@@ -1,7 +1,7 @@
 package com.dosarcusina.cadence
 
 import java.util.Calendar
-import kotlin.math.roundToLong
+import kotlin.math.ceil
 
 /**
  * Cadence and telemetry projection engine matching iOS CadenceCalculator.
@@ -97,12 +97,12 @@ object CadenceCalculator {
             return null
         }
 
-        val rawEstimatedDays = remainingMetric / effectiveRate
+        val rawEstimatedDays = ceil(remainingMetric / effectiveRate)
         val maxHorizonDays = 36500L // 100 years maximum horizon; prevents Long arithmetic overflow
         val estimatedDays = if (rawEstimatedDays.isNaN() || rawEstimatedDays.isInfinite() || rawEstimatedDays > maxHorizonDays) {
             maxHorizonDays
         } else {
-            maxOf(1L, rawEstimatedDays.roundToLong())
+            maxOf(1L, rawEstimatedDays.toLong())
         }
 
         return currentTimestamp + (estimatedDays * 86_400_000L)
