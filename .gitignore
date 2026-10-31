@@ -27,6 +27,18 @@ keystore.properties
 GoogleService-Info.plist
 google-services.json
 
+# Confidential Security Vault & Private Development Logs (CRITICAL)
+# Documents in these folders contain vulnerability findings, bug reports, and internal notes
+private/
+.private/
+internal/
+.internal/
+security-vault/
+*.private.*
+*.internal.*
+*VULNERABILIT*
+*EXPLOIT*
+
 # Xcode & Apple Build Artifacts
 build/
 DerivedData/
