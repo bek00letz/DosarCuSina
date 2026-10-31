@@ -32,8 +32,12 @@ class AndroidCadenceCalculator:
 
     @staticmethod
     def calculate_next_due_date_days(from_timestamp_ms: int, cadence_days: int) -> int:
-        # Java Calendar.add(Calendar.DAY_OF_YEAR, cadenceDays)
-        # 1 day = 86_400_000 ms
+        if cadence_days <= 0:
+            return from_timestamp_ms
+        if cadence_days == 365 or cadence_days == 366:
+            return AndroidCadenceCalculator.add_years_calendar(from_timestamp_ms, 1)
+        if cadence_days == 730 or cadence_days == 731:
+            return AndroidCadenceCalculator.add_years_calendar(from_timestamp_ms, 2)
         return from_timestamp_ms + cadence_days * 86_400_000
 
     @staticmethod
@@ -57,17 +61,24 @@ class AndroidCadenceCalculator:
             return None
 
         sorted_h = sorted(history, key=lambda x: x[0])
+        # Check consecutive pairs for rollback anomaly
+        for i in range(1, len(sorted_h)):
+            if sorted_h[i][1] < sorted_h[i - 1][1]:
+                return None
+
         first = sorted_h[0]
         last = sorted_h[-1]
 
         delta_metric = last[1] - first[1]
         delta_days = (last[0] - first[0]) / (1000.0 * 60 * 60 * 24)
 
-        if delta_days <= 0.0 or delta_metric <= 0.0:
+        if delta_days <= 0.001 or delta_metric <= 0.0:
             return None
 
         daily_burn_rate = delta_metric / delta_days
-        estimated_days = round(remaining_metric / daily_burn_rate)
+        raw_estimated_days = math.ceil(remaining_metric / daily_burn_rate)
+        max_horizon_days = 36500
+        estimated_days = max(1, min(int(raw_estimated_days), max_horizon_days))
 
         return current_timestamp + (estimated_days * 86_400_000)
 
@@ -85,15 +96,21 @@ class AndroidRomanianUtilityParser:
     }
 
     DIGI_CLIENT_CODE = re.compile(r"Cod\s+client[:\s]+([0-9]{7,10})", re.IGNORECASE)
-    DIGI_DUE_DATE = re.compile(r"(?:Data\s+scadent[aă]|Scadent[aă])[:\s]+([0-9]{2}[./-][0-9]{2}[./-][0-9]{4})", re.IGNORECASE)
-    DIGI_TOTAL = re.compile(r"Total\s+de\s+plat[aă][:\s]+([0-9.,]+)\s*(?:LEI|RON)", re.IGNORECASE)
+    DIGI_DUE_DATE = re.compile(
+        r"(?:Data\s+scadent[aă]|Scadent[aă])[:\s]+((?:0?[1-9]|[12][0-9]|3[01])[./-](?:0?[1-9]|1[0-2])[./-](?:20[2-9][0-9])|[0-9]{1,2}\s+[a-zăîșțA-ZĂÎȘȚ]+\s+(?:20[2-9][0-9]))",
+        re.IGNORECASE
+    )
+    DIGI_TOTAL = re.compile(r"Total\s+de\s+plat[aă][:\s]+([0-9.,\s]+?)\s*(?:LEI|RON)", re.IGNORECASE)
 
     HIDRO_CLIENT_CODE = re.compile(r"Cod\s+client[:\s]+([0-9]{6,10})", re.IGNORECASE)
-    HIDRO_TOTAL = re.compile(r"Total\s+de\s+achitat[:\s]+([0-9.,]+)\s*(?:LEI|RON)", re.IGNORECASE)
-    # Note: No 1.8.0 or meter index pattern in Android parser!
+    HIDRO_TOTAL = re.compile(r"Total\s+de\s+achitat[:\s]+([0-9.,\s]+?)\s*(?:LEI|RON)", re.IGNORECASE)
+    HIDRO_ACTIVE_ENERGY = re.compile(r"(?:1\.8\.0|energie\s+activ[aă])[:\s]+(\d+(?:[.,]\d+)?)", re.IGNORECASE)
 
-    GENERIC_DATE = re.compile(r"(?:Data(?:\s+scadent[aă])?|Scaden[tț][aă])?[:\s]*\b(0?[1-9]|[12][0-9]|3[01])[./-](0?[1-9]|1[0-2])[./-](20[2-9][0-9])\b", re.IGNORECASE)
-    GENERIC_TOTAL = re.compile(r"(?:Total|Suma|Achitat|Plat[aă])[:\s]+([0-9.,]+)\s*(?:LEI|RON)", re.IGNORECASE)
+    GENERIC_DATE = re.compile(
+        r"(?:Data(?:\s+scadent[aă])?|Scaden[tț][aă])?[:\s]*\b((?:0?[1-9]|[12][0-9]|3[01])[./-](?:0?[1-9]|1[0-2])[./-](?:20[2-9][0-9])|[0-9]{1,2}\s+[a-zăîșțA-ZĂÎȘȚ]+\s+(?:20[2-9][0-9]))\b",
+        re.IGNORECASE
+    )
+    GENERIC_TOTAL = re.compile(r"(?:Total|Suma|Achitat|Plat[aă])[:\s]+([0-9.,\s]+?)\s*(?:LEI|RON)", re.IGNORECASE)
 
     @classmethod
     def identify(cls, text: str) -> str:
@@ -105,9 +122,15 @@ class AndroidRomanianUtilityParser:
     @classmethod
     def parse_amount(cls, raw: str) -> float:
         s = raw.strip()
-        s = re.sub(r"(?i)LEI", "", s).replace("RON", "").strip()
+        s = re.sub(r"(?i)LEI", "", s)
+        s = re.sub(r"(?i)RON", "", s)
+        s = re.sub(r"(?i)EUR", "", s)
+        s = s.replace("\u00A0", "").replace(" ", "").strip()
         if "," in s and "." in s:
-            s = s.replace(".", "").replace(",", ".")
+            if s.rfind(",") > s.rfind("."):
+                s = s.replace(".", "").replace(",", ".")
+            else:
+                s = s.replace(",", "")
         elif "," in s:
             s = s.replace(",", ".")
         try:
