@@ -353,6 +353,9 @@ public struct DocumentScannerView: View {
         }
         
         modelContext.insert(newEvent)
+        Task {
+            _ = try? await NotificationScheduler.shared.scheduleReminders(for: newEvent)
+        }
         dismiss()
     }
 }

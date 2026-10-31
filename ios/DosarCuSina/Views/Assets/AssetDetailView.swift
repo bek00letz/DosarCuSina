@@ -10,6 +10,9 @@ public struct AssetDetailView: View {
     @State private var showingEditTelemetry = false
     @State private var newTelemetryValue: String = ""
     @State private var showCompletedEvents = false
+    @State private var exportedPDFURL: URL? = nil
+    @State private var isGeneratingPDF = false
+    @State private var showingShareSheet = false
     
     public init(asset: Asset) {
         self.asset = asset
@@ -48,16 +51,38 @@ public struct AssetDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showingAddEventSheet = true
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 17, weight: .semibold))
+                HStack(spacing: 12) {
+                    Button {
+                        generateAndShareDossier()
+                    } label: {
+                        if isGeneratingPDF {
+                            ProgressView()
+                                .controlSize(.small)
+                        } else {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                    }
+                    .disabled(isGeneratingPDF)
+                    
+                    Button {
+                        showingAddEventSheet = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 17, weight: .semibold))
+                    }
                 }
             }
         }
         .sheet(isPresented: $showingAddEventSheet) {
             addEventSheet
+        }
+        .sheet(isPresented: $showingShareSheet) {
+            if let url = exportedPDFURL {
+                #if canImport(UIKit)
+                ActivityView(activityItems: [url])
+                #endif
+            }
         }
         .alert("Actualizare Contor", isPresented: $showingEditTelemetry) {
             TextField("Valoare nouă", text: $newTelemetryValue)
@@ -232,6 +257,9 @@ public struct AssetDetailView: View {
                         )
                         ev.asset = asset
                         modelContext.insert(ev)
+                        Task {
+                            _ = try? await NotificationScheduler.shared.scheduleReminders(for: ev)
+                        }
                         showingAddEventSheet = false
                         newEventTitle = ""
                         newEventCost = ""
@@ -241,4 +269,31 @@ public struct AssetDetailView: View {
             }
         }
     }
+    
+    private func generateAndShareDossier() {
+        isGeneratingPDF = true
+        Task {
+            let url = try? PDFDossierGenerator.shared.generateDossierFile(for: asset)
+            await MainActor.run {
+                self.exportedPDFURL = url
+                self.isGeneratingPDF = false
+                if url != nil {
+                    self.showingShareSheet = true
+                }
+            }
+        }
+    }
 }
+
+#if canImport(UIKit)
+struct ActivityView: UIViewControllerRepresentable {
+    let activityItems: [Any]
+    let applicationActivities: [UIActivity]? = nil
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+#endif

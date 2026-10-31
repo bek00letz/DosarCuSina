@@ -37,7 +37,7 @@ public struct SettingsView: View {
                 
                 // Section: Gemini AI API Key (BYOK)
                 Section {
-                    SecureField("Introdu cheia API Gemini", text: $apiKeyInput)
+                    SecureField(isKeySaved ? "Cheie configurată (••••••••)" : "Introdu cheia API Gemini", text: $apiKeyInput)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
                     
@@ -189,7 +189,7 @@ public struct SettingsView: View {
     private func checkKeyStatus() {
         if let key = KeychainManager.getGeminiAPIKey(), !key.isEmpty {
             isKeySaved = true
-            apiKeyInput = key
+            apiKeyInput = "" // Keep raw secret out of view state and text field
         } else {
             isKeySaved = false
             apiKeyInput = ""
@@ -210,6 +210,7 @@ public struct SettingsView: View {
         if isValid {
             if KeychainManager.saveGeminiAPIKey(trimmed) {
                 isKeySaved = true
+                apiKeyInput = "" // Clear plaintext from view state upon successful save
                 showingSaveAlert = true
             }
         }

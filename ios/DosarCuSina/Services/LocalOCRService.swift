@@ -21,26 +21,62 @@ public final class LocalOCRService: Sendable {
     #if canImport(UIKit)
     /// Performs fast, on-device OCR recognition on a CGImage/UIImage
     public func scanImage(_ image: UIImage) async throws -> LocalOCRScanResult {
-        guard let cgImage = image.cgImage else {
-            throw NSError(domain: "LocalOCRService", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid image format"])
+        let targetCGImage: CGImage
+        if let direct = image.cgImage {
+            targetCGImage = direct
+        } else if let ciImage = image.ciImage {
+            let context = CIContext()
+            guard let converted = context.createCGImage(ciImage, from: ciImage.extent) else {
+                throw NSError(domain: "LocalOCRService", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid image format"])
+            }
+            targetCGImage = converted
+        } else {
+            let format = UIGraphicsImageRendererFormat()
+            format.scale = 1.0
+            let renderer = UIGraphicsImageRenderer(size: image.size, format: format)
+            let renderedImage = renderer.image { _ in
+                image.draw(in: CGRect(origin: .zero, size: image.size))
+            }
+            guard let converted = renderedImage.cgImage else {
+                throw NSError(domain: "LocalOCRService", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid image format"])
+            }
+            targetCGImage = converted
+        }
+        
+        final class SafeContinuation: @unchecked Sendable {
+            private var hasResumed = false
+            private let lock = NSLock()
+            
+            func resumeOnce(
+                continuation: CheckedContinuation<LocalOCRScanResult, Error>,
+                result: Result<LocalOCRScanResult, Error>
+            ) {
+                lock.lock()
+                defer { lock.unlock() }
+                guard !hasResumed else { return }
+                hasResumed = true
+                continuation.resume(with: result)
+            }
         }
         
         return try await withCheckedThrowingContinuation { continuation in
+            let safe = SafeContinuation()
             let request = VNRecognizeTextRequest { request, error in
                 if let error = error {
-                    continuation.resume(throwing: error)
+                    safe.resumeOnce(continuation: continuation, result: .failure(error))
                     return
                 }
                 
                 guard let observations = request.results as? [VNRecognizedTextObservation] else {
-                    continuation.resume(returning: LocalOCRScanResult(
+                    let emptyResult = LocalOCRScanResult(
                         rawText: "",
                         detectedDates: [],
                         detectedAmounts: [],
                         detectedCurrencies: [],
                         candidateDueDate: nil,
                         candidateTotal: nil
-                    ))
+                    )
+                    safe.resumeOnce(continuation: continuation, result: .success(emptyResult))
                     return
                 }
                 
@@ -48,18 +84,18 @@ public final class LocalOCRService: Sendable {
                 let fullText = recognizedStrings.joined(separator: "\n")
                 
                 let result = self.parseExtractedText(fullText)
-                continuation.resume(returning: result)
+                safe.resumeOnce(continuation: continuation, result: .success(result))
             }
             
             request.recognitionLevel = .accurate
             request.usesLanguageCorrection = true
             request.recognitionLanguages = ["ro-RO", "en-US"]
             
-            let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
+            let handler = VNImageRequestHandler(cgImage: targetCGImage, options: [:])
             do {
                 try handler.perform([request])
             } catch {
-                continuation.resume(throwing: error)
+                safe.resumeOnce(continuation: continuation, result: .failure(error))
             }
         }
     }

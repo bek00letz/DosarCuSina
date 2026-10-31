@@ -21,8 +21,14 @@ public struct EventRowCard: View {
                     event.isCompleted.toggle()
                     if event.isCompleted {
                         event.completedDate = Date()
+                        Task {
+                            await NotificationScheduler.shared.cancelReminders(for: event)
+                        }
                     } else {
                         event.completedDate = nil
+                        Task {
+                            _ = try? await NotificationScheduler.shared.scheduleReminders(for: event)
+                        }
                     }
                 }
                 onToggleCompletion?()

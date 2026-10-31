@@ -45,10 +45,9 @@ public final class GeminiService: Sendable {
     
     /// Tests and validates a user-provided Gemini API key with a minimal ping request
     public func validateAPIKey(_ candidateKey: String) async -> Bool {
-        guard !candidateKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return false }
-        guard var urlComponents = URLComponents(string: endpoint) else { return false }
-        urlComponents.queryItems = [URLQueryItem(name: "key", value: candidateKey)]
-        guard let url = urlComponents.url else { return false }
+        let trimmedKey = candidateKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedKey.isEmpty else { return false }
+        guard let url = URL(string: endpoint) else { return false }
         
         let testBody: [String: Any] = [
             "contents": [
@@ -59,6 +58,8 @@ public final class GeminiService: Sendable {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        // Pass API key securely via standard Google API header rather than query string
+        request.setValue(trimmedKey, forHTTPHeaderField: "x-goog-api-key")
         request.timeoutInterval = 8
         
         do {
@@ -122,18 +123,15 @@ public final class GeminiService: Sendable {
             ]
         ]
         
-        guard var urlComponents = URLComponents(string: endpoint) else {
-            throw URLError(.badURL)
-        }
-        urlComponents.queryItems = [URLQueryItem(name: "key", value: apiKey)]
-        
-        guard let url = urlComponents.url else {
+        guard let url = URL(string: endpoint) else {
             throw URLError(.badURL)
         }
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        // Pass API key securely via standard Google API header rather than query string
+        request.setValue(apiKey, forHTTPHeaderField: "x-goog-api-key")
         request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
         
         let (data, response) = try await URLSession.shared.data(for: request)
