@@ -34,6 +34,7 @@ private/
 internal/
 .internal/
 security-vault/
+.agents/
 *.private.*
 *.internal.*
 *VULNERABILIT*
