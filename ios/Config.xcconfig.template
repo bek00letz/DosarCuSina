@@ -1,0 +1,12 @@
+// ==============================================================================
+// Dosar cu Șină — Local Configuration Template
+// ==============================================================================
+// INSTRUCTIONS:
+// 1. Duplicate this file as "Config.xcconfig" in the same directory:
+//    cp Config.xcconfig.template Config.xcconfig
+// 2. Replace the placeholder below with your Gemini API key:
+//    (Get a free key from https://aistudio.google.com/)
+// 3. Config.xcconfig is ignored by .gitignore — NEVER commit secrets to git.
+// ==============================================================================
+
+GEMINI_API_KEY = YOUR_GEMINI_API_KEY_HERE

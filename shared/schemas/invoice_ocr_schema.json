@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "InvoiceOCRResult",
+  "description": "Structured extraction schema from invoices, utility bills, receipts, and medical reports for Dosar cu Șină.",
+  "type": "object",
+  "properties": {
+    "merchant": {
+      "type": "string",
+      "description": "Numele companiei / clinicii / furnizorului (ex: ENGIE Romania, Clinica Sanador, Service Auto Pro)."
+    },
+    "documentType": {
+      "type": "string",
+      "enum": ["utility_invoice", "maintenance_receipt", "insurance_policy", "medical_report", "warranty_receipt", "general_bill"],
+      "description": "Tipul documentului identificat."
+    },
+    "categorySuggestion": {
+      "type": "string",
+      "enum": ["casa", "masina", "pet", "sanatate", "documente", "garantii", "abonamente", "custom"],
+      "description": "Categoria recomandată pentru clasificare."
+    },
+    "issueDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Data emiterii documentului în format YYYY-MM-DD."
+    },
+    "dueDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Data scadenței de plată sau a expirării poliței/garanției în format YYYY-MM-DD."
+    },
+    "totalAmount": {
+      "type": "number",
+      "description": "Suma totală de plată / valoarea documentului."
+    },
+    "currency": {
+      "type": "string",
+      "default": "RON",
+      "description": "Moneda tranzacției (RON, EUR, USD)."
+    },
+    "invoiceNumber": {
+      "type": "string",
+      "description": "Seria și numărul facturii sau codul chitanței."
+    },
+    "summary": {
+      "type": "string",
+      "description": "Scurt rezumat clar al serviciilor sau bunurilor facturate (ex: 'Schimb ulei 5W30 + filtru polen', 'Consum gaze 75 mc')."
+    },
+    "actionableReminderDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Data recomandată pentru setarea alertei (de regulă cu 3-5 zile înainte de scadență)."
+    }
+  },
+  "required": ["merchant", "documentType", "categorySuggestion", "totalAmount", "currency"]
+}

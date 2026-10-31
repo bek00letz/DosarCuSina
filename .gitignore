@@ -1,0 +1,69 @@
+# ==========================================
+# Dosar cu Șină — Git Ignore Policy
+# Public Repository Safe: ZERO SECRETS / ZERO PERSONAL DATA
+# ==========================================
+
+# OS & Finder
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+
+# Secrets, Environment & API Keys (CRITICAL)
+*.env
+*.env.*
+*.secret
+*.secrets
+Config.xcconfig
+Secrets.swift
+Secrets.kt
+local.properties
+keystore.properties
+*.jks
+*.keystore
+GoogleService-Info.plist
+google-services.json
+
+# Xcode & Apple Build Artifacts
+build/
+DerivedData/
+*.moved-aside
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+xcuserdata/
+*.xcuserdatad/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+
+# Swift Package Manager
+.build/
+Packages/
+Package.pins
+Package.resolved
+
+# Fastlane & App Store
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Android / Gradle (Future-proofing)
+.gradle/
+*/build/
+captures/
+*.apk
+*.aab
+.idea/
+*.iml
+
+# Node / Web / Docs caches (if any)
+node_modules/
+.npm
+dist/
+.temp/
+tmp/

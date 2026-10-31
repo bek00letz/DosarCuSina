@@ -1,0 +1,116 @@
+[
+  {
+    "id": "bike",
+    "title": "Bicicletă / E-Bike",
+    "iconName": "bicycle",
+    "accentColor": "systemGreen",
+    "primaryMetric": "kilometers",
+    "suggestedEvents": [
+      {
+        "title": "Ungere și curățare lanț",
+        "cadenceDays": null,
+        "cadenceMetricValue": 150,
+        "metricUnit": "km"
+      },
+      {
+        "title": "Verificare uzură plăcuțe frână",
+        "cadenceDays": null,
+        "cadenceMetricValue": 1000,
+        "metricUnit": "km"
+      },
+      {
+        "title": "Înlocuire lanț transmisie",
+        "cadenceDays": null,
+        "cadenceMetricValue": 2000,
+        "metricUnit": "km"
+      },
+      {
+        "title": "Service suspensie / furcă",
+        "cadenceDays": null,
+        "cadenceMetricValue": 100,
+        "metricUnit": "hours"
+      }
+    ]
+  },
+  {
+    "id": "plants",
+    "title": "Plante & Grădină",
+    "iconName": "leaf.fill",
+    "accentColor": "systemMint",
+    "primaryMetric": "calendar",
+    "suggestedEvents": [
+      {
+        "title": "Udare periodică",
+        "cadenceDays": 7,
+        "cadenceMetricValue": null,
+        "metricUnit": null
+      },
+      {
+        "title": "Fertilizare de sezon (primăvară/vară)",
+        "cadenceDays": 30,
+        "cadenceMetricValue": null,
+        "metricUnit": null
+      },
+      {
+        "title": "Schimbare substrat și ghiveci",
+        "cadenceDays": 730,
+        "cadenceMetricValue": null,
+        "metricUnit": null
+      }
+    ]
+  },
+  {
+    "id": "landlord",
+    "title": "Proprietăți Închiriate",
+    "iconName": "building.2.fill",
+    "accentColor": "systemIndigo",
+    "primaryMetric": "calendar",
+    "suggestedEvents": [
+      {
+        "title": "Scadență plată chirie",
+        "cadenceDays": 30,
+        "cadenceMetricValue": null,
+        "metricUnit": null
+      },
+      {
+        "title": "Citire și decontare apometre / utilități",
+        "cadenceDays": 30,
+        "cadenceMetricValue": null,
+        "metricUnit": null
+      },
+      {
+        "title": "Reînnoire înregistrare contract ANAF",
+        "cadenceDays": 365,
+        "cadenceMetricValue": null,
+        "metricUnit": null
+      }
+    ]
+  },
+  {
+    "id": "espresso",
+    "title": "Cafea & Echipamente",
+    "iconName": "cup.and.saucer.fill",
+    "accentColor": "systemBrown",
+    "primaryMetric": "cycles",
+    "suggestedEvents": [
+      {
+        "title": "Curățare chimică grup (Cafiza)",
+        "cadenceDays": 14,
+        "cadenceMetricValue": 100,
+        "metricUnit": "extractions"
+      },
+      {
+        "title": "Decalcifiere completă boiler",
+        "cadenceDays": 60,
+        "cadenceMetricValue": 300,
+        "metricUnit": "extractions"
+      },
+      {
+        "title": "Înlocuire filtru apă / rășină dedurizatoare",
+        "cadenceDays": 60,
+        "cadenceMetricValue": null,
+        "metricUnit": null
+      }
+    ]
+  }
+]
