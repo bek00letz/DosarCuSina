@@ -14,6 +14,7 @@ public struct DocumentScannerView: View {
     @State private var localOCRResult: LocalOCRScanResult? = nil
     @State private var geminiResult: InvoiceOCRResponse? = nil
     @State private var errorMessage: String? = nil
+    @State private var showingKeyPromptSheet: Bool = false
     
     // Extracted Fields for Saving
     @State private var eventTitle: String = ""
@@ -54,6 +55,11 @@ public struct DocumentScannerView: View {
                     }
                 }
             }
+            .sheet(isPresented: $showingKeyPromptSheet) {
+                NavigationStack {
+                    SettingsView()
+                }
+            }
             .onChange(of: selectedItem) { _, newItem in
                 Task {
                     if let data = try? await newItem?.loadTransferable(type: Data.self),
@@ -88,9 +94,13 @@ public struct DocumentScannerView: View {
                     Spacer()
                     
                     Button {
-                        Task { await runGeminiSweep(image: image) }
+                        if KeychainManager.hasConfiguredAPIKey {
+                            Task { await runGeminiSweep(image: image) }
+                        } else {
+                            showingKeyPromptSheet = true
+                        }
                     } label: {
-                        Label("Analiză AI (Gemini)", systemImage: "sparkles")
+                        Label(KeychainManager.hasConfiguredAPIKey ? "Analiză AI (Gemini)" : "Activează AI (Gratuit)", systemImage: "sparkles")
                             .font(.system(.subheadline, design: .rounded, weight: .semibold))
                             .foregroundStyle(.purple)
                             .padding(.horizontal, 12)

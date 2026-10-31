@@ -43,6 +43,36 @@ public final class GeminiService: Sendable {
     
     private init() {}
     
+    /// Tests and validates a user-provided Gemini API key with a minimal ping request
+    public func validateAPIKey(_ candidateKey: String) async -> Bool {
+        guard !candidateKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return false }
+        guard var urlComponents = URLComponents(string: endpoint) else { return false }
+        urlComponents.queryItems = [URLQueryItem(name: "key", value: candidateKey)]
+        guard let url = urlComponents.url else { return false }
+        
+        let testBody: [String: Any] = [
+            "contents": [
+                ["parts": [["text": "ping"]]]
+            ]
+        ]
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 8
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: testBody)
+            let (_, response) = try await URLSession.shared.data(for: request)
+            if let httpResponse = response as? HTTPURLResponse {
+                return httpResponse.statusCode == 200
+            }
+            return false
+        } catch {
+            return false
+        }
+    }
+    
     #if canImport(UIKit)
     /// Performs multimodal semantic extraction using Gemini Flash API
     public func analyzeDocument(image: UIImage, mimeType: String = "image/jpeg") async throws -> InvoiceOCRResponse {

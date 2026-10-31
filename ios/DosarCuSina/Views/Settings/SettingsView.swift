@@ -3,6 +3,8 @@ import SwiftUI
 public struct SettingsView: View {
     @State private var apiKeyInput: String = ""
     @State private var isKeySaved: Bool = false
+    @State private var isValidatingKey: Bool = false
+    @State private var validationSuccess: Bool? = nil
     @State private var showingSaveAlert: Bool = false
     @State private var showingDeleteAlert: Bool = false
     
@@ -11,39 +13,126 @@ public struct SettingsView: View {
     public var body: some View {
         NavigationStack {
             Form {
+                // Section: Status Banner
+                Section {
+                    HStack(spacing: 14) {
+                        Image(systemName: isKeySaved ? "sparkles" : "bolt.shield.fill")
+                            .font(.system(size: 24, weight: .semibold))
+                            .foregroundStyle(isKeySaved ? .purple : .blue)
+                            .frame(width: 48, height: 48)
+                            .background((isKeySaved ? Color.purple : Color.blue).opacity(0.12))
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(isKeySaved ? "Modul Inteligent AI Activ" : "Modul Standard (On-Device)")
+                                .font(.system(.subheadline, design: .rounded, weight: .bold))
+                            
+                            Text(isKeySaved ? "Extragere automată avansată cu Gemini 2.0 Flash." : "Scanare 100% locală prin Apple Vision. Fără internet.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                
                 // Section: Gemini AI API Key (BYOK)
                 Section {
-                    SecureField("Cheie Gemini API (AI Studio)", text: $apiKeyInput)
+                    SecureField("Introdu cheia API Gemini", text: $apiKeyInput)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
                     
-                    HStack {
-                        Button("Salvează în Keychain") {
-                            saveKey()
+                    if let success = validationSuccess {
+                        HStack(spacing: 6) {
+                            Image(systemName: success ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                .foregroundStyle(success ? .green : .red)
+                            Text(success ? "Cheia este validă și funcțională!" : "Cheia nu a putut fi verificată. Verifică caracterele.")
+                                .font(.caption)
+                                .foregroundStyle(success ? .green : .red)
                         }
-                        .disabled(apiKeyInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                    
+                    HStack(spacing: 12) {
+                        Button {
+                            Task { await validateAndSaveKey() }
+                        } label: {
+                            HStack(spacing: 6) {
+                                if isValidatingKey {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                } else {
+                                    Image(systemName: "checkmark")
+                                }
+                                Text("Salvează & Verifică")
+                            }
+                            .font(.system(.subheadline, design: .rounded, weight: .semibold))
+                        }
+                        .disabled(apiKeyInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isValidatingKey)
                         
                         Spacer()
                         
                         if isKeySaved {
-                            Button("Șterge Cheia", role: .destructive) {
+                            Button("Șterge", role: .destructive) {
                                 deleteKey()
+                            }
+                            .font(.subheadline)
+                        }
+                    }
+                    
+                    Link(destination: URL(string: "https://aistudio.google.com/app/apikey")!) {
+                        HStack {
+                            Text("Obține o cheie gratuită pe Google AI Studio")
+                                .font(.caption.weight(.medium))
+                            Spacer()
+                            Image(systemName: "arrow.up.right")
+                                .font(.caption2)
+                        }
+                        .foregroundStyle(.purple)
+                    }
+                } header: {
+                    Text("Configurare Cheie Gemini API (BYOK)")
+                } footer: {
+                    Text("Aplicația este 100% gratuită. Nu plătești nimic dezvoltatorului. Cheia ta este stocată exclusiv pe telefonul tău în iOS Keychain și apelurile merg direct către Google fără servere intermediare.")
+                }
+                
+                // Section: Comparativ Funcționalități
+                Section("Ce oferă fiecare mod") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(alignment: .top, spacing: 8) {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(.blue)
+                                .font(.caption.weight(.bold))
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Scanare Standard (Gratuită, Fără Cheie)")
+                                    .font(.system(.caption, design: .rounded, weight: .semibold))
+                                Text("Decupare unghiuri cameră, OCR local, detectare date și sume de bază.")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        Divider()
+                        HStack(alignment: .top, spacing: 8) {
+                            Image(systemName: "sparkles")
+                                .foregroundStyle(.purple)
+                                .font(.caption.weight(.bold))
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Scanare Pro AI (Cu Cheia Ta Gemini)")
+                                    .font(.system(.caption, design: .rounded, weight: .semibold))
+                                Text("Identificare automată furnizor, scadență, sumă exactă, rezumat servicii și alocare automată pe activ.")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
                             }
                         }
                     }
-                } header: {
-                    Text("Inteligență Artificială (Scanare Avansată)")
-                } footer: {
-                    Text("Aplicația folosește implicit scanare locală (on-device) prin Apple Vision. Pentru extragerea completă a facturilor complexe poți adăuga opțional o cheie gratuită de pe Google AI Studio. Cheia este stocată securizat în iOS Keychain.")
+                    .padding(.vertical, 4)
                 }
                 
-                // Section: Cloud & Confidențialitate
-                Section("Sincronizare & Securitate") {
+                // Section: Sincronizare & Securitate
+                Section("Confidențialitate & Stocare") {
                     HStack {
                         Label("Sincronizare iCloud", systemImage: "icloud.fill")
                             .foregroundStyle(.blue)
                         Spacer()
-                        Text("Activă (CloudKit)")
+                        Text("CloudKit Privat")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -52,7 +141,7 @@ public struct SettingsView: View {
                         Label("Stocare Date", systemImage: "lock.shield.fill")
                             .foregroundStyle(.green)
                         Spacer()
-                        Text("Local-First (Pe dispozitiv)")
+                        Text("100% Pe Dispozitiv")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -67,15 +156,15 @@ public struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                     HStack {
-                        Text("Versiune")
+                        Text("Model de Distribuție")
                         Spacer()
-                        Text("1.0.0 (Alpha)")
+                        Text("Free & Open Source")
                             .foregroundStyle(.secondary)
                     }
                     HStack {
-                        Text("Arhitectură")
+                        Text("Versiune")
                         Spacer()
-                        Text("SwiftUI + SwiftData")
+                        Text("1.0.0 (Alpha)")
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -87,12 +176,12 @@ public struct SettingsView: View {
             .alert("Cheie Salvată", isPresented: $showingSaveAlert) {
                 Button("OK", role: .cancel) {}
             } message: {
-                Text("Cheia Gemini API a fost salvată în Keychain-ul dispozitivului.")
+                Text("Cheia Gemini API este activă și securizată în Keychain.")
             }
-            .alert("Cheie Ștearsă", isPresented: $showingDeleteAlert) {
+            .alert("Cheie Eliminată", isPresented: $showingDeleteAlert) {
                 Button("OK", role: .cancel) {}
             } message: {
-                Text("Cheia Gemini API a fost eliminată.")
+                Text("Aplicația a revenit la modul de scanare exclusiv local (Apple Vision).")
             }
         }
     }
@@ -107,11 +196,22 @@ public struct SettingsView: View {
         }
     }
     
-    private func saveKey() {
+    private func validateAndSaveKey() async {
         let trimmed = apiKeyInput.trimmingCharacters(in: .whitespacesAndNewlines)
-        if KeychainManager.saveGeminiAPIKey(trimmed) {
-            isKeySaved = true
-            showingSaveAlert = true
+        guard !trimmed.isEmpty else { return }
+        
+        isValidatingKey = true
+        validationSuccess = nil
+        
+        let isValid = await GeminiService.shared.validateAPIKey(trimmed)
+        isValidatingKey = false
+        validationSuccess = isValid
+        
+        if isValid {
+            if KeychainManager.saveGeminiAPIKey(trimmed) {
+                isKeySaved = true
+                showingSaveAlert = true
+            }
         }
     }
     
@@ -119,6 +219,7 @@ public struct SettingsView: View {
         if KeychainManager.deleteGeminiAPIKey() {
             isKeySaved = false
             apiKeyInput = ""
+            validationSuccess = nil
             showingDeleteAlert = true
         }
     }

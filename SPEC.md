@@ -244,7 +244,19 @@ sequenceDiagram
   "actionable_reminder_date": "2026-11-10"
 }
 ```
-- **Confidențialitate & Securitate**: Nu se stochează datele pe servere externe; procesarea se face efemer prin API cu cheie proprie sau proxy securizat.
+- **Confidențialitate & Securitate**: Nu se stochează datele pe servere externe; procesarea se face efemer prin API cu cheie proprie direct către Google.
+
+---
+
+### 3.3 Modelul de Distribuție & BYOK (App Store Review Compliant)
+Aplicația este proiectată să fie publicată **100% Free** în App Store, respectând riguros *Apple App Store Review Guidelines (Guideline 2.1 - App Completeness & Guideline 3.1.1)*:
+1. **Valoare Core Completă (Fără Cheie API)**:
+   - Aplicația **nu este o carcasă goală**. Utilizatorul fără cheie API are acces nelimitat la gestionarea activelor, calendarul scadențelor, notificările locale, widget-urile de ecran, graficele TCO și **scanarea locală de documente prin Apple Vision**.
+2. **Deblocare AI prin BYOK (Bring Your Own Key)**:
+   - Oricine dorește scanare avansată și clasificare semantică a facturilor complexe își poate adăuga o cheie gratuită Gemini (obținută cu 1 tap de pe Google AI Studio).
+   - Cheia este stocată exclusiv pe dispozitiv în **iOS Keychain** criptat.
+3. **Sustenabilitate & Cost 0$ pentru Dezvoltator**:
+   - Zero servere de administrat, zero facturi lunare de cloud, zero baze de date vulnerabile. Scalare instantanee la orice volum de utilizatori.
 
 ---
 
