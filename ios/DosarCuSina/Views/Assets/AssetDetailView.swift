@@ -1,12 +1,18 @@
 import SwiftUI
 import SwiftData
 
+/// Comprehensive detail view for an asset.
+/// Displays category-tailored specifications (VIN, plate, boiler, microchip, meters),
+/// telemetry meters, service item history link, editable events with line items,
+/// and multi-source document ingestion.
 public struct AssetDetailView: View {
     @Bindable public var asset: Asset
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     
-    @State private var showingAddEventSheet = false
+    @State private var showingEditAssetSheet = false
+    @State private var showingMultiSourceInput = false
+    @State private var editingEvent: LifecycleEvent? = nil
     @State private var showingEditTelemetry = false
     @State private var newTelemetryValue: String = ""
     @State private var showCompletedEvents = false
@@ -21,30 +27,27 @@ public struct AssetDetailView: View {
     public var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // Header Card
+                // 1. Header Hero Card
                 headerCard
                 
-                // Telemetry & Quick Metrics Card
+                // 2. Category-Specific Specifications Card
+                specificationsCard
+                
+                // 3. Service & Components Timeline Navigation Card (if Vehicle or has components)
+                if asset.category == .vehicle || !asset.serviceItems.isEmpty {
+                    serviceHistoryCard
+                }
+                
+                // 4. Telemetry & Metric Card
                 if asset.metricUnit != nil {
                     telemetryCard
                 }
                 
-                // Events Header & Filter
-                eventsSectionHeader
-                
-                // Events List
-                if displayedEvents.isEmpty {
-                    emptyEventsState
-                } else {
-                    VStack(spacing: 10) {
-                        ForEach(displayedEvents) { event in
-                            EventRowCard(event: event)
-                        }
-                    }
-                }
+                // 5. Events & Obligations Section
+                eventsSection
             }
             .padding(.horizontal, 16)
-            .padding(.bottom, 32)
+            .padding(.bottom, 36)
         }
         .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
         .navigationTitle(asset.name)
@@ -66,7 +69,14 @@ public struct AssetDetailView: View {
                     .disabled(isGeneratingPDF)
                     
                     Button {
-                        showingAddEventSheet = true
+                        showingEditAssetSheet = true
+                    } label: {
+                        Image(systemName: "slider.horizontal.3")
+                            .font(.system(size: 16, weight: .semibold))
+                    }
+                    
+                    Button {
+                        showingMultiSourceInput = true
                     } label: {
                         Image(systemName: "plus.circle.fill")
                             .font(.system(size: 17, weight: .semibold))
@@ -74,8 +84,14 @@ public struct AssetDetailView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingAddEventSheet) {
-            addEventSheet
+        .sheet(isPresented: $showingEditAssetSheet) {
+            EditAssetSheet(asset: asset)
+        }
+        .sheet(isPresented: $showingMultiSourceInput) {
+            MultiSourceInputView(preselectedAsset: asset)
+        }
+        .sheet(item: $editingEvent) { event in
+            EditEventSheet(event: event)
         }
         .sheet(isPresented: $showingShareSheet) {
             if let url = exportedPDFURL {
@@ -99,13 +115,7 @@ public struct AssetDetailView: View {
         }
     }
     
-    private var displayedEvents: [LifecycleEvent] {
-        asset.events
-            .filter { showCompletedEvents ? $0.isCompleted : !$0.isCompleted }
-            .sorted { $0.dueDate < $1.dueDate }
-    }
-    
-    // MARK: - Header
+    // MARK: - 1. Header Card
     private var headerCard: some View {
         HStack(spacing: 16) {
             Image(systemName: asset.iconName)
@@ -151,7 +161,228 @@ public struct AssetDetailView: View {
         )
     }
     
-    // MARK: - Telemetry
+    // MARK: - 2. Category Specifications Card
+    private var specificationsCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Label("Specificații & Identificare", systemImage: "info.circle.fill")
+                    .font(.system(.subheadline, design: .rounded, weight: .bold))
+                    .foregroundStyle(.secondary)
+                    .textCase(.uppercase)
+                
+                Spacer()
+                
+                Button {
+                    showingEditAssetSheet = true
+                } label: {
+                    Text("Editează")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.blue)
+                }
+            }
+            
+            VStack(spacing: 8) {
+                switch asset.category {
+                case .vehicle:
+                    vehicleSpecsGrid
+                case .home:
+                    homeSpecsGrid
+                case .pet:
+                    petSpecsGrid
+                case .health:
+                    healthSpecsGrid
+                default:
+                    genericSpecsGrid
+                }
+                
+                // Dynamic fields if present
+                if !asset.dynamicFields.isEmpty {
+                    Divider().padding(.vertical, 4)
+                    dynamicFieldsGrid
+                }
+            }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.03), radius: 8, x: 0, y: 2)
+        )
+    }
+    
+    // Vehicle Specs
+    private var vehicleSpecsGrid: some View {
+        VStack(spacing: 8) {
+            if let plate = asset.licensePlate {
+                specRow(label: "Număr Înmatriculare", value: plate, isMonospaced: true, isBold: true)
+            }
+            if let vin = asset.vinNumber {
+                specRow(label: "Serie Șasiu (VIN)", value: vin, isMonospaced: true)
+            }
+            if let fuel = asset.fuelType {
+                specRow(label: "Combustibil", value: fuel)
+            }
+            if let year = asset.manufactureYear {
+                specRow(label: "An Fabricație", value: "\(year)")
+            }
+            if let disp = asset.engineDisplacementCm3, let pwr = asset.enginePowerHp {
+                specRow(label: "Motorizare", value: "\(disp) cm³ • \(pwr) CP")
+            } else if let disp = asset.engineDisplacementCm3 {
+                specRow(label: "Cilindree", value: "\(disp) cm³")
+            } else if let pwr = asset.enginePowerHp {
+                specRow(label: "Putere", value: "\(pwr) CP")
+            }
+        }
+    }
+    
+    // Home Specs
+    private var homeSpecsGrid: some View {
+        VStack(spacing: 8) {
+            if let addr = asset.fullAddress {
+                specRow(label: "Adresă", value: addr)
+            }
+            if let area = asset.surfaceAreaM2 {
+                specRow(label: "Suprafață Utilă", value: "\(Int(area)) m²")
+            }
+            if let cy = asset.constructionYear {
+                specRow(label: "An Construcție", value: "\(cy)")
+            }
+            if let boiler = asset.heatingBoilerModel {
+                specRow(label: "Centrală Termică", value: boiler)
+            }
+            if let boilerSerial = asset.heatingBoilerSerial {
+                specRow(label: "Serie Centrală", value: boilerSerial, isMonospaced: true)
+            }
+            if let gas = asset.gasMeterSerial {
+                specRow(label: "Contor Gaze", value: gas, isMonospaced: true)
+            }
+            if let elec = asset.electricityMeterSerial {
+                specRow(label: "Contor Curent", value: elec, isMonospaced: true)
+            }
+            if let water = asset.waterMeterSerial {
+                specRow(label: "Contor Apă", value: water, isMonospaced: true)
+            }
+        }
+    }
+    
+    // Pet Specs
+    private var petSpecsGrid: some View {
+        VStack(spacing: 8) {
+            if let sp = asset.petSpecies {
+                specRow(label: "Specie", value: sp)
+            }
+            if let br = asset.petBreed {
+                specRow(label: "Rasă", value: br)
+            }
+            if let chip = asset.petMicrochipNumber {
+                specRow(label: "Microchip ISO", value: chip, isMonospaced: true)
+            }
+            if let bdate = asset.petBirthDate {
+                specRow(label: "Data Nașterii", value: formattedDate(bdate))
+            }
+            if let vet = asset.veterinarianClinic {
+                specRow(label: "Clinică Veterinară", value: vet)
+            }
+            if let phone = asset.veterinarianPhone {
+                specRow(label: "Telefon Veterinar", value: phone)
+            }
+        }
+    }
+    
+    // Health Specs
+    private var healthSpecsGrid: some View {
+        VStack(spacing: 8) {
+            if let bt = asset.bloodType {
+                specRow(label: "Grupă Sanguină", value: bt, isBold: true)
+            }
+            if let doc = asset.familyDoctorName {
+                specRow(label: "Medic de Familie", value: doc)
+            }
+            if let phone = asset.familyDoctorPhone {
+                specRow(label: "Telefon Medic", value: phone)
+            }
+            if let ice = asset.emergencyContactName {
+                specRow(label: "Contact Urgență", value: ice)
+            }
+            if let iceP = asset.emergencyContactPhone {
+                specRow(label: "Telefon Urgență", value: iceP)
+            }
+            if let alg = asset.allergiesNotes {
+                specRow(label: "Alergii", value: alg)
+            }
+        }
+    }
+    
+    private var genericSpecsGrid: some View {
+        VStack(spacing: 8) {
+            if asset.subtitle != nil {
+                specRow(label: "Detalii", value: asset.subtitle ?? "")
+            }
+            specRow(label: "Creat la", value: formattedDate(asset.createdAt))
+        }
+    }
+    
+    private var dynamicFieldsGrid: some View {
+        VStack(spacing: 6) {
+            ForEach(asset.dynamicFields) { f in
+                specRow(label: f.label, value: f.displayValue, isMonospaced: f.fieldType == .number)
+            }
+        }
+    }
+    
+    private func specRow(label: String, value: String, isMonospaced: Bool = false, isBold: Bool = false) -> some View {
+        HStack(alignment: .top) {
+            Text(label)
+                .font(.system(.subheadline, design: .rounded))
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text(value)
+                .font(.system(.subheadline, design: isMonospaced ? .monospaced : .rounded, weight: isBold ? .bold : .regular))
+                .foregroundStyle(.primary)
+                .multilineTextAlignment(.trailing)
+        }
+    }
+    
+    // MARK: - 3. Service & Maintenance Navigation Card
+    private var serviceHistoryCard: some View {
+        NavigationLink {
+            ComponentHistoryView(asset: asset)
+        } label: {
+            HStack(spacing: 14) {
+                Image(systemName: "wrench.and.screwdriver.fill")
+                    .font(.system(size: 22))
+                    .foregroundStyle(.orange)
+                    .frame(width: 48, height: 48)
+                    .background(Color.orange.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Istoric Piese & Mentenanță Service")
+                        .font(.system(.subheadline, design: .rounded, weight: .bold))
+                        .foregroundStyle(.primary)
+                    
+                    Text("\(asset.serviceItems.count) componente monitorizate (plăcuțe, filtre, ulei)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                    .shadow(color: .black.opacity(0.03), radius: 6, x: 0, y: 2)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+    
+    // MARK: - 4. Telemetry Card
     private var telemetryCard: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
@@ -184,90 +415,58 @@ public struct AssetDetailView: View {
         )
     }
     
-    // MARK: - Events Header
-    private var eventsSectionHeader: some View {
-        HStack {
-            Text("Evenimente & Obligații")
-                .font(.system(.headline, design: .rounded, weight: .bold))
-            
-            Spacer()
-            
-            Picker("Filtru", selection: $showCompletedEvents) {
-                Text("Active").tag(false)
-                Text("Istoric").tag(true)
-            }
-            .pickerStyle(.segmented)
-            .frame(width: 150)
-        }
-        .padding(.horizontal, 4)
-    }
-    
-    private var emptyEventsState: some View {
-        VStack(spacing: 8) {
-            Text(showCompletedEvents ? "Niciun eveniment finalizat" : "Nicio obligație în așteptare")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .padding(.top, 20)
-        }
-        .frame(maxWidth: .infinity)
-    }
-    
-    // MARK: - Add Event Sheet
-    @State private var newEventTitle = ""
-    @State private var newEventDueDate = Date()
-    @State private var newEventCost = ""
-    @State private var newEventCadence = 365
-    
-    private var addEventSheet: some View {
-        NavigationStack {
-            Form {
-                Section("Detalii Eveniment") {
-                    TextField("Denumire (ex: Revizie, RCA, Vaccin)", text: $newEventTitle)
-                    DatePicker("Dată Scadență", selection: $newEventDueDate, displayedComponents: .date)
-                    TextField("Cost estimat (RON)", text: $newEventCost)
-                        .keyboardType(.decimalPad)
-                }
+    // MARK: - 5. Events Section
+    private var eventsSection: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Text("Obligații & Facturi")
+                    .font(.system(.headline, design: .rounded, weight: .bold))
                 
-                Section("Recurență") {
-                    Picker("Se repetă la fiecare", selection: $newEventCadence) {
-                        Text("3 luni").tag(90)
-                        Text("6 luni").tag(180)
-                        Text("1 an").tag(365)
-                        Text("2 ani").tag(730)
-                        Text("Fără recurență").tag(0)
-                    }
+                Spacer()
+                
+                Picker("Filtru", selection: $showCompletedEvents) {
+                    Text("Active").tag(false)
+                    Text("Istoric").tag(true)
                 }
+                .pickerStyle(.segmented)
+                .frame(width: 150)
             }
-            .navigationTitle("Adaugă Eveniment")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Anulează") {
-                        showingAddEventSheet = false
-                    }
+            .padding(.horizontal, 4)
+            
+            if displayedEvents.isEmpty {
+                VStack(spacing: 8) {
+                    Text(showCompletedEvents ? "Niciun eveniment finalizat" : "Nicio obligație în așteptare")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .padding(.top, 16)
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Adaugă") {
-                        let costVal = Double(newEventCost.replacingOccurrences(of: ",", with: "."))
-                        let ev = LifecycleEvent(
-                            title: newEventTitle.trimmingCharacters(in: .whitespacesAndNewlines),
-                            dueDate: newEventDueDate,
-                            cost: costVal,
-                            cadenceDays: newEventCadence > 0 ? newEventCadence : nil
-                        )
-                        ev.asset = asset
-                        modelContext.insert(ev)
-                        Task {
-                            _ = try? await NotificationScheduler.shared.scheduleReminders(for: ev)
+                .frame(maxWidth: .infinity)
+            } else {
+                VStack(spacing: 10) {
+                    ForEach(displayedEvents) { event in
+                        Button {
+                            editingEvent = event
+                        } label: {
+                            EventRowCard(event: event)
                         }
-                        showingAddEventSheet = false
-                        newEventTitle = ""
-                        newEventCost = ""
+                        .buttonStyle(.plain)
                     }
-                    .disabled(newEventTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
         }
+    }
+    
+    private var displayedEvents: [LifecycleEvent] {
+        asset.events
+            .filter { showCompletedEvents ? $0.isCompleted : !$0.isCompleted }
+            .sorted { $0.dueDate < $1.dueDate }
+    }
+    
+    private func formattedDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.locale = Locale(identifier: "ro_RO")
+        return formatter.string(from: date)
     }
     
     private func generateAndShareDossier() {

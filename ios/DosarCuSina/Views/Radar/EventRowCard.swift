@@ -51,12 +51,19 @@ public struct EventRowCard: View {
                     
                     if let cost = event.cost, cost > 0 {
                         Text("\(String(format: "%.0f", cost)) \(event.currency)")
-                            .font(.system(.subheadline, design: .rounded, weight: .medium))
-                            .foregroundStyle(.secondary)
+                            .font(.system(.subheadline, design: .rounded, weight: .bold))
+                            .foregroundStyle(.primary)
                     }
                 }
                 
-                HStack(spacing: 8) {
+                if let prov = event.provider, !prov.isEmpty {
+                    Text(prov)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+                
+                HStack(spacing: 6) {
                     if let asset = event.asset {
                         HStack(spacing: 4) {
                             Image(systemName: asset.iconName)
@@ -78,6 +85,20 @@ public struct EventRowCard: View {
                         .padding(.vertical, 2)
                         .background(statusColor.opacity(0.12))
                         .clipShape(Capsule())
+                    
+                    if !event.serviceItems.isEmpty {
+                        HStack(spacing: 3) {
+                            Image(systemName: "wrench.fill")
+                                .font(.caption2)
+                            Text("\(event.serviceItems.count) \(event.serviceItems.count == 1 ? "piesă" : "piese")")
+                                .font(.caption2.weight(.medium))
+                        }
+                        .foregroundStyle(.orange)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.orange.opacity(0.12))
+                        .clipShape(Capsule())
+                    }
                     
                     if !event.attachments.isEmpty {
                         Image(systemName: "paperclip")

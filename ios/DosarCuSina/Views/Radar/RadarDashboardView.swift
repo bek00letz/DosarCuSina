@@ -6,8 +6,9 @@ public struct RadarDashboardView: View {
     @Query private var assets: [Asset]
     
     @State private var selectedCategory: AssetCategory? = nil
-    @State private var showingScanner = false
+    @State private var showingMultiSourceInput = false
     @State private var showingNewAssetSheet = false
+    @State private var editingEvent: LifecycleEvent? = nil
     
     public init() {}
     
@@ -46,7 +47,7 @@ public struct RadarDashboardView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        showingScanner = true
+                        showingMultiSourceInput = true
                     } label: {
                         Image(systemName: "doc.viewfinder.fill")
                             .font(.system(size: 17, weight: .semibold))
@@ -62,11 +63,14 @@ public struct RadarDashboardView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showingScanner) {
-                DocumentScannerView()
+            .sheet(isPresented: $showingMultiSourceInput) {
+                MultiSourceInputView()
             }
             .sheet(isPresented: $showingNewAssetSheet) {
                 NewAssetSheet()
+            }
+            .sheet(item: $editingEvent) { event in
+                EditEventSheet(event: event)
             }
         }
     }
@@ -214,7 +218,12 @@ public struct RadarDashboardView: View {
             
             VStack(spacing: 8) {
                 ForEach(events) { event in
-                    EventRowCard(event: event)
+                    Button {
+                        editingEvent = event
+                    } label: {
+                        EventRowCard(event: event)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         }

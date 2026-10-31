@@ -8,13 +8,18 @@ Construit conform standardelor **Apple Craftsmanship & Polish**: arhitectură lo
 
 ## 🌟 Caracteristici Cheie
 
-- **Model Mental pe Active (Assets)**: Fiecărui bun sau domeniu (ex. *Volkswagen Golf*, *Apartament Floreasca*, *Luna - Pisică*, *Sănătate Personală*) îi sunt asociate reguli de viață, scadențe, telemetrie și documente.
-- **Sistem Inteligent de Scanare (Dual-Tier OCR)**:
-  1. *Tier 1 (Instant & Offline)*: Apple Vision Framework decupează documentul, corectează perspectiva și recunoaște date/sume fără internet.
-  2. *Tier 2 (Gemini Semantic Sweep)*: Extrage câmpuri structurate (furnizor, dată emitere, scadență, total, serie) folosind Google Gemini API.
-- **Motor de Module Personalizate (Custom Modules Engine)**: Creează module noi pentru pasiunile sau activele tale (Bicicletă, E-Bike, Grădină, Proprietăți închiriate, Ambarcațiuni) cu declanșatoare pe timp sau pe unități de uzură (km, ore de funcționare, cicluri).
+- **Model Mental pe Active (Assets) cu Scheme Specializate**: Fiecărui bun sau domeniu (ex. *Vehicul* cu serie VIN, număr de înmatriculare, an și motorizare; *Locuință* cu adrese, specificații centrală termică și serii contoare gaz/curent/apă; *Pet* cu rasă, microcip ISO și medic veterinar; *Sănătate* cu grupă sanguină, contact de urgență și medic de familie) îi sunt asociate reguli de viață, scadențe și telemetrie.
+- **Istoric Granular Piese & Mentenanță Service**: Detaliază fiecare piesă înlocuită la revizie (plăcuțe de frână, filtre, ulei, distribuție) și compară automat cu intervenția anterioară: diferența de kilometri ($\Delta\text{km}$), diferența de preț ($\Delta\text{cost}$) și timpul scurs.
+- **Catalog Asigurători & Obligații Românești**: Configurare și editare completă cu asigurători reali (Groupama, Allianz-Țiriac, Omniasig, Generali, Grawe, Axeria, PAID), polițe RCA/CASCO/PAD și clase Bonus-Malus (B0–B8, M1–M8).
+- **Intake Universal Multi-Sursă (Digital & Fizic)**:
+  1. *Fișiere PDF Digitale*: Extrage nativ textul curat din facturile și contractele PDF primite pe e-mail sau descărcate.
+  2. *Fotografii & Galerie Foto*: Capturi de ecran din Homebank / e-banking sau poze din camera roll.
+  3. *Scanare Cameră Hârtie*: Corecție automată de perspectivă și contrast prin VisionKit.
+  4. *Text Copiat din E-mail / SMS*: Lipește direct mesajul primit de la furnizor și datele sunt parsate automat.
+  5. *Introducere Manuală Rapidă*: Formular complet pentru înregistrare instantanee.
+- **Motor de Module & Câmpuri Dinamice Nelimitate**: Adaugă oricâte câmpuri personalizate (text, numere, date, boolean, valută) pe orice activ.
 - **Radar de Scadențe & Financial Pulse**: Știi din timp ce cheltuieli urmează în următoarele 30/60/90 de zile și cât te costă anual fiecare activ.
-- **100% Privat & Local-First**: Datele sunt salvate local prin SwiftData și sincronizate securizat exclusiv în contul tău iCloud privat. Fără servere intermediare, fără baze de date publice, fără trackeri.
+- **100% Privat & Local-First**: Datele sunt salvate local prin SwiftData/Room și sincronizate securizat exclusiv în contul tău privat. Fără servere intermediare, fără baze de date publice, fără trackeri.
 
 ---
 

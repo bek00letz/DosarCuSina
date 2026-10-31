@@ -35,6 +35,12 @@ struct TestRunner {
         allResults.append(adversarialResult)
         printSuiteSummary(adversarialResult)
         
+        // 5. ServiceItemAndComponentHistoryTests (Granular Parts, Delta Km/Cost, Romanian Insurance)
+        print("▶ Running ServiceItemAndComponentHistoryTests...")
+        let serviceItemResult = ServiceItemAndComponentHistoryTests.runAll()
+        allResults.append(serviceItemResult)
+        printSuiteSummary(serviceItemResult)
+        
         let totalDuration = Date().timeIntervalSince(startTotal)
         let totalPassed = allResults.reduce(0) { $0 + $1.passed }
         let totalFailed = allResults.reduce(0) { $0 + $1.failed }

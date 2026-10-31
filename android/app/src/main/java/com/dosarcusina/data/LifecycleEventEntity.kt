@@ -42,7 +42,15 @@ data class LifecycleEventEntity(
     val cadenceMetricInterval: Double? = null,
     val metricTriggerValue: Double? = null,
     val reminderOffsetDays: List<Int> = listOf(30, 7, 1),
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+
+    // Policy & Service Provider Expansion
+    val provider: String? = null,
+    val policyOrContractNumber: String? = null,
+    val coverageType: String? = null,
+    val bonusMalusClass: String? = null,
+    val mileageAtEvent: Double? = null,
+    val serviceLocation: String? = null
 ) {
     val daysRemaining: Int
         get() {

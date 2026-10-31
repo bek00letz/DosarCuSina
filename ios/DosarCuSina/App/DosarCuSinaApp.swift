@@ -8,7 +8,8 @@ struct DosarCuSinaApp: App {
             Asset.self,
             LifecycleEvent.self,
             DocumentAttachment.self,
-            DynamicField.self
+            DynamicField.self,
+            ServiceItem.self
         ])
         
         let modelConfiguration = ModelConfiguration(

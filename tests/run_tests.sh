@@ -16,7 +16,7 @@ RESET="\033[0m"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TESTS_DIR="${REPO_ROOT}/tests"
 CACHE_DIR="/tmp/dosarcusina_swift_cache"
-BIN_DIR="${TESTS_DIR}/.bin"
+BIN_DIR="/tmp/dosarcusina_bin"
 mkdir -p "${CACHE_DIR}" "${BIN_DIR}"
 trap "rm -rf '${BIN_DIR}' '${CACHE_DIR}'" EXIT
 
@@ -38,9 +38,11 @@ swiftc -module-cache-path "${CACHE_DIR}" -Xfrontend -disable-sandbox -parse-as-l
   "${REPO_ROOT}/ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift" \
   "${REPO_ROOT}/ios/DosarCuSina/Services/LocalOCRService.swift" \
   "${REPO_ROOT}/ios/DosarCuSina/Services/Notifications/NotificationScheduler.swift" \
+  "${REPO_ROOT}/ios/DosarCuSina/Services/RomanianProviders.swift" \
   "${REPO_ROOT}/ios/DosarCuSina/Models/AssetCategory.swift" \
   "${REPO_ROOT}/ios/DosarCuSina/Models/DynamicField.swift" \
   "${REPO_ROOT}/ios/DosarCuSina/Models/DocumentAttachment.swift" \
+  "${REPO_ROOT}/ios/DosarCuSina/Models/ServiceItem.swift" \
   "${REPO_ROOT}/ios/DosarCuSina/Models/Asset.swift" \
   "${REPO_ROOT}/ios/DosarCuSina/Models/LifecycleEvent.swift" \
   "${REPO_ROOT}/ios/DosarCuSinaWidgets/WidgetDataProvider.swift" \
@@ -49,6 +51,7 @@ swiftc -module-cache-path "${CACHE_DIR}" -Xfrontend -disable-sandbox -parse-as-l
   "${TESTS_DIR}/ios/RomanianUtilityParserTests.swift" \
   "${TESTS_DIR}/ios/NotificationSchedulerTests.swift" \
   "${TESTS_DIR}/ios/AdversarialTests.swift" \
+  "${TESTS_DIR}/ios/ServiceItemAndComponentHistoryTests.swift" \
   "${TESTS_DIR}/ios/TestRunner.swift" \
   -o "${IOS_TEST_BIN}"
 

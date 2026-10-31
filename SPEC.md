@@ -248,7 +248,46 @@ sequenceDiagram
 
 ---
 
-### 3.3 Modelul de Distribuție & BYOK (App Store Review Compliant)
+### 3.3 Intake Universal Multi-Sursă (Digital & Fizic)
+Aplicația depășește scanarea clasică de hârtie printr-un modul integrat de ingestie omni-canal (`MultiSourceInputView`):
+1. **Fișiere Digitale PDF (`PDFKit`)**:
+   - Extragere directă din fluxul digital al PDF-urilor primite pe E-mail, WhatsApp sau descărcate din portalurile de utilități (Digi, Hidroelectrica, Engie, Enel, Allianz, Groupama).
+   - Textul nativ din PDF este extras fără zgomot optic, oferind 100% precizie la detecția sumei de plată, a scadenței și a codului de factură.
+2. **Fotografii & Capturi de Ecran (`PhotosPicker`)**:
+   - Capturi de ecran din aplicații de Mobile Banking sau poze din galeria foto, procesate on-device prin Apple Vision OCR.
+3. **Scanare Live Hârtie (`VNDocumentCameraViewController`)**:
+   - Detecție automată a colțurilor paginii, corecție de perspectivă și filtrare alb-negru/color.
+4. **Text Copiat din E-mail / SMS**:
+   - Textarea directă unde utilizatorul poate lipi corpul unui e-mail sau al unei notificări SMS, parsate instantaneu prin `RomanianUtilityParser`.
+5. **Introducere Directă Manuală**:
+   - Formular rapid cu selector de activ, furnizor, număr document, scadență și cost.
+
+---
+
+### 3.4 Schemă de Date Personalizată pe Categorii & Monitorizare Componente
+
+#### 1. Atribute de Domeniu per Categorie de Activ (`Asset` / `AssetEntity`)
+Fiecare clasă de active dispune de parametri dedicați, eliminând limitările formularelor generice:
+- **Vehicule (`.vehicle`)**: Număr înmatriculare, Serie șasiu (VIN 17 caractere), An fabricație, Combustibil (Benzină, Motorină, Hibrid, PHEV, Electric, GPL), Cilindree ($cm^3$), Putere (CP), Odometru (km).
+- **Locuință & Imobile (`.home`)**: Adresă completă, Suprafață utilă ($m^2$), An construcție, Marcă/Model centrală termică, Serie fabricație centrală, Serii contoare (Gaze, Curent, Apă).
+- **Animale de Companie (`.pet`)**: Specie, Rasă, Număr microcip ISO (15 cifre), Dată naștere, Nume clinică veterinară, Telefon medic veterinar.
+- **Sănătate & Profil Medical (`.health`)**: Grupă sanguină & Rh, Medic de familie & telefon, Contact de urgență (ICE) & telefon, Alergii & boli cronice.
+- **Atribute Dinamice Nelimitate (`DynamicField`)**: Posibilitatea de a adăuga oricâte câmpuri personalizate de tip Text, Număr, Dată, Boolean sau Valută pe oricare activ.
+
+#### 2. Monitorizare Granulară Piese de Schimb & Service (`ServiceItem`)
+La efectuarea unei revizii sau intervenții de service, utilizatorul poate detalia componentele schimbate individual (plăcuțe de frână, filtre, ulei, curea de distribuție):
+- Înregistrare: `componentName`, `category`, `partBrandOrCode`, `partSerialNumber`, `cost`, `mileageAtService`, `serviceDate`.
+- **Analiză Comparativă Automată**:
+  - Compară ultima înlocuire cu precedenta: calcul automat al $\Delta\text{km}$ parcurși între schimburi, diferența de cost ($\Delta\text{RON}$), timpul scurs ($\Delta\text{zile}$) și brandul piesei folosite.
+
+#### 3. Catalog Asigurători & Obligații Românești (`RomanianInsuranceCatalog`)
+- Asigurători autorizați: Allianz-Țiriac, Groupama, Omniasig, Generali, Asirom, Grawe, Axeria, Hellas Direct, Eurolife, PAID România.
+- Tipuri de acoperire: RCA, RCA cu Decontare Directă, CASCO Complet, CASCO Economic, PAD Obligatoriu, Facultativă Locuință.
+- Clase Bonus-Malus: B0–B8, M1–M8.
+
+---
+
+### 3.5 Modelul de Distribuție & BYOK (App Store Review Compliant)
 Aplicația este proiectată să fie publicată **100% Free** în App Store, respectând riguros *Apple App Store Review Guidelines (Guideline 2.1 - App Completeness & Guideline 3.1.1)*:
 1. **Valoare Core Completă (Fără Cheie API)**:
    - Aplicația **nu este o carcasă goală**. Utilizatorul fără cheie API are acces nelimitat la gestionarea activelor, calendarul scadențelor, notificările locale, widget-urile de ecran, graficele TCO și **scanarea locală de documente prin Apple Vision**.

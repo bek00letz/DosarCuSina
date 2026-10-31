@@ -108,6 +108,25 @@ class InMemoryDosarDatabase:
                 FOREIGN KEY (assetId) REFERENCES assets(id) ON DELETE CASCADE
             );
             CREATE INDEX IF NOT EXISTS index_dynamic_fields_assetId ON dynamic_fields(assetId);
+
+            CREATE TABLE IF NOT EXISTS service_items (
+                id TEXT PRIMARY KEY NOT NULL,
+                assetId TEXT NOT NULL,
+                eventId TEXT,
+                componentName TEXT NOT NULL,
+                componentCategory TEXT NOT NULL DEFAULT 'general',
+                partBrand TEXT,
+                partSerialNumber TEXT,
+                cost REAL,
+                serviceDate INTEGER NOT NULL,
+                mileageAtService REAL,
+                notes TEXT,
+                createdAt INTEGER NOT NULL,
+                FOREIGN KEY (assetId) REFERENCES assets(id) ON DELETE CASCADE,
+                FOREIGN KEY (eventId) REFERENCES lifecycle_events(id) ON DELETE SET NULL
+            );
+            CREATE INDEX IF NOT EXISTS index_service_items_assetId ON service_items(assetId);
+            CREATE INDEX IF NOT EXISTS index_service_items_eventId ON service_items(eventId);
         """)
         self.conn.commit()
 
@@ -300,6 +319,61 @@ def test_cost_sum_aggregation():
     assert abs(total - 400.50) < 0.01, f"Expected 400.50, got {total}"
     db.close()
 
+def test_service_items_tracking_and_cascade():
+    db = InMemoryDosarDatabase()
+    cur = db.conn.cursor()
+    asset_id = str(uuid.uuid4())
+    event_id1 = str(uuid.uuid4())
+    event_id2 = str(uuid.uuid4())
+    part_id1 = str(uuid.uuid4())
+    part_id2 = str(uuid.uuid4())
+
+    cur.execute("INSERT INTO assets VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (asset_id, "Skoda Octavia", "2.0 TDI", "vehicle", "car.fill", "007AFF", 180000.0, "km", 1000, 1000))
+    
+    cur.execute("INSERT INTO lifecycle_events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (event_id1, asset_id, "Revizie 1", None, 10000, None, 1, 650.0, "RON", 365, 15000.0, None, "30", 1000))
+    cur.execute("INSERT INTO lifecycle_events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (event_id2, asset_id, "Revizie 2", None, 20000, None, 1, 750.0, "RON", 365, 15000.0, None, "30", 2000))
+
+    # Insert Brake Pads at 120,000 km (Event 1)
+    cur.execute("INSERT INTO service_items VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (part_id1, asset_id, event_id1, "Plăcuțe Frână Față", "brakes", "Brembo", "P85020", 280.0, 10000, 120000.0, "Schimbate la service", 1000))
+
+    # Insert Brake Pads at 165,000 km (Event 2)
+    cur.execute("INSERT INTO service_items VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (part_id2, asset_id, event_id2, "Plăcuțe Frână Față", "brakes", "ATE Ceramic", "13.0460", 340.0, 20000, 165000.0, "Schimbate la reprezentanță", 2000))
+    db.conn.commit()
+
+    # Query History for "Plăcuțe Frână Față" sorted by serviceDate DESC
+    cur.execute("SELECT partBrand, cost, mileageAtService FROM service_items WHERE assetId = ? AND componentName = ? ORDER BY serviceDate DESC",
+                (asset_id, "Plăcuțe Frână Față"))
+    rows = cur.fetchall()
+    assert len(rows) == 2, "Should return 2 service items for brake pads"
+    assert rows[0][0] == "ATE Ceramic"
+    assert rows[0][1] == 340.0
+    assert rows[0][2] == 165000.0
+    assert rows[1][0] == "Brembo"
+    assert rows[1][1] == 280.0
+    assert rows[1][2] == 120000.0
+
+    # Delta mileage calculation verification
+    delta_km = rows[0][2] - rows[1][2]
+    assert delta_km == 45000.0, "Difference between pad replacements should be 45,000 km"
+
+    # Delete Event 2 -> service item eventId should become NULL (SET NULL) but item remains attached to Asset
+    cur.execute("DELETE FROM lifecycle_events WHERE id = ?", (event_id2,))
+    db.conn.commit()
+    cur.execute("SELECT eventId FROM service_items WHERE id = ?", (part_id2,))
+    assert cur.fetchone()[0] is None, "Foreign key SET NULL should clear eventId without deleting service item"
+
+    # Delete Asset -> CASCADE should remove all service items
+    cur.execute("DELETE FROM assets WHERE id = ?", (asset_id,))
+    db.conn.commit()
+    cur.execute("SELECT COUNT(*) FROM service_items WHERE assetId = ?", (asset_id,))
+    assert cur.fetchone()[0] == 0, "Deleting asset must CASCADE delete all service items"
+    db.close()
+
 def test_foreign_key_violation_guard():
     db = InMemoryDosarDatabase()
     cur = db.conn.cursor()
@@ -328,6 +402,7 @@ def main():
         ("test_cascade_delete_asset_deletes_all_children", test_cascade_delete_asset_deletes_all_children),
         ("test_cascade_delete_event_deletes_attachments", test_cascade_delete_event_deletes_attachments),
         ("test_cost_sum_aggregation", test_cost_sum_aggregation),
+        ("test_service_items_tracking_and_cascade", test_service_items_tracking_and_cascade),
         ("test_foreign_key_violation_guard", test_foreign_key_violation_guard)
     ]
 

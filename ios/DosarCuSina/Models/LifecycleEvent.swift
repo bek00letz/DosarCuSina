@@ -14,6 +14,14 @@ public final class LifecycleEvent {
     public var cost: Double?
     public var currency: String
     
+    // Domain & Provider Details (Insurances, Services, Utilities)
+    public var provider: String?
+    public var policyOrContractNumber: String?
+    public var coverageType: String?
+    public var bonusMalusClass: String?
+    public var mileageAtEvent: Double?
+    public var serviceLocation: String?
+    
     // Cadence & Recurrence
     public var cadenceDays: Int?
     public var cadenceMetricInterval: Double?
@@ -27,6 +35,9 @@ public final class LifecycleEvent {
     @Relationship(deleteRule: .cascade, inverse: \DocumentAttachment.event)
     public var attachments: [DocumentAttachment] = []
     
+    @Relationship(deleteRule: .cascade, inverse: \ServiceItem.event)
+    public var serviceItems: [ServiceItem] = []
+    
     public init(
         id: UUID = UUID(),
         title: String,
@@ -36,6 +47,12 @@ public final class LifecycleEvent {
         isCompleted: Bool = false,
         cost: Double? = nil,
         currency: String = "RON",
+        provider: String? = nil,
+        policyOrContractNumber: String? = nil,
+        coverageType: String? = nil,
+        bonusMalusClass: String? = nil,
+        mileageAtEvent: Double? = nil,
+        serviceLocation: String? = nil,
         cadenceDays: Int? = nil,
         cadenceMetricInterval: Double? = nil,
         metricTriggerValue: Double? = nil,
@@ -50,6 +67,12 @@ public final class LifecycleEvent {
         self.isCompleted = isCompleted
         self.cost = cost
         self.currency = currency
+        self.provider = provider
+        self.policyOrContractNumber = policyOrContractNumber
+        self.coverageType = coverageType
+        self.bonusMalusClass = bonusMalusClass
+        self.mileageAtEvent = mileageAtEvent
+        self.serviceLocation = serviceLocation
         self.cadenceDays = cadenceDays
         self.cadenceMetricInterval = cadenceMetricInterval
         self.metricTriggerValue = metricTriggerValue
