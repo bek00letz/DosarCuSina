@@ -1,0 +1,283 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dosarcusina.app/schemas/dosar-v3.schema.json",
+  "title": ".dosar archive, version 3",
+  "description": "Validates manifest.json. Each data file is validated with the matching definition: templates.json → #/$defs/templatesFile, assets.json → #/$defs/assetsFile, and so on. See dosar-v3.md.",
+  "$ref": "#/$defs/manifest",
+  "$defs": {
+    "uuid": { "type": "string", "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "day": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "monthDay": { "type": "string", "pattern": "^\\d{2}-\\d{2}$" },
+    "path": { "type": "string", "pattern": "^(?!/)(?!.*(^|/)\\.{1,2}(/|$))(?!.*//)[^\\\\:]+$" },
+    "money": {
+      "type": "object",
+      "required": ["amount", "currency"],
+      "properties": {
+        "amount": { "type": "string", "pattern": "^-?\\d+(\\.\\d+)?$" },
+        "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }
+      }
+    },
+    "interval": {
+      "type": "object",
+      "required": ["every", "unit"],
+      "properties": {
+        "every": { "type": "integer", "minimum": 1 },
+        "unit": { "enum": ["day", "week", "month", "year"] }
+      }
+    },
+    "recurrence": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["none", "interval", "fixedDates", "metric", "legal"] },
+        "every": { "type": "number" },
+        "unit": { "type": "string" },
+        "anchor": { "enum": ["dueDate", "completion"] },
+        "dates": { "type": "array", "items": { "$ref": "#/$defs/monthDay" } },
+        "fallbackEvery": { "type": "integer", "minimum": 1 },
+        "fallbackUnit": { "enum": ["day", "week", "month", "year"] },
+        "rule": { "type": "string" }
+      }
+    },
+    "firstDue": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["field", "afterInterval", "nextFixedDate", "ask"] },
+        "field": { "type": "string" },
+        "offsetDays": { "type": "integer" },
+        "every": { "type": "integer", "minimum": 1 },
+        "unit": { "enum": ["day", "week", "month", "year"] }
+      }
+    },
+    "reminderProfile": {
+      "type": "object",
+      "required": ["leadDays", "consequence", "graceDays"],
+      "properties": {
+        "leadDays": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
+        "consequence": { "enum": ["legal", "financial", "health", "comfort"] },
+        "graceDays": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "fieldValue": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["text", "number", "money", "date", "bool", "choices"] },
+        "value": {},
+        "amount": { "type": "string" },
+        "currency": { "type": "string" }
+      }
+    },
+    "field": {
+      "type": "object",
+      "required": ["key", "label", "type"],
+      "properties": {
+        "key": { "type": "string" },
+        "label": { "type": "string" },
+        "type": { "type": "string" },
+        "role": { "type": "string" },
+        "isEssential": { "type": "boolean" },
+        "isSensitive": { "type": "boolean" },
+        "options": { "type": "array", "items": { "type": "string" } },
+        "unit": { "type": "string" },
+        "placeholder": { "type": "string" }
+      }
+    },
+    "blueprint": {
+      "type": "object",
+      "required": ["key", "title", "kind", "recurrence"],
+      "properties": {
+        "key": { "type": "string" },
+        "title": { "type": "string" },
+        "kind": { "type": "string" },
+        "recurrence": { "$ref": "#/$defs/recurrence" },
+        "firstDue": { "$ref": "#/$defs/firstDue" },
+        "reminders": { "$ref": "#/$defs/reminderProfile" },
+        "reminderVariants": {
+          "type": "object",
+          "required": ["field", "variants"],
+          "properties": {
+            "field": { "type": "string" },
+            "variants": { "type": "object", "additionalProperties": { "$ref": "#/$defs/reminderProfile" } }
+          }
+        },
+        "estimatedCost": { "$ref": "#/$defs/money" },
+        "isSuggested": { "type": "boolean" },
+        "note": { "type": "string" }
+      }
+    },
+    "manifest": {
+      "type": "object",
+      "required": ["format", "schemaVersion", "appVersion", "platform", "exportedAt", "counts", "checksums"],
+      "properties": {
+        "format": { "const": "com.ar.dosarcusina.dossier" },
+        "schemaVersion": { "const": 3 },
+        "appVersion": { "type": "string" },
+        "platform": { "type": "string" },
+        "exportedAt": { "$ref": "#/$defs/timestamp" },
+        "counts": {
+          "type": "object",
+          "required": ["templates", "assets", "obligations", "historyEntries", "serviceItems", "providers", "measurements", "attachments"],
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        },
+        "checksums": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/path" },
+          "additionalProperties": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        }
+      }
+    },
+    "templatesFile": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "name", "symbol", "tint", "heroStyle", "isBuiltIn", "version", "homeOrder", "isOnHome", "isSensitive", "sections", "blueprints", "createdAt", "updatedAt"],
+        "properties": {
+          "key": { "type": "string" },
+          "name": { "type": "string" },
+          "summary": { "type": "string" },
+          "symbol": { "type": "string" },
+          "tint": { "type": "string" },
+          "heroStyle": { "type": "string" },
+          "isBuiltIn": { "type": "boolean" },
+          "version": { "type": "integer" },
+          "homeOrder": { "type": "integer" },
+          "isOnHome": { "type": "boolean" },
+          "isSensitive": { "type": "boolean" },
+          "sections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["key", "title", "fields"],
+              "properties": { "fields": { "type": "array", "items": { "$ref": "#/$defs/field" } } }
+            }
+          },
+          "blueprints": { "type": "array", "items": { "$ref": "#/$defs/blueprint" } },
+          "components": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["key", "name"],
+              "properties": { "key": { "type": "string" }, "name": { "type": "string" }, "group": { "type": "string" }, "synonyms": { "type": "array", "items": { "type": "string" } } }
+            }
+          },
+          "createdAt": { "$ref": "#/$defs/timestamp" },
+          "updatedAt": { "$ref": "#/$defs/timestamp" }
+        }
+      }
+    },
+    "assetsFile": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "templateKey", "name", "values", "isExample", "createdAt", "updatedAt"],
+        "properties": {
+          "id": { "$ref": "#/$defs/uuid" },
+          "templateKey": { "type": "string" },
+          "name": { "type": "string" },
+          "values": { "type": "object", "additionalProperties": { "$ref": "#/$defs/fieldValue" } },
+          "photoPath": { "$ref": "#/$defs/path" },
+          "isExample": { "type": "boolean" },
+          "createdAt": { "$ref": "#/$defs/timestamp" },
+          "updatedAt": { "$ref": "#/$defs/timestamp" }
+        }
+      }
+    },
+    "obligationsFile": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "kind", "dueDate", "reminders", "recurrence", "status", "isExample", "createdAt", "updatedAt"],
+        "properties": {
+          "id": { "$ref": "#/$defs/uuid" },
+          "assetId": { "$ref": "#/$defs/uuid" },
+          "dueDate": { "$ref": "#/$defs/day" },
+          "reminders": { "$ref": "#/$defs/reminderProfile" },
+          "reminderMinuteOfDay": { "type": "integer", "minimum": 0, "maximum": 1439 },
+          "recurrence": { "$ref": "#/$defs/recurrence" },
+          "estimatedCost": { "$ref": "#/$defs/money" },
+          "status": { "enum": ["active", "paused", "done", "archived"] },
+          "snoozedUntil": { "$ref": "#/$defs/timestamp" }
+        }
+      }
+    },
+    "historyFile": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "title", "occurredAt", "providerIds", "isExample"],
+        "properties": {
+          "id": { "$ref": "#/$defs/uuid" },
+          "assetId": { "$ref": "#/$defs/uuid" },
+          "obligationId": { "$ref": "#/$defs/uuid" },
+          "occurredAt": { "$ref": "#/$defs/timestamp" },
+          "totalCost": { "$ref": "#/$defs/money" },
+          "rating": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "cycleDueDate": { "$ref": "#/$defs/day" },
+          "nextDueDate": { "$ref": "#/$defs/day" },
+          "providerIds": { "type": "array", "items": { "$ref": "#/$defs/uuid" } }
+        }
+      }
+    },
+    "serviceItemsFile": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "isExample"],
+        "properties": {
+          "id": { "$ref": "#/$defs/uuid" },
+          "entryId": { "$ref": "#/$defs/uuid" },
+          "supplierId": { "$ref": "#/$defs/uuid" },
+          "cost": { "$ref": "#/$defs/money" },
+          "laborCost": { "$ref": "#/$defs/money" },
+          "partsCost": { "$ref": "#/$defs/money" }
+        }
+      }
+    },
+    "providersFile": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "trades", "assetIds", "isExample", "createdAt", "updatedAt"],
+        "properties": {
+          "id": { "$ref": "#/$defs/uuid" },
+          "trades": { "type": "array", "items": { "type": "string" } },
+          "manualRating": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "wouldCallAgain": { "type": "boolean" },
+          "assetIds": { "type": "array", "items": { "$ref": "#/$defs/uuid" } }
+        }
+      }
+    },
+    "measurementsFile": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "name", "value", "unit", "recordedAt", "isSelfRead", "isExample"],
+        "properties": {
+          "id": { "$ref": "#/$defs/uuid" },
+          "assetId": { "$ref": "#/$defs/uuid" },
+          "recordedAt": { "$ref": "#/$defs/timestamp" },
+          "unitPrice": { "$ref": "#/$defs/money" }
+        }
+      }
+    },
+    "attachmentsFile": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "fileName", "kind", "contentType", "byteCount", "pagePaths", "isArchived", "createdAt", "isExample"],
+        "properties": {
+          "id": { "$ref": "#/$defs/uuid" },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "path": { "$ref": "#/$defs/path" },
+          "pagePaths": { "type": "array", "items": { "$ref": "#/$defs/path" } },
+          "thumbnailPath": { "$ref": "#/$defs/path" },
+          "documentDate": { "$ref": "#/$defs/day" },
+          "supersededById": { "$ref": "#/$defs/uuid" }
+        }
+      }
+    }
+  }
+}
