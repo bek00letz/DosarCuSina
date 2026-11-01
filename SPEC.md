@@ -64,8 +64,8 @@ graph TD
 | :--- | :--- | :--- | :--- |
 | **ITP (Inspecție Tehnică)** | 1 an (>12 ani) / 2 ani / 3 ani (nouă) | Stație ITP, Kilometraj la testare | -30 zile, -7 zile, -1 zi |
 | **RCA & CASCO** | 1, 6 sau 12 luni | Asigurător, Decontare directă, Clasă Bonus-Malus | -30 zile (pentru ofertare) |
-| **Rovinietă & Taxe Drum** | 1 zi / 10 zile / 30 zile / 1 an | Serie șasiu (VIN), Categorie vehicul, Țară | Expirare la oră fixă |
-| **Revizie Periodicǎ** | 1 an SAU 10.000–15.000 km | Ulei, filtru aer/ulei/polen/motorină, Lichid frână | Se declanșează la timp sau km |
+| **Rovinietă Națională** | 1 zi / 10 zile / 30 zile / 60 zile / 12 luni (Legea 226/2023) | Serie șasiu (VIN), Categorie vehicul, Normă poluare (Non-Euro..Euro 6, EV) | Expirare la oră fixă; Peaj Pod Fetești eliminat complet |
+| **Revizie Periodică** | 1 an SAU 10.000–15.000 km | Ulei, filtru aer/ulei/polen/motorină, Lichid frână | Se declanșează la timp sau km |
 | **Schimb Anvelope** | Sezonier (Noiembrie / Aprilie) | Adâncime profil (mm), Loc depozitare (hotel roți) | Temperatură sub 7°C (sugestie) |
 | **Jurnal Kilometraj & Plin** | Eveniment | Odometru curent, Litri/kWh, Preț/unitate, Locație | Calculează automat consum/100km |
 | **Trusă Medicală & Stingător** | 2 - 5 ani (termen omologare) | Data expirării de pe ambalaj | Evită amenzi de circulație |
@@ -193,6 +193,32 @@ Pentru a elimina teama de „pagină albă” (blank slate), utilizatorul poate 
 
 ---
 
+### 2.9 Cele 4 Coloane Universale ale Fiecărui Domeniu (The 4 Universal Pillars)
+
+Fiecare dintre cele 8 domenii de bază și module personalizate respectă uniform o arhitectură pe 4 piloni fundamentali:
+
+1. **Pilonul 1: Identitate & Specificații Personalizate (Tailored Identity & Specs Schema)**:
+   - Metadata de domeniu puternic tipizate (ex. VIN, cilindree, serie centrală, microcip ISO 15 cifre, grupă sanguină, IMEI, furnizor abonamente).
+   - Suport nelimitat pentru câmpuri dinamice definite de utilizator (`DynamicField`) acoperind 10 tipuri: text, număr, valută, dată, boolean, selecție simplă, selecție multiplă, URL, telefon, text lung.
+   - Legătură directă cu specialiști din agendă prin `ContactsUI` (mecanic, instalator, medic de familie, veterinar, chiriaș) cu bară de acțiuni rapide (apel telefonic, WhatsApp, e-mail) direct din fișa activului.
+
+2. **Pilonul 2: Motorul de Scadențe & Obligații (Obligations & Deadlines Engine)**:
+   - Urmărire riguroasă a evenimentelor de ciclu de viață (`LifecycleEvent`) recurente și punctuale, cu selecție asistată din catalogul de furnizori românești autorizați.
+   - Calcul automat al cadenței (pe bază de zile calendaristice sau intervale kilometrice/orare) și alerte inteligente Time-Sensitive la praguri critice (-30d, -14d, -7d, -1d, 0d).
+   - Rollover automat la confirmare („Am rezolvat”) prin acțiuni interactive direct din banner-ul de notificare pe ecranul de blocare, generând instantaneu următorul ciclu.
+   - Sincronizare bidirecțională nativă cu Apple Calendar (`EKEvent`) și Apple Reminders (`EKReminder`) prin `EventKit`.
+
+3. **Pilonul 3: Jurnale Istorice Duble (Dual Historical Ledgers)**:
+   - **Jurnal de Intervenții Discrete (`ServiceItem`)**: Înregistrarea intervențiilor de mentenanță și a reparațiilor (piese înlocuite, manoperă, costuri, kilometraj, garanție piese, specialist). Calculează automat variațiile între intervenții consecutive: $\Delta\text{cost}$, $\Delta\text{km}$, $\Delta\text{zile}$.
+   - **Jurnal de Telemetrie Cantitativă (`MeasurementLog`)**: Înregistrarea seriilor de timp cantitative: indici contoare utilități (apă rece, apă caldă, gaze naturale, energie electrică) cu cost estimat și curbe sezoniere, biomarkeri medicali (glicemie, colesterol LDL/HDL, tensiune) cu marcare automată a valorilor ieșite din intervalul de referință al laboratorului (`* H` / `* L`), greutate corporală animale de companie și jurnale de odometru.
+
+4. **Pilonul 4: Seif Structurat de Documente (Structured Document Vault)**:
+   - Pipeline universal de ingestie multi-sursă (scanare cameră live VisionKit, import fișiere PDF, selector galerie foto, lipire text/SMS, introducere manuală).
+   - Stocare criptată locală a fișierelor binare asociate activului sau evenimentului, cu vizualizator nativ integrat (`QuickLook` / `PDFKit`).
+   - Generare de dosar administrativ consolidat cu tabel de cuprins oficial (*Opis Documente*) și trimiteri numerotate la anexe (`PDFDossierGenerator`).
+
+---
+
 ## 3. Sistemul Inteligent de Scanare (Two-Tier Hybrid OCR)
 
 Abordarea propusă este **Dual-Tier**, îmbinând viteza și confidențialitatea scanării locale cu puterea de raționament a inteligenței artificiale multimodale.
@@ -299,25 +325,76 @@ Aplicația este proiectată să fie publicată **100% Free** în App Store, resp
 
 ---
 
+### 3.6 Arhitectura de Securitate Biometrică — Model B: Just-in-Time Unlock (`BiometricVaultManager`)
+Conform cerințelor de excelență și ergonomie Apple, aplicația adoptă **Modelul B de securitate biometrică (Just-in-Time)**:
+1. **Zero Fricțiune la Lansare**:
+   - Aplicația se deschide instantaneu, fără barieră biometrică la pornire, permițând accesul rapid la activitățile cotidiene: verificarea kilometrajului mașinii, notarea unui index de contor sau consultarea notificărilor apropiate.
+2. **Deblocare Biometrică Just-in-Time**:
+   - Provocarea biometrică (Face ID, Touch ID, Optic ID sau codul dispozitivului prin `LocalAuthentication`) se declanșează strict în momentul în care utilizatorul accesează un seif cu caracter privat sau confidențial:
+     - 🪪 **Documente & Identitate (`.documents`)**: Cărți de identitate, pașapoarte, permise, certificate.
+     - 🩺 **Sănătate & Card Medical (`.health`)**: Profil medical de urgență, analize de laborator, antecedente, rețete.
+     - 🔒 **Active Personalizate Sensibile**: Orice activ din categoriile custom marcat explicit drept sensibil de către utilizator.
+3. **Păstrarea Stării de Deblocare & Auto-Lock**:
+   - Odată autorizat, accesul rămâne deschis pentru categoria respectivă pe durata sesiunii de lucru curente.
+   - **Re-blocare automată**: Seiful se blochează automat după 5 minute de inactivitate continuă sau imediat ce aplicația trece în fundal (`scenePhase == .background`).
+4. **Afișare Directă în Memorie a Datelor Sensibile**:
+   - După deblocarea biometrică a seifului, numerele de identificare (CNP, serie și număr buletin, IBAN complet) sunt afișate direct în clar, eliminând necesitatea enervantă a unui tap separat pentru dezvăluirea fiecărui câmp individual. Când seiful este blocat, cifrele din mijloc sunt mascate discret (ex. `188••••••1234`).
+
+---
+
+### 3.7 Pachetul de Arhivă Deschisă Cross-Platform (`.dosar` / `.zip`)
+Pentru a garanta portabilitatea deplină a datelor utilizatorului și a preveni blocarea într-un singur ecosistem (vendor lock-in), *Dosar cu Șină* implementează un format de pachet deschis, standardizat și interoperabil între iOS (SwiftData) și Android (Room SQLite):
+
+1. **Format & Identificator Uniform de Tip (UTType)**:
+   - Identificator înregistrat: `com.ar.dosarcusina.dossier`
+   - Extensie de fișier: `.dosar`
+   - Structură internă fizică: Arhivă ZIP standard (RFC 1951 / DEFLATE), inspectabilă cu orice utilitar de arhivare (ex. `unzip`, Finder).
+2. **Structura Internă a Pachetului**:
+   - `manifest.json`: Schema Version 2, metadata aplicație, timestamp export în format ISO 8601 UTC, identificator platformă (`iOS` sau `Android`), contor de entități și **hartă completă de integritate SHA-256** pentru fiecare fișier inclus.
+   - `data/assets.json`: Toate activele din cele 8 domenii, atribute speciale (VIN, adrese, serii contoare, date medicale, microcipuri) și câmpuri dinamice relaționale.
+   - `data/events.json`: Toate obligațiile și scadențele, cadențe, offset-uri memento, costuri, furnizori și starea de finalizare.
+   - `data/service_history.json`: Istoricul intervențiilor de service, piese, manoperă, kilometraj și zile petrecute în service.
+   - `data/measurements.json`: Jurnalele de telemetrie cantitativă (indici contoare utilități, biomarkeri cu intervale de referință, greutate, odometru).
+   - `vault/`: Director dedicat fișierelor binare atașate (facturi PDF, poze buletin, chitanțe), denumite după UUID-ul atașamentului (`vault/<uuid>.<ext>`).
+   - `opis.pdf`: Document PDF generat automat reprezentând tabelul oficial de cuprins (*Opis Documente*), gata de tipărit sau transmis autorităților.
+3. **Validare de Integritate & Reziliență la Corupere**:
+   - La import, motorul de arhivă (`DossierArchiveService` pe iOS, `DosarArchiveParser` pe Android) verifică amprenta SHA-256 a fiecărui fișier față de valoarea din `manifest.json`. Oricare modificare neautorizată sau corupere pe disc anulează importul înainte de alterarea bazei de date.
+4. **Semantici de Import Bidirecțional**:
+   - **Restaurare Curată (`CLEAN_RESTORE`)**: Șterge baza de date curentă și recreează identic starea din arhivă.
+   - **Îmbinare Inteligentă (`MERGE`)**: Păstrează activele existente; pentru entitățile cu același UUID, versiunea mai recentă actualizează înregistrarea locală, iar noile active sunt inserate transparent.
+
+---
+
 ## 4. Statistici, Rapoarte & "Financial Pulse"
 
 Unul dintre marile diferențiatori față de un simplu to-do list este transformarea datelor introduse în **concluzii financiare și operaționale utile**:
 
-1. **Cost of Ownership (TCO) pe Categorii**:
-   - *Mașină*: Cât mă costă mașina pe an defalcat pe: Combustibil, Asigurări (RCA+CASCO), Taxe, Întreținere/Service, Roți/Consumabile.
-   - *Casă*: Cheltuieli lunare utilități (gaz, curent, apă, întreținere) cu grafic de variație iarnă vs. vară.
-   - *Pet*: Bugetul anual alocat sănătății și hranei animalului de companie.
+1. **Radarul Scadențelor & Cash-Flow Forecast (30 / 60 / 90 de Zile)**:
+   - Proiecție dinamică a angajamentelor de plată pe orizonturi temporale: 30 de zile (iminent), 60 de zile (termen mediu), 90 de zile (trimestrial).
+   - Defalcare matematică precisă între:
+     - **Cheltuieli Recurente Prevăzute**: Abonamente lunare/anuale, utilități estimate pe baza istoricului de consum.
+     - **Cheltuieli Punctuale / Sezoniere**: Polițe RCA/CASCO, taxe locale, revizii ITP/ISCIR/VIG.
+   - Elimină surprizele neplăcute de la final de lună și permite planificarea din timp a lichidităților.
 
-2. **Radarul Scadențelor Viitoare (Cash-Flow Forecast)**:
-   - Proiecție pe următoarele 30 / 60 / 90 de zile:
-     > *"În luna noiembrie urmează să achiți aproximativ 2.450 RON (RCA Golf: 1.100 RON, Revizie centrală: 350 RON, Impozit casă: 400 RON, Asigurare locuință: 600 RON)."*
-   - Elimină surprizele neplăcute de la final de lună.
+2. **Cost of Ownership (TCO) pe Categorii & Active**:
+   - *Mașină*: Cost total anual defalcat pe: Combustibil, Asigurări (RCA+CASCO), Taxe/Rovinietă, Întreținere/Service, Roți/Consumabile.
+   - *Casă*: Cheltuieli lunare utilități (gaz, curent, apă, întreținere) cu grafic de variație iarnă vs. vară și costuri de mentenanță instalații.
+   - *Sănătate & Familie*: Buget anual alocat screening-urilor, stomatologiei și tratamentelor.
+   - *Pet*: Bugetul anual alocat sănătății, hranei și profilaxiei animalului de companie.
 
-3. **Indice de Bună Administrare ("Health Score")**:
-   - Un indicator vizual discret (stil Apple Fitness / inele de activitate) care arată starea conformității:
+3. **Burn Rate Lunar pe Abonamente & Alerte Retenție**:
+   - Sumar agregat instantaneu: *"Abonamentele tale însumează 385 RON/lună (4.620 RON/an)"*.
+   - Avertizări timpurii la expirarea perioadelor contractuale minime (ex. contracte telecom 24 luni) pentru negocierea ofertelor de retenție înainte de trecerea la preț de listă.
+   - Avertizări la 48h/24h înainte de conversia perioadelor de probă gratuite (Free Trials).
+
+4. **Curbe Sezoniere de Consum Utilități (`MeasurementLog`)**:
+   - Grafice interactive `Swift Charts` care corelează citirile lunare ale contoarelor (kWh, $m^3$, Gcal) cu prețul unitar, evidențiind vârfurile sezoniere (iarnă gaz vs. vară aer condiționat) și detectând anomalii de consum (posibile pierderi de apă).
+
+5. **Indice de Bună Administrare ("Health Score")**:
+   - Indicator vizual discret inspirat de inelele de activitate Apple:
      - 🟢 100%: Toate documentele sunt la zi, fără scadențe depășite.
      - 🟡 Atenție: O revizie sau o poliță expiră în următoarele 14 zile.
-     - 🔴 Expirat: Ai un ITP sau o asigurare depășită.
+     - 🔴 Expirat: Ai un ITP, o asigurare sau o inspecție tehnică depășită.
 
 ---
 
@@ -347,39 +424,87 @@ Conform filosofiei de design premium, aplicația trebuie să fie o plăcere tact
   - Lock Screen Widget circular: *"ITP: 18 zile"*.
   - Widget interactiv pe Home Screen: poți amâna sau bifa direct o sarcină.
 - **Privacy First (Local-First Architecture)**:
-  - Datele stau pe dispozitiv în CoreData / SwiftData, sincronizate exclusiv prin contul iCloud privat al utilizatorului (CloudKit). Zero trackeri, zero analitice intruzive.
+   - Datele stau pe dispozitiv în CoreData / SwiftData, sincronizate exclusiv prin contul iCloud privat al utilizatorului (CloudKit). Zero trackeri, zero analitice intruzive.
+
+### 5.3 Gestiune Date Demonstrative & Resetare Sigură (Demo Seed Data)
+Pentru a asigura o primă impresie impecabilă la instalare și a elimina frica de ecran gol:
+- **Inițializare Automată la Prima Lansare**:
+  - Gated prin `@AppStorage("didSeedInitialDemoData")`. Dacă baza de date este goală, aplicația pre-populează automat 8 active demonstrative realiste și conforme pe toate domeniile (Apartament Floreasca, VW Golf 7 2018, Câine Golden Retriever Max, Andrei Popescu - Profil Medical, Pașaport Electronic, Espressor De'Longhi, Internet Digi Fibră, Garsonieră Închiriată Titan).
+  - Toate datele respectă strict politica Zero-Secrets & Zero-PII și Standardele Administrative Românești (fără taxă Fetești, Rovinietă validă, ITP 24 luni, VTP ISCIR, PAD 130 lei, implant dentar Straumann, apometre chiriaș).
+- **Resetare & Reîncărcare din Setări**:
+  - Ecranul `SettingsView` include o secțiune dedicată *„Gestiune Date Demonstrative”*.
+  - Utilizatorul poate declanșa în orice moment ștergerea în cascadă a bazei de date și reîncărcarea curată a celor 8 exemple demonstrative, protejat printr-o alertă de confirmare distructivă și feedback haptic de succes (`UINotificationFeedbackGenerator`).
 
 ---
 
-## 6. Arhitectura Tehnică Recomandată (iOS Native)
+## 6. Standarde Administrative & Legale Românești (Ground Truth Legal)
 
-- **UI Framework**: SwiftUI (iOS 17+ / iOS 18+) cu arhitectură bazată pe `@Observable`.
-- **Persistență**: SwiftData cu sincronizare CloudKit privată.
-- **Procesare Imagini & OCR**:
-  - `VisionKit` (`DataScannerViewController` pentru scanare live în cameră).
-  - `Vision` (`VNRecognizeTextRequest` pentru procesare documente din galerie).
-- **Integrare AI**: Google Gemini 1.5 Flash / 2.0 Flash REST API prin URLSession nativ, folosind `responseSchema` (JSON strict).
-- **Grafice**: `Swift Charts` cu animații interpolate.
-- **Notificări**: `UserNotifications` cu categorii personalizate și acțiuni directe din banner ("Am făcut", "Amână 3 zile").
+Aplicația respectă cu strictețe legislația românească în vigoare, evitând implementarea de legi abrogate sau termene eronate:
+
+### 6.1 Mobilitate & Regim Rutier
+1. **Rovinietă Națională (Legea nr. 226/2023)**:
+   - Durate oficiale pentru autoturisme ($\le 3.5\text{t}$): `1 zi`, `10 zile`, `30 zile`, `60 zile`, `12 luni` (vechile durate de 7 și 90 de zile au fost restructurate).
+   - Tarife diferențiate după norma de poluare din talon: de la `Non-Euro` până la `Euro 6`, respectiv `Vehicul Electric`.
+2. **Taxa de Pod (Peaj) Fetești–Cernavodă (A2) & Giurgeni–Vadu Oii (DN2A)**:
+   - **ELIMINATĂ COMPLET** de la 1 octombrie 2026 prin Legea nr. 226/2023. Traversarea podurilor peste Dunăre este inclusă direct în Rovinietă și nu se mai plătește separat (fără cronometru ora 23:59 a zilei următoare, fără plată prin SMS la 8545).
+3. **Inspecția Tehnică Periodică (ITP — RNTR 1 / OUG nr. 195/2002)**:
+   - Autoturisme noi uz personal: prima inspecție la **3 ani**.
+   - Autoturisme uz personal $\le 12$ ani vechime: la fiecare **2 ani**.
+   - Autoturisme uz personal $> 12$ ani vechime: la fiecare **1 an** (anual).
+   - Ridesharing (Uber, Bolt) / Taxi / Rent-a-car: la fiecare **6 luni**.
+   - Efect juridic critic: la expirarea ITP, **înmatricularea vehiculului se suspendă automat de drept**.
+
+### 6.2 Locuință, Utilități & Instalații Tehnice
+1. **Instalații de Gaze Naturale (Ordinul ANRE nr. 179/2015)**:
+   - **VIG (Verificarea Tehnică a Instalației de Gaze)**: obligatorie la maximum **2 ani** (etanșeitate conducte, robineți, detectoare automate gaz; executant autorizat ANRE).
+   - **RIG (Revizia Tehnică a Instalației de Gaze)**: obligatorie la maximum **10 ani** (probă de rezistență la presiune a conductelor, demontare contor); în anul 10, RIG înlocuiește VIG-ul.
+2. **Centrala Termică de Apartament (ISCIR Prescripția Tehnică PT A1)**:
+   - **VTP (Verificarea Tehnică Periodică)**: obligatorie la maximum **2 ani** (analiză gaze arse, randament, supape de siguranță, tiraj coș; eliberare livret și proces-verbal autorizat ISCIR).
+3. **Contoare de Apă / Apometre (Biroul Român de Metrologie Legală — BRML)**:
+   - Apometre apă rece: valabilitate metrologică **7 ani**.
+   - Apometre apă caldă: valabilitate metrologică **4 ani**.
+4. **Certificat de Performanță Energetică — CPE (Legea nr. 372/2005)**:
+   - Valabilitate: **10 ani** de la data emiterii.
+
+### 6.3 Finanțe Publice, Taxe Locale & Acte Oficiale
+1. **Impozite și Taxe Locale (Codul Fiscal — Legea nr. 227/2015)**:
+   - Rata I & Bonificație: scadență la **31 martie** (bonificație de până la 10% pentru plata integrală).
+   - Rata a II-a: scadență la **30 septembrie** (după această dată se aplică majorări de întârziere zilnice).
+2. **Declarația Unică — Formularul 212 (ANAF)**:
+   - Termen legal anual: **25 mai** (venituri din chirii, PFA/PFI, dividende, plafoane CASS).
+3. **Pașapoarte & Călătorii Non-UE**:
+   - Regula celor 6 luni: majoritatea statelor non-UE cer o valabilitate rămasă a pașaportului de minimum 6 luni de la intrare/ieșire; aplicația declanșează alertă preventivă la -180 de zile.
+4. **Cardul European de Asigurări Sociale de Sănătate (CEASS)**:
+   - Valabilitate: **2 ani (24 luni)** de la emitere.
+5. **Garanția Legală de Conformitate a Bunurilor (OUG nr. 140/2021)**:
+   - 2 ani pentru bunuri noi; timpul de nefuncționare din momentul predării în service până la restituire **prelungește termenul de garanție cu numărul exact de zile petrecute în reparație** (`daysInService`).
 
 ---
 
-## 7. Roadmap de Implementare (MVP -> V1 -> V2)
+## 7. Arhitectura Tehnică & Paritate Multi-Platformă
 
-### Faza 1: MVP Solid (Fundația)
-- [ ] Modelul de date de bază (Active -> Obligații / Evenimente -> Atașamente).
-- [ ] Categoriile principale: Casă, Mașină, Pet.
-- [ ] Sistem de notificări locale inteligente (calcul automat al alertelor: -30z, -7z, -1z).
-- [ ] Atașare fotografii și vizualizator de fișiere PDF.
+Aplicația este proiectată ca un sistem decuplat pe două platforme native cu paritate completă a schemei de date:
 
-### Faza 2: Inteligență & Scanare (V1)
-- [ ] Scanare de documente cu VisionKit (edge detection + corecție unghi).
-- [ ] OCR on-device pentru extragerea datelor și a sumelor.
-- [ ] Integrare Gemini API pentru interpretarea semantică a facturilor complexe.
-- [ ] Categorii suplimentare: Sănătate, Documente, Garanții, Abonamente.
+### 7.1 Platforma iOS (Apple Native)
+- **UI Framework**: SwiftUI (iOS 17+) bazat pe arhitectură reactivă `@Observable` și `@ModelContext`.
+- **Persistență Locală**: SwiftData (`Asset`, `LifecycleEvent`, `ServiceItem`, `MeasurementLog`, `DynamicField`, `DocumentAttachment`) cu relații `.cascade`.
+- **Securitate & Biometrie**: `LocalAuthentication` (Model B: Just-in-Time unlock pentru `.documents` și `.health`), `CryptoKit` (SHA-256 integrity maps), Keychain criptat pentru chei BYOK.
+- **Integrare Sistem**:
+  - `UserNotifications` cu nivel `.timeSensitive` și acțiuni interactive pe ecranul de blocare ("Am rezolvat" cu auto-rollover).
+  - `EventKit` pentru sincronizare bidirecțională cu Apple Calendar și Apple Reminders.
+  - `ContactsUI` pentru selectarea specialiștilor din agenda telefonului.
+  - `WidgetKit` sincronizat prin App Group `group.com.ar.dosarcusina.shared`.
+  - `PDFKit` și `QuickLook` pentru vizualizarea și generarea de dosare cu *Opis Documente*.
+  - `Charts` pentru vizualizări interactive de cash-flow și curbe de telemetrie.
 
-### Faza 3: Rafinament & Finanțe (V2)
-- [ ] Tab complet de Statistici & TCO (Cost of Ownership) cu Swift Charts.
-- [ ] Widget-uri interactive pentru ecranul de pornire și ecranul de blocare.
-- [ ] Generator exportabil "Dosar PDF" cu istoric complet și anexe.
-- [ ] Integrare Siri & Shortcuts ("Siri, când îmi expiră RCA-ul?").
+### 7.2 Platforma Android (Jetpack Compose & Room)
+- **UI Framework**: Jetpack Compose cu componente Material 3 Expressive.
+- **Persistență Locală**: Room SQLite Database (`DosarDatabase` v2) cu 1:1 schema parity:
+  - `AssetEntity`, `LifecycleEventEntity`, `ServiceItemEntity`, `MeasurementLogEntity`, `AttachmentEntity`, `DynamicFieldEntity`.
+  - Ștergere în cascadă garantată prin chei străine SQLite (`ON DELETE CASCADE`).
+- **Scanare On-Device**: CameraX integrat cu Google ML Kit Latin Text Recognition offline (`CameraXTextScanner`).
+- **Motor Arhivă Deschisă**: `DosarArchiveParser` nativ (folosind exclusiv `java.util.zip`, `java.security.MessageDigest`, `org.json`), capabil de inspectare, verificare SHA-256 și import cu modurile `MERGE` și `CLEAN_RESTORE`.
+
+### 7.3 Politica Zero-Leak & Garanția Confidențialității
+- **Zero Baze de Date Centrale**: Dezvoltatorul nu găzduiește servere de colectare a datelor. Datele aparțin 100% utilizatorului pe dispozitiv și în conturile sale personale de sincronizare (iCloud / Google Drive AppData).
+- **Zero Secrete în Repository Public**: Nicio cheie API, credențial sau fișier privat nu este versionat; registrul de vulnerabilități interne este izolat în `private/` și blocat prin pre-commit hook.
