@@ -72,6 +72,17 @@ struct ArchiveTests {
         #expect(rca.reminderMinuteOfDay == 480)
         #expect(rca.reference == "POL-000001")
 
+        // Old policies stay, archived and pointing to their replacement.
+        let policies = (rca.attachments ?? []).sorted { $0.createdAt < $1.createdAt }
+        #expect(policies.map(\.title) == ["Poliță RCA 2025", "Poliță RCA 2026"])
+        #expect(policies[0].isArchived && policies[0].supersededBy?.id == policies[1].id)
+        #expect(policies[1].provider?.name == "Service auto exemplu")
+        #expect(policies.allSatisfy { $0.kind == .policy && $0.sha256 != nil })
+        let report = try #require(itp.history.first?.attachments?.first)
+        #expect(report.orderedPages.count == 1)
+        #expect(report.thumbnailData != nil)
+        #expect(report.byteCount == 62)
+
         let templates = try TemplateStore(context: context).templatesByKey()
         let boats = try #require(templates["custom.0b6c6f43-6c1e-4d1a-9c55-7d3b4f1f2a10"])
         #expect(boats.isCustom)
@@ -95,10 +106,13 @@ struct ArchiveTests {
         let boat = Asset(name: "Barca", templateKey: custom.key)
         boat.photoData = Data([0xFF, 0xD8, 0xFF])
         context.insert(boat)
-        let attachment = Attachment(fileName: "factura.pdf", contentType: "com.adobe.pdf", data: Data("%PDF-1.7 test".utf8))
-        context.insert(attachment)
-        attachment.asset = boat
         try context.save()
+        let attachment = try AttachmentActions(context: context).file(
+            DocumentDraft(title: "Factură", fileName: "factura.pdf", kind: .invoice, contentType: "com.adobe.pdf",
+                          originalData: Data("%PDF-1.7 test".utf8), pageImages: [Data([1, 2]), Data([3])], thumbnail: Data([9])),
+            asset: boat
+        )
+        #expect(attachment.byteCount == 16)
 
         let data = try DossierArchiveService(container: source, calendar: calendar).exportData(exportedAt: noon("2026-11-02"))
 
@@ -121,7 +135,12 @@ struct ArchiveTests {
         #expect(MaintenanceLog.lastOccurrence(of: "brakes.padsFront", in: HistoryItemSnapshot.items(of: copiedCar)) != nil)
         let copiedBoat = try #require(try copy.fetch(FetchDescriptor<Asset>()).first { $0.name == "Barca" })
         #expect(copiedBoat.photoData == Data([0xFF, 0xD8, 0xFF]))
-        #expect(copiedBoat.attachments?.first?.fileData == Data("%PDF-1.7 test".utf8))
+        let copiedDocument = try #require(copiedBoat.attachments?.first)
+        #expect(copiedDocument.fileData == Data("%PDF-1.7 test".utf8))
+        #expect(copiedDocument.orderedPages.map(\.imageData) == [Data([1, 2]), Data([3])])
+        #expect(copiedDocument.thumbnailData == Data([9]))
+        #expect(copiedDocument.kind == .invoice)
+        #expect(copiedDocument.sha256 == attachment.sha256)
         #expect(try TemplateStore(context: copy).template(forKey: custom.key)?.name == "Bărci")
     }
 

@@ -179,12 +179,23 @@ public enum DossierV3 {
 
     public struct Attachment: Codable, Hashable, Sendable {
         public var id: String
+        public var title: String?
         public var fileName: String
+        public var kind: String
+        /// Type of the original file.
         public var contentType: String
         public var byteCount: Int
-        /// `vault/<id>.<ext>`.
-        public var path: String
+        public var sha256: String?
+        /// The original file, `vault/<id>.<ext>`, when there is one.
+        public var path: String?
+        /// Scanned pages, `vault/<id>/page-<n>.heic`, in order.
+        public var pagePaths: [String]
+        /// `vault/<id>/thumbnail.<ext>`.
+        public var thumbnailPath: String?
         public var extractedText: String?
+        public var documentDate: CalendarDay?
+        public var isArchived: Bool
+        public var supersededById: String?
         public var createdAt: Date
         public var isExample: Bool
         public var assetId: String?
@@ -192,6 +203,10 @@ public enum DossierV3 {
         public var historyEntryId: String?
         public var serviceItemId: String?
         public var measurementId: String?
+        public var providerId: String?
+
+        /// Every file this record points to.
+        public var allPaths: [String] { [path, thumbnailPath].compactMap { $0 } + pagePaths }
     }
 
     /// Everything an archive holds, decoded and checked.

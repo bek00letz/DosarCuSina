@@ -33,11 +33,13 @@ def write_json(path, value):
 
 def v3(base):
     attachments_path = os.path.join(base, "data/attachments.json")
-    text = open(attachments_path, encoding="utf-8").read()
-    for item in json.loads(text):
-        size = os.path.getsize(os.path.join(base, item["path"]))
-        text = text.replace('"byteCount" : %d' % item["byteCount"], '"byteCount" : %d' % size)
-    open(attachments_path, "w", encoding="utf-8").write(text)
+    attachments = json.load(open(attachments_path, encoding="utf-8"))
+    for item in attachments:
+        paths = ([item["path"]] if item.get("path") else []) + item.get("pagePaths", [])
+        item["byteCount"] = sum(os.path.getsize(os.path.join(base, p)) for p in paths)
+        if item.get("path"):
+            item["sha256"] = sha(os.path.join(base, item["path"]))
+    write_json(attachments_path, attachments)
 
     def count(name):
         path = os.path.join(base, "data", name)

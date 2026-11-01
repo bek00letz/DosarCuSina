@@ -56,7 +56,7 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: "vehicle.make", label: String(localized: "Marcă"), type: .text, role: .subtitle, isEssential: true, placeholder: "Volkswagen"),
                     FieldDefinition(key: "vehicle.model", label: String(localized: "Model"), type: .text, role: .subtitle, isEssential: true, placeholder: "Golf"),
                     FieldDefinition(key: "vehicle.year", label: String(localized: "An de fabricație"), type: .number, role: .subtitle, isEssential: true, placeholder: "2018"),
-                    FieldDefinition(key: "vehicle.vin", label: String(localized: "Serie de șasiu (VIN)"), type: .vin),
+                    FieldDefinition(key: "vehicle.vin", label: String(localized: "Serie de șasiu (VIN)"), type: .vin, role: .keyFact),
                     FieldDefinition(key: "vehicle.civ", label: String(localized: "Serie CIV"), type: .text),
                 ]),
                 FieldSection(key: "vehicle.technical", title: String(localized: "Date tehnice"), fields: [
@@ -72,8 +72,11 @@ public enum BuiltInTemplates {
                     ]),
                 ]),
                 FieldSection(key: "vehicle.insurance", title: String(localized: "Asigurare"), fields: [
-                    FieldDefinition(key: "vehicle.insurer", label: String(localized: "Asigurător"), type: .text),
+                    FieldDefinition(key: "vehicle.insurer", label: String(localized: "Asigurător RCA"), type: .text, role: .issuer),
+                    FieldDefinition(key: "vehicle.policyNumber", label: String(localized: "Număr poliță RCA"), type: .text, role: .keyFact),
+                    FieldDefinition(key: "vehicle.claimsPhone", label: String(localized: "Telefon pentru daune"), type: .phone, role: .keyFact),
                 ]),
+                PurchaseFields.section(prefix: "vehicle"),
             ],
             blueprints: [
                 ObligationBlueprint(key: "vehicle.itp", title: String(localized: "ITP"), kind: .legal, recurrence: .legal(.vehicleITP), firstDue: .ask,
@@ -114,11 +117,16 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: "home.cadastral", label: String(localized: "Număr cadastral"), type: .text),
                 ]),
                 FieldSection(key: "home.utilities", title: String(localized: "Utilități"), fields: [
-                    FieldDefinition(key: "home.pod", label: String(localized: "Cod loc de consum energie (POD)"), type: .text),
-                    FieldDefinition(key: "home.clc", label: String(localized: "Cod loc de consum gaze (CLC)"), type: .text),
+                    FieldDefinition(key: "home.pod", label: String(localized: "Cod loc de consum energie (POD)"), type: .text, role: .keyFact),
+                    FieldDefinition(key: "home.clc", label: String(localized: "Cod loc de consum gaze (CLC)"), type: .text, role: .keyFact),
                     FieldDefinition(key: "home.waterCode", label: String(localized: "Cod client apă"), type: .text),
                     FieldDefinition(key: "home.meterReadFrom", label: String(localized: "Autocitire de la ziua"), type: .number),
                     FieldDefinition(key: "home.meterReadTo", label: String(localized: "Autocitire până la ziua"), type: .number),
+                ]),
+                FieldSection(key: "home.insurance", title: String(localized: "Asigurare"), fields: [
+                    FieldDefinition(key: "home.insurer", label: String(localized: "Asigurător"), type: .text, role: .issuer),
+                    FieldDefinition(key: "home.policyNumber", label: String(localized: "Număr poliță"), type: .text, role: .keyFact),
+                    FieldDefinition(key: "home.claimsPhone", label: String(localized: "Telefon pentru daune"), type: .phone, role: .keyFact),
                 ]),
                 FieldSection(key: "home.heating", title: String(localized: "Centrală termică"), fields: [
                     FieldDefinition(key: "home.boilerModel", label: String(localized: "Model"), type: .text),
@@ -163,11 +171,11 @@ public enum BuiltInTemplates {
                         DocumentType.euHealthCard, DocumentType.greenCard, DocumentType.bankCard, DocumentType.eSignature,
                         DocumentType.criminalRecord, DocumentType.other,
                     ]),
-                    FieldDefinition(key: "document.number", label: String(localized: "Serie și număr"), type: .text, role: .identifier, isSensitive: true),
-                    FieldDefinition(key: "document.holder", label: String(localized: "Titular"), type: .text),
-                    FieldDefinition(key: "document.issuer", label: String(localized: "Emis de"), type: .text),
+                    FieldDefinition(key: "document.number", label: String(localized: "Serie și număr"), type: .text, role: .documentNumber, isSensitive: true),
+                    FieldDefinition(key: "document.holder", label: String(localized: "Titular"), type: .text, role: .holder),
+                    FieldDefinition(key: "document.issuer", label: String(localized: "Emis de"), type: .text, role: .issuer),
                     FieldDefinition(key: "document.issueDate", label: String(localized: "Data emiterii"), type: .date, role: .startDate),
-                    FieldDefinition(key: "document.expiry", label: String(localized: "Valabil până la"), type: .expiryDate, role: .expiry, isEssential: true),
+                    FieldDefinition(key: "document.expiry", label: String(localized: "Valabil până la"), type: .expiryDate, role: .expiryDate, isEssential: true),
                 ]),
             ],
             blueprints: [
@@ -204,8 +212,8 @@ public enum BuiltInTemplates {
                     ]),
                     FieldDefinition(key: "pet.breed", label: String(localized: "Rasă"), type: .text, role: .subtitle),
                     FieldDefinition(key: "pet.birthDate", label: String(localized: "Data nașterii"), type: .date, role: .startDate, isEssential: true),
-                    FieldDefinition(key: "pet.microchip", label: String(localized: "Microcip"), type: .microchip, role: .identifier),
-                    FieldDefinition(key: "pet.passport", label: String(localized: "Pașaport european"), type: .text),
+                    FieldDefinition(key: "pet.microchip", label: String(localized: "Microcip"), type: .microchip, role: .keyFact),
+                    FieldDefinition(key: "pet.passport", label: String(localized: "Pașaport european"), type: .text, role: .keyFact),
                     FieldDefinition(key: "pet.weight", label: String(localized: "Greutate"), type: .number, role: .heroMetric, unit: "kg"),
                 ]),
                 FieldSection(key: "pet.care", title: String(localized: "Îngrijire"), fields: [
@@ -243,7 +251,7 @@ public enum BuiltInTemplates {
             sections: [
                 FieldSection(key: "health.person", title: String(localized: "Persoană"), fields: [
                     FieldDefinition(key: "health.birthDate", label: String(localized: "Data nașterii"), type: .date, role: .startDate),
-                    FieldDefinition(key: "health.bloodType", label: String(localized: "Grupa sanguină"), type: .choice, role: .subtitle, isSensitive: true,
+                    FieldDefinition(key: "health.bloodType", label: String(localized: "Grupa sanguină"), type: .choice, role: .keyFact, isSensitive: true,
                                     options: ["0 I+", "0 I−", "A II+", "A II−", "B III+", "B III−", "AB IV+", "AB IV−"]),
                     FieldDefinition(key: "health.allergies", label: String(localized: "Alergii"), type: .longText, isSensitive: true),
                     FieldDefinition(key: "health.conditions", label: String(localized: "Afecțiuni cronice"), type: .longText, isSensitive: true),
@@ -272,8 +280,8 @@ public enum BuiltInTemplates {
     public static var warranty: TemplateDefinition {
         TemplateDefinition(
             key: Key.warranty,
-            name: String(localized: "Garanții", comment: "Category name"),
-            summary: String(localized: "Bonuri și garanții, cu o alertă înainte să expire.", comment: "Category summary"),
+            name: String(localized: "Bunuri și garanții", comment: "Category name"),
+            summary: String(localized: "Electrocasnice și electronice, cu bonul, prețul și garanția.", comment: "Category summary"),
             symbol: "shield.lefthalf.filled",
             tint: .teal,
             heroStyle: .document,
@@ -282,12 +290,12 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: "warranty.brand", label: String(localized: "Marcă"), type: .text, role: .subtitle, isEssential: true),
                     FieldDefinition(key: "warranty.model", label: String(localized: "Model"), type: .text, role: .subtitle),
                     FieldDefinition(key: "warranty.serial", label: String(localized: "Serie sau IMEI"), type: .text, role: .identifier),
-                    FieldDefinition(key: "warranty.retailer", label: String(localized: "Magazin"), type: .text),
-                    FieldDefinition(key: "warranty.price", label: String(localized: "Preț"), type: .money),
+                    FieldDefinition(key: "warranty.retailer", label: String(localized: "Magazin"), type: .text, role: .retailer),
+                    FieldDefinition(key: "warranty.price", label: String(localized: "Preț"), type: .money, role: .purchasePrice),
                 ]),
                 FieldSection(key: "warranty.coverage", title: String(localized: "Garanție"), fields: [
-                    FieldDefinition(key: "warranty.purchaseDate", label: String(localized: "Data cumpărării"), type: .date, role: .startDate, isEssential: true),
-                    FieldDefinition(key: "warranty.expiry", label: String(localized: "Garanția expiră"), type: .expiryDate, role: .expiry, isEssential: true),
+                    FieldDefinition(key: "warranty.purchaseDate", label: String(localized: "Data cumpărării"), type: .date, role: .purchaseDate, isEssential: true),
+                    FieldDefinition(key: "warranty.expiry", label: String(localized: "Garanția expiră"), type: .expiryDate, role: .warrantyUntil, isEssential: true),
                     FieldDefinition(key: "warranty.manualUrl", label: String(localized: "Manual de utilizare"), type: .url),
                 ]),
             ],
@@ -316,7 +324,7 @@ public enum BuiltInTemplates {
                     ]),
                     FieldDefinition(key: "subscription.nextPayment", label: String(localized: "Următoarea plată"), type: .date, isEssential: true),
                     FieldDefinition(key: "subscription.trialEnd", label: String(localized: "Perioada de probă se termină"), type: .date),
-                    FieldDefinition(key: "subscription.contractEnd", label: String(localized: "Contract până la"), type: .expiryDate, role: .expiry),
+                    FieldDefinition(key: "subscription.contractEnd", label: String(localized: "Contract până la"), type: .expiryDate, role: .expiryDate),
                     FieldDefinition(key: "subscription.cancelUrl", label: String(localized: "Unde anulezi"), type: .url),
                     FieldDefinition(key: "subscription.card", label: String(localized: "Card (ultimele 4 cifre)"), type: .text, isSensitive: true),
                 ]),
@@ -349,6 +357,7 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: "other.description", label: String(localized: "Descriere scurtă"), type: .text, role: .subtitle),
                     FieldDefinition(key: "other.identifier", label: String(localized: "Serie sau cod"), type: .text, role: .identifier),
                 ]),
+                PurchaseFields.section(prefix: "other"),
             ]
         )
     }
@@ -370,6 +379,7 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: "bike.odometer", label: String(localized: "Kilometri parcurși"), type: .metric, role: .heroMetric, isEssential: true, unit: "km"),
                     FieldDefinition(key: "bike.serial", label: String(localized: "Serie cadru"), type: .text, role: .identifier),
                 ]),
+                PurchaseFields.section(prefix: "bike"),
             ],
             blueprints: [
                 ObligationBlueprint(key: "bike.chainLube", title: String(localized: "Curățare și ungere lanț"), kind: .routine,
@@ -434,7 +444,7 @@ public enum BuiltInTemplates {
                 ]),
                 FieldSection(key: "rental.lease", title: String(localized: "Contract"), fields: [
                     FieldDefinition(key: "rental.leaseStart", label: String(localized: "Început contract"), type: .date, role: .startDate),
-                    FieldDefinition(key: "rental.leaseEnd", label: String(localized: "Sfârșit contract"), type: .expiryDate, role: .expiry),
+                    FieldDefinition(key: "rental.leaseEnd", label: String(localized: "Sfârșit contract"), type: .expiryDate, role: .expiryDate),
                 ]),
             ],
             blueprints: [
@@ -467,6 +477,7 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: "espresso.model", label: String(localized: "Model"), type: .text, role: .subtitle),
                     FieldDefinition(key: "espresso.shots", label: String(localized: "Cafele făcute"), type: .metric, role: .heroMetric, unit: String(localized: "cafele")),
                 ]),
+                PurchaseFields.section(prefix: "espresso"),
             ],
             blueprints: [
                 ObligationBlueprint(key: "espresso.backflush", title: String(localized: "Curățare grup"), kind: .routine,
@@ -488,6 +499,19 @@ public enum BuiltInTemplates {
 public enum VehicleUsage {
     public static var personal: String { String(localized: "Personală", comment: "Vehicle usage option") }
     public static var commercial: String { String(localized: "Ridesharing sau taxi", comment: "Vehicle usage option") }
+}
+
+/// The same purchase facts on every category that holds things you buy, so
+/// "how much did I pay" and "when did I buy it" work for any asset.
+public enum PurchaseFields {
+    public static func section(prefix: String) -> FieldSection {
+        FieldSection(key: "\(prefix).purchase", title: String(localized: "Cumpărare"), fields: [
+            FieldDefinition(key: "\(prefix).purchaseDate", label: String(localized: "Data cumpărării"), type: .date, role: .purchaseDate),
+            FieldDefinition(key: "\(prefix).purchasePrice", label: String(localized: "Preț"), type: .money, role: .purchasePrice),
+            FieldDefinition(key: "\(prefix).retailer", label: String(localized: "Cumpărat de la"), type: .text, role: .retailer),
+            FieldDefinition(key: "\(prefix).warrantyUntil", label: String(localized: "Garanție până la"), type: .expiryDate, role: .warrantyUntil),
+        ])
+    }
 }
 
 public enum DocumentType {

@@ -24,6 +24,7 @@ public enum DosarSchemaV2: VersionedSchema {
             ServiceItem.self,
             MeasurementLog.self,
             Attachment.self,
+            AttachmentPage.self,
             Provider.self,
         ]
     }
@@ -44,6 +45,7 @@ public typealias ServiceItem = DosarSchemaV2.ServiceItem
 public typealias MeasurementLog = DosarSchemaV2.MeasurementLog
 public typealias Attachment = DosarSchemaV2.Attachment
 public typealias Provider = DosarSchemaV2.Provider
+public typealias AttachmentPage = DosarSchemaV2.AttachmentPage
 
 /// Shared JSON coding for values stored as `Data` on models and written to archives.
 /// Keys are sorted so the same value always produces the same bytes.

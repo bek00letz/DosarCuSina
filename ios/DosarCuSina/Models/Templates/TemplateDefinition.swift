@@ -87,6 +87,16 @@ public struct TemplateDefinition: Hashable, Sendable, Codable, Identifiable {
         allFields.filter { $0.role == role }
     }
 
+    public func field(withRole role: FieldRole) -> FieldDefinition? {
+        allFields.first { $0.role == role }
+    }
+
+    /// What the asset's top card shows, in order: identifiers, document numbers, then key facts.
+    public var keyFactFields: [FieldDefinition] {
+        let order: [FieldRole] = [.identifier, .documentNumber, .keyFact]
+        return order.flatMap { fields(withRole: $0) }
+    }
+
     public static let customKeyPrefix = "custom."
 
     public static func newCustomKey() -> String {

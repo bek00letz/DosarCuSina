@@ -32,12 +32,13 @@ enum DossierV2Converter {
         )
         let v3Attachments = attachments.map { meta in
             DossierV3.Attachment(
-                id: DossierV3.id(meta.id), fileName: meta.fileName,
+                id: DossierV3.id(meta.id), title: nil, fileName: meta.fileName, kind: DocumentKind.other.rawValue,
                 contentType: contentType(forExtension: meta.fileExtension), byteCount: Int(meta.fileSizeBytes),
-                path: meta.vaultRelativePath, extractedText: meta.extractedText, createdAt: meta.createdAt,
-                isExample: false, assetId: DossierV3.id(meta.assetId), obligationId: DossierV3.id(meta.eventId),
+                sha256: meta.sha256.lowercased(), path: meta.vaultRelativePath, pagePaths: [], thumbnailPath: nil,
+                extractedText: meta.extractedText, documentDate: nil, isArchived: false, supersededById: nil,
+                createdAt: meta.createdAt, isExample: false, assetId: DossierV3.id(meta.assetId), obligationId: DossierV3.id(meta.eventId),
                 historyEntryId: meta.eventId.flatMap { converter.entryForEvent[$0] },
-                serviceItemId: nil, measurementId: DossierV3.id(measurementForAttachment[meta.id])
+                serviceItemId: nil, measurementId: DossierV3.id(measurementForAttachment[meta.id]), providerId: nil
             )
         }
 

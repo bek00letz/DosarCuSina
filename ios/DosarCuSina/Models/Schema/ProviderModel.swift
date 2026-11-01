@@ -82,6 +82,10 @@ extension DosarSchemaV2 {
         @Relationship(deleteRule: .nullify, inverse: \ServiceItem.supplier)
         public var suppliedItems: [ServiceItem]? = []
 
+        /// Documents from or about them: a contract, a business card, an offer.
+        @Relationship(deleteRule: .nullify, inverse: \Attachment.provider)
+        public var attachments: [Attachment]? = []
+
         public init(id: UUID = UUID(), name: String, trades: [ProviderTrade] = [], phone: String? = nil) {
             self.id = id
             self.name = name

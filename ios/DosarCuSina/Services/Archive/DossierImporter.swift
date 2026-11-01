@@ -22,7 +22,7 @@ struct DossierImporter {
         let entries = try importHistory(&result, assets: assets, obligations: obligations, providers: providers)
         let serviceItems = try importServiceItems(&result, entries: entries, providers: providers)
         let measurements = try importMeasurements(&result, assets: assets)
-        try importAttachments(&result, assets: assets, obligations: obligations, entries: entries, serviceItems: serviceItems, measurements: measurements)
+        try importAttachments(&result, assets: assets, obligations: obligations, entries: entries, serviceItems: serviceItems, measurements: measurements, providers: providers)
         return result
     }
 
@@ -291,24 +291,46 @@ struct DossierImporter {
         obligations: [UUID: Obligation],
         entries: [UUID: HistoryEntry],
         serviceItems: [UUID: ServiceItem],
-        measurements: [UUID: MeasurementLog]
+        measurements: [UUID: MeasurementLog],
+        providers: [UUID: Provider]
     ) throws {
-        let current = try existing(Attachment.self, id: \.id)
+        var map = try existing(Attachment.self, id: \.id)
+        var inserted: [(Attachment, DossierV3.Attachment)] = []
         for dto in package.attachments {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.attachments) }
-            guard current[id] == nil else { result.skipped += 1; continue }
-            guard let data = package.files[dto.path] else { throw ArchiveError.missingFile(dto.path) }
-            let attachment = Attachment(id: id, fileName: dto.fileName, contentType: dto.contentType, data: data)
+            guard map[id] == nil else { result.skipped += 1; continue }
+            let original = try dto.path.map { path -> Data in
+                guard let data = package.files[path] else { throw ArchiveError.missingFile(path) }
+                return data
+            }
+            let attachment = Attachment(id: id, fileName: dto.fileName, contentType: dto.contentType, data: original, kind: DocumentKind(rawValue: dto.kind) ?? .other)
+            attachment.title = dto.title
+            attachment.byteCount = dto.byteCount
+            attachment.sha256 = dto.sha256 ?? attachment.sha256
+            attachment.thumbnailData = dto.thumbnailPath.flatMap { package.files[$0] }
             attachment.extractedText = dto.extractedText
+            attachment.documentDate = dto.documentDate?.noonDate(in: calendar)
+            attachment.isArchived = dto.isArchived
             attachment.createdAt = dto.createdAt
             attachment.isExample = dto.isExample
             context.insert(attachment)
+            for (index, path) in dto.pagePaths.enumerated() {
+                let page = AttachmentPage(index: index, imageData: package.files[path])
+                context.insert(page)
+                page.attachment = attachment
+            }
             attachment.asset = uuid(dto.assetId).flatMap { assets[$0] }
             attachment.obligation = uuid(dto.obligationId).flatMap { obligations[$0] }
             attachment.historyEntry = uuid(dto.historyEntryId).flatMap { entries[$0] }
             attachment.serviceItem = uuid(dto.serviceItemId).flatMap { serviceItems[$0] }
             attachment.measurement = uuid(dto.measurementId).flatMap { measurements[$0] }
+            attachment.provider = uuid(dto.providerId).flatMap { providers[$0] }
+            map[id] = attachment
+            inserted.append((attachment, dto))
             result.inserted += 1
+        }
+        for (attachment, dto) in inserted {
+            attachment.supersededBy = uuid(dto.supersededById).flatMap { map[$0] }
         }
     }
 }

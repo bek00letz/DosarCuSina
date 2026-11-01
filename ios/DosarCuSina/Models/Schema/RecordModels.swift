@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 import SwiftData
 
@@ -146,34 +147,112 @@ extension DosarSchemaV2 {
         }
     }
 
-    /// A stored file: a scanned bill, a policy PDF, a photo of a label.
-    /// It always belongs to an asset and may also be filed under an obligation,
-    /// a history entry, a line item or a measurement.
+    /// A document in the binder: a scanned bill, a policy PDF, a photo of a label.
+    ///
+    /// It can hold the original file (a PDF or an image), scanned page images
+    /// (HEIC) and a thumbnail. It is linked to an asset and optionally to an
+    /// obligation, a history entry, a line item, a measurement or a provider.
+    /// Documents are never thrown away when replaced: an old policy is archived
+    /// and points to the one that superseded it, so it is there for a claim.
     @Model
     public final class Attachment {
         public var id: UUID = UUID()
+        /// A short name the person recognizes, such as "Poliță RCA 2026".
+        public var title: String?
         public var fileName: String = ""
-        /// Uniform type identifier, such as `com.adobe.pdf` or `public.jpeg`.
+        public var kindRaw: String = DocumentKind.other.rawValue
+        /// Uniform type identifier of the original file, such as `com.adobe.pdf` or `public.jpeg`.
         public var contentType: String = "public.data"
+        /// The original file, kept as received.
         @Attribute(.externalStorage) public var fileData: Data?
+        /// A small preview image (HEIC or JPEG).
+        @Attribute(.externalStorage) public var thumbnailData: Data?
+        /// Total bytes of the original and the page images.
         public var byteCount: Int = 0
-        /// Text read from the file (OCR or PDF text), used by search.
+        /// Lowercase hex SHA-256 of the original, or of the page images in order
+        /// when there is no original. Used to spot the same document twice.
+        public var sha256: String?
+        /// Text read from the document (OCR or PDF text), used by search.
         public var extractedText: String?
+        /// The date printed on the document (issue or invoice date), noon of that day.
+        public var documentDate: Date?
+        /// Kept for reference but no longer current (an old policy).
+        public var isArchived: Bool = false
         public var createdAt: Date = Date()
         public var isExample: Bool = false
+
+        @Relationship(deleteRule: .cascade, inverse: \AttachmentPage.attachment)
+        public var pages: [AttachmentPage]? = []
+
+        /// The document that replaced this one.
+        public var supersededBy: Attachment?
+        @Relationship(deleteRule: .nullify, inverse: \Attachment.supersededBy)
+        public var supersedes: [Attachment]? = []
 
         public var asset: Asset?
         public var obligation: Obligation?
         public var historyEntry: HistoryEntry?
         public var serviceItem: ServiceItem?
         public var measurement: MeasurementLog?
+        public var provider: Provider?
 
-        public init(id: UUID = UUID(), fileName: String, contentType: String, data: Data?) {
+        public init(id: UUID = UUID(), fileName: String, contentType: String, data: Data?, kind: DocumentKind = .other) {
             self.id = id
             self.fileName = fileName
             self.contentType = contentType
+            self.kindRaw = kind.rawValue
             self.fileData = data
             self.byteCount = data?.count ?? 0
+            self.sha256 = data.map(Hashing.sha256)
         }
+
+        public var kind: DocumentKind {
+            get { DocumentKind(rawValue: kindRaw) ?? .other }
+            set { kindRaw = newValue.rawValue }
+        }
+
+        /// Page images in order.
+        public var orderedPages: [AttachmentPage] {
+            (pages ?? []).sorted { $0.index < $1.index }
+        }
+    }
+
+    /// One scanned page of a document, stored as HEIC.
+    @Model
+    public final class AttachmentPage {
+        public var id: UUID = UUID()
+        /// Zero-based position in the document.
+        public var index: Int = 0
+        @Attribute(.externalStorage) public var imageData: Data?
+        public var attachment: Attachment?
+
+        public init(id: UUID = UUID(), index: Int, imageData: Data?) {
+            self.id = id
+            self.index = index
+            self.imageData = imageData
+        }
+    }
+}
+
+/// What a document is. Raw values are part of the `.dosar` contract.
+public enum DocumentKind: String, Codable, CaseIterable, Sendable {
+    case invoice
+    case receipt
+    case policy
+    case contract
+    case certificate
+    case report
+    case identity
+    case warranty
+    case manual
+    case prescription
+    case photo
+    case other
+}
+
+/// SHA-256 as lowercase hex, shared by attachments and archives.
+public enum Hashing {
+    public static func sha256(_ data: Data) -> String {
+        SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
     }
 }

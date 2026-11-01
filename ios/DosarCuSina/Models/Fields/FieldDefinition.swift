@@ -48,16 +48,33 @@ public enum FieldType: String, Codable, CaseIterable, Sendable {
 ///
 /// Raw values are part of the `.dosar` contract.
 public enum FieldRole: String, Codable, CaseIterable, Sendable {
-    /// The value that identifies the asset at a glance: a plate, a document number.
+    /// The value that identifies the asset at a glance: a plate, a serial number.
     case identifier
     /// A short secondary line under the asset name: make and model, breed, provider.
     case subtitle
     /// The headline number for the hero: odometer, weight.
     case heroMetric
+    /// A fact worth having one tap away on the asset's top card, to copy or call:
+    /// a policy number, the insurer's claims phone, a VIN, a POD code, a microchip.
+    case keyFact
+    /// The number of an official document (ID card, passport, licence).
+    case documentNumber
+    /// Who a document belongs to.
+    case holder
+    /// Who issued a document or policy.
+    case issuer
     /// The date the asset or document stops being valid.
-    case expiry
-    /// A start date: birth date, purchase date, contract start.
+    case expiryDate
+    /// A start date: birth date, issue date, contract start.
     case startDate
+    /// When it was bought.
+    case purchaseDate
+    /// What it cost.
+    case purchasePrice
+    /// Where it was bought.
+    case retailer
+    /// The last day of its warranty.
+    case warrantyUntil
     /// Where the asset is: an address.
     case location
 }

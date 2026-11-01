@@ -111,8 +111,10 @@ public enum DossierArchiveReader {
     }
 
     static func validateReferences(_ package: DossierV3.Package) throws {
-        for attachment in package.attachments where package.files[attachment.path] == nil {
-            throw ArchiveError.missingFile(attachment.path)
+        for attachment in package.attachments {
+            for path in attachment.allPaths where package.files[path] == nil {
+                throw ArchiveError.missingFile(path)
+            }
         }
         for asset in package.assets {
             if let photo = asset.photoPath, package.files[photo] == nil { throw ArchiveError.missingFile(photo) }
@@ -120,7 +122,7 @@ public enum DossierArchiveReader {
     }
 
     public static func sha256(_ data: Data) -> String {
-        SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+        Hashing.sha256(data)
     }
 }
 
@@ -227,16 +229,35 @@ public struct DossierArchiveService {
                 referenceMax: log.referenceMax, source: log.source, notes: log.notes, isExample: log.isExample
             )
         }
-        let attachmentDTOs = attachments.compactMap { attachment -> DossierV3.Attachment? in
-            guard let data = attachment.fileData else { return nil }
-            let path = "\(DossierV3.Path.vaultPrefix)\(DossierV3.id(attachment.id)).\(Self.fileExtension(for: attachment))"
-            files[path] = data
+        let attachmentDTOs = attachments.map { attachment -> DossierV3.Attachment in
+            let base = "\(DossierV3.Path.vaultPrefix)\(DossierV3.id(attachment.id))"
+            var path: String?
+            if let data = attachment.fileData {
+                path = "\(base).\(Self.fileExtension(for: attachment))"
+                files[path!] = data
+            }
+            var pagePaths: [String] = []
+            for page in attachment.orderedPages {
+                guard let data = page.imageData else { continue }
+                let pagePath = "\(base)/page-\(pagePaths.count + 1).heic"
+                files[pagePath] = data
+                pagePaths.append(pagePath)
+            }
+            var thumbnailPath: String?
+            if let data = attachment.thumbnailData {
+                thumbnailPath = "\(base)/thumbnail.heic"
+                files[thumbnailPath!] = data
+            }
             return DossierV3.Attachment(
-                id: DossierV3.id(attachment.id), fileName: attachment.fileName, contentType: attachment.contentType,
-                byteCount: data.count, path: path, extractedText: attachment.extractedText, createdAt: attachment.createdAt,
+                id: DossierV3.id(attachment.id), title: attachment.title, fileName: attachment.fileName, kind: attachment.kindRaw,
+                contentType: attachment.contentType, byteCount: attachment.byteCount, sha256: attachment.sha256,
+                path: path, pagePaths: pagePaths, thumbnailPath: thumbnailPath, extractedText: attachment.extractedText,
+                documentDate: attachment.documentDate.map { CalendarDay($0, calendar: calendar) }, isArchived: attachment.isArchived,
+                supersededById: DossierV3.id(attachment.supersededBy?.id), createdAt: attachment.createdAt,
                 isExample: attachment.isExample, assetId: DossierV3.id(attachment.asset?.id),
                 obligationId: DossierV3.id(attachment.obligation?.id), historyEntryId: DossierV3.id(attachment.historyEntry?.id),
-                serviceItemId: DossierV3.id(attachment.serviceItem?.id), measurementId: DossierV3.id(attachment.measurement?.id)
+                serviceItemId: DossierV3.id(attachment.serviceItem?.id), measurementId: DossierV3.id(attachment.measurement?.id),
+                providerId: DossierV3.id(attachment.provider?.id)
             )
         }
 
