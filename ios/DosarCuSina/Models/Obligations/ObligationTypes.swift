@@ -1,7 +1,102 @@
 import Foundation
 
-/// What kind of duty an obligation is. It decides how much missing it costs,
-/// which drives the Radar ranking and how loudly reminders speak.
+/// What missing a deadline costs. Ranking, urgency and how loudly reminders
+/// speak all follow from it. Raw values are part of the `.dosar` contract.
+public enum Consequence: String, Codable, CaseIterable, Sendable {
+    /// Fines, a suspended registration, driving uninsured: ITP, RCA, rovinietă.
+    case legal
+    /// Penalties or money lost: local tax installments, a trial that turns paid.
+    case financial
+    /// Health and prevention: vaccines, check-ups.
+    case health
+    /// Nice to keep up with; nothing bad happens if it slips: watering, grooming.
+    case comfort
+
+    /// Relative weight in the Radar ranking.
+    public var weight: Int {
+        switch self {
+        case .legal: return 100
+        case .financial: return 80
+        case .health: return 60
+        case .comfort: return 10
+        }
+    }
+
+    /// The most days ahead an item of this consequence is promoted to "needs you now".
+    /// Earlier reminders still go out per the profile's lead days.
+    public var maxAttentionWindowDays: Int {
+        switch self {
+        case .legal: return 30
+        case .financial: return 21
+        case .health: return 7
+        case .comfort: return 3
+        }
+    }
+
+    /// Whether the last reminders may break through Focus.
+    public var allowsTimeSensitiveReminders: Bool { self != .comfort }
+}
+
+/// How an obligation reminds: how far ahead (driven by how long renewing takes),
+/// how much missing it costs, and how late is still fine.
+///
+/// Encoding: `{"leadDays": [60, 30], "consequence": "legal", "graceDays": 0}`.
+public struct ReminderProfile: Hashable, Sendable, Codable {
+    /// Days before the due date to remind, largest first; `0` is the due day.
+    public var leadDays: [Int]
+    public var consequence: Consequence
+    /// Days after the due date that are still acceptable. Within them, the item
+    /// is late but not alarming.
+    public var graceDays: Int
+
+    public init(leadDays: [Int], consequence: Consequence, graceDays: Int = 0) {
+        self.leadDays = Array(Set(leadDays.map(abs))).sorted(by: >)
+        self.consequence = consequence
+        self.graceDays = max(0, graceDays)
+    }
+
+    /// Days ahead at which the item joins "needs you now": its earliest reminder,
+    /// capped by what its consequence warrants (a passport reminds 180 days ahead
+    /// but only crowds the Radar in the last month).
+    public var attentionWindowDays: Int {
+        min(max(leadDays.first ?? 0, 1), consequence.maxAttentionWindowDays)
+    }
+
+    private enum CodingKeys: String, CodingKey { case leadDays, consequence, graceDays }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            leadDays: try c.decodeIfPresent([Int].self, forKey: .leadDays) ?? [7, 0],
+            consequence: Consequence(rawValue: try c.decodeIfPresent(String.self, forKey: .consequence) ?? "") ?? .comfort,
+            graceDays: try c.decodeIfPresent(Int.self, forKey: .graceDays) ?? 0
+        )
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(leadDays, forKey: .leadDays)
+        try c.encode(consequence.rawValue, forKey: .consequence)
+        try c.encode(graceDays, forKey: .graceDays)
+    }
+}
+
+/// A blueprint's profile that depends on an asset value, such as the document
+/// type: a passport reminds 180 days ahead, an ID card 90.
+///
+/// Encoding: `{"field": "document.type", "variants": {"Pașaport": {…profile…}}}`.
+public struct ReminderProfileVariants: Hashable, Sendable, Codable {
+    public var field: String
+    public var variants: [String: ReminderProfile]
+
+    public init(field: String, variants: [String: ReminderProfile]) {
+        self.field = field
+        self.variants = variants
+    }
+}
+
+/// What kind of duty an obligation is: how it is grouped and labeled, and the
+/// reminder profile it starts from when nothing more specific is given.
 ///
 /// Raw values are part of the `.dosar` contract.
 public enum ObligationKind: String, Codable, CaseIterable, Sendable {
@@ -22,37 +117,17 @@ public enum ObligationKind: String, Codable, CaseIterable, Sendable {
     /// Everyday chores: watering plants, cleaning filters.
     case routine
 
-    /// Relative cost of missing it, used to rank attention (higher matters more).
-    public var consequenceWeight: Int {
+    /// The profile used when a blueprint or the person doesn't give one.
+    public var defaultProfile: ReminderProfile {
         switch self {
-        case .legal: return 100
-        case .tax: return 90
-        case .insurance: return 90
-        case .health: return 70
-        case .renewal: return 60
-        case .payment: return 50
-        case .maintenance: return 30
-        case .routine: return 10
-        }
-    }
-
-    /// How many days ahead an item of this kind starts to need attention now.
-    public var attentionLeadDays: Int {
-        switch self {
-        case .legal, .tax, .insurance: return 14
-        case .renewal: return 30
-        case .health: return 7
-        case .payment: return 5
-        case .maintenance: return 7
-        case .routine: return 2
-        }
-    }
-
-    /// Whether the last reminders (the day before and the day itself) may break through Focus.
-    public var allowsTimeSensitiveReminders: Bool {
-        switch self {
-        case .legal, .tax, .insurance, .health, .renewal, .payment: return true
-        case .maintenance, .routine: return false
+        case .legal: return ReminderProfile(leadDays: [30, 7, 0], consequence: .legal)
+        case .tax: return ReminderProfile(leadDays: [14, 1], consequence: .financial)
+        case .insurance: return ReminderProfile(leadDays: [30, 7, 0], consequence: .legal)
+        case .health: return ReminderProfile(leadDays: [7, 1], consequence: .health, graceDays: 7)
+        case .renewal: return ReminderProfile(leadDays: [60, 30], consequence: .legal)
+        case .payment: return ReminderProfile(leadDays: [2, 0], consequence: .financial)
+        case .maintenance: return ReminderProfile(leadDays: [14, 1], consequence: .comfort, graceDays: 14)
+        case .routine: return ReminderProfile(leadDays: [0], consequence: .comfort, graceDays: 3)
         }
     }
 }
@@ -244,8 +319,10 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
     public var kind: ObligationKind
     public var recurrence: RecurrenceRule
     public var firstDue: FirstDueRule
-    /// Days before the due date to remind, such as `[30, 7, 1, 0]`.
-    public var reminderOffsetsDays: [Int]
+    /// How it reminds by default; the person can change it per obligation.
+    public var reminders: ReminderProfile
+    /// A different profile depending on an asset value (passport vs ID card).
+    public var reminderVariants: ReminderProfileVariants?
     public var estimatedCost: Money?
     /// Pre-selected in the add flow.
     public var isSuggested: Bool
@@ -260,7 +337,8 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
         kind: ObligationKind,
         recurrence: RecurrenceRule,
         firstDue: FirstDueRule = .ask,
-        reminderOffsetsDays: [Int] = [30, 7, 1, 0],
+        reminders: ReminderProfile? = nil,
+        reminderVariants: ReminderProfileVariants? = nil,
         estimatedCost: Money? = nil,
         isSuggested: Bool = true,
         note: String? = nil
@@ -270,14 +348,23 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
         self.kind = kind
         self.recurrence = recurrence
         self.firstDue = firstDue
-        self.reminderOffsetsDays = reminderOffsetsDays
+        self.reminders = reminders ?? kind.defaultProfile
+        self.reminderVariants = reminderVariants
         self.estimatedCost = estimatedCost
         self.isSuggested = isSuggested
         self.note = note
     }
 
+    /// The profile for a particular asset, taking variants into account.
+    public func reminders(for values: FieldValues) -> ReminderProfile {
+        guard let reminderVariants,
+              let value = values[reminderVariants.field]?.textValue,
+              let profile = reminderVariants.variants[value] else { return reminders }
+        return profile
+    }
+
     private enum CodingKeys: String, CodingKey {
-        case key, title, kind, recurrence, firstDue, reminderOffsetsDays, estimatedCost, isSuggested, note
+        case key, title, kind, recurrence, firstDue, reminders, reminderVariants, estimatedCost, isSuggested, note
     }
 
     public init(from decoder: Decoder) throws {
@@ -287,7 +374,8 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
         kind = ObligationKind(rawValue: try c.decode(String.self, forKey: .kind)) ?? .routine
         recurrence = try c.decodeIfPresent(RecurrenceRule.self, forKey: .recurrence) ?? .none
         firstDue = try c.decodeIfPresent(FirstDueRule.self, forKey: .firstDue) ?? .ask
-        reminderOffsetsDays = try c.decodeIfPresent([Int].self, forKey: .reminderOffsetsDays) ?? [30, 7, 1, 0]
+        reminders = try c.decodeIfPresent(ReminderProfile.self, forKey: .reminders) ?? kind.defaultProfile
+        reminderVariants = try c.decodeIfPresent(ReminderProfileVariants.self, forKey: .reminderVariants)
         estimatedCost = try c.decodeIfPresent(Money.self, forKey: .estimatedCost)
         isSuggested = try c.decodeIfPresent(Bool.self, forKey: .isSuggested) ?? true
         note = try c.decodeIfPresent(String.self, forKey: .note)

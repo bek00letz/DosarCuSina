@@ -203,10 +203,13 @@ enum DossierV2Converter {
     static func convert(_ dto: LifecycleEventDTO, category: String, calendar: Calendar) -> (obligation: DossierV3.Obligation, completion: DossierV3.Completion?) {
         let due = CalendarDay(dto.dueDate, calendar: calendar)
         let cost = dto.cost.map { Money(Decimal($0), currency: dto.currency) }
+        let kind = kind(forTitle: dto.title, category: category)
+        var reminders = kind.defaultProfile
+        if !dto.reminderOffsetDays.isEmpty { reminders.leadDays = Array(Set(dto.reminderOffsetDays.map(abs))).sorted(by: >) }
         let obligation = DossierV3.Obligation(
             id: DossierV3.id(dto.id), assetId: DossierV3.id(dto.assetId), title: dto.title, notes: dto.eventDescription,
-            blueprintKey: nil, kind: kind(forTitle: dto.title, category: category).rawValue, dueDate: due,
-            dueMetric: dto.metricTriggerValue, reminderOffsetsDays: dto.reminderOffsetDays.map(abs),
+            blueprintKey: nil, kind: kind.rawValue, dueDate: due,
+            dueMetric: dto.metricTriggerValue, reminders: reminders,
             reminderMinuteOfDay: nil, recurrence: recurrence(cadenceDays: dto.cadenceDays),
             estimatedCost: dto.isCompleted ? nil : cost, provider: dto.provider, reference: dto.policyOrContractNumber,
             status: (dto.isCompleted ? ObligationStatus.done : .active).rawValue, snoozedUntil: nil, isExample: false,

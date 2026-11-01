@@ -20,7 +20,7 @@ struct AttentionModelTests {
 
     @Test func farAwayItemsAreSummarizedNotListed() {
         let digest = AttentionModel.digest([
-            snapshot("RCA", kind: .insurance, due: "2026-11-25", asset: (UUID(), "VW Golf"), cost: Money(1_200)),
+            snapshot("RCA", kind: .insurance, due: "2026-11-25", asset: (UUID(), "VW Golf"), offsets: [7, 0], cost: Money(1_200)),
             snapshot("PAD", kind: .insurance, due: "2027-03-01", cost: Money(130)),
             snapshot("Pașaport", kind: .renewal, due: "2028-01-01", cost: Money(Decimal(string: "60")!, currency: "EUR")),
         ], now: today, calendar: calendar)
@@ -60,7 +60,83 @@ struct AttentionModelTests {
         #expect(shown == 600, "Nothing is lost, it is only folded away")
         let scores = digest.now.map(\.score)
         #expect(scores == scores.sorted(by: >))
-        #expect(digest.now.allSatisfy { $0.obligation.kind.consequenceWeight >= ObligationKind.health.consequenceWeight })
+        #expect(digest.now.allSatisfy { $0.obligation.reminders.consequence.weight >= Consequence.health.weight })
+    }
+}
+
+@Suite("Reminder profiles")
+struct ReminderProfileTests {
+    let calendar = Calendar.bucharest
+    let today = noon("2026-11-02")
+
+    @Test func aCatVaccineALittleLateIsCalmButAnExpiredRCAIsNot() {
+        let vaccine = snapshot("Vaccin pisică", kind: .health, due: "2026-10-31", offsets: [1], consequence: .health, grace: 7)
+        let rca = snapshot("RCA", kind: .insurance, due: "2026-11-01", offsets: [30, 7, 0], consequence: .legal, grace: 0)
+        let digest = AttentionModel.digest([vaccine, rca], now: today, calendar: calendar)
+        let byTitle = Dictionary(uniqueKeysWithValues: digest.now.map { ($0.obligation.title, $0) })
+        #expect(byTitle["Vaccin pisică"]?.urgency == .withinGrace)
+        #expect(byTitle["RCA"]?.urgency == .overdue)
+        #expect(digest.now.first?.obligation.title == "RCA")
+        #expect(digest.needsActionCount == 1, "Only the RCA counts on the badge")
+    }
+
+    @Test func graceRunsOutIntoOverdue() {
+        let vaccine = snapshot("Vaccin", kind: .health, due: "2026-10-20", offsets: [1], consequence: .health, grace: 7)
+        let digest = AttentionModel.digest([vaccine], now: today, calendar: calendar)
+        #expect(digest.now.first?.urgency == .overdue)
+    }
+
+    @Test func leadDaysDecideWhenThingsReachTheRadar() {
+        let vignette = snapshot("Rovinietă", kind: .legal, due: "2026-11-12", offsets: [7, 0], consequence: .legal)
+        let licence = snapshot("Permis", kind: .renewal, due: "2026-11-25", offsets: [60, 30], consequence: .legal)
+        let passport = snapshot("Pașaport", kind: .renewal, due: "2027-03-20", offsets: [180, 60], consequence: .legal)
+        let digest = AttentionModel.digest([vignette, licence, passport], now: today, calendar: calendar)
+        #expect(digest.now.map(\.obligation.title) == ["Permis"], "The vignette is 10 days out but only needs a week")
+        #expect(ReminderProfile(leadDays: [180, 60], consequence: .legal).attentionWindowDays == 30)
+        #expect(ReminderProfile(leadDays: [7, 0], consequence: .legal).attentionWindowDays == 7)
+        #expect(ReminderProfile(leadDays: [1], consequence: .health).attentionWindowDays == 1)
+    }
+
+    @Test func followUpWaitsForTheEndOfGrace() {
+        let vaccine = snapshot("Vaccin", kind: .health, due: "2026-11-10", offsets: [1], consequence: .health, grace: 7)
+        let plan = ReminderPlanner.plan([vaccine], now: today, calendar: calendar)
+        #expect(plan.map { CalendarDay($0.fireDate, calendar: calendar) } == [CalendarDay("2026-11-09"), CalendarDay("2026-11-17")])
+        #expect(plan.last?.title == "Încă de făcut: Vaccin")
+        #expect(plan.allSatisfy { $0.isTimeSensitive == false } == false)
+
+        let chore = snapshot("Udat", kind: .routine, due: "2026-11-03", offsets: [0], consequence: .comfort, grace: 2)
+        #expect(ReminderPlanner.plan([chore], now: today, calendar: calendar).allSatisfy { !$0.isTimeSensitive }, "Comfort never breaks through Focus")
+    }
+
+    @Test func documentRemindersFollowTheDocumentType() throws {
+        let blueprint = try #require(BuiltInTemplates.documents.blueprints.first)
+        var values = FieldValues()
+        values["document.type"] = .text(DocumentType.passport)
+        #expect(blueprint.reminders(for: values).leadDays == [180, 60])
+        values["document.type"] = .text(DocumentType.drivingLicence)
+        #expect(blueprint.reminders(for: values).leadDays == [60, 30])
+        values["document.type"] = .text(DocumentType.idCard)
+        #expect(blueprint.reminders(for: values).leadDays == [90, 30])
+        #expect(blueprint.reminders(for: FieldValues()).leadDays == [90, 30])
+    }
+
+    @Test func builtInDefaultsMatchHowHardEachRenewalIs() throws {
+        func profile(_ template: TemplateDefinition, _ key: String) throws -> ReminderProfile {
+            try #require(template.blueprints.first { $0.key == key }).reminders
+        }
+        #expect(try profile(BuiltInTemplates.vehicle, "vehicle.vignette") == ReminderProfile(leadDays: [7, 0], consequence: .legal))
+        #expect(try profile(BuiltInTemplates.vehicle, "vehicle.rca") == ReminderProfile(leadDays: [30, 7, 0], consequence: .legal))
+        #expect(try profile(BuiltInTemplates.vehicle, "vehicle.itp") == ReminderProfile(leadDays: [30, 7], consequence: .legal))
+        #expect(try profile(BuiltInTemplates.home, "home.buildingTax") == ReminderProfile(leadDays: [14, 1], consequence: .financial))
+        #expect(try profile(BuiltInTemplates.subscription, "subscription.trial") == ReminderProfile(leadDays: [2, 1], consequence: .financial))
+        let catVaccine = try profile(BuiltInTemplates.pet, "pet.vaccine")
+        #expect(catVaccine.leadDays == [1] && catVaccine.graceDays > 0)
+    }
+
+    @Test func obligationsTakeTheirBlueprintProfileAndCanOverrideIt() throws {
+        let profile = ReminderProfile(leadDays: [14], consequence: .financial, graceDays: 2)
+        let decoded = try JSONDecoder().decode(ReminderProfile.self, from: JSONEncoder().encode(profile))
+        #expect(decoded == profile)
     }
 }
 
@@ -71,11 +147,12 @@ struct ReminderPlannerTests {
     @Test func schedulesOnlyFutureOffsetsAtTheChosenTime() {
         let item = snapshot("ITP", kind: .legal, due: "2026-11-10", asset: (UUID(), "VW Golf"), offsets: [30, 7, 1, 0])
         let plan = ReminderPlanner.plan([item], now: noon("2026-11-02"), calendar: calendar, defaultMinuteOfDay: 9 * 60)
-        #expect(plan.count == 3)
-        #expect(plan.map { CalendarDay($0.fireDate, calendar: calendar) } == [CalendarDay("2026-11-03"), CalendarDay("2026-11-09"), CalendarDay("2026-11-10")])
+        #expect(plan.count == 4)
+        #expect(plan.map { CalendarDay($0.fireDate, calendar: calendar) } == [CalendarDay("2026-11-03"), CalendarDay("2026-11-09"), CalendarDay("2026-11-10"), CalendarDay("2026-11-11")])
         #expect(plan.allSatisfy { calendar.component(.hour, from: $0.fireDate) == 9 })
-        #expect(plan.last?.title == "Azi: ITP")
-        #expect(plan.last?.isTimeSensitive == true)
+        #expect(plan[2].title == "Azi: ITP")
+        #expect(plan[2].isTimeSensitive == true)
+        #expect(plan[3].title == "Depășit: ITP", "A legal deadline follows up the next day")
         #expect(plan.first?.isTimeSensitive == false)
         #expect(plan.first?.body.hasPrefix("VW Golf") == true)
     }
@@ -84,7 +161,7 @@ struct ReminderPlannerTests {
         // Romania moves clocks forward on 29 March 2026.
         let item = snapshot("Plată", kind: .payment, due: "2026-03-30", offsets: [2, 0])
         let plan = ReminderPlanner.plan([item], now: noon("2026-03-01"), calendar: calendar, defaultMinuteOfDay: 8 * 60 + 30)
-        #expect(plan.count == 2)
+        #expect(plan.count == 3)
         for reminder in plan {
             let parts = calendar.dateComponents([.hour, .minute], from: reminder.fireDate)
             #expect(parts.hour == 8 && parts.minute == 30)
@@ -94,9 +171,11 @@ struct ReminderPlannerTests {
     @Test func protectedCategoriesGetGenericText() {
         let item = snapshot("Colonoscopie", kind: .health, due: "2026-11-03", asset: (UUID(), "Profil medical"), offsets: [1], isSensitive: true)
         let plan = ReminderPlanner.plan([item], now: noon("2026-11-01"), calendar: calendar)
-        #expect(plan.count == 1)
-        #expect(!plan[0].title.contains("Colonoscopie"))
-        #expect(!plan[0].body.contains("Profil medical"))
+        #expect(!plan.isEmpty)
+        for reminder in plan {
+            #expect(!reminder.title.contains("Colonoscopie"))
+            #expect(!reminder.body.contains("Profil medical"))
+        }
     }
 
     @Test func examplesAndInactiveItemsNeverRemind() {
@@ -188,7 +267,7 @@ struct NotificationReconcilerTests {
         let outcome = await reconciler.apply(plan(["A"]), badgeCount: 2, allowPermissionPrompt: true)
         #expect(await center.promptCount == 1)
         #expect(outcome.authorization == .authorized)
-        #expect(await center.pendingReminders.count == 1)
+        #expect(await center.pendingReminders.count == 2)
         #expect(await center.badge == 2)
     }
 
@@ -202,7 +281,7 @@ struct NotificationReconcilerTests {
         #expect(unchanged.added == 0 && unchanged.removed == 0)
 
         let renamed = await reconciler.apply([first[0]], badgeCount: 0, allowPermissionPrompt: false)
-        #expect(renamed.removed == 1)
+        #expect(renamed.removed == first.count - 1)
         #expect(await center.pendingReminders.count == 1)
     }
 

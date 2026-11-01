@@ -2,8 +2,12 @@ import Foundation
 
 /// How close an obligation is, in words a screen can show.
 public enum AttentionUrgency: String, Sendable, Comparable {
+    /// Past due and past its grace period: show it as a problem.
     case overdue
     case today
+    /// Past due but within the grace the person can live with (a cat vaccine a
+    /// couple of days late). Shown calmly, not as an alarm.
+    case withinGrace
     case soon
     case upcoming
     case later
@@ -12,11 +16,15 @@ public enum AttentionUrgency: String, Sendable, Comparable {
         switch self {
         case .overdue: return 0
         case .today: return 1
-        case .soon: return 2
-        case .upcoming: return 3
-        case .later: return 4
+        case .withinGrace: return 2
+        case .soon: return 3
+        case .upcoming: return 4
+        case .later: return 5
         }
     }
+
+    /// Whether it should look alarming (red, counted on badges).
+    public var isAlarming: Bool { self == .overdue || self == .today }
 
     public static func < (lhs: AttentionUrgency, rhs: AttentionUrgency) -> Bool { lhs.order < rhs.order }
 }
@@ -119,11 +127,11 @@ public enum AttentionModel {
             let entry = AttentionEntry(
                 obligation: obligation,
                 daysRemaining: days,
-                urgency: urgency(daysRemaining: days, kind: obligation.kind),
+                urgency: urgency(daysRemaining: days, profile: obligation.reminders),
                 score: score(daysRemaining: days, obligation: obligation)
             )
-            if days <= 0 { needsAction += 1 }
-            if days <= obligation.kind.attentionLeadDays {
+            if entry.urgency.isAlarming { needsAction += 1 }
+            if days <= obligation.reminders.attentionWindowDays {
                 nowCandidates.append(entry)
             } else if days <= limits.soonWindowDays {
                 soonEntries.append(entry)
@@ -168,25 +176,30 @@ public enum AttentionModel {
         )
     }
 
-    public static func urgency(daysRemaining days: Int, kind: ObligationKind) -> AttentionUrgency {
-        if days < 0 { return .overdue }
+    public static func urgency(daysRemaining days: Int, profile: ReminderProfile) -> AttentionUrgency {
+        if days < 0 { return -days <= profile.graceDays ? .withinGrace : .overdue }
         if days == 0 { return .today }
-        if days <= kind.attentionLeadDays { return .soon }
+        if days <= profile.attentionWindowDays { return .soon }
         if days <= 30 { return .upcoming }
         return .later
     }
 
-    /// Consequence carries the most weight, closeness can lift an item by up to
-    /// three consequence steps (an overdue tax beats an ITP due in two weeks,
-    /// but an overdue chore never beats a legal deadline), and cost breaks ties.
+    /// Consequence carries the most weight. Closeness can lift an item by up to
+    /// four consequence steps: an overdue tax beats an ITP due in ten days, but
+    /// not one due in two, and an overdue chore never beats a legal deadline.
+    /// Lateness within the grace period counts like "due soon", not like
+    /// overdue. Cost breaks ties.
     static func score(daysRemaining days: Int, obligation: ObligationSnapshot) -> Int {
-        let consequence = obligation.kind.consequenceWeight * 10
+        let profile = obligation.reminders
+        let consequence = profile.consequence.weight * 10
         let closeness: Int
-        if days < 0 {
-            closeness = 300 + min(-days, 30)
+        if days < 0, -days > profile.graceDays {
+            closeness = 400 + min(-days, 30)
+        } else if days < 0 {
+            closeness = 200
         } else {
-            let lead = max(obligation.kind.attentionLeadDays, 1)
-            closeness = max(0, (lead - min(days, lead)) * 280 / lead)
+            let window = max(profile.attentionWindowDays, 1)
+            closeness = max(0, (window - min(days, window)) * 280 / window)
         }
         let cost = obligation.estimatedCost.map { NSDecimalNumber(decimal: $0.amount).doubleValue } ?? 0
         let costNudge = cost > 0 ? min(Int(log10(cost + 1) * 3), 9) : 0

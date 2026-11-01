@@ -19,8 +19,11 @@ extension DosarSchemaV2 {
         public var dueDate: Date = Date()
         /// For counter-based obligations, the reading at which it is due (for example 160 000 km).
         public var dueMetric: Double?
-        /// Days before the due date to remind; `0` is the due day itself.
-        public var reminderOffsetsDays: [Int] = [30, 7, 1, 0]
+        /// Reminder profile, stored flat: lead days (largest first; `0` is the due day),
+        /// consequence and grace days. Read and write it through `reminders`.
+        public var reminderLeadDays: [Int] = [30, 7, 0]
+        public var consequenceRaw: String = Consequence.comfort.rawValue
+        public var graceDays: Int = 0
         /// Minutes after midnight for this obligation's reminders; nil uses the app setting.
         public var reminderMinuteOfDay: Int?
         /// JSON `RecurrenceRule`.
@@ -53,7 +56,7 @@ extension DosarSchemaV2 {
             kind: ObligationKind,
             dueDay: CalendarDay,
             recurrence: RecurrenceRule = .none,
-            reminderOffsetsDays: [Int] = [30, 7, 1, 0],
+            reminders: ReminderProfile? = nil,
             estimatedCost: Money? = nil,
             calendar: Calendar = .current
         ) {
@@ -62,7 +65,10 @@ extension DosarSchemaV2 {
             self.kindRaw = kind.rawValue
             self.dueDate = dueDay.noonDate(in: calendar)
             self.recurrenceData = StoredJSON.encode(recurrence)
-            self.reminderOffsetsDays = reminderOffsetsDays
+            let profile = reminders ?? kind.defaultProfile
+            self.reminderLeadDays = profile.leadDays
+            self.consequenceRaw = profile.consequence.rawValue
+            self.graceDays = profile.graceDays
             self.estimatedCostAmount = estimatedCost?.amount
             self.estimatedCostCurrency = estimatedCost?.currency
         }
@@ -70,6 +76,22 @@ extension DosarSchemaV2 {
         public var kind: ObligationKind {
             get { ObligationKind(rawValue: kindRaw) ?? .routine }
             set { kindRaw = newValue.rawValue }
+        }
+
+        /// How this obligation reminds. Set from its blueprint, changeable by the person.
+        public var reminders: ReminderProfile {
+            get {
+                ReminderProfile(
+                    leadDays: reminderLeadDays,
+                    consequence: Consequence(rawValue: consequenceRaw) ?? .comfort,
+                    graceDays: graceDays
+                )
+            }
+            set {
+                reminderLeadDays = newValue.leadDays
+                consequenceRaw = newValue.consequence.rawValue
+                graceDays = newValue.graceDays
+            }
         }
 
         public var status: ObligationStatus {
@@ -111,9 +133,12 @@ extension DosarSchemaV2 {
             return snoozedUntil > now
         }
 
-        /// Completions newest first.
+        /// Completions newest first. Two completions recorded at the same moment
+        /// are ordered by the cycle they closed, which only moves forward.
         public var history: [Completion] {
-            (completions ?? []).sorted { $0.completedAt > $1.completedAt }
+            (completions ?? []).sorted {
+                $0.completedAt != $1.completedAt ? $0.completedAt > $1.completedAt : $0.cycleDueDate > $1.cycleDueDate
+            }
         }
     }
 

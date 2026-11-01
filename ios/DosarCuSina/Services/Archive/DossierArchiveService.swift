@@ -181,7 +181,7 @@ public struct DossierArchiveService {
                 id: DossierV3.id(obligation.id), assetId: DossierV3.id(obligation.asset?.id), title: obligation.title,
                 notes: obligation.notes, blueprintKey: obligation.blueprintKey, kind: obligation.kindRaw,
                 dueDate: obligation.dueDay(in: calendar), dueMetric: obligation.dueMetric,
-                reminderOffsetsDays: obligation.reminderOffsetsDays, reminderMinuteOfDay: obligation.reminderMinuteOfDay,
+                reminders: obligation.reminders, reminderMinuteOfDay: obligation.reminderMinuteOfDay,
                 recurrence: obligation.recurrence, estimatedCost: obligation.estimatedCost, provider: obligation.provider,
                 reference: obligation.reference, status: obligation.statusRaw, snoozedUntil: obligation.snoozedUntil,
                 isExample: obligation.isExample, createdAt: obligation.createdAt, updatedAt: obligation.updatedAt

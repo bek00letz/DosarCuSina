@@ -151,7 +151,7 @@ enum HouseholdMutations {
             kind: blueprint.kind,
             dueDay: due,
             recurrence: blueprint.recurrence,
-            reminderOffsetsDays: blueprint.reminderOffsetsDays,
+            reminders: blueprint.reminders(for: asset.values),
             estimatedCost: blueprint.estimatedCost,
             calendar: calendar
         )

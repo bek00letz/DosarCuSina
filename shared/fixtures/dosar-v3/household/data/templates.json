@@ -37,10 +37,14 @@
           "type" : "metric",
           "unit" : "h"
         },
-        "reminderOffsetsDays" : [
-          14,
-          0
-        ],
+        "reminders" : {
+          "consequence" : "comfort",
+          "graceDays" : 30,
+          "leadDays" : [
+            14,
+            0
+          ]
+        },
         "title" : "Service motor"
       }
     ],

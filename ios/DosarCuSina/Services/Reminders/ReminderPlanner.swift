@@ -39,12 +39,21 @@ public enum ReminderPlanner {
             let minute = obligation.reminderMinuteOfDay ?? defaultMinuteOfDay
             let snoozedUntil = obligation.snoozedUntil.flatMap { $0 > now ? $0 : nil }
 
-            for offset in Set(obligation.reminderOffsetsDays.map(abs)) {
+            let profile = obligation.reminders
+            for offset in profile.leadDays {
                 let day = obligation.dueDay.adding(days: -offset, calendar: calendar)
                 let fire = fireDate(day: day, minuteOfDay: minute, calendar: calendar)
                 guard fire > now else { continue }
                 if let snoozedUntil, fire < snoozedUntil { continue }
                 result.append(reminder(for: obligation, daysBefore: offset, fireDate: fire, identifierSuffix: "d\(offset)", calendar: calendar, locale: locale))
+            }
+
+            // One follow-up when it is still open: the day after for things that
+            // can't slip, the end of the grace period for things that can.
+            let lateDays = max(profile.graceDays, 1)
+            let lateFire = fireDate(day: obligation.dueDay.adding(days: lateDays, calendar: calendar), minuteOfDay: minute, calendar: calendar)
+            if lateFire > now, snoozedUntil.map({ lateFire >= $0 }) ?? true {
+                result.append(reminder(for: obligation, daysBefore: -lateDays, fireDate: lateFire, identifierSuffix: "late", calendar: calendar, locale: locale))
             }
 
             if let snoozedUntil {
@@ -99,7 +108,11 @@ public enum ReminderPlanner {
             title = genericTitle(daysBefore: daysBefore)
             body = String(localized: "Deschide Dosar cu Șină pentru detalii.", comment: "Reminder body for protected categories")
         } else {
-            title = specificTitle(obligation.title, daysBefore: daysBefore)
+            if daysBefore < 0, obligation.reminders.graceDays > 0 {
+                title = String(localized: "Încă de făcut: \(obligation.title)", comment: "Follow-up reminder title at the end of a grace period")
+            } else {
+                title = specificTitle(obligation.title, daysBefore: daysBefore)
+            }
             let dueText = obligation.dueDay.startDate(in: calendar).formatted(.dateTime.day().month(.wide).locale(locale))
             if let assetName = obligation.assetName, !assetName.isEmpty {
                 body = String(localized: "\(assetName) · scadent pe \(dueText)", comment: "Reminder body: asset name and due date")
@@ -107,7 +120,7 @@ public enum ReminderPlanner {
                 body = String(localized: "Scadent pe \(dueText)", comment: "Reminder body: due date")
             }
         }
-        let isTimeSensitive = daysBefore <= 1 && obligation.kind.allowsTimeSensitiveReminders
+        let isTimeSensitive = daysBefore <= 1 && obligation.reminders.consequence.allowsTimeSensitiveReminders
         let fingerprint = [
             String(Int(fireDate.timeIntervalSince1970)), title, body, isTimeSensitive ? "ts" : "a",
         ].joined(separator: "|")

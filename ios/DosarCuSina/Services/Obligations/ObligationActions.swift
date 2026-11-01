@@ -157,7 +157,7 @@ public final class ObligationActions {
         dueDay: CalendarDay,
         for asset: Asset?,
         recurrence: RecurrenceRule = .none,
-        reminderOffsetsDays: [Int] = [30, 7, 1, 0],
+        reminders: ReminderProfile? = nil,
         estimatedCost: Money? = nil,
         provider: String? = nil,
         reference: String? = nil,
@@ -168,7 +168,7 @@ public final class ObligationActions {
             kind: kind,
             dueDay: dueDay,
             recurrence: recurrence,
-            reminderOffsetsDays: reminderOffsetsDays,
+            reminders: reminders,
             estimatedCost: estimatedCost,
             calendar: calendar
         )

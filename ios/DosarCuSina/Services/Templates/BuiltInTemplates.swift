@@ -36,6 +36,10 @@ public enum BuiltInTemplates {
 
     private static func ron(_ amount: Decimal) -> Money { Money(amount, currency: "RON") }
 
+    private static func profile(_ leadDays: [Int], _ consequence: Consequence, grace: Int = 0) -> ReminderProfile {
+        ReminderProfile(leadDays: leadDays, consequence: consequence, graceDays: grace)
+    }
+
     // MARK: Mainstays
 
     public static var vehicle: TemplateDefinition {
@@ -74,21 +78,22 @@ public enum BuiltInTemplates {
             ],
             blueprints: [
                 ObligationBlueprint(key: "vehicle.itp", title: String(localized: "ITP"), kind: .legal, recurrence: .legal(.vehicleITP), firstDue: .ask,
+                                    reminders: profile([30, 7], .legal),
                                     estimatedCost: ron(180), note: String(localized: "Fără ITP valabil, înmatricularea se suspendă.")),
                 ObligationBlueprint(key: "vehicle.rca", title: String(localized: "RCA"), kind: .insurance, recurrence: .interval(.years(1), anchor: .dueDate), firstDue: .ask,
-                                    reminderOffsetsDays: [30, 14, 7, 1, 0], note: String(localized: "Cere oferte cu o lună înainte, prețurile diferă mult.")),
+                                    reminders: profile([30, 7, 0], .legal), note: String(localized: "Cere oferte cu o lună înainte, prețurile diferă mult.")),
                 ObligationBlueprint(key: "vehicle.vignette", title: String(localized: "Rovinietă"), kind: .legal, recurrence: .interval(.months(12), anchor: .completion), firstDue: .ask,
-                                    reminderOffsetsDays: [7, 1, 0]),
+                                    reminders: profile([7, 0], .legal)),
                 ObligationBlueprint(key: "vehicle.service", title: String(localized: "Revizie periodică"), kind: .maintenance,
                                     recurrence: .metric(every: 15_000, unit: "km", fallback: .years(1)), firstDue: .afterInterval(.years(1)),
-                                    reminderOffsetsDays: [14, 1]),
+                                    reminders: profile([14, 1], .comfort, grace: 30)),
                 ObligationBlueprint(key: "vehicle.tyres", title: String(localized: "Schimb de anvelope"), kind: .maintenance,
                                     recurrence: .fixedDates([MonthDay(month: 4, day: 15), MonthDay(month: 11, day: 1)]), firstDue: .nextFixedDate,
-                                    reminderOffsetsDays: [7, 0]),
+                                    reminders: profile([14], .comfort, grace: 14)),
                 ObligationBlueprint(key: "vehicle.casco", title: String(localized: "CASCO"), kind: .insurance, recurrence: .interval(.years(1), anchor: .dueDate), firstDue: .ask,
-                                    reminderOffsetsDays: [30, 7, 1, 0], isSuggested: false),
+                                    reminders: profile([30, 7, 0], .financial), isSuggested: false),
                 ObligationBlueprint(key: "vehicle.kit", title: String(localized: "Trusă medicală și stingător"), kind: .legal, recurrence: .none, firstDue: .ask,
-                                    reminderOffsetsDays: [14, 0], isSuggested: false, note: String(localized: "Data expirării e pe ambalaj.")),
+                                    reminders: profile([14, 0], .legal), isSuggested: false, note: String(localized: "Data expirării e pe ambalaj.")),
             ]
         )
     }
@@ -123,17 +128,21 @@ public enum BuiltInTemplates {
             ],
             blueprints: [
                 ObligationBlueprint(key: "home.boilerCheck", title: String(localized: "Verificare centrală (VTP)"), kind: .legal, recurrence: .interval(.years(2), anchor: .completion), firstDue: .ask,
+                                    reminders: profile([30, 7], .legal),
                                     note: String(localized: "Obligatorie la cel mult 2 ani, făcută de o firmă autorizată ISCIR.")),
-                ObligationBlueprint(key: "home.gasCheck", title: String(localized: "Verificare instalație de gaze"), kind: .legal, recurrence: .interval(.years(2), anchor: .completion), firstDue: .ask),
+                ObligationBlueprint(key: "home.gasCheck", title: String(localized: "Verificare instalație de gaze"), kind: .legal, recurrence: .interval(.years(2), anchor: .completion), firstDue: .ask,
+                                    reminders: profile([30, 7], .legal)),
                 ObligationBlueprint(key: "home.gasRevision", title: String(localized: "Revizie instalație de gaze"), kind: .legal, recurrence: .interval(.years(10), anchor: .completion), firstDue: .ask,
+                                    reminders: profile([60, 30], .legal),
                                     isSuggested: false),
                 ObligationBlueprint(key: "home.pad", title: String(localized: "Asigurare obligatorie (PAD)"), kind: .insurance, recurrence: .interval(.years(1), anchor: .dueDate), firstDue: .ask,
+                                    reminders: profile([30, 7, 0], .legal),
                                     estimatedCost: ron(130)),
                 ObligationBlueprint(key: "home.buildingTax", title: String(localized: "Impozit pe clădire"), kind: .tax,
                                     recurrence: .fixedDates([MonthDay(month: 3, day: 31), MonthDay(month: 9, day: 30)]), firstDue: .nextFixedDate,
-                                    reminderOffsetsDays: [14, 3, 0], note: String(localized: "Plata integrală până la 31 martie poate aduce o reducere.")),
+                                    reminders: profile([14, 1], .financial), note: String(localized: "Plata integrală până la 31 martie poate aduce o reducere.")),
                 ObligationBlueprint(key: "home.chimney", title: String(localized: "Curățare coș de fum"), kind: .maintenance, recurrence: .interval(.years(1), anchor: .completion), firstDue: .ask,
-                                    reminderOffsetsDays: [14, 0], isSuggested: false),
+                                    reminders: profile([14, 0], .comfort, grace: 30), isSuggested: false),
             ]
         )
     }
@@ -150,8 +159,9 @@ public enum BuiltInTemplates {
             sections: [
                 FieldSection(key: "document.main", title: String(localized: "Document"), fields: [
                     FieldDefinition(key: "document.type", label: String(localized: "Tip"), type: .choice, role: .subtitle, isEssential: true, options: [
-                        String(localized: "Carte de identitate"), String(localized: "Pașaport"), String(localized: "Permis de conducere"),
-                        String(localized: "Card bancar"), String(localized: "Semnătură electronică"), String(localized: "Cazier"), String(localized: "Alt document"),
+                        DocumentType.idCard, DocumentType.passport, DocumentType.drivingLicence,
+                        DocumentType.euHealthCard, DocumentType.greenCard, DocumentType.bankCard, DocumentType.eSignature,
+                        DocumentType.criminalRecord, DocumentType.other,
                     ]),
                     FieldDefinition(key: "document.number", label: String(localized: "Serie și număr"), type: .text, role: .identifier, isSensitive: true),
                     FieldDefinition(key: "document.holder", label: String(localized: "Titular"), type: .text),
@@ -162,7 +172,18 @@ public enum BuiltInTemplates {
             ],
             blueprints: [
                 ObligationBlueprint(key: "document.renew", title: String(localized: "Reînnoire"), kind: .renewal, recurrence: .none,
-                                    firstDue: .field(key: "document.expiry", offsetDays: 0), reminderOffsetsDays: [180, 90, 30, 7, 0],
+                                    firstDue: .field(key: "document.expiry", offsetDays: 0),
+                                    reminders: profile([90, 30], .legal),
+                                    reminderVariants: ReminderProfileVariants(field: "document.type", variants: [
+                                        DocumentType.passport: profile([180, 60], .legal),
+                                        DocumentType.idCard: profile([90, 30], .legal),
+                                        DocumentType.drivingLicence: profile([60, 30], .legal),
+                                        DocumentType.euHealthCard: profile([30, 7], .health),
+                                        DocumentType.greenCard: profile([30, 7], .legal),
+                                        DocumentType.bankCard: profile([30, 7], .financial),
+                                        DocumentType.eSignature: profile([30, 7], .financial),
+                                        DocumentType.criminalRecord: profile([7, 0], .legal),
+                                    ]),
                                     note: String(localized: "Programările durează. Pentru pașaport, multe țări cer 6 luni de valabilitate.")),
             ]
         )
@@ -194,14 +215,19 @@ public enum BuiltInTemplates {
             ],
             blueprints: [
                 ObligationBlueprint(key: "pet.rabies", title: String(localized: "Vaccin antirabic"), kind: .legal, recurrence: .interval(.years(1), anchor: .completion), firstDue: .ask,
+                                    reminders: profile([7, 1], .health, grace: 7),
                                     note: String(localized: "Obligatoriu și cerut la trecerea graniței.")),
-                ObligationBlueprint(key: "pet.vaccine", title: String(localized: "Vaccin anual"), kind: .health, recurrence: .interval(.years(1), anchor: .completion), firstDue: .ask),
+                ObligationBlueprint(key: "pet.vaccine", title: String(localized: "Vaccin anual"), kind: .health, recurrence: .interval(.years(1), anchor: .completion), firstDue: .ask,
+                                    reminders: profile([1], .health, grace: 7)),
                 ObligationBlueprint(key: "pet.dewormInternal", title: String(localized: "Deparazitare internă"), kind: .health, recurrence: .interval(.months(3), anchor: .completion),
-                                    firstDue: .afterInterval(.months(3)), reminderOffsetsDays: [3, 0]),
+                                    firstDue: .afterInterval(.months(3)),
+                                    reminders: profile([1, 0], .health, grace: 7)),
                 ObligationBlueprint(key: "pet.dewormExternal", title: String(localized: "Deparazitare externă"), kind: .health, recurrence: .interval(.months(1), anchor: .completion),
-                                    firstDue: .afterInterval(.months(1)), reminderOffsetsDays: [1, 0]),
+                                    firstDue: .afterInterval(.months(1)),
+                                    reminders: profile([1, 0], .health, grace: 7)),
                 ObligationBlueprint(key: "pet.grooming", title: String(localized: "Toaletaj"), kind: .routine, recurrence: .interval(.weeks(6), anchor: .completion),
-                                    firstDue: .afterInterval(.weeks(6)), reminderOffsetsDays: [2], isSuggested: false),
+                                    firstDue: .afterInterval(.weeks(6)),
+                                    reminders: profile([2], .comfort, grace: 14), isSuggested: false),
             ]
         )
     }
@@ -230,15 +256,19 @@ public enum BuiltInTemplates {
             ],
             blueprints: [
                 ObligationBlueprint(key: "health.checkup", title: String(localized: "Analize anuale"), kind: .health, recurrence: .interval(.years(1), anchor: .completion),
-                                    firstDue: .afterInterval(.years(1)), reminderOffsetsDays: [14, 0]),
+                                    firstDue: .afterInterval(.years(1)),
+                                    reminders: profile([14, 0], .health, grace: 30)),
                 ObligationBlueprint(key: "health.dentist", title: String(localized: "Control stomatologic"), kind: .health, recurrence: .interval(.months(6), anchor: .completion),
-                                    firstDue: .afterInterval(.months(6)), reminderOffsetsDays: [7, 0]),
+                                    firstDue: .afterInterval(.months(6)),
+                                    reminders: profile([7, 0], .health, grace: 30)),
                 ObligationBlueprint(key: "health.tetanus", title: String(localized: "Rapel antitetanos"), kind: .health, recurrence: .interval(.years(10), anchor: .completion), firstDue: .ask,
-                                    reminderOffsetsDays: [30, 0], isSuggested: false),
+                                    reminders: profile([30, 0], .health, grace: 30), isSuggested: false),
                 ObligationBlueprint(key: "health.flu", title: String(localized: "Vaccin antigripal"), kind: .health, recurrence: .fixedDates([MonthDay(month: 10, day: 15)]),
-                                    firstDue: .nextFixedDate, reminderOffsetsDays: [7, 0], isSuggested: false),
+                                    firstDue: .nextFixedDate,
+                                    reminders: profile([7, 0], .health, grace: 30), isSuggested: false),
                 ObligationBlueprint(key: "health.euCard", title: String(localized: "Card european de sănătate"), kind: .renewal, recurrence: .interval(.years(2), anchor: .completion),
-                                    firstDue: .ask, reminderOffsetsDays: [30, 7], isSuggested: false),
+                                    firstDue: .ask,
+                                    reminders: profile([30, 7], .financial), isSuggested: false),
             ]
         )
     }
@@ -267,7 +297,8 @@ public enum BuiltInTemplates {
             ],
             blueprints: [
                 ObligationBlueprint(key: "warranty.lastCheck", title: String(localized: "Verifică produsul cât e în garanție"), kind: .renewal, recurrence: .none,
-                                    firstDue: .field(key: "warranty.expiry", offsetDays: -30), reminderOffsetsDays: [7, 0],
+                                    firstDue: .field(key: "warranty.expiry", offsetDays: -30),
+                                    reminders: profile([7, 0], .financial),
                                     note: String(localized: "O lună înainte de expirare, ca să mai poți cere reparații gratuite.")),
             ]
         )
@@ -296,12 +327,15 @@ public enum BuiltInTemplates {
             ],
             blueprints: [
                 ObligationBlueprint(key: "subscription.payment", title: String(localized: "Plată"), kind: .payment, recurrence: .interval(.months(1), anchor: .dueDate),
-                                    firstDue: .field(key: "subscription.nextPayment", offsetDays: 0), reminderOffsetsDays: [2, 0]),
+                                    firstDue: .field(key: "subscription.nextPayment", offsetDays: 0),
+                                    reminders: profile([1, 0], .financial, grace: 3)),
                 ObligationBlueprint(key: "subscription.trial", title: String(localized: "Se termină perioada de probă"), kind: .payment, recurrence: .none,
-                                    firstDue: .field(key: "subscription.trialEnd", offsetDays: 0), reminderOffsetsDays: [2, 1, 0], isSuggested: false,
+                                    firstDue: .field(key: "subscription.trialEnd", offsetDays: 0),
+                                    reminders: profile([2, 1], .financial), isSuggested: false,
                                     note: String(localized: "Anulează înainte, dacă nu vrei să plătești.")),
                 ObligationBlueprint(key: "subscription.contractEnd", title: String(localized: "Se termină contractul"), kind: .renewal, recurrence: .none,
-                                    firstDue: .field(key: "subscription.contractEnd", offsetDays: 0), reminderOffsetsDays: [30, 7], isSuggested: false,
+                                    firstDue: .field(key: "subscription.contractEnd", offsetDays: 0),
+                                    reminders: profile([14], .financial), isSuggested: false,
                                     note: String(localized: "Un moment bun să ceri o ofertă mai bună.")),
             ]
         )
@@ -343,13 +377,17 @@ public enum BuiltInTemplates {
             ],
             blueprints: [
                 ObligationBlueprint(key: "bike.chainLube", title: String(localized: "Curățare și ungere lanț"), kind: .routine,
-                                    recurrence: .metric(every: 150, unit: "km", fallback: .months(1)), firstDue: .afterInterval(.months(1)), reminderOffsetsDays: [0]),
+                                    recurrence: .metric(every: 150, unit: "km", fallback: .months(1)), firstDue: .afterInterval(.months(1)),
+                                    reminders: profile([0], .comfort, grace: 7)),
                 ObligationBlueprint(key: "bike.brakes", title: String(localized: "Verificare plăcuțe de frână"), kind: .maintenance,
-                                    recurrence: .metric(every: 1_000, unit: "km", fallback: .months(6)), firstDue: .afterInterval(.months(6)), reminderOffsetsDays: [3, 0]),
+                                    recurrence: .metric(every: 1_000, unit: "km", fallback: .months(6)), firstDue: .afterInterval(.months(6)),
+                                    reminders: profile([3, 0], .comfort, grace: 14)),
                 ObligationBlueprint(key: "bike.chain", title: String(localized: "Schimb lanț"), kind: .maintenance,
-                                    recurrence: .metric(every: 2_000, unit: "km", fallback: .years(1)), firstDue: .afterInterval(.years(1)), reminderOffsetsDays: [7, 0]),
+                                    recurrence: .metric(every: 2_000, unit: "km", fallback: .years(1)), firstDue: .afterInterval(.years(1)),
+                                    reminders: profile([7, 0], .comfort, grace: 30)),
                 ObligationBlueprint(key: "bike.fork", title: String(localized: "Service suspensie"), kind: .maintenance,
-                                    recurrence: .interval(.years(1), anchor: .completion), firstDue: .afterInterval(.years(1)), reminderOffsetsDays: [7], isSuggested: false),
+                                    recurrence: .interval(.years(1), anchor: .completion), firstDue: .afterInterval(.years(1)),
+                                    reminders: profile([7], .comfort, grace: 30), isSuggested: false),
             ]
         )
     }
@@ -370,11 +408,14 @@ public enum BuiltInTemplates {
             ],
             blueprints: [
                 ObligationBlueprint(key: "plants.water", title: String(localized: "Udat"), kind: .routine, recurrence: .interval(.days(7), anchor: .completion),
-                                    firstDue: .afterInterval(.days(7)), reminderOffsetsDays: [0]),
+                                    firstDue: .afterInterval(.days(7)),
+                                    reminders: profile([0], .comfort, grace: 2)),
                 ObligationBlueprint(key: "plants.feed", title: String(localized: "Fertilizat"), kind: .routine, recurrence: .interval(.months(1), anchor: .completion),
-                                    firstDue: .afterInterval(.months(1)), reminderOffsetsDays: [0]),
+                                    firstDue: .afterInterval(.months(1)),
+                                    reminders: profile([0], .comfort, grace: 7)),
                 ObligationBlueprint(key: "plants.repot", title: String(localized: "Schimbat ghiveciul"), kind: .routine, recurrence: .interval(.years(2), anchor: .completion),
-                                    firstDue: .afterInterval(.years(2)), reminderOffsetsDays: [7], isSuggested: false),
+                                    firstDue: .afterInterval(.years(2)),
+                                    reminders: profile([7], .comfort, grace: 30), isSuggested: false),
             ]
         )
     }
@@ -402,13 +443,16 @@ public enum BuiltInTemplates {
             ],
             blueprints: [
                 ObligationBlueprint(key: "rental.rent", title: String(localized: "Încasare chirie"), kind: .payment, recurrence: .interval(.months(1), anchor: .dueDate), firstDue: .ask,
-                                    reminderOffsetsDays: [0]),
+                                    reminders: profile([0], .financial, grace: 3)),
                 ObligationBlueprint(key: "rental.meters", title: String(localized: "Citire contoare la chiriaș"), kind: .routine, recurrence: .interval(.months(1), anchor: .dueDate),
-                                    firstDue: .afterInterval(.months(1)), reminderOffsetsDays: [0], isSuggested: false),
+                                    firstDue: .afterInterval(.months(1)),
+                                    reminders: profile([0], .comfort, grace: 5), isSuggested: false),
                 ObligationBlueprint(key: "rental.declaration", title: String(localized: "Declarația unică (formularul 212)"), kind: .tax,
-                                    recurrence: .fixedDates([MonthDay(month: 5, day: 25)]), firstDue: .nextFixedDate, reminderOffsetsDays: [30, 7, 1, 0]),
+                                    recurrence: .fixedDates([MonthDay(month: 5, day: 25)]), firstDue: .nextFixedDate,
+                                    reminders: profile([30, 7, 1, 0], .legal)),
                 ObligationBlueprint(key: "rental.leaseEnd", title: String(localized: "Se termină contractul de închiriere"), kind: .renewal, recurrence: .none,
-                                    firstDue: .field(key: "rental.leaseEnd", offsetDays: 0), reminderOffsetsDays: [60, 30, 7]),
+                                    firstDue: .field(key: "rental.leaseEnd", offsetDays: 0),
+                                    reminders: profile([60, 30, 7], .financial)),
             ]
         )
     }
@@ -430,11 +474,14 @@ public enum BuiltInTemplates {
             ],
             blueprints: [
                 ObligationBlueprint(key: "espresso.backflush", title: String(localized: "Curățare grup"), kind: .routine,
-                                    recurrence: .metric(every: 100, unit: String(localized: "cafele"), fallback: .weeks(2)), firstDue: .afterInterval(.weeks(2)), reminderOffsetsDays: [0]),
+                                    recurrence: .metric(every: 100, unit: String(localized: "cafele"), fallback: .weeks(2)), firstDue: .afterInterval(.weeks(2)),
+                                    reminders: profile([0], .comfort, grace: 3)),
                 ObligationBlueprint(key: "espresso.descale", title: String(localized: "Decalcifiere"), kind: .maintenance,
-                                    recurrence: .metric(every: 300, unit: String(localized: "cafele"), fallback: .months(2)), firstDue: .afterInterval(.months(2)), reminderOffsetsDays: [3, 0]),
+                                    recurrence: .metric(every: 300, unit: String(localized: "cafele"), fallback: .months(2)), firstDue: .afterInterval(.months(2)),
+                                    reminders: profile([3, 0], .comfort, grace: 14)),
                 ObligationBlueprint(key: "espresso.filter", title: String(localized: "Schimb filtru de apă"), kind: .maintenance,
-                                    recurrence: .interval(.months(2), anchor: .completion), firstDue: .afterInterval(.months(2)), reminderOffsetsDays: [3, 0]),
+                                    recurrence: .interval(.months(2), anchor: .completion), firstDue: .afterInterval(.months(2)),
+                                    reminders: profile([3, 0], .comfort, grace: 14)),
             ]
         )
     }
@@ -444,6 +491,18 @@ public enum BuiltInTemplates {
 public enum VehicleUsage {
     public static var personal: String { String(localized: "Personală", comment: "Vehicle usage option") }
     public static var commercial: String { String(localized: "Ridesharing sau taxi", comment: "Vehicle usage option") }
+}
+
+public enum DocumentType {
+    public static var idCard: String { String(localized: "Carte de identitate", comment: "Document type option") }
+    public static var passport: String { String(localized: "Pașaport", comment: "Document type option") }
+    public static var drivingLicence: String { String(localized: "Permis de conducere", comment: "Document type option") }
+    public static var bankCard: String { String(localized: "Card bancar", comment: "Document type option") }
+    public static var eSignature: String { String(localized: "Semnătură electronică", comment: "Document type option") }
+    public static var criminalRecord: String { String(localized: "Cazier", comment: "Document type option") }
+    public static var euHealthCard: String { String(localized: "Card european de sănătate", comment: "Document type option") }
+    public static var greenCard: String { String(localized: "Carte verde", comment: "Document type option") }
+    public static var other: String { String(localized: "Alt document", comment: "Document type option") }
 }
 
 public enum BillingCycle {

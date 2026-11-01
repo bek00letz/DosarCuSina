@@ -11,7 +11,7 @@ public struct ObligationSnapshot: Hashable, Sendable, Identifiable {
     public var status: ObligationStatus
     public var dueDay: CalendarDay
     public var snoozedUntil: Date?
-    public var reminderOffsetsDays: [Int]
+    public var reminders: ReminderProfile
     public var reminderMinuteOfDay: Int?
     public var estimatedCost: Money?
     public var assetId: UUID?
@@ -30,7 +30,7 @@ public struct ObligationSnapshot: Hashable, Sendable, Identifiable {
         status: ObligationStatus = .active,
         dueDay: CalendarDay,
         snoozedUntil: Date? = nil,
-        reminderOffsetsDays: [Int] = [30, 7, 1, 0],
+        reminders: ReminderProfile? = nil,
         reminderMinuteOfDay: Int? = nil,
         estimatedCost: Money? = nil,
         assetId: UUID? = nil,
@@ -47,7 +47,7 @@ public struct ObligationSnapshot: Hashable, Sendable, Identifiable {
         self.status = status
         self.dueDay = dueDay
         self.snoozedUntil = snoozedUntil
-        self.reminderOffsetsDays = reminderOffsetsDays
+        self.reminders = reminders ?? kind.defaultProfile
         self.reminderMinuteOfDay = reminderMinuteOfDay
         self.estimatedCost = estimatedCost
         self.assetId = assetId
@@ -80,7 +80,7 @@ extension ObligationSnapshot {
                 status: obligation.status,
                 dueDay: obligation.dueDay(in: calendar),
                 snoozedUntil: obligation.snoozedUntil,
-                reminderOffsetsDays: obligation.reminderOffsetsDays,
+                reminders: obligation.reminders,
                 reminderMinuteOfDay: obligation.reminderMinuteOfDay,
                 estimatedCost: obligation.estimatedCost,
                 assetId: asset?.id,

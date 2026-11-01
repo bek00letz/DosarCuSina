@@ -87,7 +87,9 @@ func snapshot(
     due: String,
     status: ObligationStatus = .active,
     asset: (UUID, String)? = nil,
-    offsets: [Int] = [30, 7, 1, 0],
+    offsets: [Int]? = nil,
+    consequence: Consequence? = nil,
+    grace: Int? = nil,
     snoozedUntil: Date? = nil,
     cost: Money? = nil,
     isSensitive: Bool = false,
@@ -99,7 +101,11 @@ func snapshot(
         status: status,
         dueDay: CalendarDay(due),
         snoozedUntil: snoozedUntil,
-        reminderOffsetsDays: offsets,
+        reminders: ReminderProfile(
+            leadDays: offsets ?? kind.defaultProfile.leadDays,
+            consequence: consequence ?? kind.defaultProfile.consequence,
+            graceDays: grace ?? kind.defaultProfile.graceDays
+        ),
         estimatedCost: cost,
         assetId: asset?.0,
         assetName: asset?.1,

@@ -87,7 +87,7 @@ public enum DossierV3 {
         public var kind: String
         public var dueDate: CalendarDay
         public var dueMetric: Double?
-        public var reminderOffsetsDays: [Int]
+        public var reminders: ReminderProfile
         public var reminderMinuteOfDay: Int?
         public var recurrence: RecurrenceRule
         public var estimatedCost: Money?

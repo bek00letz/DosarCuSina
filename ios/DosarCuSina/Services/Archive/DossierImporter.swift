@@ -154,7 +154,7 @@ struct DossierImporter {
             obligation.kindRaw = ObligationKind(rawValue: dto.kind)?.rawValue ?? ObligationKind.routine.rawValue
             obligation.setDueDay(dto.dueDate, calendar: calendar)
             obligation.dueMetric = dto.dueMetric
-            obligation.reminderOffsetsDays = dto.reminderOffsetsDays
+            obligation.reminders = dto.reminders
             obligation.reminderMinuteOfDay = dto.reminderMinuteOfDay
             obligation.recurrence = dto.recurrence
             obligation.estimatedCost = dto.estimatedCost
