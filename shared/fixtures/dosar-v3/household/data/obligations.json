@@ -1,0 +1,56 @@
+[
+  {
+    "assetId" : "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a41",
+    "blueprintKey" : "vehicle.itp",
+    "createdAt" : "2026-01-10T09:06:00Z",
+    "dueDate" : "2028-03-01",
+    "estimatedCost" : {
+      "amount" : "180",
+      "currency" : "RON"
+    },
+    "id" : "1c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e63",
+    "isExample" : false,
+    "kind" : "legal",
+    "recurrence" : {
+      "rule" : "vehicleITP",
+      "type" : "legal"
+    },
+    "reminderOffsetsDays" : [
+      30,
+      7,
+      1,
+      0
+    ],
+    "status" : "active",
+    "title" : "ITP",
+    "updatedAt" : "2026-03-01T08:00:00Z"
+  },
+  {
+    "assetId" : "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a41",
+    "blueprintKey" : "vehicle.rca",
+    "createdAt" : "2026-01-10T09:06:00Z",
+    "dueDate" : "2026-12-15",
+    "id" : "2d3e4f5a-6b7c-4d8e-9f0a-1b2c3d4e5f74",
+    "isExample" : false,
+    "kind" : "insurance",
+    "provider" : "Asigurător exemplu",
+    "recurrence" : {
+      "anchor" : "dueDate",
+      "every" : 1,
+      "type" : "interval",
+      "unit" : "year"
+    },
+    "reference" : "POL-000001",
+    "reminderMinuteOfDay" : 480,
+    "reminderOffsetsDays" : [
+      30,
+      14,
+      7,
+      1,
+      0
+    ],
+    "status" : "active",
+    "title" : "RCA",
+    "updatedAt" : "2026-01-10T09:06:00Z"
+  }
+]

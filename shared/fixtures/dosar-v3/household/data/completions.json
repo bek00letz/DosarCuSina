@@ -1,0 +1,16 @@
+[
+  {
+    "completedAt" : "2026-03-01T07:30:00Z",
+    "cost" : {
+      "amount" : "175.50",
+      "currency" : "RON"
+    },
+    "cycleDueDate" : "2026-03-05",
+    "id" : "3e4f5a6b-7c8d-4e9f-8a1b-2c3d4e5f6a85",
+    "isExample" : false,
+    "metricReading" : 142500,
+    "nextDueDate" : "2028-03-01",
+    "obligationId" : "1c2d3e4f-5a6b-4c7d-8e9f-0a1b2c3d4e63",
+    "previousStatus" : "active"
+  }
+]

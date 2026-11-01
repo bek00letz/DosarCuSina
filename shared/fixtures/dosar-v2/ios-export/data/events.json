@@ -1,0 +1,45 @@
+[
+  {
+    "assetId" : "B1B2C3D4-0000-4000-8000-000000000002",
+    "attachmentIds" : [
+
+    ],
+    "cadenceDays" : 365,
+    "cost" : 1450,
+    "createdAt" : "2025-09-01T08:05:00Z",
+    "currency" : "RON",
+    "dueDate" : "2026-09-01T09:00:00Z",
+    "id" : "D1B2C3D4-0000-4000-8000-000000000004",
+    "isAutoRenew" : false,
+    "isCompleted" : false,
+    "policyOrContractNumber" : "RCA-000001",
+    "provider" : "Asigurător exemplu",
+    "reminderOffsetDays" : [
+      30,
+      7,
+      1
+    ],
+    "title" : "RCA"
+  },
+  {
+    "assetId" : "B1B2C3D4-0000-4000-8000-000000000002",
+    "attachmentIds" : [
+      "F1B2C3D4-0000-4000-8000-000000000007"
+    ],
+    "completedDate" : "2025-08-20T10:00:00Z",
+    "cost" : 160,
+    "createdAt" : "2025-09-01T08:06:00Z",
+    "currency" : "RON",
+    "dueDate" : "2025-08-25T09:00:00Z",
+    "id" : "E1B2C3D4-0000-4000-8000-000000000005",
+    "isAutoRenew" : false,
+    "isCompleted" : true,
+    "mileageAtEvent" : 97500,
+    "reminderOffsetDays" : [
+      30,
+      7,
+      1
+    ],
+    "title" : "ITP"
+  }
+]
