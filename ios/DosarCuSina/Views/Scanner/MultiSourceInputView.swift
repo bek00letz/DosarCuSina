@@ -19,8 +19,12 @@ public struct MultiSourceInputView: View {
     
     @State private var intakeMode: IntakeMode = .pdfFile
     
-    // Extracted / Target Event State
+    // Routing & Target State
+    @State private var routingDestination: RoutingDestination = .event
+    @State private var autoMatchedReason: String? = nil
     @State private var selectedAssetId: UUID? = nil
+    
+    // Event State
     @State private var eventTitle: String = ""
     @State private var provider: String = ""
     @State private var policyOrInvoiceNumber: String = ""
@@ -28,6 +32,29 @@ public struct MultiSourceInputView: View {
     @State private var eventCost: String = ""
     @State private var cadenceDays: Int = 0
     @State private var notes: String = ""
+    
+    // ServiceItem State
+    @State private var serviceItemName: String = ""
+    @State private var serviceCategory: String = "Întreținere"
+    @State private var specialistOrDoctorName: String = ""
+    @State private var partsCost: String = ""
+    @State private var laborCost: String = ""
+    @State private var serialOrBatchNumber: String = ""
+    @State private var locationOrToothNumber: String = ""
+    @State private var mileageAtService: String = ""
+    @State private var daysInService: String = ""
+    @State private var serviceWarrantyMonths: Int = 0
+    
+    // MeasurementLog State
+    @State private var measurementDomain: MeasurementDomain = .electricityMeter
+    @State private var measurementMetricName: String = "Index Contor Zi"
+    @State private var measurementValue: String = ""
+    @State private var measurementPreviousValue: String = ""
+    @State private var measurementSecondaryValue: String = ""
+    @State private var measurementUnit: String = "kWh"
+    @State private var measurementUnitPrice: String = "0.68"
+    @State private var measurementIsSelfRead: Bool = true
+    @State private var measurementLabOrProvider: String = ""
     
     // PDF State
     @State private var isShowingPDFPicker = false
@@ -72,8 +99,40 @@ public struct MultiSourceInputView: View {
         }
     }
     
+    public enum RoutingDestination: String, CaseIterable, Identifiable, Sendable {
+        case event = "Obligație / Scadență"
+        case serviceItem = "Intervenție / Service"
+        case measurement = "Index / Parametru"
+        
+        public var id: String { rawValue }
+        
+        public var icon: String {
+            switch self {
+            case .event: return "calendar.badge.clock"
+            case .serviceItem: return "wrench.and.screwdriver.fill"
+            case .measurement: return "gauge.with.dots.needle.bottom.50percent"
+            }
+        }
+    }
+    
     public init(preselectedAsset: Asset? = nil) {
         self.preselectedAsset = preselectedAsset
+    }
+    
+    @ViewBuilder
+    private var modeSpecificCard: some View {
+        switch intakeMode {
+        case .pdfFile:
+            pdfSourceCard
+        case .photo:
+            photoSourceCard
+        case .camera:
+            cameraSourceCard
+        case .pastedText:
+            pastedTextSourceCard
+        case .manual:
+            manualIntroCard
+        }
     }
     
     public var body: some View {
@@ -84,18 +143,7 @@ public struct MultiSourceInputView: View {
                     intakeModeSelector
                     
                     // Mode-Specific Input Card
-                    switch intakeMode {
-                    case .pdfFile:
-                        pdfSourceCard
-                    case .photo:
-                        photoSourceCard
-                    case .camera:
-                        cameraSourceCard
-                    case .pastedText:
-                        pastedTextSourceCard
-                    case .manual:
-                        manualIntroCard
-                    }
+                    modeSpecificCard
                     
                     // Extraction Feedback Banner
                     if let success = extractionSuccessMessage {
@@ -123,10 +171,10 @@ public struct MultiSourceInputView: View {
                 
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Salvează în Dosar") {
-                        saveEventToVault()
+                        saveToVault()
                     }
                     .font(.system(.body, design: .rounded, weight: .bold))
-                    .disabled(eventTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(!isFormValid)
                 }
             }
             .fileImporter(
@@ -458,15 +506,34 @@ public struct MultiSourceInputView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
     
-    // MARK: - 3. Standardized Event Form Section
+    // MARK: - 3. Interactive Verification & Routing Card
     private var eventDetailsFormSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Date Obligație / Factură")
-                .font(.system(.headline, design: .rounded, weight: .bold))
-                .padding(.horizontal, 4)
+            HStack {
+                Text("Verificare & Rutare în Dosar")
+                    .font(.system(.headline, design: .rounded, weight: .bold))
+                Spacer()
+                if let reason = autoMatchedReason {
+                    HStack(spacing: 4) {
+                        Image(systemName: "sparkles")
+                            .font(.caption2)
+                        Text(reason)
+                            .font(.caption2.weight(.semibold))
+                    }
+                    .foregroundStyle(.indigo)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.indigo.opacity(0.12))
+                    .clipShape(Capsule())
+                }
+            }
+            .padding(.horizontal, 4)
+            
+            // 3-way Destination Picker
+            routingDestinationPicker
             
             VStack(spacing: 12) {
-                // Asset Selector
+                // Target Asset Picker
                 if !assets.isEmpty {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Asociază Activului:")
@@ -486,96 +553,598 @@ public struct MultiSourceInputView: View {
                     }
                 }
                 
-                // Event Title
+                // Dynamic Destination Form Fields
+                switch routingDestination {
+                case .event:
+                    eventFields
+                case .serviceItem:
+                    serviceItemFields
+                case .measurement:
+                    measurementFields
+                }
+                
+                // Universal Notes Field
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Titlu Eveniment / Obligație:")
+                    Text("Observații / Mențiuni:")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     
-                    TextField("ex: Factură Energie Electrică, Asigurare RCA", text: $eventTitle)
-                        .font(.system(.body, design: .rounded))
-                        .padding(12)
+                    TextField("Opțional...", text: $notes, axis: .vertical)
+                        .lineLimit(2...4)
+                        .font(.system(.subheadline, design: .rounded))
+                        .padding(10)
                         .background(Color(uiColor: .secondarySystemGroupedBackground))
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
-                
-                // Provider & Number
-                HStack(spacing: 10) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Furnizor / Asigurător:")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        
-                        TextField("ex: Hidroelectrica", text: $provider)
-                            .font(.system(.subheadline, design: .rounded))
-                            .padding(12)
-                            .background(Color(uiColor: .secondarySystemGroupedBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+        }
+    }
+    
+    // MARK: - 3-way Routing Destination Picker
+    private var routingDestinationPicker: some View {
+        HStack(spacing: 8) {
+            ForEach(RoutingDestination.allCases) { dest in
+                let isSelected = routingDestination == dest
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        routingDestination = dest
                     }
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Nr. Factură / Poliță:")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        
-                        TextField("ex: 1029384", text: $policyOrInvoiceNumber)
-                            .font(.system(.subheadline, design: .monospaced))
-                            .padding(12)
-                            .background(Color(uiColor: .secondarySystemGroupedBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    #if canImport(UIKit)
+                    UISelectionFeedbackGenerator().selectionChanged()
+                    #endif
+                } label: {
+                    VStack(spacing: 6) {
+                        Image(systemName: dest.icon)
+                            .font(.system(size: 16, weight: .semibold))
+                        Text(dest.rawValue)
+                            .font(.system(.caption2, design: .rounded, weight: isSelected ? .bold : .medium))
+                            .multilineTextAlignment(.center)
+                            .lineLimit(2)
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 6)
+                    .background(isSelected ? Color.blue : Color(uiColor: .secondarySystemGroupedBackground))
+                    .foregroundStyle(isSelected ? .white : .primary)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .shadow(color: isSelected ? Color.blue.opacity(0.25) : .clear, radius: 4, y: 2)
                 }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+    
+    // MARK: - Event Destination Form Fields
+    @ViewBuilder
+    private var eventFields: some View {
+        // Event Title
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Titlu Eveniment / Obligație:")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            
+            TextField("ex: Factură Energie Electrică, Asigurare RCA", text: $eventTitle)
+                .font(.system(.body, design: .rounded))
+                .padding(12)
+                .background(Color(uiColor: .secondarySystemGroupedBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+        
+        // Provider & Number
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Furnizor / Asigurător:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 
-                // Due Date & Cost
-                HStack(spacing: 10) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Dată Scadență:")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        
-                        DatePicker("", selection: $eventDueDate, displayedComponents: .date)
-                            .labelsHidden()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(8)
-                            .background(Color(uiColor: .secondarySystemGroupedBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Sumă de plată (RON):")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        
-                        TextField("0.00", text: $eventCost)
-                            .keyboardType(.decimalPad)
-                            .font(.system(.body, design: .monospaced, weight: .bold))
-                            .padding(12)
-                            .background(Color(uiColor: .secondarySystemGroupedBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    }
-                }
-                
-                // Recurrence
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Recurență Plată:")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    
-                    Picker("Recurență", selection: $cadenceDays) {
-                        Text("Fără recurență (Factură unică)").tag(0)
-                        Text("Lunar (30 zile)").tag(30)
-                        Text("Trimestrial (90 zile)").tag(90)
-                        Text("Semestrial (180 zile)").tag(180)
-                        Text("Anual (365 zile)").tag(365)
-                        Text("La 2 ani (730 zile)").tag(730)
-                    }
-                    .pickerStyle(.menu)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(10)
+                TextField("ex: Hidroelectrica", text: $provider)
+                    .font(.system(.subheadline, design: .rounded))
+                    .padding(12)
                     .background(Color(uiColor: .secondarySystemGroupedBackground))
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Nr. Factură / Poliță:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                TextField("ex: 1029384", text: $policyOrInvoiceNumber)
+                    .font(.system(.subheadline, design: .monospaced))
+                    .padding(12)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+        }
+        
+        // Due Date & Cost
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Dată Scadență:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                DatePicker("", selection: $eventDueDate, displayedComponents: .date)
+                    .labelsHidden()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(8)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Sumă de plată (RON):")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                TextField("0.00", text: $eventCost)
+                    .keyboardType(.decimalPad)
+                    .font(.system(.body, design: .monospaced, weight: .bold))
+                    .padding(12)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+        }
+        
+        // Recurrence
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Recurență Plată:")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            
+            Picker("Recurență", selection: $cadenceDays) {
+                Text("Fără recurență (Factură unică)").tag(0)
+                Text("Lunar (30 zile)").tag(30)
+                Text("Trimestrial (90 zile)").tag(90)
+                Text("Semestrial (180 zile)").tag(180)
+                Text("Anual (365 zile)").tag(365)
+                Text("La 2 ani (730 zile)").tag(730)
+            }
+            .pickerStyle(.menu)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(10)
+            .background(Color(uiColor: .secondarySystemGroupedBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+    }
+    
+    // MARK: - Service Item Form Fields
+    @ViewBuilder
+    private var serviceItemFields: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Denumire Intervenție / Piesă:")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            
+            TextField("ex: Schimb plăcuțe frână, Revizie centrală", text: $serviceItemName)
+                .font(.system(.body, design: .rounded))
+                .padding(12)
+                .background(Color(uiColor: .secondarySystemGroupedBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+        
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Categorie:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                Picker("Categorie", selection: $serviceCategory) {
+                    Text("Întreținere").tag("Întreținere")
+                    Text("Reparație").tag("Reparație")
+                    Text("Revizie").tag("Revizie")
+                    Text("Tratament").tag("Tratament")
+                    Text("Garanție RMA").tag("Garanție RMA")
+                }
+                .pickerStyle(.menu)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(10)
+                .background(Color(uiColor: .secondarySystemGroupedBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Specialist / Medic / Service:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                TextField("ex: Dr. Popescu, AutoSoft", text: $specialistOrDoctorName)
+                    .font(.system(.subheadline, design: .rounded))
+                    .padding(12)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+        }
+        
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Cost Piese (RON):")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                TextField("0.00", text: $partsCost)
+                    .keyboardType(.decimalPad)
+                    .font(.system(.body, design: .monospaced))
+                    .padding(12)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Cost Manoperă (RON):")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                TextField("0.00", text: $laborCost)
+                    .keyboardType(.decimalPad)
+                    .font(.system(.body, design: .monospaced))
+                    .padding(12)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+        }
+        
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Dată Intervenție:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                DatePicker("", selection: $eventDueDate, displayedComponents: .date)
+                    .labelsHidden()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(8)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Kilometraj la Service:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                TextField("ex: 145000", text: $mileageAtService)
+                    .keyboardType(.numberPad)
+                    .font(.system(.body, design: .monospaced))
+                    .padding(12)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+        }
+        
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Serie / Lot / Tichet:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                TextField("ex: Lot #94820", text: $serialOrBatchNumber)
+                    .font(.system(.subheadline, design: .monospaced))
+                    .padding(12)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Locație / Dinte FDI:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                TextField("ex: Punte spate, #36", text: $locationOrToothNumber)
+                    .font(.system(.subheadline, design: .rounded))
+                    .padding(12)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+        }
+        
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Zile Imobilizare RMA:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                TextField("0", text: $daysInService)
+                    .keyboardType(.numberPad)
+                    .font(.system(.body, design: .monospaced))
+                    .padding(12)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Garanție Manoperă:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                Picker("Luni", selection: $serviceWarrantyMonths) {
+                    Text("Fără garanție").tag(0)
+                    Text("3 luni").tag(3)
+                    Text("6 luni").tag(6)
+                    Text("12 luni").tag(12)
+                    Text("24 luni").tag(24)
+                }
+                .pickerStyle(.menu)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(10)
+                .background(Color(uiColor: .secondarySystemGroupedBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+        }
+    }
+    
+    // MARK: - Measurement Form Fields
+    @ViewBuilder
+    private var measurementFields: some View {
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Domeniu:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                Picker("Domeniu", selection: $measurementDomain) {
+                    ForEach(MeasurementDomain.allCases, id: \.self) { dom in
+                        Text(dom.rawValue).tag(dom)
+                    }
+                }
+                .pickerStyle(.menu)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(10)
+                .background(Color(uiColor: .secondarySystemGroupedBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .onChange(of: measurementDomain) { _, newDom in
+                    measurementUnit = newDom.defaultUnit
                 }
             }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Nume Parametru:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                TextField("ex: Index Zi, Glicemie", text: $measurementMetricName)
+                    .font(.system(.subheadline, design: .rounded))
+                    .padding(12)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+        }
+        
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Index / Valoare Nouă:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                TextField("ex: 12480", text: $measurementValue)
+                    .keyboardType(.decimalPad)
+                    .font(.system(.body, design: .monospaced, weight: .bold))
+                    .padding(12)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Index Anterior:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                TextField("ex: 12100", text: $measurementPreviousValue)
+                    .keyboardType(.decimalPad)
+                    .font(.system(.body, design: .monospaced))
+                    .padding(12)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Unitate:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                TextField("kWh", text: $measurementUnit)
+                    .font(.system(.body, design: .monospaced))
+                    .padding(12)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+        }
+        
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Preț Unitar (RON):")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                TextField("0.68", text: $measurementUnitPrice)
+                    .keyboardType(.decimalPad)
+                    .font(.system(.body, design: .monospaced))
+                    .padding(12)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Dată Citire:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                
+                DatePicker("", selection: $eventDueDate, displayedComponents: .date)
+                    .labelsHidden()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(8)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+        }
+        
+        HStack(spacing: 10) {
+            Toggle("Index Autocitit", isOn: $measurementIsSelfRead)
+                .font(.caption.weight(.medium))
+                .padding(10)
+                .background(Color(uiColor: .secondarySystemGroupedBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            
+            TextField("Furnizor / Laborator", text: $measurementLabOrProvider)
+                .font(.system(.subheadline, design: .rounded))
+                .padding(12)
+                .background(Color(uiColor: .secondarySystemGroupedBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+    }
+    
+    // MARK: - Validation
+    private var isFormValid: Bool {
+        switch routingDestination {
+        case .event:
+            return !eventTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        case .serviceItem:
+            let title = serviceItemName.isEmpty ? eventTitle : serviceItemName
+            return !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        case .measurement:
+            return !measurementValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+    }
+    
+    // MARK: - Asset Auto-Matching
+    public struct ScoredAssetMatch: Sendable {
+        public let asset: Asset
+        public let reason: String
+        public let score: Int
+        
+        public init(asset: Asset, reason: String, score: Int) {
+            self.asset = asset
+            self.reason = reason
+            self.score = score
+        }
+    }
+    
+    public static func matchAsset(for extractedText: String, in assets: [Asset]) -> ScoredAssetMatch? {
+        guard !extractedText.isEmpty else { return nil }
+        let normalized = RomanianUtilityParser.normalizeDiacritics(extractedText).uppercased()
+        var matches: [ScoredAssetMatch] = []
+        
+        for candidate in assets {
+            // 1. Vehicle 17-char VIN (Score: 100) — Normalize hyphens and spaces
+            if let vin = candidate.vin, !vin.isEmpty {
+                let cleanVin = vin.replacingOccurrences(of: "-", with: "").replacingOccurrences(of: " ", with: "").uppercased()
+                if cleanVin.count >= 8 {
+                    let vinRegexPattern = cleanVin.map { NSRegularExpression.escapedPattern(for: String($0)) }.joined(separator: #"[\s\-]*"#)
+                    let fullPattern = #"(?i)(?:\b|[^A-Z0-9])"# + vinRegexPattern + #"(?:\b|[^A-Z0-9])"#
+                    if let regex = try? NSRegularExpression(pattern: fullPattern) {
+                        let ns = normalized as NSString
+                        if regex.firstMatch(in: normalized, range: NSRange(location: 0, length: ns.length)) != nil {
+                            matches.append(ScoredAssetMatch(asset: candidate, reason: "Serie Șasiu / VIN (\(vin))", score: 100))
+                            continue
+                        }
+                    }
+                    let docNoSpaces = normalized.replacingOccurrences(of: "-", with: "").replacingOccurrences(of: " ", with: "")
+                    if docNoSpaces.contains(cleanVin) {
+                        matches.append(ScoredAssetMatch(asset: candidate, reason: "Serie Șasiu / VIN (\(vin))", score: 100))
+                        continue
+                    }
+                    if cleanVin.count == 17 {
+                        let last8 = String(cleanVin.suffix(8))
+                        let partialPattern = #"(?i)(?:serie\s*(?:de\s*)?[sș]asiu|vin)[:\s]+[\s\-]*"# + NSRegularExpression.escapedPattern(for: last8) + #"(?:\b|[^A-Z0-9])"#
+                        if let regex = try? NSRegularExpression(pattern: partialPattern) {
+                            let ns = normalized as NSString
+                            if regex.firstMatch(in: normalized, range: NSRange(location: 0, length: ns.length)) != nil {
+                                matches.append(ScoredAssetMatch(asset: candidate, reason: "Serie Șasiu / VIN (\(vin))", score: 100))
+                                continue
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // 2. Utility POD Code (Score: 90)
+            if let pod = candidate.podCode, !pod.isEmpty, normalized.contains(pod.uppercased()) {
+                matches.append(ScoredAssetMatch(asset: candidate, reason: "Cod POD Energie (\(pod))", score: 90))
+                continue
+            }
+            
+            // 3. Utility CLC Code (Score: 90)
+            if let clc = candidate.clcCode, !clc.isEmpty, normalized.contains(clc.uppercased()) {
+                matches.append(ScoredAssetMatch(asset: candidate, reason: "Cod CLC Gaze (\(clc))", score: 90))
+                continue
+            }
+            
+            // 4. Water Client Code (Score: 90)
+            if let water = candidate.waterClientCode, !water.isEmpty, normalized.contains(water.uppercased()) {
+                matches.append(ScoredAssetMatch(asset: candidate, reason: "Cod Client Apă (\(water))", score: 90))
+                continue
+            }
+            
+            // 5. Pet Microchip (Score: 85)
+            if let chip = candidate.microchipNumber, !chip.isEmpty, normalized.contains(chip) {
+                matches.append(ScoredAssetMatch(asset: candidate, reason: "Microcip (\(chip))", score: 85))
+                continue
+            }
+            
+            // 6. Vehicle License Plate (Score: 80) — Enforce word/token boundary to avoid substring collisions
+            if let plate = candidate.licensePlate, !plate.isEmpty {
+                let cleanPlate = plate.replacingOccurrences(of: "-", with: "").replacingOccurrences(of: " ", with: "").uppercased()
+                if cleanPlate.count >= 5 {
+                    if let tokenRegex = try? NSRegularExpression(pattern: #"([A-Z]+|[0-9]+)"#) {
+                        let nsPlate = cleanPlate as NSString
+                        let tokenMatches = tokenRegex.matches(in: cleanPlate, range: NSRange(location: 0, length: nsPlate.length))
+                        let tokens = tokenMatches.map { nsPlate.substring(with: $0.range) }
+                        let plateRegexPattern = tokens.joined(separator: #"[\s\-]*"#)
+                        let fullPattern = #"(?i)(?:\b|[^A-Z0-9])"# + plateRegexPattern + #"(?:\b|[^A-Z0-9])"#
+                        if let regex = try? NSRegularExpression(pattern: fullPattern) {
+                            let nsDoc = normalized as NSString
+                            if regex.firstMatch(in: normalized, range: NSRange(location: 0, length: nsDoc.length)) != nil {
+                                matches.append(ScoredAssetMatch(asset: candidate, reason: "Număr Auto (\(plate))", score: 80))
+                                continue
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // 7. Person Name (Health) (Score: 60)
+            if let pName = candidate.personName, !pName.isEmpty {
+                let cleanName = pName.uppercased().trimmingCharacters(in: .whitespacesAndNewlines)
+                if !cleanName.isEmpty && normalized.contains(cleanName) {
+                    matches.append(ScoredAssetMatch(asset: candidate, reason: "Dosar Medical: \(pName)", score: 60))
+                    continue
+                }
+            }
+            
+            // 8. Serial / IMEI (Warranties) (Score: 50)
+            if let sn = candidate.serialOrImei, !sn.isEmpty {
+                let cleanSn = sn.uppercased().trimmingCharacters(in: .whitespacesAndNewlines)
+                if !cleanSn.isEmpty && normalized.contains(cleanSn) {
+                    matches.append(ScoredAssetMatch(asset: candidate, reason: "Serie / IMEI (\(sn))", score: 50))
+                    continue
+                }
+            }
+        }
+        
+        // 7. Multi-identifier conflict resolution: Score matches by identifier entropy/specificity
+        return matches.sorted(by: { $0.score > $1.score }).first
+    }
+    
+    private func attemptAutoMatch(extractedText: String) {
+        guard let bestMatch = Self.matchAsset(for: extractedText, in: assets) else { return }
+        applyAutoMatch(bestMatch.asset, reason: bestMatch.reason)
+    }
+    
+    private func applyAutoMatch(_ asset: Asset, reason: String) {
+        selectedAssetId = asset.id
+        autoMatchedReason = reason
+        
+        let lower = pastedEmailText.lowercased()
+        if lower.contains("index nou") || lower.contains("autocitit") || lower.contains("1.8.0") {
+            routingDestination = .measurement
+            if asset.category == .home {
+                measurementDomain = .electricityMeter
+                measurementMetricName = "Index Contor Energie"
+                measurementUnit = "kWh"
+            }
+        } else if lower.contains("service") || lower.contains("manopera") || lower.contains("piese") || lower.contains("reparatie") || lower.contains("revizie") {
+            routingDestination = .serviceItem
+            serviceCategory = "Revizie"
         }
     }
     
@@ -605,6 +1174,7 @@ public struct MultiSourceInputView: View {
     private func processPDFDirectly(data: Data, fileName: String) {
         isExtractingPDF = true
         let parsed = PDFExtractorService.shared.extractAndParse(pdfData: data)
+        self.pastedEmailText = parsed.extractedText
         
         isExtractingPDF = false
         if let title = parsed.title {
@@ -629,6 +1199,16 @@ public struct MultiSourceInputView: View {
             eventCost = String(format: "%.2f", cost)
         }
         
+        let utilityData = RomanianUtilityParser.shared.parseUtilityBill(text: parsed.extractedText)
+        if let index = utilityData.indexReading {
+            measurementValue = String(format: "%.0f", index)
+        }
+        if let prev = utilityData.previousIndexReading {
+            measurementPreviousValue = String(format: "%.0f", prev)
+        }
+        
+        attemptAutoMatch(extractedText: parsed.extractedText)
+        
         extractionSuccessMessage = "Date extrase cu succes din fișierul PDF digital!"
         #if canImport(UIKit)
         UINotificationFeedbackGenerator().notificationOccurred(.success)
@@ -637,20 +1217,37 @@ public struct MultiSourceInputView: View {
     
     private func processImageLocally(_ image: UIImage) async {
         do {
-            let scanResult = try await LocalOCRService.shared.scanReceipt(image: image)
+            let scanResult = try await LocalOCRService.shared.scanImage(image)
+            let utilityData = RomanianUtilityParser.shared.parseUtilityBill(text: scanResult.rawText)
+            
             await MainActor.run {
-                if let title = scanResult.suggestedTitle {
-                    self.eventTitle = title
+                self.pastedEmailText = scanResult.rawText
+                if utilityData.provider != .general {
+                    self.provider = utilityData.provider.displayName
+                    self.eventTitle = "Factură \(utilityData.provider.displayName)"
+                } else if self.eventTitle.isEmpty {
+                    self.eventTitle = "Document Scanat"
                 }
-                if let prov = scanResult.provider {
-                    self.provider = prov
+                
+                if let num = utilityData.invoiceNumber {
+                    self.policyOrInvoiceNumber = num
                 }
-                if let due = scanResult.dueDate {
+                
+                if let due = scanResult.candidateDueDate ?? utilityData.dueDate {
                     self.eventDueDate = due
                 }
-                if let cost = scanResult.amount {
+                if let cost = scanResult.candidateTotal ?? utilityData.totalAmount {
                     self.eventCost = String(format: "%.2f", cost)
                 }
+                if let index = utilityData.indexReading {
+                    self.measurementValue = String(format: "%.0f", index)
+                }
+                if let prev = utilityData.previousIndexReading {
+                    self.measurementPreviousValue = String(format: "%.0f", prev)
+                }
+                
+                self.attemptAutoMatch(extractedText: scanResult.rawText)
+                
                 self.extractionSuccessMessage = "Factură scanată cu succes prin Vision OCR!"
                 #if canImport(UIKit)
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
@@ -664,11 +1261,12 @@ public struct MultiSourceInputView: View {
     }
     
     private func parsePastedText(_ text: String) {
-        let parsed = RomanianUtilityParser.shared.parse(rawText: text)
+        pastedEmailText = text
+        let parsed = RomanianUtilityParser.shared.parseUtilityBill(text: text)
         
-        if let prov = parsed.provider {
-            provider = prov
-            eventTitle = "Factură \(prov)"
+        if parsed.provider != .general {
+            provider = parsed.provider.displayName
+            eventTitle = "Factură \(parsed.provider.displayName)"
         } else {
             eventTitle = "Factură / Notificare E-mail"
         }
@@ -681,9 +1279,17 @@ public struct MultiSourceInputView: View {
             eventDueDate = due
         }
         
-        if let cost = parsed.amount {
+        if let cost = parsed.totalAmount {
             eventCost = String(format: "%.2f", cost)
         }
+        if let index = parsed.indexReading {
+            measurementValue = String(format: "%.0f", index)
+        }
+        if let prev = parsed.previousIndexReading {
+            measurementPreviousValue = String(format: "%.0f", prev)
+        }
+        
+        attemptAutoMatch(extractedText: text)
         
         extractionSuccessMessage = "Date extrase din textul copiat!"
         #if canImport(UIKit)
@@ -691,55 +1297,143 @@ public struct MultiSourceInputView: View {
         #endif
     }
     
-    private func saveEventToVault() {
-        let trimmedTitle = eventTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedTitle.isEmpty else { return }
+    private func saveToVault() {
+        guard let targetAsset = assets.first(where: { $0.id == selectedAssetId }) ?? preselectedAsset ?? assets.first else { return }
         
-        let costVal = Double(eventCost.replacingOccurrences(of: ",", with: "."))
+        // Common attachment creation helper
+        let attachment: DocumentAttachment? = {
+            if let pdfData = selectedPDFData {
+                return DocumentAttachment(
+                    fileName: selectedPDFName ?? "document.pdf",
+                    fileExtension: "pdf",
+                    fileData: pdfData,
+                    extractedText: pastedEmailText.isEmpty ? nil : pastedEmailText
+                )
+            } else if let img = selectedPhotoImage, let imgData = img.jpegData(compressionQuality: 0.85) {
+                return DocumentAttachment(
+                    fileName: "scan_\(UUID().uuidString.prefix(6)).jpg",
+                    fileExtension: "jpg",
+                    fileData: imgData,
+                    extractedText: pastedEmailText.isEmpty ? nil : pastedEmailText
+                )
+            }
+            return nil
+        }()
         
-        let newEvent = LifecycleEvent(
-            title: trimmedTitle,
-            dueDate: eventDueDate,
-            cost: costVal,
-            cadenceDays: cadenceDays > 0 ? cadenceDays : nil,
-            notes: notes.isEmpty ? nil : notes,
-            provider: provider.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : provider.trimmingCharacters(in: .whitespacesAndNewlines),
-            policyOrContractNumber: policyOrInvoiceNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : policyOrInvoiceNumber.trimmingCharacters(in: .whitespacesAndNewlines)
-        )
-        
-        // Attach Document if present
-        if let pdfData = selectedPDFData {
-            let doc = DocumentAttachment(
-                fileName: selectedPDFName ?? "document.pdf",
-                fileData: pdfData,
-                mimeType: "application/pdf"
+        switch routingDestination {
+        case .event:
+            let trimmedTitle = eventTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmedTitle.isEmpty else { return }
+            let costVal = RomanianUtilityParser.parseRomanianAmount(eventCost)
+            
+            let newEvent = LifecycleEvent(
+                title: trimmedTitle,
+                eventDescription: notes.isEmpty ? nil : notes,
+                dueDate: eventDueDate,
+                cost: costVal,
+                provider: provider.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : provider.trimmingCharacters(in: .whitespacesAndNewlines),
+                policyOrContractNumber: policyOrInvoiceNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : policyOrInvoiceNumber.trimmingCharacters(in: .whitespacesAndNewlines),
+                cadenceDays: cadenceDays > 0 ? cadenceDays : nil
             )
-            doc.event = newEvent
-            newEvent.attachments.append(doc)
-            modelContext.insert(doc)
-        } else if let img = selectedPhotoImage, let imgData = img.jpegData(compressionQuality: 0.8) {
-            let doc = DocumentAttachment(
-                fileName: "scan_\(UUID().uuidString.prefix(6)).jpg",
-                fileData: imgData,
-                mimeType: "image/jpeg"
-            )
-            doc.event = newEvent
-            newEvent.attachments.append(doc)
-            modelContext.insert(doc)
-        }
-        
-        // Link to selected asset
-        if let targetAsset = assets.first(where: { $0.id == selectedAssetId }) {
             newEvent.asset = targetAsset
-        } else if let preselected = preselectedAsset {
-            newEvent.asset = preselected
+            if let att = attachment {
+                att.event = newEvent
+                newEvent.attachments.append(att)
+                modelContext.insert(att)
+            }
+            modelContext.insert(newEvent)
+            targetAsset.updatedAt = Date()
+            
+            Task {
+                _ = try? await NotificationScheduler.shared.scheduleReminders(for: newEvent)
+            }
+            
+        case .serviceItem:
+            let trimmedName = serviceItemName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? eventTitle : serviceItemName.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmedName.isEmpty else { return }
+            
+            let parts = RomanianUtilityParser.parseRomanianAmount(partsCost)
+            let labor = RomanianUtilityParser.parseRomanianAmount(laborCost)
+            let totalCost = RomanianUtilityParser.parseRomanianAmount(eventCost) ?? ((parts ?? 0) + (labor ?? 0))
+            let mileage = Double(mileageAtService.replacingOccurrences(of: " ", with: ""))
+            let daysInSvc = Int(daysInService)
+            
+            let newService = ServiceItem(
+                name: trimmedName,
+                category: serviceCategory,
+                partBrand: provider.isEmpty ? nil : provider,
+                cost: totalCost > 0 ? totalCost : nil,
+                laborCost: labor,
+                partsCost: parts,
+                serviceDate: eventDueDate,
+                mileageAtService: mileage,
+                specialistOrDoctorName: specialistOrDoctorName.isEmpty ? nil : specialistOrDoctorName,
+                serialOrBatchNumber: serialOrBatchNumber.isEmpty ? nil : serialOrBatchNumber,
+                locationOrToothNumber: locationOrToothNumber.isEmpty ? nil : locationOrToothNumber,
+                daysInService: daysInSvc,
+                warrantyMonths: serviceWarrantyMonths > 0 ? serviceWarrantyMonths : nil,
+                notes: notes.isEmpty ? nil : notes
+            )
+            newService.asset = targetAsset
+            modelContext.insert(newService)
+            if let att = attachment {
+                att.asset = targetAsset
+                targetAsset.attachments.append(att)
+                modelContext.insert(att)
+                newService.attachments.append(att)
+            }
+            
+            // Update vehicle odometer if provided
+            if let km = mileage, targetAsset.category == .vehicle {
+                if targetAsset.currentMetricValue == nil || km > (targetAsset.currentMetricValue ?? 0) {
+                    targetAsset.currentMetricValue = km
+                }
+            }
+            
+            // Statutory RMA Warranty Extension (OUG 140/2021)
+            if let days = daysInSvc, days > 0, targetAsset.category == .warranties {
+                if let warrantyEvent = targetAsset.events.first(where: { $0.title.localizedCaseInsensitiveContains("Garanție") }) {
+                    warrantyEvent.dueDate = Calendar.current.date(byAdding: .day, value: days, to: warrantyEvent.dueDate) ?? warrantyEvent.dueDate
+                }
+            }
+            targetAsset.updatedAt = Date()
+            
+        case .measurement:
+            guard let val = Double(measurementValue.replacingOccurrences(of: ",", with: ".")) else { return }
+            let prevVal = Double(measurementPreviousValue.replacingOccurrences(of: ",", with: "."))
+            let secVal = Double(measurementSecondaryValue.replacingOccurrences(of: ",", with: "."))
+            let uPrice = RomanianUtilityParser.parseRomanianAmount(measurementUnitPrice)
+            
+            let newMeasurement = MeasurementLog(
+                domain: measurementDomain,
+                metricName: measurementMetricName,
+                value: val,
+                secondaryValue: secVal,
+                unit: measurementUnit,
+                recordedAt: eventDueDate,
+                previousValue: prevVal,
+                unitPrice: uPrice,
+                isSelfRead: measurementIsSelfRead,
+                labOrProviderName: measurementLabOrProvider.isEmpty ? (provider.isEmpty ? nil : provider) : measurementLabOrProvider,
+                notes: notes.isEmpty ? nil : notes
+            )
+            newMeasurement.asset = targetAsset
+            if let att = attachment {
+                att.asset = targetAsset
+                targetAsset.attachments.append(att)
+                newMeasurement.attachments.append(att)
+                modelContext.insert(att)
+            }
+            modelContext.insert(newMeasurement)
+            
+            // Update asset currentMetricValue for odometer or vehicle
+            if measurementDomain == .odometer || targetAsset.category == .vehicle {
+                targetAsset.currentMetricValue = val
+            }
+            targetAsset.updatedAt = Date()
         }
         
-        modelContext.insert(newEvent)
-        
-        Task {
-            _ = try? await NotificationScheduler.shared.scheduleReminders(for: newEvent)
-        }
+        WidgetDataSyncService.shared.sync(context: modelContext)
         
         #if canImport(UIKit)
         UINotificationFeedbackGenerator().notificationOccurred(.success)

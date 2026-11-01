@@ -21,6 +21,19 @@ public final class LifecycleEvent {
     public var bonusMalusClass: String?
     public var mileageAtEvent: Double?
     public var serviceLocation: String?
+    public var insuredCoverageAmount: Double?
+    public var franchiseAmount: Double?
+    public var startDate: Date?
+    public var isAutoRenew: Bool = false
+    
+    // System Calendar & Reminders Linking
+    public var calendarEventIdentifier: String?
+    public var reminderItemIdentifier: String?
+    
+    public var providerName: String? {
+        get { provider }
+        set { provider = newValue }
+    }
     
     // Cadence & Recurrence
     public var cadenceDays: Int?
@@ -35,7 +48,7 @@ public final class LifecycleEvent {
     @Relationship(deleteRule: .cascade, inverse: \DocumentAttachment.event)
     public var attachments: [DocumentAttachment] = []
     
-    @Relationship(deleteRule: .cascade, inverse: \ServiceItem.event)
+    @Relationship(deleteRule: .nullify, inverse: \ServiceItem.event)
     public var serviceItems: [ServiceItem] = []
     
     public init(
@@ -53,6 +66,12 @@ public final class LifecycleEvent {
         bonusMalusClass: String? = nil,
         mileageAtEvent: Double? = nil,
         serviceLocation: String? = nil,
+        insuredCoverageAmount: Double? = nil,
+        franchiseAmount: Double? = nil,
+        startDate: Date? = nil,
+        isAutoRenew: Bool = false,
+        calendarEventIdentifier: String? = nil,
+        reminderItemIdentifier: String? = nil,
         cadenceDays: Int? = nil,
         cadenceMetricInterval: Double? = nil,
         metricTriggerValue: Double? = nil,
@@ -73,6 +92,12 @@ public final class LifecycleEvent {
         self.bonusMalusClass = bonusMalusClass
         self.mileageAtEvent = mileageAtEvent
         self.serviceLocation = serviceLocation
+        self.insuredCoverageAmount = insuredCoverageAmount
+        self.franchiseAmount = franchiseAmount
+        self.startDate = startDate
+        self.isAutoRenew = isAutoRenew
+        self.calendarEventIdentifier = calendarEventIdentifier
+        self.reminderItemIdentifier = reminderItemIdentifier
         self.cadenceDays = cadenceDays
         self.cadenceMetricInterval = cadenceMetricInterval
         self.metricTriggerValue = metricTriggerValue

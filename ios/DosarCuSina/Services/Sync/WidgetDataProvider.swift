@@ -1,0 +1,1 @@
+../../../DosarCuSinaWidgets/WidgetDataProvider.swift

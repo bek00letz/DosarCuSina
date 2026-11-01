@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 
 /// Romanian utility providers recognized by the intelligent parser.
 public enum RomanianUtilityProvider: String, CaseIterable, Sendable {
@@ -35,6 +36,10 @@ public struct UtilityBillData: Sendable, Equatable {
     public let issueDate: Date?
     public let dueDate: Date?
     public let indexReading: Double?
+    public let previousIndexReading: Double?
+    public let podCode: String?
+    public let clcCode: String?
+    public let waterClientCode: String?
     public let totalAmount: Double?
     public let currency: String
     public let barcodeRaw: String?
@@ -48,6 +53,11 @@ public struct UtilityBillData: Sendable, Equatable {
         return nil
     }
     
+    public var consumptionDelta: Double? {
+        guard let current = indexReading, let previous = previousIndexReading else { return nil }
+        return current - previous
+    }
+    
     public var paymentCodeOrBarcode: String? {
         barcodeRaw
     }
@@ -59,6 +69,10 @@ public struct UtilityBillData: Sendable, Equatable {
         issueDate: Date? = nil,
         dueDate: Date? = nil,
         indexReading: Double? = nil,
+        previousIndexReading: Double? = nil,
+        podCode: String? = nil,
+        clcCode: String? = nil,
+        waterClientCode: String? = nil,
         totalAmount: Double? = nil,
         currency: String = "RON",
         barcodeRaw: String? = nil,
@@ -70,6 +84,10 @@ public struct UtilityBillData: Sendable, Equatable {
         self.issueDate = issueDate
         self.dueDate = dueDate
         self.indexReading = indexReading
+        self.previousIndexReading = previousIndexReading
+        self.podCode = podCode
+        self.clcCode = clcCode
+        self.waterClientCode = waterClientCode
         self.totalAmount = totalAmount
         self.currency = currency
         self.barcodeRaw = barcodeRaw
@@ -87,18 +105,40 @@ public final class RomanianUtilityParser: Sendable {
     
     public init() {}
     
+    // MARK: - Diacritics Normalization
+    
+    /// Converts legacy Romanian cedillas (ş, ţ, Ş, Ţ) to official comma-below diacritics (ș, ț, Ș, Ț).
+    public static func normalizeDiacritics(_ text: String) -> String {
+        var result = text
+        result = result.replacingOccurrences(of: "\u{015F}", with: "\u{0219}") // ş -> ș
+        result = result.replacingOccurrences(of: "\u{015E}", with: "\u{0218}") // Ş -> Ș
+        result = result.replacingOccurrences(of: "\u{0163}", with: "\u{021B}") // ţ -> ț
+        result = result.replacingOccurrences(of: "\u{0162}", with: "\u{021A}") // Ţ -> Ț
+        return result
+    }
+    
+    /// Strips Romanian diacritics for insensitive search (ș/ş->s, ț/ţ->t, ă/â->a, î->i).
+    public static func stripDiacritics(_ text: String) -> String {
+        return text.folding(options: .diacriticInsensitive, locale: Locale(identifier: "ro_RO"))
+    }
+    
     // MARK: - Public API
     
     /// Parses raw OCR or document text to extract structured Romanian utility bill data.
     public func parseUtilityBill(text: String) -> UtilityBillData {
-        let provider = detectProvider(in: text)
-        let clientCode = extractClientCode(for: provider, in: text)
-        let invoiceNumber = extractInvoiceNumber(for: provider, in: text)
-        let issueDate = extractIssueDate(in: text)
-        let dueDate = extractDueDate(in: text, issueDate: issueDate)
-        let indexReading = extractMeterIndex(for: provider, in: text)
-        let (amount, currency) = extractTotalAmount(in: text)
-        let barcode = extractPaymentBarcodeOrCode(for: provider, in: text)
+        let normalizedText = Self.normalizeDiacritics(text)
+        let provider = detectProvider(in: normalizedText)
+        let clientCode = extractClientCode(for: provider, in: normalizedText)
+        let invoiceNumber = extractInvoiceNumber(for: provider, in: normalizedText)
+        let issueDate = extractIssueDate(in: normalizedText)
+        let dueDate = extractDueDate(in: normalizedText, issueDate: issueDate)
+        let indexReading = extractMeterIndex(for: provider, in: normalizedText)
+        let previousIndexReading = extractPreviousMeterIndex(for: provider, in: normalizedText)
+        let podCode = extractPodCode(in: normalizedText)
+        let clcCode = extractClcCode(in: normalizedText)
+        let waterClientCode = extractWaterClientCode(in: normalizedText)
+        let (amount, currency) = extractTotalAmount(in: normalizedText)
+        let barcode = extractPaymentBarcodeOrCode(for: provider, in: normalizedText)
         
         return UtilityBillData(
             provider: provider,
@@ -107,6 +147,10 @@ public final class RomanianUtilityParser: Sendable {
             issueDate: issueDate,
             dueDate: dueDate,
             indexReading: indexReading,
+            previousIndexReading: previousIndexReading,
+            podCode: podCode,
+            clcCode: clcCode,
+            waterClientCode: waterClientCode,
             totalAmount: amount,
             currency: currency,
             barcodeRaw: barcode,
@@ -239,7 +283,7 @@ public final class RomanianUtilityParser: Sendable {
     
     private func extractIssueDate(in text: String) -> Date? {
         let issuePatterns = [
-            #"(?i)(?:data\s*emiterii|data\s*facturii|emis[aă]\s*(?:la|pe)|data\s*factur[aă])[:\s]+([0-9]{1,2}[./-][0-9]{1,2}[./-][0-9]{4}|[0-9]{1,2}\s+[a-zăîșțA-ZĂÎȘȚ]+\s+[0-9]{4})\b"#
+            #"(?i)(?:data\s*emiterii|data\s*facturii|emis[aă]\s*(?:la|pe)|data\s*factur[aă])[:\s]+([0-9]{1,2}[./-](?:[0-9]{1,2}|[IVX]{1,4})[./-][0-9]{4}|[0-9]{1,2}\s+[a-zăîșțA-ZĂÎȘȚ]+\s+[0-9]{4})\b"#
         ]
         
         for pattern in issuePatterns {
@@ -254,7 +298,7 @@ public final class RomanianUtilityParser: Sendable {
     
     private func extractDueDate(in text: String, issueDate: Date?) -> Date? {
         let duePatterns = [
-            #"(?i)(?:data\s*scaden[tț]ei|scaden[tț][aă]|(?:data|termen)\s*limit[aă]\s*(?:de\s*)?plat[aă]|termen\s*(?:de\s*)?plat[aă]|scadent\s*(?:la|pe)|pl[aă]te[sș]te\s*p[aâ]n[aă]\s*la)[:.\s]+([0-9]{1,2}[./-][0-9]{1,2}[./-][0-9]{4}|[0-9]{1,2}\s+[a-zăîșțA-ZĂÎȘȚ]+\s+[0-9]{4})\b"#
+            #"(?i)(?:data\s*scaden[tț]ei|scaden[tț][aă]|(?:data|termen)\s*limit[aă]\s*(?:de\s*)?plat[aă]|termen\s*(?:de\s*)?plat[aă]|scadent\s*(?:la|pe)|pl[aă]te[sș]te\s*p[aâ]n[aă]\s*la)[:.\s]+([0-9]{1,2}[./-](?:[0-9]{1,2}|[IVX]{1,4})[./-][0-9]{4}|[0-9]{1,2}\s+[a-zăîșțA-ZĂÎȘȚ]+\s+[0-9]{4})\b"#
         ]
         
         for pattern in duePatterns {
@@ -275,6 +319,62 @@ public final class RomanianUtilityParser: Sendable {
         }
         
         return allDates.sorted(by: >).first
+    }
+    
+    // MARK: - POD, CLC & Water Identifiers
+    
+    public func extractPodCode(in text: String) -> String? {
+        let patterns = [
+            #"(?i)(?:POD|punct\s*de\s*delimitare|loc\s*consum)[:\s]*(RO[A-Z0-9]{10,25})\b"#,
+            #"\b(RO[0-9]{3}[A-Z0-9]{8,20})\b"#
+        ]
+        for p in patterns {
+            if let match = firstMatch(for: p, in: text, captureGroup: 1) {
+                return match.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+        return nil
+    }
+    
+    public func extractClcCode(in text: String) -> String? {
+        let patterns = [
+            #"(?i)(?:CLC|cod\s*loc\s*consum\s*\(?clc\)?|loc\s*consum\s*gaze)[:\s]*([A-Z0-9]{6,20})\b"#,
+            #"(?i)\b(DEG[0-9]{6,16})\b"#
+        ]
+        for p in patterns {
+            if let match = firstMatch(for: p, in: text, captureGroup: 1) {
+                return match.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+        return nil
+    }
+    
+    public func extractWaterClientCode(in text: String) -> String? {
+        let patterns = [
+            #"(?i)(?:cod\s*client\s*ap[aă]|ap[aă][- ]canal\s*(?:cod\s*client|cod|client)?|apa\s*nova\s*(?:cod\s*client|cod|client))[:\s]*([A-Z0-9-]{5,20})\b"#
+        ]
+        for p in patterns {
+            if let match = firstMatch(for: p, in: text, captureGroup: 1) {
+                return match.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+        return nil
+    }
+    
+    public func extractPreviousMeterIndex(for provider: RomanianUtilityProvider, in text: String) -> Double? {
+        let patterns = [
+            #"(?i)index\s*vechi[:\s]+(\d+(?:[.,]\d+)?)\b"#,
+            #"(?i)index\s*anterior[:\s]+(\d+(?:[.,]\d+)?)\b"#
+        ]
+        for p in patterns {
+            if let match = firstMatch(for: p, in: text, captureGroup: 1) {
+                let normalized = match.replacingOccurrences(of: ",", with: ".")
+                if let val = Double(normalized) {
+                    return val
+                }
+            }
+        }
+        return nil
     }
     
     // MARK: - Meter Index Extraction
@@ -318,8 +418,8 @@ public final class RomanianUtilityParser: Sendable {
     private func extractTotalAmount(in text: String) -> (amount: Double?, currency: String) {
         // High confidence contextual anchors
         let anchoredPatterns = [
-            #"(?i)(?:total\s*(?:de\s*plat[aă]|factur[aă]|general)?|de\s*plat[aă]|rest\s*de\s*plat[aă]|sum[aă]\s*(?:total[aă]|curent[aă]|de\s*plat[aă])|sold\s*(?:total|curent)|valoare\s*total[aă])[:\s]*([0-9.,]+)\s*(lei|ron|eur|€)?\b"#,
-            #"(?i)([0-9.,]+)\s*(?:lei|ron)\s*(?:total\s*(?:de\s*plat[aă])?)\b"#
+            #"(?i)(?:total\s*(?:de\s*plat[aă]|factur[aă]|general)?|(?<!cod\s)(?<!termen\s)(?<!data\s)de\s*plat[aă]|rest\s*de\s*plat[aă]|sum[aă]\s*(?:total[aă]|curent[aă]|de\s*plat[aă])|sold\s*(?:total|curent)|valoare\s*total[aă])[:\s]*((?:[0-9]{1,3}(?:[ .\u00A0\u202F][0-9]{3})+(?:,[0-9]{1,2})?|[0-9]+(?:[.,][0-9]{1,2})?))(?!\d)\s*(?:(lei|ron|eur|€(?!\w))(?:\b|\s|$))?"#,
+            #"(?i)((?:[0-9]{1,3}(?:[ .\u00A0\u202F][0-9]{3})+(?:,[0-9]{1,2})?|[0-9]+(?:[.,][0-9]{1,2})?))(?!\d)\s*(lei|ron|eur|€(?!\w))(?:\b|\s|$)\s*(?:total\s*(?:de\s*plat[aă])?)\b"#
         ]
         
         for pattern in anchoredPatterns {
@@ -345,7 +445,7 @@ public final class RomanianUtilityParser: Sendable {
         }
         
         // Fallback: scan all amount tokens and take reasonable highest candidate
-        let amountPattern = #"\b\d{1,4}(?:[.,]\d{3})*(?:[.,]\d{2})\b"#
+        let amountPattern = #"\b\d{1,4}(?:[.,\s\u00A0\u202F]\d{3})*(?:[.,]\d{2})\b"#
         if let regex = try? NSRegularExpression(pattern: amountPattern) {
             let nsString = text as NSString
             let matches = regex.matches(in: text, range: NSRange(location: 0, length: nsString.length))
@@ -424,9 +524,9 @@ public final class RomanianUtilityParser: Sendable {
     
     private func extractAllDates(from text: String) -> [Date] {
         var dates: [Date] = []
-        // Numeric dates DD.MM.YYYY, DD/MM/YYYY, DD-MM-YYYY
-        let datePattern = #"\b(0?[1-9]|[12][0-9]|3[01])[./-](0?[1-9]|1[0-2])[./-](20\d\d)\b"#
-        if let regex = try? NSRegularExpression(pattern: datePattern) {
+        // Numeric dates DD.MM.YYYY, DD/MM/YYYY, DD-MM-YYYY and Roman numerals DD.MM.YYYY e.g. 15.XI.2024
+        let datePattern = #"\b(0?[1-9]|[12][0-9]|3[01])[./-](0?[1-9]|1[0-2]|[IVX]{1,4})[./-](20\d\d)\b"#
+        if let regex = try? NSRegularExpression(pattern: datePattern, options: .caseInsensitive) {
             let nsString = text as NSString
             let matches = regex.matches(in: text, range: NSRange(location: 0, length: nsString.length))
             for match in matches {
@@ -439,17 +539,44 @@ public final class RomanianUtilityParser: Sendable {
         return dates
     }
     
-    private func parseDateString(_ rawString: String) -> Date? {
-        let cleaned = rawString.trimmingCharacters(in: .whitespacesAndNewlines)
+    /// Parses dates formatted with numeric, Roman numeral, or written Romanian month representations.
+    public static func parseDate(_ rawString: String) -> Date? {
+        let normalizedDiacritics = normalizeDiacritics(rawString).trimmingCharacters(in: .whitespacesAndNewlines)
         
-        // Check for written Romanian month: e.g. "15 ianuarie 2026"
+        // 1. Roman Numeral Month Parsing: "15.XI.2024", "01/IV/2026", "28-II-2025", "12-VIII-2026"
+        let romanPattern = #"^([0-9]{1,2})[./-]([IVX]{1,4})[./-](20\d\d)$"#
+        if let regex = try? NSRegularExpression(pattern: romanPattern, options: .caseInsensitive) {
+            let ns = normalizedDiacritics as NSString
+            if let match = regex.firstMatch(in: normalizedDiacritics, range: NSRange(location: 0, length: ns.length)) {
+                let day = ns.substring(with: match.range(at: 1))
+                let romanMonth = ns.substring(with: match.range(at: 2)).uppercased()
+                let year = ns.substring(with: match.range(at: 3))
+                
+                let romanMap: [String: String] = [
+                    "I": "01", "II": "02", "III": "03", "IV": "04",
+                    "V": "05", "VI": "06", "VII": "07", "VIII": "08",
+                    "IX": "09", "X": "10", "XI": "11", "XII": "12"
+                ]
+                if let monthNum = romanMap[romanMonth] {
+                    let candidate = "\(day).\(monthNum).\(year)"
+                    let fmt = DateFormatter()
+                    fmt.dateFormat = "d.MM.yyyy"
+                    fmt.timeZone = TimeZone(secondsFromGMT: 0)
+                    if let d = fmt.date(from: candidate) {
+                        return d
+                    }
+                }
+            }
+        }
+        
+        // 2. Check for written Romanian month: e.g. "15 noiembrie 2026"
         let monthMap: [String: String] = [
             "ianuarie": "01", "februarie": "02", "martie": "03", "aprilie": "04",
             "mai": "05", "iunie": "06", "iulie": "07", "august": "08",
             "septembrie": "09", "octombrie": "10", "noiembrie": "11", "decembrie": "12"
         ]
         
-        var normalized = cleaned
+        var normalized = normalizedDiacritics
         for (name, num) in monthMap {
             if normalized.lowercased().contains(name) {
                 normalized = normalized.lowercased().replacingOccurrences(of: name, with: num)
@@ -482,8 +609,29 @@ public final class RomanianUtilityParser: Sendable {
         return nil
     }
     
-    private func normalizeRomanianAmount(_ raw: String) -> Double? {
+    private func parseDateString(_ rawString: String) -> Date? {
+        Self.parseDate(rawString)
+    }
+    
+    /// Parses Romanian and European currency strings (e.g., "1.450,50 lei", "1 450,50 RON", "123,45", "50.00 lei", "2.500,00 EUR")
+    public static func normalizeRomanianAmount(_ raw: String) -> Double? {
         var str = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Remove non-breaking spaces (\u{00A0}, \u{202F})
+        str = str.replacingOccurrences(of: "\u{00A0}", with: " ")
+        str = str.replacingOccurrences(of: "\u{202F}", with: " ")
+        
+        // Strip common currency words and symbols
+        let suffixes = ["lei", "LEI", "Lei", "ron", "RON", "Ron", "eur", "EUR", "Eur", "€", "usd", "USD", "$"]
+        for s in suffixes {
+            str = str.replacingOccurrences(of: s, with: "")
+        }
+        str = str.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Handle space as thousand separator: "1 450,50" -> "1450,50"
+        str = str.replacingOccurrences(of: " ", with: "")
+        
+        guard !str.isEmpty else { return nil }
         
         // Handles "1.450,50" -> "1450.50"
         if str.contains(",") && str.contains(".") {
@@ -499,9 +647,27 @@ public final class RomanianUtilityParser: Sendable {
             }
         } else if str.contains(",") {
             str = str.replacingOccurrences(of: ",", with: ".")
+        } else if str.contains(".") {
+            // Thousands separator without decimals: e.g. "1.450", "14.500"
+            // In Romanian formatting, when there is no comma and the last dot has exactly 3 digits following it,
+            // this represents thousands grouping without decimals.
+            if let lastDot = str.lastIndex(of: ".") {
+                let afterDot = str[str.index(after: lastDot)...]
+                if afterDot.count == 3 && afterDot.allSatisfy({ $0.isNumber }) {
+                    str = str.replacingOccurrences(of: ".", with: "")
+                }
+            }
         }
         
         return Double(str)
+    }
+    
+    public static func parseRomanianAmount(_ raw: String) -> Double? {
+        normalizeRomanianAmount(raw)
+    }
+    
+    private func normalizeRomanianAmount(_ raw: String) -> Double? {
+        Self.normalizeRomanianAmount(raw)
     }
 }
 
@@ -513,3 +679,153 @@ extension LocalOCRScanResult {
         RomanianUtilityParser.shared.parseUtilityBill(text: rawText)
     }
 }
+
+// MARK: - Asset Auto-Matching Engine
+
+public struct AssetMatchResult {
+    public let asset: Asset
+    public let reason: String
+    public let score: Int
+    
+    public init(asset: Asset, reason: String, score: Int) {
+        self.asset = asset
+        self.reason = reason
+        self.score = score
+    }
+}
+
+extension RomanianUtilityParser {
+    /// Evaluates extracted OCR text against a list of candidate assets, scoring matches
+    /// by identifier entropy and specificity:
+    /// - Vehicle 17-char VIN: 100
+    /// - Utility POD / CLC / Water: 90
+    /// - Pet Microchip (15-digit ISO): 85
+    /// - Vehicle License Plate: 80
+    /// - Health Person Name: 60
+    /// - Warranty Serial / IMEI: 50
+    public static func findBestAssetMatch(for extractedText: String, in assets: [Asset]) -> AssetMatchResult? {
+        guard !extractedText.isEmpty else { return nil }
+        let normalized = normalizeDiacritics(extractedText).uppercased()
+        
+        var matches: [AssetMatchResult] = []
+        
+        for candidate in assets {
+            // 1. Vehicle 17-char VIN (Score: 100)
+            if let vin = candidate.vin, !vin.isEmpty {
+                let cleanVin = vin.replacingOccurrences(of: "-", with: "")
+                                  .replacingOccurrences(of: " ", with: "")
+                                  .uppercased()
+                if cleanVin.count >= 8 {
+                    let vinRegexPattern = cleanVin.map { NSRegularExpression.escapedPattern(for: String($0)) }
+                                                  .joined(separator: #"[\s\-]*"#)
+                    let fullPattern = #"(?i)(?:\b|[^A-Z0-9])"# + vinRegexPattern + #"(?:\b|[^A-Z0-9])"#
+                    if let regex = try? NSRegularExpression(pattern: fullPattern) {
+                        let ns = normalized as NSString
+                        if regex.firstMatch(in: normalized, range: NSRange(location: 0, length: ns.length)) != nil {
+                            matches.append(AssetMatchResult(asset: candidate, reason: "Serie Șasiu / VIN (\(vin))", score: 100))
+                            continue
+                        }
+                    }
+                    
+                    let docNoSpaces = normalized.replacingOccurrences(of: "-", with: "").replacingOccurrences(of: " ", with: "")
+                    if docNoSpaces.contains(cleanVin) {
+                        matches.append(AssetMatchResult(asset: candidate, reason: "Serie Șasiu / VIN (\(vin))", score: 100))
+                        continue
+                    }
+                    
+                    // Partial VIN support (last 8 characters if preceded by VIN/Serie sasiu anchor)
+                    if cleanVin.count == 17 {
+                        let last8 = String(cleanVin.suffix(8))
+                        let partialPattern = #"(?i)(?:serie\s*(?:de\s*)?[sș]asiu|vin)[:\s]+[\s\-]*"# + NSRegularExpression.escapedPattern(for: last8) + #"(?:\b|[^A-Z0-9])"#
+                        if let regex = try? NSRegularExpression(pattern: partialPattern) {
+                            let ns = normalized as NSString
+                            if regex.firstMatch(in: normalized, range: NSRange(location: 0, length: ns.length)) != nil {
+                                matches.append(AssetMatchResult(asset: candidate, reason: "Serie Șasiu / VIN (\(vin))", score: 100))
+                                continue
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // 2. Utility POD Code (Score: 90)
+            if let pod = candidate.podCode, !pod.isEmpty {
+                let cleanPod = pod.uppercased()
+                if normalized.contains(cleanPod) {
+                    matches.append(AssetMatchResult(asset: candidate, reason: "Cod POD Energie (\(pod))", score: 90))
+                    continue
+                }
+            }
+            
+            // 3. Utility CLC Code (Score: 90)
+            if let clc = candidate.clcCode, !clc.isEmpty {
+                let cleanClc = clc.uppercased()
+                if normalized.contains(cleanClc) {
+                    matches.append(AssetMatchResult(asset: candidate, reason: "Cod CLC Gaze (\(clc))", score: 90))
+                    continue
+                }
+            }
+            
+            // 4. Water Client Code (Score: 90)
+            if let water = candidate.waterClientCode, !water.isEmpty {
+                let cleanWater = water.uppercased()
+                if normalized.contains(cleanWater) {
+                    matches.append(AssetMatchResult(asset: candidate, reason: "Cod Client Apă (\(water))", score: 90))
+                    continue
+                }
+            }
+            
+            // 5. Pet Microchip (15-digit ISO) (Score: 85)
+            if let chip = candidate.microchipNumber, !chip.isEmpty {
+                if normalized.contains(chip) {
+                    matches.append(AssetMatchResult(asset: candidate, reason: "Microcip (\(chip))", score: 85))
+                    continue
+                }
+            }
+            
+            // 6. Vehicle License Plate (Score: 80)
+            if let plate = candidate.licensePlate, !plate.isEmpty {
+                let cleanPlate = plate.replacingOccurrences(of: "-", with: "")
+                                      .replacingOccurrences(of: " ", with: "")
+                                      .uppercased()
+                if cleanPlate.count >= 5 {
+                    if let tokenRegex = try? NSRegularExpression(pattern: #"([A-Z]+|[0-9]+)"#) {
+                        let nsPlate = cleanPlate as NSString
+                        let tokenMatches = tokenRegex.matches(in: cleanPlate, range: NSRange(location: 0, length: nsPlate.length))
+                        let tokens = tokenMatches.map { nsPlate.substring(with: $0.range) }
+                        let plateRegexPattern = tokens.joined(separator: #"[\s\-]*"#)
+                        let fullPattern = #"(?i)(?:\b|[^A-Z0-9])"# + plateRegexPattern + #"(?:\b|[^A-Z0-9])"#
+                        if let regex = try? NSRegularExpression(pattern: fullPattern) {
+                            let nsDoc = normalized as NSString
+                            if regex.firstMatch(in: normalized, range: NSRange(location: 0, length: nsDoc.length)) != nil {
+                                matches.append(AssetMatchResult(asset: candidate, reason: "Număr Auto (\(plate))", score: 80))
+                                continue
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // 7. Person Name (Health) (Score: 60)
+            if let pName = candidate.personName, !pName.isEmpty {
+                let cleanName = pName.uppercased().trimmingCharacters(in: .whitespacesAndNewlines)
+                if !cleanName.isEmpty && normalized.contains(cleanName) {
+                    matches.append(AssetMatchResult(asset: candidate, reason: "Dosar Medical: \(pName)", score: 60))
+                    continue
+                }
+            }
+            
+            // 8. Serial / IMEI (Warranties) (Score: 50)
+            if let sn = candidate.serialOrImei, !sn.isEmpty {
+                let cleanSn = sn.uppercased().trimmingCharacters(in: .whitespacesAndNewlines)
+                if !cleanSn.isEmpty && normalized.contains(cleanSn) {
+                    matches.append(AssetMatchResult(asset: candidate, reason: "Serie / IMEI (\(sn))", score: 50))
+                    continue
+                }
+            }
+        }
+        
+        return matches.sorted(by: { $0.score > $1.score }).first
+    }
+}
+

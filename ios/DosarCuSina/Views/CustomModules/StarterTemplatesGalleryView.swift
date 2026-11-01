@@ -1,5 +1,8 @@
 import SwiftUI
 import SwiftData
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// Tactile starter template gallery showcasing ready-to-use module configurations
 /// with 1-tap import creating the Asset, LifecycleEvents, and DynamicFields in SwiftData.
@@ -49,7 +52,7 @@ public struct StarterTemplatesGalleryView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 20)
             }
-            .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
+            .background(Color.groupedBackground.ignoresSafeArea())
             .navigationTitle("Șabloane Module")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -100,7 +103,7 @@ public struct StarterTemplatesGalleryView: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                .fill(Color.secondaryGroupedBackground)
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .strokeBorder(Color.green.opacity(0.3), lineWidth: 1)
@@ -111,22 +114,22 @@ public struct StarterTemplatesGalleryView: View {
     
     // MARK: - Template Detail Sheet
     private func templateDetailSheet(_ template: StarterTemplate) -> some View {
-        NavigationStack {
+        let accent = Color(hex: template.accentColorHex) ?? .blue
+        
+        return NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
                     // Header Hero
                     HStack(spacing: 16) {
                         Image(systemName: template.iconName)
                             .font(.system(size: 32, weight: .semibold))
-                            .foregroundStyle(Color(hex: template.accentColorHex) ?? .blue)
+                            .foregroundStyle(accent)
                             .frame(width: 68, height: 68)
-                            .background(
-                                (Color(hex: template.accentColorHex) ?? .blue).opacity(0.12)
-                            )
+                            .background(accent.opacity(0.12))
                             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .strokeBorder((Color(hex: template.accentColorHex) ?? .blue).opacity(0.2), lineWidth: 0.5)
+                                    .strokeBorder(accent.opacity(0.2), lineWidth: 0.5)
                             )
                         
                         VStack(alignment: .leading, spacing: 4) {
@@ -142,7 +145,7 @@ public struct StarterTemplatesGalleryView: View {
                     .padding(16)
                     .background(
                         RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                            .fill(Color.secondaryGroupedBackground)
                     )
                     
                     // Name Customizer
@@ -156,7 +159,7 @@ public struct StarterTemplatesGalleryView: View {
                             .font(.system(.body, design: .rounded))
                             .padding(.horizontal, 14)
                             .padding(.vertical, 12)
-                            .background(Color(uiColor: .secondarySystemGroupedBackground))
+                            .background(Color.secondaryGroupedBackground)
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -181,7 +184,9 @@ public struct StarterTemplatesGalleryView: View {
                             ForEach(template.suggestedEvents) { event in
                                 let isSelected = selectedEventIds.contains(event.id)
                                 Button {
+                                    #if canImport(UIKit)
                                     UISelectionFeedbackGenerator().selectionChanged()
+                                    #endif
                                     if isSelected {
                                         selectedEventIds.remove(event.id)
                                     } else {
@@ -218,7 +223,7 @@ public struct StarterTemplatesGalleryView: View {
                                     .padding(12)
                                     .background(
                                         RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                            .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                                            .fill(Color.secondaryGroupedBackground)
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                                                     .strokeBorder(
@@ -255,7 +260,7 @@ public struct StarterTemplatesGalleryView: View {
                                     .padding(10)
                                     .background(
                                         RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                            .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                                            .fill(Color.secondaryGroupedBackground)
                                     )
                                 }
                             }
@@ -282,7 +287,7 @@ public struct StarterTemplatesGalleryView: View {
                 }
                 .padding(16)
             }
-            .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
+            .background(Color.groupedBackground.ignoresSafeArea())
             .navigationTitle("Configurare Șablon")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -345,7 +350,9 @@ public struct StarterTemplatesGalleryView: View {
             asset.dynamicFields.append(dynamicField)
         }
         
+        #if canImport(UIKit)
         UINotificationFeedbackGenerator().notificationOccurred(.success)
+        #endif
         
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
             importedAssetBanner = template.title
@@ -407,7 +414,9 @@ public struct StarterTemplatesGalleryView: View {
             asset.dynamicFields.append(dynamicField)
         }
         
+        #if canImport(UIKit)
         UINotificationFeedbackGenerator().notificationOccurred(.success)
+        #endif
         
         selectedTemplate = nil
         onAssetImported?(asset)
@@ -422,18 +431,20 @@ private struct StarterTemplateCard: View {
     let onInspect: () -> Void
     
     var body: some View {
+        let accent = Color(hex: template.accentColorHex) ?? .blue
+        
         VStack(alignment: .leading, spacing: 14) {
             // Card Header
             HStack(spacing: 14) {
                 Image(systemName: template.iconName)
                     .font(.system(size: 24, weight: .semibold))
-                    .foregroundStyle(Color(hex: template.accentColorHex) ?? .blue)
+                    .foregroundStyle(accent)
                     .frame(width: 54, height: 54)
-                    .background((Color(hex: template.accentColorHex) ?? .blue).opacity(0.12))
+                    .background(accent.opacity(0.12))
                     .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: 15, style: .continuous)
-                            .strokeBorder((Color(hex: template.accentColorHex) ?? .blue).opacity(0.18), lineWidth: 0.5)
+                            .strokeBorder(accent.opacity(0.18), lineWidth: 0.5)
                     )
                 
                 VStack(alignment: .leading, spacing: 3) {
@@ -474,7 +485,7 @@ private struct StarterTemplateCard: View {
                 ForEach(template.suggestedEvents.prefix(3)) { ev in
                     HStack(spacing: 6) {
                         Circle()
-                            .fill(Color(hex: template.accentColorHex) ?? .blue)
+                            .fill(accent)
                             .frame(width: 5, height: 5)
                         Text(ev.title)
                             .font(.caption)
@@ -503,7 +514,7 @@ private struct StarterTemplateCard: View {
             .padding(10)
             .background(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color(uiColor: .tertiarySystemGroupedBackground))
+                    .fill(Color.tertiaryGroupedBackground)
             )
             
             // Action Buttons
@@ -533,7 +544,7 @@ private struct StarterTemplateCard: View {
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 9)
-                    .background(Color(hex: template.accentColorHex) ?? .blue)
+                    .background(accent)
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }
                 .buttonStyle(.plain)
@@ -542,7 +553,7 @@ private struct StarterTemplateCard: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                .fill(Color.secondaryGroupedBackground)
                 .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 2)
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -552,223 +563,29 @@ private struct StarterTemplateCard: View {
     }
 }
 
-// MARK: - Template Model Structures
-public struct StarterTemplate: Identifiable, Hashable, Sendable {
-    public let id: String
-    public let title: String
-    public let subtitle: String
-    public let category: AssetCategory
-    public let iconName: String
-    public let accentColorHex: String
-    public let primaryMetric: String
-    public let metricUnit: String?
-    public let initialMetricValue: Double?
-    public let suggestedEvents: [TemplateEvent]
-    public let suggestedFields: [TemplateField]
-    
-    public var metricBadgeTitle: String {
-        switch primaryMetric {
-        case "kilometers": return "Contor km"
-        case "hours": return "Contor ore"
-        case "cycles": return "Contor cicluri"
-        default: return "Calendaristic"
-        }
+// MARK: - Color Semantic Helpers
+fileprivate extension Color {
+    static var groupedBackground: Color {
+        #if canImport(UIKit)
+        return Color(uiColor: .systemGroupedBackground)
+        #else
+        return Color.secondary.opacity(0.08)
+        #endif
     }
     
-    public var metricBadgeIcon: String {
-        switch primaryMetric {
-        case "kilometers": return "gauge.with.dots.needle.bottom.50percent"
-        case "hours": return "hourglass"
-        case "cycles": return "arrow.triangle.2.circlepath"
-        default: return "calendar"
-        }
-    }
-}
-
-public struct TemplateEvent: Identifiable, Hashable, Sendable {
-    public let id: UUID
-    public let title: String
-    public let cadenceDays: Int?
-    public let cadenceMetricValue: Double?
-    public let metricUnit: String?
-    public let initialDueOffsetDays: Int
-    public let cost: Double?
-    
-    public init(
-        id: UUID = UUID(),
-        title: String,
-        cadenceDays: Int? = nil,
-        cadenceMetricValue: Double? = nil,
-        metricUnit: String? = nil,
-        initialDueOffsetDays: Int = 30,
-        cost: Double? = nil
-    ) {
-        self.id = id
-        self.title = title
-        self.cadenceDays = cadenceDays
-        self.cadenceMetricValue = cadenceMetricValue
-        self.metricUnit = metricUnit
-        self.initialDueOffsetDays = initialDueOffsetDays
-        self.cost = cost
-    }
-}
-
-public struct TemplateField: Identifiable, Hashable, Sendable {
-    public let id: UUID
-    public let key: String
-    public let label: String
-    public let fieldType: DynamicFieldType
-    public let defaultString: String?
-    public let defaultNumber: Double?
-    
-    public init(
-        id: UUID = UUID(),
-        key: String,
-        label: String,
-        fieldType: DynamicFieldType = .text,
-        defaultString: String? = nil,
-        defaultNumber: Double? = nil
-    ) {
-        self.id = id
-        self.key = key
-        self.label = label
-        self.fieldType = fieldType
-        self.defaultString = defaultString
-        self.defaultNumber = defaultNumber
+    static var secondaryGroupedBackground: Color {
+        #if canImport(UIKit)
+        return Color(uiColor: .secondarySystemGroupedBackground)
+        #else
+        return Color.secondary.opacity(0.12)
+        #endif
     }
     
-    public var defaultValueDescription: String {
-        if let s = defaultString, !s.isEmpty {
-            return s
-        }
-        if let n = defaultNumber {
-            return "\(n)"
-        }
-        return fieldType.displayTitle
+    static var tertiaryGroupedBackground: Color {
+        #if canImport(UIKit)
+        return Color(uiColor: .tertiarySystemGroupedBackground)
+        #else
+        return Color.secondary.opacity(0.16)
+        #endif
     }
-}
-
-// MARK: - Pre-configured Starter Catalog
-extension StarterTemplate {
-    public static let allTemplates: [StarterTemplate] = [
-        // 1. Bicicletă / E-Bike
-        StarterTemplate(
-            id: "bike",
-            title: "Bicicletă / E-Bike",
-            subtitle: "Mentenanță lanț, presiune roți, frâne și furcă",
-            category: .custom,
-            iconName: "bicycle",
-            accentColorHex: "34C759",
-            primaryMetric: "kilometers",
-            metricUnit: "km",
-            initialMetricValue: 0.0,
-            suggestedEvents: [
-                TemplateEvent(title: "Ungere și curățare lanț", cadenceDays: 14, cadenceMetricValue: 150, metricUnit: "km", initialDueOffsetDays: 14, cost: 35),
-                TemplateEvent(title: "Verificare presiune cauciucuri", cadenceDays: 7, initialDueOffsetDays: 7, cost: 0),
-                TemplateEvent(title: "Verificare uzură plăcuțe frână", cadenceMetricValue: 1000, metricUnit: "km", initialDueOffsetDays: 60, cost: 80),
-                TemplateEvent(title: "Înlocuire lanț transmisie", cadenceMetricValue: 2000, metricUnit: "km", initialDueOffsetDays: 180, cost: 120),
-                TemplateEvent(title: "Service suspensie / furcă", cadenceDays: 365, cadenceMetricValue: 100, metricUnit: "hours", initialDueOffsetDays: 180, cost: 250)
-            ],
-            suggestedFields: [
-                TemplateField(key: "tip_bicicleta", label: "Tip Bicicletă", defaultString: "MTB / E-Bike"),
-                TemplateField(key: "serie_cadru", label: "Serie Cadru", defaultString: ""),
-                TemplateField(key: "marime_roti", label: "Mărime Roți", defaultString: "29 inch")
-            ]
-        ),
-        
-        // 2. Plante de Interior
-        StarterTemplate(
-            id: "plants",
-            title: "Plante de Interior & Grădină",
-            subtitle: "Program udare, fertilizare de sezon și schimbat pământ",
-            category: .custom,
-            iconName: "leaf.fill",
-            accentColorHex: "00C7BE",
-            primaryMetric: "calendar",
-            metricUnit: nil,
-            initialMetricValue: nil,
-            suggestedEvents: [
-                TemplateEvent(title: "Udare periodică", cadenceDays: 7, initialDueOffsetDays: 3, cost: 0),
-                TemplateEvent(title: "Fertilizare de sezon (primăvară/vară)", cadenceDays: 30, initialDueOffsetDays: 14, cost: 25),
-                TemplateEvent(title: "Schimbare substrat și ghiveci", cadenceDays: 730, initialDueOffsetDays: 180, cost: 45),
-                TemplateEvent(title: "Curățare praf frunze & pulverizare", cadenceDays: 14, initialDueOffsetDays: 7, cost: 0)
-            ],
-            suggestedFields: [
-                TemplateField(key: "specie_nume", label: "Specie / Nume Plantă", defaultString: "Monstera"),
-                TemplateField(key: "nivel_lumina", label: "Nivel Lumină", defaultString: "Lumină indirectă")
-            ]
-        ),
-        
-        // 3. Proprietăți Închiriate
-        StarterTemplate(
-            id: "landlord",
-            title: "Proprietăți Închiriate",
-            subtitle: "Index contoare, încasare chirie, revizie centrală și contract ANAF",
-            category: .home,
-            iconName: "building.2.fill",
-            accentColorHex: "5856D6",
-            primaryMetric: "calendar",
-            metricUnit: nil,
-            initialMetricValue: nil,
-            suggestedEvents: [
-                TemplateEvent(title: "Scadență plată / încasare chirie", cadenceDays: 30, initialDueOffsetDays: 10, cost: 2200),
-                TemplateEvent(title: "Transmitere index apometre & utilități", cadenceDays: 30, initialDueOffsetDays: 25, cost: 0),
-                TemplateEvent(title: "Verificare Tehnică Centrală (VTP)", cadenceDays: 730, initialDueOffsetDays: 120, cost: 350),
-                TemplateEvent(title: "Reînnoire înregistrare contract ANAF", cadenceDays: 365, initialDueOffsetDays: 240, cost: 0)
-            ],
-            suggestedFields: [
-                TemplateField(key: "nume_chirias", label: "Nume Chiriaș", defaultString: ""),
-                TemplateField(key: "numar_contract", label: "Număr Contract ANAF", defaultString: ""),
-                TemplateField(key: "garantie", label: "Garanție Depusă (RON)", fieldType: .currency, defaultNumber: 4400.0)
-            ]
-        ),
-        
-        // 4. Espressor de Cafea
-        StarterTemplate(
-            id: "espresso",
-            title: "Espressor de Cafea",
-            subtitle: "Decalcifiere, schimbat filtru apă și curățare grup",
-            category: .custom,
-            iconName: "cup.and.saucer.fill",
-            accentColorHex: "A2845E",
-            primaryMetric: "cycles",
-            metricUnit: "cicluri",
-            initialMetricValue: 0.0,
-            suggestedEvents: [
-                TemplateEvent(title: "Curățare chimică grup (Cafiza)", cadenceDays: 14, cadenceMetricValue: 100, metricUnit: "extracții", initialDueOffsetDays: 7, cost: 30),
-                TemplateEvent(title: "Decalcifiere completă boiler", cadenceDays: 60, cadenceMetricValue: 300, metricUnit: "extracții", initialDueOffsetDays: 30, cost: 40),
-                TemplateEvent(title: "Înlocuire filtru apă / rășină dedurizatoare", cadenceDays: 60, initialDueOffsetDays: 45, cost: 65),
-                TemplateEvent(title: "Curățare duză spumare lapte", cadenceDays: 7, initialDueOffsetDays: 2, cost: 0)
-            ],
-            suggestedFields: [
-                TemplateField(key: "model_aparat", label: "Model Espressor", defaultString: ""),
-                TemplateField(key: "duritate_apa", label: "Duritate Apă (dH)", fieldType: .number, defaultNumber: 7.0),
-                TemplateField(key: "diametru_portfiltru", label: "Portfiltru", defaultString: "58mm")
-            ]
-        ),
-        
-        // 5. Ambarcațiuni / Bărci
-        StarterTemplate(
-            id: "boat",
-            title: "Ambarcațiuni / Bărci",
-            subtitle: "Revizie motor barcă, antivegetativă și verificare veste salvare",
-            category: .custom,
-            iconName: "sailboat.fill",
-            accentColorHex: "32ADE6",
-            primaryMetric: "hours",
-            metricUnit: "ore",
-            initialMetricValue: 0.0,
-            suggestedEvents: [
-                TemplateEvent(title: "Revizie motor barcă (Ulei & Filtre)", cadenceDays: 365, cadenceMetricValue: 100, metricUnit: "ore", initialDueOffsetDays: 90, cost: 850),
-                TemplateEvent(title: "Vopsea antivegetativă (Antifouling)", cadenceDays: 365, initialDueOffsetDays: 120, cost: 1200),
-                TemplateEvent(title: "Verificare veste salvare & siguranță", cadenceDays: 180, initialDueOffsetDays: 60, cost: 0),
-                TemplateEvent(title: "Verificare anod sacrificiu (zinc)", cadenceDays: 180, initialDueOffsetDays: 90, cost: 150)
-            ],
-            suggestedFields: [
-                TemplateField(key: "nr_inmatriculare", label: "Număr Pavilion / Înmatriculare", defaultString: ""),
-                TemplateField(key: "putere_motor", label: "Putere Motor (CP)", fieldType: .number, defaultNumber: 115.0),
-                TemplateField(key: "port_acostare", label: "Port de Ambarcare", defaultString: "")
-            ]
-        )
-    ]
 }

@@ -2,6 +2,12 @@ import Foundation
 import UserNotifications
 import SwiftData
 
+// MARK: - Deep Link Notification Extension
+
+extension Notification.Name {
+    public static let dosarCuSinaOpenEventDeepLink = Notification.Name("DosarCuSinaOpenEventDeepLink")
+}
+
 /// Abstraction protocol for UNUserNotificationCenter to allow mock testing.
 public protocol UserNotificationCenterProtocol: Sendable {
     func add(_ request: UNNotificationRequest) async throws
@@ -22,15 +28,29 @@ extension UNUserNotificationCenter: UserNotificationCenterProtocol {
     }
 }
 
+/// Fallback notification center for CLI / headless test execution where no app bundle exists.
+public final class StandaloneNotificationCenter: UserNotificationCenterProtocol, @unchecked Sendable {
+    private var requests: [UNNotificationRequest] = []
+    public init() {}
+    public func add(_ request: UNNotificationRequest) async throws { requests.append(request) }
+    public func removePendingNotificationRequests(withIdentifiers identifiers: [String]) {
+        requests.removeAll { identifiers.contains($0.identifier) }
+    }
+    public func getPendingNotificationRequests() async -> [UNNotificationRequest] { requests }
+    public func setNotificationCategories(_ categories: Set<UNNotificationCategory>) {}
+    public func requestAuthorization(options: UNAuthorizationOptions) async throws -> Bool { true }
+}
+
 /// Native notification scheduling and alert lifecycle engine using `UNUserNotificationCenter`.
 ///
 /// Features:
 /// - Reminder offsets: -30 days, -7 days, -1 day, and 0 days (due date), automatically pruning past offsets.
 /// - Schedules triggers precisely at 09:00 AM local time.
+/// - Time-Sensitive delivery (`.timeSensitive`) for -1d and 0d deadline alerts to break through Focus modes.
 /// - Registers interactive notification category `"LIFECYCLE_EVENT_CATEGORY"` with:
-///   - `"ACTION_RESOLVE"`: "Am rezolvat" (resolves event)
+///   - `"ACTION_RESOLVE"`: "Am rezolvat" (resolves event and automatically spawns next cycle on recurring cadence)
 ///   - `"ACTION_SNOOZE_3D"`: "Amână 3 zile" (postpones alert by 3 days)
-/// - Methods to schedule, cancel, reschedule, and snooze reminders for `LifecycleEvent`.
+/// - Deep linking via `dosarcusina://event/<uuid>`.
 public final class NotificationScheduler: Sendable {
     
     // MARK: - Constants
@@ -38,18 +58,44 @@ public final class NotificationScheduler: Sendable {
     public static let categoryIdentifier = "LIFECYCLE_EVENT_CATEGORY"
     public static let actionResolveIdentifier = "ACTION_RESOLVE"
     public static let actionSnooze3DIdentifier = "ACTION_SNOOZE_3D"
+    public static let deepLinkScheme = "dosarcusina"
     
     /// Default reminder offsets in days relative to due date: -30d, -7d, -1d, and 0d (due date).
     public static let defaultOffsets: [Int] = [-30, -7, -1, 0]
     
+    // MARK: - Deep Link State
+    
+    private static let deepLinkLock = NSLock()
+    private static nonisolated(unsafe) var _activeDeepLinkEventId: UUID?
+    
+    public static var activeDeepLinkEventId: UUID? {
+        get {
+            deepLinkLock.lock()
+            defer { deepLinkLock.unlock() }
+            return _activeDeepLinkEventId
+        }
+        set {
+            deepLinkLock.lock()
+            defer { deepLinkLock.unlock() }
+            _activeDeepLinkEventId = newValue
+        }
+    }
+    
     // MARK: - Properties
+    
+    public static func safeDefaultCenter() -> any UserNotificationCenterProtocol {
+        if Bundle.main.bundleIdentifier != nil {
+            return UNUserNotificationCenter.current()
+        }
+        return StandaloneNotificationCenter()
+    }
     
     public static let shared = NotificationScheduler()
     
     private let center: any UserNotificationCenterProtocol
     
-    public init(center: any UserNotificationCenterProtocol = UNUserNotificationCenter.current()) {
-        self.center = center
+    public init(center: (any UserNotificationCenterProtocol)? = nil) {
+        self.center = center ?? Self.safeDefaultCenter()
     }
     
     // MARK: - Permission & Category Registration
@@ -201,6 +247,9 @@ public final class NotificationScheduler: Sendable {
             content.categoryIdentifier = Self.categoryIdentifier
             content.sound = .default
             
+            // Time-Sensitive interruption level for critical -1d and 0d deadline breaches
+            content.interruptionLevel = (normalizedOffset >= -1) ? .timeSensitive : .active
+            
             // Localized Romanian notification copy
             if normalizedOffset == 0 {
                 content.title = "Scadent astăzi: \(event.title)"
@@ -310,6 +359,7 @@ public final class NotificationScheduler: Sendable {
         }
         content.categoryIdentifier = Self.categoryIdentifier
         content.sound = .default
+        content.interruptionLevel = .timeSensitive
         content.userInfo = [
             "eventId": event.id.uuidString,
             "assetId": event.asset?.id.uuidString ?? "",
@@ -328,9 +378,9 @@ public final class NotificationScheduler: Sendable {
         return identifier
     }
     
-    // MARK: - Action Handling
+    // MARK: - Action Handling with Recurring Rollover
     
-    /// Handles interactive notification banner actions (`"ACTION_RESOLVE"`, `"ACTION_SNOOZE_3D"`).
+    /// Handles interactive notification banner actions (`"ACTION_RESOLVE"`, `"ACTION_SNOOZE_3D"`, or default tap).
     public func handleActionResponse(
         actionIdentifier: String,
         userInfo: [AnyHashable: Any],
@@ -343,7 +393,7 @@ public final class NotificationScheduler: Sendable {
         
         switch actionIdentifier {
         case Self.actionResolveIdentifier:
-            // Cancel all notifications for this event
+            // Cancel all pending notifications for this event
             await cancelReminders(forEventId: eventId)
             
             // Mark completed in database if context is provided
@@ -354,7 +404,43 @@ public final class NotificationScheduler: Sendable {
                 if let event = try context.fetch(descriptor).first {
                     event.isCompleted = true
                     event.completedDate = Date()
+                    
+                    // Automatic Recurring Rollover:
+                    // If cadenceDays is set and > 0, spawn the next cycle's LifecycleEvent
+                    if let cadence = event.cadenceDays, cadence > 0 {
+                        let nextDueDate = Calendar.current.date(byAdding: .day, value: cadence, to: event.dueDate)
+                            ?? event.dueDate.addingTimeInterval(Double(cadence) * 86400)
+                        
+                        let nextEvent = LifecycleEvent(
+                            title: event.title,
+                            eventDescription: event.eventDescription,
+                            dueDate: nextDueDate,
+                            cost: event.cost,
+                            currency: event.currency,
+                            provider: event.provider,
+                            policyOrContractNumber: event.policyOrContractNumber,
+                            coverageType: event.coverageType,
+                            bonusMalusClass: event.bonusMalusClass,
+                            mileageAtEvent: nil,
+                            serviceLocation: event.serviceLocation,
+                            insuredCoverageAmount: event.insuredCoverageAmount,
+                            franchiseAmount: event.franchiseAmount,
+                            startDate: event.dueDate,
+                            isAutoRenew: event.isAutoRenew,
+                            cadenceDays: event.cadenceDays,
+                            cadenceMetricInterval: event.cadenceMetricInterval,
+                            metricTriggerValue: event.metricTriggerValue,
+                            reminderOffsetDays: event.reminderOffsetDays
+                        )
+                        nextEvent.asset = event.asset
+                        context.insert(nextEvent)
+                        
+                        // Schedule reminders for the newly spawned recurring cycle
+                        _ = try? await scheduleReminders(for: nextEvent)
+                    }
+                    
                     try context.save()
+                    WidgetDataSyncService.shared.sync(context: context)
                 }
             }
             
@@ -365,11 +451,91 @@ public final class NotificationScheduler: Sendable {
                 )
                 if let event = try context.fetch(descriptor).first {
                     try await snoozeReminder(for: event, days: 3)
+                    WidgetDataSyncService.shared.sync(context: context)
                 }
             }
             
+        case UNNotificationDefaultActionIdentifier:
+            // Tapping notification directly: activate deep-link navigation
+            Self.activeDeepLinkEventId = eventId
+            let deepLinkURL = URL(string: "\(Self.deepLinkScheme)://event/\(eventId.uuidString)")
+            NotificationCenter.default.post(
+                name: .dosarCuSinaOpenEventDeepLink,
+                object: nil,
+                userInfo: [
+                    "eventId": eventId,
+                    "eventIdString": eventId.uuidString,
+                    "url": deepLinkURL as Any
+                ]
+            )
+            
         default:
             break
+        }
+    }
+}
+
+// MARK: - UNUserNotificationCenterDelegate Implementation
+
+/// Native UNUserNotificationCenter delegate providing foreground presentation,
+/// interactive action dispatching with recurring rollover, and deep-link routing.
+public final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate, Sendable {
+    
+    public static let shared = NotificationDelegate()
+    
+    private let containerLock = NSLock()
+    private nonisolated(unsafe) var _modelContainer: ModelContainer?
+    
+    public var modelContainer: ModelContainer? {
+        get {
+            containerLock.lock()
+            defer { containerLock.unlock() }
+            return _modelContainer
+        }
+        set {
+            containerLock.lock()
+            defer { containerLock.unlock() }
+            _modelContainer = newValue
+        }
+    }
+    
+    public override init() {
+        super.init()
+    }
+    
+    /// Displays notification banners, sounds, and badges even while the app is active in foreground.
+    public func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .list, .sound, .badge])
+    }
+    
+    /// Handles user taps on notifications and interactive actions ("Am rezolvat", "Amână 3 zile").
+    public func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let actionIdentifier = response.actionIdentifier
+        let userInfo = response.notification.request.content.userInfo
+        
+        Task { @MainActor in
+            let context: ModelContext?
+            if let container = self.modelContainer {
+                context = container.mainContext
+            } else {
+                context = nil
+            }
+            
+            try? await NotificationScheduler.shared.handleActionResponse(
+                actionIdentifier: actionIdentifier,
+                userInfo: userInfo,
+                modelContext: context
+            )
+            
+            completionHandler()
         }
     }
 }

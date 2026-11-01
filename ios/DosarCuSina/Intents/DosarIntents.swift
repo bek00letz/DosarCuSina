@@ -15,7 +15,9 @@ final class DosarDataStore {
             Asset.self,
             LifecycleEvent.self,
             DocumentAttachment.self,
-            DynamicField.self
+            DynamicField.self,
+            ServiceItem.self,
+            MeasurementLog.self
         ])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         self.container = try? ModelContainer(for: schema, configurations: [config])
@@ -60,7 +62,7 @@ final class DosarDataStore {
         return results.sorted { $0.event.dueDate < $1.event.dueDate }
     }
     
-    /// Marks an event as resolved by its UUID.
+    /// Marks an event as resolved by its UUID, rolling over if recurring.
     func completeEvent(id: UUID) -> Bool {
         guard let container = container else { return false }
         let context = ModelContext(container)
@@ -68,8 +70,16 @@ final class DosarDataStore {
             predicate: #Predicate<LifecycleEvent> { $0.id == id }
         )
         guard let event = try? context.fetch(descriptor).first else { return false }
-        event.isCompleted = true
-        event.completedDate = Date()
+        
+        if let cadence = event.cadenceDays, cadence > 0 {
+            event.dueDate = CadenceCalculator.calculateNextDueDate(from: event.dueDate, cadenceDays: cadence)
+            event.isCompleted = false
+            event.completedDate = nil
+        } else {
+            event.isCompleted = true
+            event.completedDate = Date()
+        }
+        
         try? context.save()
         return true
     }
@@ -86,42 +96,40 @@ public struct CheckExpiringEventsIntent: AppIntent {
     public init() {}
     
     public func perform() async throws -> some IntentResult & ProvidesDialog & ReturnsValue<String> {
-        let events = await MainActor.run {
-            DosarDataStore.shared.fetchUpcomingEvents(days: 30)
-        }
-        
-        let responseText: String
-        let calendar = Calendar.current
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateStyle = .medium
-        dateFormatter.timeStyle = .none
-        dateFormatter.locale = Locale(identifier: "ro_RO")
-        
-        if events.isEmpty {
-            responseText = "Totul este la zi! Nu ai nicio scadență programată în următoarele 30 de zile în Dosar cu Șină."
-        } else if events.count == 1 {
-            let event = events[0]
-            let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: Date()), to: calendar.startOfDay(for: event.dueDate)).day ?? 0
-            let dateStr = dateFormatter.string(from: event.dueDate)
-            let assetInfo = event.asset != nil ? " pentru \(event.asset!.name)" : ""
+        let responseText: String = await MainActor.run {
+            let events = DosarDataStore.shared.fetchUpcomingEvents(days: 30)
+            let calendar = Calendar.current
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateStyle = .medium
+            dateFormatter.timeStyle = .none
+            dateFormatter.locale = Locale(identifier: "ro_RO")
             
-            if days == 0 {
-                responseText = "Ai o scadență chiar astăzi: \(event.title)\(assetInfo)."
-            } else if days == 1 {
-                responseText = "Ai o scadență mâine: \(event.title)\(assetInfo), pe \(dateStr)."
-            } else {
-                responseText = "Ai o scadență în următoarele 30 de zile: \(event.title)\(assetInfo), pe \(dateStr), peste \(days) zile."
-            }
-        } else {
-            let summaryItems = events.prefix(4).map { event -> String in
+            if events.isEmpty {
+                return "Totul este la zi! Nu ai nicio scadență programată în următoarele 30 de zile în Dosar cu Șină."
+            } else if events.count == 1 {
+                let event = events[0]
+                let days = calendar.dateComponents([.day], from: calendar.startOfDay(for: Date()), to: calendar.startOfDay(for: event.dueDate)).day ?? 0
                 let dateStr = dateFormatter.string(from: event.dueDate)
-                let assetPart = event.asset != nil ? " (\(event.asset!.name))" : ""
-                return "\(event.title)\(assetPart) pe \(dateStr)"
+                let assetInfo = event.asset != nil ? " pentru \(event.asset!.name)" : ""
+                
+                if days == 0 {
+                    return "Ai o scadență chiar astăzi: \(event.title)\(assetInfo)."
+                } else if days == 1 {
+                    return "Ai o scadență mâine: \(event.title)\(assetInfo), pe \(dateStr)."
+                } else {
+                    return "Ai o scadență în următoarele 30 de zile: \(event.title)\(assetInfo), pe \(dateStr), peste \(days) zile."
+                }
+            } else {
+                let summaryItems = events.prefix(4).map { event -> String in
+                    let dateStr = dateFormatter.string(from: event.dueDate)
+                    let assetPart = event.asset != nil ? " (\(event.asset!.name))" : ""
+                    return "\(event.title)\(assetPart) pe \(dateStr)"
+                }
+                let joinedList = summaryItems.joined(separator: ", ")
+                let remainingCount = events.count - summaryItems.count
+                let extra = remainingCount > 0 ? " și încă \(remainingCount) altele." : "."
+                return "Ai \(events.count) scadențe în următoarele 30 de zile: \(joinedList)\(extra)"
             }
-            let joinedList = summaryItems.joined(separator: ", ")
-            let remainingCount = events.count - summaryItems.count
-            let extra = remainingCount > 0 ? " și încă \(remainingCount) altele." : "."
-            responseText = "Ai \(events.count) scadențe în următoarele 30 de zile: \(joinedList)\(extra)"
         }
         
         return .result(value: responseText, dialog: IntentDialog(stringLiteral: responseText))
@@ -139,42 +147,40 @@ public struct CheckVehicleITPIntent: AppIntent {
     public init() {}
     
     public func perform() async throws -> some IntentResult & ProvidesDialog & ReturnsValue<String> {
-        let vehicleEvents = await MainActor.run {
-            DosarDataStore.shared.fetchVehicleITPEvents()
-        }
-        
-        let responseText: String
-        let calendar = Calendar.current
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateStyle = .medium
-        dateFormatter.timeStyle = .none
-        dateFormatter.locale = Locale(identifier: "ro_RO")
-        
-        // Filter specifically for ITP first, or fallback to any vehicle inspection
-        let itpMatches = vehicleEvents.filter { $0.event.title.localizedCaseInsensitiveContains("itp") }
-        let candidate = itpMatches.first ?? vehicleEvents.first
-        
-        if let match = candidate {
-            let event = match.event
-            let asset = match.asset
-            let formattedDate = dateFormatter.string(from: event.dueDate)
-            let daysRemaining = calendar.dateComponents(
-                [.day],
-                from: calendar.startOfDay(for: Date()),
-                to: calendar.startOfDay(for: event.dueDate)
-            ).day ?? 0
+        let responseText: String = await MainActor.run {
+            let vehicleEvents = DosarDataStore.shared.fetchVehicleITPEvents()
+            let calendar = Calendar.current
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateStyle = .medium
+            dateFormatter.timeStyle = .none
+            dateFormatter.locale = Locale(identifier: "ro_RO")
             
-            if daysRemaining < 0 {
-                responseText = "Atenție: ITP-ul pentru \(asset.name) a expirat acum \(abs(daysRemaining)) zile, pe data de \(formattedDate)."
-            } else if daysRemaining == 0 {
-                responseText = "ITP-ul pentru \(asset.name) expiră astăzi!"
-            } else if daysRemaining == 1 {
-                responseText = "ITP-ul pentru \(asset.name) expiră mâine, pe data de \(formattedDate)."
+            // Filter specifically for ITP first, or fallback to any vehicle inspection
+            let itpMatches = vehicleEvents.filter { $0.event.title.localizedCaseInsensitiveContains("itp") }
+            let candidate = itpMatches.first ?? vehicleEvents.first
+            
+            if let match = candidate {
+                let event = match.event
+                let asset = match.asset
+                let formattedDate = dateFormatter.string(from: event.dueDate)
+                let daysRemaining = calendar.dateComponents(
+                    [.day],
+                    from: calendar.startOfDay(for: Date()),
+                    to: calendar.startOfDay(for: event.dueDate)
+                ).day ?? 0
+                
+                if daysRemaining < 0 {
+                    return "Atenție: ITP-ul pentru \(asset.name) a expirat acum \(abs(daysRemaining)) zile, pe data de \(formattedDate)."
+                } else if daysRemaining == 0 {
+                    return "ITP-ul pentru \(asset.name) expiră astăzi!"
+                } else if daysRemaining == 1 {
+                    return "ITP-ul pentru \(asset.name) expiră mâine, pe data de \(formattedDate)."
+                } else {
+                    return "ITP-ul pentru \(asset.name) expiră pe \(formattedDate), peste \(daysRemaining) zile."
+                }
             } else {
-                responseText = "ITP-ul pentru \(asset.name) expiră pe \(formattedDate), peste \(daysRemaining) zile."
+                return "Nu am găsit nicio scadență de ITP înregistrată pentru vehiculele tale în Dosar cu Șină."
             }
-        } else {
-            responseText = "Nu am găsit nicio scadență de ITP înregistrată pentru vehiculele tale în Dosar cu Șină."
         }
         
         return .result(value: responseText, dialog: IntentDialog(stringLiteral: responseText))

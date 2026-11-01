@@ -343,7 +343,76 @@ private struct DynamicFieldRow: View {
     private var valueEditor: some View {
         switch field.fieldType {
         case .text:
-            TextField("Introdu valoare text...", text: Binding(
+            TextField("Introdu valoare...", text: Binding(
+                get: { field.stringValue ?? "" },
+                set: { field.stringValue = $0 }
+            ))
+            .font(.system(.body, design: .rounded))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(Color(uiColor: .tertiarySystemGroupedBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            
+        case .url:
+            HStack(spacing: 8) {
+                TextField("https://...", text: Binding(
+                    get: { field.stringValue ?? "" },
+                    set: { field.stringValue = $0 }
+                ))
+                .keyboardType(.URL)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .font(.system(.body, design: .monospaced))
+                
+                if let str = field.stringValue, let url = URL(string: str), UIApplication.shared.canOpenURL(url) {
+                    Link(destination: url) {
+                        Image(systemName: "arrow.up.right.circle.fill")
+                            .font(.system(size: 18))
+                            .foregroundStyle(.cyan)
+                    }
+                }
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(Color(uiColor: .tertiarySystemGroupedBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            
+        case .phone:
+            HStack(spacing: 8) {
+                TextField("07xx xxx xxx", text: Binding(
+                    get: { field.stringValue ?? "" },
+                    set: { field.stringValue = $0 }
+                ))
+                .keyboardType(.phonePad)
+                .font(.system(.body, design: .monospaced))
+                
+                if let phone = field.stringValue, !phone.isEmpty, let url = URL(string: "tel://\(phone.filter { $0.isNumber })") {
+                    Link(destination: url) {
+                        Image(systemName: "phone.circle.fill")
+                            .font(.system(size: 18))
+                            .foregroundStyle(.mint)
+                    }
+                }
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(Color(uiColor: .tertiarySystemGroupedBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            
+        case .longText:
+            TextField("Observații / Notă extinsă...", text: Binding(
+                get: { field.stringValue ?? "" },
+                set: { field.stringValue = $0 }
+            ), axis: .vertical)
+            .lineLimit(3...6)
+            .font(.system(.body, design: .rounded))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(Color(uiColor: .tertiarySystemGroupedBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            
+        case .singleSelect, .multiSelect:
+            TextField("Opțiune / Valori (separate prin virgulă)...", text: Binding(
                 get: { field.stringValue ?? "" },
                 set: { field.stringValue = $0 }
             ))
@@ -454,33 +523,18 @@ private struct FieldTypeChip: View {
 
 // MARK: - DynamicFieldType UI Extensions
 extension DynamicFieldType {
-    public var displayTitle: String {
-        switch self {
-        case .text: return "Text"
-        case .number: return "Număr"
-        case .date: return "Dată"
-        case .boolean: return "Comutator"
-        case .currency: return "Monetară"
-        }
-    }
-    
-    public var iconName: String {
-        switch self {
-        case .text: return "textformat"
-        case .number: return "number"
-        case .date: return "calendar"
-        case .boolean: return "switch.2"
-        case .currency: return "banknote"
-        }
-    }
-    
     public var accentColor: Color {
         switch self {
         case .text: return .blue
         case .number: return .orange
+        case .currency: return .teal
         case .date: return .green
         case .boolean: return .purple
-        case .currency: return .teal
+        case .singleSelect: return .indigo
+        case .multiSelect: return .pink
+        case .url: return .cyan
+        case .phone: return .mint
+        case .longText: return .gray
         }
     }
 }

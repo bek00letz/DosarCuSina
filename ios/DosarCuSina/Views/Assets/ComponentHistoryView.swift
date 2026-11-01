@@ -88,14 +88,15 @@ public struct ComponentHistoryView: View {
         
         public var timeBetween: String? {
             guard let latestDate = latestItem?.serviceDate,
-                  let prevDate = previousItem?.serviceDate else { return nil }
+                  let prevDate = previousItem?.serviceDate,
+                  latestDate >= prevDate else { return nil }
             let components = Calendar.current.dateComponents([.year, .month, .day], from: prevDate, to: latestDate)
             if let years = components.year, years > 0 {
                 return "\(years) \(years == 1 ? "an" : "ani")" + (components.month ?? 0 > 0 ? " și \(components.month!) luni" : "")
             } else if let months = components.month, months > 0 {
                 return "\(months) \(months == 1 ? "lună" : "luni")"
-            } else if let days = components.day {
-                return "\(days) zile"
+            } else if let days = components.day, days >= 0 {
+                return "\(days) \(days == 1 ? "zi" : "zile")"
             }
             return nil
         }
@@ -166,15 +167,16 @@ public struct ComponentHistoryView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 ForEach(categories, id: \.self) { cat in
+                    let isSelected = selectedCategoryFilter == cat
                     Button {
                         selectedCategoryFilter = cat
                     } label: {
                         Text(cat)
-                            .font(.system(.caption, design: .rounded, weight: selectedCategoryFilter == cat ? .bold : .medium))
+                            .font(.system(.caption, design: .rounded, weight: isSelected ? .bold : .medium))
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
-                            .background(selectedCategoryFilter == cat ? Color.primary : Color(uiColor: .tertiarySystemFill))
-                            .foregroundStyle(selectedCategoryFilter == cat ? Color(uiColor: .systemBackground) : Color.primary)
+                            .background(isSelected ? Color.primary : Color(uiColor: .tertiarySystemFill))
+                            .foregroundStyle(isSelected ? Color(uiColor: .systemBackground) : Color.primary)
                             .clipShape(Capsule())
                     }
                     .buttonStyle(.plain)
@@ -200,7 +202,8 @@ public struct ComponentHistoryView: View {
                 
                 Spacer()
                 
-                Text("\(group.items.count) \(group.items.count == 1 ? "înlocuire" : "înlocuiri")")
+                let countBadgeText = group.items.count == 1 ? "1 înlocuire" : "\(group.items.count) înlocuiri"
+                Text(countBadgeText)
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 8)
@@ -225,7 +228,7 @@ public struct ComponentHistoryView: View {
                                 Text(latest.serviceDate.formatted(.dateTime.day().month().year()))
                                     .font(.system(.caption, design: .rounded, weight: .bold))
                                 
-                                if let km = latest.mileageAtService {
+                                if let km = latest.mileageAtService, km.isFinite, km >= 0 {
                                     Text("• \(Int(km)) km")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
@@ -235,7 +238,7 @@ public struct ComponentHistoryView: View {
                         
                         Spacer()
                         
-                        if let cost = latest.cost {
+                        if let cost = latest.cost, cost.isFinite {
                             Text("\(String(format: "%.0f", cost)) RON")
                                 .font(.system(.subheadline, design: .rounded, weight: .bold))
                         }
@@ -258,7 +261,7 @@ public struct ComponentHistoryView: View {
                     }
                     
                     // Historical Delta Box (The User's Desired Superpower!)
-                    if let prev = group.previousItem {
+                    if group.previousItem != nil {
                         HStack(spacing: 12) {
                             if let deltaKm = group.deltaKm {
                                 deltaMetricBadge(
@@ -441,7 +444,7 @@ public struct AddServiceItemSheet: View {
         let item = ServiceItem(
             name: name.trimmingCharacters(in: .whitespacesAndNewlines),
             category: category.trimmingCharacters(in: .whitespacesAndNewlines),
-            partBrandOrCode: partBrandOrCode.isEmpty ? nil : partBrandOrCode,
+            partBrand: partBrandOrCode.isEmpty ? nil : partBrandOrCode,
             cost: costVal,
             serviceDate: serviceDate,
             mileageAtService: mileageVal,

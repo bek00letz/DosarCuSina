@@ -165,7 +165,7 @@ public struct DosarWidgetEntry: TimelineEntry, Sendable {
 // MARK: - Widget Data Provider
 public final class WidgetDataProvider: Sendable {
     public static let shared = WidgetDataProvider()
-    public static let appGroupID = "group.com.dosarcusina.app"
+    public static let appGroupID = "group.com.ar.dosarcusina.shared"
     public static let snapshotFileName = "dosar_widget_snapshot.json"
     
     public static func getSharedDirectoryURL() -> URL? {

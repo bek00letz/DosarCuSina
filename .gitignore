@@ -17,7 +17,8 @@ ehthumbs.db
 *.env.*
 *.secret
 *.secrets
-Config.xcconfig
+*.xcconfig
+!*.xcconfig.template
 Secrets.swift
 Secrets.kt
 local.properties

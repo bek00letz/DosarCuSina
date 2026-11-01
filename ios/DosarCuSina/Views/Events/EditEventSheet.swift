@@ -163,7 +163,7 @@ public struct EditEventSheet: View {
                         .onDelete(perform: deleteServiceItem)
                     }
                     
-                    if let asset = event.asset {
+                    if event.asset != nil {
                         Button {
                             showingAddLineItem = true
                         } label: {
@@ -179,7 +179,7 @@ public struct EditEventSheet: View {
                 
                 // Section 6: Notes
                 Section("Observații") {
-                    TextField("Note suplimentare...", text: $eventDescription, axis: .vertical)
+                    TextField("Note suplimentare…", text: $eventDescription, axis: .vertical)
                         .lineLimit(3...6)
                 }
                 
@@ -272,17 +272,21 @@ public struct EditEventSheet: View {
         }
         
         // Update notification schedule
-        if event.isCompleted {
-            NotificationScheduler.shared.cancelReminders(for: event)
-        } else {
-            NotificationScheduler.shared.scheduleReminders(for: event)
+        Task {
+            if event.isCompleted {
+                await NotificationScheduler.shared.cancelReminders(for: event)
+            } else {
+                _ = try? await NotificationScheduler.shared.scheduleReminders(for: event)
+            }
         }
         
         dismiss()
     }
     
     private func deleteEvent() {
-        NotificationScheduler.shared.cancelReminders(for: event)
+        Task {
+            await NotificationScheduler.shared.cancelReminders(for: event)
+        }
         modelContext.delete(event)
         dismiss()
     }
