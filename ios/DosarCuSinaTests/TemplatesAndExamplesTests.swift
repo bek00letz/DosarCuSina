@@ -103,7 +103,9 @@ struct ExampleDataTests {
         #expect(try context.fetch(FetchDescriptor<Asset>()).map(\.name) == ["Mașina mea"])
         #expect(try context.fetchCount(FetchDescriptor<Obligation>()) == 0)
         #expect(try context.fetchCount(FetchDescriptor<MeasurementLog>()) == 0)
-        #expect(try context.fetchCount(FetchDescriptor<Completion>()) == 0)
+        #expect(try context.fetchCount(FetchDescriptor<HistoryEntry>()) == 0)
+        #expect(try context.fetchCount(FetchDescriptor<ServiceItem>()) == 0)
+        #expect(try context.fetchCount(FetchDescriptor<Provider>()) == 0)
     }
 
     @Test func exampleCarHasAMeaningfulOdometerHistory() throws {

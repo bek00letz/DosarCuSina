@@ -88,8 +88,9 @@ public enum DossierArchiveReader {
             templates: try decode([DossierV3.Template].self, DossierV3.Path.templates),
             assets: try decode([DossierV3.Asset].self, DossierV3.Path.assets),
             obligations: try decode([DossierV3.Obligation].self, DossierV3.Path.obligations),
-            completions: try decode([DossierV3.Completion].self, DossierV3.Path.completions),
+            historyEntries: try decode([DossierV3.HistoryEntry].self, DossierV3.Path.history),
             serviceItems: try decode([DossierV3.ServiceItem].self, DossierV3.Path.serviceItems),
+            providers: try decode([DossierV3.Provider].self, DossierV3.Path.providers),
             measurements: try decode([DossierV3.Measurement].self, DossierV3.Path.measurements),
             attachments: try decode([DossierV3.Attachment].self, DossierV3.Path.attachments),
             files: files.filter { $0.key.hasPrefix(DossierV3.Path.vaultPrefix) }
@@ -145,8 +146,9 @@ public struct DossierArchiveService {
         let templates = try context.fetch(FetchDescriptor<CategoryTemplate>(sortBy: [SortDescriptor(\.homeOrder)]))
         let assets = try context.fetch(FetchDescriptor<Asset>(sortBy: [SortDescriptor(\.createdAt)]))
         let obligations = try context.fetch(FetchDescriptor<Obligation>(sortBy: [SortDescriptor(\.createdAt)]))
-        let completions = try context.fetch(FetchDescriptor<Completion>(sortBy: [SortDescriptor(\.completedAt)]))
-        let serviceItems = try context.fetch(FetchDescriptor<ServiceItem>(sortBy: [SortDescriptor(\.serviceDate)]))
+        let entries = try context.fetch(FetchDescriptor<HistoryEntry>(sortBy: [SortDescriptor(\.occurredAt)]))
+        let serviceItems = try context.fetch(FetchDescriptor<ServiceItem>()).sorted { $0.name < $1.name }
+        let providers = try context.fetch(FetchDescriptor<Provider>(sortBy: [SortDescriptor(\.createdAt)]))
         let measurements = try context.fetch(FetchDescriptor<MeasurementLog>(sortBy: [SortDescriptor(\.recordedAt)]))
         let attachments = try context.fetch(FetchDescriptor<Attachment>(sortBy: [SortDescriptor(\.createdAt)]))
 
@@ -159,7 +161,7 @@ public struct DossierArchiveService {
                 tint: template.tintRaw, heroStyle: template.heroStyleRaw, isBuiltIn: template.isBuiltIn,
                 version: template.builtInVersion, homeOrder: template.homeOrder, isOnHome: template.isOnHome,
                 isSensitive: template.isSensitive, sections: template.sections, blueprints: template.blueprints,
-                createdAt: template.createdAt, updatedAt: template.updatedAt
+                components: template.components, createdAt: template.createdAt, updatedAt: template.updatedAt
             )
         }
         let assetDTOs = assets.map { asset -> DossierV3.Asset in
@@ -187,26 +189,34 @@ public struct DossierArchiveService {
                 isExample: obligation.isExample, createdAt: obligation.createdAt, updatedAt: obligation.updatedAt
             )
         }
-        let completionDTOs = completions.map { completion in
-            DossierV3.Completion(
-                id: DossierV3.id(completion.id), obligationId: DossierV3.id(completion.obligation?.id),
-                completedAt: completion.completedAt, cycleDueDate: CalendarDay(completion.cycleDueDate, calendar: calendar),
-                nextDueDate: completion.nextDueDate.map { CalendarDay($0, calendar: calendar) },
-                previousStatus: completion.previousStatusRaw, previousDueMetric: completion.previousDueMetric,
-                cost: completion.cost, metricReading: completion.metricReading, note: completion.note, isExample: completion.isExample
+        let historyDTOs = entries.map { entry in
+            DossierV3.HistoryEntry(
+                id: DossierV3.id(entry.id), assetId: DossierV3.id(entry.asset?.id), obligationId: DossierV3.id(entry.obligation?.id),
+                kind: entry.kindRaw, title: entry.title, occurredAt: entry.occurredAt, metricReading: entry.metricReading,
+                totalCost: entry.totalCost, note: entry.note, rating: entry.rating,
+                cycleDueDate: entry.cycleDueDate.map { CalendarDay($0, calendar: calendar) },
+                nextDueDate: entry.nextDueDate.map { CalendarDay($0, calendar: calendar) },
+                previousStatus: entry.previousStatusRaw, previousDueMetric: entry.previousDueMetric,
+                providerIds: entry.providerIds.map(DossierV3.id).sorted(), isExample: entry.isExample
             )
         }
         let serviceDTOs = serviceItems.map { item in
             DossierV3.ServiceItem(
-                id: DossierV3.id(item.id), assetId: DossierV3.id(item.asset?.id), completionId: DossierV3.id(item.completion?.id),
+                id: DossierV3.id(item.id), entryId: DossierV3.id(item.entry?.id), componentKey: item.componentKey,
                 name: item.name, group: item.group, partBrandOrCode: item.partBrandOrCode, partSerialNumber: item.partSerialNumber,
                 cost: item.costAmount.map { Money($0, currency: item.currency) },
                 laborCost: item.laborCostAmount.map { Money($0, currency: item.currency) },
                 partsCost: item.partsCostAmount.map { Money($0, currency: item.currency) },
-                serviceDate: CalendarDay(item.serviceDate, calendar: calendar), metricAtService: item.metricAtService,
-                specialistName: item.specialistName, shopName: item.shopName, batchOrTicket: item.batchOrTicket,
-                locationDetail: item.locationDetail, daysInService: item.daysInService, warrantyMonths: item.warrantyMonths,
-                notes: item.notes, isExample: item.isExample
+                supplierId: DossierV3.id(item.supplier?.id), batchOrTicket: item.batchOrTicket, locationDetail: item.locationDetail,
+                daysInService: item.daysInService, warrantyMonths: item.warrantyMonths, notes: item.notes, isExample: item.isExample
+            )
+        }
+        let providerDTOs = providers.map { provider in
+            DossierV3.Provider(
+                id: DossierV3.id(provider.id), name: provider.name, trades: provider.trades, phone: provider.phone,
+                email: provider.email, address: provider.address, notes: provider.notes, manualRating: provider.manualRating,
+                wouldCallAgain: provider.wouldCallAgain, assetIds: (provider.assets ?? []).map { DossierV3.id($0.id) }.sorted(),
+                isExample: provider.isExample, createdAt: provider.createdAt, updatedAt: provider.updatedAt
             )
         }
         let measurementDTOs = measurements.map { log in
@@ -225,7 +235,7 @@ public struct DossierArchiveService {
                 id: DossierV3.id(attachment.id), fileName: attachment.fileName, contentType: attachment.contentType,
                 byteCount: data.count, path: path, extractedText: attachment.extractedText, createdAt: attachment.createdAt,
                 isExample: attachment.isExample, assetId: DossierV3.id(attachment.asset?.id),
-                obligationId: DossierV3.id(attachment.obligation?.id), completionId: DossierV3.id(attachment.completion?.id),
+                obligationId: DossierV3.id(attachment.obligation?.id), historyEntryId: DossierV3.id(attachment.historyEntry?.id),
                 serviceItemId: DossierV3.id(attachment.serviceItem?.id), measurementId: DossierV3.id(attachment.measurement?.id)
             )
         }
@@ -233,8 +243,9 @@ public struct DossierArchiveService {
         files[DossierV3.Path.templates] = try encoder.encode(templateDTOs)
         files[DossierV3.Path.assets] = try encoder.encode(assetDTOs)
         files[DossierV3.Path.obligations] = try encoder.encode(obligationDTOs)
-        files[DossierV3.Path.completions] = try encoder.encode(completionDTOs)
+        files[DossierV3.Path.history] = try encoder.encode(historyDTOs)
         files[DossierV3.Path.serviceItems] = try encoder.encode(serviceDTOs)
+        files[DossierV3.Path.providers] = try encoder.encode(providerDTOs)
         files[DossierV3.Path.measurements] = try encoder.encode(measurementDTOs)
         files[DossierV3.Path.attachments] = try encoder.encode(attachmentDTOs)
 
@@ -246,16 +257,16 @@ public struct DossierArchiveService {
             exportedAt: exportedAt,
             counts: .init(
                 templates: templateDTOs.count, assets: assetDTOs.count, obligations: obligationDTOs.count,
-                completions: completionDTOs.count, serviceItems: serviceDTOs.count,
+                historyEntries: historyDTOs.count, serviceItems: serviceDTOs.count, providers: providerDTOs.count,
                 measurements: measurementDTOs.count, attachments: attachmentDTOs.count
             ),
             checksums: files.mapValues(DossierArchiveReader.sha256)
         )
-        var entries = [DosarZipEngine.Entry(path: DossierV3.Path.manifest, data: try encoder.encode(manifest), modifiedDate: exportedAt)]
+        var zipEntries = [DosarZipEngine.Entry(path: DossierV3.Path.manifest, data: try encoder.encode(manifest), modifiedDate: exportedAt)]
         for path in files.keys.sorted() {
-            if let data = files[path] { entries.append(DosarZipEngine.Entry(path: path, data: data, modifiedDate: exportedAt)) }
+            if let data = files[path] { zipEntries.append(DosarZipEngine.Entry(path: path, data: data, modifiedDate: exportedAt)) }
         }
-        return try DosarZipEngine.createArchive(entries: entries)
+        return try DosarZipEngine.createArchive(entries: zipEntries)
     }
 
     /// Writes an archive to a temporary file ready to share, protected while the device is locked.

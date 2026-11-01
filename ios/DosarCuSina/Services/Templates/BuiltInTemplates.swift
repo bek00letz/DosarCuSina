@@ -71,8 +71,7 @@ public enum BuiltInTemplates {
                         VehicleUsage.personal, VehicleUsage.commercial,
                     ]),
                 ]),
-                FieldSection(key: "vehicle.people", title: String(localized: "Oameni de încredere"), fields: [
-                    FieldDefinition(key: "vehicle.mechanic", label: String(localized: "Service sau mecanic"), type: .contact, role: .contact),
+                FieldSection(key: "vehicle.insurance", title: String(localized: "Asigurare"), fields: [
                     FieldDefinition(key: "vehicle.insurer", label: String(localized: "Asigurător"), type: .text),
                 ]),
             ],
@@ -94,7 +93,8 @@ public enum BuiltInTemplates {
                                     reminders: profile([30, 7, 0], .financial), isSuggested: false),
                 ObligationBlueprint(key: "vehicle.kit", title: String(localized: "Trusă medicală și stingător"), kind: .legal, recurrence: .none, firstDue: .ask,
                                     reminders: profile([14, 0], .legal), isSuggested: false, note: String(localized: "Data expirării e pe ambalaj.")),
-            ]
+            ],
+            components: BuiltInComponents.vehicle
         )
     }
 
@@ -123,7 +123,6 @@ public enum BuiltInTemplates {
                 FieldSection(key: "home.heating", title: String(localized: "Centrală termică"), fields: [
                     FieldDefinition(key: "home.boilerModel", label: String(localized: "Model"), type: .text),
                     FieldDefinition(key: "home.boilerSerial", label: String(localized: "Serie"), type: .text),
-                    FieldDefinition(key: "home.technician", label: String(localized: "Tehnician"), type: .contact, role: .contact),
                 ]),
             ],
             blueprints: [
@@ -143,7 +142,8 @@ public enum BuiltInTemplates {
                                     reminders: profile([14, 1], .financial), note: String(localized: "Plata integrală până la 31 martie poate aduce o reducere.")),
                 ObligationBlueprint(key: "home.chimney", title: String(localized: "Curățare coș de fum"), kind: .maintenance, recurrence: .interval(.years(1), anchor: .completion), firstDue: .ask,
                                     reminders: profile([14, 0], .comfort, grace: 30), isSuggested: false),
-            ]
+            ],
+            components: BuiltInComponents.home
         )
     }
 
@@ -209,7 +209,6 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: "pet.weight", label: String(localized: "Greutate"), type: .number, role: .heroMetric, unit: "kg"),
                 ]),
                 FieldSection(key: "pet.care", title: String(localized: "Îngrijire"), fields: [
-                    FieldDefinition(key: "pet.vet", label: String(localized: "Veterinar"), type: .contact, role: .contact),
                     FieldDefinition(key: "pet.diet", label: String(localized: "Hrană și porții"), type: .longText),
                 ]),
             ],
@@ -228,7 +227,8 @@ public enum BuiltInTemplates {
                 ObligationBlueprint(key: "pet.grooming", title: String(localized: "Toaletaj"), kind: .routine, recurrence: .interval(.weeks(6), anchor: .completion),
                                     firstDue: .afterInterval(.weeks(6)),
                                     reminders: profile([2], .comfort, grace: 14), isSuggested: false),
-            ]
+            ],
+            components: BuiltInComponents.pet
         )
     }
 
@@ -248,10 +248,6 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: "health.allergies", label: String(localized: "Alergii"), type: .longText, isSensitive: true),
                     FieldDefinition(key: "health.conditions", label: String(localized: "Afecțiuni cronice"), type: .longText, isSensitive: true),
                     FieldDefinition(key: "health.medication", label: String(localized: "Tratament curent"), type: .longText, isSensitive: true),
-                ]),
-                FieldSection(key: "health.contacts", title: String(localized: "Contacte"), fields: [
-                    FieldDefinition(key: "health.doctor", label: String(localized: "Medic de familie"), type: .contact, role: .contact),
-                    FieldDefinition(key: "health.emergency", label: String(localized: "Contact pentru urgențe"), type: .contact),
                 ]),
             ],
             blueprints: [
@@ -388,7 +384,8 @@ public enum BuiltInTemplates {
                 ObligationBlueprint(key: "bike.fork", title: String(localized: "Service suspensie"), kind: .maintenance,
                                     recurrence: .interval(.years(1), anchor: .completion), firstDue: .afterInterval(.years(1)),
                                     reminders: profile([7], .comfort, grace: 30), isSuggested: false),
-            ]
+            ],
+            components: BuiltInComponents.bike
         )
     }
 
@@ -436,7 +433,6 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: "rental.deposit", label: String(localized: "Garanție încasată"), type: .money),
                 ]),
                 FieldSection(key: "rental.lease", title: String(localized: "Contract"), fields: [
-                    FieldDefinition(key: "rental.tenant", label: String(localized: "Chiriaș"), type: .contact, role: .contact, isEssential: true),
                     FieldDefinition(key: "rental.leaseStart", label: String(localized: "Început contract"), type: .date, role: .startDate),
                     FieldDefinition(key: "rental.leaseEnd", label: String(localized: "Sfârșit contract"), type: .expiryDate, role: .expiry),
                 ]),
@@ -482,7 +478,8 @@ public enum BuiltInTemplates {
                 ObligationBlueprint(key: "espresso.filter", title: String(localized: "Schimb filtru de apă"), kind: .maintenance,
                                     recurrence: .interval(.months(2), anchor: .completion), firstDue: .afterInterval(.months(2)),
                                     reminders: profile([3, 0], .comfort, grace: 14)),
-            ]
+            ],
+            components: BuiltInComponents.espresso
         )
     }
 }

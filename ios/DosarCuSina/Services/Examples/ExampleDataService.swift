@@ -30,7 +30,10 @@ public struct ExampleDataService {
         try store.installBuiltIns()
         let templates = try store.templatesByKey()
         let assets = AssetActions(context: context, calendar: calendar, now: now)
+        let history = HistoryActions(context: context, now: now)
+        let providers = ProviderActions(context: context, now: now)
         let today = CalendarDay(now(), calendar: calendar)
+        func daysAgo(_ days: Int) -> Date { calendar.date(byAdding: .day, value: -days, to: now()) ?? now() }
         func day(_ offset: Int) -> CalendarDay { today.adding(days: offset, calendar: calendar) }
         func plan(_ template: CategoryTemplate, _ values: FieldValues, dues: [String: Int], extra: Set<String> = []) -> [PlannedObligation] {
             assets.plannedObligations(for: template, values: values).map { planned in
@@ -57,8 +60,24 @@ public struct ExampleDataService {
                 obligations: plan(template, values, dues: ["vehicle.itp": 9, "vehicle.rca": 41, "vehicle.vignette": -2, "vehicle.service": 120]),
                 isExample: true
             )
-            try addReadings(to: car, kind: .odometer, values: [(-180, 130_000), (-90, 136_200)])
             try addHistory(to: car, blueprintKey: "vehicle.itp", daysAgo: 721, cost: Money(170))
+            let mechanic = try providers.create(name: String(localized: "Service auto exemplu"), trades: [.mechanic, .tyreShop], phone: "0700 000 001", linkedTo: [car])
+            try providers.setWouldCallAgain(mechanic, true)
+            try history.record(
+                on: car, kind: .maintenance, title: String(localized: "Revizie anuală"), occurredAt: daysAgo(400),
+                metricReading: 121_300, totalCost: Money(1_150),
+                items: [
+                    LineItemDraft(name: String(localized: "Schimb ulei și filtru"), partBrandOrCode: "5W-30", cost: Money(420)),
+                    LineItemDraft(name: String(localized: "Plăcuțe frână față"), partBrandOrCode: "Exemplu", cost: Money(380)),
+                ],
+                providers: [mechanic], rating: 5
+            )
+            try history.record(
+                on: car, kind: .maintenance, title: String(localized: "Revizie"), occurredAt: daysAgo(120),
+                metricReading: 136_200, totalCost: Money(690),
+                items: [LineItemDraft(name: String(localized: "Schimb ulei și filtru"), partBrandOrCode: "5W-30", cost: Money(450))],
+                providers: [mechanic], rating: 4
+            )
         }
 
         if let template = templates[BuiltInTemplates.Key.home] {
@@ -73,6 +92,19 @@ public struct ExampleDataService {
                 values: values,
                 obligations: plan(template, values, dues: ["home.boilerCheck": 200, "home.gasCheck": 310, "home.pad": 25]),
                 isExample: true
+            )
+        }
+
+        if let home = try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.isExample })).first(where: { $0.templateKey == BuiltInTemplates.Key.home }) {
+            let plumber = try providers.create(name: String(localized: "Instalator exemplu"), trades: [.plumber], phone: "0700 000 002", linkedTo: [home])
+            try history.record(
+                on: home, kind: .repair, title: String(localized: "Robinet nou la bucătărie"), occurredAt: daysAgo(210), totalCost: Money(340),
+                items: [LineItemDraft(name: String(localized: "Baterie bucătărie"), partBrandOrCode: "Exemplu", cost: Money(240))],
+                providers: [plumber], rating: 5
+            )
+            try history.record(
+                on: home, kind: .purchase, title: String(localized: "Hotă nouă"), occurredAt: daysAgo(500), totalCost: Money(899),
+                items: [LineItemDraft(name: String(localized: "Hotă"), partBrandOrCode: "Exemplu 60 cm", cost: Money(899))]
             )
         }
 
@@ -91,6 +123,8 @@ public struct ExampleDataService {
                 isExample: true
             )
             try addReadings(to: pet, kind: .bodyWeight, values: [(-120, 30.2), (-60, 31.0), (0, 31.5)])
+            let vet = try providers.create(name: String(localized: "Cabinet veterinar exemplu"), trades: [.vet], phone: "0700 000 003", linkedTo: [pet])
+            try providers.setRating(vet, 5)
         }
 
         if let template = templates[BuiltInTemplates.Key.documents] {
@@ -147,7 +181,10 @@ public struct ExampleDataService {
         for asset in try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.isExample })) {
             context.delete(asset)
         }
-        // Example records left without an asset (should not happen, but never leave strays).
+        // Example records that don't hang off an asset.
+        for provider in try context.fetch(FetchDescriptor<Provider>(predicate: #Predicate { $0.isExample })) {
+            context.delete(provider)
+        }
         for obligation in try context.fetch(FetchDescriptor<Obligation>(predicate: #Predicate { $0.isExample })) where obligation.asset == nil {
             context.delete(obligation)
         }
@@ -169,15 +206,19 @@ public struct ExampleDataService {
         }
     }
 
-    /// Adds a past completion for history without moving the obligation.
+    /// Adds a past completion to the history without moving the obligation.
     private func addHistory(to asset: Asset, blueprintKey: String, daysAgo: Int, cost: Money) throws {
         guard let obligation = (asset.obligations ?? []).first(where: { $0.blueprintKey == blueprintKey }) else { return }
         let date = calendar.date(byAdding: .day, value: -daysAgo, to: now()) ?? now()
-        let completion = Completion(completedAt: date, cycleDueDate: date)
-        completion.cost = cost
-        completion.isExample = true
-        context.insert(completion)
-        completion.obligation = obligation
+        let entry = HistoryEntry(kind: .forCompleting(obligation.kind), title: obligation.title, occurredAt: date)
+        entry.cycleDueDate = date
+        entry.nextDueDate = obligation.dueDate
+        entry.previousStatusRaw = ObligationStatus.active.rawValue
+        entry.totalCost = cost
+        entry.isExample = true
+        context.insert(entry)
+        entry.obligation = obligation
+        entry.asset = asset
         try context.save()
     }
 }

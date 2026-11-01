@@ -26,13 +26,16 @@ struct ActionsTests {
         let rca = try actions.create(title: "RCA", kind: .insurance, dueDay: CalendarDay("2026-11-10"), for: asset,
                                      recurrence: .interval(.years(1), anchor: .dueDate))
 
-        let completion = try actions.complete(rca, cost: Money(1_200))
+        let entry = try actions.complete(rca, cost: Money(1_200))
 
         #expect(rca.status == .active)
         #expect(rca.dueDay(in: calendar) == CalendarDay("2027-11-10"))
         #expect(rca.history.count == 1)
-        #expect(completion.cost == Money(1_200))
-        #expect(CalendarDay(completion.cycleDueDate, calendar: calendar) == CalendarDay("2026-11-10"))
+        #expect(entry.totalCost == Money(1_200))
+        #expect(entry.cycleDueDate.map { CalendarDay($0, calendar: calendar) } == CalendarDay("2026-11-10"))
+        #expect(entry.kind == .payment)
+        #expect(entry.asset?.id == asset.id, "The completion lands in the asset's history")
+        #expect(asset.timeline.map(\.id) == [entry.id])
         #expect(try context.fetchCount(FetchDescriptor<Obligation>()) == 1, "Completing never copies the obligation")
     }
 

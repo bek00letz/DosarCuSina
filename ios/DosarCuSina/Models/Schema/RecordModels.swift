@@ -43,12 +43,15 @@ public enum MeasurementKind: String, Codable, CaseIterable, Sendable {
 }
 
 extension DosarSchemaV2 {
-    /// A part replaced or a job done during a service, a repair, a medical
-    /// procedure or a warranty claim.
+    /// A line in a history entry: a part replaced, a job done, a vaccine given.
+    /// `componentKey` ties it to the template's component catalog so "when did I
+    /// last change the brake pads" has one answer across entries.
     @Model
     public final class ServiceItem {
         public var id: UUID = UUID()
         public var name: String = ""
+        /// A key from the template's component catalog, or `custom.<slug>` for free text.
+        public var componentKey: String?
         /// Free grouping such as "Frâne" or "Filtre".
         public var group: String?
         public var partBrandOrCode: String?
@@ -57,12 +60,8 @@ extension DosarSchemaV2 {
         public var laborCostAmount: Decimal?
         public var partsCostAmount: Decimal?
         public var currency: String = Money.defaultCurrency
-        /// Noon on the service day.
-        public var serviceDate: Date = Date()
-        /// Counter reading at the time (odometer, engine hours).
-        public var metricAtService: Double?
-        public var specialistName: String?
-        public var shopName: String?
+        /// Who supplied the part, when different from who fitted it.
+        public var supplier: Provider?
         /// Batch, lot or RMA number.
         public var batchOrTicket: String?
         /// Position detail such as a tooth number or "Punte spate".
@@ -73,16 +72,15 @@ extension DosarSchemaV2 {
         public var notes: String?
         public var isExample: Bool = false
 
-        public var asset: Asset?
-        public var completion: Completion?
+        public var entry: HistoryEntry?
 
         @Relationship(deleteRule: .nullify, inverse: \Attachment.serviceItem)
         public var attachments: [Attachment]? = []
 
-        public init(id: UUID = UUID(), name: String, serviceDay: CalendarDay, calendar: Calendar = .current) {
+        public init(id: UUID = UUID(), name: String, componentKey: String? = nil) {
             self.id = id
             self.name = name
-            self.serviceDate = serviceDay.noonDate(in: calendar)
+            self.componentKey = componentKey
         }
 
         /// The total paid: the explicit cost, or labor plus parts.
@@ -150,7 +148,7 @@ extension DosarSchemaV2 {
 
     /// A stored file: a scanned bill, a policy PDF, a photo of a label.
     /// It always belongs to an asset and may also be filed under an obligation,
-    /// a completion, a service item or a measurement.
+    /// a history entry, a line item or a measurement.
     @Model
     public final class Attachment {
         public var id: UUID = UUID()
@@ -166,7 +164,7 @@ extension DosarSchemaV2 {
 
         public var asset: Asset?
         public var obligation: Obligation?
-        public var completion: Completion?
+        public var historyEntry: HistoryEntry?
         public var serviceItem: ServiceItem?
         public var measurement: MeasurementLog?
 

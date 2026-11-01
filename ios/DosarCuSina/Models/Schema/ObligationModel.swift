@@ -6,7 +6,7 @@ extension DosarSchemaV2 {
     /// local taxes, a vaccine, a subscription renewal.
     ///
     /// An obligation is never copied to make the next cycle. Completing it writes
-    /// a `Completion` and moves `dueDate` forward (see `ObligationActions`).
+    /// a `HistoryEntry` and moves `dueDate` forward (see `ObligationActions`).
     @Model
     public final class Obligation {
         public var id: UUID = UUID()
@@ -42,8 +42,10 @@ extension DosarSchemaV2 {
 
         public var asset: Asset?
 
-        @Relationship(deleteRule: .cascade, inverse: \Completion.obligation)
-        public var completions: [Completion]? = []
+        /// Times it was done. They belong to the asset's history: deleting the
+        /// obligation keeps them and only unlinks them.
+        @Relationship(deleteRule: .nullify, inverse: \HistoryEntry.obligation)
+        public var historyEntries: [HistoryEntry]? = []
 
         /// Documents filed with this obligation (a policy PDF). They belong to the asset;
         /// deleting the obligation only unlinks them.
@@ -133,57 +135,13 @@ extension DosarSchemaV2 {
             return snoozedUntil > now
         }
 
-        /// Completions newest first. Two completions recorded at the same moment
-        /// are ordered by the cycle they closed, which only moves forward.
-        public var history: [Completion] {
-            (completions ?? []).sorted {
-                $0.completedAt != $1.completedAt ? $0.completedAt > $1.completedAt : $0.cycleDueDate > $1.cycleDueDate
-            }
-        }
-    }
-
-    /// One time an obligation was done: when, what it cost, the counter reading,
-    /// and what the obligation looked like before, so it can be undone.
-    @Model
-    public final class Completion {
-        public var id: UUID = UUID()
-        public var completedAt: Date = Date()
-        /// Noon on the due day of the cycle this completion closed.
-        public var cycleDueDate: Date = Date()
-        /// The due date the obligation moved to, or nil when it was a one-off.
-        public var nextDueDate: Date?
-        /// The obligation's status before completing, for undo.
-        public var previousStatusRaw: String?
-        /// The obligation's `dueMetric` before completing, for undo.
-        public var previousDueMetric: Double?
-        public var costAmount: Decimal?
-        public var costCurrency: String?
-        public var metricReading: Double?
-        public var note: String?
-        public var isExample: Bool = false
-
-        public var obligation: Obligation?
-
-        @Relationship(deleteRule: .nullify, inverse: \ServiceItem.completion)
-        public var serviceItems: [ServiceItem]? = []
-
-        @Relationship(deleteRule: .nullify, inverse: \Attachment.completion)
-        public var attachments: [Attachment]? = []
-
-        public init(id: UUID = UUID(), completedAt: Date, cycleDueDate: Date) {
-            self.id = id
-            self.completedAt = completedAt
-            self.cycleDueDate = cycleDueDate
-        }
-
-        public var cost: Money? {
-            get {
-                guard let amount = costAmount else { return nil }
-                return Money(amount, currency: costCurrency ?? Money.defaultCurrency)
-            }
-            set {
-                costAmount = newValue?.amount
-                costCurrency = newValue?.currency
+        /// Completions of this obligation, newest first. Two recorded at the same
+        /// moment are ordered by the cycle they closed, which only moves forward.
+        public var history: [HistoryEntry] {
+            (historyEntries ?? []).sorted {
+                $0.occurredAt != $1.occurredAt
+                    ? $0.occurredAt > $1.occurredAt
+                    : ($0.cycleDueDate ?? .distantPast) > ($1.cycleDueDate ?? .distantPast)
             }
         }
     }

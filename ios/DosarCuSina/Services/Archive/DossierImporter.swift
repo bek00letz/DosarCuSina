@@ -17,11 +17,12 @@ struct DossierImporter {
 
         try importTemplates(&result)
         let assets = try importAssets(&result)
+        let providers = try importProviders(&result, assets: assets)
         let obligations = try importObligations(&result, assets: assets)
-        let completions = try importCompletions(&result, obligations: obligations)
-        let serviceItems = try importServiceItems(&result, assets: assets, completions: completions)
+        let entries = try importHistory(&result, assets: assets, obligations: obligations, providers: providers)
+        let serviceItems = try importServiceItems(&result, entries: entries, providers: providers)
         let measurements = try importMeasurements(&result, assets: assets)
-        try importAttachments(&result, assets: assets, obligations: obligations, completions: completions, serviceItems: serviceItems, measurements: measurements)
+        try importAttachments(&result, assets: assets, obligations: obligations, entries: entries, serviceItems: serviceItems, measurements: measurements)
         return result
     }
 
@@ -31,7 +32,8 @@ struct DossierImporter {
         for item in try context.fetch(FetchDescriptor<Attachment>()) { context.delete(item) }
         for item in try context.fetch(FetchDescriptor<MeasurementLog>()) { context.delete(item) }
         for item in try context.fetch(FetchDescriptor<ServiceItem>()) { context.delete(item) }
-        for item in try context.fetch(FetchDescriptor<Completion>()) { context.delete(item) }
+        for item in try context.fetch(FetchDescriptor<HistoryEntry>()) { context.delete(item) }
+        for item in try context.fetch(FetchDescriptor<Provider>()) { context.delete(item) }
         for item in try context.fetch(FetchDescriptor<Obligation>()) { context.delete(item) }
         for item in try context.fetch(FetchDescriptor<Asset>()) { context.delete(item) }
         for item in try context.fetch(FetchDescriptor<CategoryTemplate>()) { context.delete(item) }
@@ -62,7 +64,7 @@ struct DossierImporter {
                 key: dto.key, name: dto.name, summary: dto.summary, symbol: dto.symbol,
                 tint: TemplateTint(rawValue: dto.tint) ?? .gray, heroStyle: HeroStyle(rawValue: dto.heroStyle) ?? .standard,
                 isOnHomeByDefault: dto.isOnHome, isSensitiveByDefault: dto.isSensitive,
-                sections: dto.sections, blueprints: dto.blueprints, version: dto.version
+                sections: dto.sections, blueprints: dto.blueprints, components: dto.components ?? [], version: dto.version
             )
             // A built-in from an older app version takes this app's definition.
             if isBuiltIn, let catalog, catalog.version >= dto.version {
@@ -73,6 +75,7 @@ struct DossierImporter {
                 definition.heroStyle = catalog.heroStyle
                 definition.sections = catalog.sections
                 definition.blueprints = catalog.blueprints
+                definition.components = catalog.components
                 definition.version = catalog.version
             }
             if let template = byKey[dto.key] {
@@ -170,33 +173,73 @@ struct DossierImporter {
         return map
     }
 
-    private func importCompletions(_ result: inout ArchiveImportResult, obligations: [UUID: Obligation]) throws -> [UUID: Completion] {
-        var map = try existing(Completion.self, id: \.id)
-        for dto in package.completions {
-            guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.completions) }
+    private func importProviders(_ result: inout ArchiveImportResult, assets: [UUID: Asset]) throws -> [UUID: Provider] {
+        var map = try existing(Provider.self, id: \.id)
+        for dto in package.providers {
+            guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.providers) }
+            let provider: Provider
+            if let current = map[id] {
+                guard dto.updatedAt > current.updatedAt else { result.skipped += 1; continue }
+                provider = current
+                result.updated += 1
+            } else {
+                provider = Provider(id: id, name: dto.name)
+                context.insert(provider)
+                map[id] = provider
+                result.inserted += 1
+            }
+            provider.name = dto.name
+            provider.trades = dto.trades
+            provider.phone = dto.phone
+            provider.email = dto.email
+            provider.address = dto.address
+            provider.notes = dto.notes
+            provider.manualRating = dto.manualRating
+            provider.wouldCallAgain = dto.wouldCallAgain
+            provider.isExample = dto.isExample
+            provider.createdAt = dto.createdAt
+            provider.updatedAt = dto.updatedAt
+            provider.assets = dto.assetIds.compactMap { uuid($0).flatMap { assets[$0] } }
+        }
+        return map
+    }
+
+    private func importHistory(
+        _ result: inout ArchiveImportResult,
+        assets: [UUID: Asset],
+        obligations: [UUID: Obligation],
+        providers: [UUID: Provider]
+    ) throws -> [UUID: HistoryEntry] {
+        var map = try existing(HistoryEntry.self, id: \.id)
+        for dto in package.historyEntries {
+            guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.history) }
             guard map[id] == nil else { result.skipped += 1; continue }
-            let completion = Completion(id: id, completedAt: dto.completedAt, cycleDueDate: dto.cycleDueDate.noonDate(in: calendar))
-            completion.nextDueDate = dto.nextDueDate?.noonDate(in: calendar)
-            completion.previousStatusRaw = dto.previousStatus
-            completion.previousDueMetric = dto.previousDueMetric
-            completion.cost = dto.cost
-            completion.metricReading = dto.metricReading
-            completion.note = dto.note
-            completion.isExample = dto.isExample
-            context.insert(completion)
-            completion.obligation = uuid(dto.obligationId).flatMap { obligations[$0] }
-            map[id] = completion
+            let entry = HistoryEntry(id: id, kind: HistoryKind(rawValue: dto.kind) ?? .note, title: dto.title, occurredAt: dto.occurredAt)
+            entry.metricReading = dto.metricReading
+            entry.totalCost = dto.totalCost
+            entry.note = dto.note
+            entry.rating = dto.rating
+            entry.cycleDueDate = dto.cycleDueDate?.noonDate(in: calendar)
+            entry.nextDueDate = dto.nextDueDate?.noonDate(in: calendar)
+            entry.previousStatusRaw = dto.previousStatus
+            entry.previousDueMetric = dto.previousDueMetric
+            entry.isExample = dto.isExample
+            context.insert(entry)
+            entry.asset = uuid(dto.assetId).flatMap { assets[$0] }
+            entry.obligation = uuid(dto.obligationId).flatMap { obligations[$0] }
+            entry.providers = dto.providerIds.compactMap { uuid($0).flatMap { providers[$0] } }
+            map[id] = entry
             result.inserted += 1
         }
         return map
     }
 
-    private func importServiceItems(_ result: inout ArchiveImportResult, assets: [UUID: Asset], completions: [UUID: Completion]) throws -> [UUID: ServiceItem] {
+    private func importServiceItems(_ result: inout ArchiveImportResult, entries: [UUID: HistoryEntry], providers: [UUID: Provider]) throws -> [UUID: ServiceItem] {
         var map = try existing(ServiceItem.self, id: \.id)
         for dto in package.serviceItems {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.serviceItems) }
             guard map[id] == nil else { result.skipped += 1; continue }
-            let item = ServiceItem(id: id, name: dto.name, serviceDay: dto.serviceDate, calendar: calendar)
+            let item = ServiceItem(id: id, name: dto.name, componentKey: dto.componentKey)
             item.group = dto.group
             item.partBrandOrCode = dto.partBrandOrCode
             item.partSerialNumber = dto.partSerialNumber
@@ -204,9 +247,6 @@ struct DossierImporter {
             item.costAmount = dto.cost?.amount
             item.laborCostAmount = dto.laborCost?.amount
             item.partsCostAmount = dto.partsCost?.amount
-            item.metricAtService = dto.metricAtService
-            item.specialistName = dto.specialistName
-            item.shopName = dto.shopName
             item.batchOrTicket = dto.batchOrTicket
             item.locationDetail = dto.locationDetail
             item.daysInService = dto.daysInService
@@ -214,8 +254,8 @@ struct DossierImporter {
             item.notes = dto.notes
             item.isExample = dto.isExample
             context.insert(item)
-            item.asset = uuid(dto.assetId).flatMap { assets[$0] }
-            item.completion = uuid(dto.completionId).flatMap { completions[$0] }
+            item.entry = uuid(dto.entryId).flatMap { entries[$0] }
+            item.supplier = uuid(dto.supplierId).flatMap { providers[$0] }
             map[id] = item
             result.inserted += 1
         }
@@ -249,7 +289,7 @@ struct DossierImporter {
         _ result: inout ArchiveImportResult,
         assets: [UUID: Asset],
         obligations: [UUID: Obligation],
-        completions: [UUID: Completion],
+        entries: [UUID: HistoryEntry],
         serviceItems: [UUID: ServiceItem],
         measurements: [UUID: MeasurementLog]
     ) throws {
@@ -265,7 +305,7 @@ struct DossierImporter {
             context.insert(attachment)
             attachment.asset = uuid(dto.assetId).flatMap { assets[$0] }
             attachment.obligation = uuid(dto.obligationId).flatMap { obligations[$0] }
-            attachment.completion = uuid(dto.completionId).flatMap { completions[$0] }
+            attachment.historyEntry = uuid(dto.historyEntryId).flatMap { entries[$0] }
             attachment.serviceItem = uuid(dto.serviceItemId).flatMap { serviceItems[$0] }
             attachment.measurement = uuid(dto.measurementId).flatMap { measurements[$0] }
             result.inserted += 1

@@ -13,15 +13,16 @@ public enum DossierV3 {
         public static let templates = "data/templates.json"
         public static let assets = "data/assets.json"
         public static let obligations = "data/obligations.json"
-        public static let completions = "data/completions.json"
+        public static let history = "data/history.json"
         public static let serviceItems = "data/service_items.json"
+        public static let providers = "data/providers.json"
         public static let measurements = "data/measurements.json"
         public static let attachments = "data/attachments.json"
         public static let vaultPrefix = "vault/"
         public static let photosPrefix = "vault/photos/"
         public static let opis = "opis.pdf"
 
-        public static let dataFiles = [templates, assets, obligations, completions, serviceItems, measurements, attachments]
+        public static let dataFiles = [templates, assets, obligations, history, serviceItems, providers, measurements, attachments]
     }
 
     public struct Manifest: Codable, Hashable, Sendable {
@@ -38,8 +39,9 @@ public enum DossierV3 {
             public var templates: Int
             public var assets: Int
             public var obligations: Int
-            public var completions: Int
+            public var historyEntries: Int
             public var serviceItems: Int
+            public var providers: Int
             public var measurements: Int
             public var attachments: Int
         }
@@ -59,6 +61,7 @@ public enum DossierV3 {
         public var isSensitive: Bool
         public var sections: [FieldSection]
         public var blueprints: [ObligationBlueprint]
+        public var components: [ComponentDefinition]?
         public var createdAt: Date
         public var updatedAt: Date
     }
@@ -100,24 +103,30 @@ public enum DossierV3 {
         public var updatedAt: Date
     }
 
-    public struct Completion: Codable, Hashable, Sendable {
+    public struct HistoryEntry: Codable, Hashable, Sendable {
         public var id: String
+        public var assetId: String?
         public var obligationId: String?
-        public var completedAt: Date
-        public var cycleDueDate: CalendarDay
+        public var kind: String
+        public var title: String
+        public var occurredAt: Date
+        public var metricReading: Double?
+        public var totalCost: Money?
+        public var note: String?
+        public var rating: Int?
+        /// Set when the entry completed an obligation.
+        public var cycleDueDate: CalendarDay?
         public var nextDueDate: CalendarDay?
         public var previousStatus: String?
         public var previousDueMetric: Double?
-        public var cost: Money?
-        public var metricReading: Double?
-        public var note: String?
+        public var providerIds: [String]
         public var isExample: Bool
     }
 
     public struct ServiceItem: Codable, Hashable, Sendable {
         public var id: String
-        public var assetId: String?
-        public var completionId: String?
+        public var entryId: String?
+        public var componentKey: String?
         public var name: String
         public var group: String?
         public var partBrandOrCode: String?
@@ -125,16 +134,29 @@ public enum DossierV3 {
         public var cost: Money?
         public var laborCost: Money?
         public var partsCost: Money?
-        public var serviceDate: CalendarDay
-        public var metricAtService: Double?
-        public var specialistName: String?
-        public var shopName: String?
+        public var supplierId: String?
         public var batchOrTicket: String?
         public var locationDetail: String?
         public var daysInService: Int?
         public var warrantyMonths: Int?
         public var notes: String?
         public var isExample: Bool
+    }
+
+    public struct Provider: Codable, Hashable, Sendable {
+        public var id: String
+        public var name: String
+        public var trades: [String]
+        public var phone: String?
+        public var email: String?
+        public var address: String?
+        public var notes: String?
+        public var manualRating: Int?
+        public var wouldCallAgain: Bool?
+        public var assetIds: [String]
+        public var isExample: Bool
+        public var createdAt: Date
+        public var updatedAt: Date
     }
 
     public struct Measurement: Codable, Hashable, Sendable {
@@ -167,7 +189,7 @@ public enum DossierV3 {
         public var isExample: Bool
         public var assetId: String?
         public var obligationId: String?
-        public var completionId: String?
+        public var historyEntryId: String?
         public var serviceItemId: String?
         public var measurementId: String?
     }
@@ -178,8 +200,9 @@ public enum DossierV3 {
         public var templates: [Template]
         public var assets: [Asset]
         public var obligations: [Obligation]
-        public var completions: [Completion]
+        public var historyEntries: [HistoryEntry]
         public var serviceItems: [ServiceItem]
+        public var providers: [Provider]
         public var measurements: [Measurement]
         public var attachments: [Attachment]
         /// File contents by archive path (`vault/…`).

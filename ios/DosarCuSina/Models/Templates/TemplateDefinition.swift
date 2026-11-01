@@ -42,6 +42,8 @@ public struct TemplateDefinition: Hashable, Sendable, Codable, Identifiable {
     public var isSensitiveByDefault: Bool
     public var sections: [FieldSection]
     public var blueprints: [ObligationBlueprint]
+    /// Parts and jobs the history can track for assets of this category.
+    public var components: [ComponentDefinition]
     /// Bumped when a built-in definition changes, so installed copies get upgraded.
     public var version: Int
 
@@ -58,8 +60,10 @@ public struct TemplateDefinition: Hashable, Sendable, Codable, Identifiable {
         isSensitiveByDefault: Bool = false,
         sections: [FieldSection],
         blueprints: [ObligationBlueprint] = [],
+        components: [ComponentDefinition] = [],
         version: Int = 1
     ) {
+        self.components = components
         self.key = key
         self.name = name
         self.summary = summary

@@ -86,7 +86,6 @@ struct FieldValueTests {
         values["d"] = .date(CalendarDay("2027-03-31"))
         values["e"] = .bool(false)
         values["f"] = .choices(["Căpușe", "Purici"])
-        values["g"] = .contact(ContactValue(name: "Dr. Exemplu", phone: "+40700000000"))
         let data = try JSONEncoder().encode(values)
         #expect(try JSONDecoder().decode(FieldValues.self, from: data) == values)
     }

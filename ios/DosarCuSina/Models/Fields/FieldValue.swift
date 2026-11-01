@@ -9,7 +9,8 @@ import Foundation
 /// - `{"type": "date", "value": "2027-03-31"}`
 /// - `{"type": "bool", "value": true}`
 /// - `{"type": "choices", "value": ["Căpușe", "Purici"]}`
-/// - `{"type": "contact", "name": "…", "phone": "…", "email": "…"}`
+///
+/// People are not field values: they are `Provider` records linked to the asset.
 public enum FieldValue: Hashable, Sendable, Codable {
     case text(String)
     case number(Double)
@@ -17,10 +18,9 @@ public enum FieldValue: Hashable, Sendable, Codable {
     case date(CalendarDay)
     case bool(Bool)
     case choices([String])
-    case contact(ContactValue)
 
     public enum Kind: String, Sendable {
-        case text, number, money, date, bool, choices, contact
+        case text, number, money, date, bool, choices
     }
 
     public var kind: Kind {
@@ -31,7 +31,6 @@ public enum FieldValue: Hashable, Sendable, Codable {
         case .date: return .date
         case .bool: return .bool
         case .choices: return .choices
-        case .contact: return .contact
         }
     }
 
@@ -65,17 +64,11 @@ public enum FieldValue: Hashable, Sendable, Codable {
         return nil
     }
 
-    public var contactValue: ContactValue? {
-        if case .contact(let value) = self { return value }
-        return nil
-    }
-
     /// True for values that carry nothing worth keeping (empty text, empty list).
     public var isEmpty: Bool {
         switch self {
         case .text(let value): return value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         case .choices(let value): return value.isEmpty
-        case .contact(let value): return value.name.isEmpty && (value.phone ?? "").isEmpty && (value.email ?? "").isEmpty
         case .number, .money, .date, .bool: return false
         }
     }
@@ -83,7 +76,7 @@ public enum FieldValue: Hashable, Sendable, Codable {
     // MARK: Codable
 
     private enum CodingKeys: String, CodingKey {
-        case type, value, amount, currency, name, phone, email, localIdentifier
+        case type, value, amount, currency
     }
 
     public init(from decoder: Decoder) throws {
@@ -102,13 +95,6 @@ public enum FieldValue: Hashable, Sendable, Codable {
             self = .bool(try c.decode(Bool.self, forKey: .value))
         case "choices":
             self = .choices(try c.decode([String].self, forKey: .value))
-        case "contact":
-            self = .contact(ContactValue(
-                name: try c.decodeIfPresent(String.self, forKey: .name) ?? "",
-                phone: try c.decodeIfPresent(String.self, forKey: .phone),
-                email: try c.decodeIfPresent(String.self, forKey: .email),
-                localIdentifier: try c.decodeIfPresent(String.self, forKey: .localIdentifier)
-            ))
         default:
             throw DecodingError.dataCorruptedError(forKey: .type, in: c, debugDescription: "Unknown field value type \(type)")
         }
@@ -126,11 +112,6 @@ public enum FieldValue: Hashable, Sendable, Codable {
         case .date(let value): try c.encode(value, forKey: .value)
         case .bool(let value): try c.encode(value, forKey: .value)
         case .choices(let value): try c.encode(value, forKey: .value)
-        case .contact(let value):
-            try c.encode(value.name, forKey: .name)
-            try c.encodeIfPresent(value.phone, forKey: .phone)
-            try c.encodeIfPresent(value.email, forKey: .email)
-            try c.encodeIfPresent(value.localIdentifier, forKey: .localIdentifier)
         }
     }
 }

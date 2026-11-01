@@ -27,11 +27,15 @@ extension DosarSchemaV2 {
         @Relationship(deleteRule: .cascade, inverse: \Attachment.asset)
         public var attachments: [Attachment]? = []
 
-        @Relationship(deleteRule: .cascade, inverse: \ServiceItem.asset)
-        public var serviceItems: [ServiceItem]? = []
+        /// Everything that happened to it: visits, repairs, purchases, completed obligations.
+        @Relationship(deleteRule: .cascade, inverse: \HistoryEntry.asset)
+        public var history: [HistoryEntry]? = []
 
         @Relationship(deleteRule: .cascade, inverse: \MeasurementLog.asset)
         public var measurements: [MeasurementLog]? = []
+
+        /// People and businesses who look after it (the mechanic, the vet).
+        public var providers: [Provider]? = []
 
         public init(id: UUID = UUID(), name: String, templateKey: String, values: FieldValues = FieldValues(), notes: String? = nil, isExample: Bool = false) {
             self.id = id
@@ -62,6 +66,11 @@ extension DosarSchemaV2 {
 
         public var nextObligation: Obligation? {
             activeObligations.first
+        }
+
+        /// History newest first.
+        public var timeline: [HistoryEntry] {
+            (history ?? []).sorted { $0.occurredAt > $1.occurredAt }
         }
     }
 }

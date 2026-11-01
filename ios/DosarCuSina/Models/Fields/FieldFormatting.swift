@@ -102,7 +102,7 @@ public enum FieldFormatter {
             return Money.parseAmount(text) != nil
                 ? .valid
                 : .invalid(String(localized: "Scrie suma în cifre, de exemplu 350 sau 1.250,50.", comment: "Money field error"))
-        case .text, .longText, .address, .choice, .multiChoice, .date, .expiryDate, .toggle, .contact:
+        case .text, .longText, .address, .choice, .multiChoice, .date, .expiryDate, .toggle:
             return .valid
         }
     }
@@ -110,7 +110,7 @@ public enum FieldFormatter {
     // MARK: Parse
 
     /// Turns typed text into a stored value, or nil when the text is empty or unreadable.
-    /// Dates, toggles, multi-choice and contacts come from their own controls, not from text.
+    /// Dates, toggles and multi-choice come from their own controls, not from text.
     public static func value(from raw: String, as type: FieldType, currency: String = Money.defaultCurrency) -> FieldValue? {
         let text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return nil }
@@ -123,7 +123,7 @@ public enum FieldFormatter {
             return Money.parseAmount(text).map { .money(Money($0, currency: currency)) }
         case .date:
             return CalendarDay(isoString: text).map(FieldValue.date)
-        case .bool, .choices, .contact:
+        case .bool, .choices:
             return nil
         }
     }
@@ -155,8 +155,6 @@ public enum FieldFormatter {
             return flag ? String(localized: "Da") : String(localized: "Nu")
         case .choices(let items):
             return items.formatted(.list(type: .and).locale(locale))
-        case .contact(let contact):
-            return contact.name
         }
     }
 

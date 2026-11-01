@@ -39,28 +39,37 @@ public final class ObligationActions {
     // MARK: Complete and undo
 
     /// Records that the obligation was done and moves it to its next cycle, or
-    /// closes it when it doesn't repeat. History is kept as a `Completion`.
+    /// closes it when it doesn't repeat. The record is a `HistoryEntry` in the
+    /// asset's history, the same history repairs and visits go into.
     @discardableResult
     public func complete(
         _ obligation: Obligation,
         on date: Date? = nil,
         cost: Money? = nil,
         metricReading: Double? = nil,
-        note: String? = nil
-    ) throws -> Completion {
+        note: String? = nil,
+        items: [LineItemDraft] = [],
+        providers: [Provider] = [],
+        rating: Int? = nil
+    ) throws -> HistoryEntry {
         guard obligation.status == .active else { throw ObligationActionError.notActive }
         let completedAt = date ?? now()
         let completedDay = CalendarDay(completedAt, calendar: calendar)
 
-        let completion = Completion(completedAt: completedAt, cycleDueDate: obligation.dueDate)
-        completion.previousStatusRaw = obligation.statusRaw
-        completion.previousDueMetric = obligation.dueMetric
-        completion.cost = cost
-        completion.metricReading = metricReading
-        completion.note = note
-        completion.isExample = obligation.isExample
-        context.insert(completion)
-        completion.obligation = obligation
+        let entry = HistoryEntry(kind: .forCompleting(obligation.kind), title: obligation.title, occurredAt: completedAt)
+        entry.cycleDueDate = obligation.dueDate
+        entry.previousStatusRaw = obligation.statusRaw
+        entry.previousDueMetric = obligation.dueMetric
+        entry.totalCost = cost
+        entry.metricReading = metricReading
+        entry.note = note
+        entry.rating = rating.map { min(max($0, 1), 5) }
+        entry.isExample = obligation.isExample
+        context.insert(entry)
+        entry.obligation = obligation
+        entry.asset = obligation.asset
+        entry.providers = providers
+        HouseholdMutations.addItems(items, to: entry, in: context)
 
         if let metricReading, let asset = obligation.asset {
             HouseholdMutations.recordReading(metricReading, on: asset, at: completedAt, unit: obligation.metricUnit, in: context)
@@ -76,29 +85,30 @@ public final class ObligationActions {
         ) {
             obligation.setDueDay(next.day, calendar: calendar)
             obligation.dueMetric = next.metric
-            completion.nextDueDate = obligation.dueDate
+            entry.nextDueDate = obligation.dueDate
         } else {
             obligation.status = .done
         }
         obligation.snoozedUntil = nil
         obligation.updatedAt = now()
         try save()
-        return completion
+        return entry
     }
 
-    /// Puts the obligation back the way it was before `completion`.
-    public func undo(_ completion: Completion) throws {
-        guard let obligation = completion.obligation else {
-            context.delete(completion)
+    /// Puts the obligation back the way it was before `entry` completed it and
+    /// removes the entry. Only the latest completion can be undone.
+    public func undo(_ entry: HistoryEntry) throws {
+        guard let obligation = entry.obligation, let cycleDueDate = entry.cycleDueDate else {
+            context.delete(entry)
             try save()
             return
         }
-        guard obligation.history.first?.id == completion.id else { throw ObligationActionError.notLatestCompletion }
-        obligation.dueDate = completion.cycleDueDate
-        obligation.dueMetric = completion.previousDueMetric
-        obligation.status = completion.previousStatusRaw.flatMap(ObligationStatus.init(rawValue:)) ?? .active
+        guard obligation.history.first?.id == entry.id else { throw ObligationActionError.notLatestCompletion }
+        obligation.dueDate = cycleDueDate
+        obligation.dueMetric = entry.previousDueMetric
+        obligation.status = entry.previousStatusRaw.flatMap(ObligationStatus.init(rawValue:)) ?? .active
         obligation.updatedAt = now()
-        context.delete(completion)
+        context.delete(entry)
         try save()
     }
 

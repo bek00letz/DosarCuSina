@@ -28,7 +28,6 @@ public enum FieldType: String, Codable, CaseIterable, Sendable {
     case iban
     /// A running counter such as an odometer, engine hours or espresso shots.
     case metric
-    case contact
 
     /// The kind of `FieldValue` this type stores.
     public var valueKind: FieldValue.Kind {
@@ -38,7 +37,6 @@ public enum FieldType: String, Codable, CaseIterable, Sendable {
         case .date, .expiryDate: return .date
         case .toggle: return .bool
         case .multiChoice: return .choices
-        case .contact: return .contact
         case .text, .longText, .choice, .url, .phone, .email, .address, .plate, .vin, .microchip, .iban:
             return .text
         }
@@ -62,8 +60,6 @@ public enum FieldRole: String, Codable, CaseIterable, Sendable {
     case startDate
     /// Where the asset is: an address.
     case location
-    /// The person to call about this asset: vet, mechanic, family doctor.
-    case contact
 }
 
 /// One field in a category template.
@@ -139,22 +135,5 @@ public struct FieldSection: Hashable, Sendable, Codable, Identifiable {
         self.key = key
         self.title = title
         self.fields = fields
-    }
-}
-
-/// A person attached to an asset, such as the vet or the mechanic.
-public struct ContactValue: Hashable, Sendable, Codable {
-    public var name: String
-    public var phone: String?
-    public var email: String?
-    /// Contacts framework identifier, when picked from the address book. It only
-    /// resolves on the device that picked it; name, phone and email are the source of truth.
-    public var localIdentifier: String?
-
-    public init(name: String, phone: String? = nil, email: String? = nil, localIdentifier: String? = nil) {
-        self.name = name
-        self.phone = phone
-        self.email = email
-        self.localIdentifier = localIdentifier
     }
 }

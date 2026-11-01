@@ -20,10 +20,11 @@ public enum DosarSchemaV2: VersionedSchema {
             CategoryTemplate.self,
             Asset.self,
             Obligation.self,
-            Completion.self,
+            HistoryEntry.self,
             ServiceItem.self,
             MeasurementLog.self,
             Attachment.self,
+            Provider.self,
         ]
     }
 }
@@ -38,10 +39,11 @@ public enum DosarMigrationPlan: SchemaMigrationPlan {
 public typealias CategoryTemplate = DosarSchemaV2.CategoryTemplate
 public typealias Asset = DosarSchemaV2.Asset
 public typealias Obligation = DosarSchemaV2.Obligation
-public typealias Completion = DosarSchemaV2.Completion
+public typealias HistoryEntry = DosarSchemaV2.HistoryEntry
 public typealias ServiceItem = DosarSchemaV2.ServiceItem
 public typealias MeasurementLog = DosarSchemaV2.MeasurementLog
 public typealias Attachment = DosarSchemaV2.Attachment
+public typealias Provider = DosarSchemaV2.Provider
 
 /// Shared JSON coding for values stored as `Data` on models and written to archives.
 /// Keys are sorted so the same value always produces the same bytes.
