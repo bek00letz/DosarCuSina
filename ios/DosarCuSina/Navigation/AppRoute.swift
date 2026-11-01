@@ -8,6 +8,9 @@ public enum AppRoute: Hashable, Sendable, Codable {
     case radar
     case asset(UUID)
     case obligation(UUID)
+    case historyEntry(UUID)
+    case provider(UUID)
+    case document(UUID)
     /// A category list, by `CategoryTemplate.key`.
     case category(String)
     /// Scan or add a document.
@@ -27,7 +30,8 @@ public enum SettingsSection: String, Hashable, Sendable, Codable, CaseIterable {
 /// `dosarcusina://` links, built and parsed in one place.
 ///
 /// - `dosarcusina://home`, `dosarcusina://radar`, `dosarcusina://intake`
-/// - `dosarcusina://asset/<uuid>`, `dosarcusina://obligation/<uuid>`
+/// - `dosarcusina://asset/<uuid>`, `dosarcusina://obligation/<uuid>`, `dosarcusina://history/<uuid>`,
+///   `dosarcusina://provider/<uuid>`, `dosarcusina://document/<uuid>`
 /// - `dosarcusina://category/<key>`
 /// - `dosarcusina://settings` or `dosarcusina://settings/<section>`
 public enum DeepLink {
@@ -45,6 +49,15 @@ public enum DeepLink {
             components.path = "/" + id.uuidString.lowercased()
         case .obligation(let id):
             components.host = "obligation"
+            components.path = "/" + id.uuidString.lowercased()
+        case .historyEntry(let id):
+            components.host = "history"
+            components.path = "/" + id.uuidString.lowercased()
+        case .provider(let id):
+            components.host = "provider"
+            components.path = "/" + id.uuidString.lowercased()
+        case .document(let id):
+            components.host = "document"
             components.path = "/" + id.uuidString.lowercased()
         case .category(let key):
             components.host = "category"
@@ -65,6 +78,9 @@ public enum DeepLink {
         case "intake": return .intake
         case "asset": return argument.flatMap(UUID.init(uuidString:)).map(AppRoute.asset)
         case "obligation": return argument.flatMap(UUID.init(uuidString:)).map(AppRoute.obligation)
+        case "history": return argument.flatMap(UUID.init(uuidString:)).map(AppRoute.historyEntry)
+        case "provider": return argument.flatMap(UUID.init(uuidString:)).map(AppRoute.provider)
+        case "document": return argument.flatMap(UUID.init(uuidString:)).map(AppRoute.document)
         case "category": return argument.map(AppRoute.category)
         case "settings": return .settings(argument.flatMap(SettingsSection.init(rawValue:)))
         default: return nil
