@@ -176,6 +176,9 @@ extension DosarSchemaV2 {
         public var extractedText: String?
         /// The date printed on the document (issue or invoice date), noon of that day.
         public var documentDate: Date?
+        /// Identifier of the source document in Capture's document store on this
+        /// device. Local only: archives don't carry it.
+        public var documentID: String?
         /// Kept for reference but no longer current (an old policy).
         public var isArchived: Bool = false
         public var createdAt: Date = Date()

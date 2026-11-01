@@ -15,6 +15,8 @@ public struct DocumentDraft: Sendable {
     public var thumbnail: Data?
     public var extractedText: String?
     public var documentDate: CalendarDay?
+    /// Capture's document store identifier for the source, when it came from there.
+    public var documentID: String?
 
     public init(
         title: String? = nil,
@@ -25,8 +27,10 @@ public struct DocumentDraft: Sendable {
         pageImages: [Data] = [],
         thumbnail: Data? = nil,
         extractedText: String? = nil,
-        documentDate: CalendarDay? = nil
+        documentDate: CalendarDay? = nil,
+        documentID: String? = nil
     ) {
+        self.documentID = documentID
         self.title = title
         self.fileName = fileName
         self.kind = kind
@@ -79,6 +83,7 @@ public final class AttachmentActions {
         attachment.thumbnailData = draft.thumbnail
         attachment.extractedText = draft.extractedText
         attachment.documentDate = draft.documentDate?.noonDate(in: calendar)
+        attachment.documentID = draft.documentID
         attachment.sha256 = draft.sha256
         attachment.byteCount = (draft.originalData?.count ?? 0) + draft.pageImages.reduce(0) { $0 + $1.count }
         attachment.isExample = asset?.isExample ?? false

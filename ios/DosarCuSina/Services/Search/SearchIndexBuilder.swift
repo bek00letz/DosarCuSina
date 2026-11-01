@@ -50,7 +50,8 @@ public struct SearchIndexBuilder {
         var fields = [SearchField(asset.name, weight: SearchField.Weight.title), SearchField(template?.name, weight: SearchField.Weight.label)]
         let definition = template?.definition
         for field in definition?.allFields ?? [] {
-            guard let value = asset.value(field.key) else { continue }
+            // Sensitive values (document numbers, CNP, medical notes) are never indexed.
+            guard !field.isSensitive, let value = asset.value(field.key) else { continue }
             let text = FieldFormatter.display(value, as: field.type, unit: field.unit, locale: locale)
             let weight: Int
             switch field.role {
