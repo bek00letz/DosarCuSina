@@ -1007,7 +1007,7 @@ public struct MultiSourceInputView: View {
     }
     
     // MARK: - Asset Auto-Matching
-    public struct ScoredAssetMatch: Sendable {
+    public struct ScoredAssetMatch {
         public let asset: Asset
         public let reason: String
         public let score: Int
