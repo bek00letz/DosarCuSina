@@ -1,17 +1,16 @@
 # 📁 Dosar cu Șină
 
-> Un asistent inteligent, elegant și privat pentru administrarea activelor, recurențelor și evenimentelor esențiale din viața de zi cu zi (Casă, Mașină, Sănătate, Pet, Documente, Garanții, Abonamente și Active Personalizate).
-
-Construit conform standardelor **Apple Craftsmanship & Polish**: arhitectură local-first, confidențialitate totală prin stocare pe dispozitiv și iCloud privat, interacțiuni haptice tactile, fizică fluidă de arc și scanare inteligentă hibridă (On-Device Apple Vision + Gemini Flash AI prin BYOK).
+> Manager local-first pentru active, documente, garanții și scadențe administrative, configurat conform cerințelor și termenelor legale din România.
+Aplicația rulează complet pe dispozitiv (SwiftData pe iOS / Room pe Android), sincronizată opțional prin iCloud / Google Drive privat, fără backend extern și fără tracking.
 
 ---
 
 ## 🌟 Caracteristici Cheie
 
-### 1. Organizator Complet pe 8 Domenii Casnice
+### 1. Monitorizare pe 8 categorii predefinite
 Fiecărui bun sau domeniu îi sunt asociate reguli de viață, scadențe conforme cu legislația românească și jurnale de telemetrie:
-- 🏠 **Casă & Utilități**: Adrese, cadastru, VTP centrală termică ISCIR (2 ani), verificare gaze ANRE (VIG 2 ani / RIG 10 ani), apometre BRML (rece 7 ani / caldă 4 ani), asigurare PAD (130 lei), contoare curent/gaz/apă cu ferestre de autocitire (zilele 20-25).
-- 🚗 **Mașină & Mobilitate**: Serie VIN 17 caractere, număr înmatriculare, ITP cu detecție vechime (3 ani / 2 ani / 1 an / 6 luni ridesharing), RCA cu catalog asigurători reali (Groupama, Allianz, Omniasig, Generali) și clase Bonus-Malus (B0–B8), Rovinietă națională conformă Legea nr. 226/2023 (1d, 10d, 30d, 60d, 12m; fără taxa de pod Fetești abrogată).
+- 🏠 **Casă & Utilități**: Termene VTP centrală termică (ISCIR 2 ani), verificare instalație gaze (VIG 2 ani / RIG 10 ani), apometre (BRML rece 7 ani / caldă 4 ani), poliță PAD, ferestre de autocitire contoare.
+- 🚗 **Auto**: Calcul ITP în funcție de vechimea vehiculului, alerte RCA și rovinietă (conform Legii 226/2023), jurnal de service și consum.
 - 🩺 **Sănătate & Familie**: Profil medical de urgență (ICE), grupă sanguină & Rh, alergii, afecțiuni cronice, medic de familie, pașaport implant dentar cu numerotare FDI (lot/serie), card european CEASS (24 luni), rețete și buletine de analize.
 - 🐾 **Animale de Companie (Pet)**: Rasă, microcip ISO 15 cifre (prefix 642 România), număr pașaport UE, grafic evoluție greutate, cadențe deparazitare internă/externă (Milbemax, Bravecto) și vaccin antirabic cu regulă de frontieră de 21 de zile.
 - 🪪 **Documente & Identitate**: Carte de identitate, pașaport simplu electronic cu alertă timpurie la 6 luni (-180 zile) pentru restricții de călătorie non-UE, permis de conducere, semnătură electronică calificată și cazier judiciar.
