@@ -85,12 +85,13 @@ struct DSFieldContainer<Input: View>: View {
                         .accessibilityHidden(true)
                 }
                 .contentShape(shape)
-                .onTapGesture { focus?() }
 
             messageLine
         }
         .contentShape(.rect)
-        .onTapGesture { focus?() }
+        // Only text inputs take focus from a tap on the frame; fields built from
+        // buttons, menus and pickers keep their own taps untouched.
+        .simultaneousGesture(TapGesture().onEnded { focus?() }, isEnabled: focus != nil)
         .animation(DS.Motion.animation(DS.Motion.quick, reduceMotion: reduceMotion), value: isFocused)
         .animation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion), value: validation.message.map { String(localized: $0) })
     }
