@@ -1,6 +1,9 @@
 import SwiftUI
 import SwiftData
 import Charts
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// Comprehensive quantitative telemetry and lab biomarker ledger view.
 /// Displays chronological reading cards, delta consumption calculations,
@@ -172,16 +175,16 @@ public struct MeasurementLedgerView: View {
             }
             
             Chart {
-                ForEach(chartMeasurements) { log in
-                    // Reference Zone for Lab Biomarkers
-                    if let min = log.referenceMin, let max = log.referenceMax {
-                        RectangleMark(
-                            xStart: .offset(0),
-                            xEnd: .offset(0),
-                            yStart: .value("Minim", min),
-                            yEnd: .value("Maxim", max)
-                        )
-                        .foregroundStyle(Color.green.opacity(0.08))
+                ForEach(chartMeasurements, id: \.id) { log in
+                    if let min = log.referenceMin {
+                        RuleMark(y: .value("Minim", min))
+                            .foregroundStyle(Color.green.opacity(0.35))
+                            .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
+                    }
+                    if let max = log.referenceMax {
+                        RuleMark(y: .value("Maxim", max))
+                            .foregroundStyle(Color.green.opacity(0.35))
+                            .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
                     }
                     
                     LineMark(

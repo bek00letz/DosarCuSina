@@ -551,6 +551,3 @@ public struct DemoDataSeeder {
     }
 }
 
-// Ensure MeasurementLog is Identifiable for SwiftUI Charts and ForEach throughout the app
-extension MeasurementLog: Identifiable {}
-

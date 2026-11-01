@@ -33,7 +33,7 @@ public enum MeasurementDomain: String, Codable, CaseIterable, Sendable {
 /// Persistent SwiftData model representing quantitative time-series telemetry:
 /// utility meter readings, health biomarkers, vitals, pet weights, or odometer snapshots.
 @Model
-public final class MeasurementLog {
+public final class MeasurementLog: Identifiable {
     public var id: UUID
     public var domainRawValue: String
     public var metricName: String               // e.g. "Index Contor Zi", "Glicemie", "Colesterol LDL", "Greutate"

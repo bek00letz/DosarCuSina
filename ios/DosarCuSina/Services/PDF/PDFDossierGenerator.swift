@@ -765,7 +765,6 @@ public final class PDFDossierGenerator: Sendable {
         currentPage: inout Int,
         assetName: String
     ) {
-        let contentWidth = pageRect.width - (Self.pageMargin * 2)
         let secTitle = "ISTORIC OBLIGAȚII & EVENIMENTE"
         (secTitle as NSString).draw(
             at: CGPoint(x: Self.pageMargin, y: currentY),

@@ -277,7 +277,9 @@ public final class BiometricVaultManager {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.lockAll()
+            Task { @MainActor in
+                self?.lockAll()
+            }
         }
         #endif
     }
