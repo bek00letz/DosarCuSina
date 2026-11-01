@@ -8,6 +8,7 @@ public struct EditAssetSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Bindable public var asset: Asset
+    @State private var showingDeleteConfirmation: Bool = false
     
     // Core Identity State
     @State private var name: String = ""
@@ -172,6 +173,20 @@ public struct EditAssetSheet: View {
                         }
                     }
                 }
+                
+                // Section: Ștergere Activ
+                Section {
+                    Button(role: .destructive) {
+                        showingDeleteConfirmation = true
+                    } label: {
+                        HStack {
+                            Spacer()
+                            Label("Șterge acest activ din Dosar", systemImage: "trash.fill")
+                                .foregroundStyle(.red)
+                            Spacer()
+                        }
+                    }
+                }
             }
             .navigationTitle("Editează Activ")
             .navigationBarTitleDisplayMode(.inline)
@@ -184,6 +199,18 @@ public struct EditAssetSheet: View {
                         .font(.system(.body, design: .rounded, weight: .bold))
                         .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
+            }
+            .confirmationDialog(
+                "Ștergi acest activ?",
+                isPresented: $showingDeleteConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Șterge definitiv „\(asset.name)”", role: .destructive) {
+                    deleteCurrentAsset()
+                }
+                Button("Anulează", role: .cancel) {}
+            } message: {
+                Text("Toate obligațiile, intervențiile tehnice și documentele asociate dosarului „\(asset.name)” vor fi eliminate definitiv.")
             }
             .onAppear {
                 populateFields()
@@ -660,6 +687,18 @@ public struct EditAssetSheet: View {
         
         asset.updatedAt = Date()
         
+        #if canImport(UIKit)
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        #endif
+        dismiss()
+    }
+    
+    private func deleteCurrentAsset() {
+        withAnimation {
+            modelContext.delete(asset)
+            try? modelContext.save()
+            WidgetDataSyncService.shared.sync(context: modelContext)
+        }
         #if canImport(UIKit)
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         #endif

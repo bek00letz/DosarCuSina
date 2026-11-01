@@ -1,48 +1,77 @@
 import SwiftUI
 import SwiftData
 
+public enum RadarHorizon: Int, CaseIterable, Identifiable {
+    case focus = 0
+    case all = 1
+    case completed = 2
+    
+    public var id: Int { rawValue }
+    
+    public var title: String {
+        switch self {
+        case .focus: return "Focalizare (14z)"
+        case .all: return "Toate"
+        case .completed: return "Rezolvate"
+        }
+    }
+}
+
 public struct RadarDashboardView: View {
+    @Environment(\.modelContext) private var modelContext
     @Query(sort: \LifecycleEvent.dueDate, order: .forward) private var allEvents: [LifecycleEvent]
     @Query private var assets: [Asset]
     
+    @State private var selectedHorizon: RadarHorizon = .focus
     @State private var selectedCategory: AssetCategory? = nil
     @State private var showingMultiSourceInput = false
     @State private var showingNewAssetSheet = false
     @State private var editingEvent: LifecycleEvent? = nil
     
+    // Undo Snackbar State
+    @State private var lastCompletedEvent: LifecycleEvent? = nil
+    @State private var showUndoToast: Bool = false
+    @State private var undoDismissTask: Task<Void, Never>? = nil
+    
     public init() {}
     
     public var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // Header Health Card
-                    healthSummaryCard
-                    
-                    // Category Filter Pills
-                    categoryFilterRow
-                    
-                    // Main Feed
-                    if urgentEvents.isEmpty && upcomingEvents.isEmpty && laterEvents.isEmpty {
-                        emptyStateView
-                    } else {
-                        if !urgentEvents.isEmpty {
-                            eventSection(title: "Urgente & Depășite", icon: "exclamationmark.triangle.fill", color: .red, events: urgentEvents)
-                        }
+            ZStack(alignment: .bottom) {
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // Header Health Card
+                        healthSummaryCard
                         
-                        if !upcomingEvents.isEmpty {
-                            eventSection(title: "În următoarele 30 de zile", icon: "clock.badge.exclamationmark", color: .orange, events: upcomingEvents)
-                        }
+                        // Horizon Picker (Focalizare / Toate / Rezolvate)
+                        horizonPicker
                         
-                        if !laterEvents.isEmpty {
-                            eventSection(title: "Planificate Ulterior", icon: "calendar", color: .blue, events: laterEvents)
+                        // Category Filter Pills
+                        categoryFilterRow
+                        
+                        // Dynamic Content by Horizon
+                        switch selectedHorizon {
+                        case .focus:
+                            focusContent
+                        case .all:
+                            allContent
+                        case .completed:
+                            completedContent
                         }
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 80) // Leave breathing room for undo toast
                 }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 32)
+                .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
+                
+                // Floating Undo Toast
+                if showUndoToast, let event = lastCompletedEvent {
+                    undoToastView(for: event)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 16)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
             }
-            .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
             .navigationTitle("Radar")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -52,6 +81,7 @@ public struct RadarDashboardView: View {
                         Image(systemName: "doc.viewfinder.fill")
                             .font(.system(size: 17, weight: .semibold))
                     }
+                    .accessibilityLabel("Scanează document sau factură")
                 }
                 
                 ToolbarItem(placement: .topBarLeading) {
@@ -61,6 +91,7 @@ public struct RadarDashboardView: View {
                         Image(systemName: "plus.circle.fill")
                             .font(.system(size: 17, weight: .semibold))
                     }
+                    .accessibilityLabel("Adaugă activ nou")
                 }
             }
             .sheet(isPresented: $showingMultiSourceInput) {
@@ -75,6 +106,16 @@ public struct RadarDashboardView: View {
         }
     }
     
+    // MARK: - Horizon Picker
+    private var horizonPicker: some View {
+        Picker("Orizont Radar", selection: $selectedHorizon) {
+            ForEach(RadarHorizon.allCases) { horizon in
+                Text(horizon.title).tag(horizon)
+            }
+        }
+        .pickerStyle(.segmented)
+    }
+    
     // MARK: - Filtered Events
     private var filteredEvents: [LifecycleEvent] {
         allEvents.filter { event in
@@ -83,16 +124,72 @@ public struct RadarDashboardView: View {
         }
     }
     
-    private var urgentEvents: [LifecycleEvent] {
-        filteredEvents.filter { !$0.isCompleted && ($0.isOverdue || $0.isUrgent) }
+    private var activeEvents: [LifecycleEvent] {
+        filteredEvents.filter { !$0.isCompleted }
     }
     
-    private var upcomingEvents: [LifecycleEvent] {
-        filteredEvents.filter { !$0.isCompleted && !$0.isUrgent && !$0.isOverdue && $0.daysRemaining <= 30 }
+    private var completedEvents: [LifecycleEvent] {
+        filteredEvents.filter { $0.isCompleted }
+    }
+    
+    private var urgentEvents: [LifecycleEvent] {
+        activeEvents.filter { $0.isOverdue || $0.isUrgent }
+    }
+    
+    private var next14DaysEvents: [LifecycleEvent] {
+        activeEvents.filter { !$0.isUrgent && !$0.isOverdue && $0.daysRemaining <= 14 }
+    }
+    
+    private var upcoming30DaysEvents: [LifecycleEvent] {
+        activeEvents.filter { !$0.isUrgent && !$0.isOverdue && $0.daysRemaining <= 30 }
     }
     
     private var laterEvents: [LifecycleEvent] {
-        filteredEvents.filter { !$0.isCompleted && $0.daysRemaining > 30 }
+        activeEvents.filter { $0.daysRemaining > 30 }
+    }
+    
+    // MARK: - Horizon Views
+    @ViewBuilder
+    private var focusContent: some View {
+        if urgentEvents.isEmpty && next14DaysEvents.isEmpty {
+            focusEmptyStateView
+        } else {
+            if !urgentEvents.isEmpty {
+                eventSection(title: "Urgente & Depășite", icon: "exclamationmark.triangle.fill", color: .red, events: urgentEvents)
+            }
+            
+            if !next14DaysEvents.isEmpty {
+                eventSection(title: "În următoarele 14 zile", icon: "clock.badge.exclamationmark", color: .orange, events: next14DaysEvents)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var allContent: some View {
+        if urgentEvents.isEmpty && upcoming30DaysEvents.isEmpty && laterEvents.isEmpty {
+            emptyStateView
+        } else {
+            if !urgentEvents.isEmpty {
+                eventSection(title: "Urgente & Depășite", icon: "exclamationmark.triangle.fill", color: .red, events: urgentEvents)
+            }
+            
+            if !upcoming30DaysEvents.isEmpty {
+                eventSection(title: "În următoarele 30 de zile", icon: "clock.badge.exclamationmark", color: .orange, events: upcoming30DaysEvents)
+            }
+            
+            if !laterEvents.isEmpty {
+                eventSection(title: "Planificate Ulterior", icon: "calendar", color: .blue, events: laterEvents)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var completedContent: some View {
+        if completedEvents.isEmpty {
+            completedEmptyStateView
+        } else {
+            eventSection(title: "Obligații Rezolvate", icon: "checkmark.seal.fill", color: .green, events: completedEvents, isHistory: true)
+        }
     }
     
     // MARK: - Health Card
@@ -134,10 +231,10 @@ public struct RadarDashboardView: View {
     }
     
     private var complianceRate: Double {
-        let total = filteredEvents.count
-        guard total > 0 else { return 1.0 }
-        let compliant = filteredEvents.filter { !$0.isOverdue }.count
-        return Double(compliant) / Double(total)
+        let active = activeEvents
+        guard !active.isEmpty else { return 1.0 }
+        let compliant = active.filter { !$0.isOverdue }.count
+        return Double(compliant) / Double(active.count)
     }
     
     private var complianceColor: Color {
@@ -158,7 +255,7 @@ public struct RadarDashboardView: View {
     
     private var complianceSubtitle: String {
         if urgentEvents.isEmpty {
-            return "Nicio grijă urgentă pentru următoarele 7 zile."
+            return "Nicio grijă urgentă pentru următoarele 14 zile."
         } else {
             return "Verifică acțiunile recomandate de mai jos."
         }
@@ -196,7 +293,7 @@ public struct RadarDashboardView: View {
     }
     
     // MARK: - Event Section
-    private func eventSection(title: String, icon: String, color: Color, events: [LifecycleEvent]) -> some View {
+    private func eventSection(title: String, icon: String, color: Color, events: [LifecycleEvent], isHistory: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
                 Image(systemName: icon)
@@ -221,7 +318,9 @@ public struct RadarDashboardView: View {
                     Button {
                         editingEvent = event
                     } label: {
-                        EventRowCard(event: event)
+                        EventRowCard(event: event) {
+                            handleToggleCompletion(for: event)
+                        }
                     }
                     .buttonStyle(.plain)
                 }
@@ -229,7 +328,157 @@ public struct RadarDashboardView: View {
         }
     }
     
-    // MARK: - Empty State
+    // MARK: - Toggle & Undo Handling
+    private func handleToggleCompletion(for event: LifecycleEvent) {
+        WidgetDataSyncService.shared.sync(context: modelContext)
+        
+        if event.isCompleted {
+            lastCompletedEvent = event
+            undoDismissTask?.cancel()
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                showUndoToast = true
+            }
+            
+            undoDismissTask = Task {
+                try? await Task.sleep(nanoseconds: 5_000_000_000)
+                if !Task.isCancelled {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        showUndoToast = false
+                    }
+                }
+            }
+        } else {
+            if lastCompletedEvent?.id == event.id {
+                undoDismissTask?.cancel()
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    showUndoToast = false
+                }
+            }
+        }
+    }
+    
+    private func undoLastCompletion() {
+        #if canImport(UIKit)
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+        #endif
+        
+        undoDismissTask?.cancel()
+        guard let event = lastCompletedEvent else { return }
+        
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+            event.isCompleted = false
+            event.completedDate = nil
+            showUndoToast = false
+            lastCompletedEvent = nil
+        }
+        
+        Task {
+            _ = try? await NotificationScheduler.shared.scheduleReminders(for: event)
+        }
+        WidgetDataSyncService.shared.sync(context: modelContext)
+    }
+    
+    // MARK: - Undo Toast View
+    private func undoToastView(for event: LifecycleEvent) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 20, weight: .bold))
+                .foregroundStyle(.green)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(event.title)
+                    .font(.system(.subheadline, design: .rounded, weight: .semibold))
+                    .lineLimit(1)
+                    .foregroundStyle(.primary)
+                
+                Text("Marcat ca rezolvat")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            
+            Spacer(minLength: 8)
+            
+            Button {
+                undoLastCompletion()
+            } label: {
+                Text("Anulează")
+                    .font(.system(.subheadline, design: .rounded, weight: .bold))
+                    .foregroundStyle(.blue)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.blue.opacity(0.12))
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            
+            Button {
+                undoDismissTask?.cancel()
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    showUndoToast = false
+                }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondary)
+                    .padding(6)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(uiColor: .secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 4)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
+        )
+    }
+    
+    // MARK: - Empty States
+    private var focusEmptyStateView: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "sun.max.fill")
+                .font(.system(size: 44))
+                .foregroundStyle(.yellow.gradient)
+                .padding(.top, 30)
+            
+            Text("Focalizare curată")
+                .font(.system(.title3, design: .rounded, weight: .bold))
+            
+            Text("Nicio obligație urgentă în următoarele 14 zile.\nPoți comuta pe «Toate» pentru planificările pe termen mai lung.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 24)
+    }
+    
+    private var completedEmptyStateView: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "archivebox")
+                .font(.system(size: 44))
+                .foregroundStyle(.secondary)
+                .padding(.top, 30)
+            
+            Text("Nicio obligație rezolvată")
+                .font(.system(.title3, design: .rounded, weight: .bold))
+            
+            Text("Facturile plătite, ITP-urile sau vaccinurile bifate vor rămâne arhivate aici pentru referință și istoric.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 24)
+    }
+    
     private var emptyStateView: some View {
         VStack(spacing: 16) {
             Image(systemName: "checkmark.seal.fill")

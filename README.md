@@ -47,11 +47,16 @@ Zero platform lock-in. Datele utilizatorului pot fi exportate și importate libe
   - `opis.pdf`: Cuprins tabelar oficial (*Opis Documente*) generat automat.
 - **Moduri de Import**: `CLEAN_RESTORE` (restaurare curată cu resetare prealabilă) și `MERGE` (îmbinare inteligentă cu regula „cel mai recent câștigă”).
 
-### 5. Gestiune Date Demonstrative & Resetare Sigură
-- **Inițializare Automată**: La prima lansare pe un dispozitiv nou, aplicația detectează baza de date goală prin `@AppStorage("didSeedInitialDemoData")` și populează automat 8 active demonstrative realiste și conforme cu legislația românească.
-- **Resetare din Setări**: Ecranul de Setări oferă un buton dedicat *„Reîncarcă Date Demonstrative”* protejat de o alertă de confirmare distructivă, permițând oricând revenirea la o stare demonstrativă curată.
+### 5. Gestiune Active, Personalizare & Resetare Sigură
+- **Dashboard Modular pe Grilă de 8 Pătrate**: Ecranul principal de deschidere (`Active`) prezintă cele 8 domenii casnice ca plăci squircle continue cu simboluri native, contoare reactive și indicatori de scadență iminentă.
+- **Personalizare & Reordonare Categorie**: Reordonare intuitivă drag-and-drop în Setări, ascundere plăci neutilizate și crearea de categorii personalizate nelimitate (ex. *Biciclete*, *Livadă*, *Echipamente*).
+- **Ștergere Universală a Activelor (CRUD Parity)**: Meniu contextual la apăsare lungă pe carduri, buton de ștergere în vizualizarea de detaliu și în fișa de editare, plus opțiune de resetare completă a bazei de date în Setări.
+- **Formulare Zero-Friction & `QuickPickChips`**: Formulare curate fără text pre-completat forțat, cu sugestii instantanee prin pastile de selecție rapidă cu 1 tap.
+- **Inițializare Automată & Resetare Sigură**: La prima lansare pe un dispozitiv nou, aplicația detectează baza de date goală prin `@AppStorage("didSeedInitialDemoData")` și populează automat 8 active demonstrative realiste. Din Setări se pot reîncărca oricând datele demo sau goli complet baza de date.
 
-### 6. Radar de Scadențe & Financial Pulse
+### 6. Radar de Scadențe, Financial Pulse & Undo Framework
+- **Filtrare pe Orizonturi Temporale**: Mod *Focalizare (14z)* pentru eliminarea zgomotului vizual, mod *Toate* pentru planificare pe termen lung și mod *Rezolvate* pentru istoricul obligațiilor finalizate (cu posibilitate de debifare pentru reactivare).
+- **Snackbar de Anulare Plutitor (`UndoSnackbar`)**: Alertă tactilă de 5 secunde la bifarea oricărui eveniment ce permite anularea imediată dacă acțiunea a fost accidentală.
 - **Cash-Flow Forecast pe 30 / 60 / 90 de zile**: Proiecție dinamică a sumelor de plată defalcată pe cheltuieli recurente (abonamente, utilități) vs punctuale (RCA, impozite, ITP, revizii).
 - **Cost Total de Deținere (TCO)**: Cât costă fiecare mașină, casă sau animal de companie pe an.
 - **Abonamente & Burn Rate**: Monitorizare a cheltuielilor lunare recurente și alerte de renegociere contracte.

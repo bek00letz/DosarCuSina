@@ -5,14 +5,14 @@ public struct MainTabView: View {
     
     public var body: some View {
         TabView {
+            AssetsHomeDashboardView()
+                .tabItem {
+                    Label("Active", systemImage: "square.grid.2x2.fill")
+                }
+            
             RadarDashboardView()
                 .tabItem {
                     Label("Radar", systemImage: "clock.badge.exclamationmark")
-                }
-            
-            AssetsVaultView()
-                .tabItem {
-                    Label("Active", systemImage: "folder.fill")
                 }
             
             FinancialPulseView()

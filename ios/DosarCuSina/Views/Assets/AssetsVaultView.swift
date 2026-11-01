@@ -8,6 +8,8 @@ public struct AssetsVaultView: View {
     @State private var showingNewAssetSheet = false
     @State private var searchText: String = ""
     @State private var selectedCategory: AssetCategory? = nil
+    @State private var assetToDelete: Asset? = nil
+    @State private var showingDeleteAlert = false
     
     public init() {}
     
@@ -197,6 +199,22 @@ public struct AssetsVaultView: View {
                                     assetCard(result: result)
                                 }
                                 .buttonStyle(.plain)
+                                .contextMenu {
+                                    NavigationLink {
+                                        AssetDetailView(asset: result.asset)
+                                    } label: {
+                                        Label("Deschide Dosar", systemImage: "folder.fill")
+                                    }
+                                    
+                                    Divider()
+                                    
+                                    Button(role: .destructive) {
+                                        assetToDelete = result.asset
+                                        showingDeleteAlert = true
+                                    } label: {
+                                        Label("Șterge Activul", systemImage: "trash")
+                                    }
+                                }
                             }
                         }
                         .padding(.horizontal, 16)
@@ -206,7 +224,7 @@ public struct AssetsVaultView: View {
                 }
             }
             .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
-            .navigationTitle("Active")
+            .navigationTitle("Căutare Active")
             .searchable(text: $searchText, prompt: "Caută activ, serie, contact, service, OCR...")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -218,10 +236,37 @@ public struct AssetsVaultView: View {
                     }
                 }
             }
+            .confirmationDialog(
+                "Ștergi acest activ?",
+                isPresented: $showingDeleteAlert,
+                titleVisibility: .visible,
+                presenting: assetToDelete
+            ) { asset in
+                Button("Șterge definitiv „\(asset.name)”", role: .destructive) {
+                    deleteAsset(asset)
+                }
+                Button("Anulează", role: .cancel) {
+                    assetToDelete = nil
+                }
+            } message: { asset in
+                Text("Toate obligațiile, intervențiile tehnice și fișierele asociate dosarului „\(asset.name)” vor fi eliminate.")
+            }
             .sheet(isPresented: $showingNewAssetSheet) {
                 NewAssetSheet()
             }
         }
+    }
+    
+    private func deleteAsset(_ asset: Asset) {
+        withAnimation {
+            modelContext.delete(asset)
+            try? modelContext.save()
+            WidgetDataSyncService.shared.sync(context: modelContext)
+        }
+        #if canImport(UIKit)
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        #endif
+        assetToDelete = nil
     }
     
     // MARK: - Category Filter Pills

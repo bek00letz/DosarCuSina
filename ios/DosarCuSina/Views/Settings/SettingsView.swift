@@ -28,6 +28,7 @@ public struct SettingsView: View {
     // Demo Data Management State
     @AppStorage("didSeedInitialDemoData") private var didSeedInitialDemoData: Bool = false
     @State private var showingResetDemoConfirmAlert: Bool = false
+    @State private var showingClearAllConfirmAlert: Bool = false
     @State private var isResettingDemoData: Bool = false
     
     public init() {}
@@ -197,9 +198,61 @@ public struct SettingsView: View {
                     Text("Formatul deschis .dosar permite backup-ul complet și transferul facil al tuturor bunurilor, scanărilor și termenelor între iOS și Android, garantând integritate criptografică SHA-256.")
                 }
                 
-                // Section: Gestiune Date Demonstrative
+                // Section: Personalizare Interfață
+                Section {
+                    NavigationLink {
+                        CategoryCustomizationView()
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "square.grid.2x2.fill")
+                                .font(.system(size: 20))
+                                .foregroundStyle(.blue)
+                                .frame(width: 32, height: 32)
+                                .background(Color.blue.opacity(0.12))
+                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Personalizare Ecran Principal")
+                                    .font(.system(.subheadline, design: .rounded, weight: .semibold))
+                                    .foregroundStyle(.primary)
+                                Text("Alege și ordonează pătratele afișate, adaugă categorii proprii.")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 2)
+                    }
+                } header: {
+                    Text("Personalizare Ecran Principal")
+                } footer: {
+                    Text("Poți ascunde categorii pe care nu le folosești (ex: animale sau auto), reordona cele 8 pătrate de pe ecran și adăuga categorii noi.")
+                }
+                
+                // Section: Gestiune Date & Curățare
                 Section {
                     Button(role: .destructive) {
+                        showingClearAllConfirmAlert = true
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "trash.circle.fill")
+                                .font(.system(size: 20))
+                                .foregroundStyle(.red)
+                                .frame(width: 32, height: 32)
+                                .background(Color.red.opacity(0.12))
+                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Șterge Toate Activele (Bază Goală)")
+                                    .font(.system(.subheadline, design: .rounded, weight: .semibold))
+                                    .foregroundStyle(.red)
+                                Text("Șterge toate activele, dosarele și jurnalele pentru a începe de la zero.")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    
+                    Button {
                         showingResetDemoConfirmAlert = true
                     } label: {
                         HStack(spacing: 12) {
@@ -229,9 +282,9 @@ public struct SettingsView: View {
                     }
                     .disabled(isResettingDemoData)
                 } header: {
-                    Text("Gestiune Date Demonstrative")
+                    Text("Gestiune Date & Exemple")
                 } footer: {
-                    Text("Înlocuiește baza de date cu exemple curate și conforme pentru toate cele 8 domenii (Casă, Auto, Sănătate, Pet, Documente, Garanții, Abonamente, Chiriaș).")
+                    Text("Ai control deplin: poți începe cu o bază curată fără niciun activ pre-populat, sau poți reîncărca oricând datele demonstrative de test.")
                 }
                 
                 // Section: Comparativ Funcționalități
@@ -376,6 +429,31 @@ public struct SettingsView: View {
             } message: {
                 Text("Ești sigur că vrei să resetezi datele? Toate activele și jurnalele curente vor fi înlocuite cu exemplele demonstrative.")
             }
+            .alert("Ștergi toate activele?", isPresented: $showingClearAllConfirmAlert) {
+                Button("Anulează", role: .cancel) {}
+                Button("Șterge Tot (Bază Goală)", role: .destructive) {
+                    clearAllData()
+                }
+            } message: {
+                Text("Ești sigur că vrei să elimini toate datele? Vei rămâne cu o bază complet goală și vei putea adăuga de la zero doar activele tale.")
+            }
+        }
+    }
+    
+    private func clearAllData() {
+        Task { @MainActor in
+            try? modelContext.delete(model: Asset.self)
+            try? modelContext.delete(model: LifecycleEvent.self)
+            try? modelContext.delete(model: MeasurementLog.self)
+            try? modelContext.delete(model: ServiceItem.self)
+            try? modelContext.delete(model: DocumentAttachment.self)
+            try? modelContext.delete(model: DynamicField.self)
+            try? modelContext.save()
+            didSeedInitialDemoData = true
+            WidgetDataSyncService.shared.sync(context: modelContext)
+            #if canImport(UIKit)
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            #endif
         }
     }
     

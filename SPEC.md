@@ -348,6 +348,43 @@ Pentru a garanta portabilitatea deplină a datelor utilizatorului și a preveni 
 1. **Format & Identificator Uniform de Tip (UTType)**:
    - Identificator înregistrat: `com.ar.dosarcusina.dossier`
    - Extensie de fișier: `.dosar`
+
+---
+
+### 3.8 Ecranul Principal Modular pe Active & Arhitectura UX Scalabilă
+
+#### 1. Ecranul Principal: Dashboard Modular cu Grilă de 8 Pătrate (`AssetsHomeDashboardView`)
+Tab-ul principal de deschidere a aplicației (`Tab 1`) este **Active**, proiectat ca un dashboard modular de înaltă densitate informațională, respectând standardul Apple Craftsmanship:
+- **Grilă de 8 Pătrate (Squircles Continui)**: Reprezentând cele 8 domenii de viață ale gospodăriei (Vehicule, Locuință, Sănătate, Animale, Documente, Garanții, Abonamente, Alte Active/Personalizate).
+- **Informație la Nivel de Card**: Fiecare pătrat prezintă simbolul SF Symbol nativ, contorul reactiv de active înregistrate, denumirea domeniului și un rezumat discret al următoarei obligații iminente.
+- **Alert Banner de Urgență**: Un banner compact de atenționare la vârful ecranului semnalează orice scadență depășită sau critică din gospodărie, permițând saltul direct la rezolvare.
+
+#### 2. Personalizarea & Reordonarea Categoriilor (`CategoryDisplayManager` & `CategoryCustomizationView`)
+Fiecare utilizator are o structură familială diferită (poate nu deține animale de companie, nu are mașină sau administrează o mică livadă):
+- **Reordonare prin Drag-and-Drop**: Utilizatorii pot schimba ordinea plăcilor din ecranul principal direct din Setări (`EditButton()` cu `onMove`).
+- **Activare/Dezactivare Modulară**: Categoriile neutilizate pot fi ascunse printr-un simplu toggle (`isVisible`), curățând interfața de elemente irelevante.
+- **Categorii Personalizate Nelimitate**: Utilizatorii pot crea plăci noi (ex: "Biciclete", "PFA", "Livadă", "Scule & Echipamente"), alegând dintr-o paletă de 16 simboluri SF Symbols și 10 culori de accent, acestea integrându-se nativ în grila de pe ecranul principal.
+
+#### 3. Cadrul Universal de Ștergere a Activelor (CRUD Parity)
+Eliminarea blocajului de descoperire a ștergerii prin implementarea punctelor de acces standard Apple:
+- Meniu contextual la apăsare lungă (`.contextMenu`) pe cardurile de active cu opțiunea explicită *Șterge Activul*.
+- Meniu de depășire cu trei puncte (`...`) în bara de instrumente a vizualizării detaliate a activului (`AssetDetailView`).
+- Secțiune distructivă dedicată în ecranul de editare a activului (`EditAssetSheet`).
+- Buton de resetare a bazei de date în Setări: *Șterge Toate Activele (Bază Goală)* cu alertă dublă de confirmare.
+- Ștergere în cascadă completă prin SwiftData și Room SQLite: ștergerea unui activ elimină instantaneu toate evenimentele, piesele de schimb, jurnalele de telemetrie și fișierele atașate, declanșând sincronizarea widget-urilor.
+
+#### 4. Motorul de Formulare Zero-Friction & `QuickPickChips`
+S-a eliminat frustrarea textelor pre-completate în câmpurile formularului (care forțau utilizatorul să șteargă manual caracterele):
+- Câmpurile utilizează stări inițiale goale (`""`) acompaniate de sugestii discrete prin `prompt: Text(...)`.
+- **Sugestii Instantanee cu 1 Tap (`QuickPickChips`)**: Sub câmpurile de text sunt afișate pastile orizontale cu opțiuni frecvente (mărci auto uzuale, comercianți românești, durate tipice de garanție, emitenți de acte, specii de animale), completând câmpul instantaneu la atingere fără tastare.
+
+#### 5. Scalabilitatea Radarului & Sistemul de Anulare (Undo Framework)
+Pentru a preveni "gaura neagră" a bifării accidentale a evenimentelor și aglomerarea listei când utilizatorul introduce zeci de active:
+- **Selector de Orizont Temporal**:
+  - *Focalizare (14z)*: Afișează strict obligațiile depășite, urgente și scadențele din următoarele 14 zile, păstrând ecranul aerisit și concentrat.
+  - *Toate*: Afișează întreaga cronologie (Urgente, Următoarele 30 de zile, Planificate ulterior).
+  - *Rezolvate*: Istoricul obligațiilor bifate, permițând debifarea lor oricând pentru reactivare imediată dacă au fost marcate din greșeală.
+- **Snackbar de Anulare Plutitor (`UndoSnackbar`)**: La bifarea oricărui eveniment, un banner flotant elegant apare timp de 5 secunde, oferind butonul *Anulează* cu răspuns haptic pentru refacerea imediată a stării active și reprogramarea notificărilor.
    - Structură internă fizică: Arhivă ZIP standard (RFC 1951 / DEFLATE), inspectabilă cu orice utilitar de arhivare (ex. `unzip`, Finder).
 2. **Structura Internă a Pachetului**:
    - `manifest.json`: Schema Version 2, metadata aplicație, timestamp export în format ISO 8601 UTC, identificator platformă (`iOS` sau `Android`), contor de entități și **hartă completă de integritate SHA-256** pentru fiecare fișier inclus.

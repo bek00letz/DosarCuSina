@@ -34,8 +34,8 @@ public struct NewAssetSheet: View {
     @State private var podCode: String = ""
     @State private var clcCode: String = ""
     @State private var waterClientCode: String = ""
-    @State private var meterReadWindowStart: String = "20"
-    @State private var meterReadWindowEnd: String = "25"
+    @State private var meterReadWindowStart: String = ""
+    @State private var meterReadWindowEnd: String = ""
     @State private var heatingBoilerModel: String = ""
     @State private var heatingBoilerSerial: String = ""
     @State private var gasMeterSerial: String = ""
@@ -43,7 +43,7 @@ public struct NewAssetSheet: View {
     @State private var waterMeterSerial: String = ""
     
     // Pet Domain Fields
-    @State private var petSpecies: String = "Câine"
+    @State private var petSpecies: String = ""
     @State private var petBreed: String = ""
     @State private var petMicrochipNumber: String = ""
     @State private var petPassportNumber: String = ""
@@ -69,11 +69,11 @@ public struct NewAssetSheet: View {
     @State private var productBrand: String = ""
     @State private var productModel: String = ""
     @State private var warrantySerial: String = ""
-    @State private var warrantyRetailer: String = "eMAG"
+    @State private var warrantyRetailer: String = ""
     @State private var purchaseDate: Date = Date()
     @State private var purchasePriceText: String = ""
-    @State private var warrantyMonthsText: String = "24"
-    @State private var extendedWarrantyMonthsText: String = "0"
+    @State private var warrantyMonthsText: String = ""
+    @State private var extendedWarrantyMonthsText: String = ""
     
     // Subscriptions Fields
     @State private var subscriptionProvider: String = ""
@@ -87,7 +87,7 @@ public struct NewAssetSheet: View {
     
     // Documents Fields
     @State private var docSeriesNumber: String = ""
-    @State private var docIssuer: String = "SPCLEP"
+    @State private var docIssuer: String = ""
     @State private var docIssueDate: Date = Date()
     @State private var docExpiryDate: Date = Calendar.current.date(byAdding: .year, value: 10, to: Date()) ?? Date()
     
@@ -109,7 +109,9 @@ public struct NewAssetSheet: View {
     private let cycleOptions = ["Lunar", "Anual", "Trimestrial", "Săptămânal"]
     private let currencyOptions = ["RON", "EUR", "USD"]
     
-    public init() {}
+    public init(initialCategory: AssetCategory = .vehicle) {
+        _selectedCategory = State(initialValue: initialCategory)
+    }
     
     public var body: some View {
         NavigationStack {
@@ -246,6 +248,7 @@ public struct NewAssetSheet: View {
                 TextField("Marcă (ex: Volkswagen)", text: $vehicleMake)
                 TextField("Model (ex: Golf 7)", text: $vehicleModel)
             }
+            QuickPickChips(options: ["Dacia", "Volkswagen", "BMW", "Toyota", "Skoda", "Renault"], selectedValue: $vehicleMake)
             
             HStack {
                 Text("An Fabricație")
@@ -292,13 +295,25 @@ public struct NewAssetSheet: View {
                 Text("Fereastră Autocitire:")
                 Spacer()
                 Text("Zilele")
-                TextField("20", text: $meterReadWindowStart)
+                TextField("20", text: $meterReadWindowStart, prompt: Text("20"))
                     .keyboardType(.numberPad)
                     .frame(width: 32)
                 Text("–")
-                TextField("25", text: $meterReadWindowEnd)
+                TextField("25", text: $meterReadWindowEnd, prompt: Text("25"))
                     .keyboardType(.numberPad)
                     .frame(width: 32)
+            }
+            
+            HStack(spacing: 6) {
+                Text("Interval rapid:")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                Button("20–25") { meterReadWindowStart = "20"; meterReadWindowEnd = "25" }
+                    .buttonStyle(.bordered).controlSize(.mini)
+                Button("1–5") { meterReadWindowStart = "1"; meterReadWindowEnd = "5" }
+                    .buttonStyle(.bordered).controlSize(.mini)
+                Button("15–20") { meterReadWindowStart = "15"; meterReadWindowEnd = "20" }
+                    .buttonStyle(.bordered).controlSize(.mini)
             }
             
             TextField("Model Centrală Termică", text: $heatingBoilerModel)
@@ -312,7 +327,9 @@ public struct NewAssetSheet: View {
     // MARK: - Pet Fields
     private var petFieldsSection: some View {
         Section("Date Animal de Companie") {
-            TextField("Specie (ex: Câine, Pisică)", text: $petSpecies)
+            TextField("Specie (ex: Câine, Pisică)", text: $petSpecies, prompt: Text("ex: Câine, Pisică"))
+            QuickPickChips(options: ["Câine", "Pisică", "Iepure", "Papagal"], selectedValue: $petSpecies)
+            
             TextField("Rasă (ex: Golden Retriever)", text: $petBreed)
             TextField("Microchip ISO (15 cifre)", text: $petMicrochipNumber)
                 .keyboardType(.numberPad)
@@ -377,7 +394,9 @@ public struct NewAssetSheet: View {
             TextField("Serie Produs / IMEI", text: $warrantySerial)
                 .font(.system(.body, design: .monospaced))
             
-            TextField("Comerciant / Magazin (ex: eMAG, Altex)", text: $warrantyRetailer)
+            TextField("Comerciant / Magazin (ex: eMAG, Altex)", text: $warrantyRetailer, prompt: Text("ex: eMAG, Altex"))
+            QuickPickChips(options: ["eMAG", "Altex", "Flanco", "Dedeman", "Apple"], selectedValue: $warrantyRetailer)
+            
             DatePicker("Data Achiziției", selection: $purchaseDate, displayedComponents: .date)
             
             HStack {
@@ -392,16 +411,17 @@ public struct NewAssetSheet: View {
             HStack {
                 Text("Garanție Standard (luni)")
                 Spacer()
-                TextField("24", text: $warrantyMonthsText)
+                TextField("24", text: $warrantyMonthsText, prompt: Text("24"))
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.trailing)
                     .frame(width: 60)
             }
+            QuickPickChips(options: ["12", "24", "36", "60"], selectedValue: $warrantyMonthsText)
             
             HStack {
                 Text("Garanție Extinsă / Extra (luni)")
                 Spacer()
-                TextField("0", text: $extendedWarrantyMonthsText)
+                TextField("0", text: $extendedWarrantyMonthsText, prompt: Text("0"))
                     .keyboardType(.numberPad)
                     .multilineTextAlignment(.trailing)
                     .frame(width: 60)
@@ -413,6 +433,7 @@ public struct NewAssetSheet: View {
     private var subscriptionsFieldsSection: some View {
         Section("Detalii Abonament & Plată") {
             TextField("Furnizor / Serviciu (ex: Netflix, Digi, Spotify)", text: $subscriptionProvider)
+            QuickPickChips(options: ["Netflix", "Spotify", "Digi", "YouTube", "iCloud", "Enel"], selectedValue: $subscriptionProvider)
             
             Picker("Periodicitate Facturare", selection: $subscriptionCycle) {
                 ForEach(cycleOptions, id: \.self) { Text($0).tag($0) }
@@ -450,7 +471,9 @@ public struct NewAssetSheet: View {
             TextField("Serie & Număr (ex: DP 123456)", text: $docSeriesNumber)
                 .font(.system(.body, design: .monospaced))
             
-            TextField("Autoritate Emitentă (ex: SPCLEP, DRPCIV)", text: $docIssuer)
+            TextField("Autoritate Emitentă (ex: SPCLEP, DRPCIV)", text: $docIssuer, prompt: Text("ex: SPCLEP, DRPCIV"))
+            QuickPickChips(options: ["SPCLEP", "DRPCIV", "DGP Pașapoarte", "MAI"], selectedValue: $docIssuer)
+            
             DatePicker("Data Emiterii", selection: $docIssueDate, displayedComponents: .date)
             DatePicker("Data Expirării", selection: $docExpiryDate, displayedComponents: .date)
         }
@@ -956,5 +979,36 @@ private struct ConfigurableEventRow: View {
             }
         }
         .padding(.vertical, 4)
+    }
+}
+
+// MARK: - Quick Pick Chips Component
+struct QuickPickChips: View {
+    let options: [String]
+    @Binding var selectedValue: String
+    
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 6) {
+                ForEach(options, id: \.self) { option in
+                    Button {
+                        #if canImport(UIKit)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        #endif
+                        selectedValue = option
+                    } label: {
+                        Text(option)
+                            .font(.caption2.weight(selectedValue == option ? .bold : .medium))
+                            .padding(.horizontal, 9)
+                            .padding(.vertical, 4)
+                            .background(selectedValue == option ? Color.blue.opacity(0.18) : Color(uiColor: .tertiarySystemGroupedBackground))
+                            .foregroundStyle(selectedValue == option ? Color.blue : Color.secondary)
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.vertical, 2)
+        }
     }
 }

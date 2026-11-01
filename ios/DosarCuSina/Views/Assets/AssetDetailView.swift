@@ -57,6 +57,7 @@ public struct AssetDetailView: View {
     
     // Toast Status Feedback
     @State private var toastMessage: String? = nil
+    @State private var showingDeleteConfirmation: Bool = false
     
     public init(asset: Asset) {
         self.asset = asset
@@ -91,29 +92,7 @@ public struct AssetDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                HStack(spacing: 12) {
-                    // Export Dossier Button
-                    Button {
-                        generateAndShareDossier()
-                    } label: {
-                        if isGeneratingPDF {
-                            ProgressView()
-                                .controlSize(.small)
-                        } else {
-                            Image(systemName: "square.and.arrow.up")
-                                .font(.system(size: 16, weight: .semibold))
-                        }
-                    }
-                    .disabled(isGeneratingPDF)
-                    
-                    // Edit Asset Button
-                    Button {
-                        showingEditAssetSheet = true
-                    } label: {
-                        Image(systemName: "slider.horizontal.3")
-                            .font(.system(size: 16, weight: .semibold))
-                    }
-                    
+                HStack(spacing: 8) {
                     // Multi-Source Intake Button
                     Button {
                         showingMultiSourceInput = true
@@ -121,8 +100,47 @@ public struct AssetDetailView: View {
                         Image(systemName: "plus.circle.fill")
                             .font(.system(size: 17, weight: .semibold))
                     }
+                    
+                    // Overflow Action Menu
+                    Menu {
+                        Button {
+                            showingEditAssetSheet = true
+                        } label: {
+                            Label("Editează Activul", systemImage: "pencil")
+                        }
+                        
+                        Button {
+                            generateAndShareDossier()
+                        } label: {
+                            Label("Exportă Opis PDF", systemImage: "square.and.arrow.up")
+                        }
+                        .disabled(isGeneratingPDF)
+                        
+                        Divider()
+                        
+                        Button(role: .destructive) {
+                            showingDeleteConfirmation = true
+                        } label: {
+                            Label("Șterge Activul", systemImage: "trash")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .font(.system(size: 17, weight: .semibold))
+                    }
                 }
             }
+        }
+        .confirmationDialog(
+            "Ștergi acest activ?",
+            isPresented: $showingDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Șterge definitiv „\(asset.name)”", role: .destructive) {
+                deleteCurrentAsset()
+            }
+            Button("Anulează", role: .cancel) {}
+        } message: {
+            Text("Toate obligațiile, intervențiile tehnice și documentele asociate activului „\(asset.name)” vor fi eliminate definitiv din dosar.")
         }
         .overlay(alignment: .bottom) {
             if let toast = toastMessage {
@@ -864,6 +882,18 @@ public struct AssetDetailView: View {
         formatter.dateStyle = .medium
         formatter.locale = Locale(identifier: "ro_RO")
         return formatter.string(from: date)
+    }
+    
+    private func deleteCurrentAsset() {
+        withAnimation {
+            modelContext.delete(asset)
+            try? modelContext.save()
+            WidgetDataSyncService.shared.sync(context: modelContext)
+        }
+        #if canImport(UIKit)
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        #endif
+        dismiss()
     }
 }
 

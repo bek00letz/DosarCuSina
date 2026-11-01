@@ -374,7 +374,7 @@ public final class Asset {
 
 // MARK: - Color Hex Extension
 extension Color {
-    init?(hex: String) {
+    public init?(hex: String) {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
         hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
         
