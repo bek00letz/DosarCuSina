@@ -68,7 +68,7 @@ data class LifecycleEventEntity(
                 set(Calendar.MILLISECOND, 0)
             }
             val diffMillis = dueCal.timeInMillis - nowCal.timeInMillis
-            return (diffMillis / (1000 * 60 * 60 * 24)).toInt()
+            return kotlin.math.round(diffMillis.toDouble() / 86_400_000.0).toInt()
         }
 
     val isOverdue: Boolean

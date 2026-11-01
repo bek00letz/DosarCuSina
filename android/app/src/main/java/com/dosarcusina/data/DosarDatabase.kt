@@ -15,9 +15,10 @@ import androidx.room.TypeConverters
         LifecycleEventEntity::class,
         AttachmentEntity::class,
         DynamicFieldEntity::class,
-        ServiceItemEntity::class
+        ServiceItemEntity::class,
+        MeasurementLogEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -27,6 +28,7 @@ abstract class DosarDatabase : RoomDatabase() {
     abstract fun attachmentDao(): AttachmentDao
     abstract fun dynamicFieldDao(): DynamicFieldDao
     abstract fun serviceItemDao(): ServiceItemDao
+    abstract fun measurementLogDao(): MeasurementLogDao
 
     companion object {
         @Volatile

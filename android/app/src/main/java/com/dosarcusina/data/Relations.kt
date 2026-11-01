@@ -36,7 +36,17 @@ data class AssetWithDetails(
         parentColumn = "id",
         entityColumn = "assetId"
     )
-    val dynamicFields: List<DynamicFieldEntity> = emptyList()
+    val dynamicFields: List<DynamicFieldEntity> = emptyList(),
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "assetId"
+    )
+    val serviceItems: List<ServiceItemEntity> = emptyList(),
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "assetId"
+    )
+    val measurements: List<MeasurementLogEntity> = emptyList()
 )
 
 /**
