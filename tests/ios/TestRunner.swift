@@ -2,7 +2,8 @@ import Foundation
 
 @main
 struct TestRunner {
-    static func main() {
+    @MainActor
+    static func main() async {
         print("==================================================================")
         print("          DOSAR CU ȘINĂ — iOS AUTOMATED TEST SUITES               ")
         print("==================================================================")
@@ -40,6 +41,26 @@ struct TestRunner {
         let serviceItemResult = ServiceItemAndComponentHistoryTests.runAll()
         allResults.append(serviceItemResult)
         printSuiteSummary(serviceItemResult)
+        
+        // 6. PlatformServicesAndIntegrationTests (Notification Rollover, CalendarSync, Contacts, Widgets)
+        print("▶ Running PlatformServicesAndIntegrationTests...")
+        let platformResult = PlatformServicesAndIntegrationTests.runAll()
+        allResults.append(platformResult)
+        printSuiteSummary(platformResult)
+        
+        // 7. BiometricVaultTests (Model B: Just-in-Time Category Unlock & Masking)
+        let bioStart = Date()
+        let bioScores = await BiometricVaultTests.runAll()
+        let bioDuration = Date().timeIntervalSince(bioStart)
+        let bioResult = TestSuiteResult(suiteName: "BiometricVaultTests", passed: bioScores.passed, failed: bioScores.failed, failures: [], duration: bioDuration)
+        allResults.append(bioResult)
+        printSuiteSummary(bioResult)
+        
+        // 8. MeasurementLogAndDomainTests (Telemetry, Lab Biomarkers, 8-Domain Schemas, Templates)
+        print("▶ Running MeasurementLogAndDomainTests...")
+        let m3Result = MeasurementLogAndDomainTests.runAll()
+        allResults.append(m3Result)
+        printSuiteSummary(m3Result)
         
         let totalDuration = Date().timeIntervalSince(startTotal)
         let totalPassed = allResults.reduce(0) { $0 + $1.passed }

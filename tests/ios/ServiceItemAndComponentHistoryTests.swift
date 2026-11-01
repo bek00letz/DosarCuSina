@@ -130,7 +130,7 @@ public final class ServiceItemAndComponentHistoryTests: Sendable {
             category: .home
         )
         
-        home.fullAddress = "Str. Aviatorilor Nr. 12, Bloc B2, Ap. 15, Sector 1, București"
+        home.fullAddress = "Str. Exemplu Nr. 12, Bloc B2, Ap. 15, Sector 1, București"
         home.surfaceAreaM2 = 82.5
         home.constructionYear = 2016
         home.heatingBoilerModel = "Viessmann Vitodens 100-W 26kW"
@@ -155,11 +155,11 @@ public final class ServiceItemAndComponentHistoryTests: Sendable {
         pet.petBreed = "Golden Retriever"
         pet.petMicrochipNumber = "642098100123456"
         pet.veterinarianClinic = "SpeedVet București"
-        pet.veterinarianPhone = "0722123456"
+        pet.veterinarianPhone = "+40 700 000 000"
         
         try assertEqual(pet.petSpecies, "Câine")
         try assertEqual(pet.petMicrochipNumber, "642098100123456")
-        try assertEqual(pet.veterinarianPhone, "0722123456")
+        try assertEqual(pet.veterinarianPhone, "+40 700 000 000")
         
         let health = Asset(
             name: "Dosar Medical Andrei",
@@ -172,6 +172,49 @@ public final class ServiceItemAndComponentHistoryTests: Sendable {
         try assertEqual(health.bloodType, "A+")
         try assertEqual(health.familyDoctorName, "Dr. Popescu Maria")
         try assertEqual(health.allergiesNotes, "Alergie sezonieră ambrozie")
+    }
+    
+    public static func testDynamicFieldDisplayValue() throws {
+        let text = DynamicField(key: "notes", label: "Note", fieldType: .text, stringValue: "Contract cadru")
+        try assertEqual(text.displayValue, "Contract cadru")
+        
+        let emptyText = DynamicField(key: "notes", label: "Note", fieldType: .text, stringValue: "")
+        try assertEqual(emptyText.displayValue, "—")
+        
+        let intNum = DynamicField(key: "hours", label: "Ore", fieldType: .number, numberValue: 120.0)
+        try assertEqual(intNum.displayValue, "120")
+        
+        let decNum = DynamicField(key: "ratio", label: "Raport", fieldType: .number, numberValue: 12.34)
+        try assertEqual(decNum.displayValue, "12.34")
+        
+        let curr = DynamicField(key: "rent", label: "Chirie", fieldType: .currency, numberValue: 1500.0)
+        try assertEqual(curr.displayValue, "1500.00 RON")
+        
+        let flag = DynamicField(key: "is_active", label: "Activ", fieldType: .boolean, boolValue: true)
+        try assertEqual(flag.displayValue, "Da")
+    }
+    
+    public static func testServiceItemNullifyCascadeParity() throws {
+        let asset = Asset(name: "Dacia Duster", category: .vehicle)
+        let event = LifecycleEvent(title: "Revizie 60.000 km", dueDate: Date())
+        let item = ServiceItem(name: "Filtru Ulei", category: "Ulei & Filtre", cost: 45.0)
+        
+        item.asset = asset
+        item.event = event
+        asset.serviceItems.append(item)
+        event.serviceItems.append(item)
+        
+        try assertEqual(asset.serviceItems.count, 1)
+        try assertEqual(event.serviceItems.count, 1)
+        
+        // Simulating Event removal under .nullify deleteRule
+        item.event = nil
+        event.serviceItems.removeAll()
+        
+        // Asset still retains the service item history!
+        try assertEqual(asset.serviceItems.count, 1)
+        try assertEqual(asset.serviceItems.first?.name, "Filtru Ulei")
+        try assertTrue(item.event == nil, "ServiceItem event should be nullified without deleting the item")
     }
     
     // MARK: - Suite Runner
@@ -187,7 +230,9 @@ public final class ServiceItemAndComponentHistoryTests: Sendable {
             ("testRomanianInsuranceCatalog", testRomanianInsuranceCatalog),
             ("testVehicleAssetTailoredFields", testVehicleAssetTailoredFields),
             ("testHomeAssetTailoredFields", testHomeAssetTailoredFields),
-            ("testPetAndHealthTailoredFields", testPetAndHealthTailoredFields)
+            ("testPetAndHealthTailoredFields", testPetAndHealthTailoredFields),
+            ("testDynamicFieldDisplayValue", testDynamicFieldDisplayValue),
+            ("testServiceItemNullifyCascadeParity", testServiceItemNullifyCascadeParity)
         ]
         
         for (name, test) in tests {

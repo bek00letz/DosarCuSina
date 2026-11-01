@@ -358,6 +358,166 @@ public final class RomanianUtilityParserTests: Sendable {
         try assertEqual(comp.day, 15, "Day 15")
     }
     
+    // MARK: - 10. Roman Numeral Date Parsing Tests
+    
+    public static func testRomanNumeralDateParsing() throws {
+        // Test A: 15.XI.2024 -> 15 November 2024
+        let dateA = RomanianUtilityParser.parseDate("15.XI.2024")
+        try assertNotNil(dateA, "15.XI.2024 should parse")
+        let compA = calendar.dateComponents([.year, .month, .day], from: dateA!)
+        try assertEqual(compA.year, 2024, "Year 2024")
+        try assertEqual(compA.month, 11, "Month XI should be 11")
+        try assertEqual(compA.day, 15, "Day 15")
+        
+        // Test B: 01.IV.2026 -> 1 April 2026
+        let dateB = RomanianUtilityParser.parseDate("01.IV.2026")
+        try assertNotNil(dateB, "01.IV.2026 should parse")
+        let compB = calendar.dateComponents([.year, .month, .day], from: dateB!)
+        try assertEqual(compB.year, 2026, "Year 2026")
+        try assertEqual(compB.month, 4, "Month IV should be 4")
+        try assertEqual(compB.day, 1, "Day 1")
+        
+        // Test C: 28/II/2025 -> 28 February 2025
+        let dateC = RomanianUtilityParser.parseDate("28/II/2025")
+        try assertNotNil(dateC, "28/II/2025 should parse")
+        let compC = calendar.dateComponents([.year, .month, .day], from: dateC!)
+        try assertEqual(compC.year, 2025, "Year 2025")
+        try assertEqual(compC.month, 2, "Month II should be 2")
+        try assertEqual(compC.day, 28, "Day 28")
+        
+        // Test D: 12-VIII-2026 -> 12 August 2026
+        let dateD = RomanianUtilityParser.parseDate("12-VIII-2026")
+        try assertNotNil(dateD, "12-VIII-2026 should parse")
+        let compD = calendar.dateComponents([.year, .month, .day], from: dateD!)
+        try assertEqual(compD.year, 2026, "Year 2026")
+        try assertEqual(compD.month, 8, "Month VIII should be 8")
+        try assertEqual(compD.day, 12, "Day 12")
+        
+        // Test E: Invoice with Roman numeral due date in text
+        let invoiceText = """
+        NOTĂ DE PLATĂ
+        Furnizor Apă Ilfov S.A.
+        Scadență: 10.XII.2026
+        Total: 95,40 lei
+        """
+        let parsed = RomanianUtilityParser.shared.parseUtilityBill(text: invoiceText)
+        try assertNotNil(parsed.dueDate, "Due date with Roman numeral XII should be extracted")
+        let compE = calendar.dateComponents([.year, .month, .day], from: parsed.dueDate!)
+        try assertEqual(compE.year, 2026, "Year 2026")
+        try assertEqual(compE.month, 12, "Month XII should be 12")
+        try assertEqual(compE.day, 10, "Day 10")
+    }
+    
+    // MARK: - 11. Romanian Comma Decimal Parsing with Currency and Non-Breaking Spaces
+    
+    public static func testRomanianCommaDecimalParsingWithCurrencyAndSpaces() throws {
+        // "1.450,50 lei" -> 1450.50
+        let valA = RomanianUtilityParser.normalizeRomanianAmount("1.450,50 lei")
+        try assertNotNil(valA, "1.450,50 lei")
+        try assertAlmostEqual(valA!, 1450.50, accuracy: 0.01, "1.450,50 lei -> 1450.50")
+        
+        // "1 450,50 RON" -> 1450.50
+        let valB = RomanianUtilityParser.normalizeRomanianAmount("1 450,50 RON")
+        try assertNotNil(valB, "1 450,50 RON")
+        try assertAlmostEqual(valB!, 1450.50, accuracy: 0.01, "1 450,50 RON -> 1450.50")
+        
+        // Non-breaking space \u{00A0}
+        let valC = RomanianUtilityParser.normalizeRomanianAmount("1\u{00A0}450,50 lei")
+        try assertNotNil(valC, "1\\u{00A0}450,50 lei")
+        try assertAlmostEqual(valC!, 1450.50, accuracy: 0.01, "Non-breaking space amount")
+        
+        // Thin non-breaking space \u{202F}
+        let valD = RomanianUtilityParser.normalizeRomanianAmount("2\u{202F}500,00 EUR")
+        try assertNotNil(valD, "2\\u{202F}500,00 EUR")
+        try assertAlmostEqual(valD!, 2500.00, accuracy: 0.01, "Thin space EUR amount")
+        
+        // Simple decimal comma without thousands "123,45"
+        let valE = RomanianUtilityParser.normalizeRomanianAmount("123,45")
+        try assertNotNil(valE, "123,45")
+        try assertAlmostEqual(valE!, 123.45, accuracy: 0.01, "123,45")
+        
+        // Standard dot decimal "50.00 lei"
+        let valF = RomanianUtilityParser.normalizeRomanianAmount("50.00 lei")
+        try assertNotNil(valF, "50.00 lei")
+        try assertAlmostEqual(valF!, 50.00, accuracy: 0.01, "50.00 lei")
+    }
+    
+    // MARK: - 12. Romanian Diacritic Normalization Tests
+    
+    public static func testRomanianDiacriticNormalization() throws {
+        // Cedilla to comma-below replacement
+        let legacyText = "şcoală şi ţară de la Ştefan la Ţiriac"
+        let normalized = RomanianUtilityParser.normalizeDiacritics(legacyText)
+        try assertEqual(normalized, "școală și țară de la Ștefan la Țiriac", "Cedillas replaced by standard comma-below")
+        
+        // Diacritic stripping for insensitive search
+        let stripped = RomanianUtilityParser.stripDiacritics("școală, țară, pâine, mâncare, împărat")
+        try assertEqual(stripped, "scoala, tara, paine, mancare, imparat", "Diacritics stripped for indexing")
+    }
+    
+    // MARK: - 13. POD, CLC, Water Client Code & Consumption Delta Extraction
+    
+    public static func testPodClcWaterAndConsumptionDeltaExtraction() throws {
+        let parser = RomanianUtilityParser()
+        let invoiceText = """
+        ENGIE ROMANIA S.A.
+        FACTURĂ DE GAZE NATURALE
+        Cod loc consum (CLC): DEG0123456
+        Punct de delimitare POD: RO001E987654321
+        Cod client apa: 849201-9
+        Index nou: 4520
+        Index vechi: 4210
+        Total de plata: 310,00 LEI
+        """
+        
+        let result = parser.parseUtilityBill(text: invoiceText)
+        
+        try assertEqual(result.clcCode, "DEG0123456", "CLC natural gas point of consumption")
+        try assertEqual(result.podCode, "RO001E987654321", "POD electricity/utility point of delivery")
+        try assertEqual(result.waterClientCode, "849201-9", "Water client code")
+        try assertEqual(result.indexReading, 4520.0, "Current index reading")
+        try assertEqual(result.previousIndexReading, 4210.0, "Previous index reading")
+        try assertNotNil(result.consumptionDelta, "Consumption delta should be computed")
+        try assertAlmostEqual(result.consumptionDelta!, 310.0, accuracy: 0.1, "Consumption delta: 4520 - 4210 = 310")
+    }
+    
+    // MARK: - 14. Thousands Separators, Euro Symbol & Water Header Guards
+    
+    public static func testThousandsSeparatorsAndEuroSymbol() throws {
+        // Space thousands
+        let billSpace = RomanianUtilityParser.shared.parseUtilityBill(text: "ENGIE ROMANIA S.A.\nTotal de plată: 1 450,50 lei\nScadență: 20.12.2026")
+        try assertNotNil(billSpace.totalAmount, "Total amount with space thousands")
+        try assertAlmostEqual(billSpace.totalAmount!, 1450.50, accuracy: 0.01, "Amount: 1450.50")
+        try assertEqual(billSpace.currency, "RON", "Currency: RON")
+        
+        // NBSP thousands
+        let billNbsp = RomanianUtilityParser.shared.parseUtilityBill(text: "DIGI ROMANIA\nTotal de plată: 1\u{00A0}450,50 lei\nScadență: 20.12.2026")
+        try assertNotNil(billNbsp.totalAmount, "Total amount with NBSP")
+        try assertAlmostEqual(billNbsp.totalAmount!, 1450.50, accuracy: 0.01, "Amount: 1450.50")
+        
+        // Thousands separator without decimals
+        let val1450 = RomanianUtilityParser.normalizeRomanianAmount("1.450 lei")
+        try assertNotNil(val1450, "1.450 lei should parse")
+        try assertAlmostEqual(val1450!, 1450.0, accuracy: 0.01, "1.450 lei -> 1450.0")
+        
+        let val14500 = RomanianUtilityParser.normalizeRomanianAmount("14.500 lei")
+        try assertNotNil(val14500, "14.500 lei should parse")
+        try assertAlmostEqual(val14500!, 14500.0, accuracy: 0.01, "14.500 lei -> 14500.0")
+        
+        // Euro symbol
+        let billEur = RomanianUtilityParser.shared.parseUtilityBill(text: "FACTURĂ SERVICII\nTotal de plată: 14.500,00 €\nScadență: 20.12.2026")
+        try assertNotNil(billEur.totalAmount, "Euro bill amount")
+        try assertAlmostEqual(billEur.totalAmount!, 14500.00, accuracy: 0.01, "Euro amount 14500.00")
+        try assertEqual(billEur.currency, "EUR", "Currency EUR")
+    }
+    
+    public static func testWaterClientCodeApaNovaHeaderGuard() throws {
+        let parser = RomanianUtilityParser.shared
+        let text = "APA NOVA BUCURESTI\nApa Nova cod: 1234567\nTotal: 45 lei"
+        let code = parser.extractWaterClientCode(in: text)
+        try assertEqual(code, "1234567", "Water client code should extract 1234567, not company name BUCURESTI")
+    }
+    
     // MARK: - Runner
     
     public static func runAll() -> TestSuiteResult {
@@ -375,7 +535,13 @@ public final class RomanianUtilityParserTests: Sendable {
             ("testOrangeInvoiceExtraction", testOrangeInvoiceExtraction),
             ("testVodafoneInvoiceExtraction", testVodafoneInvoiceExtraction),
             ("testRomanianNumberAndCurrencyFormatting", testRomanianNumberAndCurrencyFormatting),
-            ("testWrittenRomanianMonthParsing", testWrittenRomanianMonthParsing)
+            ("testWrittenRomanianMonthParsing", testWrittenRomanianMonthParsing),
+            ("testRomanNumeralDateParsing", testRomanNumeralDateParsing),
+            ("testRomanianCommaDecimalParsingWithCurrencyAndSpaces", testRomanianCommaDecimalParsingWithCurrencyAndSpaces),
+            ("testRomanianDiacriticNormalization", testRomanianDiacriticNormalization),
+            ("testPodClcWaterAndConsumptionDeltaExtraction", testPodClcWaterAndConsumptionDeltaExtraction),
+            ("testThousandsSeparatorsAndEuroSymbol", testThousandsSeparatorsAndEuroSymbol),
+            ("testWaterClientCodeApaNovaHeaderGuard", testWaterClientCodeApaNovaHeaderGuard)
         ]
         
         for (name, test) in tests {
