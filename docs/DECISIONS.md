@@ -8,6 +8,10 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-02
 
+### Back of the card vs the person's edits
+- **Decided:** when the back of an identity card is added after the person corrected a value by hand, their correction stays. Where the checked machine-readable zone disagrees, the field shows what the back says, with a button to use it.
+- **Why:** the person is the final authority on their own data, but a checked value they may have mistyped against deserves to be seen.
+
 ### Collaboration
 - **Decided:** collaborators work on their own branches and open pull requests into `main`, which the owner reviews and approves. Security problems are reported through GitHub's private vulnerability reporting. The privacy check is versioned in the repository and runs both before each commit and on every pull request.
 - **Why:** the repository is public and two collaborators with their own AI agents are joining. The knowledge they need has to be in the repository, and the protection against leaks can't depend on one person's local setup.

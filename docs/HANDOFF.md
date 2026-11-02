@@ -27,7 +27,7 @@ The template-engine overhaul (waves 1 and 2) is merged. The app builds for iOS 2
 
 ## In progress
 
-- **Identity-document follow-ups**, on a separate branch: keeping the person's own edits when the back of a card is added (with a flag where the machine-readable zone disagrees), a driving licence test built on the official Romanian specimen layout, and saving a new household member together with their document in one save. Check with the owner before overlapping work in `Services/Capture/`.
+Nothing at the moment.
 
 ## Known gaps
 
@@ -64,6 +64,13 @@ Newest first. Copy this template:
 ```
 
 Never write security findings, crash traces or local paths here. See [SECURITY.md](../SECURITY.md).
+
+### 2026-11-02 — owner (with Claude) — `claude/id-followups`
+- **Did:** driving licences read as printed on the official Romanian specimen (shared rows, field 3 date, category boxes, a failed 4d kept with "Verifică"); the person's own edits kept when the back of a card is added, with a "Pe spatele actului scrie" note and "Folosește-l"; a new household member and their document saved in one save; the page viewer cross-fades with Reduce Motion.
+- **Tests:** the whole suite passes on iPhone 17 (iOS 26.4). The privacy check passes.
+- **Left open:** the health insurance card template; card regions for the templates (not measured on real specimens).
+- **Next:** pick from "Known gaps".
+- **Decisions:** "back of card vs the person's edits" in DECISIONS.md.
 
 ### 2026-11-02 — owner (with Claude) — `claude/project-review-quality-2252bc`
 - **Did:** merged the identity-document templates (new and old identity card, passport, EU driving licence), column-aware reading with positions, date consistency rules, showing and filing identity data by person, the back-of-card prompt and the full-screen viewer; one duration wording for "how far away" ("2 luni și 3 săptămâni", "8 ani"); removed the unused developer key path and permission texts.
