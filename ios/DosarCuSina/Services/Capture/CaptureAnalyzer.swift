@@ -80,13 +80,8 @@ public struct CaptureAnalyzer: Sendable {
 
         switch kind {
         case .passport, .identityCard:
-            if let period = RomanianFieldExtractor.validityPeriod(in: text) {
-                fields.add(.expiryDate, .day(period.end), 0.7, period.source)
-                fields.add(.issueDate, .day(period.start), 0.7, period.source)
-            }
-            if let expiry = RomanianFieldExtractor.labelledDate(["data expirarii", "date of expiry", "expira", "valabil pana"], in: text) {
-                fields.add(.expiryDate, .day(expiry.day), 0.65, expiry.source)
-            }
+            // Printed labels; the MRZ (when on the photo) already added checked values, which win.
+            addIdentityFront(text, into: &fields)
         case .drivingLicence:
             for (key, entry) in RomanianFieldExtractor.drivingLicenceFields(in: text).sorted(by: { $0.key.rawValue < $1.key.rawValue }) {
                 fields.add(key, entry.0, 0.75, entry.1)
@@ -185,6 +180,28 @@ public struct CaptureAnalyzer: Sendable {
             result.append(CaptureField(key: .personalNumber, value: .text(personal), confidence: mrz.compositeValid ? 0.95 : 0.5, sourceText: source, tier: tier))
         }
         return result
+    }
+
+    private func addIdentityFront(_ text: CaptureText, into fields: inout FieldSet) {
+        let card = RomanianFieldExtractor.identityCardFields(in: text)
+        if let surname = card.surname { fields.add(.surname, .text(surname.0), 0.8, surname.1) }
+        if let given = card.givenNames { fields.add(.givenNames, .text(given.0), 0.8, given.1) }
+        if card.surname != nil || card.givenNames != nil {
+            let full = [card.givenNames?.0, card.surname?.0].compactMap { $0 }.joined(separator: " ")
+            fields.add(.holderName, .text(full), 0.8, nil)
+        }
+        if let cnp = card.personalNumber {
+            fields.add(.personalNumber, .text(cnp.0), 0.97, cnp.1, tier: .deterministic)
+        }
+        if let birth = card.birthDate {
+            let fromCNP = card.personalNumber != nil && card.birthDate?.1 == card.personalNumber?.1
+            fields.add(.birthDate, .day(birth.0), fromCNP ? 0.97 : 0.75, birth.1, tier: fromCNP ? .deterministic : .heuristic)
+        }
+        if let number = card.documentNumber { fields.add(.documentNumber, .text(number.0), 0.8, number.1) }
+        if let issue = card.issueDate { fields.add(.issueDate, .day(issue.0), 0.75, issue.1) }
+        if let expiry = card.expiryDate { fields.add(.expiryDate, .day(expiry.0), 0.8, expiry.1) }
+        if let issuer = card.issuer { fields.add(.issuer, .text(issuer.0), 0.7, issuer.1) }
+        if let sex = card.sex { fields.add(.sex, .text(sex.0), 0.8, sex.1) }
     }
 
     private func addInvoiceBasics(_ text: CaptureText, into fields: inout FieldSet) {

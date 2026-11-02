@@ -81,6 +81,7 @@ public struct VisionCaptureRecognizer: CaptureRecognizing {
             } catch is CancellationError {
                 return nil
             } catch {
+                if Task.isCancelled { return nil }
                 let code = (error as NSError).code
                 let domain = (error as NSError).domain
                 CaptureLog.engine.error("Vision \(pass, privacy: .public) pass failed (try \(attempt)): \(domain, privacy: .public) \(code)")

@@ -108,6 +108,9 @@ public enum RomanianFieldExtractor {
     public static func parseAmount(_ raw: String) -> Decimal? {
         var value = raw.filter { $0.isNumber || $0 == "," || $0 == "." }
         guard !value.isEmpty, value.contains(where: \.isNumber) else { return nil }
+        // Ten or more digits with no separators is an identifier (CNP, IBAN digits,
+        // account or meter number), never an amount on a household document.
+        guard !(value.allSatisfy(\.isNumber) && value.count >= 10) else { return nil }
         let lastComma = value.lastIndex(of: ",")
         let lastDot = value.lastIndex(of: ".")
         switch (lastComma, lastDot) {
@@ -223,6 +226,8 @@ public enum RomanianFieldExtractor {
         var items: [CaptureLineItem] = []
         for (index, line) in text.folded.enumerated() {
             guard !nonItemWords.contains(where: { line.contains($0) }) else { continue }
+            // A line carrying a personal number is never a billed item.
+            guard personalNumber(in: CaptureText(text.original[index])) == nil else { continue }
             let found = amounts(inLine: line)
             guard let amount = found.last, amount.amount > 0 else { continue }
             // The description ends where the quantity starts ("2 buc"), or else at the line amount,

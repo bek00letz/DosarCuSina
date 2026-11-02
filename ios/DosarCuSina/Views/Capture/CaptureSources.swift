@@ -117,6 +117,33 @@ enum CaptureRunner {
         return try await engine.capture(CaptureRequest(payload, options: CaptureOptions(useCloudModel: useCloudModel, ownerID: ownerID?.uuidString)))
     }
 
+    /// Reads that outlive the screen showing them. SwiftUI may rebuild a sheet while
+    /// it appears (a picker still closing, for instance); the rebuilt screen picks up
+    /// the same read instead of cancelling it and starting over.
+    @MainActor private static var jobs: [String: Task<CaptureResult, any Error>] = [:]
+
+    @MainActor
+    static func result(for key: String, _ payload: CaptureRequest.Payload, useCloudModel: Bool, ownerID: UUID?) async throws -> CaptureResult {
+        let job = jobs[key] ?? {
+            let task = Task { try await run(payload, useCloudModel: useCloudModel, ownerID: ownerID) }
+            jobs[key] = task
+            return task
+        }()
+        do {
+            return try await job.value
+        } catch {
+            // A failed read is forgotten, so "Încearcă din nou" really reads again.
+            jobs[key] = nil
+            throw error
+        }
+    }
+
+    /// Forgets every read for a capture once its screen is closed for good.
+    @MainActor
+    static func forget(_ inputID: UUID) {
+        jobs = jobs.filter { !$0.key.hasPrefix(inputID.uuidString) }
+    }
+
     /// Whether the person added their own Gemini key (Settings).
     static var hasCloudKey: Bool { KeychainManager.hasConfiguredAPIKey }
 }

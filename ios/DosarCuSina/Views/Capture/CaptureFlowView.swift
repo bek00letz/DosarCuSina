@@ -60,7 +60,7 @@ struct CaptureFlowView: View {
                     }
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
-                            Button("Închide") { onClose(.dismissed) }
+                            Button("Închide") { finish(.dismissed) }
                         }
                     }
                 }
@@ -72,7 +72,8 @@ struct CaptureFlowView: View {
     private func read() async {
         phase = .reading
         do {
-            let result = try await CaptureRunner.run(input.payload, useCloudModel: useCloud, ownerID: input.preferredAssetID)
+            let key = "\(input.id.uuidString)-\(attempt)-\(useCloud)"
+            let result = try await CaptureRunner.result(for: key, input.payload, useCloudModel: useCloud, ownerID: input.preferredAssetID)
             var review = CaptureReview(result: result, assets: assets, context: context)
             if let preferred = input.preferredAssetID { review.destination = .asset(preferred) }
             if CaptureMapping.opensVisitFlow(result.kind), review.duplicateAttachmentID == nil, case .asset(let id) = review.destination {
@@ -91,6 +92,7 @@ struct CaptureFlowView: View {
     }
 
     private func finish(_ result: CaptureFlowResult) {
+        CaptureRunner.forget(input.id)
         if let item = input.inboxItem {
             switch result {
             case .filed, .visitSaved: IntakeInbox.shared.remove(item)

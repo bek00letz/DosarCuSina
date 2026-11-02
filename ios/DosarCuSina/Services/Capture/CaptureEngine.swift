@@ -171,8 +171,10 @@ public final class CaptureEngine: Sendable {
         var kind = analysis.kind
         var kindConfidence = analysis.kindConfidence
 
-        // 3. On-device model.
-        if options.useOnDeviceModel, let model = onDeviceModel, !text.isEmpty {
+        // 3. On-device model, unless the patterns already read everything that matters.
+        let alreadyComplete = kindConfidence >= 0.8 && kind.isComplete(fields)
+        if alreadyComplete { CaptureLog.engine.info("Skipping the on-device model: patterns found the essentials") }
+        if options.useOnDeviceModel, !alreadyComplete, let model = onDeviceModel, !text.isEmpty {
             switch model.availability() {
             case .available:
                 do {
@@ -206,7 +208,8 @@ public final class CaptureEngine: Sendable {
             }
         }
 
-        fields = Self.derived(fields)
+        // Only fields that belong on this kind of document, whichever tier found them.
+        fields = Self.derived(fields).filter { kind.allows($0.key) }
         CaptureLog.engine.info("Read \(fields.count) fields, kind confidence \(kindConfidence)")
         let routing = CaptureRouter.route(kind: kind, kindConfidence: kindConfidence, fields: fields)
 
