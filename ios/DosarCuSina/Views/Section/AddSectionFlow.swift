@@ -19,6 +19,7 @@ struct AddSectionFlow: View {
     @State private var model: AddSectionModel
     @State private var path: [Step] = []
     @State private var error: UserFacingError?
+    @State private var saveRequest: ReminderSaveRequest?
     @State private var createdCount = 0
 
     init(request: AddSectionRequest, onCreated: @escaping (Asset) -> Void) {
@@ -43,6 +44,7 @@ struct AddSectionFlow: View {
         }
         .dsDiscardGuard(hasChanges: model.hasChanges)
         .userErrorAlert($error)
+        .reminderPermissionGate($saveRequest)
         .sensoryFeedback(.success, trigger: createdCount)
         .task { preselect() }
     }
@@ -83,6 +85,14 @@ struct AddSectionFlow: View {
     }
 
     private func finish() {
+        if model.planned.isEmpty {
+            create()
+        } else {
+            saveRequest = ReminderSaveRequest { create() }
+        }
+    }
+
+    private func create() {
         do {
             let asset = try model.create(context: context)
             createdCount += 1
@@ -344,7 +354,7 @@ private struct ObligationsStep: View {
                             if plan.id != model.planned.first?.id { DSRowSeparator() }
                             DSCheckboxRow(
                                 title: Text(verbatim: plan.blueprint.title),
-                                explanation: Text(verbatim: ReminderWording.summary(leadDays: plan.blueprint.reminders(for: model.values).leadDays)),
+                                explanation: Text(verbatim: ReminderWording.sentence(leadDays: plan.blueprint.reminders(for: model.values).leadDays)),
                                 isOn: $plan.isSelected
                             ) {
                                 if let note = plan.blueprint.note {

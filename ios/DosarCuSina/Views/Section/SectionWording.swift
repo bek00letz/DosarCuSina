@@ -2,47 +2,6 @@ import Foundation
 
 // Plain-language wording for section pages, kept out of the views so it is tested.
 
-/// The label of the full-width "log a visit" button in a section's Istoric pocket.
-enum VisitWording {
-    /// Worked out from the category: a car goes to the service, a pet to the vet,
-    /// a home calls a tradesperson.
-    static func buttonTitle(templateKey: String, heroStyle: HeroStyle) -> String {
-        switch (heroStyle, templateKey) {
-        case (.vehicle, _), (_, BuiltInTemplates.Key.bike):
-            return String(localized: "Am fost la service", comment: "Button that logs a visit to the car service.")
-        case (.pet, _):
-            return String(localized: "Am fost la veterinar", comment: "Button that logs a vet visit.")
-        case (.home, _):
-            return String(localized: "Am chemat un meseriaș", comment: "Button that logs a tradesperson's visit at home.")
-        case (_, BuiltInTemplates.Key.health):
-            return String(localized: "Am fost la medic", comment: "Button that logs a doctor's visit.")
-        default:
-            return String(localized: "Am făcut o lucrare", comment: "Button that logs work done on something.")
-        }
-    }
-}
-
-/// How a reminder profile reads in plain words: "Te anunț cu 30 de zile înainte".
-enum ReminderWording {
-    static func summary(leadDays: [Int], locale: Locale = .dosarDefault) -> String {
-        let days = Array(Set(leadDays.filter { $0 >= 0 })).sorted(by: >)
-        guard !days.isEmpty else {
-            return String(localized: "Nu te anunț, doar îl vezi în listă", comment: "Reminder summary when an obligation has no reminders.")
-        }
-        let parts = days.map(part)
-        let joined = parts.formatted(.list(type: .and).locale(locale))
-        return String(localized: "Te anunț \(joined)", comment: "Reminder summary, e.g. 'Te anunț cu 30 de zile înainte și în ziua respectivă'.")
-    }
-
-    private static func part(_ days: Int) -> String {
-        switch days {
-        case 0: return String(localized: "în ziua respectivă", comment: "Reminder on the due day.")
-        case 1: return String(localized: "cu o zi înainte", comment: "Reminder one day before.")
-        default: return String(localized: "cu \(DayCount.phrase(days)) înainte", comment: "Reminder N days before.")
-        }
-    }
-}
-
 /// "1 an", "3 ani", "20 de ani"; "1 lună", "5 luni", "20 de luni".
 enum CalendarCount {
     static func years(_ count: Int) -> String {

@@ -7,13 +7,6 @@ struct BinderWordingTests {
     let calendar = Calendar.bucharest
     let ro = Locale(identifier: "ro_RO")
 
-    @Test func remindersReadInPlainWords() {
-        #expect(ReminderWording.summary(leadDays: [30], locale: ro) == "Te anunț cu 30 de zile înainte")
-        #expect(ReminderWording.summary(leadDays: [7, 1], locale: ro) == "Te anunț cu 7 zile înainte și cu o zi înainte")
-        #expect(ReminderWording.summary(leadDays: [0, 30, 7], locale: ro) == "Te anunț cu 30 de zile înainte, cu 7 zile înainte și în ziua respectivă")
-        #expect(ReminderWording.summary(leadDays: [], locale: ro) == "Nu te anunț, doar îl vezi în listă")
-    }
-
     @Test("Years and months use the catalog's plural forms", arguments: [
         (1, "1 an", "1 lună"), (2, "2 ani", "2 luni"), (19, "19 ani", "19 luni"), (20, "20 de ani", "20 de luni"),
     ])
@@ -32,12 +25,12 @@ struct BinderWordingTests {
     }
 
     @Test func visitButtonFollowsTheCategory() {
-        #expect(VisitWording.buttonTitle(templateKey: "vehicle", heroStyle: .vehicle) == "Am fost la service")
-        #expect(VisitWording.buttonTitle(templateKey: "bike", heroStyle: .standard) == "Am fost la service")
-        #expect(VisitWording.buttonTitle(templateKey: "pet", heroStyle: .pet) == "Am fost la veterinar")
-        #expect(VisitWording.buttonTitle(templateKey: "home", heroStyle: .home) == "Am chemat un meseriaș")
-        #expect(VisitWording.buttonTitle(templateKey: "health", heroStyle: .standard) == "Am fost la medic")
-        #expect(VisitWording.buttonTitle(templateKey: "custom.x", heroStyle: .standard) == "Am făcut o lucrare")
+        #expect(VisitWording.forTemplate(key: "vehicle", heroStyle: .vehicle).title == "Am fost la service")
+        #expect(VisitWording.forTemplate(key: "bike", heroStyle: .standard).title == "Am fost la service")
+        #expect(VisitWording.forTemplate(key: "pet", heroStyle: .pet).title == "Am fost la veterinar")
+        #expect(VisitWording.forTemplate(key: "home", heroStyle: .home).title == "Am chemat un meseriaș")
+        #expect(VisitWording.forTemplate(key: "health", heroStyle: .standard).title == "Am fost la medic")
+        #expect(VisitWording.forTemplate(key: "custom.x", heroStyle: .standard).title == "Am făcut o lucrare")
     }
 
     @Test func componentLineShowsDistanceDateAndPrice() {

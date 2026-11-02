@@ -288,6 +288,13 @@ Aplicația depășește scanarea clasică de hârtie printr-un modul integrat de
 5. **Introducere Directă Manuală**:
    - Formular rapid cu selector de activ, furnizor, număr document, scadență și cost.
 
+#### 3.3.1 Trimis din altă aplicație, widget-uri și App Group
+- **App Group** `group.com.ar.dosarcusina.shared`, folosit de aplicație, widget-uri și extensia de partajare doar pentru fișiere mici de predare. Baza de date rămâne în containerul aplicației.
+- **Extensia de partajare (`DosarCuSinaShare`)**: apare în meniul „Trimite” din Mail, WhatsApp, Poze și Fișiere pentru poze, PDF-uri și text. Copiază ce primește în `Inbox/<id>/` (fișiere plus `manifest.json`, protecție completă) și confirmă calm. Nu deschide baza de date și nu citește documentul. Pozele trimise împreună sunt paginile aceluiași act; fiecare PDF e separat.
+- **De verificat**: aplicația citește inboxul când revine în prim-plan și imediat ce extensia semnalează (notificare Darwin). Un element trece prin același flux de citire și verificare ca o poză făcută în aplicație și se șterge din inbox după ce e salvat sau refuzat.
+- **Exercițiul de partajare**: în onboarding și din cardul din Adaugă, o factură de probă (date fictive, „Service Exemplu SRL”, B 123 ABC) se trimite prin meniul real „Trimite” și ajunge prin extensia reală în De verificat, marcată „Exercițiu”.
+- **Widget-uri (`DosarCuSinaWidgets`)**: Home (mic, mediu) și Lock Screen (inline, dreptunghiular), din `widget-snapshot.json` scris de `SideEffectsCoordinator`. Exemplele nu apar; secțiunile protejate au titlu generic și nu au „Gata”. „Gata” rulează `CompleteFromWidgetIntent`: din iOS 27 în aplicație, prin `ObligationActions`; pe iOS 26, extensia lasă cererea în `widget-completions.json`, widget-ul ascunde elementul imediat, iar aplicația o aplică la următoarea deschidere, doar dacă obligația e încă pe același termen.
+
 ---
 
 ### 3.4 Schemă de Date Personalizată pe Categorii & Monitorizare Componente

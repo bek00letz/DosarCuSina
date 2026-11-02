@@ -65,6 +65,7 @@ struct ObligationListScreen: View {
     @State private var datePrompt: ObligationBlueprint?
     @State private var isAddingCustom = false
     @State private var error: UserFacingError?
+    @State private var saveRequest: ReminderSaveRequest?
     @State private var addedCount = 0
 
     init(asset: Asset) {
@@ -120,6 +121,7 @@ struct ObligationListScreen: View {
             CustomObligationSheet(asset: asset)
         }
         .userErrorAlert($error)
+        .reminderPermissionGate($saveRequest)
         .sensoryFeedback(.success, trigger: addedCount)
     }
 
@@ -139,6 +141,10 @@ struct ObligationListScreen: View {
     }
 
     private func create(_ blueprint: ObligationBlueprint, firstDue: CalendarDay?) {
+        saveRequest = ReminderSaveRequest { performCreate(blueprint, firstDue: firstDue) }
+    }
+
+    private func performCreate(_ blueprint: ObligationBlueprint, firstDue: CalendarDay?) {
         do {
             try ObligationActions(context: context).create(from: blueprint, for: asset, firstDue: firstDue)
             addedCount += 1
@@ -158,7 +164,7 @@ private struct SuggestionRow: View {
         HStack(alignment: .center, spacing: DS.Space.s) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: blueprint.title).dsFont(.headline)
-                Text(verbatim: ReminderWording.summary(leadDays: blueprint.reminders(for: values).leadDays))
+                Text(verbatim: ReminderWording.sentence(leadDays: blueprint.reminders(for: values).leadDays))
                     .dsFont(.subheadline)
                 if let note = blueprint.note {
                     Text(verbatim: note).dsFont(.footnote)
@@ -196,7 +202,7 @@ struct FirstDateSheet: View {
                     Text("Când e următoarea dată pentru „\(title)”?", comment: "Question when adding an obligation that needs a date.")
                         .dsFont(.title)
                     DSDateField("Data", date: $date, isRequired: true, footnote: "De exemplu, data până la care e valabil ITP-ul de acum.")
-                    Text(verbatim: ReminderWording.summary(leadDays: reminders.leadDays))
+                    Text(verbatim: ReminderWording.sentence(leadDays: reminders.leadDays))
                         .dsFont(.subheadline)
                 }
                 .padding(DS.Space.m)
@@ -257,6 +263,7 @@ struct CustomObligationSheet: View {
     @State private var repeats: Repeat? = .never
     @State private var reveals = false
     @State private var error: UserFacingError?
+    @State private var saveRequest: ReminderSaveRequest?
 
     var body: some View {
         NavigationStack {
@@ -265,7 +272,7 @@ struct CustomObligationSheet: View {
                     DSTextField("Ce trebuie făcut", text: $title, prompt: "Plata asigurării, verificarea stingătorului", isRequired: true)
                     DSDateField("Până când", date: $date, isRequired: true)
                     DSChoiceField("Se repetă", selection: $repeats, options: Repeat.allCases, isRequired: true) { $0.title }
-                    Text(verbatim: ReminderWording.summary(leadDays: Self.reminders.leadDays))
+                    Text(verbatim: ReminderWording.sentence(leadDays: Self.reminders.leadDays))
                         .dsFont(.subheadline)
                 }
                 .padding(DS.Space.m)
@@ -281,6 +288,7 @@ struct CustomObligationSheet: View {
                 }
             }
             .userErrorAlert($error)
+            .reminderPermissionGate($saveRequest)
         }
         .dsDiscardGuard(hasChanges: !title.isEmpty || date != nil)
     }
@@ -288,6 +296,10 @@ struct CustomObligationSheet: View {
     private func save() {
         let name = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty, let date else { reveals = true; return }
+        saveRequest = ReminderSaveRequest { performSave(name: name, date: date) }
+    }
+
+    private func performSave(name: String, date: Date) {
         do {
             try ObligationActions(context: context).create(
                 title: name,

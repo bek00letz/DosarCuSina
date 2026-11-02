@@ -38,6 +38,7 @@ struct AppShell: View {
             } label: {
                 Label { Text("Adaugă", comment: "Tab: scan or add something.") } icon: { Image(systemName: "plus.circle.fill") }
             }
+            .badge(IntakeInbox.shared.count)
             Tab(value: AppTab.search, role: .search) {
                 NavigationStack(path: $router.searchPath) {
                     SearchScreen().shellDestinations()
@@ -47,6 +48,7 @@ struct AppShell: View {
             }
         }
         .environment(router)
+        .intakeHandoff()
         .sheet(item: $router.sheet) { sheet in
             sheetContent(sheet)
                 .environment(router)

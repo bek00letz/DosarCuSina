@@ -352,7 +352,7 @@ struct HistoryPocket: View {
                 .buttonStyle(.dsPressable)
             }
         } footer: {
-            DSWideButton(verbatim: VisitWording.buttonTitle(templateKey: definition.key, heroStyle: definition.heroStyle), systemImage: "wrench.and.screwdriver.fill") {
+            DSWideButton(verbatim: VisitWording.forTemplate(key: definition.key, heroStyle: definition.heroStyle).title, systemImage: "wrench.and.screwdriver.fill") {
                 router.present(.addVisit(asset.id))
             }
             .padding(.top, DS.Space.s)

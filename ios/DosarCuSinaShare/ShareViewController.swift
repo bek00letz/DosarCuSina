@@ -1,0 +1,237 @@
+// The shared folder's App Intents metadata step expects the framework in every
+// target that compiles it; importing it keeps that step quiet (it's in the dyld cache).
+import AppIntents
+import SwiftUI
+import UIKit
+import UniformTypeIdentifiers
+
+/// The share extension: "Dosar cu Șină" in the share sheet of Mail, WhatsApp,
+/// Photos and Files. It only copies what it receives into the App Group inbox
+/// and says so; reading the document happens later in the app, where the
+/// person reviews it. No database, no recognition here, so it stays light.
+final class ShareViewController: UIViewController {
+    private let model = ShareModel()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        let host = UIHostingController(rootView: ShareConfirmationView(model: model) { [weak self] in
+            self?.finish()
+        })
+        addChild(host)
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+        host.view.backgroundColor = .clear
+        view.addSubview(host.view)
+        NSLayoutConstraint.activate([
+            host.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            host.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            host.view.topAnchor.constraint(equalTo: view.topAnchor),
+            host.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
+        host.didMove(toParent: self)
+
+        let items = (extensionContext?.inputItems as? [NSExtensionItem]) ?? []
+        let providers = items.flatMap { $0.attachments ?? [] }
+        Task { await model.receive(providers) }
+    }
+
+    private func finish() {
+        extensionContext?.completeRequest(returningItems: nil)
+    }
+}
+
+/// Copies the shared attachments into the inbox.
+@MainActor
+@Observable
+final class ShareModel {
+    enum Phase: Equatable {
+        case working
+        case saved(count: Int)
+        /// Nothing we can read: not a photo, a PDF or text.
+        case unsupported
+        /// The phone couldn't hand the file over, or there's no room.
+        case failed
+    }
+
+    private(set) var phase: Phase = .working
+
+    func receive(_ providers: [NSItemProvider]) async {
+        guard let inbox = ShareInbox.shared() else {
+            phase = .failed
+            return
+        }
+        try? FileManager.default.createDirectory(at: inbox.directory, withIntermediateDirectories: true, attributes: ShareInbox.protection)
+        inbox.removeAbandonedStaging()
+
+        let classified = providers.compactMap { provider -> (NSItemProvider, ShareInbox.IncomingKind)? in
+            if provider.hasItemConformingToTypeIdentifier(UTType.pdf.identifier) { return (provider, .pdf) }
+            if provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) { return (provider, .image) }
+            if provider.hasItemConformingToTypeIdentifier(UTType.plainText.identifier) { return (provider, .text) }
+            return nil
+        }
+        guard !classified.isEmpty else {
+            phase = .unsupported
+            return
+        }
+
+        var saved = 0
+        var failed = false
+        for planned in ShareInbox.plan(classified.map(\.1)) {
+            do {
+                let staging = try inbox.makeStagingFolder()
+                var files: [String] = []
+                var originalName: String?
+                for (position, index) in planned.indices.enumerated() {
+                    let provider = classified[index].0
+                    originalName = originalName ?? provider.suggestedName
+                    if let name = try await Self.stage(provider, as: classified[index].1, inbox: inbox, staging: staging, index: position) {
+                        files.append(name)
+                    }
+                }
+                if files.isEmpty {
+                    inbox.discard(staging: staging)
+                    failed = true
+                    continue
+                }
+                try inbox.commit(staging: staging, payload: planned.payload, files: files, originalName: originalName)
+                saved += 1
+            } catch {
+                failed = true
+            }
+        }
+        if saved > 0 { AppGroup.postInboxDidChange() }
+        phase = saved > 0 ? .saved(count: saved) : (failed ? .failed : .unsupported)
+    }
+
+    /// Copies one attachment into the staging folder; returns its file name.
+    private static func stage(_ provider: NSItemProvider, as kind: ShareInbox.IncomingKind, inbox: ShareInbox, staging: URL, index: Int) async throws -> String? {
+        switch kind {
+        case .text:
+            let data: Data? = try await withCheckedThrowingContinuation { continuation in
+                _ = provider.loadDataRepresentation(for: .plainText) { data, error in
+                    if let error { continuation.resume(throwing: error) } else { continuation.resume(returning: data) }
+                }
+            }
+            guard let data, !data.isEmpty else { return nil }
+            return try inbox.stage(data: data, fileExtension: "txt", into: staging, index: index)
+        case .pdf, .image:
+            let type: UTType = kind == .pdf ? .pdf : .image
+            return try await withCheckedThrowingContinuation { continuation in
+                // The file only exists while this handler runs, so it is copied here.
+                _ = provider.loadFileRepresentation(for: type, openInPlace: false) { url, _, error in
+                    if let error {
+                        continuation.resume(throwing: error)
+                        return
+                    }
+                    guard let url else {
+                        continuation.resume(returning: nil)
+                        return
+                    }
+                    do {
+                        continuation.resume(returning: try inbox.stage(copyOf: url, into: staging, index: index))
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// The calm confirmation the person sees in the share sheet.
+struct ShareConfirmationView: View {
+    let model: ShareModel
+    let onDone: () -> Void
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
+    @State private var showsProgress = false
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Spacer(minLength: 0)
+            symbol
+                .font(.system(size: 44, weight: .semibold))
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(tint)
+                .frame(height: 56)
+                .accessibilityHidden(true)
+            VStack(spacing: 6) {
+                Text(title)
+                    .font(.title3.weight(.semibold))
+                    .multilineTextAlignment(.center)
+                Text(message)
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .accessibilityElement(children: .combine)
+            Spacer(minLength: 0)
+            Button(action: onDone) {
+                Text(model.phase == .working ? "Anulează" : "Gata")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, minHeight: 50)
+            }
+            .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.roundedRectangle(radius: 14))
+        }
+        .padding(24)
+        .frame(maxWidth: 480)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(uiColor: .systemGroupedBackground))
+        .animation(reduceMotion ? .easeOut(duration: 0.18) : .spring(duration: 0.32, bounce: 0.1), value: model.phase)
+        .sensoryFeedback(trigger: model.phase) { _, phase in
+            switch phase {
+            case .saved: .success
+            case .failed, .unsupported: .warning
+            case .working: nil
+            }
+        }
+        .task {
+            // Only show a spinner if copying takes a moment.
+            try? await Task.sleep(for: .milliseconds(400))
+            showsProgress = true
+        }
+        .task(id: model.phase) {
+            guard case .saved = model.phase, !voiceOverEnabled else { return }
+            try? await Task.sleep(for: .seconds(2.5))
+            onDone()
+        }
+    }
+
+    @ViewBuilder private var symbol: some View {
+        switch model.phase {
+        case .working:
+            ProgressView().controlSize(.large).opacity(showsProgress ? 1 : 0)
+        case .saved:
+            Image(systemName: "checkmark.circle.fill")
+        case .unsupported, .failed:
+            Image(systemName: "exclamationmark.circle.fill")
+        }
+    }
+
+    private var tint: Color {
+        switch model.phase {
+        case .saved: .green
+        case .unsupported, .failed: .orange
+        case .working: .secondary
+        }
+    }
+
+    private var title: LocalizedStringKey {
+        switch model.phase {
+        case .working: "Se trimite…"
+        case .saved: "Trimis în Dosar cu Șină"
+        case .unsupported: "Nu pot primi asta"
+        case .failed: "Nu s-a trimis"
+        }
+    }
+
+    private var message: LocalizedStringKey {
+        switch model.phase {
+        case .working: " "
+        case .saved: "Îl verifici când deschizi aplicația."
+        case .unsupported: "Pot primi poze, PDF-uri și text. Trimite factura sau actul ca poză sau PDF."
+        case .failed: "Telefonul nu mi-a dat fișierul. Încearcă din nou din aplicația din care l-ai trimis."
+        }
+    }
+}
