@@ -55,6 +55,10 @@ public struct CaptureAnalyzer: Sendable {
             .map { ($0.id, $0.name) }
     }
 
+    /// Below this classifier confidence, a provider-specific reader may claim a document
+    /// of another kind; above it, the classifier's kind stands.
+    static let specializedClaimBelow = 0.6
+
     // MARK: - Analysis
 
     public func analyze(text rawText: String, barcodes: [CaptureBarcode] = [], referenceDate: Date = Date()) -> Analysis {
@@ -79,7 +83,12 @@ public struct CaptureAnalyzer: Sendable {
         let years = DateWindow.around(today)
 
         let mrz = MRZParser.parse(text: rawText, referenceDate: referenceDate)
-        let specialized = specializedParsers.lazy.compactMap { $0.parse(text) }.first
+        let classification = DocumentClassifier.classify(text: text, mrz: mrz)
+        // A provider-specific reader claims a document only when the classifier agrees
+        // or isn't sure: an RCA policy that mentions "digital" stays a policy.
+        let specialized = specializedParsers.lazy
+            .compactMap { $0.parse(text) }
+            .first { $0.kind == classification.kind || classification.confidence < Self.specializedClaimBelow }
 
         let kind: CaptureDocumentKind
         let kindConfidence: Double
@@ -88,7 +97,6 @@ public struct CaptureAnalyzer: Sendable {
             kindConfidence = 0.95
             fields.add(specialized.fields)
         } else {
-            let classification = DocumentClassifier.classify(text: text, mrz: mrz)
             kind = classification.kind
             kindConfidence = classification.confidence
         }

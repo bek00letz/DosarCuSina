@@ -161,37 +161,22 @@ public final class RomanianUtilityParser: Sendable {
     
     public func detectProvider(in text: String) -> RomanianUtilityProvider {
         let uppercase = text.uppercased()
-        
-        // Hidroelectrica
-        if uppercase.contains("HIDROELECTRICA") || uppercase.contains("SPEEH") {
-            return .hidroelectrica
+        // Names match as whole words only: "DIGI" isn't in "DIGITAL", "EON" isn't in "LEONTE".
+        func has(_ word: String) -> Bool {
+            let escaped = NSRegularExpression.escapedPattern(for: word)
+            return uppercase.range(of: #"(?<![A-Z0-9])"# + escaped + #"(?![A-Z0-9])"#, options: .regularExpression) != nil
         }
-        // Digi (RCS & RDS)
-        if uppercase.contains("RCS & RDS") || uppercase.contains("RCS-RDS") || uppercase.contains("RCS RDS") ||
-           (uppercase.contains("DIGI") && (uppercase.contains("ROMANIA") || uppercase.contains("TELECOM") || uppercase.contains("FACTURA") || uppercase.contains("SERVICII"))) {
+
+        if has("HIDROELECTRICA") || has("SPEEH") { return .hidroelectrica }
+        if has("RCS & RDS") || has("RCS-RDS") || has("RCS RDS") ||
+           (has("DIGI") && (has("ROMANIA") || has("TELECOM") || has("FACTURA") || has("SERVICII"))) {
             return .digi
         }
-        // PPC / Enel
-        if uppercase.contains("PPC ENERGIE") || uppercase.contains("PPC") || uppercase.contains("ENEL ENERGIE") || uppercase.contains("ENEL") {
-            return .ppcEnel
-        }
-        // Engie
-        if uppercase.contains("ENGIE") || uppercase.contains("GDF SUEZ") {
-            return .engie
-        }
-        // E.ON
-        if uppercase.contains("E.ON") || uppercase.contains("EON ENERGIE") || uppercase.contains("EON") {
-            return .eon
-        }
-        // Vodafone
-        if uppercase.contains("VODAFONE") {
-            return .vodafone
-        }
-        // Orange
-        if uppercase.contains("ORANGE") {
-            return .orange
-        }
-        
+        if has("PPC ENERGIE") || has("PPC") || has("ENEL ENERGIE") || has("ENEL") { return .ppcEnel }
+        if has("ENGIE") || has("GDF SUEZ") { return .engie }
+        if has("E.ON") || has("EON ENERGIE") || has("EON") { return .eon }
+        if has("VODAFONE") { return .vodafone }
+        if has("ORANGE") { return .orange }
         return .general
     }
     
