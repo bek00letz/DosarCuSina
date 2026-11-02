@@ -5,45 +5,66 @@ import UniformTypeIdentifiers
 // MARK: - Copie de siguranță
 
 /// Export to a `.dosar` file through the share sheet (the temporary file is
-/// removed once sharing ends) and import one back, asking before anything is replaced.
+/// removed once sharing ends), with or without a password, and import one back,
+/// asking before anything is replaced. What happens is decided in `BackupFlow`.
 struct BackupSettings: View {
     @Environment(\.modelContext) private var context
-    @Environment(AppNavigator.self) private var navigator
-
-    @State private var exportURL: URL?
-    @State private var isExporting = false
-    @State private var isPickingFile = false
-    @State private var pending: PendingImport?
-    @State private var resultText: String?
-    @State private var error: UserFacingError?
-    @State private var doneCount = 0
-
-    struct PendingImport: Identifiable {
-        let id = UUID()
-        let data: Data
-        let summary: ArchiveSummary
-    }
+    @Environment(BiometricVaultManager.self) private var vault
 
     static let dossierType = UTType(exportedAs: "com.ar.dosarcusina.dossier", conformingTo: .zip)
 
     var body: some View {
+        BackupSection(container: context.container, vault: vault)
+    }
+}
+
+private struct BackupSection: View {
+    @Environment(AppNavigator.self) private var navigator
+    @Environment(BiometricVaultManager.self) private var vault
+
+    @State private var flow: BackupFlow
+    @State private var isChoosingPassword = false
+    /// What the password sheet chose; the export starts once the sheet has gone.
+    @State private var exportChoice: ExportChoice?
+    @State private var isPickingFile = false
+    /// What is typed in the prompt for a backup's password.
+    @State private var password = ""
+
+    private enum ExportChoice {
+        case plain
+        case protected(String)
+    }
+
+    init(container: ModelContainer, vault: BiometricVaultManager) {
+        _flow = State(initialValue: BackupFlow(container: container, vault: vault))
+    }
+
+    var body: some View {
         Section {
-            Button(action: export) {
+            Button {
+                isChoosingPassword = true
+            } label: {
                 HStack {
                     Label { Text("Fă o copie de siguranță", comment: "Exports a backup.") } icon: { Image(systemName: "square.and.arrow.up") }
                     Spacer()
-                    if isExporting { DSDelayedProgress(label: "Se pregătește…") }
+                    if flow.work == .exporting { DSDelayedProgress(label: "Se pregătește…") }
                 }
                 .frame(minHeight: 44)
             }
-            .disabled(isExporting)
+            .disabled(flow.work != nil)
             Button {
                 isPickingFile = true
             } label: {
-                Label { Text("Pune înapoi o copie", comment: "Imports a backup.") } icon: { Image(systemName: "square.and.arrow.down") }
-                    .frame(minHeight: 44)
+                HStack {
+                    Label { Text("Pune înapoi o copie", comment: "Imports a backup.") } icon: { Image(systemName: "square.and.arrow.down") }
+                    Spacer()
+                    if flow.work == .reading { DSDelayedProgress(label: "Se citește…") }
+                    if flow.work == .importing { DSDelayedProgress(label: "Se pune înapoi…") }
+                }
+                .frame(minHeight: 44)
             }
-            if let resultText {
+            .disabled(flow.work != nil)
+            if let resultText = flow.resultText {
                 Label {
                     Text(verbatim: resultText)
                 } icon: {
@@ -54,78 +75,155 @@ struct BackupSettings: View {
         } header: {
             Text("Copie de siguranță", comment: "Settings section.")
         } footer: {
-            Text("Copia e un singur fișier cu tot dosarul, inclusiv documentele. Păstreaz-o în Fișiere, pe iCloud Drive sau trimite-o pe alt telefon. Codurile PIN nu intră în copie: rămân doar pe acest telefon.", comment: "Footer of the backup section.")
+            Text("Copia e un singur fișier cu tot dosarul, inclusiv documentele. Păstreaz-o în Fișiere, pe iCloud Drive sau trimite-o pe alt telefon. Codurile PIN și rândurile secrete nu intră în copie: rămân doar pe acest telefon.", comment: "Footer of the backup section.")
         }
-        .sheet(item: Binding(get: { exportURL.map(ShareItem.init) }, set: { if $0 == nil { exportURL = nil } })) { item in
-            ShareSheet(url: item.url) {
-                BackupFiles.remove(item.url)
-                exportURL = nil
+        .sheet(isPresented: $isChoosingPassword, onDismiss: startChosenExport) {
+            BackupPasswordSheet { password in
+                exportChoice = password.map(ExportChoice.protected) ?? .plain
+                isChoosingPassword = false
             }
-            .ignoresSafeArea()
         }
-        .fileImporter(isPresented: $isPickingFile, allowedContentTypes: [Self.dossierType, .zip, .data]) { result in
+        .sheet(item: Binding(get: { flow.exportURL.map(ShareItem.init) }, set: { if $0 == nil { flow.finishSharing() } })) { item in
+            ShareSheet(url: item.url) { flow.finishSharing() }
+                .ignoresSafeArea()
+        }
+        .fileImporter(isPresented: $isPickingFile, allowedContentTypes: [BackupSettings.dossierType, .zip, .data]) { result in
             switch result {
-            case .success(let url): prepareImport(from: url, isSecurityScoped: true)
-            case .failure(let failure): error = UserFacingError(failure)
+            case .success(let url): Task { await flow.open(url) }
+            case .failure(let failure): flow.error = UserFacingError(failure)
             }
         }
-        .confirmationDialog(Text("Pui înapoi copia?", comment: "Import confirmation title."), isPresented: Binding(get: { pending != nil }, set: { if !$0 { pending = nil } }), titleVisibility: .visible, presenting: pending) { pending in
-            Button { runImport(pending, mode: .merge) } label: {
+        .alert(
+            Text("Copia are parolă", comment: "Title of the prompt for a backup's password."),
+            isPresented: Binding(get: { flow.lockedFile != nil }, set: { if !$0 { flow.lockedFile = nil } }),
+            presenting: flow.lockedFile
+        ) { file in
+            SecureField(text: $password) { Text("Parola copiei", comment: "Placeholder of a backup's password.") }
+                .textContentType(.password)
+            Button {
+                let typed = password
+                password = ""
+                Task { await flow.unlock(file, with: typed) }
+            } label: {
+                Text("Deschide", comment: "Opens a password-protected backup.")
+            }
+            Button(role: .cancel) {
+                password = ""
+                flow.discard(file.url)
+            } label: {
+                Text("Nu acum", comment: "Cancels an optional action.")
+            }
+        } message: { file in
+            if file.wasWrong {
+                Text("Parola nu deschide copia. Verifică literele mari și mici și încearcă din nou.", comment: "A backup's password was wrong.")
+            } else {
+                Text("Scrie parola pe care ai ales-o când ai făcut copia.", comment: "Asks for a backup's password.")
+            }
+        }
+        .confirmationDialog(Text("Pui înapoi copia?", comment: "Import confirmation title."), isPresented: Binding(get: { flow.pending != nil }, set: { if !$0 { flow.pending = nil } }), titleVisibility: .visible, presenting: flow.pending) { pending in
+            Button { Task { await flow.runImport(pending, mode: .merge) } } label: {
                 Text("Adaug-o la ce am acum", comment: "Import mode: merge.")
             }
-            Button(role: .destructive) { runImport(pending, mode: .replace) } label: {
+            Button(role: .destructive) { Task { await flow.runImport(pending, mode: .replace) } } label: {
                 Text("Înlocuiește tot ce e aici", comment: "Import mode: replace.")
             }
-            Button(role: .cancel) {} label: { Text("Nu acum", comment: "Cancels an optional action.") }
+            Button(role: .cancel) { flow.discard(pending.url) } label: { Text("Nu acum", comment: "Cancels an optional action.") }
         } message: { pending in
-            Text(verbatim: BackupWording.summary(pending.summary) + " " + String(localized: "Dacă alegi „Înlocuiește”, ce ai acum pe telefon se șterge și rămâne doar ce e în copie.", comment: "Warning before replacing everything with a backup."))
+            Text(verbatim: BackupWording.summary(pending.summary) + " " + String(localized: "Dacă alegi „Înlocuiește”, ce ai acum pe telefon se șterge și rămâne doar ce e în copie. Codurile PIN de pe acest telefon rămân.", comment: "Warning before replacing everything with a backup."))
         }
         .task { consumeOpenedFile() }
         .onChange(of: navigator.pendingArchiveURL) { _, _ in consumeOpenedFile() }
-        .sensoryFeedback(.success, trigger: doneCount)
-        .userErrorAlert($error)
+        .onChange(of: vault.isAppLocked) { _, _ in consumeOpenedFile() }
+        .sensoryFeedback(.success, trigger: flow.doneCount)
+        .userErrorAlert(Binding(get: { flow.error }, set: { flow.error = $0 }))
     }
 
-    private func export() {
-        isExporting = true
-        Task {
-            // Let the button show it is working before the export takes the main thread.
-            try? await Task.sleep(for: .milliseconds(50))
-            defer { isExporting = false }
-            do {
-                exportURL = try DossierArchiveService(container: context.container).export()
-            } catch {
-                self.error = UserFacingError(error, doing: String(localized: "Copia nu s-a făcut", comment: "Title of an export error."))
-            }
+    private func startChosenExport() {
+        guard let choice = exportChoice else { return }
+        exportChoice = nil
+        switch choice {
+        case .plain: Task { await flow.export(password: nil) }
+        case .protected(let password): Task { await flow.export(password: password) }
         }
     }
 
     private func consumeOpenedFile() {
-        if let url = navigator.consumeArchiveURL() {
-            prepareImport(from: url, isSecurityScoped: false)
+        guard let url = navigator.consumeArchiveURL() else { return }
+        Task { await flow.open(url) }
+    }
+}
+
+/// Before a backup: an optional password. With one, the copy can't be opened
+/// without it; without one, it is an ordinary file to keep somewhere safe.
+private struct BackupPasswordSheet: View {
+    let onExport: (String?) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var password = ""
+    @State private var repeated = ""
+
+    private var rule: BackupPasswordRule { BackupPasswordRule(password: password, repeated: repeated) }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: DS.Space.l) {
+                    Label {
+                        Text("Copia conține tot dosarul, inclusiv actele de identitate și pozele lor. Codurile PIN și codurile secrete nu intră în ea.", comment: "What a backup contains, said before every backup.")
+                    } icon: {
+                        Image(systemName: "doc.on.doc.fill").foregroundStyle(DS.Palette.secondaryLabel)
+                    }
+                    .dsFont(.body)
+                    Text("Cu o parolă, copia nu se poate deschide fără ea, nici dacă fișierul ajunge la altcineva.", comment: "Explains a backup password.")
+                        .dsFont(.body)
+                    VStack(spacing: DS.Space.s) {
+                        DSSecureField("Parolă", text: $password, contentType: .newPassword, validation: rule.passwordValidation)
+                        DSSecureField("Scrie parola din nou", text: $repeated, contentType: .newPassword, validation: rule.repeatValidation)
+                    }
+                    Label {
+                        Text("Dacă uiți parola, copia nu mai poate fi deschisă de nimeni. Pune-o undeva sigur, de exemplu în Parole.", comment: "Warning: a forgotten backup password can't be recovered.")
+                    } icon: {
+                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(DSStatus.soon.color)
+                    }
+                    .dsFont(.footnote)
+                    VStack(spacing: DS.Space.s) {
+                        DSPrimaryButton("Fă copia cu parolă", systemImage: "lock.fill") { onExport(password) }
+                            .disabled(!rule.isReady)
+                        DSSecondaryButton("Fă copia fără parolă") { onExport(nil) }
+                    }
+                }
+                .padding(DS.Space.m)
+            }
+            .background(DS.Palette.background)
+            .navigationTitle(Text("Copie de siguranță", comment: "Settings section."))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button { dismiss() } label: { Text("Anulează", comment: "Cancels.") }
+                }
+            }
         }
+        .presentationDetents([.large])
+    }
+}
+
+/// When a backup password can be used: long enough, and typed the same twice.
+struct BackupPasswordRule {
+    var password: String
+    var repeated: String
+
+    var isReady: Bool {
+        password.count >= ArchiveEncryption.minimumPasswordLength && password == repeated
     }
 
-    private func prepareImport(from url: URL, isSecurityScoped: Bool) {
-        let accessing = isSecurityScoped && url.startAccessingSecurityScopedResource()
-        defer { if accessing { url.stopAccessingSecurityScopedResource() } }
-        do {
-            let data = try Data(contentsOf: url)
-            let summary = try DossierArchiveService(container: context.container).inspect(data)
-            pending = PendingImport(data: data, summary: summary)
-        } catch {
-            self.error = UserFacingError(error, doing: String(localized: "Copia nu se deschide", comment: "Title of an import error."))
-        }
+    var passwordValidation: DSValidation {
+        guard !password.isEmpty, password.count < ArchiveEncryption.minimumPasswordLength else { return .valid }
+        return .invalid(LocalizedStringResource("Parola are cel puțin \(ArchiveEncryption.minimumPasswordLength) caractere.", comment: "A backup password is too short."))
     }
 
-    private func runImport(_ pending: PendingImport, mode: ArchiveImportMode) {
-        do {
-            let result = try DossierArchiveService(container: context.container).importArchive(pending.data, mode: mode)
-            resultText = BackupWording.result(result)
-            doneCount += 1
-        } catch {
-            self.error = UserFacingError(error, doing: String(localized: "Copia nu s-a pus înapoi", comment: "Title of an import error."))
-        }
+    var repeatValidation: DSValidation {
+        guard !repeated.isEmpty, repeated != password else { return .valid }
+        return .invalid(LocalizedStringResource("Parolele nu se potrivesc.", comment: "The two backup passwords differ."))
     }
 }
 
@@ -146,7 +244,9 @@ enum BackupWording {
     }
 
     static func result(_ result: ArchiveImportResult) -> String {
-        String(localized: "Copia e pusă înapoi. Noi: \(result.inserted). Actualizate: \(result.updated).", comment: "After importing a backup.")
+        let done = String(localized: "Copia e pusă înapoi. Noi: \(result.inserted). Actualizate: \(result.updated).", comment: "After importing a backup.")
+        guard result.movedToTop > 0 else { return done }
+        return done + " " + String(localized: "\(result.movedToTop) secțiuni nu și-au găsit locul din copie și sunt acum direct în dosar.", comment: "After importing a backup: sections whose parent couldn't be used, with Romanian plural forms.")
     }
 }
 
@@ -155,6 +255,13 @@ enum BackupFiles {
     @discardableResult
     static func remove(_ url: URL) -> Bool {
         (try? FileManager.default.removeItem(at: url)) != nil
+    }
+
+    /// Whether a file sits inside a folder (the app's Inbox, say).
+    static func isInside(_ url: URL, _ folder: URL) -> Bool {
+        let file = url.standardizedFileURL.resolvingSymlinksInPath().pathComponents
+        let parent = folder.standardizedFileURL.resolvingSymlinksInPath().pathComponents
+        return file.count > parent.count && Array(file.prefix(parent.count)) == parent
     }
 }
 

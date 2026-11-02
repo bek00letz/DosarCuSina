@@ -2,29 +2,97 @@ import Foundation
 import SwiftData
 
 /// Writes a decoded package into a context. The caller saves (once) or rolls back.
+///
+/// An archive brings the household's records and the choices a person can make
+/// themselves. It never changes what the app defines, whatever it says:
+/// - built-in categories always take the app's own definition (name, fields,
+///   field types, reminders); an archive brings only their order, whether they
+///   show on the binder and their lock;
+/// - a lock is never made weaker: a category or field locked on this phone stays locked;
+/// - secrets (PIN codes, secret rows) never come from an archive, and the ones
+///   this phone keeps for the same records stay, in both modes;
+/// - parents follow the same rule as "Mută la…", so nothing ends up filed under itself;
+/// - no record's last change is later than now.
 @MainActor
 struct DossierImporter {
     let context: ModelContext
     let package: DossierV3.Package
     let mode: ArchiveImportMode
     let calendar: Calendar
+    var now = Date()
 
     private func uuid(_ raw: String?) -> UUID? { raw.flatMap(UUID.init(uuidString:)) }
 
+    /// An archive's timestamp, never later than now.
+    private func stamp(_ date: Date) -> Date { min(date, now) }
+
     func run() throws -> ArchiveImportResult {
         var result = ArchiveImportResult()
+        let phone = try PhoneKeeps.capture(in: context)
         if mode == .replace { try deleteEverything() }
 
-        let definitions = try importTemplates(&result)
-        let assets = try importAssets(&result, definitions: definitions)
+        let definitions = try importTemplates(&result, phone: phone)
+        let assets = try importAssets(&result, definitions: definitions, phone: phone)
         let providers = try importProviders(&result, assets: assets)
         let obligations = try importObligations(&result, assets: assets)
         let entries = try importHistory(&result, assets: assets, obligations: obligations, providers: providers)
         let serviceItems = try importServiceItems(&result, entries: entries, providers: providers)
         let measurements = try importMeasurements(&result, assets: assets)
         try importAttachments(&result, assets: assets, obligations: obligations, entries: entries, serviceItems: serviceItems, measurements: measurements, providers: providers)
-        try HouseholdRules.reconcile(in: context, today: CalendarDay(Date(), calendar: calendar), calendar: calendar)
+        try HouseholdRules.reconcile(in: context, today: CalendarDay(now, calendar: calendar), calendar: calendar)
         return result
+    }
+
+    // MARK: What the phone keeps
+
+    /// What stays as this phone has it, whatever the archive says. Read before
+    /// anything changes, so replacing everything keeps it too.
+    struct PhoneKeeps {
+        /// Category key → whether it is locked here.
+        var locks: [String: Bool] = [:]
+        /// Custom category key → its fields that are secret or sensitive here.
+        var guardedFields: [String: [String: FieldDefinition]] = [:]
+        /// Record id → its sealed values.
+        var secrets: [UUID: FieldValues] = [:]
+        /// Record id → its secret rows.
+        var secretFacts: [UUID: [CustomFact]] = [:]
+
+        static func capture(in context: ModelContext) throws -> PhoneKeeps {
+            var keeps = PhoneKeeps()
+            for template in try context.fetch(FetchDescriptor<CategoryTemplate>()) {
+                keeps.locks[template.key] = (keeps.locks[template.key] ?? false) || template.isSensitive
+                guard template.isCustom else { continue }
+                for field in template.definition.allFields where field.isSecret || field.isSensitive {
+                    keeps.guardedFields[template.key, default: [:]][field.key] = field
+                }
+            }
+            for asset in try context.fetch(FetchDescriptor<Asset>()) {
+                let sealed = SecretFields.sealedValues(in: asset.values)
+                if !sealed.isEmpty { keeps.secrets[asset.id] = sealed }
+                let facts = asset.customFacts.filter(\.isSecret)
+                if !facts.isEmpty { keeps.secretFacts[asset.id] = facts }
+            }
+            return keeps
+        }
+
+        /// A category's lock after the import: on if it was on here or in the archive.
+        func lock(_ key: String, archive: Bool, default fallback: Bool) -> Bool {
+            archive || (locks[key] ?? fallback)
+        }
+
+        /// A custom category's definition with every field locked here kept locked.
+        func guarding(_ definition: TemplateDefinition) -> TemplateDefinition {
+            guard let guarded = guardedFields[definition.key] else { return definition }
+            var result = definition
+            for (sectionIndex, section) in result.sections.enumerated() {
+                for (fieldIndex, field) in section.fields.enumerated() {
+                    guard let here = guarded[field.key] else { continue }
+                    if here.isSecret { result.sections[sectionIndex].fields[fieldIndex].type = .secret }
+                    if here.isSensitive { result.sections[sectionIndex].fields[fieldIndex].isSensitive = true }
+                }
+            }
+            return result
+        }
     }
 
     // MARK: Replace
@@ -52,7 +120,7 @@ struct DossierImporter {
     // MARK: Templates
 
     /// Imports templates and returns every definition in effect after the import, by key.
-    private func importTemplates(_ result: inout ArchiveImportResult) throws -> [String: TemplateDefinition] {
+    private func importTemplates(_ result: inout ArchiveImportResult, phone: PhoneKeeps) throws -> [String: TemplateDefinition] {
         var byKey: [String: CategoryTemplate] = [:]
         if mode == .merge {
             for template in try context.fetch(FetchDescriptor<CategoryTemplate>()) where byKey[template.key] == nil {
@@ -61,51 +129,40 @@ struct DossierImporter {
         }
         for dto in package.templates {
             let catalog = BuiltInTemplates.definition(for: dto.key)
-            let isBuiltIn = dto.isBuiltIn && catalog != nil
-            var definition = TemplateDefinition(
+            // A built-in is the app's, whatever the archive says; anything else is the person's own.
+            let definition = catalog ?? phone.guarding(TemplateDefinition(
                 key: dto.key, name: dto.name, summary: dto.summary, symbol: dto.symbol,
                 tint: TemplateTint(rawValue: dto.tint) ?? .gray, heroStyle: HeroStyle(rawValue: dto.heroStyle) ?? .standard,
                 isOnHomeByDefault: dto.isOnHome, isSensitiveByDefault: dto.isSensitive,
                 sections: dto.sections, blueprints: dto.blueprints, components: dto.components ?? [],
                 pockets: dto.pockets.map { $0.compactMap(SectionPocket.init(rawValue:)) } ?? SectionPocket.standard,
-                version: dto.version
-            )
-            // A built-in from an older app version takes this app's definition.
-            if isBuiltIn, let catalog, catalog.version >= dto.version {
-                definition.name = catalog.name
-                definition.summary = catalog.summary
-                definition.symbol = catalog.symbol
-                definition.tint = catalog.tint
-                definition.heroStyle = catalog.heroStyle
-                definition.sections = catalog.sections
-                definition.blueprints = catalog.blueprints
-                definition.components = catalog.components
-                definition.pockets = catalog.pockets
-                definition.version = catalog.version
-            }
-            if let template = byKey[dto.key] {
-                guard dto.updatedAt > template.updatedAt else { result.skipped += 1; continue }
-                if template.isCustom || isBuiltIn { template.apply(definition) }
-                template.homeOrder = dto.homeOrder
-                template.isOnHome = dto.isOnHome
-                template.isSensitive = dto.isSensitive
-                template.updatedAt = dto.updatedAt
+                version: 0
+            ))
+            let isLocked = phone.lock(dto.key, archive: dto.isSensitive, default: catalog?.isSensitiveByDefault ?? false)
+            let template: CategoryTemplate
+            if let current = byKey[dto.key] {
+                guard dto.updatedAt > current.updatedAt else { result.skipped += 1; continue }
+                template = current
                 result.updated += 1
             } else {
-                let template = CategoryTemplate(definition: definition, isBuiltIn: isBuiltIn, homeOrder: dto.homeOrder)
-                template.isOnHome = dto.isOnHome
-                template.isSensitive = dto.isSensitive
-                template.createdAt = dto.createdAt
-                template.updatedAt = dto.updatedAt
+                template = CategoryTemplate(definition: definition, isBuiltIn: catalog != nil, homeOrder: dto.homeOrder)
+                template.createdAt = stamp(dto.createdAt)
                 context.insert(template)
                 byKey[dto.key] = template
                 result.inserted += 1
             }
+            template.isBuiltIn = catalog != nil
+            template.apply(definition)
+            template.homeOrder = dto.homeOrder
+            template.isOnHome = dto.isOnHome
+            template.isSensitive = isLocked
+            template.updatedAt = stamp(dto.updatedAt)
         }
         // Built-ins the archive didn't mention.
         var order = (byKey.values.map(\.homeOrder).max() ?? -1) + 1
         for definition in BuiltInTemplates.all where byKey[definition.key] == nil {
             let template = CategoryTemplate(definition: definition, isBuiltIn: true, homeOrder: order)
+            template.isSensitive = phone.lock(definition.key, archive: false, default: definition.isSensitiveByDefault)
             context.insert(template)
             byKey[definition.key] = template
             order += 1
@@ -115,17 +172,15 @@ struct DossierImporter {
 
     // MARK: Records
 
-    private func importAssets(_ result: inout ArchiveImportResult, definitions: [String: TemplateDefinition]) throws -> [UUID: Asset] {
+    private func importAssets(_ result: inout ArchiveImportResult, definitions: [String: TemplateDefinition], phone: PhoneKeeps) throws -> [UUID: Asset] {
         var map = try existing(Asset.self, id: \.id)
+        var written: [(Asset, DossierV3.Asset)] = []
         for dto in package.assets {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.assets) }
             let asset: Asset
-            // Secrets this phone keeps for the record stay; an archive never brings any.
-            var localValues = FieldValues()
             if let current = map[id] {
                 guard dto.updatedAt > current.updatedAt else { result.skipped += 1; continue }
                 asset = current
-                localValues = current.values
                 result.updated += 1
             } else {
                 asset = Asset(id: id, name: dto.name, templateKey: dto.templateKey)
@@ -141,20 +196,26 @@ struct DossierImporter {
             // Choice values written as display text (v2 backups, older builds) become option keys.
             let definition = definitions[dto.templateKey]
             let values = definition.map { dto.values.normalizingChoices(for: $0) } ?? dto.values
-            // Stripped by the archive's template and by the app's own, whichever names the secret.
-            let builtIn = BuiltInTemplates.definition(for: dto.templateKey)
-            let incoming = SecretFields.stripping(values, definition: builtIn)
-            asset.valuesData = StoredJSON.encode(SecretFields.keepingLocalSecrets(incoming, from: localValues, definition: builtIn ?? definition))
-            asset.customFacts = dto.customFacts ?? []
+            // Secrets this phone keeps for the record stay; an archive never brings any.
+            asset.valuesData = StoredJSON.encode(SecretFields.keepingLocalSecrets(values, from: phone.secrets[id] ?? FieldValues(), definition: definition))
+            asset.customFacts = SecretFields.keepingLocalSecretFacts(dto.customFacts ?? [], from: phone.secretFacts[id] ?? [])
             asset.photoData = dto.photoPath.flatMap { package.files[$0] }
             asset.isExample = dto.isExample
-            asset.createdAt = dto.createdAt
-            asset.updatedAt = dto.updatedAt
+            asset.createdAt = stamp(dto.createdAt)
+            asset.updatedAt = stamp(dto.updatedAt)
+            written.append((asset, dto))
         }
-        // Parents are linked once every asset exists, so order in the file doesn't matter.
-        for dto in package.assets {
-            guard let id = uuid(dto.id), let asset = map[id], let parentId = uuid(dto.parentId), parentId != id else { continue }
-            asset.parent = map[parentId]
+        // Parents are linked once every asset exists, so order in the file doesn't
+        // matter, and through the app's own rule, so nothing is filed under itself.
+        // A parent that can't be used leaves the section at the top of the binder.
+        for (asset, dto) in written {
+            let parent = uuid(dto.parentId).flatMap { map[$0] }
+            if let parent, AssetActions.canFile(asset, under: parent) {
+                asset.parent = parent
+            } else {
+                asset.parent = nil
+                if dto.parentId != nil { result.movedToTop += 1 }
+            }
         }
         return map
     }
@@ -189,8 +250,8 @@ struct DossierImporter {
             obligation.statusRaw = ObligationStatus(rawValue: dto.status)?.rawValue ?? ObligationStatus.active.rawValue
             obligation.snoozedUntil = dto.snoozedUntil
             obligation.isExample = dto.isExample
-            obligation.createdAt = dto.createdAt
-            obligation.updatedAt = dto.updatedAt
+            obligation.createdAt = stamp(dto.createdAt)
+            obligation.updatedAt = stamp(dto.updatedAt)
             obligation.asset = uuid(dto.assetId).flatMap { assets[$0] }
         }
         return map
@@ -220,8 +281,8 @@ struct DossierImporter {
             provider.manualRating = dto.manualRating
             provider.wouldCallAgain = dto.wouldCallAgain
             provider.isExample = dto.isExample
-            provider.createdAt = dto.createdAt
-            provider.updatedAt = dto.updatedAt
+            provider.createdAt = stamp(dto.createdAt)
+            provider.updatedAt = stamp(dto.updatedAt)
             provider.assets = dto.assetIds.compactMap { uuid($0).flatMap { assets[$0] } }
         }
         return map

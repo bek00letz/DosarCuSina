@@ -25,8 +25,9 @@ public struct TemplateStore {
         self.context = context
     }
 
-    /// Installs built-in templates that are missing and upgrades installed ones
-    /// whose catalog version is newer, keeping household preferences (order,
+    /// Installs built-in templates that are missing and gives installed ones the
+    /// catalog's definition whenever theirs is from another version or was
+    /// changed into a custom one, keeping household preferences (order,
     /// visibility, Face ID). Also removes duplicate built-ins that a sync merge
     /// may have produced. Saves only when something changed.
     @discardableResult
@@ -46,7 +47,10 @@ public struct TemplateStore {
         var nextOrder = (existing.map(\.homeOrder).max() ?? -1) + 1
         for definition in catalog {
             if let installed = byKey[definition.key] {
-                if installed.isBuiltIn, installed.builtInVersion < definition.version {
+                // A built-in is always the app's own definition: a newer catalog
+                // upgrades it, and one changed from outside is put back.
+                if !installed.isBuiltIn || installed.builtInVersion != definition.version {
+                    installed.isBuiltIn = true
                     installed.apply(definition)
                     changed = true
                 }

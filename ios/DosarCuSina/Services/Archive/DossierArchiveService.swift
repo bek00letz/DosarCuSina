@@ -11,6 +11,10 @@ public enum ArchiveError: LocalizedError, Equatable {
     case unlistedFile(String)
     case unreadableFile(String)
     case brokenReference(String)
+    /// The archive is protected with a password and none was given.
+    case needsPassword
+    /// The password given doesn't open the archive.
+    case wrongPassword
 
     public var errorDescription: String? {
         switch self {
@@ -26,6 +30,10 @@ public enum ArchiveError: LocalizedError, Equatable {
             return String(localized: "Arhiva conține un fișier neașteptat: \(path).")
         case .brokenReference(let path):
             return String(localized: "Datele din \(path) nu se potrivesc între ele.")
+        case .needsPassword:
+            return String(localized: "Copia e protejată cu o parolă. Scrie parola cu care a fost făcută.")
+        case .wrongPassword:
+            return String(localized: "Parola nu deschide copia. Verifică literele mari și mici și încearcă din nou.")
         }
     }
 }
@@ -44,17 +52,56 @@ public struct ArchiveSummary: Hashable, Sendable {
     public var counts: DossierV3.Manifest.Counts
 }
 
+extension ArchiveSummary {
+    public init(_ package: DossierV3.Package) {
+        schemaVersion = package.manifest.schemaVersion
+        platform = package.manifest.platform
+        exportedAt = package.manifest.exportedAt
+        counts = package.manifest.counts
+    }
+}
+
 public struct ArchiveImportResult: Hashable, Sendable {
     public var inserted = 0
     public var updated = 0
     public var skipped = 0
+    /// Sections whose place in the archive couldn't be used (filed under
+    /// themselves, or under something missing): they are at the top of the binder.
+    public var movedToTop = 0
 }
 
 // MARK: - Reading
 
 /// Unpacks, checks and decodes an archive. Pure and thread-safe; nothing touches the database.
 public enum DossierArchiveReader {
-    public static func read(_ data: Data, limits: DosarZipEngine.Limits = .standard) throws -> DossierV3.Package {
+    /// Whether the archive needs a password to open.
+    public static func isPasswordProtected(_ data: Data) -> Bool {
+        ArchiveEncryption.isEncrypted(data)
+    }
+
+    public static func read(_ data: Data, password: String? = nil, limits: DosarZipEngine.Limits = .standard) throws -> DossierV3.Package {
+        guard ArchiveEncryption.isEncrypted(data) else { return try readPlain(data, limits: limits) }
+        guard let password else { throw ArchiveError.needsPassword }
+        let plain: Data
+        do {
+            plain = try ArchiveEncryption.decrypt(data, password: password)
+        } catch ArchiveEncryption.Failure.wrongPassword {
+            throw ArchiveError.wrongPassword
+        } catch {
+            throw ArchiveError.notADossier
+        }
+        return try readPlain(plain, limits: limits)
+    }
+
+    /// Reads an archive file. Meant to run away from the main thread: the file is
+    /// mapped rather than copied where the system allows, and nothing of it is
+    /// kept once the package is decoded.
+    public static func read(contentsOf url: URL, password: String? = nil, limits: DosarZipEngine.Limits = .standard) throws -> DossierV3.Package {
+        let data = try Data(contentsOf: url, options: .mappedIfSafe)
+        return try read(data, password: password, limits: limits)
+    }
+
+    private static func readPlain(_ data: Data, limits: DosarZipEngine.Limits) throws -> DossierV3.Package {
         let entries = try DosarZipEngine.unpackArchive(data, limits: limits)
         var files: [String: Data] = [:]
         for entry in entries { files[entry.path] = entry.data }
@@ -143,7 +190,13 @@ public struct DossierArchiveService {
 
     // MARK: Export
 
+    /// The plain archive, as one zip.
     public func exportData(appVersion: String = Bundle.main.shortVersion, exportedAt: Date = Date()) throws -> Data {
+        try DosarZipEngine.createArchive(entries: exportEntries(appVersion: appVersion, exportedAt: exportedAt))
+    }
+
+    /// Every file of the archive, read from the database.
+    func exportEntries(appVersion: String = Bundle.main.shortVersion, exportedAt: Date = Date()) throws -> [DosarZipEngine.Entry] {
         let context = ModelContext(container)
         let templates = try context.fetch(FetchDescriptor<CategoryTemplate>(sortBy: [SortDescriptor(\.homeOrder)]))
         let assets = try context.fetch(FetchDescriptor<Asset>(sortBy: [SortDescriptor(\.createdAt)]))
@@ -167,7 +220,7 @@ public struct DossierArchiveService {
                 createdAt: template.createdAt, updatedAt: template.updatedAt
             )
         }
-        // Secret fields (PIN codes) never leave the phone: an archive carries none.
+        // Secrets (PIN codes, secret rows, anything sealed) never leave the phone: an archive carries none.
         let definitions = Dictionary(templates.map { ($0.key, $0.definition) }, uniquingKeysWith: { first, _ in first })
         let assetDTOs = assets.map { asset -> DossierV3.Asset in
             var photoPath: String?
@@ -180,7 +233,7 @@ public struct DossierArchiveService {
                 id: DossierV3.id(asset.id), templateKey: asset.templateKey, name: asset.name,
                 parentId: DossierV3.id(asset.parent?.id), symbolOverride: asset.symbolOverride, tintOverride: asset.tintOverrideRaw, notes: asset.notes,
                 values: SecretFields.stripping(asset.values, definition: definitions[asset.templateKey] ?? BuiltInTemplates.definition(for: asset.templateKey)),
-                customFacts: asset.customFacts.isEmpty ? nil : asset.customFacts,
+                customFacts: SecretFields.strippingFacts(asset.customFacts).nilIfEmpty,
                 photoPath: photoPath, isExample: asset.isExample,
                 createdAt: asset.createdAt, updatedAt: asset.updatedAt
             )
@@ -292,42 +345,45 @@ public struct DossierArchiveService {
         for path in files.keys.sorted() {
             if let data = files[path] { zipEntries.append(DosarZipEngine.Entry(path: path, data: data, modifiedDate: exportedAt)) }
         }
-        return try DosarZipEngine.createArchive(entries: zipEntries)
+        return zipEntries
     }
 
-    /// Writes an archive to a temporary file ready to share, protected while the device is locked.
-    public func export(to directory: URL = .temporaryDirectory, exportedAt: Date = Date()) throws -> URL {
-        let data = try exportData(exportedAt: exportedAt)
+    /// Writes an archive to a temporary file ready to share, protected while the
+    /// device is locked. With a password, the whole archive is encrypted with it.
+    /// Packing and encrypting run away from the main thread.
+    public func export(to directory: URL = .temporaryDirectory, password: String? = nil, exportedAt: Date = Date()) async throws -> URL {
+        let entries = try exportEntries(exportedAt: exportedAt)
         let day = CalendarDay(exportedAt, calendar: calendar).isoString
         let url = directory.appending(path: "Dosar cu Șină \(day).dosar")
-        try data.write(to: url, options: [.atomic, .completeFileProtection])
+        try await Task.detached(priority: .userInitiated) {
+            var data = try DosarZipEngine.createArchive(entries: entries)
+            if let password {
+                data = try ArchiveEncryption.encrypt(data, password: password)
+            }
+            try data.write(to: url, options: [.atomic, .completeFileProtection])
+        }.value
         return url
     }
 
     // MARK: Inspect and import
 
-    public func inspect(_ data: Data) throws -> ArchiveSummary {
-        let package = try DossierArchiveReader.read(data)
-        return ArchiveSummary(
-            schemaVersion: package.manifest.schemaVersion,
-            platform: package.manifest.platform,
-            exportedAt: package.manifest.exportedAt,
-            counts: package.manifest.counts
-        )
+    public func inspect(_ data: Data, password: String? = nil) throws -> ArchiveSummary {
+        ArchiveSummary(try DossierArchiveReader.read(data, password: password))
     }
 
     @discardableResult
-    public func importArchive(_ data: Data, mode: ArchiveImportMode) throws -> ArchiveImportResult {
-        let package = try DossierArchiveReader.read(data)
+    public func importArchive(_ data: Data, password: String? = nil, mode: ArchiveImportMode) throws -> ArchiveImportResult {
+        try importPackage(try DossierArchiveReader.read(data, password: password), mode: mode)
+    }
+
+    /// Writes an already read package into the database, as one unit of work:
+    /// everything or nothing.
+    @discardableResult
+    public func importPackage(_ package: DossierV3.Package, mode: ArchiveImportMode) throws -> ArchiveImportResult {
         let context = ModelContext(container)
         context.autosaveEnabled = false
-        do {
-            let result = try DossierImporter(context: context, package: package, mode: mode, calendar: calendar).run()
-            try context.save()
-            return result
-        } catch {
-            context.rollback()
-            throw error
+        return try UnitOfWork.perform(in: context) {
+            try DossierImporter(context: context, package: package, mode: mode, calendar: calendar).run()
         }
     }
 
@@ -336,6 +392,10 @@ public struct DossierArchiveService {
         if !fromName.isEmpty, fromName.allSatisfy({ $0.isLetter || $0.isNumber }) { return fromName }
         return UTType(attachment.contentType)?.preferredFilenameExtension ?? "bin"
     }
+}
+
+private extension Array {
+    var nilIfEmpty: Self? { isEmpty ? nil : self }
 }
 
 extension Bundle {
