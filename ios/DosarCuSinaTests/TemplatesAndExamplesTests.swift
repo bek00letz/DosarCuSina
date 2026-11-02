@@ -88,7 +88,7 @@ struct ExampleDataTests {
         try service.loadExamples()
         try service.loadExamples()
         let examples = try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.isExample }))
-        #expect(examples.count == 8, "Loading twice doesn't duplicate")
+        #expect(examples.count == 12, "Loading twice doesn't duplicate")
         let obligations = try context.fetch(FetchDescriptor<Obligation>())
         #expect(!obligations.isEmpty)
         #expect(obligations.allSatisfy { $0.isExample })

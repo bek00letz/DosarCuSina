@@ -44,7 +44,8 @@ public final class AssetActions {
     /// The template's blueprints with first dates worked out from `values`, for the add flow.
     public func plannedObligations(for template: CategoryTemplate, values: FieldValues) -> [PlannedObligation] {
         let today = CalendarDay(now(), calendar: calendar)
-        return template.blueprints.map { blueprint in
+        let values = values.applyingRules(of: template.definition, previous: nil, calendar: calendar)
+        return template.blueprints.filter { $0.appliesWhen?.isMet(by: values) ?? true }.map { blueprint in
             PlannedObligation(
                 blueprint: blueprint,
                 firstDue: RecurrenceEngine.firstDue(for: blueprint, values: values, today: today, calendar: calendar),
@@ -64,7 +65,8 @@ public final class AssetActions {
         parent: Asset? = nil,
         isExample: Bool = false
     ) throws -> Asset {
-        let asset = Asset(name: name, templateKey: template.key, values: values.normalizingChoices(for: template.definition), notes: notes, isExample: isExample)
+        let prepared = values.normalizingChoices(for: template.definition).applyingRules(of: template.definition, previous: nil, calendar: calendar)
+        let asset = Asset(name: name, templateKey: template.key, values: prepared, notes: notes, isExample: isExample)
         context.insert(asset)
         asset.parent = parent
         let today = CalendarDay(now(), calendar: calendar)
@@ -75,6 +77,7 @@ public final class AssetActions {
             if let reading = HouseholdMutations.heroMetricValue(of: asset, template: template.definition) {
                 HouseholdMutations.addMeasurement(reading, unit: HouseholdMutations.heroMetricUnit(template: template.definition), to: asset, at: now(), in: context)
             }
+            try HouseholdRules.reconcile(in: context, today: today, calendar: calendar)
             try context.save()
         } catch {
             context.rollback()
@@ -88,7 +91,9 @@ public final class AssetActions {
     public func update(_ asset: Asset, name: String, values: FieldValues, notes: String?) throws {
         let previous = asset.values
         let template = try TemplateStore(context: context).template(forKey: asset.templateKey)
-        let values = template.map { values.normalizingChoices(for: $0.definition) } ?? values
+        let values = template.map {
+            values.normalizingChoices(for: $0.definition).applyingRules(of: $0.definition, previous: previous, calendar: calendar)
+        } ?? values
         asset.name = name
         asset.values = values
         asset.notes = notes
@@ -151,6 +156,7 @@ public final class AssetActions {
             for child in Self.descendants(of: asset) { context.delete(child) }
         }
         context.delete(asset)
+        try HouseholdRules.reconcile(in: context, today: CalendarDay(now(), calendar: calendar), calendar: calendar)
         try save()
     }
 

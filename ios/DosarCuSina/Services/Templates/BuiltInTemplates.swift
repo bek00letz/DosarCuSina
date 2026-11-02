@@ -10,12 +10,29 @@ import Foundation
 public enum BuiltInTemplates {
 
     public static var all: [TemplateDefinition] {
-        [vehicle, home, documents, pet, health, warranty, subscription, other, bike, plants, rental, espresso]
+        [vehicle, home, documents, pet, health, purchase, subscription, other, bike, plants, tenancy, member, espresso]
     }
 
     public static func definition(for key: String) -> TemplateDefinition? {
         all.first { $0.key == key }
     }
+
+    /// Built-in keys from earlier catalogs and what replaced them. `TemplateStore`
+    /// moves assets over; a retired key with no replacement becomes a custom category.
+    public static let replacedKeys: [String: String] = ["warranty": Key.purchase]
+    public static let retiredKeys: Set<String> = ["rental"]
+
+    /// Field keys renamed along with a replaced template.
+    public static let replacedFieldKeys: [String: String] = [
+        "warranty.brand": "purchase.brand",
+        "warranty.model": "purchase.model",
+        "warranty.serial": "purchase.serial",
+        "warranty.retailer": "purchase.retailer",
+        "warranty.price": "purchase.price",
+        "warranty.purchaseDate": "purchase.date",
+        "warranty.expiry": "purchase.warrantyUntil",
+        "warranty.manualUrl": "purchase.manualUrl",
+    ]
 
     // MARK: Keys
 
@@ -25,19 +42,20 @@ public enum BuiltInTemplates {
         public static let documents = "documents"
         public static let pet = "pet"
         public static let health = "health"
-        public static let warranty = "warranty"
+        public static let purchase = "purchase"
         public static let subscription = "subscription"
         public static let other = "other"
         public static let bike = "bike"
         public static let plants = "plants"
-        public static let rental = "rental"
+        public static let tenancy = "tenancy"
+        public static let member = "member"
         public static let espresso = "espresso"
     }
 
     private static func ron(_ amount: Decimal) -> Money { Money(amount, currency: "RON") }
 
-    private static func profile(_ leadDays: [Int], _ consequence: Consequence, grace: Int = 0) -> ReminderProfile {
-        ReminderProfile(leadDays: leadDays, consequence: consequence, graceDays: grace)
+    private static func profile(_ leadDays: [Int], _ consequence: Consequence, grace: Int = 0, followUp: Bool? = nil) -> ReminderProfile {
+        ReminderProfile(leadDays: leadDays, consequence: consequence, graceDays: grace, followUpAfterLapse: followUp)
     }
 
     // MARK: Mainstays
@@ -165,7 +183,6 @@ public enum BuiltInTemplates {
                 FieldSection(key: "document.main", title: String(localized: "Document"), fields: [
                     FieldDefinition(key: "document.type", label: String(localized: "Tip"), type: .choice, role: .subtitle, isEssential: true, options: DocumentType.options),
                     FieldDefinition(key: "document.number", label: String(localized: "Serie și număr"), type: .text, role: .documentNumber, isSensitive: true),
-                    FieldDefinition(key: "document.holder", label: String(localized: "Titular"), type: .text, role: .holder),
                     // The personal numeric code lives only here, in a category that asks for Face ID by default.
                     FieldDefinition(key: "document.personalNumber", label: String(localized: "CNP"), type: .text, isSensitive: true),
                     FieldDefinition(key: "document.issuer", label: String(localized: "Emis de"), type: .text, role: .issuer),
@@ -278,69 +295,78 @@ public enum BuiltInTemplates {
         )
     }
 
-    public static var warranty: TemplateDefinition {
+    /// One asset per product: what it is, where and when it was bought, what it
+    /// cost, and how long the legal guarantee lasts (24 months for new consumer
+    /// goods, OUG 140/2021). Answers "cât am plătit pe aragaz" and "când am luat hota".
+    public static var purchase: TemplateDefinition {
         TemplateDefinition(
-            key: Key.warranty,
-            name: String(localized: "Bunuri și garanții", comment: "Category name"),
-            summary: String(localized: "Electrocasnice și electronice, cu bonul, prețul și garanția.", comment: "Category summary"),
+            key: Key.purchase,
+            name: String(localized: "Garanții", comment: "Category name"),
+            summary: String(localized: "Ce ai cumpărat, cât a costat și până când e în garanție.", comment: "Category summary"),
             symbol: "shield.lefthalf.filled",
             tint: .teal,
             heroStyle: .document,
             sections: [
-                FieldSection(key: "warranty.product", title: String(localized: "Produs"), fields: [
-                    FieldDefinition(key: "warranty.brand", label: String(localized: "Marcă"), type: .text, role: .subtitle, isEssential: true),
-                    FieldDefinition(key: "warranty.model", label: String(localized: "Model"), type: .text, role: .subtitle),
-                    FieldDefinition(key: "warranty.serial", label: String(localized: "Serie sau IMEI"), type: .text, role: .identifier),
-                    FieldDefinition(key: "warranty.retailer", label: String(localized: "Magazin"), type: .text, role: .retailer),
-                    FieldDefinition(key: "warranty.price", label: String(localized: "Preț"), type: .money, role: .purchasePrice),
+                FieldSection(key: "purchase.product", title: String(localized: "Produs"), fields: [
+                    FieldDefinition(key: "purchase.brand", label: String(localized: "Marcă"), type: .text, role: .subtitle),
+                    FieldDefinition(key: "purchase.model", label: String(localized: "Model"), type: .text, role: .subtitle),
+                    FieldDefinition(key: "purchase.serial", label: String(localized: "Serie sau IMEI"), type: .text, role: .identifier),
                 ]),
-                FieldSection(key: "warranty.coverage", title: String(localized: "Garanție"), fields: [
-                    FieldDefinition(key: "warranty.purchaseDate", label: String(localized: "Data cumpărării"), type: .date, role: .purchaseDate, isEssential: true),
-                    FieldDefinition(key: "warranty.expiry", label: String(localized: "Garanția expiră"), type: .expiryDate, role: .warrantyUntil, isEssential: true),
-                    FieldDefinition(key: "warranty.manualUrl", label: String(localized: "Manual de utilizare"), type: .url),
+                FieldSection(key: "purchase.bought", title: String(localized: "Cumpărare"), fields: [
+                    FieldDefinition(key: "purchase.retailer", label: String(localized: "Magazin"), type: .text, role: .retailer, isEssential: true),
+                    FieldDefinition(key: "purchase.date", label: String(localized: "Data cumpărării"), type: .date, role: .purchaseDate, isEssential: true),
+                    FieldDefinition(key: "purchase.price", label: String(localized: "Preț"), type: .money, role: .purchasePrice, isEssential: true),
+                ]),
+                FieldSection(key: "purchase.coverage", title: String(localized: "Garanție"), fields: [
+                    FieldDefinition(key: "purchase.warrantyMonths", label: String(localized: "Garanție (luni)"), type: .number, unit: String(localized: "luni"),
+                                    defaultValue: .number(24)),
+                    FieldDefinition(key: "purchase.warrantyUntil", label: String(localized: "Garanția expiră"), type: .expiryDate, role: .warrantyUntil,
+                                    derivation: .addMonths(dateField: "purchase.date", monthsField: "purchase.warrantyMonths")),
+                    FieldDefinition(key: "purchase.manualUrl", label: String(localized: "Manual de utilizare"), type: .url),
                 ]),
             ],
             blueprints: [
-                ObligationBlueprint(key: "warranty.lastCheck", title: String(localized: "Verifică produsul cât e în garanție"), kind: .renewal, recurrence: .none,
-                                    firstDue: .field(key: "warranty.expiry", offsetDays: -30),
-                                    reminders: profile([7, 0], .financial),
-                                    note: String(localized: "O lună înainte de expirare, ca să mai poți cere reparații gratuite.")),
+                ObligationBlueprint(key: "purchase.warrantyEnds", title: String(localized: "Garanția se termină"), kind: .renewal, recurrence: .none,
+                                    firstDue: .field(key: "purchase.warrantyUntil", offsetDays: 0),
+                                    reminders: profile([30], .financial, followUp: false),
+                                    note: String(localized: "Funcționează totul bine? Acum mai poți reclama gratuit un defect.")),
             ],
             pockets: [.upcoming, .documents, .history, .money, .keyFacts]
         )
     }
 
+    /// A provider, a price per billing cycle and, for fixed-term contracts, the end
+    /// date. Reminds about yearly renewals and contract ends, not monthly charges.
     public static var subscription: TemplateDefinition {
         TemplateDefinition(
             key: Key.subscription,
             name: String(localized: "Abonamente", comment: "Category name"),
-            summary: String(localized: "Plăți recurente, perioade de probă și contracte.", comment: "Category summary"),
+            summary: String(localized: "Reînnoiri anuale și contracte care se termină.", comment: "Category summary"),
             symbol: "creditcard.fill",
             tint: .purple,
             sections: [
                 FieldSection(key: "subscription.main", title: String(localized: "Abonament"), fields: [
                     FieldDefinition(key: "subscription.provider", label: String(localized: "Furnizor"), type: .text, role: .subtitle, isEssential: true),
-                    FieldDefinition(key: "subscription.price", label: String(localized: "Cost pe perioadă"), type: .money, role: .heroMetric, isEssential: true),
-                    FieldDefinition(key: "subscription.cycle", label: String(localized: "Se plătește"), type: .choice, isEssential: true, options: BillingCycle.options),
-                    FieldDefinition(key: "subscription.nextPayment", label: String(localized: "Următoarea plată"), type: .date, isEssential: true),
-                    FieldDefinition(key: "subscription.trialEnd", label: String(localized: "Perioada de probă se termină"), type: .date),
+                    FieldDefinition(key: "subscription.price", label: String(localized: "Preț"), type: .money, role: .heroMetric, isEssential: true),
+                    FieldDefinition(key: "subscription.cycle", label: String(localized: "Se plătește"), type: .choice, isEssential: true,
+                                    options: BillingCycle.options, defaultValue: .text(BillingCycle.monthly)),
+                    FieldDefinition(key: "subscription.renewalDate", label: String(localized: "Următoarea reînnoire"), type: .date),
                     FieldDefinition(key: "subscription.contractEnd", label: String(localized: "Contract până la"), type: .expiryDate, role: .expiryDate),
                     FieldDefinition(key: "subscription.cancelUrl", label: String(localized: "Unde anulezi"), type: .url),
                     FieldDefinition(key: "subscription.card", label: String(localized: "Card (ultimele 4 cifre)"), type: .text, isSensitive: true),
                 ]),
             ],
             blueprints: [
-                ObligationBlueprint(key: "subscription.payment", title: String(localized: "Plată"), kind: .payment, recurrence: .interval(.months(1), anchor: .dueDate),
-                                    firstDue: .field(key: "subscription.nextPayment", offsetDays: 0),
-                                    reminders: profile([1, 0], .financial, grace: 3)),
-                ObligationBlueprint(key: "subscription.trial", title: String(localized: "Se termină perioada de probă"), kind: .payment, recurrence: .none,
-                                    firstDue: .field(key: "subscription.trialEnd", offsetDays: 0),
-                                    reminders: profile([2, 1], .financial), isSuggested: false,
-                                    note: String(localized: "Anulează înainte, dacă nu vrei să plătești.")),
+                ObligationBlueprint(key: "subscription.renewal", title: String(localized: "Reînnoire anuală"), kind: .payment,
+                                    recurrence: .interval(.years(1), anchor: .dueDate),
+                                    firstDue: .field(key: "subscription.renewalDate", offsetDays: 0),
+                                    reminders: profile([14], .financial, followUp: false),
+                                    appliesWhen: BlueprintCondition(field: "subscription.cycle", oneOf: [BillingCycle.yearly]),
+                                    note: String(localized: "Decide dacă îl mai vrei înainte să se plătească singur.")),
                 ObligationBlueprint(key: "subscription.contractEnd", title: String(localized: "Se termină contractul"), kind: .renewal, recurrence: .none,
                                     firstDue: .field(key: "subscription.contractEnd", offsetDays: 0),
-                                    reminders: profile([14], .financial), isSuggested: false,
-                                    note: String(localized: "Un moment bun să ceri o ofertă mai bună.")),
+                                    reminders: profile([30], .financial, followUp: false),
+                                    note: String(localized: "De obicei prețul crește după. E momentul să ceri o ofertă mai bună.")),
             ],
             pockets: [.upcoming, .documents, .money, .keyFacts]
         )
@@ -431,40 +457,51 @@ public enum BuiltInTemplates {
         )
     }
 
-    public static var rental: TemplateDefinition {
+    /// A tenancy filed under a property: who rents it, the contract, the rent,
+    /// the deposit and the meter readings at move-in and move-out. While any
+    /// tenancy exists, the household gets the yearly income declaration
+    /// (see `HouseholdRules`).
+    public static var tenancy: TemplateDefinition {
         TemplateDefinition(
-            key: Key.rental,
-            name: String(localized: "Proprietăți închiriate", comment: "Category name"),
-            summary: String(localized: "Chirie, contoare, contract și Declarația unică.", comment: "Category summary"),
-            symbol: "building.2.fill",
+            key: Key.tenancy,
+            name: String(localized: "Chiriași", comment: "Category name"),
+            summary: String(localized: "Contractul, chiria, garanția și indexurile la mutare.", comment: "Category summary"),
+            symbol: "person.2.fill",
             tint: .cyan,
-            heroStyle: .home,
             isOnHomeByDefault: false,
             sections: [
-                FieldSection(key: "rental.place", title: String(localized: "Proprietate"), fields: [
-                    FieldDefinition(key: "rental.address", label: String(localized: "Adresă"), type: .address, role: .location, isEssential: true),
-                    FieldDefinition(key: "rental.rent", label: String(localized: "Chirie lunară"), type: .money, role: .heroMetric, isEssential: true),
-                    FieldDefinition(key: "rental.deposit", label: String(localized: "Garanție încasată"), type: .money),
+                FieldSection(key: "tenancy.contract", title: String(localized: "Contract"), fields: [
+                    FieldDefinition(key: "tenancy.start", label: String(localized: "Început contract"), type: .date, role: .startDate, isEssential: true),
+                    FieldDefinition(key: "tenancy.end", label: String(localized: "Sfârșit contract"), type: .expiryDate, role: .expiryDate, isEssential: true),
                 ]),
-                FieldSection(key: "rental.lease", title: String(localized: "Contract"), fields: [
-                    FieldDefinition(key: "rental.leaseStart", label: String(localized: "Început contract"), type: .date, role: .startDate),
-                    FieldDefinition(key: "rental.leaseEnd", label: String(localized: "Sfârșit contract"), type: .expiryDate, role: .expiryDate),
+                FieldSection(key: "tenancy.money", title: String(localized: "Bani"), fields: [
+                    FieldDefinition(key: "tenancy.rent", label: String(localized: "Chirie lunară"), type: .money, role: .heroMetric, isEssential: true),
+                    FieldDefinition(key: "tenancy.paymentDay", label: String(localized: "Ziua de plată"), type: .number, placeholder: "5"),
+                    FieldDefinition(key: "tenancy.deposit", label: String(localized: "Garanție încasată"), type: .money),
                 ]),
             ],
             blueprints: [
-                ObligationBlueprint(key: "rental.rent", title: String(localized: "Încasare chirie"), kind: .payment, recurrence: .interval(.months(1), anchor: .dueDate), firstDue: .ask,
-                                    reminders: profile([0], .financial, grace: 3)),
-                ObligationBlueprint(key: "rental.meters", title: String(localized: "Citire contoare la chiriaș"), kind: .routine, recurrence: .interval(.months(1), anchor: .dueDate),
-                                    firstDue: .afterInterval(.months(1)),
-                                    reminders: profile([0], .comfort, grace: 5), isSuggested: false),
-                ObligationBlueprint(key: "rental.declaration", title: String(localized: "Declarația unică (formularul 212)"), kind: .tax,
-                                    recurrence: .fixedDates([MonthDay(month: 5, day: 25)]), firstDue: .nextFixedDate,
-                                    reminders: profile([30, 7, 1, 0], .legal)),
-                ObligationBlueprint(key: "rental.leaseEnd", title: String(localized: "Se termină contractul de închiriere"), kind: .renewal, recurrence: .none,
-                                    firstDue: .field(key: "rental.leaseEnd", offsetDays: 0),
-                                    reminders: profile([60, 30, 7], .financial)),
+                ObligationBlueprint(key: "tenancy.end", title: String(localized: "Se termină contractul de închiriere"), kind: .renewal, recurrence: .none,
+                                    firstDue: .field(key: "tenancy.end", offsetDays: 0),
+                                    reminders: profile([60], .financial, followUp: false),
+                                    note: String(localized: "Timp să vorbiți despre prelungire sau să cauți alt chiriaș.")),
             ],
             pockets: [.upcoming, .documents, .people, .money, .keyFacts]
+        )
+    }
+
+    /// A household member, by name only. Their personal documents are filed under
+    /// them, so the Acte box can group documents by holder.
+    public static var member: TemplateDefinition {
+        TemplateDefinition(
+            key: Key.member,
+            name: String(localized: "Membri ai familiei", comment: "Category name"),
+            summary: String(localized: "Cui aparțin actele.", comment: "Category summary"),
+            symbol: "person.crop.circle",
+            tint: .indigo,
+            isOnHomeByDefault: false,
+            sections: [],
+            pockets: [.upcoming, .documents, .keyFacts]
         )
     }
 

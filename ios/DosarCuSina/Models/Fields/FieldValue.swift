@@ -140,6 +140,27 @@ public struct FieldValues: Hashable, Sendable, Codable, Sequence {
 
     public var isEmpty: Bool { storage.isEmpty }
 
+    /// The values with defaults filled in for empty fields (new assets only) and
+    /// derived fields worked out again when one of their inputs changed, or when
+    /// they are still empty. A derived value the person typed in themselves stays
+    /// until an input changes.
+    public func applyingRules(of template: TemplateDefinition, previous: FieldValues?, calendar: Calendar = .current) -> FieldValues {
+        var result = self
+        if previous == nil {
+            for field in template.allFields where result[field.key] == nil {
+                if let value = field.defaultValue { result[field.key] = value }
+            }
+        }
+        for field in template.allFields {
+            guard let derivation = field.derivation else { continue }
+            let inputsChanged = previous.map { old in derivation.inputs.contains { old[$0] != result[$0] } } ?? true
+            if result[field.key] == nil || inputsChanged, let value = derivation.value(from: result, calendar: calendar) {
+                result[field.key] = value
+            }
+        }
+        return result
+    }
+
     /// The same values with choice fields stored as option keys. Display text
     /// written before keys existed (older backups, earlier builds) maps to its
     /// key; text no option recognizes is kept as written.

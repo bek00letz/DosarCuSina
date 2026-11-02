@@ -80,13 +80,14 @@ public struct ExampleDataService {
             )
         }
 
+        var homeAsset: Asset?
         if let template = templates[BuiltInTemplates.Key.home] {
             var values = FieldValues()
             values["home.address"] = .text("Str. Exemplului nr. 12, București")
             values["home.area"] = .number(78.5)
             values["home.meterReadFrom"] = .number(20)
             values["home.meterReadTo"] = .number(25)
-            try assets.create(
+            homeAsset = try assets.create(
                 name: String(localized: "Apartament Floreasca"),
                 template: template,
                 values: values,
@@ -95,7 +96,7 @@ public struct ExampleDataService {
             )
         }
 
-        if let home = try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.isExample })).first(where: { $0.templateKey == BuiltInTemplates.Key.home }) {
+        if let home = homeAsset {
             let plumber = try providers.create(name: String(localized: "Instalator exemplu"), trades: [.plumber], phone: "0700 000 002", linkedTo: [home])
             try history.record(
                 on: home, kind: .repair, title: String(localized: "Robinet nou la bucătărie"), occurredAt: daysAgo(210), totalCost: Money(340),
@@ -127,13 +128,18 @@ public struct ExampleDataService {
             try providers.setRating(vet, 5)
         }
 
-        if let template = templates[BuiltInTemplates.Key.documents] {
-            var values = FieldValues()
-            values["document.type"] = .text(DocumentType.passport)
-            values["document.number"] = .text("050000000")
-            values["document.holder"] = .text(String(localized: "Titular exemplu"))
-            values["document.expiry"] = .date(day(150))
-            try assets.create(name: String(localized: "Pașaport"), template: template, values: values, obligations: plan(template, values, dues: [:]), isExample: true)
+        if let template = templates[BuiltInTemplates.Key.documents], let memberTemplate = templates[BuiltInTemplates.Key.member] {
+            // Documents are filed under the household member they belong to.
+            let me = try assets.create(name: String(localized: "Eu", comment: "Example household member"), template: memberTemplate, values: FieldValues(), isExample: true)
+            var passport = FieldValues()
+            passport["document.type"] = .text(DocumentType.passport)
+            passport["document.number"] = .text("050000000")
+            passport["document.expiry"] = .date(day(150))
+            try assets.create(name: String(localized: "Pașaport"), template: template, values: passport, obligations: plan(template, passport, dues: [:]), parent: me, isExample: true)
+            var idCard = FieldValues()
+            idCard["document.type"] = .text(DocumentType.idCard)
+            idCard["document.expiry"] = .date(day(900))
+            try assets.create(name: String(localized: "Carte de identitate"), template: template, values: idCard, obligations: plan(template, idCard, dues: [:]), parent: me, isExample: true)
         }
 
         if let template = templates[BuiltInTemplates.Key.health] {
@@ -149,14 +155,31 @@ public struct ExampleDataService {
             )
         }
 
-        if let template = templates[BuiltInTemplates.Key.warranty] {
-            var values = FieldValues()
-            values["warranty.brand"] = .text(String(localized: "Frigider combinat"))
-            values["warranty.retailer"] = .text(String(localized: "Magazin exemplu"))
-            values["warranty.price"] = .money(Money(2_499))
-            values["warranty.purchaseDate"] = .date(day(-600))
-            values["warranty.expiry"] = .date(day(130))
-            try assets.create(name: String(localized: "Frigider"), template: template, values: values, obligations: plan(template, values, dues: [:]), isExample: true)
+        if let template = templates[BuiltInTemplates.Key.purchase] {
+            var fridge = FieldValues()
+            fridge["purchase.brand"] = .text(String(localized: "Frigider combinat"))
+            fridge["purchase.retailer"] = .text(String(localized: "Magazin exemplu"))
+            fridge["purchase.price"] = .money(Money(2_499))
+            fridge["purchase.date"] = .date(day(-600))
+            try assets.create(name: String(localized: "Frigider"), template: template, values: fridge, obligations: plan(template, fridge, dues: [:]), parent: homeAsset, isExample: true)
+            var cooker = FieldValues()
+            cooker["purchase.retailer"] = .text(String(localized: "Magazin exemplu"))
+            cooker["purchase.price"] = .money(Money(1_350))
+            cooker["purchase.date"] = .date(day(-200))
+            try assets.create(name: String(localized: "Aragaz"), template: template, values: cooker, obligations: plan(template, cooker, dues: [:]), parent: homeAsset, isExample: true)
+        }
+
+        if let template = templates[BuiltInTemplates.Key.tenancy], let home = homeAsset {
+            var lease = FieldValues()
+            lease["tenancy.start"] = .date(day(-300))
+            lease["tenancy.end"] = .date(day(65))
+            lease["tenancy.rent"] = .money(Money(450, currency: "EUR"))
+            lease["tenancy.paymentDay"] = .number(5)
+            lease["tenancy.deposit"] = .money(Money(450, currency: "EUR"))
+            let tenancy = try assets.create(name: String(localized: "Chiriaș garsonieră"), template: template, values: lease,
+                                            obligations: plan(template, lease, dues: [:]), parent: home, isExample: true)
+            try providers.create(name: String(localized: "Chiriaș exemplu"), trades: [.tenant], phone: "0700 000 004", linkedTo: [tenancy])
+            try assets.recordMeasurement(on: tenancy, kind: .coldWater, name: String(localized: "Apă rece la mutare"), value: 312, at: calendar.date(byAdding: .day, value: -300, to: now()))
         }
 
         if let template = templates[BuiltInTemplates.Key.subscription] {
@@ -164,14 +187,14 @@ public struct ExampleDataService {
             values["subscription.provider"] = .text("Digi")
             values["subscription.price"] = .money(Money(45))
             values["subscription.cycle"] = .text(BillingCycle.monthly)
-            values["subscription.nextPayment"] = .date(day(6))
+            values["subscription.contractEnd"] = .date(day(40))
             try assets.create(name: String(localized: "Internet fibră"), template: template, values: values, obligations: plan(template, values, dues: [:]), isExample: true)
 
             var storage = FieldValues()
             storage["subscription.provider"] = .text(String(localized: "Serviciu exemplu"))
-            storage["subscription.price"] = .money(Money(Decimal(string: "2.99") ?? 3, currency: "EUR"))
-            storage["subscription.cycle"] = .text(BillingCycle.monthly)
-            storage["subscription.nextPayment"] = .date(day(18))
+            storage["subscription.price"] = .money(Money(Decimal(string: "29.99") ?? 30, currency: "EUR"))
+            storage["subscription.cycle"] = .text(BillingCycle.yearly)
+            storage["subscription.renewalDate"] = .date(day(18))
             try assets.create(name: String(localized: "Stocare online"), template: template, values: storage, obligations: plan(template, storage, dues: [:]), isExample: true)
         }
     }
@@ -188,6 +211,7 @@ public struct ExampleDataService {
         for obligation in try context.fetch(FetchDescriptor<Obligation>(predicate: #Predicate { $0.isExample })) where obligation.asset == nil {
             context.delete(obligation)
         }
+        try HouseholdRules.reconcile(in: context, today: CalendarDay(now(), calendar: calendar), calendar: calendar)
         do {
             try context.save()
         } catch {

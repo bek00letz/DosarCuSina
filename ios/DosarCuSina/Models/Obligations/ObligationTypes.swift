@@ -106,6 +106,26 @@ public struct ReminderProfileVariants: Hashable, Sendable, Codable {
     }
 }
 
+/// A blueprint condition on an asset value: `{"field": "subscription.cycle", "oneOf": ["billing.yearly"]}`.
+public struct BlueprintCondition: Hashable, Sendable, Codable {
+    public var field: String
+    public var oneOf: [String]
+
+    public init(field: String, oneOf: [String]) {
+        self.field = field
+        self.oneOf = oneOf
+    }
+
+    public func isMet(by values: FieldValues) -> Bool {
+        guard let value = values[field] else { return false }
+        switch value {
+        case .text(let text): return oneOf.contains(text)
+        case .choices(let items): return items.contains(where: oneOf.contains)
+        default: return false
+        }
+    }
+}
+
 /// What kind of duty an obligation is: how it is grouped and labeled, and the
 /// reminder profile it starts from when nothing more specific is given.
 ///
@@ -334,6 +354,8 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
     public var reminders: ReminderProfile
     /// A different profile depending on an asset value (passport vs ID card).
     public var reminderVariants: ReminderProfileVariants?
+    /// Offered only when an asset value matches (a yearly renewal only for yearly billing).
+    public var appliesWhen: BlueprintCondition?
     public var estimatedCost: Money?
     /// Pre-selected in the add flow.
     public var isSuggested: Bool
@@ -350,6 +372,7 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
         firstDue: FirstDueRule = .ask,
         reminders: ReminderProfile? = nil,
         reminderVariants: ReminderProfileVariants? = nil,
+        appliesWhen: BlueprintCondition? = nil,
         estimatedCost: Money? = nil,
         isSuggested: Bool = true,
         note: String? = nil
@@ -361,6 +384,7 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
         self.firstDue = firstDue
         self.reminders = reminders ?? kind.defaultProfile
         self.reminderVariants = reminderVariants
+        self.appliesWhen = appliesWhen
         self.estimatedCost = estimatedCost
         self.isSuggested = isSuggested
         self.note = note
@@ -375,7 +399,7 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case key, title, kind, recurrence, firstDue, reminders, reminderVariants, estimatedCost, isSuggested, note
+        case key, title, kind, recurrence, firstDue, reminders, reminderVariants, appliesWhen, estimatedCost, isSuggested, note
     }
 
     public init(from decoder: Decoder) throws {
@@ -387,6 +411,7 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
         firstDue = try c.decodeIfPresent(FirstDueRule.self, forKey: .firstDue) ?? .ask
         reminders = try c.decodeIfPresent(ReminderProfile.self, forKey: .reminders) ?? kind.defaultProfile
         reminderVariants = try c.decodeIfPresent(ReminderProfileVariants.self, forKey: .reminderVariants)
+        appliesWhen = try c.decodeIfPresent(BlueprintCondition.self, forKey: .appliesWhen)
         estimatedCost = try c.decodeIfPresent(Money.self, forKey: .estimatedCost)
         isSuggested = try c.decodeIfPresent(Bool.self, forKey: .isSuggested) ?? true
         note = try c.decodeIfPresent(String.self, forKey: .note)

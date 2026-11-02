@@ -45,6 +45,9 @@ struct DosarCuSinaApp: App {
         guard sideEffects == nil else { return }
         _ = try? TemplateStore(context: container.mainContext).installBuiltIns()
         _ = try? ChoiceMigration.migrateStoredValues(in: container.mainContext)
+        if (try? HouseholdRules.reconcile(in: container.mainContext, today: CalendarDay(Date()))) == true {
+            try? container.mainContext.save()
+        }
         let coordinator = SideEffectsCoordinator(container: container)
         coordinator.start()
         sideEffects = coordinator

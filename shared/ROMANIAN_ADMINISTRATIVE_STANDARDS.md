@@ -82,7 +82,13 @@ Se aplică pentru clădiri, terenuri și mijloace de transport:
 ### 3.2 Declarația Unică — Formularul 212 (Codul Fiscal / ANAF)
 * **Termen legal**: **25 mai** în fiecare an.
 * **Aplicabilitate**: Venituri din chirii (contracte de locațiune), activități independente (PFA/PFI), dividende, dobânzi, tranzacții bursiere/crypto, stabilirea plafoanelor CASS (6, 12, 24 salarii minime brute).
-* **Tratament în aplicație**: În șablonul „Landlord Hub / Proprietar”, generare automată de reminder pentru 25 mai.
+* **Tratament în aplicație**: Cât timp există cel puțin un contract de închiriere (șablonul „Chiriași”, sub o locuință), gospodăria are o singură obligație anuală „Declarația unică pentru chirii”, scadentă pe 25 mai, cu remindere la 30 și 7 zile înainte și o revenire a doua zi dacă nu e bifată. Obligația aparține gospodăriei, nu unei proprietăți, și dispare când nu mai există chiriași.
+* **Surse**: Codul fiscal (Legea nr. 227/2015), Titlul IV, Capitolul III „Venituri din cedarea folosinței bunurilor” (art. 83–84) și art. 120–122 (declarația unică); termenul de 25 mai este cel publicat de ANAF pentru formularul 212.
+
+### 3.3 Contracte de închiriere (locuințe)
+* **Contractul**: Date de început și sfârșit, chiria lunară, ziua de plată și garanția încasată.
+* **La mutare și la plecare**: Indexurile contoarelor (apă, gaze, energie) se notează la intrarea și la ieșirea chiriașului, ca bază pentru decontul utilităților.
+* **Tratament în aplicație**: Reminder pentru sfârșitul contractului cu 60 de zile înainte (timp pentru prelungire sau pentru alt chiriaș).
 
 ---
 
@@ -122,3 +128,5 @@ Se aplică pentru clădiri, terenuri și mijloace de transport:
 * **Garanția legală de conformitate**: 2 ani pentru bunuri noi, minimum 1 an pentru bunuri second-hand.
 * **Extinderea garanției pe perioada service-ului**: Timpul de nefuncționare din momentul predării bunului în service până la restituirea lui funcțională **prelungește termenul de garanție cu numărul exact de zile petrecute în reparație** (art. 12 din OUG 140/2021).
 * **Tratament în aplicație**: Câmpul `daysInService` din `ServiceItem` calculează automat noua dată extinsă de expirare a garanției bunului.
+* **Șablonul „Garanții”**: Un produs pe înregistrare (magazin, data cumpărării, preț, bonul atașat). Garanția pornește implicit la 24 de luni, care se pot schimba. Data de sfârșit se calculează din data cumpărării și din numărul de luni. Reminderul vine cu 30 de zile înainte de sfârșitul garanției și întreabă dacă totul funcționează, pentru că atunci se mai poate reclama gratuit un defect.
+* **Surse**: OUG nr. 140/2021 privind anumite aspecte referitoare la contractele de vânzare de bunuri (transpune Directiva (UE) 2019/771), art. 10 (răspunderea vânzătorului pentru lipsa de conformitate timp de 2 ani de la livrare) și art. 12 (prelungirea cu perioada de nefuncționare).

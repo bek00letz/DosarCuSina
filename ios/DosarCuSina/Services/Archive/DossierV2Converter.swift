@@ -20,7 +20,8 @@ enum DossierV2Converter {
             do { return try decoder.decode(type, from: data) } catch { throw ArchiveError.unreadableFile(path) }
         }
         var converter = Converter(calendar: calendar)
-        let assets = try decode([AssetDTO].self, "data/assets.json").map { converter.convert($0) }
+        let converted = try decode([AssetDTO].self, "data/assets.json").map { converter.convert($0) }
+        let assets = converted + converter.members.values.sorted { $0.name < $1.name }
         try decode([LifecycleEventDTO].self, "data/events.json").forEach { converter.convert($0) }
         try decode([ServiceItemDTO].self, "data/service_history.json").forEach { converter.convert($0) }
         let measurements = try decode([MeasurementLogDTO].self, "data/measurements.json")
@@ -75,7 +76,7 @@ enum DossierV2Converter {
         case "pet": return BuiltInTemplates.Key.pet
         case "health": return BuiltInTemplates.Key.health
         case "documents": return BuiltInTemplates.Key.documents
-        case "warranties": return BuiltInTemplates.Key.warranty
+        case "warranties": return BuiltInTemplates.Key.purchase
         case "subscriptions": return BuiltInTemplates.Key.subscription
         default: return BuiltInTemplates.Key.other
         }
@@ -105,6 +106,23 @@ enum DossierV2Converter {
         var entryForEvent: [UUID: String] = [:]
         /// (asset, day) → history entry id, for v2 service records without an event.
         var entryForVisit: [String: String] = [:]
+        /// Household members created for document holders, by normalized name.
+        var members: [String: DossierV3.Asset] = [:]
+
+        /// The member asset for a holder's name, created once per name.
+        mutating func member(named name: String?, at date: Date) -> String? {
+            let clean = (name ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !clean.isEmpty else { return nil }
+            let key = SearchText.normalize(clean)
+            if let existing = members[key] { return existing.id }
+            let member = DossierV3.Asset(
+                id: DossierV3.id(UUID()), templateKey: BuiltInTemplates.Key.member, name: clean, parentId: nil,
+                symbolOverride: nil, tintOverride: nil, notes: nil, values: FieldValues(), customFacts: nil, photoPath: nil,
+                isExample: false, createdAt: date, updatedAt: date
+            )
+            members[key] = member
+            return member.id
+        }
 
         init(calendar: Calendar) {
             self.calendar = calendar
@@ -135,6 +153,7 @@ enum DossierV2Converter {
         mutating func convert(_ dto: AssetDTO) -> DossierV3.Asset {
             categoryOf[dto.id] = dto.categoryRaw
             let key = templateKey(forCategory: dto.categoryRaw)
+            var parentId: String?
             var values = FieldValues()
             var leftovers: [String] = []
 
@@ -203,17 +222,19 @@ enum DossierV2Converter {
                 text("document.issuer", dto.retailerOrIssuer)
                 day("document.issueDate", dto.purchaseOrIssueDate)
                 day("document.expiry", dto.contractEndDate)
-                text("document.holder", dto.personName)
-            case BuiltInTemplates.Key.warranty:
-                text("warranty.brand", dto.make)
-                text("warranty.model", dto.modelName)
-                text("warranty.serial", dto.serialOrImei)
-                text("warranty.retailer", dto.retailerOrIssuer)
-                day("warranty.purchaseDate", dto.purchaseOrIssueDate)
-                if let price = dto.purchasePrice { values["warranty.price"] = .money(Money(Decimal(price), currency: dto.currencyCode)) }
+                // The holder becomes a household member the document is filed under.
+                parentId = member(named: dto.personName, at: dto.createdAt)
+            case BuiltInTemplates.Key.purchase:
+                text("purchase.brand", dto.make)
+                text("purchase.model", dto.modelName)
+                text("purchase.serial", dto.serialOrImei)
+                text("purchase.retailer", dto.retailerOrIssuer)
+                day("purchase.date", dto.purchaseOrIssueDate)
+                if let price = dto.purchasePrice { values["purchase.price"] = .money(Money(Decimal(price), currency: dto.currencyCode)) }
+                let months = (dto.warrantyMonths ?? 24) + (dto.extendedWarrantyMonths ?? 0)
+                number("purchase.warrantyMonths", Double(months))
                 if let purchase = dto.purchaseOrIssueDate {
-                    let months = (dto.warrantyMonths ?? 24) + (dto.extendedWarrantyMonths ?? 0)
-                    values["warranty.expiry"] = .date(RecurrenceEngine.add(.months(months), to: CalendarDay(purchase, calendar: calendar), calendar: calendar))
+                    values["purchase.warrantyUntil"] = .date(RecurrenceEngine.add(.months(months), to: CalendarDay(purchase, calendar: calendar), calendar: calendar))
                 }
             case BuiltInTemplates.Key.subscription:
                 text("subscription.provider", dto.providerName)
@@ -240,7 +261,7 @@ enum DossierV2Converter {
             let notes = ([dto.notes].compactMap { $0 } + leftovers).filter { !$0.isEmpty }.joined(separator: "\n")
 
             return DossierV3.Asset(
-                id: DossierV3.id(dto.id), templateKey: key, name: dto.name, parentId: nil, symbolOverride: nil, tintOverride: nil,
+                id: DossierV3.id(dto.id), templateKey: key, name: dto.name, parentId: parentId, symbolOverride: nil, tintOverride: nil,
                 notes: notes.isEmpty ? nil : notes, values: values, customFacts: nil, photoPath: nil, isExample: false,
                 createdAt: dto.createdAt, updatedAt: dto.updatedAt
             )

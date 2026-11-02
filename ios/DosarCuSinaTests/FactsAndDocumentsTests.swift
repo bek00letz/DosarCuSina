@@ -8,11 +8,11 @@ struct AssetFactsTests {
     @Test("How much did I pay for the cooker, and when did I buy the hood")
     func purchaseFactsWorkForAnyCategoryWithThem() {
         var goods = FieldValues()
-        goods["warranty.purchaseDate"] = .date(CalendarDay("2025-06-15"))
-        goods["warranty.price"] = .money(Money(1_899))
-        goods["warranty.retailer"] = .text("Magazin exemplu")
-        goods["warranty.expiry"] = .date(CalendarDay("2027-06-15"))
-        let info = AssetFacts.purchase(goods, template: BuiltInTemplates.warranty)
+        goods["purchase.date"] = .date(CalendarDay("2025-06-15"))
+        goods["purchase.price"] = .money(Money(1_899))
+        goods["purchase.retailer"] = .text("Magazin exemplu")
+        goods["purchase.warrantyUntil"] = .date(CalendarDay("2027-06-15"))
+        let info = AssetFacts.purchase(goods, template: BuiltInTemplates.purchase)
         #expect(info.date == CalendarDay("2025-06-15"))
         #expect(info.price == Money(1_899))
         #expect(info.retailer == "Magazin exemplu")
@@ -45,7 +45,6 @@ struct AssetFactsTests {
         for template in [BuiltInTemplates.vehicle, BuiltInTemplates.home, BuiltInTemplates.documents, BuiltInTemplates.pet] {
             #expect(!template.keyFactFields.isEmpty, "\(template.key) shows key facts")
         }
-        #expect(BuiltInTemplates.documents.field(withRole: .holder) != nil)
         #expect(BuiltInTemplates.documents.field(withRole: .issuer) != nil)
         #expect(BuiltInTemplates.vehicle.field(withRole: .purchasePrice) != nil)
     }

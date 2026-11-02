@@ -23,6 +23,7 @@ struct DossierImporter {
         let serviceItems = try importServiceItems(&result, entries: entries, providers: providers)
         let measurements = try importMeasurements(&result, assets: assets)
         try importAttachments(&result, assets: assets, obligations: obligations, entries: entries, serviceItems: serviceItems, measurements: measurements, providers: providers)
+        try HouseholdRules.reconcile(in: context, today: CalendarDay(Date(), calendar: calendar), calendar: calendar)
         return result
     }
 

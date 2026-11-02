@@ -96,6 +96,11 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
     public var unit: String?
     /// Example shown in an empty field.
     public var placeholder: String?
+    /// Filled in when the asset is created and the person left it empty,
+    /// such as 24 months of legal guarantee. Always editable.
+    public var defaultValue: FieldValue?
+    /// Worked out from other fields while the person hasn't set it themselves.
+    public var derivation: FieldDerivation?
 
     public var id: String { key }
 
@@ -119,8 +124,12 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
         isSensitive: Bool = false,
         options: [ChoiceOption]? = nil,
         unit: String? = nil,
-        placeholder: String? = nil
+        placeholder: String? = nil,
+        defaultValue: FieldValue? = nil,
+        derivation: FieldDerivation? = nil
     ) {
+        self.defaultValue = defaultValue
+        self.derivation = derivation
         self.key = key
         self.label = label
         self.type = type
@@ -133,7 +142,7 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case key, label, type, role, isEssential, isSensitive, options, unit, placeholder
+        case key, label, type, role, isEssential, isSensitive, options, unit, placeholder, defaultValue, derivation
     }
 
     public init(from decoder: Decoder) throws {
@@ -148,6 +157,53 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
         options = try c.decodeIfPresent([ChoiceOption].self, forKey: .options)
         unit = try c.decodeIfPresent(String.self, forKey: .unit)
         placeholder = try c.decodeIfPresent(String.self, forKey: .placeholder)
+        defaultValue = try? c.decodeIfPresent(FieldValue.self, forKey: .defaultValue)
+        derivation = try? c.decodeIfPresent(FieldDerivation.self, forKey: .derivation)
+    }
+}
+
+/// How a field is worked out from others.
+///
+/// Encoding: `{"type": "addMonths", "date": "purchase.date", "months": "purchase.warrantyMonths"}`.
+public enum FieldDerivation: Hashable, Sendable, Codable {
+    /// A date field plus a number of months from another field (purchase date + warranty months).
+    case addMonths(dateField: String, monthsField: String)
+
+    private enum CodingKeys: String, CodingKey { case type, date, months }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        switch try c.decode(String.self, forKey: .type) {
+        case "addMonths":
+            self = .addMonths(dateField: try c.decode(String.self, forKey: .date), monthsField: try c.decode(String.self, forKey: .months))
+        default:
+            throw DecodingError.dataCorruptedError(forKey: .type, in: c, debugDescription: "Unknown derivation")
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .addMonths(let date, let months):
+            try c.encode("addMonths", forKey: .type)
+            try c.encode(date, forKey: .date)
+            try c.encode(months, forKey: .months)
+        }
+    }
+
+    /// The fields this derivation reads.
+    public var inputs: [String] {
+        switch self {
+        case .addMonths(let date, let months): return [date, months]
+        }
+    }
+
+    public func value(from values: FieldValues, calendar: Calendar = .current) -> FieldValue? {
+        switch self {
+        case .addMonths(let dateField, let monthsField):
+            guard let day = values[dateField]?.dateValue, let months = values[monthsField]?.numberValue, months > 0 else { return nil }
+            return .date(RecurrenceEngine.add(.months(Int(months)), to: day, calendar: calendar))
+        }
     }
 }
 

@@ -42,6 +42,7 @@ public struct TemplateStore {
                 byKey[template.key] = template
             }
         }
+        changed = try retireOldBuiltIns(byKey: &byKey) || changed
         var nextOrder = (existing.map(\.homeOrder).max() ?? -1) + 1
         for definition in catalog {
             if let installed = byKey[definition.key] {
@@ -56,6 +57,40 @@ public struct TemplateStore {
             }
         }
         if changed { try save() }
+        return changed
+    }
+
+    /// Moves assets off built-in templates an earlier catalog had: a replaced key
+    /// hands its assets (with renamed field keys) to its successor; a retired key
+    /// with assets becomes a custom category so nothing disappears.
+    private func retireOldBuiltIns(byKey: inout [String: CategoryTemplate]) throws -> Bool {
+        var changed = false
+        for (oldKey, newKey) in BuiltInTemplates.replacedKeys {
+            let assets = try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.templateKey == oldKey }))
+            for asset in assets {
+                var values = FieldValues()
+                for (key, value) in asset.values { values[BuiltInTemplates.replacedFieldKeys[key] ?? key] = value }
+                asset.templateKey = newKey
+                asset.valuesData = StoredJSON.encode(values)
+                changed = true
+            }
+            if let old = byKey.removeValue(forKey: oldKey), old.isBuiltIn {
+                context.delete(old)
+                changed = true
+            }
+        }
+        for key in BuiltInTemplates.retiredKeys {
+            guard let old = byKey[key], old.isBuiltIn else { continue }
+            let count = try context.fetchCount(FetchDescriptor<Asset>(predicate: #Predicate { $0.templateKey == key }))
+            if count > 0 {
+                old.isBuiltIn = false
+                old.builtInVersion = 0
+            } else {
+                context.delete(old)
+                byKey.removeValue(forKey: key)
+            }
+            changed = true
+        }
         return changed
     }
 

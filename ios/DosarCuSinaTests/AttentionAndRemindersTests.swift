@@ -179,7 +179,8 @@ struct ReminderProfileTests {
         #expect(try profile(BuiltInTemplates.vehicle, "vehicle.rca") == ReminderProfile(leadDays: [30, 7, 0], consequence: .legal))
         #expect(try profile(BuiltInTemplates.vehicle, "vehicle.itp") == ReminderProfile(leadDays: [30, 7], consequence: .legal))
         #expect(try profile(BuiltInTemplates.home, "home.buildingTax") == ReminderProfile(leadDays: [14, 1], consequence: .financial))
-        #expect(try profile(BuiltInTemplates.subscription, "subscription.trial") == ReminderProfile(leadDays: [2, 1], consequence: .financial))
+        #expect(try profile(BuiltInTemplates.subscription, "subscription.contractEnd") == ReminderProfile(leadDays: [30], consequence: .financial, followUpAfterLapse: false))
+        #expect(try profile(BuiltInTemplates.subscription, "subscription.renewal").leadDays == [14])
         let catVaccine = try profile(BuiltInTemplates.pet, "pet.vaccine")
         #expect(catVaccine.leadDays == [1] && catVaccine.graceDays > 0)
     }

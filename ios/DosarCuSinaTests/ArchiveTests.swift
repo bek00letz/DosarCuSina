@@ -263,8 +263,9 @@ struct ArchiveV2Tests {
         #expect(itp.attachments?.count == 1)
 
         let washer = assets[1]
-        #expect(washer.templateKey == BuiltInTemplates.Key.warranty)
-        #expect(washer.value("warranty.expiry") == .date(CalendarDay("2027-06-15")))
+        #expect(washer.templateKey == BuiltInTemplates.Key.purchase)
+        #expect(washer.value("purchase.warrantyUntil") == .date(CalendarDay("2027-06-15")))
+        #expect(washer.value("purchase.warrantyMonths") == .number(24))
         #expect(car.measurements?.first?.kind == .odometer)
     }
 }
