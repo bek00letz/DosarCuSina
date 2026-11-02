@@ -46,57 +46,6 @@ struct DSActionCard: View {
     }
 }
 
-// MARK: - Facts with an action
-
-/// A fact worth one tap: a policy number to copy, a phone to call.
-/// The action is a labelled button, never an icon alone.
-struct DSFactRow: View {
-    enum Action {
-        case copy
-        case call
-    }
-
-    let title: Text
-    let value: String
-    let action: Action
-
-    @State private var copied = 0
-    @Environment(\.openURL) private var openURL
-
-    var body: some View {
-        HStack(spacing: DS.Space.s) {
-            VStack(alignment: .leading, spacing: 2) {
-                title.dsFont(.footnote)
-                Text(verbatim: value)
-                    .dsFont(.headline, numeric: true)
-                    .textSelection(.enabled)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            Button(action: perform) {
-                Label(action == .copy ? "Copiază" : "Sună", systemImage: action == .copy ? "doc.on.doc" : "phone.fill")
-                    .font(.subheadline.weight(.semibold))
-                    .frame(minHeight: 44)
-            }
-            .buttonStyle(.bordered)
-            .buttonBorderShape(.capsule)
-        }
-        .sensoryFeedback(.success, trigger: copied)
-        .accessibilityElement(children: .combine)
-    }
-
-    private func perform() {
-        switch action {
-        case .copy:
-            UIPasteboard.general.string = value
-            copied += 1
-            AccessibilityNotification.Announcement(String(localized: "Copiat")).post()
-        case .call:
-            let digits = value.filter { $0.isNumber || $0 == "+" }
-            if let url = URL(string: "tel:\(digits)") { openURL(url) }
-        }
-    }
-}
-
 // MARK: - Steps
 
 /// A numbered step in written instructions ("1 Apasă Trimite").
@@ -138,8 +87,8 @@ struct DSStepRow: View {
             }
             DSCard {
                 VStack(alignment: .leading, spacing: DS.Space.s) {
-                    DSFactRow(title: Text(verbatim: "Număr poliță"), value: "RO/00/EX0001", action: .copy)
-                    DSFactRow(title: Text(verbatim: "Telefon pentru daune"), value: "0700 000 001", action: .call)
+                    DSActionValueRow(title: Text(verbatim: "Număr poliță"), value: "RO/00/EX0001", action: .copy)
+                    DSActionValueRow(title: Text(verbatim: "Telefon pentru daune"), value: "0700 000 001", action: .call)
                     HStack {
                         DSStarRating(rating: 4.5, style: .compact)
                         DSExampleBadge()

@@ -442,16 +442,16 @@ struct MoneyPocket: View {
                 PocketEmptyLine(text: String(localized: "Nicio sumă notată încă. Când notezi o lucrare cu preț, apare aici.", comment: "Empty Bani pocket."))
             }
             if let monthly {
-                DSValueRow(label: Text("Pe lună", comment: "Money row: monthly equivalent of a subscription."), value: Text(verbatim: monthly.formattedCompact()))
+                DSReadOnlyValueRow(label: Text("Pe lună", comment: "Money row: monthly equivalent of a subscription."), value: Text(verbatim: monthly.formattedCompact()))
             }
             if !summary.lastTwelveMonths.isEmpty {
-                DSValueRow(label: Text("În ultimul an", comment: "Money row: spent in the last 12 months."), value: Text(verbatim: summary.lastTwelveMonths.formatted()))
+                DSReadOnlyValueRow(label: Text("În ultimul an", comment: "Money row: spent in the last 12 months."), value: Text(verbatim: summary.lastTwelveMonths.formatted()))
             }
             if !summary.allTime.isEmpty {
-                DSValueRow(label: Text("De când îl ai", comment: "Money row: spent in total."), value: Text(verbatim: summary.allTime.formatted()))
+                DSReadOnlyValueRow(label: Text("De când îl ai", comment: "Money row: spent in total."), value: Text(verbatim: summary.allTime.formatted()))
             }
             if let price = purchase.price {
-                DSValueRow(label: Text("Preț de cumpărare", comment: "Money row: purchase price."), value: Text(verbatim: price.formattedCompact()))
+                DSReadOnlyValueRow(label: Text("Preț de cumpărare", comment: "Money row: purchase price."), value: Text(verbatim: price.formattedCompact()))
             }
         }
     }

@@ -377,38 +377,3 @@ struct DSSecureField: View {
         }
     }
 }
-
-// MARK: - Value row
-
-/// A label and a value on one card row, with the value in tabular digits.
-/// At accessibility sizes the value moves under the label.
-struct DSValueRow: View {
-    let label: Text
-    let value: Text
-    var systemImage: String?
-
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
-    var body: some View {
-        Group {
-            if dynamicTypeSize.isAccessibilitySize {
-                VStack(alignment: .leading, spacing: 2) {
-                    label.dsFont(.subheadline)
-                    value.dsFont(.headline, numeric: true)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            } else {
-                HStack(alignment: .firstTextBaseline, spacing: DS.Space.s) {
-                    label.dsFont(.body)
-                        .foregroundStyle(DS.Palette.secondaryLabel)
-                    Spacer(minLength: DS.Space.xs)
-                    value.dsFont(.headline, numeric: true)
-                        .multilineTextAlignment(.trailing)
-                }
-            }
-        }
-        .padding(.vertical, DS.Space.xs)
-        .frame(minHeight: 44)
-        .accessibilityElement(children: .combine)
-    }
-}

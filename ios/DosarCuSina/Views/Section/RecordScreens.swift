@@ -59,7 +59,7 @@ private struct HistoryEntryContent: View {
                     DSPocketCard(String(localized: "Ce s-a făcut", comment: "Header: the jobs and parts of a visit.")) {
                         ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                             if index > 0 { DSRowSeparator() }
-                            DSValueRow(
+                            DSReadOnlyValueRow(
                                 label: Text(verbatim: [item.name, item.partBrandOrCode].compactMap { $0 }.joined(separator: " · ")),
                                 value: Text(verbatim: item.totalCost?.formattedCompact() ?? "")
                             )

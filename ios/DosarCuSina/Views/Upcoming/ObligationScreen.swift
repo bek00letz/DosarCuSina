@@ -199,11 +199,11 @@ private struct ObligationPage: View {
                         }
                         if let policyNumber {
                             if last != nil { DS.Hairline() }
-                            DSFactRow(title: Text("Număr poliță"), value: policyNumber, action: .copy)
+                            DSActionValueRow(title: Text("Număr poliță"), value: policyNumber, action: .copy)
                         }
                         if let claimsPhone {
                             DS.Hairline()
-                            DSFactRow(title: Text("Telefon pentru daune"), value: claimsPhone, action: .call)
+                            DSActionValueRow(title: Text("Telefon pentru daune"), value: claimsPhone, action: .call)
                         }
                         if !documents.isEmpty {
                             DS.Hairline()
@@ -244,7 +244,7 @@ private struct ObligationPage: View {
                         DSStarRating(rating: provider.rating, style: .compact)
                     }
                     if let phone = provider.phone {
-                        DSFactRow(title: Text("Telefon \(provider.name)"), value: phone, action: .call)
+                        DSActionValueRow(title: Text("Telefon \(provider.name)"), value: phone, action: .call)
                     }
                 }
             }
