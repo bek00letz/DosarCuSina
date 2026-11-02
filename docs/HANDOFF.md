@@ -27,7 +27,7 @@ The template-engine overhaul (waves 1 and 2) is merged. The app builds for iOS 2
 
 ## In progress
 
-- **Identity-document templates and column-aware reading**, on a separate branch, not merged yet: per-document templates and cross-checks for the new and old identity card, the passport and the EU driving licence, and reading values that sit in columns. Don't start overlapping work in `Services/Capture/` without checking with the owner.
+- **Identity-document follow-ups**, on a separate branch: keeping the person's own edits when the back of a card is added (with a flag where the machine-readable zone disagrees), a driving licence test built on the official Romanian specimen layout, and saving a new household member together with their document in one save. Check with the owner before overlapping work in `Services/Capture/`.
 
 ## Known gaps
 
@@ -65,9 +65,16 @@ Newest first. Copy this template:
 
 Never write security findings, crash traces or local paths here. See [SECURITY.md](../SECURITY.md).
 
+### 2026-11-02 — owner (with Claude) — `claude/project-review-quality-2252bc`
+- **Did:** merged the identity-document templates (new and old identity card, passport, EU driving licence), column-aware reading with positions, date consistency rules, showing and filing identity data by person, the back-of-card prompt and the full-screen viewer; one duration wording for "how far away" ("2 luni și 3 săptămâni", "8 ani"); removed the unused developer key path and permission texts.
+- **Tests:** the whole suite passes on iPhone 17 (iOS 26.4). The privacy check passes across the branch.
+- **Left open:** the follow-ups under "In progress"; the health insurance card template (fields not confirmed against a specimen).
+- **Next:** merge this pull request, then the follow-ups.
+- **Decisions:** identity documents and durations entries in DECISIONS.md.
+
 ### 2026-11-02 — owner (with Claude) — documentation for collaborators
 - **Did:** rewrote README and SPEC to match the code (old spec in `docs/archive/`), added the standing rule, architecture map and agent routine to AGENTS, added CONTRIBUTING, SECURITY, this handoff and the decision log, the pull request and proposal templates, CODEOWNERS, and the versioned privacy check with its pull request workflow.
 - **Tests:** none needed (no app code changed). The privacy check was run against staged sample files and the branch's own history.
 - **Left open:** turning on branch protection and private vulnerability reporting on GitHub (owner).
-- **Next:** pick from "Known gaps"; the identity-document branch is the active capture work.
+- **Next:** pick from "Known gaps".
 - **Decisions:** added "Collaboration" (2026-11-02).
