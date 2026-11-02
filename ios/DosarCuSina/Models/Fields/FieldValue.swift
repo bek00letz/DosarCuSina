@@ -151,6 +151,18 @@ public struct FieldValues: Hashable, Sendable, Codable, Sequence {
                 if let value = field.defaultValue { result[field.key] = value }
             }
         }
+        // Values that no longer belong (a cazier's variant after the type became a
+        // passport) go. Twice, so a value that depended on a dropped one goes too.
+        for _ in 0..<2 {
+            for field in template.allFields {
+                if !field.applies(to: result) {
+                    result[field.key] = nil
+                } else if field.type == .choice, let key = result[field.key]?.textValue,
+                          let option = field.options?.option(for: key), !option.isOffered(for: result) {
+                    result[field.key] = nil
+                }
+            }
+        }
         for field in template.allFields {
             guard let derivation = field.derivation else { continue }
             let inputsChanged = previous.map { old in derivation.inputs.contains { old[$0] != result[$0] } } ?? true

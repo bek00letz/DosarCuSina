@@ -73,6 +73,9 @@ struct CaptureReview: Identifiable {
     var remindsToPay: Bool
     /// Already in the binder: the filed document it matches.
     var duplicateAttachmentID: UUID?
+    /// Filed under a household member, it becomes one of their documents whatever
+    /// its kind (a cazier, a bank card), not a loose paper on the person.
+    var filesAsPersonalDocument = false
     let suggested: Suggested
 
     /// The pages waiting in capture's store, when there are any to file.
@@ -263,6 +266,7 @@ struct CaptureReview: Identifiable {
         if previous.destination != before.destination { merged.destination = previous.destination }
         if previous.newAssetName != before.newAssetName { merged.newAssetName = previous.newAssetName }
         merged.remindsToPay = previous.remindsToPay
+        merged.filesAsPersonalDocument = previous.filesAsPersonalDocument
         return merged
     }
 }

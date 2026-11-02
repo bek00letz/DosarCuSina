@@ -63,6 +63,13 @@ enum ReminderWording {
             : String(localized: "Te anunț \(list) înainte.", comment: "Reminder sentence: leads before the due day")
     }
 
+    /// "Expiră pe 12 august 2031. Te anunț cu 3 luni și cu o lună înainte." The line
+    /// under an expiry date, shown before saving so the reminder is never a surprise.
+    static func expiryLine(_ day: CalendarDay, leadDays: [Int], today: CalendarDay, calendar: Calendar = .current) -> String {
+        let date = DueWording.date(day, today: today, calendar: calendar)
+        return String(localized: "Expiră pe \(date).") + " " + sentence(leadDays: leadDays)
+    }
+
     /// The follow-up line under the sentence, when it is on.
     static let followUp = String(localized: "Dacă nu e rezolvat, îți mai amintesc o dată a doua zi după termen.", comment: "Reminder sentence: follow-up after the due date")
 

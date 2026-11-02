@@ -83,6 +83,9 @@ private struct SectionContent: View {
         return ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.xl) {
                 SectionHero(asset: asset, definition: definition)
+                if asset.templateKey == BuiltInTemplates.Key.documents, (asset.attachments ?? []).isEmpty {
+                    DocumentPhotoPrompt(asset: asset, toast: $toast)
+                }
                 ForEach(definition.pockets, id: \.self) { pocket in
                     PocketView(pocket: pocket, asset: asset, definition: definition, toast: $toast, error: $error)
                 }
@@ -218,6 +221,64 @@ private struct PocketView: View {
             MoneyPocket(asset: asset, definition: definition)
         case .keyFacts:
             KeyFactsPocket(asset: asset, definition: definition, toast: $toast, error: $error)
+        }
+    }
+}
+
+/// On a document that has no picture yet: "Adaugă poza actului", front and
+/// centre. The photo goes through capture, which fills in what it reads.
+private struct DocumentPhotoPrompt: View {
+    let asset: Asset
+    @Binding var toast: DSToast?
+
+    @State private var isChoosingSource = false
+    @State private var source: CaptureSource?
+    @State private var flow: CaptureFlowInput?
+    @State private var errorMessage: String?
+
+    var body: some View {
+        DSCard {
+            VStack(alignment: .leading, spacing: DS.Space.s) {
+                HStack(alignment: .top, spacing: DS.Space.s) {
+                    DSIconWell(systemImage: "camera.fill", tint: DS.Palette.accent)
+                    VStack(alignment: .leading, spacing: DS.Space.xxs) {
+                        Text("Nu are încă poza actului", comment: "Prompt on a document page without a picture.")
+                            .dsFont(.headline)
+                        Text("Cu poza la îndemână nu mai cauți actul prin casă. Ce citesc din ea completez aici.", comment: "Why to add a picture of a document.")
+                            .dsFont(.subheadline)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                DSPrimaryButton("Adaugă poza actului", systemImage: "camera.fill") { isChoosingSource = true }
+                if let errorMessage {
+                    DSNotice(.error, title: "Nu s-a deschis", message: LocalizedStringKey(errorMessage))
+                }
+            }
+        }
+        .confirmationDialog(Text("Adaugă poza actului", comment: "Title of the photo source choice for a document."), isPresented: $isChoosingSource, titleVisibility: .visible) {
+            if CaptureSource.isCameraAvailable {
+                Button { source = .camera } label: { Text("Fotografiază actul", comment: "Photo source: camera.") }
+            }
+            Button { source = .photos } label: { Text("Alege din poze", comment: "Photo source: library.") }
+            Button { source = .files } label: { Text("Din Fișiere", comment: "Photo source: files.") }
+            Button(role: .cancel) {} label: { Text("Renunță", comment: "Cancels a choice.") }
+        }
+        .captureSourcePicker($source) { payload in
+            errorMessage = nil
+            flow = CaptureFlowInput(payload: payload, preferredAssetID: asset.id)
+        } onError: { error in
+            errorMessage = SaveFailure.message(for: error, formKept: false)
+        }
+        .sheet(item: $flow) { input in
+            CaptureFlowView(input: input) { result in
+                flow = nil
+                switch result {
+                case .filed(let message), .visitSaved(let message):
+                    toast = DSToast(title: message, actionTitle: nil, action: nil)
+                case .dismissed:
+                    break
+                }
+            }
         }
     }
 }

@@ -9,16 +9,19 @@ public struct ChoiceOption: Hashable, Sendable, Codable, Identifiable {
     /// Other ways the value was written before keys existed (older backups,
     /// other languages). Matched without case or diacritics.
     public var aliases: [String]
+    /// Offered only while another value matches, such as "Cazier fiscal" only for a cazier.
+    public var appliesWhen: BlueprintCondition?
 
     public var id: String { key }
 
-    public init(key: String, label: String, aliases: [String] = []) {
+    public init(key: String, label: String, aliases: [String] = [], appliesWhen: BlueprintCondition? = nil) {
         self.key = key
         self.label = label
         self.aliases = aliases
+        self.appliesWhen = appliesWhen
     }
 
-    private enum CodingKeys: String, CodingKey { case key, label, aliases }
+    private enum CodingKeys: String, CodingKey { case key, label, aliases, appliesWhen }
 
     public init(from decoder: Decoder) throws {
         // Older template definitions listed options as plain text.
@@ -30,7 +33,8 @@ public struct ChoiceOption: Hashable, Sendable, Codable, Identifiable {
         self.init(
             key: try c.decode(String.self, forKey: .key),
             label: try c.decode(String.self, forKey: .label),
-            aliases: try c.decodeIfPresent([String].self, forKey: .aliases) ?? []
+            aliases: try c.decodeIfPresent([String].self, forKey: .aliases) ?? [],
+            appliesWhen: try? c.decodeIfPresent(BlueprintCondition.self, forKey: .appliesWhen)
         )
     }
 
@@ -39,6 +43,12 @@ public struct ChoiceOption: Hashable, Sendable, Codable, Identifiable {
         try c.encode(key, forKey: .key)
         try c.encode(label, forKey: .label)
         if !aliases.isEmpty { try c.encode(aliases, forKey: .aliases) }
+        try c.encodeIfPresent(appliesWhen, forKey: .appliesWhen)
+    }
+
+    /// Whether the option is offered for these values.
+    public func isOffered(for values: FieldValues) -> Bool {
+        appliesWhen?.isMet(by: values) ?? true
     }
 
     /// Whether `text` names this option: its key, its label or an alias.
@@ -67,8 +77,8 @@ extension Array where Element == ChoiceOption {
 
 // MARK: - Built-in option sets
 
-private func option(_ key: String, _ label: String.LocalizationValue, _ aliases: [String] = []) -> ChoiceOption {
-    ChoiceOption(key: key, label: String(localized: label), aliases: aliases)
+private func option(_ key: String, _ label: String.LocalizationValue, _ aliases: [String] = [], when condition: BlueprintCondition? = nil) -> ChoiceOption {
+    ChoiceOption(key: key, label: String(localized: label), aliases: aliases, appliesWhen: condition)
 }
 
 public enum VehicleUse {
@@ -126,6 +136,80 @@ public enum DocumentType {
             option(criminalRecord, "Cazier", ["Cazier judiciar"]),
             option(other, "Alt document", ["Altul"]),
         ]
+    }
+
+    /// The document's name for a type: "Carte de identitate", "Pașaport".
+    public static func label(for type: String) -> String? {
+        options.option(for: type)?.label
+    }
+
+    // MARK: Variants
+
+    /// The kinds of a document type that really differ: what the paper is called,
+    /// how long it lasts or what it carries (only the electronic identity card has
+    /// PIN codes). Data, read by the template, the add flow and the naming.
+    public enum Variant {
+        public static let idCardElectronic = "documentVariant.idCard.electronic"
+        public static let idCardWithoutChip = "documentVariant.idCard.withoutChip"
+        public static let passportElectronic = "documentVariant.passport.electronic"
+        public static let passportTemporary = "documentVariant.passport.temporary"
+        public static let bankCardDebit = "documentVariant.bankCard.debit"
+        public static let bankCardCredit = "documentVariant.bankCard.credit"
+        public static let criminalRecordJudicial = "documentVariant.criminalRecord.judicial"
+        public static let criminalRecordFiscal = "documentVariant.criminalRecord.fiscal"
+        public static let criminalRecordDriving = "documentVariant.criminalRecord.driving"
+    }
+
+    /// One variant: its option (offered only for its type) and, when it differs
+    /// from the type's, the name the document takes.
+    public struct VariantSpec: Sendable {
+        public var type: String
+        public var option: ChoiceOption
+        public var documentName: String?
+    }
+
+    public static var variants: [VariantSpec] {
+        func variant(_ type: String, _ key: String, _ label: String.LocalizationValue, name: String.LocalizationValue? = nil) -> VariantSpec {
+            VariantSpec(type: type, option: option(key, label, when: BlueprintCondition(field: typeFieldKey, oneOf: [type])),
+                        documentName: name.map { String(localized: $0) })
+        }
+        return [
+            variant(idCard, Variant.idCardElectronic, "Electronică, cu cip (CEI)"),
+            variant(idCard, Variant.idCardWithoutChip, "Fără cip"),
+            variant(passport, Variant.passportElectronic, "Simplu electronic"),
+            variant(passport, Variant.passportTemporary, "Simplu temporar", name: "Pașaport temporar"),
+            variant(bankCard, Variant.bankCardDebit, "De debit", name: "Card de debit"),
+            variant(bankCard, Variant.bankCardCredit, "De credit", name: "Card de credit"),
+            variant(criminalRecord, Variant.criminalRecordJudicial, "Judiciar", name: "Cazier judiciar"),
+            variant(criminalRecord, Variant.criminalRecordFiscal, "Fiscal", name: "Cazier fiscal"),
+            variant(criminalRecord, Variant.criminalRecordDriving, "Auto", name: "Cazier auto"),
+        ]
+    }
+
+    /// The field that holds the type, which variants depend on.
+    public static let typeFieldKey = "document.type"
+    /// The field that holds the variant.
+    public static let variantFieldKey = "document.variant"
+
+    /// Every variant option, each offered only for its own type.
+    public static var variantOptions: [ChoiceOption] { variants.map(\.option) }
+
+    /// The types that have variants, so the variant question appears only for them.
+    public static var typesWithVariants: [String] {
+        variants.reduce(into: [String]()) { types, spec in if !types.contains(spec.type) { types.append(spec.type) } }
+    }
+
+    /// The variants of one type, in order.
+    public static func variants(of type: String) -> [ChoiceOption] {
+        variants.filter { $0.type == type }.map(\.option)
+    }
+
+    /// What the document is called: the variant's own name ("Cazier fiscal"), else the type's.
+    public static func documentName(type: String, variant: String?) -> String {
+        if let variant, let spec = variants.first(where: { $0.type == type && $0.option.key == variant }), let name = spec.documentName {
+            return name
+        }
+        return label(for: type) ?? String(localized: "Document")
     }
 }
 

@@ -1,0 +1,122 @@
+import Foundation
+import SwiftData
+import Testing
+@testable import DosarCuSina
+
+@MainActor
+@Suite("Adding a document for a person")
+struct PersonalDocumentTests {
+    private func setup() throws -> (ModelContext, Asset) {
+        let context = try makeContext()
+        let member = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.member))
+        let corina = try AssetActions(context: context, calendar: .bucharest).create(name: "Manole Corina", template: member, values: FieldValues())
+        return (context, corina)
+    }
+
+    @Test func onlyTypesWithRealVariantsHaveThem() throws {
+        #expect(DocumentType.variants(of: DocumentType.criminalRecord).map(\.label) == ["Judiciar", "Fiscal", "Auto"])
+        #expect(DocumentType.variants(of: DocumentType.bankCard).count == 2)
+        #expect(DocumentType.variants(of: DocumentType.idCard).count == 2)
+        #expect(DocumentType.variants(of: DocumentType.passport).count == 2)
+        #expect(DocumentType.variants(of: DocumentType.drivingLicence).isEmpty)
+        #expect(DocumentType.variants(of: DocumentType.other).isEmpty)
+        let field = try #require(BuiltInTemplates.documents.field(DocumentType.variantFieldKey))
+        let cazier = FieldValues([DocumentType.typeFieldKey: .text(DocumentType.criminalRecord)])
+        #expect(field.applies(to: cazier))
+        #expect(field.options(for: cazier).map(\.key) == DocumentType.variants(of: DocumentType.criminalRecord).map(\.key))
+        #expect(!field.applies(to: FieldValues([DocumentType.typeFieldKey: .text(DocumentType.drivingLicence)])))
+    }
+
+    @Test func theNameComesFromTheTypeVariantAndHolder() {
+        var draft = PersonalDocumentDraft()
+        #expect(draft.automaticName(holder: "Manole Corina") == nil)
+        draft.choose(type: DocumentType.criminalRecord)
+        #expect(draft.name(holder: "Manole Corina") == "Cazier – Manole Corina")
+        draft.variant = DocumentType.Variant.criminalRecordFiscal
+        #expect(draft.name(holder: "Manole Corina") == "Cazier fiscal – Manole Corina")
+        draft.choose(type: DocumentType.idCard)
+        #expect(draft.variant == nil, "A cazier's variant doesn't fit an identity card")
+        draft.variant = DocumentType.Variant.idCardElectronic
+        #expect(draft.name(holder: "Manole Corina") == "Carte de identitate – Manole Corina")
+        draft.customName = "Buletinul nou"
+        #expect(draft.name(holder: "Manole Corina") == "Buletinul nou")
+    }
+
+    @Test func savingFilesItUnderThePersonWithItsReminderInOneSave() throws {
+        let (context, corina) = try setup()
+        var draft = PersonalDocumentDraft()
+        draft.choose(type: DocumentType.passport)
+        draft.variant = DocumentType.Variant.passportTemporary
+        draft.expiry = CalendarDay(year: 2027, month: 6, day: 30)
+
+        let template = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.documents))
+        let actions = AssetActions(context: context, calendar: .bucharest, now: { noon("2026-11-02") })
+        let line = try #require(PersonalDocumentFiling.reminderLine(draft, template: template, actions: actions,
+                                                                     today: CalendarDay(year: 2026, month: 11, day: 2), calendar: .bucharest))
+        #expect(line.hasPrefix("Expiră pe 30 iunie 2027."))
+        #expect(line.contains("Te anunț"))
+
+        let document = try PersonalDocumentFiling.save(draft, holder: corina, context: context, calendar: .bucharest, now: { noon("2026-11-02") })
+        #expect(!context.hasChanges)
+        #expect(document.parent?.id == corina.id)
+        #expect(document.name == "Pașaport temporar – Manole Corina")
+        #expect(document.value(DocumentType.variantFieldKey)?.textValue == DocumentType.Variant.passportTemporary)
+        let renewal = try #require(document.activeObligations.first)
+        #expect(renewal.blueprintKey == "document.renew")
+        #expect(renewal.reminderLeadDays == [180, 60], "The passport's profile, not a separate step")
+    }
+
+    @Test func aDocumentWithoutAnExpiryHasNoDeadline() throws {
+        let (context, corina) = try setup()
+        var draft = PersonalDocumentDraft()
+        draft.choose(type: DocumentType.bankCard)
+        let document = try PersonalDocumentFiling.save(draft, holder: corina, context: context)
+        #expect(document.activeObligations.isEmpty)
+        #expect(document.name == "Card bancar – Manole Corina")
+    }
+
+    @Test func savingWithoutATypeIsRefused() throws {
+        let (context, corina) = try setup()
+        #expect(throws: PersonalDocumentError.missingType) { try PersonalDocumentFiling.save(PersonalDocumentDraft(), holder: corina, context: context) }
+    }
+
+    @Test func aVariantThatNoLongerFitsIsDroppedOnSave() throws {
+        let (context, corina) = try setup()
+        var draft = PersonalDocumentDraft()
+        draft.choose(type: DocumentType.criminalRecord)
+        draft.variant = DocumentType.Variant.criminalRecordDriving
+        let document = try PersonalDocumentFiling.save(draft, holder: corina, context: context)
+        var values = document.values
+        values[DocumentType.typeFieldKey] = .text(DocumentType.drivingLicence)
+        try AssetActions(context: context).update(document, name: document.name, values: values, notes: nil)
+        #expect(document.value(DocumentType.variantFieldKey) == nil)
+    }
+
+    @Test func aPhotoStartedFromAPersonBecomesOneOfTheirDocuments() async throws {
+        let (context, corina) = try setup()
+        let known = PersonalDocumentFiling.documentIDs(of: corina)
+        var review = CaptureReview(
+            result: CaptureResult(kind: .other, kindConfidence: 0.6, fields: [], suggestions: [], reminder: nil,
+                                  recognizedText: "", barcodes: [], documentID: nil, notices: []),
+            assets: [corina], context: context
+        )
+        review.destination = .asset(corina.id)
+        review.filesAsPersonalDocument = true
+        #expect(CaptureFiler.filedTemplateKey(for: review, destinationTemplateKey: BuiltInTemplates.Key.member) == BuiltInTemplates.Key.documents)
+
+        _ = try await CaptureFiler(context: context).save(review)
+        let document = try #require(PersonalDocumentFiling.newDocument(of: corina, since: known))
+        #expect(document.templateKey == BuiltInTemplates.Key.documents)
+        #expect(document.name == "Document – Manole Corina")
+    }
+
+    @Test func withoutTheFlagALoosePaperStaysOnThePerson() throws {
+        var review = CaptureReview(
+            result: CaptureResult(kind: .other, kindConfidence: 0.6, fields: [], suggestions: [], reminder: nil,
+                                  recognizedText: "", barcodes: [], documentID: nil, notices: []),
+            assets: [], context: try makeContext()
+        )
+        review.destination = .none
+        #expect(CaptureFiler.filedTemplateKey(for: review, destinationTemplateKey: BuiltInTemplates.Key.member) == BuiltInTemplates.Key.member)
+    }
+}

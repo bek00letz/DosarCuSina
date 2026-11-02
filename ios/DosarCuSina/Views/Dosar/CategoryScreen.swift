@@ -91,7 +91,7 @@ private struct CategoryContent: View {
                         }
                         if let holder = group.holder {
                             DSSecondaryButton("Adaugă un act", systemImage: "plus") {
-                                router.present(.addSection(AddSectionRequest(parentID: holder.id, templateKey: BuiltInTemplates.Key.documents)))
+                                router.present(.addPersonalDocument(holderID: holder.id))
                             }
                             .padding(.top, DS.Space.s)
                         }

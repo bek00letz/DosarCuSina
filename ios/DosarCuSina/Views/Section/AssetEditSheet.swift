@@ -56,7 +56,7 @@ struct AssetEditSheet: View {
                         if !section.fields.isEmpty {
                             VStack(alignment: .leading, spacing: DS.Space.m) {
                                 DSSectionHeader(verbatim: section.title)
-                                ForEach(section.fields) { field in
+                                ForEach(section.fields.filter { $0.applies(to: values) }) { field in
                                     FieldEditor(field: field, values: $values)
                                 }
                             }

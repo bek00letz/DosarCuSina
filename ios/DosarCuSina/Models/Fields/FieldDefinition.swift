@@ -103,8 +103,23 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
     public var defaultValue: FieldValue?
     /// Worked out from other fields while the person hasn't set it themselves.
     public var derivation: FieldDerivation?
+    /// Shown and kept only while another value matches (a variant only for its
+    /// document type). A value left behind when it stops applying is dropped on save.
+    public var appliesWhen: BlueprintCondition?
+    /// One short line under the field: what it is and where to find it.
+    public var footnote: String?
 
     public var id: String { key }
+
+    /// Whether the field belongs on an asset with these values.
+    public func applies(to values: FieldValues) -> Bool {
+        appliesWhen?.isMet(by: values) ?? true
+    }
+
+    /// The choice options offered for these values.
+    public func options(for values: FieldValues) -> [ChoiceOption] {
+        (options ?? []).filter { $0.isOffered(for: values) }
+    }
 
     /// The label to show for a stored choice key (or legacy text).
     public func label(forChoice key: String) -> String {
@@ -128,8 +143,12 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
         unit: String? = nil,
         placeholder: String? = nil,
         defaultValue: FieldValue? = nil,
-        derivation: FieldDerivation? = nil
+        derivation: FieldDerivation? = nil,
+        appliesWhen: BlueprintCondition? = nil,
+        footnote: String? = nil
     ) {
+        self.appliesWhen = appliesWhen
+        self.footnote = footnote
         self.defaultValue = defaultValue
         self.derivation = derivation
         self.key = key
@@ -144,7 +163,7 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case key, label, type, role, isEssential, isSensitive, options, unit, placeholder, defaultValue, derivation
+        case key, label, type, role, isEssential, isSensitive, options, unit, placeholder, defaultValue, derivation, appliesWhen, footnote
     }
 
     public init(from decoder: Decoder) throws {
@@ -161,6 +180,8 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
         placeholder = try c.decodeIfPresent(String.self, forKey: .placeholder)
         defaultValue = try? c.decodeIfPresent(FieldValue.self, forKey: .defaultValue)
         derivation = try? c.decodeIfPresent(FieldDerivation.self, forKey: .derivation)
+        appliesWhen = try? c.decodeIfPresent(BlueprintCondition.self, forKey: .appliesWhen)
+        footnote = try c.decodeIfPresent(String.self, forKey: .footnote)
     }
 }
 

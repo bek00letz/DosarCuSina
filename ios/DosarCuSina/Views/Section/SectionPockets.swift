@@ -204,7 +204,7 @@ struct DocumentsPocket: View {
             VStack(spacing: DS.Space.s) {
                 if asset.templateKey == BuiltInTemplates.Key.member {
                     DSSecondaryButton("Adaugă un act", systemImage: "plus") {
-                        router.present(.addSection(AddSectionRequest(parentID: asset.id, templateKey: BuiltInTemplates.Key.documents)))
+                        router.present(.addPersonalDocument(holderID: asset.id))
                     }
                 }
                 DSSecondaryButton("Scanează un document", systemImage: "doc.viewfinder") {

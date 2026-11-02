@@ -82,9 +82,10 @@ struct CaptureFiler {
             var descriptor = FetchDescriptor<Asset>(predicate: #Predicate { $0.id == id })
             descriptor.fetchLimit = 1
             guard let asset = try context.fetch(descriptor).first else { throw FilingError.missingSection }
-            if let documentsKey = Self.holderDocumentTemplateKey(for: review.kind, destinationTemplateKey: asset.templateKey) {
-                // A person: the document becomes one of their documents.
-                outcome.asset = try createSection(review, templateKey: documentsKey, name: review.title, parent: asset, templates: templates)
+            if let documentsKey = Self.holderDocumentTemplateKey(for: review, destinationTemplateKey: asset.templateKey) {
+                // A person: the document becomes one of their documents, named after them.
+                let name = review.kind.isIdentityDocument ? review.title : DocumentNaming.name(document: review.title, holder: asset.name)
+                outcome.asset = try createSection(review, templateKey: documentsKey, name: name, parent: asset, templates: templates)
                 break
             }
             if let template = templates[asset.templateKey] {
@@ -105,7 +106,7 @@ struct CaptureFiler {
         case .newAsset(let templateKey):
             let name = review.newAssetName.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !name.isEmpty else { throw FilingError.missingName }
-            if let documentsKey = Self.holderDocumentTemplateKey(for: review.kind, destinationTemplateKey: templateKey) {
+            if let documentsKey = Self.holderDocumentTemplateKey(for: review, destinationTemplateKey: templateKey) {
                 // A new person, named after the holder, with the document filed under them,
                 // in one save: a failure leaves neither behind.
                 guard let memberTemplate = templates[templateKey] else { throw FilingError.missingSection }
@@ -183,9 +184,17 @@ struct CaptureFiler {
         return CaptureMapping.templateKey(for: kind)
     }
 
+    /// The same for a review: a capture started from a household member's documents
+    /// (`filesAsPersonalDocument`) becomes one of their documents whatever its kind.
+    static func holderDocumentTemplateKey(for review: CaptureReview, destinationTemplateKey: String) -> String? {
+        if let key = holderDocumentTemplateKey(for: review.kind, destinationTemplateKey: destinationTemplateKey) { return key }
+        guard review.filesAsPersonalDocument, destinationTemplateKey == BuiltInTemplates.Key.member else { return nil }
+        return BuiltInTemplates.Key.documents
+    }
+
     /// The template the document's values land in, for the review's reminder preview.
     static func filedTemplateKey(for review: CaptureReview, destinationTemplateKey: String) -> String {
-        holderDocumentTemplateKey(for: review.kind, destinationTemplateKey: destinationTemplateKey) ?? destinationTemplateKey
+        holderDocumentTemplateKey(for: review, destinationTemplateKey: destinationTemplateKey) ?? destinationTemplateKey
     }
 
     /// A new section with the values read and the deadlines its template plans.

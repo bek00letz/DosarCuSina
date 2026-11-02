@@ -79,6 +79,11 @@ struct AppShell: View {
             SettingsScreen(initialSection: section)
         case .addVisit(let assetID):
             AddVisitFlow(assetID: assetID)
+        case .addPersonalDocument(let holderID):
+            AddPersonalDocumentFlow(holderID: holderID) { documentID in
+                // Land on the document's own page, over the person it was added for.
+                router.push(.asset(documentID))
+            }
         case .addSection(let request):
             AddSectionFlow(request: request) { asset in
                 // A new top-level section opens right away; a child shows up in its parent's pocket.

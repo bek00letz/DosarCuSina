@@ -9,6 +9,9 @@ struct CaptureFlowInput: Identifiable {
     var inboxItem: InboxItem?
     /// The section the person started from ("Scriu eu" › a section › "Un act").
     var preferredAssetID: UUID?
+    /// The person started from a household member's documents: whatever is read
+    /// becomes one of that member's documents, even when it isn't an identity card.
+    var filesAsPersonalDocument = false
 }
 
 /// What happened when the flow closed, for the toast on the screen underneath.
@@ -78,6 +81,7 @@ struct CaptureFlowView: View {
             let result = try await CaptureRunner.result(for: key, payload ?? input.payload, useCloudModel: useCloud, ownerID: input.preferredAssetID)
             var review = CaptureReview(result: result, assets: assets, context: context)
             if let preferred = input.preferredAssetID { review.destination = .asset(preferred) }
+            review.filesAsPersonalDocument = input.filesAsPersonalDocument
             if CaptureMapping.opensVisitFlow(result.kind), review.duplicateAttachmentID == nil, case .asset(let id) = review.destination {
                 phase = .visit(assetID: id, result: result)
             } else {

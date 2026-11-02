@@ -181,7 +181,10 @@ public enum BuiltInTemplates {
             isSensitiveByDefault: true,
             sections: [
                 FieldSection(key: "document.main", title: String(localized: "Document"), fields: [
-                    FieldDefinition(key: "document.type", label: String(localized: "Tip"), type: .choice, role: .subtitle, isEssential: true, options: DocumentType.options),
+                    FieldDefinition(key: DocumentType.typeFieldKey, label: String(localized: "Tip"), type: .choice, role: .subtitle, isEssential: true, options: DocumentType.options),
+                    // Only for types with real variants (cazier judiciar, fiscal or auto); the options follow the type.
+                    FieldDefinition(key: DocumentType.variantFieldKey, label: String(localized: "Varianta"), type: .choice, options: DocumentType.variantOptions,
+                                    appliesWhen: BlueprintCondition(field: DocumentType.typeFieldKey, oneOf: DocumentType.typesWithVariants)),
                     FieldDefinition(key: "document.number", label: String(localized: "Serie și număr"), type: .text, role: .documentNumber, isSensitive: true),
                     // The personal numeric code lives only here, in a category that asks for Face ID by default.
                     FieldDefinition(key: "document.personalNumber", label: String(localized: "CNP"), type: .text, isSensitive: true),

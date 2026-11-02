@@ -19,6 +19,7 @@ struct FieldEditor: View {
 
     private var title: LocalizedStringKey { LocalizedStringKey(field.label) }
     private var prompt: LocalizedStringKey? { field.placeholder.map { LocalizedStringKey($0) } }
+    private var footnote: LocalizedStringKey? { field.footnote.map { LocalizedStringKey($0) } }
 
     var body: some View {
         switch field.type {
@@ -29,6 +30,7 @@ struct FieldEditor: View {
                 kind: FieldEditor.textKind(for: field.type),
                 prompt: prompt,
                 isRequired: isRequired,
+                footnote: footnote,
                 validator: { FieldEditor.validation(FieldFormatter.validate($0, as: field.type)) },
                 formatter: { FieldFormatter.normalize($0, as: field.type) }
             )
@@ -47,7 +49,7 @@ struct FieldEditor: View {
         case .toggle:
             DSToggleField(title, isOn: boolBinding)
         case .choice:
-            DSChoiceField(title, selection: choiceBinding, options: (field.options ?? []).map(\.key), isRequired: isRequired) {
+            DSChoiceField(title, selection: choiceBinding, options: field.options(for: values).map(\.key), isRequired: isRequired) {
                 field.label(forChoice: $0)
             }
         case .multiChoice:
