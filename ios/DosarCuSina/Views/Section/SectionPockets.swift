@@ -436,13 +436,29 @@ struct MoneyPocket: View {
     var body: some View {
         let summary = MoneySummary.make(entries: (asset.history ?? []).map { ($0.occurredAt, $0.effectiveCost) }, now: Date())
         let purchase = AssetFacts.purchase(asset.values, template: definition)
-        let monthly = asset.templateKey == BuiltInTemplates.Key.subscription ? SubscriptionMath.monthlyEquivalent(asset.values) : nil
+        let isSubscription = asset.templateKey == BuiltInTemplates.Key.subscription
+        // A fixed price per month; a contract billed by use shows its bills instead.
+        let monthly = isSubscription ? SubscriptionMath.monthlyEquivalent(asset.values, usingLastBill: false) : nil
+        let trend = isSubscription ? BillHistory.trend(BillHistory.bills(of: asset), today: CalendarDay(Date())) : nil
         DSPocketCard(SectionPocket.money.title) {
-            if summary.allTime.isEmpty && purchase.price == nil && monthly == nil {
+            if summary.allTime.isEmpty && purchase.price == nil && monthly == nil && trend == nil {
                 PocketEmptyLine(text: String(localized: "Nicio sumă notată încă. Când notezi o lucrare cu preț, apare aici.", comment: "Empty Bani pocket."))
             }
             if let monthly {
                 DSReadOnlyValueRow(label: Text("Pe lună", comment: "Money row: monthly equivalent of a subscription."), value: Text(verbatim: monthly.formattedCompact()))
+            }
+            if let trend, let amount = trend.last.amount {
+                DSReadOnlyValueRow(label: Text("Ultima factură", comment: "Money row: a subscription's newest bill."), value: Text(verbatim: amount.formattedCompact()))
+                if let sentence = BillHistory.changeSentence(trend) {
+                    Text(verbatim: sentence)
+                        .dsFont(.subheadline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                if !trend.averageLastYear.isEmpty {
+                    DSReadOnlyValueRow(label: Text("În medie, pe factură", comment: "Money row: a subscription's average bill over the last year."),
+                                       value: Text(verbatim: MoneyTotals(trend.averageLastYear).formatted()))
+                }
             }
             if !summary.lastTwelveMonths.isEmpty {
                 DSReadOnlyValueRow(label: Text("În ultimul an", comment: "Money row: spent in the last 12 months."), value: Text(verbatim: summary.lastTwelveMonths.formatted()))

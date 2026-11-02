@@ -13,9 +13,14 @@ struct UpcomingRoot: View {
     @Environment(\.modelContext) private var context
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Query private var obligations: [Obligation]
+    /// Subscriptions, so a bill filed or a subscription changed refreshes the missing-bill notes.
+    /// (`BuiltInTemplates.Key.subscription`; a macro predicate takes the key as written.)
+    @Query(filter: #Predicate<Asset> { $0.templateKey == "subscription" }) private var subscriptions: [Asset]
 
     @State private var snapshots: [ObligationSnapshot] = []
     @State private var digest: AttentionDigest?
+    /// Calm notes with nothing due: a bill that hasn't come.
+    @State private var notes: [AttentionNote] = []
     @State private var today = CalendarDay(Date())
     @State private var expanded: Set<String> = []
     @State private var toast: DSToast?
@@ -61,6 +66,11 @@ struct UpcomingRoot: View {
             hasher.combine(obligation.snoozedUntil)
             hasher.combine(obligation.asset?.name)
         }
+        for subscription in subscriptions {
+            hasher.combine(subscription.id)
+            hasher.combine(subscription.updatedAt)
+            hasher.combine(subscription.history?.count)
+        }
         return hasher.finalize()
     }
 
@@ -68,6 +78,7 @@ struct UpcomingRoot: View {
         today = CalendarDay(Date())
         snapshots = (try? ObligationSnapshot.fetchAll(in: context)) ?? []
         digest = AttentionModel.digest(snapshots)
+        notes = AttentionModel.missingBills((try? BillWatchSnapshot.fetchAll(in: context)) ?? [])
     }
 
     // MARK: Content
@@ -92,6 +103,13 @@ struct UpcomingRoot: View {
                         ForEach(digest.soon) { group in soonGroup(group) }
                     } header: {
                         sectionHeader("Curând", subtitle: "În următoarele 30 de zile")
+                    }
+                }
+                if !notes.isEmpty {
+                    Section {
+                        ForEach(notes) { note in noteRow(note) }
+                    } header: {
+                        sectionHeader("Din timp", subtitle: "Nimic de plătit acum, doar de știut.")
                     }
                 }
                 if digest.later.count > 0 || digest.hiddenCount > 0 {
@@ -184,6 +202,19 @@ struct UpcomingRoot: View {
         }
         let count = String(localized: "\(group.entries.count) termene", comment: "How many deadlines a section has coming up")
         return String(localized: "\(count), primul pe \(first)", comment: "Deadlines in a section, and the date of the first")
+    }
+
+    /// A calm note: no badge, no alarm colour, opens the subscription.
+    private func noteRow(_ note: AttentionNote) -> some View {
+        NavigationLink(value: AppRoute.asset(note.assetId)) {
+            DSListRow(
+                title: Text(verbatim: note.title),
+                subtitle: Text(verbatim: note.detail),
+                systemImage: "envelope.open",
+                trailing: { EmptyView() }
+            )
+        }
+        .accessibilityHint(Text("Deschide abonamentul.", comment: "VoiceOver hint of a missing-bill note."))
     }
 
     private func laterRow(_ later: AttentionLaterSummary) -> some View {
