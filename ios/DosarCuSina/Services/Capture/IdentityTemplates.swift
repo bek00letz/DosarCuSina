@@ -91,7 +91,18 @@ enum IdentityTemplates {
     private static let cardSignals: [(String, Double)] = [
         ("carte de identitate", 4), ("carte electronica de identitate", 4), ("identity card", 3), ("buletin", 2), ("cnp", 1),
     ]
-    private static let issuedFromFourteen: [CaptureConsistency.Rule] = [
+    /// When an identity document's dates can fall. Every Romanian identity document is
+    /// valid for at most 10 years (the permanent card has no expiry date), so:
+    /// - an expiry is between 2000 (the first cards with a machine-readable zone) and
+    ///   15 years from today; anything else is a misread and is dropped;
+    /// - an issue date more than 15 years ago is possible only on a permanent card, so
+    ///   it is kept for a look rather than shown as fact.
+    /// These windows also decide the century of two-digit years (the zone, "12.03.18").
+    static let identityDates: [CaptureConsistency.Rule] = [
+        .within(.expiryDate, DateWindow.Rule(earliest: .day(year: 2000, month: 1, day: 1), latest: .yearsFromToday(15)), outside: .drop),
+        .within(.issueDate, DateWindow.Rule(earliest: .yearsFromToday(-15), latest: .today), outside: .verify),
+    ]
+    private static let issuedFromFourteen: [CaptureConsistency.Rule] = identityDates + [
         .atLeastYearsAfter(.issueDate, anchor: .birthDate, years: 14),
     ]
 
@@ -173,7 +184,7 @@ enum IdentityTemplates {
             "tip / type", "tip", "type", "cod tara / code", "cod tara", "code", "locul nasterii / place of birth", "locul nasterii",
             "place of birth", "semnatura titularului", "semnatura", "signature", "pasaport", "passport", "romania",
         ].map(LabelWording.words),
-        agreements: []
+        agreements: identityDates
     )
 
     /// The EU driving licence: numbered fields, the value after the number. On Romanian

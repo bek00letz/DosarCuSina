@@ -11,12 +11,15 @@ public struct SemanticInput: Sendable {
     public let firstPage: CGImage?
     public let kind: CaptureDocumentKind
     public let knownFields: [CaptureField]
+    /// "Today", for checking dates against their plausibility windows.
+    public let today: CaptureDay
 
-    public init(text: String, firstPage: CGImage?, kind: CaptureDocumentKind, knownFields: [CaptureField]) {
+    public init(text: String, firstPage: CGImage?, kind: CaptureDocumentKind, knownFields: [CaptureField], today: CaptureDay = CaptureDay(date: Date())) {
         self.text = text
         self.firstPage = firstPage
         self.kind = kind
         self.knownFields = knownFields
+        self.today = today
     }
 }
 

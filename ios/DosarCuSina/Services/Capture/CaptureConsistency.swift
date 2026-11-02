@@ -21,6 +21,17 @@ enum CaptureConsistency {
         case atLeastYearsAfter(CaptureFieldKey, anchor: CaptureFieldKey, years: Int)
         /// `field` is after `anchor`.
         case after(CaptureFieldKey, anchor: CaptureFieldKey)
+        /// `field` falls inside a window relative to today. Outside it, the value is
+        /// dropped or kept only for a look, as `outside` says.
+        case within(CaptureFieldKey, DateWindow.Rule, outside: Outcome)
+    }
+
+    /// What happens to a value outside its window.
+    enum Outcome: Hashable, Sendable {
+        /// Impossible for this document: never shown.
+        case drop
+        /// Unusual but possible: kept, marked "Verifică".
+        case verify
     }
 
     /// Rules for every kind of document.
@@ -29,8 +40,11 @@ enum CaptureConsistency {
         .differs(.startDate, from: .birthDate),
         .differs(.expiryDate, from: .birthDate),
         .notInFuture(.issueDate),
+        .after(.issueDate, anchor: .birthDate),
         .after(.expiryDate, anchor: .issueDate),
         .after(.expiryDate, anchor: .birthDate),
+        // A person alive today: born in the last 120 years, and not in the future.
+        .within(.birthDate, DateWindow.Rule(earliest: .yearsFromToday(-120), latest: .today), outside: .drop),
     ]
 
     /// The rules for a kind: the general ones and its templates' own.
@@ -38,13 +52,51 @@ enum CaptureConsistency {
         general + IdentityTemplates.agreements(for: kind)
     }
 
+    /// The window a date of `key` falls in on this kind of document, for deciding the
+    /// century of a two-digit year and for checking a model's answer. Keys without a
+    /// rule get a window around today (80 years back, 20 ahead).
+    static func window(for key: CaptureFieldKey, kind: CaptureDocumentKind, today: CaptureDay) -> DateWindow {
+        for rule in rules(for: kind) {
+            if case .within(key, let window, _) = rule, let resolved = window.resolved(today: today) { return resolved }
+        }
+        return DateWindow.around(today)
+    }
+
+    /// Whether a date passes its own window on this kind of document (no rule: it passes).
+    static func isPlausible(_ day: CaptureDay, for key: CaptureFieldKey, kind: CaptureDocumentKind, today: CaptureDay) -> Bool {
+        for rule in rules(for: kind) {
+            if case .within(key, let window, _) = rule, let resolved = window.resolved(today: today) { return resolved.contains(day) }
+        }
+        return true
+    }
+
+    /// Only the window rules, for one tier's answers before they are merged with the
+    /// others, so an impossible date never pushes out a possible one.
+    static func plausible(_ fields: [CaptureField], kind: CaptureDocumentKind, today: CaptureDay) -> [CaptureField] {
+        var result = fields
+        for rule in rules(for: kind) {
+            guard case .within(let key, let window, let outside) = rule, let resolved = window.resolved(today: today) else { continue }
+            result = result.compactMap { field in
+                guard field.key == key, let day = field.value.day, !resolved.contains(day) else { return field }
+                switch outside {
+                case .drop: return nil
+                case .verify:
+                    return CaptureField(key: field.key, value: field.value, confidence: min(field.confidence, disputed),
+                                        sourceText: field.sourceText, tier: field.tier)
+                }
+            }
+        }
+        return result
+    }
+
     /// The confidence a value kept despite a disagreement drops to, so the review marks it.
     static let disputed = 0.5
 
     /// The fields with every rule applied, and the keys that were dropped.
     static func resolve(_ fields: [CaptureField], kind: CaptureDocumentKind, today: CaptureDay) -> (fields: [CaptureField], dropped: [CaptureFieldKey]) {
-        var fields = preferPersonalNumberBirthDate(fields)
-        var dropped: [CaptureFieldKey] = []
+        let checked = plausible(fields, kind: kind, today: today)
+        var dropped: [CaptureFieldKey] = fields.map(\.key).filter { key in !checked.contains { $0.key == key } }
+        var fields = preferPersonalNumberBirthDate(checked)
         func field(_ key: CaptureFieldKey) -> CaptureField? { fields.first { $0.key == key } }
         func drop(_ key: CaptureFieldKey) {
             fields.removeAll { $0.key == key }
@@ -81,6 +133,9 @@ enum CaptureConsistency {
                    let start = anchor.value.day, day <= start {
                     settle(subject, anchor)
                 }
+            case .within:
+                // Applied first, by `plausible`.
+                continue
             }
         }
         if !dropped.isEmpty {
@@ -114,5 +169,68 @@ enum CaptureConsistency {
         var result = fields
         result[index] = derived
         return result
+    }
+}
+
+// MARK: - Date windows
+
+/// The days a date can plausibly fall on, inclusive.
+struct DateWindow: Hashable, Sendable {
+    let earliest: CaptureDay
+    let latest: CaptureDay
+
+    func contains(_ day: CaptureDay) -> Bool { earliest <= day && day <= latest }
+
+    /// A window relative to today, as the rules state it.
+    struct Rule: Hashable, Sendable {
+        let earliest: Bound
+        let latest: Bound
+
+        func resolved(today: CaptureDay) -> DateWindow? {
+            guard let from = earliest.day(today: today), let to = latest.day(today: today), from <= to else { return nil }
+            return DateWindow(earliest: from, latest: to)
+        }
+    }
+
+    enum Bound: Hashable, Sendable {
+        case today
+        /// Whole years before (negative) or after today.
+        case yearsFromToday(Int)
+        /// A fixed day, such as the first identity documents with a machine-readable zone.
+        case day(year: Int, month: Int, day: Int)
+
+        func day(today: CaptureDay) -> CaptureDay? {
+            switch self {
+            case .today: today
+            case .yearsFromToday(let years): today.addingMonths(years * 12)
+            case .day(let year, let month, let day): CaptureDay(year: year, month: month, day: day)
+            }
+        }
+    }
+
+    /// The fallback around the real today, for readers that aren't told the day.
+    static var aroundToday: DateWindow { around(CaptureDay(date: Date())) }
+
+    /// The fallback for dates no rule covers: 80 years back, 20 ahead.
+    static func around(_ today: CaptureDay) -> DateWindow {
+        DateWindow(earliest: today.addingMonths(-80 * 12) ?? today, latest: today.addingMonths(20 * 12) ?? today)
+    }
+
+    /// The day a two-digit year means: the candidate inside the window (the later one
+    /// when both fit), else the one nearest the window, so the rules can still judge it.
+    func resolve(twoDigitYear yy: Int, month: Int, day: Int) -> CaptureDay? {
+        guard (0...99).contains(yy) else { return nil }
+        let centuries = Set([earliest.year / 100, latest.year / 100, earliest.year / 100 - 1, latest.year / 100 + 1])
+        let candidates = centuries.sorted().compactMap { CaptureDay(year: $0 * 100 + yy, month: month, day: day) }
+        if let inside = candidates.filter(contains).max() { return inside }
+        return candidates.min { distance($0) < distance($1) }
+    }
+
+    /// Roughly how many days a day is from the window; 0 inside it.
+    private func distance(_ day: CaptureDay) -> Int {
+        func ordinal(_ value: CaptureDay) -> Int { value.year * 372 + value.month * 31 + value.day }
+        if day < earliest { return ordinal(earliest) - ordinal(day) }
+        if day > latest { return ordinal(day) - ordinal(latest) }
+        return 0
     }
 }

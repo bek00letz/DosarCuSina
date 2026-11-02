@@ -27,6 +27,27 @@ extension CaptureDocumentKind {
         }
     }
 
+    /// The fields a document of this kind usually carries, beyond identity documents
+    /// (whose fields come from their templates in `IdentityTemplates`). A cloud model is
+    /// asked for exactly these (`CloudSchema`).
+    var expectedKeys: [CaptureFieldKey] {
+        switch self {
+        case .passport, .identityCard, .drivingLicence:
+            IdentityTemplates.all.filter { $0.kind == self }.flatMap { $0.fields.map(\.key) }
+        case .vehicleRegistration: [.licensePlate, .vin, .make, .model, .firstRegistrationDate]
+        case .rcaPolicy: [.provider, .policyNumber, .startDate, .expiryDate, .total, .claimsPhone, .licensePlate, .vin, .bonusMalusClass]
+        case .insurancePolicy: [.provider, .policyNumber, .startDate, .expiryDate, .total, .claimsPhone, .licensePlate]
+        case .utilityInvoice: [.provider, .invoiceNumber, .issueDate, .dueDate, .total, .clientCode, .podCode, .clcCode, .meterIndex]
+        case .serviceInvoice: [.provider, .invoiceNumber, .issueDate, .total, .licensePlate, .vin, .odometer, .lineItems]
+        case .fiscalReceipt: [.retailer, .purchaseDate, .purchasePrice, .productName, .serialNumber, .lineItems]
+        case .warrantyCertificate: [.retailer, .productName, .serialNumber, .purchaseDate, .warrantyMonths, .warrantyUntil]
+        case .itpReport: [.provider, .licensePlate, .vin, .issueDate, .expiryDate, .odometer]
+        case .veterinaryRecord: [.provider, .petName, .microchip, .vaccineName, .issueDate, .nextDoseDate]
+        case .medicalResult: [.provider, .issueDate]
+        case .other: [.provider, .documentNumber, .invoiceNumber, .issueDate, .dueDate, .expiryDate, .total]
+        }
+    }
+
     /// Fields that, found by the pattern tiers with good confidence, make the
     /// on-device model unnecessary. Empty means the model always helps.
     var essentialKeys: [CaptureFieldKey] {
@@ -34,6 +55,15 @@ extension CaptureDocumentKind {
         case .passport, .identityCard, .drivingLicence: [.surname, .documentNumber, .expiryDate]
         default: []
         }
+    }
+
+    /// Whether a reading of this kind has none of the fields it should carry: for an
+    /// identity document, not one of its essentials, its personal number or birth date.
+    /// Such a reading is retried with another view of the photo.
+    func lacksExpectedFields(_ fields: [CaptureField]) -> Bool {
+        guard isIdentityDocument else { return false }
+        let expected = Set(essentialKeys + [.personalNumber, .birthDate, .givenNames])
+        return !fields.contains { expected.contains($0.key) }
     }
 
     /// Whether the patterns already read everything that matters on this document.

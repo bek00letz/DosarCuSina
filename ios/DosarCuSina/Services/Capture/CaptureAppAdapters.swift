@@ -1,8 +1,5 @@
 import CoreGraphics
 import Foundation
-#if canImport(UIKit)
-import UIKit
-#endif
 
 // Adapters that connect the capture pipeline to services that already exist in the app.
 // They live apart from the pure pipeline so the engine stays testable without them.
@@ -50,45 +47,3 @@ public struct UtilityInvoiceParser: CaptureSpecializedParser {
     }
 }
 
-// MARK: - Gemini
-
-#if canImport(UIKit)
-/// The person's own Gemini key, used only when they ask for it on a specific capture.
-/// The image leaves the device, so the engine never calls this on its own.
-public struct GeminiCaptureExtractor: CaptureSemanticExtracting {
-
-    public let tier: CaptureTier = .cloudModel
-    let resolver: any CaptureComponentResolving
-
-    public init(resolver: any CaptureComponentResolving = CatalogComponentResolver()) {
-        self.resolver = resolver
-    }
-
-    public func availability() -> CaptureModelAvailability {
-        KeychainManager.hasConfiguredAPIKey ? .available : .unavailable("noKey")
-    }
-
-    public func extract(_ input: SemanticInput) async throws -> SemanticExtraction {
-        guard let page = input.firstPage else {
-            return SemanticExtraction(kind: nil, fields: [])
-        }
-        let response = try await GeminiService.shared.analyzeDocument(image: UIImage(cgImage: page))
-        var answers = ModelAnswerMapper.Answers()
-        answers.issuer = response.merchant
-        answers.issueDate = response.issueDate
-        answers.totalAmount = response.totalAmount > 0 ? String(describing: response.totalAmount) : nil
-        answers.currency = response.currency
-        answers.documentNumber = response.invoiceNumber
-        // Gemini's single "due date" is an expiry for policies and documents, a payment date for bills.
-        switch input.kind {
-        case .rcaPolicy, .insurancePolicy, .passport, .identityCard, .drivingLicence, .itpReport:
-            answers.expiryDate = response.dueDate
-        default:
-            answers.dueDate = response.dueDate
-        }
-        // Grounding needs text; when local recognition found none, trust the image-based answer as is.
-        let source = input.text.isEmpty ? [response.merchant, response.invoiceNumber ?? "", String(describing: response.totalAmount)].joined(separator: " ") : input.text
-        return ModelAnswerMapper.fields(from: answers, sourceText: source, tier: tier, resolver: resolver)
-    }
-}
-#endif

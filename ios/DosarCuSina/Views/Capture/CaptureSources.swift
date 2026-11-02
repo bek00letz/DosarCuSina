@@ -144,6 +144,6 @@ enum CaptureRunner {
         jobs = jobs.filter { !$0.key.hasPrefix(inputID.uuidString) }
     }
 
-    /// Whether the person added their own Gemini key (Settings).
-    static var hasCloudKey: Bool { KeychainManager.hasConfiguredAPIKey }
+    /// Whether the person set up an AI provider with their own key (Settings).
+    static var hasCloudKey: Bool { AIProviderSettings.standard.isReady }
 }

@@ -36,7 +36,7 @@ public struct CaptureRequest: Sendable {
 public struct CaptureOptions: Sendable {
     /// Use Apple's on-device model when available. Private and offline, so on by default.
     public var useOnDeviceModel: Bool = true
-    /// Send the first page to the person's own Gemini key. Only when they ask for it on this capture.
+    /// Send the first page to the AI provider the person set up, with their own key. Only when they ask for it on this capture.
     public var useCloudModel: Bool = false
     /// Keep the pages in the document store.
     public var storeDocument: Bool = true
@@ -60,7 +60,7 @@ public struct CaptureOptions: Sendable {
 /// 1. **Deterministic**: the MRZ with check digits, barcodes and QR codes, known invoice formats, tax ID checksums.
 /// 2. **Heuristic**: Romanian dates, amounts, labels and identifiers in the recognized text.
 /// 3. **On-device model**: Apple's language model fills what patterns can't, when the device has it.
-/// 4. **Cloud model**: the person's Gemini key, only when they ask.
+/// 4. **Cloud model**: the AI provider the person set up with their own key, only when they ask.
 ///
 /// The result is a draft. Nothing is saved to the person's data until they confirm it;
 /// only the document's pages are kept, so they're never lost.
@@ -71,7 +71,7 @@ public final class CaptureEngine: Sendable {
 
     let analyzer: CaptureAnalyzer
     let recognizer: any CaptureRecognizing
-    let normalizer: DocumentImageNormalizer?
+    let normalizer: (any CapturePagePreparing)?
     let onDeviceModel: (any CaptureSemanticExtracting)?
     let cloudModel: (any CaptureSemanticExtracting)?
     let store: CaptureDocumentStore?
@@ -79,7 +79,7 @@ public final class CaptureEngine: Sendable {
     public init(
         analyzer: CaptureAnalyzer,
         recognizer: any CaptureRecognizing,
-        normalizer: DocumentImageNormalizer? = DocumentImageNormalizer(),
+        normalizer: (any CapturePagePreparing)? = DocumentImageNormalizer(),
         onDeviceModel: (any CaptureSemanticExtracting)?,
         cloudModel: (any CaptureSemanticExtracting)?,
         store: CaptureDocumentStore?
@@ -94,16 +94,11 @@ public final class CaptureEngine: Sendable {
 
     /// The engine as the app and the Share Extension use it.
     public static func standard(componentResolver: any CaptureComponentResolving = CatalogComponentResolver()) -> CaptureEngine {
-        #if canImport(UIKit)
-        let cloud: (any CaptureSemanticExtracting)? = GeminiCaptureExtractor(resolver: componentResolver)
-        #else
-        let cloud: (any CaptureSemanticExtracting)? = nil
-        #endif
-        return CaptureEngine(
+        CaptureEngine(
             analyzer: CaptureAnalyzer(specializedParsers: [UtilityInvoiceParser()], componentResolver: componentResolver),
             recognizer: VisionCaptureRecognizer(),
             onDeviceModel: OnDeviceModelExtractor(resolver: componentResolver),
-            cloudModel: cloud,
+            cloudModel: CloudCaptureExtractor(resolver: componentResolver),
             store: CaptureDocumentStore.shared()
         )
     }
@@ -115,7 +110,10 @@ public final class CaptureEngine: Sendable {
         let options = request.options
 
         // 1. Pages and text.
+        /// The pages as taken: what is kept and shown.
         var pages: [CGImage] = []
+        /// The pages as read: found, flattened, turned upright and enlarged.
+        var readImages: [CGImage] = []
         /// Recognized lines with their positions, page by page. Empty for pasted text and a PDF's text layer.
         var recognized: [[RecognizedLine]] = []
         var text = ""
@@ -129,9 +127,10 @@ public final class CaptureEngine: Sendable {
             for item in images {
                 var page = item.image
                 if let normalizer, !item.isPerspectiveCorrected {
-                    page = await normalizer.normalize(item.image)
+                    page = await normalizer.prepare(item.image)
                 }
-                pages.append(page)
+                pages.append(item.image)
+                readImages.append(page)
                 let read = try await recognizer.recognize(page)
                 recognized.append(read.items)
                 text += (text.isEmpty ? "" : "\n") + read.text
@@ -169,12 +168,47 @@ public final class CaptureEngine: Sendable {
         CaptureLog.engine.info("Recognized \(text.count) characters and \(barcodes.count) codes")
 
         // 2. Deterministic and heuristic tiers.
-        let analysis = recognized.isEmpty
+        var analysis = recognized.isEmpty
             ? analyzer.analyze(text: text, barcodes: barcodes, referenceDate: options.referenceDate)
             : analyzer.analyze(pages: recognized, barcodes: barcodes, referenceDate: options.referenceDate)
+
+        // One retry for photos that read poorly: each page's best other variant (a quarter
+        // turn, or the photo uncorrected), read once more; the better reading is kept.
+        if !readImages.isEmpty, let normalizer, Self.readsPoorly(analysis) {
+            var retried = recognized
+            var retriedImages = readImages
+            var retriedBarcodes: [CaptureBarcode] = []
+            var changed = false
+            for index in readImages.indices {
+                guard let variant = await normalizer.retryVariant(of: readImages[index], original: pages[index]),
+                      let read = try? await recognizer.recognize(variant) else { continue }
+                retried[index] = read.items
+                retriedImages[index] = variant
+                retriedBarcodes += read.barcodes
+                changed = true
+            }
+            if changed {
+                let second = analyzer.analyze(pages: retried, barcodes: barcodes + retriedBarcodes, referenceDate: options.referenceDate)
+                CaptureLog.engine.info("Retried a poor read: \(Self.readingScore(analysis)) → \(Self.readingScore(second))")
+                if Self.readingScore(second) > Self.readingScore(analysis) {
+                    analysis = second
+                    recognized = retried
+                    readImages = retriedImages
+                    barcodes += retriedBarcodes
+                    text = retried.map { $0.map(\.text).joined(separator: "\n") }.joined(separator: "\n")
+                }
+            }
+        }
         notices += analysis.notices
-        var fields = analysis.fields
+        // Still poor after the retry: say so calmly, once.
+        if Self.readsPoorly(analysis), !notices.contains(.littleTextRecognized) {
+            notices.append(.littleTextRecognized)
+        }
+        let today = CaptureDay(date: options.referenceDate)
         var kind = analysis.kind
+        // Each tier's dates are checked against their windows before merging, so an
+        // impossible date (a passport "expiring in 1906") never pushes out a possible one.
+        var fields = CaptureConsistency.plausible(analysis.fields, kind: kind, today: today)
         var kindConfidence = analysis.kindConfidence
 
         // 3. On-device model, unless the patterns already read everything that matters.
@@ -184,8 +218,8 @@ public final class CaptureEngine: Sendable {
             switch model.availability() {
             case .available:
                 do {
-                    let extraction = try await model.extract(SemanticInput(text: text, firstPage: pages.first ?? pdfThumbnail, kind: kind, knownFields: fields))
-                    fields = FieldMerger.merge(fields, with: extraction.fields)
+                    let extraction = try await model.extract(SemanticInput(text: text, firstPage: readImages.first ?? pdfThumbnail, kind: kind, knownFields: fields, today: today))
+                    fields = FieldMerger.merge(fields, with: CaptureConsistency.plausible(extraction.fields, kind: kind, today: today))
                     if let modelKind = extraction.kind, modelKind != kind, kindConfidence < 0.6 {
                         kind = modelKind
                         kindConfidence = 0.65
@@ -204,10 +238,12 @@ public final class CaptureEngine: Sendable {
             switch model.availability() {
             case .available:
                 do {
-                    let extraction = try await model.extract(SemanticInput(text: text, firstPage: pages.first ?? pdfThumbnail, kind: kind, knownFields: fields))
-                    fields = FieldMerger.merge(fields, with: extraction.fields)
+                    let extraction = try await model.extract(SemanticInput(text: text, firstPage: readImages.first ?? pdfThumbnail, kind: kind, knownFields: fields, today: today))
+                    fields = FieldMerger.merge(fields, with: CaptureConsistency.plausible(extraction.fields, kind: kind, today: today))
                 } catch {
-                    notices.append(.cloudModelFailed(reason: "requestFailed"))
+                    let reason = AIProviderError(transport: error).code
+                    CaptureLog.engine.error("Cloud model failed: \(reason, privacy: .public)")
+                    notices.append(.cloudModelFailed(reason: reason))
                 }
             case .unavailable(let reason):
                 notices.append(.cloudModelFailed(reason: reason))
@@ -216,7 +252,7 @@ public final class CaptureEngine: Sendable {
 
         // Dates checked against each other, then only fields that belong on this kind
         // of document, whichever tier found them.
-        fields = CaptureConsistency.resolve(fields, kind: kind, today: CaptureDay(date: options.referenceDate)).fields
+        fields = CaptureConsistency.resolve(fields, kind: kind, today: today).fields
         fields = Self.derived(fields).filter { kind.allows($0.key) }
 
         // A card read from its front alone: the back carries the zone that confirms it.
@@ -254,6 +290,20 @@ public final class CaptureEngine: Sendable {
             documentID: documentID,
             notices: notices
         )
+    }
+
+    /// Whether a reading is too poor to trust: little text, or an identity document
+    /// without any of the fields every such document carries.
+    static func readsPoorly(_ analysis: CaptureAnalyzer.Analysis) -> Bool {
+        if analysis.notices.contains(.littleTextRecognized) { return true }
+        return analysis.kind.isIdentityDocument && analysis.kind.lacksExpectedFields(analysis.fields)
+    }
+
+    /// How good a reading is, for keeping the better of two: fields first, then text.
+    static func readingScore(_ analysis: CaptureAnalyzer.Analysis) -> Int {
+        let checked = analysis.fields.filter { $0.tier == .deterministic }.count
+        let letters = analysis.text.joinedOriginal.filter { $0.isLetter || $0.isNumber }.count
+        return checked * 1_000 + analysis.fields.count * 100 + min(letters, 99)
     }
 
     /// Values computed from other fields after all tiers have run.

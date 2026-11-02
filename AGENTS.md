@@ -99,13 +99,16 @@ A field of type `secret` (an electronic identity card's PIN codes) follows one s
 | :--- | :--- | :--- |
 | Read a photo, scan, PDF or pasted text | `CaptureEngine` (`CaptureEngine.standard()`), the one way in for the app and the share extension | [Services/Capture/CaptureEngine.swift](ios/DosarCuSina/Services/Capture/CaptureEngine.swift) |
 | Tiers 1–2: deterministic and heuristic | `CaptureAnalyzer` with `MRZParser`, `RomanianFieldExtractor`, `IdentityCardExtractor`, `DocumentClassifier` and the invoice parsers | [Services/Capture/](ios/DosarCuSina/Services/Capture/) |
-| Tiers 3–4: on-device model, optional Gemini, and grounding their answers in the text | `OnDeviceModelExtractor`, `GeminiCaptureExtractor` | [CaptureLanguageModels.swift](ios/DosarCuSina/Services/Capture/CaptureLanguageModels.swift), [CaptureAppAdapters.swift](ios/DosarCuSina/Services/Capture/CaptureAppAdapters.swift) |
+| Tiers 3–4: on-device model, the person's optional AI provider, and grounding their answers | `OnDeviceModelExtractor`, `CloudCaptureExtractor` (with `CloudSchema` and `CloudAnswerMapper`) | [CaptureLanguageModels.swift](ios/DosarCuSina/Services/Capture/CaptureLanguageModels.swift), [CloudCaptureExtractor.swift](ios/DosarCuSina/Services/Capture/CloudCaptureExtractor.swift) |
+| Prepare a photo for reading (find the card, flatten, turn, enlarge; the retry view) | `DocumentImageNormalizer` | [CaptureVision.swift](ios/DosarCuSina/Services/Capture/CaptureVision.swift) |
+| When a document's dates can fall, and the century of two-digit years | `.within` rules in `CaptureConsistency`, identity windows in `IdentityTemplates` | [CaptureConsistency.swift](ios/DosarCuSina/Services/Capture/CaptureConsistency.swift) |
+| AI providers: configuration, keys, one adapter per provider | `AIProviderSettings`, `AIProvider.adapter`, `AIClient` | [Services/AI/](ios/DosarCuSina/Services/AI/) |
 | Which fields a kind of document may carry, after every tier | `CaptureFieldRules` | [Services/Capture/CaptureFieldRules.swift](ios/DosarCuSina/Services/Capture/CaptureFieldRules.swift) |
 | Read label–value layouts (ID cards, licences, certificates) | `LabelledLayout`, with a label table per document kind | [Services/Capture/LabelledLayout.swift](ios/DosarCuSina/Services/Capture/LabelledLayout.swift) |
 | Save a reviewed capture | `CaptureFiler`, which only calls the actions above | [Views/Capture/Filing/CaptureFiler.swift](ios/DosarCuSina/Views/Capture/Filing/CaptureFiler.swift) |
 | Things shared from other apps | `ShareInbox` (written by the extension), `IntakeInbox` (read by the app) | [ios/Shared/ShareInbox.swift](ios/Shared/ShareInbox.swift), [Views/Capture/IntakeInbox.swift](ios/DosarCuSina/Views/Capture/IntakeInbox.swift) |
 
-A new document layout is a new label table, not new reading code. A new field rule goes in `CaptureFieldRules`, never inside one tier.
+A new document layout is a new label table, not new reading code. A new field rule goes in `CaptureFieldRules`, never inside one tier. A new AI provider is a new adapter; grounding and checks stay shared.
 
 ## Navigation
 
@@ -163,7 +166,7 @@ The standing rule above is the bar. These are the SwiftUI specifics.
 
 ## 4.1 No secrets, no personal data
 - **No credentials in the repository:** no API keys, tokens, passwords, keystores, certificates or provisioning profiles.
-- **Bring your own key:** the optional Gemini key is entered by the person in Settings and kept in the iOS Keychain (`kSecClassGenericPassword`, `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`, so it never leaves the device). Developers use the same Settings screen with their own key; there is no build-time key. Never commit a key, even a test one.
+- **Bring your own key:** the optional AI keys (one per provider: Google Gemini, OpenAI, Anthropic Claude, an OpenAI-compatible service) are entered by the person in Settings and kept in the iOS Keychain (`kSecClassGenericPassword`, `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`, so they never leave the device). They are sent only in request headers, never in a URL. Developers use the same Settings screen with their own key; there is no build-time key. Never commit a key, even a test one.
 - **Placeholder data only** (see "How agents work here", item 8). This covers names, emails, phone numbers, plates, VINs, CNPs, document numbers and addresses.
 - **Local first, no central database:** data lives in SwiftData on the device. Sync, when it comes, uses the person's own private iCloud. There are no servers of ours, no accounts, no analytics and no telemetry. Don't add any SDK that phones home.
 
@@ -183,8 +186,8 @@ The standing rule above is the bar. These are the SwiftUI specifics.
 
 To meet the App Store Review Guidelines (2.1 and 3.1.1):
 - **Free:** the app is free to download and use, with no paywalls.
-- **Complete without a key:** everything works offline and without a Gemini key: unlimited sections, deadlines and reminders, on-device reading of documents, widgets, backups.
-- **Optional Gemini:** a key the person brings improves reading of a document they choose. The UI never blocks or nags anyone who doesn't add one.
+- **Complete without a key:** everything works offline and without an AI key: unlimited sections, deadlines and reminders, on-device reading of documents, widgets, backups.
+- **Optional AI provider:** a key the person brings (Gemini, OpenAI, Claude or a compatible service) improves reading of a document they choose. The UI never blocks or nags anyone who doesn't add one.
 
 # 7. Commits and workflow
 

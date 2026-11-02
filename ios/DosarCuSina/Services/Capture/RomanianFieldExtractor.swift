@@ -20,6 +20,8 @@ public enum RomanianFieldExtractor {
         ("iulie", 7), ("august", 8), ("septembrie", 9), ("octombrie", 10), ("noiembrie", 11), ("decembrie", 12),
         ("ian", 1), ("feb", 2), ("mar", 3), ("apr", 4), ("iun", 6), ("iul", 7), ("aug", 8),
         ("sept", 9), ("sep", 9), ("oct", 10), ("noi", 11), ("nov", 11), ("dec", 12),
+        // English, as on bilingual passports ("12 IUN/JUN 31").
+        ("jan", 1), ("may", 5), ("jun", 6), ("jul", 7),
     ]
 
     private static let romanMonths: [String: Int] = [
@@ -27,8 +29,10 @@ public enum RomanianFieldExtractor {
         "vii": 7, "viii": 8, "ix": 9, "x": 10, "xi": 11, "xii": 12,
     ]
 
-    /// All dates on one folded line, in reading order.
-    static func dates(inLine line: String, index: Int) -> [DateMatch] {
+    /// All dates on one folded line, in reading order. A two-digit year takes the century
+    /// that puts the date inside `window` (see `DateWindow.resolve`), so "12.03.18" on an
+    /// identity card is 2018 and a birth year "52" is 1952.
+    static func dates(inLine line: String, index: Int, window: DateWindow = .aroundToday) -> [DateMatch] {
         var found: [DateMatch] = []
 
         for match in TextPattern.matches(#"(?<!\d)(\d{4})-(\d{2})-(\d{2})(?!\d)"#, in: line) {
@@ -42,8 +46,8 @@ public enum RomanianFieldExtractor {
             guard !found.contains(where: { $0.range.overlaps(match.range) }),
                   let d = match[1].flatMap(Int.init), let m = match[2].flatMap(Int.init),
                   let rawYear = match[3], let y = Int(rawYear) else { continue }
-            let year = rawYear.count == 2 ? 2000 + y : y
-            if let day = CaptureDay(year: year, month: m, day: d) {
+            let resolved = rawYear.count == 2 ? window.resolve(twoDigitYear: y, month: m, day: d) : CaptureDay(year: y, month: m, day: d)
+            if let day = resolved {
                 found.append(DateMatch(day: day, line: index, range: match.range))
             }
         }
@@ -73,22 +77,33 @@ public enum RomanianFieldExtractor {
             }
         }
 
+        // Passports print the month in two languages and may shorten the year: "12 IUN/JUN 31".
+        for match in TextPattern.matches(#"(?<!\d)(\d{1,2})\s+("# + names + #")\s*/\s*(?:"# + names + #")\.?\s+(\d{4}|\d{2})(?!\d)"#, in: line) {
+            guard !found.contains(where: { $0.range.overlaps(match.range) }),
+                  let d = match[1].flatMap(Int.init),
+                  let m = match[2].flatMap({ name in monthNames.first { $0.0 == name.lowercased() }?.1 }),
+                  let rawYear = match[3], let y = Int(rawYear),
+                  let day = rawYear.count == 2 ? window.resolve(twoDigitYear: y, month: m, day: d) : CaptureDay(year: y, month: m, day: d)
+            else { continue }
+            found.append(DateMatch(day: day, line: index, range: match.range))
+        }
+
         return found.sorted { $0.range.lowerBound < $1.range.lowerBound }
     }
 
-    static func allDates(in text: CaptureText) -> [DateMatch] {
-        text.folded.enumerated().flatMap { dates(inLine: $0.element, index: $0.offset) }
+    static func allDates(in text: CaptureText, window: DateWindow = .aroundToday) -> [DateMatch] {
+        text.folded.enumerated().flatMap { dates(inLine: $0.element, index: $0.offset, window: window) }
     }
 
     /// The first date after one of the labels: on the label's line (after the label), or on the next line.
-    static func labelledDate(_ labels: [String], in text: CaptureText) -> (day: CaptureDay, source: String)? {
+    static func labelledDate(_ labels: [String], in text: CaptureText, window: DateWindow = .aroundToday) -> (day: CaptureDay, source: String)? {
         for index in text.lines(containing: labels) {
             let line = text.folded[index]
             let labelEnd = labels.compactMap { line.range(of: $0)?.upperBound }.min() ?? line.startIndex
-            if let match = dates(inLine: line, index: index).first(where: { $0.range.lowerBound >= labelEnd }) {
+            if let match = dates(inLine: line, index: index, window: window).first(where: { $0.range.lowerBound >= labelEnd }) {
                 return (match.day, text.original[index])
             }
-            if index + 1 < text.folded.count, let match = dates(inLine: text.folded[index + 1], index: index + 1).first {
+            if index + 1 < text.folded.count, let match = dates(inLine: text.folded[index + 1], index: index + 1, window: window).first {
                 return (match.day, text.original[index] + " " + text.original[index + 1])
             }
         }
@@ -96,12 +111,12 @@ public enum RomanianFieldExtractor {
     }
 
     /// A validity period on one line ("valabilă de la 01.11.2026 până la 31.10.2027", "12.03.21-12.03.2031").
-    static func validityPeriod(in text: CaptureText) -> (start: CaptureDay, end: CaptureDay, source: String)? {
+    static func validityPeriod(in text: CaptureText, window: DateWindow = .aroundToday) -> (start: CaptureDay, end: CaptureDay, source: String)? {
         let labels = ["valabil", "perioada", "valabilitate", "validity", "de la", "asigurare"]
         for index in text.lines(containing: labels) {
-            var found = dates(inLine: text.folded[index], index: index)
+            var found = dates(inLine: text.folded[index], index: index, window: window)
             if found.count < 2, index + 1 < text.folded.count {
-                found += dates(inLine: text.folded[index + 1], index: index + 1)
+                found += dates(inLine: text.folded[index + 1], index: index + 1, window: window)
             }
             if found.count >= 2, found[0].day < found[1].day {
                 return (found[0].day, found[1].day, text.original[index])

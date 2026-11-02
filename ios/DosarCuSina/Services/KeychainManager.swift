@@ -1,71 +1,59 @@
 import Foundation
 import Security
 
-/// Secure Keychain Manager for storing sensitive user credentials (e.g., Gemini API key)
-/// Ensures zero plain-text storage and zero leaks in public repositories.
+/// The person's own AI keys, one per provider, kept only in this phone's Keychain
+/// (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`: never synced, never in a backup
+/// restored to another phone). Keys come only from Settings: one path for everyone,
+/// developers included, and never from the repository.
 public enum KeychainManager {
     private static let serviceName = "com.dosarcusina.app"
-    private static let geminiAccountKey = "gemini_api_key"
-    
-    // MARK: - Save API Key
+
     @discardableResult
-    public static func saveGeminiAPIKey(_ key: String) -> Bool {
-        guard let data = key.data(using: .utf8) else { return false }
-        
-        // Remove existing item if present
-        deleteGeminiAPIKey()
-        
+    public static func saveAPIKey(_ key: String, for provider: AIProvider) -> Bool {
+        let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, let data = trimmed.data(using: .utf8) else { return false }
+        deleteAPIKey(for: provider)
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: serviceName,
-            kSecAttrAccount as String: geminiAccountKey,
+            kSecAttrAccount as String: provider.keychainAccount,
             kSecValueData as String: data,
-            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
         ]
-        
-        let status = SecItemAdd(query as CFDictionary, nil)
-        return status == errSecSuccess
+        return SecItemAdd(query as CFDictionary, nil) == errSecSuccess
     }
-    
-    // MARK: - Retrieve API Key
-    public static func getGeminiAPIKey() -> String? {
-        // 1. Check user-provided key in Keychain first (Priority 1)
+
+    public static func apiKey(for provider: AIProvider) -> String? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: serviceName,
-            kSecAttrAccount as String: geminiAccountKey,
+            kSecAttrAccount as String: provider.keychainAccount,
             kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
+            kSecMatchLimit as String: kSecMatchLimitOne,
         ]
-        
-        var dataTypeRef: AnyObject?
-        let status = SecItemCopyMatching(query as CFDictionary, &dataTypeRef)
-        
-        if status == errSecSuccess, let data = dataTypeRef as? Data, let key = String(data: data, encoding: .utf8) {
-            let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !trimmed.isEmpty {
-                return trimmed
-            }
-        }
-        
-        // The key comes only from Settings: one path for everyone, developers included.
-        return nil
+        var result: AnyObject?
+        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
+              let data = result as? Data, let key = String(data: data, encoding: .utf8) else { return nil }
+        let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
-    
-    // MARK: - Delete API Key
+
     @discardableResult
-    public static func deleteGeminiAPIKey() -> Bool {
+    public static func deleteAPIKey(for provider: AIProvider) -> Bool {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: serviceName,
-            kSecAttrAccount as String: geminiAccountKey
+            kSecAttrAccount as String: provider.keychainAccount,
         ]
         let status = SecItemDelete(query as CFDictionary)
         return status == errSecSuccess || status == errSecItemNotFound
     }
-    
-    // MARK: - Check Status
-    public static var hasConfiguredAPIKey: Bool {
-        getGeminiAPIKey() != nil
+
+    /// The Keychain as `AIProviderSettings` uses it.
+    public struct Keys: AIKeyStoring {
+        public init() {}
+        public func key(for provider: AIProvider) -> String? { KeychainManager.apiKey(for: provider) }
+        public func save(_ key: String, for provider: AIProvider) -> Bool { KeychainManager.saveAPIKey(key, for: provider) }
+        public func delete(for provider: AIProvider) { KeychainManager.deleteAPIKey(for: provider) }
     }
 }

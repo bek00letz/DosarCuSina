@@ -21,7 +21,7 @@ Anything that could expose a household's data or let someone act on it, for exam
 - data leaving the device when the person didn't ask for it;
 - a way past the app lock or a section lock, or locked content showing anywhere it shouldn't (box lines, search, widgets, notifications, the app switcher);
 - problems in reading `.dosar` archives, shared files or scanned documents;
-- the optional Gemini key being exposed or sent anywhere other than Google;
+- an optional AI key being exposed or sent anywhere other than the provider it belongs to;
 - a secret, an absolute local path or real personal data committed to this repository.
 
 Not sure whether it counts? Report it privately anyway.
@@ -35,7 +35,7 @@ Not sure whether it counts? Report it privately anyway.
 
 Use placeholder data only in your report. Never include a real person's documents, numbers or files.
 
-If you committed a secret by accident, revoke or rotate it first (for a Gemini key, delete it in Google AI Studio and make a new one), then report it privately.
+If you committed a secret by accident, revoke or rotate it first (for an AI key, delete it in the provider's console and make a new one), then report it privately.
 
 ## What to expect
 
