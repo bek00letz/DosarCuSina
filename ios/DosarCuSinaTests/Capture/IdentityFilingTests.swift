@@ -134,7 +134,7 @@ struct IdentityFilingTests {
         let routing = CaptureRouter.route(kind: .identityCard, kindConfidence: 0.98, fields: withZone)
         let after = CaptureReview(result: CaptureResult(kind: .identityCard, kindConfidence: 0.98, fields: withZone, suggestions: routing.suggestions,
                                                         reminder: routing.reminder, recognizedText: "", barcodes: [], documentID: nil, notices: []),
-                                  assets: [], context: context).carryingEdits(from: before)
+                                  assets: [], context: context).carryingEdits(from: before, assets: [])
         #expect(after.value(.nationality) == .text("Română"))
         #expect(after.value(.documentNumber) == .text("SP1236344"))
         #expect(after.title == "Buletinul Corinei")
@@ -157,20 +157,21 @@ struct IdentityFilingTests {
         let routing = CaptureRouter.route(kind: .identityCard, kindConfidence: 0.98, fields: withZone)
         var after = CaptureReview(result: CaptureResult(kind: .identityCard, kindConfidence: 0.98, fields: withZone, suggestions: routing.suggestions,
                                                         reminder: routing.reminder, recognizedText: "", barcodes: [], documentID: nil, notices: []),
-                                  assets: [], context: context).carryingEdits(from: before)
+                                  assets: [], context: context).carryingEdits(from: before, assets: [])
 
         let edited = try #require(after.fields.first { $0.key == .documentNumber })
         #expect(edited.value == .text("SP1236345"), "The person's value stays")
-        #expect(edited.documentValue == .text("SP1236343"), "The zone's value is offered beside it")
-        #expect(after.fields.first { $0.key == .surname }?.documentValue == nil, "Nothing to offer when they agree")
+        let zoneValue = CaptureAlternative(CaptureValue.text("SP1236343"), source: .checked(machineReadable: true))
+        #expect(edited.alternatives == [zoneValue], "The zone's value is offered beside it")
+        #expect(after.fields.first { $0.key == .surname }?.alternatives.isEmpty == true, "Nothing to offer when they agree")
         // A field they didn't touch takes the zone's value.
         #expect(after.value(.expiryDate) == .day(CaptureDay(year: 2035, month: 4, day: 7)!))
-        #expect(after.fields.first { $0.key == .expiryDate }?.documentValue == nil)
+        #expect(after.fields.first { $0.key == .expiryDate }?.alternatives.isEmpty == true)
 
         let index = try #require(after.fields.firstIndex { $0.key == .documentNumber })
-        after.fields[index].useDocumentValue()
+        after.fields[index].use(zoneValue)
         #expect(after.value(.documentNumber) == .text("SP1236343"))
-        #expect(after.fields[index].documentValue == nil)
+        #expect(after.fields[index].alternatives.isEmpty, "Their own typed value isn't offered back")
         #expect(!after.fields[index].needsCheck)
     }
 }

@@ -42,10 +42,14 @@ struct CaptureFlowView: View {
 
     @State private var phase: Phase = .reading
     @State private var attempt = 0
+    /// The person's AI provider read this document, so later readings (the back of a card) use it too.
     @State private var useCloud = false
     /// The pages read, once the person added more (the back of a card).
     @State private var payload: CaptureRequest.Payload?
-    @State private var isReadingAgain = false
+    /// What is being read again while the review stays on screen.
+    @State private var rereading: CaptureReread?
+    /// The newest reading, which the review merges with what the person changed.
+    @State private var rereadResult: CaptureResult?
     @State private var readAgainError: String?
 
     var body: some View {
@@ -78,8 +82,8 @@ struct CaptureFlowView: View {
     private func read() async {
         phase = .reading
         do {
-            let key = "\(input.id.uuidString)-\(attempt)-\(useCloud)"
-            let result = try await CaptureRunner.result(for: key, payload ?? input.payload, useCloudModel: useCloud, ownerID: input.preferredAssetID)
+            let key = "\(input.id.uuidString)-\(attempt)"
+            let result = try await CaptureRunner.result(for: key, payload ?? input.payload, useCloudModel: false, ownerID: input.preferredAssetID)
             var review = CaptureReview(result: result, assets: assets, context: context)
             if let preferred = input.preferredAssetID { review.destination = .asset(preferred) }
             review.filesAsPersonalDocument = input.filesAsPersonalDocument
@@ -99,21 +103,19 @@ struct CaptureFlowView: View {
     }
 
     private func reviewView(_ review: CaptureReview) -> some View {
-        let addPages: ((CaptureReview, CaptureRequest.Payload) -> Void)? = canAddPages ? { current, added in self.addPages(current, added) } : nil
+        let addPages: ((CaptureRequest.Payload) -> Void)? = canAddPages ? { added in self.addPages(added) } : nil
+        // One review for the whole flow: each new reading is merged into it, keeping
+        // everything the person changed (`CaptureReview.carryingEdits`).
         return CaptureReviewView(
             review: review,
             assets: assets,
-            onReadWithCloud: {
-                useCloud = true
-                attempt += 1
-            },
+            onReadWithCloud: { readAgain(.cloud, payload ?? input.payload) },
             onAddPages: addPages,
-            isReadingAgain: isReadingAgain,
+            rereading: rereading,
+            rereadResult: rereadResult,
             readAgainError: readAgainError,
             onClose: { finish($0) }
         )
-        // A new read is a new review; the person's edits are carried into it.
-        .id(review.id)
     }
 
     /// Photos and scans can take more pages; a PDF or pasted text can't.
@@ -122,25 +124,31 @@ struct CaptureFlowView: View {
         return false
     }
 
-    /// Reads the document again with the added pages as one document. The review stays
-    /// on screen while it reads, and the new one keeps everything the person changed.
-    private func addPages(_ current: CaptureReview, _ added: CaptureRequest.Payload) {
+    /// Reads the document again with the added pages as one document.
+    private func addPages(_ added: CaptureRequest.Payload) {
         guard case .images(let existing) = payload ?? input.payload, case .images(let more) = added, !more.isEmpty else { return }
-        let combined = CaptureRequest.Payload.images(existing + more)
+        readAgain(.pages, .images(existing + more))
+    }
+
+    /// The one way to read a document again while its review stays on screen: with added
+    /// pages, or by the person's AI provider (on a tap, or by itself after a weak reading).
+    /// The review merges the new reading with what the person changed meanwhile.
+    private func readAgain(_ what: CaptureReread, _ newPayload: CaptureRequest.Payload) {
+        guard rereading == nil else { return }
+        let cloud = useCloud || what == .cloud
         readAgainError = nil
-        withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { isReadingAgain = true }
+        withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { rereading = what }
         Task {
             do {
-                let result = try await CaptureRunner.run(combined, useCloudModel: useCloud, ownerID: input.preferredAssetID)
-                payload = combined
-                let review = CaptureReview(result: result, assets: assets, context: context).carryingEdits(from: current)
-                isReadingAgain = false
-                phase = .review(review)
+                let result = try await CaptureRunner.run(newPayload, useCloudModel: cloud, ownerID: input.preferredAssetID)
+                payload = newPayload
+                useCloud = cloud
+                rereadResult = result
             } catch {
-                CaptureLog.engine.error("Reading added pages failed: \((error as NSError).domain, privacy: .public) \((error as NSError).code)")
-                isReadingAgain = false
+                CaptureLog.engine.error("Reading again failed: \((error as NSError).domain, privacy: .public) \((error as NSError).code)")
                 readAgainError = String(localized: "Încearcă o poză mai clară, cu actul întins și fără umbre.")
             }
+            withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { rereading = nil }
         }
     }
 

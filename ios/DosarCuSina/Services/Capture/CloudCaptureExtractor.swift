@@ -3,9 +3,11 @@ import Foundation
 import ImageIO
 import UniformTypeIdentifiers
 
-// Tier 4: the person's own AI provider, only when they tap to read a document with it.
-// Whoever answers, the request is built from the same field definitions the app reads
-// with, and the answer goes through the same grounding and checks.
+// Tier 4: the person's own AI provider, when they tap to read a document with it or,
+// when they turned it on, by itself after a weak phone reading. It is a full second
+// opinion: it names the kind and reads every field from the page. Whoever answers, the
+// request is built from the same field definitions the app reads with, the answer goes
+// through the same checks, and `ReadingArbiter` ranks it against the phone's reading.
 
 // MARK: - What is asked
 
@@ -38,23 +40,36 @@ struct CloudField: Hashable, Sendable {
     let description: String
 }
 
-/// The fields a document of one kind is asked for, as a JSON Schema every provider
-/// accepts: every property listed and required, `null` where nothing is printed.
+/// What a provider is asked, as a JSON Schema every provider accepts: what kind of
+/// document it is, then every field any kind of document carries, every property listed
+/// and required, `null` where nothing is printed. The phone's guess only orders the fields
+/// and is the kind assumed when an answer names none; it is never told to the provider,
+/// so a wrong guess can't steer its reading.
 struct CloudSchema: Sendable {
+    /// The phone's guess.
     let kind: CaptureDocumentKind
     let fields: [CloudField]
 
     static let zoneName = "machineReadableZone"
+    static let kindName = "documentKind"
 
     init(kind: CaptureDocumentKind) {
         self.kind = kind
-        if kind.isIdentityDocument {
-            fields = Self.identityFields(kind)
-        } else {
-            fields = kind.expectedKeys.map { key in
-                let format = Self.format(of: key)
-                return CloudField(name: key.rawValue, key: key, format: format, description: Self.description(of: key, format: format))
+        var fields: [CloudField] = []
+        for each in [kind] + CaptureDocumentKind.allCases.filter({ $0 != kind }) {
+            for field in Self.fields(of: each) where !fields.contains(where: { $0.name == field.name }) {
+                fields.append(field)
             }
+        }
+        self.fields = fields
+    }
+
+    /// The fields one kind of document carries.
+    private static func fields(of kind: CaptureDocumentKind) -> [CloudField] {
+        if kind.isIdentityDocument { return identityFields(kind) }
+        return kind.expectedKeys.map { key in
+            let format = format(of: key)
+            return CloudField(name: key.rawValue, key: key, format: format, description: description(of: key, format: format))
         }
     }
 
@@ -170,14 +185,21 @@ struct CloudSchema: Sendable {
 
     /// The fields as a JSON Schema: strict, so every provider answers in one shape.
     var json: JSONValue {
-        var properties: [String: JSONValue] = [:]
+        let kinds = CaptureDocumentKind.allCases.map { "\($0.rawValue) (\(Self.documentName($0)))" }.joined(separator: ", ")
+        var properties: [String: JSONValue] = [
+            Self.kindName: [
+                "type": "string",
+                "enum": .array(CaptureDocumentKind.allCases.map { .string($0.rawValue) }),
+                "description": .string("What the document is: \(kinds)."),
+            ],
+        ]
         for field in fields {
             properties[field.name] = Self.schema(for: field)
         }
         return .object([
             "type": "object",
             "properties": .object(properties),
-            "required": .array(fields.map { .string($0.name) }),
+            "required": .array([.string(Self.kindName)] + fields.map { .string($0.name) }),
             "additionalProperties": false,
         ])
     }
@@ -212,9 +234,10 @@ struct CloudSchema: Sendable {
     /// What every provider is told.
     var instructions: String {
         var text = """
-        You read a photo of a Romanian \(Self.documentName(kind)). Fill in each field with exactly what is printed on it. \
-        Use null for a field that isn't printed or that you can't read with confidence; never guess or complete a value. \
-        Write dates as YYYY-MM-DD. Copy names, numbers and codes character for character.
+        You read a photo of a Romanian household document. First decide what kind of document it is, from the page itself, \
+        and give it as documentKind. Then fill in each field with exactly what is printed on it; fields that don't belong \
+        on this kind of document are null. Use null for a field that isn't printed or that you can't read with confidence; \
+        never guess or complete a value. Write dates as YYYY-MM-DD. Copy names, numbers and codes character for character.
         """
         if fields.contains(where: { $0.format == .machineReadableZone }) {
             text += " Copy the machine-readable zone line by line, exactly, with every < character."
@@ -244,29 +267,38 @@ struct CloudSchema: Sendable {
 
 // MARK: - What is kept
 
-/// Turns a provider's answer into fields, the same way whoever answered.
+/// Turns a provider's answer into its kind and fields, the same way whoever answered.
 ///
-/// A value is kept as read when it is grounded in the text recognized on the phone, or
-/// passes its own check: a CNP's control digit, a VIN's check digit, the machine-readable
-/// zone's check digits, a date inside its plausibility window. Anything else is only a
-/// candidate, marked "Verifică", and never outranks a checked value.
+/// Every value it read is kept: what it is worth decides only whether the review marks
+/// it. A value passing its own check (a CNP's control digit, a VIN's check digit, the
+/// machine-readable zone's check digits) is certain; one that agrees with what the phone
+/// recognised, or a date inside its plausibility window, needs no look; anything else is
+/// marked "Verifică". Being missing from the phone's text is never a reason to drop or
+/// demote it: the phone may have misread. `ReadingArbiter` ranks it against the phone's.
 enum CloudAnswerMapper {
 
     /// A value proven by its own check digits.
     static let checked = 0.95
-    /// A value found in the recognized text, or a date inside its window.
+    /// A value the phone's recognised text agrees with, or a date inside its window.
     static let grounded = 0.8
-    /// A value only the model saw.
+    /// A value only the model saw: kept, marked "Verifică".
     static let candidate = 0.5
+
+    /// The kind the answer names, if it names one.
+    static func kind(from answer: JSONValue) -> CaptureDocumentKind? {
+        answer[CloudSchema.kindName]?.string.flatMap(CaptureDocumentKind.init(rawValue:))
+    }
 
     static func fields(from answer: JSONValue, schema: CloudSchema, recognizedText: String, today: CaptureDay,
                        resolver: any CaptureComponentResolving) -> [CaptureField] {
+        // Dates and the holder follow the kind the provider saw.
+        let kind = Self.kind(from: answer) ?? schema.kind
         let compactText = ModelAnswerMapper.compact(recognizedText)
         let printed = CaptureText(recognizedText)
         var fields: [CaptureField] = []
-        func add(_ key: CaptureFieldKey, _ value: CaptureValue, _ confidence: Double) {
+        func add(_ key: CaptureFieldKey, _ value: CaptureValue, _ confidence: Double, source: String? = nil) {
             guard !fields.contains(where: { $0.key == key }) else { return }
-            fields.append(CaptureField(key: key, value: value, confidence: confidence, sourceText: nil, tier: .cloudModel))
+            fields.append(CaptureField(key: key, value: value, confidence: confidence, sourceText: source, tier: .cloudModel))
         }
         func groundedText(_ value: String) -> Double {
             let compact = ModelAnswerMapper.compact(value)
@@ -279,7 +311,7 @@ enum CloudAnswerMapper {
            let mrz = MRZParser.parse(text: lines.joined(separator: "\n"), referenceDate: today.date() ?? Date()),
            mrz.allChecksValid {
             for field in CaptureAnalyzer.machineReadableFields(mrz) {
-                add(field.key, field.value, field.confidence)
+                add(field.key, field.value, field.confidence, source: CaptureField.machineReadableSource)
             }
         }
 
@@ -290,13 +322,13 @@ enum CloudAnswerMapper {
                 continue
             case .date:
                 guard let text = raw.string, let day = ModelAnswerMapper.isoDay(text) else { continue }
-                let window = CaptureConsistency.window(for: key, kind: schema.kind, today: today)
+                let window = CaptureConsistency.window(for: key, kind: kind, today: today)
                 let inText = RomanianFieldExtractor.allDates(in: printed, window: window).contains { $0.day == day }
-                let hasWindow = CaptureConsistency.rules(for: schema.kind).contains { rule in
+                let hasWindow = CaptureConsistency.rules(for: kind).contains { rule in
                     if case .within(key, _, _) = rule { return true }
                     return false
                 }
-                let inWindow = hasWindow && CaptureConsistency.isPlausible(day, for: key, kind: schema.kind, today: today)
+                let inWindow = hasWindow && CaptureConsistency.isPlausible(day, for: key, kind: kind, today: today)
                 add(key, .day(day), inText || inWindow ? grounded : candidate)
             case .personalNumber:
                 guard let digits = raw.string?.filter(\.isNumber), digits.count == 13 else { continue }
@@ -341,7 +373,7 @@ enum CloudAnswerMapper {
         }
 
         // The holder, as the identity readers name them.
-        if schema.kind.isIdentityDocument, !fields.contains(where: { $0.key == .holderName }),
+        if kind.isIdentityDocument, !fields.contains(where: { $0.key == .holderName }),
            let surname = fields.first(where: { $0.key == .surname }) {
             let given = fields.first { $0.key == .givenNames }
             let full = [given?.value.text, surname.value.text].compactMap { $0 }.joined(separator: " ")
@@ -354,7 +386,8 @@ enum CloudAnswerMapper {
 // MARK: - The tier
 
 /// Reads the first page with the provider the person set up in Settings, with their own
-/// key. The page leaves the phone, so the engine calls this only when the person asks.
+/// key. The page leaves the phone, so the engine calls this only when the person asks, or
+/// when they turned on the automatic reading and the phone's reading is weak.
 public struct CloudCaptureExtractor: CaptureSemanticExtracting {
 
     public let tier: CaptureTier = .cloudModel
@@ -382,7 +415,7 @@ public struct CloudCaptureExtractor: CaptureSemanticExtracting {
         CaptureLog.engine.info("Reading with \(config.provider.rawValue, privacy: .public), \(schema.fields.count) fields")
         let answer = try await client.read(CloudReadingRequest(instructions: schema.instructions, schema: schema.json, jpeg: jpeg), config: config)
         let fields = CloudAnswerMapper.fields(from: answer, schema: schema, recognizedText: input.text, today: input.today, resolver: resolver)
-        return SemanticExtraction(kind: nil, fields: fields)
+        return SemanticExtraction(kind: CloudAnswerMapper.kind(from: answer), fields: fields)
     }
 
     /// The page as a JPEG, no larger than `sentLongEdge`.

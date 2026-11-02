@@ -109,8 +109,8 @@ struct DocumentCamera: UIViewControllerRepresentable {
     }
 }
 
-/// Runs capture on what was picked. On-device only, unless the person asks
-/// for their own Gemini key on this document.
+/// Runs capture on what was picked. On-device only, unless the person's AI provider
+/// reads this document too (on a tap, or by itself after a weak reading when they chose so).
 enum CaptureRunner {
     static func run(_ payload: CaptureRequest.Payload, useCloudModel: Bool = false, ownerID: UUID? = nil) async throws -> CaptureResult {
         let engine = CaptureEngine.standard()

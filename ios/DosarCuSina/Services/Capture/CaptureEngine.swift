@@ -60,7 +60,9 @@ public struct CaptureOptions: Sendable {
 /// 1. **Deterministic**: the MRZ with check digits, barcodes and QR codes, known invoice formats, tax ID checksums.
 /// 2. **Heuristic**: Romanian dates, amounts, labels and identifiers in the recognized text.
 /// 3. **On-device model**: Apple's language model fills what patterns can't, when the device has it.
-/// 4. **Cloud model**: the AI provider the person set up with their own key, only when they ask.
+/// 4. **Cloud model**: the AI provider the person set up with their own key, when they ask (or
+///    automatically after a weak reading, when they chose so): a full second opinion that
+///    `ReadingArbiter` ranks against the phone's reading by evidence.
 ///
 /// The result is a draft. Nothing is saved to the person's data until they confirm it;
 /// only the document's pages are kept, so they're never lost.
@@ -205,25 +207,35 @@ public final class CaptureEngine: Sendable {
             notices.append(.littleTextRecognized)
         }
         let today = CaptureDay(date: options.referenceDate)
-        var kind = analysis.kind
-        // Each tier's dates are checked against their windows before merging, so an
+        var reading = ReadingArbiter.KindReading(kind: analysis.kind, confidence: analysis.kindConfidence, evidence: analysis.kindEvidence)
+        var kindAlternatives: [CaptureAlternative<CaptureDocumentKind>] = []
+        var fieldAlternatives: [CaptureFieldAlternative] = []
+        var readWithCloudModel = false
+        /// Set when a value falls outside its window or breaks a rule with another.
+        var failedCheck = false
+        // Each reader's dates are checked against their windows before merging, so an
         // impossible date (a passport "expiring in 1906") never pushes out a possible one.
-        var fields = CaptureConsistency.plausible(analysis.fields, kind: kind, today: today)
-        var kindConfidence = analysis.kindConfidence
+        func plausible(_ fields: [CaptureField]) -> [CaptureField] {
+            let kept = CaptureConsistency.plausible(fields, kind: reading.kind, today: today)
+            if kept != fields { failedCheck = true }
+            return kept
+        }
+        var fields = plausible(analysis.fields)
+        /// The on-device model's answers, kept apart so the phone's reading can be redone for another kind.
+        var modelFields: [CaptureField] = []
+        let firstPage = readImages.first ?? pdfThumbnail
 
         // 3. On-device model, unless the patterns already read everything that matters.
-        let alreadyComplete = kindConfidence >= 0.8 && kind.isComplete(fields)
+        let alreadyComplete = reading.confidence >= 0.8 && reading.kind.isComplete(fields)
         if alreadyComplete { CaptureLog.engine.info("Skipping the on-device model: patterns found the essentials") }
         if options.useOnDeviceModel, !alreadyComplete, let model = onDeviceModel, !text.isEmpty {
             switch model.availability() {
             case .available:
                 do {
-                    let extraction = try await model.extract(SemanticInput(text: text, firstPage: readImages.first ?? pdfThumbnail, kind: kind, knownFields: fields, today: today))
-                    fields = FieldMerger.merge(fields, with: CaptureConsistency.plausible(extraction.fields, kind: kind, today: today))
-                    if let modelKind = extraction.kind, modelKind != kind, kindConfidence < 0.6 {
-                        kind = modelKind
-                        kindConfidence = 0.65
-                    }
+                    let extraction = try await model.extract(SemanticInput(text: text, firstPage: firstPage, kind: reading.kind, knownFields: fields, today: today))
+                    modelFields = extraction.fields
+                    fields = FieldMerger.merge(fields, with: plausible(modelFields))
+                    reading = ReadingArbiter.kind(reading, onDeviceModel: extraction.kind)
                 } catch {
                     CaptureLog.engine.error("On-device model failed: \((error as NSError).domain, privacy: .public) \((error as NSError).code)")
                     notices.append(.onDeviceModelFailed)
@@ -233,13 +245,30 @@ public final class CaptureEngine: Sendable {
             }
         }
 
-        // 4. Cloud model, only on request.
+        // 4. The person's AI provider: a second opinion on the whole page, on request.
+        // `ReadingArbiter` ranks it against the phone's reading by evidence.
         if options.useCloudModel, let model = cloudModel {
             switch model.availability() {
             case .available:
                 do {
-                    let extraction = try await model.extract(SemanticInput(text: text, firstPage: readImages.first ?? pdfThumbnail, kind: kind, knownFields: fields, today: today))
-                    fields = FieldMerger.merge(fields, with: CaptureConsistency.plausible(extraction.fields, kind: kind, today: today))
+                    let extraction = try await model.extract(SemanticInput(text: text, firstPage: firstPage, kind: reading.kind, knownFields: fields, today: today))
+                    readWithCloudModel = true
+                    let decided = ReadingArbiter.kind(reading, secondOpinion: extraction.kind)
+                    if decided.reading.kind != reading.kind {
+                        // The phone read it as another kind: read its text again as this one,
+                        // so the phone's values are the ones this kind of document carries.
+                        CaptureLog.engine.info("Second opinion changed the kind")
+                        reading = decided.reading
+                        analysis = recognized.isEmpty
+                            ? analyzer.analyze(text: text, barcodes: barcodes, referenceDate: options.referenceDate, as: reading.kind)
+                            : analyzer.analyze(pages: recognized, barcodes: barcodes, referenceDate: options.referenceDate, as: reading.kind)
+                        fields = FieldMerger.merge(plausible(analysis.fields), with: plausible(modelFields))
+                    }
+                    reading = decided.reading
+                    kindAlternatives = decided.alternatives
+                    let merged = ReadingArbiter.secondOpinion(phone: fields, ai: plausible(extraction.fields))
+                    fields = merged.fields
+                    fieldAlternatives = merged.alternatives
                 } catch {
                     let reason = AIProviderError(transport: error).code
                     CaptureLog.engine.error("Cloud model failed: \(reason, privacy: .public)")
@@ -249,24 +278,33 @@ public final class CaptureEngine: Sendable {
                 notices.append(.cloudModelFailed(reason: reason))
             }
         }
+        let kind = reading.kind
 
         // Dates checked against each other, then only fields that belong on this kind
-        // of document, whichever tier found them.
-        fields = CaptureConsistency.resolve(fields, kind: kind, today: today).fields
-        fields = Self.derived(fields).filter { kind.allows($0.key) }.compactMap { field in
-            // Lines that aren't lines (prose, zero amounts) go, whichever tier read them.
+        // of document, whichever reader found them.
+        let resolved = CaptureConsistency.resolve(fields, kind: kind, today: today)
+        if !resolved.dropped.isEmpty || resolved.fields.contains(where: { field in
+            fields.contains { $0.key == field.key && $0.value == field.value && $0.confidence > field.confidence }
+        }) { failedCheck = true }
+        if failedCheck { notices.append(.valueFailedCheck) }
+        fields = Self.derived(resolved.fields).filter { kind.allows($0.key) }.compactMap { field in
+            // Lines that aren't lines (prose, zero amounts) go, whichever reader read them.
             guard case .lineItems(let items) = field.value else { return field }
             let real = CaptureDocumentKind.realLineItems(items)
             guard !real.isEmpty else { return nil }
             return CaptureField(key: field.key, value: .lineItems(real), confidence: field.confidence, sourceText: field.sourceText, tier: field.tier)
+        }
+        // An alternative stays only beside a value it differs from.
+        fieldAlternatives = fieldAlternatives.filter { alternative in
+            fields.contains { $0.key == alternative.key && $0.value != alternative.alternative.value }
         }
 
         // A card read from its front alone: the back carries the zone that confirms it.
         if kind == .identityCard, !analysis.hasMachineReadableZone, case .images(let images) = request.payload, images.count == 1 {
             notices.append(.identityBackMissing)
         }
-        CaptureLog.engine.info("Read \(fields.count) fields, kind confidence \(kindConfidence)")
-        let routing = CaptureRouter.route(kind: kind, kindConfidence: kindConfidence, fields: fields)
+        CaptureLog.engine.info("Read \(fields.count) fields, kind confidence \(reading.confidence), \(fieldAlternatives.count) alternatives")
+        let routing = CaptureRouter.route(kind: kind, kindConfidence: reading.confidence, fields: fields)
 
         // 5. Keep the pages.
         var documentID: UUID?
@@ -286,7 +324,7 @@ public final class CaptureEngine: Sendable {
 
         return CaptureResult(
             kind: kind,
-            kindConfidence: kindConfidence,
+            kindConfidence: reading.confidence,
             fields: fields,
             suggestions: routing.suggestions,
             reminder: routing.reminder,
@@ -294,7 +332,11 @@ public final class CaptureEngine: Sendable {
             recognizedText: recognized.isEmpty ? text : analysis.readableText,
             barcodes: barcodes,
             documentID: documentID,
-            notices: notices
+            notices: notices,
+            kindEvidence: reading.evidence,
+            kindAlternatives: kindAlternatives,
+            fieldAlternatives: fieldAlternatives,
+            readWithCloudModel: readWithCloudModel
         )
     }
 

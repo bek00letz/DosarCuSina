@@ -218,12 +218,16 @@ struct AIProviderTests {
 
     // MARK: The schema
 
-    @Test("Each kind is asked for exactly its fields, identity documents from their templates")
+    @Test("The provider is asked what the document is and every field any kind carries, the phone's guess first")
     func schemas() {
         let passport = CloudSchema(kind: .passport)
         let names = Set(passport.fields.map(\.name))
         #expect(names.isSuperset(of: ["surname", "givenNames", "documentNumber", "birthDate", "expiryDate", "issueDate", "personalNumber", "machineReadableZone"]))
-        #expect(passport.json["required"]?.array?.count == passport.fields.count)
+        #expect(names.isSuperset(of: ["policyNumber", "total", "podCode", "vin"]), "A wrong guess never hides another kind's fields")
+        #expect(passport.json["required"]?.array?.count == passport.fields.count + 1)
+        #expect(passport.json["required"]?.array?.first?.string == CloudSchema.kindName)
+        #expect(passport.json["properties"]?[CloudSchema.kindName]?["enum"]?.array?.count == CaptureDocumentKind.allCases.count)
+        #expect(!passport.instructions.contains("passport"), "The phone's guess isn't told to the provider")
         #expect(passport.json["additionalProperties"]?.bool == false)
         #expect(passport.fields.first { $0.name == "expiryDate" }?.description.contains("date of expiry") == true)
 
@@ -231,8 +235,8 @@ struct AIProviderTests {
         #expect(olderCard.fields.contains { $0.name == "issueDate" })
 
         let invoice = CloudSchema(kind: .utilityInvoice)
-        #expect(Set(invoice.fields.compactMap(\.key)) == Set(CaptureDocumentKind.utilityInvoice.expectedKeys))
-        #expect(!invoice.fields.contains { CaptureDocumentKind.personalKeys.contains($0.key ?? "") })
+        #expect(Array(invoice.fields.compactMap(\.key).prefix(CaptureDocumentKind.utilityInvoice.expectedKeys.count)) == CaptureDocumentKind.utilityInvoice.expectedKeys)
+        #expect(Set(CloudSchema(kind: .rcaPolicy).fields.map(\.name)) == Set(invoice.fields.map(\.name)), "Every guess asks the same fields")
         #expect(invoice.fields.first { $0.key == .total }?.format == .money)
     }
 

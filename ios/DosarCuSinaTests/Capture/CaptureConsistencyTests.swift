@@ -36,12 +36,18 @@ struct CaptureConsistencyTests {
         ], kind: .passport, today: today)
         #expect(resolved.fields.first { $0.key == .expiryDate } == nil)
 
-        // An expiry before the issue date goes too, whichever tier read it.
+        // An expiry before the issue date: the less trusted of the two goes.
         let before = CaptureConsistency.resolve([
             field(.issueDate, CaptureDay(year: 2022, month: 3, day: 1)!, .heuristic),
-            field(.expiryDate, CaptureDay(year: 2012, month: 3, day: 1)!, .cloudModel),
+            field(.expiryDate, CaptureDay(year: 2012, month: 3, day: 1)!, .onDeviceModel),
         ], kind: .passport, today: today)
         #expect(keys(before.fields) == [.issueDate])
+        // The AI provider is trusted above the phone's labels (`ReadingArbiter`).
+        let secondOpinion = CaptureConsistency.resolve([
+            field(.issueDate, CaptureDay(year: 2022, month: 3, day: 1)!, .heuristic),
+            field(.expiryDate, CaptureDay(year: 2021, month: 3, day: 1)!, .cloudModel),
+        ], kind: .passport, today: today)
+        #expect(keys(secondOpinion.fields) == [.expiryDate])
     }
 
     @Test("An issue date in the future, or before the holder turned 14, isn't an identity card's")
@@ -105,7 +111,9 @@ struct CaptureConsistencyTests {
 
     @Test("Engine: the specimen front reads by column, the model's issue date is dropped, and the back is asked for")
     func engineSpecimen() async throws {
+        // A second opinion reads the whole card: the birth date where it is, and again as the issue date.
         let cloud = CaptureEngineTests.StubModel(tier: .cloudModel, isAvailable: true, fields: [
+            CaptureField(key: .birthDate, value: .day(CaptureDay(year: 1983, month: 7, day: 3)!), confidence: 0.8, tier: .cloudModel),
             CaptureField(key: .issueDate, value: .day(CaptureDay(year: 1983, month: 7, day: 3)!), confidence: 0.65, tier: .cloudModel),
         ])
         let engine = CaptureEngine(analyzer: CaptureAnalyzer(), recognizer: PositionedRecognizer(lines: Card.electronicFront),

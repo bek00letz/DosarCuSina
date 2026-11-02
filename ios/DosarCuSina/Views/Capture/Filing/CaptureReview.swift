@@ -20,17 +20,21 @@ struct CaptureReview: Identifiable {
         var confidence: Double
         var sourceText: String?
         var tier: CaptureTier
-        /// What the machine-readable zone says, checked by its digits, when it differs
-        /// from a value the person typed. Shown beside their value; never applied by itself.
-        var documentValue: CaptureValue?
+        /// What other readers read here, shown beside the value with "Folosește-l" and
+        /// never applied by themselves: the phone's value an AI value replaced, or, beside
+        /// the person's own value, what a checked code or the AI read.
+        var alternatives: [CaptureAlternative<CaptureValue>] = []
+        /// The person typed or chose this value. No later reading changes it.
+        var isEdited = false
+        /// Who read the value the person chose from the alternatives; nil when they typed it.
+        var chosenSource: CaptureAlternativeSource?
 
         var id: String { key.rawValue }
         var label: String { CaptureMapping.label(for: key) }
         /// Doubtful: it failed a format or a cross-check, or only a model read it. The
         /// review marks only these; values that passed their checks show plainly.
         var needsCheck: Bool {
-            guard let value else { return false }
-            return CaptureField(key: key, value: value, confidence: confidence, sourceText: sourceText, tier: tier).needsCheck
+            captureField?.needsCheck ?? false
         }
 
         /// The person typed this value: certain, and their own.
@@ -38,17 +42,28 @@ struct CaptureReview: Identifiable {
             value = newValue
             confidence = 1
             tier = .deterministic
-            if newValue == documentValue { documentValue = nil }
+            isEdited = true
+            chosenSource = nil
+            alternatives.removeAll { $0.value == newValue }
         }
 
-        /// Takes what the document's zone says instead of the person's value.
-        mutating func useDocumentValue() {
-            guard let documentValue else { return }
-            value = documentValue
-            confidence = 0.99
-            tier = .deterministic
-            sourceText = CaptureField.machineReadableSource
-            self.documentValue = nil
+        /// Takes another reader's value instead of the one shown: the person's choice. The
+        /// value it replaces is offered in its place, so they can switch back, unless they
+        /// had typed it themselves.
+        mutating func use(_ alternative: CaptureAlternative<CaptureValue>) {
+            let shownSource = isEdited ? chosenSource : captureField.map(ReadingArbiter.source(of:))
+            let shownValue = value
+            confirm(alternative.value)
+            chosenSource = alternative.source
+            if let shownValue, let shownSource, shownValue != alternative.value {
+                let replaced = CaptureAlternative(shownValue, source: shownSource)
+                if !alternatives.contains(replaced) { alternatives.append(replaced) }
+            }
+        }
+
+        /// The value as a capture field, for the checks.
+        var captureField: CaptureField? {
+            value.map { CaptureField(key: key, value: $0, confidence: confidence, sourceText: sourceText, tier: tier) }
         }
     }
 
@@ -59,6 +74,7 @@ struct CaptureReview: Identifiable {
         var title: String
         var destination: Destination
         var newAssetName: String
+        var remindsToPay: Bool
         var fields: [CaptureFieldKey: CaptureValue]
     }
 
@@ -77,6 +93,10 @@ struct CaptureReview: Identifiable {
     /// its kind (a cazier, a bank card), not a loose paper on the person.
     var filesAsPersonalDocument = false
     var suggested: Suggested
+    /// Kinds another reader saw, offered beside the kind shown ("Pe telefon părea: …").
+    var kindAlternatives: [CaptureAlternative<CaptureDocumentKind>]
+    /// The reading behind the kind shown, when the person took it from the alternatives.
+    private var chosenKind: CaptureAlternative<CaptureDocumentKind>?
 
     /// The pages waiting in capture's store, when there are any to file.
     var documentID: UUID? {
@@ -162,11 +182,36 @@ struct CaptureReview: Identifiable {
         return nil
     }
 
-    /// After the person changes the kind: what depends on it follows, unless they
-    /// already chose it themselves (the place, the name, the title).
+    /// Takes another reader's kind: the person's choice. The kind it replaces is offered
+    /// in its place, so they can switch back. What depends on the kind follows through
+    /// `kindChanged`, which the review runs on every change of kind.
+    mutating func useKind(_ alternative: CaptureAlternative<CaptureDocumentKind>) {
+        // The kind shown came from the reading, or from an alternative taken before; one
+        // the person picked from the list themselves isn't offered back.
+        let replaced: CaptureAlternative<CaptureDocumentKind>? = if kind == suggested.kind, kind == result.kind {
+            CaptureAlternative(kind, source: result.kindSource)
+        } else if let chosenKind, chosenKind.value == kind {
+            chosenKind
+        } else {
+            nil
+        }
+        kind = alternative.value
+        chosenKind = alternative
+        kindAlternatives.removeAll { $0 == alternative }
+        if let replaced, replaced.value != kind, !kindAlternatives.contains(replaced) { kindAlternatives.append(replaced) }
+    }
+
+    /// After the kind changes (the person chose another, or a reading named another): what
+    /// depends on it follows, unless they already chose it themselves (the place, the name,
+    /// the title, the reminder to pay). Routing, the blueprint and the reminder follow by
+    /// themselves through `suggestions`.
     @MainActor
     mutating func kindChanged(assets: [Asset]) {
-        remindsToPay = kind == .utilityInvoice
+        kindAlternatives.removeAll { $0.value == kind }
+        if remindsToPay == suggested.remindsToPay {
+            remindsToPay = kind == .utilityInvoice
+            suggested.remindsToPay = remindsToPay
+        }
         let values = Dictionary(currentFields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
         if destination == suggested.destination {
             destination = Self.suggestDestination(kind: kind, suggestions: suggestions, fields: currentFields, assets: assets)
@@ -188,7 +233,8 @@ struct CaptureReview: Identifiable {
         return counts.max { $0.value < $1.value }?.key
     }
 
-    var usedCloudModel: Bool { result.tiersUsed.contains(.cloudModel) }
+    /// The person's AI provider read this document.
+    var usedCloudModel: Bool { result.readWithCloudModel }
 
     // MARK: Building
 
@@ -200,7 +246,13 @@ struct CaptureReview: Identifiable {
     init(result: CaptureResult, assets: [Asset], context: ModelContext) {
         self.result = result
         self.kind = result.kind
-        self.fields = result.fields.map { Field(key: $0.key, value: $0.value, confidence: $0.confidence, sourceText: $0.sourceText, tier: $0.tier) }
+        self.fields = result.fields.map { field in
+            // A check settles a disagreement: nothing is offered beside a checked value.
+            let settled = ReadingArbiter.standing(field) >= .checked
+            return Field(key: field.key, value: field.value, confidence: field.confidence, sourceText: field.sourceText, tier: field.tier,
+                         alternatives: settled ? [] : result.alternatives(for: field.key).filter { $0.value != field.value })
+        }
+        self.kindAlternatives = result.kindAlternatives.filter { $0.value != result.kind }
         let values = Dictionary(result.fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
         self.title = CaptureMapping.defaultTitle(for: result.kind, fields: values)
         self.remindsToPay = result.kind == .utilityInvoice
@@ -212,7 +264,7 @@ struct CaptureReview: Identifiable {
         }
         self.destination = Self.suggestDestination(result: result, assets: assets)
         self.newAssetName = Self.defaultAssetName(kind: result.kind, values: values)
-        self.suggested = Suggested(kind: kind, title: title, destination: destination, newAssetName: newAssetName, fields: values)
+        self.suggested = Suggested(kind: kind, title: title, destination: destination, newAssetName: newAssetName, remindsToPay: remindsToPay, fields: values)
     }
 
     private static func isFiled(_ id: UUID, in context: ModelContext) -> Bool {
@@ -294,25 +346,41 @@ struct CaptureReview: Identifiable {
 
     // MARK: Reading again
 
-    /// A value read from the machine-readable zone with valid check digits.
-    static func isCheckedZoneValue(_ field: Field) -> Bool {
-        field.value != nil && field.tier == .deterministic && field.sourceText == CaptureField.machineReadableSource
+    /// Values that may be offered beside the person's own: checked ones and the AI's.
+    /// The phone's patterns are what they corrected, so those aren't offered again.
+    private static func offersBesideAnEdit(_ source: CaptureAlternativeSource) -> Bool {
+        if case .phone = source { return false }
+        return true
     }
 
-    /// This review read again (with the back of the card added), keeping everything
-    /// the person changed in `previous`. Values they typed stay theirs; the rest comes
-    /// from the new read, where the checked zone on the back wins over printed labels.
-    func carryingEdits(from previous: CaptureReview) -> CaptureReview {
+    /// This review read again (with the back of the card added, or by the person's AI
+    /// provider), keeping everything the person changed in `previous`: values they typed
+    /// or chose, the kind, the place, the title, the name and the reminder to pay. A
+    /// checked or AI value that differs from theirs is offered beside it, never applied.
+    /// What they didn't touch comes from the new reading; when they kept a kind of their
+    /// own, what depends on the kind follows theirs (`kindChanged`).
+    @MainActor
+    func carryingEdits(from previous: CaptureReview, assets: [Asset]) -> CaptureReview {
         var merged = self
         let before = previous.suggested
-        for field in previous.fields where field.value != before.fields[field.key] {
+        for field in previous.fields where field.isEdited || field.value != before.fields[field.key] {
             var kept = field
+            kept.isEdited = true
             if let index = merged.fields.firstIndex(where: { $0.key == field.key }) {
-                // The person's value stays; a checked zone value that disagrees is offered beside it.
                 let fresh = merged.fields[index]
-                kept.documentValue = Self.isCheckedZoneValue(fresh) && fresh.value != field.value ? fresh.value : nil
+                var offered: [CaptureAlternative<CaptureValue>] = []
+                if let freshField = fresh.captureField {
+                    offered.append(CaptureAlternative(freshField.value, source: ReadingArbiter.source(of: freshField)))
+                }
+                offered += merged.result.alternatives(for: field.key)
+                kept.alternatives = offered.reduce(into: []) { list, alternative in
+                    guard Self.offersBesideAnEdit(alternative.source), alternative.value != field.value,
+                          !list.contains(where: { $0.value == alternative.value }) else { return }
+                    list.append(alternative)
+                }
                 merged.fields[index] = kept
             } else {
+                kept.alternatives = []
                 merged.fields.append(kept)
             }
         }
@@ -320,11 +388,21 @@ struct CaptureReview: Identifiable {
         for key in before.fields.keys where !previous.fields.contains(where: { $0.key == key && $0.value != nil }) {
             if let index = merged.fields.firstIndex(where: { $0.key == key }) { merged.fields[index].value = nil }
         }
-        if previous.kind != before.kind { merged.kind = previous.kind }
+        if previous.kind != before.kind {
+            // Their kind stays; the reading's own is offered beside it.
+            let read = CaptureAlternative(merged.kind, source: merged.result.kindSource)
+            merged.kind = previous.kind
+            merged.kindAlternatives = ([read] + merged.kindAlternatives).reduce(into: []) { list, alternative in
+                guard Self.offersBesideAnEdit(alternative.source), alternative.value != previous.kind,
+                      !list.contains(where: { $0.value == alternative.value }) else { return }
+                list.append(alternative)
+            }
+            merged.kindChanged(assets: assets)
+        }
         if previous.title != before.title { merged.title = previous.title }
         if previous.destination != before.destination { merged.destination = previous.destination }
         if previous.newAssetName != before.newAssetName { merged.newAssetName = previous.newAssetName }
-        merged.remindsToPay = previous.remindsToPay
+        if previous.remindsToPay != before.remindsToPay { merged.remindsToPay = previous.remindsToPay }
         merged.filesAsPersonalDocument = previous.filesAsPersonalDocument
         return merged
     }

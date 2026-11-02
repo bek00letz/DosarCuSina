@@ -1,6 +1,14 @@
 import SwiftData
 import SwiftUI
 
+/// What is being read again while the review stays on screen.
+enum CaptureReread: Hashable, Sendable {
+    /// The pages the person added (the back of a card), read with the others.
+    case pages
+    /// The person's AI provider, on a tap or by itself after a weak reading.
+    case cloud
+}
+
 /// The confirm step of capture: what the document is, the values read from it
 /// (the uncertain ones marked), where it goes, and the reminder it sets.
 /// "Salvează" runs `CaptureFiler.save`, the one save path.
@@ -8,11 +16,13 @@ struct CaptureReviewView: View {
     @State var review: CaptureReview
     let assets: [Asset]
     var onReadWithCloud: (() -> Void)?
-    /// Adds pages (the back of a card) and reads the document again, keeping the person's edits.
-    var onAddPages: ((CaptureReview, CaptureRequest.Payload) -> Void)?
-    /// A read with added pages is running.
-    var isReadingAgain = false
-    /// Why the last read with added pages didn't work.
+    /// Adds pages (the back of a card) and reads the document again.
+    var onAddPages: ((CaptureRequest.Payload) -> Void)?
+    /// What is being read again, if anything.
+    var rereading: CaptureReread?
+    /// The newest reading; merged into the review, keeping the person's edits.
+    var rereadResult: CaptureResult?
+    /// Why the last reading again didn't work.
     var readAgainError: String?
     let onClose: (CaptureFlowResult) -> Void
 
@@ -20,8 +30,9 @@ struct CaptureReviewView: View {
         review: CaptureReview,
         assets: [Asset],
         onReadWithCloud: (() -> Void)? = nil,
-        onAddPages: ((CaptureReview, CaptureRequest.Payload) -> Void)? = nil,
-        isReadingAgain: Bool = false,
+        onAddPages: ((CaptureRequest.Payload) -> Void)? = nil,
+        rereading: CaptureReread? = nil,
+        rereadResult: CaptureResult? = nil,
         readAgainError: String? = nil,
         onClose: @escaping (CaptureFlowResult) -> Void
     ) {
@@ -29,7 +40,8 @@ struct CaptureReviewView: View {
         self.assets = assets
         self.onReadWithCloud = onReadWithCloud
         self.onAddPages = onAddPages
-        self.isReadingAgain = isReadingAgain
+        self.rereading = rereading
+        self.rereadResult = rereadResult
         self.readAgainError = readAgainError
         self.onClose = onClose
     }
@@ -90,12 +102,13 @@ struct CaptureReviewView: View {
         }
         .captureSourcePicker($backSource, onPicked: { payload in
             backError = nil
-            onAddPages?(review, payload)
+            onAddPages?(payload)
         }, onError: { _ in
             backError = String(localized: "Poza nu s-a putut deschide. Încearcă din nou.")
         })
-        .task { await loadThumbnail() }
+        .task(id: review.documentID) { await loadThumbnail() }
         .task(id: review.result.id) { await explainCloudFailure() }
+        .onChange(of: rereadResult?.id) { _, _ in mergeReread() }
         .onDisappear {
             // Closing without saving drops the pages from capture's memory. Not while the
             // camera covers the screen for the back of the card: the review comes back.
@@ -143,6 +156,12 @@ struct CaptureReviewView: View {
                             .frame(minHeight: 44)
                     }
                     .onChange(of: review.kind) { _, _ in review.kindChanged(assets: assets) }
+                    ForEach(review.kindAlternatives, id: \.self) { alternative in
+                        CaptureAlternativeNote(text: kindAlternativeText(alternative)) {
+                            withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { review.useKind(alternative) }
+                        }
+                        .transition(.opacity)
+                    }
                     Text(verbatim: tierNote)
                         .dsFont(.footnote)
                 }
@@ -150,8 +169,20 @@ struct CaptureReviewView: View {
         }
     }
 
+    /// "Pe telefon părea: Factură de utilități", beside a kind another reader didn't keep.
+    private func kindAlternativeText(_ alternative: CaptureAlternative<CaptureDocumentKind>) -> String {
+        let kind = CaptureMapping.kindTitle(alternative.value)
+        return switch alternative.source {
+        case .phone: String(localized: "Pe telefon părea: \(kind)", comment: "The kind the phone read, beside the AI provider's.")
+        case .cloudModel: CaptureAlternativeNote.readBy(cloudProvider, value: kind)
+        case .checked: String(localized: "Codul de jos al actului arată: \(kind)", comment: "The kind the checked machine-readable zone shows.")
+        }
+    }
+
     private var tierNote: String {
-        if review.usedCloudModel { return String(localized: "Citit și cu Gemini, cu cheia ta.") }
+        if review.usedCloudModel {
+            return String(localized: "Citit și cu \(cloudProvider.shortName), cu cheia ta.", comment: "The AI provider read the document too. The argument is the provider's short name.")
+        }
         switch review.mainTier {
         case .onDeviceModel?: return String(localized: "Citit pe telefon, cu Apple Intelligence.")
         default: return String(localized: "Citit pe telefon. Nimic n-a plecat de aici.")
@@ -160,10 +191,10 @@ struct CaptureReviewView: View {
 
     /// The back of an identity card, when only the front was read.
     @ViewBuilder private var backPageNotice: some View {
-        if review.asksForBackPage || isReadingAgain {
+        if review.asksForBackPage || rereading == .pages {
             VStack(alignment: .leading, spacing: DS.Space.s) {
                 DSNotice(.info, title: "Ai și o poză cu spatele? Acolo e codul care confirmă datele.")
-                if isReadingAgain {
+                if rereading == .pages {
                     DSDelayedProgress(label: "Citesc și spatele…")
                         .frame(maxWidth: .infinity, minHeight: 44)
                 } else if onAddPages != nil {
@@ -172,7 +203,7 @@ struct CaptureReviewView: View {
                     }
                     DSSecondaryButton("Alege din poze", systemImage: "photo.on.rectangle") { backSource = .photos }
                 }
-                if let message = backError ?? readAgainError {
+                if let message = backError ?? (rereading == nil ? readAgainError : nil) {
                     DSNotice(.error, title: "Nu am putut citi spatele", message: LocalizedStringKey(message))
                 }
             }
@@ -203,8 +234,16 @@ struct CaptureReviewView: View {
         if let cloudMessage {
             DSNotice(.warning, title: "\(cloudProvider.name) nu a citit actul", message: LocalizedStringKey(cloudMessage))
         }
-        if let onReadWithCloud, CaptureRunner.hasCloudKey, !review.usedCloudModel, review.visibleFields.contains(where: \.needsCheck) || review.visibleFields.count < 2 {
-            DSSecondaryButton("Citește mai bine cu \(cloudProvider.shortName)", systemImage: "sparkles", action: onReadWithCloud)
+        // Offered whenever a provider is set up, whatever the phone read: a confident
+        // reading can be wrong too, and only a second opinion can tell.
+        if let onReadWithCloud, CaptureRunner.hasCloudKey, !review.usedCloudModel {
+            if rereading == .cloud {
+                DSDelayedProgress(label: "Citesc cu \(cloudProvider.shortName)…")
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            } else {
+                DSSecondaryButton("Citește mai bine cu \(cloudProvider.shortName)", systemImage: "sparkles", action: onReadWithCloud)
+                    .disabled(rereading != nil)
+            }
             VStack(alignment: .leading, spacing: DS.Space.xxs) {
                 if review.kind.isIdentityDocument {
                     Text("Poza actului se trimite la \(cloudProvider.name), cu cheia ta.")
@@ -240,7 +279,7 @@ struct CaptureReviewView: View {
                     }
                     ForEach(fields) { field in
                         if let index = review.fields.firstIndex(where: { $0.id == field.id }) {
-                            CaptureFieldEditor(field: $review.fields[index])
+                            CaptureFieldEditor(field: $review.fields[index], kind: review.kind)
                         }
                     }
                     if review.showsLineItems {
@@ -370,8 +409,21 @@ struct CaptureReviewView: View {
         pages = processed.pageData.compactMap(UIImage.init(data:))
     }
 
+    /// Merges the newest reading into the review, keeping everything the person changed.
+    /// Pages a reading with added pages replaced are let go.
+    private func mergeReread() {
+        guard let result = rereadResult, result.id != review.result.id else { return }
+        let previousDocument = review.documentID
+        let merged = CaptureReview(result: result, assets: assets, context: context).carryingEdits(from: review, assets: assets)
+        withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { review = merged }
+        if let previousDocument, previousDocument != merged.documentID {
+            Task { await CaptureDocumentStore.shared().discard(id: previousDocument) }
+        }
+    }
+
     /// Says what went wrong with the cloud reading: offline, the key, the quota, the model.
     private func explainCloudFailure() async {
+        cloudMessage = nil
         for notice in review.result.notices {
             guard case .cloudModelFailed(let reason) = notice else { continue }
             cloudMessage = AIProviderError(code: reason).message(provider: cloudProvider)
@@ -382,6 +434,8 @@ struct CaptureReviewView: View {
 /// One value read from the document: editable, with where it was read from.
 private struct CaptureFieldEditor: View {
     @Binding var field: CaptureReview.Field
+    /// The document's kind, for how a checked value is named.
+    let kind: CaptureDocumentKind
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -392,11 +446,10 @@ private struct CaptureFieldEditor: View {
                     .font(.system(.caption, weight: .semibold))
                     .foregroundStyle(DSStatus.soon.textColor)
             }
-            if let documentValue = field.documentValue {
-                // The person's value stays; the back of the card offers its own, once.
-                ViewThatFits(in: .horizontal) {
-                    HStack(alignment: .firstTextBaseline, spacing: DS.Space.s) { documentNote(documentValue); useButton }
-                    VStack(alignment: .leading, spacing: DS.Space.xxs) { documentNote(documentValue); useButton }
+            // What other readers read: offered beside the value, never applied by itself.
+            ForEach(field.alternatives, id: \.self) { alternative in
+                CaptureAlternativeNote(text: alternativeText(alternative)) {
+                    withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { field.use(alternative) }
                 }
                 .transition(.opacity)
             }
@@ -409,22 +462,21 @@ private struct CaptureFieldEditor: View {
         }
     }
 
-    private func documentNote(_ value: CaptureValue) -> some View {
-        Text("Pe spatele actului scrie: \(CaptureMapping.displayText(value))", comment: "What the machine-readable zone says, beside a value the person typed.")
-            .dsFont(.footnote)
-            .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var useButton: some View {
-        Button {
-            withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { field.useDocumentValue() }
-        } label: {
-            Text("Folosește-l", comment: "Applies the value from the back of the card.")
-                .font(.subheadline.weight(.semibold))
-                .frame(minHeight: 44)
-                .contentShape(.rect)
+    /// "Pe telefon am citit: …", "Gemini a citit: …", "Pe spatele actului scrie: …".
+    private func alternativeText(_ alternative: CaptureAlternative<CaptureValue>) -> String {
+        let value = CaptureMapping.displayText(alternative.value)
+        return switch alternative.source {
+        case .phone:
+            String(localized: "Pe telefon am citit: \(value)", comment: "The phone's value, beside the AI provider's.")
+        case .cloudModel:
+            CaptureAlternativeNote.readBy(AIProviderSettings.standard.provider, value: value)
+        case .checked(machineReadable: true) where kind == .identityCard:
+            String(localized: "Pe spatele actului scrie: \(value)", comment: "What the machine-readable zone on the back of the card says.")
+        case .checked(machineReadable: true):
+            String(localized: "În codul de jos al actului scrie: \(value)", comment: "What the machine-readable zone says.")
+        case .checked:
+            String(localized: "Pe act scrie: \(value)", comment: "A value that passed its own check digit, beside a different one.")
         }
-        .buttonStyle(.borderless)
     }
 
     @ViewBuilder private var editor: some View {
@@ -441,7 +493,7 @@ private struct CaptureFieldEditor: View {
                 set: { amount in field.confirm(amount.map { .money(CaptureMoney(amount: $0, currencyCode: money.currencyCode)) }) }
             ), currencyCode: Binding(
                 get: { field.value?.money?.currencyCode ?? money.currencyCode },
-                set: { code in if let amount = field.value?.money?.amount { field.value = .money(CaptureMoney(amount: amount, currencyCode: code)) } }
+                set: { code in if let amount = field.value?.money?.amount { field.confirm(.money(CaptureMoney(amount: amount, currencyCode: code))) } }
             ))
         default:
             DSTextField(title, text: Binding(
@@ -483,6 +535,47 @@ private struct CaptureFieldEditor: View {
             return Money.parseAmount(digits).map { .metric(value: $0, unit: unit) } ?? .text(trimmed)
         default:
             return .text(trimmed)
+        }
+    }
+}
+
+/// A reading that wasn't kept, beside the one shown: what it says and "Folosește-l". The one
+/// mechanism for every alternative: the phone's value or kind, the AI's, a checked code's.
+private struct CaptureAlternativeNote: View {
+    let text: String
+    let onUse: () -> Void
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .firstTextBaseline, spacing: DS.Space.s) { note; button }
+            VStack(alignment: .leading, spacing: DS.Space.xxs) { note; button }
+        }
+    }
+
+    private var note: some View {
+        Text(verbatim: text)
+            .dsFont(.footnote)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var button: some View {
+        Button(action: onUse) {
+            Text("Folosește-l", comment: "Applies a value another reader read instead of the one shown.")
+                .font(.subheadline.weight(.semibold))
+                .frame(minHeight: 44)
+                .contentShape(.rect)
+        }
+        .buttonStyle(.borderless)
+        .accessibilityLabel(Text("Folosește: \(text)", comment: "VoiceOver label of the button that applies another reader's value."))
+    }
+
+    /// "Gemini a citit: …", in the provider's own name.
+    static func readBy(_ provider: AIProvider, value: String) -> String {
+        switch provider {
+        case .openAICompatible:
+            String(localized: "Modelul tău a citit: \(value)", comment: "The value the person's own AI model read.")
+        default:
+            String(localized: "\(provider.shortName) a citit: \(value)", comment: "The value the AI provider read. The first argument is the provider's short name.")
         }
     }
 }

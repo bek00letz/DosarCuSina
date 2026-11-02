@@ -26,6 +26,8 @@ public struct CaptureAnalyzer: Sendable {
         public let text: CaptureText
         public let kind: CaptureDocumentKind
         public let kindConfidence: Double
+        /// What the kind rests on, for `ReadingArbiter`.
+        public let kindEvidence: CaptureKindEvidence
         public let fields: [CaptureField]
         public let notices: [CaptureNotice]
         /// Whether a machine-readable zone was found.
@@ -61,20 +63,22 @@ public struct CaptureAnalyzer: Sendable {
 
     // MARK: - Analysis
 
-    public func analyze(text rawText: String, barcodes: [CaptureBarcode] = [], referenceDate: Date = Date()) -> Analysis {
-        analyze(CaptureText(rawText), rawText: rawText, barcodes: barcodes, referenceDate: referenceDate)
+    /// `kind`, when given, is what the document is known to be (the AI provider named it),
+    /// so the patterns read it as that kind instead of classifying it again.
+    public func analyze(text rawText: String, barcodes: [CaptureBarcode] = [], referenceDate: Date = Date(), as kind: CaptureDocumentKind? = nil) -> Analysis {
+        analyze(CaptureText(rawText), rawText: rawText, barcodes: barcodes, referenceDate: referenceDate, as: kind)
     }
 
     /// Recognized pages, with where each line sits, so labels find the values in their columns.
-    public func analyze(pages: [[RecognizedLine]], barcodes: [CaptureBarcode] = [], referenceDate: Date = Date()) -> Analysis {
+    public func analyze(pages: [[RecognizedLine]], barcodes: [CaptureBarcode] = [], referenceDate: Date = Date(), as kind: CaptureDocumentKind? = nil) -> Analysis {
         let text = CaptureText(pages: pages)
-        return analyze(text, rawText: text.joinedOriginal, barcodes: barcodes, referenceDate: referenceDate)
+        return analyze(text, rawText: text.joinedOriginal, barcodes: barcodes, referenceDate: referenceDate, as: kind)
     }
 
     /// `lines` keeps recognized fragments apart, with their positions, for documents read
     /// by their printed labels (identity documents). Every other reader works on whole
     /// rows, so an invoice line's description and amount stay on one line.
-    func analyze(_ lines: CaptureText, rawText: String, barcodes: [CaptureBarcode], referenceDate: Date) -> Analysis {
+    func analyze(_ lines: CaptureText, rawText: String, barcodes: [CaptureBarcode], referenceDate: Date, as knownKind: CaptureDocumentKind? = nil) -> Analysis {
         var notices: [CaptureNotice] = []
         var fields = FieldSet()
         var text = lines.joiningRows()
@@ -83,22 +87,32 @@ public struct CaptureAnalyzer: Sendable {
         let years = DateWindow.around(today)
 
         let mrz = MRZParser.parse(text: rawText, referenceDate: referenceDate)
-        let classification = DocumentClassifier.classify(text: text, mrz: mrz)
+        let classification = knownKind.map { DocumentClassifier.Classification(kind: $0, confidence: 1) }
+            ?? DocumentClassifier.classify(text: text, mrz: mrz)
         // A provider-specific reader claims a document only when the classifier agrees
-        // or isn't sure: an RCA policy that mentions "digital" stays a policy.
+        // or isn't sure: an RCA policy that mentions "digital" stays a policy. A known
+        // kind is never claimed by a reader of another.
         let specialized = specializedParsers.lazy
             .compactMap { $0.parse(text) }
-            .first { $0.kind == classification.kind || classification.confidence < Self.specializedClaimBelow }
+            .first { $0.kind == classification.kind || (knownKind == nil && classification.confidence < Self.specializedClaimBelow) }
 
         let kind: CaptureDocumentKind
         let kindConfidence: Double
+        var kindEvidence: CaptureKindEvidence
         if let specialized {
             kind = specialized.kind
             kindConfidence = 0.95
+            kindEvidence = specialized.kind == classification.kind ? .providerFormat : .providerFormatAlone
             fields.add(specialized.fields)
         } else {
             kind = classification.kind
             kindConfidence = classification.confidence
+            kindEvidence = .classifier
+        }
+        if let mrz, mrz.allChecksValid, kind.isIdentityDocument {
+            kindEvidence = .machineReadableZone
+        } else if kind == .utilityInvoice, !kindEvidence.isDeterministic, barcodes.contains(where: \.isPaymentCode) {
+            kindEvidence = .paymentBarcode
         }
 
         if let mrz {
@@ -184,7 +198,7 @@ public struct CaptureAnalyzer: Sendable {
             readable = text.original
         }
         return Analysis(
-            text: text, kind: kind, kindConfidence: kindConfidence, fields: fields.fields, notices: notices,
+            text: text, kind: kind, kindConfidence: kindConfidence, kindEvidence: kindEvidence, fields: fields.fields, notices: notices,
             hasMachineReadableZone: mrz != nil, readableText: readable.joined(separator: "\n")
         )
     }
@@ -364,19 +378,15 @@ struct FieldSet {
 
 // MARK: - Merging tiers
 
-/// Combines fields from several tiers into one best answer per key.
+/// Combines fields from several readers into one best answer per key. Which value wins
+/// is decided in one place, `ReadingArbiter`.
 public enum FieldMerger {
 
-    /// A checksum-verified value is never replaced. Otherwise the more confident value wins,
-    /// and on a tie the more reliable tier wins.
     static func prefers(_ candidate: CaptureField, over existing: CaptureField) -> Bool {
-        if existing.tier == .deterministic && candidate.tier != .deterministic { return false }
-        if candidate.tier == .deterministic && existing.tier != .deterministic { return true }
-        if candidate.confidence != existing.confidence { return candidate.confidence > existing.confidence }
-        return candidate.tier < existing.tier
+        ReadingArbiter.prefers(candidate, over: existing)
     }
 
-    /// Merges a later tier's fields into earlier ones. When two tiers agree on a value,
+    /// Merges a later reader's fields into earlier ones. When two readers agree on a value,
     /// the agreement raises confidence, keeps the earlier source text, and counts as read
     /// from the document rather than guessed by a model.
     public static func merge(_ base: [CaptureField], with incoming: [CaptureField]) -> [CaptureField] {
@@ -388,13 +398,7 @@ public enum FieldMerger {
             }
             let existing = result[index]
             if existing.value == candidate.value {
-                result[index] = CaptureField(
-                    key: existing.key,
-                    value: existing.value,
-                    confidence: max(existing.confidence, candidate.confidence) + 0.1,
-                    sourceText: existing.sourceText ?? candidate.sourceText,
-                    tier: CaptureConsistency.trust(existing) >= CaptureConsistency.trust(candidate) ? existing.tier : candidate.tier
-                )
+                result[index] = ReadingArbiter.agreeing(existing, candidate)
             } else if prefers(candidate, over: existing) {
                 result[index] = candidate
             }

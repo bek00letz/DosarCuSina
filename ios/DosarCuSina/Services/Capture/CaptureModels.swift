@@ -150,16 +150,18 @@ public enum CaptureTier: String, Codable, Sendable, CaseIterable, Comparable {
     case heuristic
     /// Apple's on-device language model. Private and offline.
     case onDeviceModel
-    /// The AI provider the person set up with their own key, only when they ask for it.
+    /// The AI provider the person set up with their own key: when they ask for it, or
+    /// automatically when they chose so and the phone's reading is weak.
     case cloudModel
 
-    /// Lower rank wins when two tiers disagree about the same field.
+    /// The readers in the order `ReadingArbiter` trusts them when no check decides:
+    /// lower comes first. The full order, checks included, is in `ReadingArbiter`.
     var rank: Int {
         switch self {
         case .deterministic: 0
-        case .onDeviceModel: 1
-        case .cloudModel: 2
-        case .heuristic: 3
+        case .cloudModel: 1
+        case .heuristic: 2
+        case .onDeviceModel: 3
         }
     }
 
@@ -291,9 +293,10 @@ public struct CaptureField: Hashable, Codable, Sendable {
 
     /// Whether a person should look at this value before it is saved: it failed a
     /// format or a cross-check (low confidence), or only the on-device model read it.
-    /// A cloud provider's value is kept with a high confidence only when it is grounded
-    /// in the recognized text or passed its own check (`CloudAnswerMapper`); otherwise
-    /// its low confidence marks it here.
+    /// An AI provider's value has a high confidence only when it passed its own check or
+    /// agrees with what the phone read (`CloudAnswerMapper`), and one that replaced a
+    /// different phone value is marked too (`ReadingArbiter`); otherwise its low
+    /// confidence marks it here.
     public var needsCheck: Bool {
         confidence < Self.checkThreshold || tier == .onDeviceModel
     }
@@ -379,6 +382,10 @@ public enum CaptureNotice: Hashable, Codable, Sendable {
     /// An identity card read from one photo without its machine-readable zone: the
     /// back carries the zone that confirms the values.
     case identityBackMissing
+    /// A value was dropped or marked for a look because it fell outside its plausible
+    /// window or disagreed with another (a birth date read as the issue date). Part of
+    /// what makes a reading weak (`ReadingArbiter.weaknesses`); the review marks the values.
+    case valueFailedCheck
 }
 
 /// A barcode or QR code found on the page.
@@ -389,6 +396,79 @@ public struct CaptureBarcode: Hashable, Codable, Sendable {
     public init(symbology: String, payload: String) {
         self.symbology = symbology
         self.payload = payload
+    }
+
+    /// The long digit codes Romanian utilities print as payment barcodes (25 to 50 digits),
+    /// decoded from the page. Evidence that the document is a bill.
+    public var isPaymentCode: Bool {
+        (25...50).contains(payload.count) && payload.allSatisfy(\.isASCIIDigit)
+    }
+}
+
+private extension Character {
+    var isASCIIDigit: Bool { ("0"..."9").contains(self) }
+}
+
+// MARK: - Evidence and alternatives
+
+/// What the document's kind rests on. `ReadingArbiter` lets a second opinion replace the
+/// phone's kind unless it rests on deterministic evidence.
+public enum CaptureKindEvidence: String, Codable, Sendable, CaseIterable {
+    /// A machine-readable zone whose check digits all pass.
+    case machineReadableZone
+    /// A provider's known format (a utility's bill layout) that the classifier agrees with.
+    case providerFormat
+    /// A payment barcode decoded from a bill.
+    case paymentBarcode
+    /// The classifier's weighted keywords (or a zone whose check digits failed).
+    case classifier
+    /// A provider's known format the classifier didn't independently support.
+    case providerFormatAlone
+    /// Apple's on-device model corrected an unsure classifier.
+    case onDeviceModel
+    /// The person's AI provider, reading the page as a second opinion.
+    case secondOpinion
+
+    /// Evidence no reading can argue with: only a check or a decoded code.
+    public var isDeterministic: Bool {
+        switch self {
+        case .machineReadableZone, .providerFormat, .paymentBarcode: true
+        default: false
+        }
+    }
+}
+
+/// Who read a value or a kind that wasn't kept, so the review can offer it beside the
+/// one shown, with "Folosește-l".
+public enum CaptureAlternativeSource: Hashable, Codable, Sendable {
+    /// The phone's own reading: patterns, labels or Apple's on-device model.
+    case phone
+    /// The person's AI provider.
+    case cloudModel
+    /// A value proven by its own check: the machine-readable zone's check digits, or
+    /// another control digit (a CNP's, a VIN's, a CUI's).
+    case checked(machineReadable: Bool)
+}
+
+/// A reading that wasn't kept, offered beside the one shown and never applied by itself.
+public struct CaptureAlternative<Value: Hashable & Codable & Sendable>: Hashable, Codable, Sendable {
+    public let value: Value
+    public let source: CaptureAlternativeSource
+
+    public init(_ value: Value, source: CaptureAlternativeSource) {
+        self.value = value
+        self.source = source
+    }
+}
+
+/// A field's value that another reader read differently.
+public struct CaptureFieldAlternative: Hashable, Codable, Sendable {
+    public let key: CaptureFieldKey
+    public let alternative: CaptureAlternative<CaptureValue>
+
+    public init(key: CaptureFieldKey, alternative: CaptureAlternative<CaptureValue>) {
+        self.key = key
+        self.alternative = alternative
     }
 }
 
@@ -407,6 +487,14 @@ public struct CaptureResult: Sendable, Codable, Hashable {
     /// The stored document, when the capture was saved to the document store.
     public let documentID: UUID?
     public let notices: [CaptureNotice]
+    /// What the kind rests on.
+    public let kindEvidence: CaptureKindEvidence
+    /// Kinds another reader saw (the phone's, when the AI's replaced it).
+    public let kindAlternatives: [CaptureAlternative<CaptureDocumentKind>]
+    /// Values another reader read differently from the ones kept.
+    public let fieldAlternatives: [CaptureFieldAlternative]
+    /// Whether the person's AI provider read the page and answered.
+    public let readWithCloudModel: Bool
 
     public init(
         id: UUID = UUID(),
@@ -418,7 +506,11 @@ public struct CaptureResult: Sendable, Codable, Hashable {
         recognizedText: String,
         barcodes: [CaptureBarcode],
         documentID: UUID?,
-        notices: [CaptureNotice]
+        notices: [CaptureNotice],
+        kindEvidence: CaptureKindEvidence = .classifier,
+        kindAlternatives: [CaptureAlternative<CaptureDocumentKind>] = [],
+        fieldAlternatives: [CaptureFieldAlternative] = [],
+        readWithCloudModel: Bool = false
     ) {
         self.id = id
         self.kind = kind
@@ -430,11 +522,29 @@ public struct CaptureResult: Sendable, Codable, Hashable {
         self.barcodes = barcodes
         self.documentID = documentID
         self.notices = notices
+        self.kindEvidence = kindEvidence
+        self.kindAlternatives = kindAlternatives
+        self.fieldAlternatives = fieldAlternatives
+        self.readWithCloudModel = readWithCloudModel
     }
 
     /// The best field for a key.
     public func field(_ key: CaptureFieldKey) -> CaptureField? {
         fields.first { $0.key == key }
+    }
+
+    /// What other readers read for a key, beside the value kept.
+    public func alternatives(for key: CaptureFieldKey) -> [CaptureAlternative<CaptureValue>] {
+        fieldAlternatives.filter { $0.key == key }.map(\.alternative)
+    }
+
+    /// Who decided the kind shown: the AI when its second opinion replaced or confirmed it.
+    public var kindSource: CaptureAlternativeSource {
+        switch kindEvidence {
+        case .secondOpinion: .cloudModel
+        case .machineReadableZone: .checked(machineReadable: true)
+        default: .phone
+        }
     }
 
     /// Which tiers contributed at least one field.

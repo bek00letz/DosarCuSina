@@ -5,11 +5,12 @@ import Foundation
 /// birth date repeated as the issue or expiry date, an expiry before the issue, an
 /// identity card issued to a child.
 ///
-/// The rules are data. When two values break a rule, the less trusted one goes:
-/// the machine-readable zone with valid check digits, then a CNP with a valid
-/// control digit (and what it encodes), then a printed label read in place, then
-/// the on-device model, then Gemini. On a tie the value the rule is about goes,
-/// and the one it was checked against is marked for a look.
+/// The rules are data. When two values break a rule, the less trusted one goes, in the
+/// order `ReadingArbiter` defines: the machine-readable zone with valid check digits,
+/// then other checked values (a CNP with a valid control digit and what it encodes),
+/// then the AI provider, then a printed label read in place, then the on-device model.
+/// On a tie the value the rule is about goes, and the one it was checked against is
+/// marked for a look.
 enum CaptureConsistency {
 
     enum Rule: Hashable, Sendable {
@@ -144,15 +145,9 @@ enum CaptureConsistency {
         return (fields, dropped)
     }
 
-    /// How far a value can be trusted when two disagree: the zone's check digits,
-    /// then other checked values (a CNP), then a label read in place, then the models.
-    static func trust(_ field: CaptureField) -> Int {
-        switch field.tier {
-        case .deterministic: field.sourceText == CaptureField.machineReadableSource ? 5 : 4
-        case .heuristic: 3
-        case .onDeviceModel: 2
-        case .cloudModel: 1
-        }
+    /// How far a value can be trusted when two disagree: `ReadingArbiter`'s order.
+    static func trust(_ field: CaptureField) -> ReadingArbiter.Standing {
+        ReadingArbiter.standing(field)
     }
 
     /// A CNP with a valid control digit decides the birth date, unless the
@@ -165,7 +160,7 @@ enum CaptureConsistency {
                                    sourceText: fields.first { $0.key == .personalNumber }?.sourceText, tier: .deterministic)
         guard let index = fields.firstIndex(where: { $0.key == .birthDate }) else { return fields + [derived] }
         let existing = fields[index]
-        if trust(existing) == 5 || (existing.value == derived.value && existing.tier == .deterministic) { return fields }
+        if trust(existing) == .machineReadableZone || (existing.value == derived.value && existing.tier == .deterministic) { return fields }
         var result = fields
         result[index] = derived
         return result
