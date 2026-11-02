@@ -357,7 +357,9 @@ public struct CaptureReminderHint: Hashable, Codable, Sendable {
 public enum CaptureNotice: Hashable, Codable, Sendable {
     /// A machine-readable zone was found, but a check digit didn't match. Fields from it need a look.
     case machineReadableZoneUnverified
-    /// Very little text was recognized. A sharper, flatter photo would help.
+    /// The photo was hard to read, even after a retry with another view of it: very
+    /// little text, or an identity document without its main fields. A new photo,
+    /// straight and without glare, would help.
     case littleTextRecognized
     /// The on-device model isn't available, so only patterns were used.
     case onDeviceModelUnavailable(reason: String)

@@ -36,6 +36,15 @@ extension CaptureDocumentKind {
         }
     }
 
+    /// Whether a reading of this kind has none of the fields it should carry: for an
+    /// identity document, not one of its essentials, its personal number or birth date.
+    /// Such a reading is retried with another view of the photo.
+    func lacksExpectedFields(_ fields: [CaptureField]) -> Bool {
+        guard isIdentityDocument else { return false }
+        let expected = Set(essentialKeys + [.personalNumber, .birthDate, .givenNames])
+        return !fields.contains { expected.contains($0.key) }
+    }
+
     /// Whether the patterns already read everything that matters on this document.
     func isComplete(_ fields: [CaptureField], minimumConfidence: Double = 0.6) -> Bool {
         let keys = essentialKeys

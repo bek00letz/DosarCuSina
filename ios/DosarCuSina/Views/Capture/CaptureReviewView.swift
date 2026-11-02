@@ -191,7 +191,7 @@ struct CaptureReviewView: View {
         ForEach(Array(review.result.notices.enumerated()), id: \.offset) { _, notice in
             switch notice {
             case .littleTextRecognized:
-                DSNotice(.warning, title: "Am citit puțin text", message: "O poză mai clară, cu actul întins și fără umbre, ajută. Verifică valorile de mai jos.")
+                DSNotice(.info, title: "Poza e greu de citit", message: "O poză nouă, dreaptă și fără reflexii, ajută.")
             case .pagesTruncated(let read, _):
                 DSNotice(.info, title: "Am citit primele \(read) pagini", message: "E un document lung. Se păstrează tot, cu toate paginile.")
             case .machineReadableZoneUnverified:
