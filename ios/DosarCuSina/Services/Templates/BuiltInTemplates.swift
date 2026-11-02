@@ -363,24 +363,59 @@ public enum BuiltInTemplates {
         )
     }
 
-    /// A provider, a price per billing cycle and, for fixed-term contracts, the end
-    /// date. Reminds about yearly renewals and contract ends, not monthly charges.
+    /// An ongoing contract: who provides it and what for, a price per billing cycle,
+    /// the identifiers its bills carry, the minimum period and how it is paid. Gas,
+    /// electricity, water and fixed internet or TV are filed under the home they
+    /// supply; a mobile plan stands on its own. Bills and contracts read by capture
+    /// find their subscription by these identifiers (`SubscriptionMatcher`).
+    /// Reminds about yearly renewals, the end of the minimum period, contract ends
+    /// and each bill's due date, never about monthly charges paid by direct debit.
     public static var subscription: TemplateDefinition {
         TemplateDefinition(
             key: Key.subscription,
             name: String(localized: "Abonamente", comment: "Category name"),
-            summary: String(localized: "Reînnoiri anuale și contracte care se termină.", comment: "Category summary"),
+            summary: String(localized: "Telefon, internet, gaz și curent: facturile și contractele lor.", comment: "Category summary"),
             symbol: "creditcard.fill",
             tint: .purple,
             sections: [
                 FieldSection(key: "subscription.main", title: String(localized: "Abonament"), fields: [
-                    FieldDefinition(key: "subscription.provider", label: String(localized: "Furnizor"), type: .text, role: .subtitle, isEssential: true),
+                    FieldDefinition(key: "subscription.provider", label: String(localized: "Furnizor"), type: .text, role: .subtitle, isEssential: true,
+                                    placeholder: "ENGIE Romania S.A."),
+                    FieldDefinition(key: SubscriptionFields.service, label: String(localized: "Serviciu"), type: .choice, options: ServiceKind.options),
                     FieldDefinition(key: "subscription.price", label: String(localized: "Preț"), type: .money, role: .heroMetric, isEssential: true),
                     FieldDefinition(key: "subscription.cycle", label: String(localized: "Se plătește"), type: .choice, isEssential: true,
                                     options: BillingCycle.options, defaultValue: .text(BillingCycle.monthly)),
                     FieldDefinition(key: "subscription.renewalDate", label: String(localized: "Următoarea reînnoire"), type: .date),
                     FieldDefinition(key: "subscription.contractEnd", label: String(localized: "Contract până la"), type: .expiryDate, role: .expiryDate),
                     FieldDefinition(key: "subscription.cancelUrl", label: String(localized: "Unde anulezi"), type: .url),
+                ]),
+                // What the provider's bills and letters quote, one tap to copy.
+                FieldSection(key: "subscription.identifiers", title: String(localized: "Coduri"), fields: [
+                    FieldDefinition(key: SubscriptionFields.clientCode, label: String(localized: "Cod client"), type: .text, role: .keyFact),
+                    FieldDefinition(key: SubscriptionFields.contractNumber, label: String(localized: "Număr contract"), type: .text, role: .keyFact),
+                    FieldDefinition(key: SubscriptionFields.pod, label: String(localized: "Cod loc de consum (POD)"), type: .text, role: .keyFact,
+                                    appliesWhen: BlueprintCondition(field: SubscriptionFields.service, oneOf: [ServiceKind.electricity]),
+                                    footnote: String(localized: "Începe cu RO. E pe factura de curent.")),
+                    FieldDefinition(key: SubscriptionFields.clc, label: String(localized: "Cod loc de consum gaze (CLC)"), type: .text, role: .keyFact,
+                                    appliesWhen: BlueprintCondition(field: SubscriptionFields.service, oneOf: [ServiceKind.gas]),
+                                    footnote: String(localized: "E pe factura de gaz.")),
+                    // The person's own number: copied into forms, never called, so it is text, not a phone.
+                    FieldDefinition(key: SubscriptionFields.phoneNumber, label: String(localized: "Număr de telefon"), type: .text, role: .keyFact,
+                                    placeholder: "0700 000 000",
+                                    appliesWhen: BlueprintCondition(field: SubscriptionFields.service, oneOf: [ServiceKind.mobile])),
+                ]),
+                FieldSection(key: "subscription.term", title: String(localized: "Perioada minimă"), fields: [
+                    FieldDefinition(key: SubscriptionFields.startDate, label: String(localized: "Început contract"), type: .date, role: .startDate),
+                    FieldDefinition(key: SubscriptionFields.minimumMonths, label: String(localized: "Perioadă minimă"), type: .number, unit: String(localized: "luni"),
+                                    placeholder: "24",
+                                    footnote: String(localized: "Cât te-ai angajat să rămâi. Plecarea mai devreme costă de obicei.")),
+                    FieldDefinition(key: SubscriptionFields.minimumUntil, label: String(localized: "Perioada minimă se termină"), type: .date,
+                                    derivation: .addMonths(dateField: SubscriptionFields.startDate, monthsField: SubscriptionFields.minimumMonths)),
+                ]),
+                FieldSection(key: "subscription.payment", title: String(localized: "Plată"), fields: [
+                    FieldDefinition(key: SubscriptionFields.directDebit, label: String(localized: "Plătesc prin debit direct"), type: .toggle,
+                                    footnote: String(localized: "Banca plătește singură facturile, așa că nu îți mai amintesc să le plătești.")),
+                    FieldDefinition(key: SubscriptionFields.lastBill, label: String(localized: "Ultima factură"), type: .money),
                     FieldDefinition(key: "subscription.card", label: String(localized: "Card (ultimele 4 cifre)"), type: .text, isSensitive: true),
                 ]),
             ],
@@ -395,8 +430,19 @@ public enum BuiltInTemplates {
                                     firstDue: .field(key: "subscription.contractEnd", offsetDays: 0),
                                     reminders: profile([30], .financial, followUp: false),
                                     note: String(localized: "De obicei prețul crește după. E momentul să ceri o ofertă mai bună.")),
+                // When a fixed term ends, the contract usually carries on with no fixed
+                // term, and leaving takes at most a month's notice and no penalty (EU
+                // electronic communications code, art. 105). Said plainly, never promised.
+                ObligationBlueprint(key: SubscriptionFields.minimumEndsBlueprint, title: String(localized: "Se termină perioada minimă"), kind: .renewal, recurrence: .none,
+                                    firstDue: .field(key: SubscriptionFields.minimumUntil, offsetDays: 0),
+                                    reminders: profile([30, 0], .financial, followUp: false),
+                                    note: String(localized: "De regulă, de la această dată poți renunța fără penalități, anunțând cu cel mult o lună înainte. E cel mai bun moment să ceri o ofertă mai bună.")),
+                // One per subscription: each bill read moves it to that bill's own due date.
+                ObligationBlueprint(key: SubscriptionFields.billBlueprint, title: String(localized: "Factura de plătit"), kind: .payment, recurrence: .none,
+                                    firstDue: .ask, isSuggested: false,
+                                    note: String(localized: "Data vine de pe ultima factură citită.")),
             ],
-            pockets: [.upcoming, .documents, .money, .keyFacts]
+            pockets: [.upcoming, .documents, .history, .money, .keyFacts]
         )
     }
 

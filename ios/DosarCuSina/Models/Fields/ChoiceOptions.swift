@@ -254,4 +254,54 @@ public enum BillingCycle {
             option(yearly, "Anual", ["Anuală", "Yearly", "Annual"]),
         ]
     }
+
+    /// How many months one cycle lasts; monthly when unknown.
+    public static func months(_ key: String?) -> Int {
+        switch key.flatMap({ options.option(for: $0)?.key }) {
+        case yearly: return 12
+        case quarterly: return 3
+        default: return 1
+        }
+    }
+}
+
+/// What an ongoing contract is for. Gas, electricity, water and fixed internet or TV
+/// are tied to an address, so they live under the home they supply; a mobile plan
+/// lives in Abonamente, like a streaming service. Capture names the service with
+/// these same keys (`CaptureFieldKey.serviceKind`).
+public enum ServiceKind {
+    public static let gas = "service.gas"
+    public static let electricity = "service.electricity"
+    public static let water = "service.water"
+    public static let internetTV = "service.internetTV"
+    public static let mobile = "service.mobile"
+    public static let other = "service.other"
+
+    public static let all = [gas, electricity, water, internetTV, mobile, other]
+
+    public static var options: [ChoiceOption] {
+        [
+            option(gas, "Gaz", ["Gaze", "Gaze naturale"]),
+            option(electricity, "Curent", ["Energie electrică", "Electricitate"]),
+            option(water, "Apă", ["Apă și canal", "Apă-canal"]),
+            option(internetTV, "Internet și TV", ["Internet", "Televiziune", "TV", "Cablu"]),
+            option(mobile, "Telefon mobil", ["Mobil", "Abonament mobil", "Telefonie mobilă"]),
+            option(other, "Alt abonament", ["Altul", "Altceva"]),
+        ]
+    }
+
+    /// Supplied at an address: the contract belongs to the home, and each home has its own.
+    public static func isTiedToHome(_ key: String?) -> Bool {
+        [gas, electricity, water, internetTV].contains(key ?? "")
+    }
+
+    /// Billed on a rhythm the binder can expect: one bill per billing cycle.
+    public static func sendsRegularBills(_ key: String?) -> Bool {
+        isTiedToHome(key) || key == mobile
+    }
+
+    /// The service's name, in a few words: "Gaz".
+    public static func label(for key: String?) -> String? {
+        key.flatMap { options.option(for: $0)?.label }
+    }
 }
