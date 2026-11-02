@@ -213,7 +213,12 @@ public enum BuiltInTemplates {
             ],
             blueprints: [
                 ObligationBlueprint(key: "pet.rabies", title: String(localized: "Vaccin antirabic"), kind: .legal, recurrence: .interval(.years(1), anchor: .completion), firstDue: .ask,
-                                    reminders: profile([7, 1], .health, grace: 7),
+                                    reminders: profile([1], .health, grace: 7),
+                                    // A cat can be a few days late; a dog's rabies vaccine is a legal requirement.
+                                    reminderVariants: ReminderProfileVariants(field: "pet.species", variants: [
+                                        PetSpecies.cat: profile([1], .health, grace: 7),
+                                        PetSpecies.dog: profile([10, 4], .legal),
+                                    ]),
                                     note: String(localized: "Obligatoriu și cerut la trecerea graniței.")),
                 ObligationBlueprint(key: "pet.vaccine", title: String(localized: "Vaccin anual"), kind: .health, recurrence: .interval(.years(1), anchor: .completion), firstDue: .ask,
                                     reminders: profile([1], .health, grace: 7)),
