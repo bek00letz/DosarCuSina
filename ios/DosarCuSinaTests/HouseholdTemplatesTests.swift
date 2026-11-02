@@ -101,6 +101,13 @@ struct HouseholdTemplatesTests {
         let documents = (me.children ?? []).filter { $0.templateKey == BuiltInTemplates.Key.documents }
         #expect(Set(documents.map(\.name)) == ["Pașaport", "Carte de identitate"])
         #expect(BuiltInTemplates.member.allFields.isEmpty, "Members are a name only")
+
+        let loose = try AssetActions(context: context).create(name: "Permis", template: try template(BuiltInTemplates.Key.documents, in: context), values: FieldValues())
+        let groups = try DocumentHolders.groups(in: context)
+        #expect(groups.first?.holder?.id == me.id)
+        #expect(groups.first?.documents.map(\.name) == ["Pașaport", "Carte de identitate"], "Soonest expiry first")
+        #expect(groups.last?.holder == nil)
+        #expect(groups.last?.documents.map(\.id) == [loose.id])
         #expect(!BuiltInTemplates.documents.allFields.contains { $0.key == "document.holder" })
     }
 
