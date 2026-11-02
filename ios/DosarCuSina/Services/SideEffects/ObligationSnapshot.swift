@@ -22,6 +22,11 @@ public struct ObligationSnapshot: Hashable, Sendable, Identifiable {
     /// The category asks for Face ID, so lock-screen text stays generic.
     public var isSensitive: Bool
     public var isExample: Bool
+    /// When the obligation last changed. Its current due day can't have been set
+    /// later, so reminders that would have fired before it never had a chance:
+    /// `ReminderPlanner` makes up for them with one catch-up reminder. Nil when
+    /// unknown (no catch-up).
+    public var cycleKnownSince: Date?
 
     public init(
         id: UUID = UUID(),
@@ -39,7 +44,8 @@ public struct ObligationSnapshot: Hashable, Sendable, Identifiable {
         symbol: String = "checklist",
         tint: TemplateTint = .gray,
         isSensitive: Bool = false,
-        isExample: Bool = false
+        isExample: Bool = false,
+        cycleKnownSince: Date? = nil
     ) {
         self.id = id
         self.title = title
@@ -57,10 +63,19 @@ public struct ObligationSnapshot: Hashable, Sendable, Identifiable {
         self.tint = tint
         self.isSensitive = isSensitive
         self.isExample = isExample
+        self.cycleKnownSince = cycleKnownSince
     }
 }
 
 extension ObligationSnapshot {
+    /// What may leave the app (reminders, the badge, widgets, Siri and Shortcuts,
+    /// Spotlight): every snapshot except examples, which are only for exploring.
+    /// Every outside surface reads this one list.
+    @MainActor
+    public static func fetchForOutside(in context: ModelContext, calendar: Calendar = .current) throws -> [ObligationSnapshot] {
+        try fetchAll(in: context, calendar: calendar).filter { !$0.isExample }
+    }
+
     /// Snapshots of every obligation that isn't archived, with asset and category details.
     @MainActor
     public static func fetchAll(in context: ModelContext, calendar: Calendar = .current) throws -> [ObligationSnapshot] {
@@ -89,7 +104,8 @@ extension ObligationSnapshot {
                 symbol: asset?.symbolOverride ?? template?.symbol ?? "checklist",
                 tint: asset?.tintOverride ?? template?.tint ?? .gray,
                 isSensitive: template?.isSensitive ?? false,
-                isExample: obligation.isExample
+                isExample: obligation.isExample,
+                cycleKnownSince: obligation.updatedAt
             )
         }
     }

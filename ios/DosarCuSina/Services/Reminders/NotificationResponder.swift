@@ -3,19 +3,26 @@ import SwiftData
 @preconcurrency import UserNotifications
 
 /// Handles taps and buttons on reminders. "Am rezolvat" and "Amână 3 zile" go
-/// through `ObligationActions`, exactly like the same buttons inside the app;
-/// a tap opens the obligation through `AppNavigator`.
+/// through `IntentEngine`, the one way in for actions from outside the app: they
+/// act only on the cycle the reminder was about, and reminders are planned again
+/// afterwards. A tap opens the obligation through `AppNavigator`.
 @MainActor
 public final class NotificationResponder: NSObject, UNUserNotificationCenterDelegate {
     private let containerProvider: @MainActor () -> ModelContainer?
     private let navigator: AppNavigator
+    private let sideEffects: @MainActor (ModelContainer) -> SideEffectsCoordinator
+    private let failures: OutsideActionFailures
 
     public init(
         containerProvider: @escaping @MainActor () -> ModelContainer? = { PersistenceController.shared.container },
-        navigator: AppNavigator = .shared
+        navigator: AppNavigator = .shared,
+        sideEffects: @escaping @MainActor (ModelContainer) -> SideEffectsCoordinator = { SideEffectsCoordinator.shared(for: $0) },
+        failures: OutsideActionFailures = .shared
     ) {
         self.containerProvider = containerProvider
         self.navigator = navigator
+        self.sideEffects = sideEffects
+        self.failures = failures
     }
 
     public nonisolated func userNotificationCenter(
@@ -30,30 +37,30 @@ public final class NotificationResponder: NSObject, UNUserNotificationCenterDele
         didReceive response: UNNotificationResponse
     ) async {
         let action = response.actionIdentifier
-        let info = response.notification.request.content.userInfo
-        let obligationId = (info[ReminderActions.obligationIdKey] as? String).flatMap(UUID.init(uuidString:))
-        let deepLink = (info[ReminderActions.deepLinkKey] as? String).flatMap(URL.init(string:))
-        await handle(action: action, obligationId: obligationId, deepLink: deepLink)
+        let request = response.notification.request
+        let payload = ReminderPayload(identifier: request.identifier, userInfo: request.content.userInfo, deliveredAt: response.notification.date)
+        await handle(action: action, payload: payload)
     }
 
     /// Applies a reminder action. Internal so tests can drive it without a notification.
-    func handle(action: String, obligationId: UUID?, deepLink: URL?) async {
+    func handle(action: String, payload: ReminderPayload, calendar: Calendar = .current) async {
         switch action {
         case ReminderActions.complete, ReminderActions.snooze:
-            guard let obligationId, let container = containerProvider() else { return }
-            let context = container.mainContext
-            var descriptor = FetchDescriptor<Obligation>(predicate: #Predicate { $0.id == obligationId })
-            descriptor.fetchLimit = 1
-            guard let obligation = try? context.fetch(descriptor).first else { return }
-            let actions = ObligationActions(context: context)
-            if action == ReminderActions.complete {
-                _ = try? actions.complete(obligation)
-            } else {
-                try? actions.snooze(obligation, days: ReminderActions.snoozeDays)
+            guard let obligationId = payload.obligationId else { return }
+            let request = OutsideRequest(
+                obligationId: obligationId,
+                cycle: payload.cycle,
+                action: action == ReminderActions.complete ? .complete : .snooze(days: ReminderActions.snoozeDays),
+                surface: .notification
+            )
+            do {
+                try await IntentEngine.perform(request, container: containerProvider(), sideEffects: sideEffects, failures: failures, calendar: calendar)
+            } catch {
+                // Recorded by the engine; Urmează shows it the next time the app opens.
             }
         default:
-            if let deepLink, navigator.open(deepLink) { return }
-            if let obligationId { navigator.open(.obligation(obligationId)) }
+            if let deepLink = payload.deepLink, navigator.open(deepLink) { return }
+            if let obligationId = payload.obligationId { navigator.open(.obligation(obligationId)) }
         }
     }
 }

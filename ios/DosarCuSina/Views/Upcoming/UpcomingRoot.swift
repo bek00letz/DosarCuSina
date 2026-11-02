@@ -21,6 +21,8 @@ struct UpcomingRoot: View {
     @State private var digest: AttentionDigest?
     /// Calm notes with nothing due: a bill that hasn't come.
     @State private var notes: [AttentionNote] = []
+    /// Reminder buttons and widget taps that couldn't be saved, while their cycle is still open.
+    @State private var unsaved: [OutsideActionFailures.Failure] = []
     @State private var today = CalendarDay(Date())
     @State private var expanded: Set<String> = []
     @State private var toast: DSToast?
@@ -42,6 +44,7 @@ struct UpcomingRoot: View {
         .dsToast($toast)
         .task(id: changeToken) { reload() }
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in reload() }
+        .onReceive(NotificationCenter.default.publisher(for: OutsideActionFailures.didChange)) { _ in reload() }
         .confirmationDialog(
             Text("Amâni până când?"),
             isPresented: Binding(get: { snoozing != nil }, set: { if !$0 { snoozing = nil } }),
@@ -79,6 +82,7 @@ struct UpcomingRoot: View {
         snapshots = (try? ObligationSnapshot.fetchAll(in: context)) ?? []
         digest = AttentionModel.digest(snapshots)
         notes = AttentionModel.missingBills((try? BillWatchSnapshot.fetchAll(in: context)) ?? [])
+        unsaved = OutsideActionFailures.shared.current(in: snapshots).map(\.failure)
     }
 
     // MARK: Content
@@ -86,6 +90,13 @@ struct UpcomingRoot: View {
     @ViewBuilder private var content: some View {
         if let digest {
             List {
+                if !unsaved.isEmpty {
+                    Section {
+                        ForEach(unsaved) { failure in unsavedRow(failure) }
+                    } header: {
+                        sectionHeader("Nu s-a salvat", subtitle: "Fă-o din nou de aici.")
+                    }
+                }
                 if digest.now.isEmpty && digest.soon.isEmpty {
                     Section { allClear(digest) }
                         .listRowBackground(Color.clear)
@@ -215,6 +226,40 @@ struct UpcomingRoot: View {
             )
         }
         .accessibilityHint(Text("Deschide abonamentul.", comment: "VoiceOver hint of a missing-bill note."))
+    }
+
+    /// A reminder button or widget tap that couldn't be saved: says which and where,
+    /// and opens the deadline so it can be done again. It goes once that cycle is
+    /// done, or with a swipe.
+    private func unsavedRow(_ failure: OutsideActionFailures.Failure) -> some View {
+        let obligation = snapshots.first { $0.id == failure.obligationId }
+        let isLocked = vault.isLocked(sectionIsSensitive: obligation?.isSensitive ?? false)
+        let name = isLocked ? String(localized: "O scadență protejată") : (obligation?.title ?? "")
+        let title: String
+        switch failure.action {
+        case .complete: title = String(localized: "„\(name)” nu s-a bifat", comment: "Urmează: a reminder button or widget tap for this deadline couldn't be saved")
+        case .snooze: title = String(localized: "„\(name)” nu s-a amânat", comment: "Urmează: a snooze from a reminder couldn't be saved")
+        }
+        let when = DueWording.date(CalendarDay(failure.failedAt), today: today)
+        let detail: String
+        switch failure.surface {
+        case .widget: detail = String(localized: "Din widget, \(when)", comment: "Where and when an unsaved tap came from")
+        case .notification, .shortcut: detail = String(localized: "Din notificare, \(when)", comment: "Where and when an unsaved tap came from")
+        }
+        return NavigationLink(value: AppRoute.obligation(failure.obligationId)) {
+            DSListRow(
+                title: Text(verbatim: title),
+                subtitle: Text(verbatim: detail),
+                systemImage: "arrow.clockwise.circle",
+                trailing: { EmptyView() }
+            )
+        }
+        .swipeActions(edge: .trailing) {
+            Button { OutsideActionFailures.shared.dismiss(failure.obligationId) } label: { Label("Ascunde", systemImage: "eye.slash") }
+                .tint(DS.Palette.secondaryLabel)
+        }
+        .accessibilityAction(named: Text("Ascunde")) { OutsideActionFailures.shared.dismiss(failure.obligationId) }
+        .accessibilityHint(Text("Deschide termenul ca să-l faci din nou.", comment: "VoiceOver hint of an unsaved tap in Urmează."))
     }
 
     private func laterRow(_ later: AttentionLaterSummary) -> some View {

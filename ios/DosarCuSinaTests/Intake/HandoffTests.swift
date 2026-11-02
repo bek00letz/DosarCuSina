@@ -212,9 +212,10 @@ struct WidgetEngineTests {
         let context = try makeContext()
         let rent = try ObligationActions(context: context, calendar: .bucharest).create(
             title: "Chirie", kind: .payment, dueDay: CalendarDay("2026-11-05"), for: nil)
-        let outcome = try IntentEngine.complete(obligationID: rent.id, cycle: CalendarDay("2026-12-05"), in: context, calendar: .bucharest)
+        let outcome = try IntentEngine.apply(OutsideRequest(obligationId: rent.id, cycle: CalendarDay("2026-12-05"), action: .complete, surface: .widget),
+                                             in: context, calendar: .bucharest)
         #expect(outcome == .skipped)
         #expect(rent.status == .active)
-        #expect(try IntentEngine.complete(obligationID: UUID(), in: context) == .skipped)
+        #expect(try IntentEngine.apply(OutsideRequest(obligationId: UUID(), cycle: CalendarDay("2026-11-05"), action: .complete, surface: .widget), in: context) == .skipped)
     }
 }
