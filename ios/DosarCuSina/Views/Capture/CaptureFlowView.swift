@@ -91,6 +91,11 @@ struct CaptureFlowView: View {
                 phase = .visit(assetID: id, result: result)
             } else {
                 phase = .review(review)
+                // The person chose to have a weak phone reading read by their AI provider too.
+                if AIProviderSettings.standard.readsAutomatically(after: result) {
+                    CaptureLog.engine.info("Reading with the AI provider automatically: \(ReadingArbiter.weaknesses(of: result).map(\.rawValue).sorted().joined(separator: ","), privacy: .public)")
+                    readAgain(.cloud, payload ?? input.payload)
+                }
             }
         } catch is CancellationError {
             // The sheet went away or a new attempt started; that one shows its own result.

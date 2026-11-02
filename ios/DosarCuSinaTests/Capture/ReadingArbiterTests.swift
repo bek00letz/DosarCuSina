@@ -271,4 +271,19 @@ struct ReadingArbiterTests {
         #expect(ReadingArbiter.weaknesses(of: result(.utilityInvoice, confidence: 0.95, evidence: .providerFormatAlone)) == [.providerFormatAlone])
         #expect(ReadingArbiter.weaknesses(of: result(.utilityInvoice, confidence: 0.95, evidence: .providerFormat)).isEmpty)
     }
+
+    @Test("The automatic reading is off until the person turns it on, and runs only after a weak reading")
+    func automaticReadingIsOffByDefault() {
+        let settings = AIProviderTests.settings()
+        #expect(!settings.readsAutomaticallyWhenUnsure)
+        settings.saveKey(AIProviderTests.placeholderKey, for: .gemini)
+        let weak = result(confidence: 0.5)
+        #expect(!settings.readsAutomatically(after: weak), "Off by default")
+
+        settings.readsAutomaticallyWhenUnsure = true
+        #expect(settings.readsAutomatically(after: weak))
+        #expect(!settings.readsAutomatically(after: result()), "A sound reading isn't sent")
+        settings.deleteKey(for: .gemini)
+        #expect(!settings.readsAutomatically(after: weak), "Not without a provider")
+    }
 }

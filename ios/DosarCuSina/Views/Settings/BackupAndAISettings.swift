@@ -189,6 +189,7 @@ struct AISettings: View {
     @State private var baseURL = ""
     @State private var status: AIKeyStatus?
     @State private var isTesting = false
+    @State private var readsAutomatically = AIProviderSettings.standard.readsAutomaticallyWhenUnsure
 
     var body: some View {
         Section {
@@ -247,6 +248,18 @@ struct AISettings: View {
                 .frame(minHeight: 44)
             }
 
+            if hasKey || !provider.requiresKey {
+                Toggle(isOn: $readsAutomatically) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Citește automat când nu sunt sigur", comment: "AI setting: read with the AI provider by itself after a weak phone reading.")
+                        Text("Dacă telefonul nu citește sigur un act, îl trimite singur la \(provider.name), cu cheia ta.", comment: "Explains the automatic AI reading. The argument is the provider.")
+                            .dsFont(.footnote)
+                    }
+                }
+                .frame(minHeight: 44)
+                .onChange(of: readsAutomatically) { _, new in settings.readsAutomaticallyWhenUnsure = new }
+            }
+
             Button(action: saveAndTest) {
                 HStack {
                     Text(hasKey || key.isEmpty ? "Testează" : "Salvează și testează", comment: "Saves and tests the AI settings.")
@@ -280,7 +293,7 @@ struct AISettings: View {
         } header: {
             Text("Inteligență artificială (opțional)", comment: "Settings section.")
         } footer: {
-            Text("Cheile stau doar pe acest telefon. Un act ajunge la serviciul ales doar când apeși „Citește mai bine” pe el.", comment: "Footer of the AI section.")
+            Text("Cheile stau doar pe acest telefon. Un act ajunge la serviciul ales doar când apeși „Citește mai bine” pe el sau, dacă alegi mai sus, când telefonul nu e sigur ce a citit.", comment: "Footer of the AI section.")
         }
         .onAppear(perform: reload)
         .onChange(of: provider) { _, new in

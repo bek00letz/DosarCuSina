@@ -151,6 +151,21 @@ public struct AIProviderSettings: Sendable {
         return custom.isEmpty ? provider.defaultModel : custom
     }
 
+    private static let readsAutomaticallyKey = "ai.readsAutomaticallyWhenUnsure"
+
+    /// "Citește automat când nu sunt sigur": the provider reads a document by itself right
+    /// after a weak phone reading (`ReadingArbiter.isWeak`). Off until the person turns it on.
+    public var readsAutomaticallyWhenUnsure: Bool {
+        get { defaults.bool(forKey: Self.readsAutomaticallyKey) }
+        nonmutating set { defaults.set(newValue, forKey: Self.readsAutomaticallyKey) }
+    }
+
+    /// Whether a reading of this result should go to the provider without a tap: the person
+    /// turned it on, a provider is ready, and the phone's reading is weak.
+    public func readsAutomatically(after result: CaptureResult) -> Bool {
+        readsAutomaticallyWhenUnsure && isReady && !result.readWithCloudModel && ReadingArbiter.isWeak(result)
+    }
+
     /// The compatible service's address as the person typed it.
     public var baseURLText: String {
         get { defaults.string(forKey: Self.baseURLKey) ?? "" }
