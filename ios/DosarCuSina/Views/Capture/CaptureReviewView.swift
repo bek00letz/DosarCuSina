@@ -9,12 +9,29 @@ struct CaptureReviewView: View {
     @State var review: CaptureReview
     let assets: [Asset]
     var onReadWithCloud: (() -> Void)?
+    /// Adds pages (the back of a card) and reads the document again, keeping the person's edits.
+    var onAddPages: ((CaptureReview, CaptureRequest.Payload) -> Void)?
+    /// A read with added pages is running.
+    var isReadingAgain = false
+    /// Why the last read with added pages didn't work.
+    var readAgainError: String?
     let onClose: (CaptureFlowResult) -> Void
 
-    init(review: CaptureReview, assets: [Asset], onReadWithCloud: (() -> Void)? = nil, onClose: @escaping (CaptureFlowResult) -> Void) {
+    init(
+        review: CaptureReview,
+        assets: [Asset],
+        onReadWithCloud: (() -> Void)? = nil,
+        onAddPages: ((CaptureReview, CaptureRequest.Payload) -> Void)? = nil,
+        isReadingAgain: Bool = false,
+        readAgainError: String? = nil,
+        onClose: @escaping (CaptureFlowResult) -> Void
+    ) {
         self._review = State(initialValue: review)
         self.assets = assets
         self.onReadWithCloud = onReadWithCloud
+        self.onAddPages = onAddPages
+        self.isReadingAgain = isReadingAgain
+        self.readAgainError = readAgainError
         self.onClose = onClose
     }
 
@@ -28,7 +45,10 @@ struct CaptureReviewView: View {
     @State private var cloudMessage: String?
     @State private var saveRequest: ReminderSaveRequest?
     @State private var thumbnail: UIImage?
-    @State private var showsAllFields = false
+    @State private var pages: [UIImage] = []
+    @State private var isShowingPages = false
+    @State private var backSource: CaptureSource?
+    @State private var backError: String?
 
     private var templatesByKey: [String: CategoryTemplate] {
         Dictionary(templates.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
@@ -61,13 +81,26 @@ struct CaptureReviewView: View {
         .dsDiscardGuard(hasChanges: !isSaving)
         .reminderPermissionGate($saveRequest)
         .sheet(isPresented: $isPickingDestination) {
-            CaptureDestinationPicker(destination: $review.destination, newAssetName: $review.newAssetName, templates: templates, assets: assets)
+            CaptureDestinationPicker(
+                destination: $review.destination, newAssetName: $review.newAssetName, templates: templates, assets: assets,
+                offersNewHolder: review.kind.isIdentityDocument
+            )
         }
+        .fullScreenCover(isPresented: $isShowingPages) {
+            DocumentPagesViewer(pages: pages.isEmpty ? [thumbnail].compactMap { $0 } : pages)
+        }
+        .captureSourcePicker($backSource, onPicked: { payload in
+            backError = nil
+            onAddPages?(review, payload)
+        }, onError: { _ in
+            backError = String(localized: "Poza nu s-a putut deschide. Încearcă din nou.")
+        })
         .task { await loadThumbnail() }
         .task(id: review.result.id) { await explainCloudFailure() }
         .onDisappear {
-            // Closing without saving drops the pages from capture's memory.
-            if !isSaving, let id = review.documentID {
+            // Closing without saving drops the pages from capture's memory. Not while the
+            // camera covers the screen for the back of the card: the review comes back.
+            if !isSaving, backSource == nil, !isShowingPages, let id = review.documentID {
                 Task { await CaptureDocumentStore.shared().discard(id: id) }
             }
         }
@@ -78,17 +111,23 @@ struct CaptureReviewView: View {
     private var documentCard: some View {
         DSCard {
             HStack(alignment: .top, spacing: DS.Space.s) {
-                Group {
-                    if let thumbnail {
-                        Image(uiImage: thumbnail).resizable().scaledToFill()
-                    } else {
-                        Image(systemName: "doc.text").font(.title).foregroundStyle(DS.Palette.secondaryLabel)
+                Button { isShowingPages = true } label: {
+                    Group {
+                        if let thumbnail {
+                            Image(uiImage: thumbnail).resizable().scaledToFill()
+                        } else {
+                            Image(systemName: "doc.text").font(.title).foregroundStyle(DS.Palette.secondaryLabel)
+                        }
                     }
+                    .frame(width: 64, height: 84)
+                    .background(DS.Palette.fill)
+                    .clipShape(ConcentricRectangle(corners: .concentric(minimum: 8), isUniform: true))
+                    .contentShape(.rect)
                 }
-                .frame(width: 64, height: 84)
-                .background(DS.Palette.fill)
-                .clipShape(ConcentricRectangle(corners: .concentric(minimum: 8), isUniform: true))
-                .accessibilityHidden(true)
+                .buttonStyle(.dsPressable)
+                .disabled(thumbnail == nil && pages.isEmpty)
+                .accessibilityLabel(Text("Vezi actul mare", comment: "VoiceOver label of the document thumbnail in the review."))
+                .accessibilityHint(Text("Se deschide pe tot ecranul. Poți mări cu două degete.", comment: "VoiceOver hint of the document thumbnail."))
 
                 VStack(alignment: .leading, spacing: DS.Space.xs) {
                     Text(verbatim: CaptureMapping.kindTitle(review.kind))
@@ -119,7 +158,30 @@ struct CaptureReviewView: View {
         }
     }
 
+    /// The back of an identity card, when only the front was read.
+    @ViewBuilder private var backPageNotice: some View {
+        if review.asksForBackPage || isReadingAgain {
+            VStack(alignment: .leading, spacing: DS.Space.s) {
+                DSNotice(.info, title: "Ai și o poză cu spatele? Acolo e codul care confirmă datele.")
+                if isReadingAgain {
+                    DSDelayedProgress(label: "Citesc și spatele…")
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                } else if onAddPages != nil {
+                    if CaptureSource.isCameraAvailable {
+                        DSSecondaryButton("Fotografiază spatele", systemImage: "camera") { backSource = .camera }
+                    }
+                    DSSecondaryButton("Alege din poze", systemImage: "photo.on.rectangle") { backSource = .photos }
+                }
+                if let message = backError ?? readAgainError {
+                    DSNotice(.error, title: "Nu am putut citi spatele", message: LocalizedStringKey(message))
+                }
+            }
+            .transition(.opacity)
+        }
+    }
+
     @ViewBuilder private var notices: some View {
+        backPageNotice
         if let duplicate = review.duplicateAttachmentID {
             DSNotice(.info, title: "Ai mai adăugat documentul ăsta", message: "Poți să-l deschizi, sau să salvezi doar datele de pe el.", actionTitle: "Vezi documentul") {
                 onClose(.dismissed)
@@ -155,7 +217,7 @@ struct CaptureReviewView: View {
             DSSectionHeader("Ce am citit", subtitle: review.visibleFields.contains(where: \.needsCheck) ? "Verifică ce e marcat." : nil)
             DSCard {
                 VStack(alignment: .leading, spacing: DS.Space.m) {
-                    DSTextField("Nume", text: $review.title)
+                    DSTextField("Numele actului", text: $review.title)
                     let fields = review.visibleFields
                     if fields.isEmpty {
                         Text("Nu am găsit date pe act. Îl păstrez oricum, cu numele de mai sus.")
@@ -202,8 +264,9 @@ struct CaptureReviewView: View {
                         )
                     }
                     .buttonStyle(.plain)
-                    if case .newAsset = review.destination {
-                        DSTextField("Numele secțiunii noi", text: $review.newAssetName, isRequired: true)
+                    if case .newAsset(let key) = review.destination {
+                        DSTextField(key == BuiltInTemplates.Key.member ? "Numele persoanei" : "Numele secțiunii noi",
+                                    text: $review.newAssetName, isRequired: true)
                     }
                 }
             }
@@ -214,6 +277,8 @@ struct CaptureReviewView: View {
         switch review.destination {
         case .none: return String(localized: "Doar păstrez actul")
         case .asset(let id): return assets.first { $0.id == id }?.name ?? String(localized: "Secțiune ștearsă")
+        case .newAsset(let key) where key == BuiltInTemplates.Key.member:
+            return String(localized: "Persoană nouă: \(review.newAssetName)")
         case .newAsset(let key): return String(localized: "Secțiune nouă în \(templatesByKey[key]?.name ?? key)")
         }
     }
@@ -223,7 +288,10 @@ struct CaptureReviewView: View {
         case .none: return String(localized: "Îl găsești în Caută.")
         case .asset(let id):
             guard let asset = assets.first(where: { $0.id == id }) else { return "" }
+            if asset.templateKey == BuiltInTemplates.Key.member { return String(localized: "Actul stă la actele acestei persoane.") }
             return templatesByKey[asset.templateKey]?.name ?? ""
+        case .newAsset(let key) where key == BuiltInTemplates.Key.member:
+            return String(localized: "Se adaugă în Acte când salvezi.")
         case .newAsset: return String(localized: "Se creează când salvezi.")
         }
     }
@@ -234,6 +302,7 @@ struct CaptureReviewView: View {
         case .asset(let id):
             let asset = assets.first { $0.id == id }
             return asset?.symbolOverride ?? asset.flatMap { templatesByKey[$0.templateKey]?.symbol } ?? "folder"
+        case .newAsset(let key) where key == BuiltInTemplates.Key.member: return "person.crop.circle.badge.plus"
         case .newAsset(let key): return templatesByKey[key]?.symbol ?? "folder.badge.plus"
         }
     }
@@ -292,9 +361,9 @@ struct CaptureReviewView: View {
     }
 
     private func loadThumbnail() async {
-        guard let id = review.documentID, let processed = await CaptureDocumentStore.shared().processed(id: id),
-              let data = processed.thumbnailData else { return }
-        thumbnail = UIImage(data: data)
+        guard let id = review.documentID, let processed = await CaptureDocumentStore.shared().processed(id: id) else { return }
+        thumbnail = processed.thumbnailData.flatMap(UIImage.init(data:))
+        pages = processed.pageData.compactMap(UIImage.init(data:))
     }
 
     /// Tells "offline" apart from "the key wasn't accepted".
@@ -339,12 +408,12 @@ private struct CaptureFieldEditor: View {
         case .day?:
             DSDateField(title, date: Binding(
                 get: { field.value?.day?.date() },
-                set: { field.value = $0.map { .day(CaptureDay(date: $0)) }; field.confidence = 1 }
+                set: { field.confirm($0.map { .day(CaptureDay(date: $0)) }) }
             ))
         case .money(let money)?:
             DSMoneyField(title, amount: Binding(
                 get: { field.value?.money?.amount },
-                set: { amount in field.value = amount.map { .money(CaptureMoney(amount: $0, currencyCode: money.currencyCode)) }; field.confidence = 1 }
+                set: { amount in field.confirm(amount.map { .money(CaptureMoney(amount: $0, currencyCode: money.currencyCode)) }) }
             ), currencyCode: Binding(
                 get: { field.value?.money?.currencyCode ?? money.currencyCode },
                 set: { code in if let amount = field.value?.money?.amount { field.value = .money(CaptureMoney(amount: amount, currencyCode: code)) } }
@@ -352,7 +421,7 @@ private struct CaptureFieldEditor: View {
         default:
             DSTextField(title, text: Binding(
                 get: { Self.text(of: field.value) },
-                set: { text in field.value = Self.value(text, like: field.value); field.confidence = 1 }
+                set: { text in field.confirm(Self.value(text, like: field.value)) }
             ))
         }
     }
@@ -399,6 +468,8 @@ private struct CaptureDestinationPicker: View {
     @Binding var newAssetName: String
     let templates: [CategoryTemplate]
     let assets: [Asset]
+    /// An identity document can go to a new household member.
+    var offersNewHolder = false
 
     @Environment(\.dismiss) private var dismiss
     @State private var isPickingNewCategory = false
@@ -408,6 +479,10 @@ private struct CaptureDestinationPicker: View {
             List {
                 Section {
                     choice(.none, title: String(localized: "Doar păstrez actul"), subtitle: String(localized: "Fără secțiune; îl găsești în Caută."), symbol: "tray")
+                    if offersNewHolder {
+                        choice(.newAsset(templateKey: BuiltInTemplates.Key.member), title: String(localized: "Persoană nouă"),
+                               subtitle: String(localized: "Actele stau grupate pe persoane."), symbol: "person.crop.circle.badge.plus")
+                    }
                 }
                 ForEach(templates.filter { template in assets.contains { $0.templateKey == template.key } }) { template in
                     Section {

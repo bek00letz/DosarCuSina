@@ -185,6 +185,11 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: "document.number", label: String(localized: "Serie și număr"), type: .text, role: .documentNumber, isSensitive: true),
                     // The personal numeric code lives only here, in a category that asks for Face ID by default.
                     FieldDefinition(key: "document.personalNumber", label: String(localized: "CNP"), type: .text, isSensitive: true),
+                    // What forms ask for, read off the document. Sensitive, so never indexed for search.
+                    FieldDefinition(key: "document.birthDate", label: String(localized: "Data nașterii"), type: .date, isSensitive: true),
+                    FieldDefinition(key: "document.sex", label: String(localized: "Sex"), type: .text, isSensitive: true),
+                    FieldDefinition(key: "document.nationality", label: String(localized: "Cetățenie"), type: .text, isSensitive: true),
+                    FieldDefinition(key: "document.categories", label: String(localized: "Categorii"), type: .text),
                     FieldDefinition(key: "document.issuer", label: String(localized: "Emis de"), type: .text, role: .issuer),
                     FieldDefinition(key: "document.issueDate", label: String(localized: "Data emiterii"), type: .date, role: .startDate),
                     FieldDefinition(key: "document.expiry", label: String(localized: "Valabil până la"), type: .expiryDate, role: .expiryDate, isEssential: true),

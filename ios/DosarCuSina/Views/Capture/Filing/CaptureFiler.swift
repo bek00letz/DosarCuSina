@@ -76,6 +76,11 @@ struct CaptureFiler {
             var descriptor = FetchDescriptor<Asset>(predicate: #Predicate { $0.id == id })
             descriptor.fetchLimit = 1
             guard let asset = try context.fetch(descriptor).first else { throw FilingError.missingSection }
+            if let documentsKey = Self.holderDocumentTemplateKey(for: review.kind, destinationTemplateKey: asset.templateKey) {
+                // A person: the document becomes one of their documents.
+                outcome.asset = try createSection(review, templateKey: documentsKey, name: review.title, parent: asset, templates: templates)
+                break
+            }
             if let template = templates[asset.templateKey] {
                 var merged = asset.values
                 var changed = false
@@ -94,20 +99,14 @@ struct CaptureFiler {
         case .newAsset(let templateKey):
             let name = review.newAssetName.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !name.isEmpty else { throw FilingError.missingName }
-            guard let template = templates[templateKey] else { throw FilingError.missingSection }
-            let actions = AssetActions(context: context, calendar: calendar, now: now)
-            let values = Self.values(from: review, for: template.definition)
-            let planned = actions.plannedObligations(for: template, values: values).map { planned -> PlannedObligation in
-                var planned = planned
-                if planned.blueprint.key == review.blueprintKey, let day = review.reminderDay {
-                    planned.firstDue = day
-                    planned.isSelected = true
-                }
-                // Dates the person still has to give (the current ITP) are left for the section page.
-                planned.isSelected = planned.isSelected && planned.firstDue != nil
-                return planned
+            if let documentsKey = Self.holderDocumentTemplateKey(for: review.kind, destinationTemplateKey: templateKey) {
+                // A new person, named after the holder, with the document filed under them.
+                guard let memberTemplate = templates[templateKey] else { throw FilingError.missingSection }
+                let member = try AssetActions(context: context, calendar: calendar, now: now).create(name: name, template: memberTemplate, values: FieldValues())
+                outcome.asset = try createSection(review, templateKey: documentsKey, name: review.title, parent: member, templates: templates)
+            } else {
+                outcome.asset = try createSection(review, templateKey: templateKey, name: name, parent: nil, templates: templates)
             }
-            outcome.asset = try actions.create(name: name, template: template, values: values, obligations: planned)
         }
 
         // 2. The deadline.
@@ -170,6 +169,37 @@ struct CaptureFiler {
         return outcome
     }
 
+    /// The template a document becomes when it is filed under a person: an identity
+    /// document going to a household member becomes one of their documents. Nil otherwise.
+    static func holderDocumentTemplateKey(for kind: CaptureDocumentKind, destinationTemplateKey: String) -> String? {
+        guard kind.isIdentityDocument, destinationTemplateKey == BuiltInTemplates.Key.member else { return nil }
+        return CaptureMapping.templateKey(for: kind)
+    }
+
+    /// The template the document's values land in, for the review's reminder preview.
+    static func filedTemplateKey(for review: CaptureReview, destinationTemplateKey: String) -> String {
+        holderDocumentTemplateKey(for: review.kind, destinationTemplateKey: destinationTemplateKey) ?? destinationTemplateKey
+    }
+
+    /// A new section with the values read and the deadlines its template plans.
+    private func createSection(_ review: CaptureReview, templateKey: String, name: String, parent: Asset?, templates: [String: CategoryTemplate]) throws -> Asset {
+        let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let template = templates[templateKey] else { throw FilingError.missingSection }
+        let actions = AssetActions(context: context, calendar: calendar, now: now)
+        let values = Self.values(from: review, for: template.definition)
+        let planned = actions.plannedObligations(for: template, values: values).map { planned -> PlannedObligation in
+            var planned = planned
+            if planned.blueprint.key == review.blueprintKey, let day = review.reminderDay {
+                planned.firstDue = day
+                planned.isSelected = true
+            }
+            // Dates the person still has to give (the current ITP) are left for the section page.
+            planned.isSelected = planned.isSelected && planned.firstDue != nil
+            return planned
+        }
+        return try actions.create(name: name.isEmpty ? CaptureMapping.kindTitle(review.kind) : name, template: template, values: values, obligations: planned, parent: parent)
+    }
+
     /// Drops the pages of a capture the person didn't keep.
     func discard(_ review: CaptureReview) async {
         if let id = review.documentID { await store.discard(id: id) }
@@ -221,8 +251,8 @@ enum CaptureReminderPreview {
     private static func templateKey(for review: CaptureReview, assets: [Asset]) -> String? {
         switch review.destination {
         case .none: return nil
-        case .asset(let id): return assets.first { $0.id == id }?.templateKey
-        case .newAsset(let key): return key
+        case .asset(let id): return assets.first { $0.id == id }.map { CaptureFiler.filedTemplateKey(for: review, destinationTemplateKey: $0.templateKey) }
+        case .newAsset(let key): return CaptureFiler.filedTemplateKey(for: review, destinationTemplateKey: key)
         }
     }
 

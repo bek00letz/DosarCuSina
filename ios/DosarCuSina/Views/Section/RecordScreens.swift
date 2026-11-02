@@ -214,6 +214,10 @@ private struct DocumentContent: View {
 
                 DocumentPreview(attachment: attachment)
 
+                if attachment.kind == .identity, let asset = attachment.asset {
+                    DocumentFacts(asset: asset)
+                }
+
                 if let text = attachment.extractedText, !text.isEmpty {
                     DisclosureGroup(isExpanded: $isShowingText) {
                         Text(verbatim: text)
@@ -284,34 +288,88 @@ private struct DocumentContent: View {
 private struct DocumentPreview: View {
     let attachment: Attachment
 
+    /// The page opened full screen, with pinch and double-tap to zoom.
+    @State private var openPage: OpenPage?
+
+    private struct OpenPage: Identifiable {
+        let index: Int
+        var id: Int { index }
+    }
+
     var body: some View {
         let pages = attachment.orderedPages.compactMap { $0.imageData.flatMap(UIImage.init(data:)) }
-        if attachment.contentType == "com.adobe.pdf", let data = attachment.fileData {
-            PDFPreview(data: data)
-                .frame(height: 520)
-                .clipShape(.rect(cornerRadius: DS.Radius.card, style: .continuous))
-                .dsHairlineBorder(RoundedRectangle(cornerRadius: DS.Radius.card, style: .continuous))
-                .accessibilityLabel(Text("Documentul PDF", comment: "VoiceOver label of a PDF preview."))
-        } else if !pages.isEmpty {
-            VStack(spacing: DS.Space.s) {
-                ForEach(Array(pages.enumerated()), id: \.offset) { index, page in
-                    pageImage(page, index: index)
+        let images = pages.isEmpty ? [(attachment.fileData ?? attachment.thumbnailData).flatMap(UIImage.init(data:))].compactMap { $0 } : pages
+        Group {
+            if attachment.contentType == "com.adobe.pdf", let data = attachment.fileData {
+                PDFPreview(data: data)
+                    .frame(height: 520)
+                    .clipShape(.rect(cornerRadius: DS.Radius.card, style: .continuous))
+                    .dsHairlineBorder(RoundedRectangle(cornerRadius: DS.Radius.card, style: .continuous))
+                    .accessibilityLabel(Text("Documentul PDF", comment: "VoiceOver label of a PDF preview."))
+            } else if !images.isEmpty {
+                VStack(spacing: DS.Space.s) {
+                    ForEach(Array(images.enumerated()), id: \.offset) { index, page in
+                        pageImage(page, index: index)
+                    }
                 }
+            } else {
+                DSNotice(.info, title: "Nu am o previzualizare", message: "Documentul e păstrat, dar nu îl pot arăta aici.")
             }
-        } else if let data = attachment.fileData ?? attachment.thumbnailData, let image = UIImage(data: data) {
-            pageImage(image, index: 0)
-        } else {
-            DSNotice(.info, title: "Nu am o previzualizare", message: "Documentul e păstrat, dar nu îl pot arăta aici.")
+        }
+        .fullScreenCover(item: $openPage) { page in
+            DocumentPagesViewer(pages: images, startAt: page.index)
         }
     }
 
     private func pageImage(_ image: UIImage, index: Int) -> some View {
-        Image(uiImage: image)
-            .resizable()
-            .scaledToFit()
-            .clipShape(.rect(cornerRadius: DS.Radius.control, style: .continuous))
-            .dsHairlineBorder(RoundedRectangle(cornerRadius: DS.Radius.control, style: .continuous))
-            .accessibilityLabel(Text("Pagina \(index + 1)", comment: "VoiceOver label of a scanned page."))
+        Button { openPage = OpenPage(index: index) } label: {
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+                .clipShape(.rect(cornerRadius: DS.Radius.control, style: .continuous))
+                .dsHairlineBorder(RoundedRectangle(cornerRadius: DS.Radius.control, style: .continuous))
+        }
+        .buttonStyle(.dsPressable)
+        .accessibilityLabel(Text("Pagina \(index + 1)", comment: "VoiceOver label of a scanned page."))
+        .accessibilityHint(Text("Se deschide pe tot ecranul. Poți mări cu două degete.", comment: "VoiceOver hint of a page that opens full screen."))
+    }
+}
+
+/// What was read off an identity document, one tap from the clipboard for filling in
+/// forms: CNP, birth date, series and number, dates. The page sits behind Face ID.
+private struct DocumentFacts: View {
+    let asset: Asset
+    @Query private var templates: [CategoryTemplate]
+
+    init(asset: Asset) {
+        self.asset = asset
+        let key = asset.templateKey
+        _templates = Query(filter: #Predicate<CategoryTemplate> { $0.key == key })
+    }
+
+    var body: some View {
+        let rows = Self.rows(asset.values, definition: templates.first?.definition)
+        if !rows.isEmpty {
+            DSCard {
+                VStack(spacing: 0) {
+                    ForEach(Array(rows.enumerated()), id: \.element.key) { index, row in
+                        if index > 0 { DSRowSeparator() }
+                        DSActionValueRow(title: Text(verbatim: row.label), value: row.text, action: .copy)
+                            .padding(.vertical, DS.Space.xs)
+                    }
+                }
+            }
+        }
+    }
+
+    /// Every filled field of the document's template except its type, in template order.
+    static func rows(_ values: FieldValues, definition: TemplateDefinition?) -> [(key: String, label: String, text: String)] {
+        guard let definition else { return [] }
+        return definition.allFields.compactMap { field in
+            guard field.type != .choice, let value = values[field.key] else { return nil }
+            let text = FieldFormatter.display(value, field: field, locale: .dosarDefault)
+            return text.isEmpty ? nil : (field.key, field.label, text)
+        }
     }
 }
 
