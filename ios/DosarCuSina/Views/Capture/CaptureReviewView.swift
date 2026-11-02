@@ -111,7 +111,7 @@ struct CaptureReviewView: View {
     private var documentCard: some View {
         DSCard {
             HStack(alignment: .top, spacing: DS.Space.s) {
-                Button { isShowingPages = true } label: {
+                Button { DocumentPagesViewer.present(reduceMotion: reduceMotion) { isShowingPages = true } } label: {
                     Group {
                         if let thumbnail {
                             Image(uiImage: thumbnail).resizable().scaledToFill()
