@@ -496,6 +496,7 @@ private struct GalleryFeedback: View {
     @State private var toast: DSToast?
     @State private var isLoading = true
     @State private var showsSpinner = false
+    @State private var exampleQuestion: ExampleSectionQuestion?
 
     var body: some View {
         GalleryPage {
@@ -529,8 +530,19 @@ private struct GalleryFeedback: View {
                     .frame(minHeight: 44)
                 }
             }
+            GallerySection(title: "Un exemplu devine al tău", note: "Când adaugi ceva al tău la un exemplu. Posesivul se acordă cu felul secțiunii.") {
+                DSCard {
+                    Button {
+                        exampleQuestion = ExampleSectionQuestion(sectionID: UUID(), name: "VW Golf 2018", gender: .feminine)
+                    } label: {
+                        Text(verbatim: "Adaugă un termen la exemplu").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
+                }
+            }
         }
         .dsToast($toast)
+        .examplePrompt($exampleQuestion) {}
     }
 }
 

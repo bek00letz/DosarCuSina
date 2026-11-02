@@ -52,8 +52,9 @@ struct CaptureFiler {
         enum ProviderChoice {
             case none
             case existing(Provider)
-            /// Typed or read off the invoice: an existing firm with this name is used before a new one.
-            case named(String, trade: ProviderTrade)
+            /// Typed or read off the invoice (with the CUI read, if any): an existing firm with
+            /// this name is used before a new one.
+            case named(String, trade: ProviderTrade, taxID: String? = nil)
         }
         var asset: Asset
         var kind: HistoryKind
@@ -372,7 +373,8 @@ struct CaptureFiler {
         let provider: Provider? = switch visit.provider {
         case .none: nil
         case .existing(let provider): provider
-        case .named(let name, let trade): try ProviderActions(context: context, now: now).findOrCreate(name: name, trade: trade, linkedTo: visit.asset)
+        case .named(let name, let trade, let taxID):
+            try ProviderActions(context: context, now: now).findOrCreate(name: name, taxID: taxID, trade: trade, linkedTo: visit.asset)
         }
         if let provider, case .existing = visit.provider { try ProviderActions(context: context, now: now).link(provider, to: visit.asset) }
         let entry = try HistoryActions(context: context, now: now).recordVisit(

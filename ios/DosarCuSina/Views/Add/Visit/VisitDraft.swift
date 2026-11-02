@@ -69,6 +69,8 @@ struct VisitDraft: Equatable {
     var document: CapturedDocumentRef?
     var documentTitle: String?
     var documentText: String?
+    /// The CUI read off the invoice, for finding who did the job.
+    var providerTaxID: String?
 
     init(date: Date) {
         self.date = date
@@ -156,6 +158,7 @@ struct VisitDraft: Equatable {
             provider = .new(name)
         }
         if let document = result.document { self.document = document }
+        if let taxID = fields[.providerTaxID]?.text { providerTaxID = taxID }
         documentText = result.recognizedText.isEmpty ? nil : result.recognizedText
     }
 }

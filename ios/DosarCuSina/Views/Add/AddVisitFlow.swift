@@ -409,7 +409,7 @@ private struct VisitForm: View {
         switch draft.provider {
         case .none: return .none
         case .existing(let id): return allProviders.first { $0.id == id }.map { .existing($0) } ?? .none
-        case .new(let name): return .named(name, trade: wording.trade)
+        case .new(let name): return .named(name, trade: wording.trade, taxID: draft.providerTaxID)
         }
     }
 

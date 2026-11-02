@@ -38,9 +38,8 @@ public final class ProviderActions {
     /// The one way capture and the visit form name who issued a document or did a job:
     /// the firm already in Oameni, or a new one. A firm is the same when its name reads
     /// the same once case, diacritics and spacing are set aside (`SearchText.normalize`).
-    /// `taxID` (a checked CUI read off the document) is taken now so callers pass it
-    /// already; firms don't keep their CUI yet, so today it doesn't decide the match.
-    /// The firm is linked to `asset` either way.
+    /// Callers pass the CUI read off the document as `taxID`; the CUI match comes with
+    /// the provider tax-ID field. The firm is linked to `asset` either way.
     @discardableResult
     public func findOrCreate(name: String, taxID: String? = nil, trade: ProviderTrade, phone: String? = nil, linkedTo asset: Asset? = nil) throws -> Provider? {
         let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
