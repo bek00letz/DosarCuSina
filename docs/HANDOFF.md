@@ -50,6 +50,9 @@ Nothing at the moment.
 - **Readiness scenarios** (trip abroad, selling a vehicle, insurance claim): the engine and tests exist, no screen uses them.
 - **Permission descriptions** for Calendar, Reminders and Contacts in the project settings still describe the first version; the app now uses the system's event editor and contact picker without asking for those permissions.
 - **No build in CI.** Only the privacy check runs on pull requests. A macOS workflow that builds and runs the tests could come later.
+- **Repairs waiting for the owner.** `CaptureRepairs` finds documents moved with their old place's links, visits saved without their invoice and firms kept twice, and repairs only what is approved. Nothing calls them yet; the repair list that asks comes with the numbers session.
+- **Firms don't keep their CUI.** `ProviderActions.findOrCreate` matches by name; the filer and the visit already pass the CUI they read. Matching it first comes with the provider tax-ID field, in one coordinated step with the new database version, its migration and the `.dosar` mapping (together with the kind profiles).
+- **Undo.** Only the visit's "Anulează" knows what it moved (a kept invoice goes back). Undo receipts for every action, deleting an older completion from Istoric, and the reading "Gata" leaves behind when undone are for a later session.
 
 ## How to pick up work
 
@@ -73,6 +76,13 @@ Newest first. Copy this template:
 ```
 
 Never write security findings, crash traces or local paths here. See [SECURITY.md](../SECURITY.md).
+
+### 2026-11-02 — owner (with Claude) — `claude/fix-capture-saves-e56b3c`
+- **Did:** capture, filing and saving fixes from both reviews. A unit of work never waits, so another screen's save can't slip into it or be undone with it; actions don't roll back on their own; "Altceva…", example data and compaction are one step each. `CaptureFiler` is the only filer (review, "Am rezolvat" with the new document, visit with its invoice), with one deadline rule and `ProviderActions.findOrCreate`; `ObligationCompletion` is gone. `CapturedDocumentRef` with one claim per capture; a kept document that moves drops its old links. `CaptureSession` cancels reading and lets go of pages when its owner goes. The automatic AI reading asks before sending anything that may be an identity document or is headed for a locked section or a person's documents. `CaptureEngine.reinterpret` reads the page again when the kind changes, and the review lists the kind's missing fields. Examples become the person's only when they say so ("Păstrezi … ca al tău/a ta?"). `CaptureRepairs` for data already affected.
+- **Tests:** new `UnitOfWorkTests` cases, `CapturedDocumentFilingTests` (one parameterised duplicate-photo test over the three entry points, shared twice in every order), `ExampleOwnershipTests`, `CaptureSessionTests`, `CaptureRepairTests`, `ProviderLookupTests`; `correctingTheKindBringsItsDeadline` replaced by tests that read real policy text. The covering suites while working and the whole suite once on iPhone 17 (E2A56DA4).
+- **Left open:** see "Known gaps" (repairs not called yet, CUI on firms, undo). Not tried by eye in the simulator. When this branch takes in the guardrails pull request, remove the exception lines these fixes cleared.
+- **Next:** the numbers session (one Romanian number reader) and the repair list that asks the owner.
+- **Decisions:** "One filer, one document in one place, and steps that can't swallow each other" added.
 
 ### 2026-11-02 — owner (with Claude) — `claude/subscriptions-from-capture`
 - **Did:** subscriptions from capture. The subscription template carries the service (stable `service.*` keys), the codes (client code, contract number, POD, CLC, phone number), the start, the minimum period and its end, direct debit and the last bill, with "Se termină perioada minimă" and one "Factura de plătit"; catalog version 8. Contracts are a capture kind (`ContractReader` with a label table, classifier words, field rules, plausibility windows, the AI provider's schema). Bills and contracts find their subscription by their codes (`SubscriptionMatcher`, never across two homes), go under their home or stand on their own (phone plans), and a bill is logged in the subscription's history with its due date as the one bill reminder, none with direct debit. The loose "Factură …" deadline is disabled (kept in `CaptureFiler.looseBillReminder`). The trend of a subscription's bills in Bani and the missing bill in Urmează ("Din timp") come from `BillHistory`. "Mută la…" moves any subscription between homes and Abonamente. A derived field given with its inputs is now kept (a contract's printed end).
