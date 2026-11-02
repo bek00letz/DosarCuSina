@@ -73,7 +73,7 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: "vehicle.plate", label: String(localized: "Număr de înmatriculare"), type: .plate, role: .identifier, isEssential: true, placeholder: "B-123-ABC"),
                     FieldDefinition(key: "vehicle.make", label: String(localized: "Marcă"), type: .text, role: .subtitle, isEssential: true, placeholder: "Volkswagen"),
                     FieldDefinition(key: "vehicle.model", label: String(localized: "Model"), type: .text, role: .subtitle, isEssential: true, placeholder: "Golf"),
-                    FieldDefinition(key: "vehicle.year", label: String(localized: "An de fabricație"), type: .number, role: .subtitle, isEssential: true, placeholder: "2018"),
+                    FieldDefinition(key: "vehicle.year", label: String(localized: "An de fabricație"), type: .year, role: .subtitle, isEssential: true, placeholder: "2018"),
                     FieldDefinition(key: "vehicle.vin", label: String(localized: "Serie de șasiu (VIN)"), type: .vin, role: .keyFact),
                     FieldDefinition(key: "vehicle.civ", label: String(localized: "Serie CIV"), type: .text),
                 ]),
@@ -127,7 +127,7 @@ public enum BuiltInTemplates {
                 FieldSection(key: "home.place", title: String(localized: "Locuința"), fields: [
                     FieldDefinition(key: "home.address", label: String(localized: "Adresă"), type: .address, role: .location, isEssential: true),
                     FieldDefinition(key: "home.area", label: String(localized: "Suprafață utilă"), type: .number, unit: "m²"),
-                    FieldDefinition(key: "home.year", label: String(localized: "An construcție"), type: .number),
+                    FieldDefinition(key: "home.year", label: String(localized: "An construcție"), type: .year),
                     FieldDefinition(key: "home.cadastral", label: String(localized: "Număr cadastral"), type: .text),
                 ]),
                 FieldSection(key: "home.utilities", title: String(localized: "Utilități"), fields: [

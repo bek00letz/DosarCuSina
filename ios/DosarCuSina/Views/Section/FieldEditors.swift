@@ -34,6 +34,10 @@ struct FieldEditor: View {
             )
         case .number, .metric:
             DSMetricField(title, value: numberBinding, unit: field.unit ?? "", isRequired: isRequired)
+        case .year:
+            DSMetricField(title, value: numberBinding, unit: "", fractionDigits: 0...0, groupsDigits: false, isRequired: isRequired) { year in
+                FieldEditor.validation(FieldFormatter.validate(String(Int(year)), as: .year))
+            }
         case .money:
             DSMoneyField(title, amount: moneyBinding, currencyCode: currencyBinding, isRequired: isRequired)
         case .date:

@@ -225,18 +225,15 @@ struct ExpiryLine: View {
 
 /// Facts the heroes read from field roles, so templates stay data.
 enum HeroFacts {
-    /// The subtitle fields in order: "Volkswagen Golf · 2018". Numbers without a
-    /// unit (a year) are written without thousands separators.
+    /// The subtitle fields in order: "Volkswagen Golf · 2018". Words run
+    /// together; numbers (a year) follow after a dot.
     static func subtitle(_ values: FieldValues, definition: TemplateDefinition, locale: Locale = .dosarDefault) -> String? {
         var words: [String] = []
         var numbers: [String] = []
         for field in definition.fields(withRole: .subtitle) {
             guard let value = values[field.key] else { continue }
-            if case .number(let number) = value, field.unit == nil {
-                numbers.append(number.formatted(.number.grouping(.never).precision(.fractionLength(0)).locale(locale)))
-            } else {
-                words.append(FieldFormatter.display(value, field: field, locale: locale))
-            }
+            let text = FieldFormatter.display(value, field: field, locale: locale)
+            if case .number = value { numbers.append(text) } else { words.append(text) }
         }
         let parts = [words.joined(separator: " ")].filter { !$0.isEmpty } + numbers
         return parts.isEmpty ? nil : parts.joined(separator: " · ")

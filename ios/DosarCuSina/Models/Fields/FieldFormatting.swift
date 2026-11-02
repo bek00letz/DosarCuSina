@@ -94,6 +94,12 @@ public enum FieldFormatter {
             return (7...15).contains(digits.count)
                 ? .valid
                 : .invalid(String(localized: "Numărul de telefon nu e complet.", comment: "Phone field error"))
+        case .year:
+            let latest = Calendar.current.component(.year, from: Date()) + 1
+            guard let year = parseNumber(text), year == year.rounded(), (1900...Double(latest)).contains(year) else {
+                return .invalid(String(localized: "Scrie anul cu patru cifre, de exemplu 2018.", comment: "Year field error"))
+            }
+            return .valid
         case .number, .metric:
             return parseNumber(text) != nil
                 ? .valid
@@ -155,6 +161,8 @@ public enum FieldFormatter {
             case .plate: return formatPlate(text) ?? text
             default: return text
             }
+        case .number(let number) where type == .year:
+            return number.formatted(.number.grouping(.never).precision(.fractionLength(0)).locale(locale))
         case .number(let number):
             let formatted = number.formatted(.number.locale(locale).precision(.fractionLength(0...2)))
             if let unit, !unit.isEmpty { return "\(formatted) \(unit)" }

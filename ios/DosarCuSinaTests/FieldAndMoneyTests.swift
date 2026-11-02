@@ -74,6 +74,14 @@ struct FieldFormatterTests {
         #expect(FieldFormatter.display(.bool(true), as: .toggle, locale: locale) == "Da")
         #expect(FieldFormatter.display(.text("RO49AAAA1B31007593840000"), as: .iban, locale: locale) == "RO49 AAAA 1B31 0075 9384 0000")
     }
+
+    @Test func yearsHaveNoThousandsSeparatorAndStayPlausible() {
+        let locale = Locale(identifier: "ro_RO")
+        #expect(FieldFormatter.display(.number(2018), as: .year, locale: locale) == "2018")
+        #expect(FieldFormatter.validate("2018", as: .year) == .valid)
+        #expect(FieldFormatter.validate("18", as: .year) != .valid)
+        #expect(FieldFormatter.validate("2018,5", as: .year) != .valid)
+    }
 }
 
 @Suite("Field values")

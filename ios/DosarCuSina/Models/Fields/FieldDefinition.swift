@@ -8,6 +8,8 @@ public enum FieldType: String, Codable, CaseIterable, Sendable {
     case text
     case longText
     case number
+    /// A calendar year such as 2018: a number, shown without a thousands separator.
+    case year
     case money
     case date
     /// A date after which something stops being valid (documents, warranties, contracts).
@@ -32,7 +34,7 @@ public enum FieldType: String, Codable, CaseIterable, Sendable {
     /// The kind of `FieldValue` this type stores.
     public var valueKind: FieldValue.Kind {
         switch self {
-        case .number, .metric: return .number
+        case .number, .year, .metric: return .number
         case .money: return .money
         case .date, .expiryDate: return .date
         case .toggle: return .bool

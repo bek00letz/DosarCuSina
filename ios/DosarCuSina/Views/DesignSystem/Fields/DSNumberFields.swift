@@ -23,8 +23,8 @@ enum DSNumberInput {
     }
 
     /// How a parsed amount reads back in the field once the person leaves it.
-    static func display(_ value: Decimal, locale: Locale, fractionDigits: ClosedRange<Int> = 0...2) -> String {
-        value.formatted(.number.precision(.fractionLength(fractionDigits)).locale(locale))
+    static func display(_ value: Decimal, locale: Locale, fractionDigits: ClosedRange<Int> = 0...2, groupsDigits: Bool = true) -> String {
+        value.formatted(.number.precision(.fractionLength(fractionDigits)).grouping(groupsDigits ? .automatic : .never).locale(locale))
     }
 }
 
@@ -153,6 +153,8 @@ struct DSMetricField: View {
     /// The unit as shown after the number, e.g. "km", "h", "kg". Comes from the template.
     let unit: String
     var fractionDigits: ClosedRange<Int> = 0...1
+    /// False for numbers read as labels rather than amounts, such as a year.
+    var groupsDigits: Bool = true
     var isRequired: Bool = false
     var footnote: LocalizedStringKey?
     var validator: ((Double) -> DSValidation)?
@@ -168,6 +170,7 @@ struct DSMetricField: View {
         value: Binding<Double?>,
         unit: String,
         fractionDigits: ClosedRange<Int> = 0...1,
+        groupsDigits: Bool = true,
         isRequired: Bool = false,
         footnote: LocalizedStringKey? = nil,
         validator: ((Double) -> DSValidation)? = nil
@@ -176,6 +179,7 @@ struct DSMetricField: View {
         self._value = value
         self.unit = unit
         self.fractionDigits = fractionDigits
+        self.groupsDigits = groupsDigits
         self.isRequired = isRequired
         self.footnote = footnote
         self.validator = validator
@@ -232,7 +236,7 @@ struct DSMetricField: View {
 
     private func syncTextFromValue() {
         guard let value else { return }
-        let display = DSNumberInput.display(Decimal(value), locale: locale, fractionDigits: 0...fractionDigits.upperBound)
+        let display = DSNumberInput.display(Decimal(value), locale: locale, fractionDigits: 0...fractionDigits.upperBound, groupsDigits: groupsDigits)
         if display != text { text = display }
     }
 }

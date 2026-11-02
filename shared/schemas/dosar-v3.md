@@ -107,7 +107,7 @@ household preferences (`homeOrder`, `isOnHome`, `isSensitive`).
   - **`defaultValue`:** a field value (see below), filled in when an asset is created and the field is empty. An example is `{"type": "number", "value": 24}` for warranty months.
   - **`derivation`:** `{"type": "addMonths", "date": "purchase.date", "months": "purchase.warrantyMonths"}`. The value is worked out again whenever one of its inputs changes, or while the field is empty. A value the person sets by hand stays until an input changes.
   - **Options:** `[{"key": "fuel.diesel", "label": "Motorină", "aliases": ["Diesel"]}]`. Readers also accept a plain array of strings, from older definitions, and use each string as both key and label.
-  - **Types:** `text`, `longText`, `number`, `money`, `date`, `expiryDate`, `toggle`, `choice`, `multiChoice`, `url`, `phone`, `email`, `address`, `plate`, `vin`, `microchip`, `iban`, `metric`.
+  - **Types:** `text`, `longText`, `number`, `year`, `money`, `date`, `expiryDate`, `toggle`, `choice`, `multiChoice`, `url`, `phone`, `email`, `address`, `plate`, `vin`, `microchip`, `iban`, `metric`.
   - **Roles:** `identifier`, `subtitle`, `heroMetric`, `keyFact`, `documentNumber`, `holder`, `issuer`, `expiryDate`, `startDate`, `purchaseDate`, `purchasePrice`, `retailer`, `warrantyUntil`, `location`.
 - **Component:** `key`, `name`, `group`, `synonyms`.
 - **Blueprint:** `key`, `title`, `kind`, `recurrence`, `firstDue`, `reminders`, `reminderVariants`?, `appliesWhen`?, `estimatedCost`?, `isSuggested`, `note`?.
