@@ -1,4 +1,8 @@
 #!/bin/sh
-# Runs the privacy check on what is about to be committed.
+# Runs the privacy check and the architecture check on what is about to be
+# committed. Every pull request runs both again, so they always agree.
 # Turn it on once per clone:  git config core.hooksPath .githooks
-exec "$(git rev-parse --show-toplevel)/scripts/privacy-check.sh" --staged
+set -e
+top="$(git rev-parse --show-toplevel)"
+"$top/scripts/privacy-check.sh" --staged
+"$top/scripts/architecture-check.sh" --staged

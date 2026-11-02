@@ -1,0 +1,111 @@
+# Code that broke a rule of scripts/architecture-check.sh before the rule existed.
+#
+# This list only shrinks. Fixing one of these is always welcome: remove its line
+# (or lower its count) in the same commit, and the check makes sure you do.
+# Never add a line or raise a count without the owner's OK; the pull request
+# check fails on that unless the owner labels it "architecture-exception".
+#
+# Format: path:rule, or path:rule:count when a file breaks the rule more than once.
+# The note above each group says which piece of work removes it.
+# animation-curve: Springs from DS.Motion; the shimmer needs a DS.Motion token for a steady sweep, the share extension needs the tokens in ios/Shared.
+ios/DosarCuSina/Views/Capture/DocumentPagesViewer.swift:animation-curve:2
+ios/DosarCuSina/Views/DesignSystem/Components/DSLoading.swift:animation-curve
+ios/DosarCuSinaShare/ShareViewController.swift:animation-curve
+
+# bare-progress-view: The share extension draws its own spinner; it needs DSDelayedProgress in ios/Shared.
+ios/DosarCuSinaShare/ShareViewController.swift:bare-progress-view
+
+# built-in-key-in-views: Category behaviour as template data (agreed fix 6, review finding 5).
+ios/DosarCuSina/Views/Add/ManualAddFlow.swift:built-in-key-in-views
+ios/DosarCuSina/Views/Add/Visit/VisitDraft.swift:built-in-key-in-views:2
+ios/DosarCuSina/Views/Capture/CaptureReviewView.swift:built-in-key-in-views:14
+ios/DosarCuSina/Views/Capture/Filing/CaptureFiler.swift:built-in-key-in-views:12
+ios/DosarCuSina/Views/Capture/Filing/CaptureMapping.swift:built-in-key-in-views:8
+ios/DosarCuSina/Views/Capture/Filing/CaptureReview.swift:built-in-key-in-views:8
+ios/DosarCuSina/Views/Dosar/BinderLayout.swift:built-in-key-in-views:5
+ios/DosarCuSina/Views/Dosar/CategoryScreen.swift:built-in-key-in-views:5
+ios/DosarCuSina/Views/Dosar/DosarHomeView.swift:built-in-key-in-views
+ios/DosarCuSina/Views/Section/AddPersonalDocumentFlow.swift:built-in-key-in-views
+ios/DosarCuSina/Views/Section/AddSectionFlow.swift:built-in-key-in-views:12
+ios/DosarCuSina/Views/Section/PersonalDocumentDraft.swift:built-in-key-in-views
+ios/DosarCuSina/Views/Section/SectionHero.swift:built-in-key-in-views:3
+ios/DosarCuSina/Views/Section/SectionLists.swift:built-in-key-in-views
+ios/DosarCuSina/Views/Section/SectionPockets.swift:built-in-key-in-views:3
+ios/DosarCuSina/Views/Section/SectionScreen.swift:built-in-key-in-views:4
+ios/DosarCuSina/Views/Upcoming/UpcomingRoot.swift:built-in-key-in-views
+
+# date-format: One source for dates (review finding 7): DosarFormat moves to its own file in ios/Shared and grows the formats these need. SectionPockets is DosarFormat itself until then.
+ios/DosarCuSina/Intents/DosarIntents.swift:date-format:2
+ios/DosarCuSina/Models/Fields/FieldFormatting.swift:date-format
+ios/DosarCuSina/Services/Attention/MissingBills.swift:date-format
+ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:date-format:2
+ios/DosarCuSina/Services/Readiness/ReadinessEngine.swift:date-format
+ios/DosarCuSina/Services/Reminders/ReminderPlanner.swift:date-format
+ios/DosarCuSina/Services/Search/SearchIndexBuilder.swift:date-format:3
+ios/DosarCuSina/Views/Add/AddRoot.swift:date-format:2
+ios/DosarCuSina/Views/Add/AddVisitFlow.swift:date-format:3
+ios/DosarCuSina/Views/Capture/Filing/CaptureMapping.swift:date-format
+ios/DosarCuSina/Views/Onboarding/SharePracticeView.swift:date-format
+ios/DosarCuSina/Views/Section/SectionHero.swift:date-format
+ios/DosarCuSina/Views/Section/SectionPockets.swift:date-format:2
+ios/DosarCuSina/Views/Section/SectionWording.swift:date-format
+ios/DosarCuSina/Views/Upcoming/ObligationScreen.swift:date-format:2
+ios/DosarCuSina/Views/Upcoming/ReminderPresets.swift:date-format:2
+ios/DosarCuSina/Views/Upcoming/UpcomingActions.swift:date-format
+ios/DosarCuSina/Views/Upcoming/UpcomingFullList.swift:date-format
+ios/DosarCuSinaWidgets/UpcomingWidget.swift:date-format
+
+# format-string: Machine text (ISO days, hashes): one shared helper, then these go.
+ios/DosarCuSina/Models/Schema/RecordModels.swift:format-string
+ios/DosarCuSina/Models/Values/CalendarDay.swift:format-string:2
+ios/DosarCuSina/Services/Capture/CaptureModels.swift:format-string
+ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:format-string
+
+# number-parser: The five number readers become one shared reader (review finding 3). A file named RomanianNumber*.swift is the reader's home and is allowed.
+ios/DosarCuSina/Models/Values/Money.swift:number-parser
+ios/DosarCuSina/Services/Capture/RomanianFieldExtractor.swift:number-parser:3
+ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:number-parser:4
+ios/DosarCuSina/Views/DesignSystem/Fields/DSNumberFields.swift:number-parser
+
+# pasteboard-write: Clipboard.copy moves into the design system beside the value rows.
+ios/DosarCuSina/Views/Shell/ShellSupport.swift:pasteboard-write
+
+# romanian-locale: Locale.dosarDefault everywhere, folding included.
+ios/DosarCuSina/Models/Fields/ChoiceOptions.swift:romanian-locale
+ios/DosarCuSina/Models/Templates/ComponentCatalog.swift:romanian-locale
+ios/DosarCuSina/Services/Capture/CaptureText.swift:romanian-locale
+ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:romanian-locale:2
+ios/DosarCuSina/Views/Capture/Filing/CaptureMapping.swift:romanian-locale
+ios/DosarCuSina/Views/Onboarding/SharePracticeView.swift:romanian-locale
+ios/DosarCuSinaWidgets/UpcomingWidget.swift:romanian-locale
+
+# save-outside-unit-of-work: One unit of work around every multi-step flow (agreed fix 7); start-up and migrations save through UnitOfWork too.
+ios/DosarCuSina/App/DosarCuSinaApp.swift:save-outside-unit-of-work
+ios/DosarCuSina/Services/Archive/DossierArchiveService.swift:save-outside-unit-of-work
+ios/DosarCuSina/Services/Documents/DocumentStorage.swift:save-outside-unit-of-work
+ios/DosarCuSina/Services/Examples/ExampleDataService.swift:save-outside-unit-of-work:2
+ios/DosarCuSina/Services/Templates/ChoiceMigration.swift:save-outside-unit-of-work
+
+# silent-action-failure: Failures go through the shared error path (agreed fixes 2 and 7).
+ios/DosarCuSina/Services/Reminders/NotificationResponder.swift:silent-action-failure:2
+ios/DosarCuSina/Views/Section/RecordScreens.swift:silent-action-failure
+ios/DosarCuSina/Views/Upcoming/ObligationScreen.swift:silent-action-failure:2
+ios/DosarCuSina/Views/Upcoming/UpcomingActions.swift:silent-action-failure:2
+
+# small-hit-target: 44 pt tap targets, or no minimum where nothing is tapped.
+ios/DosarCuSina/Views/Agenda/AgendaScreen.swift:small-hit-target
+ios/DosarCuSina/Views/DesignSystem/Components/DSButtons.swift:small-hit-target
+ios/DosarCuSina/Views/DesignSystem/Fields/DSChoiceFields.swift:small-hit-target
+ios/DosarCuSina/Views/DesignSystem/Fields/DSContactField.swift:small-hit-target
+ios/DosarCuSina/Views/DesignSystem/Fields/DSDateFields.swift:small-hit-target
+ios/DosarCuSina/Views/Onboarding/SharePracticeView.swift:small-hit-target
+ios/DosarCuSina/Views/Section/KeyFactsPocket.swift:small-hit-target:2
+ios/DosarCuSina/Views/Section/SectionLists.swift:small-hit-target
+ios/DosarCuSina/Views/Upcoming/ObligationScreen.swift:small-hit-target
+
+# system-error-text: SaveFailure.message and UserFacingError (review finding 9).
+ios/DosarCuSina/Services/Persistence/PersistenceController.swift:system-error-text
+ios/DosarCuSina/Views/Add/AddVisitFlow.swift:system-error-text
+ios/DosarCuSina/Views/Onboarding/OnboardingFlow.swift:system-error-text
+ios/DosarCuSina/Views/Upcoming/ObligationScreen.swift:system-error-text:2
+ios/DosarCuSina/Views/Upcoming/UpcomingActions.swift:system-error-text
