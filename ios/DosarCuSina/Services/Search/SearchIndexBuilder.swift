@@ -165,7 +165,8 @@ public struct SearchIndexBuilder {
                 SearchField(title, weight: SearchField.Weight.title),
                 SearchField(attachment.fileName, weight: SearchField.Weight.label),
                 SearchField(attachment.asset?.name, weight: SearchField.Weight.label),
-                SearchField(attachment.extractedText, weight: SearchField.Weight.extracted),
+                // The text read off an identity document holds its CNP and birth date: never indexed.
+                SearchField(attachment.kind == .identity ? nil : attachment.extractedText, weight: SearchField.Weight.extracted),
             ],
             date: attachment.documentDate ?? attachment.createdAt,
             isSensitive: isSensitive(attachment.asset, templates)

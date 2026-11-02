@@ -48,6 +48,15 @@ public enum RomanianFieldExtractor {
             }
         }
 
+        // Identity cards print dates with spaces: "03 07 1983". Strict, so a phone number
+        // or an amount never reads as one: two-digit day and month, a four-digit year.
+        for match in TextPattern.matches(#"(?<![\d.,])(?<!\d )(0[1-9]|[12]\d|3[01]) (0[1-9]|1[0-2]) ((?:19|20)\d{2})(?! ?\d)"#, in: line) {
+            guard !found.contains(where: { $0.range.overlaps(match.range) }),
+                  let d = match[1].flatMap(Int.init), let m = match[2].flatMap(Int.init), let y = match[3].flatMap(Int.init),
+                  let day = CaptureDay(year: y, month: m, day: d) else { continue }
+            found.append(DateMatch(day: day, line: index, range: match.range))
+        }
+
         for match in TextPattern.matches(#"(?<!\d)(\d{1,2})[./-](x{0,1}i{1,3}|iv|v|vi{1,3}|ix|x|xi{1,2})[./-](\d{4})(?!\d)"#, in: line) {
             if let d = match[1].flatMap(Int.init), let m = match[2].flatMap({ romanMonths[$0.lowercased()] }),
                let y = match[3].flatMap(Int.init), let day = CaptureDay(year: y, month: m, day: d) {
@@ -491,29 +500,6 @@ public enum RomanianFieldExtractor {
     }
 
     // MARK: - Numbered document fields
-
-    /// EU driving licence fields are numbered: `1.` surname, `2.` given names, `4a.` issue date,
-    /// `4b.` expiry, `5.` licence number, `9.` categories.
-    static func drivingLicenceFields(in text: CaptureText) -> [CaptureFieldKey: (CaptureValue, String)] {
-        var result: [CaptureFieldKey: (CaptureValue, String)] = [:]
-        for (index, line) in text.folded.enumerated() {
-            let original = text.original[index]
-            if TextPattern.first(#"^\s*4\s?b\b\.?"#, in: line) != nil, let day = dates(inLine: line, index: index).first?.day {
-                result[.expiryDate] = (.day(day), original)
-            } else if TextPattern.first(#"^\s*4\s?a\b\.?"#, in: line) != nil, let day = dates(inLine: line, index: index).first?.day {
-                result[.issueDate] = (.day(day), original)
-            } else if let match = TextPattern.first(#"^\s*5\.\s*([A-Z0-9]{5,14})\b"#, in: original) , let value = match[1] {
-                result[.documentNumber] = (.text(value.uppercased()), original)
-            } else if let match = TextPattern.first(#"^\s*1\.\s*([A-ZĂÂÎȘȚŞŢ -]{2,40})$"#, in: original), let value = match[1] {
-                result[.surname] = (.text(value.trimmingCharacters(in: .whitespaces)), original)
-            } else if let match = TextPattern.first(#"^\s*2\.\s*([A-ZĂÂÎȘȚŞŢ -]{2,40})$"#, in: original), let value = match[1] {
-                result[.givenNames] = (.text(value.trimmingCharacters(in: .whitespaces)), original)
-            } else if let match = TextPattern.first(#"^\s*9\.\s*([A-Z0-9 ,/]{1,30})$"#, in: original), let value = match[1] {
-                result[.licenceCategories] = (.text(value.trimmingCharacters(in: .whitespaces)), original)
-            }
-        }
-        return result
-    }
 
     /// Vehicle registration certificate fields: `A` plate, `B` first registration, `D.1` make, `D.3` model, `E` VIN.
     static func registrationFields(in text: CaptureText) -> [CaptureFieldKey: (CaptureValue, String)] {

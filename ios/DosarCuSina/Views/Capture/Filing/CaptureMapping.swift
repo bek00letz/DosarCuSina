@@ -81,6 +81,11 @@ enum CaptureMapping {
         .policyNumber: ["vehicle.policyNumber", "home.policyNumber"],
         .claimsPhone: ["vehicle.claimsPhone", "home.claimsPhone"],
         .documentNumber: ["document.number"],
+        .personalNumber: ["document.personalNumber"],
+        .birthDate: ["document.birthDate"],
+        .sex: ["document.sex"],
+        .nationality: ["document.nationality"],
+        .licenceCategories: ["document.categories"],
         .issueDate: ["document.issueDate"],
         .issuer: ["document.issuer"],
         .podCode: ["home.pod"],
@@ -174,6 +179,10 @@ enum CaptureMapping {
     /// A name a person recognizes, used as the document title and a new section's name.
     static func defaultTitle(for kind: CaptureDocumentKind, fields: [CaptureFieldKey: CaptureValue]) -> String {
         let provider = fields[.provider]?.text
+        // Identity documents carry their holder: "Carte de identitate – Manole Corina Ioana".
+        if kind.isIdentityDocument, let holder = holderName(fields) {
+            return kindTitle(kind) + " – " + holder
+        }
         switch kind {
         case .passport: return String(localized: "Pașaport")
         case .identityCard: return String(localized: "Carte de identitate")
@@ -221,7 +230,7 @@ enum CaptureMapping {
         case .documentCode: return String(localized: "Tip document")
         case .issuingCountry: return String(localized: "Țara")
         case .nationality: return String(localized: "Cetățenie")
-        case .surname: return String(localized: "Nume")
+        case .surname: return String(localized: "Nume de familie")
         case .givenNames: return String(localized: "Prenume")
         case .holderName: return String(localized: "Titular")
         case .birthDate: return String(localized: "Data nașterii")
@@ -269,8 +278,75 @@ enum CaptureMapping {
         }
     }
 
-    /// Fields that identify a person and are never shown unless asked for.
-    static func isPersonal(_ key: CaptureFieldKey) -> Bool {
-        key == .personalNumber || key == .birthDate || key == .sex || key == .nationality
+    // MARK: Review
+
+    /// The order fields are shown in the review: who, then the document, then the dates.
+    /// Anything not listed follows in the order it was read.
+    static let reviewOrder: [CaptureFieldKey] = [
+        .surname, .givenNames, .personalNumber, .birthDate, .sex, .nationality,
+        .documentNumber, .licenceCategories, .issuer, .issueDate, .startDate, .expiryDate,
+    ]
+
+    /// Whether the review shows a field. Everything read is shown (identity documents
+    /// sit behind Face ID), except what has its own place or repeats other fields.
+    static func isShownInReview(_ key: CaptureFieldKey, among keys: Set<CaptureFieldKey>) -> Bool {
+        switch key {
+        case .lineItems, .documentCode, .issuingCountry: return false
+        case .holderName: return !keys.contains(.surname) && !keys.contains(.givenNames)
+        default: return true
+        }
+    }
+
+    // MARK: Holders
+
+    /// The holder as printed on Romanian documents, surname first, in title case with
+    /// diacritics kept: "MANOLE" "CORINA IOANA" → "Manole Corina Ioana".
+    static func holderName(_ fields: [CaptureFieldKey: CaptureValue]) -> String? {
+        let parts = [fields[.surname]?.text, fields[.givenNames]?.text].compactMap { $0 }
+        let raw = parts.isEmpty ? fields[.holderName]?.text : parts.joined(separator: " ")
+        guard let raw else { return nil }
+        let name = titleCased(raw)
+        return name.isEmpty ? nil : name
+    }
+
+    /// "ION-ANDREI ȘTEFĂNESCU" → "Ion-Andrei Ștefănescu". Words start after spaces, hyphens and apostrophes.
+    static func titleCased(_ text: String) -> String {
+        let romanian = Locale(identifier: "ro_RO")
+        var result = ""
+        var startsWord = true
+        for character in text.trimmingCharacters(in: .whitespacesAndNewlines) {
+            if character.isWhitespace {
+                if !result.hasSuffix(" ") { result.append(" ") }
+                startsWord = true
+                continue
+            }
+            let piece = String(character)
+            result += startsWord ? piece.uppercased(with: romanian) : piece.lowercased(with: romanian)
+            startsWord = character == "-" || character == "'" || character == "’"
+        }
+        return result
+    }
+
+    /// The words of a name for comparing people: folded (no case, no diacritics), in any order.
+    static func nameWords(_ name: String) -> [String] {
+        CaptureText.fold(name)
+            .components(separatedBy: CharacterSet.letters.inverted)
+            .filter { !$0.isEmpty }
+    }
+
+    /// The member a holder's document belongs to: the one with exactly the holder's
+    /// names, in any order, or else the only one whose names are all among the holder's
+    /// (at least two, including the surname), so "Corina Manole" matches "Manole Corina Ioana".
+    static func matchingMember(holderSurname surname: String?, holderName: String, among members: [(id: UUID, name: String)]) -> UUID? {
+        let holder = nameWords(holderName)
+        guard !holder.isEmpty else { return nil }
+        let holderSet = Set(holder)
+        if let exact = members.first(where: { nameWords($0.name).sorted() == holder.sorted() }) { return exact.id }
+        let surnameWords = Set(surname.map(nameWords) ?? [])
+        let partial = members.filter { member in
+            let words = Set(nameWords(member.name))
+            return words.count >= 2 && words.isSubset(of: holderSet) && (surnameWords.isEmpty || !words.isDisjoint(with: surnameWords))
+        }
+        return partial.count == 1 ? partial[0].id : nil
     }
 }

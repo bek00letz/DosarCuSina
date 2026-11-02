@@ -9,7 +9,8 @@ struct CaptureReview: Identifiable {
         /// Keep the document without filing it under a section.
         case none
         case asset(UUID)
-        /// A new section of this category, named `newAssetName`.
+        /// A new section of this category, named `newAssetName`. For an identity
+        /// document, a new household member (`member`) the document is filed under.
         case newAsset(templateKey: String)
     }
 
@@ -22,10 +23,29 @@ struct CaptureReview: Identifiable {
 
         var id: String { key.rawValue }
         var label: String { CaptureMapping.label(for: key) }
-        /// Read with little certainty: the review marks it for a check.
-        var needsCheck: Bool { confidence < Self.checkThreshold }
+        /// Doubtful: it failed a format or a cross-check, or only a model read it. The
+        /// review marks only these; values that passed their checks show plainly.
+        var needsCheck: Bool {
+            guard let value else { return false }
+            return CaptureField(key: key, value: value, confidence: confidence, sourceText: sourceText, tier: tier).needsCheck
+        }
 
-        static let checkThreshold = 0.6
+        /// The person typed this value: certain, and their own.
+        mutating func confirm(_ newValue: CaptureValue?) {
+            value = newValue
+            confidence = 1
+            tier = .deterministic
+        }
+    }
+
+    /// What the review suggested before the person changed anything, so a re-read
+    /// (after adding the back of a card) keeps exactly what they edited.
+    struct Suggested: Hashable {
+        var kind: CaptureDocumentKind
+        var title: String
+        var destination: Destination
+        var newAssetName: String
+        var fields: [CaptureFieldKey: CaptureValue]
     }
 
     let id = UUID()
@@ -39,6 +59,7 @@ struct CaptureReview: Identifiable {
     var remindsToPay: Bool
     /// Already in the binder: the filed document it matches.
     var duplicateAttachmentID: UUID?
+    let suggested: Suggested
 
     /// The pages waiting in capture's store, when there are any to file.
     var documentID: UUID? {
@@ -46,9 +67,19 @@ struct CaptureReview: Identifiable {
         return result.documentID
     }
 
-    /// Fields shown on the review: everything read, except personal identifiers.
+    /// Fields shown on the review: everything read, in a sensible order, without repeats.
     var visibleFields: [Field] {
-        fields.filter { !CaptureMapping.isPersonal($0.key) && $0.key != .lineItems }
+        let keys = Set(fields.map(\.key))
+        let order = Dictionary(uniqueKeysWithValues: CaptureMapping.reviewOrder.enumerated().map { ($1, $0) })
+        return fields.enumerated()
+            .filter { CaptureMapping.isShownInReview($0.element.key, among: keys) }
+            .sorted { (order[$0.element.key] ?? 100 + $0.offset, $0.offset) < (order[$1.element.key] ?? 100 + $1.offset, $1.offset) }
+            .map(\.element)
+    }
+
+    /// An identity card read without the zone on its back: the review offers to add it.
+    var asksForBackPage: Bool {
+        kind == .identityCard && result.notices.contains(.identityBackMissing)
     }
 
     func value(_ key: CaptureFieldKey) -> CaptureValue? {
@@ -93,7 +124,8 @@ struct CaptureReview: Identifiable {
 
     /// A review with the destination worked out from what was read: an existing
     /// section that matches an identifier (plate, VIN, POD, microchip, document
-    /// number), the only section of the right category, or a new one.
+    /// number), the household member an identity document belongs to, the only
+    /// section of the right category, or a new one.
     @MainActor
     init(result: CaptureResult, assets: [Asset], context: ModelContext) {
         self.result = result
@@ -108,9 +140,9 @@ struct CaptureReview: Identifiable {
                 self.duplicateAttachmentID = id
             }
         }
-        let suggestion = Self.suggestDestination(result: result, assets: assets)
-        self.destination = suggestion
+        self.destination = Self.suggestDestination(result: result, assets: assets)
         self.newAssetName = Self.defaultAssetName(kind: result.kind, values: values)
+        self.suggested = Suggested(kind: kind, title: title, destination: destination, newAssetName: newAssetName, fields: values)
     }
 
     private static func isFiled(_ id: UUID, in context: ModelContext) -> Bool {
@@ -135,7 +167,18 @@ struct CaptureReview: Identifiable {
                 return .asset(match.id)
             }
         }
-        // 2. The category the document belongs to.
+        // 2. An identity document goes to its holder: the matching member, or a new one.
+        if result.kind.isIdentityDocument {
+            let values = Dictionary(result.fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
+            if let holder = CaptureMapping.holderName(values) {
+                let members = candidates.filter { $0.templateKey == BuiltInTemplates.Key.member }.map { (id: $0.id, name: $0.name) }
+                if let member = CaptureMapping.matchingMember(holderSurname: values[.surname]?.text, holderName: holder, among: members) {
+                    return .asset(member)
+                }
+                return .newAsset(templateKey: BuiltInTemplates.Key.member)
+            }
+        }
+        // 3. The category the document belongs to.
         let templateKey = result.suggestions.lazy.compactMap { suggestion -> String? in
             switch suggestion.destination {
             case .newAsset(let key): return CaptureMapping.templateKey(key)
@@ -159,6 +202,9 @@ struct CaptureReview: Identifiable {
 
     static func defaultAssetName(kind: CaptureDocumentKind, values: [CaptureFieldKey: CaptureValue]) -> String {
         switch kind {
+        case .passport, .identityCard, .drivingLicence:
+            // A new member is named after the holder.
+            return CaptureMapping.holderName(values) ?? CaptureMapping.defaultTitle(for: kind, fields: values)
         case .vehicleRegistration, .rcaPolicy, .itpReport, .serviceInvoice:
             let makeModel = [values[.make]?.text, values[.model]?.text].compactMap { $0 }.joined(separator: " ")
             if !makeModel.isEmpty { return makeModel }
@@ -168,5 +214,32 @@ struct CaptureReview: Identifiable {
         case .medicalResult: return String(localized: "Sănătate")
         default: return CaptureMapping.defaultTitle(for: kind, fields: values)
         }
+    }
+
+    // MARK: Reading again
+
+    /// This review read again (with the back of the card added), keeping everything
+    /// the person changed in `previous`. Values they typed stay theirs; the rest comes
+    /// from the new read, where the checked zone on the back wins over printed labels.
+    func carryingEdits(from previous: CaptureReview) -> CaptureReview {
+        var merged = self
+        let before = previous.suggested
+        for field in previous.fields where field.value != before.fields[field.key] {
+            if let index = merged.fields.firstIndex(where: { $0.key == field.key }) {
+                merged.fields[index] = field
+            } else {
+                merged.fields.append(field)
+            }
+        }
+        // Values the person cleared stay cleared.
+        for key in before.fields.keys where !previous.fields.contains(where: { $0.key == key && $0.value != nil }) {
+            if let index = merged.fields.firstIndex(where: { $0.key == key }) { merged.fields[index].value = nil }
+        }
+        if previous.kind != before.kind { merged.kind = previous.kind }
+        if previous.title != before.title { merged.title = previous.title }
+        if previous.destination != before.destination { merged.destination = previous.destination }
+        if previous.newAssetName != before.newAssetName { merged.newAssetName = previous.newAssetName }
+        merged.remindsToPay = previous.remindsToPay
+        return merged
     }
 }

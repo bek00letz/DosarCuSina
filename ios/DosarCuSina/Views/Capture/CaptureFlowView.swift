@@ -26,6 +26,7 @@ struct CaptureFlowView: View {
     let onClose: (CaptureFlowResult) -> Void
 
     @Environment(\.modelContext) private var context
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Query(sort: \Asset.name) private var assets: [Asset]
 
     private enum Phase {
@@ -38,6 +39,10 @@ struct CaptureFlowView: View {
     @State private var phase: Phase = .reading
     @State private var attempt = 0
     @State private var useCloud = false
+    /// The pages read, once the person added more (the back of a card).
+    @State private var payload: CaptureRequest.Payload?
+    @State private var isReadingAgain = false
+    @State private var readAgainError: String?
 
     var body: some View {
         NavigationStack {
@@ -46,10 +51,7 @@ struct CaptureFlowView: View {
                 case .reading:
                     CaptureReadingView()
                 case .review(let review):
-                    CaptureReviewView(review: review, assets: assets, onReadWithCloud: {
-                        useCloud = true
-                        attempt += 1
-                    }, onClose: finish)
+                    reviewView(review)
                 case .visit(let assetID, let result):
                     AddVisitFlow(assetID: assetID, prefill: result) { saved in
                         finish(saved ? .visitSaved(message: "Vizita e în istoric.") : .dismissed)
@@ -73,7 +75,7 @@ struct CaptureFlowView: View {
         phase = .reading
         do {
             let key = "\(input.id.uuidString)-\(attempt)-\(useCloud)"
-            let result = try await CaptureRunner.result(for: key, input.payload, useCloudModel: useCloud, ownerID: input.preferredAssetID)
+            let result = try await CaptureRunner.result(for: key, payload ?? input.payload, useCloudModel: useCloud, ownerID: input.preferredAssetID)
             var review = CaptureReview(result: result, assets: assets, context: context)
             if let preferred = input.preferredAssetID { review.destination = .asset(preferred) }
             if CaptureMapping.opensVisitFlow(result.kind), review.duplicateAttachmentID == nil, case .asset(let id) = review.destination {
@@ -88,6 +90,52 @@ struct CaptureFlowView: View {
             guard !Task.isCancelled else { return }
             CaptureLog.engine.error("Capture failed: \(String(describing: type(of: error)), privacy: .public) \((error as NSError).domain, privacy: .public) \((error as NSError).code)")
             phase = .failed(String(localized: "Încearcă din nou. Dacă tot nu merge, fă o poză mai clară, cu actul întins și fără umbre."))
+        }
+    }
+
+    private func reviewView(_ review: CaptureReview) -> some View {
+        let addPages: ((CaptureReview, CaptureRequest.Payload) -> Void)? = canAddPages ? { current, added in self.addPages(current, added) } : nil
+        return CaptureReviewView(
+            review: review,
+            assets: assets,
+            onReadWithCloud: {
+                useCloud = true
+                attempt += 1
+            },
+            onAddPages: addPages,
+            isReadingAgain: isReadingAgain,
+            readAgainError: readAgainError,
+            onClose: { finish($0) }
+        )
+        // A new read is a new review; the person's edits are carried into it.
+        .id(review.id)
+    }
+
+    /// Photos and scans can take more pages; a PDF or pasted text can't.
+    private var canAddPages: Bool {
+        if case .images = payload ?? input.payload { return true }
+        return false
+    }
+
+    /// Reads the document again with the added pages as one document. The review stays
+    /// on screen while it reads, and the new one keeps everything the person changed.
+    private func addPages(_ current: CaptureReview, _ added: CaptureRequest.Payload) {
+        guard case .images(let existing) = payload ?? input.payload, case .images(let more) = added, !more.isEmpty else { return }
+        let combined = CaptureRequest.Payload.images(existing + more)
+        readAgainError = nil
+        withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { isReadingAgain = true }
+        Task {
+            do {
+                let result = try await CaptureRunner.run(combined, useCloudModel: useCloud, ownerID: input.preferredAssetID)
+                payload = combined
+                let review = CaptureReview(result: result, assets: assets, context: context).carryingEdits(from: current)
+                isReadingAgain = false
+                phase = .review(review)
+            } catch {
+                CaptureLog.engine.error("Reading added pages failed: \((error as NSError).domain, privacy: .public) \((error as NSError).code)")
+                isReadingAgain = false
+                readAgainError = String(localized: "Încearcă o poză mai clară, cu actul întins și fără umbre.")
+            }
         }
     }
 

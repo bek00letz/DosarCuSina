@@ -10,10 +10,10 @@ public enum DocumentClassifier {
     }
 
     /// Weighted keywords per kind, matched against folded text (no diacritics, lowercase).
-    static let signals: [CaptureDocumentKind: [(String, Double)]] = [
-        .passport: [("pasaport", 3), ("passport", 3), ("passeport", 2)],
-        .identityCard: [("carte de identitate", 4), ("carte electronica de identitate", 4), ("identity card", 3), ("buletin", 2), ("cnp", 1)],
-        .drivingLicence: [("permis de conducere", 4), ("driving licence", 3), ("permis", 1), ("4b.", 1), ("4a.", 1)],
+    /// Identity documents bring theirs from their templates (`IdentityTemplates`).
+    static let signals: [CaptureDocumentKind: [(String, Double)]] = otherSignals.merging(IdentityTemplates.classifierSignals) { $1 }
+
+    private static let otherSignals: [CaptureDocumentKind: [(String, Double)]] = [
         .vehicleRegistration: [("certificat de inmatriculare", 4), ("talon", 2), ("d.1", 1), ("d.3", 1), ("civ", 1), ("cartea de identitate a vehiculului", 4)],
         .rcaPolicy: [("rca", 3), ("raspundere civila auto", 4), ("asigurare obligatorie", 2), ("bonus-malus", 2), ("bonus malus", 2), ("carte verde", 1)],
         .insurancePolicy: [("polita", 2), ("asigurare", 1), ("casco", 3), ("pad", 1), ("paid", 1), ("asigurator", 1), ("prima de asigurare", 2), ("suma asigurata", 2), ("franciza", 2)],

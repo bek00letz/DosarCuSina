@@ -116,6 +116,8 @@ public final class CaptureEngine: Sendable {
 
         // 1. Pages and text.
         var pages: [CGImage] = []
+        /// Recognized lines with their positions, page by page. Empty for pasted text and a PDF's text layer.
+        var recognized: [[RecognizedLine]] = []
         var text = ""
         var barcodes: [CaptureBarcode] = []
         var pdfData: Data?
@@ -130,9 +132,10 @@ public final class CaptureEngine: Sendable {
                     page = await normalizer.normalize(item.image)
                 }
                 pages.append(page)
-                let recognized = try await recognizer.recognize(page)
-                text += (text.isEmpty ? "" : "\n") + recognized.text
-                barcodes += recognized.barcodes
+                let read = try await recognizer.recognize(page)
+                recognized.append(read.items)
+                text += (text.isEmpty ? "" : "\n") + read.text
+                barcodes += read.barcodes
             }
             if images.count == 1 { sourceData = images[0].sourceData }
 
@@ -149,9 +152,10 @@ public final class CaptureEngine: Sendable {
             if text.count < 40 {
                 text = ""
                 for page in rendered {
-                    let recognized = try await recognizer.recognize(page)
-                    text += (text.isEmpty ? "" : "\n") + recognized.text
-                    barcodes += recognized.barcodes
+                    let read = try await recognizer.recognize(page)
+                    recognized.append(read.items)
+                    text += (text.isEmpty ? "" : "\n") + read.text
+                    barcodes += read.barcodes
                 }
             } else if let first = rendered.first, let recognized = try? await recognizer.recognize(first) {
                 // Digital PDFs still carry payment QR codes as images.
@@ -165,7 +169,9 @@ public final class CaptureEngine: Sendable {
         CaptureLog.engine.info("Recognized \(text.count) characters and \(barcodes.count) codes")
 
         // 2. Deterministic and heuristic tiers.
-        let analysis = analyzer.analyze(text: text, barcodes: barcodes, referenceDate: options.referenceDate)
+        let analysis = recognized.isEmpty
+            ? analyzer.analyze(text: text, barcodes: barcodes, referenceDate: options.referenceDate)
+            : analyzer.analyze(pages: recognized, barcodes: barcodes, referenceDate: options.referenceDate)
         notices += analysis.notices
         var fields = analysis.fields
         var kind = analysis.kind
@@ -208,8 +214,15 @@ public final class CaptureEngine: Sendable {
             }
         }
 
-        // Only fields that belong on this kind of document, whichever tier found them.
+        // Dates checked against each other, then only fields that belong on this kind
+        // of document, whichever tier found them.
+        fields = CaptureConsistency.resolve(fields, kind: kind, today: CaptureDay(date: options.referenceDate)).fields
         fields = Self.derived(fields).filter { kind.allows($0.key) }
+
+        // A card read from its front alone: the back carries the zone that confirms it.
+        if kind == .identityCard, !analysis.hasMachineReadableZone, case .images(let images) = request.payload, images.count == 1 {
+            notices.append(.identityBackMissing)
+        }
         CaptureLog.engine.info("Read \(fields.count) fields, kind confidence \(kindConfidence)")
         let routing = CaptureRouter.route(kind: kind, kindConfidence: kindConfidence, fields: fields)
 
@@ -235,7 +248,8 @@ public final class CaptureEngine: Sendable {
             fields: fields,
             suggestions: routing.suggestions,
             reminder: routing.reminder,
-            recognizedText: text,
+            // For people: laid out like the document when positions are known, as read otherwise.
+            recognizedText: recognized.isEmpty ? text : analysis.readableText,
             barcodes: barcodes,
             documentID: documentID,
             notices: notices

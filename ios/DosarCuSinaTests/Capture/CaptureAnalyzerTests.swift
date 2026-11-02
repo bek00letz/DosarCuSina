@@ -258,6 +258,8 @@ struct FieldMergerTests {
         let merged = try #require(FieldMerger.merge([heuristic], with: [model]).first)
         #expect(merged.confidence > 0.8)
         #expect(merged.sourceText == "Total de plată: 695,00 lei")
-        #expect(merged.tier == .onDeviceModel)
+        // Read on the document and confirmed by the model: not a model-only guess, so no "Verifică".
+        #expect(merged.tier == .heuristic)
+        #expect(!merged.needsCheck)
     }
 }

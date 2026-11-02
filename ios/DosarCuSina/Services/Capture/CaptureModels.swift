@@ -283,6 +283,18 @@ public struct CaptureField: Hashable, Codable, Sendable {
         self.sourceText = sourceText
         self.tier = tier
     }
+
+    /// The source text of values read from the machine-readable zone.
+    public static let machineReadableSource = "MRZ"
+
+    /// Whether a person should look at this value before it is saved: it failed a
+    /// format or a cross-check (low confidence), or only a language model read it.
+    public var needsCheck: Bool {
+        confidence < Self.checkThreshold || tier == .onDeviceModel || tier == .cloudModel
+    }
+
+    /// Below this, a value is marked for a check.
+    public static let checkThreshold = 0.6
 }
 
 // MARK: - Suggestions
@@ -357,6 +369,9 @@ public enum CaptureNotice: Hashable, Codable, Sendable {
     case duplicateDocument(documentID: UUID)
     /// Only the first pages of a long PDF were read.
     case pagesTruncated(readPages: Int, totalPages: Int)
+    /// An identity card read from one photo without its machine-readable zone: the
+    /// back carries the zone that confirms the values.
+    case identityBackMissing
 }
 
 /// A barcode or QR code found on the page.

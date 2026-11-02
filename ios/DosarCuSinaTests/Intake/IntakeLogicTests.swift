@@ -101,7 +101,8 @@ struct CaptureFilingTests {
         #expect(values["vehicle.insurer"] == .text("Asigurare Exemplu SA"))
         #expect(values["vehicle.plate"] == .text("B 123 ABC"))
         #expect(!values.keys.contains { $0.contains("personal") }, "Personal identifiers are never written")
-        #expect(review.visibleFields.allSatisfy { $0.key != .personalNumber })
+        // The engine never lets a personal identifier onto a policy in the first place.
+        #expect(!CaptureDocumentKind.rcaPolicy.allows(.personalNumber))
     }
 
     @Test func aNewPolicyClosesTheOldCycleAndSetsTheNewDate() async throws {

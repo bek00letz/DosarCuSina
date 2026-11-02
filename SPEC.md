@@ -221,7 +221,9 @@ Long PDFs are read up to their first 25 pages. Pages are read one pass at a time
 
 ### 5.3 The label-layout reader
 
-`LabelledLayout` reads documents printed as labels with values beside or under them (identity cards, licences, certificates). The labels are data, a table per document kind, so a new layout needs a table, not new reading code. Labels match as whole words in folded text (longer wordings win, so *prenume* is never read as *nume*), and a date belongs to a label only when it follows it on its line or sits on the next non-label line. The Romanian identity card front is read this way in both layouts; its personal number is accepted only with a valid control digit.
+`LabelledLayout` reads documents printed as labels with values beside or under them (identity cards, licences, certificates). The labels are data, a table per document kind, so a new layout needs a table, not new reading code. Labels match as whole words in folded text (longer wordings win, so *prenume* is never read as *nume*).
+
+Every recognised line keeps its position on the page (`TextLayout`). Fragments close together on one row join into one line ("03" "07" "1983" → "03 07 1983"; the gap threshold is relative to the text height). A label's value is the rest of its line, the nearest text to its right on the same row, or the nearest line below that overlaps the label's column, before the next label. A label's printed translation under it ("Nume" / "Surname") is skipped, and value lines stacked tightly in a column join ("CORINA" + "IOANA"). Without positions (pasted text, PDFs with a text layer) the next non-label line is read. The text shown under "Textul citit din document" follows the same layout: each label, then its value.
 
 ### 5.4 Review and filing
 
@@ -229,7 +231,11 @@ The review screen shows what was read, where it could go, and the reminder it su
 
 ### 5.5 Identity documents
 
-Everything read from an identity document (personal number, series and number, birth date) is shown and can be copied, because people need it to fill in forms. The section's Face ID lock is the protection. It never appears in search, widgets or notifications.
+**Templates (`IdentityTemplates`).** One definition per known Romanian identity document: the electronic identity card (front, and back with a TD1 machine-readable zone), the older card (TD2, "SERIA XX NR …", validity as a range), the passport (TD3) and the EU driving licence (numbered fields; 4d is taken as the personal number only with a valid control digit). Each template says how the document is recognised, each field's labels and format, an optional usual region on the card, and age rules. `IdentityDocumentReader` applies any template, so a new document means a new template, not new code. The health insurance card isn't included yet: its printed fields couldn't be confirmed against an official specimen.
+
+**Confidence from checks (`CaptureConsistency`).** After all tiers, dates are checked against each other: a birth date is never also an issue, start or expiry date; an issue date is never in the future and, for identity cards and licences, never before the holder's 14th birthday; an expiry comes after the issue and birth dates. The trust order is: machine-readable zone with valid check digits, a personal number with a valid control digit (which also decides birth date and sex), a printed label read in place, the on-device model, Gemini. The review marks "Verifică" only on values that failed a format or a check, or that only a model read.
+
+**Showing, naming and filing.** Everything read (personal number, series and number, birth date, sex, nationality, issuer, dates) is shown in the review, kept on the document and listed on its page with "Copiază", because people need it to fill in forms. The section's Face ID lock is the protection; these values never appear in search, widgets, notifications or exported file names. The document is named "Carte de identitate – Manole Corina Ioana" (surname first, as printed) and filed under the household member whose name matches (ignoring case, diacritics and name order), or under a new member named after the holder. When only the front of a card was read, the review offers to add the back; both are then read together, keeping what the person already corrected. Tapping the document's picture opens it full screen, with zoom.
 
 ### 5.6 Share extension and inbox
 
