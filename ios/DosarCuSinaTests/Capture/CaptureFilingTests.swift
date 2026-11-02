@@ -42,6 +42,13 @@ struct CapturedDocumentFilingTests {
         return Household(context: context, car: car, home: home, rca: rca, boilerCheck: boiler, repair: repair)
     }
 
+    /// A firm's invoice, for who issued it (policies' insurers aren't kept in Oameni).
+    private func invoice(document: CapturedDocumentRef?) -> CaptureResult {
+        CaptureResult(kind: .serviceInvoice, kindConfidence: 0.95, fields: [
+            CaptureField(key: .provider, value: .text("Service Exemplu SRL"), confidence: 0.9, tier: .heuristic),
+        ], suggestions: [], reminder: nil, recognizedText: "FACTURĂ", barcodes: [], document: document, notices: [])
+    }
+
     private func policy(document: CapturedDocumentRef?) -> CaptureResult {
         let expiry = CaptureDay(date: Calendar.current.date(byAdding: .day, value: 375, to: Date())!)
         return CaptureResult(kind: .rcaPolicy, kindConfidence: 0.95, fields: [
@@ -107,9 +114,22 @@ struct CapturedDocumentFilingTests {
         #expect(attachment.asset?.id == house.car.id)
         #expect(attachment.orderedPages.count == 1)
         #expect(await store.pendingCount == 0)
-        if entry != .visit {
-            #expect(attachment.provider?.name == "Exemplu Asigurări S.A.", "Who issued it is written the same way")
-        }
+    }
+
+    @Test("Who issued a document is the same firm, whichever way the document came in")
+    func theProviderIsFoundOnce() async throws {
+        let house = try household()
+        let store = CaptureDocumentStore()
+        var review = CaptureReview(result: invoice(document: nil), assets: [house.car], context: house.context)
+        review.destination = .asset(house.car.id)
+        _ = try await CaptureFiler(context: house.context, store: store).save(review)
+        _ = try await CaptureFiler(context: house.context, store: store).file(.completion(.init(
+            obligation: house.rca, date: Date(), cost: nil, document: invoice(document: nil))))
+        let stored = try await store.store(.init(pages: [CaptureDocumentStoreTests.page(width: 800, height: 1100, seed: 71)], kind: .serviceInvoice))
+        try await file(.visit, stored.ref, in: house, store: store)
+        let firms = try house.context.fetch(FetchDescriptor<Provider>())
+        #expect(firms.map(\.name) == ["Service Exemplu SRL"], "One firm, found by name each time")
+        #expect(firms.first?.assets?.contains { $0.id == house.car.id } == true)
     }
 
     @Test("A new RCA policy through Am rezolvat updates the car's policy details")
@@ -353,7 +373,7 @@ struct CaptureSessionTests {
         let other = try await store.store(.init(pages: [CaptureDocumentStoreTests.page(width: 400, height: 600, seed: 61)], sourceData: bytes))
         let id = try #require(mine.ref.pendingID)
         let session = CaptureSession(payload: .text("RCA"), store: store, reader: { _, _, _ in self.result(.rcaPolicy, document: mine.ref) },
-                                     automaticReading: { _ in .none })
+                                     automaticReading: { _, _ in .none })
         session.read()
         #expect(await eventually { session.result != nil })
         session.close()
@@ -369,7 +389,7 @@ struct CaptureSessionTests {
             CaptureSession(payload: .text("CARTE DE IDENTITATE"), reader: { _, cloud, _ in
                 calls.read(cloud: cloud)
                 return self.result(.identityCard, document: nil)
-            }, automaticReading: { _ in .askFirst })
+            }, automaticReading: { _, _ in .askFirst })
         }
         let saysNo = session()
         saysNo.read()
@@ -435,5 +455,46 @@ struct CaptureRepairTests {
         #expect(invoice.historyEntry?.id == visit.id)
         try repairs.linkInvoices(found)
         #expect(try repairs.visitsWithoutInvoiceCandidates().isEmpty)
+    }
+}
+
+@Suite("Providers found once")
+@MainActor
+struct ProviderLookupTests {
+
+    @Test("The filer and the visit form find a firm by its name before making a new one")
+    func findOrCreateFindsByName() throws {
+        let context = try makeContext()
+        let actions = ProviderActions(context: context)
+        let first = try #require(try actions.findOrCreate(name: "Service Exemplu SRL", trade: .mechanic))
+        let again = try actions.findOrCreate(name: "  service exemplu srl ", trade: .mechanic)
+        #expect(again?.id == first.id)
+        #expect(try context.fetchCount(FetchDescriptor<Provider>()) == 1)
+        #expect(try actions.findOrCreate(name: "   ", trade: .mechanic) == nil)
+    }
+
+    @Test("Duplicate firms are merged only when approved, into the one kept first, and a second run changes nothing")
+    func mergeDuplicates() throws {
+        let context = try makeContext()
+        let car = try AssetActions(context: context).create(name: "VW Golf 2018", template: try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.vehicle)), values: FieldValues())
+        let actions = ProviderActions(context: context)
+        let kept = try actions.create(name: "Service Exemplu SRL", trades: [.mechanic])
+        kept.createdAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let copy = try actions.create(name: "SERVICE EXEMPLU SRL", trades: [.tyreShop], phone: "0700 000 001", linkedTo: [car])
+        let visit = try HistoryActions(context: context).recordVisit(on: car, checklist: [], provider: copy)
+        try context.save()
+        let repairs = CaptureRepairs(context: context)
+
+        let found = try repairs.duplicateProviderCandidates()
+        #expect(found == [.init(keptID: kept.id, duplicateIDs: [copy.id])])
+        #expect(try context.fetchCount(FetchDescriptor<Provider>()) == 2, "Finding changes nothing")
+        try repairs.mergeDuplicateProviders(found)
+        #expect(try context.fetchCount(FetchDescriptor<Provider>()) == 1)
+        #expect(visit.providers?.map(\.id) == [kept.id])
+        #expect(kept.assets?.contains { $0.id == car.id } == true)
+        #expect(kept.phone != nil)
+        #expect(Set(kept.knownTrades) == [.mechanic, .tyreShop])
+        try repairs.mergeDuplicateProviders(found)
+        #expect(try repairs.duplicateProviderCandidates().isEmpty)
     }
 }

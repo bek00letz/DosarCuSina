@@ -68,7 +68,24 @@ struct CaptureFlowView: View {
             }
         }
         // Starts once; a sheet SwiftUI rebuilds finds the reading already running.
-        .task { if session.phase == .idle { session.read() } }
+        .task {
+            guard session.phase == .idle else { return }
+            session.headsForProtectedPlace = headsForProtectedPlace
+            session.read()
+        }
+    }
+
+    /// The capture started from a person's documents or a locked section.
+    private var headsForProtectedPlace: Bool {
+        guard !input.filesAsPersonalDocument else { return true }
+        guard let id = input.preferredAssetID, let asset = assets.first(where: { $0.id == id }) else { return false }
+        let templates = (try? TemplateStore(context: context).templatesByKey()) ?? [:]
+        var current: Asset? = asset
+        while let node = current {
+            if templates[node.templateKey]?.isSensitive == true { return true }
+            current = node.parent
+        }
+        return false
     }
 
     @ViewBuilder private func content(for result: CaptureResult) -> some View {

@@ -99,4 +99,60 @@ public struct CaptureRepairs {
             try UnitOfWork.save(context)
         }
     }
+
+    // MARK: The same firm twice
+
+    /// Firms kept twice under the same name (the visit form and capture each made one):
+    /// the one kept first, and the copies that would merge into it.
+    public struct DuplicateProviders: Identifiable, Equatable {
+        public let keptID: UUID
+        public let duplicateIDs: [UUID]
+        public var id: UUID { keptID }
+    }
+
+    /// Every group of firms whose names read the same (`ProviderActions.findOrCreate`'s rule).
+    public func duplicateProviderCandidates() throws -> [DuplicateProviders] {
+        let groups = Dictionary(grouping: try context.fetch(FetchDescriptor<Provider>()).filter { !$0.isExample }) { SearchText.normalize($0.name) }
+        return groups.values.filter { $0.count > 1 }.compactMap { group in
+            let ordered = group.sorted { ($0.createdAt, $0.id.uuidString) < ($1.createdAt, $1.id.uuidString) }
+            guard let kept = ordered.first else { return nil }
+            return DuplicateProviders(keptID: kept.id, duplicateIDs: ordered.dropFirst().map(\.id))
+        }.sorted { $0.keptID.uuidString < $1.keptID.uuidString }
+    }
+
+    /// Merges each approved group into the firm kept first, in one save: its sections,
+    /// jobs, parts and documents move over, its trades join, details it lacks are filled
+    /// in, and the copies go. A group already merged changes nothing.
+    public func mergeDuplicateProviders(_ approved: [DuplicateProviders]) throws {
+        try UnitOfWork.perform(in: context) {
+            let providers = Dictionary(try context.fetch(FetchDescriptor<Provider>()).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            for group in approved {
+                guard let kept = providers[group.keptID] else { continue }
+                for id in group.duplicateIDs {
+                    guard let copy = providers[id], copy.id != kept.id, !copy.isDeleted else { continue }
+                    for asset in copy.assets ?? [] where !(kept.assets ?? []).contains(where: { $0.id == asset.id }) {
+                        kept.assets = (kept.assets ?? []) + [asset]
+                    }
+                    for entry in copy.historyEntries ?? [] {
+                        var people = (entry.providers ?? []).filter { $0.id != copy.id }
+                        if !people.contains(where: { $0.id == kept.id }) { people.append(kept) }
+                        entry.providers = people
+                    }
+                    for item in copy.suppliedItems ?? [] { item.supplier = kept }
+                    for attachment in copy.attachments ?? [] { attachment.provider = kept }
+                    kept.trades = Array(Set(kept.trades + copy.trades)).sorted()
+                    kept.phone = kept.phone ?? copy.phone
+                    kept.email = kept.email ?? copy.email
+                    kept.address = kept.address ?? copy.address
+                    kept.notes = kept.notes ?? copy.notes
+                    kept.manualRating = kept.manualRating ?? copy.manualRating
+                    kept.wouldCallAgain = kept.wouldCallAgain ?? copy.wouldCallAgain
+                    kept.contactIdentifier = kept.contactIdentifier ?? copy.contactIdentifier
+                    kept.updatedAt = Date()
+                    context.delete(copy)
+                }
+            }
+            try UnitOfWork.save(context)
+        }
+    }
 }

@@ -372,7 +372,7 @@ struct CaptureFiler {
         let provider: Provider? = switch visit.provider {
         case .none: nil
         case .existing(let provider): provider
-        case .named(let name, let trade): try self.provider(named: name, trade: trade, phone: nil, asset: visit.asset)
+        case .named(let name, let trade): try ProviderActions(context: context, now: now).findOrCreate(name: name, trade: trade, linkedTo: visit.asset)
         }
         if let provider, case .existing = visit.provider { try ProviderActions(context: context, now: now).link(provider, to: visit.asset) }
         let entry = try HistoryActions(context: context, now: now).recordVisit(
@@ -620,23 +620,10 @@ struct CaptureFiler {
     }
 
     private func provider(for review: CaptureReview, asset: Asset?) throws -> Provider? {
-        guard let trade = CaptureMapping.providerTrade(for: review.kind),
-              let name = review.value(.provider)?.text else { return nil }
-        return try provider(named: name, trade: trade, phone: review.value(.providerPhone)?.text, asset: asset)
-    }
-
-    /// Who issued a document or did a job: the firm already in Oameni with this name
-    /// (linked to the section), or a new one.
-    private func provider(named name: String, trade: ProviderTrade, phone: String?, asset: Asset?) throws -> Provider? {
-        let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !name.isEmpty else { return nil }
-        let actions = ProviderActions(context: context, now: now)
-        let wanted = SearchText.normalize(name)
-        if let existing = try context.fetch(FetchDescriptor<Provider>()).first(where: { SearchText.normalize($0.name) == wanted }) {
-            if let asset { try actions.link(existing, to: asset) }
-            return existing
-        }
-        return try actions.create(name: name, trades: [trade], phone: phone, linkedTo: asset.map { [$0] } ?? [])
+        guard let trade = CaptureMapping.providerTrade(for: review.kind), let name = review.value(.provider)?.text else { return nil }
+        return try ProviderActions(context: context, now: now).findOrCreate(
+            name: name, taxID: review.value(.providerTaxID)?.text, trade: trade, phone: review.value(.providerPhone)?.text, linkedTo: asset
+        )
     }
 }
 

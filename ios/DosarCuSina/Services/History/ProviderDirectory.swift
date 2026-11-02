@@ -35,6 +35,24 @@ public final class ProviderActions {
         return provider
     }
 
+    /// The one way capture and the visit form name who issued a document or did a job:
+    /// the firm already in Oameni, or a new one. A firm is the same when its name reads
+    /// the same once case, diacritics and spacing are set aside (`SearchText.normalize`).
+    /// `taxID` (a checked CUI read off the document) is taken now so callers pass it
+    /// already; firms don't keep their CUI yet, so today it doesn't decide the match.
+    /// The firm is linked to `asset` either way.
+    @discardableResult
+    public func findOrCreate(name: String, taxID: String? = nil, trade: ProviderTrade, phone: String? = nil, linkedTo asset: Asset? = nil) throws -> Provider? {
+        let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { return nil }
+        let wanted = SearchText.normalize(name)
+        if let existing = try context.fetch(FetchDescriptor<Provider>()).first(where: { SearchText.normalize($0.name) == wanted }) {
+            if let asset { try link(existing, to: asset) }
+            return existing
+        }
+        return try create(name: name, trades: [trade], phone: phone, linkedTo: asset.map { [$0] } ?? [])
+    }
+
     public func link(_ provider: Provider, to asset: Asset) throws {
         guard !(provider.assets ?? []).contains(where: { $0.id == asset.id }) else { return }
         provider.assets = (provider.assets ?? []) + [asset]

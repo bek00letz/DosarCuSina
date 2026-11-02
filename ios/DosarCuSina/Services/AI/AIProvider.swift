@@ -167,12 +167,14 @@ public struct AIProviderSettings: Sendable {
     }
 
     /// What happens by itself after a weak phone reading, with "Citește automat când nu
-    /// sunt sigur" on. An identity document's photo is never sent by itself: the review
-    /// asks first, once for that document, naming the provider. Bills, policies and
-    /// contracts are read right away.
-    public func automaticReading(after result: CaptureResult) -> AutomaticReading {
+    /// sunt sigur" on. The page is sent without asking only when the phone is sure it is
+    /// not an identity document (`IdentitySignals`: no machine-readable zone, no
+    /// CNP-shaped number, no identity words, no identity kind among the readings) and
+    /// the capture isn't headed for a locked section or a person's documents
+    /// (`headedForProtectedPlace`). Otherwise the review asks once, naming the provider.
+    public func automaticReading(after result: CaptureResult, headedForProtectedPlace: Bool = false) -> AutomaticReading {
         guard readsAutomaticallyWhenUnsure, isReady, !result.readWithCloudModel, ReadingArbiter.isWeak(result) else { return .none }
-        return result.kind.isIdentityDocument ? .askFirst : .read
+        return headedForProtectedPlace || IdentitySignals.mayBeIdentity(result) ? .askFirst : .read
     }
 
     public enum AutomaticReading: Sendable, Equatable {

@@ -298,6 +298,25 @@ struct ReadingArbiterTests {
         #expect(!settings.readsAutomatically(after: result(kind, confidence: 0.5)))
         #expect(settings.automaticReading(after: result(.rcaPolicy, confidence: 0.5)) == .read, "A policy still reads by itself")
         #expect(settings.automaticReading(after: result(.utilityInvoice, confidence: 0.5)) == .read, "A bill too")
+        #expect(settings.automaticReading(after: result(.rcaPolicy, confidence: 0.5), headedForProtectedPlace: true) == .askFirst,
+                "Headed for a locked section or a person's documents: ask first")
         settings.deleteKey(for: .gemini)
+    }
+
+    @Test("A glared identity card the phone read as something else still asks before it is sent")
+    func unrecognisedIdentityAsks() {
+        let settings = AIProviderTests.settings()
+        settings.saveKey(AIProviderTests.placeholderKey, for: .gemini)
+        settings.readsAutomaticallyWhenUnsure = true
+        defer { settings.deleteKey(for: .gemini) }
+        func page(_ text: String) -> CaptureResult {
+            CaptureResult(kind: .other, kindConfidence: 0.3, fields: [], suggestions: [], reminder: nil, recognizedText: text,
+                          barcodes: [], document: nil, notices: [.littleTextRecognized])
+        }
+        // Glare hid the title; what's left still says what it is.
+        #expect(settings.automaticReading(after: page("ROMANIA\nIDROUEXEMPLU<<ION<<<<<<<<<<<<<<<<<<<<<<")) == .askFirst, "A zone's fillers")
+        #expect(settings.automaticReading(after: page("CNP 1800101990006\nEXEMPLU")) == .askFirst, "A CNP-shaped number")
+        #expect(settings.automaticReading(after: page("Data nașterii 01.01.1980\nEXEMPLU ION")) == .askFirst, "Identity words")
+        #expect(settings.automaticReading(after: page("ENGIE Romania S.A.\nTotal de plată 245,30 lei")) == .read, "A bill reads by itself")
     }
 }

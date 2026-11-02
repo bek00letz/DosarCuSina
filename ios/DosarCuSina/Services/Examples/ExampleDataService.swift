@@ -214,15 +214,14 @@ public struct ExampleDataService {
     public func removeExamples() throws -> [String] {
         try UnitOfWork.perform(in: context) {
             var kept: [String] = []
-            // Each example from its top: what is under it goes with it, or stays with it.
-            for asset in try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.isExample })) where asset.isExample && asset.parent?.isExample != true {
-                if Self.holdsSomethingReal(asset) {
-                    kept.append(asset.name)
-                    Self.makeReal(asset)
-                } else {
-                    context.delete(asset)
-                }
+            // Each example from its top: one that holds something of the person's becomes
+            // theirs with everything under it; every other example goes.
+            let examples = try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.isExample }))
+            for asset in examples where asset.isExample && asset.parent?.isExample != true && Self.holdsSomethingReal(asset) {
+                kept.append(asset.name)
+                Self.makeReal(asset)
             }
+            for asset in examples where asset.isExample { context.delete(asset) }
             // Example records that don't hang off an asset.
             // People who worked on a kept section were made the person's with it.
             for provider in try context.fetch(FetchDescriptor<Provider>(predicate: #Predicate { $0.isExample })) where provider.isExample {

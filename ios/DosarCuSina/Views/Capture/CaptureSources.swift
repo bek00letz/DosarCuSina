@@ -156,7 +156,9 @@ final class CaptureSession {
 
     @ObservationIgnored let ownerID: UUID?
     @ObservationIgnored private let reader: Reader
-    @ObservationIgnored private let automaticReading: @MainActor (CaptureResult) -> AIProviderSettings.AutomaticReading
+    @ObservationIgnored private let automaticReading: @MainActor (CaptureResult, _ headedForProtectedPlace: Bool) -> AIProviderSettings.AutomaticReading
+    /// The capture goes to a locked section or a person's documents: "Citește automat" asks first, whatever the page.
+    @ObservationIgnored var headsForProtectedPlace = false
     @ObservationIgnored private var usesCloud = false
     /// The provider read, or the person answered, for this document: never asked again.
     @ObservationIgnored private var hasAnsweredSending = false
@@ -168,7 +170,9 @@ final class CaptureSession {
         ownerID: UUID? = nil,
         store: CaptureDocumentStore = .shared(),
         reader: @escaping Reader = { try await CaptureRunner.run($0, useCloudModel: $1, ownerID: $2) },
-        automaticReading: @escaping @MainActor (CaptureResult) -> AIProviderSettings.AutomaticReading = { AIProviderSettings.standard.automaticReading(after: $0) }
+        automaticReading: @escaping @MainActor (CaptureResult, Bool) -> AIProviderSettings.AutomaticReading = {
+            AIProviderSettings.standard.automaticReading(after: $0, headedForProtectedPlace: $1)
+        }
     ) {
         self.payload = payload
         self.ownerID = ownerID
@@ -216,7 +220,7 @@ final class CaptureSession {
     /// The person chose to have a weak phone reading read by their AI provider too, or
     /// "Citește automat" asks for it. For an identity document it waits for their yes.
     private func afterReading(_ result: CaptureResult) {
-        switch automaticReading(result) {
+        switch automaticReading(result, headsForProtectedPlace) {
         case .none: break
         case .read:
             CaptureLog.engine.info("Reading with the AI provider automatically: \(ReadingArbiter.weaknesses(of: result).map(\.rawValue).sorted().joined(separator: ","), privacy: .public)")
