@@ -19,9 +19,10 @@ The template-engine overhaul (waves 1 and 2) is merged. The app builds for iOS 2
 | Adaugă and capture | Camera, photos, files, typing; the capture engine with all four tiers ranked by evidence (`ReadingArbiter`), per-kind field rules, the label-layout reader (Romanian ID card front, both layouts); the AI provider as a second opinion, on a tap or automatically after a weak reading; review with other readers' values offered beside each field and the kind; filing; the visit flow with component checklists. |
 | Share extension and inbox | Share from Mail, WhatsApp, Photos and Files into *De verificat*; the practice share in onboarding. |
 | Widgets | Home Screen (small, medium) and Lock Screen (inline, rectangular), with "Gata". |
+| Reminders | Each reminder carries its cycle; buttons, widget taps, Siri and Shortcuts go through one guarded way in (`IntentEngine.perform`) and re-plan after; a catch-up for a deadline added late; trimming by consequence with a last "open the app" reminder; background refresh; unsaved taps shown in Urmează. |
 | Search | Diacritic-insensitive search over the whole binder, locked sections show titles only. |
 | Settings and locks | Reminder time, app lock and section locks, categories on the binder, backup, the optional AI provider and its key, examples, storage. |
-| Engines | Obligation, asset, history, attachment and provider actions; recurrence; reminder profiles with follow-up after a lapse; attention model; box status; readiness (requirements on screen, scenarios engine only); search; household rules (rental income declaration); wording. |
+| Engines | Obligation, asset, history, attachment and provider actions; recurrence (a series keeps its day of the month); reminder profiles with follow-up after a lapse; attention model; box status; readiness (requirements on screen, scenarios engine only); search; household rules (rental income declaration); wording. |
 | Side effects | Notifications, badge and widget snapshot through `SideEffectsCoordinator`. |
 | Archive | `.dosar` v3 export and import (merge or replace), v2 import, golden fixtures in `shared/`. |
 | Localisation | Romanian String Catalog with plural variations; Romanian formats for dates and money. |
@@ -49,6 +50,8 @@ Nothing at the moment.
 - **Spotlight.** The coordinator has an indexer hook; no Spotlight indexer is registered.
 - **Readiness scenarios** (trip abroad, selling a vehicle, insurance claim): the engine and tests exist, no screen uses them.
 - **Permission descriptions** for Calendar, Reminders and Contacts in the project settings still describe the first version; the app now uses the system's event editor and contact picker without asking for those permissions.
+- **Deadlines an old reminder may have closed twice.** `LikelyDoubleCompletions.find` lists them; nothing uses it yet. The coming repair list should show each one and offer to undo the second completion, only with the person's OK.
+- **Siri and Shortcuts with the app lock on** open the app instead of answering. Not tried on a device yet.
 - **No build in CI.** Only the privacy check runs on pull requests. A macOS workflow that builds and runs the tests could come later.
 
 ## How to pick up work
@@ -73,6 +76,13 @@ Newest first. Copy this template:
 ```
 
 Never write security findings, crash traces or local paths here. See [SECURITY.md](../SECURITY.md).
+
+### 2026-11-02 — owner (with Claude) — `claude/fix-reminders-87daeb`
+- **Did:** reminders you can trust. One way in for every outside "done" and "amână" (`IntentEngine.perform`): reminders carry their cycle, a tap for a closed cycle changes nothing, shown reminders for closed cycles are cleared, and every outside action re-plans through the one coordinator (`SideEffectsCoordinator.shared(for:)`, passes one after another). Failed reminder buttons and widget taps show in Urmează ("Nu s-a salvat"). A catch-up reminder for deadlines added late; trimming by consequence then time, with the last place for „Deschide Dosar cu Șină o clipă”; background refresh (`BackgroundRefresh`, `UIBackgroundModes` fetch); durations worked out from the fire day. A monthly or yearly series keeps its day of the month, read from its completions. Siri and Shortcuts read `ObligationSnapshot.fetchForOutside` (no examples), need the phone unlocked, and open the app when the app lock is on. `LikelyDoubleCompletions` for the coming repair list.
+- **Tests:** new `OutsideActionsTests`, `CatchUpReminderTests`, `RecurrenceSeriesTests`; `notificationButtonsUseTheSameEngine` and `respectsTheSystemLimitByKeepingTheSoonest` changed on purpose (now `…ForTheirOwnCycle` and `…ByConsequenceThenTime`). Reminder, recurrence, widget and action suites while working; the whole suite once on iPhone 17 (iOS 26.4).
+- **Left open:** background refresh, the Urmează notice and Siri with the app lock not tried on a device or by eye in the simulator. The repair list that uses `LikelyDoubleCompletions` belongs to the data-repair work.
+- **Next:** try a reminder's "Am rezolvat" twice on a device, and the background refresh with Xcode's simulated launch.
+- **Decisions:** "Reminders you can trust" added.
 
 ### 2026-11-02 — owner (with Claude) — `claude/subscriptions-from-capture`
 - **Did:** subscriptions from capture. The subscription template carries the service (stable `service.*` keys), the codes (client code, contract number, POD, CLC, phone number), the start, the minimum period and its end, direct debit and the last bill, with "Se termină perioada minimă" and one "Factura de plătit"; catalog version 8. Contracts are a capture kind (`ContractReader` with a label table, classifier words, field rules, plausibility windows, the AI provider's schema). Bills and contracts find their subscription by their codes (`SubscriptionMatcher`, never across two homes), go under their home or stand on their own (phone plans), and a bill is logged in the subscription's history with its due date as the one bill reminder, none with direct debit. The loose "Factură …" deadline is disabled (kept in `CaptureFiler.looseBillReminder`). The trend of a subscription's bills in Bani and the missing bill in Urmează ("Din timp") come from `BillHistory`. "Mută la…" moves any subscription between homes and Abonamente. A derived field given with its inputs is now kept (a contract's printed end).

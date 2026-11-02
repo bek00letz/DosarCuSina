@@ -85,6 +85,8 @@ Pure engines (no database) sit beside them: `RecurrenceEngine`, `AttentionModel`
 
 `SideEffectsCoordinator` ([Services/SideEffects/SideEffectsCoordinator.swift](ios/DosarCuSina/Services/SideEffects/SideEffectsCoordinator.swift)) is the **only** path to notifications, the app badge, the widget snapshot and Spotlight (through its indexer hook). Actions save; the coordinator reacts to the save. Never schedule a notification, reload a widget or index anything from a view or an action. Notification permission is asked only with `setNeedsReconcile(allowPermissionPrompt: true)`, after the in-app explanation or from Settings.
 
+Every "done" or "amână" from outside the app (reminder buttons, the widget's *Gata*, Siri and Shortcuts) goes through `IntentEngine.perform` ([Intents/IntentEngine.swift](ios/DosarCuSina/Intents/IntentEngine.swift)), with the cycle the person saw; never call `ObligationActions` from a notification, widget or intent directly. Get the coordinator with `SideEffectsCoordinator.shared(for:)`, never a second instance. Anything that carries obligations out of the app (reminders, the badge, widgets, intents, Spotlight) reads `ObligationSnapshot.fetchForOutside`, which leaves examples out.
+
 ## Secret fields
 
 A field of type `secret` (an electronic identity card's PIN codes) follows one set of rules, in [Services/Security/SecretFields.swift](ios/DosarCuSina/Services/Security/SecretFields.swift):
