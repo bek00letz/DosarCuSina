@@ -65,6 +65,22 @@ public struct ComponentOccurrence: Hashable, Sendable {
     public var providerIds: [UUID]
 }
 
+/// A guess at the next time a component needs doing.
+public struct NextEstimate: Hashable, Sendable {
+    public enum Basis: String, Sendable {
+        /// From the typical distance and how fast the counter has been moving.
+        case distance
+        /// From the typical time between jobs.
+        case time
+    }
+
+    public var day: CalendarDay
+    public var metric: Double?
+    public var basis: Basis
+    /// How many past intervals it rests on; show it as an estimate either way.
+    public var sampleCount: Int
+}
+
 /// How often a component is usually replaced, from the asset's own history.
 public struct TypicalInterval: Hashable, Sendable {
     /// Median counter distance between replacements.
@@ -129,6 +145,45 @@ public enum MaintenanceLog {
             return b - a
         }
         return TypicalInterval(metric: median(metrics), days: median(days.map(Double.init)).map { Int($0.rounded()) }, sampleCount: ordered.count - 1)
+    }
+
+    /// How far the counter moves in 30 days, from readings that span at least
+    /// `minimumSpanDays`. Nil when there isn't enough to say honestly.
+    public static func monthlyRate(_ readings: [CadenceCalculator.TelemetryReading], minimumSpanDays: Int = 30) -> Double? {
+        let ordered = readings.sorted { $0.date < $1.date }
+        guard let first = ordered.first, let last = ordered.last, ordered.count >= 2 else { return nil }
+        let days = last.date.timeIntervalSince(first.date) / 86_400
+        let distance = last.metric - first.metric
+        guard days >= Double(minimumSpanDays), distance > 0 else { return nil }
+        return distance / days * 30
+    }
+
+    /// When a component will probably need doing again, from its own history.
+    /// Uses the typical distance and the recent pace of the counter when both are
+    /// known, else the typical time between jobs. Nil when there are fewer than two
+    /// past jobs: one job is not a pattern.
+    public static func nextEstimate(
+        of componentKey: String,
+        in items: [HistoryItemSnapshot],
+        readings: [CadenceCalculator.TelemetryReading] = [],
+        currentMetric: Double? = nil,
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) -> NextEstimate? {
+        guard let typical = typicalInterval(of: componentKey, in: items, calendar: calendar),
+              let last = lastOccurrence(of: componentKey, in: items, currentMetric: currentMetric, now: now, calendar: calendar) else { return nil }
+        let today = CalendarDay(now, calendar: calendar)
+        let lastDay = CalendarDay(last.date, calendar: calendar)
+        let dueMetric = both(last.metricAtTime, typical.metric).map { $0 + $1 }
+
+        if let dueMetric, let rate = monthlyRate(readings), let current = currentMetric ?? readings.max(by: { $0.date < $1.date })?.metric {
+            let days = Int(((dueMetric - current) / rate * 30).rounded())
+            return NextEstimate(day: today.adding(days: max(0, days), calendar: calendar), metric: dueMetric, basis: .distance, sampleCount: typical.sampleCount)
+        }
+        if let days = typical.days {
+            return NextEstimate(day: lastDay.adding(days: days, calendar: calendar), metric: dueMetric, basis: .time, sampleCount: typical.sampleCount)
+        }
+        return nil
     }
 
     /// Components that have history, newest activity first.

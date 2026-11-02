@@ -98,6 +98,79 @@ public final class HistoryActions {
         return entry
     }
 
+    /// One ticked component on the visit checklist, with what it cost if known.
+    public struct ChecklistItem: Sendable {
+        public var componentKey: String
+        public var cost: Money?
+        public var partBrandOrCode: String?
+
+        public init(componentKey: String, cost: Money? = nil, partBrandOrCode: String? = nil) {
+            self.componentKey = componentKey
+            self.cost = cost
+            self.partBrandOrCode = partBrandOrCode
+        }
+    }
+
+    /// Records one visit (a service, a repair, a check-up) with every part ticked on
+    /// the checklist, all in one save: the entry, its line items, the odometer
+    /// reading (also logged as a measurement), the provider and the documents.
+    @discardableResult
+    public func recordVisit(
+        on asset: Asset,
+        kind: HistoryKind = .maintenance,
+        title: String? = nil,
+        occurredAt: Date? = nil,
+        checklist: [ChecklistItem],
+        extraItems: [LineItemDraft] = [],
+        totalCost: Money? = nil,
+        odometer: Double? = nil,
+        provider: Provider? = nil,
+        documents: [DocumentDraft] = [],
+        rating: Int? = nil,
+        calendar: Calendar = .current
+    ) throws -> HistoryEntry {
+        let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
+        let catalog = template?.components ?? []
+        let ticked = checklist.map { item in
+            LineItemDraft(
+                name: catalog.first { $0.key == item.componentKey }?.name ?? item.componentKey,
+                componentKey: item.componentKey,
+                partBrandOrCode: item.partBrandOrCode,
+                cost: item.cost
+            )
+        }
+        let items = ticked + extraItems
+        let date = occurredAt ?? now()
+        let entry = HistoryEntry(kind: kind, title: title ?? Self.visitTitle(for: items), occurredAt: date)
+        entry.metricReading = odometer
+        entry.totalCost = totalCost
+        entry.rating = rating.map { min(max($0, 1), 5) }
+        entry.isExample = asset.isExample
+        context.insert(entry)
+        entry.asset = asset
+        entry.providers = provider.map { [$0] } ?? []
+        HouseholdMutations.addItems(items, to: entry, in: context)
+        if let odometer {
+            let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) }
+            HouseholdMutations.recordReading(odometer, on: asset, at: date, unit: unit, in: context)
+        }
+        for draft in documents {
+            _ = AttachmentActions.insert(draft, asset: asset, obligation: nil, historyEntry: entry, provider: nil, calendar: calendar, in: context)
+        }
+        try save()
+        return entry
+    }
+
+    /// "Ulei și filtru, Plăcuțe frână față" for short visits, a plain title for long ones.
+    static func visitTitle(for items: [LineItemDraft]) -> String {
+        let names = items.map(\.name).filter { !$0.isEmpty }
+        switch names.count {
+        case 0: return String(localized: "Vizită", comment: "History entry title when nothing was listed")
+        case 1...2: return names.joined(separator: ", ")
+        default: return String(localized: "Revizie: \(names.count) lucrări", comment: "History entry title for a visit with many jobs")
+        }
+    }
+
     /// Adds line items to an existing entry.
     public func addItems(_ items: [LineItemDraft], to entry: HistoryEntry) throws {
         HouseholdMutations.addItems(items, to: entry, in: context)

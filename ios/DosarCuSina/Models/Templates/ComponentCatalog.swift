@@ -32,9 +32,27 @@ public struct ComponentDefinition: Hashable, Sendable, Codable, Identifiable {
     }
 }
 
+/// A heading on the visit checklist and the components under it.
+public struct ComponentGroup: Hashable, Sendable, Identifiable {
+    public var title: String
+    public var components: [ComponentDefinition]
+    public var id: String { title }
+}
+
 /// Matching free text to a template's components.
 public enum ComponentCatalog {
     public static let customKeyPrefix = "custom."
+
+    /// The template's components grouped for the visit checklist, in catalog order.
+    public static func checklist(for components: [ComponentDefinition]) -> [ComponentGroup] {
+        var order: [String] = []
+        var byGroup: [String: [ComponentDefinition]] = [:]
+        for component in components {
+            if byGroup[component.group] == nil { order.append(component.group) }
+            byGroup[component.group, default: []].append(component)
+        }
+        return order.map { ComponentGroup(title: $0, components: byGroup[$0] ?? []) }
+    }
 
     /// The component whose name or synonym appears in `text`, preferring the longest match
     /// ("plăcuțe frână spate" picks the rear pads, not just "plăcuțe").
