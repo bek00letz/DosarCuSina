@@ -133,7 +133,7 @@ public enum RecurrenceEngine {
     /// years old and every year after. An unknown age gets the shorter interval,
     /// so a reminder is never late.
     public static func itpInterval(values: FieldValues, on day: CalendarDay) -> RecurrenceInterval {
-        if values["vehicle.usage"]?.textValue == VehicleUsage.commercial {
+        if values["vehicle.usage"]?.textValue.flatMap({ VehicleUse.options.option(for: $0)?.key }) == VehicleUse.commercial {
             return .months(6)
         }
         guard let year = values["vehicle.year"]?.numberValue else { return .years(1) }

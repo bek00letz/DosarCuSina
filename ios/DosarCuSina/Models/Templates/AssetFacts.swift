@@ -46,7 +46,7 @@ public enum AssetFacts {
     public static func keyFacts(_ values: FieldValues, template: TemplateDefinition, locale: Locale = .dosarDefault) -> [KeyFact] {
         template.keyFactFields.compactMap { field in
             guard let value = values[field.key] else { return nil }
-            return KeyFact(field: field, value: value, text: FieldFormatter.display(value, as: field.type, unit: field.unit, locale: locale))
+            return KeyFact(field: field, value: value, text: FieldFormatter.display(value, field: field, locale: locale))
         }
     }
 

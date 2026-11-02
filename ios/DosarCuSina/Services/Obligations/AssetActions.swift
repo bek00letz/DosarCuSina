@@ -52,7 +52,7 @@ public final class AssetActions {
         obligations: [PlannedObligation] = [],
         isExample: Bool = false
     ) throws -> Asset {
-        let asset = Asset(name: name, templateKey: template.key, values: values, notes: notes, isExample: isExample)
+        let asset = Asset(name: name, templateKey: template.key, values: values.normalizingChoices(for: template.definition), notes: notes, isExample: isExample)
         context.insert(asset)
         let today = CalendarDay(now(), calendar: calendar)
         do {
@@ -74,11 +74,13 @@ public final class AssetActions {
     /// renewal follows its expiry date) move with that field.
     public func update(_ asset: Asset, name: String, values: FieldValues, notes: String?) throws {
         let previous = asset.values
+        let template = try TemplateStore(context: context).template(forKey: asset.templateKey)
+        let values = template.map { values.normalizingChoices(for: $0.definition) } ?? values
         asset.name = name
         asset.values = values
         asset.notes = notes
         asset.updatedAt = now()
-        if let template = try TemplateStore(context: context).template(forKey: asset.templateKey) {
+        if let template {
             let blueprints = Dictionary(template.blueprints.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
             for obligation in asset.activeObligations {
                 guard let key = obligation.blueprintKey, let blueprint = blueprints[key],

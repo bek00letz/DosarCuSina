@@ -139,6 +139,26 @@ public struct FieldValues: Hashable, Sendable, Codable, Sequence {
     }
 
     public var isEmpty: Bool { storage.isEmpty }
+
+    /// The same values with choice fields stored as option keys. Display text
+    /// written before keys existed (older backups, earlier builds) maps to its
+    /// key; text no option recognizes is kept as written.
+    public func normalizingChoices(for template: TemplateDefinition) -> FieldValues {
+        var result = self
+        for field in template.allFields where field.options != nil {
+            switch (field.type, storage[field.key]) {
+            case (.choice, .text(let text)?):
+                result[field.key] = .text(field.choiceKey(for: text))
+            case (.multiChoice, .choices(let items)?):
+                result[field.key] = .choices(items.map(field.choiceKey(for:)))
+            case (.multiChoice, .text(let text)?):
+                result[field.key] = .choices([field.choiceKey(for: text)])
+            default:
+                break
+            }
+        }
+        return result
+    }
     public var keys: [String] { storage.keys.sorted() }
 
     public func makeIterator() -> Dictionary<String, FieldValue>.Iterator {

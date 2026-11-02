@@ -101,7 +101,10 @@ public enum ReadinessEngine {
     // MARK: Trip
 
     static func documents(of type: String, in assets: [ReadinessAsset]) -> [ReadinessAsset] {
-        assets.filter { $0.templateKey == BuiltInTemplates.Key.documents && $0.values["document.type"]?.textValue == type }
+        assets.filter {
+            $0.templateKey == BuiltInTemplates.Key.documents
+                && $0.values["document.type"]?.textValue.flatMap({ DocumentType.options.option(for: $0)?.key }) == type
+        }
     }
 
     static func expiry(_ asset: ReadinessAsset) -> CalendarDay? {

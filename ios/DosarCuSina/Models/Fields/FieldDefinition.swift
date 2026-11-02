@@ -90,14 +90,25 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
     public var isEssential: Bool
     /// Hidden behind Face ID when the category is locked (document numbers, medical data).
     public var isSensitive: Bool
-    /// Options for `choice` and `multiChoice`.
-    public var options: [String]?
+    /// Options for `choice` and `multiChoice`. Values store the option keys.
+    public var options: [ChoiceOption]?
     /// Unit for `number` and `metric`, such as `km` or `kg`.
     public var unit: String?
     /// Example shown in an empty field.
     public var placeholder: String?
 
     public var id: String { key }
+
+    /// The label to show for a stored choice key (or legacy text).
+    public func label(forChoice key: String) -> String {
+        options?.option(for: key)?.label ?? key
+    }
+
+    /// The stored key for a choice value: keys pass through, legacy display text
+    /// maps to its option's key, unknown text is kept as written.
+    public func choiceKey(for text: String) -> String {
+        options?.option(for: text)?.key ?? text
+    }
 
     public init(
         key: String,
@@ -106,7 +117,7 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
         role: FieldRole? = nil,
         isEssential: Bool = false,
         isSensitive: Bool = false,
-        options: [String]? = nil,
+        options: [ChoiceOption]? = nil,
         unit: String? = nil,
         placeholder: String? = nil
     ) {
@@ -134,7 +145,7 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
         role = (try c.decodeIfPresent(String.self, forKey: .role)).flatMap(FieldRole.init(rawValue:))
         isEssential = try c.decodeIfPresent(Bool.self, forKey: .isEssential) ?? false
         isSensitive = try c.decodeIfPresent(Bool.self, forKey: .isSensitive) ?? false
-        options = try c.decodeIfPresent([String].self, forKey: .options)
+        options = try c.decodeIfPresent([ChoiceOption].self, forKey: .options)
         unit = try c.decodeIfPresent(String.self, forKey: .unit)
         placeholder = try c.decodeIfPresent(String.self, forKey: .placeholder)
     }

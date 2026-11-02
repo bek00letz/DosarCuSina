@@ -80,7 +80,23 @@
         "role": { "type": "string" },
         "isEssential": { "type": "boolean" },
         "isSensitive": { "type": "boolean" },
-        "options": { "type": "array", "items": { "type": "string" } },
+        "options": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": ["key", "label"],
+                "properties": {
+                  "key": { "type": "string" },
+                  "label": { "type": "string" },
+                  "aliases": { "type": "array", "items": { "type": "string" } }
+                }
+              },
+              { "type": "string", "description": "Older definitions: the text is both key and label." }
+            ]
+          }
+        },
         "unit": { "type": "string" },
         "placeholder": { "type": "string" }
       }

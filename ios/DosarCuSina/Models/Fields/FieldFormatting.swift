@@ -134,6 +134,18 @@ public enum FieldFormatter {
 
     // MARK: Display
 
+    /// Human-readable text for a value of `field`. Choice keys show their labels.
+    public static func display(_ value: FieldValue, field: FieldDefinition, locale: Locale = .dosarDefault, calendar: Calendar = .current) -> String {
+        switch (field.type, value) {
+        case (.choice, .text(let key)):
+            return field.label(forChoice: key)
+        case (.multiChoice, .choices(let keys)):
+            return keys.map(field.label(forChoice:)).formatted(.list(type: .and).locale(locale))
+        default:
+            return display(value, as: field.type, unit: field.unit, locale: locale, calendar: calendar)
+        }
+    }
+
     /// Human-readable text for a stored value, using the field's type and unit.
     public static func display(_ value: FieldValue, as type: FieldType, unit: String? = nil, locale: Locale = .dosarDefault, calendar: Calendar = .current) -> String {
         switch value {

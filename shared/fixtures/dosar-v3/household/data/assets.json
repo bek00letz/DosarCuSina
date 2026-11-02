@@ -8,9 +8,17 @@
     "templateKey" : "vehicle",
     "updatedAt" : "2026-03-01T08:00:00Z",
     "values" : {
+      "vehicle.fuel" : {
+        "type" : "text",
+        "value" : "fuel.diesel"
+      },
       "vehicle.make" : {
         "type" : "text",
         "value" : "Volkswagen"
+      },
+      "vehicle.usage" : {
+        "type" : "text",
+        "value" : "vehicleUse.personal"
       },
       "vehicle.odometer" : {
         "type" : "number",

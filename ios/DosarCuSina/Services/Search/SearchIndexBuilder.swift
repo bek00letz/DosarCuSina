@@ -52,7 +52,7 @@ public struct SearchIndexBuilder {
         for field in definition?.allFields ?? [] {
             // Sensitive values (document numbers, CNP, medical notes) are never indexed.
             guard !field.isSensitive, let value = asset.value(field.key) else { continue }
-            let text = FieldFormatter.display(value, as: field.type, unit: field.unit, locale: locale)
+            let text = FieldFormatter.display(value, field: field, locale: locale)
             let weight: Int
             switch field.role {
             case .identifier?, .keyFact?, .documentNumber?: weight = SearchField.Weight.identifier
@@ -67,7 +67,7 @@ public struct SearchIndexBuilder {
         }
         fields.append(SearchField(asset.notes, weight: SearchField.Weight.note))
         let subtitle = definition.flatMap { def in
-            def.fields(withRole: .subtitle).compactMap { asset.value($0.key).map { FieldFormatter.display($0, as: .text, locale: locale) } }.joined(separator: " ")
+            def.fields(withRole: .subtitle).compactMap { field in asset.value(field.key).map { FieldFormatter.display($0, field: field, locale: locale) } }.joined(separator: " ")
         }
         return SearchDocument(
             id: id(.asset, asset.id), kind: .asset, title: asset.name,

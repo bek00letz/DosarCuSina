@@ -15,8 +15,8 @@ struct DossierImporter {
         var result = ArchiveImportResult()
         if mode == .replace { try deleteEverything() }
 
-        try importTemplates(&result)
-        let assets = try importAssets(&result)
+        let definitions = try importTemplates(&result)
+        let assets = try importAssets(&result, definitions: definitions)
         let providers = try importProviders(&result, assets: assets)
         let obligations = try importObligations(&result, assets: assets)
         let entries = try importHistory(&result, assets: assets, obligations: obligations, providers: providers)
@@ -50,7 +50,8 @@ struct DossierImporter {
 
     // MARK: Templates
 
-    private func importTemplates(_ result: inout ArchiveImportResult) throws {
+    /// Imports templates and returns every definition in effect after the import, by key.
+    private func importTemplates(_ result: inout ArchiveImportResult) throws -> [String: TemplateDefinition] {
         var byKey: [String: CategoryTemplate] = [:]
         if mode == .merge {
             for template in try context.fetch(FetchDescriptor<CategoryTemplate>()) where byKey[template.key] == nil {
@@ -100,14 +101,17 @@ struct DossierImporter {
         // Built-ins the archive didn't mention.
         var order = (byKey.values.map(\.homeOrder).max() ?? -1) + 1
         for definition in BuiltInTemplates.all where byKey[definition.key] == nil {
-            context.insert(CategoryTemplate(definition: definition, isBuiltIn: true, homeOrder: order))
+            let template = CategoryTemplate(definition: definition, isBuiltIn: true, homeOrder: order)
+            context.insert(template)
+            byKey[definition.key] = template
             order += 1
         }
+        return byKey.mapValues(\.definition)
     }
 
     // MARK: Records
 
-    private func importAssets(_ result: inout ArchiveImportResult) throws -> [UUID: Asset] {
+    private func importAssets(_ result: inout ArchiveImportResult, definitions: [String: TemplateDefinition]) throws -> [UUID: Asset] {
         var map = try existing(Asset.self, id: \.id)
         for dto in package.assets {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.assets) }
@@ -127,7 +131,9 @@ struct DossierImporter {
             asset.symbolOverride = dto.symbolOverride
             asset.tintOverrideRaw = dto.tintOverride
             asset.notes = dto.notes
-            asset.valuesData = StoredJSON.encode(dto.values)
+            // Choice values written as display text (v2 backups, older builds) become option keys.
+            let values = definitions[dto.templateKey].map { dto.values.normalizingChoices(for: $0) } ?? dto.values
+            asset.valuesData = StoredJSON.encode(values)
             asset.photoData = dto.photoPath.flatMap { package.files[$0] }
             asset.isExample = dto.isExample
             asset.createdAt = dto.createdAt

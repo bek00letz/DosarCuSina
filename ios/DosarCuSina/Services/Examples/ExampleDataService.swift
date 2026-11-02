@@ -50,8 +50,8 @@ public struct ExampleDataService {
             values["vehicle.make"] = .text("Volkswagen")
             values["vehicle.model"] = .text("Golf")
             values["vehicle.year"] = .number(2018)
-            values["vehicle.fuel"] = .text(String(localized: "Benzină"))
-            values["vehicle.usage"] = .text(VehicleUsage.personal)
+            values["vehicle.fuel"] = .text(FuelType.petrol)
+            values["vehicle.usage"] = .text(VehicleUse.personal)
             values["vehicle.odometer"] = .number(142_500)
             let car = try assets.create(
                 name: "VW Golf",
@@ -110,7 +110,7 @@ public struct ExampleDataService {
 
         if let template = templates[BuiltInTemplates.Key.pet] {
             var values = FieldValues()
-            values["pet.species"] = .text(String(localized: "Câine"))
+            values["pet.species"] = .text(PetSpecies.dog)
             values["pet.breed"] = .text("Golden Retriever")
             values["pet.birthDate"] = .date(CalendarDay(year: 2021, month: 5, day: 10))
             values["pet.microchip"] = .text("642000000000001")
@@ -129,7 +129,7 @@ public struct ExampleDataService {
 
         if let template = templates[BuiltInTemplates.Key.documents] {
             var values = FieldValues()
-            values["document.type"] = .text(String(localized: "Pașaport"))
+            values["document.type"] = .text(DocumentType.passport)
             values["document.number"] = .text("050000000")
             values["document.holder"] = .text(String(localized: "Titular exemplu"))
             values["document.expiry"] = .date(day(150))
@@ -138,7 +138,7 @@ public struct ExampleDataService {
 
         if let template = templates[BuiltInTemplates.Key.health] {
             var values = FieldValues()
-            values["health.bloodType"] = .text("A II+")
+            values["health.bloodType"] = .text("bloodType.aPositive")
             values["health.allergies"] = .text(String(localized: "Fără alergii cunoscute"))
             try assets.create(
                 name: String(localized: "Profil medical"),

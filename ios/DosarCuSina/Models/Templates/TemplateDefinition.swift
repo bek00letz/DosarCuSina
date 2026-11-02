@@ -61,7 +61,7 @@ public struct TemplateDefinition: Hashable, Sendable, Codable, Identifiable {
         sections: [FieldSection],
         blueprints: [ObligationBlueprint] = [],
         components: [ComponentDefinition] = [],
-        version: Int = 1
+        version: Int = TemplateDefinition.builtInCatalogVersion
     ) {
         self.components = components
         self.key = key
@@ -96,6 +96,10 @@ public struct TemplateDefinition: Hashable, Sendable, Codable, Identifiable {
         let order: [FieldRole] = [.identifier, .documentNumber, .keyFact]
         return order.flatMap { fields(withRole: $0) }
     }
+
+    /// Revision of the built-in catalog. Bump it whenever a built-in definition
+    /// changes so installed copies are upgraded (preferences are kept).
+    public static let builtInCatalogVersion = 2
 
     public static let customKeyPrefix = "custom."
 

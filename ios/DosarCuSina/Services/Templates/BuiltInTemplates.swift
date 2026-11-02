@@ -61,15 +61,10 @@ public enum BuiltInTemplates {
                 ]),
                 FieldSection(key: "vehicle.technical", title: String(localized: "Date tehnice"), fields: [
                     FieldDefinition(key: "vehicle.odometer", label: String(localized: "Kilometraj"), type: .metric, role: .heroMetric, isEssential: true, unit: "km"),
-                    FieldDefinition(key: "vehicle.fuel", label: String(localized: "Combustibil"), type: .choice, options: [
-                        String(localized: "Benzină"), String(localized: "Motorină"), String(localized: "Hibrid"),
-                        String(localized: "Hibrid plug-in"), String(localized: "Electric"), String(localized: "GPL"),
-                    ]),
+                    FieldDefinition(key: "vehicle.fuel", label: String(localized: "Combustibil"), type: .choice, options: FuelType.options),
                     FieldDefinition(key: "vehicle.engineCc", label: String(localized: "Capacitate cilindrică"), type: .number, unit: "cm³"),
                     FieldDefinition(key: "vehicle.powerHp", label: String(localized: "Putere"), type: .number, unit: "CP"),
-                    FieldDefinition(key: "vehicle.usage", label: String(localized: "Folosire"), type: .choice, options: [
-                        VehicleUsage.personal, VehicleUsage.commercial,
-                    ]),
+                    FieldDefinition(key: "vehicle.usage", label: String(localized: "Folosire"), type: .choice, options: VehicleUse.options),
                 ]),
                 FieldSection(key: "vehicle.insurance", title: String(localized: "Asigurare"), fields: [
                     FieldDefinition(key: "vehicle.insurer", label: String(localized: "Asigurător RCA"), type: .text, role: .issuer),
@@ -166,11 +161,7 @@ public enum BuiltInTemplates {
             isSensitiveByDefault: true,
             sections: [
                 FieldSection(key: "document.main", title: String(localized: "Document"), fields: [
-                    FieldDefinition(key: "document.type", label: String(localized: "Tip"), type: .choice, role: .subtitle, isEssential: true, options: [
-                        DocumentType.idCard, DocumentType.passport, DocumentType.drivingLicence,
-                        DocumentType.euHealthCard, DocumentType.greenCard, DocumentType.bankCard, DocumentType.eSignature,
-                        DocumentType.criminalRecord, DocumentType.other,
-                    ]),
+                    FieldDefinition(key: "document.type", label: String(localized: "Tip"), type: .choice, role: .subtitle, isEssential: true, options: DocumentType.options),
                     FieldDefinition(key: "document.number", label: String(localized: "Serie și număr"), type: .text, role: .documentNumber, isSensitive: true),
                     FieldDefinition(key: "document.holder", label: String(localized: "Titular"), type: .text, role: .holder),
                     // The personal numeric code lives only here, in a category that asks for Face ID by default.
@@ -209,9 +200,7 @@ public enum BuiltInTemplates {
             heroStyle: .pet,
             sections: [
                 FieldSection(key: "pet.identity", title: String(localized: "Identitate"), fields: [
-                    FieldDefinition(key: "pet.species", label: String(localized: "Specie"), type: .choice, role: .subtitle, isEssential: true, options: [
-                        String(localized: "Pisică"), String(localized: "Câine"), String(localized: "Alt animal"),
-                    ]),
+                    FieldDefinition(key: "pet.species", label: String(localized: "Specie"), type: .choice, role: .subtitle, isEssential: true, options: PetSpecies.options),
                     FieldDefinition(key: "pet.breed", label: String(localized: "Rasă"), type: .text, role: .subtitle),
                     FieldDefinition(key: "pet.birthDate", label: String(localized: "Data nașterii"), type: .date, role: .startDate, isEssential: true),
                     FieldDefinition(key: "pet.microchip", label: String(localized: "Microcip"), type: .microchip, role: .keyFact),
@@ -254,7 +243,7 @@ public enum BuiltInTemplates {
                 FieldSection(key: "health.person", title: String(localized: "Persoană"), fields: [
                     FieldDefinition(key: "health.birthDate", label: String(localized: "Data nașterii"), type: .date, role: .startDate),
                     FieldDefinition(key: "health.bloodType", label: String(localized: "Grupa sanguină"), type: .choice, role: .keyFact, isSensitive: true,
-                                    options: ["0 I+", "0 I−", "A II+", "A II−", "B III+", "B III−", "AB IV+", "AB IV−"]),
+                                    options: BloodType.options),
                     FieldDefinition(key: "health.allergies", label: String(localized: "Alergii"), type: .longText, isSensitive: true),
                     FieldDefinition(key: "health.conditions", label: String(localized: "Afecțiuni cronice"), type: .longText, isSensitive: true),
                     FieldDefinition(key: "health.medication", label: String(localized: "Tratament curent"), type: .longText, isSensitive: true),
@@ -321,9 +310,7 @@ public enum BuiltInTemplates {
                 FieldSection(key: "subscription.main", title: String(localized: "Abonament"), fields: [
                     FieldDefinition(key: "subscription.provider", label: String(localized: "Furnizor"), type: .text, role: .subtitle, isEssential: true),
                     FieldDefinition(key: "subscription.price", label: String(localized: "Cost pe perioadă"), type: .money, role: .heroMetric, isEssential: true),
-                    FieldDefinition(key: "subscription.cycle", label: String(localized: "Se plătește"), type: .choice, isEssential: true, options: [
-                        BillingCycle.monthly, BillingCycle.quarterly, BillingCycle.yearly,
-                    ]),
+                    FieldDefinition(key: "subscription.cycle", label: String(localized: "Se plătește"), type: .choice, isEssential: true, options: BillingCycle.options),
                     FieldDefinition(key: "subscription.nextPayment", label: String(localized: "Următoarea plată"), type: .date, isEssential: true),
                     FieldDefinition(key: "subscription.trialEnd", label: String(localized: "Perioada de probă se termină"), type: .date),
                     FieldDefinition(key: "subscription.contractEnd", label: String(localized: "Contract până la"), type: .expiryDate, role: .expiryDate),
@@ -497,12 +484,6 @@ public enum BuiltInTemplates {
     }
 }
 
-/// Choice values the engine reads. Kept as constants so the template and the rules agree.
-public enum VehicleUsage {
-    public static var personal: String { String(localized: "Personală", comment: "Vehicle usage option") }
-    public static var commercial: String { String(localized: "Ridesharing sau taxi", comment: "Vehicle usage option") }
-}
-
 /// The same purchase facts on every category that holds things you buy, so
 /// "how much did I pay" and "when did I buy it" work for any asset.
 public enum PurchaseFields {
@@ -516,20 +497,3 @@ public enum PurchaseFields {
     }
 }
 
-public enum DocumentType {
-    public static var idCard: String { String(localized: "Carte de identitate", comment: "Document type option") }
-    public static var passport: String { String(localized: "Pașaport", comment: "Document type option") }
-    public static var drivingLicence: String { String(localized: "Permis de conducere", comment: "Document type option") }
-    public static var bankCard: String { String(localized: "Card bancar", comment: "Document type option") }
-    public static var eSignature: String { String(localized: "Semnătură electronică", comment: "Document type option") }
-    public static var criminalRecord: String { String(localized: "Cazier", comment: "Document type option") }
-    public static var euHealthCard: String { String(localized: "Card european de sănătate", comment: "Document type option") }
-    public static var greenCard: String { String(localized: "Carte verde", comment: "Document type option") }
-    public static var other: String { String(localized: "Alt document", comment: "Document type option") }
-}
-
-public enum BillingCycle {
-    public static var monthly: String { String(localized: "Lunar", comment: "Billing cycle option") }
-    public static var quarterly: String { String(localized: "Trimestrial", comment: "Billing cycle option") }
-    public static var yearly: String { String(localized: "Anual", comment: "Billing cycle option") }
-}

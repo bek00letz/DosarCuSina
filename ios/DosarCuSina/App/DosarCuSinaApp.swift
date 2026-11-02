@@ -44,6 +44,7 @@ struct DosarCuSinaApp: App {
     private func start(with container: ModelContainer) {
         guard sideEffects == nil else { return }
         _ = try? TemplateStore(context: container.mainContext).installBuiltIns()
+        _ = try? ChoiceMigration.migrateStoredValues(in: container.mainContext)
         let coordinator = SideEffectsCoordinator(container: container)
         coordinator.start()
         sideEffects = coordinator

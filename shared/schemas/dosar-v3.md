@@ -94,6 +94,7 @@ household preferences (`homeOrder`, `isOnHome`, `isSensitive`).
 
 - **Section:** `key`, `title`, `fields`.
 - **Field:** `key`, `label`, `type`, `role`?, `isEssential`, `isSensitive`, `options`?, `unit`?, `placeholder`?.
+  - **Options:** `[{"key": "fuel.diesel", "label": "Motorină", "aliases": ["Diesel"]}]`. Readers also accept a plain array of strings, from older definitions, and use each string as both key and label.
   - **Types:** `text`, `longText`, `number`, `money`, `date`, `expiryDate`, `toggle`, `choice`, `multiChoice`, `url`, `phone`, `email`, `address`, `plate`, `vin`, `microchip`, `iban`, `metric`.
   - **Roles:** `identifier`, `subtitle`, `heroMetric`, `keyFact`, `documentNumber`, `holder`, `issuer`, `expiryDate`, `startDate`, `purchaseDate`, `purchasePrice`, `retailer`, `warrantyUntil`, `location`.
 - **Component:** `key`, `name`, `group`, `synonyms`.
@@ -151,6 +152,21 @@ household preferences (`homeOrder`, `isOnHome`, `isSensitive`).
 ```
 
 A reader skips a single value it can't read and keeps the rest of the asset.
+
+**Choice values are option keys**, such as `fuel.diesel`, `vehicleUse.personal`, `documentType.passport` or `species.dog`, never display text. Single choices are `text` values and multiple choices are `choices` values. Labels come from the field's options, so they follow the reader's language.
+
+**On import**, a choice value that isn't a key is matched against the options' labels and aliases, ignoring case and diacritics. This covers v2 backups and Android data that stored Romanian text. A match is stored as the key; text no option recognizes is kept as written.
+
+Built-in option keys:
+
+| Field | Keys |
+| :--- | :--- |
+| `vehicle.fuel` | `fuel.petrol`, `fuel.diesel`, `fuel.hybrid`, `fuel.plugInHybrid`, `fuel.electric`, `fuel.lpg` |
+| `vehicle.usage` | `vehicleUse.personal`, `vehicleUse.commercial` |
+| `document.type` | `documentType.idCard`, `documentType.passport`, `documentType.drivingLicence`, `documentType.euHealthCard`, `documentType.greenCard`, `documentType.bankCard`, `documentType.eSignature`, `documentType.criminalRecord`, `documentType.other` |
+| `pet.species` | `species.cat`, `species.dog`, `species.other` |
+| `health.bloodType` | `bloodType.0Positive`, `bloodType.0Negative`, `bloodType.aPositive`, `bloodType.aNegative`, `bloodType.bPositive`, `bloodType.bNegative`, `bloodType.abPositive`, `bloodType.abNegative` |
+| `subscription.cycle` | `billing.monthly`, `billing.quarterly`, `billing.yearly` |
 
 ### Obligation (`data/obligations.json`)
 
