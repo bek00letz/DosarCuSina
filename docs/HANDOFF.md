@@ -6,13 +6,14 @@ A living document: where work stands, so the next person or agent can pick up. K
 
 ## Current state
 
-The template-engine overhaul (waves 1 and 2) is merged. The app builds for iOS 26 with Swift 6 and has about 330 tests in `ios/DosarCuSinaTests`.
+The template-engine overhaul (waves 1 and 2) is merged. The app builds for iOS 26 with Swift 6 and has about 400 tests in `ios/DosarCuSinaTests`.
 
 | Area | What's built |
 | :--- | :--- |
 | Shell and navigation | Four labelled tabs, one `NavigationStack` per tab, every route through `ShellRouter`, `dosarcusina://` links, sheets that never stack, onboarding once. |
 | Dosar (binder) | Grid of boxes with one status line each, zoom into a box, drag to reorder, category boxes (Acte, Garanții, Abonamente), Agenda last, empty first run with examples. |
-| Sections | Heroes per style (vehicle, home, document, pet, standard), the nine pockets in one global order, editing with discard guard, delete that asks about filed records, "Adaugă o secțiune" including custom categories. |
+| Sections | Heroes per style (vehicle, home, document, pet, standard), the nine pockets in one global order, editing with discard guard, delete that asks about filed records, "Mută la…" for anything filed under something else, "Adaugă o secțiune" including custom categories. |
+| Documents | Added for a person photo first or on one screen ("Scriu eu"), with variants as data on the document type; "Adaugă poza actului" on a document without a picture; the electronic identity card's two PIN codes as hidden secret fields. |
 | Urmează | Acum / Curând / Mai târziu from the attention model; the obligation page with what to bring, actions, reminder setup and "add to Calendar". |
 | Adaugă and capture | Camera, photos, files, typing; the capture engine with all four tiers, per-kind field rules, the label-layout reader (Romanian ID card front, both layouts); review and filing; the visit flow with component checklists. |
 | Share extension and inbox | Share from Mail, WhatsApp, Photos and Files into *De verificat*; the practice share in onboarding. |
@@ -30,6 +31,10 @@ The template-engine overhaul (waves 1 and 2) is merged. The app builds for iOS 2
 Nothing at the moment.
 
 ## Known gaps
+
+- **Capture can't tell the electronic identity card from the older one.** A captured CEI is saved without its variant, so its PIN rows appear only after choosing "Electronică, cu cip (CEI)" in Editează. Capture would need to say which identity template it matched.
+- **Capture doesn't know cazier, bank cards and the other document types.** A photo of one taken from a person is filed as one of their documents, without a type; the person picks it in Editează.
+- **The capture review doesn't say what it filed.** The photo-first flow finds the new document by comparing the person's documents before and after; `CaptureFlowResult.filed` could carry the filed section's id instead.
 
 - **iCloud sync** to the person's private iCloud. The schema is ready; the store is local only.
 - **Android port.** Paused; `android/` is the first version. The `.dosar` format is the contract.
@@ -64,6 +69,13 @@ Newest first. Copy this template:
 ```
 
 Never write security findings, crash traces or local paths here. See [SECURITY.md](../SECURITY.md).
+
+### 2026-11-02 — owner (with Claude) — `claude/documents-flow`
+- **Did:** "Mută la…" for anything filed under something else (toolbar menu and edit sheet, a new person for documents, rename after the new holder, undo); adding a person's document photo first or on one "Scriu eu" screen, with variants as data on the document type and "Adaugă poza actului" on the document's page; the secret field type with the electronic identity card's two PIN codes (sealed, Face ID every time, never in search, widgets, notifications or archives). Built-in catalog version 6.
+- **Tests:** the whole suite passes on iPhone 17e (iOS 26). New suites: `MoveTests`, `PersonalDocumentTests`, `SecretFieldTests`. The privacy check passes across the branch.
+- **Left open:** the three capture items under "Known gaps" (the CEI variant, document types capture doesn't know, the filed section's id). Not checked on a device or in the simulator by eye.
+- **Next:** have capture report which identity template it matched, so a captured CEI gets its variant and PIN rows by itself.
+- **Decisions:** "Adding a document for a person, photo first", "Mută la…" and "Secret fields (PIN codes)" in DECISIONS.md.
 
 ### 2026-11-02 — owner (with Claude) — `claude/id-followups`
 - **Did:** driving licences read as printed on the official Romanian specimen (shared rows, field 3 date, category boxes, a failed 4d kept with "Verifică"); the person's own edits kept when the back of a card is added, with a "Pe spatele actului scrie" note and "Folosește-l"; a new household member and their document saved in one save; the page viewer cross-fades with Reduce Motion.

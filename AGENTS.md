@@ -66,6 +66,9 @@ Every action saves once and rolls back on failure. Views never write models dire
 | Complete, undo, snooze, reschedule, pause, archive, delete or create an obligation; change its reminders | `ObligationActions` | [Services/Obligations/ObligationActions.swift](ios/DosarCuSina/Services/Obligations/ObligationActions.swift) |
 | Record a visit, repair or purchase with its line items; rate a job | `HistoryActions` | [Services/History/HistoryActions.swift](ios/DosarCuSina/Services/History/HistoryActions.swift) |
 | Create, edit, measure, re-parent or delete an asset | `AssetActions` | [Services/Obligations/AssetActions.swift](ios/DosarCuSina/Services/Obligations/AssetActions.swift) |
+| Move something to another parent ("Mută la…"), with undo | `AssetActions.move`, `undoMove`, `moveDestinations` | [Services/Obligations/AssetActions+Move.swift](ios/DosarCuSina/Services/Obligations/AssetActions+Move.swift) |
+| Name a personal document after its holder, or rename it for a new one | `DocumentNaming` | [Services/Documents/DocumentNaming.swift](ios/DosarCuSina/Services/Documents/DocumentNaming.swift) |
+| What a document can be: its types, their variants and the names they give | `DocumentType` (`variants`, `documentName`) | [Models/Fields/ChoiceOptions.swift](ios/DosarCuSina/Models/Fields/ChoiceOptions.swift) |
 | File, replace, archive or delete a document | `AttachmentActions` (`fileCaptured` for capture) | [Services/Documents/AttachmentActions.swift](ios/DosarCuSina/Services/Documents/AttachmentActions.swift), [CapturedDocumentFiling.swift](ios/DosarCuSina/Services/Documents/CapturedDocumentFiling.swift) |
 | Create or edit a person or firm | `ProviderActions` | [Services/History/ProviderDirectory.swift](ios/DosarCuSina/Services/History/ProviderDirectory.swift) |
 | Install, upgrade, create, order, hide, lock or delete a category | `TemplateStore` (built-ins defined once in `BuiltInTemplates`) | [Services/Templates/TemplateStore.swift](ios/DosarCuSina/Services/Templates/TemplateStore.swift), [BuiltInTemplates.swift](ios/DosarCuSina/Services/Templates/BuiltInTemplates.swift) |
@@ -80,6 +83,15 @@ Pure engines (no database) sit beside them: `RecurrenceEngine`, `AttentionModel`
 `UnitOfWork` ([Services/Persistence/UnitOfWork.swift](ios/DosarCuSina/Services/Persistence/UnitOfWork.swift)) is how actions save. Every action saves through `UnitOfWork.save(context)`; never call `context.save()` from an action or a view. When one tap does several things (file a document under a new person, log a visit with its invoice, complete a deadline with the new document), wrap them in `UnitOfWork.perform(in:)`: the actions inside only record their changes and the unit saves once, everything or nothing. Work that must only happen once the changes are kept (releasing a capture's pages) goes in `UnitOfWork.afterCommit(in:)`. Show save failures with `SaveFailure.message(for:formKept:)`, never the system's error text.
 
 `SideEffectsCoordinator` ([Services/SideEffects/SideEffectsCoordinator.swift](ios/DosarCuSina/Services/SideEffects/SideEffectsCoordinator.swift)) is the **only** path to notifications, the app badge, the widget snapshot and Spotlight (through its indexer hook). Actions save; the coordinator reacts to the save. Never schedule a notification, reload a widget or index anything from a view or an action. Notification permission is asked only with `setNeedsReconcile(allowPermissionPrompt: true)`, after the in-app explanation or from Settings.
+
+## Secret fields
+
+A field of type `secret` (an electronic identity card's PIN codes) follows one set of rules, in [Services/Security/SecretFields.swift](ios/DosarCuSina/Services/Security/SecretFields.swift):
+
+- `AssetActions` seals every secret with `SecretSealer` before saving; the database holds only sealed text. The key lives in the Keychain on this device only.
+- Showing or copying one goes through `SecretReveal`, which asks `BiometricVaultManager.authenticateForReveal` every time and never changes the session. The screens use `DSSecretValueRow` to show and `DSSecretField` to type.
+- Anything that carries values out of the binder (search, widgets, notifications, archives, logs) leaves secrets out: use `FieldDefinition.isIndexable` and `SecretFields.stripping`. `FieldFormatter.display` shows a secret only as a mask.
+- Never offer a secret field for a bank card, and never write a real-looking code in tests or examples (use `0000`).
 
 ## Capture
 
@@ -110,9 +122,9 @@ Everything visual comes from [Views/DesignSystem/](ios/DosarCuSina/Views/DesignS
 - **Checklists and single choices:** `DSCheckRow`, the whole row is the target.
 - **Ratings:** `DSStarRating`, read-only or tappable.
 - **Example data:** `DSExampleBadge` marks every example record.
-- **Value rows:** `DSReadOnlyValueRow` for amounts and facts, `DSActionValueRow` for a value with one labelled action (copy, call).
+- **Value rows:** `DSReadOnlyValueRow` for amounts and facts, `DSActionValueRow` for a value with one labelled action (copy, call), `DSSecretValueRow` for a masked code shown or copied after Face ID.
 - **States and feedback:** `DSEmptyState`, `DSErrorState`, `DSLockedState`, `DSDelayedProgress` (waits before showing), `DSToast.undo`, `dsDiscardGuard`.
-- **Fields:** the `DS…Field` controls under `Fields/`, one per field type.
+- **Fields:** the `DS…Field` controls under `Fields/`, one per field type (`DSSecretField` for secrets).
 - [DesignSystemGallery.swift](ios/DosarCuSina/Views/DesignSystem/Gallery/DesignSystemGallery.swift) shows every component. Add new ones there.
 
 ## Words, numbers and dates

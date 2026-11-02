@@ -8,6 +8,23 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-02
 
+### Adding a document for a person, photo first
+- **Decided:** adding a document from a household member starts with three choices, the person already chosen: "Fotografiază", "Din poze", "Scriu eu". A photo goes through capture and becomes one of that person's documents whatever its kind. "Scriu eu" is one screen: the type in big rows, a variant only where the type has real ones, a name that comes by itself ("Cazier judiciar – Manole Corina"), the expiry with its reminder said plainly, and "Salvează". There is no separate deadlines step: the reminder comes from the type's profile and can be changed on the deadline page. Both land on the document's page, which asks for the picture when there is none.
+- **Why:** the old way asked for a name the type already gave, then a deadlines step, and only then let the person add the picture. The picture is what people have in hand, and every extra step is a place to give up.
+- **Decided:** variants are data on the document type (cazier judiciar, fiscal or auto; card de debit or de credit; carte de identitate electronică or fără cip; pașaport simplu electronic or temporar), offered through a condition on the field and its options, never as special cases in screens. A value that no longer fits its type is dropped on save.
+- **Why:** one source of truth for what a document can be, which the add flow, the edit sheet, the naming and the PIN rule all read.
+
+### "Mută la…"
+- **Decided:** anything filed under something else (a document under a person, a tenancy or a product under a home) can move to another parent of the same kind from its page, through the toolbar menu or the edit sheet; a document can also go to a new person. A document named after its holder offers to take the new holder's name. The move is one save and the toast takes it back.
+- **Why:** the only way before was to delete and add it again, losing its deadline, history and pictures.
+
+### Secret fields (PIN codes)
+- **Decided:** a new field type, `secret`, for codes such as the two PINs of the electronic identity card. It is sealed before saving with a key kept in the phone's Keychain (this device only), shown masked, and shown or copied only after Face ID or the passcode, every time, even when the section is open. A shown code hides after 30 seconds or when the app leaves the screen; a copied one leaves the clipboard after a minute and isn't shared with other devices. It never reaches search, widgets, notifications, the box status line, logs or `.dosar` archives; the backup screen says so, and a restored or merged backup keeps whatever codes the phone already has.
+- **Why:** people forget these codes, and the card is blocked after a few wrong tries. Unlike the rest of an identity document, a PIN is never needed to fill in a form, so it can afford a prompt every time; a code that left the phone in a backup or a search index would defeat the point. A code moved to another phone with the database can't be opened there, and says so.
+- **Decided:** the fields are named as the issuing authority names them, "PIN pentru autentificare" (4 digits) and "PIN pentru semnare" (6 digits), and apply only to the electronic identity card.
+- **Decided:** a bank card is never offered a PIN field.
+- **Why:** bank card terms forbid writing the PIN down; keeping it would put the person in breach of their card contract.
+
 ### Back of the card vs the person's edits
 - **Decided:** when the back of an identity card is added after the person corrected a value by hand, their correction stays. Where the checked machine-readable zone disagrees, the field shows what the back says, with a button to use it.
 - **Why:** the person is the final authority on their own data, but a checked value they may have mistyped against deserves to be seen.

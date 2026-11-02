@@ -59,11 +59,16 @@ A section is the page of one asset. One vertical scroll: a hero, then the catego
 8. *Bani* — what it has cost, all time and in the last twelve months, per currency.
 9. *Date importante* — key facts and free label–value rows (alarm code, Wi‑Fi, contract number), each one tap to copy or call.
 
-Editing uses the design system's fields and asks before discarding changes. Deleting a section asks what happens to what is filed under it: keep those records on their own, or delete them too.
+Editing uses the design system's fields and asks before discarding changes. Fields that depend on another value (a document's variant on its type, the PIN codes on the electronic identity card) appear only while it matches. Deleting a section asks what happens to what is filed under it: keep those records on their own, or delete them too.
+
+**Mută la…** (move to). Anything filed under something else (a document under a household member, a tenancy or a product under a home) moves from its page, through the toolbar's *Mai multe* menu or the edit sheet. A short list offers the other parents of the same kind and, for a document, *O persoană nouă*. A document named after its holder ("Carte de identitate – Manole Corina") offers to take the new holder's name. The move is one save; the toast offers *Anulează*, which also removes a person made only for the move.
+
+**A document's page** asks for its picture when it has none (*Adaugă poza actului*, through capture, which fills in what it reads), and shows its secret fields under *Coduri PIN* (see 7).
 
 ### 2.4 Category boxes and Agenda
 
 - **Acte** groups documents by the household member they belong to, soonest expiry first, plus a group for documents not filed under anyone.
+- **Adding a document for a person** (from Acte or the person's page) starts with the person chosen and three choices: *Fotografiază*, *Din poze* and *Scriu eu*. A photo goes through capture (5.4) and is filed as one of that person's documents whatever its kind. *Scriu eu* is one screen: the type in big rows; a variant only for types that have real ones (*Ce fel de cazier?* judiciar, fiscal or auto; card de debit or de credit; carte de identitate electronică (CEI) or fără cip; pașaport simplu electronic or temporar); a name that comes by itself, "<document> – <Surname Given names>", with *Schimbă*; the expiry with its reminder in plain words (*Expiră pe 30 iunie 2027. Te anunț cu 6 luni și cu două luni înainte.*); and *Salvează*. The reminder comes from the type's profile and can be changed on the deadline page. Both ways land on the document's page.
 - **Garanții** groups products by whether their warranty still covers them.
 - **Abonamente** lists subscriptions with what they cost a month (amounts are never added across currencies).
 - **Agendă** lists everyone the household relies on, grouped by trade or by section, best rated first, with the last job and its price, and real buttons to call or message. A provider's page shows their jobs, ratings and *Aș chema din nou* (would call again).
@@ -88,7 +93,7 @@ Four big buttons: camera (document scanner), photos, files, and *Scriu eu* (I'll
 
 ### 2.7 Caută
 
-One field over sections, deadlines, history, components, people and the text read from scanned documents. It ignores case and diacritics (*polita* finds *poliță*), matches each word as the start of a word so Romanian endings still match, and needs every word to match. Results are grouped with matching words highlighted. Sensitive fields and sensitive free facts are not indexed; results from locked sections show their title only.
+One field over sections, deadlines, history, components, people and the text read from scanned documents. It ignores case and diacritics (*polita* finds *poliță*), matches each word as the start of a word so Romanian endings still match, and needs every word to match. Results are grouped with matching words highlighted. Sensitive fields, secret fields and sensitive free facts are not indexed; results from locked sections show their title only.
 
 ### 2.8 Settings
 
@@ -116,11 +121,13 @@ Every category is one template engine. A `TemplateDefinition` declares sections 
 - Built-in templates ship in the app (car, home, documents, pet, health, warranties, subscriptions, other, and starters hidden from the binder: bikes, plants, tenancies, household members, espresso machines). They are installed and upgraded by version; upgrades keep the household's preferences, and renamed or retired templates move their assets over so nothing disappears.
 - Custom templates are the person's own and travel in archives in full.
 - Choice values are stored as stable option keys, never as display text. Older stored text is migrated at launch.
+- A field, and a choice option, can carry a condition (`appliesWhen`): it is offered only while another value matches. A document's variants are data on its type (`DocumentType.variants`), offered only for that type; a value that no longer fits is dropped on save.
+- A `secret` field holds a code to keep hidden (see 7).
 - Legal cadences follow [shared/ROMANIAN_ADMINISTRATIVE_STANDARDS.md](shared/ROMANIAN_ADMINISTRATIVE_STANDARDS.md).
 
 ### 3.2 Parent and child
 
-An asset can be filed under another: a tenancy under its property, a product under a home, a document under its holder. The engine refuses loops. A box's status includes what is filed under it.
+An asset can be filed under another: a tenancy under its property, a product under a home, a document under its holder. The engine refuses loops. A box's status includes what is filed under it. Moving to another parent of the same kind goes through `AssetActions.move` (one save, with `undoMove`).
 
 ### 3.3 Household members
 
@@ -235,7 +242,7 @@ The review screen shows what was read, where it could go, and the reminder it su
 
 **Confidence from checks (`CaptureConsistency`).** After all tiers, dates are checked against each other: a birth date is never also an issue, start or expiry date; an issue date is never in the future and, for identity cards and licences, never before the holder's 14th birthday; an expiry comes after the issue and birth dates. The trust order is: machine-readable zone with valid check digits, a personal number with a valid control digit (which also decides birth date and sex), a printed label read in place, the on-device model, Gemini. The review marks "Verifică" only on values that failed a format or a check, or that only a model read.
 
-**Showing, naming and filing.** Everything read (personal number, series and number, birth date, sex, nationality, issuer, dates) is shown in the review, kept on the document and listed on its page with "Copiază", because people need it to fill in forms. The section's Face ID lock is the protection; these values never appear in search, widgets, notifications or exported file names. The document is named "Carte de identitate – Manole Corina Ioana" (surname first, as printed) and filed under the household member whose name matches (ignoring case, diacritics and name order), or under a new member named after the holder. When only the front of a card was read, the review offers to add the back; both are then read together, keeping what the person already corrected; where the checked zone on the back says otherwise, that field shows "Pe spatele actului scrie: …" with "Folosește-l". A new household member and their document are created in one save. Tapping the document's picture opens it full screen, with zoom.
+**Showing, naming and filing.** Everything read (personal number, series and number, birth date, sex, nationality, issuer, dates) is shown in the review, kept on the document and listed on its page with "Copiază", because people need it to fill in forms. The section's Face ID lock is the protection; these values never appear in search, widgets, notifications or exported file names. The document is named "Carte de identitate – Manole Corina Ioana" (surname first, as printed) and filed under the household member whose name matches (ignoring case, diacritics and name order), or under a new member named after the holder. When only the front of a card was read, the review offers to add the back; both are then read together, keeping what the person already corrected; where the checked zone on the back says otherwise, that field shows "Pe spatele actului scrie: …" with "Folosește-l". A new household member and their document are created in one save. Tapping the document's picture opens it full screen, with zoom. A capture started from a household member's documents is filed as one of their documents whatever its kind; one that isn't an identity document is named "<what it is> – <the person>".
 
 ### 5.6 Share extension and inbox
 
@@ -266,11 +273,12 @@ Integrations are optional, one tap, and asked in context: *Adaugă în Calendar*
 - With the app lock on, the screen is hidden in the app switcher. Turning a lock off asks for Face ID first.
 - Locked sections show nothing of what's inside: box lines, search results, widgets and notifications use generic wording.
 - The optional Gemini key is kept in the Keychain on this device only, and can be tested and removed in Settings.
+- **Secret fields** (`FieldType.secret`, the rules in `SecretFields`): the PIN codes of the electronic identity card, *PIN pentru autentificare* (4 digits) and *PIN pentru semnare* (6 digits), named as on the issuing authority's site. A code is sealed (AES-GCM) before it is saved, with a key kept in the Keychain on this device only, and shown masked. *Arată* and *Copiază* ask for Face ID or the passcode every time, even when the section is open, without opening or closing the session (`BiometricVaultManager.authenticateForReveal`). A shown code hides after 30 seconds or when the app leaves the screen; a copied one stays on this phone's clipboard for a minute. The edit sheet never shows a kept code: it offers *Schimbă* and *Scoate*. Secrets never reach search, widgets, notifications, the box status line, logs or `.dosar` archives. A bank card is never offered a PIN field.
 - The database and documents use the system's file protection.
 
 ## 8. The `.dosar` archive
 
-Backup and transfer use the `.dosar` v3 format, the cross-platform contract: a plain ZIP of JSON files plus the document files, with a manifest of SHA-256 checksums. Export goes through the share sheet; opening a `.dosar` file from Files, Mail or AirDrop goes to the import screen, which asks before anything is replaced. Import either merges (for records in both, the more recently edited wins) or replaces everything. Version 2 archives from the first app are still imported.
+Backup and transfer use the `.dosar` v3 format, the cross-platform contract: a plain ZIP of JSON files plus the document files, with a manifest of SHA-256 checksums. Export goes through the share sheet; opening a `.dosar` file from Files, Mail or AirDrop goes to the import screen, which asks before anything is replaced. Import either merges (for records in both, the more recently edited wins) or replaces everything. Version 2 archives from the first app are still imported. Secret fields (PIN codes) are never written to an archive, and the backup screen says so; an import ignores any it finds and keeps the ones already on the phone.
 
 The format, its JSON Schema and golden fixtures are in [shared/schemas/dosar-v3.md](shared/schemas/dosar-v3.md), [shared/schemas/dosar-v3.schema.json](shared/schemas/dosar-v3.schema.json) and [shared/fixtures](shared/fixtures). Every implementation must import both fixtures.
 
