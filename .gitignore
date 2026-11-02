@@ -25,11 +25,15 @@ local.properties
 keystore.properties
 *.jks
 *.keystore
+*.p12
+*.p8
+*.mobileprovision
 GoogleService-Info.plist
 google-services.json
 
 # Confidential Security Vault & Private Development Logs (CRITICAL)
-# Documents in these folders contain vulnerability findings, bug reports, and internal notes
+# Documents in these folders contain vulnerability findings, bug reports, and internal notes.
+# scripts/privacy-check.sh blocks the same paths; keep the two lists in step.
 private/
 .private/
 internal/
