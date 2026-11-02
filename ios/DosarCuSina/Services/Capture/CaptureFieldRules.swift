@@ -27,6 +27,27 @@ extension CaptureDocumentKind {
         }
     }
 
+    /// The fields a document of this kind usually carries, beyond identity documents
+    /// (whose fields come from their templates in `IdentityTemplates`). A cloud model is
+    /// asked for exactly these (`CloudSchema`).
+    var expectedKeys: [CaptureFieldKey] {
+        switch self {
+        case .passport, .identityCard, .drivingLicence:
+            IdentityTemplates.all.filter { $0.kind == self }.flatMap { $0.fields.map(\.key) }
+        case .vehicleRegistration: [.licensePlate, .vin, .make, .model, .firstRegistrationDate]
+        case .rcaPolicy: [.provider, .policyNumber, .startDate, .expiryDate, .total, .claimsPhone, .licensePlate, .vin, .bonusMalusClass]
+        case .insurancePolicy: [.provider, .policyNumber, .startDate, .expiryDate, .total, .claimsPhone, .licensePlate]
+        case .utilityInvoice: [.provider, .invoiceNumber, .issueDate, .dueDate, .total, .clientCode, .podCode, .clcCode, .meterIndex]
+        case .serviceInvoice: [.provider, .invoiceNumber, .issueDate, .total, .licensePlate, .vin, .odometer, .lineItems]
+        case .fiscalReceipt: [.retailer, .purchaseDate, .purchasePrice, .productName, .serialNumber, .lineItems]
+        case .warrantyCertificate: [.retailer, .productName, .serialNumber, .purchaseDate, .warrantyMonths, .warrantyUntil]
+        case .itpReport: [.provider, .licensePlate, .vin, .issueDate, .expiryDate, .odometer]
+        case .veterinaryRecord: [.provider, .petName, .microchip, .vaccineName, .issueDate, .nextDoseDate]
+        case .medicalResult: [.provider, .issueDate]
+        case .other: [.provider, .documentNumber, .invoiceNumber, .issueDate, .dueDate, .expiryDate, .total]
+        }
+    }
+
     /// Fields that, found by the pattern tiers with good confidence, make the
     /// on-device model unnecessary. Empty means the model always helps.
     var essentialKeys: [CaptureFieldKey] {

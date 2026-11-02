@@ -36,7 +36,7 @@ public struct CaptureRequest: Sendable {
 public struct CaptureOptions: Sendable {
     /// Use Apple's on-device model when available. Private and offline, so on by default.
     public var useOnDeviceModel: Bool = true
-    /// Send the first page to the person's own Gemini key. Only when they ask for it on this capture.
+    /// Send the first page to the AI provider the person set up, with their own key. Only when they ask for it on this capture.
     public var useCloudModel: Bool = false
     /// Keep the pages in the document store.
     public var storeDocument: Bool = true
@@ -60,7 +60,7 @@ public struct CaptureOptions: Sendable {
 /// 1. **Deterministic**: the MRZ with check digits, barcodes and QR codes, known invoice formats, tax ID checksums.
 /// 2. **Heuristic**: Romanian dates, amounts, labels and identifiers in the recognized text.
 /// 3. **On-device model**: Apple's language model fills what patterns can't, when the device has it.
-/// 4. **Cloud model**: the person's Gemini key, only when they ask.
+/// 4. **Cloud model**: the AI provider the person set up with their own key, only when they ask.
 ///
 /// The result is a draft. Nothing is saved to the person's data until they confirm it;
 /// only the document's pages are kept, so they're never lost.
@@ -94,16 +94,11 @@ public final class CaptureEngine: Sendable {
 
     /// The engine as the app and the Share Extension use it.
     public static func standard(componentResolver: any CaptureComponentResolving = CatalogComponentResolver()) -> CaptureEngine {
-        #if canImport(UIKit)
-        let cloud: (any CaptureSemanticExtracting)? = GeminiCaptureExtractor(resolver: componentResolver)
-        #else
-        let cloud: (any CaptureSemanticExtracting)? = nil
-        #endif
-        return CaptureEngine(
+        CaptureEngine(
             analyzer: CaptureAnalyzer(specializedParsers: [UtilityInvoiceParser()], componentResolver: componentResolver),
             recognizer: VisionCaptureRecognizer(),
             onDeviceModel: OnDeviceModelExtractor(resolver: componentResolver),
-            cloudModel: cloud,
+            cloudModel: CloudCaptureExtractor(resolver: componentResolver),
             store: CaptureDocumentStore.shared()
         )
     }
@@ -246,7 +241,9 @@ public final class CaptureEngine: Sendable {
                     let extraction = try await model.extract(SemanticInput(text: text, firstPage: readImages.first ?? pdfThumbnail, kind: kind, knownFields: fields, today: today))
                     fields = FieldMerger.merge(fields, with: CaptureConsistency.plausible(extraction.fields, kind: kind, today: today))
                 } catch {
-                    notices.append(.cloudModelFailed(reason: "requestFailed"))
+                    let reason = AIProviderError(transport: error).code
+                    CaptureLog.engine.error("Cloud model failed: \(reason, privacy: .public)")
+                    notices.append(.cloudModelFailed(reason: reason))
                 }
             case .unavailable(let reason):
                 notices.append(.cloudModelFailed(reason: reason))

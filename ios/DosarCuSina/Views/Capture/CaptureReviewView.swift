@@ -1,4 +1,3 @@
-import Network
 import SwiftData
 import SwiftUI
 
@@ -201,14 +200,29 @@ struct CaptureReviewView: View {
             }
         }
         if let cloudMessage {
-            DSNotice(.warning, title: "Gemini nu a citit actul", message: LocalizedStringKey(cloudMessage))
+            DSNotice(.warning, title: "\(cloudProvider.name) nu a citit actul", message: LocalizedStringKey(cloudMessage))
         }
         if let onReadWithCloud, CaptureRunner.hasCloudKey, !review.usedCloudModel, review.visibleFields.contains(where: \.needsCheck) || review.visibleFields.count < 2 {
-            DSSecondaryButton("Citește mai bine cu Gemini", systemImage: "sparkles", action: onReadWithCloud)
-            Text("Prima pagină se trimite la Google, cu cheia ta.")
-                .dsFont(.footnote)
+            DSSecondaryButton("Citește mai bine cu \(cloudProvider.shortName)", systemImage: "sparkles", action: onReadWithCloud)
+            VStack(alignment: .leading, spacing: DS.Space.xxs) {
+                if review.kind.isIdentityDocument {
+                    Text("Poza actului se trimite la \(cloudProvider.name), cu cheia ta.")
+                } else {
+                    Text("Prima pagină se trimite la \(cloudProvider.name), cu cheia ta.")
+                }
+                if let policy = cloudProvider.dataPolicyURL {
+                    Link(destination: policy) {
+                        Text("Cum folosește \(cloudProvider.name) ce trimiți", comment: "Link to the AI provider's data-use terms.")
+                            .frame(minHeight: 44, alignment: .leading)
+                    }
+                }
+            }
+            .dsFont(.footnote)
         }
     }
+
+    /// The AI provider the person set up in Settings.
+    private var cloudProvider: AIProvider { AIProviderSettings.standard.provider }
 
     // MARK: Fields
 
@@ -366,17 +380,11 @@ struct CaptureReviewView: View {
         pages = processed.pageData.compactMap(UIImage.init(data:))
     }
 
-    /// Tells "offline" apart from "the key wasn't accepted".
+    /// Says what went wrong with the cloud reading: offline, the key, the quota, the model.
     private func explainCloudFailure() async {
         for notice in review.result.notices {
             guard case .cloudModelFailed(let reason) = notice else { continue }
-            if reason == "noKey" {
-                cloudMessage = String(localized: "Nu ai adăugat o cheie Google. Citirea de pe telefon merge oricum.")
-            } else if await NetworkCheck.isOnline() {
-                cloudMessage = String(localized: "Google nu a acceptat cheia. Verifică în Setări dacă ai copiat-o întreagă.")
-            } else {
-                cloudMessage = String(localized: "Nu ești conectat la internet. Citirea de pe telefon a mers în continuare.")
-            }
+            cloudMessage = AIProviderError(code: reason).message(provider: cloudProvider)
         }
     }
 }
@@ -559,34 +567,5 @@ private struct CaptureDestinationPicker: View {
             )
         }
         .buttonStyle(.plain)
-    }
-}
-
-/// One look at whether there is a network path, for wording errors.
-enum NetworkCheck {
-    static func isOnline() async -> Bool {
-        let monitor = NWPathMonitor()
-        let satisfied: Bool = await withCheckedContinuation { continuation in
-            let once = OnceFlag()
-            monitor.pathUpdateHandler = { path in
-                if once.claim() { continuation.resume(returning: path.status == .satisfied) }
-            }
-            monitor.start(queue: DispatchQueue(label: "dosar.network-check"))
-        }
-        monitor.cancel()
-        return satisfied
-    }
-
-    private final class OnceFlag: @unchecked Sendable {
-        private let lock = NSLock()
-        private var claimed = false
-
-        func claim() -> Bool {
-            lock.lock()
-            defer { lock.unlock() }
-            if claimed { return false }
-            claimed = true
-            return true
-        }
     }
 }

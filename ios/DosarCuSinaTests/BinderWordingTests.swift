@@ -83,16 +83,11 @@ struct BinderWordingTests {
     }
 
     @Test func keyTestResultsTellOfflineApartFromABadKey() {
-        #expect(GeminiKeyStatus(statusCode: 200) == .valid)
-        #expect(GeminiKeyStatus(statusCode: 400) == .invalidKey)
-        #expect(GeminiKeyStatus(statusCode: 403) == .invalidKey)
-        #expect(GeminiKeyStatus(statusCode: 429) == .rateLimited)
-        #expect(GeminiKeyStatus(statusCode: 500) == .unavailable)
-        #expect(GeminiKeyStatus(error: URLError(.notConnectedToInternet)) == .offline)
-        #expect(GeminiKeyStatus(error: URLError(.timedOut)) == .offline)
-        #expect(GeminiKeyStatus(error: URLError(.badServerResponse)) == .unavailable)
-        let offline = AIKeyWording.message(.offline) ?? ""
-        let invalid = AIKeyWording.message(.invalidKey) ?? ""
+        #expect(AIProviderError(transport: URLError(.notConnectedToInternet)) == .offline)
+        #expect(AIProviderError(transport: URLError(.timedOut)) == .offline)
+        #expect(AIProviderError(transport: URLError(.badServerResponse)) == .badResponse)
+        let offline = AIKeyWording.message(.failed(.offline), provider: .gemini) ?? ""
+        let invalid = AIKeyWording.message(.failed(.invalidKey), provider: .gemini) ?? ""
         #expect(offline.contains("internet"))
         #expect(invalid.contains("cheia"))
         #expect(offline != invalid)

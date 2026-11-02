@@ -150,7 +150,7 @@ public enum CaptureTier: String, Codable, Sendable, CaseIterable, Comparable {
     case heuristic
     /// Apple's on-device language model. Private and offline.
     case onDeviceModel
-    /// The user's own Gemini key, only when they ask for it.
+    /// The AI provider the person set up with their own key, only when they ask for it.
     case cloudModel
 
     /// Lower rank wins when two tiers disagree about the same field.
@@ -288,9 +288,12 @@ public struct CaptureField: Hashable, Codable, Sendable {
     public static let machineReadableSource = "MRZ"
 
     /// Whether a person should look at this value before it is saved: it failed a
-    /// format or a cross-check (low confidence), or only a language model read it.
+    /// format or a cross-check (low confidence), or only the on-device model read it.
+    /// A cloud provider's value is kept with a high confidence only when it is grounded
+    /// in the recognized text or passed its own check (`CloudAnswerMapper`); otherwise
+    /// its low confidence marks it here.
     public var needsCheck: Bool {
-        confidence < Self.checkThreshold || tier == .onDeviceModel || tier == .cloudModel
+        confidence < Self.checkThreshold || tier == .onDeviceModel
     }
 
     /// Below this, a value is marked for a check.

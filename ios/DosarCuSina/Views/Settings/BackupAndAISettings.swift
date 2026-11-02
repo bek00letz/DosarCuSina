@@ -176,63 +176,79 @@ private struct ShareSheet: UIViewControllerRepresentable {
 
 // MARK: - Inteligență artificială
 
-/// The optional Gemini key: pasted here, kept only in this phone's Keychain,
-/// tested on request. Everything in the app works without it.
+/// The optional AI provider: which service, its key (kept only in this phone's Keychain,
+/// one per provider), an optional model and, for a compatible service, its address.
+/// Tested on request. Everything in the app works without it.
 struct AISettings: View {
+    private let settings = AIProviderSettings.standard
+
+    @State private var provider = AIProviderSettings.standard.provider
     @State private var key = ""
-    @State private var hasKey = KeychainManager.hasConfiguredAPIKey
-    @State private var status: GeminiKeyStatus?
+    @State private var hasKey = false
+    @State private var model = ""
+    @State private var baseURL = ""
+    @State private var status: AIKeyStatus?
     @State private var isTesting = false
 
     var body: some View {
         Section {
+            Picker(selection: $provider) {
+                ForEach(AIProvider.allCases) { provider in
+                    Text(verbatim: provider.pickerName).tag(provider)
+                }
+            } label: {
+                Text("Serviciul", comment: "AI setting: which AI service reads documents.")
+            }
+            .pickerStyle(.menu)
+            .frame(minHeight: 44)
+
             if hasKey {
                 Label {
-                    Text("Ai pus o cheie Google", comment: "AI setting: a key is saved.")
+                    Text("Ai pus o cheie pentru \(provider.pickerName)", comment: "AI setting: a key is saved for the chosen service.")
                 } icon: {
                     Image(systemName: "key.fill").foregroundStyle(DS.Palette.accent)
                 }
                 .frame(minHeight: 44)
-                Button(action: testSaved) {
-                    HStack {
-                        Text("Verifică cheia", comment: "Tests the saved Gemini key.")
-                        Spacer()
-                        if isTesting { DSDelayedProgress(label: "Verific…") }
-                    }
-                    .frame(minHeight: 44)
-                }
-                .disabled(isTesting)
                 Button(role: .destructive) {
-                    KeychainManager.deleteGeminiAPIKey()
-                    hasKey = KeychainManager.hasConfiguredAPIKey
-                    status = nil
+                    settings.deleteKey(for: provider)
+                    reload()
                 } label: {
-                    Text("Șterge cheia", comment: "Removes the Gemini key.")
+                    Text("Șterge cheia", comment: "Removes the AI key.")
                         .frame(minHeight: 44)
                 }
             } else {
-                Text("Cu o cheie Google gratuită, aplicația citește mai bine facturile și actele scanate. Fără ea, scanarea merge la fel, direct pe telefon.", comment: "Explains the optional Gemini key.")
+                Text("Cu o cheie proprie, aplicația citește mai bine facturile și actele scanate. Fără ea, scanarea merge la fel, direct pe telefon.", comment: "Explains the optional AI key.")
                     .dsFont(.subheadline)
                     .padding(.vertical, DS.Space.xxs)
-                if let url = URL(string: "https://aistudio.google.com/app/apikey") {
+                if let url = provider.keyPageURL {
                     Link(destination: url) {
-                        Text("Ia o cheie de la Google", comment: "Link to get a Gemini key.")
+                        Text("Ia o cheie de la \(provider.pickerName)", comment: "Link to get a key from the chosen AI service.")
                             .frame(minHeight: 44)
                     }
                 }
-                DSSecureField("Cheia ta Google", text: $key, prompt: "Lipește cheia aici")
+                DSSecureField(provider.requiresKey ? "Cheia ta" : "Cheia ta (dacă serviciul cere)", text: $key, prompt: "Lipește cheia aici")
                     .listRowSeparator(.hidden)
-                Button(action: saveAndTest) {
-                    HStack {
-                        Text("Salvează și verifică", comment: "Saves and tests a Gemini key.")
-                        Spacer()
-                        if isTesting { DSDelayedProgress(label: "Verific…") }
-                    }
-                    .frame(minHeight: 44)
-                }
-                .disabled(key.trimmingCharacters(in: .whitespaces).isEmpty || isTesting)
             }
-            if let status, let message = AIKeyWording.message(status) {
+
+            if provider == .openAICompatible {
+                DSTextField("Adresa serviciului", text: $baseURL, kind: .url, prompt: "https://…/v1",
+                            footnote: "Pe rețeaua de acasă merge și http://, de exemplu un server LM Studio.")
+            }
+            DSTextField("Model", text: $model,
+                        prompt: provider.defaultModel.isEmpty ? "Numele modelului" : LocalizedStringKey(provider.defaultModel),
+                        footnote: provider.defaultModel.isEmpty ? nil : "Lasă gol pentru modelul obișnuit.")
+
+            Button(action: saveAndTest) {
+                HStack {
+                    Text(hasKey || key.isEmpty ? "Testează" : "Salvează și testează", comment: "Saves and tests the AI settings.")
+                    Spacer()
+                    if isTesting { DSDelayedProgress(label: "Verific…") }
+                }
+                .frame(minHeight: 44)
+            }
+            .disabled(isTesting || (provider.requiresKey && !hasKey && key.trimmingCharacters(in: .whitespaces).isEmpty))
+
+            if let status, let message = AIKeyWording.message(status, provider: provider) {
                 Label {
                     Text(verbatim: message)
                 } icon: {
@@ -242,10 +258,25 @@ struct AISettings: View {
                 .dsFont(.footnote)
                 .transition(.opacity)
             }
+
+            if let policy = provider.dataPolicyURL {
+                Link(destination: policy) {
+                    Text("Cum folosește \(provider.name) ce trimiți", comment: "Link to the AI provider's data-use terms.")
+                        .frame(minHeight: 44)
+                }
+            } else {
+                Text("Serviciul ales are regulile lui pentru ce trimiți. Citește-le înainte să trimiți acte.", comment: "Note for a custom AI service.")
+                    .dsFont(.footnote)
+            }
         } header: {
             Text("Inteligență artificială (opțional)", comment: "Settings section.")
         } footer: {
-            Text("Cheia stă doar pe acest telefon. Documentele trimise spre citire ajung la Google doar când folosești cheia.", comment: "Footer of the AI section.")
+            Text("Cheile stau doar pe acest telefon. Un act ajunge la serviciul ales doar când apeși „Citește mai bine” pe el.", comment: "Footer of the AI section.")
+        }
+        .onAppear(perform: reload)
+        .onChange(of: provider) { _, new in
+            settings.provider = new
+            reload()
         }
         .sensoryFeedback(trigger: status) { _, new in
             switch new {
@@ -256,22 +287,34 @@ struct AISettings: View {
         }
     }
 
-    private func saveAndTest() {
-        let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard KeychainManager.saveGeminiAPIKey(trimmed) else {
-            status = .unavailable
-            return
-        }
+    /// The chosen provider's saved state.
+    private func reload() {
         key = ""
-        hasKey = true
-        testSaved()
+        status = nil
+        hasKey = settings.key(for: provider) != nil
+        model = settings.customModel(for: provider)
+        baseURL = settings.baseURLText
     }
 
-    private func testSaved() {
-        guard let saved = KeychainManager.getGeminiAPIKey() else { hasKey = false; return }
+    private func saveAndTest() {
+        let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty {
+            guard settings.saveKey(trimmed, for: provider) else {
+                status = .failed(.badResponse)
+                return
+            }
+            key = ""
+            hasKey = true
+        }
+        settings.setCustomModel(model, for: provider)
+        if provider == .openAICompatible { settings.baseURLText = baseURL }
+        guard let config = settings.config(for: provider) else {
+            status = .failed(.notConfigured)
+            return
+        }
         isTesting = true
         Task {
-            status = await GeminiService.shared.checkAPIKey(saved)
+            status = await AIClient().testKey(config: config)
             isTesting = false
         }
     }
@@ -279,20 +322,16 @@ struct AISettings: View {
 
 /// What the key test result means, and what to do next.
 enum AIKeyWording {
-    static func message(_ status: GeminiKeyStatus) -> String? {
+    static func message(_ status: AIKeyStatus, provider: AIProvider) -> String? {
         switch status {
         case .valid:
-            String(localized: "Cheia merge. Documentele scanate vor fi citite mai bine.", comment: "Gemini key test: valid.")
+            String(localized: "Cheia merge. Documentele scanate vor fi citite mai bine.", comment: "AI key test: valid.")
         case .empty:
             nil
-        case .invalidKey:
-            String(localized: "Google nu a acceptat cheia. Verifică dacă ai copiat-o întreagă.", comment: "Gemini key test: rejected.")
-        case .offline:
-            String(localized: "Nu ești conectat la internet. Cheia e salvată; o verificăm când revine conexiunea. Scanarea locală merge în continuare.", comment: "Gemini key test: offline.")
-        case .rateLimited:
-            String(localized: "Google e ocupat sau cheia și-a terminat cererile gratuite pe azi. Încearcă mai târziu.", comment: "Gemini key test: rate limited.")
-        case .unavailable:
-            String(localized: "Google nu a răspuns cum trebuie. Încearcă din nou peste câteva minute.", comment: "Gemini key test: unexpected answer.")
+        case .failed(.notConfigured) where provider == .openAICompatible:
+            String(localized: "Scrie adresa serviciului (https://…) și numele modelului.", comment: "AI key test: the compatible service isn't set up.")
+        case .failed(let error):
+            error.message(provider: provider)
         }
     }
 }
