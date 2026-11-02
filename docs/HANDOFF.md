@@ -49,6 +49,7 @@ Nothing at the moment.
 - **Spotlight.** The coordinator has an indexer hook; no Spotlight indexer is registered.
 - **Readiness scenarios** (trip abroad, selling a vehicle, insurance claim): the engine and tests exist, no screen uses them.
 - **Permission descriptions** for Calendar, Reminders and Contacts in the project settings still describe the first version; the app now uses the system's event editor and contact picker without asking for those permissions.
+- **Dates written in the phone's time zone.** Due days are worked out in the Bucharest calendar but written with `.formatted(.dateTime…)` in the phone's own time zone, so on a phone set to another zone every date reads a day early ("Expiră pe 11 august" for 12 August). The `build-and-test` check runs in UTC and shows it in five tests (binder wording, reminder presets, capture review, adding a person's document, subscriptions from capture). The fix belongs with one source for dates: `DosarFormat` and `DueWording` take the calendar's time zone, and the `date-format` exceptions go with it.
 - **Architecture exceptions.** `scripts/architecture-exceptions.txt` lists 168 places that broke a rule before the check existed: built-in category keys in views (82), date formats outside `DosarFormat` (29), small tap targets, number readers, saves outside `UnitOfWork`, the system's error text, silent `try?` on actions and a few more. Each group says which piece of work removes it; remove lines as they're fixed.
 
 ## How to pick up work

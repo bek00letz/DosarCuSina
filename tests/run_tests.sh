@@ -89,7 +89,9 @@ xcodebuild test \
     CODE_SIGNING_ALLOWED=NO > "$LOG" 2>&1
 STATUS=$?
 set -e
+# Build errors and warnings, each failed test with what it expected, and the verdict.
 grep -E "failed on|error:|warning:|\*\* TEST" "$LOG" | sort -u || true
+grep -E "^✘ |^↳ " "$LOG" || true
 if [[ $STATUS -ne 0 ]]; then
     echo "iOS tests failed (exit $STATUS)." >&2
     [[ -n "${RESULTS_DIR:-}" ]] && echo "The full log is $LOG, the result bundle $RESULT_BUNDLE." >&2
