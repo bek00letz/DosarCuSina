@@ -26,33 +26,60 @@ public final class DosarZipEngine: Sendable {
         }
     }
     
-    public enum ZipError: LocalizedError, Sendable {
+    /// Size limits applied while reading an archive.
+    public struct Limits: Sendable {
+        public var maxEntries: Int
+        public var maxEntryBytes: Int
+        public var maxTotalBytes: Int
+
+        public init(maxEntries: Int, maxEntryBytes: Int, maxTotalBytes: Int) {
+            self.maxEntries = maxEntries
+            self.maxEntryBytes = maxEntryBytes
+            self.maxTotalBytes = maxTotalBytes
+        }
+
+        /// Room for a large household: thousands of files, scans up to 128 MB each, 512 MB in total.
+        public static let standard = Limits(maxEntries: 20_000, maxEntryBytes: 128 * 1_024 * 1_024, maxTotalBytes: 512 * 1_024 * 1_024)
+    }
+
+    public enum ZipError: LocalizedError, Sendable, Equatable {
         case invalidZipArchive
         case endOfCentralDirectoryNotFound
         case unsupportedCompressionMethod(UInt16)
         case crcMismatch(path: String, expected: UInt32, actual: UInt32)
         case fileCorrupted(path: String)
-        case pathTraversalDetected(path: String)
+        case unsafeEntryPath(path: String)
+        case duplicateEntry(path: String)
+        case sizeLimitExceeded
         case zlibError(code: Int32, message: String)
-        
+
         public var errorDescription: String? {
             switch self {
-            case .invalidZipArchive:
-                return "Fișierul nu este o arhivă ZIP validă."
-            case .endOfCentralDirectoryNotFound:
-                return "Structura EOCD (End of Central Directory) lipsește din arhivă."
-            case .unsupportedCompressionMethod(let m):
-                return "Metodă de compresie ZIP nesuportată: \(m) (sunt suportate doar Deflate și Store)."
-            case .crcMismatch(let path, let exp, let act):
-                return "Eroare de integritate CRC-32 pentru \(path): așteptat 0x\(String(format: "%08X", exp)), calculat 0x\(String(format: "%08X", act))."
-            case .fileCorrupted(let path):
-                return "Dimensiunea extrasă pentru \(path) nu corespunde metadatelor din antet."
-            case .pathTraversalDetected(let path):
-                return "Tentativă de traversare de cale nesigură (Zip-Slip) detectată: \(path)"
-            case .zlibError(let code, let msg):
-                return "Eroare internă zlib (\(code)): \(msg)"
+            case .invalidZipArchive, .endOfCentralDirectoryNotFound:
+                return String(localized: "Fișierul nu e o arhivă validă.")
+            case .unsupportedCompressionMethod:
+                return String(localized: "Arhiva folosește un tip de compresie pe care aplicația nu îl citește.")
+            case .crcMismatch(let path, _, _), .fileCorrupted(let path):
+                return String(localized: "Fișierul \(path) din arhivă e deteriorat.")
+            case .unsafeEntryPath(let path):
+                return String(localized: "Arhiva conține un nume de fișier nepermis: \(path).")
+            case .duplicateEntry(let path):
+                return String(localized: "Arhiva conține de două ori fișierul \(path).")
+            case .sizeLimitExceeded:
+                return String(localized: "Arhiva e prea mare pentru a fi deschisă pe acest dispozitiv.")
+            case .zlibError:
+                return String(localized: "Arhiva nu a putut fi dezarhivată.")
             }
         }
+    }
+
+    /// An entry path is accepted only if it is relative, uses `/`, and has no
+    /// empty, `.` or `..` components.
+    public static func isSafeEntryPath(_ path: String) -> Bool {
+        guard !path.isEmpty, !path.hasPrefix("/"), !path.contains("\\"), !path.contains("\0"), !path.contains(":") else { return false }
+        let components = path.split(separator: "/", omittingEmptySubsequences: false)
+        let body = path.hasSuffix("/") ? components.dropLast() : components[...]
+        return !body.isEmpty && body.allSatisfy { !$0.isEmpty && $0 != "." && $0 != ".." }
     }
     
     // MARK: - Compression & Decompression (zlib)
@@ -123,7 +150,7 @@ public final class DosarZipEngine: Sendable {
     }
     
     /// Decompresses raw DEFLATE (-MAX_WBITS) data from a PKZip archive.
-    public static func inflateRaw(_ data: Data) throws -> Data {
+    public static func inflateRaw(_ data: Data, maxOutputBytes: Int = .max) throws -> Data {
         guard !data.isEmpty else { return Data() }
         #if canImport(zlib)
         var stream = z_stream()
@@ -159,6 +186,9 @@ public final class DosarZipEngine: Sendable {
                         decompressed.append(base, count: bytesWritten)
                     }
                 }
+                if decompressed.count > maxOutputBytes {
+                    throw ZipError.sizeLimitExceeded
+                }
             }
             guard status == Z_STREAM_END else {
                 throw ZipError.zlibError(code: status, message: "inflate stream did not finish cleanly")
@@ -191,9 +221,8 @@ public final class DosarZipEngine: Sendable {
         var records: [Record] = []
         
         for entry in entries {
-            // Guard against zip slip
-            guard !entry.path.contains("..") && !entry.path.hasPrefix("/") else {
-                throw ZipError.pathTraversalDetected(path: entry.path)
+            guard isSafeEntryPath(entry.path) else {
+                throw ZipError.unsafeEntryPath(path: entry.path)
             }
             
             let rawData = entry.data
@@ -281,7 +310,7 @@ public final class DosarZipEngine: Sendable {
     // MARK: - Unpackaging / Decoder
     
     /// Unpacks a PKZip `.zip` / `.dosar` archive byte buffer and returns all contained entries.
-    public static func unpackArchive(_ archiveData: Data) throws -> [Entry] {
+    public static func unpackArchive(_ archiveData: Data, limits: Limits = .standard) throws -> [Entry] {
         guard archiveData.count >= 22 else { throw ZipError.invalidZipArchive }
         
         // Step 1: Locate End of Central Directory Record (EOCD)
@@ -307,9 +336,13 @@ public final class DosarZipEngine: Sendable {
             throw ZipError.invalidZipArchive
         }
         
+        guard totalEntries <= limits.maxEntries else { throw ZipError.sizeLimitExceeded }
+
         var currentCD = cdOffset
         var entries: [Entry] = []
-        
+        var seenPaths: Set<String> = []
+        var totalBytes = 0
+
         for _ in 0..<totalEntries {
             guard currentCD + 46 <= archiveData.count else { throw ZipError.invalidZipArchive }
             let sig = readUInt32LE(archiveData, at: currentCD)
@@ -331,13 +364,17 @@ public final class DosarZipEngine: Sendable {
             let nameData = archiveData.subdata(in: nameStart..<(nameStart + nameLen))
             let path = String(data: nameData, encoding: .utf8) ?? String(decoding: nameData, as: UTF8.self)
             
-            // Security: check against zip slip
-            guard !path.contains("..") && !path.hasPrefix("/") else {
-                throw ZipError.pathTraversalDetected(path: path)
+            guard isSafeEntryPath(path) else {
+                throw ZipError.unsafeEntryPath(path: path)
             }
-            
+
             // Skip directory entries ending with "/"
             if !path.hasSuffix("/") {
+                guard seenPaths.insert(path).inserted else { throw ZipError.duplicateEntry(path: path) }
+                guard uncompSize <= limits.maxEntryBytes, totalBytes + uncompSize <= limits.maxTotalBytes else {
+                    throw ZipError.sizeLimitExceeded
+                }
+                totalBytes += uncompSize
                 // Read from Local File Header
                 guard localHeaderOffset + 30 <= archiveData.count else { throw ZipError.invalidZipArchive }
                 let localSig = readUInt32LE(archiveData, at: localHeaderOffset)
@@ -353,7 +390,7 @@ public final class DosarZipEngine: Sendable {
                 if method == 0 {
                     extractedData = rawPayload
                 } else if method == 8 {
-                    extractedData = try inflateRaw(rawPayload)
+                    extractedData = try inflateRaw(rawPayload, maxOutputBytes: uncompSize)
                 } else {
                     throw ZipError.unsupportedCompressionMethod(method)
                 }

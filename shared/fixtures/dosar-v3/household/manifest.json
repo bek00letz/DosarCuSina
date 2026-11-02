@@ -1,0 +1,32 @@
+{
+  "appVersion": "1.0",
+  "checksums": {
+    "data/assets.json": "e7202c689295df2aae1329a1f6bb26473c5c946f27cf0baa664dd9f43f5c1184",
+    "data/attachments.json": "96bc8bde06f30fe070d5b59df97d2b3b61f4e63aa3b377b4fd744a84707b360e",
+    "data/history.json": "66c1c3508abf0c8b6c231cfca27030d4fe4b149b248998ea9dd7b234986043a3",
+    "data/measurements.json": "25649828ce83b91bb3d9d3344a3dfa5f43df523c6f234883375694d7aa46ba67",
+    "data/obligations.json": "f3b5be620dc69138133383fd8e4cde74a23caa408f8455706214cd77d84acbcf",
+    "data/providers.json": "29342a0eb19c085dfee07ca30cac56cfeeb84ab1dab74ac21d14a8a5f4579a13",
+    "data/service_items.json": "ebad7ff774b41ab15dd2ef7ac25cde98ae1e3173ffcac235b121d625cdcd15a3",
+    "data/templates.json": "d2a7e60d52dfb352424af0adf6a740b279a752c1c2901a7cae28396a95ff20c9",
+    "vault/6b7c8d9e-0f1a-4b2c-9d4e-5f6a7b8c9db8.txt": "67051d54289bda73dbc0a679ebb22a534c22a05ec288f34e241bb495d445e43c",
+    "vault/6b7c8d9e-0f1a-4b2c-9d4e-5f6a7b8c9db8/page-1.heic": "eae0d75dcf271ec321c664b71d28a99d217c431110e914e34c5113b6c43534e0",
+    "vault/6b7c8d9e-0f1a-4b2c-9d4e-5f6a7b8c9db8/thumbnail.heic": "381d123ce2a34027c40d307beced14c96833f5007a7269cc1db5104bd96bda9f",
+    "vault/af0e1d2c-3b4a-4596-8877-665544332211.pdf": "1e6d3bc85a7cbb6ff6aa66e78a4f9642c4a07fe23fd50c1ccbad23907ffcf038",
+    "vault/bf1e2d3c-4b5a-4697-8988-776655443322.pdf": "1c09197c43d6185f70f5b1e4176943255d182bee5cf7d418b830c1ae61ffd09a"
+  },
+  "counts": {
+    "assets": 2,
+    "attachments": 3,
+    "historyEntries": 2,
+    "measurements": 1,
+    "obligations": 2,
+    "providers": 2,
+    "serviceItems": 1,
+    "templates": 2
+  },
+  "exportedAt": "2026-03-02T08:00:00Z",
+  "format": "com.ar.dosarcusina.dossier",
+  "platform": "iOS",
+  "schemaVersion": 3
+}

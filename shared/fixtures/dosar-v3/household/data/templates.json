@@ -1,0 +1,90 @@
+[
+  {
+    "blueprints" : [
+
+    ],
+    "createdAt" : "2026-01-10T09:00:00Z",
+    "heroStyle" : "vehicle",
+    "homeOrder" : 0,
+    "isBuiltIn" : true,
+    "isOnHome" : false,
+    "isSensitive" : false,
+    "key" : "vehicle",
+    "name" : "Mașini",
+    "sections" : [
+
+    ],
+    "symbol" : "car.fill",
+    "tint" : "blue",
+    "updatedAt" : "2026-02-01T09:00:00Z",
+    "version" : 1
+  },
+  {
+    "blueprints" : [
+      {
+        "firstDue" : {
+          "every" : 1,
+          "type" : "afterInterval",
+          "unit" : "year"
+        },
+        "isSuggested" : true,
+        "key" : "boat.engine",
+        "kind" : "maintenance",
+        "recurrence" : {
+          "every" : 100,
+          "fallbackEvery" : 1,
+          "fallbackUnit" : "year",
+          "type" : "metric",
+          "unit" : "h"
+        },
+        "reminders" : {
+          "consequence" : "comfort",
+          "graceDays" : 30,
+          "leadDays" : [
+            14,
+            0
+          ]
+        },
+        "title" : "Service motor"
+      }
+    ],
+    "createdAt" : "2026-01-12T10:00:00Z",
+    "heroStyle" : "standard",
+    "homeOrder" : 8,
+    "isBuiltIn" : false,
+    "isOnHome" : true,
+    "isSensitive" : false,
+    "key" : "custom.0b6c6f43-6c1e-4d1a-9c55-7d3b4f1f2a10",
+    "name" : "Bărci",
+    "sections" : [
+      {
+        "fields" : [
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "boat.registration",
+            "label" : "Înmatriculare",
+            "role" : "identifier",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "boat.hours",
+            "label" : "Ore motor",
+            "role" : "heroMetric",
+            "type" : "metric",
+            "unit" : "h"
+          }
+        ],
+        "key" : "boat.main",
+        "title" : "Barcă"
+      }
+    ],
+    "summary" : "Ambarcațiuni de agrement",
+    "symbol" : "sailboat.fill",
+    "tint" : "teal",
+    "updatedAt" : "2026-01-12T10:00:00Z",
+    "version" : 0
+  }
+]
