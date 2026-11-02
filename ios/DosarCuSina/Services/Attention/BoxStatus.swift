@@ -54,17 +54,12 @@ public struct BoxStatus: Hashable, Sendable {
     }
 }
 
-/// "1 zi", "5 zile", "20 de zile": Romanian puts "de" before numbers whose last
-/// two digits are 20 or more (and before 100, 1000 …). Each form is its own
-/// localizable string so a translation can supply its own.
+/// "1 zi", "5 zile", "20 de zile". The forms live in the String Catalog as
+/// plural variations (Romanian one / few / other), like every other count in
+/// the app, so there is one way to write plurals.
 public enum DayCount {
     public static func phrase(_ count: Int) -> String {
         let n = abs(count)
-        if n == 1 { return String(localized: "1 zi", comment: "Exactly one day") }
-        let lastTwo = n % 100
-        if n == 0 || (1...19).contains(lastTwo) {
-            return String(localized: "\(n) zile", comment: "Days, 2–19 (and numbers ending in 01–19)")
-        }
-        return String(localized: "\(n) de zile", comment: "Days, 20 and above (Romanian adds 'de')")
+        return String(localized: "\(n) zile", comment: "A number of days, with Romanian plural forms: 1 zi, 2 zile, 20 de zile.")
     }
 }
