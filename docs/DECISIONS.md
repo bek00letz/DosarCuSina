@@ -8,6 +8,18 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-02
 
+### AI providers: bring your own key, several providers, one contract
+- **Decided:** the optional cloud reading is a provider layer, not Gemini wired in. The person picks Google Gemini, OpenAI, Anthropic Claude or any OpenAI-compatible service (OpenRouter, Mistral, LM Studio or Ollama on the home network) and brings their own key, one per provider, kept only in this phone's Keychain and sent only in request headers. Every provider gets the same request (the page and the document kind's fields as a JSON Schema, from the definitions the app reads with) and its answer goes through the same grounding and checks. The default model per provider is defined in one place and can be changed in Settings. Without a key nothing changes.
+- **Why:** people already pay for, or trust, different services, and some run a model at home. One contract keeps the checks identical whoever answers, and a new provider is one small adapter, not a second reading path.
+
+### What a cloud provider's answer is worth
+- **Decided:** a value from a cloud provider is kept as read only when it appears in the text recognised on the phone or passes its own check (a CNP's control digit, a VIN's check digit, the machine-readable zone's check digits, a date inside its plausibility window). Anything else is a candidate marked "Verifică" and never replaces a checked value. The provider runs only when the person taps "Citește mai bine cu …"; for identity documents the review first says "Poza actului se trimite la <provider>, cu cheia ta." and links to the provider's own data-use terms. The app doesn't summarise those terms: it links to them.
+- **Why:** a model reading a glared photo can be confidently wrong, and an identity document's values end up on forms. The phone's own reading and the documents' check digits are the evidence; the model only helps find what they can confirm. Linking avoids claims that may not hold for every person (Google's terms, for example, treat free keys differently in the European Economic Area).
+
+### Plausible dates per document kind
+- **Decided:** each kind of document says, as data, when its dates can fall. A birth date is within the last 120 years and not in the future. An issue date is not in the future and not before the birth date. On identity documents an expiry is between 2000 and 15 years from today (outside: dropped), and an issue date more than 15 years ago is kept only with "Verifică" (permanent cards). The same windows decide the century of two-digit years, in the machine-readable zone and on printed cards.
+- **Why:** library photos are angled, glared and blurred, and a misread digit made a passport "expire in 1906". A fixed century rule can't tell a 1952 birth from a 2052 expiry; the window for each date can. Checking every tier's dates before they are merged keeps an impossible date from pushing out a possible one.
+
 ### Back of the card vs the person's edits
 - **Decided:** when the back of an identity card is added after the person corrected a value by hand, their correction stays. Where the checked machine-readable zone disagrees, the field shows what the back says, with a button to use it.
 - **Why:** the person is the final authority on their own data, but a checked value they may have mistyped against deserves to be seen.

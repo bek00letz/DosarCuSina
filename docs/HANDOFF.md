@@ -6,7 +6,7 @@ A living document: where work stands, so the next person or agent can pick up. K
 
 ## Current state
 
-The template-engine overhaul (waves 1 and 2) is merged. The app builds for iOS 26 with Swift 6 and has about 330 tests in `ios/DosarCuSinaTests`.
+The template-engine overhaul (waves 1 and 2) is merged. The app builds for iOS 26 with Swift 6 and has about 416 tests in `ios/DosarCuSinaTests`.
 
 | Area | What's built |
 | :--- | :--- |
@@ -18,7 +18,7 @@ The template-engine overhaul (waves 1 and 2) is merged. The app builds for iOS 2
 | Share extension and inbox | Share from Mail, WhatsApp, Photos and Files into *De verificat*; the practice share in onboarding. |
 | Widgets | Home Screen (small, medium) and Lock Screen (inline, rectangular), with "Gata". |
 | Search | Diacritic-insensitive search over the whole binder, locked sections show titles only. |
-| Settings and locks | Reminder time, app lock and section locks, categories on the binder, backup, Gemini key, examples, storage. |
+| Settings and locks | Reminder time, app lock and section locks, categories on the binder, backup, the optional AI provider and its key, examples, storage. |
 | Engines | Obligation, asset, history, attachment and provider actions; recurrence; reminder profiles with follow-up after a lapse; attention model; box status; readiness (requirements on screen, scenarios engine only); search; household rules (rental income declaration); wording. |
 | Side effects | Notifications, badge and widget snapshot through `SideEffectsCoordinator`. |
 | Archive | `.dosar` v3 export and import (merge or replace), v2 import, golden fixtures in `shared/`. |
@@ -64,6 +64,13 @@ Newest first. Copy this template:
 ```
 
 Never write security findings, crash traces or local paths here. See [SECURITY.md](../SECURITY.md).
+
+### 2026-11-02 — owner (with Claude) — `claude/capture-reliability`
+- **Did:** reading from imperfect library photos. Plausibility windows per document kind (and two-digit years resolved by them); the card found, flattened, turned and enlarged before reading, with the photo as taken kept; a dedicated pass for the machine-readable zone with check-digit-guided OCR-B repair; one retry with another view of a poorly read page and a calm "Poza e greu de citit" notice; the cloud tier rebuilt as an AI provider layer (Gemini, OpenAI, Claude, OpenAI-compatible) with one schema per document kind, shared grounding and checks, a key per provider and plain error messages.
+- **Tests:** capture and AI provider suites while working; the whole suite (about 416 tests) passes on iPhone 17 (iOS 26.4). The privacy check passes.
+- **Left open:** not tried on a real iPhone with library photos yet; the provider requests are checked against their documentation and canned answers, not against the live services; plain `http` to a home server may also need the app's local-network settings (Info.plist), not changed here.
+- **Next:** try a handful of angled, glared library photos of each identity document on a device; tune the card-finding thresholds if a card is missed.
+- **Decisions:** "AI providers: bring your own key, several providers, one contract", "What a cloud provider's answer is worth" and "Plausible dates per document kind" in DECISIONS.md.
 
 ### 2026-11-02 — owner (with Claude) — `claude/id-followups`
 - **Did:** driving licences read as printed on the official Romanian specimen (shared rows, field 3 date, category boxes, a failed 4d kept with "Verifică"); the person's own edits kept when the back of a card is added, with a "Pe spatele actului scrie" note and "Folosește-l"; a new household member and their document saved in one save; the page viewer cross-fades with Reduce Motion.

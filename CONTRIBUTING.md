@@ -56,7 +56,7 @@ Bug fixes with one obvious fix, tests, refactors that keep behaviour, and docume
 The repository is public. The privacy check runs before every commit (once the hook is on) and on every pull request.
 
 - **Placeholder data only:** plates like `B-123-ABC`, firms like `ENGIE Romania S.A.`, emails like `nume@exemplu.ro`. A made-up CNP uses county code `99` with a valid control digit. This applies to code, tests, previews, fixtures, screenshots and pull request text.
-- **No secrets:** no API keys, tokens or signing files. Your own Gemini key goes in the app's Settings, never in a file.
+- **No secrets:** no API keys, tokens or signing files. Your own AI key goes in the app's Settings, never in a file.
 - **No absolute paths** from your machine. Links are relative to the repository.
 - **Screenshots** in a pull request show placeholder data only.
 - If the check blocks something by mistake, change the value to a placeholder rather than working around the check, and mention it in the pull request.

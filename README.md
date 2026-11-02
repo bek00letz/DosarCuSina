@@ -13,7 +13,7 @@ The app is in Romanian. It is built for people who aren't tech-savvy: four label
 
 - Your data stays on your device. Sync through your own private iCloud is planned, not built.
 - No accounts, no analytics, no tracking, no servers of ours.
-- Reading documents happens on the phone. If you add your own free Gemini key in Settings, you can choose to have a single document read by Gemini; only that document's first page is sent, only when you tap. The key stays in the Keychain on your device.
+- Reading documents happens on the phone. If you add your own key for an AI provider in Settings (Google Gemini, OpenAI, Anthropic Claude, or an OpenAI-compatible service such as one on your home network), you can choose to have a single document read by it; only that document's first page is sent, only when you tap. Keys stay in the Keychain on your device.
 - Identity documents, health and any section you choose can be locked with Face ID.
 
 ## Status

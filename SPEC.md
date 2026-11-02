@@ -8,10 +8,10 @@ UI terms are the app's real Romanian labels, with an English gloss the first tim
 
 - **A documents binder, not a to-do app.** A *dosar cu șină* is the slotted folder Romanians keep their papers in. The app is that folder for rare-but-predictable life admin: the car's ITP and RCA, the boiler check, the passport, the cat's vaccine, the warranty on the washing machine. It opens on the binder, not on a list of deadlines.
 - **Capture first.** The phone already has the photos, PDFs, mail and messages. The main way in is a photo or a document shared from another app; typing is the fallback.
-- **Offline and private.** Everything works on the device, with no account and no network. Data stays on the phone. The only thing that ever leaves it is a page the person explicitly chooses to read with their own Gemini key.
+- **Offline and private.** Everything works on the device, with no account and no network. Data stays on the phone. The only thing that ever leaves it is a page the person explicitly chooses to read with their own AI key.
 - **Short and calm.** The list of what comes next stays short however much is tracked. Reminders arrive as early as the renewal needs, not earlier, and never nag.
 - **Built for people who aren't tech-savvy** (aged 50–60 is the reference). Four labelled tabs, big targets, no horizontal scrolling, no hidden gestures needed, obvious buttons with verbs on them.
-- **Free and complete without a key.** Nothing is behind a paywall, and nothing needs the Gemini key to work.
+- **Free and complete without a key.** Nothing is behind a paywall, and nothing needs an AI key to work.
 - **Sensible first run.** The app starts empty, with *Încarcă exemple* (load examples) for exploring. Examples are tagged, never notify, never reach widgets, and go away with one tap.
 
 ## 2. App structure
@@ -92,7 +92,7 @@ One field over sections, deadlines, history, components, people and the text rea
 
 ### 2.8 Settings
 
-Reminder time, app lock and section locks, which categories show on the binder, backup (export and import), the optional Gemini key, examples, storage and about. Settings can open scrolled to a section from a link.
+Reminder time, app lock and section locks, which categories show on the binder, backup (export and import), the optional AI provider and its key, examples, storage and about. Settings can open scrolled to a section from a link.
 
 ## 3. Data model
 
@@ -211,7 +211,13 @@ How far away something is reads in the unit a person feels, never rounded up: da
 1. **Deterministic** — the machine-readable zone with its check digits, barcodes and QR codes, known invoice formats, checksums.
 2. **Heuristic** — Romanian dates, amounts, labels and identifiers in the recognised text.
 3. **On-device model** — Apple's on-device language model fills what patterns can't, when the device has it. Private and offline, on by default. Its answers are kept only if they are grounded in the recognised text.
-4. **Gemini (optional)** — only with the person's own key, and only when they tap to read this document with it. Only the image of the first page is sent, and the answers are grounded the same way.
+4. **The person's AI provider (optional)** — only with their own key, and only when they tap "Citește mai bine cu …" on this document. Only the first page, as prepared for reading, is sent. See 5.7.
+
+**Preparing a photo.** Before a photo is read, `DocumentImageNormalizer` (the one preparation path) finds the document: a rectangle shaped like an ID-1 card (about 1.586 : 1) or a passport data page (about 1.42 : 1), or, when there is none or the rectangle is only a box printed on a larger page, Vision's document segmentation. The document is flattened, a card that comes out portrait is turned the way more text reads, and a small card is enlarged (up to three times) so small print is legible. The prepared image is what is read and what a cloud provider sees; the photo as taken is what is kept. Pages from the document scanner are already flat and are read as they are.
+
+**The machine-readable zone's own pass.** The zone's band (the lines dense with `<` near the bottom) is cropped across the page, enlarged and read again without language correction; the reading whose check digits pass best is kept, and lines inside the band are never read as a printed label's value. Recognition's OCR-B confusions (O/0/Q, I/1/L, B/8, S/5, Z/2, G/6, and a `K` or `«` among fillers) are tried inside one field at a time, fewest swaps first and only where a character stands out from its neighbours, and a repair is kept only when exactly one combination passes the field's check digit (and the composite agrees). Two that pass are a guess: the field stays as read, unverified.
+
+**One retry.** A reading with little text (fewer than about 20 letters), or an identity document without any of its main fields, is read once more with the page's best other view (a quarter turn, or the photo uncorrected, whichever a quick read finds more text in); the better reading is kept. If it is still poor, the review says "Poza e greu de citit. O poză nouă, dreaptă și fără reflexii, ajută."
 
 Long PDFs are read up to their first 25 pages. Pages are read one pass at a time, and a failed pass doesn't lose the others. The same document captured twice is recognised by its fingerprint.
 
@@ -233,7 +239,9 @@ The review screen shows what was read, where it could go, and the reminder it su
 
 **Templates (`IdentityTemplates`).** One definition per known Romanian identity document: the electronic identity card (front, and back with a TD1 machine-readable zone), the older card (TD2, "SERIA XX NR …", validity as a range), the passport (TD3) and the EU driving licence (numbered fields, two sharing a row: 4a with 4c, 4b with 4d; 4d holds the personal number, which decides birth date and sex only with a valid control digit; categories printed in boxes are joined as "A, B, C"). Each template says how the document is recognised, each field's labels and format, an optional usual region on the card, and age rules. `IdentityDocumentReader` applies any template, so a new document means a new template, not new code. The health insurance card isn't included yet: its printed fields couldn't be confirmed against an official specimen.
 
-**Confidence from checks (`CaptureConsistency`).** After all tiers, dates are checked against each other: a birth date is never also an issue, start or expiry date; an issue date is never in the future and, for identity cards and licences, never before the holder's 14th birthday; an expiry comes after the issue and birth dates. The trust order is: machine-readable zone with valid check digits, a personal number with a valid control digit (which also decides birth date and sex), a printed label read in place, the on-device model, Gemini. The review marks "Verifică" only on values that failed a format or a check, or that only a model read.
+**Confidence from checks (`CaptureConsistency`).** After all tiers, dates are checked against each other: a birth date is never also an issue, start or expiry date; an issue date is never in the future and, for identity cards and licences, never before the holder's 14th birthday; an expiry comes after the issue and birth dates. The trust order is: machine-readable zone with valid check digits, a personal number with a valid control digit (which also decides birth date and sex), a printed label read in place, the on-device model, the cloud provider. The review marks "Verifică" only on values that failed a format or a check, that only the on-device model read, or that a cloud provider gave without grounding or a check (5.7).
+
+**Plausible dates.** Each kind of document says, as data, when its dates can fall (`.within` rules in `CaptureConsistency`, identity windows in `IdentityTemplates.identityDates`): a birth date within the last 120 years and not in the future; an issue date not in the future and not before the birth date; on identity documents, an expiry between 2000 and 15 years from today (outside it the value is dropped), and an issue date within the last 15 years (older is possible only on a permanent card, so it is kept with "Verifică"). The windows are checked on every tier's answers before they are merged, so an impossible date (a passport "expiring in 1906") never pushes out a possible one, and again after all tiers. They also decide the century of two-digit years, in the machine-readable zone and on printed cards ("12.03.18-31.12.28", "12 IUN/JUN 31"): the candidate inside the window, the later one when both fit.
 
 **Showing, naming and filing.** Everything read (personal number, series and number, birth date, sex, nationality, issuer, dates) is shown in the review, kept on the document and listed on its page with "Copiază", because people need it to fill in forms. The section's Face ID lock is the protection; these values never appear in search, widgets, notifications or exported file names. The document is named "Carte de identitate – Manole Corina Ioana" (surname first, as printed) and filed under the household member whose name matches (ignoring case, diacritics and name order), or under a new member named after the holder. When only the front of a card was read, the review offers to add the back; both are then read together, keeping what the person already corrected; where the checked zone on the back says otherwise, that field shows "Pe spatele actului scrie: …" with "Folosește-l". A new household member and their document are created in one save. Tapping the document's picture opens it full screen, with zoom.
 
@@ -244,6 +252,18 @@ The share extension (`DosarCuSinaShare`) appears in the share sheet of Mail, Wha
 The app reads the inbox when it comes to the front and the moment the extension signals. Each item goes through the same capture and review as a photo taken in the app, and leaves the inbox once filed or dismissed.
 
 The practice share (in onboarding and from the Adaugă card) sends a sample invoice with placeholder data through the real share sheet and the real extension, and shows how to move the app to the front of the share sheet.
+
+### 5.7 Reading with the person's AI provider
+
+**Providers (`AIProvider`, `AIProviderAdapters`).** Google Gemini (`gemini-3.8-flash`), OpenAI (`gpt-6-astra`), Anthropic Claude (`claude-opus-5-5`), and "Compatibil OpenAI": any service that speaks OpenAI's chat format at an address the person gives (OpenRouter, Mistral, LM Studio or Ollama on the home network). Each provider is one small adapter: its request, where the JSON is in its answer, a key test that reads nothing, and what its errors mean. The default models are defined once, in `AIProvider.defaultModel`.
+
+**One configuration place (`AIProviderSettings`).** The chosen provider (Gemini until another is chosen), a model per provider (its default unless the person types another), the compatible service's address (`https`, or `http` only to a server on the home network) and a key per provider in the Keychain. Settings → Inteligență artificială picks the provider, keeps its key, takes an optional model and address, and tests them ("Testează").
+
+**One contract.** The cloud tier (`CloudCaptureExtractor`) sends the first page and the fields of the document's kind as a strict JSON Schema (`CloudSchema`), built from the same definitions the app reads with: an identity document's template fields with their printed labels and formats, plus its machine-readable zone's lines; for any other kind, its `expectedKeys` in `CaptureFieldRules`.
+
+**Whoever answered, the same checks (`CloudAnswerMapper`).** A value is kept when it appears in the text recognised on the phone, or passes its own check: a CNP's control digit, a VIN's check digit, the machine-readable zone's check digits (then its values are the certain ones), a date inside its plausibility window. Anything else is a candidate marked "Verifică". A provider's value never replaces a checked one, and its dates go through the same windows.
+
+**Before sending, and when it fails.** The review names the provider before the tap: "Poza actului se trimite la <provider>, cu cheia ta." for identity documents, "Prima pagină se trimite la <provider>, cu cheia ta." otherwise, with a link to the provider's own data-use terms (nothing is claimed on their behalf). Settings shows the same link. A failed reading says why, in plain words: no internet, the key wasn't accepted, the key's requests are used up, the model isn't available, the service is busy or declined. Without a key nothing changes: reading stays on the phone.
 
 ## 6. Side effects
 
@@ -265,7 +285,7 @@ Integrations are optional, one tap, and asked in context: *Adaugă în Calendar*
 - **The device passcode is the fallback** for Face ID, Touch ID or Optic ID.
 - With the app lock on, the screen is hidden in the app switcher. Turning a lock off asks for Face ID first.
 - Locked sections show nothing of what's inside: box lines, search results, widgets and notifications use generic wording.
-- The optional Gemini key is kept in the Keychain on this device only, and can be tested and removed in Settings.
+- The optional AI keys, one per provider, are kept in the Keychain on this device only (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`), are sent only in request headers, and can be tested and removed in Settings.
 - The database and documents use the system's file protection.
 
 ## 8. The `.dosar` archive
