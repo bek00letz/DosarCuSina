@@ -125,18 +125,18 @@ struct LabelledLayout<Key: Hashable> {
     }
 
     /// The date printed for a label: after it on its line, or in its value.
-    func day(for key: Key) -> (CaptureDay, String)? {
+    func day(for key: Key, window: DateWindow = .aroundToday) -> (CaptureDay, String)? {
         for position in positions where position.key == key {
             let line = text.folded[position.line]
             let nextLabel = (positionsByLine[position.line] ?? []).filter { $0.start > position.start }.map(\.start).min() ?? line.endIndex
             // Only the text between this label and the next, so a field number ("3.") never
             // reads as part of the date after it.
             let segment = position.end < nextLabel ? String(line[position.end..<nextLabel]) : ""
-            if let match = RomanianFieldExtractor.dates(inLine: segment, index: position.line).first {
+            if let match = RomanianFieldExtractor.dates(inLine: segment, index: position.line, window: window).first {
                 return (match.day, text.original[position.line])
             }
             if let found = value(at: position), found.lines != [position.line],
-               let match = RomanianFieldExtractor.dates(inLine: found.folded, index: position.line).first {
+               let match = RomanianFieldExtractor.dates(inLine: found.folded, index: position.line, window: window).first {
                 return (match.day, found.source)
             }
         }

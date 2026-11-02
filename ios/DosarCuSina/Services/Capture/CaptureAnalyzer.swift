@@ -74,6 +74,9 @@ public struct CaptureAnalyzer: Sendable {
         var notices: [CaptureNotice] = []
         var fields = FieldSet()
         var text = lines.joiningRows()
+        let today = CaptureDay(date: referenceDate)
+        // Two-digit years on documents no rule covers take the century nearest today.
+        let years = DateWindow.around(today)
 
         let mrz = MRZParser.parse(text: rawText, referenceDate: referenceDate)
         let specialized = specializedParsers.lazy.compactMap { $0.parse(text) }.first
@@ -91,7 +94,7 @@ public struct CaptureAnalyzer: Sendable {
         }
 
         if let mrz {
-            fields.add(mrzFields(mrz))
+            fields.add(Self.machineReadableFields(mrz))
             if !mrz.allChecksValid { notices.append(.machineReadableZoneUnverified) }
         }
 
@@ -101,38 +104,38 @@ public struct CaptureAnalyzer: Sendable {
         case .passport, .identityCard, .drivingLicence:
             // Printed labels, read with the document's template. The MRZ (when on the
             // photo) already added checked values, which win; agreeing values reinforce.
-            if let template { fields.add(IdentityDocumentReader.read(text, template: template)) }
+            if let template { fields.add(IdentityDocumentReader.read(text, template: template, today: today)) }
         case .vehicleRegistration:
             addVehicleIdentity(text, into: &fields)
             for (key, entry) in RomanianFieldExtractor.registrationFields(in: text).sorted(by: { $0.key.rawValue < $1.key.rawValue }) {
                 fields.add(key, entry.0, 0.65, entry.1)
             }
         case .rcaPolicy, .insurancePolicy:
-            addInsurance(text, kind: kind, into: &fields)
+            addInsurance(text, kind: kind, years: years, into: &fields)
         case .utilityInvoice:
-            addInvoiceBasics(text, into: &fields)
-            if let due = RomanianFieldExtractor.labelledDate(["scadent", "termen de plata", "data scadentei", "de platit pana la"], in: text) {
+            addInvoiceBasics(text, years: years, into: &fields)
+            if let due = RomanianFieldExtractor.labelledDate(["scadent", "termen de plata", "data scadentei", "de platit pana la"], in: text, window: years) {
                 fields.add(.dueDate, .day(due.day), 0.75, due.source)
             }
         case .serviceInvoice:
-            addInvoiceBasics(text, into: &fields)
+            addInvoiceBasics(text, years: years, into: &fields)
             addVehicleIdentity(text, into: &fields)
             addLineItems(text, into: &fields)
             if let odometer = RomanianFieldExtractor.odometer(in: text) {
                 fields.add(.odometer, .metric(value: odometer.km, unit: "km"), odometer.labelled ? 0.8 : 0.55, odometer.source)
             }
         case .fiscalReceipt, .warrantyCertificate:
-            addPurchase(text, kind: kind, into: &fields)
+            addPurchase(text, kind: kind, years: years, into: &fields)
         case .itpReport:
             addVehicleIdentity(text, into: &fields)
-            if let expiry = RomanianFieldExtractor.labelledDate(["valabila pana la", "valabil pana la", "urmatoarea inspectie", "data urmatoarei inspectii", "valabilitate"], in: text) {
+            if let expiry = RomanianFieldExtractor.labelledDate(["valabila pana la", "valabil pana la", "urmatoarea inspectie", "data urmatoarei inspectii", "valabilitate"], in: text, window: years) {
                 fields.add(.expiryDate, .day(expiry.day), 0.8, expiry.source)
             }
             if let odometer = RomanianFieldExtractor.odometer(in: text) {
                 fields.add(.odometer, .metric(value: odometer.km, unit: "km"), odometer.labelled ? 0.8 : 0.55, odometer.source)
             }
             addIssuer(text, into: &fields)
-            addIssueDate(text, into: &fields)
+            addIssueDate(text, years: years, into: &fields)
         case .veterinaryRecord:
             if let chip = RomanianFieldExtractor.microchip(in: text) {
                 fields.add(.microchip, .text(chip.value), 0.85, chip.source)
@@ -140,16 +143,16 @@ public struct CaptureAnalyzer: Sendable {
             if let index = text.lines(containing: ["vaccin", "antirabic"]).first {
                 fields.add(.vaccineName, .text(text.original[index]), 0.55, text.original[index])
             }
-            if let next = RomanianFieldExtractor.labelledDate(["rapel", "revaccinare", "urmatorul vaccin", "urmatoarea vaccinare", "valabil pana la"], in: text) {
+            if let next = RomanianFieldExtractor.labelledDate(["rapel", "revaccinare", "urmatorul vaccin", "urmatoarea vaccinare", "valabil pana la"], in: text, window: years) {
                 fields.add(.nextDoseDate, .day(next.day), 0.75, next.source)
             }
             addIssuer(text, into: &fields)
-            addIssueDate(text, into: &fields)
+            addIssueDate(text, years: years, into: &fields)
         case .medicalResult:
             addIssuer(text, into: &fields)
-            addIssueDate(text, into: &fields)
+            addIssueDate(text, years: years, into: &fields)
         case .other:
-            addInvoiceBasics(text, into: &fields)
+            addInvoiceBasics(text, years: years, into: &fields)
         }
 
         if kind == .utilityInvoice || kind == .serviceInvoice || kind == .other,
@@ -175,7 +178,8 @@ public struct CaptureAnalyzer: Sendable {
 
     // MARK: - Field groups
 
-    private func mrzFields(_ mrz: MRZParser.Result) -> [CaptureField] {
+    /// The fields a machine-readable zone holds: certain where its check digits pass.
+    static func machineReadableFields(_ mrz: MRZParser.Result) -> [CaptureField] {
         let tier: CaptureTier = mrz.allChecksValid ? .deterministic : .heuristic
         let source = CaptureField.machineReadableSource
         var result: [CaptureField] = [
@@ -203,7 +207,7 @@ public struct CaptureAnalyzer: Sendable {
         return result
     }
 
-    private func addInvoiceBasics(_ text: CaptureText, into fields: inout FieldSet) {
+    private func addInvoiceBasics(_ text: CaptureText, years: DateWindow, into fields: inout FieldSet) {
         addIssuer(text, into: &fields)
         if let invoice = RomanianFieldExtractor.invoiceNumber(in: text) {
             fields.add(.invoiceNumber, .text(invoice.value), 0.7, invoice.source)
@@ -211,7 +215,7 @@ public struct CaptureAnalyzer: Sendable {
         if let total = RomanianFieldExtractor.total(in: text) {
             fields.add(.total, .money(total.money), total.strong ? 0.8 : 0.6, total.source)
         }
-        addIssueDate(text, into: &fields)
+        addIssueDate(text, years: years, into: &fields)
     }
 
     private func addIssuer(_ text: CaptureText, into fields: inout FieldSet) {
@@ -223,10 +227,10 @@ public struct CaptureAnalyzer: Sendable {
         }
     }
 
-    private func addIssueDate(_ text: CaptureText, into fields: inout FieldSet) {
-        if let issue = RomanianFieldExtractor.labelledDate(["data emiterii", "data facturii", "data eliberarii", "emisa la", "data:"], in: text) {
+    private func addIssueDate(_ text: CaptureText, years: DateWindow, into fields: inout FieldSet) {
+        if let issue = RomanianFieldExtractor.labelledDate(["data emiterii", "data facturii", "data eliberarii", "emisa la", "data:"], in: text, window: years) {
             fields.add(.issueDate, .day(issue.day), 0.7, issue.source)
-        } else if let first = RomanianFieldExtractor.allDates(in: text).first {
+        } else if let first = RomanianFieldExtractor.allDates(in: text, window: years).first {
             fields.add(.issueDate, .day(first.day), 0.45, text.original[first.line])
         }
     }
@@ -248,7 +252,7 @@ public struct CaptureAnalyzer: Sendable {
         }
     }
 
-    private func addInsurance(_ text: CaptureText, kind: CaptureDocumentKind, into fields: inout FieldSet) {
+    private func addInsurance(_ text: CaptureText, kind: CaptureDocumentKind, years: DateWindow, into fields: inout FieldSet) {
         let haystack = text.joinedFolded
         if let insurer = insurerNames.first(where: { DocumentClassifier.containsWord($0.keyword, in: haystack) }) {
             fields.add(.provider, .text(insurer.name), 0.85, nil)
@@ -264,10 +268,10 @@ public struct CaptureAnalyzer: Sendable {
         if let phone = RomanianFieldExtractor.claimsPhone(in: text) {
             fields.add(.claimsPhone, .text(phone.value), 0.75, phone.source)
         }
-        if let period = RomanianFieldExtractor.validityPeriod(in: text) {
+        if let period = RomanianFieldExtractor.validityPeriod(in: text, window: years) {
             fields.add(.startDate, .day(period.start), 0.75, period.source)
             fields.add(.expiryDate, .day(period.end), 0.8, period.source)
-        } else if let expiry = RomanianFieldExtractor.labelledDate(["pana la", "expira", "data expirarii", "valabila pana"], in: text) {
+        } else if let expiry = RomanianFieldExtractor.labelledDate(["pana la", "expira", "data expirarii", "valabila pana"], in: text, window: years) {
             fields.add(.expiryDate, .day(expiry.day), 0.65, expiry.source)
         }
         if let premium = RomanianFieldExtractor.total(in: text) {
@@ -285,7 +289,7 @@ public struct CaptureAnalyzer: Sendable {
         addVehicleIdentity(text, into: &fields)
     }
 
-    private func addPurchase(_ text: CaptureText, kind: CaptureDocumentKind, into fields: inout FieldSet) {
+    private func addPurchase(_ text: CaptureText, kind: CaptureDocumentKind, years: DateWindow, into fields: inout FieldSet) {
         if let taxID = RomanianFieldExtractor.taxID(in: text) {
             fields.add(.providerTaxID, .text(taxID.value), taxID.valid ? 0.97 : 0.5, text.original[taxID.line], tier: taxID.valid ? .deterministic : .heuristic)
         }
@@ -293,8 +297,8 @@ public struct CaptureAnalyzer: Sendable {
             fields.add(.retailer, .text(issuer.name), 0.65, text.original[issuer.line])
             fields.add(.provider, .text(issuer.name), 0.6, text.original[issuer.line])
         }
-        let purchaseDate = RomanianFieldExtractor.labelledDate(["data vanzarii", "data cumpararii", "data achizitiei", "data livrarii", "data:"], in: text).map { ($0.day, $0.source, 0.75) }
-            ?? RomanianFieldExtractor.allDates(in: text).first.map { ($0.day, text.original[$0.line], 0.55) }
+        let purchaseDate = RomanianFieldExtractor.labelledDate(["data vanzarii", "data cumpararii", "data achizitiei", "data livrarii", "data:"], in: text, window: years).map { ($0.day, $0.source, 0.75) }
+            ?? RomanianFieldExtractor.allDates(in: text, window: years).first.map { ($0.day, text.original[$0.line], 0.55) }
         if let purchaseDate {
             fields.add(.purchaseDate, .day(purchaseDate.0), purchaseDate.2, purchaseDate.1)
         }

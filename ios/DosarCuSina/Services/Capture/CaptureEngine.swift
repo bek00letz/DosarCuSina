@@ -173,8 +173,11 @@ public final class CaptureEngine: Sendable {
             ? analyzer.analyze(text: text, barcodes: barcodes, referenceDate: options.referenceDate)
             : analyzer.analyze(pages: recognized, barcodes: barcodes, referenceDate: options.referenceDate)
         notices += analysis.notices
-        var fields = analysis.fields
+        let today = CaptureDay(date: options.referenceDate)
         var kind = analysis.kind
+        // Each tier's dates are checked against their windows before merging, so an
+        // impossible date (a passport "expiring in 1906") never pushes out a possible one.
+        var fields = CaptureConsistency.plausible(analysis.fields, kind: kind, today: today)
         var kindConfidence = analysis.kindConfidence
 
         // 3. On-device model, unless the patterns already read everything that matters.
@@ -185,7 +188,7 @@ public final class CaptureEngine: Sendable {
             case .available:
                 do {
                     let extraction = try await model.extract(SemanticInput(text: text, firstPage: pages.first ?? pdfThumbnail, kind: kind, knownFields: fields))
-                    fields = FieldMerger.merge(fields, with: extraction.fields)
+                    fields = FieldMerger.merge(fields, with: CaptureConsistency.plausible(extraction.fields, kind: kind, today: today))
                     if let modelKind = extraction.kind, modelKind != kind, kindConfidence < 0.6 {
                         kind = modelKind
                         kindConfidence = 0.65
@@ -205,7 +208,7 @@ public final class CaptureEngine: Sendable {
             case .available:
                 do {
                     let extraction = try await model.extract(SemanticInput(text: text, firstPage: pages.first ?? pdfThumbnail, kind: kind, knownFields: fields))
-                    fields = FieldMerger.merge(fields, with: extraction.fields)
+                    fields = FieldMerger.merge(fields, with: CaptureConsistency.plausible(extraction.fields, kind: kind, today: today))
                 } catch {
                     notices.append(.cloudModelFailed(reason: "requestFailed"))
                 }
@@ -216,7 +219,7 @@ public final class CaptureEngine: Sendable {
 
         // Dates checked against each other, then only fields that belong on this kind
         // of document, whichever tier found them.
-        fields = CaptureConsistency.resolve(fields, kind: kind, today: CaptureDay(date: options.referenceDate)).fields
+        fields = CaptureConsistency.resolve(fields, kind: kind, today: today).fields
         fields = Self.derived(fields).filter { kind.allows($0.key) }
 
         // A card read from its front alone: the back carries the zone that confirms it.

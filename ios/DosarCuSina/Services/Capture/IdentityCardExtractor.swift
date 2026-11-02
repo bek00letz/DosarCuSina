@@ -23,8 +23,10 @@ enum IdentityDocumentReader {
     /// Confidence for a value that failed its format check.
     static let failedFormat = 0.45
 
-    static func read(_ text: CaptureText, template: IdentityTemplate) -> [CaptureField] {
+    /// - Parameter today: Decides the century of two-digit years, through each date's window.
+    static func read(_ text: CaptureText, template: IdentityTemplate, today: CaptureDay) -> [CaptureField] {
         let layout = LabelledLayout(text: text, labels: template.labelTable)
+        func window(_ key: CaptureFieldKey) -> DateWindow { CaptureConsistency.window(for: key, kind: template.kind, today: today) }
         var fields: [CaptureField] = []
         func add(_ key: CaptureFieldKey, _ value: CaptureValue, _ confidence: Double, _ source: String?, tier: CaptureTier = .heuristic) {
             guard !fields.contains(where: { $0.key == key }) else { return }
@@ -34,7 +36,7 @@ enum IdentityDocumentReader {
         for field in template.fields {
             let key = IdentityLabelKey.field(field.key)
             if case .dateRange(let startKey) = field.format {
-                if let range = dateRange(at: layout.found(for: key), in: text) {
+                if let range = dateRange(at: layout.found(for: key), start: window(startKey), end: window(field.key)) {
                     add(field.key, .day(range.end), labelled, range.source)
                     add(startKey, .day(range.start), labelled, range.source)
                 }
@@ -42,7 +44,7 @@ enum IdentityDocumentReader {
             }
             if case .date = field.format {
                 // A date only counts at its own label, so a neighbour's date is never borrowed.
-                if let (day, source) = layout.day(for: key) {
+                if let (day, source) = layout.day(for: key, window: window(field.key)) {
                     add(field.key, .day(day), labelled, source)
                     continue
                 }
@@ -52,11 +54,11 @@ enum IdentityDocumentReader {
                     add(field.key, parsed.value, labelled, found.source)
                     continue
                 }
-            } else if let found = layout.found(for: key), let parsed = parse(found.value, as: field.format) {
+            } else if let found = layout.found(for: key), let parsed = parse(found.value, as: field.format, window: window(field.key)) {
                 add(field.key, parsed.value, parsed.passed ? labelled : failedFormat, found.source, tier: parsed.tier)
                 continue
             }
-            if let region = field.region, let found = inRegion(region, of: text, format: field.format) {
+            if let region = field.region, let found = inRegion(region, of: text, format: field.format, window: window(field.key)) {
                 add(field.key, found.value, regional, found.source)
                 continue
             }
@@ -88,7 +90,7 @@ enum IdentityDocumentReader {
     }
 
     /// The value in its format, or nil when there is nothing of that shape at all.
-    static func parse(_ raw: String, as format: IdentityFormat) -> Parsed? {
+    static func parse(_ raw: String, as format: IdentityFormat, window: DateWindow = .aroundToday) -> Parsed? {
         let value = raw.trimmingCharacters(in: .whitespaces)
         switch format {
         case .name:
@@ -103,7 +105,7 @@ enum IdentityDocumentReader {
             let joined = match.groups.dropFirst().compactMap { $0 }.joined().uppercased()
             return joined.contains(where: \.isNumber) ? Parsed(value: .text(joined), passed: true) : nil
         case .date, .dateRange:
-            return RomanianFieldExtractor.dates(inLine: CaptureText.fold(value), index: 0).first.map { Parsed(value: .day($0.day), passed: true) }
+            return RomanianFieldExtractor.dates(inLine: CaptureText.fold(value), index: 0, window: window).first.map { Parsed(value: .day($0.day), passed: true) }
         case .sex:
             let letters = value.uppercased().filter(\.isLetter)
             guard let letter = letters.first(where: { $0 == "M" || $0 == "F" }) else { return nil }
@@ -127,19 +129,21 @@ enum IdentityDocumentReader {
     }
 
     /// A validity range at its label: two dates, the first before the second, on the
-    /// value or on the line after the label.
-    private static func dateRange(at found: LabelledLayout<IdentityLabelKey>.Found?, in text: CaptureText) -> (start: CaptureDay, end: CaptureDay, source: String)? {
+    /// value or on the line after the label. Each date's two-digit year is read in its
+    /// own window ("12.03.18-31.12.28": issued 2018, valid until 2028).
+    private static func dateRange(at found: LabelledLayout<IdentityLabelKey>.Found?, start: DateWindow, end: DateWindow) -> (start: CaptureDay, end: CaptureDay, source: String)? {
         guard let found else { return nil }
-        let dates = RomanianFieldExtractor.dates(inLine: found.folded, index: found.label.line)
-        guard dates.count == 2, dates[0].day < dates[1].day else { return nil }
-        return (dates[0].day, dates[1].day, found.source)
+        let starts = RomanianFieldExtractor.dates(inLine: found.folded, index: found.label.line, window: start)
+        let ends = RomanianFieldExtractor.dates(inLine: found.folded, index: found.label.line, window: end)
+        guard starts.count == 2, ends.count == 2, starts[0].day < ends[1].day else { return nil }
+        return (starts[0].day, ends[1].day, found.source)
     }
 
     /// A value in the field's usual region that passes its format.
-    private static func inRegion(_ region: TextBox, of text: CaptureText, format: IdentityFormat) -> (value: CaptureValue, source: String)? {
+    private static func inRegion(_ region: TextBox, of text: CaptureText, format: IdentityFormat, window: DateWindow) -> (value: CaptureValue, source: String)? {
         for (index, box) in text.boxes.enumerated() {
             guard let box, box.midX >= region.minX, box.midX <= region.maxX, box.midY >= region.minY, box.midY <= region.maxY,
-                  let parsed = parse(text.original[index], as: format), parsed.passed else { continue }
+                  let parsed = parse(text.original[index], as: format, window: window), parsed.passed else { continue }
             return (parsed.value, text.original[index])
         }
         return nil
