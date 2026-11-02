@@ -87,7 +87,11 @@ public enum BuiltInTemplates {
                 FieldSection(key: "vehicle.insurance", title: String(localized: "Asigurare"), fields: [
                     FieldDefinition(key: "vehicle.insurer", label: String(localized: "Asigurător RCA"), type: .text, role: .issuer),
                     FieldDefinition(key: "vehicle.policyNumber", label: String(localized: "Număr poliță RCA"), type: .text, role: .keyFact),
-                    FieldDefinition(key: "vehicle.claimsPhone", label: String(localized: "Telefon pentru daune"), type: .phone, role: .keyFact),
+                    FieldDefinition(key: "vehicle.claimsPhone", label: String(localized: "Telefon daune RCA"), type: .phone, role: .keyFact),
+                    // CASCO is optional and separate from RCA: its own insurer, policy and claims line.
+                    FieldDefinition(key: "vehicle.cascoInsurer", label: String(localized: "Asigurător CASCO"), type: .text),
+                    FieldDefinition(key: "vehicle.cascoPolicyNumber", label: String(localized: "Număr poliță CASCO"), type: .text, role: .keyFact),
+                    FieldDefinition(key: "vehicle.cascoClaimsPhone", label: String(localized: "Telefon daune CASCO"), type: .phone, role: .keyFact),
                 ]),
                 PurchaseFields.section(prefix: "vehicle"),
             ],

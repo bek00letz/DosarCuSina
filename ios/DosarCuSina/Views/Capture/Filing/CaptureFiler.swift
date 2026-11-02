@@ -42,7 +42,7 @@ struct CaptureFiler {
         var values = FieldValues()
         for field in review.fields {
             guard let value = field.value,
-                  let key = CaptureMapping.fieldKey(for: field.key, kind: review.kind, in: template),
+                  let key = CaptureMapping.fieldKey(for: field.key, kind: review.kind, in: template, coverage: review.value(.coverageType)?.text),
                   let definition = template.field(key),
                   let converted = CaptureMapping.fieldValue(value, for: definition) else { continue }
             if values[key] == nil { values[key] = converted }

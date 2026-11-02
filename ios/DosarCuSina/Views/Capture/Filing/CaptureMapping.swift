@@ -78,8 +78,8 @@ enum CaptureMapping {
         .make: ["vehicle.make"],
         .model: ["vehicle.model"],
         .odometer: ["vehicle.odometer"],
-        .policyNumber: ["vehicle.policyNumber", "home.policyNumber"],
-        .claimsPhone: ["vehicle.claimsPhone", "home.claimsPhone"],
+        .policyNumber: ["home.policyNumber"],
+        .claimsPhone: ["home.claimsPhone"],
         .documentNumber: ["document.number"],
         .personalNumber: ["document.personalNumber"],
         .birthDate: ["document.birthDate"],
@@ -108,10 +108,26 @@ enum CaptureMapping {
         }
     }
 
-    /// The template field a capture field fills, if any.
-    static func fieldKey(for key: CaptureFieldKey, kind: CaptureDocumentKind, in template: TemplateDefinition) -> String? {
+    /// Where a vehicle policy's details go, by its cover: RCA and CASCO each keep
+    /// their own insurer, policy number and claims phone.
+    private static let vehicleCoverFields: [String: [CaptureFieldKey: String]] = [
+        "RCA": [.provider: "vehicle.insurer", .policyNumber: "vehicle.policyNumber", .claimsPhone: "vehicle.claimsPhone"],
+        "CASCO": [.provider: "vehicle.cascoInsurer", .policyNumber: "vehicle.cascoPolicyNumber", .claimsPhone: "vehicle.cascoClaimsPhone"],
+    ]
+    private static let vehiclePolicyFields = Set(vehicleCoverFields.values.flatMap(\.values))
+
+    /// The template field a capture field fills, if any. `coverage` is the policy's
+    /// cover as read ("RCA", "CASCO", …), which decides where a vehicle policy's details go.
+    static func fieldKey(for key: CaptureFieldKey, kind: CaptureDocumentKind, in template: TemplateDefinition, coverage: String? = nil) -> String? {
+        let isPolicy = kind == .rcaPolicy || kind == .insurancePolicy
+        if isPolicy, [.provider, .policyNumber, .claimsPhone].contains(key),
+           vehiclePolicyFields.contains(where: { template.field($0) != nil }) {
+            // A vehicle: the cover picks the fields; an unknown cover fills none, never RCA's.
+            let cover = (coverage ?? (kind == .rcaPolicy ? "RCA" : "")).uppercased()
+            return vehicleCoverFields[cover]?[key].flatMap { template.field($0) != nil ? $0 : nil }
+        }
         // The insurer named on a policy goes into the insurer field.
-        if key == .provider, kind == .rcaPolicy || kind == .insurancePolicy {
+        if key == .provider, isPolicy {
             return template.field(withRole: .issuer)?.key
         }
         // A policy's end date is the obligation's date, not an asset field.

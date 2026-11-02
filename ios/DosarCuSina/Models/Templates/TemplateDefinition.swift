@@ -103,7 +103,7 @@ public struct TemplateDefinition: Hashable, Sendable, Codable, Identifiable {
 
     /// Revision of the built-in catalog. Bump it whenever a built-in definition
     /// changes so installed copies are upgraded (preferences are kept).
-    public static let builtInCatalogVersion = 6
+    public static let builtInCatalogVersion = 7
 
     public static let customKeyPrefix = "custom."
 
