@@ -25,7 +25,7 @@ public enum GeminiServiceError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .missingAPIKey:
-            return "Cheia Gemini API lipsește. Adaug-o în ecranul de Setări sau în Config.xcconfig."
+            return "Cheia Gemini lipsește. Adaug-o în Setări, la Inteligență artificială."
         case .invalidImageData:
             return "Imaginea nu a putut fi procesată."
         case .invalidServerResponse(let code, let msg):

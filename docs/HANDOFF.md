@@ -40,7 +40,6 @@ The template-engine overhaul (waves 1 and 2) is merged. The app builds for iOS 2
 - **Spotlight.** The coordinator has an indexer hook; no Spotlight indexer is registered.
 - **Readiness scenarios** (trip abroad, selling a vehicle, insurance claim): the engine and tests exist, no screen uses them.
 - **Permission descriptions** for Calendar, Reminders and Contacts in the project settings still describe the first version; the app now uses the system's event editor and contact picker without asking for those permissions.
-- **Developer Gemini key file.** `ios/Config.xcconfig.template` is tracked, but the project doesn't read a `Config.xcconfig`. Enter a key in the app's Settings instead.
 - **No build in CI.** Only the privacy check runs on pull requests. A macOS workflow that builds and runs the tests could come later.
 
 ## How to pick up work

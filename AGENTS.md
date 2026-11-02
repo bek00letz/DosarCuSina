@@ -149,7 +149,7 @@ The standing rule above is the bar. These are the SwiftUI specifics.
 
 ## 4.1 No secrets, no personal data
 - **No credentials in the repository:** no API keys, tokens, passwords, keystores, certificates or provisioning profiles.
-- **Bring your own key:** the optional Gemini key is entered by the person in Settings and kept in the iOS Keychain (`kSecClassGenericPassword`, `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`, so it never leaves the device). Developers use the same Settings screen with their own key. Never commit a key, even a test one. `ios/Config.xcconfig` is ignored by git; only its `.template` is tracked.
+- **Bring your own key:** the optional Gemini key is entered by the person in Settings and kept in the iOS Keychain (`kSecClassGenericPassword`, `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`, so it never leaves the device). Developers use the same Settings screen with their own key; there is no build-time key. Never commit a key, even a test one.
 - **Placeholder data only** (see "How agents work here", item 8). This covers names, emails, phone numbers, plates, VINs, CNPs, document numbers and addresses.
 - **Local first, no central database:** data lives in SwiftData on the device. Sync, when it comes, uses the person's own private iCloud. There are no servers of ours, no accounts, no analytics and no telemetry. Don't add any SDK that phones home.
 

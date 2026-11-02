@@ -15,3 +15,5 @@ was never a target; the real widget extension is `ios/DosarCuSinaWidgets`.
 Wave-2 screens and services port what is still useful from here onto the new
 model. Delete this folder only after the new app has been used for a while and
 the owner agrees.
+
+`Config.xcconfig.template` is the old developer key file. The project never read it; the Gemini key is entered in Settings.

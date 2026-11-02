@@ -501,11 +501,7 @@
 				INFOPLIST_FILE = "SupportingFiles/DosarCuSina-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Dosar cu Șină";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Folosim Face ID ca să deschidem doar categoriile pe care le-ai protejat, cum ar fi actele și datele medicale.";
-				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Dosar cu Șină sincronizează scadențele importante (ITP, RCA, facturi, programări medicale, garanții) direct în aplicația Calendar.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Aplicația are nevoie de acces la cameră pentru a scana facturi, chitanțe și documente.";
-				INFOPLIST_KEY_NSContactsUsageDescription = "Dosar cu Șină îți permite să asociezi rapid medici, mecanici, instalatori, veterinari sau chiriași din agenda ta de contacte.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Aplicația are nevoie de acces la galerie pentru a atașa poze la scadențe.";
-				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Dosar cu Șină poate adăuga automat obligațiile scadente în aplicația Mementouri (Reminders).";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -541,11 +537,7 @@
 				INFOPLIST_FILE = "SupportingFiles/DosarCuSina-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Dosar cu Șină";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Folosim Face ID ca să deschidem doar categoriile pe care le-ai protejat, cum ar fi actele și datele medicale.";
-				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Dosar cu Șină sincronizează scadențele importante (ITP, RCA, facturi, programări medicale, garanții) direct în aplicația Calendar.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Aplicația are nevoie de acces la cameră pentru a scana facturi, chitanțe și documente.";
-				INFOPLIST_KEY_NSContactsUsageDescription = "Dosar cu Șină îți permite să asociezi rapid medici, mecanici, instalatori, veterinari sau chiriași din agenda ta de contacte.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Aplicația are nevoie de acces la galerie pentru a atașa poze la scadențe.";
-				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Dosar cu Șină poate adăuga automat obligațiile scadente în aplicația Mementouri (Reminders).";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
