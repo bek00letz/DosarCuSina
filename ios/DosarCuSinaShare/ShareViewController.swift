@@ -50,6 +50,8 @@ final class ShareModel {
         case unsupported
         /// The phone couldn't hand the file over, or there's no room.
         case failed
+        /// A file, or the whole share, is bigger than the inbox accepts.
+        case tooLarge
     }
 
     private(set) var phase: Phase = .working
@@ -75,35 +77,42 @@ final class ShareModel {
 
         var saved = 0
         var failed = false
+        var tooLarge = false
+        var sharedBytes = 0
         for planned in ShareInbox.plan(classified.map(\.1)) {
+            var staging: URL?
             do {
-                let staging = try inbox.makeStagingFolder()
+                let folder = try inbox.makeStagingFolder()
+                staging = folder
                 var files: [String] = []
                 var originalName: String?
                 for (position, index) in planned.indices.enumerated() {
                     let provider = classified[index].0
                     originalName = originalName ?? provider.suggestedName
-                    if let name = try await Self.stage(provider, as: classified[index].1, inbox: inbox, staging: staging, index: position) {
+                    if let name = try await Self.stage(provider, as: classified[index].1, inbox: inbox, staging: folder, index: position, sharedSoFar: sharedBytes) {
                         files.append(name)
+                        sharedBytes += ShareInbox.byteCount(of: name, in: folder)
                     }
                 }
                 if files.isEmpty {
-                    inbox.discard(staging: staging)
+                    inbox.discard(staging: folder)
                     failed = true
                     continue
                 }
-                try inbox.commit(staging: staging, payload: planned.payload, files: files, originalName: originalName)
+                try inbox.commit(staging: folder, payload: planned.payload, files: files, originalName: originalName)
                 saved += 1
             } catch {
+                if let staging { inbox.discard(staging: staging) }
+                if (error as? ShareInbox.InboxError) == .tooLarge { tooLarge = true }
                 failed = true
             }
         }
         if saved > 0 { AppGroup.postInboxDidChange() }
-        phase = saved > 0 ? .saved(count: saved) : (failed ? .failed : .unsupported)
+        phase = saved > 0 ? .saved(count: saved) : (tooLarge ? .tooLarge : (failed ? .failed : .unsupported))
     }
 
     /// Copies one attachment into the staging folder; returns its file name.
-    private static func stage(_ provider: NSItemProvider, as kind: ShareInbox.IncomingKind, inbox: ShareInbox, staging: URL, index: Int) async throws -> String? {
+    private static func stage(_ provider: NSItemProvider, as kind: ShareInbox.IncomingKind, inbox: ShareInbox, staging: URL, index: Int, sharedSoFar: Int) async throws -> String? {
         switch kind {
         case .text:
             let data: Data? = try await withCheckedThrowingContinuation { continuation in
@@ -112,7 +121,7 @@ final class ShareModel {
                 }
             }
             guard let data, !data.isEmpty else { return nil }
-            return try inbox.stage(data: data, fileExtension: "txt", into: staging, index: index)
+            return try inbox.stage(data: data, fileExtension: "txt", into: staging, index: index, sharedSoFar: sharedSoFar)
         case .pdf, .image:
             let type: UTType = kind == .pdf ? .pdf : .image
             return try await withCheckedThrowingContinuation { continuation in
@@ -127,7 +136,7 @@ final class ShareModel {
                         return
                     }
                     do {
-                        continuation.resume(returning: try inbox.stage(copyOf: url, into: staging, index: index))
+                        continuation.resume(returning: try inbox.stage(copyOf: url, into: staging, index: index, sharedSoFar: sharedSoFar))
                     } catch {
                         continuation.resume(throwing: error)
                     }
@@ -182,7 +191,7 @@ struct ShareConfirmationView: View {
         .sensoryFeedback(trigger: model.phase) { _, phase in
             switch phase {
             case .saved: .success
-            case .failed, .unsupported: .warning
+            case .failed, .unsupported, .tooLarge: .warning
             case .working: nil
             }
         }
@@ -204,7 +213,7 @@ struct ShareConfirmationView: View {
             ProgressView().controlSize(.large).opacity(showsProgress ? 1 : 0)
         case .saved:
             Image(systemName: "checkmark.circle.fill")
-        case .unsupported, .failed:
+        case .unsupported, .failed, .tooLarge:
             Image(systemName: "exclamationmark.circle.fill")
         }
     }
@@ -212,7 +221,7 @@ struct ShareConfirmationView: View {
     private var tint: Color {
         switch model.phase {
         case .saved: .green
-        case .unsupported, .failed: .orange
+        case .unsupported, .failed, .tooLarge: .orange
         case .working: .secondary
         }
     }
@@ -223,6 +232,7 @@ struct ShareConfirmationView: View {
         case .saved: "Trimis în Dosar cu Șină"
         case .unsupported: "Nu pot primi asta"
         case .failed: "Nu s-a trimis"
+        case .tooLarge: "Fișierul e prea mare"
         }
     }
 
@@ -232,6 +242,7 @@ struct ShareConfirmationView: View {
         case .saved: "Îl verifici când deschizi aplicația."
         case .unsupported: "Pot primi poze, PDF-uri și text. Trimite factura sau actul ca poză sau PDF."
         case .failed: "Telefonul nu mi-a dat fișierul. Încearcă din nou din aplicația din care l-ai trimis."
+        case .tooLarge: "Trimite actele câte unul, sau ca poze în loc de un PDF mare."
         }
     }
 }

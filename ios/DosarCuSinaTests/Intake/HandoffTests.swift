@@ -27,6 +27,25 @@ struct ShareInboxTests {
         #expect(plan[0].indices.count == ShareInbox.maxFiles)
     }
 
+    @Test func oversizedFilesAndSharesAreRefused() throws {
+        #expect(throws: ShareInbox.InboxError.tooLarge) {
+            try ShareInbox.checkRoom(for: ShareInbox.maxFileBytes + 1, sharedSoFar: 0)
+        }
+        #expect(throws: ShareInbox.InboxError.tooLarge) {
+            try ShareInbox.checkRoom(for: 1_000, sharedSoFar: ShareInbox.maxShareBytes)
+        }
+        try ShareInbox.checkRoom(for: ShareInbox.maxFileBytes, sharedSoFar: 0)
+
+        let folder = try temporaryFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let inbox = ShareInbox(directory: folder)
+        let staging = try inbox.makeStagingFolder()
+        #expect(throws: ShareInbox.InboxError.tooLarge) {
+            try inbox.stage(data: Data("x".utf8), fileExtension: "txt", into: staging, index: 0, sharedSoFar: ShareInbox.maxShareBytes)
+        }
+        #expect(try FileManager.default.contentsOfDirectory(atPath: staging.path()).isEmpty, "Nothing is written when refused")
+    }
+
     @Test func committedItemsAreListedReadAndRemoved() throws {
         let folder = try temporaryFolder()
         defer { try? FileManager.default.removeItem(at: folder) }

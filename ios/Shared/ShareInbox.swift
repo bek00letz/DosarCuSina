@@ -57,6 +57,10 @@ public struct ShareInbox: Sendable {
 
     /// Most files accepted from one share, so a huge selection can't fill the phone.
     public static let maxFiles = 20
+    /// Largest single file accepted. A long scanned contract stays well under it.
+    public static let maxFileBytes = 40 * 1024 * 1024
+    /// Most bytes one share may add to the inbox, across all its files.
+    public static let maxShareBytes = 150 * 1024 * 1024
 
     public let directory: URL
 
@@ -111,6 +115,18 @@ public struct ShareInbox: Sendable {
 
     public enum InboxError: Error, Equatable {
         case nothingToSave
+        case tooLarge
+    }
+
+    /// Throws `tooLarge` when a file of `bytes` would pass the per-file limit, or
+    /// the share's running total (`sharedSoFar`) would pass the per-share limit.
+    public static func checkRoom(for bytes: Int, sharedSoFar: Int) throws {
+        guard bytes <= maxFileBytes, sharedSoFar + bytes <= maxShareBytes else { throw InboxError.tooLarge }
+    }
+
+    /// The size of a staged file, for the share's running total.
+    public static func byteCount(of name: String, in staging: URL) -> Int {
+        (try? staging.appending(path: name).resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
     }
 
     /// A private folder to copy incoming files into before they are committed.
@@ -123,7 +139,9 @@ public struct ShareInbox: Sendable {
 
     /// Copies a file into a staging folder under a safe name. Returns the name used.
     @discardableResult
-    public func stage(copyOf source: URL, into staging: URL, index: Int) throws -> String {
+    public func stage(copyOf source: URL, into staging: URL, index: Int, sharedSoFar: Int = 0) throws -> String {
+        let size = (try? source.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+        try Self.checkRoom(for: size, sharedSoFar: sharedSoFar)
         let name = Self.safeName(index: index, extension: source.pathExtension)
         let target = staging.appending(path: name)
         try FileManager.default.copyItem(at: source, to: target)
@@ -133,7 +151,8 @@ public struct ShareInbox: Sendable {
 
     /// Writes bytes into a staging folder. Returns the name used.
     @discardableResult
-    public func stage(data: Data, fileExtension: String, into staging: URL, index: Int) throws -> String {
+    public func stage(data: Data, fileExtension: String, into staging: URL, index: Int, sharedSoFar: Int = 0) throws -> String {
+        try Self.checkRoom(for: data.count, sharedSoFar: sharedSoFar)
         let name = Self.safeName(index: index, extension: fileExtension)
         try data.write(to: staging.appending(path: name), options: [.atomic, .completeFileProtection])
         return name
