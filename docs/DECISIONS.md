@@ -15,6 +15,30 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 - **Decided:** "Citește mai bine cu <provider>" is offered whenever a provider is set up, whatever the phone read; for identity documents the line naming the provider and linking its terms stays. A new setting, "Citește automat când nu sunt sigur", off by default, has the provider read right after a weak phone reading: an unsure kind, an identity document without its essentials, a value that failed its check or a cross-check, little text, or a kind only a provider's format named.
 - **Why:** a confident wrong reading on the phone (an RCA policy taken for a bill) used to hide the button, stop the model from changing the kind, and grade the model's correct answer against the phone's misread text. The more expensive reading the person chose to pay for must always be able to do better; only checks and the person themselves outrank it.
 
+### Number fields change only while the person types
+- **Decided:** a number or money field turns text into a value only while the person is typing in it. Showing a stored value never feeds back into it.
+- **Why:** the field read its own formatted text back into the value, and a format and a read under different number conventions compounded: a car's 45.724 km became 457 after one edit. Rounding rules or a longer field would only have hidden it.
+
+### A corrected kind brings what depends on it
+- **Decided:** when the person changes a document's kind in the review, its deadline, place, title, name and reminder to pay follow the new kind, unless they already chose those themselves. Routing and the blueprint are worked out again from the new kind.
+- **Why:** an RCA policy read as a bill and corrected by hand was saved without its expiry deadline: the kind changed, but nothing that depends on it did.
+
+### Bill readers claim only bills
+- **Decided:** a provider's known bill format (Digi, ENGIE, E.ON…) names the kind only when the classifier agrees or isn't sure, and providers are matched as whole words.
+- **Why:** an RCA policy mentioning a word inside a provider's name was read as a Digi bill. A specialised reader is strong evidence for its own kind, not for every page that happens to share a word.
+
+### Each car policy keeps its own details
+- **Decided:** RCA and CASCO each have their own insurer, policy number and claims phone on the vehicle ("Telefon daune RCA", "Telefon daune CASCO"). A policy whose cover can't be told isn't written into either. Built-in catalog version 7.
+- **Why:** a CASCO policy filled the RCA fields, so the number to call after an accident was the wrong one.
+
+### Bill lines: only real lines, and the person can fix them
+- **Decided:** line items ("Ce s-a făcut") belong only on service invoices, receipts, veterinary records and unknown documents. A line is kept only when it reads like one: short, with letters, and with an amount or a known part. In the review each line can be corrected or removed, a line added, or all removed.
+- **Why:** a CASCO policy's terms came through as dozens of "lines", and there was no way to remove them before saving.
+
+### A photo already in the binder moves to where it's added now
+- **Decided:** filing a photo that's already kept moves the existing document to the new place, with what was read, instead of refusing or keeping two copies.
+- **Why:** "Adaugă poza actului" with a photo added before saved nothing; the person had no way to know why.
+
 ### Adding a document for a person, photo first
 - **Decided:** adding a document from a household member starts with three choices, the person already chosen: "Fotografiază", "Din poze", "Scriu eu". A photo goes through capture and becomes one of that person's documents whatever its kind. "Scriu eu" is one screen: the type in big rows, a variant only where the type has real ones, a name that comes by itself ("Cazier judiciar – Manole Corina"), the expiry with its reminder said plainly, and "Salvează". There is no separate deadlines step: the reminder comes from the type's profile and can be changed on the deadline page. Both land on the document's page, which asks for the picture when there is none.
 - **Why:** the old way asked for a name the type already gave, then a deadlines step, and only then let the person add the picture. The picture is what people have in hand, and every extra step is a place to give up.
