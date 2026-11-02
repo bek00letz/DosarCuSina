@@ -91,19 +91,27 @@ to update the app, and imports version 2 through a converter.
 always shown in that order. When the key is missing, readers use
 `upcoming, documents, history, people, money, keyFacts`.
 
-Built-in keys: `vehicle`, `home`, `documents`, `pet`, `health`, `warranty`,
-`subscription`, `other`, `bike`, `plants`, `rental`, `espresso`. Custom keys
+Built-in keys: `vehicle`, `home`, `documents`, `pet`, `health`, `purchase`,
+`subscription`, `other`, `bike`, `plants`, `tenancy`, `member`, `espresso`.
+
+Keys from earlier builds:
+
+- **`warranty`:** became `purchase`. Readers move such assets over and rename their fields (`warranty.purchaseDate` → `purchase.date`, `warranty.expiry` → `purchase.warrantyUntil`, other `warranty.*` → `purchase.*`).
+- **`rental`:** retired. If assets still use it, readers keep it as a custom category. Custom keys
 start with `custom.`. For a built-in template, a reader keeps its own
 definition unless the archive's `version` is higher, and always applies the
 household preferences (`homeOrder`, `isOnHome`, `isSensitive`).
 
 - **Section:** `key`, `title`, `fields`.
-- **Field:** `key`, `label`, `type`, `role`?, `isEssential`, `isSensitive`, `options`?, `unit`?, `placeholder`?.
+- **Field:** `key`, `label`, `type`, `role`?, `isEssential`, `isSensitive`, `options`?, `unit`?, `placeholder`?, `defaultValue`?, `derivation`?.
+  - **`defaultValue`:** a field value (see below), filled in when an asset is created and the field is empty. An example is `{"type": "number", "value": 24}` for warranty months.
+  - **`derivation`:** `{"type": "addMonths", "date": "purchase.date", "months": "purchase.warrantyMonths"}`. The value is worked out again whenever one of its inputs changes, or while the field is empty. A value the person sets by hand stays until an input changes.
   - **Options:** `[{"key": "fuel.diesel", "label": "Motorină", "aliases": ["Diesel"]}]`. Readers also accept a plain array of strings, from older definitions, and use each string as both key and label.
   - **Types:** `text`, `longText`, `number`, `money`, `date`, `expiryDate`, `toggle`, `choice`, `multiChoice`, `url`, `phone`, `email`, `address`, `plate`, `vin`, `microchip`, `iban`, `metric`.
   - **Roles:** `identifier`, `subtitle`, `heroMetric`, `keyFact`, `documentNumber`, `holder`, `issuer`, `expiryDate`, `startDate`, `purchaseDate`, `purchasePrice`, `retailer`, `warrantyUntil`, `location`.
 - **Component:** `key`, `name`, `group`, `synonyms`.
-- **Blueprint:** `key`, `title`, `kind`, `recurrence`, `firstDue`, `reminders`, `reminderVariants`?, `estimatedCost`?, `isSuggested`, `note`?.
+- **Blueprint:** `key`, `title`, `kind`, `recurrence`, `firstDue`, `reminders`, `reminderVariants`?, `appliesWhen`?, `estimatedCost`?, `isSuggested`, `note`?.
+  - **`appliesWhen`:** `{"field": "subscription.cycle", "oneOf": ["billing.yearly"]}`. The blueprint is offered only when the asset's value is one of these keys.
 
 ### Recurrence
 
@@ -191,6 +199,12 @@ Built-in option keys:
 `estimatedCost`?, `provider`?, `reference`?, `status`
 (`active|paused|done|archived`), `snoozedUntil`?, `isExample`, `createdAt`,
 `updatedAt`.
+
+**Household obligations** have no `assetId`. The one in use today is the yearly rental income declaration:
+
+- **`blueprintKey`:** `household.rentalDeclaration`.
+- **Due:** 25 May.
+- **Lifecycle:** it exists exactly while at least one `tenancy` asset exists; readers recreate or remove it after import.
 
 ### History entry (`data/history.json`)
 

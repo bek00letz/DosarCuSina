@@ -99,7 +99,13 @@
           }
         },
         "unit": { "type": "string" },
-        "placeholder": { "type": "string" }
+        "placeholder": { "type": "string" },
+        "defaultValue": { "$ref": "#/$defs/fieldValue" },
+        "derivation": {
+          "type": "object",
+          "required": ["type"],
+          "properties": { "type": { "const": "addMonths" }, "date": { "type": "string" }, "months": { "type": "string" } }
+        }
       }
     },
     "blueprint": {
@@ -119,6 +125,11 @@
             "field": { "type": "string" },
             "variants": { "type": "object", "additionalProperties": { "$ref": "#/$defs/reminderProfile" } }
           }
+        },
+        "appliesWhen": {
+          "type": "object",
+          "required": ["field", "oneOf"],
+          "properties": { "field": { "type": "string" }, "oneOf": { "type": "array", "items": { "type": "string" } } }
         },
         "estimatedCost": { "$ref": "#/$defs/money" },
         "isSuggested": { "type": "boolean" },
