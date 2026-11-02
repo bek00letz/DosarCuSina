@@ -107,7 +107,8 @@ public enum DeepLink {
 }
 
 /// Holds a route that arrived from outside the UI (a notification tap, a
-/// widget, a URL) until the screen hierarchy consumes it.
+/// widget, a URL) until the screen hierarchy consumes it. While the app lock is
+/// closed nothing is handed out: links and opened files wait until unlocking.
 @MainActor
 @Observable
 public final class AppNavigator {
@@ -117,7 +118,11 @@ public final class AppNavigator {
     /// A `.dosar` file opened from Files, Mail or AirDrop, waiting for the import screen.
     public private(set) var pendingArchiveURL: URL?
 
-    public init() {}
+    @ObservationIgnored private let isAppLocked: @MainActor () -> Bool
+
+    public init(isAppLocked: @escaping @MainActor () -> Bool = { BiometricVaultManager.shared.isAppLocked }) {
+        self.isAppLocked = isAppLocked
+    }
 
     public func open(_ route: AppRoute) {
         pendingRoute = route
@@ -136,14 +141,18 @@ public final class AppNavigator {
         return true
     }
 
-    /// Returns the pending archive once and clears it.
+    /// Returns the pending archive once and clears it. While the app is locked
+    /// it stays pending and nothing is returned.
     public func consumeArchiveURL() -> URL? {
+        guard !isAppLocked() else { return nil }
         defer { pendingArchiveURL = nil }
         return pendingArchiveURL
     }
 
-    /// Returns the pending route once and clears it.
+    /// Returns the pending route once and clears it. While the app is locked it
+    /// stays pending, so a link or a notification opens only after unlocking.
     public func consume() -> AppRoute? {
+        guard !isAppLocked() else { return nil }
         defer { pendingRoute = nil }
         return pendingRoute
     }
