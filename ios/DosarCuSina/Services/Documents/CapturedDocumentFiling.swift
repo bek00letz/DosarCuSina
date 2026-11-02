@@ -40,6 +40,8 @@ extension ProcessedDocument {
 extension AttachmentActions {
     /// Files a capture the person confirmed. The processed pages move from the
     /// capture store into an `Attachment`; nothing stays behind in capture.
+    /// The pages leave the capture store only once the save succeeded, so a
+    /// failed save can be retried with everything still there.
     @discardableResult
     public func fileCaptured(
         documentID: UUID,
@@ -53,9 +55,11 @@ extension AttachmentActions {
         historyEntry: HistoryEntry? = nil,
         provider: Provider? = nil
     ) async throws -> Attachment? {
-        guard let processed = await store.take(id: documentID) else { return nil }
+        guard let processed = await store.processed(id: documentID) else { return nil }
         let draft = processed.draft(title: title, kind: kind, extractedText: extractedText, documentDate: documentDate)
-        return try file(draft, asset: asset, obligation: obligation, historyEntry: historyEntry, provider: provider)
+        let attachment = try file(draft, asset: asset, obligation: obligation, historyEntry: historyEntry, provider: provider)
+        await store.discard(id: documentID)
+        return attachment
     }
 
     /// The id of a filed document with this fingerprint, for capture's duplicate check.
