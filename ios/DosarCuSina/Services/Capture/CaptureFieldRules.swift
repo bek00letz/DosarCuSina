@@ -15,6 +15,10 @@ extension CaptureDocumentKind {
         .birthDate, .sex, .personalNumber, .issueDate, .expiryDate, .issuer, .documentVariant,
     ]
 
+    /// Kinds whose documents list what was done or bought, line by line. A policy,
+    /// a utility bill or a report has no "Ce s-a făcut", whatever a model reads into it.
+    static let kindsWithLineItems: Set<CaptureDocumentKind> = [.serviceInvoice, .fiscalReceipt, .veterinaryRecord, .other]
+
     /// Whether a field may appear on this kind of document.
     func allows(_ key: CaptureFieldKey) -> Bool {
         switch self {
@@ -23,7 +27,22 @@ extension CaptureDocumentKind {
         case .drivingLicence:
             return Self.identityKeys.contains(key) || key == .licenceCategories
         default:
+            if key == .lineItems { return Self.kindsWithLineItems.contains(self) }
             return !Self.personalKeys.contains(key)
+        }
+    }
+
+    /// The longest description a line item can have; anything longer is prose
+    /// (terms, consent clauses), not something done or bought.
+    static let lineItemMaxLength = 90
+
+    /// Keeps only lines that look like lines: a short description with letters, and
+    /// an amount above zero or a part the catalog knows.
+    static func realLineItems(_ items: [CaptureLineItem]) -> [CaptureLineItem] {
+        items.filter { item in
+            let description = item.description.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard description.count <= lineItemMaxLength, description.contains(where: \.isLetter) else { return false }
+            return (item.amount?.amount ?? 0) > 0 || item.componentKey != nil
         }
     }
 

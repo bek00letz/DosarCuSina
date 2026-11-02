@@ -253,7 +253,13 @@ public final class CaptureEngine: Sendable {
         // Dates checked against each other, then only fields that belong on this kind
         // of document, whichever tier found them.
         fields = CaptureConsistency.resolve(fields, kind: kind, today: today).fields
-        fields = Self.derived(fields).filter { kind.allows($0.key) }
+        fields = Self.derived(fields).filter { kind.allows($0.key) }.compactMap { field in
+            // Lines that aren't lines (prose, zero amounts) go, whichever tier read them.
+            guard case .lineItems(let items) = field.value else { return field }
+            let real = CaptureDocumentKind.realLineItems(items)
+            guard !real.isEmpty else { return nil }
+            return CaptureField(key: field.key, value: .lineItems(real), confidence: field.confidence, sourceText: field.sourceText, tier: field.tier)
+        }
 
         // A card read from its front alone: the back carries the zone that confirms it.
         if kind == .identityCard, !analysis.hasMachineReadableZone, case .images(let images) = request.payload, images.count == 1 {
