@@ -55,9 +55,14 @@ struct DSActionValueRow: View {
 
     @State private var copied = 0
     @Environment(\.openURL) private var openURL
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        HStack(spacing: DS.Space.s) {
+        // At accessibility sizes the button moves under the value, so the value keeps the full width.
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: DS.Space.s))
+            : AnyLayout(HStackLayout(spacing: DS.Space.s))
+        layout {
             VStack(alignment: .leading, spacing: 2) {
                 title.dsFont(.footnote)
                 Text(verbatim: value)
@@ -66,7 +71,7 @@ struct DSActionValueRow: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             Button(action: perform) {
-                Label(action == .copy ? "Copiază" : "Sună", systemImage: action == .copy ? "doc.on.doc" : "phone.fill")
+                Label(action == .copy ? LocalizedStringKey("Copiază") : LocalizedStringKey("Sună"), systemImage: action == .copy ? "doc.on.doc" : "phone.fill")
                     .font(.subheadline.weight(.semibold))
                     .frame(minHeight: 44)
             }
