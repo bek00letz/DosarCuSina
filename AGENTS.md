@@ -103,12 +103,13 @@ A field of type `secret` (an electronic identity card's PIN codes) follows one s
 | Prepare a photo for reading (find the card, flatten, turn, enlarge; the retry view) | `DocumentImageNormalizer` | [CaptureVision.swift](ios/DosarCuSina/Services/Capture/CaptureVision.swift) |
 | When a document's dates can fall, and the century of two-digit years | `.within` rules in `CaptureConsistency`, identity windows in `IdentityTemplates` | [CaptureConsistency.swift](ios/DosarCuSina/Services/Capture/CaptureConsistency.swift) |
 | AI providers: configuration, keys, one adapter per provider | `AIProviderSettings`, `AIProvider.adapter`, `AIClient` | [Services/AI/](ios/DosarCuSina/Services/AI/) |
+| Decide between readers: which kind, which value when they disagree, what is offered beside it, and when a reading is weak | `ReadingArbiter` | [Services/Capture/ReadingArbiter.swift](ios/DosarCuSina/Services/Capture/ReadingArbiter.swift) |
 | Which fields a kind of document may carry, after every tier | `CaptureFieldRules` | [Services/Capture/CaptureFieldRules.swift](ios/DosarCuSina/Services/Capture/CaptureFieldRules.swift) |
 | Read label–value layouts (ID cards, licences, certificates) | `LabelledLayout`, with a label table per document kind | [Services/Capture/LabelledLayout.swift](ios/DosarCuSina/Services/Capture/LabelledLayout.swift) |
 | Save a reviewed capture | `CaptureFiler`, which only calls the actions above | [Views/Capture/Filing/CaptureFiler.swift](ios/DosarCuSina/Views/Capture/Filing/CaptureFiler.swift) |
 | Things shared from other apps | `ShareInbox` (written by the extension), `IntakeInbox` (read by the app) | [ios/Shared/ShareInbox.swift](ios/Shared/ShareInbox.swift), [Views/Capture/IntakeInbox.swift](ios/DosarCuSina/Views/Capture/IntakeInbox.swift) |
 
-A new document layout is a new label table, not new reading code. A new field rule goes in `CaptureFieldRules`, never inside one tier. A new AI provider is a new adapter; grounding and checks stay shared.
+A new document layout is a new label table, not new reading code. A new field rule goes in `CaptureFieldRules`, never inside one tier. A new AI provider is a new adapter; grounding and checks stay shared. Which reader wins is decided only in `ReadingArbiter`, never by the order the tiers run in.
 
 ## Navigation
 

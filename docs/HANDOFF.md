@@ -6,7 +6,7 @@ A living document: where work stands, so the next person or agent can pick up. K
 
 ## Current state
 
-The template-engine overhaul (waves 1 and 2) is merged. The app builds for iOS 26 with Swift 6 and has more than 440 tests in `ios/DosarCuSinaTests`.
+The template-engine overhaul (waves 1 and 2) is merged. The app builds for iOS 26 with Swift 6 and has more than 470 tests in `ios/DosarCuSinaTests`.
 
 | Area | What's built |
 | :--- | :--- |
@@ -15,7 +15,7 @@ The template-engine overhaul (waves 1 and 2) is merged. The app builds for iOS 2
 | Sections | Heroes per style (vehicle, home, document, pet, standard), the nine pockets in one global order, editing with discard guard, delete that asks about filed records, "Mută la…" for anything filed under something else, "Adaugă o secțiune" including custom categories. |
 | Documents | Added for a person photo first or on one screen ("Scriu eu"), with variants as data on the document type; "Adaugă poza actului" on a document without a picture; the electronic identity card's two PIN codes as hidden secret fields. |
 | Urmează | Acum / Curând / Mai târziu from the attention model; the obligation page with what to bring, actions, reminder setup and "add to Calendar". |
-| Adaugă and capture | Camera, photos, files, typing; the capture engine with all four tiers, per-kind field rules, the label-layout reader (Romanian ID card front, both layouts); review and filing; the visit flow with component checklists. |
+| Adaugă and capture | Camera, photos, files, typing; the capture engine with all four tiers ranked by evidence (`ReadingArbiter`), per-kind field rules, the label-layout reader (Romanian ID card front, both layouts); the AI provider as a second opinion, on a tap or automatically after a weak reading; review with other readers' values offered beside each field and the kind; filing; the visit flow with component checklists. |
 | Share extension and inbox | Share from Mail, WhatsApp, Photos and Files into *De verificat*; the practice share in onboarding. |
 | Widgets | Home Screen (small, medium) and Lock Screen (inline, rectangular), with "Gata". |
 | Search | Diacritic-insensitive search over the whole binder, locked sections show titles only. |
@@ -67,6 +67,13 @@ Newest first. Copy this template:
 ```
 
 Never write security findings, crash traces or local paths here. See [SECURITY.md](../SECURITY.md).
+
+### 2026-11-02 — owner (with Claude) — `claude/reading-arbitration`
+- **Did:** readers ranked by evidence in one place, `ReadingArbiter` (the person's edits, then checked values, then the AI provider, then the phone's patterns, then Apple's model). The AI provider reads the whole page as a second opinion and names the kind; its kind replaces the phone's unless a checked zone, a payment barcode or a provider's format the classifier agrees with backs it. AI values missing from the phone's text are kept with "Verifică". What a reader read differently is offered beside the value ("Pe telefon am citit", "Pe telefon părea", "Gemini a citit", "Pe spatele actului scrie"), one mechanism for all. "Citește mai bine cu …" is always offered with a provider, and a new setting, "Citește automat când nu sunt sigur" (off by default), reads weak readings by itself. Reading again (the back of a card, or the AI) keeps the review on screen and merges into it.
+- **Tests:** new `ReadingArbiterTests`; capture and AI suites while working; the whole suite once on iPhone 17 (iOS 26.4). The privacy check passes across the branch.
+- **Left open:** not tried with a live provider or by eye in the simulator; the automatic reading doesn't run for invoices that open the visit flow; one AI date that repeats a phone label's date under another key now wins the consistency rule (the AI ranks above labels), so the label's date goes.
+- **Next:** try a misread RCA policy and an angled identity card with a real key; watch how often "Citește automat" fires on ordinary bills.
+- **Decisions:** "Reading by evidence: the AI provider as a second opinion" in DECISIONS.md, replacing the rule in "What a cloud provider's answer is worth".
 
 ### 2026-11-02 — owner (with Claude) — `claude/model-picker`
 - **Did:** a model picker in Settings → Inteligență artificială: the recommended model, the models the key can use (each provider's list request, one shared filter), or a name typed by hand. Listing works before a model is chosen (`AIProviderSettings.connection`).
