@@ -1,3 +1,5 @@
+> **Archived.** This report describes the first test harness, now kept in `tests/legacy/` and no longer run. The current tests are the `DosarCuSinaTests` target, run with `./tests/run_tests.sh` (see the README).
+
 # 🧪 TEST_READY — Dosar cu Șină Automated Test Suite
 
 > **Status**: Ready for Verification & Integration  
@@ -130,7 +132,7 @@ python3 tests/android/run_room_tests.py
 ==================================================================
       DOSAR CU ȘINĂ — AUTOMATED MULTI-PLATFORM TEST RUNNER        
 ==================================================================
-Workspace: /Users/play/Developer/DosarCuSina
+Workspace: <repository root>
 Date:      2026-10-31T21:15:14Z
 
 ▶ [1/2] Compiling & Running iOS Swift Test Suites...
