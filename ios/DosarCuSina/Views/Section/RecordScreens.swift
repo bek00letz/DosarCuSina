@@ -290,6 +290,7 @@ private struct DocumentPreview: View {
 
     /// The page opened full screen, with pinch and double-tap to zoom.
     @State private var openPage: OpenPage?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private struct OpenPage: Identifiable {
         let index: Int
@@ -322,7 +323,7 @@ private struct DocumentPreview: View {
     }
 
     private func pageImage(_ image: UIImage, index: Int) -> some View {
-        Button { openPage = OpenPage(index: index) } label: {
+        Button { DocumentPagesViewer.present(reduceMotion: reduceMotion) { openPage = OpenPage(index: index) } } label: {
             Image(uiImage: image)
                 .resizable()
                 .scaledToFit()

@@ -297,6 +297,19 @@ enum CaptureMapping {
         }
     }
 
+    /// A value as a person reads it: "SP1236343", "6 aprilie 2035".
+    static func displayText(_ value: CaptureValue) -> String {
+        switch value {
+        case .text(let text): return text
+        case .day(let day):
+            return day.date().map { $0.formatted(.dateTime.day().month(.wide).year().locale(.dosarDefault)) } ?? day.description
+        case .money(let amount): return Self.money(amount).formattedCompact()
+        case .number(let number): return NSDecimalNumber(decimal: number).stringValue
+        case .metric(let number, let unit): return "\(NSDecimalNumber(decimal: number).stringValue) \(unit)"
+        case .lineItems(let items): return items.map(\.description).joined(separator: ", ")
+        }
+    }
+
     // MARK: Holders
 
     /// The holder as printed on Romanian documents, surname first, in title case with

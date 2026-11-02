@@ -46,6 +46,12 @@ enum IdentityDocumentReader {
                     add(field.key, .day(day), labelled, source)
                     continue
                 }
+            } else if case .categories = field.format {
+                // Categories are printed in boxes along the label's row, each its own fragment.
+                if let found = layout.restOfRow(for: key) ?? layout.value(for: key), let parsed = parse(found.value, as: .categories) {
+                    add(field.key, parsed.value, labelled, found.source)
+                    continue
+                }
             } else if let found = layout.found(for: key), let parsed = parse(found.value, as: field.format) {
                 add(field.key, parsed.value, parsed.passed ? labelled : failedFormat, found.source, tier: parsed.tier)
                 continue
@@ -69,6 +75,11 @@ enum IdentityDocumentReader {
     }
 
     // MARK: - Formats
+
+    /// The EU driving licence categories, plus the national tractor and tram ones.
+    static let drivingCategories: Set<String> = [
+        "AM", "A1", "A2", "A", "B1", "B", "BE", "C1", "C1E", "C", "CE", "D1", "D1E", "D", "DE", "TR", "TB", "TV",
+    ]
 
     struct Parsed {
         let value: CaptureValue
@@ -106,8 +117,12 @@ enum IdentityDocumentReader {
         case .text:
             return value.contains(where: \.isLetter) ? Parsed(value: .text(value), passed: true) : nil
         case .categories:
-            guard TextPattern.first(#"^[A-Z0-9 ,/+]{1,40}$"#, in: value, caseInsensitive: false) != nil else { return nil }
-            return Parsed(value: .text(value), passed: true)
+            // "[A] [B] [C]", "A B C" or "A,B,C" → "A, B, C"; only real EU categories count.
+            let tokens = value.uppercased()
+                .components(separatedBy: CharacterSet.alphanumerics.inverted)
+                .filter { !$0.isEmpty }
+            guard !tokens.isEmpty, tokens.allSatisfy(drivingCategories.contains) else { return nil }
+            return Parsed(value: .text(tokens.joined(separator: ", ")), passed: true)
         }
     }
 

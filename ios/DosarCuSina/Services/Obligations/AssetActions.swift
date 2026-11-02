@@ -54,7 +54,19 @@ public final class AssetActions {
         }
     }
 
-    /// Creates the asset and the selected obligations in one save.
+    /// A parent made together with the asset: a new household member and their first document.
+    public struct NewParent {
+        public var name: String
+        public var template: CategoryTemplate
+
+        public init(name: String, template: CategoryTemplate) {
+            self.name = name
+            self.template = template
+        }
+    }
+
+    /// Creates the asset and the selected obligations in one save. With `newParent`, the
+    /// parent is created in the same save, so a failure leaves neither behind.
     @discardableResult
     public func create(
         name: String,
@@ -63,12 +75,19 @@ public final class AssetActions {
         notes: String? = nil,
         obligations: [PlannedObligation] = [],
         parent: Asset? = nil,
+        newParent: NewParent? = nil,
         isExample: Bool = false
     ) throws -> Asset {
         let prepared = values.normalizingChoices(for: template.definition).applyingRules(of: template.definition, previous: nil, calendar: calendar)
         let asset = Asset(name: name, templateKey: template.key, values: prepared, notes: notes, isExample: isExample)
         context.insert(asset)
-        asset.parent = parent
+        if let newParent {
+            let holder = Asset(name: newParent.name, templateKey: newParent.template.key, values: FieldValues(), notes: nil, isExample: isExample)
+            context.insert(holder)
+            asset.parent = holder
+        } else {
+            asset.parent = parent
+        }
         let today = CalendarDay(now(), calendar: calendar)
         do {
             for planned in obligations where planned.isSelected {

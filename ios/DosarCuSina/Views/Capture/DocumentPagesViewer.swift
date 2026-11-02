@@ -9,6 +9,8 @@ struct DocumentPagesViewer: View {
     @State private var selection: Int
     @State private var isZoomed = false
     @State private var dragOffset: CGFloat = 0
+    /// Whether the viewer has faded in (Reduce Motion only).
+    @State private var isShown = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -44,12 +46,40 @@ struct DocumentPagesViewer: View {
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button { dismiss() } label: { Text("Gata", comment: "Closes the full-screen page viewer.") }
+                    Button { close() } label: { Text("Gata", comment: "Closes the full-screen page viewer.") }
                 }
             }
             .onChange(of: selection) { isZoomed = false }
         }
         .preferredColorScheme(.dark)
+        // With Reduce Motion the cover appears without its slide (see `present`) and
+        // cross-fades in and out instead.
+        .opacity(reduceMotion && !isShown ? 0 : 1)
+        .presentationBackground(.clear)
+        .onAppear {
+            guard reduceMotion else { return }
+            withAnimation(.easeInOut(duration: 0.2)) { isShown = true }
+        }
+    }
+
+    /// Presents the viewer: with Reduce Motion, without the full-screen cover's slide.
+    @MainActor static func present(reduceMotion: Bool, _ show: () -> Void) {
+        guard reduceMotion else { return show() }
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction, show)
+    }
+
+    /// Closes the viewer: with Reduce Motion, a fade instead of the slide down.
+    private func close() {
+        guard reduceMotion else { return dismiss() }
+        withAnimation(.easeInOut(duration: 0.2)) {
+            isShown = false
+        } completion: {
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) { dismiss() }
+        }
     }
 
     private var backgroundOpacity: Double {
@@ -65,7 +95,7 @@ struct DocumentPagesViewer: View {
             }
             .onEnded { value in
                 if value.translation.height > closeDistance || value.predictedEndTranslation.height > closeDistance * 2.5 {
-                    dismiss()
+                    close()
                 } else {
                     withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { dragOffset = 0 }
                 }
