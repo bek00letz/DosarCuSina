@@ -34,6 +34,8 @@ Nothing at the moment.
 
 - **Capture doesn't know cazier, bank cards and the other document types.** A photo of one taken from a person is filed as one of their documents, without a type; the person picks it in Editează.
 
+- **A counter reading lower than the last one is kept as a new reading.** It should replace the wrong one as a correction; until then a mistyped kilometre reading stays in the vehicle's history and can skew estimates.
+
 - **iCloud sync** to the person's private iCloud. The schema is ready; the store is local only.
 - **Android port.** Paused; `android/` is the first version. The `.dosar` format is the contract.
 - **Password-protected export** of `.dosar` archives.
@@ -67,6 +69,13 @@ Newest first. Copy this template:
 ```
 
 Never write security findings, crash traces or local paths here. See [SECURITY.md](../SECURITY.md).
+
+### 2026-11-02 — owner (with Claude) — `claude/phone-fixes`
+- **Did:** fixes from trying the app on a phone. A photo already in the binder is moved to where it's added; value buttons (copy, show) stay on one line and move under the value when they don't fit; a passport's trilingual labels are no longer read as its authority; bill lines only on documents that list them, only real lines, and editable in the review; a bill reader claims a document only when the classifier agrees; RCA and CASCO keep their own details on the vehicle (catalog version 7); a corrected kind brings its deadline, place and title; number fields no longer shrink a stored value (45724 km became 457).
+- **Tests:** `DocumentPhotoTests`, `TrilingualLabelTests`, `LineItemRulesTests`, `PolicyFilingTests`, `NumberInputTests`; the whole suite on iPhone 17 (iOS 26.4). The privacy check passes.
+- **Left open:** a car whose kilometres were saved wrong keeps the wrong reading in its history (see "Known gaps").
+- **Next:** treat a counter reading lower than the last one as a correction.
+- **Decisions:** "Number fields change only while the person types", "A corrected kind brings what depends on it", "Bill readers claim only bills", "Each car policy keeps its own details", "Bill lines: only real lines, and the person can fix them", "A photo already in the binder moves to where it's added now".
 
 ### 2026-11-02 — owner (with Claude) — `claude/model-picker`
 - **Did:** a model picker in Settings → Inteligență artificială: the recommended model, the models the key can use (each provider's list request, one shared filter), or a name typed by hand. Listing works before a model is chosen (`AIProviderSettings.connection`).
