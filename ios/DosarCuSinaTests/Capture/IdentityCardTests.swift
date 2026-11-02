@@ -139,3 +139,34 @@ struct IdentityCardTests {
         #expect(CaptureDocumentKind.serviceInvoice.allows(.lineItems))
     }
 }
+
+@Suite("Labels printed in three languages")
+struct TrilingualLabelTests {
+
+    @Test("A label's translations after it are part of the label, not its value", arguments: [
+        ("/Authority/Autorité", ""),
+        ("/Authority/Autorité SPCEEPS EXEMPLU", "SPCEEPS EXEMPLU"),
+        (" / Authority / Autorité  SPCEEPS EXEMPLU", "SPCEEPS EXEMPLU"),
+        (" 12.03.2031", " 12.03.2031"),
+        (" SPCEEPS EXEMPLU", " SPCEEPS EXEMPLU"),
+    ])
+    func translationsAreDropped(rest: String, value: String) {
+        #expect(LabelledLayout<String>.droppingTranslations(rest).trimmingCharacters(in: .whitespaces) == value.trimmingCharacters(in: .whitespaces))
+    }
+
+    @Test func thePassportAuthorityIsReadUnderItsTrilingualLabel() {
+        let analysis = CaptureAnalyzer().analyze(text: """
+        ROMÂNIA PAȘAPORT PASSPORT PASSEPORT
+        Nume/Surname/Nom
+        EXEMPLU
+        Data eliberării/Date of issue/Date de délivrance
+        15.03.2022
+        Autoritatea/Authority/Autorité
+        SPCEEPS EXEMPLU
+        Data expirării/Date of expiry/Date d'expiration
+        15.03.2032
+        """, referenceDate: Date(timeIntervalSince1970: 1_793_577_600))
+        #expect(analysis.kind == .passport)
+        #expect(analysis.fields.first { $0.key == .issuer }?.value.text == "SPCEEPS EXEMPLU")
+    }
+}

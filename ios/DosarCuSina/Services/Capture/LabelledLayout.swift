@@ -195,9 +195,32 @@ struct LabelledLayout<Key: Hashable> {
         let nextLabel = (positionsByLine[position.line] ?? []).filter { $0.start > position.start }.map(\.start).min()
         let to = nextLabel.map { folded.distance(from: folded.startIndex, to: $0) } ?? original.count
         guard from < min(to, original.count) else { return nil }
-        let rest = String(original.dropFirst(from).prefix(min(to, original.count) - from))
+        let rest = Self.droppingTranslations(String(original.dropFirst(from).prefix(min(to, original.count) - from)))
             .trimmingCharacters(in: CharacterSet(charactersIn: " :/-.\t"))
         return rest.contains(where: { $0.isLetter || $0.isNumber }) ? rest : nil
+    }
+
+    /// A label's printed translations right after it belong to the label, not to the
+    /// value: "/Authority/Autorité" after "Autoritatea". Each "/" starts a translation,
+    /// which ends at the first word in capitals or with digits, where a value printed
+    /// on the same line begins ("…/Autorité SPCEEPS EXEMPLU").
+    static func droppingTranslations(_ rest: String) -> String {
+        var remaining = Substring(rest).drop { $0 == " " }
+        while remaining.first == "/" {
+            remaining = remaining.dropFirst().drop { $0 == " " }
+            while let word = remaining.split(separator: " ", maxSplits: 1).first.map({ $0.split(separator: "/").first ?? $0 }),
+                  !word.isEmpty, !isValueWord(word) {
+                remaining = remaining.dropFirst(word.count).drop { $0 == " " }
+            }
+        }
+        return String(remaining)
+    }
+
+    /// A word printed as a value rather than as a label: capitals, or digits.
+    private static func isValueWord(_ word: Substring) -> Bool {
+        let letters = word.filter(\.isLetter)
+        if word.contains(where: \.isNumber) { return true }
+        return letters.count >= 2 && letters.allSatisfy(\.isUppercase)
     }
 
     /// Everything on the label's row after it, up to the next label: the rest of its line and
