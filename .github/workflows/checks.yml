@@ -1,0 +1,97 @@
+# Runs on every pull request and every push to main:
+#   architecture-check  the rules in AGENTS.md (scripts/architecture-check.sh), the same
+#                       script the pre-commit hook runs
+#   build-and-test      builds the app with its widgets and share extension and runs
+#                       DosarCuSinaTests, through tests/run_tests.sh like a local run
+# The privacy check has its own workflow (privacy-check.yml).
+name: Checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# A newer push to the same pull request replaces the run in progress.
+concurrency:
+  group: checks-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  architecture-check:
+    name: architecture-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Check out the full history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Check the rules against their fixtures
+        run: scripts/architecture-check.sh --self-test
+
+      - name: Check the code
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [[ $EVENT != pull_request ]]; then
+            scripts/architecture-check.sh
+            exit
+          fi
+          # The labels are read now, not from the event, so a re-run sees a label added later.
+          labels=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/labels" --jq '.[].name')
+          if grep -qx architecture-exception <<<"$labels"; then
+            export ARCHITECTURE_EXCEPTIONS_APPROVED=true
+          fi
+          scripts/architecture-check.sh --base "$(git merge-base "$BASE_SHA" "$HEAD_SHA")"
+
+  build-and-test:
+    name: build-and-test
+    # The app uses the iOS 27 SDK, so it needs Xcode 27. GitHub keys its Mac images by
+    # Xcode major version; the standard size is free for public repositories.
+    runs-on: xcode-27
+    timeout-minutes: 60
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Show the Xcode and simulators in use
+        id: xcode
+        run: |
+          xcodebuild -version
+          xcrun simctl list runtimes available
+          echo "version=$(xcodebuild -version | tr '\n' ' ' | tr -cs 'A-Za-z0-9.' '-')" >> "$GITHUB_OUTPUT"
+
+      # Only the compiled system modules are kept: a fresh checkout rebuilds the app's
+      # own code anyway, and stale build products are a source of odd failures.
+      - name: Restore the module cache
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/DerivedData/ModuleCache.noindex
+          key: modules-${{ steps.xcode.outputs.version }}-${{ hashFiles('ios/DosarCuSina.xcodeproj/project.pbxproj') }}
+          restore-keys: modules-${{ steps.xcode.outputs.version }}-
+
+      - name: Build the app, widgets and share extension, and run the tests
+        env:
+          DERIVED_DATA_PATH: ${{ runner.temp }}/DerivedData
+          RESULTS_DIR: ${{ runner.temp }}/results
+        run: ./tests/run_tests.sh
+
+      - name: Keep the log and results of a failed run
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: ${{ runner.temp }}/results
+          retention-days: 7
+          if-no-files-found: ignore
