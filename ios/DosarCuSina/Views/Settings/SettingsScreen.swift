@@ -353,12 +353,6 @@ private struct AboutSettings: View {
 
     var body: some View {
         Section {
-            LabeledContent {
-                Text(verbatim: Bundle.main.shortVersion).monospacedDigit()
-            } label: {
-                Text("Versiunea", comment: "About: app version.")
-            }
-            .frame(minHeight: 44)
             VStack(alignment: .leading, spacing: DS.Space.xs) {
                 Text("Datele tale stau pe telefonul tău", comment: "About: privacy headline.")
                     .dsFont(.headline)
@@ -375,6 +369,8 @@ private struct AboutSettings: View {
             }
             .sheet(isPresented: $isShowingGallery) { DesignSystemGallery() }
             #endif
+            // Last, so it's easy to find: which build this phone runs, copyable.
+            DSActionValueRow(title: Text("Versiunea", comment: "About: app version and build."), value: BuildInfo.current.summary, action: .copy)
         } header: {
             Text("Despre", comment: "Settings section.")
         }

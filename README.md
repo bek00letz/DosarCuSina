@@ -47,6 +47,8 @@ On first launch the app is empty. Tap *Încarcă exemple* (load examples) to exp
 
 To run on your own iPhone, choose your team under Signing & Capabilities for the app, widget and share extension targets. You may need bundle identifiers and an App Group your team owns. Keep those changes out of your commits.
 
+Every build is stamped with a build number (the number of commits, so it only goes up) and the commit it came from, by `scripts/stamp-build-info.sh`. The app shows them at the bottom of Settings, under Despre: *Versiunea 1.0 (build 180) · 7754ec8*. Include that line when you report a problem.
+
 ## Tests
 
 ```sh
