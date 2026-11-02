@@ -1,16 +1,32 @@
 import Foundation
 import SwiftData
 import Observation
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// Opens the household database once and shares it with the app, App Intents
-/// and notification actions. A store that can't be opened never crashes the
-/// app: the state becomes `.failed` and the UI offers to retry or start fresh.
+/// and notification actions. A store that can't be opened never crashes the app:
+/// - while the phone hasn't been unlocked since it started (a launch in the
+///   background, say), the files can't be read yet: the state is
+///   `.waitingForUnlock` and the store opens again by itself once they can;
+/// - otherwise the state becomes `.failed` and the UI offers to retry or start fresh.
 @MainActor
 @Observable
 public final class PersistenceController {
     public enum State {
         case ready(ModelContainer)
-        case failed(String)
+        /// The phone hasn't been unlocked since it started; the store opens as soon as it is.
+        case waitingForUnlock
+        case failed(StoreFailure)
+    }
+
+    /// Why the store didn't open, in terms the recovery screen can act on.
+    public enum StoreFailure: Equatable, Sendable {
+        /// The phone is full.
+        case outOfSpace
+        /// Anything else: the file can't be read as it is.
+        case unreadable
     }
 
     public static let shared = PersistenceController()
@@ -24,22 +40,80 @@ public final class PersistenceController {
     }
 
     private let storeURL: URL
+    @ObservationIgnored private let isProtectedDataAvailable: @MainActor () -> Bool
+    @ObservationIgnored private let makeContainer: (URL) throws -> ModelContainer
+    @ObservationIgnored private var unlockObserver: (any NSObjectProtocol)?
 
-    public init(storeURL: URL = PersistenceController.defaultStoreURL) {
+    public convenience init(storeURL: URL = PersistenceController.defaultStoreURL) {
+        self.init(storeURL: storeURL, isProtectedDataAvailable: Self.systemProtectedDataAvailable, makeContainer: { try Self.makeContainer(storeURL: $0) })
+    }
+
+    init(
+        storeURL: URL,
+        isProtectedDataAvailable: @escaping @MainActor () -> Bool,
+        makeContainer: @escaping (URL) throws -> ModelContainer
+    ) {
         self.storeURL = storeURL
-        self.state = Self.open(at: storeURL)
+        self.isProtectedDataAvailable = isProtectedDataAvailable
+        self.makeContainer = makeContainer
+        self.state = .waitingForUnlock
+        open()
     }
 
     /// Tries to open the store again (for example after freeing space).
     public func retry() {
-        state = Self.open(at: storeURL)
+        open()
     }
 
     /// Moves the unreadable store aside (it is kept, renamed, next to the new
-    /// one) and opens an empty store.
+    /// one) and opens an empty store. Never while the phone's files are still
+    /// locked: then the store isn't broken, only waiting.
     public func startFresh() {
+        guard isProtectedDataAvailable() else { return open() }
         Self.moveStoreAside(at: storeURL)
-        state = Self.open(at: storeURL)
+        open()
+    }
+
+    /// The phone's files can be read now: open the store if it was waiting.
+    func protectedDataDidBecomeAvailable() {
+        if case .waitingForUnlock = state { open() }
+    }
+
+    private func open() {
+        do {
+            state = .ready(try makeContainer(storeURL))
+            stopWaiting()
+        } catch {
+            if !isProtectedDataAvailable() {
+                state = .waitingForUnlock
+                waitForUnlock()
+            } else {
+                state = .failed(SaveFailure.isOutOfSpace(error) ? .outOfSpace : .unreadable)
+                stopWaiting()
+            }
+        }
+    }
+
+    private func waitForUnlock() {
+        #if canImport(UIKit)
+        guard unlockObserver == nil else { return }
+        unlockObserver = NotificationCenter.default.addObserver(forName: UIApplication.protectedDataDidBecomeAvailableNotification, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.protectedDataDidBecomeAvailable() }
+        }
+        #endif
+    }
+
+    private func stopWaiting() {
+        if let unlockObserver { NotificationCenter.default.removeObserver(unlockObserver) }
+        unlockObserver = nil
+    }
+
+    private static func systemProtectedDataAvailable() -> Bool {
+        #if canImport(UIKit)
+        return UIApplication.shared.isProtectedDataAvailable
+        #else
+        return true
+        #endif
     }
 
     // MARK: Container
@@ -63,14 +137,6 @@ public final class PersistenceController {
             configuration = ModelConfiguration(schema: schema, url: storeURL ?? defaultStoreURL, cloudKitDatabase: .none)
         }
         return try ModelContainer(for: schema, migrationPlan: DosarMigrationPlan.self, configurations: [configuration])
-    }
-
-    private static func open(at url: URL) -> State {
-        do {
-            return .ready(try makeContainer(storeURL: url))
-        } catch {
-            return .failed(error.localizedDescription)
-        }
     }
 
     private static func moveStoreAside(at url: URL) {
