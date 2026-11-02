@@ -142,6 +142,7 @@ struct CaptureReviewView: View {
                             .font(.subheadline.weight(.medium))
                             .frame(minHeight: 44)
                     }
+                    .onChange(of: review.kind) { _, _ in review.kindChanged(assets: assets) }
                     Text(verbatim: tierNote)
                         .dsFont(.footnote)
                 }

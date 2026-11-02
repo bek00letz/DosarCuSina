@@ -76,7 +76,7 @@ struct CaptureReview: Identifiable {
     /// Filed under a household member, it becomes one of their documents whatever
     /// its kind (a cazier, a bank card), not a loose paper on the person.
     var filesAsPersonalDocument = false
-    let suggested: Suggested
+    var suggested: Suggested
 
     /// The pages waiting in capture's store, when there are any to file.
     var documentID: UUID? {
@@ -141,12 +141,45 @@ struct CaptureReview: Identifiable {
         [CaptureFieldKey.issueDate, .startDate, .purchaseDate].lazy.compactMap { value($0)?.day }.first.map(CaptureMapping.calendarDay)
     }
 
+    /// The fields as they stand now, corrections included, for routing.
+    var currentFields: [CaptureField] {
+        fields.compactMap { field in
+            field.value.map { CaptureField(key: field.key, value: $0, confidence: field.confidence, sourceText: field.sourceText, tier: field.tier) }
+        }
+    }
+
+    /// What routing suggests for the document as it stands now: its current kind and
+    /// fields, so changing the kind ("Nu e asta? Schimbă") changes the deadline too.
+    var suggestions: [CaptureSuggestion] {
+        kind == result.kind ? result.suggestions : CaptureRouter.route(kind: kind, kindConfidence: 1, fields: currentFields).suggestions
+    }
+
     /// The template blueprint this document renews or schedules, if any.
     var blueprintKey: String? {
-        for suggestion in result.suggestions {
+        for suggestion in suggestions {
             if case .obligation(let key, _) = suggestion.destination, let mapped = CaptureMapping.blueprintKey(key) { return mapped }
         }
         return nil
+    }
+
+    /// After the person changes the kind: what depends on it follows, unless they
+    /// already chose it themselves (the place, the name, the title).
+    @MainActor
+    mutating func kindChanged(assets: [Asset]) {
+        remindsToPay = kind == .utilityInvoice
+        let values = Dictionary(currentFields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
+        if destination == suggested.destination {
+            destination = Self.suggestDestination(kind: kind, suggestions: suggestions, fields: currentFields, assets: assets)
+            suggested.destination = destination
+        }
+        if title == suggested.title {
+            title = CaptureMapping.defaultTitle(for: kind, fields: values)
+            suggested.title = title
+        }
+        if newAssetName == suggested.newAssetName {
+            newAssetName = Self.defaultAssetName(kind: kind, values: values)
+            suggested.newAssetName = newAssetName
+        }
     }
 
     /// Which reading tier filled most of the fields, for the subtle note.
@@ -190,9 +223,15 @@ struct CaptureReview: Identifiable {
 
     @MainActor
     static func suggestDestination(result: CaptureResult, assets: [Asset]) -> Destination {
+        suggestDestination(kind: result.kind, suggestions: result.suggestions, fields: result.fields, assets: assets)
+    }
+
+    /// Where a document of `kind` goes, from what routing suggests for it.
+    @MainActor
+    static func suggestDestination(kind: CaptureDocumentKind, suggestions: [CaptureSuggestion], fields: [CaptureField], assets: [Asset]) -> Destination {
         let candidates = assets.filter { !$0.isExample }
         // 1. An identifier on the document matches a section.
-        let hints = result.suggestions.flatMap(\.assetHints)
+        let hints = suggestions.flatMap(\.assetHints)
         for hint in hints {
             let wanted = CaptureMapping.normalizedIdentifier(hint.value)
             guard !wanted.isEmpty else { continue }
@@ -205,8 +244,8 @@ struct CaptureReview: Identifiable {
             }
         }
         // 2. An identity document goes to its holder: the matching member, or a new one.
-        if result.kind.isIdentityDocument {
-            let values = Dictionary(result.fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
+        if kind.isIdentityDocument {
+            let values = Dictionary(fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
             if let holder = CaptureMapping.holderName(values) {
                 let members = candidates.filter { $0.templateKey == BuiltInTemplates.Key.member }.map { (id: $0.id, name: $0.name) }
                 if let member = CaptureMapping.matchingMember(holderSurname: values[.surname]?.text, holderName: holder, among: members) {
@@ -216,18 +255,18 @@ struct CaptureReview: Identifiable {
             }
         }
         // 3. The category the document belongs to.
-        let templateKey = result.suggestions.lazy.compactMap { suggestion -> String? in
+        let templateKey = suggestions.lazy.compactMap { suggestion -> String? in
             switch suggestion.destination {
             case .newAsset(let key): return CaptureMapping.templateKey(key)
             case .obligation(_, let key?): return CaptureMapping.templateKey(key)
             case .historyEntry(let key?): return CaptureMapping.templateKey(key)
             default: return nil
             }
-        }.first ?? CaptureMapping.templateKey(for: result.kind)
+        }.first ?? CaptureMapping.templateKey(for: kind)
         guard let templateKey else { return .none }
         // New documents, products and cars get their own section; bills and
         // policies go to the only section of their kind when there is one.
-        let createsNew = result.suggestions.contains {
+        let createsNew = suggestions.contains {
             if case .newAsset = $0.destination { return true }
             return false
         }
