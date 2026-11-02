@@ -75,7 +75,8 @@ Every action saves once and rolls back on failure. Views never write models dire
 | Find the subscription a bill or contract belongs to, or where a new one goes (codes first, never across two homes) | `SubscriptionMatcher`, with the template's keys in `SubscriptionFields` | [Services/Subscriptions/SubscriptionMatcher.swift](ios/DosarCuSina/Services/Subscriptions/SubscriptionMatcher.swift), [SubscriptionFields.swift](ios/DosarCuSina/Services/Subscriptions/SubscriptionFields.swift) |
 | Obligations that belong to the household, not an asset | `HouseholdRules` | [Services/Templates/HouseholdRules.swift](ios/DosarCuSina/Services/Templates/HouseholdRules.swift) |
 | Load or remove example data | `ExampleDataService` | [Services/Examples/ExampleDataService.swift](ios/DosarCuSina/Services/Examples/ExampleDataService.swift) |
-| Export or import a `.dosar` archive | `DossierArchiveService` | [Services/Archive/DossierArchiveService.swift](ios/DosarCuSina/Services/Archive/DossierArchiveService.swift) |
+| Export or import a `.dosar` archive | `DossierArchiveService` (what an import may change: `DossierImporter`; a password: `ArchiveEncryption`) | [Services/Archive/DossierArchiveService.swift](ios/DosarCuSina/Services/Archive/DossierArchiveService.swift), [DossierImporter.swift](ios/DosarCuSina/Services/Archive/DossierImporter.swift), [ArchiveEncryption.swift](ios/DosarCuSina/Services/Archive/ArchiveEncryption.swift) |
+| The backup screen: Face ID first, the password, reading off the main thread, files from "Open in" | `BackupFlow` | [Views/Settings/BackupFlow.swift](ios/DosarCuSina/Views/Settings/BackupFlow.swift) |
 
 Pure engines (no database) sit beside them: `RecurrenceEngine`, `AttentionModel` (with `missingBills`, the calm notes in Urmează), `BoxStatus`, `ReminderPlanner`, `MaintenanceLog`, `BillHistory` (a subscription's bill trend and the missing bill), `ReadinessEngine`, `SearchEngine`. Ranking, dates and wording come from these; screens never recompute them.
 
@@ -87,11 +88,12 @@ Pure engines (no database) sit beside them: `RecurrenceEngine`, `AttentionModel`
 
 ## Secret fields
 
-A field of type `secret` (an electronic identity card's PIN codes) follows one set of rules, in [Services/Security/SecretFields.swift](ios/DosarCuSina/Services/Security/SecretFields.swift):
+A field of type `secret` (an electronic identity card's PIN codes) and a secret row under Date importante (`CustomFact.isSecret`, an alarm or Wi-Fi code) follow one set of rules, in [Services/Security/SecretFields.swift](ios/DosarCuSina/Services/Security/SecretFields.swift):
 
-- `AssetActions` seals every secret with `SecretSealer` before saving; the database holds only sealed text. The key lives in the Keychain on this device only.
+- `AssetActions` seals every secret with `SecretSealer` before saving (`sealing`, `sealingFacts`); the database holds only sealed text. The key lives in the Keychain on this device only.
 - Showing or copying one goes through `SecretReveal`, which asks `BiometricVaultManager.authenticateForReveal` every time and never changes the session. The screens use `DSSecretValueRow` to show and `DSSecretField` to type.
-- Anything that carries values out of the binder (search, widgets, notifications, archives, logs) leaves secrets out: use `FieldDefinition.isIndexable` and `SecretFields.stripping`. `FieldFormatter.display` shows a secret only as a mask.
+- Anything that carries values out of the binder (search, widgets, notifications, archives, logs) leaves secrets out: use `FieldDefinition.isIndexable`, `SecretFields.stripping` and `SecretFields.strippingFacts`. A sealed value is recognised by its own form, whatever the template says; `FieldFormatter.display` shows it only as a mask.
+- An import never brings a secret and keeps the phone's own for the same records, in both modes (`keepingLocalSecrets`, `keepingLocalSecretFacts`).
 - Never offer a secret field for a bank card, and never write a real-looking code in tests or examples (use `0000`).
 
 ## Capture
@@ -113,6 +115,13 @@ A field of type `secret` (an electronic identity card's PIN codes) follows one s
 
 A new document layout is a new label table, not new reading code. A new field rule goes in `CaptureFieldRules`, never inside one tier. A new AI provider is a new adapter; grounding and checks stay shared. Which reader wins is decided only in `ReadingArbiter`, never by the order the tiers run in.
 
+## Locks
+
+- `BiometricVaultManager` is the one unlock session for the app lock and the section locks. `confirmWholeBinder` asks before a backup or "Înlocuiește tot" whenever any lock is on.
+- `LockCover.decide` is the one rule for when the app is covered, and `LockWindowHost` draws the lock and the app-switcher cover in a window above every sheet ([Views/Locks/LockWindow.swift](ios/DosarCuSina/Views/Locks/LockWindow.swift)). Never draw a lock as an overlay of one screen.
+- `AppNavigator` hands out no route or opened file while the app is locked.
+- What search may keep is decided in `SearchPrivacy` ([Services/Search/SearchPrivacy.swift](ios/DosarCuSina/Services/Search/SearchPrivacy.swift)).
+
 ## Navigation
 
 - `AppRoute` is every place the app can open; `DeepLink` builds and parses `dosarcusina://` links ([Navigation/AppRoute.swift](ios/DosarCuSina/Navigation/AppRoute.swift)).
@@ -128,7 +137,7 @@ Everything visual comes from [Views/DesignSystem/](ios/DosarCuSina/Views/DesignS
 - **Checklists and single choices:** `DSCheckRow`, the whole row is the target.
 - **Ratings:** `DSStarRating`, read-only or tappable.
 - **Example data:** `DSExampleBadge` marks every example record.
-- **Value rows:** `DSReadOnlyValueRow` for amounts and facts, `DSActionValueRow` for a value with one labelled action (copy, call), `DSSecretValueRow` for a masked code shown or copied after Face ID. Their buttons sit beside the value, or under it when they don't fit (`DSValueWithActions`), and never wrap their label.
+- **Value rows:** `DSReadOnlyValueRow` for amounts and facts, `DSActionValueRow` for a value with one labelled action (copy, call), `DSSecretValueRow` for a masked code shown or copied after Face ID. Every copy goes through `Clipboard.copy(_:_:)`: `.personal` for anything read off an identity document, a sensitive value or anything from a locked section (this phone only, gone after a minute). Their buttons sit beside the value, or under it when they don't fit (`DSValueWithActions`), and never wrap their label.
 - **States and feedback:** `DSEmptyState`, `DSErrorState`, `DSLockedState`, `DSDelayedProgress` (waits before showing), `DSToast.undo`, `dsDiscardGuard`.
 - **Fields:** the `DS…Field` controls under `Fields/`, one per field type (`DSSecretField` for secrets). Number and money fields turn text into a value only while the person types; showing a value never changes it.
 - [DesignSystemGallery.swift](ios/DosarCuSina/Views/DesignSystem/Gallery/DesignSystemGallery.swift) shows every component. Add new ones there.

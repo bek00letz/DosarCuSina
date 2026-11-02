@@ -8,6 +8,36 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-02
 
+### The lock and backups
+- **Decided:** the app lock and the app-switcher cover live in a window of their own, above every window of the app. A sheet, a full-screen flow or an alert left open stays under them. Links, notification taps and opened backups wait until the app is unlocked.
+- **Why:** this is how the system's own apps hide their content: nothing drawn later can end up on top, whatever presents it. Closing and reopening sheets instead would lose what the person was typing and would need every screen to take part.
+- **Decided:** the app-switcher picture is covered whenever the app lock is on, or a section lock is on and the session is open.
+- **Why:** a locked section can only be on screen while the session is open, and section locks alone are the default, so the cover follows whichever lock could have something on screen.
+- **Decided:** exporting a backup and "Înlocuiește tot" ask for Face ID or the passcode every time, whenever any lock is on.
+- **Why:** a backup holds everything the locks protect, and replacing everything can't be undone; turning a lock off already asked.
+- **Decided:** a backup can have a password. With one, the whole file is encrypted (PBKDF2-HMAC-SHA256 with 600 000 iterations, AES-256-GCM in 1 MiB chunks) and can't be opened without it. The password is at least 8 characters, typed twice, never kept, and the screen says plainly that a forgotten one can't be recovered. Without one, the backup is an ordinary file, as before.
+- **Why:** a backup travels: iCloud Drive, e-mail, another phone. A password keeps CNPs and document photos unreadable wherever the file ends up, while people who keep it somewhere safe aren't forced to remember one. The format is open and documented, so Android can read it.
+- **Decided:** the sheet before every backup says what the copy contains, the identity documents included, lock or no lock.
+- **Why:** with no lock on, nothing else would stop to say so; it costs no extra tap, because the password sheet opens anyway.
+- **Decided:** an archive never changes what the app defines. Built-in categories always take the app's definition (fields, field types, reminders, version); an archive brings only their order, visibility and lock. A lock is never made weaker by an import, sections are filed by the same rule as "Mută la…", no timestamp is later than now, and the app puts back any built-in that differs from its own at launch.
+- **Why:** the person's records belong to them and travel; what a PIN field is, or whether Acte is locked, belongs to the app and to the person's own choices on this phone.
+- **Decided:** restoring with "Înlocuiește tot" keeps the PIN codes this phone already has for the same records, like a merge.
+- **Why:** this decision log promises it; a backup never carries codes, so the phone's own are the only ones that can come through a restore.
+- **Decided:** a sealed value is recognised by its own form, wherever it sits and whatever its template says. Every exit (search, archives, widgets, notifications, the box line) leaves it out, and every display shows only the mask.
+- **Why:** one rule that doesn't depend on each exit remembering, or on a template being what it should be.
+
+### Search, copying and codes
+- **Decided:** text read off a document filed in a locked section is never searchable, whatever its kind, and no thirteen-digit number (the shape of a CNP) is ever indexed, wherever it was typed or read. Recent searches keep neither a CNP-shaped query nor one that found something locked.
+- **Why:** a criminal record certificate or a bank letter carries a CNP as much as an identity card does; the kind a document was given can be wrong. A misread CNP is still personal, so the rule is its shape, not its checksum. A thirteen-digit invoice number is the rare price.
+- **Decided:** a personal value (read off an identity document, a sensitive field, anything from a locked section) or a code is copied to this phone's clipboard only, and leaves it after a minute.
+- **Why:** the same reason PINs already did: the clipboard is shared with the person's other devices and read by other apps.
+- **Decided:** a row under Date importante can be a "Cod secret": sealed like a PIN, masked, shown or copied after Face ID, kept out of search and backups. A row whose label names a code ("Parolă Wi-Fi", "Cod alarmă", "Interfon") starts as a secret; "Cod client" or "Cod POD" don't.
+- **Why:** people keep these codes in the binder. Reusing the PIN rules gives them a safe place without a new kind of screen.
+
+### A database that can't open yet
+- **Decided:** before the phone's first unlock after a restart, the app waits for the unlock and opens the database then, instead of showing recovery. The recovery screen offers only what it does, tells a full phone apart, and never shows the system's error text.
+- **Why:** nothing is wrong with the database then; it only can't be read until the phone is unlocked. A screen that offers recovery should offer only what the app can do.
+
 ### Bills and contracts belong to their subscription
 - **Decided:** an ongoing contract is one record, a subscription. The first bill or contract from a provider makes it; later bills and contracts find it by the codes they print (a POD, a CLC or the phone number first, then the contract number, then the client code) and file under it. Without a code, the provider decides only inside one house; two homes with the same provider never merge, and when the house can't be told the person picks. One engine decides, `SubscriptionMatcher`, and the review's place ("Unde îl pun") is the one way to change its answer.
 - **Why:** each month's bill made a new, unrelated "Factură ENGIE" deadline, so nothing knew it was the same contract, and the codes that identify it were already on every bill.
