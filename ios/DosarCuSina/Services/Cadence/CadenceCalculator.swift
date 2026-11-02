@@ -177,8 +177,13 @@ public final class CadenceCalculator: Sendable {
     }
     
     /// Adds months to a date with end-of-month clamping (e.g., Jan 31 -> Feb 28/29).
-    public static func addMonths(to date: Date, months: Int, calendar: Calendar = .current) -> Date {
-        guard months != 0 else { return date }
+    ///
+    /// - Parameter dayOfMonth: the day a series keeps (31 for "the 31st"). The result
+    ///   is that day, or the target month's last day when it is shorter. Without it,
+    ///   the date's own day is used, so a date already clamped (28 February) would
+    ///   carry its shorter day forward.
+    public static func addMonths(to date: Date, months: Int, dayOfMonth: Int? = nil, calendar: Calendar = .current) -> Date {
+        guard months != 0 || dayOfMonth != nil else { return date }
         
         var components = calendar.dateComponents(
             [.year, .month, .day, .hour, .minute, .second, .timeZone],
@@ -208,7 +213,7 @@ public final class CadenceCalculator: Sendable {
         
         components.year = targetYear
         components.month = targetMonth
-        components.day = min(currentDay, daysInTargetMonth)
+        components.day = min(dayOfMonth ?? currentDay, daysInTargetMonth)
         
         return calendar.date(from: components)
             ?? calendar.date(byAdding: .month, value: months, to: date)
