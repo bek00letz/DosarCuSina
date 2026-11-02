@@ -1,0 +1,27 @@
+# Runs the same privacy check as the pre-commit hook (.githooks/pre-commit) on
+# every commit of a pull request. The repository is public, so nothing private
+# may reach main, not even in a commit that a later one undoes.
+name: Privacy check
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  privacy-check:
+    name: privacy-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check every commit in the pull request
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: scripts/privacy-check.sh --range "$(git merge-base "$BASE_SHA" "$HEAD_SHA")" "$HEAD_SHA"

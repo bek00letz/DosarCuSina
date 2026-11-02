@@ -1,107 +1,213 @@
 # AGENTS.md — Dosar cu Șină
 
-## Apple Craftsmanship & Polish Standard
+Instructions for AI coding agents and the people who run them. Read this whole file before you change anything. The repository is **public**.
 
-Any piece of software, interface, component, script, or artifact created in this workspace must look, feel, and function like something Apple shipped.
+Read next, in this order: [docs/DECISIONS.md](docs/DECISIONS.md), [docs/HANDOFF.md](docs/HANDOFF.md), [SPEC.md](SPEC.md), [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/COPY_GUIDE.md](docs/COPY_GUIDE.md).
 
-This is not about superficial aesthetics, but about the uncompromising, obsessive attention to the subtle details that elevate a product from merely functional to undeniably polished, intuitive, and tactile.
+# The standing rule
 
-### 1. The Core Philosophy
-- **Restraint and Intentionality**: Every element, border, gradient, and margin must have a clear reason to exist. If an element doesn't serve the user or clarity, eliminate it. Chrome should recede so content takes center stage.
-- **The "Invisible" Polish**: The best design details are the ones the user feels rather than notices—fluid transitions, forgiving touch targets, instantaneous responses, and seamless state preservation.
-- **Respect for the Human**: Never confuse, startle, or overwhelm the user. Protect user agency, avoid dark patterns, avoid gratuitous modal interruptions, and respect system preferences (`prefers-color-scheme`, `prefers-reduced-motion`, `prefers-contrast`).
+**Everything we make together — apps, sites, scripts with UI, artifacts, dashboards, even CLI output — has to look and feel like something Apple shipped.**
 
-### 2. Visual & Typographic Hierarchy
-- **Typography as Architecture**:
-  - Native system font stacks (`-apple-system`, `SF Pro Display`, `SF Pro Text`, `system-ui`).
-  - Strict typographic scale with intentional line heights (`leading`), letter spacing (`tracking`), and contrast hierarchies (primary, secondary, tertiary labels).
-  - Proper typographic punctuation: real quotes (“ ”), apostrophes (’), em dashes (—), and ellipsis (…).
-- **Concentric Geometry**:
-  - Nested corners must be mathematically concentric: $R_{\text{inner}} = R_{\text{outer}} - \text{padding}$. Never have sharp-cornered children inside rounded containers.
-  - Standard Apple squircle/continuous corner curves (`corner-smoothing: 60%` / smooth continuous curvature).
-- **Subtle Depth & Elevation**:
-  - Soft, multi-layered ambient drop shadows rather than harsh single-offset dark shadows.
-  - Delicate hairline borders (0.5pt subtle overlays matching dynamic contrast) to define surfaces against any background.
+This is not about a visual style (not "make it white", not "add Liquid Glass"). It's about the small details people never notice consciously but always feel. Before calling anything done, check it against this list:
 
-### 3. Motion, Physics & Tactility
-- **Natural, Organic Spring Physics**:
-  - Fluid spring curves (`cubic-bezier(0.25, 1, 0.5, 1)` or fluid springs).
-  - Transitions grounded physically—elements expand from their origin and settle with weight.
-- **Micro-Interactions & State Polish**:
-  - Instant response to touch and hover with haptic feedback (`UIImpactFeedbackGenerator`).
-  - Zero layout shifts (CLS): reserve space for dynamic content, images, and asynchronous data.
+## Feel
+- Motion uses springs, not linear or default ease curves. Short (≈0.2–0.4s), interruptible, and it respects Reduce Motion.
+- Every interaction answers back right away: press states, hover states, focus rings, haptics where the platform has them.
+- Nothing jumps. Layout shifts, content popping in, and spinners that flash for 50ms are bugs. Use skeletons or fade-ins, and hold back loading indicators until a delay has passed.
+- Sensible defaults so the first run already feels right. Fewer settings, not more.
 
----
+## Look
+- Typography does the hierarchy: the system font stack (SF Pro / -apple-system), tight tracking on large titles, a real type scale, tabular numbers where digits line up.
+- Spacing sits on a consistent grid (4/8pt). Optical alignment wins over mathematical alignment when they disagree.
+- Concentric corner radii (inner radius = outer radius − padding), continuous/squircle corners where possible.
+- Restrained color: one accent, semantic colors, real dark mode (not inverted), hairline separators instead of heavy borders.
+- Icons are SF Symbols, or match their weight and optical size.
 
-## 4. Public Repository Security & Privacy Policies
+## Care
+- Empty states, error states, and edge cases get designed too, not left as defaults. Error messages are human, specific, and say what to do next.
+- Copy is short and plain, in sentence case. No jargon, no exclamation marks.
+- Accessibility is built in: Dynamic Type / scalable text, contrast, VoiceOver labels, keyboard navigation, hit targets of 44pt or more.
+- Works at every size: phone width, narrow windows, huge screens. No horizontal scroll, no clipped text.
+- Small touches nobody asked for: a correct app/tab icon, a sensible window title, remembered state, natural keyboard shortcuts, smart truncation.
 
-The GitHub repository for *Dosar cu Șină* is **public**. Every contributor and AI agent must adhere strictly to these non-negotiable security mandates:
+When a tradeoff comes up between shipping fast and getting these details right, flag it instead of quietly dropping the detail.
 
-### 4.1 Zero-Secrets & Zero-PII Policy
-- **No Hardcoded Credentials**: Never commit API keys, private tokens, passwords, keystores, or certificates.
-- **Bring Your Own Key (BYOK)**: Any external API key (such as Google Gemini) must be:
-  - Stored exclusively on the user's physical device in the **iOS Keychain** (`kSecClassGenericPassword` with `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`, so it never leaves the device).
-  - For local developer builds, read from an untracked local file (`ios/Config.xcconfig`) created from `ios/Config.xcconfig.template`.
-- **Sanitized Mock Data**: Never include real names, email addresses, phone numbers, vehicle registration numbers (VIN/plates), or real Romanian personal identification data (CNP, adrese) in previews, tests, or mock files. Use realistic placeholders (e.g., `B-123-ABC`, `ENGIE Romania S.A.`, `VW Golf 2018`).
-- **Local-First & Zero Central Database**:
-  - Data remains on the user's device (`SwiftData` on iOS, `Room` on Android).
-  - Cloud synchronization uses the user's private Apple ID (`CloudKit` private database) or personal Google Drive AppData folder. The developer hosts **no central user database** and has zero access to user records.
+# Framework, not patch
 
----
+**Framework, not patch.** Fix the cause, not the symptom: a change that only makes one scenario look right isn't done, and say plainly when something is only a mitigation. Build for every case of its kind (every device, size, user and source), not the one on my desk: no hard-coded models, sizes, addresses or names. One source of truth, never a second path that does the same thing slightly differently. Pin the behaviour with tests. When a decision comes up, give the right long-term design, not the easy one.
 
-## 5. The Confidential Security Vault (`private/`)
+# How agents work here
 
-During development, security vulnerabilities, edge-case bug traces, exploit vectors, and sensitive architectural notes will be identified. These **must never be published online**.
+1. **Read first.** [docs/DECISIONS.md](docs/DECISIONS.md) says what was decided and why; [docs/HANDOFF.md](docs/HANDOFF.md) says where work stands and what the last session left. Don't undo a decision quietly: if you think one is wrong, say so in the pull request or an issue.
+2. **One branch per task**, named `<person>/<topic>`, for example `ana/visit-wording`. Branch from an up-to-date `main`.
+3. **Never push to `main`.** Open a pull request into `main` using the template. The owner reviews every one.
+4. **Conventional commits** (see section 7), each one building on its own.
+5. **Test lightly while working, fully once.** Run only the suites that cover your change while you iterate; after a fix, rerun only what failed. Run the whole suite (`./tests/run_tests.sh`) once before opening the pull request, and say in it which simulator you used.
+6. **Only simulators that are already installed.** Pick from `xcrun simctl list devices available`. Never download a simulator runtime or platform, and don't create devices for other OS versions. If a task truly needs one that isn't there, ask.
+7. **No screenshots without asking.** Verify with builds and tests first. If only a screenshot or the simulator can show something, ask the person you work with before taking one, or ask them to look.
+8. **Placeholder data only**, everywhere: code, tests, previews, fixtures, screenshots, commit messages. Plates like `B-123-ABC`, cars like `VW Golf 2018`, firms like `ENGIE Romania S.A.`, email like `nume@exemplu.ro`. A made-up CNP uses county code `99` with a valid control digit, such as `1800101990006`; the privacy check rejects any other CNP that passes the checksum.
+9. **End each session by updating [docs/HANDOFF.md](docs/HANDOFF.md)**: append a "last session" entry and fix anything in "current state" your work changed.
+10. **Ask before design choices.** When a layout or product change could reasonably go more than one way, name the options and ask. Obvious bugs with one clear fix: just fix them.
+11. **Keep a way back.** When replacing something that works, keep the old version disabled (not deleted) until the new one is proven, and ask before removing it. `ios/Legacy/` and `tests/legacy/` are kept this way.
+12. **Security problems are never written in the repository.** See section 5.
 
-### 5.1 Rules for `private/`
-1. **Strictly Local-Only**: The entire `private/` directory and its contents are excluded via `.gitignore` and enforced by `.git/hooks/pre-commit`.
-2. **Where to Document Findings**:
-   - Log identified security flaws, severity, and reproduction steps in `private/VULNERABILITY_REGISTER.md`.
-   - Log sensitive crash logs, internal stack traces with file paths, or race condition repros in `private/INTERNAL_BUGS.md`.
-3. **Defense-in-Depth Enforcement**:
-   - The `.git/hooks/pre-commit` script actively scans every staged commit. If any file matching `private/`, `.private/`, `internal/`, or sensitive credential patterns is detected, **the commit is automatically aborted**.
+Turn on the privacy hook once per clone: `git config core.hooksPath .githooks`.
 
----
+# Architecture map
 
-## 6. App Store Distribution & Feature Tiering Policy
+One path per job. If you need to do one of these things, use the type listed. Never add a second path that does the same thing slightly differently; extend the existing one instead. Paths are relative to `ios/DosarCuSina/` unless they say otherwise.
 
-To comply with **Apple App Store Review Guidelines** (Guidelines 2.1 & 3.1.1):
-- **100% Free App**: The app is free to download and use with zero paywalls.
-- **Complete Offline Utility**: The core app must be 100% functional without an API key (unlimited assets, events, offline Vision OCR, widgets, cash-flow projections).
-- **Pro AI Mode**: Unlocked exclusively through the user's free Gemini API key (BYOK). The UI must never block users who choose not to add a key.
+## Changing household data
 
----
+Every action saves once and rolls back on failure. Views never write models directly.
 
-## 7. Git Commit Policy & Development Workflow
+| Job | Use | File |
+| :--- | :--- | :--- |
+| Complete, undo, snooze, reschedule, pause, archive, delete or create an obligation; change its reminders | `ObligationActions` | [Services/Obligations/ObligationActions.swift](ios/DosarCuSina/Services/Obligations/ObligationActions.swift) |
+| Record a visit, repair or purchase with its line items; rate a job | `HistoryActions` | [Services/History/HistoryActions.swift](ios/DosarCuSina/Services/History/HistoryActions.swift) |
+| Create, edit, measure, re-parent or delete an asset | `AssetActions` | [Services/Obligations/AssetActions.swift](ios/DosarCuSina/Services/Obligations/AssetActions.swift) |
+| File, replace, archive or delete a document | `AttachmentActions` (`fileCaptured` for capture) | [Services/Documents/AttachmentActions.swift](ios/DosarCuSina/Services/Documents/AttachmentActions.swift), [CapturedDocumentFiling.swift](ios/DosarCuSina/Services/Documents/CapturedDocumentFiling.swift) |
+| Create or edit a person or firm | `ProviderActions` | [Services/History/ProviderDirectory.swift](ios/DosarCuSina/Services/History/ProviderDirectory.swift) |
+| Install, upgrade, create, order, hide, lock or delete a category | `TemplateStore` (built-ins defined once in `BuiltInTemplates`) | [Services/Templates/TemplateStore.swift](ios/DosarCuSina/Services/Templates/TemplateStore.swift), [BuiltInTemplates.swift](ios/DosarCuSina/Services/Templates/BuiltInTemplates.swift) |
+| Obligations that belong to the household, not an asset | `HouseholdRules` | [Services/Templates/HouseholdRules.swift](ios/DosarCuSina/Services/Templates/HouseholdRules.swift) |
+| Load or remove example data | `ExampleDataService` | [Services/Examples/ExampleDataService.swift](ios/DosarCuSina/Services/Examples/ExampleDataService.swift) |
+| Export or import a `.dosar` archive | `DossierArchiveService` | [Services/Archive/DossierArchiveService.swift](ios/DosarCuSina/Services/Archive/DossierArchiveService.swift) |
 
-To maintain a clean, professional, and audit-ready public Git history, all commits must follow this standard.
+Pure engines (no database) sit beside them: `RecurrenceEngine`, `AttentionModel`, `BoxStatus`, `ReminderPlanner`, `MaintenanceLog`, `ReadinessEngine`, `SearchEngine`. Ranking, dates and wording come from these; screens never recompute them.
 
-### 7.1 Conventional Commit Format
-Use structured commit messages in the imperative mood:
+## Everything outside the database
+
+`SideEffectsCoordinator` ([Services/SideEffects/SideEffectsCoordinator.swift](ios/DosarCuSina/Services/SideEffects/SideEffectsCoordinator.swift)) is the **only** path to notifications, the app badge, the widget snapshot and Spotlight (through its indexer hook). Actions save; the coordinator reacts to the save. Never schedule a notification, reload a widget or index anything from a view or an action. Notification permission is asked only with `setNeedsReconcile(allowPermissionPrompt: true)`, after the in-app explanation or from Settings.
+
+## Capture
+
+| Job | Use | File |
+| :--- | :--- | :--- |
+| Read a photo, scan, PDF or pasted text | `CaptureEngine` (`CaptureEngine.standard()`), the one way in for the app and the share extension | [Services/Capture/CaptureEngine.swift](ios/DosarCuSina/Services/Capture/CaptureEngine.swift) |
+| Tiers 1–2: deterministic and heuristic | `CaptureAnalyzer` with `MRZParser`, `RomanianFieldExtractor`, `IdentityCardExtractor`, `DocumentClassifier` and the invoice parsers | [Services/Capture/](ios/DosarCuSina/Services/Capture/) |
+| Tiers 3–4: on-device model, optional Gemini, and grounding their answers in the text | `OnDeviceModelExtractor`, `GeminiCaptureExtractor` | [CaptureLanguageModels.swift](ios/DosarCuSina/Services/Capture/CaptureLanguageModels.swift), [CaptureAppAdapters.swift](ios/DosarCuSina/Services/Capture/CaptureAppAdapters.swift) |
+| Which fields a kind of document may carry, after every tier | `CaptureFieldRules` | [Services/Capture/CaptureFieldRules.swift](ios/DosarCuSina/Services/Capture/CaptureFieldRules.swift) |
+| Read label–value layouts (ID cards, licences, certificates) | `LabelledLayout`, with a label table per document kind | [Services/Capture/LabelledLayout.swift](ios/DosarCuSina/Services/Capture/LabelledLayout.swift) |
+| Save a reviewed capture | `CaptureFiler`, which only calls the actions above | [Views/Capture/Filing/CaptureFiler.swift](ios/DosarCuSina/Views/Capture/Filing/CaptureFiler.swift) |
+| Things shared from other apps | `ShareInbox` (written by the extension), `IntakeInbox` (read by the app) | [ios/Shared/ShareInbox.swift](ios/Shared/ShareInbox.swift), [Views/Capture/IntakeInbox.swift](ios/DosarCuSina/Views/Capture/IntakeInbox.swift) |
+
+A new document layout is a new label table, not new reading code. A new field rule goes in `CaptureFieldRules`, never inside one tier.
+
+## Navigation
+
+- `AppRoute` is every place the app can open; `DeepLink` builds and parses `dosarcusina://` links ([Navigation/AppRoute.swift](ios/DosarCuSina/Navigation/AppRoute.swift)).
+- `ShellRouter` and `ShellRouting.plan(for:)` turn a route into a tab, a path and maybe a sheet ([App/ShellRouter.swift](ios/DosarCuSina/App/ShellRouter.swift)). Notifications, widgets, links, Shortcuts and search results all go through it.
+- `AppShell` owns one `NavigationStack` per tab and registers every route as a destination ([Views/Shell/AppShell.swift](ios/DosarCuSina/Views/Shell/AppShell.swift)). Tab roots must not add a stack of their own; push with `NavigationLink(value: AppRoute…)`.
+
+## Design system
+
+Everything visual comes from [Views/DesignSystem/](ios/DosarCuSina/Views/DesignSystem/). One component per job; extend it rather than drawing a look-alike.
+
+- **Tokens:** `DS.Space` (4/8 grid), `DS.Radius` with `DS.Radius.concentric(outer:padding:)`, `DS.Motion` springs and `dsAnimation` (Reduce Motion handled), palette and type styles.
+- **Full-width actions:** `DSPrimaryButton` for the main action, `DSSecondaryButton` for any other (with `role: .destructive` for deletions).
+- **Checklists and single choices:** `DSCheckRow`, the whole row is the target.
+- **Ratings:** `DSStarRating`, read-only or tappable.
+- **Example data:** `DSExampleBadge` marks every example record.
+- **Value rows:** `DSReadOnlyValueRow` for amounts and facts, `DSActionValueRow` for a value with one labelled action (copy, call).
+- **States and feedback:** `DSEmptyState`, `DSErrorState`, `DSLockedState`, `DSDelayedProgress` (waits before showing), `DSToast.undo`, `dsDiscardGuard`.
+- **Fields:** the `DS…Field` controls under `Fields/`, one per field type.
+- [DesignSystemGallery.swift](ios/DosarCuSina/Views/DesignSystem/Gallery/DesignSystemGallery.swift) shows every component. Add new ones there.
+
+## Words, numbers and dates
+
+- **String Catalog:** [Resources/Localizable.xcstrings](ios/DosarCuSina/Resources/Localizable.xcstrings) (the widgets have their own in `ios/DosarCuSinaWidgets/`). Romanian is the source language. Every count uses plural variations (*1 zi*, *2 zile*, *20 de zile*); never write `count == 1 ? … : …`.
+- **Distances in time:** `DurationWording` (days, then weeks, months and weeks, years and months; never rounded up), `DayCount` and `CalendarCount`, in [Services/Attention/BoxStatus.swift](ios/DosarCuSina/Services/Attention/BoxStatus.swift).
+- **Money and dates:** `Money.formatted` and `Locale.dosarDefault` ([Models/Values/Money.swift](ios/DosarCuSina/Models/Values/Money.swift)), `CalendarDay` for due days. Never `String(format:)`.
+- Copy follows [docs/COPY_GUIDE.md](docs/COPY_GUIDE.md).
+
+## The placeholder-view contract
+
+Screens know each other only by type name and initializer, such as `SectionScreen(assetID:)`, `ObligationScreen(obligationID:)`, `AddVisitFlow(assetID:)` or `OnboardingFlow(onFinish:)`, and move between each other with `AppRoute`. When two branches build screens in parallel, the branch that needs a screen first adds a placeholder with the agreed name and initializer (a `DSEmptyState`), so both branches build on their own. The branch that builds the real screen replaces the placeholder in place and keeps the name and initializer. Never change a screen's name or initializer without updating every caller in the same commit, and list any placeholder still in place in [docs/HANDOFF.md](docs/HANDOFF.md).
+
+# Craftsmanship details
+
+The standing rule above is the bar. These are the SwiftUI specifics.
+
+## 1. Philosophy
+- **Restraint and intentionality:** every element, border and margin needs a reason to exist. Chrome recedes so content leads.
+- **Invisible polish:** fluid transitions, forgiving touch targets, instant responses, state that's kept.
+- **Respect for the person:** never confuse, startle or overwhelm. No dark patterns, no needless modal interruptions. Respect the system settings: appearance, Reduce Motion, Increase Contrast, Dynamic Type.
+
+## 2. Visual and typographic hierarchy
+- **System fonts and the type scale** from the design system's type styles, with primary, secondary and tertiary labels.
+- **Real typography:** Romanian quotes („ ”), apostrophes (’), en and em dashes, the ellipsis character (…), ș and ț with a comma below.
+- **Concentric geometry:** nested corners follow inner radius = outer radius − padding (`DS.Radius.concentric`). All corners are continuous (`style: .continuous`). No sharp children inside rounded containers.
+- **Depth:** soft, layered shadows, hairline separators, semantic materials. No heavy borders.
+
+## 3. Motion and tactility
+- **Springs only,** from `DS.Motion` (0.2–0.4 s), through `dsAnimation` so Reduce Motion turns movement into a short fade.
+- **Physical transitions:** things grow from where they came from (the binder's boxes zoom open).
+- **Feedback:** press states on everything tappable, `sensoryFeedback` for success, failure and selection.
+- **No layout shift:** reserve space for content that loads, and hold back progress indicators with `DSDelayedProgress`.
+
+# 4. Security and privacy in a public repository
+
+## 4.1 No secrets, no personal data
+- **No credentials in the repository:** no API keys, tokens, passwords, keystores, certificates or provisioning profiles.
+- **Bring your own key:** the optional Gemini key is entered by the person in Settings and kept in the iOS Keychain (`kSecClassGenericPassword`, `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`, so it never leaves the device). Developers use the same Settings screen with their own key. Never commit a key, even a test one. `ios/Config.xcconfig` is ignored by git; only its `.template` is tracked.
+- **Placeholder data only** (see "How agents work here", item 8). This covers names, emails, phone numbers, plates, VINs, CNPs, document numbers and addresses.
+- **Local first, no central database:** data lives in SwiftData on the device. Sync, when it comes, uses the person's own private iCloud. There are no servers of ours, no accounts, no analytics and no telemetry. Don't add any SDK that phones home.
+
+## 4.2 What protects the repository
+- The versioned pre-commit hook [.githooks/pre-commit](.githooks/pre-commit) and the pull request workflow [.github/workflows/privacy-check.yml](.github/workflows/privacy-check.yml) run the same script, [scripts/privacy-check.sh](scripts/privacy-check.sh). It blocks private and credential paths, keys and tokens, home-folder paths and real-looking CNPs.
+- The script lists patterns only. Never add a finding, a trace or a real value to it.
+- Links in documents are relative to the repository. Never write an absolute path from your machine.
+
+# 5. Security findings and the private vault
+
+- `private/` exists **only on the owner's machine**. It holds security findings, internal bug traces and anything else that must never be published. It is ignored by git and blocked by the privacy check. Collaborators don't have it and don't need it.
+- **Collaborators and their agents report security problems through GitHub's private vulnerability reporting**, as [SECURITY.md](SECURITY.md) explains. Never in issues, commits, code comments, pull request text, test names or documentation.
+- Describe behaviour in public, never weaknesses. A fix's commit message says what now happens ("ask before replacing the household"), not how it could be abused.
+- If you are the owner's agent: findings go in `private/VULNERABILITY_REGISTER.md`, crash logs and traces with local paths in `private/INTERNAL_BUGS.md`.
+
+# 6. App Store distribution and feature tiers
+
+To meet the App Store Review Guidelines (2.1 and 3.1.1):
+- **Free:** the app is free to download and use, with no paywalls.
+- **Complete without a key:** everything works offline and without a Gemini key: unlimited sections, deadlines and reminders, on-device reading of documents, widgets, backups.
+- **Optional Gemini:** a key the person brings improves reading of a document they choose. The UI never blocks or nags anyone who doesn't add one.
+
+# 7. Commits and workflow
+
+## 7.1 Conventional commits
 
 ```text
-<type>(<scope>): <short description in imperative present tense>
+<type>(<scope>): <short description in the imperative>
 
-[optional body explaining WHY the change was made]
+[optional body explaining why]
+
+Co-Authored-By: <agent> <noreply@…>   (when an agent wrote it)
 ```
 
-#### Allowed Types:
-- `feat`: A new user-facing feature, screen, or capability (e.g., `feat(scanner): add live vision preview and byok prompt sheet`).
-- `fix`: A bug fix or correction (e.g., `fix(events): correct countdown calculation for leap years`).
-- `docs`: Documentation updates (e.g., `docs(spec): document custom modules engine schema`).
-- `refactor`: Code restructuring without changing functional behavior (e.g., `refactor(models): modularize asset category helper`).
-- `chore`: Project maintenance, `.gitignore`, build settings, or templates (e.g., `chore(security): add pre-commit hook`).
-- `test`: Adding or modernizing unit or UI tests.
+Types:
+- `feat` — a new user-facing feature or screen, e.g. `feat(scanner): add live vision preview`.
+- `fix` — a bug fix, e.g. `fix(reminders): ask for permission only after the explanation`.
+- `docs` — documentation, e.g. `docs(spec): describe the share inbox`.
+- `refactor` — restructuring without changing behaviour.
+- `chore` — maintenance, build settings, tooling, templates.
+- `test` — adding or modernising tests.
 
-### 7.2 Commit Atomicity & Rules
-- **One Logical Unit Per Commit**: Do not mix a bug fix with a feature addition or unrelated formatting changes.
-- **No In-Progress Breakages**: The codebase must build cleanly (`swiftc -parse` or `xcodebuild`) at every commit.
-- **Review Staged Files Explicitly**: Always run `git status` or inspect staged diffs before committing to verify that no accidental temporary files, credentials, or private vault notes are included.
+## 7.2 Atomic commits
+- **One logical change per commit.** Don't mix a fix with a feature or with unrelated formatting.
+- **Every commit builds** (`xcodebuild`) and keeps the tests that cover it passing.
+- **Check what you stage** (`git status`, `git diff --cached`) so no temporary files, credentials or private notes slip in.
 
-### 7.3 Documentation Synchronization Map
-Whenever changes occur, document them in their designated source of truth:
-1. **Product Features & Architecture**: Update [`SPEC.md`](file:///Users/play/Developer/DosarCuSina/SPEC.md).
-2. **Public Instructions & Onboarding**: Update [`README.md`](file:///Users/play/Developer/DosarCuSina/README.md).
-3. **Engineering & Quality Standards**: Update [`AGENTS.md`](file:///Users/play/Developer/DosarCuSina/AGENTS.md).
-4. **Vulnerabilities & Attack Surface**: Document locally in [`private/VULNERABILITY_REGISTER.md`](file:///Users/play/Developer/DosarCuSina/private/VULNERABILITY_REGISTER.md).
-5. **Private Bugs & Crash Stack Traces**: Document locally in [`private/INTERNAL_BUGS.md`](file:///Users/play/Developer/DosarCuSina/private/INTERNAL_BUGS.md).
+## 7.3 Where things are documented
+
+| What changed | Update |
+| :--- | :--- |
+| Product behaviour or architecture | [SPEC.md](SPEC.md) |
+| A product or architecture decision | [docs/DECISIONS.md](docs/DECISIONS.md) (newest first, with the reason) |
+| Where work stands, what's next | [docs/HANDOFF.md](docs/HANDOFF.md) |
+| Setup, build, run, test | [README.md](README.md) |
+| How we work together | [CONTRIBUTING.md](CONTRIBUTING.md) |
+| Engineering and quality rules, the architecture map | [AGENTS.md](AGENTS.md) |
+| How the app writes | [docs/COPY_GUIDE.md](docs/COPY_GUIDE.md) |
+| The `.dosar` format | [shared/schemas/dosar-v3.md](shared/schemas/dosar-v3.md) and its fixtures |
+| How to report a security problem | [SECURITY.md](SECURITY.md) |
+| Security findings, crash traces | Never in the repository. Collaborators: private vulnerability reporting. Owner: `private/` on their own machine. |
