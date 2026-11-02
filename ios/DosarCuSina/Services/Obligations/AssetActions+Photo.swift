@@ -8,7 +8,7 @@ extension AssetActions {
         asset.photoData = data
         asset.updatedAt = Date()
         do {
-            try context.save()
+            try UnitOfWork.save(context)
         } catch {
             context.rollback()
             throw error

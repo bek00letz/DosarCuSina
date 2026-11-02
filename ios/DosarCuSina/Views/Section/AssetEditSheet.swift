@@ -94,12 +94,15 @@ struct AssetEditSheet: View {
         }
         do {
             let actions = AssetActions(context: context)
-            if photoData != originalPhoto {
-                try actions.setPhoto(asset, photoData)
-            }
-            if trimmedName != asset.name || values != asset.values || notes != (asset.notes ?? "") {
-                let note = notes.trimmingCharacters(in: .whitespacesAndNewlines)
-                try actions.update(asset, name: trimmedName, values: values, notes: note.isEmpty ? nil : note)
+            // The photo and the fields are one change: both are kept, or neither.
+            try UnitOfWork.perform(in: context) {
+                if photoData != originalPhoto {
+                    try actions.setPhoto(asset, photoData)
+                }
+                if trimmedName != asset.name || values != asset.values || notes != (asset.notes ?? "") {
+                    let note = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+                    try actions.update(asset, name: trimmedName, values: values, notes: note.isEmpty ? nil : note)
+                }
             }
             savedCount += 1
             dismiss()

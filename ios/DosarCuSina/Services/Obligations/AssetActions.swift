@@ -97,7 +97,7 @@ public final class AssetActions {
                 HouseholdMutations.addMeasurement(reading, unit: HouseholdMutations.heroMetricUnit(template: template.definition), to: asset, at: now(), in: context)
             }
             try HouseholdRules.reconcile(in: context, today: today, calendar: calendar)
-            try context.save()
+            try UnitOfWork.save(context)
         } catch {
             context.rollback()
             throw error
@@ -205,12 +205,7 @@ public final class AssetActions {
     }
 
     private func save() throws {
-        do {
-            try context.save()
-        } catch {
-            context.rollback()
-            throw error
-        }
+        try UnitOfWork.save(context)
     }
 }
 

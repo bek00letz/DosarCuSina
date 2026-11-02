@@ -373,31 +373,37 @@ private struct VisitForm: View {
         Task {
             defer { isSaving = false }
             do {
-                let provider = try resolveProvider()
-                var documents: [DocumentDraft] = []
-                if let id = draft.documentID, let processed = await CaptureDocumentStore.shared().take(id: id) {
-                    documents.append(processed.draft(
-                        title: draft.documentTitle,
-                        kind: .invoice,
-                        extractedText: draft.documentText,
-                        documentDate: CalendarDay(draft.date)
-                    ))
+                // The new provider, the visit and the invoice are one unit of work:
+                // all kept, or none; the invoice pages leave capture only once kept.
+                let entry = try await UnitOfWork.perform(in: context) {
+                    let provider = try resolveProvider()
+                    var documents: [DocumentDraft] = []
+                    let store = CaptureDocumentStore.shared()
+                    if let id = draft.documentID, let processed = await store.processed(id: id) {
+                        documents.append(processed.draft(
+                            title: draft.documentTitle,
+                            kind: .invoice,
+                            extractedText: draft.documentText,
+                            documentDate: CalendarDay(draft.date)
+                        ))
+                        await UnitOfWork.afterCommit(in: context) { await store.discard(id: id) }
+                    }
+                    return try HistoryActions(context: context).recordVisit(
+                        on: asset,
+                        kind: wording.kind,
+                        occurredAt: draft.date,
+                        checklist: draft.checklistItems,
+                        extraItems: draft.extraItems,
+                        totalCost: draft.totalMoney,
+                        odometer: draft.odometer,
+                        provider: provider,
+                        documents: documents,
+                        rating: draft.rating
+                    )
                 }
-                let entry = try HistoryActions(context: context).recordVisit(
-                    on: asset,
-                    kind: wording.kind,
-                    occurredAt: draft.date,
-                    checklist: draft.checklistItems,
-                    extraItems: draft.extraItems,
-                    totalCost: draft.totalMoney,
-                    odometer: draft.odometer,
-                    provider: provider,
-                    documents: documents,
-                    rating: draft.rating
-                )
                 withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { saved = entry }
             } catch {
-                errorMessage = error.localizedDescription
+                errorMessage = SaveFailure.message(for: error, formKept: true)
             }
         }
     }

@@ -27,11 +27,41 @@ struct UserFacingError: Identifiable, Equatable {
     /// Wraps an engine error. Engine errors already speak plain Romanian; anything
     /// else gets a generic sentence that still says what to do.
     init(_ error: any Error, doing action: String? = nil) {
-        let text = (error as? LocalizedError)?.errorDescription
         self.init(
             title: action ?? String(localized: "Nu a mers", comment: "Title of an error alert."),
-            message: text ?? String(localized: "Nu am putut salva. Încearcă din nou; dacă tot nu merge, repornește aplicația.", comment: "Generic error message.")
+            message: SaveFailure.message(for: error, formKept: false)
         )
+    }
+}
+
+/// What to tell a person when saving failed: what happened, in plain words, and
+/// what to do. Engine errors already speak plain Romanian; system errors never
+/// reach the screen as they are.
+enum SaveFailure {
+    /// - Parameter formKept: the screen stays open with what the person filled in,
+    ///   so the message can say nothing was lost.
+    static func message(for error: any Error, formKept: Bool) -> String {
+        // The app's own errors are written in plain Romanian; system errors are not.
+        if String(reflecting: type(of: error)).hasPrefix("DosarCuSina."), let text = (error as? LocalizedError)?.errorDescription {
+            return text
+        }
+        let kept = formKept ? " " + String(localized: "Ce ai completat e încă aici.", comment: "Reassurance after a failed save: the form keeps what was typed.") : ""
+        if isOutOfSpace(error) {
+            return String(localized: "Telefonul nu mai are spațiu liber. Eliberează puțin spațiu, apoi încearcă din nou.", comment: "Save failed because the phone is full.") + kept
+        }
+        return String(localized: "Nu am putut salva. Încearcă din nou; dacă tot nu merge, repornește aplicația.", comment: "Generic error message.") + kept
+    }
+
+    /// A full disk, as the file system or the database reports it, at any depth.
+    static func isOutOfSpace(_ error: any Error) -> Bool {
+        var current: NSError? = error as NSError
+        while let nsError = current {
+            if nsError.domain == NSCocoaErrorDomain && nsError.code == NSFileWriteOutOfSpaceError { return true }
+            if nsError.domain == NSPOSIXErrorDomain && nsError.code == Int(ENOSPC) { return true }
+            if nsError.domain == "NSSQLiteErrorDomain" && nsError.code == 13 { return true } // SQLITE_FULL
+            current = nsError.userInfo[NSUnderlyingErrorKey] as? NSError
+        }
+        return false
     }
 }
 

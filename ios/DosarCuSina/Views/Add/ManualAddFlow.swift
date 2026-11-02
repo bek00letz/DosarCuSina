@@ -123,7 +123,7 @@ private struct ManualWhatView: View {
         .captureSourcePicker($source) { payload in
             flow = CaptureFlowInput(payload: payload, preferredAssetID: assetID)
         } onError: { error in
-            errorMessage = error.localizedDescription
+            errorMessage = SaveFailure.message(for: error, formKept: true)
         }
         .sheet(item: $flow) { input in
             CaptureFlowView(input: input) { result in
@@ -290,7 +290,7 @@ private struct AddDeadlineForm: View {
             }
             onClose("Am adăugat \(obligation.title). \(ReminderWording.sentence(leadDays: obligation.reminderLeadDays))")
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = SaveFailure.message(for: error, formKept: true)
         }
     }
 }
@@ -351,7 +351,7 @@ private struct NewSectionForm: View {
             let asset = try AssetActions(context: context).create(name: name.trimmingCharacters(in: .whitespacesAndNewlines), template: template, values: FieldValues())
             onClose(asset)
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = SaveFailure.message(for: error, formKept: true)
         }
     }
 }

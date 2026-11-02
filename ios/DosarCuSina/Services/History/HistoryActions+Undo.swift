@@ -18,7 +18,7 @@ extension HistoryActions {
         }
         context.delete(entry)
         do {
-            try context.save()
+            try UnitOfWork.save(context)
         } catch {
             context.rollback()
             throw error

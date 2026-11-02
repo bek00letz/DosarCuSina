@@ -355,7 +355,7 @@ struct CaptureReviewView: View {
                 onClose(.filed(message: place.map { "Salvat în \($0)." } ?? "Actul e salvat."))
             } catch {
                 isSaving = false
-                errorMessage = error.localizedDescription
+                errorMessage = SaveFailure.message(for: error, formKept: true)
             }
         }
     }

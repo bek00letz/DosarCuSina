@@ -62,7 +62,13 @@ struct CaptureFiler {
 
     // MARK: Save
 
+    /// One "Salvează" is one unit of work: the section, the deadline, who issued it
+    /// and the document are all kept, or none of them is (see `UnitOfWork`).
     func save(_ review: CaptureReview) async throws -> Outcome {
+        try await UnitOfWork.perform(in: context) { try await fileAll(review) }
+    }
+
+    private func fileAll(_ review: CaptureReview) async throws -> Outcome {
         let templates = try TemplateStore(context: context).templatesByKey()
         var outcome = Outcome()
         let today = CalendarDay(now(), calendar: calendar)

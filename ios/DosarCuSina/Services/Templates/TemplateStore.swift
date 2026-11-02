@@ -200,7 +200,7 @@ public struct TemplateStore {
 
     private func save() throws {
         do {
-            try context.save()
+            try UnitOfWork.save(context)
         } catch {
             context.rollback()
             throw error

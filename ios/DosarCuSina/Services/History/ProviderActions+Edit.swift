@@ -39,7 +39,7 @@ extension ProviderActions {
         provider.contactIdentifier = details.contactIdentifier
         provider.updatedAt = Date()
         do {
-            try context.save()
+            try UnitOfWork.save(context)
         } catch {
             context.rollback()
             throw error

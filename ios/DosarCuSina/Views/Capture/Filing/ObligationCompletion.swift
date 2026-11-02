@@ -27,7 +27,14 @@ struct ObligationCompletion {
         return keys.lazy.compactMap { result.field($0)?.value.day }.first.map(CaptureMapping.calendarDay)
     }
 
+    /// Completing and filing the new document is one unit of work: both are kept, or neither.
     func complete(_ obligation: Obligation, on date: Date, cost: Money?, document: CaptureResult?, title: String?) async throws -> Outcome {
+        try await UnitOfWork.perform(in: context) {
+            try await completeAndFile(obligation, on: date, cost: cost, document: document, title: title)
+        }
+    }
+
+    private func completeAndFile(_ obligation: Obligation, on date: Date, cost: Money?, document: CaptureResult?, title: String?) async throws -> Outcome {
         let actions = ObligationActions(context: context, calendar: calendar, now: now)
         let today = CalendarDay(now(), calendar: calendar)
         let newDay = document.flatMap(Self.nextDay(in:)).flatMap { $0 > today ? $0 : nil }
