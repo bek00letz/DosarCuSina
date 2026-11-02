@@ -87,11 +87,12 @@ public final class SideEffectsCoordinator {
         let context = ModelContext(container)
         guard let obligations = try? ObligationSnapshot.fetchAll(in: context, calendar: calendar) else { return }
         let date = now()
-        let digest = AttentionModel.digest(obligations, now: date, calendar: calendar)
-        let plan = ReminderPlanner.plan(obligations, now: date, calendar: calendar, defaultMinuteOfDay: preferences.reminderMinuteOfDay)
-        let badge = AttentionModel.digest(obligations.filter { !$0.isExample }, now: date, calendar: calendar).needsActionCount
+        // Example records are for exploring the app; they never notify, badge or reach widgets.
+        let real = obligations.filter { !$0.isExample }
+        let plan = ReminderPlanner.plan(real, now: date, calendar: calendar, defaultMinuteOfDay: preferences.reminderMinuteOfDay)
+        let badge = AttentionModel.digest(real, now: date, calendar: calendar).needsActionCount
 
-        widgetWriter.write(WidgetSnapshot.make(from: digest, generatedAt: date))
+        widgetWriter.write(WidgetSnapshot.make(from: real, now: date, calendar: calendar))
         let outcome = await reconciler.apply(plan, badgeCount: badge, allowPermissionPrompt: allowPermissionPrompt)
         reminderAuthorization = outcome.authorization
         for indexer in indexers {

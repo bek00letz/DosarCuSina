@@ -47,8 +47,11 @@ public struct WidgetSnapshot: Codable, Hashable, Sendable {
     public var needsActionCount: Int
     public var items: [Item]
 
-    /// Builds the snapshot from an attention digest: "now" first, then "soon" in order.
-    public static func make(from digest: AttentionDigest, generatedAt: Date = Date()) -> WidgetSnapshot {
+    /// Builds the snapshot in attention order ("now" first, then "soon"). Example
+    /// records never appear in widgets, even when they are all there is.
+    public static func make(from obligations: [ObligationSnapshot], now: Date = Date(), calendar: Calendar = .current) -> WidgetSnapshot {
+        let digest = AttentionModel.digest(obligations.filter { !$0.isExample }, now: now, calendar: calendar)
+        let generatedAt = now
         let ordered = digest.now + digest.soon.flatMap(\.entries)
         let items = ordered.prefix(maxItems).map { entry -> Item in
             let obligation = entry.obligation

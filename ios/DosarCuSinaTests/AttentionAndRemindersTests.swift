@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 import Testing
 @testable import DosarCuSina
 
@@ -303,11 +304,10 @@ struct NotificationReconcilerTests {
 @Suite("Widget snapshot")
 struct WidgetSnapshotTests {
     @Test func protectedItemsAreRedactedAndOrderFollowsAttention() throws {
-        let digest = AttentionModel.digest([
+        let widget = WidgetSnapshot.make(from: [
             snapshot("Analize", kind: .health, due: "2026-11-03", asset: (UUID(), "Profil medical"), isSensitive: true),
             snapshot("ITP", kind: .legal, due: "2026-11-05", asset: (UUID(), "VW Golf")),
         ], now: noon("2026-11-02"), calendar: .bucharest)
-        let widget = WidgetSnapshot.make(from: digest, generatedAt: noon("2026-11-02"))
         #expect(widget.items.first?.title == "ITP")
         let hidden = try #require(widget.items.last)
         #expect(hidden.isSensitive)
@@ -320,16 +320,73 @@ struct WidgetSnapshotTests {
         #expect(try WidgetSnapshot.decoder().decode(WidgetSnapshot.self, from: data) == widget)
     }
 
+    @Test func examplesNeverReachWidgetsEvenWhenTheyAreAllThereIs() {
+        let onlyExamples = WidgetSnapshot.make(from: [
+            snapshot("RCA exemplu", kind: .insurance, due: "2026-11-01", isExample: true),
+            snapshot("ITP exemplu", kind: .legal, due: "2026-11-03", isExample: true),
+        ], now: noon("2026-11-02"), calendar: .bucharest)
+        #expect(onlyExamples.items.isEmpty)
+        #expect(onlyExamples.needsActionCount == 0)
+
+        let mixed = WidgetSnapshot.make(from: [
+            snapshot("RCA exemplu", kind: .insurance, due: "2026-11-01", isExample: true),
+            snapshot("ITP", kind: .legal, due: "2026-11-05"),
+        ], now: noon("2026-11-02"), calendar: .bucharest)
+        #expect(mixed.items.map(\.title) == ["ITP"])
+    }
+
     @Test func writerSkipsUnchangedContent() throws {
         let directory = URL.temporaryDirectory.appending(path: UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
         let writer = WidgetSnapshotWriter(directory: directory)
-        let snapshot = WidgetSnapshot.make(from: AttentionModel.digest([snapshot("ITP", kind: .legal, due: "2026-11-05")], now: noon("2026-11-02"), calendar: .bucharest))
+        let snapshot = WidgetSnapshot.make(from: [snapshot("ITP", kind: .legal, due: "2026-11-05")], now: noon("2026-11-02"), calendar: .bucharest)
         #expect(writer.write(snapshot))
         var later = snapshot
         later.generatedAt = later.generatedAt.addingTimeInterval(60)
         #expect(!writer.write(later))
+    }
+}
+
+@MainActor
+@Suite("Side effects with example data")
+struct SideEffectsExampleTests {
+    @Test func examplesNeverNotifyBadgeOrReachWidgets() async throws {
+        let container = try makeInMemoryContainer()
+        let context = ModelContext(container)
+        try TemplateStore(context: context).installBuiltIns()
+        try ExampleDataService(context: context, calendar: .bucharest, now: { noon("2026-11-02") }).loadExamples()
+
+        let directory = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let center = FakeNotificationCenter(status: .authorized)
+        let defaults = try #require(UserDefaults(suiteName: "tests.\(UUID().uuidString)"))
+        let coordinator = SideEffectsCoordinator(
+            container: container,
+            notificationClient: center,
+            widgetWriter: WidgetSnapshotWriter(directory: directory),
+            preferences: AppPreferences(defaults: defaults),
+            calendar: .bucharest,
+            now: { noon("2026-11-02") }
+        )
+        await coordinator.reconcileNow(allowPermissionPrompt: true)
+
+        #expect(await center.pendingReminders.isEmpty)
+        #expect(await center.badge == 0)
+        #expect(await center.promptCount == 0)
+        let data = try Data(contentsOf: directory.appending(path: WidgetSnapshot.fileName))
+        let widget = try WidgetSnapshot.decoder().decode(WidgetSnapshot.self, from: data)
+        #expect(widget.items.isEmpty)
+
+        // A real obligation next to the examples does reach both.
+        let actions = ObligationActions(context: context, calendar: .bucharest, now: { noon("2026-11-02") })
+        try actions.create(title: "RCA", kind: .insurance, dueDay: CalendarDay("2026-11-10"), for: nil)
+        await coordinator.reconcileNow()
+        #expect(await !center.pendingReminders.isEmpty)
+        #expect(await center.pendingReminders.keys.allSatisfy { !$0.isEmpty })
+        let updated = try WidgetSnapshot.decoder().decode(WidgetSnapshot.self, from: Data(contentsOf: directory.appending(path: WidgetSnapshot.fileName)))
+        #expect(updated.items.map(\.title) == ["RCA"])
     }
 }
 
