@@ -1,7 +1,7 @@
 import SwiftUI
 
-// Components for the binder screens: the home boxes, pocket cards, heroes,
-// checkboxes and star ratings. Built only from DS tokens.
+// Components for the binder screens: the home boxes, pocket cards, the plate,
+// the locked state and the secret field. Built only from DS tokens.
 
 // MARK: - Category tint
 

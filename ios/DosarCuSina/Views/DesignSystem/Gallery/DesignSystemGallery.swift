@@ -263,6 +263,15 @@ private struct GalleryButtons: View {
                     }
                 }
             }
+            GallerySection(title: "Butoane pe toată lățimea", note: "Acțiunea principală e plină; restul sunt conturate. Cel puțin 50 pt înălțime, textul se rupe pe rânduri, nu se taie.") {
+                DSCard {
+                    VStack(spacing: DS.Space.s) {
+                        DSPrimaryButton(verbatim: "Salvează", systemImage: "checkmark") {}
+                        DSSecondaryButton(verbatim: "Adaugă un act", systemImage: "plus") {}
+                        DSSecondaryButton(verbatim: "Șterge din istoric", systemImage: "trash", role: .destructive) {}
+                    }
+                }
+            }
             GallerySection(title: "Suprafețe apăsabile", note: "Răspuns imediat la atingere; cu Reducere mișcare doar se estompează.") {
                 Button {} label: {
                     DSCard {
@@ -292,6 +301,11 @@ private struct GalleryButtons: View {
 // MARK: - Cards & rows
 
 private struct GalleryCards: View {
+    @State private var brakes = true
+    @State private var cabinFilter = false
+    @State private var reminder = 7
+    @State private var rating: Int? = 4
+
     var body: some View {
         GalleryPage {
             GallerySection(title: "Card cu rânduri") {
@@ -309,6 +323,49 @@ private struct GalleryCards: View {
                             DSStatusBadge(daysRemaining: -3)
                         }
                         .padding(.horizontal, DS.Space.m)
+                    }
+                }
+            }
+            GallerySection(title: "Rânduri cu bifă", note: "Tot rândul se apasă. Ce e dedesubt apare doar când e bifat și poate conține câmpuri.") {
+                DSCard {
+                    VStack(alignment: .leading, spacing: DS.Space.xs) {
+                        DSCheckRow(title: Text(verbatim: "Plăcuțe frână față"), subtitle: Text(verbatim: "Ultima dată: martie 2024"), isOn: $brakes) {
+                            Text(verbatim: "380 lei").dsFont(.body, numeric: true).padding(.leading, DS.Space.xl)
+                        }
+                        DS.Hairline()
+                        DSCheckRow(title: Text(verbatim: "Filtru de habitaclu"), isOn: $cabinFilter)
+                        DS.Hairline()
+                        ForEach([7, 1], id: \.self) { days in
+                            DSCheckRow(title: Text(verbatim: days == 7 ? "Cu o săptămână înainte" : "Cu o zi înainte"), isOn: reminder == days) {
+                                reminder = days
+                            }
+                        }
+                    }
+                }
+            }
+            GallerySection(title: "Valori", note: "Doar de citit: sumele se aliniază pe coloană. Cu acțiune: se copiază sau se sună dintr-o atingere.") {
+                DSCard {
+                    VStack(alignment: .leading, spacing: 0) {
+                        DSReadOnlyValueRow(label: Text(verbatim: "Pe lună"), value: Text(verbatim: "49,99 lei"))
+                        DSRowSeparator()
+                        DSReadOnlyValueRow(label: Text(verbatim: "În ultimul an"), value: Text(verbatim: "1.250,50 lei"))
+                        DSRowSeparator()
+                        DSActionValueRow(title: Text(verbatim: "Număr poliță"), value: "RO/00/EX0001", action: .copy)
+                        DSRowSeparator()
+                        DSActionValueRow(title: Text(verbatim: "Telefon pentru daune"), value: "0700 000 001", action: .call)
+                    }
+                }
+            }
+            GallerySection(title: "Note și exemple", note: "Stelele se pot apăsa doar unde se dă o notă; o atingere pe nota curentă o șterge.") {
+                DSCard {
+                    VStack(alignment: .leading, spacing: DS.Space.s) {
+                        DSStarRating(rating: rating.map(Double.init)) { rating = $0 }
+                        HStack(spacing: DS.Space.s) {
+                            DSStarRating(rating: 4.5)
+                            DSStarRating(rating: 4.5, style: .compact)
+                            Spacer(minLength: 0)
+                            DSExampleBadge()
+                        }
                     }
                 }
             }

@@ -1,7 +1,8 @@
 import SwiftUI
 
 // Components first needed by the intake screens (Adaugă, Urmează, the
-// obligation page, the visit flow, onboarding). Built only from DS tokens.
+// obligation page, the visit flow, onboarding): big choice cards and numbered
+// steps. Built only from DS tokens.
 
 // MARK: - Big choice cards
 
@@ -76,29 +77,7 @@ struct DSStepRow: View {
     ScrollView {
         VStack(alignment: .leading, spacing: DS.Space.l) {
             DSActionCard("Fotografiază un act", subtitle: "Pagina se îndreaptă singură.", systemImage: "camera.fill") {}
-            DSCard {
-                VStack(alignment: .leading, spacing: DS.Space.xs) {
-                    DSCheckRow(title: Text(verbatim: "Plăcuțe frână față"), subtitle: Text(verbatim: "Ultima dată: martie 2024"), isOn: true, action: {}) {
-                        Text(verbatim: "380 lei").dsFont(.body, numeric: true)
-                    }
-                    DS.Hairline()
-                    DSCheckRow(title: Text(verbatim: "Filtru de habitaclu"), isOn: false) {}
-                }
-            }
-            DSCard {
-                VStack(alignment: .leading, spacing: DS.Space.s) {
-                    DSActionValueRow(title: Text(verbatim: "Număr poliță"), value: "RO/00/EX0001", action: .copy)
-                    DSActionValueRow(title: Text(verbatim: "Telefon pentru daune"), value: "0700 000 001", action: .call)
-                    HStack {
-                        DSStarRating(rating: 4.5, style: .compact)
-                        DSExampleBadge()
-                    }
-                    DSStarRating(rating: 3) { _ in }
-                }
-            }
             DSStepRow(number: 1, text: Text(verbatim: "Apasă „Trimite”."))
-            DSPrimaryButton("Salvează", systemImage: "checkmark") {}
-            DSSecondaryButton("Mai târziu") {}
         }
         .padding(DS.Space.m)
     }
