@@ -243,35 +243,6 @@
         }
       }
     },
-    "%lld stele": {
-      "comment": "VoiceOver label of a star rating button",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "o stea"
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld stele"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld de stele"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "%lld termene": {
       "comment": "A number of obligations, with Romanian plural forms.",
       "localizations": {
