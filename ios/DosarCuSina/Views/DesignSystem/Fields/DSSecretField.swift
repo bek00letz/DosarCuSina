@@ -10,6 +10,8 @@ struct DSSecretField: View {
     let title: LocalizedStringKey
     @Binding var value: String
     var footnote: LocalizedStringKey?
+    /// A PIN (digits only, number pad) or any code (a Wi-Fi password, an alarm code).
+    var isPIN = true
 
     @FocusState private var isFocused: Bool
     @State private var isReplacing = false
@@ -17,17 +19,18 @@ struct DSSecretField: View {
     @Environment(\.dsRevealsValidation) private var revealsValidation
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    init(_ title: LocalizedStringKey, value: Binding<String>, footnote: LocalizedStringKey? = nil) {
+    init(_ title: LocalizedStringKey, value: Binding<String>, footnote: LocalizedStringKey? = nil, isPIN: Bool = true) {
         self.title = title
         self._value = value
         self.footnote = footnote
+        self.isPIN = isPIN
     }
 
     /// A code kept from before, which this field must not show.
     private var isKept: Bool { SecretSealer.isSealed(value) && !isReplacing }
 
     private var validation: DSValidation {
-        guard !isKept, !value.isEmpty else { return .valid }
+        guard isPIN, !isKept, !value.isEmpty else { return .valid }
         return value.allSatisfy(\.isNumber)
             ? .valid
             : .warning(LocalizedStringResource("Codurile PIN au de obicei doar cifre.", comment: "Secret PIN field hint"))
@@ -51,8 +54,8 @@ struct DSSecretField: View {
             } else {
                 SecureField(title, text: $value, prompt: Text("Scrie codul", comment: "Placeholder of a secret PIN field."))
                     .font(.body.monospacedDigit())
-                    .keyboardType(.numberPad)
-                    .textContentType(.oneTimeCode)
+                    .keyboardType(isPIN ? .numberPad : .default)
+                    .textContentType(isPIN ? .oneTimeCode : nil)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
                     .focused($isFocused)

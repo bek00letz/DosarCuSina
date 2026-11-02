@@ -11,8 +11,10 @@ import Security
 /// - **Opened only after a fresh Face ID** (or the passcode), every time, even
 ///   when the section is already open: `SecretReveal`.
 /// - **Never leaves the binder:** not in search, widgets, notifications, the
-///   box status line, logs or `.dosar` archives. Anything that carries values
-///   outward calls `stripping(_:definition:)`.
+///   box status line, logs or `.dosar` archives. A sealed value is known by its
+///   own form (`SecretSealer.isSealed`), whatever its template says, so every
+///   exit that calls `stripping(_:definition:)` or `strippingFacts(_:)` leaves
+///   it out, and `FieldFormatter.display` only ever shows it as a mask.
 public enum SecretFields {
     /// What a secret looks like wherever it isn't opened.
     public static let mask = "••••"
@@ -22,12 +24,34 @@ public enum SecretFields {
         definition.allFields.filter(\.isSecret)
     }
 
-    /// The values without any secret, for anything that leaves the binder.
+    /// Whether a value is a sealed secret, by its own form.
+    public static func isSealed(_ value: FieldValue) -> Bool {
+        switch value {
+        case .text(let text): return SecretSealer.isSealed(text)
+        case .choices(let items): return items.contains(where: SecretSealer.isSealed)
+        default: return false
+        }
+    }
+
+    /// The values without any secret, for anything that leaves the binder: every
+    /// sealed value, and every value of a field the template marks secret.
     public static func stripping(_ values: FieldValues, definition: TemplateDefinition?) -> FieldValues {
-        guard let definition else { return values }
         var result = values
-        for field in fields(in: definition) { result[field.key] = nil }
+        for (key, value) in values where isSealed(value) { result[key] = nil }
+        for field in definition.map(fields(in:)) ?? [] { result[field.key] = nil }
         return result
+    }
+
+    /// Only the sealed values, by their own form.
+    public static func sealedValues(in values: FieldValues) -> FieldValues {
+        var result = FieldValues()
+        for (key, value) in values where isSealed(value) { result[key] = value }
+        return result
+    }
+
+    /// The person's own rows without the secret ones, for anything that leaves the binder.
+    public static func strippingFacts(_ facts: [CustomFact]) -> [CustomFact] {
+        facts.filter { !$0.isSecret }
     }
 
     /// The values with every secret typed in plain sealed. Values already sealed
@@ -42,15 +66,38 @@ public enum SecretFields {
         return result
     }
 
+    /// The person's rows with every secret row typed in plain sealed. Rows
+    /// already sealed pass through unchanged; a secret row left empty keeps no value.
+    public static func sealingFacts(_ facts: [CustomFact], sealer: SecretSealer) throws -> [CustomFact] {
+        try facts.map { fact in
+            guard fact.isSecret, !SecretSealer.isSealed(fact.value) else { return fact }
+            var sealed = fact
+            sealed.isSensitive = true
+            let plain = fact.value.trimmingCharacters(in: .whitespacesAndNewlines)
+            sealed.value = plain.isEmpty ? "" : try sealer.seal(plain)
+            return sealed
+        }
+    }
+
     /// Incoming values (from an archive, which never carries secrets) with the
-    /// secrets this phone already keeps for the same record.
+    /// secrets this phone already keeps for the same record. With a template, a
+    /// kept secret stays only while its field still applies (a PIN goes when the
+    /// card became a passport).
     public static func keepingLocalSecrets(_ incoming: FieldValues, from existing: FieldValues, definition: TemplateDefinition?) -> FieldValues {
-        guard let definition else { return incoming }
         var result = stripping(incoming, definition: definition)
-        for field in fields(in: definition) where field.applies(to: result) {
-            result[field.key] = existing[field.key]
+        for (key, value) in sealedValues(in: existing) {
+            if let field = definition?.allFields.first(where: { $0.key == key }), !field.applies(to: result) { continue }
+            result[key] = value
         }
         return result
+    }
+
+    /// Incoming rows (from an archive, which never carries secret rows) with the
+    /// secret rows this phone already keeps for the same record.
+    public static func keepingLocalSecretFacts(_ incoming: [CustomFact], from existing: [CustomFact]) -> [CustomFact] {
+        let kept = existing.filter(\.isSecret)
+        let keptIDs = Set(kept.map(\.id))
+        return strippingFacts(incoming).filter { !keptIDs.contains($0.id) } + kept
     }
 }
 

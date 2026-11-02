@@ -118,7 +118,7 @@ private struct ProviderContent: View {
                     if let url = PhoneLinks.message(phone) { openURL(url) }
                 }
                 DSSecondaryButton("Copiază", systemImage: "doc.on.doc") {
-                    Clipboard.copy(phone)
+                    Clipboard.copy(phone, .ordinary)
                     toast = DSToast(title: LocalizedStringResource("Am copiat numărul", comment: "Toast after copying a phone number."), systemImage: "doc.on.doc.fill", actionTitle: nil, feedback: .success)
                 }
             }

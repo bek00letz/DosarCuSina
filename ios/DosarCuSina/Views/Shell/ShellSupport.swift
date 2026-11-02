@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import UIKit
+import UniformTypeIdentifiers
 
 // Small pieces every binder screen shares: the side-effects coordinator in the
 // environment, human error alerts, photo thumbnails and copy-to-clipboard.
@@ -111,10 +112,30 @@ extension Asset {
 
 // MARK: - Copy and call
 
+/// The one way the app puts a value on the clipboard.
 @MainActor
 enum Clipboard {
-    static func copy(_ text: String) {
-        UIPasteboard.general.string = text
+    enum Kind {
+        /// A phone number, a policy number: shared with the person's other devices like any copy.
+        case ordinary
+        /// A personal value (a CNP, a document number, anything from a locked
+        /// section) or a code: kept on this phone only, and gone after `personalLifetime`.
+        case personal
+    }
+
+    /// How long a personal value or a code stays on the clipboard.
+    static let personalLifetime: TimeInterval = 60
+
+    static func copy(_ text: String, _ kind: Kind) {
+        switch kind {
+        case .ordinary:
+            UIPasteboard.general.string = text
+        case .personal:
+            UIPasteboard.general.setItems(
+                [[UTType.utf8PlainText.identifier: text]],
+                options: [.localOnly: true, .expirationDate: Date().addingTimeInterval(personalLifetime)]
+            )
+        }
     }
 }
 

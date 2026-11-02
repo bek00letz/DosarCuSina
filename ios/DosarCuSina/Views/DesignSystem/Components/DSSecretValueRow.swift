@@ -15,8 +15,6 @@ struct DSSecretValueRow: View {
 
     /// How long a shown code stays on screen.
     static let visibleFor: Duration = .seconds(30)
-    /// How long a copied code stays on the clipboard.
-    static let clipboardLifetime: TimeInterval = 60
 
     @State private var shown: String?
     @State private var message: String?
@@ -120,10 +118,7 @@ struct DSSecretValueRow: View {
 
     private func copy() async {
         guard let code = await opened() else { return }
-        UIPasteboard.general.setItems(
-            [[UTType.utf8PlainText.identifier: code]],
-            options: [.localOnly: true, .expirationDate: Date().addingTimeInterval(Self.clipboardLifetime)]
-        )
+        Clipboard.copy(code, .personal)
         copied += 1
         AccessibilityNotification.Announcement(String(localized: "Copiat. Se șterge singur din memorie într-un minut.", comment: "Note after copying a secret code.")).post()
         message = nil

@@ -153,9 +153,12 @@ public final class AssetActions {
         try save()
     }
 
-    /// Replaces the free label–value rows shown under Date importante.
+    /// Replaces the free label–value rows shown under Date importante. A secret
+    /// row (a code) is sealed before it is saved, like a PIN field.
     public func setCustomFacts(_ asset: Asset, _ facts: [CustomFact]) throws {
-        asset.customFacts = facts.filter { !$0.label.trimmingCharacters(in: .whitespaces).isEmpty || !$0.value.trimmingCharacters(in: .whitespaces).isEmpty }
+        let kept = facts.filter { !$0.label.trimmingCharacters(in: .whitespaces).isEmpty || !$0.value.trimmingCharacters(in: .whitespaces).isEmpty }
+        asset.customFacts = try SecretFields.sealingFacts(kept, sealer: sealer)
+        asset.updatedAt = now()
         try save()
     }
 
@@ -199,14 +202,24 @@ public final class AssetActions {
     /// Files `child` under `parent`, or makes it standalone with nil. Refuses to
     /// create a loop (an asset under its own descendant).
     public func setParent(_ child: Asset, _ parent: Asset?) throws {
-        if let parent {
-            guard parent.id != child.id, !Self.descendants(of: child).contains(where: { $0.id == parent.id }) else {
-                throw AssetActionError.wouldCreateLoop
-            }
+        if let parent, !Self.canFile(child, under: parent) {
+            throw AssetActionError.wouldCreateLoop
         }
         child.parent = parent
         child.updatedAt = now()
         try save()
+    }
+
+    /// The one rule for filing something under something else, in the app and
+    /// in a restored backup: never under itself, nor under anything filed under it.
+    static func canFile(_ child: Asset, under parent: Asset) -> Bool {
+        var seen: Set<UUID> = []
+        var current: Asset? = parent
+        while let next = current {
+            guard next.id != child.id, seen.insert(next.id).inserted else { return false }
+            current = next.parent
+        }
+        return true
     }
 
     static func descendants(of asset: Asset) -> [Asset] {

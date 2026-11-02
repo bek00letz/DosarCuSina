@@ -43,6 +43,7 @@ struct DSReadOnlyValueRow: View {
 
 /// A value worth one tap: a policy number to copy, a phone to call. The value
 /// sits under its title, with a labelled button beside it, never an icon alone.
+/// A personal value (`copies: .personal`) stays on this phone's clipboard for a minute only.
 struct DSActionValueRow: View {
     enum Action {
         case copy
@@ -52,6 +53,7 @@ struct DSActionValueRow: View {
     let title: Text
     let value: String
     let action: Action
+    var copies: Clipboard.Kind = .ordinary
 
     @State private var copied = 0
     @Environment(\.openURL) private var openURL
@@ -78,9 +80,11 @@ struct DSActionValueRow: View {
     private func perform() {
         switch action {
         case .copy:
-            UIPasteboard.general.string = value
+            Clipboard.copy(value, copies)
             copied += 1
-            AccessibilityNotification.Announcement(String(localized: "Copiat")).post()
+            AccessibilityNotification.Announcement(copies == .personal
+                ? String(localized: "Copiat. Se șterge singur din memorie într-un minut.", comment: "Note after copying a secret code.")
+                : String(localized: "Copiat")).post()
         case .call:
             let digits = value.filter { $0.isNumber || $0 == "+" }
             if let url = URL(string: "tel:\(digits)") { openURL(url) }
