@@ -197,6 +197,8 @@ public struct CaptureFieldKey: RawRepresentable, Hashable, Codable, Sendable, Ex
     public static let sex: CaptureFieldKey = "sex"
     public static let personalNumber: CaptureFieldKey = "personalNumber"
     public static let licenceCategories: CaptureFieldKey = "licenceCategories"
+    /// Which variant of its document type this is (a `DocumentType.Variant` key), from the matched layout.
+    public static let documentVariant: CaptureFieldKey = "documentVariant"
 
     // Validity
     public static let issueDate: CaptureFieldKey = "issueDate"

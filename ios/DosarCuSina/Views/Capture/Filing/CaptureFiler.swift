@@ -47,8 +47,14 @@ struct CaptureFiler {
                   let converted = CaptureMapping.fieldValue(value, for: definition) else { continue }
             if values[key] == nil { values[key] = converted }
         }
-        if let type = CaptureMapping.documentType(for: review.kind), template.field("document.type") != nil {
-            values["document.type"] = .text(type)
+        if let type = CaptureMapping.documentType(for: review.kind), template.field(DocumentType.typeFieldKey) != nil {
+            values[DocumentType.typeFieldKey] = .text(type)
+            // The layout that was read says which variant this is (the electronic card or the older one).
+            if let variant = review.value(.documentVariant)?.text,
+               DocumentType.variants(of: type).contains(where: { $0.key == variant }),
+               template.field(DocumentType.variantFieldKey) != nil {
+                values[DocumentType.variantFieldKey] = .text(variant)
+            }
         }
         return values
     }

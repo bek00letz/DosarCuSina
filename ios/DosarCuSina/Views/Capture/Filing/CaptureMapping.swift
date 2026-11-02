@@ -291,7 +291,8 @@ enum CaptureMapping {
     /// sit behind Face ID), except what has its own place or repeats other fields.
     static func isShownInReview(_ key: CaptureFieldKey, among keys: Set<CaptureFieldKey>) -> Bool {
         switch key {
-        case .lineItems, .documentCode, .issuingCountry: return false
+        // Bookkeeping, not something read off the page: filing uses it, people don't need to check it.
+        case .lineItems, .documentCode, .issuingCountry, .documentVariant: return false
         case .holderName: return !keys.contains(.surname) && !keys.contains(.givenNames)
         default: return true
         }

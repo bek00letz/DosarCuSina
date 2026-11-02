@@ -12,7 +12,7 @@ extension CaptureDocumentKind {
     /// Fields printed on identity documents.
     static let identityKeys: Set<CaptureFieldKey> = [
         .documentNumber, .documentCode, .issuingCountry, .nationality, .surname, .givenNames, .holderName,
-        .birthDate, .sex, .personalNumber, .issueDate, .expiryDate, .issuer,
+        .birthDate, .sex, .personalNumber, .issueDate, .expiryDate, .issuer, .documentVariant,
     ]
 
     /// Whether a field may appear on this kind of document.

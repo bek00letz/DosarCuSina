@@ -66,6 +66,10 @@ struct IdentityTemplate: Sendable {
     let otherLabels: [LabelWording]
     /// Rules the document's values must satisfy on top of the general ones.
     let agreements: [CaptureConsistency.Rule]
+    /// The document variant this layout identifies (the electronic identity card
+    /// or the older one), so filing sets it and the variant's fields, such as the
+    /// PIN codes, appear without asking.
+    var documentVariant: String? = nil
 
     /// The label table `LabelledLayout` reads with: each field's labels, then the others.
     var labelTable: [(IdentityLabelKey, [LabelWording])] {
@@ -131,7 +135,8 @@ enum IdentityTemplates {
             "romania", "carte de identitate", "carte electronica de identitate", "identity card", "semnatura titularului",
             "semnatura", "holder's signature", "signature", "domiciliu", "address", "loc nastere", "locul nasterii", "place of birth",
         ].map(LabelWording.words),
-        agreements: issuedFromFourteen
+        agreements: issuedFromFourteen,
+        documentVariant: DocumentType.Variant.idCardElectronic
     )
 
     /// The older identity card: trilingual labels, "SERIA XT NR 123456" at the top,
@@ -156,7 +161,8 @@ enum IdentityTemplates {
             "loc nastere/lieu de naissance/place of birth", "loc nastere", "place of birth", "domiciliu/adresse/address", "domiciliu",
             "address", "romania", "roumanie", "carte de identitate", "identity card", "carte d'identite",
         ].map(LabelWording.words),
-        agreements: issuedFromFourteen
+        agreements: issuedFromFourteen,
+        documentVariant: DocumentType.Variant.idCardWithoutChip
     )
 
     /// The passport data page: bilingual labels with values under them, and a TD3 zone.

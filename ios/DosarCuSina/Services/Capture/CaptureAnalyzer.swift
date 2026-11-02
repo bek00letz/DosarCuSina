@@ -104,7 +104,12 @@ public struct CaptureAnalyzer: Sendable {
         case .passport, .identityCard, .drivingLicence:
             // Printed labels, read with the document's template. The MRZ (when on the
             // photo) already added checked values, which win; agreeing values reinforce.
-            if let template { fields.add(IdentityDocumentReader.read(text, template: template, today: today)) }
+            if let template {
+                fields.add(IdentityDocumentReader.read(text, template: template, today: today))
+                if let variant = template.documentVariant {
+                    fields.add(.documentVariant, .text(variant), 0.9, nil, tier: .deterministic)
+                }
+            }
         case .vehicleRegistration:
             addVehicleIdentity(text, into: &fields)
             for (key, entry) in RomanianFieldExtractor.registrationFields(in: text).sorted(by: { $0.key.rawValue < $1.key.rawValue }) {

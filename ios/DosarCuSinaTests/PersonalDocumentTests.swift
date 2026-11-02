@@ -94,7 +94,6 @@ struct PersonalDocumentTests {
 
     @Test func aPhotoStartedFromAPersonBecomesOneOfTheirDocuments() async throws {
         let (context, corina) = try setup()
-        let known = PersonalDocumentFiling.documentIDs(of: corina)
         var review = CaptureReview(
             result: CaptureResult(kind: .other, kindConfidence: 0.6, fields: [], suggestions: [], reminder: nil,
                                   recognizedText: "", barcodes: [], documentID: nil, notices: []),
@@ -104,10 +103,45 @@ struct PersonalDocumentTests {
         review.filesAsPersonalDocument = true
         #expect(CaptureFiler.filedTemplateKey(for: review, destinationTemplateKey: BuiltInTemplates.Key.member) == BuiltInTemplates.Key.documents)
 
-        _ = try await CaptureFiler(context: context).save(review)
-        let document = try #require(PersonalDocumentFiling.newDocument(of: corina, since: known))
+        let outcome = try await CaptureFiler(context: context).save(review)
+        let document = try #require(outcome.asset)
+        #expect(document.parent?.id == corina.id)
         #expect(document.templateKey == BuiltInTemplates.Key.documents)
         #expect(document.name == "Document – Manole Corina")
+    }
+
+    @Test func aPhotographedElectronicCardKnowsItsVariantSoItsPINRowsAppear() async throws {
+        let (context, corina) = try setup()
+        var review = CaptureReview(
+            result: CaptureResult(kind: .identityCard, kindConfidence: 0.95, fields: [
+                CaptureField(key: .surname, value: .text("MANOLE"), confidence: 0.8, tier: .heuristic),
+                CaptureField(key: .givenNames, value: .text("CORINA"), confidence: 0.8, tier: .heuristic),
+                CaptureField(key: .documentVariant, value: .text(DocumentType.Variant.idCardElectronic), confidence: 0.9, tier: .deterministic),
+            ], suggestions: [], reminder: nil, recognizedText: "", barcodes: [], documentID: nil, notices: []),
+            assets: [corina], context: context
+        )
+        review.destination = .asset(corina.id)
+        let outcome = try await CaptureFiler(context: context).save(review)
+        let document = try #require(outcome.asset)
+        #expect(document.value(DocumentType.variantFieldKey) == .text(DocumentType.Variant.idCardElectronic))
+    }
+
+    @Test func theElectronicCardLayoutReportsItsVariant() {
+        let analysis = CaptureAnalyzer().analyze(text: """
+        ROMANIA
+        CARTE DE IDENTITATE IDENTITY CARD
+        Nume / Surname
+        EXEMPLU
+        Prenume / Given names
+        ION
+        CNP / PIN 1800101990006
+        Nr. document / Document no.
+        XY123456
+        Data expirării / Date of expiry
+        15.03.2032
+        Semnătura titularului / Holder's signature
+        """, referenceDate: Date(timeIntervalSince1970: 1_793_577_600))
+        #expect(analysis.fields.first { $0.key == .documentVariant }?.value.text == DocumentType.Variant.idCardElectronic)
     }
 
     @Test func withoutTheFlagALoosePaperStaysOnThePerson() throws {
