@@ -55,9 +55,7 @@ struct CaptureEngineTests {
 
     @Test("A passport photo becomes a draft with a deterministic expiry and a stored page")
     func passportPhoto() async throws {
-        let root = FileManager.default.temporaryDirectory.appendingPathComponent("engine-\(UUID().uuidString)")
-        defer { try? FileManager.default.removeItem(at: root) }
-        let store = CaptureDocumentStore(rootURL: root)
+        let store = CaptureDocumentStore()
         let engine = makeEngine(text: Self.passportText, onDevice: nil, cloud: nil, store: store)
 
         let image = CaptureDocumentStoreTests.page(width: 800, height: 560)
@@ -67,7 +65,7 @@ struct CaptureEngineTests {
         #expect(result.field(.expiryDate)?.value.day == CaptureDay(year: 2031, month: 4, day: 15))
         #expect(result.reminder?.leadDays.first == 270)
         let documentID = try #require(result.documentID)
-        #expect(try await store.document(id: documentID)?.kind == .passport)
+        #expect(await store.processed(id: documentID)?.document.kind == .passport)
     }
 
     @Test("When the on-device model is unavailable the result says so and patterns still work")
@@ -99,14 +97,12 @@ struct CaptureEngineTests {
 
     @Test("Pasted text isn't stored as a document")
     func pastedText() async throws {
-        let root = FileManager.default.temporaryDirectory.appendingPathComponent("engine-\(UUID().uuidString)")
-        defer { try? FileManager.default.removeItem(at: root) }
-        let store = CaptureDocumentStore(rootURL: root)
+        let store = CaptureDocumentStore()
         let engine = makeEngine(text: "", onDevice: nil, cloud: nil, store: store)
 
         let result = try await engine.capture(CaptureRequest(.text("Total de plată 210,40 lei"), options: CaptureOptions(referenceDate: today)))
         #expect(result.documentID == nil)
-        #expect(try await store.allDocuments().isEmpty)
+        #expect(await store.pendingCount == 0)
     }
 
     @Test("Warranty end is derived from purchase date and length when no tier gave it")

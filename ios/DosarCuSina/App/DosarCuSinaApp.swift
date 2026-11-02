@@ -48,6 +48,13 @@ struct DosarCuSinaApp: App {
         if (try? HouseholdRules.reconcile(in: container.mainContext, today: CalendarDay(Date()))) == true {
             try? container.mainContext.save()
         }
+        // Capture recognizes documents already in the binder by their fingerprint.
+        Task {
+            await CaptureDocumentStore.shared().setDuplicateLookup { fingerprint in
+                await MainActor.run { AttachmentActions(context: container.mainContext).attachmentID(withFingerprint: fingerprint) }
+            }
+        }
+        DocumentFileProtection.apply(toStoreAt: PersistenceController.defaultStoreURL)
         let coordinator = SideEffectsCoordinator(container: container)
         coordinator.start()
         sideEffects = coordinator

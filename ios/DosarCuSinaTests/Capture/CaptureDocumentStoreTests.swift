@@ -26,16 +26,9 @@ struct CaptureDocumentStoreTests {
         return context.makeImage()!
     }
 
-    private func makeStore() -> (CaptureDocumentStore, URL) {
-        let root = FileManager.default.temporaryDirectory.appendingPathComponent("capture-store-\(UUID().uuidString)", isDirectory: true)
-        return (CaptureDocumentStore(rootURL: root), root)
-    }
-
-    @Test("Pages are kept with a thumbnail, sized for reading")
-    func storesPagesAndThumbnail() async throws {
-        let (store, root) = makeStore()
-        defer { try? FileManager.default.removeItem(at: root) }
-
+    @Test("Pages are processed with a thumbnail, sized for reading, and nothing is written to disk")
+    func processesPagesAndThumbnail() async throws {
+        let store = CaptureDocumentStore()
         let (document, isDuplicate) = try await store.store(.init(pages: [Self.page()], kind: .rcaPolicy))
         #expect(!isDuplicate)
         #expect(document.pages.count == 1)
@@ -43,20 +36,20 @@ struct CaptureDocumentStoreTests {
         #expect(max(page.pixelWidth ?? 0, page.pixelHeight ?? 0) == CaptureDocumentStore.pageMaxLongEdge)
         let thumbnail = try #require(document.thumbnail)
         #expect(max(thumbnail.pixelWidth ?? 0, thumbnail.pixelHeight ?? 0) == CaptureDocumentStore.thumbnailMaxLongEdge)
-        #expect(FileManager.default.fileExists(atPath: await store.fileURL(of: page, in: document.id).path))
+        let processed = try #require(await store.processed(id: document.id))
+        #expect(processed.pageData.count == 1)
+        #expect(processed.thumbnailData != nil)
     }
 
-    @Test("The same document captured twice is stored once")
-    func deduplicates() async throws {
-        let (store, root) = makeStore()
-        defer { try? FileManager.default.removeItem(at: root) }
-
+    @Test("The same document captured twice is processed once")
+    func deduplicatesPending() async throws {
+        let store = CaptureDocumentStore()
         let original = Data("same photo bytes".utf8)
-        let first = try await store.store(.init(pages: [Self.page(seed: 1)], sourceData: original))
-        let second = try await store.store(.init(pages: [Self.page(seed: 2)], sourceData: original))
+        let first = try await store.store(.init(pages: [Self.page(width: 400, height: 600, seed: 1)], sourceData: original))
+        let second = try await store.store(.init(pages: [Self.page(width: 400, height: 600, seed: 2)], sourceData: original))
         #expect(second.isDuplicate)
         #expect(second.document.id == first.document.id)
-        #expect(try await store.allDocuments().count == 1)
+        #expect(await store.pendingCount == 1)
 
         let pdf = Data("%PDF-1.7 placeholder".utf8)
         let third = try await store.store(.init(pages: [], originalPDF: pdf))
@@ -65,55 +58,88 @@ struct CaptureDocumentStoreTests {
         #expect(fourth.isDuplicate)
     }
 
-    @Test("Replaced documents are archived, never deleted")
-    func archiving() async throws {
-        let (store, root) = makeStore()
-        defer { try? FileManager.default.removeItem(at: root) }
-
-        let old = try await store.store(.init(pages: [Self.page(width: 400, height: 600, seed: 3)], kind: .rcaPolicy)).document
-        let new = try await store.store(.init(pages: [Self.page(width: 400, height: 600, seed: 4)], kind: .rcaPolicy)).document
-        try await store.archive(documentID: old.id, supersededBy: new.id)
-
-        let archived = try #require(try await store.document(id: old.id))
-        #expect(archived.isArchived)
-        #expect(archived.supersededBy == new.id)
-        #expect(try await store.allDocuments().count == 2)
-
-        // Records survive a fresh store reading the same folder.
-        let reopened = CaptureDocumentStore(rootURL: root)
-        #expect(try await reopened.document(id: old.id)?.supersededBy == new.id)
+    @Test("Documents already in the binder are recognized by fingerprint")
+    func recognizesFiledDocuments() async throws {
+        let filedID = UUID()
+        let pdf = Data("%PDF-1.7 already filed".utf8)
+        let fingerprint = Hashing.sha256(pdf)
+        let store = CaptureDocumentStore(duplicateLookup: { $0 == fingerprint ? filedID : nil })
+        let result = try await store.store(.init(pages: [], originalPDF: pdf))
+        #expect(result.isDuplicate)
+        #expect(result.document.id == filedID)
+        #expect(await store.pendingCount == 0)
     }
 
-    @Test("The report adds up space by owner and kind")
-    func report() async throws {
-        let (store, root) = makeStore()
-        defer { try? FileManager.default.removeItem(at: root) }
+    @Test("Taking or discarding a capture leaves nothing behind")
+    func takeAndDiscard() async throws {
+        let store = CaptureDocumentStore()
+        let first = try await store.store(.init(pages: [Self.page(width: 400, height: 600, seed: 3)])).document
+        let second = try await store.store(.init(pages: [Self.page(width: 400, height: 600, seed: 4)])).document
+        #expect(await store.take(id: first.id) != nil)
+        #expect(await store.take(id: first.id) == nil)
+        await store.discard(id: second.id)
+        #expect(await store.pendingCount == 0)
+    }
 
-        let car = try await store.store(.init(pages: [Self.page(width: 400, height: 600, seed: 5)], kind: .serviceInvoice, ownerID: "car")).document
-        let home = try await store.store(.init(pages: [Self.page(width: 400, height: 600, seed: 6)], kind: .utilityInvoice, ownerID: "home")).document
-        let report = try await store.report()
+    @MainActor
+    @Test("A confirmed capture becomes an Attachment, the one record")
+    func filingMovesTheCaptureIntoTheBinder() async throws {
+        let context = try makeContext()
+        let car = Asset(name: "Mașina", templateKey: BuiltInTemplates.Key.vehicle)
+        context.insert(car)
+        try context.save()
+        let store = CaptureDocumentStore()
+        let captured = try await store.store(.init(pages: [Self.page(width: 800, height: 1100, seed: 5)], kind: .rcaPolicy)).document
 
+        let documents = AttachmentActions(context: context)
+        let attachment = try #require(try await documents.fileCaptured(documentID: captured.id, from: store, title: "Poliță RCA", asset: car))
+        #expect(attachment.kind == .policy)
+        #expect(attachment.orderedPages.count == 1)
+        #expect(attachment.thumbnailData != nil)
+        #expect(attachment.sha256 == captured.contentHash)
+        #expect(attachment.documentID == captured.id.uuidString)
+        #expect(await store.pendingCount == 0, "Nothing stays in capture")
+        #expect(documents.attachmentID(withFingerprint: captured.contentHash) == attachment.id)
+    }
+
+    @MainActor
+    @Test("The report adds up space by asset and kind, over attachments")
+    func report() throws {
+        let context = try makeContext()
+        let car = Asset(name: "Mașina", templateKey: BuiltInTemplates.Key.vehicle)
+        context.insert(car)
+        try context.save()
+        let documents = AttachmentActions(context: context)
+        try documents.file(DocumentDraft(fileName: "a.pdf", kind: .invoice, originalData: Data(count: 1_000)), asset: car)
+        let old = try documents.file(DocumentDraft(fileName: "b.pdf", kind: .policy, originalData: Data(count: 500)))
+        old.isArchived = true
+        let report = try DocumentStorage(context: context).report()
         #expect(report.total.documents == 2)
-        #expect(report.total.bytes == car.totalBytes + home.totalBytes)
-        #expect(report.byOwner["car"]?.bytes == car.totalBytes)
-        #expect(report.byKind[.utilityInvoice]?.documents == 1)
+        #expect(report.total.bytes == 1_500)
+        #expect(report.byAsset[car.id]?.bytes == 1_000)
+        #expect(report.byKind[.policy]?.documents == 1)
+        #expect(report.archived.bytes == 500)
     }
 
-    @Test("Old, large scans can be shrunk")
+    @MainActor
+    @Test("Old, large scans can be shrunk; originals are never touched")
     func compaction() async throws {
-        let (store, root) = makeStore()
-        defer { try? FileManager.default.removeItem(at: root) }
-
-        let longAgo = Date(timeIntervalSince1970: 1_600_000_000)
-        let document = try await store.store(.init(pages: [Self.page(seed: 7)], capturedAt: longAgo)).document
+        let context = try makeContext()
+        let store = CaptureDocumentStore()
+        let captured = try await store.store(.init(pages: [Self.page(seed: 7)])).document
+        let attachment = try #require(try await AttachmentActions(context: context).fileCaptured(documentID: captured.id, from: store, title: "Scan vechi"))
+        attachment.createdAt = Date(timeIntervalSince1970: 1_600_000_000)
         let policy = CompactionPolicy(olderThanDays: 365, maxLongEdge: 1200, quality: 0.5, minimumPageBytes: 0)
+        let storage = DocumentStorage(context: context)
 
-        #expect(try await store.report(policy: policy).compactionCandidates == [document.id])
-        let saved = try await store.compact(policy: policy)
+        #expect(try storage.report(policy: policy).compactionCandidates == [attachment.id])
+        let before = attachment.byteCount
+        let saved = try storage.compact(policy: policy)
         #expect(saved > 0)
-        let compacted = try #require(try await store.document(id: document.id))
-        #expect(compacted.compactedAt != nil)
-        #expect(max(compacted.pages[0].pixelWidth ?? 0, compacted.pages[0].pixelHeight ?? 0) == 1200)
-        #expect(try await store.report(policy: policy).compactionCandidates.isEmpty)
+        #expect(attachment.byteCount == before - saved)
+        #expect(attachment.compactedAt != nil)
+        let image = try #require(attachment.orderedPages.first?.imageData.flatMap(ImageEncoding.decode))
+        #expect(max(image.width, image.height) == 1200)
+        #expect(try storage.report(policy: policy).compactionCandidates.isEmpty)
     }
 }

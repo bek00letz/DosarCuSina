@@ -42,8 +42,13 @@ public struct DocumentDraft: Sendable {
         self.documentDate = documentDate
     }
 
+    /// A fingerprint worked out by capture (from the camera bytes or the PDF);
+    /// when set it is used as is, so the same photo is recognized next time.
+    public var contentHash: String?
+
     /// The fingerprint `Attachment.sha256` will have.
     public var sha256: String? {
+        if let contentHash { return contentHash }
         if let originalData { return Hashing.sha256(originalData) }
         guard !pageImages.isEmpty else { return nil }
         return Hashing.sha256(pageImages.reduce(into: Data()) { $0.append($1) })
@@ -80,6 +85,9 @@ public final class AttachmentActions {
     ) throws -> Attachment {
         let attachment = Self.insert(draft, asset: asset, obligation: obligation, historyEntry: historyEntry, provider: provider, calendar: calendar, in: context)
         try save()
+        if let storeURL = context.container.configurations.first?.url, storeURL.isFileURL, storeURL.path() != "/dev/null" {
+            DocumentFileProtection.apply(toStoreAt: storeURL)
+        }
         return attachment
     }
 

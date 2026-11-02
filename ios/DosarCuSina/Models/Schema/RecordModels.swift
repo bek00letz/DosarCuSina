@@ -181,6 +181,8 @@ extension DosarSchemaV2 {
         public var documentID: String?
         /// Kept for reference but no longer current (an old policy).
         public var isArchived: Bool = false
+        /// When old page images were re-encoded smaller to save space.
+        public var compactedAt: Date?
         public var createdAt: Date = Date()
         public var isExample: Bool = false
 
