@@ -2,17 +2,6 @@ import Foundation
 
 // Plain-language wording for section pages, kept out of the views so it is tested.
 
-/// "1 an", "3 ani", "20 de ani"; "1 lună", "5 luni", "20 de luni".
-enum CalendarCount {
-    static func years(_ count: Int) -> String {
-        String(localized: "\(abs(count)) ani", comment: "A number of years, with Romanian plural forms.")
-    }
-
-    static func months(_ count: Int) -> String {
-        String(localized: "\(abs(count)) luni", comment: "A number of months, with Romanian plural forms.")
-    }
-}
-
 /// A pet's or a person's age in plain words: "3 ani", "1 an și 4 luni", "5 luni".
 enum AgeWording {
     static func text(born: CalendarDay, today: CalendarDay, calendar: Calendar = .current) -> String? {
@@ -25,9 +14,7 @@ enum AgeWording {
                 ? String(localized: "sub o lună", comment: "Age younger than one month.")
                 : CalendarCount.months(months)
         }
-        // Months stop mattering once someone is a few years old.
-        if months == 0 || years >= 3 { return CalendarCount.years(years) }
-        return String(localized: "\(CalendarCount.years(years)) și \(CalendarCount.months(months))", comment: "Age in years and months, e.g. '1 an și 4 luni'.")
+        return DurationWording.yearsAndMonths(years: years, months: months)
     }
 }
 

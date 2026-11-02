@@ -117,7 +117,7 @@ public struct UpcomingObligationsIntent: AppIntent {
                 switch entry.urgency {
                 case .overdue: return String(localized: "\(title), depășit")
                 case .today: return String(localized: "\(title), azi")
-                default: return String(localized: "\(title), în \(entry.daysRemaining) zile")
+                default: return String(localized: "\(title), în \(DurationWording.phrase(days: entry.daysRemaining))")
                 }
             }
             return lines.formatted(.list(type: .and).locale(.dosarDefault))

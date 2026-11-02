@@ -33,6 +33,15 @@ struct BoxStatusTests {
         #expect(DayCount.phrase(count) == text)
     }
 
+    @Test("Distances step up from days to weeks, months and years, never rounding up", arguments: [
+        (5, "5 zile"), (20, "20 de zile"), (21, "3 săptămâni"), (27, "3 săptămâni"),
+        (87, "2 luni și 3 săptămâni"), (92, "3 luni"), (400, "1 an și 1 lună"),
+        (3_077, "8 ani"), (14_000, "38 de ani"), (-14_000, "38 de ani"),
+    ])
+    func durations(days: Int, text: String) {
+        #expect(DurationWording.phrase(days: days, from: today, calendar: calendar) == text)
+    }
+
     @Test func overdueTodayTomorrowAndGraceReadDifferently() {
         func line(_ due: String, consequence: Consequence = .legal, grace: Int = 0) -> String {
             BoxStatus.make([snapshot("RCA", kind: .insurance, due: due, offsets: [7, 0], consequence: consequence, grace: grace)], now: today, calendar: calendar)

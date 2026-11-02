@@ -17,11 +17,11 @@ extension DSDueText {
         switch days {
         case ..<0:
             let ago = -days
-            return LocalizedStringResource("Expirat de \(ago) zile", comment: "Badge: a document expired this many days ago.")
+            return LocalizedStringResource("Expirat de \(DurationWording.phrase(days: ago))", comment: "Badge: a document expired this long ago, e.g. '5 zile' or '3 ani'.")
         case 0:
             return LocalizedStringResource("Expiră azi", comment: "Badge: a document expires today.")
         case 1...soonWithinDays:
-            return LocalizedStringResource("Expiră în \(days) zile", comment: "Badge: a document expires in this many days.")
+            return LocalizedStringResource("Expiră în \(DurationWording.phrase(days: days))", comment: "Badge: a document expires in a duration such as '5 zile' or '8 ani'.")
         default:
             return LocalizedStringResource("Valabil", comment: "Badge: a document is valid and not close to expiring.")
         }

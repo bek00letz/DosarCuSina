@@ -100,10 +100,10 @@ enum DueWording {
     static func relative(daysRemaining days: Int) -> String {
         switch days {
         case -1: return String(localized: "ieri", comment: "Due: yesterday")
-        case ..<0: return String(localized: "acum \(DayCount.phrase(-days))", comment: "Due: this many days ago")
+        case ..<0: return String(localized: "acum \(DurationWording.phrase(days: days))", comment: "Due: this long ago")
         case 0: return String(localized: "azi", comment: "Due: today")
         case 1: return String(localized: "mâine", comment: "Due: tomorrow")
-        default: return String(localized: "în \(DayCount.phrase(days))", comment: "Due: in this many days")
+        default: return String(localized: "în \(DurationWording.phrase(days: days))", comment: "Due: in this long")
         }
     }
 

@@ -24,13 +24,13 @@ enum DSDueText {
         switch days {
         case ..<0:
             let late = -days
-            return LocalizedStringResource("Întârziat cu \(late) zile", comment: "Badge: the obligation is late. The number is how many days late.")
+            return LocalizedStringResource("Întârziat cu \(DurationWording.phrase(days: late))", comment: "Badge: the obligation is late, by a duration such as '5 zile' or '2 luni'.")
         case 0:
             return LocalizedStringResource("Azi", comment: "Badge: the obligation is due today.")
         case 1:
             return LocalizedStringResource("Mâine", comment: "Badge: the obligation is due tomorrow.")
         default:
-            return LocalizedStringResource("În \(days) zile", comment: "Badge: the obligation is due in this many days.")
+            return LocalizedStringResource("În \(DurationWording.phrase(days: days))", comment: "Badge: the obligation is due in a duration such as '5 zile' or '2 luni și 3 săptămâni'.")
         }
     }
 }

@@ -145,7 +145,7 @@ public enum ReminderPlanner {
         case ..<0: return String(localized: "Depășit: \(title)", comment: "Reminder title for an overdue obligation")
         case 0: return String(localized: "Azi: \(title)", comment: "Reminder title, due today")
         case 1: return String(localized: "Mâine: \(title)", comment: "Reminder title, due tomorrow")
-        default: return String(localized: "În \(daysBefore) zile: \(title)", comment: "Reminder title, due in N days. Needs Romanian plural forms.")
+        default: return String(localized: "În \(DurationWording.phrase(days: daysBefore)): \(title)", comment: "Reminder title: due in a duration such as '7 zile' or '9 luni', then the obligation.")
         }
     }
 
@@ -154,7 +154,7 @@ public enum ReminderPlanner {
         case ..<0: return String(localized: "Ai o scadență depășită", comment: "Generic reminder title")
         case 0: return String(localized: "Ai o scadență azi", comment: "Generic reminder title")
         case 1: return String(localized: "Ai o scadență mâine", comment: "Generic reminder title")
-        default: return String(localized: "Ai o scadență în \(daysBefore) zile", comment: "Generic reminder title, due in N days. Needs Romanian plural forms.")
+        default: return String(localized: "Ai o scadență în \(DurationWording.phrase(days: daysBefore))", comment: "Generic reminder title: due in a duration such as '7 zile' or '2 luni'.")
         }
     }
 }

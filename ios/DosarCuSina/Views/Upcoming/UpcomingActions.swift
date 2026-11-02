@@ -17,7 +17,7 @@ struct UpcomingActions {
         case 1: return String(localized: "Mâine")
         case 7: return String(localized: "Peste o săptămână")
         case 14: return String(localized: "Peste două săptămâni")
-        default: return String(localized: "Peste \(DayCount.phrase(days))")
+        default: return String(localized: "Peste \(DurationWording.phrase(days: days))")
         }
     }
 

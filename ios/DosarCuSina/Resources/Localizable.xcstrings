@@ -1,45 +1,6 @@
 {
   "sourceLanguage": "ro",
   "strings": {
-    "%@, în %lld zile": {
-      "comment": "Siri answer: the obligation title, then in how many days it is due.",
-      "localizations": {
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$@, în %#@days@"
-          },
-          "substitutions": {
-            "days": {
-              "argNum": 2,
-              "formatSpecifier": "lld",
-              "variations": {
-                "plural": {
-                  "one": {
-                    "stringUnit": {
-                      "state": "translated",
-                      "value": "%arg zi"
-                    }
-                  },
-                  "few": {
-                    "stringUnit": {
-                      "state": "translated",
-                      "value": "%arg zile"
-                    }
-                  },
-                  "other": {
-                    "stringUnit": {
-                      "state": "translated",
-                      "value": "%arg de zile"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "%lld amânate sau pe pauză": {
       "comment": "Deadlines snoozed or paused",
       "localizations": {
@@ -243,6 +204,35 @@
         }
       }
     },
+    "%lld săptămâni": {
+      "comment": "A number of weeks, with Romanian plural forms.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld săptămână"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld săptămâni"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de săptămâni"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld termene": {
       "comment": "A number of obligations, with Romanian plural forms.",
       "localizations": {
@@ -342,35 +332,6 @@
     "Adresa completă.": {
       "comment": "VoiceOver hint for an address field."
     },
-    "Ai o scadență în %lld zile": {
-      "comment": "Generic reminder title, due in N days.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Ai o scadență în %lld zi"
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Ai o scadență în %lld zile"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Ai o scadență în %lld de zile"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "Alege": {
       "comment": "Placeholder in an empty choice field."
     },
@@ -462,66 +423,8 @@
     "Elimină contactul": {
       "comment": "Menu item that unlinks the contact from this field."
     },
-    "Expirat de %lld zile": {
-      "comment": "Badge: a document expired this many days ago.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Expirat de %lld zi"
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Expirat de %lld zile"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Expirat de %lld de zile"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "Expiră azi": {
       "comment": "Badge: a document expires today."
-    },
-    "Expiră în %lld zile": {
-      "comment": "Badge: a document expires in this many days.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Expiră în %lld zi"
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Expiră în %lld zile"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Expiră în %lld de zile"
-                }
-              }
-            }
-          }
-        }
-      }
     },
     "Mai târziu": {
       "comment": "Status of an obligation that is not due soon."
@@ -583,74 +486,6 @@
     "Valabil": {
       "comment": "Badge: a document is valid and not close to expiring."
     },
-    "În %lld zile": {
-      "comment": "Badge: the obligation is due in this many days.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "În %lld zi"
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "În %lld zile"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "În %lld de zile"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "În %lld zile: %@": {
-      "comment": "Reminder title, due in N days. The second value is the obligation title.",
-      "localizations": {
-        "ro": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "În %#@days@: %2$@"
-          },
-          "substitutions": {
-            "days": {
-              "argNum": 1,
-              "formatSpecifier": "lld",
-              "variations": {
-                "plural": {
-                  "one": {
-                    "stringUnit": {
-                      "state": "translated",
-                      "value": "%arg zi"
-                    }
-                  },
-                  "few": {
-                    "stringUnit": {
-                      "state": "translated",
-                      "value": "%arg zile"
-                    }
-                  },
-                  "other": {
-                    "stringUnit": {
-                      "state": "translated",
-                      "value": "%arg de zile"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "În curând": {
       "comment": "Status of an obligation due within the next days."
     },
@@ -691,35 +526,6 @@
     },
     "Întârziat": {
       "comment": "Status of an obligation whose due date has passed."
-    },
-    "Întârziat cu %lld zile": {
-      "comment": "Badge: the obligation is late. The number is how many days late.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Întârziat cu %lld zi"
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Întârziat cu %lld zile"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Întârziat cu %lld de zile"
-                }
-              }
-            }
-          }
-        }
-      }
     },
     "Șterge data": {
       "comment": "Button that removes the date from a date field."
