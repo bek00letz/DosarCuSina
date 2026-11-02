@@ -100,10 +100,11 @@ struct CaptureFiler {
             let name = review.newAssetName.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !name.isEmpty else { throw FilingError.missingName }
             if let documentsKey = Self.holderDocumentTemplateKey(for: review.kind, destinationTemplateKey: templateKey) {
-                // A new person, named after the holder, with the document filed under them.
+                // A new person, named after the holder, with the document filed under them,
+                // in one save: a failure leaves neither behind.
                 guard let memberTemplate = templates[templateKey] else { throw FilingError.missingSection }
-                let member = try AssetActions(context: context, calendar: calendar, now: now).create(name: name, template: memberTemplate, values: FieldValues())
-                outcome.asset = try createSection(review, templateKey: documentsKey, name: review.title, parent: member, templates: templates)
+                outcome.asset = try createSection(review, templateKey: documentsKey, name: review.title,
+                                                  newParent: AssetActions.NewParent(name: name, template: memberTemplate), templates: templates)
             } else {
                 outcome.asset = try createSection(review, templateKey: templateKey, name: name, parent: nil, templates: templates)
             }
@@ -182,7 +183,8 @@ struct CaptureFiler {
     }
 
     /// A new section with the values read and the deadlines its template plans.
-    private func createSection(_ review: CaptureReview, templateKey: String, name: String, parent: Asset?, templates: [String: CategoryTemplate]) throws -> Asset {
+    private func createSection(_ review: CaptureReview, templateKey: String, name: String, parent: Asset? = nil,
+                               newParent: AssetActions.NewParent? = nil, templates: [String: CategoryTemplate]) throws -> Asset {
         let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let template = templates[templateKey] else { throw FilingError.missingSection }
         let actions = AssetActions(context: context, calendar: calendar, now: now)
@@ -197,7 +199,7 @@ struct CaptureFiler {
             planned.isSelected = planned.isSelected && planned.firstDue != nil
             return planned
         }
-        return try actions.create(name: name.isEmpty ? CaptureMapping.kindTitle(review.kind) : name, template: template, values: values, obligations: planned, parent: parent)
+        return try actions.create(name: name.isEmpty ? CaptureMapping.kindTitle(review.kind) : name, template: template, values: values, obligations: planned, parent: parent, newParent: newParent)
     }
 
     /// Drops the pages of a capture the person didn't keep.
