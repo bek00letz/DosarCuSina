@@ -40,6 +40,151 @@
         }
       }
     },
+    "%lld amânate sau pe pauză": {
+      "comment": "Deadlines snoozed or paused",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Unul amânat sau pe pauză"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld amânate sau pe pauză"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld amânate sau pe pauză"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld poze": {
+      "comment": "Photos received from another app",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "O poză"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld poze"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de poze"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld stele": {
+      "comment": "VoiceOver label of a star rating button",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "o stea"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld stele"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de stele"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld termene": {
+      "comment": "How many deadlines a section has coming up",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Un termen"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld termene"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de termene"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld termene mai departe": {
+      "comment": "Deadlines more than a month away",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Un termen mai departe"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld termene mai departe"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de termene mai departe"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "15 cifre": {
       "comment": "Placeholder for the pet microchip field."
     },
@@ -89,6 +234,64 @@
     },
     "Alege din Contacte": {
       "comment": "Button in an empty contact field."
+    },
+    "Am bifat %lld rânduri de pe factură. Verifică-le.": {
+      "comment": "Visit flow: rows ticked from a scanned invoice",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Am bifat un rând de pe factură. Verifică-l."
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Am bifat %lld rânduri de pe factură. Verifică-le."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Am bifat %lld de rânduri de pe factură. Verifică-le."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Am citit primele %lld pagini": {
+      "comment": "Capture review: only the first pages of a long PDF were read",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Am citit prima pagină"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Am citit primele %lld pagini"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Am citit primele %lld de pagini"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Anulează": {
       "comment": "Button that closes an editing sheet, or reverses the action a toast confirms."
@@ -311,6 +514,35 @@
     },
     "Închide": {
       "comment": "VoiceOver action that dismisses a toast."
+    },
+    "Încă %lld sunt mai jos, la Curând.": {
+      "comment": "Urmează: items that didn't fit under Acum",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Încă unul e mai jos, la Curând."
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Încă %lld sunt mai jos, la Curând."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Încă %lld sunt mai jos, la Curând."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Întârziat": {
       "comment": "Status of an obligation whose due date has passed."
