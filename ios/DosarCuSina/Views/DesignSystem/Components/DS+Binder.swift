@@ -283,59 +283,6 @@ struct DSSeeAllRow: View {
     }
 }
 
-// MARK: - Checkbox
-
-/// A plain checkbox with a title and a one-line explanation. The whole row toggles.
-struct DSCheckboxRow<Detail: View>: View {
-    let title: Text
-    var explanation: Text?
-    @Binding var isOn: Bool
-    @ViewBuilder var detail: Detail
-
-    init(title: Text, explanation: Text? = nil, isOn: Binding<Bool>, @ViewBuilder detail: () -> Detail) {
-        self.title = title
-        self.explanation = explanation
-        self._isOn = isOn
-        self.detail = detail()
-    }
-
-    var body: some View {
-        Button {
-            isOn.toggle()
-        } label: {
-            HStack(alignment: .firstTextBaseline, spacing: DS.Space.s) {
-                Image(systemName: isOn ? "checkmark.square.fill" : "square")
-                    .font(.title3)
-                    .foregroundStyle(isOn ? DS.Palette.accent : DS.Palette.secondaryLabel)
-                    .contentTransition(.symbolEffect(.replace))
-                    .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 2) {
-                    title.dsFont(.headline)
-                    if let explanation {
-                        explanation.dsFont(.subheadline)
-                    }
-                    detail
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .multilineTextAlignment(.leading)
-            }
-            .padding(.vertical, DS.Space.xs)
-            .frame(minHeight: 44)
-            .contentShape(.rect)
-        }
-        .buttonStyle(.dsPressable)
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(isOn ? [.isButton, .isSelected] : .isButton)
-        .sensoryFeedback(.selection, trigger: isOn)
-    }
-}
-
-extension DSCheckboxRow where Detail == EmptyView {
-    init(title: Text, explanation: Text? = nil, isOn: Binding<Bool>) {
-        self.init(title: title, explanation: explanation, isOn: isOn) { EmptyView() }
-    }
-}
-
 // MARK: - Stars
 
 /// A 1–5 rating. Read-only by default; with `onRate` every star is a 44 pt button

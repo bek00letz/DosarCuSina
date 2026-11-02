@@ -46,55 +46,6 @@ struct DSActionCard: View {
     }
 }
 
-// MARK: - Check rows
-
-/// A whole-row toggle with a checkmark, at least 44 pt tall: checklist parts,
-/// reminder choices. The row is the button; the checkmark is not a tiny target.
-struct DSCheckRow<Detail: View>: View {
-    let title: Text
-    var subtitle: Text?
-    let isOn: Bool
-    let action: () -> Void
-    @ViewBuilder var detail: Detail
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: DS.Space.xs) {
-            Button(action: action) {
-                HStack(spacing: DS.Space.s) {
-                    Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
-                        .font(.title2)
-                        .foregroundStyle(isOn ? DS.Palette.accent : DS.Palette.tertiaryLabel)
-                        .contentTransition(.symbolEffect(.replace))
-                        .accessibilityHidden(true)
-                    VStack(alignment: .leading, spacing: 2) {
-                        title.dsFont(.body)
-                        if let subtitle { subtitle.dsFont(.footnote) }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .frame(minHeight: 44)
-                .contentShape(.rect)
-            }
-            .buttonStyle(.plain)
-            .accessibilityAddTraits(isOn ? [.isButton, .isSelected] : .isButton)
-            if isOn {
-                detail
-                    .transition(DS.Motion.transition(from: .top, reduceMotion: reduceMotion))
-            }
-        }
-        .sensoryFeedback(.selection, trigger: isOn)
-        .animation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion), value: isOn)
-    }
-}
-
-extension DSCheckRow where Detail == EmptyView {
-    init(title: Text, subtitle: Text? = nil, isOn: Bool, action: @escaping () -> Void) {
-        self.init(title: title, subtitle: subtitle, isOn: isOn, action: action, detail: { EmptyView() })
-    }
-}
-
 // MARK: - Facts with an action
 
 /// A fact worth one tap: a policy number to copy, a phone to call.

@@ -226,9 +226,9 @@ private struct CustomSectionStep: View {
                         VStack(spacing: 0) {
                             ForEach(Array(CustomSectionDraft.offeredPockets.enumerated()), id: \.element) { index, pocket in
                                 if index > 0 { DSRowSeparator() }
-                                DSCheckboxRow(
+                                DSCheckRow(
                                     title: Text(verbatim: pocket.title),
-                                    explanation: Text(verbatim: CustomSectionDraft.explanation(for: pocket)),
+                                    subtitle: Text(verbatim: CustomSectionDraft.explanation(for: pocket)),
                                     isOn: Binding(
                                         get: { draft.wrappedValue.pockets.contains(pocket) },
                                         set: { isOn in
@@ -236,6 +236,7 @@ private struct CustomSectionStep: View {
                                         }
                                     )
                                 )
+                                .padding(.vertical, DS.Space.xs)
                             }
                         }
                     }
@@ -352,15 +353,15 @@ private struct ObligationsStep: View {
                     VStack(spacing: 0) {
                         ForEach($model.planned) { $plan in
                             if plan.id != model.planned.first?.id { DSRowSeparator() }
-                            DSCheckboxRow(
+                            DSCheckRow(
                                 title: Text(verbatim: plan.blueprint.title),
-                                explanation: Text(verbatim: ReminderWording.sentence(leadDays: plan.blueprint.reminders(for: model.values).leadDays)),
+                                subtitle: Text(verbatim: [
+                                    ReminderWording.sentence(leadDays: plan.blueprint.reminders(for: model.values).leadDays),
+                                    plan.blueprint.note,
+                                ].compactMap { $0 }.joined(separator: "\n")),
                                 isOn: $plan.isSelected
-                            ) {
-                                if let note = plan.blueprint.note {
-                                    Text(verbatim: note).dsFont(.footnote)
-                                }
-                            }
+                            )
+                            .padding(.vertical, DS.Space.xs)
                             if plan.isSelected {
                                 DSDateField(
                                     "Următoarea dată",
