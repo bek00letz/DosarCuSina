@@ -1,0 +1,51 @@
+name: Proposal
+description: Suggest a product, design or architecture change before building it.
+title: "Proposal: "
+labels: ["proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this before building anything a person would see or feel differently, anything that changes a decision in docs/DECISIONS.md, or a change to the data model or the `.dosar` format. The owner decides.
+
+        **Security or privacy problems don't go here.** Report them privately, as SECURITY.md explains. Use placeholder data only in this issue.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What isn't working for people today? Who runs into it, and when?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you propose
+      description: What would change, from the person's point of view first.
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: Options considered
+      description: Other ways it could go, and why this one.
+  - type: textarea
+    id: decisions
+    attributes:
+      label: Decisions it touches
+      description: Entries in docs/DECISIONS.md this follows, changes or contradicts. "None" is fine.
+  - type: textarea
+    id: scope
+    attributes:
+      label: What it affects
+      description: Screens, engines, the data model, the `.dosar` format, permissions, copy.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: It keeps the app free, offline and private (no accounts, analytics or servers).
+          required: true
+        - label: It works for people who aren't tech-savvy (no horizontal scrolling, big targets, Romanian copy).
+          required: true
+        - label: This issue contains no personal data and no security details.
+          required: true
