@@ -1,0 +1,94 @@
+import SwiftUI
+
+/// Namespace for the Dosar cu Șină design system.
+///
+/// Every screen builds on these tokens and components instead of hand-tuned values,
+/// so spacing, corners, color, type and motion stay consistent across the app.
+enum DS {}
+
+// MARK: - Spacing (4/8 pt grid)
+
+extension DS {
+    /// Spacing on a 4 pt grid. Use the named steps; never a raw number.
+    enum Space {
+        /// 4 pt — between an icon and its label, inside dense rows.
+        static let xxs: CGFloat = 4
+        /// 8 pt — between related lines of text, chip gaps.
+        static let xs: CGFloat = 8
+        /// 12 pt — between rows inside a card.
+        static let s: CGFloat = 12
+        /// 16 pt — card padding and the screen's side margin.
+        static let m: CGFloat = 16
+        /// 20 pt — between a section header and the card under it.
+        static let l: CGFloat = 20
+        /// 24 pt — between sections.
+        static let xl: CGFloat = 24
+        /// 32 pt — around empty and error states.
+        static let xxl: CGFloat = 32
+    }
+}
+
+// MARK: - Corner radii
+
+extension DS {
+    /// Corner radii. All corners are continuous (squircle) curves.
+    enum Radius {
+        /// Top-level cards and sheets' content blocks.
+        static let card: CGFloat = 22
+        /// Text fields, tiles inside cards, icon wells on rows.
+        static let control: CGFloat = 12
+        /// Small badges that are not capsules.
+        static let badge: CGFloat = 8
+
+        /// The radius a child needs to stay concentric with its container:
+        /// inner = outer − padding, never below `minimum`.
+        ///
+        /// Prefer `ConcentricRectangle` inside a `.containerShape(...)` when the
+        /// child is laid out by SwiftUI; use this when you need the number.
+        static func concentric(outer: CGFloat, padding: CGFloat, minimum: CGFloat = 4) -> CGFloat {
+            max(outer - padding, minimum)
+        }
+    }
+}
+
+// MARK: - Hairlines
+
+extension DS {
+    /// One physical pixel, for separators and card outlines.
+    struct Hairline: View {
+        @Environment(\.displayScale) private var displayScale
+
+        var body: some View {
+            Rectangle()
+                .fill(Color(uiColor: .separator))
+                .frame(height: 1 / displayScale)
+                .accessibilityHidden(true)
+        }
+    }
+}
+
+extension View {
+    /// A one-pixel outline along `shape`, used to separate a surface from its background.
+    /// It strengthens automatically when Increase Contrast is on.
+    func dsHairlineBorder<S: InsettableShape>(_ shape: S) -> some View {
+        modifier(DSHairlineBorder(shape: shape))
+    }
+}
+
+private struct DSHairlineBorder<S: InsettableShape>: ViewModifier {
+    let shape: S
+    @Environment(\.displayScale) private var displayScale
+    @Environment(\.colorSchemeContrast) private var contrast
+
+    func body(content: Content) -> some View {
+        content.overlay {
+            shape
+                .strokeBorder(
+                    Color(uiColor: contrast == .increased ? .label : .separator)
+                        .opacity(contrast == .increased ? 0.45 : 1),
+                    lineWidth: 1 / displayScale
+                )
+                .accessibilityHidden(true)
+        }
+    }
+}

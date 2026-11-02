@@ -1,0 +1,245 @@
+{
+  "sourceLanguage": "ro",
+  "strings": {
+    "15 cifre": {
+      "comment": "Placeholder for the pet microchip field."
+    },
+    "17 litere și cifre": {
+      "comment": "Placeholder for the vehicle identification number field."
+    },
+    "Adaugă data": {
+      "comment": "Button in an empty date field."
+    },
+    "Adresa completă.": {
+      "comment": "VoiceOver hint for an address field."
+    },
+    "Alege": {
+      "comment": "Placeholder in an empty choice field."
+    },
+    "Alege alt contact": {
+      "comment": "Menu item that replaces the linked contact."
+    },
+    "Alege din Contacte": {
+      "comment": "Button in an empty contact field."
+    },
+    "Anulează": {
+      "comment": "Button that closes an editing sheet, or reverses the action a toast confirms."
+    },
+    "Azi": {
+      "comment": "Badge: the obligation is due today."
+    },
+    "Ce ai completat până acum nu se va salva.": {
+      "comment": "Explains what discarding unsaved changes means."
+    },
+    "Cele 15 cifre ale microcipului, din carnetul de sănătate.": {
+      "comment": "VoiceOver hint for the pet microchip field."
+    },
+    "Completează acest câmp.": {
+      "comment": "Validation message under a required field that was left empty."
+    },
+    "Continuă editarea": {
+      "comment": "Button that keeps the sheet open."
+    },
+    "Contul bancar, începe cu RO.": {
+      "comment": "VoiceOver hint for the IBAN field."
+    },
+    "Elimină contactul": {
+      "comment": "Menu item that unlinks the contact from this field."
+    },
+    "Expirat de %lld zile": {
+      "comment": "Badge: a document expired this many days ago.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Expirat de %lld zi"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Expirat de %lld zile"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Expirat de %lld de zile"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Expiră azi": {
+      "comment": "Badge: a document expires today."
+    },
+    "Expiră în %lld zile": {
+      "comment": "Badge: a document expires in this many days.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Expiră în %lld zi"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Expiră în %lld zile"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Expiră în %lld de zile"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Mai târziu": {
+      "comment": "Status of an obligation that is not due soon."
+    },
+    "Monedă": {
+      "comment": "Label of the currency picker next to an amount."
+    },
+    "Mâine": {
+      "comment": "Badge: the obligation is due tomorrow."
+    },
+    "Niciuna": {
+      "comment": "Choice that leaves an optional field empty."
+    },
+    "Nimic ales": {
+      "comment": "VoiceOver value of an empty choice field."
+    },
+    "Numărul de înmatriculare, de exemplu B 123 ABC.": {
+      "comment": "VoiceOver hint for the license plate field."
+    },
+    "O adresă de e-mail.": {
+      "comment": "VoiceOver hint for an email field."
+    },
+    "Opțiuni contact": {
+      "comment": "VoiceOver label of the menu next to a linked contact."
+    },
+    "Renunți la modificări?": {
+      "comment": "Title of the dialog shown when closing a sheet with unsaved changes."
+    },
+    "Renunță la modificări": {
+      "comment": "Destructive button that closes the sheet and drops unsaved changes."
+    },
+    "Rezolvat": {
+      "comment": "Status or badge of an obligation that has been completed."
+    },
+    "Scrie doar cifre, de exemplu 84.200.": {
+      "comment": "Validation message when a reading such as kilometers isn't a number."
+    },
+    "Scrie suma doar cu cifre, de exemplu 1.250,50.": {
+      "comment": "Validation message when a money amount isn't a number."
+    },
+    "Se încarcă…": {
+      "comment": "Shown or read by VoiceOver while content loads."
+    },
+    "Seria de șasiu din talon, 17 litere și cifre.": {
+      "comment": "VoiceOver hint for the vehicle identification number field."
+    },
+    "Stradă, număr, localitate": {
+      "comment": "Placeholder for an address field."
+    },
+    "Suma nu poate fi negativă.": {
+      "comment": "Validation message when a money amount is below zero."
+    },
+    "Un link care începe cu https.": {
+      "comment": "VoiceOver hint for a web link field."
+    },
+    "Un număr de telefon.": {
+      "comment": "VoiceOver hint for a phone number field."
+    },
+    "Valabil": {
+      "comment": "Badge: a document is valid and not close to expiring."
+    },
+    "În %lld zile": {
+      "comment": "Badge: the obligation is due in this many days.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "În %lld zi"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "În %lld zile"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "În %lld de zile"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "În curând": {
+      "comment": "Status of an obligation due within the next days."
+    },
+    "Încearcă din nou": {
+      "comment": "Button on an error screen that retries the failed action."
+    },
+    "Închide": {
+      "comment": "VoiceOver action that dismisses a toast."
+    },
+    "Întârziat": {
+      "comment": "Status of an obligation whose due date has passed."
+    },
+    "Întârziat cu %lld zile": {
+      "comment": "Badge: the obligation is late. The number is how many days late.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Întârziat cu %lld zi"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Întârziat cu %lld zile"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Întârziat cu %lld de zile"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Șterge data": {
+      "comment": "Button that removes the date from a date field."
+    }
+  },
+  "version": "1.0"
+}
