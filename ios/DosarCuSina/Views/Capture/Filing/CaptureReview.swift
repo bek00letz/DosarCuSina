@@ -99,6 +99,26 @@ struct CaptureReview: Identifiable {
         kind == .identityCard && result.notices.contains(.identityBackMissing)
     }
 
+    /// The bill's lines as the person left them: corrected, added or removed. An
+    /// empty list removes the field.
+    var lineItems: [CaptureLineItem] {
+        get { value(.lineItems)?.lineItems ?? [] }
+        set {
+            if let index = fields.firstIndex(where: { $0.key == .lineItems }) {
+                if newValue.isEmpty { fields.remove(at: index) } else { fields[index].confirm(.lineItems(newValue)) }
+            } else if !newValue.isEmpty {
+                var field = Field(key: .lineItems, value: nil, confidence: 1, sourceText: nil, tier: .deterministic)
+                field.confirm(.lineItems(newValue))
+                fields.append(field)
+            }
+        }
+    }
+
+    /// Whether the review offers "Ce s-a făcut": the kind lists lines, or some were read.
+    var showsLineItems: Bool {
+        !lineItems.isEmpty || [.serviceInvoice, .fiscalReceipt, .veterinaryRecord].contains(kind)
+    }
+
     func value(_ key: CaptureFieldKey) -> CaptureValue? {
         fields.first { $0.key == key }?.value
     }

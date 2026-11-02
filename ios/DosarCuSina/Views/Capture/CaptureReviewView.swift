@@ -242,19 +242,8 @@ struct CaptureReviewView: View {
                             CaptureFieldEditor(field: $review.fields[index])
                         }
                     }
-                    if let lines = review.value(.lineItems)?.lineItems, !lines.isEmpty {
-                        VStack(alignment: .leading, spacing: DS.Space.xxs) {
-                            Text("Ce s-a făcut").dsFont(.footnote)
-                            ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
-                                HStack {
-                                    Text(verbatim: line.description).dsFont(.body)
-                                    Spacer()
-                                    if let amount = line.amount {
-                                        Text(verbatim: CaptureMapping.money(amount).formattedCompact()).dsFont(.body, numeric: true)
-                                    }
-                                }
-                            }
-                        }
+                    if review.showsLineItems {
+                        CaptureLineItemsEditor(lines: $review.lineItems, currency: review.value(.total)?.money?.currencyCode ?? Money.defaultCurrency)
                     }
                 }
             }
