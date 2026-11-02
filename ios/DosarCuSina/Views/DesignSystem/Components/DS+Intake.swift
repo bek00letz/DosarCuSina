@@ -97,20 +97,7 @@ struct DSFactRow: View {
     }
 }
 
-// MARK: - Labels
-
-/// "Exemplu" on anything that comes from the example household.
-struct DSExampleTag: View {
-    var body: some View {
-        Text("Exemplu", comment: "Tag on example data")
-            .font(.system(.caption2, weight: .semibold))
-            .foregroundStyle(DS.Palette.secondaryLabel)
-            .padding(.horizontal, DS.Space.xs - 2)
-            .padding(.vertical, 2)
-            .background(DS.Palette.fill, in: .capsule)
-            .accessibilityLabel(Text("Date de exemplu"))
-    }
-}
+// MARK: - Steps
 
 /// A numbered step in written instructions ("1 Apasă Trimite").
 struct DSStepRow: View {
@@ -155,7 +142,7 @@ struct DSStepRow: View {
                     DSFactRow(title: Text(verbatim: "Telefon pentru daune"), value: "0700 000 001", action: .call)
                     HStack {
                         DSStarRating(rating: 4.5, style: .compact)
-                        DSExampleTag()
+                        DSExampleBadge()
                     }
                     DSStarRating(rating: 3) { _ in }
                 }

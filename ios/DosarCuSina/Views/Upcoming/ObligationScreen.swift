@@ -114,7 +114,7 @@ private struct ObligationPage: View {
                 } else if obligation.asset == nil {
                     Text("Pentru toată casa").dsFont(.subheadline)
                 }
-                if obligation.isExample { DSExampleTag() }
+                if obligation.isExample { DSExampleBadge() }
             }
             Text(verbatim: isLocked ? String(localized: "O scadență protejată") : obligation.title)
                 .dsFont(.display)

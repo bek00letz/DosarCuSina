@@ -296,7 +296,7 @@ struct UpcomingRow: View {
                 HStack(spacing: DS.Space.xs) {
                     Text(verbatim: isLocked ? String(localized: "O scadență protejată") : obligation.title)
                         .dsFont(.headline)
-                    if obligation.isExample { DSExampleTag() }
+                    if obligation.isExample { DSExampleBadge() }
                 }
                 if !isLocked {
                     Text(verbatim: obligation.assetName ?? String(localized: "Pentru toată casa"))
