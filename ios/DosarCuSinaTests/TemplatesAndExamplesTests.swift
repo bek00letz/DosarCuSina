@@ -119,59 +119,107 @@ struct ExampleDataTests {
 
 /// Answers Face ID prompts the way a test tells it to.
 final class FakeAuthenticator: BiometricAuthenticating, @unchecked Sendable {
-    var succeeds: Bool
-    private(set) var prompts = 0
+    enum Outcome { case succeed, fail, cancel }
 
-    init(succeeds: Bool) { self.succeeds = succeeds }
+    var outcome: Outcome
+    var delay: Duration = .zero
+    private let lock = NSLock()
+    private var _prompts = 0
+    var prompts: Int { lock.withLock { _prompts } }
 
-    func canAuthenticate() -> Bool { true }
+    init(_ outcome: Outcome) { self.outcome = outcome }
+
     func biometryType() -> LABiometryType { .faceID }
 
     func evaluate(localizedReason: String) async throws -> Bool {
-        prompts += 1
-        if succeeds { return true }
-        throw LAError(.authenticationFailed)
+        lock.withLock { _prompts += 1 }
+        if delay > .zero { try? await Task.sleep(for: delay) }
+        switch outcome {
+        case .succeed: return true
+        case .fail: throw LAError(.authenticationFailed)
+        case .cancel: throw LAError(.userCancel)
+        }
     }
 }
 
 @MainActor
-@Suite("Face ID lock")
+@Suite("Face ID locks")
 struct BiometricVaultTests {
-    @Test func unlocksPerCategoryAndRelocksWhenIdle() async {
+    private func vault(_ authenticator: FakeAuthenticator, appLock: Bool = false, clock: @escaping () -> Date = { Date() }) -> BiometricVaultManager {
+        BiometricVaultManager(authenticator: authenticator, now: clock, appLockEnabled: { appLock }, observesAppLifecycle: false)
+    }
+
+    @Test func sectionLocksWorkWithOrWithoutTheAppLock() {
+        let withoutAppLock = vault(FakeAuthenticator(.succeed), appLock: false)
+        #expect(!withoutAppLock.isAppLocked)
+        #expect(withoutAppLock.isLocked(sectionIsSensitive: true))
+        #expect(!withoutAppLock.isLocked(sectionIsSensitive: false))
+
+        let withAppLock = vault(FakeAuthenticator(.succeed), appLock: true)
+        #expect(withAppLock.isAppLocked)
+        #expect(withAppLock.isLocked(sectionIsSensitive: true))
+    }
+
+    @Test func oneAuthenticationOpensAppAndSections() async {
+        let authenticator = FakeAuthenticator(.succeed)
+        let manager = vault(authenticator, appLock: true)
+        #expect(await manager.unlock(reason: "test") == .success)
+        #expect(!manager.isAppLocked)
+        #expect(!manager.isLocked(sectionIsSensitive: true), "No second prompt for a sensitive section")
+        #expect(await manager.unlock(reason: "test") == .success)
+        #expect(authenticator.prompts == 1)
+    }
+
+    @Test func failingOrCancellingOnlyKeepsTheSectionClosed() async {
+        let authenticator = FakeAuthenticator(.fail)
+        let manager = vault(authenticator)
+        #expect(await manager.unlock(reason: "test") == .failed)
+        #expect(manager.isLocked(sectionIsSensitive: true))
+        #expect(!manager.isAppLocked, "A failed section unlock never locks the whole app")
+        #expect(!manager.isAuthenticating)
+
+        authenticator.outcome = .cancel
+        #expect(await manager.unlock(reason: "test") == .cancelled)
+        #expect(manager.isLocked(sectionIsSensitive: true))
+
+        authenticator.outcome = .succeed
+        #expect(await manager.unlock(reason: "test") == .success, "The person can retry")
+        #expect(!manager.isLocked(sectionIsSensitive: true))
+    }
+
+    @Test func overlappingRequestsShareOnePrompt() async {
+        let authenticator = FakeAuthenticator(.succeed)
+        authenticator.delay = .milliseconds(100)
+        let manager = vault(authenticator, appLock: true)
+        async let first = manager.unlock(reason: "app")
+        async let second = manager.unlock(reason: "section")
+        let results = await [first, second]
+        #expect(results == [.success, .success])
+        #expect(authenticator.prompts == 1)
+    }
+
+    @Test func relocksOnlyAfterALongerBackgroundTrip() async {
         var clock = noon("2026-11-02")
-        let authenticator = FakeAuthenticator(succeeds: true)
-        let vault = BiometricVaultManager(authenticator: authenticator, now: { clock })
+        let manager = vault(FakeAuthenticator(.succeed), appLock: true, clock: { clock })
+        await manager.unlock(reason: "test")
 
-        #expect(vault.needsUnlock(templateKey: "documents", isSensitive: true, lockEnabled: true))
-        #expect(!vault.needsUnlock(templateKey: "vehicle", isSensitive: false, lockEnabled: true))
-        #expect(!vault.needsUnlock(templateKey: "documents", isSensitive: true, lockEnabled: false), "The master switch turns it off")
+        manager.appDidEnterBackground()
+        clock = clock.addingTimeInterval(BiometricVaultManager.relockAfterBackground - 5)
+        manager.appWillEnterForeground()
+        #expect(manager.isSessionUnlocked, "A quick switch to another app keeps it open")
 
-        #expect(await vault.unlock("documents", reason: "test"))
-        #expect(vault.isUnlocked("documents"))
-        #expect(!vault.isUnlocked("health"), "Each category unlocks on its own")
-        #expect(await vault.unlock("documents", reason: "test"))
-        #expect(authenticator.prompts == 1, "An open category doesn't ask again")
-
-        clock = clock.addingTimeInterval(200)
-        vault.noteActivity("documents")
-        clock = clock.addingTimeInterval(200)
-        #expect(vault.isUnlocked("documents"), "Activity keeps it open")
-        clock = clock.addingTimeInterval(301)
-        #expect(!vault.isUnlocked("documents"), "Idle time locks it")
+        manager.appDidEnterBackground()
+        clock = clock.addingTimeInterval(BiometricVaultManager.relockAfterBackground + 5)
+        manager.appWillEnterForeground()
+        #expect(!manager.isSessionUnlocked)
+        #expect(manager.isAppLocked)
     }
 
-    @Test func failedAuthenticationKeepsItLocked() async {
-        let vault = BiometricVaultManager(authenticator: FakeAuthenticator(succeeds: false))
-        #expect(await !vault.unlock("health", reason: "test"))
-        #expect(!vault.isUnlocked("health"))
-    }
-
-    @Test func lockAllClosesEverything() async {
-        let vault = BiometricVaultManager(authenticator: FakeAuthenticator(succeeds: true))
-        await vault.unlock("documents", reason: "test")
-        await vault.unlock("health", reason: "test")
-        vault.lockAll()
-        #expect(vault.unlockedKeys.isEmpty)
+    @Test func lockClosesTheSession() async {
+        let manager = vault(FakeAuthenticator(.succeed))
+        await manager.unlock(reason: "test")
+        manager.lock()
+        #expect(manager.isLocked(sectionIsSensitive: true))
     }
 
     @Test func masksTheMiddleOfIdentifiers() {

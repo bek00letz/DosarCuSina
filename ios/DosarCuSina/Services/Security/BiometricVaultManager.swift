@@ -8,18 +8,13 @@ import UIKit
 /// Face ID, Touch ID, Optic ID or the device passcode, behind a protocol so
 /// tests can run without a person.
 public protocol BiometricAuthenticating: Sendable {
-    func canAuthenticate() -> Bool
     func biometryType() -> LABiometryType
+    /// Throws `LAError` when the person cancels or authentication fails.
     func evaluate(localizedReason: String) async throws -> Bool
 }
 
 public struct SystemBiometricAuthenticator: BiometricAuthenticating {
     public init() {}
-
-    public func canAuthenticate() -> Bool {
-        var error: NSError?
-        return LAContext().canEvaluatePolicy(.deviceOwnerAuthentication, error: &error)
-    }
 
     public func biometryType() -> LABiometryType {
         let context = LAContext()
@@ -28,6 +23,7 @@ public struct SystemBiometricAuthenticator: BiometricAuthenticating {
         return context.biometryType
     }
 
+    /// Device-owner authentication: Face ID or Touch ID, with the passcode as fallback.
     public func evaluate(localizedReason: String) async throws -> Bool {
         let context = LAContext()
         context.localizedCancelTitle = String(localized: "Anulează")
@@ -35,86 +31,128 @@ public struct SystemBiometricAuthenticator: BiometricAuthenticating {
     }
 }
 
-/// Just-in-time unlock for sensitive categories. The app opens without a prompt;
-/// Face ID is asked only when a protected category is opened, stays unlocked
-/// while in use, and locks again after `idleTimeout` without activity or as
-/// soon as the app goes to the background.
+/// The outcome of an unlock attempt. Failing or cancelling never closes the
+/// app or leaves the screen: the protected part stays closed and can be retried.
+public enum UnlockResult: Sendable, Equatable {
+    case success
+    case failed
+    case cancelled
+}
+
+/// Two independent locks over one unlock session:
+/// - the whole-app lock (`AppPreferences.appLockEnabled`, off by default);
+/// - per-section locks (`CategoryTemplate.isSensitive`), on or off whatever the app lock says.
 ///
-/// Which categories are protected is decided by `CategoryTemplate.isSensitive`
-/// together with the `AppPreferences.biometricLockEnabled` master switch.
+/// One successful authentication opens the session for both, so the person is
+/// never asked twice in a row. The session closes when the app has been in the
+/// background longer than `relockAfterBackground`, or on `lock()`.
 @MainActor
 @Observable
 public final class BiometricVaultManager {
     public static let shared = BiometricVaultManager()
 
-    /// Unlocked category keys and when they were last used.
-    public private(set) var unlockedKeys: [String: Date] = [:]
-    public var idleTimeout: TimeInterval = 300
+    /// How long the app may stay in the background before the session closes.
+    public static let relockAfterBackground: TimeInterval = 60
+
+    public private(set) var isSessionUnlocked = false
+    /// An authentication prompt is on screen.
+    public private(set) var isAuthenticating = false
 
     @ObservationIgnored private let authenticator: any BiometricAuthenticating
     @ObservationIgnored private let now: () -> Date
-    @ObservationIgnored private var backgroundObserver: (any NSObjectProtocol)?
+    @ObservationIgnored private let appLockEnabled: @MainActor () -> Bool
+    @ObservationIgnored private var backgroundedAt: Date?
+    @ObservationIgnored private var inFlight: Task<UnlockResult, Never>?
+    @ObservationIgnored private var observers: [any NSObjectProtocol] = []
 
-    public init(authenticator: any BiometricAuthenticating = SystemBiometricAuthenticator(), now: @escaping () -> Date = { Date() }) {
+    public init(
+        authenticator: any BiometricAuthenticating = SystemBiometricAuthenticator(),
+        now: @escaping () -> Date = { Date() },
+        appLockEnabled: @escaping @MainActor () -> Bool = { AppPreferences.shared.appLockEnabled },
+        observesAppLifecycle: Bool = true
+    ) {
         self.authenticator = authenticator
         self.now = now
+        self.appLockEnabled = appLockEnabled
         #if canImport(UIKit)
-        backgroundObserver = NotificationCenter.default.addObserver(
-            forName: UIApplication.didEnterBackgroundNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.lockAll() }
+        if observesAppLifecycle {
+            let center = NotificationCenter.default
+            observers.append(center.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.appDidEnterBackground() }
+            })
+            observers.append(center.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.appWillEnterForeground() }
+            })
         }
         #endif
     }
 
-    // MARK: State
+    // MARK: State for screens
 
-    /// Whether `templateKey` is open right now. Reading never changes state, so
-    /// views can call it freely.
-    public func isUnlocked(_ templateKey: String) -> Bool {
-        guard let lastUse = unlockedKeys[templateKey] else { return false }
-        return now().timeIntervalSince(lastUse) <= idleTimeout
+    /// The whole app is behind the lock right now.
+    public var isAppLocked: Bool {
+        appLockEnabled() && !isSessionUnlocked
     }
 
-    /// Whether opening a category needs Face ID first.
-    public func needsUnlock(templateKey: String, isSensitive: Bool, lockEnabled: Bool) -> Bool {
-        lockEnabled && isSensitive && !isUnlocked(templateKey)
+    /// A section is closed right now: it is marked sensitive and the session isn't open.
+    public func isLocked(sectionIsSensitive: Bool) -> Bool {
+        sectionIsSensitive && !isSessionUnlocked
     }
 
-    /// Call while the person is using an unlocked category to keep it open.
-    public func noteActivity(_ templateKey: String) {
-        guard isUnlocked(templateKey) else { return }
-        unlockedKeys[templateKey] = now()
+    public func isLocked(_ template: CategoryTemplate) -> Bool {
+        isLocked(sectionIsSensitive: template.isSensitive)
     }
 
     // MARK: Unlock
 
-    /// Asks for Face ID (or the passcode) to open `templateKey`. Returns whether it is open.
+    /// Asks for Face ID, Touch ID or the passcode. Calls made while a prompt is
+    /// already showing wait for that prompt instead of opening a second one.
     @discardableResult
-    public func unlock(_ templateKey: String, reason: String) async -> Bool {
-        if isUnlocked(templateKey) {
-            noteActivity(templateKey)
-            return true
-        }
-        do {
-            if try await authenticator.evaluate(localizedReason: reason) {
-                unlockedKeys[templateKey] = now()
-                return true
+    public func unlock(reason: String) async -> UnlockResult {
+        if isSessionUnlocked { return .success }
+        if let inFlight { return await inFlight.value }
+        let authenticator = authenticator
+        let task = Task<UnlockResult, Never> {
+            do {
+                return try await authenticator.evaluate(localizedReason: reason) ? .success : .failed
+            } catch let error as LAError {
+                switch error.code {
+                case .userCancel, .appCancel, .systemCancel: return .cancelled
+                default: return .failed
+                }
+            } catch {
+                return .failed
             }
-        } catch {
-            return false
         }
-        return false
+        inFlight = task
+        isAuthenticating = true
+        let result = await task.value
+        inFlight = nil
+        isAuthenticating = false
+        if result == .success {
+            isSessionUnlocked = true
+            backgroundedAt = nil
+        }
+        return result
     }
 
-    public func lock(_ templateKey: String) {
-        unlockedKeys.removeValue(forKey: templateKey)
+    /// Closes the session now.
+    public func lock() {
+        isSessionUnlocked = false
     }
 
-    public func lockAll() {
-        unlockedKeys.removeAll()
+    // MARK: Lifecycle
+
+    func appDidEnterBackground() {
+        backgroundedAt = now()
+    }
+
+    func appWillEnterForeground() {
+        defer { backgroundedAt = nil }
+        guard let backgroundedAt else { return }
+        if now().timeIntervalSince(backgroundedAt) > Self.relockAfterBackground {
+            lock()
+        }
     }
 
     // MARK: Presentation
@@ -139,7 +177,7 @@ public final class BiometricVaultManager {
         }
     }
 
-    /// Hides the middle of an identifier: `1800101990006` becomes `188••••••456`.
+    /// Hides the middle of an identifier: `1800101990006` becomes `180•••••••006`.
     public static func mask(_ text: String, visiblePrefix: Int = 3, visibleSuffix: Int = 3) -> String {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.count > visiblePrefix + visibleSuffix else {
