@@ -57,7 +57,8 @@
       "properties": {
         "leadDays": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
         "consequence": { "enum": ["legal", "financial", "health", "comfort"] },
-        "graceDays": { "type": "integer", "minimum": 0 }
+        "graceDays": { "type": "integer", "minimum": 0 },
+        "followUpAfterLapse": { "type": "boolean", "description": "Defaults to true for legal and financial, false otherwise." }
       }
     },
     "fieldValue": {

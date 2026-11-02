@@ -134,6 +134,20 @@ public final class ObligationActions {
         try save()
     }
 
+    /// Changes how the obligation reminds (lead days, grace, follow-up after lapsing).
+    public func setReminders(_ obligation: Obligation, _ profile: ReminderProfile) throws {
+        obligation.reminders = profile
+        obligation.updatedAt = now()
+        try save()
+    }
+
+    /// The "follow up after it lapses" checkbox.
+    public func setFollowUpAfterLapse(_ obligation: Obligation, _ isOn: Bool) throws {
+        obligation.followUpAfterLapse = isOn
+        obligation.updatedAt = now()
+        try save()
+    }
+
     public func reschedule(_ obligation: Obligation, to day: CalendarDay) throws {
         obligation.setDueDay(day, calendar: calendar)
         obligation.snoozedUntil = nil

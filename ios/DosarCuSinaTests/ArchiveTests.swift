@@ -71,6 +71,7 @@ struct ArchiveTests {
         let rca = try #require(car.obligations?.first { $0.title == "RCA" })
         #expect(rca.reminderMinuteOfDay == 480)
         #expect(rca.reference == "POL-000001")
+        #expect(rca.followUpAfterLapse, "The follow-up flag travels with the archive")
 
         // Old policies stay, archived and pointing to their replacement.
         let policies = (rca.attachments ?? []).sorted { $0.createdAt < $1.createdAt }

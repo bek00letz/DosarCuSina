@@ -24,6 +24,9 @@ extension DosarSchemaV2 {
         public var reminderLeadDays: [Int] = [30, 7, 0]
         public var consequenceRaw: String = Consequence.comfort.rawValue
         public var graceDays: Int = 0
+        /// Remind once the day after the due date if it is still open. The reminder
+        /// setup screen shows it as a checkbox; defaults come from the blueprint profile.
+        public var followUpAfterLapse: Bool = false
         /// Minutes after midnight for this obligation's reminders; nil uses the app setting.
         public var reminderMinuteOfDay: Int?
         /// JSON `RecurrenceRule`.
@@ -71,6 +74,7 @@ extension DosarSchemaV2 {
             self.reminderLeadDays = profile.leadDays
             self.consequenceRaw = profile.consequence.rawValue
             self.graceDays = profile.graceDays
+            self.followUpAfterLapse = profile.followUpAfterLapse
             self.estimatedCostAmount = estimatedCost?.amount
             self.estimatedCostCurrency = estimatedCost?.currency
         }
@@ -86,13 +90,15 @@ extension DosarSchemaV2 {
                 ReminderProfile(
                     leadDays: reminderLeadDays,
                     consequence: Consequence(rawValue: consequenceRaw) ?? .comfort,
-                    graceDays: graceDays
+                    graceDays: graceDays,
+                    followUpAfterLapse: followUpAfterLapse
                 )
             }
             set {
                 reminderLeadDays = newValue.leadDays
                 consequenceRaw = newValue.consequence.rawValue
                 graceDays = newValue.graceDays
+                followUpAfterLapse = newValue.followUpAfterLapse
             }
         }
 

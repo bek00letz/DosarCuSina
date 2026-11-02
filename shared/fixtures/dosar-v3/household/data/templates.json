@@ -39,6 +39,7 @@
         },
         "reminders" : {
           "consequence" : "comfort",
+          "followUpAfterLapse" : false,
           "graceDays" : 30,
           "leadDays" : [
             14,

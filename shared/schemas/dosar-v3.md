@@ -127,12 +127,15 @@ household preferences (`homeOrder`, `isOnHome`, `isSensitive`).
 ### Reminder profile (`reminders`)
 
 ```json
-{"leadDays": [30, 7, 0], "consequence": "legal", "graceDays": 0}
+{"leadDays": [30, 7, 0], "consequence": "legal", "graceDays": 0, "followUpAfterLapse": true}
 ```
 
 - **`leadDays`:** days before the due date, largest first; `0` is the due day itself.
 - **`consequence`:** `legal|financial|health|comfort`.
 - **`graceDays`:** days of lateness that are still acceptable.
+- **`followUpAfterLapse`:** one reminder the day after the due date if the obligation is still open, then nothing more.
+  - **Default:** on for `legal` and `financial`, off otherwise. Readers apply this default when the key is missing.
+  - **Per obligation:** the person can change it on each obligation.
 - **`reminderVariants`:** `{"field": "document.type", "variants": {"Pașaport": {…profile…}}}`. It chooses a profile by an asset value.
 
 ### Asset (`data/assets.json`)

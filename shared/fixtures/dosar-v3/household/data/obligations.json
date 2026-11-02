@@ -17,6 +17,7 @@
     },
     "reminders" : {
       "consequence" : "legal",
+      "followUpAfterLapse" : true,
       "graceDays" : 0,
       "leadDays" : [
         30,
@@ -46,6 +47,7 @@
     "reminderMinuteOfDay" : 480,
     "reminders" : {
       "consequence" : "legal",
+      "followUpAfterLapse" : true,
       "graceDays" : 0,
       "leadDays" : [
         30,

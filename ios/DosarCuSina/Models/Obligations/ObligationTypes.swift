@@ -38,9 +38,10 @@ public enum Consequence: String, Codable, CaseIterable, Sendable {
 }
 
 /// How an obligation reminds: how far ahead (driven by how long renewing takes),
-/// how much missing it costs, and how late is still fine.
+/// how much missing it costs, how late is still fine, and whether to nudge
+/// once after the due date passes.
 ///
-/// Encoding: `{"leadDays": [60, 30], "consequence": "legal", "graceDays": 0}`.
+/// Encoding: `{"leadDays": [60, 30], "consequence": "legal", "graceDays": 0, "followUpAfterLapse": true}`.
 public struct ReminderProfile: Hashable, Sendable, Codable {
     /// Days before the due date to remind, largest first; `0` is the due day.
     public var leadDays: [Int]
@@ -48,11 +49,19 @@ public struct ReminderProfile: Hashable, Sendable, Codable {
     /// Days after the due date that are still acceptable. Within them, the item
     /// is late but not alarming.
     public var graceDays: Int
+    /// One notification the day after the due date if it is still open, then silence.
+    public var followUpAfterLapse: Bool
 
-    public init(leadDays: [Int], consequence: Consequence, graceDays: Int = 0) {
+    /// Whether a consequence follows up after lapsing by default: yes for legal and financial.
+    public static func defaultFollowUp(for consequence: Consequence) -> Bool {
+        consequence == .legal || consequence == .financial
+    }
+
+    public init(leadDays: [Int], consequence: Consequence, graceDays: Int = 0, followUpAfterLapse: Bool? = nil) {
         self.leadDays = Array(Set(leadDays.map(abs))).sorted(by: >)
         self.consequence = consequence
         self.graceDays = max(0, graceDays)
+        self.followUpAfterLapse = followUpAfterLapse ?? Self.defaultFollowUp(for: consequence)
     }
 
     /// Days ahead at which the item joins "needs you now": its earliest reminder,
@@ -62,14 +71,15 @@ public struct ReminderProfile: Hashable, Sendable, Codable {
         min(max(leadDays.first ?? 0, 1), consequence.maxAttentionWindowDays)
     }
 
-    private enum CodingKeys: String, CodingKey { case leadDays, consequence, graceDays }
+    private enum CodingKeys: String, CodingKey { case leadDays, consequence, graceDays, followUpAfterLapse }
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         self.init(
             leadDays: try c.decodeIfPresent([Int].self, forKey: .leadDays) ?? [7, 0],
             consequence: Consequence(rawValue: try c.decodeIfPresent(String.self, forKey: .consequence) ?? "") ?? .comfort,
-            graceDays: try c.decodeIfPresent(Int.self, forKey: .graceDays) ?? 0
+            graceDays: try c.decodeIfPresent(Int.self, forKey: .graceDays) ?? 0,
+            followUpAfterLapse: try c.decodeIfPresent(Bool.self, forKey: .followUpAfterLapse)
         )
     }
 
@@ -78,6 +88,7 @@ public struct ReminderProfile: Hashable, Sendable, Codable {
         try c.encode(leadDays, forKey: .leadDays)
         try c.encode(consequence.rawValue, forKey: .consequence)
         try c.encode(graceDays, forKey: .graceDays)
+        try c.encode(followUpAfterLapse, forKey: .followUpAfterLapse)
     }
 }
 

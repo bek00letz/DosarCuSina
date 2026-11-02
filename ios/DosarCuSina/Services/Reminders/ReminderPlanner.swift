@@ -23,6 +23,8 @@ public struct PlannedReminder: Hashable, Sendable, Identifiable {
 /// Pure: no notification center, no database, so every rule is testable.
 public enum ReminderPlanner {
     public static let identifierPrefix = "obligation."
+    /// Identifier suffix of the one follow-up after the due date: `obligation.<uuid>.lapse`.
+    public static let lapseSuffix = "lapse"
     /// iOS keeps at most 64 pending requests per app; leave room for the system.
     public static let defaultLimit = 60
 
@@ -48,12 +50,13 @@ public enum ReminderPlanner {
                 result.append(reminder(for: obligation, daysBefore: offset, fireDate: fire, identifierSuffix: "d\(offset)", calendar: calendar, locale: locale))
             }
 
-            // One follow-up when it is still open: the day after for things that
-            // can't slip, the end of the grace period for things that can.
-            let lateDays = max(profile.graceDays, 1)
-            let lateFire = fireDate(day: obligation.dueDay.adding(days: lateDays, calendar: calendar), minuteOfDay: minute, calendar: calendar)
-            if lateFire > now, snoozedUntil.map({ lateFire >= $0 }) ?? true {
-                result.append(reminder(for: obligation, daysBefore: -lateDays, fireDate: lateFire, identifierSuffix: "late", calendar: calendar, locale: locale))
+            // "Follow up after it lapses": one reminder the day after the due date,
+            // then silence. Completing the obligation removes it from the plan.
+            if profile.followUpAfterLapse {
+                let lapseFire = fireDate(day: obligation.dueDay.adding(days: 1, calendar: calendar), minuteOfDay: minute, calendar: calendar)
+                if lapseFire > now, snoozedUntil.map({ lapseFire >= $0 }) ?? true {
+                    result.append(reminder(for: obligation, daysBefore: -1, fireDate: lapseFire, identifierSuffix: lapseSuffix, calendar: calendar, locale: locale))
+                }
             }
 
             if let snoozedUntil {
@@ -109,7 +112,8 @@ public enum ReminderPlanner {
             body = String(localized: "Deschide Dosar cu Șină pentru detalii.", comment: "Reminder body for protected categories")
         } else {
             if daysBefore < 0, obligation.reminders.graceDays > 0 {
-                title = String(localized: "Încă de făcut: \(obligation.title)", comment: "Follow-up reminder title at the end of a grace period")
+                // Still within the grace the person accepts, so the follow-up stays calm.
+                title = String(localized: "Încă de făcut: \(obligation.title)", comment: "Follow-up reminder title the day after the due date, when some lateness is fine")
             } else {
                 title = specificTitle(obligation.title, daysBefore: daysBefore)
             }

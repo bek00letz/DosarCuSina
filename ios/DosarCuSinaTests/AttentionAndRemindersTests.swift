@@ -98,15 +98,65 @@ struct ReminderProfileTests {
         #expect(ReminderProfile(leadDays: [1], consequence: .health).attentionWindowDays == 1)
     }
 
-    @Test func followUpWaitsForTheEndOfGrace() {
+    @Test func followUpComesTheDayAfterLapsingAndOnlyWhenAskedFor() {
+        let itp = snapshot("ITP", kind: .legal, due: "2026-11-10", offsets: [30, 7], consequence: .legal)
+        let itpPlan = ReminderPlanner.plan([itp], now: today, calendar: calendar)
+        let lapse = itpPlan.first { $0.identifier.hasSuffix(".\(ReminderPlanner.lapseSuffix)") }
+        #expect(lapse.map { CalendarDay($0.fireDate, calendar: calendar) } == CalendarDay("2026-11-11"))
+        #expect(lapse?.title == "Depășit: ITP")
+        #expect(itpPlan.filter { $0.fireDate > noon("2026-11-11") }.isEmpty, "Then silence")
+
         let vaccine = snapshot("Vaccin", kind: .health, due: "2026-11-10", offsets: [1], consequence: .health, grace: 7)
-        let plan = ReminderPlanner.plan([vaccine], now: today, calendar: calendar)
-        #expect(plan.map { CalendarDay($0.fireDate, calendar: calendar) } == [CalendarDay("2026-11-09"), CalendarDay("2026-11-17")])
-        #expect(plan.last?.title == "Încă de făcut: Vaccin")
-        #expect(plan.allSatisfy { $0.isTimeSensitive == false } == false)
+        #expect(ReminderPlanner.plan([vaccine], now: today, calendar: calendar).map { CalendarDay($0.fireDate, calendar: calendar) } == [CalendarDay("2026-11-09")],
+                "Health and comfort don't follow up by default")
+
+        var turnedOff = itp
+        turnedOff.reminders.followUpAfterLapse = false
+        #expect(!ReminderPlanner.plan([turnedOff], now: today, calendar: calendar).contains { $0.identifier.hasSuffix(".lapse") })
+
+        var calm = snapshot("Chirie", kind: .payment, due: "2026-11-10", offsets: [0], consequence: .financial, grace: 3)
+        calm.reminders.followUpAfterLapse = true
+        #expect(ReminderPlanner.plan([calm], now: today, calendar: calendar).last?.title == "Încă de făcut: Chirie")
 
         let chore = snapshot("Udat", kind: .routine, due: "2026-11-03", offsets: [0], consequence: .comfort, grace: 2)
         #expect(ReminderPlanner.plan([chore], now: today, calendar: calendar).allSatisfy { !$0.isTimeSensitive }, "Comfort never breaks through Focus")
+    }
+
+    @Test func completingRemovesThePendingFollowUp() async {
+        let id = UUID()
+        let open = ObligationSnapshot(id: id, title: "RCA", kind: .insurance, dueDay: CalendarDay("2026-11-10"),
+                                      reminders: ReminderProfile(leadDays: [7], consequence: .legal))
+        let center = FakeNotificationCenter(status: .authorized)
+        let reconciler = NotificationReconciler(client: center)
+        await reconciler.apply(ReminderPlanner.plan([open], now: today, calendar: calendar), badgeCount: 0, allowPermissionPrompt: false)
+        let lapseId = ReminderPlanner.identifier(obligationId: id, suffix: ReminderPlanner.lapseSuffix)
+        #expect(await center.pendingReminders[lapseId] != nil)
+
+        var done = open
+        done.status = .done
+        await reconciler.apply(ReminderPlanner.plan([done], now: today, calendar: calendar), badgeCount: 0, allowPermissionPrompt: false)
+        #expect(await center.pendingReminders[lapseId] == nil)
+    }
+
+    @Test func profilesDefaultTheFollowUpByConsequence() throws {
+        #expect(ReminderProfile(leadDays: [7], consequence: .legal).followUpAfterLapse)
+        #expect(ReminderProfile(leadDays: [7], consequence: .financial).followUpAfterLapse)
+        #expect(!ReminderProfile(leadDays: [7], consequence: .health).followUpAfterLapse)
+        #expect(!ReminderProfile(leadDays: [7], consequence: .comfort).followUpAfterLapse)
+        let old = #"{"leadDays": [7], "consequence": "legal", "graceDays": 0}"#
+        #expect(try JSONDecoder().decode(ReminderProfile.self, from: Data(old.utf8)).followUpAfterLapse)
+    }
+
+    @Test func rabiesRemindersFollowTheSpecies() throws {
+        let rabies = try #require(BuiltInTemplates.pet.blueprints.first { $0.key == "pet.rabies" })
+        var values = FieldValues()
+        values["pet.species"] = .text(PetSpecies.dog)
+        let dog = rabies.reminders(for: values)
+        #expect(dog == ReminderProfile(leadDays: [10, 4], consequence: .legal, graceDays: 0))
+        #expect(dog.followUpAfterLapse)
+        values["pet.species"] = .text(PetSpecies.cat)
+        let cat = rabies.reminders(for: values)
+        #expect(cat.leadDays == [1] && cat.graceDays > 0 && !cat.followUpAfterLapse)
     }
 
     @Test func documentRemindersFollowTheDocumentType() throws {
@@ -268,7 +318,7 @@ struct NotificationReconcilerTests {
         let outcome = await reconciler.apply(plan(["A"]), badgeCount: 2, allowPermissionPrompt: true)
         #expect(await center.promptCount == 1)
         #expect(outcome.authorization == .authorized)
-        #expect(await center.pendingReminders.count == 2)
+        #expect(await center.pendingReminders.count == plan(["A"]).count)
         #expect(await center.badge == 2)
     }
 
