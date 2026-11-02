@@ -11,6 +11,7 @@ extension DocumentKind {
         case .fiscalReceipt: self = .receipt
         case .warrantyCertificate: self = .warranty
         case .itpReport, .medicalResult, .veterinaryRecord: self = .report
+        case .contract: self = .contract
         case .other: self = .other
         }
     }

@@ -26,6 +26,8 @@ enum CaptureMapping {
         case "padPolicy": return "home.pad"
         case "passportRenewal", "identityCardRenewal", "drivingLicenceRenewal": return "document.renew"
         case "petVaccine": return "pet.vaccine"
+        case "subscriptionMinimumEnds": return SubscriptionFields.minimumEndsBlueprint
+        case "subscriptionBill": return SubscriptionFields.billBlueprint
         default: return nil
         }
     }
@@ -35,7 +37,7 @@ enum CaptureMapping {
         switch kind {
         case .passport, .identityCard, .drivingLicence: return BuiltInTemplates.Key.documents
         case .vehicleRegistration, .rcaPolicy, .itpReport, .serviceInvoice: return BuiltInTemplates.Key.vehicle
-        case .utilityInvoice: return BuiltInTemplates.Key.home
+        case .utilityInvoice, .contract: return BuiltInTemplates.Key.subscription
         case .fiscalReceipt, .warrantyCertificate: return BuiltInTemplates.Key.purchase
         case .veterinaryRecord: return BuiltInTemplates.Key.pet
         case .medicalResult: return BuiltInTemplates.Key.health
@@ -58,10 +60,17 @@ enum CaptureMapping {
         switch kind {
         case .passport, .identityCard, .drivingLicence, .rcaPolicy, .insurancePolicy, .itpReport: return .expiryDate
         case .utilityInvoice: return .dueDate
+        case .contract: return .minimumPeriodEnd
         case .veterinaryRecord: return .nextDoseDate
         case .fiscalReceipt, .warrantyCertificate: return .warrantyUntil
         default: return nil
         }
+    }
+
+    /// Bills and contracts belong to an ongoing contract: a subscription, found by its
+    /// codes (`SubscriptionMatcher`) or made under its home.
+    static func filesUnderSubscription(_ kind: CaptureDocumentKind) -> Bool {
+        kind == .utilityInvoice || kind == .contract
     }
 
     /// Invoices with parts and jobs open the visit flow instead of the plain review.
@@ -88,8 +97,17 @@ enum CaptureMapping {
         .licenceCategories: ["document.categories"],
         .issueDate: ["document.issueDate"],
         .issuer: ["document.issuer"],
-        .podCode: ["home.pod"],
-        .clcCode: ["home.clc"],
+        .podCode: ["home.pod", SubscriptionFields.pod],
+        .clcCode: ["home.clc", SubscriptionFields.clc],
+        .clientCode: [SubscriptionFields.clientCode],
+        .contractNumber: [SubscriptionFields.contractNumber],
+        .phoneNumber: [SubscriptionFields.phoneNumber],
+        .serviceKind: [SubscriptionFields.service],
+        .startDate: [SubscriptionFields.startDate],
+        .minimumMonths: [SubscriptionFields.minimumMonths],
+        .minimumPeriodEnd: [SubscriptionFields.minimumUntil],
+        .monthlyPrice: [SubscriptionFields.price],
+        .provider: [SubscriptionFields.provider],
         .microchip: ["pet.microchip"],
         .serialNumber: ["purchase.serial"],
         .productName: ["purchase.model"],
@@ -210,6 +228,8 @@ enum CaptureMapping {
         case .insurancePolicy: return String(localized: "Poliță de asigurare")
         case .utilityInvoice, .serviceInvoice:
             return provider.map { String(localized: "Factură \($0)") } ?? String(localized: "Factură")
+        case .contract:
+            return provider.map { String(localized: "Contract \($0)") } ?? String(localized: "Contract")
         case .fiscalReceipt: return fields[.productName]?.text ?? String(localized: "Bon fiscal")
         case .warrantyCertificate: return fields[.productName]?.text ?? String(localized: "Certificat de garanție")
         case .itpReport: return String(localized: "Raport ITP")
@@ -229,6 +249,7 @@ enum CaptureMapping {
         case .rcaPolicy: return String(localized: "Poliță RCA")
         case .insurancePolicy: return String(localized: "Poliță de asigurare")
         case .utilityInvoice: return String(localized: "Factură de utilități")
+        case .contract: return String(localized: "Contract sau act adițional")
         case .serviceInvoice: return String(localized: "Factură de service")
         case .fiscalReceipt: return String(localized: "Bon fiscal")
         case .warrantyCertificate: return String(localized: "Certificat de garanție")
@@ -279,6 +300,12 @@ enum CaptureMapping {
         case .podCode: return String(localized: "Cod loc de consum (POD)")
         case .clcCode: return String(localized: "Cod loc de consum gaze (CLC)")
         case .meterIndex: return String(localized: "Index contor")
+        case .serviceKind: return String(localized: "Serviciu")
+        case .contractNumber: return String(localized: "Număr contract")
+        case .phoneNumber: return String(localized: "Număr de telefon")
+        case .minimumMonths: return String(localized: "Perioadă minimă (luni)")
+        case .minimumPeriodEnd: return String(localized: "Perioada minimă se termină")
+        case .monthlyPrice: return String(localized: "Preț pe lună")
         case .productName: return String(localized: "Produs")
         case .serialNumber: return String(localized: "Serie")
         case .retailer: return String(localized: "Magazin")
@@ -317,7 +344,7 @@ enum CaptureMapping {
     /// A value as a person reads it: "SP1236343", "6 aprilie 2035".
     static func displayText(_ value: CaptureValue) -> String {
         switch value {
-        case .text(let text): return text
+        case .text(let text): return ServiceKind.all.contains(text) ? ServiceKind.label(for: text) ?? text : text
         case .day(let day):
             return day.date().map { $0.formatted(.dateTime.day().month(.wide).year().locale(.dosarDefault)) } ?? day.description
         case .money(let amount): return Self.money(amount).formattedCompact()

@@ -94,7 +94,11 @@ public struct CaptureAnalyzer: Sendable {
         // kind is never claimed by a reader of another.
         let specialized = specializedParsers.lazy
             .compactMap { $0.parse(text) }
-            .first { $0.kind == classification.kind || (knownKind == nil && classification.confidence < Self.specializedClaimBelow) }
+            .first { parse in
+                // A contract quotes the provider's name and codes too; a bill reader never takes it.
+                parse.kind == classification.kind
+                    || (knownKind == nil && classification.confidence < Self.specializedClaimBelow && classification.kind != .contract)
+            }
 
         let kind: CaptureDocumentKind
         let kindConfidence: Double
@@ -144,6 +148,11 @@ public struct CaptureAnalyzer: Sendable {
             if let due = RomanianFieldExtractor.labelledDate(["scadent", "termen de plata", "data scadentei", "de platit pana la"], in: text, window: years) {
                 fields.add(.dueDate, .day(due.day), 0.75, due.source)
             }
+            // What ties the bill to its contract: the codes and the service.
+            fields.add(ContractReader.identifierFields(in: text))
+        case .contract:
+            addContractProvider(text, into: &fields)
+            fields.add(ContractReader.contractFields(in: text, window: years))
         case .serviceInvoice:
             addInvoiceBasics(text, years: years, into: &fields)
             addVehicleIdentity(text, into: &fields)
@@ -252,6 +261,16 @@ public struct CaptureAnalyzer: Sendable {
         if let issuer = RomanianFieldExtractor.issuerName(in: text) {
             fields.add(.provider, .text(issuer.name), 0.65, text.original[issuer.line])
         }
+    }
+
+    /// Who provides the service: a provider whose documents the utility reader knows by
+    /// name, else the company printed as the issuer.
+    private func addContractProvider(_ text: CaptureText, into fields: inout FieldSet) {
+        let known = RomanianUtilityParser.shared.detectProvider(in: RomanianUtilityParser.normalizeDiacritics(text.joinedOriginal))
+        if known != .general {
+            fields.add(.provider, .text(known.displayName), 0.85, nil)
+        }
+        addIssuer(text, into: &fields)
     }
 
     private func addIssueDate(_ text: CaptureText, years: DateWindow, into fields: inout FieldSet) {

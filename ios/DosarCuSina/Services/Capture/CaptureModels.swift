@@ -15,6 +15,9 @@ public enum CaptureDocumentKind: String, Codable, Sendable, CaseIterable {
     case rcaPolicy
     case insurancePolicy
     case utilityInvoice
+    /// A contract for an ongoing service (gas, electricity, water, internet and TV, a
+    /// mobile plan) or an addendum to one: who provides it, from when, for how long.
+    case contract
     case serviceInvoice
     case fiscalReceipt
     case warrantyCertificate
@@ -238,6 +241,19 @@ public struct CaptureFieldKey: RawRepresentable, Hashable, Codable, Sendable, Ex
     public static let clcCode: CaptureFieldKey = "clcCode"
     public static let meterIndex: CaptureFieldKey = "meterIndex"
 
+    // Ongoing contracts (bills and the contracts themselves)
+    /// What the contract is for, as a `ServiceKind` key ("service.gas").
+    public static let serviceKind: CaptureFieldKey = "serviceKind"
+    public static let contractNumber: CaptureFieldKey = "contractNumber"
+    /// The subscriber's own phone number on a mobile plan.
+    public static let phoneNumber: CaptureFieldKey = "phoneNumber"
+    /// How many months the person committed to ("perioada minimă").
+    public static let minimumMonths: CaptureFieldKey = "minimumMonths"
+    /// The last day of the minimum period.
+    public static let minimumPeriodEnd: CaptureFieldKey = "minimumPeriodEnd"
+    /// The price per month the contract states.
+    public static let monthlyPrice: CaptureFieldKey = "monthlyPrice"
+
     // Purchases and warranties
     public static let productName: CaptureFieldKey = "productName"
     public static let serialNumber: CaptureFieldKey = "serialNumber"
@@ -257,7 +273,7 @@ public struct CaptureFieldKey: RawRepresentable, Hashable, Codable, Sendable, Ex
     public var role: CaptureFieldRole? {
         switch self {
         case .policyNumber, .claimsPhone, .vin, .licensePlate, .podCode, .clcCode,
-             .clientCode, .microchip, .documentNumber, .serialNumber:
+             .clientCode, .contractNumber, .phoneNumber, .microchip, .documentNumber, .serialNumber:
             .keyFact
         case .purchaseDate: .purchaseDate
         case .purchasePrice: .purchasePrice

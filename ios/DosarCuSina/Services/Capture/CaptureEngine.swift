@@ -368,6 +368,17 @@ public final class CaptureEngine: Sendable {
                 sourceText: nil, tier: max(purchase.tier, months.tier)
             ))
         }
+        // A contract's minimum period ends its length after it starts.
+        if lookup[.minimumPeriodEnd] == nil,
+           let start = lookup[.startDate], let day = start.value.day,
+           let months = lookup[.minimumMonths], case .number(let count) = months.value,
+           let end = day.addingMonths(NSDecimalNumber(decimal: count).intValue) {
+            result.append(CaptureField(
+                key: .minimumPeriodEnd, value: .day(end),
+                confidence: min(start.confidence, months.confidence),
+                sourceText: nil, tier: max(start.tier, months.tier)
+            ))
+        }
         if lookup[.purchasePrice] == nil, let total = lookup[.total], case .money = total.value,
            result.contains(where: { $0.key == .purchaseDate }) {
             result.append(CaptureField(key: .purchasePrice, value: total.value, confidence: total.confidence, sourceText: total.sourceText, tier: total.tier))

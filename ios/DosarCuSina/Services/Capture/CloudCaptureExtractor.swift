@@ -27,6 +27,8 @@ enum CloudFieldFormat: Hashable, Sendable {
     case vin
     case plate
     case phone
+    /// One of the service keys (`ServiceKind`).
+    case serviceKind
     /// The machine-readable zone's lines, checked by their own digits.
     case machineReadableZone
 }
@@ -115,13 +117,15 @@ struct CloudSchema: Sendable {
 
     static func format(of key: CaptureFieldKey) -> CloudFieldFormat {
         switch key {
-        case .issueDate, .startDate, .expiryDate, .dueDate, .purchaseDate, .warrantyUntil, .nextDoseDate, .firstRegistrationDate, .birthDate: .date
-        case .total, .purchasePrice: .money
-        case .warrantyMonths, .odometer, .meterIndex: .integer
+        case .issueDate, .startDate, .expiryDate, .dueDate, .purchaseDate, .warrantyUntil, .nextDoseDate, .firstRegistrationDate, .birthDate,
+             .minimumPeriodEnd: .date
+        case .total, .purchasePrice, .monthlyPrice: .money
+        case .warrantyMonths, .odometer, .meterIndex, .minimumMonths: .integer
+        case .serviceKind: .serviceKind
         case .lineItems: .lineItems
         case .vin: .vin
         case .licensePlate: .plate
-        case .claimsPhone, .providerPhone: .phone
+        case .claimsPhone, .providerPhone, .phoneNumber: .phone
         case .personalNumber: .personalNumber
         default: .text
         }
@@ -135,7 +139,7 @@ struct CloudSchema: Sendable {
         case .invoiceNumber: "The invoice series and number."
         case .documentNumber: "The document number."
         case .issueDate: "The date of issue."
-        case .startDate: "The first day of validity or coverage."
+        case .startDate: "The first day of validity, coverage or of the contract."
         case .expiryDate: "The last day of validity."
         case .dueDate: "The payment due date."
         case .purchaseDate: "The date of purchase."
@@ -152,6 +156,12 @@ struct CloudSchema: Sendable {
         case .model: "The vehicle model."
         case .odometer: "The odometer reading in kilometres."
         case .clientCode: "The client code."
+        case .contractNumber: "The contract's number (or the addendum's), as printed."
+        case .serviceKind: "What the service is: gas, electricity, water, fixed internet or TV, a mobile phone plan, or something else."
+        case .phoneNumber: "The customer's own mobile phone number the plan is for (not the provider's support line)."
+        case .minimumMonths: "The minimum contract period in months (perioada minimă), e.g. 24."
+        case .minimumPeriodEnd: "The last day of the minimum contract period."
+        case .monthlyPrice: "The monthly price of the subscription or plan."
         case .podCode: "The POD code of the consumption point."
         case .clcCode: "The CLC code of the consumption point."
         case .meterIndex: "The meter reading."
@@ -215,6 +225,9 @@ struct CloudSchema: Sendable {
             ]
         case .integer:
             return ["type": ["integer", "null"], "description": description]
+        case .serviceKind:
+            return ["type": ["string", "null"], "description": description,
+                    "enum": .array(ServiceKind.all.map(JSONValue.string) + [.null])]
         case .lineItems:
             return [
                 "type": "array", "description": description,
@@ -253,7 +266,8 @@ struct CloudSchema: Sendable {
         case .vehicleRegistration: "vehicle registration certificate"
         case .rcaPolicy: "compulsory motor insurance (RCA) policy"
         case .insurancePolicy: "insurance policy"
-        case .utilityInvoice: "utility invoice"
+        case .utilityInvoice: "utility, internet, TV or phone bill"
+        case .contract: "contract or addendum for gas, electricity, water, internet, TV or a mobile plan"
         case .serviceInvoice: "car service invoice"
         case .fiscalReceipt: "fiscal receipt"
         case .warrantyCertificate: "warranty certificate"
@@ -353,6 +367,7 @@ enum CloudAnswerMapper {
             case .integer:
                 guard let number = raw.double, number >= 0, number < 10_000_000 else { continue }
                 let value = Int(number)
+                if key == .minimumMonths, !ContractReader.plausibleMonths.contains(value) { continue }
                 let typed: CaptureValue = key == .odometer ? .metric(value: Decimal(value), unit: "km") : .number(Decimal(value))
                 add(key, typed, compactText.contains(String(value)) ? grounded : candidate)
             case .lineItems:
@@ -365,9 +380,18 @@ enum CloudAnswerMapper {
                 guard !items.isEmpty else { continue }
                 let allPrinted = items.allSatisfy { compactText.contains(ModelAnswerMapper.compact($0.description)) }
                 add(key, .lineItems(items), allPrinted ? grounded : candidate)
+            case .serviceKind:
+                // A judgement about the page, not text copied from it: kept when it names a known service.
+                guard let service = raw.string, ServiceKind.all.contains(service) else { continue }
+                add(key, .text(service), grounded)
             case .text, .documentNumber, .country, .plate, .phone:
                 guard let text = raw.string?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty, text.lowercased() != "null" else { continue }
-                let value = field.format == .documentNumber || field.format == .plate ? text.uppercased() : text
+                var value = field.format == .documentNumber || field.format == .plate ? text.uppercased() : text
+                if key == .phoneNumber {
+                    // The person's own number, written the way the phone reads it: "0700 000 000".
+                    guard ContractReader.isMobileNumber(value) else { continue }
+                    value = ContractReader.displayPhone(value)
+                }
                 add(key, .text(value), groundedText(value))
             }
         }

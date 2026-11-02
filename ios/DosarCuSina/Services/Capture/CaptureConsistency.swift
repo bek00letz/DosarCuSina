@@ -48,9 +48,26 @@ enum CaptureConsistency {
         .within(.birthDate, DateWindow.Rule(earliest: .yearsFromToday(-120), latest: .today), outside: .drop),
     ]
 
-    /// The rules for a kind: the general ones and its templates' own.
+    /// The rules for a kind: the general ones, its templates' own and its kind's.
     static func rules(for kind: CaptureDocumentKind) -> [Rule] {
-        general + IdentityTemplates.agreements(for: kind)
+        general + IdentityTemplates.agreements(for: kind) + kindRules(kind)
+    }
+
+    /// Rules a kind of document carries beyond identity templates.
+    static func kindRules(_ kind: CaptureDocumentKind) -> [Rule] {
+        switch kind {
+        case .contract:
+            [
+                // Contracts for household services run for years, not generations, and one
+                // signed today may start next month.
+                .within(.startDate, DateWindow.Rule(earliest: .yearsFromToday(-40), latest: .yearsFromToday(1)), outside: .drop),
+                // A minimum period ends after the contract starts, at most ten years on.
+                .within(.minimumPeriodEnd, DateWindow.Rule(earliest: .yearsFromToday(-40), latest: .yearsFromToday(11)), outside: .drop),
+                .after(.minimumPeriodEnd, anchor: .startDate),
+            ]
+        default:
+            []
+        }
     }
 
     /// The window a date of `key` falls in on this kind of document, for deciding the

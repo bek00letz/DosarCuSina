@@ -56,7 +56,10 @@ extension CaptureDocumentKind {
         case .vehicleRegistration: [.licensePlate, .vin, .make, .model, .firstRegistrationDate]
         case .rcaPolicy: [.provider, .policyNumber, .startDate, .expiryDate, .total, .claimsPhone, .licensePlate, .vin, .bonusMalusClass]
         case .insurancePolicy: [.provider, .policyNumber, .startDate, .expiryDate, .total, .claimsPhone, .licensePlate]
-        case .utilityInvoice: [.provider, .invoiceNumber, .issueDate, .dueDate, .total, .clientCode, .podCode, .clcCode, .meterIndex]
+        case .utilityInvoice: [.provider, .serviceKind, .invoiceNumber, .issueDate, .dueDate, .total, .clientCode, .contractNumber, .podCode, .clcCode,
+                               .phoneNumber, .meterIndex]
+        case .contract: [.provider, .serviceKind, .contractNumber, .clientCode, .startDate, .minimumMonths, .minimumPeriodEnd, .monthlyPrice,
+                         .phoneNumber, .podCode, .clcCode]
         case .serviceInvoice: [.provider, .invoiceNumber, .issueDate, .total, .licensePlate, .vin, .odometer, .lineItems]
         case .fiscalReceipt: [.retailer, .purchaseDate, .purchasePrice, .productName, .serialNumber, .lineItems]
         case .warrantyCertificate: [.retailer, .productName, .serialNumber, .purchaseDate, .warrantyMonths, .warrantyUntil]

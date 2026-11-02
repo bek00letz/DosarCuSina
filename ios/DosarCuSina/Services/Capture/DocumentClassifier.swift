@@ -18,6 +18,11 @@ public enum DocumentClassifier {
         .rcaPolicy: [("rca", 3), ("raspundere civila auto", 4), ("asigurare obligatorie", 2), ("bonus-malus", 2), ("bonus malus", 2), ("carte verde", 1)],
         .insurancePolicy: [("polita", 2), ("asigurare", 1), ("casco", 3), ("pad", 1), ("paid", 1), ("asigurator", 1), ("prima de asigurare", 2), ("suma asigurata", 2), ("franciza", 2)],
         .utilityInvoice: [("energie electrica", 3), ("gaze naturale", 3), ("cod client", 2), ("cod loc de consum", 3), ("pod", 1), ("index", 1), ("kwh", 2), ("consum", 1), ("abonament", 1), ("apa rece", 2), ("canalizare", 2)],
+        // A contract names itself; the minimum period and its length are what set it apart from a bill.
+        .contract: [("contract de furnizare", 5), ("contract de abonament", 5), ("contract de prestari servicii", 4),
+                    ("act aditional", 5), ("perioada minima", 4), ("perioada contractuala", 3), ("durata contractului", 3),
+                    ("durata minima", 3), ("perioada initiala", 2), ("perioada determinata", 2), ("conditii generale", 1),
+                    ("abonament lunar", 1), ("se incheie", 1), ("partile", 1)],
         .serviceInvoice: [("manopera", 3), ("deviz", 3), ("service auto", 3), ("km bord", 2), ("kilometraj", 2), ("piese", 1), ("placute", 1), ("filtru", 1), ("schimb ulei", 2), ("nr. inmatriculare", 1), ("factura", 1)],
         // A receipt printed with its warranty terms is still the receipt; "bon fiscal" outweighs warranty wording.
         .fiscalReceipt: [("bon fiscal", 6), ("numerar", 1), ("rest", 1), ("tva a", 1), ("card", 1), ("total", 1)],
@@ -26,6 +31,10 @@ public enum DocumentClassifier {
         .veterinaryRecord: [("vaccin", 2), ("antirabic", 3), ("microcip", 3), ("deparazitare", 3), ("medic veterinar", 3), ("cabinet veterinar", 3), ("pasaport pentru animale", 4), ("carnet de sanatate", 2)],
         .medicalResult: [("buletin de analize", 4), ("rezultat", 1), ("valori de referinta", 3), ("interval biologic", 3), ("hemoglobina", 2), ("glicemie", 2), ("colesterol", 2), ("medic", 1), ("clinica", 1)],
     ]
+
+    /// Words only a bill prints: the amount to pay now. A contract's terms talk about
+    /// due dates and payment too, so those aren't enough.
+    static let billMarkers = ["total de plata", "sold de plata", "suma de plata", "total factura", "factura fiscala", "valoare de plata"]
 
     public static func classify(text: CaptureText, mrz: MRZParser.Result?) -> Classification {
         if let mrz {
@@ -40,6 +49,14 @@ public enum DocumentClassifier {
         }
         // An RCA policy is also an insurance policy; prefer the specific kind when RCA terms are present.
         if let rca = scores[.rcaPolicy], rca >= 3 { scores[.insurancePolicy] = (scores[.insurancePolicy] ?? 0) * 0.5 }
+        // A contract mentions the gas, the POD and the client code a bill does; a bill
+        // quotes its contract. What decides is whether there is something to pay.
+        let isBill = billMarkers.contains { haystack.contains($0) }
+        if let contract = scores[.contract], contract >= 4, !isBill {
+            scores[.utilityInvoice] = (scores[.utilityInvoice] ?? 0) * 0.5
+        } else if isBill {
+            scores[.contract] = (scores[.contract] ?? 0) * 0.5
+        }
         // A fiscal receipt beats a generic invoice when "bon fiscal" is printed.
         if haystack.contains("bon fiscal") { scores[.serviceInvoice] = (scores[.serviceInvoice] ?? 0) * 0.5 }
 

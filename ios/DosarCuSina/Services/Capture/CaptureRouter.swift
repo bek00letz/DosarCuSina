@@ -29,6 +29,8 @@ public enum CaptureRouter {
         .warrantyCertificate: ReminderDefault(profileKey: "warranty", leadDays: [30]),
         .fiscalReceipt: ReminderDefault(profileKey: "warranty", leadDays: [30]),
         .utilityInvoice: ReminderDefault(profileKey: "bill", leadDays: [3, 0]),
+        // The end of a contract's minimum period: a month to compare offers, then the day.
+        .contract: ReminderDefault(profileKey: "minimumPeriod", leadDays: [30, 0]),
         // A few days late is fine; the day before is enough.
         .veterinaryRecord: ReminderDefault(profileKey: "petVaccine", leadDays: [1]),
     ]
@@ -86,12 +88,19 @@ public enum CaptureRouter {
             reminderHint = reminder(on: day(.expiryDate))
 
         case .utilityInvoice:
-            let utilityHints = hints([.podCode, .clcCode, .clientCode])
-            suggestions.append(CaptureSuggestion(destination: .historyEntry(templateKey: "home"), assetHints: utilityHints, confidence: confidence))
+            // A bill belongs to its ongoing contract: logged in the subscription's history,
+            // with this bill's own due date to pay by.
+            let contractHints = hints(subscriptionHintKeys)
+            suggestions.append(CaptureSuggestion(destination: .historyEntry(templateKey: "subscriptions"), assetHints: contractHints, confidence: confidence))
             if day(.dueDate) != nil {
-                suggestions.append(CaptureSuggestion(destination: .obligation(blueprintKey: "utilityBill", templateKey: "home"), assetHints: utilityHints, confidence: confidence * 0.8))
+                suggestions.append(CaptureSuggestion(destination: .obligation(blueprintKey: "subscriptionBill", templateKey: "subscriptions"), assetHints: contractHints, confidence: confidence * 0.8))
             }
             reminderHint = reminder(on: day(.dueDate))
+
+        case .contract:
+            let contractHints = hints(subscriptionHintKeys)
+            suggestions.append(CaptureSuggestion(destination: .obligation(blueprintKey: "subscriptionMinimumEnds", templateKey: "subscriptions"), assetHints: contractHints, confidence: confidence))
+            reminderHint = reminder(on: day(.minimumPeriodEnd))
 
         case .serviceInvoice:
             suggestions.append(CaptureSuggestion(destination: .historyEntry(templateKey: "vehicle"), assetHints: vehicleHints, confidence: confidence))
@@ -129,6 +138,9 @@ public enum CaptureRouter {
         return Routing(suggestions: suggestions, reminder: reminderHint)
     }
 
+    /// The codes that find a bill's or a contract's subscription, most specific first.
+    static let subscriptionHintKeys: [CaptureFieldKey] = [.podCode, .clcCode, .phoneNumber, .contractNumber, .clientCode]
+
     /// The trade a provider most likely has, given the document it issued.
     static func trade(for kind: CaptureDocumentKind) -> String? {
         switch kind {
@@ -137,7 +149,7 @@ public enum CaptureRouter {
         case .itpReport: "statieITP"
         case .veterinaryRecord: "veterinar"
         case .medicalResult: "medic"
-        case .utilityInvoice: "furnizorUtilitati"
+        case .utilityInvoice, .contract: "furnizorUtilitati"
         case .fiscalReceipt, .warrantyCertificate: "magazin"
         default: nil
         }
