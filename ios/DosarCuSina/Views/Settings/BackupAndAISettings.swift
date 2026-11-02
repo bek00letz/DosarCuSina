@@ -234,9 +234,18 @@ struct AISettings: View {
                 DSTextField("Adresa serviciului", text: $baseURL, kind: .url, prompt: "https://…/v1",
                             footnote: "Pe rețeaua de acasă merge și http://, de exemplu un server LM Studio.")
             }
-            DSTextField("Model", text: $model,
-                        prompt: provider.defaultModel.isEmpty ? "Numele modelului" : LocalizedStringKey(provider.defaultModel),
-                        footnote: provider.defaultModel.isEmpty ? nil : "Lasă gol pentru modelul obișnuit.")
+            NavigationLink {
+                AIModelPicker(provider: provider, model: $model)
+            } label: {
+                LabeledContent {
+                    Text(verbatim: AIModelPicker.summary(model: model, provider: provider))
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                } label: {
+                    Text("Model", comment: "AI setting: which model of the service reads documents.")
+                }
+                .frame(minHeight: 44)
+            }
 
             Button(action: saveAndTest) {
                 HStack {

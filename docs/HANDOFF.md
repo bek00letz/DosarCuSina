@@ -68,6 +68,13 @@ Newest first. Copy this template:
 
 Never write security findings, crash traces or local paths here. See [SECURITY.md](../SECURITY.md).
 
+### 2026-11-02 — owner (with Claude) — `claude/model-picker`
+- **Did:** a model picker in Settings → Inteligență artificială: the recommended model, the models the key can use (each provider's list request, one shared filter), or a name typed by hand. Listing works before a model is chosen (`AIProviderSettings.connection`).
+- **Tests:** `AIModelListTests` with each provider's list format; the whole suite on iPhone 17 (iOS 26.4).
+- **Left open:** nothing new.
+- **Next:** try the picker with a real key.
+- **Decisions:** none.
+
 ### 2026-11-02 — owner (with Claude) — `claude/documents-flow`
 - **Did:** "Mută la…" for anything filed under something else (toolbar menu and edit sheet, a new person for documents, rename after the new holder, undo); adding a person's document photo first or on one "Scriu eu" screen, with variants as data on the document type and "Adaugă poza actului" on the document's page; the secret field type with the electronic identity card's two PIN codes (sealed, Face ID every time, never in search, widgets, notifications or archives). Built-in catalog version 6.
 - **Tests:** the whole suite passes on iPhone 17e (iOS 26). New suites: `MoveTests`, `PersonalDocumentTests`, `SecretFieldTests`. The privacy check passes across the branch.
