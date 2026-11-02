@@ -155,6 +155,15 @@ public final class ObligationActions {
         try save()
     }
 
+    /// What it is expected to cost and the number it quotes (a bill's amount and number).
+    public func setDetails(_ obligation: Obligation, estimatedCost: Money?, reference: String?) throws {
+        guard obligation.estimatedCost != estimatedCost || obligation.reference != reference else { return }
+        obligation.estimatedCost = estimatedCost
+        obligation.reference = reference
+        obligation.updatedAt = now()
+        try save()
+    }
+
     public func pause(_ obligation: Obligation) throws {
         try setStatus(.paused, of: obligation)
     }

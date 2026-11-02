@@ -149,7 +149,23 @@ struct CaptureReview: Identifiable {
 
     /// The day the reminder follows (expiry, due date, next dose), from the current values.
     var reminderDay: CalendarDay? {
-        CaptureMapping.reminderField(for: kind).flatMap { value($0)?.day }.map(CaptureMapping.calendarDay)
+        if kind == .contract { return minimumPeriodEnd }
+        return CaptureMapping.reminderField(for: kind).flatMap { value($0)?.day }.map(CaptureMapping.calendarDay)
+    }
+
+    /// When a contract's minimum period ends: as printed, or its length after its start.
+    /// Once the person corrects the start or the length, the end follows them, unless
+    /// they set the end themselves.
+    var minimumPeriodEnd: CalendarDay? {
+        func edited(_ key: CaptureFieldKey) -> Bool { fields.contains { $0.key == key && $0.isEdited } }
+        let printed = value(.minimumPeriodEnd)?.day
+        let worked: CaptureDay? = {
+            guard let start = value(.startDate)?.day, let months = value(.minimumMonths), case .number(let count) = months else { return nil }
+            return start.addingMonths(NSDecimalNumber(decimal: count).intValue)
+        }()
+        let termsEdited = edited(.startDate) || edited(.minimumMonths)
+        let end = (printed != nil && (edited(.minimumPeriodEnd) || !termsEdited)) ? printed : (worked ?? printed)
+        return end.map(CaptureMapping.calendarDay)
     }
 
     var total: Money? {
@@ -227,6 +243,49 @@ struct CaptureReview: Identifiable {
         }
     }
 
+    // MARK: Subscriptions
+
+    /// What the bill or contract says about its ongoing contract, as it stands now.
+    var subscriptionReading: SubscriptionMatcher.Reading {
+        Self.subscriptionReading(kind: kind, values: valuesByKey)
+    }
+
+    static func subscriptionReading(kind: CaptureDocumentKind, values: [CaptureFieldKey: CaptureValue]) -> SubscriptionMatcher.Reading {
+        let codes: [SubscriptionMatcher.Code: CaptureFieldKey] = [
+            .pod: .podCode, .clc: .clcCode, .phoneNumber: .phoneNumber, .contractNumber: .contractNumber, .clientCode: .clientCode,
+        ]
+        return SubscriptionMatcher.Reading(
+            provider: values[.provider]?.text,
+            service: values[.serviceKind]?.text,
+            codes: codes.compactMapValues { values[$0]?.text },
+            isBill: kind == .utilityInvoice
+        )
+    }
+
+    /// The subscription that already exists and that saving would file into: the one
+    /// chosen, or the one a chosen home holds for this contract. Nil for a new one.
+    @MainActor
+    func existingSubscription(assets: [Asset]) -> Asset? {
+        guard CaptureMapping.filesUnderSubscription(kind), case .asset(let id) = destination,
+              let asset = assets.first(where: { $0.id == id }) else { return nil }
+        if asset.templateKey == BuiltInTemplates.Key.subscription { return asset }
+        guard asset.templateKey == BuiltInTemplates.Key.home else { return nil }
+        let children = (asset.children ?? []).filter { $0.templateKey == BuiltInTemplates.Key.subscription }
+        let decision = SubscriptionMatcher.match(
+            subscriptionReading,
+            subscriptions: children.map { SubscriptionMatcher.Subscription(id: $0.id, parentID: asset.id, values: $0.values) },
+            homes: [], within: asset.id
+        )
+        guard case .existing(let match) = decision else { return nil }
+        return children.first { $0.id == match }
+    }
+
+    /// The bank pays the subscription this bill goes to by direct debit.
+    @MainActor
+    func paysByDirectDebit(assets: [Asset]) -> Bool {
+        existingSubscription(assets: assets).map { SubscriptionFields.paysByDirectDebit($0.values) } ?? false
+    }
+
     /// Which reading tier filled most of the fields, for the subtle note.
     var mainTier: CaptureTier? {
         let counts = Dictionary(grouping: fields, by: \.tier).mapValues(\.count)
@@ -282,6 +341,23 @@ struct CaptureReview: Identifiable {
     @MainActor
     static func suggestDestination(kind: CaptureDocumentKind, suggestions: [CaptureSuggestion], fields: [CaptureField], assets: [Asset]) -> Destination {
         let candidates = assets.filter { !$0.isExample }
+        // A bill or a contract: its ongoing contract, or where a new one goes.
+        if CaptureMapping.filesUnderSubscription(kind) {
+            let values = Dictionary(fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
+            let decision = SubscriptionMatcher.match(
+                subscriptionReading(kind: kind, values: values),
+                subscriptions: candidates.filter { $0.templateKey == BuiltInTemplates.Key.subscription }
+                    .map { SubscriptionMatcher.Subscription(id: $0.id, parentID: $0.parent?.id, values: $0.values) },
+                homes: candidates.filter { $0.templateKey == BuiltInTemplates.Key.home }.map { SubscriptionMatcher.Home(id: $0.id, values: $0.values) }
+            )
+            switch decision {
+            case .existing(let id): return .asset(id)
+            // A home: filed into a new subscription under it (`CaptureFiler`).
+            case .newUnder(let home): return .asset(home)
+            case .newStandalone: return .newAsset(templateKey: BuiltInTemplates.Key.subscription)
+            case .undecided: return .none
+            }
+        }
         // 1. An identifier on the document matches a section.
         let hints = suggestions.flatMap(\.assetHints)
         for hint in hints {
@@ -337,7 +413,9 @@ struct CaptureReview: Identifiable {
             let makeModel = [values[.make]?.text, values[.model]?.text].compactMap { $0 }.joined(separator: " ")
             if !makeModel.isEmpty { return makeModel }
             return values[.licensePlate]?.text ?? String(localized: "Mașina")
-        case .utilityInvoice: return String(localized: "Locuința")
+        case .utilityInvoice, .contract:
+            // The ongoing contract the bill or the contract belongs to.
+            return SubscriptionNaming.name(provider: values[.provider]?.text, service: values[.serviceKind]?.text)
         case .veterinaryRecord: return values[.petName]?.text ?? String(localized: "Animalul")
         case .medicalResult: return String(localized: "Sănătate")
         default: return CaptureMapping.defaultTitle(for: kind, fields: values)
