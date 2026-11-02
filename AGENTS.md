@@ -40,7 +40,7 @@ The GitHub repository for *Dosar cu Șină* is **public**. Every contributor and
 ### 4.1 Zero-Secrets & Zero-PII Policy
 - **No Hardcoded Credentials**: Never commit API keys, private tokens, passwords, keystores, or certificates.
 - **Bring Your Own Key (BYOK)**: Any external API key (such as Google Gemini) must be:
-  - Stored exclusively on the user's physical device in the **iOS Keychain** (`kSecClassGenericPassword` with `kSecAttrAccessibleAfterFirstUnlock`).
+  - Stored exclusively on the user's physical device in the **iOS Keychain** (`kSecClassGenericPassword` with `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`, so it never leaves the device).
   - For local developer builds, read from an untracked local file (`ios/Config.xcconfig`) created from `ios/Config.xcconfig.template`.
 - **Sanitized Mock Data**: Never include real names, email addresses, phone numbers, vehicle registration numbers (VIN/plates), or real Romanian personal identification data (CNP, adrese) in previews, tests, or mock files. Use realistic placeholders (e.g., `B-123-ABC`, `ENGIE Romania S.A.`, `VW Golf 2018`).
 - **Local-First & Zero Central Database**:

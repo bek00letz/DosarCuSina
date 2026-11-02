@@ -20,7 +20,7 @@ public enum KeychainManager {
             kSecAttrService as String: serviceName,
             kSecAttrAccount as String: geminiAccountKey,
             kSecValueData as String: data,
-            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
         ]
         
         let status = SecItemAdd(query as CFDictionary, nil)
