@@ -444,12 +444,16 @@ struct SideEffectsExampleTests {
 struct DeepLinkTests {
     @Test func everyRouteRoundTrips() {
         let routes: [AppRoute] = [
-            .home, .radar, .intake, .asset(UUID()), .obligation(UUID()), .historyEntry(UUID()), .provider(UUID()), .document(UUID()),
+            .home, .upcoming, .search, .agenda, .intake, .asset(UUID()), .addVisit(UUID()), .obligation(UUID()), .historyEntry(UUID()), .provider(UUID()), .document(UUID()),
             .category("custom.abc"), .settings(nil), .settings(.backup),
         ]
         for route in routes {
             #expect(DeepLink.route(from: DeepLink.url(for: route)) == route)
         }
+    }
+
+    @Test func linksFromEarlierBuildsStillOpen() {
+        #expect(DeepLink.route(from: URL(string: "dosarcusina://radar")!) == .upcoming)
     }
 
     @Test func rejectsOtherSchemesAndMalformedIds() {

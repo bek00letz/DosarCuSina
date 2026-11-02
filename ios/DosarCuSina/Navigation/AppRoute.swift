@@ -4,16 +4,25 @@ import Observation
 /// Every place the app can be opened to. Notifications, widgets, Spotlight,
 /// App Intents and in-app links all speak this one type.
 public enum AppRoute: Hashable, Sendable, Codable {
+    /// The Dosar tab: the grid of section boxes.
     case home
-    case radar
+    /// The Urmează tab: what comes up next.
+    case upcoming
+    /// The Caută tab.
+    case search
+    /// A section page for one asset (VW Golf, Apartament, PawPaw).
     case asset(UUID)
+    /// Logging a visit (service, repair, check-up) on an asset.
+    case addVisit(UUID)
+    /// The Agenda box: people and firms.
     case obligation(UUID)
     case historyEntry(UUID)
     case provider(UUID)
     case document(UUID)
-    /// A category list, by `CategoryTemplate.key`.
+    case agenda
+    /// A box that groups a category (Acte, Garanții, Abonamente), by `CategoryTemplate.key`.
     case category(String)
-    /// Scan or add a document.
+    /// The Adaugă tab: scan or add something.
     case intake
     case settings(SettingsSection?)
 }
@@ -29,8 +38,9 @@ public enum SettingsSection: String, Hashable, Sendable, Codable, CaseIterable {
 
 /// `dosarcusina://` links, built and parsed in one place.
 ///
-/// - `dosarcusina://home`, `dosarcusina://radar`, `dosarcusina://intake`
-/// - `dosarcusina://asset/<uuid>`, `dosarcusina://obligation/<uuid>`, `dosarcusina://history/<uuid>`,
+/// - `dosarcusina://home`, `dosarcusina://upcoming` (also `radar`, from earlier builds),
+///   `dosarcusina://search`, `dosarcusina://intake`, `dosarcusina://agenda`
+/// - `dosarcusina://asset/<uuid>`, `dosarcusina://visit/<asset uuid>`, `dosarcusina://obligation/<uuid>`, `dosarcusina://history/<uuid>`,
 ///   `dosarcusina://provider/<uuid>`, `dosarcusina://document/<uuid>`
 /// - `dosarcusina://category/<key>`
 /// - `dosarcusina://settings` or `dosarcusina://settings/<section>`
@@ -42,8 +52,13 @@ public enum DeepLink {
         components.scheme = scheme
         switch route {
         case .home: components.host = "home"
-        case .radar: components.host = "radar"
+        case .upcoming: components.host = "upcoming"
+        case .search: components.host = "search"
+        case .agenda: components.host = "agenda"
         case .intake: components.host = "intake"
+        case .addVisit(let id):
+            components.host = "visit"
+            components.path = "/" + id.uuidString.lowercased()
         case .asset(let id):
             components.host = "asset"
             components.path = "/" + id.uuidString.lowercased()
@@ -74,8 +89,11 @@ public enum DeepLink {
         let argument = url.pathComponents.dropFirst().first
         switch host {
         case "home": return .home
-        case "radar": return .radar
+        case "upcoming", "radar": return .upcoming
+        case "search": return .search
+        case "agenda": return .agenda
         case "intake": return .intake
+        case "visit": return argument.flatMap(UUID.init(uuidString:)).map(AppRoute.addVisit)
         case "asset": return argument.flatMap(UUID.init(uuidString:)).map(AppRoute.asset)
         case "obligation": return argument.flatMap(UUID.init(uuidString:)).map(AppRoute.obligation)
         case "history": return argument.flatMap(UUID.init(uuidString:)).map(AppRoute.historyEntry)
