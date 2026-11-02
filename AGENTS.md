@@ -77,6 +77,8 @@ Pure engines (no database) sit beside them: `RecurrenceEngine`, `AttentionModel`
 
 ## Everything outside the database
 
+`UnitOfWork` ([Services/Persistence/UnitOfWork.swift](ios/DosarCuSina/Services/Persistence/UnitOfWork.swift)) is how actions save. Every action saves through `UnitOfWork.save(context)`; never call `context.save()` from an action or a view. When one tap does several things (file a document under a new person, log a visit with its invoice, complete a deadline with the new document), wrap them in `UnitOfWork.perform(in:)`: the actions inside only record their changes and the unit saves once, everything or nothing. Work that must only happen once the changes are kept (releasing a capture's pages) goes in `UnitOfWork.afterCommit(in:)`. Show save failures with `SaveFailure.message(for:formKept:)`, never the system's error text.
+
 `SideEffectsCoordinator` ([Services/SideEffects/SideEffectsCoordinator.swift](ios/DosarCuSina/Services/SideEffects/SideEffectsCoordinator.swift)) is the **only** path to notifications, the app badge, the widget snapshot and Spotlight (through its indexer hook). Actions save; the coordinator reacts to the save. Never schedule a notification, reload a widget or index anything from a view or an action. Notification permission is asked only with `setNeedsReconcile(allowPermissionPrompt: true)`, after the in-app explanation or from Settings.
 
 ## Capture

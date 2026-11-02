@@ -227,7 +227,7 @@ Every recognised line keeps its position on the page (`TextLayout`). Fragments c
 
 ### 5.4 Review and filing
 
-The review screen shows what was read, where it could go, and the reminder it suggests. On confirm, `CaptureFiler` files everything through the engine in one go: the section (`AssetActions`), the deadline (`ObligationActions`: complete the old cycle and move to the new date, or create it from the blueprint), who issued it (`ProviderActions`) and the document (`AttachmentActions`), all linked.
+The review screen shows what was read, where it could go, and the reminder it suggests. On confirm, `CaptureFiler` files everything through the engine as one unit of work (`UnitOfWork`): the section (`AssetActions`), the deadline (`ObligationActions`: complete the old cycle and move to the new date, or create it from the blueprint), who issued it (`ProviderActions`) and the document (`AttachmentActions`), all linked. Everything is kept, or nothing is: a failed save leaves the binder as it was, the review stays open with everything the person filled in, the document's pages stay ready for a retry, and the message says plainly what happened and what to do ("Telefonul nu mai are spațiu liber…"). Logging a visit with its invoice, completing a deadline with the new document, and editing a section with its photo work the same way.
 
 ### 5.5 Identity documents
 
