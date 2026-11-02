@@ -241,7 +241,7 @@ private struct ObligationPage: View {
                 VStack(alignment: .leading, spacing: DS.Space.xs) {
                     HStack(spacing: DS.Space.xs) {
                         Text(verbatim: provider.name).dsFont(.body)
-                        DSStars(rating: provider.rating)
+                        DSStarRating(rating: provider.rating, style: .compact)
                     }
                     if let phone = provider.phone {
                         DSFactRow(title: Text("Telefon \(provider.name)"), value: phone, action: .call)

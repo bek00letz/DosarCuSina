@@ -283,60 +283,6 @@ struct DSSeeAllRow: View {
     }
 }
 
-// MARK: - Stars
-
-/// A 1–5 rating. Read-only by default; with `onRate` every star is a 44 pt button
-/// and tapping the current rating clears it.
-struct DSStarRating: View {
-    let rating: Double?
-    var onRate: ((Int?) -> Void)?
-
-    var body: some View {
-        if let onRate {
-            HStack(spacing: 0) {
-                ForEach(1...5, id: \.self) { value in
-                    Button {
-                        onRate(Int((rating ?? 0).rounded()) == value ? nil : value)
-                    } label: {
-                        star(for: value)
-                            .font(.title2)
-                            .frame(minWidth: 44, minHeight: 44)
-                            .contentShape(.rect)
-                    }
-                    .buttonStyle(.dsPressable)
-                    .accessibilityLabel(Text("Nota \(value) din 5", comment: "VoiceOver: a star rating button."))
-                }
-            }
-            .accessibilityElement(children: .contain)
-            .accessibilityValue(valueText)
-            .sensoryFeedback(.selection, trigger: rating)
-        } else {
-            HStack(spacing: 1) {
-                ForEach(1...5, id: \.self) { value in
-                    star(for: value).imageScale(.small)
-                }
-            }
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(valueText)
-        }
-    }
-
-    private func star(for value: Int) -> some View {
-        let filled = (rating ?? 0) >= Double(value) - 0.25
-        let half = !filled && (rating ?? 0) >= Double(value) - 0.75
-        return Image(systemName: filled ? "star.fill" : (half ? "star.leadinghalf.filled" : "star"))
-            .foregroundStyle(filled || half ? Color.yellow : DS.Palette.tertiaryLabel)
-            .accessibilityHidden(true)
-    }
-
-    private var valueText: Text {
-        if let rating {
-            return Text("\(rating.formatted(.number.precision(.fractionLength(0...1)))) din 5 stele", comment: "VoiceOver value of a star rating.")
-        }
-        return Text("Fără notă", comment: "VoiceOver value of a rating that hasn't been given.")
-    }
-}
-
 // MARK: - Plate
 
 /// A Romanian registration plate: the blue EU band with "RO" and the number.

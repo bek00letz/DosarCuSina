@@ -97,45 +97,6 @@ struct DSFactRow: View {
     }
 }
 
-// MARK: - Stars
-
-/// A 1–5 rating. Read-only when `onChange` is nil; otherwise each star is a 44 pt button.
-struct DSStars: View {
-    let rating: Double?
-    var onChange: ((Int?) -> Void)?
-
-    var body: some View {
-        if let onChange {
-            HStack(spacing: 0) {
-                ForEach(1...5, id: \.self) { star in
-                    Button {
-                        onChange(Int(rating ?? 0) == star ? nil : star)
-                    } label: {
-                        Image(systemName: Double(star) <= (rating ?? 0) ? "star.fill" : "star")
-                            .font(.title3)
-                            .foregroundStyle(Double(star) <= (rating ?? 0) ? Color(.statusSoon) : DS.Palette.tertiaryLabel)
-                            .frame(width: 44, height: 44)
-                            .contentShape(.rect)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(Text("\(star) stele"))
-                    .accessibilityAddTraits(Double(star) <= (rating ?? 0) ? .isSelected : [])
-                }
-            }
-            .sensoryFeedback(.selection, trigger: rating)
-        } else if let rating {
-            HStack(spacing: 2) {
-                Image(systemName: "star.fill").foregroundStyle(Color(.statusSoon)).imageScale(.small)
-                Text(rating, format: .number.precision(.fractionLength(0...1)).locale(.dosarDefault))
-                    .monospacedDigit()
-            }
-            .dsFont(.subheadline)
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(Text("Notă \(rating.formatted(.number.precision(.fractionLength(0...1)).locale(.dosarDefault))) din 5"))
-        }
-    }
-}
-
 // MARK: - Labels
 
 /// "Exemplu" on anything that comes from the example household.
@@ -193,10 +154,10 @@ struct DSStepRow: View {
                     DSFactRow(title: Text(verbatim: "Număr poliță"), value: "RO/00/EX0001", action: .copy)
                     DSFactRow(title: Text(verbatim: "Telefon pentru daune"), value: "0700 000 001", action: .call)
                     HStack {
-                        DSStars(rating: 4.5)
+                        DSStarRating(rating: 4.5, style: .compact)
                         DSExampleTag()
                     }
-                    DSStars(rating: 3) { _ in }
+                    DSStarRating(rating: 3) { _ in }
                 }
             }
             DSStepRow(number: 1, text: Text(verbatim: "Apasă „Trimite”."))

@@ -296,7 +296,7 @@ private struct VisitForm: View {
                     if draft.provider != .none {
                         VStack(alignment: .leading, spacing: DS.Space.xxs) {
                             Text("Cum a lucrat?").dsFont(.footnote)
-                            DSStars(rating: draft.rating.map(Double.init)) { draft.rating = $0 }
+                            DSStarRating(rating: draft.rating.map(Double.init)) { draft.rating = $0 }
                         }
                         .transition(DS.Motion.transition(from: .top, reduceMotion: reduceMotion))
                     }
