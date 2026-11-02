@@ -50,7 +50,7 @@ enum IntentError: Error, CustomLocalizedStringResourceConvertible {
     var localizedStringResource: LocalizedStringResource {
         switch self {
         case .storeUnavailable: return "Datele nu pot fi deschise acum. Deschide aplicația și încearcă din nou."
-        case .notFound: return "Obligația nu mai există."
+        case .notFound: return "Obligația nu mai e activă. Poate ai bifat-o deja."
         }
     }
 }
@@ -83,18 +83,19 @@ public struct CompleteObligationIntent: AppIntent {
 
     public func perform() async throws -> some IntentResult & ProvidesDialog {
         let id = obligation.id
-        let message = try await MainActor.run { () throws -> String in
-            let context = try IntentStore.container().mainContext
-            var descriptor = FetchDescriptor<Obligation>(predicate: #Predicate { $0.id == id })
-            descriptor.fetchLimit = 1
-            guard let target = try context.fetch(descriptor).first else { throw IntentError.notFound }
-            try ObligationActions(context: context).complete(target)
-            if target.status == .active {
-                let next = target.dueDay().startDate().formatted(.dateTime.day().month(.wide).year().locale(.dosarDefault))
-                return String(localized: "Gata. Următoarea scadență e pe \(next).")
+        let (message, container) = try await MainActor.run { () throws -> (String, ModelContainer) in
+            let container = try IntentStore.container()
+            switch try IntentEngine.complete(obligationID: id, in: container.mainContext) {
+            case .skipped:
+                throw IntentError.notFound
+            case .completed(let next?):
+                let date = next.startDate().formatted(.dateTime.day().month(.wide).year().locale(.dosarDefault))
+                return (String(localized: "Gata. Următoarea scadență e pe \(date)."), container)
+            case .completed(nil):
+                return (String(localized: "Gata, am bifat-o."), container)
             }
-            return String(localized: "Gata, am bifat-o.")
         }
+        await IntentEngine.refreshSideEffects(container: container)
         return .result(dialog: IntentDialog(stringLiteral: message))
     }
 }
