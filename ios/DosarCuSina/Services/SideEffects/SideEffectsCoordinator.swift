@@ -56,7 +56,9 @@ public final class SideEffectsCoordinator {
     /// and runs a first pass (without asking for permission).
     public func start() {
         guard observers.isEmpty else { return }
-        observers.append(listen(to: ModelContext.didSave, allowPrompt: true))
+        // Saves never ask by themselves: the question comes only after the
+        // in-app explanation or from Settings, via `setNeedsReconcile(allowPermissionPrompt: true)`.
+        observers.append(listen(to: ModelContext.didSave, allowPrompt: false))
         observers.append(listen(to: AppPreferences.didChangeNotification, allowPrompt: false))
         observers.append(listen(to: .NSCalendarDayChanged, allowPrompt: false))
         let client = reconciler.client

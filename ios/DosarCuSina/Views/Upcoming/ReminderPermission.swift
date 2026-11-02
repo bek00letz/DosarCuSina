@@ -3,7 +3,8 @@ import UIKit
 
 /// Notification permission, asked in context: the first time the person saves
 /// something that reminds, the app explains in one sentence, then the system
-/// asks (through `SideEffectsCoordinator`, right after the save). If it was
+/// asks (through `SideEffectsCoordinator`, right after the save). This gate
+/// and Settings are the only places that ask; plain saves never do. If it was
 /// refused, screens show calmly how to turn it on; nothing else depends on it.
 @MainActor
 @Observable
@@ -42,6 +43,7 @@ struct ReminderSaveRequest: Identifiable {
 
 private struct ReminderPermissionGate: ViewModifier {
     @Binding var request: ReminderSaveRequest?
+    @Environment(\.sideEffects) private var sideEffects
     @State private var pending: ReminderSaveRequest?
 
     func body(content: Content) -> some View {
@@ -63,6 +65,7 @@ private struct ReminderPermissionGate: ViewModifier {
                 ReminderPermissionExplainer {
                     pending = nil
                     request.save()
+                    sideEffects?.setNeedsReconcile(allowPermissionPrompt: true)
                     Task {
                         // The system question follows the save; read the answer once it's given.
                         try? await Task.sleep(for: .seconds(2))
