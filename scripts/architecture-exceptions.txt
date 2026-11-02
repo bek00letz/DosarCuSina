@@ -34,7 +34,7 @@ ios/DosarCuSina/Views/Section/SectionPockets.swift:built-in-key-in-views:3
 ios/DosarCuSina/Views/Section/SectionScreen.swift:built-in-key-in-views:4
 ios/DosarCuSina/Views/Upcoming/UpcomingRoot.swift:built-in-key-in-views
 
-# date-format: One source for dates (review finding 7): DosarFormat moves to its own file in ios/Shared and grows the formats these need. SectionPockets is DosarFormat itself until then.
+# date-format: One source for dates (review finding 7): DosarFormat and DueWording move to their own files in ios/Shared and grow the formats these need. SectionPockets is DosarFormat and ReminderPresets is DueWording until then.
 ios/DosarCuSina/Intents/DosarIntents.swift:date-format:2
 ios/DosarCuSina/Models/Fields/FieldFormatting.swift:date-format
 ios/DosarCuSina/Services/Attention/MissingBills.swift:date-format

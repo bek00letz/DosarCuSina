@@ -119,16 +119,20 @@ rule built-in-key-in-views "$views" - \
     "BuiltInTemplates\\.Key\\.|(^|[^A-Za-z0-9_.])Key\\.($keys)([^A-Za-z0-9_]|\$)|(==|!=|case|,|\\(|\\[|:) *\"($keys)\"" - \
     "Screens don't branch on a built-in category. Ask the template what it does (its kind, its fields' roles), so a custom category behaves the same."
 
-rule date-format "$app" '(^|/)DosarFormat\.swift$' \
+rule date-format "$app" '(^|/)(DosarFormat|DueWording)\.swift$' \
     '\.dateTime([^A-Za-z0-9_]|$)|(^|[^A-Za-z0-9_])DateFormatter\(\)|\.formatted\(date:|Text\([^)]*, *style: *\.(date|time|relative|offset|timer)' - \
-    'Write dates with DosarFormat (or CalendarDay for due days), so every screen, widget and notification writes them the same way.'
+    'Write dates with DosarFormat (or DueWording and CalendarDay for due days), so every screen, widget and notification writes them the same way.'
 
 rule romanian-locale "$app" '^ios/DosarCuSina/Models/Values/Money\.swift$' \
     'Locale\(identifier: *"ro' - \
     'Use Locale.dosarDefault, the one place that decides which Romanian locale the app writes in.'
 
+# A minimum under 44 anywhere; a fixed height under 44 on a line that is tapped
+# (a button, a tap gesture, a tap shape). The rule reads one line at a time, so a
+# button whose label sets the height on a later line isn't seen.
+small='([0-9]|[1-3][0-9]|4[0-3])([^0-9.]|$)'
 rule small-hit-target "$app" - \
-    'min(Height|Width): *([0-9]|[1-3][0-9]|4[0-3])([^0-9.]|$)' - \
+    "min(Height|Width): *$small|(Button|onTapGesture|contentShape|Toggle|Link).*[^A-Za-z]height: *$small" - \
     'Tap targets are at least 44 pt (DS.Space and the DS buttons already are). If nothing here is tapped, drop the minimum instead.'
 
 rule silent-action-failure "$app" - \
