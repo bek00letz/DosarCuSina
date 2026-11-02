@@ -175,7 +175,7 @@ public struct DossierArchiveService {
             }
             return DossierV3.Asset(
                 id: DossierV3.id(asset.id), templateKey: asset.templateKey, name: asset.name,
-                symbolOverride: asset.symbolOverride, tintOverride: asset.tintOverrideRaw, notes: asset.notes,
+                parentId: DossierV3.id(asset.parent?.id), symbolOverride: asset.symbolOverride, tintOverride: asset.tintOverrideRaw, notes: asset.notes,
                 values: asset.values, photoPath: photoPath, isExample: asset.isExample,
                 createdAt: asset.createdAt, updatedAt: asset.updatedAt
             )

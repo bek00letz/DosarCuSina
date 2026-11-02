@@ -240,7 +240,7 @@ enum DossierV2Converter {
             let notes = ([dto.notes].compactMap { $0 } + leftovers).filter { !$0.isEmpty }.joined(separator: "\n")
 
             return DossierV3.Asset(
-                id: DossierV3.id(dto.id), templateKey: key, name: dto.name, symbolOverride: nil, tintOverride: nil,
+                id: DossierV3.id(dto.id), templateKey: key, name: dto.name, parentId: nil, symbolOverride: nil, tintOverride: nil,
                 notes: notes.isEmpty ? nil : notes, values: values, photoPath: nil, isExample: false,
                 createdAt: dto.createdAt, updatedAt: dto.updatedAt
             )

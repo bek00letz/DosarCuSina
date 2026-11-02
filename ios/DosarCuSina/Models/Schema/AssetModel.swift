@@ -37,6 +37,15 @@ extension DosarSchemaV2 {
         /// People and businesses who look after it (the mechanic, the vet).
         public var providers: [Provider]? = []
 
+        /// The asset this one belongs under: a tenancy under its property, a product
+        /// under a home, a document under its holder.
+        public var parent: Asset?
+
+        /// Assets filed under this one. Deleting this asset only unlinks them; the
+        /// screen asks first (see `AssetActions.delete(_:children:)`).
+        @Relationship(deleteRule: .nullify, inverse: \Asset.parent)
+        public var children: [Asset]? = []
+
         public init(id: UUID = UUID(), name: String, templateKey: String, values: FieldValues = FieldValues(), notes: String? = nil, isExample: Bool = false) {
             self.id = id
             self.name = name
@@ -67,6 +76,9 @@ extension DosarSchemaV2 {
         public var nextObligation: Obligation? {
             activeObligations.first
         }
+
+        /// How many assets are filed under this one, for the delete question.
+        public var childCount: Int { children?.count ?? 0 }
 
         /// History newest first.
         public var timeline: [HistoryEntry] {

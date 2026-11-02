@@ -194,6 +194,7 @@
           "id": { "$ref": "#/$defs/uuid" },
           "templateKey": { "type": "string" },
           "name": { "type": "string" },
+          "parentId": { "$ref": "#/$defs/uuid" },
           "values": { "type": "object", "additionalProperties": { "$ref": "#/$defs/fieldValue" } },
           "photoPath": { "$ref": "#/$defs/path" },
           "isExample": { "type": "boolean" },

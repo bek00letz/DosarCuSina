@@ -139,6 +139,11 @@ struct DossierImporter {
             asset.createdAt = dto.createdAt
             asset.updatedAt = dto.updatedAt
         }
+        // Parents are linked once every asset exists, so order in the file doesn't matter.
+        for dto in package.assets {
+            guard let id = uuid(dto.id), let asset = map[id], let parentId = uuid(dto.parentId), parentId != id else { continue }
+            asset.parent = map[parentId]
+        }
         return map
     }
 

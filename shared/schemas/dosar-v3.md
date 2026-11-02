@@ -140,8 +140,12 @@ household preferences (`homeOrder`, `isOnHome`, `isSensitive`).
 
 ### Asset (`data/assets.json`)
 
-`id`, `templateKey`, `name`, `symbolOverride`?, `tintOverride`?, `notes`?,
-`values`, `photoPath`?, `isExample`, `createdAt`, `updatedAt`.
+`id`, `templateKey`, `name`, `parentId`?, `symbolOverride`?, `tintOverride`?,
+`notes`?, `values`, `photoPath`?, `isExample`, `createdAt`, `updatedAt`.
+
+`parentId` files the asset under another: a tenancy under its property, a
+product under a home, a document under its holder. Deleting a parent never
+deletes its children unless the person says so.
 
 `values` maps field keys to typed values:
 

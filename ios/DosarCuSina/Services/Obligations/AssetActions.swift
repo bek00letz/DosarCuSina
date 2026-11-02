@@ -1,6 +1,17 @@
 import Foundation
 import SwiftData
 
+public enum AssetActionError: LocalizedError, Equatable {
+    case wouldCreateLoop
+
+    public var errorDescription: String? {
+        switch self {
+        case .wouldCreateLoop:
+            return String(localized: "Nu poți pune un element sub unul care e deja sub el.")
+        }
+    }
+}
+
 /// An obligation the add flow is about to create: a blueprint and its first date.
 public struct PlannedObligation: Hashable, Sendable, Identifiable {
     public var blueprint: ObligationBlueprint
@@ -50,10 +61,12 @@ public final class AssetActions {
         values: FieldValues,
         notes: String? = nil,
         obligations: [PlannedObligation] = [],
+        parent: Asset? = nil,
         isExample: Bool = false
     ) throws -> Asset {
         let asset = Asset(name: name, templateKey: template.key, values: values.normalizingChoices(for: template.definition), notes: notes, isExample: isExample)
         context.insert(asset)
+        asset.parent = parent
         let today = CalendarDay(now(), calendar: calendar)
         do {
             for planned in obligations where planned.isSelected {
@@ -118,9 +131,46 @@ public final class AssetActions {
         return log
     }
 
-    public func delete(_ asset: Asset) throws {
+    /// What happens to the assets filed under one that is deleted. The screen asks,
+    /// using `Asset.childCount`.
+    public enum ChildrenOnDelete: Sendable {
+        /// Keep them as standalone assets.
+        case keep
+        /// Delete them too (and, in turn, whatever is filed under them).
+        case delete
+    }
+
+    public func delete(_ asset: Asset, children: ChildrenOnDelete = .keep) throws {
+        if children == .delete {
+            for child in Self.descendants(of: asset) { context.delete(child) }
+        }
         context.delete(asset)
         try save()
+    }
+
+    /// Files `child` under `parent`, or makes it standalone with nil. Refuses to
+    /// create a loop (an asset under its own descendant).
+    public func setParent(_ child: Asset, _ parent: Asset?) throws {
+        if let parent {
+            guard parent.id != child.id, !Self.descendants(of: child).contains(where: { $0.id == parent.id }) else {
+                throw AssetActionError.wouldCreateLoop
+            }
+        }
+        child.parent = parent
+        child.updatedAt = now()
+        try save()
+    }
+
+    static func descendants(of asset: Asset) -> [Asset] {
+        var result: [Asset] = []
+        var queue = asset.children ?? []
+        var seen: Set<UUID> = [asset.id]
+        while let next = queue.popLast() {
+            guard seen.insert(next.id).inserted else { continue }
+            result.append(next)
+            queue.append(contentsOf: next.children ?? [])
+        }
+        return result
     }
 
     private func save() throws {

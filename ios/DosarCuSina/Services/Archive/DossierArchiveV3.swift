@@ -70,6 +70,8 @@ public enum DossierV3 {
         public var id: String
         public var templateKey: String
         public var name: String
+        /// The asset this one is filed under.
+        public var parentId: String?
         public var symbolOverride: String?
         public var tintOverride: String?
         public var notes: String?
