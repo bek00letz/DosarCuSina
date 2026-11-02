@@ -1,0 +1,102 @@
+import Foundation
+import SwiftData
+
+/// Repairs for data that earlier versions filed wrongly, before capture had one filer.
+/// None of them runs by itself: each finds what it would change (`…Candidates`) so the
+/// owner's repair list can show it and ask, and repairs only what was approved. Each is
+/// idempotent: running it again changes nothing more.
+@MainActor
+public struct CaptureRepairs {
+    public let context: ModelContext
+
+    public init(context: ModelContext) {
+        self.context = context
+    }
+
+    // MARK: Documents moved with their old links
+
+    /// A document whose deadline or history entry belongs to another section than the
+    /// document itself: it was moved here ("A photo already in the binder moves to where
+    /// it's added now") and kept its links to the old place.
+    public struct StaleDocumentLinks: Identifiable, Equatable {
+        public let attachmentID: UUID
+        public let obligationID: UUID?
+        public let historyEntryID: UUID?
+        public var id: UUID { attachmentID }
+    }
+
+    /// Every document that still points at another section's deadline or history entry.
+    public func staleDocumentLinkCandidates() throws -> [StaleDocumentLinks] {
+        try context.fetch(FetchDescriptor<Attachment>()).compactMap { attachment in
+            guard let home = attachment.asset?.id else { return nil }
+            let staleObligation = attachment.obligation.flatMap { $0.asset?.id != home ? $0.id : nil }
+            let staleEntry = attachment.historyEntry.flatMap { $0.asset?.id != home ? $0.id : nil }
+            guard staleObligation != nil || staleEntry != nil else { return nil }
+            return StaleDocumentLinks(attachmentID: attachment.id, obligationID: staleObligation, historyEntryID: staleEntry)
+        }
+    }
+
+    /// Drops the old place's links from the documents the owner approved, in one save.
+    /// The document stays where it is now, with its pages and everything read from it.
+    public func dropStaleDocumentLinks(_ approved: [StaleDocumentLinks]) throws {
+        let ids = Set(approved.map(\.attachmentID))
+        try UnitOfWork.perform(in: context) {
+            for attachment in try context.fetch(FetchDescriptor<Attachment>()) where ids.contains(attachment.id) {
+                let home = attachment.asset?.id
+                if let obligation = attachment.obligation, obligation.asset?.id != home { attachment.obligation = nil }
+                if let entry = attachment.historyEntry, entry.asset?.id != home { attachment.historyEntry = nil }
+            }
+            try UnitOfWork.save(context)
+        }
+    }
+
+    // MARK: Visits saved without their invoice
+
+    /// A visit logged without a document while an invoice for it sits loose in the same
+    /// section: the visit form was given a photo already in the binder and saved
+    /// without it. The invoice is the only one filed in the week before the visit,
+    /// or on its day, and belongs to no history entry.
+    public struct VisitWithoutInvoice: Identifiable, Equatable {
+        public let visitID: UUID
+        public let invoiceID: UUID
+        public var id: UUID { visitID }
+    }
+
+    /// Visits that may have lost their invoice, each with the one invoice that fits.
+    /// A visit with two possible invoices isn't offered: the owner would have to guess.
+    public func visitsWithoutInvoiceCandidates(calendar: Calendar = .current) throws -> [VisitWithoutInvoice] {
+        let visitKinds: Set<HistoryKind> = [.maintenance, .repair]
+        var used = Set<UUID>()
+        var found: [VisitWithoutInvoice] = []
+        for entry in try context.fetch(FetchDescriptor<HistoryEntry>()).sorted(by: { $0.occurredAt < $1.occurredAt }) {
+            guard visitKinds.contains(entry.kind), entry.obligation == nil, (entry.attachments ?? []).isEmpty,
+                  let asset = entry.asset else { continue }
+            let visitDay = CalendarDay(entry.occurredAt, calendar: calendar)
+            let weekBefore = visitDay.adding(days: -7, calendar: calendar)
+            let loose = (asset.attachments ?? []).filter { invoice in
+                guard invoice.kind == .invoice, invoice.historyEntry == nil, !used.contains(invoice.id) else { return false }
+                let filed = CalendarDay(invoice.documentDate ?? invoice.createdAt, calendar: calendar)
+                return filed >= weekBefore && filed <= visitDay
+            }
+            guard loose.count == 1, let invoice = loose.first else { continue }
+            used.insert(invoice.id)
+            found.append(VisitWithoutInvoice(visitID: entry.id, invoiceID: invoice.id))
+        }
+        return found
+    }
+
+    /// Links each approved invoice to its visit, in one save. An invoice already linked
+    /// to an entry is left alone.
+    public func linkInvoices(_ approved: [VisitWithoutInvoice]) throws {
+        try UnitOfWork.perform(in: context) {
+            let entries = Dictionary(try context.fetch(FetchDescriptor<HistoryEntry>()).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            let documents = Dictionary(try context.fetch(FetchDescriptor<Attachment>()).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            for pair in approved {
+                guard let entry = entries[pair.visitID], let invoice = documents[pair.invoiceID], invoice.historyEntry == nil else { continue }
+                invoice.historyEntry = entry
+                if invoice.provider == nil { invoice.provider = entry.providers?.first }
+            }
+            try UnitOfWork.save(context)
+        }
+    }
+}

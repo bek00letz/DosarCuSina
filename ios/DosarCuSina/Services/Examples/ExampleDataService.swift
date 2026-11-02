@@ -23,11 +23,16 @@ public struct ExampleDataService {
         return try !context.fetch(descriptor).isEmpty
     }
 
-    /// Adds the example household. Does nothing if examples are already there.
+    /// Adds the example household, in one save: a failure part-way leaves no half
+    /// household behind. Does nothing if examples are already there.
     public func loadExamples() throws {
         guard try !hasExamples() else { return }
         let store = TemplateStore(context: context)
         try store.installBuiltIns()
+        try UnitOfWork.perform(in: context) { try addExampleHousehold(store: store) }
+    }
+
+    private func addExampleHousehold(store: TemplateStore) throws {
         let templates = try store.templatesByKey()
         let assets = AssetActions(context: context, calendar: calendar, now: now)
         let history = HistoryActions(context: context, now: now)
@@ -70,13 +75,13 @@ public struct ExampleDataService {
                     LineItemDraft(name: String(localized: "Schimb ulei și filtru"), partBrandOrCode: "5W-30", cost: Money(420)),
                     LineItemDraft(name: String(localized: "Plăcuțe frână față"), partBrandOrCode: "Exemplu", cost: Money(380)),
                 ],
-                providers: [mechanic], rating: 5
+                providers: [mechanic], rating: 5, asExample: true
             )
             try history.record(
                 on: car, kind: .maintenance, title: String(localized: "Revizie"), occurredAt: daysAgo(120),
                 metricReading: 136_200, totalCost: Money(690),
                 items: [LineItemDraft(name: String(localized: "Schimb ulei și filtru"), partBrandOrCode: "5W-30", cost: Money(450))],
-                providers: [mechanic], rating: 4
+                providers: [mechanic], rating: 4, asExample: true
             )
         }
 
@@ -101,11 +106,12 @@ public struct ExampleDataService {
             try history.record(
                 on: home, kind: .repair, title: String(localized: "Robinet nou la bucătărie"), occurredAt: daysAgo(210), totalCost: Money(340),
                 items: [LineItemDraft(name: String(localized: "Baterie bucătărie"), partBrandOrCode: "Exemplu", cost: Money(240))],
-                providers: [plumber], rating: 5
+                providers: [plumber], rating: 5, asExample: true
             )
             try history.record(
                 on: home, kind: .purchase, title: String(localized: "Hotă nouă"), occurredAt: daysAgo(500), totalCost: Money(899),
-                items: [LineItemDraft(name: String(localized: "Hotă"), partBrandOrCode: "Exemplu 60 cm", cost: Money(899))]
+                items: [LineItemDraft(name: String(localized: "Hotă"), partBrandOrCode: "Exemplu 60 cm", cost: Money(899))],
+                asExample: true
             )
         }
 
@@ -179,7 +185,8 @@ public struct ExampleDataService {
             let tenancy = try assets.create(name: String(localized: "Chiriaș garsonieră"), template: template, values: lease,
                                             obligations: plan(template, lease, dues: [:]), parent: home, isExample: true)
             try providers.create(name: String(localized: "Chiriaș exemplu"), trades: [.tenant], phone: "0700 000 004", linkedTo: [tenancy])
-            try assets.recordMeasurement(on: tenancy, kind: .coldWater, name: String(localized: "Apă rece la mutare"), value: 312, at: calendar.date(byAdding: .day, value: -300, to: now()))
+            try assets.recordMeasurement(on: tenancy, kind: .coldWater, name: String(localized: "Apă rece la mutare"), value: 312,
+                                         at: calendar.date(byAdding: .day, value: -300, to: now()), asExample: true)
         }
 
         if let template = templates[BuiltInTemplates.Key.subscription] {
@@ -199,25 +206,88 @@ public struct ExampleDataService {
         }
     }
 
-    /// Deletes everything created by `loadExamples()` in one save.
-    public func removeExamples() throws {
-        for asset in try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.isExample })) {
-            context.delete(asset)
+    /// Deletes everything created by `loadExamples()` in one save. Only examples go:
+    /// anything of the person's is never touched. Returns the example sections kept
+    /// because something of the person's sits in them (from before the app asked);
+    /// they become the person's, so the screen can say so.
+    @discardableResult
+    public func removeExamples() throws -> [String] {
+        try UnitOfWork.perform(in: context) {
+            var kept: [String] = []
+            // Each example from its top: what is under it goes with it, or stays with it.
+            for asset in try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.isExample })) where asset.isExample && asset.parent?.isExample != true {
+                if Self.holdsSomethingReal(asset) {
+                    kept.append(asset.name)
+                    Self.makeReal(asset)
+                } else {
+                    context.delete(asset)
+                }
+            }
+            // Example records that don't hang off an asset.
+            // People who worked on a kept section were made the person's with it.
+            for provider in try context.fetch(FetchDescriptor<Provider>(predicate: #Predicate { $0.isExample })) where provider.isExample {
+                context.delete(provider)
+            }
+            for obligation in try context.fetch(FetchDescriptor<Obligation>(predicate: #Predicate { $0.isExample })) where obligation.asset == nil {
+                context.delete(obligation)
+            }
+            try HouseholdRules.reconcile(in: context, today: CalendarDay(now(), calendar: calendar), calendar: calendar)
+            try UnitOfWork.save(context)
+            return kept
         }
-        // Example records that don't hang off an asset.
-        for provider in try context.fetch(FetchDescriptor<Provider>(predicate: #Predicate { $0.isExample })) {
-            context.delete(provider)
+    }
+
+    /// "Da" to "Păstrezi … ca al tău?": the example section and everything in it
+    /// become the person's. Removing examples never touches them again.
+    public func adopt(sectionID: UUID) throws {
+        var descriptor = FetchDescriptor<Asset>(predicate: #Predicate { $0.id == sectionID })
+        descriptor.fetchLimit = 1
+        guard let section = try context.fetch(descriptor).first else { return }
+        // The whole example it sits in, so nothing of it is left to be removed with the examples.
+        let root = ExampleOwnership.exampleSection(containing: section) ?? section
+        try UnitOfWork.perform(in: context) {
+            Self.makeReal(root)
+            try UnitOfWork.save(context)
         }
-        for obligation in try context.fetch(FetchDescriptor<Obligation>(predicate: #Predicate { $0.isExample })) where obligation.asset == nil {
-            context.delete(obligation)
+    }
+
+    /// Whether anything in `asset`, or under it, isn't an example.
+    static func holdsSomethingReal(_ asset: Asset) -> Bool {
+        tree(of: asset).contains { node in
+            !node.isExample
+                || (node.obligations ?? []).contains { !$0.isExample }
+                || (node.history ?? []).contains { !$0.isExample }
+                || (node.attachments ?? []).contains { !$0.isExample }
+                || (node.measurements ?? []).contains { !$0.isExample }
         }
-        try HouseholdRules.reconcile(in: context, today: CalendarDay(now(), calendar: calendar), calendar: calendar)
-        do {
-            try context.save()
-        } catch {
-            context.rollback()
-            throw error
+    }
+
+    /// Clears the example mark on `asset`, everything under it and the people who worked on it.
+    static func makeReal(_ asset: Asset) {
+        for node in tree(of: asset) {
+            node.isExample = false
+            for obligation in node.obligations ?? [] { obligation.isExample = false }
+            for entry in node.history ?? [] {
+                entry.isExample = false
+                for item in entry.items ?? [] { item.isExample = false }
+            }
+            for attachment in node.attachments ?? [] { attachment.isExample = false }
+            for log in node.measurements ?? [] { log.isExample = false }
+            for provider in node.providers ?? [] { provider.isExample = false }
         }
+    }
+
+    /// `asset` and everything under it.
+    private static func tree(of asset: Asset) -> [Asset] {
+        var result: [Asset] = []
+        var queue = [asset]
+        var seen = Set<UUID>()
+        while let node = queue.popLast() {
+            guard seen.insert(node.id).inserted else { continue }
+            result.append(node)
+            queue += node.children ?? []
+        }
+        return result
     }
 
     // MARK: Helpers
@@ -226,7 +296,7 @@ public struct ExampleDataService {
         let assets = AssetActions(context: context, calendar: calendar, now: now)
         for reading in values where reading.daysAgo != 0 {
             let date = calendar.date(byAdding: .day, value: reading.daysAgo, to: now()) ?? now()
-            try assets.recordMeasurement(on: asset, kind: kind, value: reading.value, at: date)
+            try assets.recordMeasurement(on: asset, kind: kind, value: reading.value, at: date, asExample: true)
         }
     }
 
@@ -234,15 +304,6 @@ public struct ExampleDataService {
     private func addHistory(to asset: Asset, blueprintKey: String, daysAgo: Int, cost: Money) throws {
         guard let obligation = (asset.obligations ?? []).first(where: { $0.blueprintKey == blueprintKey }) else { return }
         let date = calendar.date(byAdding: .day, value: -daysAgo, to: now()) ?? now()
-        let entry = HistoryEntry(kind: .forCompleting(obligation.kind), title: obligation.title, occurredAt: date)
-        entry.cycleDueDate = date
-        entry.nextDueDate = obligation.dueDate
-        entry.previousStatusRaw = ObligationStatus.active.rawValue
-        entry.totalCost = cost
-        entry.isExample = true
-        context.insert(entry)
-        entry.obligation = obligation
-        entry.asset = asset
-        try context.save()
+        try ObligationActions(context: context, calendar: calendar, now: now).recordPastCompletion(of: obligation, on: date, cost: cost)
     }
 }

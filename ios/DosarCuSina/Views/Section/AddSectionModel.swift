@@ -108,8 +108,13 @@ final class AddSectionModel {
         planned.filter { $0.isSelected && $0.firstDue == nil }
     }
 
-    /// Creates the section (and its category, for "Altceva…") with the chosen obligations.
+    /// Creates the section (and its category, for "Altceva…") with the chosen obligations,
+    /// in one step: a failure leaves no empty category behind.
     func create(context: ModelContext) throws -> Asset {
+        try UnitOfWork.perform(in: context) { try createSection(context: context) }
+    }
+
+    private func createSection(context: ModelContext) throws -> Asset {
         let store = TemplateStore(context: context)
         let category: CategoryTemplate
         if let template {

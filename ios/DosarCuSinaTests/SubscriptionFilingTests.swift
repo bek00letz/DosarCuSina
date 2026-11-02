@@ -20,7 +20,7 @@ private func ron(_ amount: String) -> CaptureValue {
 private func capture(_ kind: CaptureDocumentKind, _ fields: [CaptureField]) -> CaptureResult {
     let routing = CaptureRouter.route(kind: kind, kindConfidence: 0.9, fields: fields)
     return CaptureResult(kind: kind, kindConfidence: 0.9, fields: fields, suggestions: routing.suggestions, reminder: routing.reminder,
-                         recognizedText: "", barcodes: [], documentID: nil, notices: [])
+                         recognizedText: "", barcodes: [], document: nil, notices: [])
 }
 
 /// An ENGIE gas bill for one consumption point. Placeholder codes.
@@ -379,7 +379,7 @@ struct SubscriptionFilingTests {
 
         // The AI reads it again and says 24: their 12 stays, the AI's is offered beside it.
         let again = CaptureResult(kind: .contract, kindConfidence: 0.9, fields: read.fields + [], suggestions: read.suggestions, reminder: read.reminder,
-                                  recognizedText: "", barcodes: [], documentID: nil, notices: [],
+                                  recognizedText: "", barcodes: [], document: nil, notices: [],
                                   fieldAlternatives: [], readWithCloudModel: true)
         let merged = CaptureReview(result: again, assets: [], context: context).carryingEdits(from: review, assets: [])
         #expect(merged.value(.minimumMonths) == .number(12))

@@ -391,8 +391,6 @@ public enum CaptureNotice: Hashable, Codable, Sendable {
     case onDeviceModelFailed
     /// The cloud model was asked for but couldn't run.
     case cloudModelFailed(reason: String)
-    /// The same document was captured before.
-    case duplicateDocument(documentID: UUID)
     /// Only the first pages of a long PDF were read.
     case pagesTruncated(readPages: Int, totalPages: Int)
     /// An identity card read from one photo without its machine-readable zone: the
@@ -490,6 +488,36 @@ public struct CaptureFieldAlternative: Hashable, Codable, Sendable {
 
 // MARK: - Result
 
+/// What the readers read from the pages, before deciding the kind's fields: the text
+/// with its layout, the codes, and the models' answers. Reading it again as another
+/// kind needs nothing else.
+public struct CaptureReadingSource: Sendable, Codable, Hashable {
+    /// The recognized text, as read.
+    public let text: String
+    /// Recognized lines with their positions, page by page. Empty for pasted text and a PDF's text layer.
+    public let pages: [[RecognizedLine]]
+    public let barcodes: [CaptureBarcode]
+    /// "Today" when it was read, for the windows dates must fall in.
+    public let referenceDate: Date
+    /// Apple's on-device model's answers.
+    public let modelFields: [CaptureField]
+    /// The person's AI provider's answers, when it read the page.
+    public let aiFields: [CaptureField]?
+    /// One photo of the page: an identity card read from it alone asks for its back.
+    public let isSinglePhoto: Bool
+
+    public init(text: String, pages: [[RecognizedLine]], barcodes: [CaptureBarcode], referenceDate: Date,
+                modelFields: [CaptureField], aiFields: [CaptureField]?, isSinglePhoto: Bool) {
+        self.text = text
+        self.pages = pages
+        self.barcodes = barcodes
+        self.referenceDate = referenceDate
+        self.modelFields = modelFields
+        self.aiFields = aiFields
+        self.isSinglePhoto = isSinglePhoto
+    }
+}
+
 /// Everything one capture produced. A draft for the user to confirm, never saved by itself.
 public struct CaptureResult: Sendable, Codable, Hashable {
     public let id: UUID
@@ -500,8 +528,9 @@ public struct CaptureResult: Sendable, Codable, Hashable {
     public let reminder: CaptureReminderHint?
     public let recognizedText: String
     public let barcodes: [CaptureBarcode]
-    /// The stored document, when the capture was saved to the document store.
-    public let documentID: UUID?
+    /// The document this capture is about: its pages waiting in the document store,
+    /// or the copy the binder already keeps. Nil when nothing was stored (pasted text).
+    public let document: CapturedDocumentRef?
     public let notices: [CaptureNotice]
     /// What the kind rests on.
     public let kindEvidence: CaptureKindEvidence
@@ -511,6 +540,9 @@ public struct CaptureResult: Sendable, Codable, Hashable {
     public let fieldAlternatives: [CaptureFieldAlternative]
     /// Whether the person's AI provider read the page and answered.
     public let readWithCloudModel: Bool
+    /// What the readers read, kept so the page can be read again as another kind
+    /// (`CaptureEngine.reinterpret`) without new pictures. Nil for a hand-made result.
+    public let source: CaptureReadingSource?
 
     public init(
         id: UUID = UUID(),
@@ -521,12 +553,13 @@ public struct CaptureResult: Sendable, Codable, Hashable {
         reminder: CaptureReminderHint?,
         recognizedText: String,
         barcodes: [CaptureBarcode],
-        documentID: UUID?,
+        document: CapturedDocumentRef?,
         notices: [CaptureNotice],
         kindEvidence: CaptureKindEvidence = .classifier,
         kindAlternatives: [CaptureAlternative<CaptureDocumentKind>] = [],
         fieldAlternatives: [CaptureFieldAlternative] = [],
-        readWithCloudModel: Bool = false
+        readWithCloudModel: Bool = false,
+        source: CaptureReadingSource? = nil
     ) {
         self.id = id
         self.kind = kind
@@ -536,12 +569,13 @@ public struct CaptureResult: Sendable, Codable, Hashable {
         self.reminder = reminder
         self.recognizedText = recognizedText
         self.barcodes = barcodes
-        self.documentID = documentID
+        self.document = document
         self.notices = notices
         self.kindEvidence = kindEvidence
         self.kindAlternatives = kindAlternatives
         self.fieldAlternatives = fieldAlternatives
         self.readWithCloudModel = readWithCloudModel
+        self.source = source
     }
 
     /// The best field for a key.

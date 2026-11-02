@@ -33,7 +33,7 @@ struct LineItemRulesTests {
         let context = try makeContext()
         var review = CaptureReview(
             result: CaptureResult(kind: .fiscalReceipt, kindConfidence: 0.9, fields: [], suggestions: [], reminder: nil,
-                                  recognizedText: "", barcodes: [], documentID: nil, notices: []),
+                                  recognizedText: "", barcodes: [], document: nil, notices: []),
             assets: [], context: context
         )
         #expect(review.showsLineItems, "A receipt offers lines even when none were read")

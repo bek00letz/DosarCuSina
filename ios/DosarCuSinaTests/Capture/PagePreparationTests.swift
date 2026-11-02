@@ -115,7 +115,7 @@ struct PagePreparationTests {
         #expect(!result.notices.contains(.littleTextRecognized))
         // The model is shown the page as it was read; the photo as taken is what's kept.
         #expect(model.page?.width == 540)
-        let id = try #require(result.documentID)
+        let id = try #require(result.document?.pendingID)
         let kept = try #require(await store.processed(id: id)?.pageData.first)
         let source = try #require(CGImageSourceCreateWithData(kept as CFData, nil))
         let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]

@@ -241,7 +241,7 @@ struct ReadingArbiterTests {
     private func result(_ kind: CaptureDocumentKind = .rcaPolicy, confidence: Double = 0.9, evidence: CaptureKindEvidence = .classifier,
                         fields: [CaptureField] = [], notices: [CaptureNotice] = []) -> CaptureResult {
         CaptureResult(kind: kind, kindConfidence: confidence, fields: fields, suggestions: [], reminder: nil, recognizedText: "",
-                      barcodes: [], documentID: nil, notices: notices, kindEvidence: evidence)
+                      barcodes: [], document: nil, notices: notices, kindEvidence: evidence)
     }
 
     @Test("A weak reading: unsure kind, missing essentials, a failed check, little text, a provider's format alone")
@@ -285,5 +285,19 @@ struct ReadingArbiterTests {
         #expect(!settings.readsAutomatically(after: result()), "A sound reading isn't sent")
         settings.deleteKey(for: .gemini)
         #expect(!settings.readsAutomatically(after: weak), "Not without a provider")
+    }
+
+    @Test("An identity document's photo is never sent by itself: the review asks first", arguments: [
+        CaptureDocumentKind.identityCard, .passport, .drivingLicence,
+    ])
+    func identityDocumentsAskBeforeSending(_ kind: CaptureDocumentKind) {
+        let settings = AIProviderTests.settings()
+        settings.saveKey(AIProviderTests.placeholderKey, for: .gemini)
+        settings.readsAutomaticallyWhenUnsure = true
+        #expect(settings.automaticReading(after: result(kind, confidence: 0.5)) == .askFirst)
+        #expect(!settings.readsAutomatically(after: result(kind, confidence: 0.5)))
+        #expect(settings.automaticReading(after: result(.rcaPolicy, confidence: 0.5)) == .read, "A policy still reads by itself")
+        #expect(settings.automaticReading(after: result(.utilityInvoice, confidence: 0.5)) == .read, "A bill too")
+        settings.deleteKey(for: .gemini)
     }
 }

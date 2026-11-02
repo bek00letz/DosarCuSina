@@ -95,6 +95,25 @@ public final class ObligationActions {
         return entry
     }
 
+    /// A completion from before the binder knew the obligation (last year's ITP): logged
+    /// in the history with the cycle it closed, without moving the obligation. Only the
+    /// example loader uses it today, so its entry is an example exactly when the
+    /// obligation is one.
+    @discardableResult
+    func recordPastCompletion(of obligation: Obligation, on date: Date, cost: Money?) throws -> HistoryEntry {
+        let entry = HistoryEntry(kind: .forCompleting(obligation.kind), title: obligation.title, occurredAt: date)
+        entry.cycleDueDate = date
+        entry.nextDueDate = obligation.dueDate
+        entry.previousStatusRaw = ObligationStatus.active.rawValue
+        entry.totalCost = cost
+        entry.isExample = obligation.isExample
+        context.insert(entry)
+        entry.obligation = obligation
+        entry.asset = obligation.asset
+        try save()
+        return entry
+    }
+
     /// Puts the obligation back the way it was before `entry` completed it and
     /// removes the entry. Only the latest completion can be undone.
     public func undo(_ entry: HistoryEntry) throws {
@@ -196,6 +215,7 @@ public final class ObligationActions {
         reference: String? = nil,
         notes: String? = nil
     ) throws -> Obligation {
+        let isExample = try ExampleOwnership.requireReal(asset)
         let obligation = Obligation(
             title: title,
             kind: kind,
@@ -210,7 +230,7 @@ public final class ObligationActions {
         obligation.notes = notes
         context.insert(obligation)
         obligation.asset = asset
-        obligation.isExample = asset?.isExample ?? false
+        obligation.isExample = isExample
         try save()
         return obligation
     }
@@ -219,6 +239,7 @@ public final class ObligationActions {
     /// blueprint's own rule; it is required when the blueprint asks for a date.
     @discardableResult
     public func create(from blueprint: ObligationBlueprint, for asset: Asset, firstDue: CalendarDay? = nil) throws -> Obligation {
+        try ExampleOwnership.requireReal(asset)
         let obligation = try HouseholdMutations.makeObligation(from: blueprint, for: asset, firstDue: firstDue, today: CalendarDay(now(), calendar: calendar), calendar: calendar, in: context)
         try save()
         return obligation

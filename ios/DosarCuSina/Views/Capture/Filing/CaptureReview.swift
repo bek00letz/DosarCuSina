@@ -87,8 +87,6 @@ struct CaptureReview: Identifiable {
     var newAssetName: String
     /// For bills with a due date: a one-off reminder to pay it.
     var remindsToPay: Bool
-    /// Already in the binder: the filed document it matches.
-    var duplicateAttachmentID: UUID?
     /// Filed under a household member, it becomes one of their documents whatever
     /// its kind (a cazier, a bank card), not a loose paper on the person.
     var filesAsPersonalDocument = false
@@ -97,12 +95,18 @@ struct CaptureReview: Identifiable {
     var kindAlternatives: [CaptureAlternative<CaptureDocumentKind>]
     /// The reading behind the kind shown, when the person took it from the alternatives.
     private var chosenKind: CaptureAlternative<CaptureDocumentKind>?
+    /// The person chose the kind shown. No later reading changes it.
+    private(set) var kindEdited = false
 
-    /// The pages waiting in capture's store, when there are any to file.
-    var documentID: UUID? {
-        guard duplicateAttachmentID == nil else { return nil }
-        return result.documentID
-    }
+    /// The document this review files: pages waiting in capture's store, or the copy
+    /// the binder already keeps (it moves to where this review files it).
+    var document: CapturedDocumentRef? { result.document }
+
+    /// Already in the binder: the filed document it matches.
+    var duplicateAttachmentID: UUID? { document?.keptAttachmentID }
+
+    /// The pages waiting in capture's store, when there are any.
+    var documentID: UUID? { document?.pendingID }
 
     /// Fields shown on the review: everything read, in a sensible order, without repeats.
     var visibleFields: [Field] {
@@ -196,6 +200,48 @@ struct CaptureReview: Identifiable {
             if case .obligation(let key, _) = suggestion.destination, let mapped = CaptureMapping.blueprintKey(key) { return mapped }
         }
         return nil
+    }
+
+    /// Expected fields of this kind that weren't read, so the person can add them: an RCA
+    /// policy corrected from a bill can get its expiry.
+    var addableKeys: [CaptureFieldKey] {
+        let present = Set(fields.map(\.key))
+        let expected = kind.expectedKeys.reduce(into: [CaptureFieldKey]()) { list, key in
+            if !list.contains(key) { list.append(key) }
+        }
+        return expected.filter { key in
+            !present.contains(key) && kind.allows(key) && key != .lineItems && key != .serviceKind
+                && CaptureMapping.isShownInReview(key, among: present.union([key]))
+        }
+    }
+
+    /// Adds an expected field the reading didn't find, empty, for the person to fill in.
+    mutating func addField(_ key: CaptureFieldKey) {
+        guard !fields.contains(where: { $0.key == key }) else { return }
+        var field = Field(key: key, value: nil, confidence: 1, sourceText: nil, tier: .deterministic)
+        field.isEdited = true
+        fields.append(field)
+    }
+
+    /// The person chose another kind: from the list, or another reader's ("Folosește-l").
+    /// The page is read again as that kind (`CaptureEngine.reinterpret`: that kind's
+    /// patterns and labels, merged with what the models read, only the fields it carries),
+    /// and the review keeps everything they changed. What depends on the kind follows
+    /// (`kindChanged`), unless they chose it themselves.
+    @MainActor
+    func choosingKind(_ kind: CaptureDocumentKind, from alternative: CaptureAlternative<CaptureDocumentKind>? = nil,
+                      assets: [Asset], context: ModelContext, engine: CaptureEngine = .standard()) -> CaptureReview {
+        var previous = self
+        if let alternative { previous.useKind(alternative) } else { previous.kind = kind }
+        guard previous.kind != self.kind || alternative != nil else { return self }
+        previous.kindEdited = true
+        let read = CaptureReview(result: engine.reinterpret(result, as: previous.kind), assets: assets, context: context)
+        var merged = read.carryingEdits(from: previous, assets: assets)
+        // The field rules hold for the person's own values too: an ID card carries no total.
+        merged.fields.removeAll { !merged.kind.allows($0.key) }
+        merged.kindAlternatives = previous.kindAlternatives.filter { $0.value != previous.kind }
+        merged.chosenKind = previous.chosenKind
+        return merged
     }
 
     /// Takes another reader's kind: the person's choice. The kind it replaces is offered
@@ -315,21 +361,9 @@ struct CaptureReview: Identifiable {
         let values = Dictionary(result.fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
         self.title = CaptureMapping.defaultTitle(for: result.kind, fields: values)
         self.remindsToPay = result.kind == .utilityInvoice
-        self.duplicateAttachmentID = nil
-        for notice in result.notices {
-            if case .duplicateDocument(let id) = notice, Self.isFiled(id, in: context) {
-                self.duplicateAttachmentID = id
-            }
-        }
         self.destination = Self.suggestDestination(result: result, assets: assets)
         self.newAssetName = Self.defaultAssetName(kind: result.kind, values: values)
         self.suggested = Suggested(kind: kind, title: title, destination: destination, newAssetName: newAssetName, remindsToPay: remindsToPay, fields: values)
-    }
-
-    private static func isFiled(_ id: UUID, in context: ModelContext) -> Bool {
-        var descriptor = FetchDescriptor<Attachment>(predicate: #Predicate { $0.id == id })
-        descriptor.fetchLimit = 1
-        return ((try? context.fetchCount(descriptor)) ?? 0) > 0
     }
 
     @MainActor
@@ -466,7 +500,8 @@ struct CaptureReview: Identifiable {
         for key in before.fields.keys where !previous.fields.contains(where: { $0.key == key && $0.value != nil }) {
             if let index = merged.fields.firstIndex(where: { $0.key == key }) { merged.fields[index].value = nil }
         }
-        if previous.kind != before.kind {
+        if previous.kindEdited || previous.kind != before.kind {
+            merged.kindEdited = true
             // Their kind stays; the reading's own is offered beside it.
             let read = CaptureAlternative(merged.kind, source: merged.result.kindSource)
             merged.kind = previous.kind

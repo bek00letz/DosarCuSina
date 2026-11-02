@@ -163,7 +163,23 @@ public struct AIProviderSettings: Sendable {
     /// Whether a reading of this result should go to the provider without a tap: the person
     /// turned it on, a provider is ready, and the phone's reading is weak.
     public func readsAutomatically(after result: CaptureResult) -> Bool {
-        readsAutomaticallyWhenUnsure && isReady && !result.readWithCloudModel && ReadingArbiter.isWeak(result)
+        automaticReading(after: result) == .read
+    }
+
+    /// What happens by itself after a weak phone reading, with "Citește automat când nu
+    /// sunt sigur" on. An identity document's photo is never sent by itself: the review
+    /// asks first, once for that document, naming the provider. Bills, policies and
+    /// contracts are read right away.
+    public func automaticReading(after result: CaptureResult) -> AutomaticReading {
+        guard readsAutomaticallyWhenUnsure, isReady, !result.readWithCloudModel, ReadingArbiter.isWeak(result) else { return .none }
+        return result.kind.isIdentityDocument ? .askFirst : .read
+    }
+
+    public enum AutomaticReading: Sendable, Equatable {
+        case none
+        case read
+        /// "Trimit poza la <provider>?" first; nothing is sent before yes.
+        case askFirst
     }
 
     /// The compatible service's address as the person typed it.

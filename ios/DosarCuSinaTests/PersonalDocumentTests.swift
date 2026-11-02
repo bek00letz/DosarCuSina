@@ -96,7 +96,7 @@ struct PersonalDocumentTests {
         let (context, corina) = try setup()
         var review = CaptureReview(
             result: CaptureResult(kind: .other, kindConfidence: 0.6, fields: [], suggestions: [], reminder: nil,
-                                  recognizedText: "", barcodes: [], documentID: nil, notices: []),
+                                  recognizedText: "", barcodes: [], document: nil, notices: []),
             assets: [corina], context: context
         )
         review.destination = .asset(corina.id)
@@ -117,7 +117,7 @@ struct PersonalDocumentTests {
                 CaptureField(key: .surname, value: .text("MANOLE"), confidence: 0.8, tier: .heuristic),
                 CaptureField(key: .givenNames, value: .text("CORINA"), confidence: 0.8, tier: .heuristic),
                 CaptureField(key: .documentVariant, value: .text(DocumentType.Variant.idCardElectronic), confidence: 0.9, tier: .deterministic),
-            ], suggestions: [], reminder: nil, recognizedText: "", barcodes: [], documentID: nil, notices: []),
+            ], suggestions: [], reminder: nil, recognizedText: "", barcodes: [], document: nil, notices: []),
             assets: [corina], context: context
         )
         review.destination = .asset(corina.id)
@@ -147,7 +147,7 @@ struct PersonalDocumentTests {
     @Test func withoutTheFlagALoosePaperStaysOnThePerson() throws {
         var review = CaptureReview(
             result: CaptureResult(kind: .other, kindConfidence: 0.6, fields: [], suggestions: [], reminder: nil,
-                                  recognizedText: "", barcodes: [], documentID: nil, notices: []),
+                                  recognizedText: "", barcodes: [], document: nil, notices: []),
             assets: [], context: try makeContext()
         )
         review.destination = .none

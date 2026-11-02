@@ -5,7 +5,7 @@ import SwiftUI
 /// job. Big check rows grouped by the template's components, each with an
 /// optional cost and brand; the date, the counter, the total and who did it;
 /// and an invoice photo that ticks the rows by itself. One save through
-/// `HistoryActions.recordVisit`, then a summary of what changed.
+/// `CaptureFiler` (the visit and its invoice together), then a summary of what changed.
 struct AddVisitFlow: View {
     let assetID: UUID
     private let prefill: CaptureResult?
@@ -64,13 +64,19 @@ private struct VisitForm: View {
     @State private var didStart = false
     @State private var source: CaptureSource?
     @State private var isChoosingSource = false
-    @State private var isReading = false
+    /// Reading an invoice picked here. It ends with the form: a reading still running stops.
+    @State private var session = CaptureSession()
     @State private var readNote: String?
     @State private var errorMessage: String?
     @State private var newProviderName = ""
     @State private var isSaving = false
     @State private var saved: HistoryEntry?
+    /// Where an invoice already in the binder was before it moved to this visit, for "Anulează".
+    @State private var movedInvoice: RefileReceipt?
     @State private var toast: DSToast?
+    @State private var exampleQuestion: ExampleSectionQuestion?
+
+    private var isReading: Bool { session.phase == .reading }
 
     private var template: CategoryTemplate? { try? TemplateStore(context: context).template(forKey: asset.templateKey) }
 
@@ -138,15 +144,23 @@ private struct VisitForm: View {
         }
         .captureSourcePicker($source) { payload in
             read(payload)
-        } onError: { error in
-            readNote = error.localizedDescription
+        } onError: { _ in
+            readNote = String(localized: "Poza nu s-a putut deschide. Încearcă din nou.")
         }
+        .onChange(of: session.phase) { _, phase in
+            switch phase {
+            case .read(let result): apply(result)
+            case .failed: readNote = String(localized: "Încearcă o poză mai clară. Poți bifa și de mână.")
+            default: break
+            }
+        }
+        .examplePrompt($exampleQuestion) { save() }
     }
 
     // MARK: Invoice
 
     @ViewBuilder private var invoiceCard: some View {
-        if draft.documentID == nil {
+        if draft.document == nil {
             DSActionCard("Atașează factura", subtitle: "Bifez singur ce scrie pe ea și trec sumele.", systemImage: "doc.viewfinder") {
                 isChoosingSource = true
             }
@@ -157,7 +171,7 @@ private struct VisitForm: View {
         } else {
             DSNotice(.success, title: "Factura e atașată", message: readNote.map { LocalizedStringKey($0) })
         }
-        if draft.documentID == nil, let readNote {
+        if draft.document == nil, let readNote {
             DSNotice(.warning, title: "Factura nu s-a citit", message: LocalizedStringKey(readNote))
         }
     }
@@ -331,16 +345,8 @@ private struct VisitForm: View {
     }
 
     private func read(_ payload: CaptureRequest.Payload) {
-        isReading = true
         readNote = nil
-        Task {
-            defer { isReading = false }
-            do {
-                apply(try await CaptureRunner.run(payload, ownerID: asset.id))
-            } catch {
-                readNote = String(localized: "Încearcă o poză mai clară. Poți bifa și de mână.")
-            }
-        }
+        session.read(payload)
     }
 
     private func apply(_ result: CaptureResult) {
@@ -358,7 +364,7 @@ private struct VisitForm: View {
         }
         let found = draft.ticked.count + draft.extras.count - before
         draft.documentTitle = CaptureMapping.defaultTitle(for: result.kind, fields: Dictionary(result.fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first }))
-        if draft.documentID != nil {
+        if draft.document != nil {
             readNote = found > 0
                 ? String(localized: "Am bifat \(found) rânduri de pe factură. Verifică-le.")
                 : String(localized: "Nu am găsit rânduri de bifat. Bifează de mână.")
@@ -373,55 +379,44 @@ private struct VisitForm: View {
         Task {
             defer { isSaving = false }
             do {
-                // The new provider, the visit and the invoice are one unit of work:
-                // all kept, or none; the invoice pages leave capture only once kept.
-                let entry = try await UnitOfWork.perform(in: context) {
-                    let provider = try resolveProvider()
-                    var documents: [DocumentDraft] = []
-                    let store = CaptureDocumentStore.shared()
-                    if let id = draft.documentID, let processed = await store.processed(id: id) {
-                        documents.append(processed.draft(
-                            title: draft.documentTitle,
-                            kind: .invoice,
-                            extractedText: draft.documentText,
-                            documentDate: CalendarDay(draft.date)
-                        ))
-                        await UnitOfWork.afterCommit(in: context) { await store.discard(id: id) }
-                    }
-                    return try HistoryActions(context: context).recordVisit(
-                        on: asset,
-                        kind: wording.kind,
-                        occurredAt: draft.date,
-                        checklist: draft.checklistItems,
-                        extraItems: draft.extraItems,
-                        totalCost: draft.totalMoney,
-                        odometer: draft.odometer,
-                        provider: provider,
-                        documents: documents,
-                        rating: draft.rating
-                    )
-                }
-                withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { saved = entry }
+                // The provider, the visit and the invoice are one unit of work: all kept, or
+                // none; an invoice already in the binder moves to the visit, never left out.
+                let outcome = try await CaptureFiler(context: context).file(.visit(.init(
+                    asset: asset,
+                    kind: wording.kind,
+                    occurredAt: draft.date,
+                    checklist: draft.checklistItems,
+                    extraItems: draft.extraItems,
+                    totalCost: draft.totalMoney,
+                    odometer: draft.odometer,
+                    provider: providerChoice,
+                    rating: draft.rating,
+                    document: draft.document,
+                    documentTitle: draft.documentTitle,
+                    documentText: draft.documentText
+                )))
+                movedInvoice = outcome.movedDocument
+                withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { saved = outcome.visit }
+            } catch let question as ExampleSectionQuestion {
+                exampleQuestion = question
             } catch {
                 errorMessage = SaveFailure.message(for: error, formKept: true)
             }
         }
     }
 
-    private func resolveProvider() throws -> Provider? {
+    private var providerChoice: CaptureFiler.Visit.ProviderChoice {
         switch draft.provider {
-        case .none: return nil
-        case .existing(let id): return allProviders.first { $0.id == id }
-        case .new(let name):
-            let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !trimmed.isEmpty else { return nil }
-            return try ProviderActions(context: context).create(name: trimmed, trades: [wording.trade], linkedTo: [asset])
+        case .none: return .none
+        case .existing(let id): return allProviders.first { $0.id == id }.map { .existing($0) } ?? .none
+        case .new(let name): return .named(name, trade: wording.trade)
         }
     }
 
     private func undo(_ entry: HistoryEntry) {
         do {
-            try HistoryActions(context: context).undoVisit(entry)
+            try HistoryActions(context: context).undoVisit(entry, restoring: movedInvoice)
+            movedInvoice = nil
             saved = nil
             toast = DSToast(title: "Vizita a fost anulată.", systemImage: "arrow.uturn.backward.circle.fill", tint: DS.Palette.accent, actionTitle: nil, action: nil)
         } catch {
