@@ -143,7 +143,8 @@ public struct FieldValues: Hashable, Sendable, Codable, Sequence {
     /// The values with defaults filled in for empty fields (new assets only) and
     /// derived fields worked out again when one of their inputs changed, or when
     /// they are still empty. A derived value the person typed in themselves stays
-    /// until an input changes.
+    /// until an input changes, and one given in the same change as its inputs (a
+    /// contract's printed end date, beside its start and length) is kept as given.
     public func applyingRules(of template: TemplateDefinition, previous: FieldValues?, calendar: Calendar = .current) -> FieldValues {
         var result = self
         if previous == nil {
@@ -166,7 +167,8 @@ public struct FieldValues: Hashable, Sendable, Codable, Sequence {
         for field in template.allFields {
             guard let derivation = field.derivation else { continue }
             let inputsChanged = previous.map { old in derivation.inputs.contains { old[$0] != result[$0] } } ?? true
-            if result[field.key] == nil || inputsChanged, let value = derivation.value(from: result, calendar: calendar) {
+            let givenNow = previous.map { $0[field.key] != result[field.key] } ?? (result[field.key] != nil)
+            if result[field.key] == nil || (inputsChanged && !givenNow), let value = derivation.value(from: result, calendar: calendar) {
                 result[field.key] = value
             }
         }

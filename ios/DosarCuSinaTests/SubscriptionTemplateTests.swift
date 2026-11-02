@@ -45,6 +45,21 @@ struct SubscriptionTemplateTests {
         #expect(plan.activeObligations.map(\.blueprintKey) == [SubscriptionFields.minimumEndsBlueprint])
     }
 
+    @Test func aPrintedEndGivenWithItsStartAndLengthIsKept() throws {
+        let definition = BuiltInTemplates.subscription
+        var values = FieldValues()
+        values[SubscriptionFields.startDate] = .date(CalendarDay("2026-03-15"))
+        values[SubscriptionFields.minimumMonths] = .number(24)
+        values[SubscriptionFields.minimumUntil] = .date(CalendarDay("2028-03-14"))
+        let created = values.applyingRules(of: definition, previous: nil, calendar: .bucharest)
+        #expect(created[SubscriptionFields.minimumUntil] == .date(CalendarDay("2028-03-14")), "As the contract prints it")
+
+        var longer = created
+        longer[SubscriptionFields.minimumMonths] = .number(12)
+        let edited = longer.applyingRules(of: definition, previous: created, calendar: .bucharest)
+        #expect(edited[SubscriptionFields.minimumUntil] == .date(CalendarDay("2027-03-15")), "A new length moves the end")
+    }
+
     @Test func identifiersShowOnlyForTheirService() throws {
         let definition = BuiltInTemplates.subscription
         var gas = FieldValues()
