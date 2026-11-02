@@ -5,18 +5,77 @@ import Foundation
 /// Every line is kept twice: as read (for showing the source to the user) and
 /// folded (lowercased, diacritics removed, cedillas and commas unified), so
 /// "Poliță", "POLITA" and "polița" all match `polita`.
+///
+/// Text that came from recognition also keeps where each line sits on its page,
+/// so labels can be matched to the values in their column. Pasted text and a
+/// PDF's text layer have no positions, and every reader falls back to line order.
 public struct CaptureText: Sendable {
     public let original: [String]
     public let folded: [String]
+    /// Where each line sits on its page; nil when the text has no positions.
+    public let boxes: [TextBox?]
+    /// The page each line is on, from 0.
+    public let pages: [Int]
 
     public init(_ text: String) {
         let lines = text
             .replacingOccurrences(of: "\r\n", with: "\n")
             .components(separatedBy: .newlines)
-            .map { $0.trimmingCharacters(in: .whitespaces) }
-            .filter { !$0.isEmpty }
-        self.original = lines
-        self.folded = lines.map(Self.fold)
+        self.init(pages: [lines.map { RecognizedLine($0) }])
+    }
+
+    /// Recognized pages, each in reading order.
+    public init(pages: [[RecognizedLine]]) {
+        var original: [String] = [], boxes: [TextBox?] = [], numbers: [Int] = []
+        for (number, page) in pages.enumerated() {
+            for line in page {
+                let trimmed = line.text.trimmingCharacters(in: .whitespaces)
+                guard !trimmed.isEmpty else { continue }
+                original.append(trimmed)
+                boxes.append(line.box)
+                numbers.append(number)
+            }
+        }
+        self.original = original
+        self.folded = original.map(Self.fold)
+        self.boxes = boxes
+        self.pages = numbers
+    }
+
+    /// Whether any line knows where it sits on its page.
+    public var hasPositions: Bool { boxes.contains { $0 != nil } }
+
+    /// The same text with each row's fragments joined left to right, for readers that
+    /// work line by line ("Plăcuțe frână față" and "320,00" on one row are one line).
+    /// Expects lines in reading order; text without positions is returned as is.
+    func joiningRows() -> CaptureText {
+        guard hasPositions else { return self }
+        var pagesOut: [[RecognizedLine]] = []
+        var current: RecognizedLine?
+        var anchor: TextBox?
+        var page = -1
+        func flush() {
+            if let line = current { pagesOut[pagesOut.count - 1].append(line) }
+            current = nil
+            anchor = nil
+        }
+        for index in original.indices {
+            if pages[index] != page {
+                flush()
+                while pagesOut.count <= pages[index] { pagesOut.append([]) }
+                page = pages[index]
+            }
+            let line = RecognizedLine(original[index], box: boxes[index])
+            if let box = line.box, let rowAnchor = anchor, let joined = current, rowAnchor.isOnSameRow(as: box) {
+                current = RecognizedLine(joined.text + " " + line.text, box: joined.box.map { $0.union(box) } ?? box)
+            } else {
+                flush()
+                current = line
+                anchor = line.box
+            }
+        }
+        flush()
+        return CaptureText(pages: pagesOut)
     }
 
     /// Lowercases, strips diacritics (ș/ş → s, ț/ţ → t, ă/â → a, î → i) and unifies spaces.

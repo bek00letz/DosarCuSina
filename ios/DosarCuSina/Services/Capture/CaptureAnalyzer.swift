@@ -28,6 +28,10 @@ public struct CaptureAnalyzer: Sendable {
         public let kindConfidence: Double
         public let fields: [CaptureField]
         public let notices: [CaptureNotice]
+        /// Whether a machine-readable zone was found.
+        public let hasMachineReadableZone: Bool
+        /// The text for people: each printed label followed by its value, columns kept together.
+        public let readableText: String
     }
 
     let specializedParsers: [any CaptureSpecializedParser]
@@ -54,9 +58,22 @@ public struct CaptureAnalyzer: Sendable {
     // MARK: - Analysis
 
     public func analyze(text rawText: String, barcodes: [CaptureBarcode] = [], referenceDate: Date = Date()) -> Analysis {
-        let text = CaptureText(rawText)
+        analyze(CaptureText(rawText), rawText: rawText, barcodes: barcodes, referenceDate: referenceDate)
+    }
+
+    /// Recognized pages, with where each line sits, so labels find the values in their columns.
+    public func analyze(pages: [[RecognizedLine]], barcodes: [CaptureBarcode] = [], referenceDate: Date = Date()) -> Analysis {
+        let text = CaptureText(pages: pages)
+        return analyze(text, rawText: text.joinedOriginal, barcodes: barcodes, referenceDate: referenceDate)
+    }
+
+    /// `lines` keeps recognized fragments apart, with their positions, for documents read
+    /// by their printed labels (identity documents). Every other reader works on whole
+    /// rows, so an invoice line's description and amount stay on one line.
+    func analyze(_ lines: CaptureText, rawText: String, barcodes: [CaptureBarcode], referenceDate: Date) -> Analysis {
         var notices: [CaptureNotice] = []
         var fields = FieldSet()
+        var text = lines.joiningRows()
 
         let mrz = MRZParser.parse(text: rawText, referenceDate: referenceDate)
         let specialized = specializedParsers.lazy.compactMap { $0.parse(text) }.first
@@ -78,18 +95,13 @@ public struct CaptureAnalyzer: Sendable {
             if !mrz.allChecksValid { notices.append(.machineReadableZoneUnverified) }
         }
 
+        let template = IdentityTemplates.template(for: kind, text: text, machineReadableFormat: mrz?.format)
+        if template != nil { text = lines }
         switch kind {
-        case .passport, .identityCard:
-            // Printed labels; the MRZ (when on the photo) already added checked values, which win.
-            addIdentityFront(text, into: &fields)
-        case .drivingLicence:
-            for (key, entry) in RomanianFieldExtractor.drivingLicenceFields(in: text).sorted(by: { $0.key.rawValue < $1.key.rawValue }) {
-                fields.add(key, entry.0, 0.75, entry.1)
-            }
-            if let surname = fields.text(.surname) {
-                let full = [fields.text(.givenNames), surname].compactMap { $0 }.joined(separator: " ")
-                fields.add(.holderName, .text(full), 0.7, nil)
-            }
+        case .passport, .identityCard, .drivingLicence:
+            // Printed labels, read with the document's template. The MRZ (when on the
+            // photo) already added checked values, which win; agreeing values reinforce.
+            if let template { fields.add(IdentityDocumentReader.read(text, template: template)) }
         case .vehicleRegistration:
             addVehicleIdentity(text, into: &fields)
             for (key, entry) in RomanianFieldExtractor.registrationFields(in: text).sorted(by: { $0.key.rawValue < $1.key.rawValue }) {
@@ -149,14 +161,23 @@ public struct CaptureAnalyzer: Sendable {
             notices.append(.littleTextRecognized)
         }
 
-        return Analysis(text: text, kind: kind, kindConfidence: kindConfidence, fields: fields.fields, notices: notices)
+        let readable: [String]
+        if let template {
+            readable = LabelledLayout(text: text, labels: template.labelTable).readableLines()
+        } else {
+            readable = text.original
+        }
+        return Analysis(
+            text: text, kind: kind, kindConfidence: kindConfidence, fields: fields.fields, notices: notices,
+            hasMachineReadableZone: mrz != nil, readableText: readable.joined(separator: "\n")
+        )
     }
 
     // MARK: - Field groups
 
     private func mrzFields(_ mrz: MRZParser.Result) -> [CaptureField] {
         let tier: CaptureTier = mrz.allChecksValid ? .deterministic : .heuristic
-        let source = "MRZ"
+        let source = CaptureField.machineReadableSource
         var result: [CaptureField] = [
             CaptureField(key: .documentCode, value: .text(mrz.documentCode), confidence: 0.99, sourceText: source, tier: .deterministic),
             CaptureField(key: .issuingCountry, value: .text(mrz.issuingCountry), confidence: 0.95, sourceText: source, tier: tier),
@@ -180,28 +201,6 @@ public struct CaptureAnalyzer: Sendable {
             result.append(CaptureField(key: .personalNumber, value: .text(personal), confidence: mrz.compositeValid ? 0.95 : 0.5, sourceText: source, tier: tier))
         }
         return result
-    }
-
-    private func addIdentityFront(_ text: CaptureText, into fields: inout FieldSet) {
-        let card = RomanianFieldExtractor.identityCardFields(in: text)
-        if let surname = card.surname { fields.add(.surname, .text(surname.0), 0.8, surname.1) }
-        if let given = card.givenNames { fields.add(.givenNames, .text(given.0), 0.8, given.1) }
-        if card.surname != nil || card.givenNames != nil {
-            let full = [card.givenNames?.0, card.surname?.0].compactMap { $0 }.joined(separator: " ")
-            fields.add(.holderName, .text(full), 0.8, nil)
-        }
-        if let cnp = card.personalNumber {
-            fields.add(.personalNumber, .text(cnp.0), 0.97, cnp.1, tier: .deterministic)
-        }
-        if let birth = card.birthDate {
-            let fromCNP = card.personalNumber != nil && card.birthDate?.1 == card.personalNumber?.1
-            fields.add(.birthDate, .day(birth.0), fromCNP ? 0.97 : 0.75, birth.1, tier: fromCNP ? .deterministic : .heuristic)
-        }
-        if let number = card.documentNumber { fields.add(.documentNumber, .text(number.0), 0.8, number.1) }
-        if let issue = card.issueDate { fields.add(.issueDate, .day(issue.0), 0.75, issue.1) }
-        if let expiry = card.expiryDate { fields.add(.expiryDate, .day(expiry.0), 0.8, expiry.1) }
-        if let issuer = card.issuer { fields.add(.issuer, .text(issuer.0), 0.7, issuer.1) }
-        if let sex = card.sex { fields.add(.sex, .text(sex.0), 0.8, sex.1) }
     }
 
     private func addInvoiceBasics(_ text: CaptureText, into fields: inout FieldSet) {
@@ -332,12 +331,10 @@ struct FieldSet {
         for field in newFields { add(field) }
     }
 
+    /// Keeps the better value per key; two readings that agree (the MRZ and the printed
+    /// label, say) reinforce each other.
     mutating func add(_ field: CaptureField) {
-        if let index = fields.firstIndex(where: { $0.key == field.key }) {
-            if FieldMerger.prefers(field, over: fields[index]) { fields[index] = field }
-        } else {
-            fields.append(field)
-        }
+        fields = FieldMerger.merge(fields, with: [field])
     }
 
     mutating func add(_ key: CaptureFieldKey, _ value: CaptureValue, _ confidence: Double, _ source: String?, tier: CaptureTier = .heuristic) {
@@ -363,7 +360,8 @@ public enum FieldMerger {
     }
 
     /// Merges a later tier's fields into earlier ones. When two tiers agree on a value,
-    /// the agreement raises confidence and keeps the earlier source text.
+    /// the agreement raises confidence, keeps the earlier source text, and counts as read
+    /// from the document rather than guessed by a model.
     public static func merge(_ base: [CaptureField], with incoming: [CaptureField]) -> [CaptureField] {
         var result = base
         for candidate in incoming {
@@ -378,7 +376,7 @@ public enum FieldMerger {
                     value: existing.value,
                     confidence: max(existing.confidence, candidate.confidence) + 0.1,
                     sourceText: existing.sourceText ?? candidate.sourceText,
-                    tier: min(existing.tier, candidate.tier)
+                    tier: CaptureConsistency.trust(existing) >= CaptureConsistency.trust(candidate) ? existing.tier : candidate.tier
                 )
             } else if prefers(candidate, over: existing) {
                 result[index] = candidate

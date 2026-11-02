@@ -1,108 +1,177 @@
 import Foundation
 
-/// The front of a Romanian identity card, read from its printed labels.
+/// Reads an identity document with its template (`IdentityTemplates`): each field at
+/// its printed label (column-aware, through `LabelledLayout`), else in its usual
+/// region, else anywhere when its format can't be mistaken, then checked against
+/// its format and against the other values.
 ///
-/// Two layouts are in use:
-/// - the electronic card (2021+): bilingual labels ("Nume / Surname") with the
-///   value beside or under the label, and no machine-readable zone on the front;
-/// - the older card: trilingual labels ("Nume/Nom/Last name"), "SERIA XX NR 123456"
-///   at the top and the validity as one range ("12.03.18-12.03.2028").
+/// Confidence comes from those checks, not from guesses:
+/// - a CNP with a valid control digit is certain, and so are the birth date and sex it encodes;
+/// - a value read at its label that passes its format is trusted (no "Verifică");
+/// - a value found only in a region, or that fails its format, is marked for a check;
+/// - two sources agreeing (printed and CNP, printed and MRZ) raise confidence.
 ///
-/// Every date must sit under its own label, so a birth date is never taken for an
-/// issue or expiry date. The CNP is accepted only with a valid control digit.
-extension RomanianFieldExtractor {
+/// Every date must sit at its own label, so a birth date is never an issue or expiry date.
+enum IdentityDocumentReader {
 
-    struct IdentityFields {
-        var surname: (String, String)?
-        var givenNames: (String, String)?
-        var personalNumber: (String, String)?
-        var documentNumber: (String, String)?
-        var birthDate: (CaptureDay, String)?
-        var issueDate: (CaptureDay, String)?
-        var expiryDate: (CaptureDay, String)?
-        var issuer: (String, String)?
-        var sex: (String, String)?
-    }
+    /// Confidence for a value read at its label that passed its format.
+    static let labelled = 0.8
+    /// Confidence for a value found by its format anywhere on the page.
+    static let anywhere = 0.7
+    /// Confidence for a value found only in its usual region.
+    static let regional = 0.55
+    /// Confidence for a value that failed its format check.
+    static let failedFormat = 0.45
 
-    /// Labels in folded form (lowercase, no diacritics), as printed on either layout.
-    /// `other` lists labels whose values aren't read, so they're never taken for a value.
-    enum IdentityLabel: CaseIterable, Hashable {
-        case surname, givenNames, personalNumber, documentNumber, birthDate, issueDate, expiryDate, validity, issuer, sex, other
-
-        var words: [String] {
-            switch self {
-            case .surname: ["nume / surname", "nume/surname", "nume/nom/last name", "nume/nom", "surname", "last name"]
-            case .givenNames: ["prenume / given names", "prenume/given names", "prenume/prenom/first name", "prenume/prenom", "given names", "first name", "prenume"]
-            case .personalNumber: ["cnp / pin", "cnp/pin", "cnp"]
-            case .documentNumber: ["nr. document / document no", "nr. document/document no", "document no", "nr. document"]
-            case .birthDate: ["data nasterii / date of birth", "data nasterii", "date of birth"]
-            case .issueDate: ["data emiterii / date of issue", "data emiterii", "date of issue", "data eliberarii"]
-            case .expiryDate: ["data expirarii / date of expiry", "data expirarii", "date of expiry"]
-            case .validity: ["valabilitate/validite/validity", "valabilitate", "validity"]
-            case .issuer: ["emisa de / issued by", "emisa de/delivree par/issued by", "emisa de", "issued by", "autoritatea emitenta", "issuing authority"]
-            case .sex: ["sex / sex", "sex/sexe/sex", "sex"]
-            case .other: [
-                "cetatenie", "nationality", "nationalite", "loc nastere", "locul nasterii", "place of birth", "lieu de naissance",
-                "domiciliu", "address", "adresse", "semnatura", "signature", "romania", "roumanie", "carte de identitate",
-                "identity card", "carte d'identite", "carte electronica",
-            ]
-            }
-        }
-    }
-
-    /// The fields printed on an identity card front.
-    static func identityCardFields(in text: CaptureText) -> IdentityFields {
-        var result = IdentityFields()
-        let layout = LabelledLayout(text: text, labels: IdentityLabel.allCases.map { ($0, $0.words) })
-
-        func value(for label: IdentityLabel) -> (value: String, source: String)? { layout.value(for: label) }
-
-        if let name = value(for: .surname), let clean = personName(name.value) { result.surname = (clean, name.source) }
-        if let name = value(for: .givenNames), let clean = personName(name.value) { result.givenNames = (clean, name.source) }
-        if let issuer = value(for: .issuer), issuer.value.contains(where: \.isLetter) { result.issuer = (issuer.value, issuer.source) }
-        if let sex = value(for: .sex), let letter = sex.value.uppercased().first(where: { $0 == "M" || $0 == "F" }) {
-            result.sex = (String(letter), sex.source)
+    static func read(_ text: CaptureText, template: IdentityTemplate) -> [CaptureField] {
+        let layout = LabelledLayout(text: text, labels: template.labelTable)
+        var fields: [CaptureField] = []
+        func add(_ key: CaptureFieldKey, _ value: CaptureValue, _ confidence: Double, _ source: String?, tier: CaptureTier = .heuristic) {
+            guard !fields.contains(where: { $0.key == key }) else { return }
+            fields.append(CaptureField(key: key, value: value, confidence: confidence, sourceText: source, tier: tier))
         }
 
-        // The CNP: anywhere on the card, but only with a valid control digit.
-        if let cnp = personalNumber(in: text) {
-            result.personalNumber = cnp
-            if let birth = birthDate(fromCNP: cnp.0) { result.birthDate = (birth, cnp.1) }
-        }
-
-        // Document number: "SERIA XT NR 123456" (older card) or under "Nr. document".
-        if let match = text.original.lazy.compactMap({ TextPattern.first(#"\bseria\s+([A-Z]{2})\s*,?\s*nr\.?\s*(\d{6,7})\b"#, in: $0) }).first,
-           let series = match[1], let number = match[2] {
-            result.documentNumber = (series.uppercased() + number, series.uppercased() + " " + number)
-        } else if let number = value(for: .documentNumber),
-                  let match = TextPattern.first(#"\b([A-Z]{2})\s?(\d{6,7})\b"#, in: number.value),
-                  let series = match[1], let digits = match[2] {
-            result.documentNumber = (series.uppercased() + digits, number.source)
-        }
-
-        // Dates, each from its own label.
-        if result.birthDate == nil, let birth = layout.day(for: .birthDate) { result.birthDate = birth }
-        if let issue = layout.day(for: .issueDate) { result.issueDate = issue }
-        if let expiry = layout.day(for: .expiryDate) { result.expiryDate = expiry }
-        // The older card prints the validity as one range on one line.
-        if result.expiryDate == nil, let line = layout.line(of: .validity) {
-            let candidates = [line, line + 1].filter { $0 < text.folded.count }
-            for line in candidates {
-                let found = dates(inLine: text.folded[line], index: line)
-                if found.count == 2, found[0].day < found[1].day {
-                    if result.issueDate == nil { result.issueDate = (found[0].day, text.original[line]) }
-                    result.expiryDate = (found[1].day, text.original[line])
-                    break
+        for field in template.fields {
+            let key = IdentityLabelKey.field(field.key)
+            if case .dateRange(let startKey) = field.format {
+                if let range = dateRange(at: layout.found(for: key), in: text) {
+                    add(field.key, .day(range.end), labelled, range.source)
+                    add(startKey, .day(range.start), labelled, range.source)
                 }
+                continue
+            }
+            if case .date = field.format {
+                // A date only counts at its own label, so a neighbour's date is never borrowed.
+                if let (day, source) = layout.day(for: key) {
+                    add(field.key, .day(day), labelled, source)
+                    continue
+                }
+            } else if let found = layout.found(for: key), let parsed = parse(found.value, as: field.format) {
+                add(field.key, parsed.value, parsed.passed ? labelled : failedFormat, found.source, tier: parsed.tier)
+                continue
+            }
+            if let region = field.region, let found = inRegion(region, of: text, format: field.format) {
+                add(field.key, found.value, regional, found.source)
+                continue
+            }
+            if field.searchesEverywhere, let found = anywhere(in: text, format: field.format) {
+                add(field.key, found.value, found.tier == .deterministic ? 0.97 : anywhere, found.source, tier: found.tier)
             }
         }
-        // A birth date is never an issue or expiry date.
-        if let birth = result.birthDate?.0 {
-            if result.issueDate?.0 == birth { result.issueDate = nil }
-            if result.expiryDate?.0 == birth { result.expiryDate = nil }
+
+        crossCheckPersonalNumber(&fields)
+        if let surname = fields.first(where: { $0.key == .surname }) ?? fields.first(where: { $0.key == .givenNames }) {
+            let full = [fields.first { $0.key == .givenNames }?.value.text, fields.first { $0.key == .surname }?.value.text]
+                .compactMap { $0 }.joined(separator: " ")
+            add(.holderName, .text(full), surname.confidence, nil, tier: surname.tier)
         }
-        return result
+        return fields
     }
+
+    // MARK: - Formats
+
+    struct Parsed {
+        let value: CaptureValue
+        let passed: Bool
+        var tier: CaptureTier = .heuristic
+    }
+
+    /// The value in its format, or nil when there is nothing of that shape at all.
+    static func parse(_ raw: String, as format: IdentityFormat) -> Parsed? {
+        let value = raw.trimmingCharacters(in: .whitespaces)
+        switch format {
+        case .name:
+            return RomanianFieldExtractor.personName(value).map { Parsed(value: .text($0), passed: true) }
+        case .personalNumber:
+            let digits = value.filter { !$0.isWhitespace }
+            guard let match = TextPattern.first(#"(?<!\d)(\d{13})(?!\d)"#, in: digits), let cnp = match[1] else { return nil }
+            let valid = RomanianFieldExtractor.isValidCNP(cnp)
+            return Parsed(value: .text(cnp), passed: valid, tier: valid ? .deterministic : .heuristic)
+        case .documentNumber(let pattern):
+            guard let match = TextPattern.first(pattern, in: value.uppercased()) else { return nil }
+            let joined = match.groups.dropFirst().compactMap { $0 }.joined().uppercased()
+            return joined.contains(where: \.isNumber) ? Parsed(value: .text(joined), passed: true) : nil
+        case .date, .dateRange:
+            return RomanianFieldExtractor.dates(inLine: CaptureText.fold(value), index: 0).first.map { Parsed(value: .day($0.day), passed: true) }
+        case .sex:
+            let letters = value.uppercased().filter(\.isLetter)
+            guard let letter = letters.first(where: { $0 == "M" || $0 == "F" }) else { return nil }
+            return Parsed(value: .text(String(letter)), passed: letters.count <= 3)
+        case .country:
+            if let code = TextPattern.first(#"\b([A-Z]{3})\b"#, in: value, caseInsensitive: false)?[1] {
+                return Parsed(value: .text(code), passed: true)
+            }
+            guard value.count <= 30, value.contains(where: \.isLetter) else { return nil }
+            return Parsed(value: .text(value), passed: value.allSatisfy { $0.isLetter || $0 == " " })
+        case .text:
+            return value.contains(where: \.isLetter) ? Parsed(value: .text(value), passed: true) : nil
+        case .categories:
+            guard TextPattern.first(#"^[A-Z0-9 ,/+]{1,40}$"#, in: value, caseInsensitive: false) != nil else { return nil }
+            return Parsed(value: .text(value), passed: true)
+        }
+    }
+
+    /// A validity range at its label: two dates, the first before the second, on the
+    /// value or on the line after the label.
+    private static func dateRange(at found: LabelledLayout<IdentityLabelKey>.Found?, in text: CaptureText) -> (start: CaptureDay, end: CaptureDay, source: String)? {
+        guard let found else { return nil }
+        let dates = RomanianFieldExtractor.dates(inLine: found.folded, index: found.label.line)
+        guard dates.count == 2, dates[0].day < dates[1].day else { return nil }
+        return (dates[0].day, dates[1].day, found.source)
+    }
+
+    /// A value in the field's usual region that passes its format.
+    private static func inRegion(_ region: TextBox, of text: CaptureText, format: IdentityFormat) -> (value: CaptureValue, source: String)? {
+        for (index, box) in text.boxes.enumerated() {
+            guard let box, box.midX >= region.minX, box.midX <= region.maxX, box.midY >= region.minY, box.midY <= region.maxY,
+                  let parsed = parse(text.original[index], as: format), parsed.passed else { continue }
+            return (parsed.value, text.original[index])
+        }
+        return nil
+    }
+
+    /// A line anywhere that is exactly a value of this format (a CNP: anywhere on a line,
+    /// but only with a valid control digit).
+    private static func anywhere(in text: CaptureText, format: IdentityFormat) -> (value: CaptureValue, source: String, tier: CaptureTier)? {
+        if case .personalNumber = format {
+            return RomanianFieldExtractor.personalNumber(in: text).map { (.text($0.0), $0.1, .deterministic) }
+        }
+        guard case .documentNumber(let pattern) = format else { return nil }
+        let whole = "^" + pattern.replacingOccurrences(of: #"\b"#, with: "") + "$"
+        for line in text.original {
+            if let parsed = parse(line, as: .documentNumber(pattern: whole)) { return (parsed.value, line, .heuristic) }
+        }
+        return nil
+    }
+
+    // MARK: - Cross-checks
+
+    /// A valid CNP encodes the birth date and sex: they are added when missing, made
+    /// certain when the printed ones agree, and replaced when they don't.
+    private static func crossCheckPersonalNumber(_ fields: inout [CaptureField]) {
+        guard let cnp = fields.first(where: { $0.key == .personalNumber }), cnp.tier == .deterministic,
+              let digits = cnp.value.text else { return }
+        let derived: [(CaptureFieldKey, CaptureValue?)] = [
+            (.birthDate, RomanianFieldExtractor.birthDate(fromCNP: digits).map(CaptureValue.day)),
+            (.sex, RomanianFieldExtractor.sex(fromCNP: digits).map(CaptureValue.text)),
+        ]
+        for (key, value) in derived {
+            guard let value else { continue }
+            let checked = CaptureField(key: key, value: value, confidence: 0.97, sourceText: cnp.sourceText, tier: .deterministic)
+            if let index = fields.firstIndex(where: { $0.key == key }) {
+                if fields[index].value == value {
+                    fields[index] = CaptureField(key: key, value: value, confidence: 0.97, sourceText: fields[index].sourceText, tier: .deterministic)
+                } else {
+                    fields[index] = checked
+                }
+            } else {
+                fields.append(checked)
+            }
+        }
+    }
+}
+
+extension RomanianFieldExtractor {
 
     // MARK: - CNP
 
@@ -143,6 +212,12 @@ extension RomanianFieldExtractor {
         let day = numbers[5] * 10 + numbers[6]
         guard (1...12).contains(month), (1...31).contains(day) else { return nil }
         return CaptureDay(year: year, month: month, day: day)
+    }
+
+    /// The sex a CNP encodes: odd first digits are men, even ones women (9: foreigners, not encoded).
+    static func sex(fromCNP cnp: String) -> String? {
+        guard let first = cnp.first?.wholeNumberValue, (1...8).contains(first) else { return nil }
+        return first.isMultiple(of: 2) ? "F" : "M"
     }
 
     /// A printed name in capitals, kept only if it looks like a name.

@@ -7,15 +7,21 @@ import Vision
 
 /// The text and codes recognized on one page.
 public struct RecognizedPage: Sendable, Hashable {
-    /// Lines in reading order, top to bottom.
-    public let lines: [String]
+    /// Lines in reading order, top to bottom, each with where it sits on the page when known.
+    public let items: [RecognizedLine]
     public let barcodes: [CaptureBarcode]
 
-    public init(lines: [String], barcodes: [CaptureBarcode]) {
-        self.lines = lines
+    public init(items: [RecognizedLine], barcodes: [CaptureBarcode]) {
+        self.items = items
         self.barcodes = barcodes
     }
 
+    /// Lines without positions, for text that has none.
+    public init(lines: [String], barcodes: [CaptureBarcode]) {
+        self.init(items: lines.map { RecognizedLine($0) }, barcodes: barcodes)
+    }
+
+    public var lines: [String] { items.map(\.text) }
     public var text: String { lines.joined(separator: "\n") }
 }
 
@@ -53,15 +59,17 @@ public struct VisionCaptureRecognizer: CaptureRecognizing {
         let literal = await Self.attempt("literal") { try await literalPass.perform(on: image) }
         guard text != nil || literal != nil else { throw RecognitionFailed() }
 
-        var lines = Self.readingOrder(text ?? [])
-        let literalLines = Self.readingOrder(literal ?? [])
-        let machineReadable = literalLines.filter { $0.filter { $0 == "<" }.count >= 2 }
+        var lines = Self.lines(text ?? [])
+        let literalLines = TextLayout.arrange(Self.lines(literal ?? []))
+        // The machine-readable zone keeps its own lines, last and without positions,
+        // so it is never read as the value under a printed label.
+        let machineReadable = literalLines.filter { $0.text.filter { $0 == "<" }.count >= 2 }.map { RecognizedLine($0.text) }
         if text == nil {
             // Without the corrected pass, the literal one is the page's text.
-            lines = literalLines.filter { !$0.contains("<") }
+            lines = literalLines.filter { !$0.text.contains("<") }
         }
-        lines.removeAll { $0.contains("<") }
-        lines.append(contentsOf: machineReadable)
+        lines.removeAll { $0.text.contains("<") }
+        lines = TextLayout.arrange(lines) + machineReadable
 
         let barcodes = (await Self.attempt("barcodes") { try await DetectBarcodesRequest().perform(on: image) })?
             .compactMap { observation -> CaptureBarcode? in
@@ -69,7 +77,7 @@ public struct VisionCaptureRecognizer: CaptureRecognizing {
                 return CaptureBarcode(symbology: String(describing: observation.symbology), payload: payload)
             } ?? []
 
-        return RecognizedPage(lines: lines, barcodes: barcodes)
+        return RecognizedPage(items: lines, barcodes: barcodes)
     }
 
     /// Runs a pass, retrying once after a short pause. Returns nil when both tries fail.
@@ -91,16 +99,18 @@ public struct VisionCaptureRecognizer: CaptureRecognizing {
         return nil
     }
 
-    /// Sorts observations top to bottom, then left to right, and keeps the best candidate of each.
-    static func readingOrder(_ observations: [RecognizedTextObservation]) -> [String] {
-        observations
-            .sorted { lhs, rhs in
-                let (a, b) = (lhs.boundingBox, rhs.boundingBox)
-                // Vision's origin is bottom-left: a higher y is higher on the page.
-                if abs(a.origin.y - b.origin.y) > min(a.height, b.height) / 2 { return a.origin.y > b.origin.y }
-                return a.origin.x < b.origin.x
-            }
-            .compactMap { $0.topCandidates(1).first?.string }
+    /// The best candidate of each observation with its box turned to a top-left origin.
+    /// `TextLayout` puts them in reading order.
+    static func lines(_ observations: [RecognizedTextObservation]) -> [RecognizedLine] {
+        observations.compactMap { observation in
+            guard let string = observation.topCandidates(1).first?.string else { return nil }
+            let box = observation.boundingBox
+            // Vision's origin is bottom-left: flip y so a smaller y is higher on the page.
+            return RecognizedLine(string, box: TextBox(
+                x: Double(box.origin.x), y: Double(1 - box.origin.y - box.height),
+                width: Double(box.width), height: Double(box.height)
+            ))
+        }
     }
 }
 
