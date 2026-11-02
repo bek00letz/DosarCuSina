@@ -2,6 +2,7 @@ import CoreGraphics
 import CoreImage
 import CoreImage.CIFilterBuiltins
 import Foundation
+import OSLog
 import Vision
 
 /// The text and codes recognized on one page.
@@ -28,6 +29,13 @@ public struct VisionCaptureRecognizer: CaptureRecognizing {
 
     public init() {}
 
+    /// Thrown only when no text pass worked at all, after one retry each.
+    public struct RecognitionFailed: Error {}
+
+    /// The passes run one after another, not side by side: on a cold start each
+    /// loads its own model, and several loading at once is what makes a first
+    /// read fail. A pass that fails is retried once; a page is only unreadable
+    /// when every text pass failed. Barcodes are a bonus and never fail a page.
     public func recognize(_ image: CGImage) async throws -> RecognizedPage {
         var textRequest = RecognizeTextRequest()
         textRequest.recognitionLevel = .accurate
@@ -39,23 +47,47 @@ public struct VisionCaptureRecognizer: CaptureRecognizing {
         literalRequest.recognitionLevel = .accurate
         literalRequest.usesLanguageCorrection = false
 
-        let barcodeRequest = DetectBarcodesRequest()
+        let corrected = textRequest
+        let literalPass = literalRequest
+        let text = await Self.attempt("text") { try await corrected.perform(on: image) }
+        let literal = await Self.attempt("literal") { try await literalPass.perform(on: image) }
+        guard text != nil || literal != nil else { throw RecognitionFailed() }
 
-        async let textObservations = textRequest.perform(on: image)
-        async let literalObservations = literalRequest.perform(on: image)
-        async let barcodeObservations = barcodeRequest.perform(on: image)
-
-        var lines = Self.readingOrder(try await textObservations)
-        let machineReadable = Self.readingOrder(try await literalObservations).filter { $0.filter { $0 == "<" }.count >= 2 }
+        var lines = Self.readingOrder(text ?? [])
+        let literalLines = Self.readingOrder(literal ?? [])
+        let machineReadable = literalLines.filter { $0.filter { $0 == "<" }.count >= 2 }
+        if text == nil {
+            // Without the corrected pass, the literal one is the page's text.
+            lines = literalLines.filter { !$0.contains("<") }
+        }
         lines.removeAll { $0.contains("<") }
         lines.append(contentsOf: machineReadable)
 
-        let barcodes = (try? await barcodeObservations)?.compactMap { observation -> CaptureBarcode? in
-            guard let payload = observation.payloadString, !payload.isEmpty else { return nil }
-            return CaptureBarcode(symbology: String(describing: observation.symbology), payload: payload)
-        } ?? []
+        let barcodes = (await Self.attempt("barcodes") { try await DetectBarcodesRequest().perform(on: image) })?
+            .compactMap { observation -> CaptureBarcode? in
+                guard let payload = observation.payloadString, !payload.isEmpty else { return nil }
+                return CaptureBarcode(symbology: String(describing: observation.symbology), payload: payload)
+            } ?? []
 
         return RecognizedPage(lines: lines, barcodes: barcodes)
+    }
+
+    /// Runs a pass, retrying once after a short pause. Returns nil when both tries fail.
+    /// Cancellation isn't retried. Only the pass name and error code are logged, never content.
+    private static func attempt<T: Sendable>(_ pass: String, _ work: @Sendable () async throws -> T) async -> T? {
+        for attempt in 1...2 {
+            do {
+                return try await work()
+            } catch is CancellationError {
+                return nil
+            } catch {
+                let code = (error as NSError).code
+                let domain = (error as NSError).domain
+                CaptureLog.engine.error("Vision \(pass, privacy: .public) pass failed (try \(attempt)): \(domain, privacy: .public) \(code)")
+                if attempt == 1 { try? await Task.sleep(for: .milliseconds(300)) }
+            }
+        }
+        return nil
     }
 
     /// Sorts observations top to bottom, then left to right, and keeps the best candidate of each.

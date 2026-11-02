@@ -162,6 +162,8 @@ public final class CaptureEngine: Sendable {
             text = pasted
         }
 
+        CaptureLog.engine.info("Recognized \(text.count) characters and \(barcodes.count) codes")
+
         // 2. Deterministic and heuristic tiers.
         let analysis = analyzer.analyze(text: text, barcodes: barcodes, referenceDate: options.referenceDate)
         notices += analysis.notices
@@ -181,6 +183,7 @@ public final class CaptureEngine: Sendable {
                         kindConfidence = 0.65
                     }
                 } catch {
+                    CaptureLog.engine.error("On-device model failed: \((error as NSError).domain, privacy: .public) \((error as NSError).code)")
                     notices.append(.onDeviceModelFailed)
                 }
             case .unavailable(let reason):
@@ -204,6 +207,7 @@ public final class CaptureEngine: Sendable {
         }
 
         fields = Self.derived(fields)
+        CaptureLog.engine.info("Read \(fields.count) fields, kind confidence \(kindConfidence)")
         let routing = CaptureRouter.route(kind: kind, kindConfidence: kindConfidence, fields: fields)
 
         // 5. Keep the pages.

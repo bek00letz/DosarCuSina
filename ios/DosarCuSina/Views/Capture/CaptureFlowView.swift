@@ -80,7 +80,12 @@ struct CaptureFlowView: View {
             } else {
                 phase = .review(review)
             }
+        } catch is CancellationError {
+            // The sheet went away or a new attempt started; that one shows its own result.
+            return
         } catch {
+            guard !Task.isCancelled else { return }
+            CaptureLog.engine.error("Capture failed: \(String(describing: type(of: error)), privacy: .public) \((error as NSError).domain, privacy: .public) \((error as NSError).code)")
             phase = .failed(String(localized: "Încearcă din nou. Dacă tot nu merge, fă o poză mai clară, cu actul întins și fără umbre."))
         }
     }
