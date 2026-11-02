@@ -164,8 +164,9 @@ struct CaptureFiler {
         // 3. Who issued it.
         let provider = try provider(for: review, asset: outcome.asset)
 
-        // 4. The document, linked to all of it.
-        if let documentID = review.documentID {
+        // 4. The document, linked to all of it: the new pages, or the copy already
+        // kept when the same photo was filed before (it moves here, never lost).
+        if let documentID = review.documentID ?? review.duplicateAttachmentID {
             let title = review.title.trimmingCharacters(in: .whitespacesAndNewlines)
             outcome.attachment = try await AttachmentActions(context: context, calendar: calendar).fileCaptured(
                 documentID: documentID,

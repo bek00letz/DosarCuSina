@@ -56,10 +56,30 @@ extension AttachmentActions {
         historyEntry: HistoryEntry? = nil,
         provider: Provider? = nil
     ) async throws -> Attachment? {
-        guard let processed = await store.processed(id: documentID) else { return nil }
+        guard let processed = await store.processed(id: documentID) else {
+            // The same photo was filed before: capture pointed at that copy instead of
+            // keeping a second one. File the copy where the person is filing now.
+            return try refile(documentID, title: title, asset: asset, obligation: obligation, historyEntry: historyEntry, provider: provider)
+        }
         let draft = processed.draft(title: title, kind: kind, extractedText: extractedText, documentDate: documentDate)
         let attachment = try file(draft, asset: asset, obligation: obligation, historyEntry: historyEntry, provider: provider)
         await UnitOfWork.afterCommit(in: context) { await store.discard(id: documentID) }
+        return attachment
+    }
+
+    /// Moves an already filed document to where it's being filed now, keeping its pages.
+    /// Nil when there is no such document.
+    private func refile(_ id: UUID, title: String?, asset: Asset?, obligation: Obligation?, historyEntry: HistoryEntry?, provider: Provider?) throws -> Attachment? {
+        var descriptor = FetchDescriptor<Attachment>(predicate: #Predicate { $0.id == id })
+        descriptor.fetchLimit = 1
+        guard let attachment = try context.fetch(descriptor).first else { return nil }
+        if let destination = asset ?? obligation?.asset ?? historyEntry?.asset { attachment.asset = destination }
+        if let obligation { attachment.obligation = obligation }
+        if let historyEntry { attachment.historyEntry = historyEntry }
+        if let provider { attachment.provider = provider }
+        if (attachment.title ?? "").isEmpty, let title { attachment.title = title }
+        attachment.isArchived = false
+        try UnitOfWork.save(context)
         return attachment
     }
 

@@ -56,7 +56,8 @@ struct ObligationCompletion {
             }
         }
 
-        if let document, let id = document.documentID, !Self.isFiled(id, in: context) {
+        // New pages are filed; a photo already in the binder is moved here (`fileCaptured` does both).
+        if let document, let id = document.documentID {
             let kind = DocumentKind(capturedKind: document.kind)
             let documentDay = [CaptureFieldKey.issueDate, .startDate].lazy.compactMap { document.field($0)?.value.day }.first.map(CaptureMapping.calendarDay)
             outcome.attachment = try await AttachmentActions(context: context, calendar: calendar).fileCaptured(
@@ -82,11 +83,5 @@ struct ObligationCompletion {
               !blueprint.recurrence.repeats,
               case .field(let field, _) = blueprint.firstDue else { return nil }
         return field
-    }
-
-    private static func isFiled(_ id: UUID, in context: ModelContext) -> Bool {
-        var descriptor = FetchDescriptor<Attachment>(predicate: #Predicate { $0.id == id })
-        descriptor.fetchLimit = 1
-        return ((try? context.fetchCount(descriptor)) ?? 0) > 0
     }
 }

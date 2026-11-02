@@ -182,7 +182,7 @@ struct CaptureReviewView: View {
     @ViewBuilder private var notices: some View {
         backPageNotice
         if let duplicate = review.duplicateAttachmentID {
-            DSNotice(.info, title: "Ai mai adăugat documentul ăsta", message: "Poți să-l deschizi, sau să salvezi doar datele de pe el.", actionTitle: "Vezi documentul") {
+            DSNotice(.info, title: "Ai mai adăugat poza asta", message: "Dacă salvezi, o pun la locul ales mai jos, împreună cu ce am citit.", actionTitle: "Vezi unde e acum") {
                 onClose(.dismissed)
                 AppNavigator.shared.open(.document(duplicate))
             }
