@@ -384,6 +384,7 @@ struct CaptureReviewView: View {
 /// One value read from the document: editable, with where it was read from.
 private struct CaptureFieldEditor: View {
     @Binding var field: CaptureReview.Field
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Space.xxs) {
@@ -393,6 +394,14 @@ private struct CaptureFieldEditor: View {
                     .font(.system(.caption, weight: .semibold))
                     .foregroundStyle(DSStatus.soon.textColor)
             }
+            if let documentValue = field.documentValue {
+                // The person's value stays; the back of the card offers its own, once.
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .firstTextBaseline, spacing: DS.Space.s) { documentNote(documentValue); useButton }
+                    VStack(alignment: .leading, spacing: DS.Space.xxs) { documentNote(documentValue); useButton }
+                }
+                .transition(.opacity)
+            }
             if let source = sourceText {
                 Text(source)
                     .dsFont(.footnote)
@@ -400,6 +409,24 @@ private struct CaptureFieldEditor: View {
                     .accessibilityLabel(Text("Citit din: \(String(source.characters))"))
             }
         }
+    }
+
+    private func documentNote(_ value: CaptureValue) -> some View {
+        Text("Pe spatele actului scrie: \(CaptureMapping.displayText(value))", comment: "What the machine-readable zone says, beside a value the person typed.")
+            .dsFont(.footnote)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var useButton: some View {
+        Button {
+            withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { field.useDocumentValue() }
+        } label: {
+            Text("Folosește-l", comment: "Applies the value from the back of the card.")
+                .font(.subheadline.weight(.semibold))
+                .frame(minHeight: 44)
+                .contentShape(.rect)
+        }
+        .buttonStyle(.borderless)
     }
 
     @ViewBuilder private var editor: some View {

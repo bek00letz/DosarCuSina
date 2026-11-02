@@ -20,6 +20,9 @@ struct CaptureReview: Identifiable {
         var confidence: Double
         var sourceText: String?
         var tier: CaptureTier
+        /// What the machine-readable zone says, checked by its digits, when it differs
+        /// from a value the person typed. Shown beside their value; never applied by itself.
+        var documentValue: CaptureValue?
 
         var id: String { key.rawValue }
         var label: String { CaptureMapping.label(for: key) }
@@ -35,6 +38,17 @@ struct CaptureReview: Identifiable {
             value = newValue
             confidence = 1
             tier = .deterministic
+            if newValue == documentValue { documentValue = nil }
+        }
+
+        /// Takes what the document's zone says instead of the person's value.
+        mutating func useDocumentValue() {
+            guard let documentValue else { return }
+            value = documentValue
+            confidence = 0.99
+            tier = .deterministic
+            sourceText = CaptureField.machineReadableSource
+            self.documentValue = nil
         }
     }
 
@@ -218,6 +232,11 @@ struct CaptureReview: Identifiable {
 
     // MARK: Reading again
 
+    /// A value read from the machine-readable zone with valid check digits.
+    static func isCheckedZoneValue(_ field: Field) -> Bool {
+        field.value != nil && field.tier == .deterministic && field.sourceText == CaptureField.machineReadableSource
+    }
+
     /// This review read again (with the back of the card added), keeping everything
     /// the person changed in `previous`. Values they typed stay theirs; the rest comes
     /// from the new read, where the checked zone on the back wins over printed labels.
@@ -225,10 +244,14 @@ struct CaptureReview: Identifiable {
         var merged = self
         let before = previous.suggested
         for field in previous.fields where field.value != before.fields[field.key] {
+            var kept = field
             if let index = merged.fields.firstIndex(where: { $0.key == field.key }) {
-                merged.fields[index] = field
+                // The person's value stays; a checked zone value that disagrees is offered beside it.
+                let fresh = merged.fields[index]
+                kept.documentValue = Self.isCheckedZoneValue(fresh) && fresh.value != field.value ? fresh.value : nil
+                merged.fields[index] = kept
             } else {
-                merged.fields.append(field)
+                merged.fields.append(kept)
             }
         }
         // Values the person cleared stay cleared.
