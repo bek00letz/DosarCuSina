@@ -16,7 +16,6 @@ struct AddPersonalDocumentFlow: View {
 
     @State private var source: CaptureSource?
     @State private var capture: CaptureFlowInput?
-    @State private var knownDocuments: Set<UUID> = []
     @State private var isTyping = false
     @State private var draft = PersonalDocumentDraft()
     @State private var errorMessage: String?
@@ -88,7 +87,6 @@ struct AddPersonalDocumentFlow: View {
             }
             .captureSourcePicker($source) { payload in
                 errorMessage = nil
-                knownDocuments = PersonalDocumentFiling.documentIDs(of: holder)
                 capture = CaptureFlowInput(payload: payload, preferredAssetID: holder.id, filesAsPersonalDocument: true)
             } onError: { error in
                 errorMessage = SaveFailure.message(for: error, formKept: false)
@@ -100,10 +98,11 @@ struct AddPersonalDocumentFlow: View {
 
     private func finishCapture(_ result: CaptureFlowResult, holder: Asset) {
         switch result {
-        case .filed, .visitSaved:
-            let document = PersonalDocumentFiling.newDocument(of: holder, since: knownDocuments)
+        case .filed(_, let assetID):
             dismiss()
-            if let document { onCreated(document.id) }
+            if let assetID { onCreated(assetID) }
+        case .visitSaved:
+            dismiss()
         case .dismissed:
             capture = nil
         }

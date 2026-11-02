@@ -99,16 +99,4 @@ enum PersonalDocumentFiling {
             )
         }
     }
-
-    /// The person's documents, to tell afterwards which one a capture added.
-    static func documentIDs(of holder: Asset) -> Set<UUID> {
-        Set((holder.children ?? []).filter { $0.templateKey == BuiltInTemplates.Key.documents }.map(\.id))
-    }
-
-    /// The document filed under `holder` since `known` was taken, newest first.
-    static func newDocument(of holder: Asset, since known: Set<UUID>) -> Asset? {
-        (holder.children ?? [])
-            .filter { $0.templateKey == BuiltInTemplates.Key.documents && !known.contains($0.id) }
-            .max { $0.createdAt < $1.createdAt }
-    }
 }

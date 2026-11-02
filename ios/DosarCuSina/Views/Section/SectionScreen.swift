@@ -274,7 +274,7 @@ private struct DocumentPhotoPrompt: View {
             CaptureFlowView(input: input) { result in
                 flow = nil
                 switch result {
-                case .filed(let message), .visitSaved(let message):
+                case .filed(let message, _), .visitSaved(let message):
                     toast = DSToast(title: message, actionTitle: nil, action: nil)
                 case .dismissed:
                     break

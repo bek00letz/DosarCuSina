@@ -129,7 +129,7 @@ private struct ManualWhatView: View {
             CaptureFlowView(input: input) { result in
                 flow = nil
                 switch result {
-                case .filed(let message), .visitSaved(let message): onClose(message)
+                case .filed(let message, _), .visitSaved(let message): onClose(message)
                 case .dismissed: break
                 }
             }

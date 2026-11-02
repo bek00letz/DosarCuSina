@@ -32,9 +32,7 @@ Nothing at the moment.
 
 ## Known gaps
 
-- **Capture can't tell the electronic identity card from the older one.** A captured CEI is saved without its variant, so its PIN rows appear only after choosing "Electronică, cu cip (CEI)" in Editează. Capture would need to say which identity template it matched.
 - **Capture doesn't know cazier, bank cards and the other document types.** A photo of one taken from a person is filed as one of their documents, without a type; the person picks it in Editează.
-- **The capture review doesn't say what it filed.** The photo-first flow finds the new document by comparing the person's documents before and after; `CaptureFlowResult.filed` could carry the filed section's id instead.
 
 - **iCloud sync** to the person's private iCloud. The schema is ready; the store is local only.
 - **Android port.** Paused; `android/` is the first version. The `.dosar` format is the contract.
@@ -73,8 +71,8 @@ Never write security findings, crash traces or local paths here. See [SECURITY.m
 ### 2026-11-02 — owner (with Claude) — `claude/documents-flow`
 - **Did:** "Mută la…" for anything filed under something else (toolbar menu and edit sheet, a new person for documents, rename after the new holder, undo); adding a person's document photo first or on one "Scriu eu" screen, with variants as data on the document type and "Adaugă poza actului" on the document's page; the secret field type with the electronic identity card's two PIN codes (sealed, Face ID every time, never in search, widgets, notifications or archives). Built-in catalog version 6.
 - **Tests:** the whole suite passes on iPhone 17e (iOS 26). New suites: `MoveTests`, `PersonalDocumentTests`, `SecretFieldTests`. The privacy check passes across the branch.
-- **Left open:** the three capture items under "Known gaps" (the CEI variant, document types capture doesn't know, the filed section's id). Not checked on a device or in the simulator by eye.
-- **Next:** have capture report which identity template it matched, so a captured CEI gets its variant and PIN rows by itself.
+- **Left open:** document types capture doesn't know (see "Known gaps"); the CEI variant and the filed section's id were done right after, on the merge branch. Not checked on a device or in the simulator by eye.
+- **Next:** teach capture the other personal document types (cazier, bank cards) through the same templates.
 - **Decisions:** "Adding a document for a person, photo first", "Mută la…" and "Secret fields (PIN codes)" in DECISIONS.md.
 
 ### 2026-11-02 — owner (with Claude) — `claude/capture-reliability`

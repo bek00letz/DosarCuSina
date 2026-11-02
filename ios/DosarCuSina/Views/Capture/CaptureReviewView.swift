@@ -366,7 +366,7 @@ struct CaptureReviewView: View {
             do {
                 let outcome = try await CaptureFiler(context: context).save(review)
                 let place = outcome.asset?.name
-                onClose(.filed(message: place.map { "Salvat în \($0)." } ?? "Actul e salvat."))
+                onClose(.filed(message: place.map { "Salvat în \($0)." } ?? "Actul e salvat.", assetID: outcome.asset?.id))
             } catch {
                 isSaving = false
                 errorMessage = SaveFailure.message(for: error, formKept: true)

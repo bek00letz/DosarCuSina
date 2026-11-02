@@ -16,7 +16,8 @@ struct CaptureFlowInput: Identifiable {
 
 /// What happened when the flow closed, for the toast on the screen underneath.
 enum CaptureFlowResult {
-    case filed(message: LocalizedStringResource)
+    /// `assetID` is the section the document was filed in, so the screen underneath can open it.
+    case filed(message: LocalizedStringResource, assetID: UUID?)
     case visitSaved(message: LocalizedStringResource)
     case dismissed
 }

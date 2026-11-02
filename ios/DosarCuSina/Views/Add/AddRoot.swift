@@ -197,7 +197,7 @@ struct AddRoot: View {
 
     private func show(_ result: CaptureFlowResult) {
         switch result {
-        case .filed(let message), .visitSaved(let message):
+        case .filed(let message, _), .visitSaved(let message):
             toast = DSToast(title: message, actionTitle: nil, action: nil)
         case .dismissed:
             break
