@@ -1,139 +1,96 @@
-# 📁 Dosar cu Șină
+# Dosar cu Șină
 
-> Manager local-first pentru active, documente, garanții și scadențe administrative, configurat conform cerințelor și termenelor legale din România.
-Aplicația rulează complet pe dispozitiv (SwiftData pe iOS / Room pe Android), sincronizată opțional prin iCloud / Google Drive privat, fără backend extern și fără tracking.
+A documents binder for the rare-but-predictable parts of life admin. A *dosar cu șină* is the slotted folder Romanian households keep their papers in. This app is that folder on an iPhone: the car's ITP and insurance, the boiler check, the passport, the cat's vaccine, the warranty on the washing machine.
 
----
+- **Capture first.** Take a photo, or share a PDF or a message from another app. The app reads it on the phone, files it, and works out when to remind you.
+- **A binder, not a to-do list.** It opens on one box per thing you look after, each with one line that says whether all is well.
+- **Calm.** The list of what's next stays short, and reminders come as early as each renewal needs, no earlier.
+- **Offline.** Everything works without a network or an account.
 
-## 🌟 Caracteristici Cheie
+The app is in Romanian. It is built for people who aren't tech-savvy: four labelled tabs, big buttons, nothing hidden behind a swipe.
 
-### 1. Monitorizare pe 8 categorii predefinite
-Fiecărui bun sau domeniu îi sunt asociate reguli de viață, scadențe conforme cu legislația românească și jurnale de telemetrie:
-- 🏠 **Casă & Utilități**: Termene VTP centrală termică (ISCIR 2 ani), verificare instalație gaze (VIG 2 ani / RIG 10 ani), apometre (BRML rece 7 ani / caldă 4 ani), poliță PAD, ferestre de autocitire contoare.
-- 🚗 **Auto**: Calcul ITP în funcție de vechimea vehiculului, alerte RCA și rovinietă (conform Legii 226/2023), jurnal de service și consum.
-- 🩺 **Sănătate & Familie**: Profil medical de urgență (ICE), grupă sanguină & Rh, alergii, afecțiuni cronice, medic de familie, pașaport implant dentar cu numerotare FDI (lot/serie), card european CEASS (24 luni), rețete și buletine de analize.
-- 🐾 **Animale de Companie (Pet)**: Rasă, microcip ISO 15 cifre (prefix 642 România), număr pașaport UE, grafic evoluție greutate, cadențe deparazitare internă/externă (Milbemax, Bravecto) și vaccin antirabic cu regulă de frontieră de 21 de zile.
-- 🪪 **Documente & Identitate**: Carte de identitate, pașaport simplu electronic cu alertă timpurie la 6 luni (-180 zile) pentru restricții de călătorie non-UE, permis de conducere, semnătură electronică calificată și cazier judiciar.
-- 🛡️ **Garanții & Bunuri**: Electrocasnice, unelte și electronice, S/N, IMEI, bon fiscal scanat, alertă automată „Ultima Șansă” cu 30 de zile înainte de expirarea garanției de 2 ani, prelungire automată a garanției legale cu zilele petrecute în reparație (`daysInService` per OUG nr. 140/2021).
-- 💳 **Abonamente & Contracte**: Servicii digitale și telecom, cicluri de facturare, alertă cu 48h/24h înainte de conversia perioadelor de probă (Free Trials), alertă de retenție la expirarea contractelor minime pe 24 de luni.
-- 🧩 **Active Personalizate & Landlord Hub**: Șabloane gata de utilizat pentru Proprietari / Chirii (chiriaș, garanție, contract ANAF, termen Declarația Unică Formular 212 la 25 mai, apometre chiriaș), Prosumator Solar, Bicicletă / E-Bike și Echipamente Cafea de Specialitate.
+## Privacy
 
-### 2. Cele 4 Coloane Universale (Universal Pillars)
-Fiecare activ implementează cei 4 piloni arhitecturali:
-1. **Identitate & Specificații Personalizate**: Metadata puternic tipizate, câmpuri dinamice nelimitate pe 10 tipuri (`DynamicField`) și legătură directă cu specialiști din agendă via `ContactsUI`.
-2. **Motor de Scadențe & Obligații**: Evenimente recurente și punctuale (`LifecycleEvent`), alerte Time-Sensitive la praguri critice, rollover automat la bifare („Am rezolvat”) direct din ecranul de blocare, sincronizare bidirecțională cu Apple Calendar și Apple Reminders prin `EventKit`.
-3. **Jurnale Istorice Duble**:
-   - `ServiceItem`: Intervenții discrete și piese de schimb, cu analiză comparativă automată ($\Delta\text{cost}$, $\Delta\text{km}$, $\Delta\text{zile}$).
-   - `MeasurementLog`: Telemetrie cantitativă pentru indici utilități cu curbe sezoniere, biomarkeri medicali cu intervale de referință (`* H` / `* L`), greutate și odometru.
-4. **Seif Structurat de Documente**: Ingestie multi-sursă (cameră VisionKit, PDF, galerie foto, text copiat, manual), vizualizator de înaltă rezoluție și generator de dosar consolidat cu *Opis Documente* (`PDFDossierGenerator`).
+- Your data stays on your device. Sync through your own private iCloud is planned, not built.
+- No accounts, no analytics, no tracking, no servers of ours.
+- Reading documents happens on the phone. If you add your own free Gemini key in Settings, you can choose to have a single document read by Gemini; only that document's first page is sent, only when you tap. The key stays in the Keychain on your device.
+- Identity documents, health and any section you choose can be locked with Face ID.
 
-### 3. Securitate & Deblocare Biometrică Just-in-Time (Model B)
-Aplicația adoptă o arhitectură de securitate biometrică ergonomică (**Model B: Just-in-Time Unlock**):
-- **Zero Fricțiune la Pornire**: Aplicația se deschide instantaneu pentru vizualizarea kilometrajului mașinii, notarea indicilor de utilități sau consultarea memento-urilor.
-- **Autentificare Doar la Nevoie**: Face ID, Touch ID, Optic ID sau codul dispozitivului se solicită exclusiv la intrarea în seifurile sensibile:
-  - 🪪 *Documente & Identitate (`.documents`)*
-  - 🩺 *Sănătate & Card Medical (`.health`)*
-  - 🔒 *Orice activ custom marcat drept sensibil*
-- **Afișare Directă în Memorie**: Odată autentificat, codurile CNP, seriile de buletin și conturile IBAN sunt vizibile direct în clar în memorie fără a necesita dezvăluiri manuale câmp cu câmp.
-- **Auto-Lock Sigur**: Seifurile se re-blochează automat după 5 minute de inactivitate continuă sau imediat ce aplicația trece în fundal.
+## Status
 
-### 4. Format Deschis & Portabilitate Cross-Platform (`.dosar`)
-Zero platform lock-in. Datele utilizatorului pot fi exportate și importate liber între iOS (SwiftData) și Android (Room SQLite):
-- **Format Standardizat**: Pachet de arhivă ZIP înregistrat în sistem cu identificatorul UTType `com.ar.dosarcusina.dossier` și extensia `.dosar`.
-- **Structură Pachet v2**:
-  - `manifest.json`: Schema v2, metadata platformă, contor entități și **hartă completă de integritate SHA-256**.
-  - `data/*.json`: `assets.json`, `events.json`, `service_history.json`, `measurements.json`.
-  - `vault/`: Binare atașate (`.pdf`, `.heic`, `.jpg`) stocate securizat după UUID.
-  - `opis.pdf`: Cuprins tabelar oficial (*Opis Documente*) generat automat.
-- **Moduri de Import**: `CLEAN_RESTORE` (restaurare curată cu resetare prealabilă) și `MERGE` (îmbinare inteligentă cu regula „cel mai recent câștigă”).
+Pre-release. Not on the App Store yet.
 
-### 5. Gestiune Active, Personalizare & Resetare Sigură
-- **Dashboard Modular pe Grilă de 8 Pătrate**: Ecranul principal de deschidere (`Active`) prezintă cele 8 domenii casnice ca plăci squircle continue cu simboluri native, contoare reactive și indicatori de scadență iminentă.
-- **Personalizare & Reordonare Categorie**: Reordonare intuitivă drag-and-drop în Setări, ascundere plăci neutilizate și crearea de categorii personalizate nelimitate (ex. *Biciclete*, *Livadă*, *Echipamente*).
-- **Ștergere Universală a Activelor (CRUD Parity)**: Meniu contextual la apăsare lungă pe carduri, buton de ștergere în vizualizarea de detaliu și în fișa de editare, plus opțiune de resetare completă a bazei de date în Setări.
-- **Formulare Zero-Friction & `QuickPickChips`**: Formulare curate fără text pre-completat forțat, cu sugestii instantanee prin pastile de selecție rapidă cu 1 tap.
-- **Inițializare Automată & Resetare Sigură**: La prima lansare pe un dispozitiv nou, aplicația detectează baza de date goală prin `@AppStorage("didSeedInitialDemoData")` și populează automat 8 active demonstrative realiste. Din Setări se pot reîncărca oricând datele demo sau goli complet baza de date.
+- **iOS only**, iOS 26 and later.
+- **Android is paused.** The code under `android/` is from an earlier version. The `.dosar` backup format ([spec](shared/schemas/dosar-v3.md), [fixtures](shared/fixtures)) is the cross-platform contract a future port will follow.
 
-### 6. Radar de Scadențe, Financial Pulse & Undo Framework
-- **Filtrare pe Orizonturi Temporale**: Mod *Focalizare (14z)* pentru eliminarea zgomotului vizual, mod *Toate* pentru planificare pe termen lung și mod *Rezolvate* pentru istoricul obligațiilor finalizate (cu posibilitate de debifare pentru reactivare).
-- **Snackbar de Anulare Plutitor (`UndoSnackbar`)**: Alertă tactilă de 5 secunde la bifarea oricărui eveniment ce permite anularea imediată dacă acțiunea a fost accidentală.
-- **Cash-Flow Forecast pe 30 / 60 / 90 de zile**: Proiecție dinamică a sumelor de plată defalcată pe cheltuieli recurente (abonamente, utilități) vs punctuale (RCA, impozite, ITP, revizii).
-- **Cost Total de Deținere (TCO)**: Cât costă fiecare mașină, casă sau animal de companie pe an.
-- **Abonamente & Burn Rate**: Monitorizare a cheltuielilor lunare recurente și alerte de renegociere contracte.
+What is built, and what isn't yet, is in [SPEC.md](SPEC.md). Where work stands right now is in [docs/HANDOFF.md](docs/HANDOFF.md).
 
----
+## Requirements
 
-## 🔒 Politica de Securitate pentru Repository Public (Zero-Secrets)
+- A Mac with Xcode that includes the iOS 26 SDK (Xcode 26 or later).
+- An iPhone simulator running iOS 26 or later, already installed in Xcode.
 
-Acest depozit este **public**, conceput cu o arhitectură strictă **Zero-Leak / BYOK (Bring Your Own Key)**:
-- **Zero API Keys în Cod**: Nicio cheie API, parolă sau credențial nu este salvată în Git.
-- **Securitate BYOK**: Cheia opțională Gemini este stocată exclusiv în **iOS Keychain** criptat (`kSecClassGenericPassword` cu `kSecAttrAccessibleAfterFirstUnlock`) sau într-un fișier local `ios/Config.xcconfig` ignorat de Git.
-- **Zero Central Database**: Fără servere backend de colectare a datelor. Datele stau 100% pe dispozitivul tău (`SwiftData` pe iOS, `Room` pe Android) și în conturile tale private de sincronizare (iCloud / Google Drive AppData).
-- **Seiful Confidențial (`private/`)**: Vulnerabilitățile interne și jurnalele de depanare sunt stocate în `private/`, ignorate de Git și protejate activ de hook-ul `.git/hooks/pre-commit`.
+## Build and run
 
----
+1. Clone the repository and turn on the privacy hook (once per clone):
 
-## 🛠️ Structura Proiectului
-
-```text
-DosarCuSina/
-├── SPEC.md                      # Specificația completă a produsului (arhitectură, standarde românești)
-├── AGENTS.md                    # Standardul de excelență (Apple Craftsmanship & Reguli de Securitate)
-├── shared/                      # Standarde administrative & scheme comune
-│   └── ROMANIAN_ADMINISTRATIVE_STANDARDS.md # Ghid autoritar legal românesc (ITP, ANRE, ISCIR, Rovinietă)
-├── ios/                         # Aplicația nativă iOS (SwiftUI + SwiftData)
-│   ├── Config.xcconfig.template # Șablon de configurare locală pentru chei API
-│   ├── DosarCuSina/             # Codul sursă Swift (Modele, Servicii, Vizualizări)
-│   └── DosarCuSinaWidgets/      # Widget-uri native WidgetKit
-├── android/                     # Aplicația nativă Android (Jetpack Compose + Room SQLite)
-│   └── app/src/main/java/com/dosarcusina/
-│       ├── data/                # Entități Room cu 1:1 SwiftData Parity (MeasurementLog, ServiceItem, etc.)
-│       ├── archive/             # DosarArchiveParser (import/export .dosar cu verificare SHA-256)
-│       └── ocr/                 # CameraXTextScanner (ML Kit Text Recognition)
-└── tests/                       # Suită automată multi-platformă
-    ├── run_tests.sh             # Rulor automatizat complet (iOS Swift + Android Room)
-    ├── ios/                     # Teste unitare și de integrare Swift (13 suite, 137 teste)
-    └── android/                 # Teste Room SQLite & teste de stres adversariale (13 teste)
-```
-
----
-
-## 🧪 Testare & Verificare Automată
-
-Aplicația include o suită cuprinzătoare de teste automate multi-platformă ce verifică calculul cadențelor, parsarea OCR a chitanțelor românești, motorul de arhivă `.dosar`, securitatea biometrică și paritatea SQLite pe Android:
-
-```bash
-# Rulare completă a tuturor testelor (iOS + Android)
-./tests/run_tests.sh
-
-# Rulare teste de paritate Android Room SQLite
-python3 tests/android/run_room_tests.py
-
-# Rulare teste de stres adversarial Android Room (100 active cascade delete)
-python3 tests/android/adversarial_room_stress_test.py
-```
-
----
-
-## 🚀 Cum Rulezi Aplicația pe iOS
-
-1. Clonează depozitul:
-   ```bash
-   git clone https://github.com/your-username/DosarCuSina.git
+   ```sh
+   git clone https://github.com/bek00letz/DosarCuSina.git
    cd DosarCuSina
+   git config core.hooksPath .githooks
    ```
-2. *(Opțional pentru dezvoltare cu Gemini API)*:
-   ```bash
-   cp ios/Config.xcconfig.template ios/Config.xcconfig
-   # Adaugă cheia ta Gemini în ios/Config.xcconfig
-   ```
-   *Alternativ, poți introduce cheia Gemini direct din ecranul de Setări al aplicației.*
-3. Deschide proiectul în Xcode și rulează pe simulator sau pe un dispozitiv fizic iOS 17+.
 
----
+2. Open `ios/DosarCuSina.xcodeproj`.
+3. Pick the `DosarCuSina` scheme and an iPhone simulator, then Run.
 
-## 📜 Licență
+On first launch the app is empty. Tap *Încarcă exemple* (load examples) to explore with made-up data, and remove it later in Settings.
 
-Proiect cu sursă deschisă distribuit sub licența **[PolyForm Noncommercial License 1.0.0](LICENSE)**. 
+To run on your own iPhone, choose your team under Signing & Capabilities for the app, widget and share extension targets. You may need bundle identifiers and an App Group your team owns. Keep those changes out of your commits.
 
-Puteți descărca, modifica și utiliza liber codul sursă pentru uz personal, casnic sau comunitar, cu păstrarea atribuirii, fiind interzisă vânzarea sau exploatarea comercială a software-ului.
+## Tests
+
+```sh
+./tests/run_tests.sh
+```
+
+It runs the `DosarCuSinaTests` target (Swift Testing) on an iPhone simulator that is already installed with iOS 26 or 27. It never downloads a runtime or creates a simulator. To pick one yourself:
+
+```sh
+SIMULATOR_ID=<udid> ./tests/run_tests.sh
+```
+
+To run one suite while you work:
+
+```sh
+xcodebuild test -project ios/DosarCuSina.xcodeproj -scheme DosarCuSina \
+  -destination 'id=<udid>' -only-testing:DosarCuSinaTests/<SuiteName> CODE_SIGNING_ALLOWED=NO
+```
+
+`xcrun simctl list devices available` lists the simulators you have.
+
+## Repository layout
+
+| Path | What's there |
+| :--- | :--- |
+| `ios/DosarCuSina/` | The app: `App`, `Models`, `Services` (the engines), `Navigation`, `Views` (with the `DesignSystem`), `Intents`, `Resources`. |
+| `ios/DosarCuSinaWidgets/` | Home Screen and Lock Screen widgets. |
+| `ios/DosarCuSinaShare/` | The share extension. |
+| `ios/Shared/` | Code compiled into the app and its extensions: the App Group handoff. |
+| `ios/DosarCuSinaTests/` | Tests. |
+| `ios/Legacy/` | The first version of the app. Not compiled, kept as a way back. |
+| `shared/` | The `.dosar` format and fixtures, Romanian administrative standards, starter templates. |
+| `android/` | The paused Android version. |
+| `tests/` | The test runner, plus legacy and Android scripts. |
+| `docs/` | Decisions, handoff notes, copy guide, archive. |
+| `scripts/`, `.githooks/` | The privacy check and the hook that runs it. |
+| `.github/` | Code owners, templates and the privacy check workflow. |
+
+## Contributing
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) first. If you work with an AI coding agent, point it at [AGENTS.md](AGENTS.md).
+
+Found a security or privacy problem? Don't open an issue. Report it privately, as [SECURITY.md](SECURITY.md) explains.
+
+## Licence
+
+[PolyForm Noncommercial 1.0.0](LICENSE). You may use, change and share the code for any noncommercial purpose. Selling it or using it commercially is not allowed.

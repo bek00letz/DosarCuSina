@@ -6,16 +6,92 @@
 	objectVersion = 70;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D05A01202C00000000000120 /* DosarCuSinaWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D05A01012C00000000000101 /* DosarCuSinaWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		D05A01212C00000000000121 /* DosarCuSinaShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D05A01022C00000000000102 /* DosarCuSinaShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D05A01242C00000000000124 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				D05A01202C00000000000120 /* DosarCuSinaWidgets.appex in Embed Foundation Extensions */,
+				D05A01212C00000000000121 /* DosarCuSinaShare.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		D05A00012C00000000000001 /* DosarCuSina.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DosarCuSina.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D05A00102C00000000000010 /* DosarCuSinaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DosarCuSinaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D05A01012C00000000000101 /* DosarCuSinaWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DosarCuSinaWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		D05A01022C00000000000102 /* DosarCuSinaShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DosarCuSinaShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		D05A01062C00000000000106 /* Exceptions for "DosarCuSinaWidgets" folder in "DosarCuSinaWidgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				DosarCuSinaWidgets.entitlements,
+				Info.plist,
+			);
+			target = D05A01102C00000000000110 /* DosarCuSinaWidgets */;
+		};
+		D05A01072C00000000000107 /* Exceptions for "DosarCuSinaShare" folder in "DosarCuSinaShare" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				DosarCuSinaShare.entitlements,
+				Info.plist,
+			);
+			target = D05A01302C00000000000130 /* DosarCuSinaShare */;
+		};
+		D05A01082C00000000000108 /* Exceptions for "Shared" folder in "DosarCuSinaShare" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				CompleteFromWidgetIntent.swift,
+				WidgetCompletionQueue.swift,
+				WidgetFeed.swift,
+			);
+			target = D05A01302C00000000000130 /* DosarCuSinaShare */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D05A00022C00000000000002 /* DosarCuSina */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DosarCuSina; sourceTree = "<group>"; };
+		D05A00112C00000000000011 /* DosarCuSinaTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DosarCuSinaTests; sourceTree = "<group>"; };
+		D05A01032C00000000000103 /* DosarCuSinaWidgets */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (D05A01062C00000000000106 /* Exceptions for "DosarCuSinaWidgets" folder in "DosarCuSinaWidgets" target */, ); explicitFileTypes = {}; explicitFolders = (); path = DosarCuSinaWidgets; sourceTree = "<group>"; };
+		D05A01042C00000000000104 /* DosarCuSinaShare */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (D05A01072C00000000000107 /* Exceptions for "DosarCuSinaShare" folder in "DosarCuSinaShare" target */, ); explicitFileTypes = {}; explicitFolders = (); path = DosarCuSinaShare; sourceTree = "<group>"; };
+		D05A01052C00000000000105 /* Shared */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (D05A01082C00000000000108 /* Exceptions for "Shared" folder in "DosarCuSinaShare" target */, ); explicitFileTypes = {}; explicitFolders = (); path = Shared; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		D05A01112C00000000000111 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D05A01312C00000000000131 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D05A00032C00000000000003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D05A00122C00000000000012 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -29,6 +105,10 @@
 			isa = PBXGroup;
 			children = (
 				D05A00022C00000000000002 /* DosarCuSina */,
+				D05A00112C00000000000011 /* DosarCuSinaTests */,
+				D05A01052C00000000000105 /* Shared */,
+				D05A01032C00000000000103 /* DosarCuSinaWidgets */,
+				D05A01042C00000000000104 /* DosarCuSinaShare */,
 				D05A00042C00000000000004 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -37,6 +117,9 @@
 			isa = PBXGroup;
 			children = (
 				D05A00012C00000000000001 /* DosarCuSina.app */,
+				D05A00102C00000000000010 /* DosarCuSinaTests.xctest */,
+				D05A01012C00000000000101 /* DosarCuSinaWidgets.appex */,
+				D05A01022C00000000000102 /* DosarCuSinaShare.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -51,18 +134,85 @@
 				D05A00062C00000000000006 /* Sources */,
 				D05A00032C00000000000003 /* Frameworks */,
 				D05A00072C00000000000007 /* Resources */,
+				D05A01242C00000000000124 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D05A01252C00000000000125 /* PBXTargetDependency */,
+				D05A01262C00000000000126 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				D05A00022C00000000000002 /* DosarCuSina */,
+				D05A01052C00000000000105 /* Shared */,
+			);
+			name = DosarCuSina;
+			productName = DosarCuSina;
+			productReference = D05A00012C00000000000001 /* DosarCuSina.app */;
+			productType = "com.apple.product-type.application";
+		};
+		D05A00132C00000000000013 /* DosarCuSinaTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D05A00172C00000000000017 /* Build configuration list for PBXNativeTarget "DosarCuSinaTests" */;
+			buildPhases = (
+				D05A00142C00000000000014 /* Sources */,
+				D05A00122C00000000000012 /* Frameworks */,
+				D05A00152C00000000000015 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D05A001B2C0000000000001B /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				D05A00112C00000000000011 /* DosarCuSinaTests */,
+			);
+			name = DosarCuSinaTests;
+			productName = DosarCuSinaTests;
+			productReference = D05A00102C00000000000010 /* DosarCuSinaTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		D05A01102C00000000000110 /* DosarCuSinaWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D05A01152C00000000000115 /* Build configuration list for PBXNativeTarget "DosarCuSinaWidgets" */;
+			buildPhases = (
+				D05A01122C00000000000112 /* Sources */,
+				D05A01112C00000000000111 /* Frameworks */,
+				D05A01132C00000000000113 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				D05A00022C00000000000002 /* DosarCuSina */,
+				D05A01032C00000000000103 /* DosarCuSinaWidgets */,
+				D05A01052C00000000000105 /* Shared */,
 			);
-			name = DosarCuSina;
-			productName = DosarCuSina;
-			productReference = D05A00012C00000000000001 /* DosarCuSina.app */;
-			productType = "com.apple.product-type.application";
+			name = DosarCuSinaWidgets;
+			productName = DosarCuSinaWidgets;
+			productReference = D05A01012C00000000000101 /* DosarCuSinaWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		D05A01302C00000000000130 /* DosarCuSinaShare */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D05A01352C00000000000135 /* Build configuration list for PBXNativeTarget "DosarCuSinaShare" */;
+			buildPhases = (
+				D05A01322C00000000000132 /* Sources */,
+				D05A01312C00000000000131 /* Frameworks */,
+				D05A01332C00000000000133 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				D05A01042C00000000000104 /* DosarCuSinaShare */,
+				D05A01052C00000000000105 /* Shared */,
+			);
+			name = DosarCuSinaShare;
+			productName = DosarCuSinaShare;
+			productReference = D05A01022C00000000000102 /* DosarCuSinaShare.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -77,11 +227,21 @@
 					D05A00052C00000000000005 = {
 						CreatedOnToolsVersion = 27.2;
 					};
+					D05A00132C00000000000013 = {
+						CreatedOnToolsVersion = 27.2;
+						TestTargetID = D05A00052C00000000000005;
+					};
+					D05A01102C00000000000110 = {
+						CreatedOnToolsVersion = 27.2;
+					};
+					D05A01302C00000000000130 = {
+						CreatedOnToolsVersion = 27.2;
+					};
 				};
 			};
 			buildConfigurationList = D05A000A2C0000000000000A /* Build configuration list for PBXProject "DosarCuSina" */;
 			compatibilityVersion = "Xcode 14.0";
-			developmentRegion = en;
+			developmentRegion = ro;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
@@ -94,12 +254,60 @@
 			projectRoot = "";
 			targets = (
 				D05A00052C00000000000005 /* DosarCuSina */,
+				D05A00132C00000000000013 /* DosarCuSinaTests */,
+				D05A01102C00000000000110 /* DosarCuSinaWidgets */,
+				D05A01302C00000000000130 /* DosarCuSinaShare */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXContainerItemProxy section */
+		D05A001A2C0000000000001A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D05A00092C00000000000009 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D05A00052C00000000000005;
+			remoteInfo = DosarCuSina;
+		};
+		D05A01222C00000000000122 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D05A00092C00000000000009 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D05A01102C00000000000110;
+			remoteInfo = DosarCuSinaWidgets;
+		};
+		D05A01232C00000000000123 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D05A00092C00000000000009 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D05A01302C00000000000130;
+			remoteInfo = DosarCuSinaShare;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXResourcesBuildPhase section */
 		D05A00072C00000000000007 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D05A00152C00000000000015 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D05A01132C00000000000113 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D05A01332C00000000000133 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -116,7 +324,46 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D05A00142C00000000000014 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D05A01122C00000000000112 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D05A01322C00000000000132 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D05A001B2C0000000000001B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D05A00052C00000000000005 /* DosarCuSina */;
+			targetProxy = D05A001A2C0000000000001A /* PBXContainerItemProxy */;
+		};
+		D05A01252C00000000000125 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D05A01102C00000000000110 /* DosarCuSinaWidgets */;
+			targetProxy = D05A01222C00000000000122 /* PBXContainerItemProxy */;
+		};
+		D05A01262C00000000000126 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D05A01302C00000000000130 /* DosarCuSinaShare */;
+			targetProxy = D05A01232C00000000000123 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		D05A000B2C0000000000000B /* Debug */ = {
@@ -170,7 +417,7 @@
 				GCC_WARN_UNDEFINED_VARIABLES = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -227,7 +474,7 @@
 				GCC_WARN_UNDEFINED_VARIABLES = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -251,16 +498,13 @@
 				DEVELOPMENT_TEAM = 4NDY4PQ2LB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SupportingFiles/DosarCuSina-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Dosar cu Șină";
-				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Dosar cu Șină sincronizează scadențele importante (ITP, RCA, facturi, programări medicale, garanții) direct în aplicația Calendar.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Folosim Face ID ca să deschidem doar categoriile pe care le-ai protejat, cum ar fi actele și datele medicale.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Aplicația are nevoie de acces la cameră pentru a scana facturi, chitanțe și documente.";
-				INFOPLIST_KEY_NSContactsUsageDescription = "Dosar cu Șină îți permite să asociezi rapid medici, mecanici, instalatori, veterinari sau chiriași din agenda ta de contacte.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Aplicația are nevoie de acces la galerie pentru a atașa poze la scadențe.";
-				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Dosar cu Șină poate adăuga automat obligațiile scadente în aplicația Mementouri (Reminders).";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -273,7 +517,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -290,16 +534,13 @@
 				DEVELOPMENT_TEAM = 4NDY4PQ2LB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SupportingFiles/DosarCuSina-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Dosar cu Șină";
-				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Dosar cu Șină sincronizează scadențele importante (ITP, RCA, facturi, programări medicale, garanții) direct în aplicația Calendar.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Folosim Face ID ca să deschidem doar categoriile pe care le-ai protejat, cum ar fi actele și datele medicale.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Aplicația are nevoie de acces la cameră pentru a scana facturi, chitanțe și documente.";
-				INFOPLIST_KEY_NSContactsUsageDescription = "Dosar cu Șină îți permite să asociezi rapid medici, mecanici, instalatori, veterinari sau chiriași din agenda ta de contacte.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Aplicația are nevoie de acces la galerie pentru a atașa poze la scadențe.";
-				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "Dosar cu Șină poate adăuga automat obligațiile scadente în aplicația Mementouri (Reminders).";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -312,7 +553,159 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		D05A00182C00000000000018 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4NDY4PQ2LB;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ar.dosarcusina.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DosarCuSina.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/DosarCuSina";
+			};
+			name = Debug;
+		};
+		D05A00192C00000000000019 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4NDY4PQ2LB;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ar.dosarcusina.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DosarCuSina.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/DosarCuSina";
+			};
+			name = Release;
+		};
+		D05A01162C00000000000116 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = DosarCuSinaWidgets/DosarCuSinaWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4NDY4PQ2LB;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DosarCuSinaWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Dosar cu Șină";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ar.dosarcusina.app.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "WIDGET_EXTENSION $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		D05A01172C00000000000117 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = DosarCuSinaWidgets/DosarCuSinaWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4NDY4PQ2LB;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DosarCuSinaWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Dosar cu Șină";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ar.dosarcusina.app.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "WIDGET_EXTENSION $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		D05A01362C00000000000136 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = DosarCuSinaShare/DosarCuSinaShare.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4NDY4PQ2LB;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DosarCuSinaShare/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Dosar cu Șină";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ar.dosarcusina.app.share;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "SHARE_EXTENSION $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		D05A01372C00000000000137 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = DosarCuSinaShare/DosarCuSinaShare.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4NDY4PQ2LB;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DosarCuSinaShare/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Dosar cu Șină";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ar.dosarcusina.app.share;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "SHARE_EXTENSION $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -334,6 +727,33 @@
 			buildConfigurations = (
 				D05A000B2C0000000000000B /* Debug */,
 				D05A000C2C0000000000000C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D05A00172C00000000000017 /* Build configuration list for PBXNativeTarget "DosarCuSinaTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D05A00182C00000000000018 /* Debug */,
+				D05A00192C00000000000019 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D05A01152C00000000000115 /* Build configuration list for PBXNativeTarget "DosarCuSinaWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D05A01162C00000000000116 /* Debug */,
+				D05A01172C00000000000117 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D05A01352C00000000000135 /* Build configuration list for PBXNativeTarget "DosarCuSinaShare" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D05A01362C00000000000136 /* Debug */,
+				D05A01372C00000000000137 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

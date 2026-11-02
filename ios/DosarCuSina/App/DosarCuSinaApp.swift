@@ -4,79 +4,66 @@ import UserNotifications
 
 @main
 struct DosarCuSinaApp: App {
-    public static let sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Asset.self,
-            LifecycleEvent.self,
-            DocumentAttachment.self,
-            DynamicField.self,
-            ServiceItem.self,
-            MeasurementLog.self
-        ])
-        
-        let modelConfiguration = ModelConfiguration(
-            schema: schema,
-            isStoredInMemoryOnly: false
-        )
-        
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
-    
-    var sharedModelContainer: ModelContainer {
-        Self.sharedModelContainer
-    }
-    
-    public init() {
-        let container = Self.sharedModelContainer
-        
-        // 1. Configure Notification Delegate & ModelContainer Link
-        NotificationDelegate.shared.modelContainer = container
-        UNUserNotificationCenter.current().delegate = NotificationDelegate.shared
-        
-        // 2. Register Interactive Action Categories ("Am rezolvat", "Amână 3 zile")
-        NotificationScheduler.shared.registerCategories()
-        
-        // 3. Initial Widget Data Snapshot Sync to App Group container
-        WidgetDataSyncService.shared.sync(container: container)
-    }
+    @State private var persistence = PersistenceController.shared
+    @State private var navigator = AppNavigator.shared
+    @State private var preferences = AppPreferences.shared
+    @State private var vault = BiometricVaultManager.shared
+    @State private var sideEffects: SideEffectsCoordinator?
+    @Environment(\.scenePhase) private var scenePhase
 
-    @AppStorage("didSeedInitialDemoData") private var didSeedInitialDemoData: Bool = false
+    /// Kept for the app's lifetime; the notification center holds its delegate weakly.
+    private static let notificationResponder = NotificationResponder()
+
+    init() {
+        UNUserNotificationCenter.current().delegate = Self.notificationResponder
+    }
 
     var body: some Scene {
         WindowGroup {
-            MainTabView()
-                .task {
-                    if !didSeedInitialDemoData {
-                        DemoDataSeeder.seedInitialDataIfNeeded(context: sharedModelContainer.mainContext)
-                        didSeedInitialDemoData = true
-                    }
+            Group {
+                switch persistence.state {
+                case .ready(let container):
+                    AppShell()
+                        .modelContainer(container)
+                        .environment(\.sideEffects, sideEffects)
+                        .task { start(with: container) }
+                case .failed(let message):
+                    StoreRecoveryView(message: message, retry: persistence.retry, startFresh: persistence.startFresh)
                 }
-                .onOpenURL { url in
-                    handleDeepLink(url)
-                }
+            }
+            .environment(navigator)
+            .environment(preferences)
+            .environment(vault)
+            // The binder speaks Romanian and writes dates and money the Romanian way.
+            .environment(\.locale, .dosarDefault)
+            .onOpenURL { url in
+                navigator.open(url)
+            }
         }
-        .modelContainer(sharedModelContainer)
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                sideEffects?.setNeedsReconcile(allowPermissionPrompt: false)
+            }
+        }
     }
-    
-    private func handleDeepLink(_ url: URL) {
-        guard url.scheme == NotificationScheduler.deepLinkScheme else { return }
-        if url.host == "event",
-           let uuidString = url.pathComponents.dropFirst().first,
-           let uuid = UUID(uuidString: uuidString) {
-            NotificationScheduler.activeDeepLinkEventId = uuid
-            NotificationCenter.default.post(
-                name: .dosarCuSinaOpenEventDeepLink,
-                object: nil,
-                userInfo: [
-                    "eventId": uuid,
-                    "eventIdString": uuidString,
-                    "url": url
-                ]
-            )
+
+    /// Installs built-in categories and starts the side-effects pipeline, once per container.
+    private func start(with container: ModelContainer) {
+        guard sideEffects == nil else { return }
+        _ = try? TemplateStore(context: container.mainContext).installBuiltIns()
+        _ = try? ChoiceMigration.migrateStoredValues(in: container.mainContext)
+        if (try? HouseholdRules.reconcile(in: container.mainContext, today: CalendarDay(Date()))) == true {
+            try? container.mainContext.save()
         }
+        // Capture recognizes documents already in the binder by their fingerprint.
+        Task {
+            await CaptureDocumentStore.shared().setDuplicateLookup { fingerprint in
+                await MainActor.run { AttachmentActions(context: container.mainContext).attachmentID(withFingerprint: fingerprint) }
+            }
+        }
+        DocumentFileProtection.apply(toStoreAt: PersistenceController.defaultStoreURL)
+        let coordinator = SideEffectsCoordinator(container: container)
+        coordinator.start()
+        sideEffects = coordinator
     }
 }

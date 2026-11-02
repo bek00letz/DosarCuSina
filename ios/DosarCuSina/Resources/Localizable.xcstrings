@@ -1,0 +1,535 @@
+{
+  "sourceLanguage": "ro",
+  "strings": {
+    "%lld amânate sau pe pauză": {
+      "comment": "Deadlines snoozed or paused",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Unul amânat sau pe pauză"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld amânate sau pe pauză"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld amânate sau pe pauză"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld ani": {
+      "comment": "A number of years, with Romanian plural forms.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld an"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld ani"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de ani"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld contacte": {
+      "comment": "Agenda box: how many people and firms are saved.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld contact"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld contacte"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de contacte"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld documente": {
+      "comment": "A number of documents, with Romanian plural forms.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld document"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld documente"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de documente"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld luni": {
+      "comment": "A number of months, with Romanian plural forms.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld lună"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld luni"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de luni"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld poze": {
+      "comment": "Photos received from another app",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "O poză"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld poze"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de poze"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld secțiuni": {
+      "comment": "A number of sections, with Romanian plural forms.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld secțiune"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld secțiuni"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de secțiuni"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld săptămâni": {
+      "comment": "A number of weeks, with Romanian plural forms.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld săptămână"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld săptămâni"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de săptămâni"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld termene": {
+      "comment": "A number of obligations, with Romanian plural forms.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld termen"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld termene"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de termene"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld termene mai departe": {
+      "comment": "Deadlines more than a month away",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Un termen mai departe"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld termene mai departe"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de termene mai departe"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld zile": {
+      "comment": "A number of days, with Romanian plural forms: 1 zi, 2 zile, 20 de zile.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld zi"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld zile"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de zile"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "15 cifre": {
+      "comment": "Placeholder for the pet microchip field."
+    },
+    "17 litere și cifre": {
+      "comment": "Placeholder for the vehicle identification number field."
+    },
+    "Adaugă data": {
+      "comment": "Button in an empty date field."
+    },
+    "Adresa completă.": {
+      "comment": "VoiceOver hint for an address field."
+    },
+    "Alege": {
+      "comment": "Placeholder in an empty choice field."
+    },
+    "Alege alt contact": {
+      "comment": "Menu item that replaces the linked contact."
+    },
+    "Alege din Contacte": {
+      "comment": "Button in an empty contact field."
+    },
+    "Am bifat %lld rânduri de pe factură. Verifică-le.": {
+      "comment": "Visit flow: rows ticked from a scanned invoice",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Am bifat un rând de pe factură. Verifică-l."
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Am bifat %lld rânduri de pe factură. Verifică-le."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Am bifat %lld de rânduri de pe factură. Verifică-le."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Am citit primele %lld pagini": {
+      "comment": "Capture review: only the first pages of a long PDF were read",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Am citit prima pagină"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Am citit primele %lld pagini"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Am citit primele %lld de pagini"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Anulează": {
+      "comment": "Button that closes an editing sheet, or reverses the action a toast confirms."
+    },
+    "Azi": {
+      "comment": "Badge: the obligation is due today."
+    },
+    "Ce ai completat până acum nu se va salva.": {
+      "comment": "Explains what discarding unsaved changes means."
+    },
+    "Cele 15 cifre ale microcipului, din carnetul de sănătate.": {
+      "comment": "VoiceOver hint for the pet microchip field."
+    },
+    "Completează acest câmp.": {
+      "comment": "Validation message under a required field that was left empty."
+    },
+    "Continuă editarea": {
+      "comment": "Button that keeps the sheet open."
+    },
+    "Contul bancar, începe cu RO.": {
+      "comment": "VoiceOver hint for the IBAN field."
+    },
+    "Elimină contactul": {
+      "comment": "Menu item that unlinks the contact from this field."
+    },
+    "Expiră azi": {
+      "comment": "Badge: a document expires today."
+    },
+    "Mai târziu": {
+      "comment": "Status of an obligation that is not due soon."
+    },
+    "Monedă": {
+      "comment": "Label of the currency picker next to an amount."
+    },
+    "Mâine": {
+      "comment": "Badge: the obligation is due tomorrow."
+    },
+    "Niciuna": {
+      "comment": "Choice that leaves an optional field empty."
+    },
+    "Nimic ales": {
+      "comment": "VoiceOver value of an empty choice field."
+    },
+    "Numărul de înmatriculare, de exemplu B 123 ABC.": {
+      "comment": "VoiceOver hint for the license plate field."
+    },
+    "O adresă de e-mail.": {
+      "comment": "VoiceOver hint for an email field."
+    },
+    "Opțiuni contact": {
+      "comment": "VoiceOver label of the menu next to a linked contact."
+    },
+    "Renunți la modificări?": {
+      "comment": "Title of the dialog shown when closing a sheet with unsaved changes."
+    },
+    "Renunță la modificări": {
+      "comment": "Destructive button that closes the sheet and drops unsaved changes."
+    },
+    "Rezolvat": {
+      "comment": "Status or badge of an obligation that has been completed."
+    },
+    "Scrie doar cifre, de exemplu 84.200.": {
+      "comment": "Validation message when a reading such as kilometers isn't a number."
+    },
+    "Scrie suma doar cu cifre, de exemplu 1.250,50.": {
+      "comment": "Validation message when a money amount isn't a number."
+    },
+    "Se încarcă…": {
+      "comment": "Shown or read by VoiceOver while content loads."
+    },
+    "Seria de șasiu din talon, 17 litere și cifre.": {
+      "comment": "VoiceOver hint for the vehicle identification number field."
+    },
+    "Stradă, număr, localitate": {
+      "comment": "Placeholder for an address field."
+    },
+    "Suma nu poate fi negativă.": {
+      "comment": "Validation message when a money amount is below zero."
+    },
+    "Un link care începe cu https.": {
+      "comment": "VoiceOver hint for a web link field."
+    },
+    "Un număr de telefon.": {
+      "comment": "VoiceOver hint for a phone number field."
+    },
+    "Valabil": {
+      "comment": "Badge: a document is valid and not close to expiring."
+    },
+    "În curând": {
+      "comment": "Status of an obligation due within the next days."
+    },
+    "Încearcă din nou": {
+      "comment": "Button on an error screen that retries the failed action."
+    },
+    "Închide": {
+      "comment": "VoiceOver action that dismisses a toast."
+    },
+    "Încă %lld sunt mai jos, la Curând.": {
+      "comment": "Urmează: items that didn't fit under Acum",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Încă unul e mai jos, la Curând."
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Încă %lld sunt mai jos, la Curând."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Încă %lld sunt mai jos, la Curând."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Întârziat": {
+      "comment": "Status of an obligation whose due date has passed."
+    },
+    "Șterge data": {
+      "comment": "Button that removes the date from a date field."
+    }
+  },
+  "version": "1.0"
+}

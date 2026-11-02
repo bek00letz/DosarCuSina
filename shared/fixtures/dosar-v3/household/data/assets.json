@@ -1,0 +1,62 @@
+[
+  {
+    "createdAt" : "2026-01-10T09:05:00Z",
+    "id" : "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a41",
+    "isExample" : false,
+    "name" : "VW Golf",
+    "notes" : "Cauciucuri de iarnă la hotelul de roți.",
+    "templateKey" : "vehicle",
+    "updatedAt" : "2026-03-01T08:00:00Z",
+    "values" : {
+      "vehicle.fuel" : {
+        "type" : "text",
+        "value" : "fuel.diesel"
+      },
+      "vehicle.make" : {
+        "type" : "text",
+        "value" : "Volkswagen"
+      },
+      "vehicle.usage" : {
+        "type" : "text",
+        "value" : "vehicleUse.personal"
+      },
+      "vehicle.odometer" : {
+        "type" : "number",
+        "value" : 142500
+      },
+      "vehicle.plate" : {
+        "type" : "text",
+        "value" : "B-123-ABC"
+      },
+      "vehicle.year" : {
+        "type" : "number",
+        "value" : 2018
+      }
+    }
+  },
+  {
+    "createdAt" : "2026-01-12T10:05:00Z",
+    "customFacts" : [
+      {
+        "id" : "c0ffee00-0000-4000-8000-000000000001",
+        "label" : "Loc în port",
+        "value" : "Ponton 3, locul 12"
+      }
+    ],
+    "id" : "8a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c52",
+    "isExample" : false,
+    "name" : "Barca de pe lac",
+    "templateKey" : "custom.0b6c6f43-6c1e-4d1a-9c55-7d3b4f1f2a10",
+    "updatedAt" : "2026-01-12T10:05:00Z",
+    "values" : {
+      "boat.hours" : {
+        "type" : "number",
+        "value" : 210
+      },
+      "boat.registration" : {
+        "type" : "text",
+        "value" : "RO-EXEMPLU-01"
+      }
+    }
+  }
+]

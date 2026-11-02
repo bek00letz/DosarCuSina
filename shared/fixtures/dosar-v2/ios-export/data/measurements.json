@@ -1,0 +1,15 @@
+[
+  {
+    "assetId" : "B1B2C3D4-0000-4000-8000-000000000002",
+    "attachmentIds" : [
+
+    ],
+    "domainRawValue" : "Kilometraj (km)",
+    "id" : "A2B2C3D4-0000-4000-8000-000000000008",
+    "isSelfRead" : true,
+    "metricName" : "Kilometraj",
+    "recordedAt" : "2025-08-20T10:00:00Z",
+    "unit" : "km",
+    "value" : 97500
+  }
+]

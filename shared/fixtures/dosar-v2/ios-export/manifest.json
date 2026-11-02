@@ -1,0 +1,25 @@
+{
+  "appName": "Dosar cu Șină",
+  "appVersion": "2.0.0",
+  "checksums": {
+    "data/assets.json": "ca14d720ce571b683b8ce0b046322985cb1d043680a67a564aa6911e50e341b8",
+    "data/attachments_meta.json": "ef03e61d1c9c2dd72021e9add2b4fd84d1ee6cabb8b1ee58b24b710b387c73be",
+    "data/events.json": "c53ea3fd9fe2cacdf3e79ec4c067b6c091eb3be171a39aff4ba93639c26cca20",
+    "data/measurements.json": "cf77adeba123d0c3814f8c864f408321f8c4e46de7ed455f9aa0fab97cc0b2dc",
+    "data/service_history.json": "e744ce944faa936ffea7dfb3e354f235253e360f5d3e21d4112786f26d618561",
+    "vault/F1B2C3D4-0000-4000-8000-000000000007.txt": "29a06555e1b527140f90aa7ca08f1fb5d44420b9c8f19ebb8f70b0df4658b263"
+  },
+  "deviceId": "00000000-0000-0000-0000-000000000000",
+  "entityCounts": {
+    "assets": 2,
+    "attachments": 1,
+    "dynamicFields": 1,
+    "events": 2,
+    "measurements": 1,
+    "serviceItems": 1
+  },
+  "exportDate": "2025-10-02T08:00:00Z",
+  "format": "com.ar.dosarcusina.dossier",
+  "platform": "iOS",
+  "schemaVersion": 2
+}

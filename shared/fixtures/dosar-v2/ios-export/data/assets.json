@@ -1,0 +1,48 @@
+[
+  {
+    "accentColorHex" : "007AFF",
+    "categoryRaw" : "vehicle",
+    "createdAt" : "2025-09-01T08:00:00Z",
+    "currencyCode" : "RON",
+    "currentMetricValue" : 98000,
+    "dynamicFields" : [
+      {
+        "fieldTypeRaw" : "text",
+        "id" : "A1B2C3D4-0000-4000-8000-000000000001",
+        "key" : "tyre_hotel",
+        "label" : "Hotel roți",
+        "stringValue" : "Service exemplu"
+      }
+    ],
+    "enginePowerKw" : 110,
+    "fuelType" : "Motorină",
+    "iconName" : "car.fill",
+    "id" : "B1B2C3D4-0000-4000-8000-000000000002",
+    "licensePlate" : "cj 12 xyz",
+    "make" : "Dacia",
+    "manufactureYear" : 2012,
+    "modelName" : "Logan",
+    "name" : "Dacia Logan",
+    "subtitle" : "Mașina de oraș",
+    "updatedAt" : "2025-10-01T08:00:00Z",
+    "vin" : "UU1LSDAAH12345678"
+  },
+  {
+    "accentColorHex" : "30B0C7",
+    "categoryRaw" : "warranties",
+    "createdAt" : "2025-09-02T08:00:00Z",
+    "currencyCode" : "RON",
+    "dynamicFields" : [
+
+    ],
+    "iconName" : "shield.lefthalf.filled",
+    "id" : "C1B2C3D4-0000-4000-8000-000000000003",
+    "make" : "Mașină de spălat",
+    "name" : "Mașina de spălat",
+    "purchaseOrIssueDate" : "2025-06-15T09:00:00Z",
+    "purchasePrice" : 1899.99,
+    "retailerOrIssuer" : "Magazin exemplu",
+    "updatedAt" : "2025-09-02T08:00:00Z",
+    "warrantyMonths" : 24
+  }
+]

@@ -20,7 +20,7 @@ public enum KeychainManager {
             kSecAttrService as String: serviceName,
             kSecAttrAccount as String: geminiAccountKey,
             kSecValueData as String: data,
-            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
         ]
         
         let status = SecItemAdd(query as CFDictionary, nil)
@@ -48,14 +48,7 @@ public enum KeychainManager {
             }
         }
         
-        // 2. Fallback to Info.plist (populated via local Config.xcconfig for developers)
-        if let configKey = Bundle.main.infoDictionary?["GEMINI_API_KEY"] as? String {
-            let trimmed = configKey.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !trimmed.isEmpty && !trimmed.contains("YOUR_GEMINI_API_KEY") {
-                return trimmed
-            }
-        }
-        
+        // The key comes only from Settings: one path for everyone, developers included.
         return nil
     }
     

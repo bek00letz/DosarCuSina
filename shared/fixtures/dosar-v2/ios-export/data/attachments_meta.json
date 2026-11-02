@@ -1,0 +1,13 @@
+[
+  {
+    "assetId": "B1B2C3D4-0000-4000-8000-000000000002",
+    "createdAt": "2025-08-20T10:05:00Z",
+    "eventId": "E1B2C3D4-0000-4000-8000-000000000005",
+    "fileExtension": "txt",
+    "fileName": "raport-itp.txt",
+    "fileSizeBytes": 20,
+    "id": "F1B2C3D4-0000-4000-8000-000000000007",
+    "sha256": "29a06555e1b527140f90aa7ca08f1fb5d44420b9c8f19ebb8f70b0df4658b263",
+    "vaultRelativePath": "vault/F1B2C3D4-0000-4000-8000-000000000007.txt"
+  }
+]
