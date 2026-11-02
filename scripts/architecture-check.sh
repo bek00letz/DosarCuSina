@@ -58,7 +58,8 @@ trap 'rm -rf "$work"' EXIT
 #   id, paths it covers, paths it leaves out ("-" for none), pattern,
 #   lines it leaves out ("-" for none), message.
 # Patterns are POSIX extended regular expressions, read by awk, so they work the
-# same on macOS and Linux: no \b, \s or \d.
+# same on macOS and Linux: no \b, \s or \d. Awk variable names avoid gawk's own
+# words (include, switch, case…): Linux runners use gawk.
 
 app='^ios/(DosarCuSina|DosarCuSinaWidgets|DosarCuSinaShare|Shared)/'
 views='^ios/DosarCuSina/Views/'
@@ -191,11 +192,11 @@ scan() {
     ' $files)
     [[ -n $roots ]] || return 0
     # shellcheck disable=SC2086
-    awk -F'\t' -v map_file="$map" -v roots="$roots" -v include="$app" '
+    awk -F'\t' -v map_file="$map" -v roots="$roots" -v covered="$app" '
         BEGIN { split(roots, list, " "); for (i in list) is_root[list[i]] = 1 }
         FILENAME == map_file { path_of[$2] = $1; next }
         FNR == 1 { path = path_of[FILENAME]; current = ""; in_body = 0 }
-        path !~ include { next }
+        path !~ covered { next }
         /^[[:space:]]*(\/\/|\/\*|\*)/ { next }
         match($0, /^[[:space:]]*((public|private|fileprivate|internal)[[:space:]]+)?struct[[:space:]]+[A-Z][A-Za-z0-9_]*/) {
             name = substr($0, RSTART, RLENGTH); sub(/.*struct[[:space:]]+/, "", name)
