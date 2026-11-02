@@ -388,7 +388,7 @@ struct PeopleListScreen: View {
                 ForEach(people) { provider in
                     DSCard { ProviderCard(provider: provider) }
                 }
-                DSWideButton("Adaugă o persoană", systemImage: "person.badge.plus", isProminent: false) { isAdding = true }
+                DSSecondaryButton("Adaugă o persoană", systemImage: "person.badge.plus") { isAdding = true }
             }
             .padding(DS.Space.m)
         }

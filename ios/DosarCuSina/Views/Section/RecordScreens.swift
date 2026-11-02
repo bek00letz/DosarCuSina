@@ -104,7 +104,7 @@ private struct HistoryEntryContent: View {
                     }
                 }
 
-                DSWideButton("Șterge din istoric", systemImage: "trash", isProminent: false, role: .destructive) {
+                DSSecondaryButton("Șterge din istoric", systemImage: "trash", role: .destructive) {
                     isConfirmingDelete = true
                 }
             }
@@ -231,11 +231,11 @@ private struct DocumentContent: View {
                 }
 
                 VStack(spacing: DS.Space.s) {
-                    DSWideButton(attachment.isArchived ? "Scoate din arhivă" : "Mută în arhivă",
-                                 systemImage: attachment.isArchived ? "tray.and.arrow.up" : "archivebox", isProminent: false) {
+                    DSSecondaryButton(attachment.isArchived ? "Scoate din arhivă" : "Mută în arhivă",
+                                      systemImage: attachment.isArchived ? "tray.and.arrow.up" : "archivebox") {
                         setArchived(!attachment.isArchived)
                     }
-                    DSWideButton("Șterge documentul", systemImage: "trash", isProminent: false, role: .destructive) {
+                    DSSecondaryButton("Șterge documentul", systemImage: "trash", role: .destructive) {
                         isConfirmingDelete = true
                     }
                 }

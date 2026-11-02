@@ -252,7 +252,7 @@ private struct CustomSectionStep: View {
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {
             BottomBar {
-                DSWideButton("Continuă") {
+                DSPrimaryButton("Continuă") {
                     guard let custom = model.custom, !custom.name.trimmingCharacters(in: .whitespaces).isEmpty else {
                         reveals = true
                         return
@@ -311,7 +311,7 @@ private struct EssentialsStep: View {
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {
             BottomBar {
-                DSWideButton("Continuă") {
+                DSPrimaryButton("Continuă") {
                     guard FieldValuesCheck.canSave(model.values, fields: fields) else { reveals = true; return }
                     next()
                 }
@@ -388,7 +388,7 @@ private struct ObligationsStep: View {
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {
             BottomBar {
-                DSWideButton("Adaugă în dosar") {
+                DSPrimaryButton("Adaugă în dosar") {
                     guard model.missingDates.isEmpty else { reveals = true; return }
                     finish()
                 }

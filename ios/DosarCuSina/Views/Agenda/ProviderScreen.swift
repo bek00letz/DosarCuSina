@@ -52,7 +52,7 @@ private struct ProviderContent: View {
                 notesCard
                 jobs
                 sections
-                DSWideButton("Șterge din agendă", systemImage: "trash", isProminent: false, role: .destructive) {
+                DSSecondaryButton("Șterge din agendă", systemImage: "trash", role: .destructive) {
                     isConfirmingDelete = true
                 }
             }
@@ -111,13 +111,13 @@ private struct ProviderContent: View {
         if let phone = provider.phone {
             let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: DS.Space.s)) : AnyLayout(HStackLayout(spacing: DS.Space.s))
             layout {
-                DSWideButton("Sună", systemImage: "phone.fill") {
+                DSPrimaryButton("Sună", systemImage: "phone.fill") {
                     if let url = PhoneLinks.call(phone) { openURL(url) }
                 }
-                DSWideButton("Mesaj", systemImage: "message.fill", isProminent: false) {
+                DSSecondaryButton("Mesaj", systemImage: "message.fill") {
                     if let url = PhoneLinks.message(phone) { openURL(url) }
                 }
-                DSWideButton("Copiază", systemImage: "doc.on.doc", isProminent: false) {
+                DSSecondaryButton("Copiază", systemImage: "doc.on.doc") {
                     Clipboard.copy(phone)
                     toast = DSToast(title: LocalizedStringResource("Am copiat numărul", comment: "Toast after copying a phone number."), systemImage: "doc.on.doc.fill", actionTitle: nil, feedback: .success)
                 }

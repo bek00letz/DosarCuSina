@@ -118,8 +118,8 @@ private struct SectionContent: View {
     // MARK: Delete
 
     private var deleteButton: some View {
-        DSWideButton(verbatim: String(localized: "Șterge „\(asset.name)”", comment: "Button at the bottom of a section page."),
-                     systemImage: "trash", isProminent: false, role: .destructive) {
+        DSSecondaryButton(verbatim: String(localized: "Șterge „\(asset.name)”", comment: "Button at the bottom of a section page."),
+                          systemImage: "trash", role: .destructive) {
             isConfirmingDelete = true
         }
         .padding(.top, DS.Space.l)

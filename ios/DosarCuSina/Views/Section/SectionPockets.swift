@@ -90,7 +90,7 @@ struct ChildrenPocket: View {
                 .buttonStyle(.dsPressable)
             }
         } footer: {
-            DSWideButton(verbatim: addTitle, systemImage: "plus", isProminent: false) {
+            DSSecondaryButton(verbatim: addTitle, systemImage: "plus") {
                 router.present(.addSection(AddSectionRequest(parentID: asset.id, templateKey: childKey)))
             }
             .padding(.top, DS.Space.s)
@@ -203,11 +203,11 @@ struct DocumentsPocket: View {
         } footer: {
             VStack(spacing: DS.Space.s) {
                 if asset.templateKey == BuiltInTemplates.Key.member {
-                    DSWideButton("Adaugă un act", systemImage: "plus", isProminent: false) {
+                    DSSecondaryButton("Adaugă un act", systemImage: "plus") {
                         router.present(.addSection(AddSectionRequest(parentID: asset.id, templateKey: BuiltInTemplates.Key.documents)))
                     }
                 }
-                DSWideButton("Scanează un document", systemImage: "doc.viewfinder", isProminent: false) {
+                DSSecondaryButton("Scanează un document", systemImage: "doc.viewfinder") {
                     router.open(.intake)
                 }
             }
@@ -352,7 +352,7 @@ struct HistoryPocket: View {
                 .buttonStyle(.dsPressable)
             }
         } footer: {
-            DSWideButton(verbatim: VisitWording.forTemplate(key: definition.key, heroStyle: definition.heroStyle).title, systemImage: "wrench.and.screwdriver.fill") {
+            DSPrimaryButton(verbatim: VisitWording.forTemplate(key: definition.key, heroStyle: definition.heroStyle).title, systemImage: "wrench.and.screwdriver.fill") {
                 router.present(.addVisit(asset.id))
             }
             .padding(.top, DS.Space.s)
@@ -415,7 +415,7 @@ struct PeoplePocket: View {
                 .buttonStyle(.dsPressable)
             }
         } footer: {
-            DSWideButton("Adaugă o persoană", systemImage: "person.badge.plus", isProminent: false) {
+            DSSecondaryButton("Adaugă o persoană", systemImage: "person.badge.plus") {
                 isAdding = true
             }
             .padding(.top, DS.Space.s)

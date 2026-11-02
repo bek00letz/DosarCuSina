@@ -36,7 +36,7 @@ struct KeyFactsPocket: View {
             }
         } footer: {
             if editing == nil {
-                DSWideButton("Adaugă un rând", systemImage: "plus", isProminent: false) {
+                DSSecondaryButton("Adaugă un rând", systemImage: "plus") {
                     editing = CustomFact(label: "", value: "")
                 }
                 .padding(.top, DS.Space.s)

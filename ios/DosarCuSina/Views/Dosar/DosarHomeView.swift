@@ -318,8 +318,8 @@ struct DosarEmptyState: View {
                     .multilineTextAlignment(.center)
             }
             VStack(spacing: DS.Space.s) {
-                DSWideButton("Adaugă primul lucru", systemImage: "plus", action: addFirst)
-                DSWideButton("Încarcă exemple", systemImage: "sparkles", isProminent: false, action: loadExamples)
+                DSPrimaryButton("Adaugă primul lucru", systemImage: "plus", action: addFirst)
+                DSSecondaryButton("Încarcă exemple", systemImage: "sparkles", action: loadExamples)
                     .disabled(isLoading)
                 Text("Exemplele sunt marcate și le ștergi dintr-o atingere, din Setări.", comment: "Footnote under the load examples button.")
                     .dsFont(.footnote)

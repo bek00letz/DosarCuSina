@@ -1,7 +1,7 @@
 import SwiftUI
 
 // Components for the binder screens: the home boxes, pocket cards, heroes,
-// checkboxes, star ratings and full-width actions. Built only from DS tokens.
+// checkboxes and star ratings. Built only from DS tokens.
 
 // MARK: - Category tint
 
@@ -283,52 +283,6 @@ struct DSSeeAllRow: View {
     }
 }
 
-// MARK: - Full-width actions
-
-/// A full-width button with a text label: primary actions use the prominent style.
-struct DSWideButton: View {
-    let title: Text
-    var systemImage: String?
-    var isProminent = true
-    var role: ButtonRole?
-    let action: () -> Void
-
-    init(_ title: LocalizedStringKey, systemImage: String? = nil, isProminent: Bool = true, role: ButtonRole? = nil, action: @escaping () -> Void) {
-        self.title = Text(title)
-        self.systemImage = systemImage
-        self.isProminent = isProminent
-        self.role = role
-        self.action = action
-    }
-
-    init(verbatim title: String, systemImage: String? = nil, isProminent: Bool = true, role: ButtonRole? = nil, action: @escaping () -> Void) {
-        self.title = Text(verbatim: title)
-        self.systemImage = systemImage
-        self.isProminent = isProminent
-        self.role = role
-        self.action = action
-    }
-
-    var body: some View {
-        let button = Button(role: role, action: action) {
-            Label {
-                title.multilineTextAlignment(.center)
-            } icon: {
-                if let systemImage { Image(systemName: systemImage) }
-            }
-            .font(.body.weight(.semibold))
-            .frame(maxWidth: .infinity, minHeight: 34)
-        }
-        .controlSize(.large)
-        .buttonBorderShape(.roundedRectangle(radius: DS.Radius.control + 2))
-        if isProminent {
-            button.buttonStyle(.borderedProminent)
-        } else {
-            button.buttonStyle(.bordered)
-        }
-    }
-}
-
 // MARK: - Checkbox
 
 /// A plain checkbox with a title and a one-line explanation. The whole row toggles.
@@ -500,14 +454,8 @@ struct DSLockedState: View {
                         .multilineTextAlignment(.center)
                 }
             }
-            Button(action: unlock) {
-                unlockTitle
-                    .font(.body.weight(.semibold))
-                    .frame(maxWidth: .infinity, minHeight: 34)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .disabled(isWorking)
+            DSPrimaryButton(unlockTitle, action: unlock)
+                .disabled(isWorking)
         }
         .padding(DS.Space.xxl)
         .frame(maxWidth: 480)

@@ -90,7 +90,7 @@ private struct CategoryContent: View {
                             DocumentRowLink(item: .personal(document))
                         }
                         if let holder = group.holder {
-                            DSWideButton("Adaugă un act", systemImage: "plus", isProminent: false) {
+                            DSSecondaryButton("Adaugă un act", systemImage: "plus") {
                                 router.present(.addSection(AddSectionRequest(parentID: holder.id, templateKey: BuiltInTemplates.Key.documents)))
                             }
                             .padding(.top, DS.Space.s)
@@ -100,7 +100,7 @@ private struct CategoryContent: View {
             }
         }
         if !groups.isEmpty {
-            DSWideButton("Adaugă o persoană", systemImage: "person.badge.plus", isProminent: false) {
+            DSSecondaryButton("Adaugă o persoană", systemImage: "person.badge.plus") {
                 router.present(.addSection(AddSectionRequest(templateKey: BuiltInTemplates.Key.member)))
             }
         }
@@ -124,7 +124,7 @@ private struct CategoryContent: View {
         } else {
             assetGroup(String(localized: "În garanție", comment: "Group of products still under warranty."), covered, definition: definition)
             assetGroup(String(localized: "Garanție expirată", comment: "Group of products whose warranty ended."), expired, definition: definition)
-            DSWideButton("Adaugă un produs", systemImage: "plus", isProminent: false) { addTopLevel() }
+            DSSecondaryButton("Adaugă un produs", systemImage: "plus") { addTopLevel() }
         }
     }
 
@@ -146,7 +146,7 @@ private struct CategoryContent: View {
                 }
             }
             assetGroup(String(localized: "Abonamente", comment: "Section pocket"), items, definition: template.definition)
-            DSWideButton("Adaugă un abonament", systemImage: "plus", isProminent: false) { addTopLevel() }
+            DSSecondaryButton("Adaugă un abonament", systemImage: "plus") { addTopLevel() }
         }
     }
 
@@ -158,7 +158,7 @@ private struct CategoryContent: View {
             emptyState(title: "Nimic aici încă", message: "Adaugă primul și îl găsești aici.", action: "Adaugă") { addTopLevel() }
         } else {
             assetGroup(template.name, items, definition: template.definition)
-            DSWideButton("Adaugă", systemImage: "plus", isProminent: false) { addTopLevel() }
+            DSSecondaryButton("Adaugă", systemImage: "plus") { addTopLevel() }
         }
     }
 

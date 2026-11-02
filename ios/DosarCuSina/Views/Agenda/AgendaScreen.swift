@@ -46,7 +46,7 @@ struct AgendaScreen: View {
                             }
                         }
                     }
-                    DSWideButton("Adaugă o persoană", systemImage: "person.badge.plus", isProminent: false) { isAdding = true }
+                    DSSecondaryButton("Adaugă o persoană", systemImage: "person.badge.plus") { isAdding = true }
                 }
             }
             .padding(DS.Space.m)
