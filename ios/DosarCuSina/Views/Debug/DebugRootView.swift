@@ -49,9 +49,16 @@ struct DebugRootView: View {
             }
             .navigationTitle("Dosar cu Șină")
             .toolbar {
-                Menu("Exemple", systemImage: "ellipsis.circle") {
-                    Button("Încarcă exemple", systemImage: "sparkles") { run { try ExampleDataService(context: context).loadExamples() } }
-                    Button("Șterge exemplele", systemImage: "trash", role: .destructive) { run { try ExampleDataService(context: context).removeExamples() } }
+                #if DEBUG
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink("Galerie", destination: DesignSystemGallery())
+                }
+                #endif
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu("Exemple", systemImage: "ellipsis.circle") {
+                        Button("Încarcă exemple", systemImage: "sparkles") { run { try ExampleDataService(context: context).loadExamples() } }
+                        Button("Șterge exemplele", systemImage: "trash", role: .destructive) { run { try ExampleDataService(context: context).removeExamples() } }
+                    }
                 }
             }
             .alert("Nu a mers", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {

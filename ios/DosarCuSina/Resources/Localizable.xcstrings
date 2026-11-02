@@ -1,6 +1,45 @@
 {
   "sourceLanguage": "ro",
   "strings": {
+    "%@, în %lld zile": {
+      "comment": "Siri answer: the obligation title, then in how many days it is due.",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, în %#@days@"
+          },
+          "substitutions": {
+            "days": {
+              "argNum": 2,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg zi"
+                    }
+                  },
+                  "few": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg zile"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg de zile"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "15 cifre": {
       "comment": "Placeholder for the pet microchip field."
     },
@@ -12,6 +51,35 @@
     },
     "Adresa completă.": {
       "comment": "VoiceOver hint for an address field."
+    },
+    "Ai o scadență în %lld zile": {
+      "comment": "Generic reminder title, due in N days.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Ai o scadență în %lld zi"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Ai o scadență în %lld zile"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Ai o scadență în %lld de zile"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Alege": {
       "comment": "Placeholder in an empty choice field."
@@ -189,6 +257,45 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "În %lld de zile"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "În %lld zile: %@": {
+      "comment": "Reminder title, due in N days. The second value is the obligation title.",
+      "localizations": {
+        "ro": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "În %#@days@: %2$@"
+          },
+          "substitutions": {
+            "days": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg zi"
+                    }
+                  },
+                  "few": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg zile"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg de zile"
+                    }
+                  }
                 }
               }
             }

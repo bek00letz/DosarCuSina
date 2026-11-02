@@ -44,7 +44,7 @@ struct DSEmptyState: View {
 }
 
 /// A full-area error: what happened, and what to do next. Offer a retry whenever
-/// trying again can help. See COPY_GUIDE.md for wording.
+/// trying again can help. See docs/COPY_GUIDE.md for wording.
 struct DSErrorState: View {
     let title: Text
     let message: Text

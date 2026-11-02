@@ -669,12 +669,3 @@ public final class RomanianUtilityParser: Sendable {
         Self.normalizeRomanianAmount(raw)
     }
 }
-
-// MARK: - LocalOCRService Integration Extension
-
-extension LocalOCRScanResult {
-    /// Seamless integration: extracts structured utility bill data directly from a `LocalOCRScanResult`.
-    public var utilityBillData: UtilityBillData {
-        RomanianUtilityParser.shared.parseUtilityBill(text: rawText)
-    }
-}

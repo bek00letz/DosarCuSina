@@ -8,7 +8,8 @@ It holds the first version of the app: the 90-field `Asset` model and its
 siblings, the hand-built screens, and services written against that model
 (notification scheduler, widget sync, PDF dossier, finance calculator,
 calendar export, demo seeder, category display settings, the v2 archive
-service).
+service), and `Services/LocalOCRService.swift`, replaced by the capture
+pipeline in `Services/Capture`.
 
 Wave-2 screens and services port what is still useful from here onto the new
 model. Delete this folder only after the new app has been used for a while and
