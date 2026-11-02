@@ -61,7 +61,7 @@ A section is the page of one asset. One vertical scroll: a hero, then the catego
 
 Editing uses the design system's fields and asks before discarding changes. Fields that depend on another value (a document's variant on its type, the PIN codes on the electronic identity card) appear only while it matches. Deleting a section asks what happens to what is filed under it: keep those records on their own, or delete them too.
 
-**Mută la…** (move to). Anything filed under something else (a document under a household member, a tenancy or a product under a home) moves from its page, through the toolbar's *Mai multe* menu or the edit sheet. A short list offers the other parents of the same kind and, for a document, *O persoană nouă*. A document named after its holder ("Carte de identitate – Manole Corina") offers to take the new holder's name. The move is one save; the toast offers *Anulează*, which also removes a person made only for the move.
+**Mută la…** (move to). Anything filed under something else (a document under a household member, a tenancy or a product under a home) moves from its page, and so does any subscription: between homes, under a home, or out to Abonamente (*În Abonamente, fără locuință*). It moves through the toolbar's *Mai multe* menu or the edit sheet. A short list offers the other parents of the same kind and, for a document, *O persoană nouă*. A document named after its holder ("Carte de identitate – Manole Corina") offers to take the new holder's name. The move is one save; the toast offers *Anulează*, which also removes a person made only for the move.
 
 **A document's page** asks for its picture when it has none (*Adaugă poza actului*, through capture, which fills in what it reads), and shows its secret fields under *Coduri PIN* (see 7).
 
@@ -70,7 +70,7 @@ Editing uses the design system's fields and asks before discarding changes. Fiel
 - **Acte** groups documents by the household member they belong to, soonest expiry first, plus a group for documents not filed under anyone.
 - **Adding a document for a person** (from Acte or the person's page) starts with the person chosen and three choices: *Fotografiază*, *Din poze* and *Scriu eu*. A photo goes through capture (5.4) and is filed as one of that person's documents whatever its kind. *Scriu eu* is one screen: the type in big rows; a variant only for types that have real ones (*Ce fel de cazier?* judiciar, fiscal or auto; card de debit or de credit; carte de identitate electronică (CEI) or fără cip; pașaport simplu electronic or temporar); a name that comes by itself, "<document> – <Surname Given names>", with *Schimbă*; the expiry with its reminder in plain words (*Expiră pe 30 iunie 2027. Te anunț cu 6 luni și cu două luni înainte.*); and *Salvează*. The reminder comes from the type's profile and can be changed on the deadline page. Both ways land on the document's page.
 - **Garanții** groups products by whether their warranty still covers them.
-- **Abonamente** lists subscriptions with what they cost a month (amounts are never added across currencies).
+- **Abonamente** lists every subscription, those under a home included, with what they cost a month: the price, or the last bill for a contract billed by use (amounts are never added across currencies). A subscription's page shows its bills in Istoric and, in Bani, *Ultima factură*, how it compares with the one before (*Cu 32,10 lei mai mult decât cea dinainte.*) and the average bill over the last year, one per currency.
 - **Agendă** lists everyone the household relies on, grouped by trade or by section, best rated first, with the last job and its price, and real buttons to call or message. A provider's page shows their jobs, ratings and *Aș chema din nou* (would call again).
 
 ### 2.5 Urmează
@@ -80,6 +80,7 @@ A calm, short list built on the attention model (4.4):
 - *Acum* (now): the few things that need the person, most consequential first.
 - *Curând* (soon): the rest of the next month, one collapsed row per section.
 - *Mai târziu* (later): a count that opens the full list.
+- *Din timp*: calm notes with nothing due, today a bill that hasn't come (*Factura de la ENGIE n-a venit luna asta*), each opening its subscription (4.10).
 
 Snoozed and paused items are counted, not listed. Tapping a deadline opens its page: when it is and why it matters, last time's price and who did it, the policy number and claims phone, what to bring (with what the binder already holds ticked), the actions (*Am rezolvat* — done, snooze, reschedule, pause, add to Calendar) and how it reminds.
 
@@ -123,6 +124,7 @@ Every category is one template engine. A `TemplateDefinition` declares sections 
 - Choice values are stored as stable option keys, never as display text. Older stored text is migrated at launch.
 - A field, and a choice option, can carry a condition (`appliesWhen`): it is offered only while another value matches. A document's variants are data on its type (`DocumentType.variants`), offered only for that type; a value that no longer fits is dropped on save.
 - A `secret` field holds a code to keep hidden (see 7).
+- When a derived field is given in the same change as its inputs (a contract's printed end beside its start and length), the given value is kept; it is worked out again only when an input changes alone.
 - Legal cadences follow [shared/ROMANIAN_ADMINISTRATIVE_STANDARDS.md](shared/ROMANIAN_ADMINISTRATIVE_STANDARDS.md).
 
 ### 3.2 Parent and child
@@ -132,6 +134,10 @@ An asset can be filed under another: a tenancy under its property, a product und
 ### 3.3 Household members
 
 A household member (template `member`) is a name only; no personal number is stored on the member. Personal documents are filed under the member they belong to, and Acte groups them that way. The member's obligations count towards Acte.
+
+### 3.3a Subscriptions
+
+A subscription (template `subscription`, keys in `SubscriptionFields`) is one ongoing contract: the provider, the service (*Gaz*, *Curent*, *Apă*, *Internet și TV*, *Telefon mobil*, *Alt abonament*; stored as `service.*` keys, `ServiceKind`), the price and billing cycle, the codes its bills quote (*Cod client*, *Număr contract*, and only for its service the POD, the CLC or the phone number; each one tap to copy), the start, the minimum period in months and when it ends (worked out from the two), *Plătesc prin debit direct* and *Ultima factură*. Gas, electricity, water and fixed internet or TV are filed under the home they supply (the home's *Abonamente* pocket); a mobile plan stands on its own. Its deadlines: the yearly renewal, the contract's end, *Se termină perioada minimă* (30 days before and on the day) and one *Factura de plătit*, which each bill moves to its own due date.
 
 ### 3.4 Obligations
 
@@ -209,6 +215,12 @@ The digest has a capped *now* (5 items), a *soon* window grouped per asset (30 d
 
 How far away something is reads in the unit a person feels, never rounded up: days under three weeks, then weeks, then months and weeks, then years and months (years only from three years). `DurationWording`, `DayCount` and `CalendarCount` are the one way to write these, with Romanian plural forms from the String Catalog.
 
+### 4.10 Subscriptions and their bills
+
+`SubscriptionMatcher` (pure) finds the subscription a bill or a contract belongs to. The codes decide first: a POD, a CLC or a phone number (one consumption point or one line, and a subscription with a different one is never the match), then the contract number, then the client code (which alone can't tell two homes apart, as one customer has one client code for several places). Without a code, the provider (and the service, when both are known) decides only inside one house: the home whose own POD, CLC or water code the document prints, or the only home. A new subscription goes under its house for gas, electricity, water and fixed internet or TV, and stands on its own for a mobile plan or anything else; with no home yet it stands on its own (and can be moved). When the house or the contract can't be told, nothing is guessed.
+
+`BillHistory` (pure) reads a subscription's bills (its history's payments, not the completions of a deadline): the trend (the last bill, the difference from the one before in the same currency, the average over the last year per currency) and the missing bill. A bill is missing when one cycle after the last one (monthly unless the subscription says otherwise) has passed by more than ten days for a monthly bill (up to 30 for longer cycles) plus the provider's own usual delay (how late bills came before, at most 15 days). It is said for at most two missed cycles, then the note stops. `AttentionModel.missingBills` turns these into calm notes for utilities and phone plans that had a bill before, never for examples; a locked section's note names nothing. Notes never notify, never badge and never reach widgets.
+
 ## 5. Capture pipeline
 
 `CaptureEngine` is the single way into the binder from a photo, scanned pages, a PDF, or pasted text. Every input goes through the same tiers, and the result is a draft: nothing is saved to the person's data until they confirm it.
@@ -238,9 +250,15 @@ Long PDFs are read up to their first 25 pages. Pages are read one pass at a time
 
 Every recognised line keeps its position on the page (`TextLayout`). Fragments close together on one row join into one line ("03" "07" "1983" → "03 07 1983"; the gap threshold is relative to the text height). A label's value is the rest of its line, the nearest text to its right on the same row, or the nearest line below that overlaps the label's column, before the next label. A label's printed translation under it ("Nume" / "Surname") is skipped, and value lines stacked tightly in a column join ("CORINA" + "IOANA"). Without positions (pasted text, PDFs with a text layer) the next non-label line is read. The text shown under "Textul citit din document" follows the same layout: each label, then its value.
 
+### 5.3a Bills and contracts
+
+A bill (`utilityInvoice`) and a contract (`contract`, *Contract sau act adițional*) carry what ties them to their ongoing contract, read by `ContractReader` with one label table through `LabelledLayout`: the contract number, the client code, the POD and CLC (with the utility reader's patterns), the subscriber's mobile number (07…, written "0700 000 000"), and the service (a CLC means gas, a POD electricity, a mobile number a phone plan; otherwise the words that win clearly). A contract also gives its start, its minimum period (*24 de luni*, *2 ani*; one month to ten years), its end and its monthly price. The classifier knows a contract by its own words (*contract de furnizare*, *contract de abonament*, *act adițional*, *perioada minimă*, *perioadă contractuală*, *durata contractului*); what makes a page a bill instead is an amount to pay now (*total de plată*). A provider's bill reader never claims a page the classifier reads as a contract. When the end isn't printed, it is the start plus the length. A contract's start falls within the last 40 years or the next one, and its minimum period ends after it starts and within eleven years; the AI provider is asked for the same fields, the service as one of the stable keys.
+
 ### 5.4 Review and filing
 
 The review screen shows what was read, where it could go, and the reminder it suggests. On confirm, `CaptureFiler` files everything through the engine as one unit of work (`UnitOfWork`): the section (`AssetActions`), the deadline (`ObligationActions`: complete the old cycle and move to the new date, or create it from the blueprint), who issued it (`ProviderActions`) and the document (`AttachmentActions`), all linked. Everything is kept, or nothing is: a failed save leaves the binder as it was, the review stays open with everything the person filled in, the document's pages stay ready for a retry, and the message says plainly what happened and what to do ("Telefonul nu mai are spațiu liber…"). Logging a visit with its invoice, completing a deadline with the new document, and editing a section with its photo work the same way.
+
+**Bills and contracts** go to their subscription (4.10): the review suggests the one the codes find, a home (where a new one is made, or its matching one found), *Abonament nou* on its own for a phone plan, or nothing when it can't be told. Choosing a home in *Unde îl pun* means its subscription there; choosing a new home makes the home and the subscription in one save. A bill fills what the subscription doesn't have yet, sets *Ultima factură* when it is the newest, is logged in its history with its amount and number, and moves *Factura de plătit* to its own due date with its amount, unless the person turned off *Amintește-mi să o plătesc*, the subscription pays by direct debit (the review says so instead) or the date has passed. A bill kept without a place sets no reminder (the loose *Factură <furnizor>* deadline of earlier versions is disabled; the ones already made stay). A contract also brings its terms (the number, the start, the minimum period and its end, the price) and *Se termină perioada minimă*; the review says *Perioada minimă se termină pe … De atunci poți, de regulă, renunța fără penalități.* A period that already ended sets no deadline. When the person corrects the start or the length, the end follows them unless they set it themselves.
 
 ### 5.5 Identity documents
 

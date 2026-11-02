@@ -72,11 +72,12 @@ Every action saves once and rolls back on failure. Views never write models dire
 | File, replace, archive or delete a document | `AttachmentActions` (`fileCaptured` for capture) | [Services/Documents/AttachmentActions.swift](ios/DosarCuSina/Services/Documents/AttachmentActions.swift), [CapturedDocumentFiling.swift](ios/DosarCuSina/Services/Documents/CapturedDocumentFiling.swift) |
 | Create or edit a person or firm | `ProviderActions` | [Services/History/ProviderDirectory.swift](ios/DosarCuSina/Services/History/ProviderDirectory.swift) |
 | Install, upgrade, create, order, hide, lock or delete a category | `TemplateStore` (built-ins defined once in `BuiltInTemplates`) | [Services/Templates/TemplateStore.swift](ios/DosarCuSina/Services/Templates/TemplateStore.swift), [BuiltInTemplates.swift](ios/DosarCuSina/Services/Templates/BuiltInTemplates.swift) |
+| Find the subscription a bill or contract belongs to, or where a new one goes (codes first, never across two homes) | `SubscriptionMatcher`, with the template's keys in `SubscriptionFields` | [Services/Subscriptions/SubscriptionMatcher.swift](ios/DosarCuSina/Services/Subscriptions/SubscriptionMatcher.swift), [SubscriptionFields.swift](ios/DosarCuSina/Services/Subscriptions/SubscriptionFields.swift) |
 | Obligations that belong to the household, not an asset | `HouseholdRules` | [Services/Templates/HouseholdRules.swift](ios/DosarCuSina/Services/Templates/HouseholdRules.swift) |
 | Load or remove example data | `ExampleDataService` | [Services/Examples/ExampleDataService.swift](ios/DosarCuSina/Services/Examples/ExampleDataService.swift) |
 | Export or import a `.dosar` archive | `DossierArchiveService` | [Services/Archive/DossierArchiveService.swift](ios/DosarCuSina/Services/Archive/DossierArchiveService.swift) |
 
-Pure engines (no database) sit beside them: `RecurrenceEngine`, `AttentionModel`, `BoxStatus`, `ReminderPlanner`, `MaintenanceLog`, `ReadinessEngine`, `SearchEngine`. Ranking, dates and wording come from these; screens never recompute them.
+Pure engines (no database) sit beside them: `RecurrenceEngine`, `AttentionModel` (with `missingBills`, the calm notes in Urmează), `BoxStatus`, `ReminderPlanner`, `MaintenanceLog`, `BillHistory` (a subscription's bill trend and the missing bill), `ReadinessEngine`, `SearchEngine`. Ranking, dates and wording come from these; screens never recompute them.
 
 ## Everything outside the database
 
@@ -106,6 +107,7 @@ A field of type `secret` (an electronic identity card's PIN codes) follows one s
 | Decide between readers: which kind, which value when they disagree, what is offered beside it, and when a reading is weak | `ReadingArbiter` | [Services/Capture/ReadingArbiter.swift](ios/DosarCuSina/Services/Capture/ReadingArbiter.swift) |
 | Which fields a kind of document may carry, after every tier | `CaptureFieldRules` | [Services/Capture/CaptureFieldRules.swift](ios/DosarCuSina/Services/Capture/CaptureFieldRules.swift) |
 | Read label–value layouts (ID cards, licences, certificates) | `LabelledLayout`, with a label table per document kind | [Services/Capture/LabelledLayout.swift](ios/DosarCuSina/Services/Capture/LabelledLayout.swift) |
+| What ties a bill or a contract to its ongoing contract: codes, service, a contract's terms | `ContractReader` (its label table through `LabelledLayout`) | [Services/Capture/ContractReader.swift](ios/DosarCuSina/Services/Capture/ContractReader.swift) |
 | Save a reviewed capture | `CaptureFiler`, which only calls the actions above | [Views/Capture/Filing/CaptureFiler.swift](ios/DosarCuSina/Views/Capture/Filing/CaptureFiler.swift) |
 | Things shared from other apps | `ShareInbox` (written by the extension), `IntakeInbox` (read by the app) | [ios/Shared/ShareInbox.swift](ios/Shared/ShareInbox.swift), [Views/Capture/IntakeInbox.swift](ios/DosarCuSina/Views/Capture/IntakeInbox.swift) |
 

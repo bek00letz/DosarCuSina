@@ -12,9 +12,10 @@ The template-engine overhaul (waves 1 and 2) is merged. The app builds for iOS 2
 | :--- | :--- |
 | Shell and navigation | Four labelled tabs, one `NavigationStack` per tab, every route through `ShellRouter`, `dosarcusina://` links, sheets that never stack, onboarding once. |
 | Dosar (binder) | Grid of boxes with one status line each, zoom into a box, drag to reorder, category boxes (Acte, Garanții, Abonamente), Agenda last, empty first run with examples. |
+| Subscriptions | One record per ongoing contract: the service, the codes its bills quote, the minimum period and its deadline, direct debit, the last bill; gas, electricity, water and internet or TV under their home, phone plans in Abonamente. Bills and contracts from capture find their subscription (`SubscriptionMatcher`), bills go in its history with their own due date to pay by, and a bill that hasn't come shows calmly in Urmează under "Din timp". Built-in catalog version 8. |
 | Sections | Heroes per style (vehicle, home, document, pet, standard), the nine pockets in one global order, editing with discard guard, delete that asks about filed records, "Mută la…" for anything filed under something else, "Adaugă o secțiune" including custom categories. |
 | Documents | Added for a person photo first or on one screen ("Scriu eu"), with variants as data on the document type; "Adaugă poza actului" on a document without a picture; the electronic identity card's two PIN codes as hidden secret fields. |
-| Urmează | Acum / Curând / Mai târziu from the attention model; the obligation page with what to bring, actions, reminder setup and "add to Calendar". |
+| Urmează | Acum / Curând / Mai târziu from the attention model, and "Din timp" for a bill that hasn't come; the obligation page with what to bring, actions, reminder setup and "add to Calendar". |
 | Adaugă and capture | Camera, photos, files, typing; the capture engine with all four tiers ranked by evidence (`ReadingArbiter`), per-kind field rules, the label-layout reader (Romanian ID card front, both layouts); the AI provider as a second opinion, on a tap or automatically after a weak reading; review with other readers' values offered beside each field and the kind; filing; the visit flow with component checklists. |
 | Share extension and inbox | Share from Mail, WhatsApp, Photos and Files into *De verificat*; the practice share in onboarding. |
 | Widgets | Home Screen (small, medium) and Lock Screen (inline, rectangular), with "Gata". |
@@ -31,6 +32,9 @@ The template-engine overhaul (waves 1 and 2) is merged. The app builds for iOS 2
 Nothing at the moment.
 
 ## Known gaps
+
+- **Loose "Factură …" deadlines from before.** Bills filed by earlier versions made a payment deadline under the home, not tied to a subscription. They stay as they are; nothing migrates them. New bills remind only through their subscription.
+- **Subscriptions: what isn't read yet.** The address of consumption isn't read, so with two homes a first bill whose codes no home keeps waits for the person to pick the home (later bills find it by its codes). "Plata prin debit direct" printed on a bill isn't read; turning direct debit on doesn't remove a bill reminder already made.
 
 - **Capture doesn't know cazier, bank cards and the other document types.** A photo of one taken from a person is filed as one of their documents, without a type; the person picks it in Editează.
 
@@ -67,6 +71,13 @@ Newest first. Copy this template:
 ```
 
 Never write security findings, crash traces or local paths here. See [SECURITY.md](../SECURITY.md).
+
+### 2026-11-02 — owner (with Claude) — `claude/subscriptions-from-capture`
+- **Did:** subscriptions from capture. The subscription template carries the service (stable `service.*` keys), the codes (client code, contract number, POD, CLC, phone number), the start, the minimum period and its end, direct debit and the last bill, with "Se termină perioada minimă" and one "Factura de plătit"; catalog version 8. Contracts are a capture kind (`ContractReader` with a label table, classifier words, field rules, plausibility windows, the AI provider's schema). Bills and contracts find their subscription by their codes (`SubscriptionMatcher`, never across two homes), go under their home or stand on their own (phone plans), and a bill is logged in the subscription's history with its due date as the one bill reminder, none with direct debit. The loose "Factură …" deadline is disabled (kept in `CaptureFiler.looseBillReminder`). The trend of a subscription's bills in Bani and the missing bill in Urmează ("Din timp") come from `BillHistory`. "Mută la…" moves any subscription between homes and Abonamente. A derived field given with its inputs is now kept (a contract's printed end).
+- **Tests:** new `SubscriptionTemplateTests`, `ContractCaptureTests`, `SubscriptionFilingTests`, `BillHistoryTests`; capture suites while working; the whole suite once on iPhone 17 (iOS 26.4). The privacy check passes across the branch.
+- **Left open:** see "Known gaps" (old loose bills, the address of consumption, direct debit read off a bill). Not tried by eye in the simulator or with a live AI provider. The "Din timp" name for the calm section in Urmează is to confirm.
+- **Next:** try a real ENGIE and Orange bill and contract; read "debit direct" off bills; consider reading the address of consumption to place a first bill in two-home households.
+- **Decisions:** "Bills and contracts belong to their subscription" in DECISIONS.md.
 
 ### 2026-11-02 — owner (with Claude) — `claude/reading-arbitration`
 - **Did:** readers ranked by evidence in one place, `ReadingArbiter` (the person's edits, then checked values, then the AI provider, then the phone's patterns, then Apple's model). The AI provider reads the whole page as a second opinion and names the kind; its kind replaces the phone's unless a checked zone, a payment barcode or a provider's format the classifier agrees with backs it. AI values missing from the phone's text are kept with "Verifică". What a reader read differently is offered beside the value ("Pe telefon am citit", "Pe telefon părea", "Gemini a citit", "Pe spatele actului scrie"), one mechanism for all. "Citește mai bine cu …" is always offered with a provider, and a new setting, "Citește automat când nu sunt sigur" (off by default), reads weak readings by itself. Reading again (the back of a card, or the AI) keeps the review on screen and merges into it.
