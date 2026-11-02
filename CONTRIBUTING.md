@@ -12,7 +12,7 @@ Thanks for helping build Dosar cu Șină. This is how we work together, whether 
 
 1. Read [README.md](README.md) to build and test, [SPEC.md](SPEC.md) for what the app does, and [AGENTS.md](AGENTS.md) for the rules and the architecture map. They apply to people too.
 2. Read [docs/HANDOFF.md](docs/HANDOFF.md) to see where work stands and what's in progress, so you don't start something already under way.
-3. Turn on the privacy hook, once per clone:
+3. Turn on the hooks (the privacy and architecture checks), once per clone:
 
    ```sh
    git config core.hooksPath .githooks
@@ -42,7 +42,17 @@ Bug fixes with one obvious fix, tests, refactors that keep behaviour, and docume
    Use a simulator that is already installed. Never download simulator runtimes.
 4. **Update the docs** your change affects: [SPEC.md](SPEC.md) for behaviour, [docs/DECISIONS.md](docs/DECISIONS.md) for a decision, and always a "last session" entry in [docs/HANDOFF.md](docs/HANDOFF.md).
 5. **Open a pull request** into `main` and fill in the template. Never push to `main` directly.
-6. **Review.** The owner reviews, may ask for changes, and merges. The privacy check must pass.
+6. **Review.** The owner reviews, may ask for changes, and merges. The checks below must pass.
+
+## What runs on every pull request
+
+Three checks run on GitHub for every pull request and every push to `main`. You'll see them at the bottom of the pull request.
+
+- **`privacy-check`**: nothing private in any commit (see "Privacy rules" below). To fix it, remove the value from every commit, not just the last one.
+- **`architecture-check`**: code stays on the one path [AGENTS.md](AGENTS.md#architecture-map) names for each job. Each failure names the file, the line, the rule and what to use instead; use that. Run it yourself with `scripts/architecture-check.sh`. If you fixed something listed in `scripts/architecture-exceptions.txt`, remove its line in the same commit; the check asks you to. That list is only ever made shorter: adding a line, or raising a count, needs the owner's OK first (they label the pull request `architecture-exception`).
+- **`build-and-test`**: builds the app with its widgets and share extension and runs the tests on GitHub's Mac. If it fails, open the run's log; a failed run also keeps the full log as `test-results`. Run `./tests/run_tests.sh` to reproduce it on your Mac.
+
+If a check fails for a reason that has nothing to do with your change, say so in the pull request rather than changing unrelated code.
 
 ## Working with an AI agent
 

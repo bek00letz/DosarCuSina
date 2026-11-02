@@ -27,12 +27,12 @@ What is built, and what isn't yet, is in [SPEC.md](SPEC.md). Where work stands r
 
 ## Requirements
 
-- A Mac with Xcode that includes the iOS 26 SDK (Xcode 26 or later).
+- A Mac with Xcode 27 or later: the app builds against the iOS 27 SDK and runs on iOS 26 and later.
 - An iPhone simulator running iOS 26 or later, already installed in Xcode.
 
 ## Build and run
 
-1. Clone the repository and turn on the privacy hook (once per clone):
+1. Clone the repository and turn on the hooks, which run the privacy and architecture checks before each commit (once per clone):
 
    ```sh
    git clone https://github.com/bek00letz/DosarCuSina.git
@@ -70,6 +70,12 @@ xcodebuild test -project ios/DosarCuSina.xcodeproj -scheme DosarCuSina \
 
 `xcrun simctl list devices available` lists the simulators you have.
 
+Every pull request runs the same script on GitHub (the `build-and-test` check, on an Xcode 27 Mac with an iPhone simulator it finds there), together with the privacy and architecture checks. [CONTRIBUTING.md](CONTRIBUTING.md#what-runs-on-every-pull-request) says what each does and how to fix a failure. The architecture check runs locally in about a second:
+
+```sh
+scripts/architecture-check.sh
+```
+
 ## Repository layout
 
 | Path | What's there |
@@ -84,8 +90,8 @@ xcodebuild test -project ios/DosarCuSina.xcodeproj -scheme DosarCuSina \
 | `android/` | The paused Android version. |
 | `tests/` | The test runner, plus legacy and Android scripts. |
 | `docs/` | Decisions, handoff notes, copy guide, archive. |
-| `scripts/`, `.githooks/` | The privacy check and the hook that runs it. |
-| `.github/` | Code owners, templates and the privacy check workflow. |
+| `scripts/`, `.githooks/` | The privacy and architecture checks, the architecture exceptions and fixtures, and the hook that runs both. |
+| `.github/` | Code owners, templates, and the workflows for the checks. |
 
 ## Contributing
 

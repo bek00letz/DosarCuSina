@@ -25,7 +25,7 @@ The template-engine overhaul (waves 1 and 2) is merged. The app builds for iOS 2
 | Side effects | Notifications, badge and widget snapshot through `SideEffectsCoordinator`. |
 | Archive | `.dosar` v3 export and import (merge or replace), v2 import, golden fixtures in `shared/`. |
 | Localisation | Romanian String Catalog with plural variations; Romanian formats for dates and money. |
-| Repository | README, SPEC, AGENTS, CONTRIBUTING, SECURITY, decision log, this handoff, pull request and proposal templates, the versioned privacy check and its workflow. |
+| Repository | README, SPEC, AGENTS, CONTRIBUTING, SECURITY, decision log, this handoff, pull request and proposal templates. Every pull request and push to `main` runs `privacy-check`, `architecture-check` (15 rules from AGENTS.md, with an exceptions list that only shrinks) and `build-and-test` (app, widgets, share extension and tests on GitHub's Xcode 27 Mac); the pre-commit hook runs the first two. |
 
 ## In progress
 
@@ -49,7 +49,7 @@ Nothing at the moment.
 - **Spotlight.** The coordinator has an indexer hook; no Spotlight indexer is registered.
 - **Readiness scenarios** (trip abroad, selling a vehicle, insurance claim): the engine and tests exist, no screen uses them.
 - **Permission descriptions** for Calendar, Reminders and Contacts in the project settings still describe the first version; the app now uses the system's event editor and contact picker without asking for those permissions.
-- **No build in CI.** Only the privacy check runs on pull requests. A macOS workflow that builds and runs the tests could come later.
+- **Architecture exceptions.** `scripts/architecture-exceptions.txt` lists 168 places that broke a rule before the check existed: built-in category keys in views (82), date formats outside `DosarFormat` (29), small tap targets, number readers, saves outside `UnitOfWork`, the system's error text, silent `try?` on actions and a few more. Each group says which piece of work removes it; remove lines as they're fixed.
 
 ## How to pick up work
 
@@ -73,6 +73,13 @@ Newest first. Copy this template:
 ```
 
 Never write security findings, crash traces or local paths here. See [SECURITY.md](../SECURITY.md).
+
+### 2026-11-02 — owner (with Claude) — `claude/fix-guardrails-350990`
+- **Did:** the rules are checked on every pull request. A new workflow, `Checks`, runs `architecture-check` (on Linux, seconds) and `build-and-test` (on GitHub's `xcode-27` Mac: builds the app with its widgets and share extension and runs `DosarCuSinaTests` through `tests/run_tests.sh`, with the compiled system modules cached and a 60-minute limit). `scripts/architecture-check.sh` has 15 rules from AGENTS.md and the agreed fixes, each with a plain message, a failing and a passing fixture (`--self-test`), and today's 168 violations in `scripts/architecture-exceptions.txt`, which fails when a line is fixed but not removed and, on a pull request, when a line is added without the owner's `architecture-exception` label. The pre-commit hook runs it after the privacy check. `tests/run_tests.sh` picks the newest installed iOS at or above the project's deployment target (read from the project, not hard-coded) and can keep its build products and results for CI. README now asks for Xcode 27: the app uses the iOS 27 SDK.
+- **Tests:** the check's self-test and a run over the tree with planted violations (a new one, a count too high, a fixed exception, an unknown rule, a stack in a tab root). The privacy check over the branch. The iOS suite runs in the pull request's `build-and-test`; not run locally, to keep the Mac free for the other sessions.
+- **Left open:** the owner adds `privacy-check`, `architecture-check` and `build-and-test` as required checks in the `main` ruleset once they have run once, and creates the `architecture-exception` label when it's first needed. The other sessions running now (reminders, privacy and backups, capture and saves) will be asked by the check to remove the exception lines their fixes clear.
+- **Next:** each agreed fix removes its own exceptions. Rules still to write as the fixes land: numbers through the shared reader once it exists (its file name `RomanianNumber*.swift` is already allowed), urgency and durations from the shared engines.
+- **Decisions:** "Rules are checked, not remembered" in DECISIONS.md.
 
 ### 2026-11-02 — owner (with Claude) — `claude/subscriptions-from-capture`
 - **Did:** subscriptions from capture. The subscription template carries the service (stable `service.*` keys), the codes (client code, contract number, POD, CLC, phone number), the start, the minimum period and its end, direct debit and the last bill, with "Se termină perioada minimă" and one "Factura de plătit"; catalog version 8. Contracts are a capture kind (`ContractReader` with a label table, classifier words, field rules, plausibility windows, the AI provider's schema). Bills and contracts find their subscription by their codes (`SubscriptionMatcher`, never across two homes), go under their home or stand on their own (phone plans), and a bill is logged in the subscription's history with its due date as the one bill reminder, none with direct debit. The loose "Factură …" deadline is disabled (kept in `CaptureFiler.looseBillReminder`). The trend of a subscription's bills in Bani and the missing bill in Urmează ("Din timp") come from `BillHistory`. "Mută la…" moves any subscription between homes and Abonamente. A derived field given with its inputs is now kept (a contract's printed end).

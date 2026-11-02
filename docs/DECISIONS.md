@@ -8,6 +8,12 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-02
 
+### Rules are checked, not remembered
+- **Decided:** every pull request and every push to `main` runs three checks: `privacy-check`, `architecture-check` and `build-and-test`. The architecture check turns the one-path rules in AGENTS.md into patterns with a plain message each (save through `UnitOfWork`, errors through `SaveFailure`, springs from `DS.Motion`, side effects through `SideEffectsCoordinator`, no built-in category key in a view, and the rest). Code that broke a rule before it existed is listed in `scripts/architecture-exceptions.txt`; that list only shrinks. A fixed line must be removed, and a new line or a higher count needs the owner's OK, given as the `architecture-exception` label on the pull request.
+- **Why:** the review found that the shared helpers already existed and were bypassed: nothing but the privacy check ran on a pull request, and three people's agents contribute. A rule only a reader remembers drifts; a check that names the right helper keeps every contributor on it, and a list that only shrinks turns the old debt into a to-do list instead of a permission.
+- **Decided:** the build runs on GitHub's `xcode-27` Mac image (generally available since October 2026, free at its standard size for public repositories), not on the older `macos-26` image, whose newest Xcode is 26.6. The tests run on whatever iPhone simulator the image has with the newest iOS, found by `tests/run_tests.sh`, never a fixed device.
+- **Why:** the app builds against the iOS 27 SDK (`IntentExecutionTargets` for widgets), which only Xcode 27 has; a fixed device name breaks the day GitHub updates the image.
+
 ### Bills and contracts belong to their subscription
 - **Decided:** an ongoing contract is one record, a subscription. The first bill or contract from a provider makes it; later bills and contracts find it by the codes they print (a POD, a CLC or the phone number first, then the contract number, then the client code) and file under it. Without a code, the provider decides only inside one house; two homes with the same provider never merge, and when the house can't be told the person picks. One engine decides, `SubscriptionMatcher`, and the review's place ("Unde îl pun") is the one way to change its answer.
 - **Why:** each month's bill made a new, unrelated "Factură ENGIE" deadline, so nothing knew it was the same contract, and the codes that identify it were already on every bill.

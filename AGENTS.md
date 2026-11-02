@@ -42,7 +42,7 @@ When a tradeoff comes up between shipping fast and getting these details right, 
 2. **One branch per task**, named `<person>/<topic>`, for example `ana/visit-wording`. Branch from an up-to-date `main`.
 3. **Never push to `main`.** Open a pull request into `main` using the template. The owner reviews every one.
 4. **Conventional commits** (see section 7), each one building on its own.
-5. **Test lightly while working, fully once.** Run only the suites that cover your change while you iterate; after a fix, rerun only what failed. Run the whole suite (`./tests/run_tests.sh`) once before opening the pull request, and say in it which simulator you used.
+5. **Test lightly while working, fully once.** Run only the suites that cover your change while you iterate; after a fix, rerun only what failed. Run the whole suite (`./tests/run_tests.sh`) once before opening the pull request, and say in it which simulator you used. The pull request runs it again on GitHub (see "Checks on every pull request").
 6. **Only simulators that are already installed.** Pick from `xcrun simctl list devices available`. Never download a simulator runtime or platform, and don't create devices for other OS versions. If a task truly needs one that isn't there, ask.
 7. **No screenshots without asking.** Verify with builds and tests first. If only a screenshot or the simulator can show something, ask the person you work with before taking one, or ask them to look.
 8. **Placeholder data only**, everywhere: code, tests, previews, fixtures, screenshots, commit messages. Plates like `B-123-ABC`, cars like `VW Golf 2018`, firms like `ENGIE Romania S.A.`, email like `nume@exemplu.ro`. A made-up CNP uses county code `99` with a valid control digit, such as `1800101990006`; the privacy check rejects any other CNP that passes the checksum.
@@ -51,7 +51,24 @@ When a tradeoff comes up between shipping fast and getting these details right, 
 11. **Keep a way back.** When replacing something that works, keep the old version disabled (not deleted) until the new one is proven, and ask before removing it. `ios/Legacy/` and `tests/legacy/` are kept this way.
 12. **Security problems are never written in the repository.** See section 5.
 
-Turn on the privacy hook once per clone: `git config core.hooksPath .githooks`.
+Turn on the hooks once per clone: `git config core.hooksPath .githooks`. Before each commit they run the privacy check and the architecture check.
+
+# Checks on every pull request
+
+Rules are checked, not remembered. Every pull request, and every push to `main`, runs three checks; all three must pass before the owner merges.
+
+| Check | What it does | When it fails |
+| :--- | :--- | :--- |
+| `privacy-check` | [scripts/privacy-check.sh](scripts/privacy-check.sh) over every commit: no private paths, keys, home-folder paths or real CNPs. | Remove the value from every commit (rewrite the branch). |
+| `architecture-check` | [scripts/architecture-check.sh](scripts/architecture-check.sh): code that goes around the paths in the architecture map below, such as `context.save()` outside `UnitOfWork`, `localizedDescription` shown to people, `String(format:)`, a hand-written plural, an animation curve outside `DS.Motion`, a bare `ProgressView()`, a notification or widget reload outside `SideEffectsCoordinator`, a built-in category key in a view, a stack in a tab root. Comments and tests don't count. | Each line names the file, the rule and what to use instead. Use that. |
+| `build-and-test` | Builds the app, its widgets and share extension and runs `DosarCuSinaTests` through `./tests/run_tests.sh`, on GitHub's Xcode 27 Mac with an iPhone simulator it finds there. | The log is in the run; a failed run keeps the full log and result bundle as `test-results`. Reproduce with `./tests/run_tests.sh`. |
+
+Run the architecture check yourself with `scripts/architecture-check.sh` (about a second). Code that broke a rule before the rule existed is listed in [scripts/architecture-exceptions.txt](scripts/architecture-exceptions.txt). That list only shrinks:
+
+- When you fix a listed line, remove it (or lower its count) in the same commit. The check fails until you do, so a fixed problem can't come back.
+- **Never add a line or raise a count without the owner's OK.** The pull request check fails on that unless the owner labels the pull request `architecture-exception`.
+- A new rule comes with a failing and a passing fixture in `scripts/architecture-fixtures/` (`scripts/architecture-check.sh --self-test`) and lists today's violations as exceptions.
+- A rule that seems wrong is a question for the owner: say so in the pull request. Never work around a pattern.
 
 # Architecture map
 
@@ -227,6 +244,7 @@ Types:
 | Setup, build, run, test | [README.md](README.md) |
 | How we work together | [CONTRIBUTING.md](CONTRIBUTING.md) |
 | Engineering and quality rules, the architecture map | [AGENTS.md](AGENTS.md) |
+| A rule the architecture check enforces | [scripts/architecture-check.sh](scripts/architecture-check.sh), its fixtures, and "Checks on every pull request" above |
 | How the app writes | [docs/COPY_GUIDE.md](docs/COPY_GUIDE.md) |
 | The `.dosar` format | [shared/schemas/dosar-v3.md](shared/schemas/dosar-v3.md) and its fixtures |
 | How to report a security problem | [SECURITY.md](SECURITY.md) |
