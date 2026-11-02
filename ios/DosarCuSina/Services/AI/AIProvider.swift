@@ -166,15 +166,20 @@ public struct AIProviderSettings: Sendable {
 
     /// A provider's configuration, or nil while something it needs is missing.
     public func config(for provider: AIProvider) -> AIProviderConfig? {
-        let model = model(for: provider)
-        guard !model.isEmpty else { return nil }
+        guard let reachable = connection(for: provider), !reachable.model.isEmpty else { return nil }
+        return reachable
+    }
+
+    /// What reaching a provider needs, with the model possibly not chosen yet: the
+    /// key and, for a compatible service, its address. Enough to list its models.
+    public func connection(for provider: AIProvider) -> AIProviderConfig? {
         let key = key(for: provider)
         if provider.requiresKey, key == nil { return nil }
         if provider == .openAICompatible {
             guard let url = Self.validatedBaseURL(baseURLText) else { return nil }
-            return AIProviderConfig(provider: provider, model: model, key: key, baseURL: url)
+            return AIProviderConfig(provider: provider, model: model(for: provider), key: key, baseURL: url)
         }
-        return AIProviderConfig(provider: provider, model: model, key: key)
+        return AIProviderConfig(provider: provider, model: model(for: provider), key: key)
     }
 
     /// The chosen provider's configuration, when it is ready to use.

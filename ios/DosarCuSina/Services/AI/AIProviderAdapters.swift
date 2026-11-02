@@ -29,6 +29,10 @@ public protocol AIProviderAdapter: Sendable {
     func answer(from data: Data) throws -> JSONValue
     /// A request that costs nothing and tells whether the key and model work.
     func keyTestRequest(config: AIProviderConfig) throws -> URLRequest
+    /// A request that lists the models this key can use. Costs nothing.
+    func modelsRequest(config: AIProviderConfig) throws -> URLRequest
+    /// The models in the provider's answer, before the shared filter.
+    func models(from data: Data) throws -> [AIModel]
     /// What an error status means, from the status and the provider's error body.
     func error(status: Int, body: Data) -> AIProviderError
 }
@@ -75,6 +79,15 @@ public struct AIClient: Sendable {
         } catch {
             return .failed(AIProviderError(transport: error))
         }
+    }
+
+    /// The models this key can use for reading documents, newest first. Models that
+    /// can't read a page (speech, embeddings, image or video generation) are left out.
+    public func listModels(config: AIProviderConfig) async throws -> [AIModel] {
+        if config.provider.requiresKey, config.key?.isEmpty ?? true { throw AIProviderError.notConfigured }
+        let adapter = config.provider.adapter
+        let data = try await perform(try adapter.modelsRequest(config: config), adapter: adapter)
+        return AIModel.forReading(try adapter.models(from: data))
     }
 
     private func perform(_ request: URLRequest, adapter: any AIProviderAdapter) async throws -> Data {
@@ -201,6 +214,23 @@ public struct GeminiAdapter: AIProviderAdapter {
         try AIHTTP.request(try modelURL(config), method: "GET", headers: ["x-goog-api-key": config.key ?? ""], body: nil, timeout: AIHTTP.testTimeout)
     }
 
+    public func modelsRequest(config: AIProviderConfig) throws -> URLRequest {
+        guard let url = URL(string: String(Self.base.dropLast()) + "?pageSize=1000") else { throw AIProviderError.badResponse }
+        return try AIHTTP.request(url, method: "GET", headers: ["x-goog-api-key": config.key ?? ""], body: nil, timeout: AIHTTP.testTimeout)
+    }
+
+    /// `models[]` with `name` ("models/…") and the methods each supports; only
+    /// models that can `generateContent` can read a page.
+    public func models(from data: Data) throws -> [AIModel] {
+        guard let list = try AIHTTP.decode(data)["models"]?.array else { throw AIProviderError.badResponse }
+        return list.compactMap { entry in
+            guard let name = entry["name"]?.string,
+                  (entry["supportedGenerationMethods"]?.array ?? []).contains(.string("generateContent")) else { return nil }
+            let id = name.hasPrefix("models/") ? String(name.dropFirst("models/".count)) : name
+            return AIModel(id: id, displayName: entry["displayName"]?.string)
+        }
+    }
+
     public func error(status: Int, body: Data) -> AIProviderError {
         let error = (try? AIHTTP.decode(body))?["error"]
         let reasons = (error?["details"]?.array ?? []).compactMap { $0["reason"]?.string }
@@ -258,6 +288,24 @@ public struct OpenAIAdapter: AIProviderAdapter {
         let model = config.model.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? config.model
         guard let url = URL(string: Self.base + "/models/" + model) else { throw AIProviderError.modelUnavailable }
         return try AIHTTP.request(url, method: "GET", headers: headers(config), body: nil, timeout: AIHTTP.testTimeout)
+    }
+
+    public func modelsRequest(config: AIProviderConfig) throws -> URLRequest {
+        guard let url = URL(string: Self.base + "/models") else { throw AIProviderError.badResponse }
+        return try AIHTTP.request(url, method: "GET", headers: headers(config), body: nil, timeout: AIHTTP.testTimeout)
+    }
+
+    public func models(from data: Data) throws -> [AIModel] {
+        try Self.modelList(data)
+    }
+
+    /// `data[]` with `id` and `created` (seconds), as OpenAI and compatible services list them.
+    static func modelList(_ data: Data) throws -> [AIModel] {
+        guard let list = try AIHTTP.decode(data)["data"]?.array else { throw AIProviderError.badResponse }
+        return list.compactMap { entry in
+            guard let id = entry["id"]?.string else { return nil }
+            return AIModel(id: id, created: entry["created"]?.double.map { Date(timeIntervalSince1970: $0) })
+        }
     }
 
     public func error(status: Int, body: Data) -> AIProviderError {
@@ -330,6 +378,21 @@ public struct AnthropicAdapter: AIProviderAdapter {
         return try AIHTTP.request(url, method: "GET", headers: headers(config), body: nil, timeout: AIHTTP.testTimeout)
     }
 
+    public func modelsRequest(config: AIProviderConfig) throws -> URLRequest {
+        guard let url = URL(string: Self.base + "/models?limit=1000") else { throw AIProviderError.badResponse }
+        return try AIHTTP.request(url, method: "GET", headers: headers(config), body: nil, timeout: AIHTTP.testTimeout)
+    }
+
+    /// `data[]` with `id`, `display_name` and `created_at`. Every Claude model reads images.
+    public func models(from data: Data) throws -> [AIModel] {
+        guard let list = try AIHTTP.decode(data)["data"]?.array else { throw AIProviderError.badResponse }
+        let dates = ISO8601DateFormatter()
+        return list.compactMap { entry in
+            guard let id = entry["id"]?.string else { return nil }
+            return AIModel(id: id, displayName: entry["display_name"]?.string, created: entry["created_at"]?.string.flatMap { dates.date(from: $0) })
+        }
+    }
+
     public func error(status: Int, body: Data) -> AIProviderError {
         switch (try? AIHTTP.decode(body))?["error"]?["type"]?.string {
         case "authentication_error", "permission_error": return .invalidKey
@@ -390,6 +453,14 @@ public struct OpenAICompatibleAdapter: AIProviderAdapter {
 
     public func error(status: Int, body: Data) -> AIProviderError {
         OpenAIAdapter.chatError(status: status, body: body)
+    }
+
+    public func modelsRequest(config: AIProviderConfig) throws -> URLRequest {
+        try AIHTTP.request(try url(config, "/models"), method: "GET", headers: headers(config), body: nil, timeout: AIHTTP.testTimeout)
+    }
+
+    public func models(from data: Data) throws -> [AIModel] {
+        try OpenAIAdapter.modelList(data)
     }
 }
 
