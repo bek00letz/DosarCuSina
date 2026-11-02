@@ -1,0 +1,113 @@
+# Decisions
+
+A dated log of product and architecture decisions, newest first. Each says what was decided and why. A newer decision can replace an older one: add a new entry that says so, and leave the old one in place.
+
+To propose a change to a decision, open an issue with the **Proposal** template or a draft pull request. The owner decides.
+
+---
+
+## 2026-11-02
+
+### Collaboration
+- **Decided:** collaborators work on their own branches and open pull requests into `main`, which the owner reviews and approves. Security problems are reported through GitHub's private vulnerability reporting. The privacy check is versioned in the repository and runs both before each commit and on every pull request.
+- **Why:** the repository is public and two collaborators with their own AI agents are joining. The knowledge they need has to be in the repository, and the protection against leaks can't depend on one person's local setup.
+
+### Distances read in the unit a person feels
+- **Decided:** how far away something is reads as days under three weeks, then weeks, then months and weeks, then years and months. Leftovers are dropped, never rounded up.
+- **Why:** "87 de zile" hides that something is under three months away. Rounding up would show more time than there is.
+
+### Identity documents
+- **Decided:** everything read from an identity document (CNP, series and number, birth date and so on) is shown and can be copied. The section's Face ID lock is the protection. It never appears in search, widgets or notifications.
+- **Why:** people need these values to fill in forms; hiding them behind extra taps would defeat the binder. The lock protects the section; the places that show content without the lock never get it.
+- **Decided:** documents are named "<document> – <Surname Given names>" and filed under the household member they belong to.
+- **Why:** one person usually keeps the papers for the whole household.
+- **Decided:** known Romanian documents (the new and the old identity card, the passport, the EU driving licence) are read with per-document templates and cross-checks. The person is asked only about doubtful values.
+- **Why:** these layouts are fixed and well known, so they can be read reliably; asking about every field would make capture slower than typing.
+
+### Widgets and examples
+- **Decided:** widgets never show example data, and examples never notify.
+- **Why:** examples are for exploring. A reminder or a widget about a made-up car would be confusing and would erode trust in real reminders.
+
+### Choice values
+- **Decided:** choice values are stored as stable keys, not as display text.
+- **Why:** display text changes with wording and language; keys keep stored data, archives and rules stable.
+
+### Face ID
+- **Decided:** the app lock and the section locks are independent. A failed unlock never ejects the person. The device passcode is the fallback.
+- **Why:** people protect different things in different ways. Being thrown out of the app after a failed Face ID is startling and loses their place.
+
+### The share sheet is the main door
+- **Decided:** onboarding includes a real practice share and shows how to move the app to the front of the share sheet.
+- **Why:** most documents already arrive in Mail or WhatsApp, and many people don't know apps can hand things to each other, or can't find the app at the end of the share row.
+
+### Integrations
+- **Decided:** the app works fully without Calendar, Reminders or Contacts, which are optional one-tap extras. Permissions are asked in context. Notification permission is asked only after an in-app explanation or from Settings.
+- **Why:** a permission prompt with no context gets refused, and a refused notification permission is hard to undo. Nothing essential should depend on a permission.
+
+### Structure
+- **Decided:** four tabs (Dosar, Urmează, Adaugă, Caută). The binder is a grid of boxes, each with one status line. A section shows fixed pockets in one global order. Agenda is a box.
+- **Why:** labelled tabs and one predictable page layout are easy to learn, and one status line per box answers "is everything fine?" at a glance.
+
+### Audience
+- **Decided:** the reference user is aged 50–60 and not tech-savvy. No horizontal scrolling, no small pull tabs, labelled tabs, big targets, obvious affordances.
+- **Why:** these are the people who keep the household's papers and who struggle most with apps built for power users.
+
+### Follow-up after a lapse
+- **Decided:** an optional single reminder the day after something lapsed. On by default for legal and financial items; the person can turn it on or off for any item.
+- **Why:** a missed legal or financial deadline gets worse every day, so one nudge is worth it. More than one would nag.
+
+### Reminder profiles
+- **Decided:** the lead time follows how hard the renewal is. Rovinietă: 7 days before and on the day. Driving licence: 60 and 30 days. Cat vaccine: 1 day, with grace. Dog rabies vaccine: 10 and 4 days, legal, no grace.
+- **Why:** a fixed "30 days before" is too early for a vignette bought in a minute and too late for a passport appointment. Reminding when action is actually needed keeps reminders trusted.
+
+### Capture first
+- **Decided:** the phone already has calendar, contacts, photos and notes. The app connects them to real-life events, and the main input is a photo or a document shared from another app.
+- **Why:** typing details into forms is the main reason people give up on apps like this. The documents already exist; the app should read them.
+
+### Product centre
+- **Decided:** the app is a documents binder (*dosar cu șină*) for rare-but-predictable life admin, not a reminders or to-do app. It opens on the binder, not on a list of deadlines.
+- **Why:** the value is having everything about the car, the home or the passport in one place when it's needed. Reminders follow from that, not the other way round.
+- **Decided:** a smart maintenance log per component (when, how many km ago, cost, supplier, who did it) for every asset type.
+- **Why:** "when did I last change it, and who did it" is the question people actually ask, and it applies to cars, boilers and bikes alike.
+- **Decided:** people and providers with star ratings; key facts in one tap; purchase information; readiness checks (for example, the passport before a trip).
+- **Why:** the binder should answer the next practical question, too: who to call, what number to quote, whether everything is in order before a trip.
+
+## 2026-11-01
+
+### Overhaul
+- **Decided:** a full "framework, not patch" overhaul instead of incremental fixes, built in waves by coordinated agents.
+- **Why:** the first version had one 90-field model and hand-built screens per category; fixing it piece by piece would have kept that structure. A template engine and single paths fix the cause.
+- **Decided:** minimum iOS 26, Swift 6.
+- **Why:** the app isn't released yet, so there are no older devices to support, and the newer APIs (on-device model, current SwiftUI and SwiftData) remove a lot of workarounds.
+
+### Android and the archive format
+- **Decided:** Android is paused, but `.dosar` export and import stay cross-platform, with a written specification and golden fixtures in `shared/`.
+- **Why:** one platform done well first. Keeping the format portable means a future Android version can read the same backups without reshaping anything.
+
+### Categories
+- **Decided:** categories are one template engine, and the mainstays (car, home, documents, pets) must feel premium.
+- **Why:** one engine means every category gets the same reminders, history, search and archive support; the mainstays are what most people use, so they get purpose-built heroes.
+
+### First run
+- **Decided:** the first run is empty, with "Explore with examples". Example data is tagged and removable.
+- **Why:** seeding fake data into someone's binder mixes it with theirs. Examples on request let people explore, then start clean.
+
+### Face ID
+- **Decided:** Face ID is optional, per section, plus an app lock.
+- **Why:** most of the binder (the car, the boiler) needs no lock and should open instantly; identity and health papers do.
+
+### Urmează stays short
+- **Decided:** the Urmează list must stay short as data grows (the attention model).
+- **Why:** a list that grows with every tracked item becomes noise and stops being read.
+
+---
+
+## Decided, not built yet
+
+### Partner offers
+- **Decided:** optional partner offers (an insurance broker, vetted companies) on fair commission, privacy-first: the catalog is downloaded anonymously and matched on the device, data is shared only on an explicit tap per request, paid placements are labelled, and they never override the person's own rated providers.
+- **Why:** it can help people renew insurance or find a trusted tradesperson and fund the free app, without trading their data or their trust.
+
+### Household sharing
+- **Decided:** household sharing through iCloud.
+- **Why:** papers are often kept by two people; sharing through their own iCloud keeps the no-servers promise.
