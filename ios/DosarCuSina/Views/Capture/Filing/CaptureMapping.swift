@@ -181,7 +181,7 @@ enum CaptureMapping {
         let provider = fields[.provider]?.text
         // Identity documents carry their holder: "Carte de identitate – Manole Corina Ioana".
         if kind.isIdentityDocument, let holder = holderName(fields) {
-            return kindTitle(kind) + " – " + holder
+            return DocumentNaming.name(document: kindTitle(kind), holder: holder)
         }
         switch kind {
         case .passport: return String(localized: "Pașaport")

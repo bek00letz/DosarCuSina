@@ -20,6 +20,8 @@ struct AssetEditSheet: View {
     @State private var revealsValidation = false
     @State private var error: UserFacingError?
     @State private var savedCount = 0
+    @State private var isMoving = false
+    @State private var toast: DSToast?
 
     private let originalPhoto: Data?
 
@@ -46,6 +48,9 @@ struct AssetEditSheet: View {
                     VStack(alignment: .leading, spacing: DS.Space.m) {
                         DSTextField("Nume", text: $name, isRequired: true)
                         PhotoPickerRow(photoData: $photoData, item: $photoItem)
+                        if AssetActions.parentTemplateKey(for: asset) != nil {
+                            moveRow
+                        }
                     }
                     ForEach(definition.sections) { section in
                         if !section.fields.isEmpty {
@@ -82,8 +87,44 @@ struct AssetEditSheet: View {
             }
             .userErrorAlert($error)
             .sensoryFeedback(.success, trigger: savedCount)
+            .sheet(isPresented: $isMoving) {
+                MoveAssetSheet(asset: asset) { receipt in
+                    followName(from: receipt.previousName)
+                    toast = .undo(receipt.toastTitle) { undoMove(receipt) }
+                }
+            }
+            .dsToast($toast)
         }
         .dsDiscardGuard(hasChanges: hasChanges)
+    }
+
+    /// Where it is filed, and "Mută la…".
+    private var moveRow: some View {
+        Button { isMoving = true } label: {
+            DSListRow(
+                title: Text("Mută la…", comment: "Menu item that files something under another parent."),
+                subtitle: asset.parent.map { Text("Acum e la „\($0.name)”.", comment: "Where the item is filed now, in the move sheet.") },
+                systemImage: "arrow.turn.up.right",
+                showsChevron: true
+            ) { EmptyView() }
+        }
+        .buttonStyle(.dsPressable)
+    }
+
+    /// A move that renamed the document carries the new name into the form, unless
+    /// the person had already typed one of their own.
+    private func followName(from previousName: String) {
+        if name == previousName { name = asset.name }
+    }
+
+    private func undoMove(_ receipt: AssetActions.MoveReceipt) {
+        do {
+            let renamed = asset.name
+            try AssetActions(context: context).undoMove(receipt)
+            followName(from: renamed)
+        } catch {
+            self.error = UserFacingError(error)
+        }
     }
 
     private func save() {

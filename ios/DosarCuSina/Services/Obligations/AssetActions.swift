@@ -3,11 +3,19 @@ import SwiftData
 
 public enum AssetActionError: LocalizedError, Equatable {
     case wouldCreateLoop
+    /// The place chosen to move something to is gone.
+    case missingDestination
+    /// A new person was asked for without a name.
+    case missingName
 
     public var errorDescription: String? {
         switch self {
         case .wouldCreateLoop:
             return String(localized: "Nu poți pune un element sub unul care e deja sub el.")
+        case .missingDestination:
+            return String(localized: "Locul ales nu mai există. Alege altul.")
+        case .missingName:
+            return String(localized: "Scrie numele persoanei.")
         }
     }
 }

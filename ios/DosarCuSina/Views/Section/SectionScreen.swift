@@ -53,6 +53,7 @@ private struct SectionContent: View {
     @Query private var templates: [CategoryTemplate]
 
     @State private var isEditing = false
+    @State private var isMoving = false
     @State private var isConfirmingDelete = false
     @State private var error: UserFacingError?
     @State private var toast: DSToast?
@@ -102,9 +103,27 @@ private struct SectionContent: View {
                 }
                 .keyboardShortcut("e", modifiers: .command)
             }
+            if AssetActions.parentTemplateKey(for: asset) != nil {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Button {
+                            isMoving = true
+                        } label: {
+                            Label { Text("Mută la…", comment: "Menu item that files something under another parent.") } icon: { Image(systemName: "arrow.turn.up.right") }
+                        }
+                    } label: {
+                        Label { Text("Mai multe", comment: "Toolbar menu with more actions for a section.") } icon: { Image(systemName: "ellipsis.circle") }
+                    }
+                }
+            }
         }
         .sheet(isPresented: $isEditing) {
             AssetEditSheet(asset: asset, definition: definition)
+        }
+        .sheet(isPresented: $isMoving) {
+            MoveAssetSheet(asset: asset) { receipt in
+                toast = .undo(receipt.toastTitle) { undoMove(receipt) }
+            }
         }
         .confirmationDialog(deleteTitle, isPresented: $isConfirmingDelete, titleVisibility: .visible) {
             deleteActions
@@ -151,6 +170,14 @@ private struct SectionContent: View {
             return Text("Are lucruri trecute sub el, de exemplu chiriași, produse sau acte. Dacă le păstrezi, rămân în dosar fără să fie sub „\(asset.name)”. Termenele, istoricul și documentele lui se șterg de pe acest telefon.", comment: "Delete confirmation when the asset has children.")
         }
         return Text("Termenele, istoricul și documentele lui se șterg de pe acest telefon.", comment: "Delete confirmation message.")
+    }
+
+    private func undoMove(_ receipt: AssetActions.MoveReceipt) {
+        do {
+            try AssetActions(context: context).undoMove(receipt)
+        } catch {
+            self.error = UserFacingError(error)
+        }
     }
 
     private func delete(children: AssetActions.ChildrenOnDelete) {
