@@ -93,7 +93,7 @@ public final class CaptureEngine: Sendable {
     }
 
     /// The engine as the app and the Share Extension use it.
-    public static func standard(componentResolver: any CaptureComponentResolving = KeywordComponentResolver()) -> CaptureEngine {
+    public static func standard(componentResolver: any CaptureComponentResolving = CatalogComponentResolver()) -> CaptureEngine {
         #if canImport(UIKit)
         let cloud: (any CaptureSemanticExtracting)? = GeminiCaptureExtractor(resolver: componentResolver)
         #else

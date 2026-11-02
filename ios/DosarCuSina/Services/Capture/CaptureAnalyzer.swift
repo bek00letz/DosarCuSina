@@ -36,7 +36,7 @@ public struct CaptureAnalyzer: Sendable {
 
     public init(
         specializedParsers: [any CaptureSpecializedParser] = [],
-        componentResolver: any CaptureComponentResolving = KeywordComponentResolver(),
+        componentResolver: any CaptureComponentResolving = CatalogComponentResolver(),
         insurerNames: [(keyword: String, name: String)] = CaptureAnalyzer.catalogInsurers
     ) {
         self.specializedParsers = specializedParsers

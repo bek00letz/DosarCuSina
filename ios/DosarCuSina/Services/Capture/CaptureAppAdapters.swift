@@ -60,7 +60,7 @@ public struct GeminiCaptureExtractor: CaptureSemanticExtracting {
     public let tier: CaptureTier = .cloudModel
     let resolver: any CaptureComponentResolving
 
-    public init(resolver: any CaptureComponentResolving = KeywordComponentResolver()) {
+    public init(resolver: any CaptureComponentResolving = CatalogComponentResolver()) {
         self.resolver = resolver
     }
 

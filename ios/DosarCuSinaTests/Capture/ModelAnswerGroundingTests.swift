@@ -21,7 +21,7 @@ struct ModelAnswerGroundingTests {
         answers.claimsPhone = "0800 123 456"
         answers.totalAmount = "1240.00"
         answers.expiryDate = "2027-11-06"
-        let extraction = ModelAnswerMapper.fields(from: answers, sourceText: source, tier: .onDeviceModel, resolver: KeywordComponentResolver())
+        let extraction = ModelAnswerMapper.fields(from: answers, sourceText: source, tier: .onDeviceModel, resolver: CatalogComponentResolver())
         let keys = Set(extraction.fields.map(\.key))
         #expect(keys == [.policyNumber, .claimsPhone, .total, .expiryDate])
         #expect(extraction.fields.allSatisfy { $0.tier == .onDeviceModel })
@@ -34,7 +34,7 @@ struct ModelAnswerGroundingTests {
         answers.licensePlate = "B 999 ZZZ"
         answers.totalAmount = "5000"
         answers.expiryDate = "2027-02-30"
-        let extraction = ModelAnswerMapper.fields(from: answers, sourceText: source, tier: .onDeviceModel, resolver: KeywordComponentResolver())
+        let extraction = ModelAnswerMapper.fields(from: answers, sourceText: source, tier: .onDeviceModel, resolver: CatalogComponentResolver())
         #expect(extraction.fields.isEmpty)
     }
 
@@ -42,8 +42,8 @@ struct ModelAnswerGroundingTests {
     func kind() {
         var answers = ModelAnswerMapper.Answers()
         answers.kind = "insurancePolicy"
-        #expect(ModelAnswerMapper.fields(from: answers, sourceText: source, tier: .onDeviceModel, resolver: KeywordComponentResolver()).kind == .insurancePolicy)
+        #expect(ModelAnswerMapper.fields(from: answers, sourceText: source, tier: .onDeviceModel, resolver: CatalogComponentResolver()).kind == .insurancePolicy)
         answers.kind = "spaceship"
-        #expect(ModelAnswerMapper.fields(from: answers, sourceText: source, tier: .onDeviceModel, resolver: KeywordComponentResolver()).kind == nil)
+        #expect(ModelAnswerMapper.fields(from: answers, sourceText: source, tier: .onDeviceModel, resolver: CatalogComponentResolver()).kind == nil)
     }
 }

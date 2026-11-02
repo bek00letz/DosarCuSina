@@ -110,14 +110,17 @@ public struct CaptureLineItem: Hashable, Codable, Sendable {
     public let description: String
     public let quantity: Decimal?
     public let amount: CaptureMoney?
-    /// A normalized component key guessed from the description (e.g. `brakePadsFront`), if any.
+    /// The catalog component guessed from the description (e.g. `brakes.padsFront`), if any.
     public let componentKey: String?
+    /// Whether the line is labour rather than a part.
+    public let isLabour: Bool
 
-    public init(description: String, quantity: Decimal? = nil, amount: CaptureMoney? = nil, componentKey: String? = nil) {
+    public init(description: String, quantity: Decimal? = nil, amount: CaptureMoney? = nil, componentKey: String? = nil, isLabour: Bool? = nil) {
         self.description = description
         self.quantity = quantity
         self.amount = amount
         self.componentKey = componentKey
+        self.isLabour = isLabour ?? LabourLine.matches(description)
     }
 }
 

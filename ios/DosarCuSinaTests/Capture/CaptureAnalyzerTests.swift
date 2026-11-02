@@ -67,7 +67,8 @@ struct CaptureAnalyzerTests {
         #expect(byKey[.issueDate]?.value.day == CaptureDay(year: 2025, month: 3, day: 14))
 
         let items = try #require(byKey[.lineItems]?.value.lineItems)
-        #expect(items.map(\.componentKey) == ["brakePadsFront", "engineOil", "oilFilter", "labour"])
+        #expect(items.map(\.componentKey) == ["brakes.padsFront", "engine.oil", "engine.oil", nil])
+        #expect(items.map(\.isLabour) == [false, false, false, true])
         #expect(items.first?.amount == CaptureMoney(amount: 320, currencyCode: "RON"))
 
         let routing = route(analysis)

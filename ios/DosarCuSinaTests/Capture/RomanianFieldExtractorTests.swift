@@ -111,16 +111,24 @@ struct RomanianFieldExtractorTests {
         #expect(RomanianFieldExtractor.invoiceNumber(in: CaptureText("FACTURĂ FISCALĂ seria AUT nr. 004512"))?.value == "AUT 004512")
     }
 
-    @Test("Component keys from invoice wording")
+    @Test("Component keys come from the templates' catalogs")
     func components() {
-        let resolver = KeywordComponentResolver()
-        #expect(resolver.componentKey(for: "Plăcuțe frână față ATE") == "brakePadsFront")
-        #expect(resolver.componentKey(for: "Disc frana spate") == "brakeDiscsRear")
-        #expect(resolver.componentKey(for: "Filtru ulei Mann") == "oilFilter")
-        #expect(resolver.componentKey(for: "Ulei motor 5W30 4L") == "engineOil")
-        #expect(resolver.componentKey(for: "Kit distribuție") == "timingBelt")
-        #expect(resolver.componentKey(for: "Baterie lavoar") == "tapMixer")
-        #expect(resolver.componentKey(for: "Manoperă") == "labour")
+        let resolver = CatalogComponentResolver()
+        #expect(resolver.componentKey(for: "Plăcuțe frână față ATE") == "brakes.padsFront")
+        #expect(resolver.componentKey(for: "Pastile frana spate") == "brakes.padsRear")
+        #expect(resolver.componentKey(for: "Disc frana spate") == "brakes.discsRear")
+        #expect(resolver.componentKey(for: "Filtru ulei Mann") == "engine.oil")
+        #expect(resolver.componentKey(for: "Ulei motor 5W30 4L") == "engine.oil")
+        #expect(resolver.componentKey(for: "Kit distribuție") == "engine.timing")
+        #expect(resolver.componentKey(for: "Baterie lavoar") == "plumbing.taps")
         #expect(resolver.componentKey(for: "Odorizant") == nil)
+    }
+
+    @Test("Labour lines are labour, not parts")
+    func labour() {
+        let line = CaptureLineItem(description: "Manoperă 1,5 ore")
+        #expect(line.isLabour)
+        #expect(CatalogComponentResolver().componentKey(for: line.description) == nil)
+        #expect(!CaptureLineItem(description: "Filtru ulei").isLabour)
     }
 }

@@ -160,7 +160,7 @@ public struct OnDeviceModelExtractor: CaptureSemanticExtracting {
     /// The on-device model's context is small; long documents are cut to their first part.
     static let maxCharacters = 6_000
 
-    public init(resolver: any CaptureComponentResolving = KeywordComponentResolver()) {
+    public init(resolver: any CaptureComponentResolving = CatalogComponentResolver()) {
         self.resolver = resolver
     }
 
