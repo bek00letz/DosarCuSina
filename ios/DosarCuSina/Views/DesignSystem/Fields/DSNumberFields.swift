@@ -125,6 +125,9 @@ struct DSMoneyField: View {
             if !isFocused { syncTextFromAmount() }
         }
         .onChange(of: text) { _, newText in
+            // Only what the person types becomes the amount. Showing a stored amount
+            // changes the text too, and reading that back could change the amount.
+            guard isFocused else { return }
             amount = DSNumberInput.decimal(from: newText, locale: locale)
         }
         .onChange(of: isFocused) { _, focused in
@@ -223,6 +226,9 @@ struct DSMetricField: View {
             if !isFocused { syncTextFromValue() }
         }
         .onChange(of: text) { _, newText in
+            // Only what the person types becomes the value. Showing a stored value
+            // changes the text too, and reading that back could turn 45.724 km into 457.
+            guard isFocused else { return }
             value = DSNumberInput.decimal(from: newText, locale: locale).map { NSDecimalNumber(decimal: $0).doubleValue }
         }
         .onChange(of: isFocused) { _, focused in
