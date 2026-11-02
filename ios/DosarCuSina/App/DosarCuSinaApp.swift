@@ -6,6 +6,8 @@ import UserNotifications
 struct DosarCuSinaApp: App {
     @State private var persistence = PersistenceController.shared
     @State private var navigator = AppNavigator.shared
+    @State private var preferences = AppPreferences.shared
+    @State private var vault = BiometricVaultManager.shared
     @State private var sideEffects: SideEffectsCoordinator?
     @Environment(\.scenePhase) private var scenePhase
 
@@ -21,14 +23,19 @@ struct DosarCuSinaApp: App {
             Group {
                 switch persistence.state {
                 case .ready(let container):
-                    DebugRootView()
+                    AppShell()
                         .modelContainer(container)
+                        .environment(\.sideEffects, sideEffects)
                         .task { start(with: container) }
                 case .failed(let message):
                     StoreRecoveryView(message: message, retry: persistence.retry, startFresh: persistence.startFresh)
                 }
             }
             .environment(navigator)
+            .environment(preferences)
+            .environment(vault)
+            // The binder speaks Romanian and writes dates and money the Romanian way.
+            .environment(\.locale, .dosarDefault)
             .onOpenURL { url in
                 navigator.open(url)
             }

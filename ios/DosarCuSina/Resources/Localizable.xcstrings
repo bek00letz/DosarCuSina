@@ -40,6 +40,209 @@
         }
       }
     },
+    "%lld ani": {
+      "comment": "A number of years, with Romanian plural forms.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld an"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld ani"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de ani"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld contacte": {
+      "comment": "Agenda box: how many people and firms are saved.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld contact"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld contacte"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de contacte"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld documente": {
+      "comment": "A number of documents, with Romanian plural forms.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld document"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld documente"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de documente"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld luni": {
+      "comment": "A number of months, with Romanian plural forms.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld lună"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld luni"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de luni"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld secțiuni": {
+      "comment": "A number of sections, with Romanian plural forms.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld secțiune"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld secțiuni"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de secțiuni"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld termene": {
+      "comment": "A number of obligations, with Romanian plural forms.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld termen"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld termene"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de termene"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld zile": {
+      "comment": "A number of days, with Romanian plural forms: 1 zi, 2 zile, 20 de zile.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld zi"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld zile"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de zile"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "15 cifre": {
       "comment": "Placeholder for the pet microchip field."
     },

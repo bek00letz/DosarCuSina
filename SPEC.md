@@ -353,17 +353,24 @@ Pentru a garanta portabilitatea deplină a datelor utilizatorului și a preveni 
 
 ### 3.8 Ecranul Principal Modular pe Active & Arhitectura UX Scalabilă
 
-#### 1. Ecranul Principal: Dashboard Modular cu Grilă de 8 Pătrate (`AssetsHomeDashboardView`)
-Tab-ul principal de deschidere a aplicației (`Tab 1`) este **Active**, proiectat ca un dashboard modular de înaltă densitate informațională, respectând standardul Apple Craftsmanship:
-- **Grilă de 8 Pătrate (Squircles Continui)**: Reprezentând cele 8 domenii de viață ale gospodăriei (Vehicule, Locuință, Sănătate, Animale, Documente, Garanții, Abonamente, Alte Active/Personalizate).
-- **Informație la Nivel de Card**: Fiecare pătrat prezintă simbolul SF Symbol nativ, contorul reactiv de active înregistrate, denumirea domeniului și un rezumat discret al următoarei obligații iminente.
-- **Alert Banner de Urgență**: Un banner compact de atenționare la vârful ecranului semnalează orice scadență depășită sau critică din gospodărie, permițând saltul direct la rezolvare.
+#### 1. Shell-ul: patru taburi (`AppShell`, `ShellRouter`)
+- **Taburi etichetate (stil iOS 26)**: *Dosar*, *Urmează*, *Adaugă*, *Caută* (rol de căutare). Fiecare tab are propriul `NavigationStack`, deținut de shell, cu toate `AppRoute` înregistrate ca destinații; ecranele împing cu `NavigationLink(value: AppRoute…)`.
+- **O singură rută**: notificările, widgeturile, linkurile `dosarcusina://` și rezultatele căutării trec prin `ShellRouting.plan(for:)` (tab + ecrane + foaie). Setările, „Am fost la service” și „Adaugă o secțiune” sunt foi prezentate de shell.
+- **Prima pornire**: `OnboardingFlow` apare o singură dată (`AppPreferences.hasCompletedOnboarding`). Blocarea aplicației acoperă totul cu un ecran calm „Deblochează”; secțiunile protejate se deschid separat.
 
-#### 2. Personalizarea & Reordonarea Categoriilor (`CategoryDisplayManager` & `CategoryCustomizationView`)
-Fiecare utilizator are o structură familială diferită (poate nu deține animale de companie, nu are mașină sau administrează o mică livadă):
-- **Reordonare prin Drag-and-Drop**: Utilizatorii pot schimba ordinea plăcilor din ecranul principal direct din Setări (`EditButton()` cu `onMove`).
-- **Activare/Dezactivare Modulară**: Categoriile neutilizate pot fi ascunse printr-un simplu toggle (`isVisible`), curățând interfața de elemente irelevante.
-- **Categorii Personalizate Nelimitate**: Utilizatorii pot crea plăci noi (ex: "Biciclete", "PFA", "Livadă", "Scule & Echipamente"), alegând dintr-o paletă de 16 simboluri SF Symbols și 10 culori de accent, acestea integrându-se nativ în grila de pe ecranul principal.
+#### 2. Dosarul: grila de cutii (`DosarHomeView`, `BinderLayout`)
+- **O cutie pentru fiecare lucru de top** (mașina, casa, PawPaw), plus *Acte*, *Garanții*, *Abonamente* și *Agendă*. Chiriașii, produsele dintr-o casă și actele unei persoane stau în părintele lor. Ordinea implicită urmează `homeOrder` și vizibilitatea categoriilor.
+- **Conținutul cutiei**: poza sau simbolul categoriei, numele mare și un singur rând de stare din `BoxStatus` („Totul e în regulă”, „RCA · în 5 zile”), cu icon și culoare semantică (niciodată doar culoare).
+- **Deschidere**: cutia se deschide cu tranziția *zoom* a sistemului; înapoi revine în cutie.
+- **Reordonare**: apăsare lungă și tragere; ordinea se păstrează pe dispozitiv (`BinderLayoutStore`), iar cutiile noi se așază lângă vecinii lor. La VoiceOver și în meniul contextual: „Mută mai în față / în spate”.
+- **Grila**: 2 coloane pe iPhone, adaptivă pe iPad, o coloană la textele mari de accesibilitate. Ultima cutie, punctată, este „Adaugă o secțiune”.
+- **Prima pornire goală**: ecran dedicat cu „Adaugă primul lucru” și „Încarcă exemple”; exemplele poartă eticheta „Exemplu” și se șterg din Setări.
+
+#### 2b. Pagina unei secțiuni (`SectionScreen`)
+- Un singur scroll vertical: erou după `heroStyle` (mașină: plăcuță, marcă/model/an, kilometraj; casă: adresă; animal: poză, vârstă, greutate; acte/persoană: numele și următorul act care expiră), apoi buzunarele șablonului în ordinea globală `SectionPocket`: Urmează, Chiriași, Produse, Abonamente, Acte, Istoric („ultima dată” pe piesă, din `MaintenanceLog`), Oameni, Bani, Date importante.
+- Editarea folosește controalele DesignSystem cu `.dsDiscardGuard`; ștergerea întreabă ce se întâmplă cu ce e în secțiune (`AssetActions.delete(_:children:)`).
+- Secțiunile protejate arată o stare calmă „Deblochează”; o deblocare ratată sau anulată închide doar secțiunea respectivă.
+- „Adaugă o secțiune” oferă secțiuni gata făcute și „Altceva…” (nume, simbol, buzunare), apoi doar câmpurile esențiale, apoi termenele sugerate, fiecare cu amintirile spuse simplu („Te anunț cu 30 de zile înainte”).
 
 #### 3. Cadrul Universal de Ștergere a Activelor (CRUD Parity)
 Eliminarea blocajului de descoperire a ștergerii prin implementarea punctelor de acces standard Apple:

@@ -45,10 +45,16 @@ public final class GeminiService: Sendable {
     
     /// Tests and validates a user-provided Gemini API key with a minimal ping request
     public func validateAPIKey(_ candidateKey: String) async -> Bool {
+        await checkAPIKey(candidateKey) == .valid
+    }
+
+    /// Tests a key and says why it didn't work, so the screen can tell
+    /// "no internet" apart from "Google refused the key".
+    public func checkAPIKey(_ candidateKey: String) async -> GeminiKeyStatus {
         let trimmedKey = candidateKey.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedKey.isEmpty else { return false }
-        guard let url = URL(string: endpoint) else { return false }
-        
+        guard !trimmedKey.isEmpty else { return .empty }
+        guard let url = URL(string: endpoint) else { return .unavailable }
+
         let testBody: [String: Any] = [
             "contents": [
                 ["parts": [["text": "ping"]]]
@@ -65,12 +71,9 @@ public final class GeminiService: Sendable {
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: testBody)
             let (_, response) = try await URLSession.shared.data(for: request)
-            if let httpResponse = response as? HTTPURLResponse {
-                return httpResponse.statusCode == 200
-            }
-            return false
+            return GeminiKeyStatus(statusCode: (response as? HTTPURLResponse)?.statusCode)
         } catch {
-            return false
+            return GeminiKeyStatus(error: error)
         }
     }
     
