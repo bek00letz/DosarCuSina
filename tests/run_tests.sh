@@ -48,6 +48,7 @@ xcodebuild test \
     -scheme DosarCuSina \
     -destination "id=$DEVICE" \
     -derivedDataPath "$DERIVED_DATA" \
+    -parallel-testing-enabled NO \
     CODE_SIGNING_ALLOWED=NO > "$LOG" 2>&1
 STATUS=$?
 set -e
