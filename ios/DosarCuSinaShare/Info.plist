@@ -16,6 +16,7 @@
         ANY $attachment.registeredTypeIdentifiers UTI-CONFORMS-TO "com.adobe.pdf"
         || ANY $attachment.registeredTypeIdentifiers UTI-CONFORMS-TO "public.image"
         || ANY $attachment.registeredTypeIdentifiers UTI-CONFORMS-TO "public.plain-text"
+        || ANY $attachment.registeredTypeIdentifiers UTI-CONFORMS-TO "public.file-url"
     ).@count &gt;= 1
 ).@count &gt;= 1</string>
 		</dict>

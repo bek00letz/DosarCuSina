@@ -27,6 +27,17 @@ struct ShareInboxTests {
         #expect(plan[0].indices.count == ShareInbox.maxFiles)
     }
 
+    @Test func filesSentAsLinksAreRecognizedByWhatTheyAre() {
+        #expect(ShareInbox.kind(ofFile: URL(filePath: "/tmp/\(ShareInbox.practiceFileName)")) == .pdf)
+        #expect(ShareInbox.kind(ofFile: URL(filePath: "/tmp/Factura.PDF")) == .pdf)
+        #expect(ShareInbox.kind(ofFile: URL(filePath: "/tmp/IMG_0001.HEIC")) == .image)
+        #expect(ShareInbox.kind(ofFile: URL(filePath: "/tmp/poza.jpg")) == .image)
+        #expect(ShareInbox.kind(ofFile: URL(filePath: "/tmp/nota.txt")) == .text)
+        #expect(ShareInbox.kind(ofFile: URL(filePath: "/tmp/arhiva.zip")) == nil)
+        #expect(ShareInbox.kind(of: .pdf) == .pdf)
+        #expect(ShareInbox.kind(of: .jpeg) == .image)
+    }
+
     @Test func oversizedFilesAndSharesAreRefused() throws {
         #expect(throws: ShareInbox.InboxError.tooLarge) {
             try ShareInbox.checkRoom(for: ShareInbox.maxFileBytes + 1, sharedSoFar: 0)

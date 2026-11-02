@@ -64,11 +64,9 @@ final class ShareModel {
         try? FileManager.default.createDirectory(at: inbox.directory, withIntermediateDirectories: true, attributes: ShareInbox.protection)
         inbox.removeAbandonedStaging()
 
-        let classified = providers.compactMap { provider -> (NSItemProvider, ShareInbox.IncomingKind)? in
-            if provider.hasItemConformingToTypeIdentifier(UTType.pdf.identifier) { return (provider, .pdf) }
-            if provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) { return (provider, .image) }
-            if provider.hasItemConformingToTypeIdentifier(UTType.plainText.identifier) { return (provider, .text) }
-            return nil
+        var classified: [(Source, ShareInbox.IncomingKind)] = []
+        for provider in providers {
+            if let item = await Self.classify(provider) { classified.append(item) }
         }
         guard !classified.isEmpty else {
             phase = .unsupported
@@ -87,9 +85,9 @@ final class ShareModel {
                 var files: [String] = []
                 var originalName: String?
                 for (position, index) in planned.indices.enumerated() {
-                    let provider = classified[index].0
-                    originalName = originalName ?? provider.suggestedName
-                    if let name = try await Self.stage(provider, as: classified[index].1, inbox: inbox, staging: folder, index: position, sharedSoFar: sharedBytes) {
+                    let source = classified[index].0
+                    originalName = originalName ?? source.suggestedName
+                    if let name = try await Self.stage(source, as: classified[index].1, inbox: inbox, staging: folder, index: position, sharedSoFar: sharedBytes) {
                         files.append(name)
                         sharedBytes += ShareInbox.byteCount(of: name, in: folder)
                     }
@@ -111,7 +109,52 @@ final class ShareModel {
         phase = saved > 0 ? .saved(count: saved) : (tooLarge ? .tooLarge : (failed ? .failed : .unsupported))
     }
 
+    /// Where one shared item comes from: typed data, or a link to a file
+    /// (how Files, WhatsApp and SwiftUI's ShareLink often send documents).
+    enum Source {
+        case provider(NSItemProvider)
+        case file(URL, NSItemProvider)
+
+        var suggestedName: String? {
+            switch self {
+            case .provider(let provider): provider.suggestedName
+            case .file(let url, let provider): provider.suggestedName ?? url.lastPathComponent
+            }
+        }
+    }
+
+    /// Works out what an attachment is. Typed items say so directly; a file link
+    /// is opened to see what the file is, so a PDF sent as a link still counts.
+    private static func classify(_ provider: NSItemProvider) async -> (Source, ShareInbox.IncomingKind)? {
+        for type in [UTType.pdf, .image, .plainText] where provider.hasItemConformingToTypeIdentifier(type.identifier) {
+            if let kind = ShareInbox.kind(of: type) { return (.provider(provider), kind) }
+        }
+        guard provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier),
+              let url = await fileURL(from: provider),
+              let kind = ShareInbox.kind(ofFile: url) else { return nil }
+        return (.file(url, provider), kind)
+    }
+
+    private static func fileURL(from provider: NSItemProvider) async -> URL? {
+        await withCheckedContinuation { continuation in
+            _ = provider.loadObject(ofClass: URL.self) { url, _ in
+                continuation.resume(returning: url?.isFileURL == true ? url : nil)
+            }
+        }
+    }
+
     /// Copies one attachment into the staging folder; returns its file name.
+    private static func stage(_ source: Source, as kind: ShareInbox.IncomingKind, inbox: ShareInbox, staging: URL, index: Int, sharedSoFar: Int) async throws -> String? {
+        switch source {
+        case .file(let url, _):
+            let didAccess = url.startAccessingSecurityScopedResource()
+            defer { if didAccess { url.stopAccessingSecurityScopedResource() } }
+            return try inbox.stage(copyOf: url, into: staging, index: index, sharedSoFar: sharedSoFar)
+        case .provider(let provider):
+            return try await stage(provider, as: kind, inbox: inbox, staging: staging, index: index, sharedSoFar: sharedSoFar)
+        }
+    }
+
     private static func stage(_ provider: NSItemProvider, as kind: ShareInbox.IncomingKind, inbox: ShareInbox, staging: URL, index: Int, sharedSoFar: Int) async throws -> String? {
         switch kind {
         case .text:

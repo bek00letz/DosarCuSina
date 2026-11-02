@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 import UIKit
 
 /// Practice sharing from another app, with the real share sheet and the real
@@ -79,7 +80,7 @@ struct SharePracticeView: View {
 
     @ViewBuilder private var shareButton: some View {
         if let sampleURL {
-            ShareLink(item: sampleURL, preview: SharePreview(Text("Factură de probă"), image: Image(systemName: "doc.text"))) {
+            ShareLink(item: PracticeInvoiceFile(url: sampleURL), preview: SharePreview(Text("Factură de probă"), image: Image(systemName: "doc.text"))) {
                 Label("Trimite factura de probă", systemImage: "square.and.arrow.up")
                     .font(.headline)
                     .frame(maxWidth: .infinity, minHeight: 34)
@@ -210,6 +211,17 @@ private struct SampleInvoiceCard: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text("Factură de probă de la \(SampleInvoice.issuer), total \(Money(SampleInvoice.total).formattedCompact())"))
+    }
+}
+
+/// The practice invoice as the share sheet sends it: a typed PDF with its own
+/// name, the way Mail sends an attachment, so the extension sees a PDF.
+struct PracticeInvoiceFile: Transferable {
+    let url: URL
+
+    static var transferRepresentation: some TransferRepresentation {
+        FileRepresentation(exportedContentType: .pdf) { SentTransferredFile($0.url) }
+            .suggestedFileName(ShareInbox.practiceFileName)
     }
 }
 

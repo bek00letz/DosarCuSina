@@ -1,4 +1,5 @@
 import Foundation
+import UniformTypeIdentifiers
 
 /// Something another app sent with the share sheet, waiting in the App Group
 /// until the person reviews it in Adaugă › De verificat.
@@ -78,6 +79,21 @@ public struct ShareInbox: Sendable {
     /// What one shared attachment is.
     public enum IncomingKind: Sendable, Hashable {
         case pdf, image, text
+    }
+
+    /// What a shared item is, from its declared type. Apps hand documents over
+    /// either typed (a PDF, a photo) or as a link to a file; for a link, pass the
+    /// file's own type (`kind(ofFile:)`).
+    public static func kind(of type: UTType) -> IncomingKind? {
+        if type.conforms(to: .pdf) { return .pdf }
+        if type.conforms(to: .image) { return .image }
+        if type.conforms(to: .plainText) { return .text }
+        return nil
+    }
+
+    /// What a shared file is, from its name's extension ("Factura.PDF" is a PDF).
+    public static func kind(ofFile url: URL) -> IncomingKind? {
+        UTType(filenameExtension: url.pathExtension).flatMap(kind(of:))
     }
 
     /// One inbox item to make from a share: its payload and which attachments go in it.
