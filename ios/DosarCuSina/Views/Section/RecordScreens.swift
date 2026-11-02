@@ -367,7 +367,8 @@ private struct DocumentFacts: View {
     static func rows(_ values: FieldValues, definition: TemplateDefinition?) -> [(key: String, label: String, text: String)] {
         guard let definition else { return [] }
         return definition.allFields.compactMap { field in
-            guard field.type != .choice, let value = values[field.key] else { return nil }
+            // Secrets have their own rows on the document's page, behind a fresh Face ID.
+            guard field.type != .choice, !field.isSecret, let value = values[field.key] else { return nil }
             let text = FieldFormatter.display(value, field: field, locale: .dosarDefault)
             return text.isEmpty ? nil : (field.key, field.label, text)
         }

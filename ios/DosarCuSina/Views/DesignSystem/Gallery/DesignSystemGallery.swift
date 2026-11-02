@@ -353,6 +353,9 @@ private struct GalleryCards: View {
                         DSActionValueRow(title: Text(verbatim: "Număr poliță"), value: "RO/00/EX0001", action: .copy)
                         DSRowSeparator()
                         DSActionValueRow(title: Text(verbatim: "Telefon pentru daune"), value: "0700 000 001", action: .call)
+                        DSRowSeparator()
+                        // A secret: in the app, "Arată" and "Copiază" ask for Face ID first, every time.
+                        DSSecretValueRow(title: Text(verbatim: "PIN pentru autentificare"), isSet: true) { .revealed("0000") }
                     }
                 }
             }
@@ -537,6 +540,7 @@ private struct GalleryFields: View {
     @State private var plate = ""
     @State private var vin = "WVWZZZ1KZ8W00000"
     @State private var microchip = ""
+    @State private var pin = ""
     @State private var iban = ""
     @State private var phone = ""
     @State private var email = ""
@@ -584,6 +588,7 @@ private struct GalleryFields: View {
                 DSCard {
                     VStack(spacing: DS.Space.m) {
                         DSTextField("Microcip", text: $microchip, kind: .microchip)
+                        DSSecretField("PIN pentru semnare", value: $pin, footnote: "Rămâne ascuns; îl vezi doar după Face ID.")
                         DSTextField("IBAN", text: $iban, kind: .iban)
                         DSTextField("Telefon", text: $phone, kind: .phone)
                         DSTextField("E-mail", text: $email, kind: .email)

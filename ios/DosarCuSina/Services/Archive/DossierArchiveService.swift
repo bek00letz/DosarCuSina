@@ -167,6 +167,8 @@ public struct DossierArchiveService {
                 createdAt: template.createdAt, updatedAt: template.updatedAt
             )
         }
+        // Secret fields (PIN codes) never leave the phone: an archive carries none.
+        let definitions = Dictionary(templates.map { ($0.key, $0.definition) }, uniquingKeysWith: { first, _ in first })
         let assetDTOs = assets.map { asset -> DossierV3.Asset in
             var photoPath: String?
             if let photo = asset.photoData {
@@ -177,7 +179,8 @@ public struct DossierArchiveService {
             return DossierV3.Asset(
                 id: DossierV3.id(asset.id), templateKey: asset.templateKey, name: asset.name,
                 parentId: DossierV3.id(asset.parent?.id), symbolOverride: asset.symbolOverride, tintOverride: asset.tintOverrideRaw, notes: asset.notes,
-                values: asset.values, customFacts: asset.customFacts.isEmpty ? nil : asset.customFacts,
+                values: SecretFields.stripping(asset.values, definition: definitions[asset.templateKey] ?? BuiltInTemplates.definition(for: asset.templateKey)),
+                customFacts: asset.customFacts.isEmpty ? nil : asset.customFacts,
                 photoPath: photoPath, isExample: asset.isExample,
                 createdAt: asset.createdAt, updatedAt: asset.updatedAt
             )

@@ -197,6 +197,17 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: "document.issueDate", label: String(localized: "Data emiterii"), type: .date, role: .startDate),
                     FieldDefinition(key: "document.expiry", label: String(localized: "Valabil până la"), type: .expiryDate, role: .expiryDate, isEssential: true),
                 ]),
+                // The two codes that come with the electronic identity card, named as on
+                // carteadeidentitate.gov.ro. Secret: sealed, shown only after a fresh Face ID,
+                // never exported. Never offered for a bank card: its terms forbid writing the PIN down.
+                FieldSection(key: "document.pins", title: String(localized: "Coduri PIN"), fields: [
+                    FieldDefinition(key: "document.pinAuthentication", label: String(localized: "PIN pentru autentificare"), type: .secret, isSensitive: true,
+                                    appliesWhen: electronicIdentityCard,
+                                    footnote: String(localized: "4 cifre. Îl folosești când intri în servicii online cu cartea de identitate.")),
+                    FieldDefinition(key: "document.pinSigning", label: String(localized: "PIN pentru semnare"), type: .secret, isSensitive: true,
+                                    appliesWhen: electronicIdentityCard,
+                                    footnote: String(localized: "6 cifre. Îl folosești când semnezi documente cu cartea de identitate.")),
+                ]),
             ],
             blueprints: [
                 ObligationBlueprint(key: "document.renew", title: String(localized: "Reînnoire"), kind: .renewal, recurrence: .none,
@@ -216,6 +227,11 @@ public enum BuiltInTemplates {
             ],
             pockets: [.upcoming, .documents, .keyFacts]
         )
+    }
+
+    /// Only the electronic identity card carries PIN codes.
+    private static var electronicIdentityCard: BlueprintCondition {
+        BlueprintCondition(field: DocumentType.variantFieldKey, oneOf: [DocumentType.Variant.idCardElectronic])
     }
 
     public static var pet: TemplateDefinition {

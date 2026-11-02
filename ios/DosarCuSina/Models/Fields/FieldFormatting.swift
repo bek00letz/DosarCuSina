@@ -108,6 +108,10 @@ public enum FieldFormatter {
             return Money.parseAmount(text) != nil
                 ? .valid
                 : .invalid(String(localized: "Scrie suma în cifre, de exemplu 350 sau 1.250,50.", comment: "Money field error"))
+        case .secret:
+            return text.allSatisfy(\.isNumber)
+                ? .valid
+                : .warning(String(localized: "Codurile PIN au de obicei doar cifre.", comment: "Secret PIN field hint"))
         case .text, .longText, .address, .choice, .multiChoice, .date, .expiryDate, .toggle:
             return .valid
         }
@@ -157,6 +161,8 @@ public enum FieldFormatter {
         switch value {
         case .text(let text):
             switch type {
+            // A secret never shows through a general path; only `SecretReveal` opens it.
+            case .secret: return SecretFields.mask
             case .iban: return groupIBAN(text)
             case .plate: return formatPlate(text) ?? text
             default: return text

@@ -30,6 +30,9 @@ public enum FieldType: String, Codable, CaseIterable, Sendable {
     case iban
     /// A running counter such as an odometer, engine hours or espresso shots.
     case metric
+    /// A code to keep hidden, such as an identity card's PIN: sealed when saved,
+    /// shown only after a fresh Face ID, never carried outside the binder (see `SecretFields`).
+    case secret
 
     /// The kind of `FieldValue` this type stores.
     public var valueKind: FieldValue.Kind {
@@ -39,7 +42,7 @@ public enum FieldType: String, Codable, CaseIterable, Sendable {
         case .date, .expiryDate: return .date
         case .toggle: return .bool
         case .multiChoice: return .choices
-        case .text, .longText, .choice, .url, .phone, .email, .address, .plate, .vin, .microchip, .iban:
+        case .text, .longText, .choice, .url, .phone, .email, .address, .plate, .vin, .microchip, .iban, .secret:
             return .text
         }
     }

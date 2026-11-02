@@ -42,11 +42,14 @@ public final class AssetActions {
     public let context: ModelContext
     private let calendar: Calendar
     private let now: () -> Date
+    /// Seals secret fields (PIN codes) before they are saved.
+    private let sealer: SecretSealer
 
-    public init(context: ModelContext, calendar: Calendar = .current, now: @escaping () -> Date = { Date() }) {
+    public init(context: ModelContext, calendar: Calendar = .current, now: @escaping () -> Date = { Date() }, sealer: SecretSealer = .device) {
         self.context = context
         self.calendar = calendar
         self.now = now
+        self.sealer = sealer
     }
 
     /// The template's blueprints with first dates worked out from `values`, for the add flow.
@@ -86,7 +89,10 @@ public final class AssetActions {
         newParent: NewParent? = nil,
         isExample: Bool = false
     ) throws -> Asset {
-        let prepared = values.normalizingChoices(for: template.definition).applyingRules(of: template.definition, previous: nil, calendar: calendar)
+        let prepared = try SecretFields.sealing(
+            values.normalizingChoices(for: template.definition).applyingRules(of: template.definition, previous: nil, calendar: calendar),
+            definition: template.definition, sealer: sealer
+        )
         let asset = Asset(name: name, templateKey: template.key, values: prepared, notes: notes, isExample: isExample)
         context.insert(asset)
         if let newParent {
@@ -118,8 +124,11 @@ public final class AssetActions {
     public func update(_ asset: Asset, name: String, values: FieldValues, notes: String?) throws {
         let previous = asset.values
         let template = try TemplateStore(context: context).template(forKey: asset.templateKey)
-        let values = template.map {
-            values.normalizingChoices(for: $0.definition).applyingRules(of: $0.definition, previous: previous, calendar: calendar)
+        let values = try template.map {
+            try SecretFields.sealing(
+                values.normalizingChoices(for: $0.definition).applyingRules(of: $0.definition, previous: previous, calendar: calendar),
+                definition: $0.definition, sealer: sealer
+            )
         } ?? values
         asset.name = name
         asset.values = values

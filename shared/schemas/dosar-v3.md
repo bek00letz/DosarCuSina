@@ -103,11 +103,14 @@ definition unless the archive's `version` is higher, and always applies the
 household preferences (`homeOrder`, `isOnHome`, `isSensitive`).
 
 - **Section:** `key`, `title`, `fields`.
-- **Field:** `key`, `label`, `type`, `role`?, `isEssential`, `isSensitive`, `options`?, `unit`?, `placeholder`?, `defaultValue`?, `derivation`?.
+- **Field:** `key`, `label`, `type`, `role`?, `isEssential`, `isSensitive`, `options`?, `unit`?, `placeholder`?, `defaultValue`?, `derivation`?, `appliesWhen`?, `footnote`?.
+  - **`appliesWhen`:** `{"field": "document.variant", "oneOf": ["documentVariant.idCard.electronic"]}`. The field is shown and kept only while the asset's value is one of these keys; a reader drops a value whose field no longer applies.
+  - **`footnote`:** one short line shown under the field.
   - **`defaultValue`:** a field value (see below), filled in when an asset is created and the field is empty. An example is `{"type": "number", "value": 24}` for warranty months.
   - **`derivation`:** `{"type": "addMonths", "date": "purchase.date", "months": "purchase.warrantyMonths"}`. The value is worked out again whenever one of its inputs changes, or while the field is empty. A value the person sets by hand stays until an input changes.
-  - **Options:** `[{"key": "fuel.diesel", "label": "Motorină", "aliases": ["Diesel"]}]`. Readers also accept a plain array of strings, from older definitions, and use each string as both key and label.
-  - **Types:** `text`, `longText`, `number`, `year`, `money`, `date`, `expiryDate`, `toggle`, `choice`, `multiChoice`, `url`, `phone`, `email`, `address`, `plate`, `vin`, `microchip`, `iban`, `metric`.
+  - **Options:** `[{"key": "fuel.diesel", "label": "Motorină", "aliases": ["Diesel"]}]`. Readers also accept a plain array of strings, from older definitions, and use each string as both key and label. An option may carry `appliesWhen` (same shape as above): it is offered only while that value matches, so a document's variants follow its type.
+  - **Types:** `text`, `longText`, `number`, `year`, `money`, `date`, `expiryDate`, `toggle`, `choice`, `multiChoice`, `url`, `phone`, `email`, `address`, `plate`, `vin`, `microchip`, `iban`, `metric`, `secret`.
+  - **`secret`:** a code kept hidden, such as an identity card's PIN. Its values are never written to an archive: writers leave them out, and readers ignore any they find and keep the ones already on the device for the same asset.
   - **Roles:** `identifier`, `subtitle`, `heroMetric`, `keyFact`, `documentNumber`, `holder`, `issuer`, `expiryDate`, `startDate`, `purchaseDate`, `purchasePrice`, `retailer`, `warrantyUntil`, `location`.
 - **Component:** `key`, `name`, `group`, `synonyms`.
 - **Blueprint:** `key`, `title`, `kind`, `recurrence`, `firstDue`, `reminders`, `reminderVariants`?, `appliesWhen`?, `estimatedCost`?, `isSuggested`, `note`?.

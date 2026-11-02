@@ -120,9 +120,12 @@ struct DossierImporter {
         for dto in package.assets {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.assets) }
             let asset: Asset
+            // Secrets this phone keeps for the record stay; an archive never brings any.
+            var localValues = FieldValues()
             if let current = map[id] {
                 guard dto.updatedAt > current.updatedAt else { result.skipped += 1; continue }
                 asset = current
+                localValues = current.values
                 result.updated += 1
             } else {
                 asset = Asset(id: id, name: dto.name, templateKey: dto.templateKey)
@@ -136,8 +139,12 @@ struct DossierImporter {
             asset.tintOverrideRaw = dto.tintOverride
             asset.notes = dto.notes
             // Choice values written as display text (v2 backups, older builds) become option keys.
-            let values = definitions[dto.templateKey].map { dto.values.normalizingChoices(for: $0) } ?? dto.values
-            asset.valuesData = StoredJSON.encode(values)
+            let definition = definitions[dto.templateKey]
+            let values = definition.map { dto.values.normalizingChoices(for: $0) } ?? dto.values
+            // Stripped by the archive's template and by the app's own, whichever names the secret.
+            let builtIn = BuiltInTemplates.definition(for: dto.templateKey)
+            let incoming = SecretFields.stripping(values, definition: builtIn)
+            asset.valuesData = StoredJSON.encode(SecretFields.keepingLocalSecrets(incoming, from: localValues, definition: builtIn ?? definition))
             asset.customFacts = dto.customFacts ?? []
             asset.photoData = dto.photoPath.flatMap { package.files[$0] }
             asset.isExample = dto.isExample

@@ -136,6 +136,24 @@ public final class BiometricVaultManager {
         return result
     }
 
+    /// Asks for Face ID, Touch ID or the passcode for one look at a secret (a PIN
+    /// code), always, even while the session is open. It never opens or closes
+    /// the session: the answer is for this one reveal only.
+    public func authenticateForReveal(reason: String) async -> UnlockResult {
+        isAuthenticating = true
+        defer { isAuthenticating = false }
+        do {
+            return try await authenticator.evaluate(localizedReason: reason) ? .success : .failed
+        } catch let error as LAError {
+            switch error.code {
+            case .userCancel, .appCancel, .systemCancel: return .cancelled
+            default: return .failed
+            }
+        } catch {
+            return .failed
+        }
+    }
+
     /// Closes the session now.
     public func lock() {
         isSessionUnlocked = false

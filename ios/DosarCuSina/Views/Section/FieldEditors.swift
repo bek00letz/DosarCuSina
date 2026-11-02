@@ -34,6 +34,8 @@ struct FieldEditor: View {
                 validator: { FieldEditor.validation(FieldFormatter.validate($0, as: field.type)) },
                 formatter: { FieldFormatter.normalize($0, as: field.type) }
             )
+        case .secret:
+            DSSecretField(title, value: textBinding, footnote: footnote)
         case .number, .metric:
             DSMetricField(title, value: numberBinding, unit: field.unit ?? "", isRequired: isRequired)
         case .year:

@@ -86,6 +86,7 @@ private struct SectionContent: View {
                 if asset.templateKey == BuiltInTemplates.Key.documents, (asset.attachments ?? []).isEmpty {
                     DocumentPhotoPrompt(asset: asset, toast: $toast)
                 }
+                SecretFieldsCard(asset: asset, definition: definition)
                 ForEach(definition.pockets, id: \.self) { pocket in
                     PocketView(pocket: pocket, asset: asset, definition: definition, toast: $toast, error: $error)
                 }
@@ -277,6 +278,40 @@ private struct DocumentPhotoPrompt: View {
                     toast = DSToast(title: message, actionTitle: nil, action: nil)
                 case .dismissed:
                     break
+                }
+            }
+        }
+    }
+}
+
+/// The asset's secret fields (an electronic identity card's PIN codes), masked.
+/// Showing or copying one asks for Face ID every time, even with the section open.
+private struct SecretFieldsCard: View {
+    let asset: Asset
+    let definition: TemplateDefinition
+
+    @Environment(BiometricVaultManager.self) private var vault
+
+    var body: some View {
+        let fields = SecretFields.fields(in: definition).filter { $0.applies(to: asset.values) }
+        if !fields.isEmpty {
+            DSPocketCard(String(localized: "Coduri PIN", comment: "Header of the secret codes on a document page.")) {
+                ForEach(Array(fields.enumerated()), id: \.element.key) { index, field in
+                    if index > 0 { DSRowSeparator() }
+                    let sealed = asset.value(field.key)?.textValue
+                    DSSecretValueRow(
+                        title: Text(verbatim: field.label),
+                        footnote: sealed == nil
+                            ? Text("Îl poți scrie din Editează. Îl arăt doar după Face ID.", comment: "Footnote of an empty secret code row.")
+                            : nil,
+                        isSet: sealed != nil
+                    ) {
+                        guard let sealed else { return .notAuthenticated }
+                        return await SecretReveal(vault: vault).open(
+                            sealed,
+                            reason: String(localized: "Arată \(field.label)", comment: "Face ID reason when showing a secret code.")
+                        )
+                    }
                 }
             }
         }

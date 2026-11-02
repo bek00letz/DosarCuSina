@@ -91,7 +91,8 @@
                 "properties": {
                   "key": { "type": "string" },
                   "label": { "type": "string" },
-                  "aliases": { "type": "array", "items": { "type": "string" } }
+                  "aliases": { "type": "array", "items": { "type": "string" } },
+                  "appliesWhen": { "type": "object", "required": ["field", "oneOf"], "properties": { "field": { "type": "string" }, "oneOf": { "type": "array", "items": { "type": "string" } } } }
                 }
               },
               { "type": "string", "description": "Older definitions: the text is both key and label." }
@@ -105,7 +106,9 @@
           "type": "object",
           "required": ["type"],
           "properties": { "type": { "const": "addMonths" }, "date": { "type": "string" }, "months": { "type": "string" } }
-        }
+        },
+        "appliesWhen": { "type": "object", "required": ["field", "oneOf"], "properties": { "field": { "type": "string" }, "oneOf": { "type": "array", "items": { "type": "string" } } } },
+        "footnote": { "type": "string" }
       }
     },
     "blueprint": {

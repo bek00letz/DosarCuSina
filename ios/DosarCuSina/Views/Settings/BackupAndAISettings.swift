@@ -54,7 +54,7 @@ struct BackupSettings: View {
         } header: {
             Text("Copie de siguranță", comment: "Settings section.")
         } footer: {
-            Text("Copia e un singur fișier cu tot dosarul, inclusiv documentele. Păstreaz-o în Fișiere, pe iCloud Drive sau trimite-o pe alt telefon.", comment: "Footer of the backup section.")
+            Text("Copia e un singur fișier cu tot dosarul, inclusiv documentele. Păstreaz-o în Fișiere, pe iCloud Drive sau trimite-o pe alt telefon. Codurile PIN nu intră în copie: rămân doar pe acest telefon.", comment: "Footer of the backup section.")
         }
         .sheet(item: Binding(get: { exportURL.map(ShareItem.init) }, set: { if $0 == nil { exportURL = nil } })) { item in
             ShareSheet(url: item.url) {
