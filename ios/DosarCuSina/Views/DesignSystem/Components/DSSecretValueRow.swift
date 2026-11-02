@@ -24,21 +24,17 @@ struct DSSecretValueRow: View {
     @State private var copied = 0
     @State private var copiedNote = false
     @Environment(\.scenePhase) private var scenePhase
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Space.xs) {
-            let layout = dynamicTypeSize.isAccessibilitySize
-                ? AnyLayout(VStackLayout(alignment: .leading, spacing: DS.Space.s))
-                : AnyLayout(HStackLayout(spacing: DS.Space.s))
-            layout {
+            DSValueWithActions {
                 VStack(alignment: .leading, spacing: 2) {
                     title.dsFont(.footnote)
                     value
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityElement(children: .combine)
+            } actions: {
                 if isSet { buttons }
             }
             if let footnote { footnote.dsFont(.footnote) }
@@ -100,21 +96,16 @@ struct DSSecretValueRow: View {
     }
 
     private var buttons: some View {
-        HStack(spacing: DS.Space.xs) {
+        Group {
             Button {
                 if shown != nil { shown = nil } else { Task { await reveal() } }
             } label: {
-                Label(shown == nil ? LocalizedStringKey("Arată") : LocalizedStringKey("Ascunde"),
-                      systemImage: shown == nil ? "eye" : "eye.slash")
-                    .font(.subheadline.weight(.semibold))
-                    .frame(minHeight: 44)
+                DSValueActionLabel(title: shown == nil ? "Arată" : "Ascunde", systemImage: shown == nil ? "eye" : "eye.slash")
             }
             Button {
                 Task { await copy() }
             } label: {
-                Label("Copiază", systemImage: "doc.on.doc")
-                    .font(.subheadline.weight(.semibold))
-                    .frame(minHeight: 44)
+                DSValueActionLabel(title: "Copiază", systemImage: "doc.on.doc")
             }
         }
         .buttonStyle(.bordered)

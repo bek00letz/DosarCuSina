@@ -55,25 +55,18 @@ struct DSActionValueRow: View {
 
     @State private var copied = 0
     @Environment(\.openURL) private var openURL
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        // At accessibility sizes the button moves under the value, so the value keeps the full width.
-        let layout = dynamicTypeSize.isAccessibilitySize
-            ? AnyLayout(VStackLayout(alignment: .leading, spacing: DS.Space.s))
-            : AnyLayout(HStackLayout(spacing: DS.Space.s))
-        layout {
+        DSValueWithActions {
             VStack(alignment: .leading, spacing: 2) {
                 title.dsFont(.footnote)
                 Text(verbatim: value)
                     .dsFont(.headline, numeric: true)
                     .textSelection(.enabled)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+        } actions: {
             Button(action: perform) {
-                Label(action == .copy ? LocalizedStringKey("Copiază") : LocalizedStringKey("Sună"), systemImage: action == .copy ? "doc.on.doc" : "phone.fill")
-                    .font(.subheadline.weight(.semibold))
-                    .frame(minHeight: 44)
+                DSValueActionLabel(title: action == .copy ? "Copiază" : "Sună", systemImage: action == .copy ? "doc.on.doc" : "phone.fill")
             }
             .buttonStyle(.bordered)
             .buttonBorderShape(.capsule)
@@ -92,5 +85,42 @@ struct DSActionValueRow: View {
             let digits = value.filter { $0.isNumber || $0 == "+" }
             if let url = URL(string: "tel:\(digits)") { openURL(url) }
         }
+    }
+}
+
+/// A value with its buttons: side by side when everything fits on one line, the
+/// buttons on their own line under the value otherwise. Button labels never wrap,
+/// so a narrow screen or large text moves the buttons down instead of breaking
+/// "Copiază" into syllables. The one layout for every value-with-actions row.
+struct DSValueWithActions<Value: View, Actions: View>: View {
+    @ViewBuilder let value: () -> Value
+    @ViewBuilder let actions: () -> Actions
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: DS.Space.s) {
+                value().frame(maxWidth: .infinity, alignment: .leading)
+                HStack(spacing: DS.Space.xs) { actions() }
+            }
+            VStack(alignment: .leading, spacing: DS.Space.s) {
+                value().frame(maxWidth: .infinity, alignment: .leading)
+                HStack(spacing: DS.Space.xs) { actions() }
+            }
+        }
+    }
+}
+
+/// A small labelled button for a value's action ("Copiază", "Arată", "Sună"):
+/// bordered, at least 44 pt tall, its label on one line.
+struct DSValueActionLabel: View {
+    let title: LocalizedStringKey
+    let systemImage: String
+
+    var body: some View {
+        Label(title, systemImage: systemImage)
+            .font(.subheadline.weight(.semibold))
+            .lineLimit(1)
+            .fixedSize()
+            .frame(minHeight: 44)
     }
 }
