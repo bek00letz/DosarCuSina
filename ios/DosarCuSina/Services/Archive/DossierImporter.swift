@@ -65,7 +65,9 @@ struct DossierImporter {
                 key: dto.key, name: dto.name, summary: dto.summary, symbol: dto.symbol,
                 tint: TemplateTint(rawValue: dto.tint) ?? .gray, heroStyle: HeroStyle(rawValue: dto.heroStyle) ?? .standard,
                 isOnHomeByDefault: dto.isOnHome, isSensitiveByDefault: dto.isSensitive,
-                sections: dto.sections, blueprints: dto.blueprints, components: dto.components ?? [], version: dto.version
+                sections: dto.sections, blueprints: dto.blueprints, components: dto.components ?? [],
+                pockets: dto.pockets.map { $0.compactMap(SectionPocket.init(rawValue:)) } ?? SectionPocket.standard,
+                version: dto.version
             )
             // A built-in from an older app version takes this app's definition.
             if isBuiltIn, let catalog, catalog.version >= dto.version {
@@ -77,6 +79,7 @@ struct DossierImporter {
                 definition.sections = catalog.sections
                 definition.blueprints = catalog.blueprints
                 definition.components = catalog.components
+                definition.pockets = catalog.pockets
                 definition.version = catalog.version
             }
             if let template = byKey[dto.key] {
@@ -134,6 +137,7 @@ struct DossierImporter {
             // Choice values written as display text (v2 backups, older builds) become option keys.
             let values = definitions[dto.templateKey].map { dto.values.normalizingChoices(for: $0) } ?? dto.values
             asset.valuesData = StoredJSON.encode(values)
+            asset.customFacts = dto.customFacts ?? []
             asset.photoData = dto.photoPath.flatMap { package.files[$0] }
             asset.isExample = dto.isExample
             asset.createdAt = dto.createdAt

@@ -28,6 +28,17 @@ public struct KeyFact: Hashable, Sendable, Identifiable {
     public var isCallable: Bool { field.type == .phone }
 }
 
+/// One row under Date importante: a key fact from the template or a free row.
+public struct FactRow: Hashable, Sendable, Identifiable {
+    public var id: String
+    public var label: String
+    public var text: String
+    public var isCallable: Bool
+    public var isSensitive: Bool
+    /// A free row the person added, editable in place.
+    public var isCustom: Bool
+}
+
 /// Role-based reading of an asset's values, so screens and engines never hard-code field keys.
 public enum AssetFacts {
     public static func purchase(_ values: FieldValues, template: TemplateDefinition) -> PurchaseInfo {
@@ -47,6 +58,16 @@ public enum AssetFacts {
         template.keyFactFields.compactMap { field in
             guard let value = values[field.key] else { return nil }
             return KeyFact(field: field, value: value, text: FieldFormatter.display(value, field: field, locale: locale))
+        }
+    }
+
+    /// Everything Date importante shows: the template's key facts, then the person's own rows.
+    public static func factRows(_ values: FieldValues, customFacts: [CustomFact], template: TemplateDefinition?, locale: Locale = .dosarDefault) -> [FactRow] {
+        let fromTemplate = template.map { keyFacts(values, template: $0, locale: locale) } ?? []
+        return fromTemplate.map {
+            FactRow(id: $0.field.key, label: $0.field.label, text: $0.text, isCallable: $0.isCallable, isSensitive: $0.field.isSensitive, isCustom: false)
+        } + customFacts.map {
+            FactRow(id: $0.id.uuidString, label: $0.label, text: $0.value, isCallable: false, isSensitive: $0.isSensitive, isCustom: true)
         }
     }
 

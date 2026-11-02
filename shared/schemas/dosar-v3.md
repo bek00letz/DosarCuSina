@@ -84,7 +84,12 @@ to update the app, and imports version 2 through a converter.
 (`blue|orange|pink|brown|indigo|teal|purple|green|red|yellow|mint|cyan|gray`),
 `heroStyle` (`vehicle|home|document|pet|standard`), `isBuiltIn`, `version`,
 `homeOrder`, `isOnHome`, `isSensitive`, `sections`, `blueprints`,
-`components`?, `createdAt`, `updatedAt`.
+`components`?, `pockets`?, `createdAt`, `updatedAt`.
+
+`pockets` lists the parts a section page shows. The values are
+`upcoming|tenants|products|subscriptions|documents|history|people|money|keyFacts`,
+always shown in that order. When the key is missing, readers use
+`upcoming, documents, history, people, money, keyFacts`.
 
 Built-in keys: `vehicle`, `home`, `documents`, `pet`, `health`, `warranty`,
 `subscription`, `other`, `bike`, `plants`, `rental`, `espresso`. Custom keys
@@ -141,7 +146,10 @@ household preferences (`homeOrder`, `isOnHome`, `isSensitive`).
 ### Asset (`data/assets.json`)
 
 `id`, `templateKey`, `name`, `parentId`?, `symbolOverride`?, `tintOverride`?,
-`notes`?, `values`, `photoPath`?, `isExample`, `createdAt`, `updatedAt`.
+`notes`?, `values`, `customFacts`?, `photoPath`?, `isExample`, `createdAt`, `updatedAt`.
+
+`customFacts` holds free rows under Date importante:
+`[{"id": "…", "label": "Loc în port", "value": "Ponton 3", "isSensitive": false}]`.
 
 `parentId` files the asset under another: a tenancy under its property, a
 product under a home, a document under its holder. Deleting a parent never

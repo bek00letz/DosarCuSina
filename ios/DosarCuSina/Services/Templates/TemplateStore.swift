@@ -104,6 +104,22 @@ public struct TemplateStore {
         return template
     }
 
+    /// Creates a category from a name, a symbol and the pockets it should show,
+    /// with no fields of its own ("Altceva…"). Facts go in Date importante as free rows.
+    @discardableResult
+    public func createCustom(name: String, symbol: String, pockets: [SectionPocket], tint: TemplateTint = .gray, isSensitive: Bool = false) throws -> CategoryTemplate {
+        let template = try createCustom(name: name, symbol: symbol, tint: tint, sections: [], isSensitive: isSensitive)
+        template.pockets = pockets
+        try save()
+        return template
+    }
+
+    /// Changes which pockets a category shows.
+    public func setPockets(_ template: CategoryTemplate, _ pockets: [SectionPocket]) throws {
+        template.pockets = pockets
+        try save()
+    }
+
     /// Replaces a custom template's definition. Built-ins only take preference changes.
     public func update(_ template: CategoryTemplate, with definition: TemplateDefinition) throws {
         if template.isBuiltIn {

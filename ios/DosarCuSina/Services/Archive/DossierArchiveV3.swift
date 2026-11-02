@@ -62,6 +62,8 @@ public enum DossierV3 {
         public var sections: [FieldSection]
         public var blueprints: [ObligationBlueprint]
         public var components: [ComponentDefinition]?
+        /// `SectionPocket` raw values; missing means the standard set.
+        public var pockets: [String]?
         public var createdAt: Date
         public var updatedAt: Date
     }
@@ -76,6 +78,8 @@ public enum DossierV3 {
         public var tintOverride: String?
         public var notes: String?
         public var values: FieldValues
+        /// Free label–value rows under Date importante.
+        public var customFacts: [CustomFact]?
         /// `vault/photos/<id>.jpg` when the asset has a photo.
         public var photoPath: String?
         public var isExample: Bool

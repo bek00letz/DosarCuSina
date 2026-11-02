@@ -16,6 +16,8 @@ extension DosarSchemaV2 {
         @Attribute(.externalStorage) public var photoData: Data?
         /// JSON `FieldValues`.
         public var valuesData: Data?
+        /// JSON `[CustomFact]`: free label and value rows under Date importante.
+        public var customFactsData: Data?
         /// Created by "Explore with examples"; removed together with one tap.
         public var isExample: Bool = false
         public var createdAt: Date = Date()
@@ -62,6 +64,11 @@ extension DosarSchemaV2 {
 
         public func value(_ key: String) -> FieldValue? {
             values[key]
+        }
+
+        public var customFacts: [CustomFact] {
+            get { StoredJSON.decode([CustomFact].self, from: customFactsData) ?? [] }
+            set { customFactsData = newValue.isEmpty ? nil : StoredJSON.encode(newValue); updatedAt = Date() }
         }
 
         public var tintOverride: TemplateTint? {

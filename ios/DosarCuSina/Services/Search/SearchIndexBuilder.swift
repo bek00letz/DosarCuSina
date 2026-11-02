@@ -65,6 +65,9 @@ public struct SearchIndexBuilder {
                 fields.append(SearchField(value.textValue?.filter { $0.isLetter || $0.isNumber }, weight: weight))
             }
         }
+        for fact in asset.customFacts where !fact.isSensitive {
+            fields.append(SearchField("\(fact.label) \(fact.value)", weight: SearchField.Weight.value))
+        }
         fields.append(SearchField(asset.notes, weight: SearchField.Weight.note))
         let subtitle = definition.flatMap { def in
             def.fields(withRole: .subtitle).compactMap { field in asset.value(field.key).map { FieldFormatter.display($0, field: field, locale: locale) } }.joined(separator: " ")

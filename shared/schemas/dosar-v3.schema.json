@@ -172,6 +172,10 @@
             }
           },
           "blueprints": { "type": "array", "items": { "$ref": "#/$defs/blueprint" } },
+          "pockets": {
+            "type": "array",
+            "items": { "enum": ["upcoming", "tenants", "products", "subscriptions", "documents", "history", "people", "money", "keyFacts"] }
+          },
           "components": {
             "type": "array",
             "items": {
@@ -196,6 +200,14 @@
           "name": { "type": "string" },
           "parentId": { "$ref": "#/$defs/uuid" },
           "values": { "type": "object", "additionalProperties": { "$ref": "#/$defs/fieldValue" } },
+          "customFacts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["label", "value"],
+              "properties": { "id": { "$ref": "#/$defs/uuid" }, "label": { "type": "string" }, "value": { "type": "string" }, "isSensitive": { "type": "boolean" } }
+            }
+          },
           "photoPath": { "$ref": "#/$defs/path" },
           "isExample": { "type": "boolean" },
           "createdAt": { "$ref": "#/$defs/timestamp" },

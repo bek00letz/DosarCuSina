@@ -44,6 +44,8 @@ public struct TemplateDefinition: Hashable, Sendable, Codable, Identifiable {
     public var blueprints: [ObligationBlueprint]
     /// Parts and jobs the history can track for assets of this category.
     public var components: [ComponentDefinition]
+    /// The pockets a section page of this category shows, in the global order.
+    public var pockets: [SectionPocket]
     /// Bumped when a built-in definition changes, so installed copies get upgraded.
     public var version: Int
 
@@ -61,9 +63,11 @@ public struct TemplateDefinition: Hashable, Sendable, Codable, Identifiable {
         sections: [FieldSection],
         blueprints: [ObligationBlueprint] = [],
         components: [ComponentDefinition] = [],
+        pockets: [SectionPocket] = SectionPocket.standard,
         version: Int = TemplateDefinition.builtInCatalogVersion
     ) {
         self.components = components
+        self.pockets = SectionPocket.ordered(pockets)
         self.key = key
         self.name = name
         self.summary = summary

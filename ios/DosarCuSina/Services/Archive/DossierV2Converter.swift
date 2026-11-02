@@ -241,7 +241,7 @@ enum DossierV2Converter {
 
             return DossierV3.Asset(
                 id: DossierV3.id(dto.id), templateKey: key, name: dto.name, parentId: nil, symbolOverride: nil, tintOverride: nil,
-                notes: notes.isEmpty ? nil : notes, values: values, photoPath: nil, isExample: false,
+                notes: notes.isEmpty ? nil : notes, values: values, customFacts: nil, photoPath: nil, isExample: false,
                 createdAt: dto.createdAt, updatedAt: dto.updatedAt
             )
         }

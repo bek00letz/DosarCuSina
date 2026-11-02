@@ -32,6 +32,8 @@ extension DosarSchemaV2 {
         public var blueprintsData: Data?
         /// JSON `[ComponentDefinition]`.
         public var componentsData: Data?
+        /// `SectionPocket` raw values.
+        public var pocketsRaw: [String] = SectionPocket.standard.map(\.rawValue)
 
         public var createdAt: Date = Date()
         public var updatedAt: Date = Date()
@@ -55,6 +57,7 @@ extension DosarSchemaV2 {
             sectionsData = StoredJSON.encode(definition.sections)
             blueprintsData = StoredJSON.encode(definition.blueprints)
             componentsData = StoredJSON.encode(definition.components)
+            pocketsRaw = definition.pockets.map(\.rawValue)
             builtInVersion = isBuiltIn ? definition.version : 0
             updatedAt = Date()
         }
@@ -84,6 +87,12 @@ extension DosarSchemaV2 {
             set { componentsData = StoredJSON.encode(newValue); updatedAt = Date() }
         }
 
+        /// The pockets a section page shows, in the global order.
+        public var pockets: [SectionPocket] {
+            get { SectionPocket.ordered(pocketsRaw.compactMap(SectionPocket.init(rawValue:))) }
+            set { pocketsRaw = SectionPocket.ordered(newValue).map(\.rawValue); updatedAt = Date() }
+        }
+
         public var isCustom: Bool { !isBuiltIn }
 
         /// The plain definition, as archives and the catalog describe it.
@@ -100,6 +109,7 @@ extension DosarSchemaV2 {
                 sections: sections,
                 blueprints: blueprints,
                 components: components,
+                pockets: pockets,
                 version: builtInVersion
             )
         }

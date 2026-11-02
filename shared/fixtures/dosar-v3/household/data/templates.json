@@ -57,6 +57,11 @@
     "isSensitive" : false,
     "key" : "custom.0b6c6f43-6c1e-4d1a-9c55-7d3b4f1f2a10",
     "name" : "Bărci",
+    "pockets" : [
+      "upcoming",
+      "history",
+      "keyFacts"
+    ],
     "sections" : [
       {
         "fields" : [

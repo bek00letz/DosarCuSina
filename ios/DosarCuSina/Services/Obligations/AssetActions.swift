@@ -112,6 +112,12 @@ public final class AssetActions {
         try save()
     }
 
+    /// Replaces the free label–value rows shown under Date importante.
+    public func setCustomFacts(_ asset: Asset, _ facts: [CustomFact]) throws {
+        asset.customFacts = facts.filter { !$0.label.trimmingCharacters(in: .whitespaces).isEmpty || !$0.value.trimmingCharacters(in: .whitespaces).isEmpty }
+        try save()
+    }
+
     /// Records a reading. Counter readings (odometer, shots) also update the asset's hero value.
     @discardableResult
     public func recordMeasurement(

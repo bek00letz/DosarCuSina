@@ -163,7 +163,8 @@ public struct DossierArchiveService {
                 tint: template.tintRaw, heroStyle: template.heroStyleRaw, isBuiltIn: template.isBuiltIn,
                 version: template.builtInVersion, homeOrder: template.homeOrder, isOnHome: template.isOnHome,
                 isSensitive: template.isSensitive, sections: template.sections, blueprints: template.blueprints,
-                components: template.components, createdAt: template.createdAt, updatedAt: template.updatedAt
+                components: template.components, pockets: template.pockets.map(\.rawValue),
+                createdAt: template.createdAt, updatedAt: template.updatedAt
             )
         }
         let assetDTOs = assets.map { asset -> DossierV3.Asset in
@@ -176,7 +177,8 @@ public struct DossierArchiveService {
             return DossierV3.Asset(
                 id: DossierV3.id(asset.id), templateKey: asset.templateKey, name: asset.name,
                 parentId: DossierV3.id(asset.parent?.id), symbolOverride: asset.symbolOverride, tintOverride: asset.tintOverrideRaw, notes: asset.notes,
-                values: asset.values, photoPath: photoPath, isExample: asset.isExample,
+                values: asset.values, customFacts: asset.customFacts.isEmpty ? nil : asset.customFacts,
+                photoPath: photoPath, isExample: asset.isExample,
                 createdAt: asset.createdAt, updatedAt: asset.updatedAt
             )
         }

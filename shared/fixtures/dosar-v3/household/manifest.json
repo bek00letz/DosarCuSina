@@ -1,14 +1,14 @@
 {
   "appVersion": "1.0",
   "checksums": {
-    "data/assets.json": "39df788b7933133c92d7ed7fd6f5dae56e12d8a73fa9cf40d3c9dffc87504a95",
+    "data/assets.json": "3a33a352f1205577fefbf6e0d4c5dc44d85d4ff0bf9380b3a0037c2d3860923a",
     "data/attachments.json": "96bc8bde06f30fe070d5b59df97d2b3b61f4e63aa3b377b4fd744a84707b360e",
     "data/history.json": "66c1c3508abf0c8b6c231cfca27030d4fe4b149b248998ea9dd7b234986043a3",
     "data/measurements.json": "25649828ce83b91bb3d9d3344a3dfa5f43df523c6f234883375694d7aa46ba67",
     "data/obligations.json": "bddb7fbfce23ff7bfb3a7197824a2ee213303cc173230ff282e4769faf1e67fa",
     "data/providers.json": "29342a0eb19c085dfee07ca30cac56cfeeb84ab1dab74ac21d14a8a5f4579a13",
     "data/service_items.json": "ebad7ff774b41ab15dd2ef7ac25cde98ae1e3173ffcac235b121d625cdcd15a3",
-    "data/templates.json": "7683027afdd7d3fa635e53c9972b58499865ac8c06719b9ba5a684c9c31cc4be",
+    "data/templates.json": "94489d59d953f583c4201d6b6f1344bd824d5e686045d4cfac855bdac265377c",
     "vault/6b7c8d9e-0f1a-4b2c-9d4e-5f6a7b8c9db8.txt": "67051d54289bda73dbc0a679ebb22a534c22a05ec288f34e241bb495d445e43c",
     "vault/6b7c8d9e-0f1a-4b2c-9d4e-5f6a7b8c9db8/page-1.heic": "eae0d75dcf271ec321c664b71d28a99d217c431110e914e34c5113b6c43534e0",
     "vault/6b7c8d9e-0f1a-4b2c-9d4e-5f6a7b8c9db8/thumbnail.heic": "381d123ce2a34027c40d307beced14c96833f5007a7269cc1db5104bd96bda9f",

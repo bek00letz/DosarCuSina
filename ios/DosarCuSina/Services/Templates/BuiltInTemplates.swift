@@ -92,7 +92,8 @@ public enum BuiltInTemplates {
                 ObligationBlueprint(key: "vehicle.kit", title: String(localized: "Trusă medicală și stingător"), kind: .legal, recurrence: .none, firstDue: .ask,
                                     reminders: profile([14, 0], .legal), isSuggested: false, note: String(localized: "Data expirării e pe ambalaj.")),
             ],
-            components: BuiltInComponents.vehicle
+            components: BuiltInComponents.vehicle,
+            pockets: [.upcoming, .documents, .history, .people, .money, .keyFacts]
         )
     }
 
@@ -146,7 +147,8 @@ public enum BuiltInTemplates {
                 ObligationBlueprint(key: "home.chimney", title: String(localized: "Curățare coș de fum"), kind: .maintenance, recurrence: .interval(.years(1), anchor: .completion), firstDue: .ask,
                                     reminders: profile([14, 0], .comfort, grace: 30), isSuggested: false),
             ],
-            components: BuiltInComponents.home
+            components: BuiltInComponents.home,
+            pockets: [.upcoming, .tenants, .products, .subscriptions, .documents, .history, .people, .money, .keyFacts]
         )
     }
 
@@ -186,7 +188,8 @@ public enum BuiltInTemplates {
                                         DocumentType.criminalRecord: profile([7, 0], .legal),
                                     ]),
                                     note: String(localized: "Programările durează. Pentru pașaport, multe țări cer 6 luni de valabilitate.")),
-            ]
+            ],
+            pockets: [.upcoming, .documents, .keyFacts]
         )
     }
 
@@ -232,7 +235,8 @@ public enum BuiltInTemplates {
                                     firstDue: .afterInterval(.weeks(6)),
                                     reminders: profile([2], .comfort, grace: 14), isSuggested: false),
             ],
-            components: BuiltInComponents.pet
+            components: BuiltInComponents.pet,
+            pockets: [.upcoming, .documents, .history, .people, .money, .keyFacts]
         )
     }
 
@@ -269,7 +273,8 @@ public enum BuiltInTemplates {
                 ObligationBlueprint(key: "health.euCard", title: String(localized: "Card european de sănătate"), kind: .renewal, recurrence: .interval(.years(2), anchor: .completion),
                                     firstDue: .ask,
                                     reminders: profile([30, 7], .financial), isSuggested: false),
-            ]
+            ],
+            pockets: [.upcoming, .documents, .history, .people, .keyFacts]
         )
     }
 
@@ -300,7 +305,8 @@ public enum BuiltInTemplates {
                                     firstDue: .field(key: "warranty.expiry", offsetDays: -30),
                                     reminders: profile([7, 0], .financial),
                                     note: String(localized: "O lună înainte de expirare, ca să mai poți cere reparații gratuite.")),
-            ]
+            ],
+            pockets: [.upcoming, .documents, .history, .money, .keyFacts]
         )
     }
 
@@ -335,7 +341,8 @@ public enum BuiltInTemplates {
                                     firstDue: .field(key: "subscription.contractEnd", offsetDays: 0),
                                     reminders: profile([14], .financial), isSuggested: false,
                                     note: String(localized: "Un moment bun să ceri o ofertă mai bună.")),
-            ]
+            ],
+            pockets: [.upcoming, .documents, .money, .keyFacts]
         )
     }
 
@@ -352,7 +359,8 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: "other.identifier", label: String(localized: "Serie sau cod"), type: .text, role: .identifier),
                 ]),
                 PurchaseFields.section(prefix: "other"),
-            ]
+            ],
+            pockets: SectionPocket.standard
         )
     }
 
@@ -389,7 +397,8 @@ public enum BuiltInTemplates {
                                     recurrence: .interval(.years(1), anchor: .completion), firstDue: .afterInterval(.years(1)),
                                     reminders: profile([7], .comfort, grace: 30), isSuggested: false),
             ],
-            components: BuiltInComponents.bike
+            components: BuiltInComponents.bike,
+            pockets: [.upcoming, .history, .people, .money, .keyFacts]
         )
     }
 
@@ -417,7 +426,8 @@ public enum BuiltInTemplates {
                 ObligationBlueprint(key: "plants.repot", title: String(localized: "Schimbat ghiveciul"), kind: .routine, recurrence: .interval(.years(2), anchor: .completion),
                                     firstDue: .afterInterval(.years(2)),
                                     reminders: profile([7], .comfort, grace: 30), isSuggested: false),
-            ]
+            ],
+            pockets: [.upcoming, .history, .keyFacts]
         )
     }
 
@@ -453,7 +463,8 @@ public enum BuiltInTemplates {
                 ObligationBlueprint(key: "rental.leaseEnd", title: String(localized: "Se termină contractul de închiriere"), kind: .renewal, recurrence: .none,
                                     firstDue: .field(key: "rental.leaseEnd", offsetDays: 0),
                                     reminders: profile([60, 30, 7], .financial)),
-            ]
+            ],
+            pockets: [.upcoming, .documents, .people, .money, .keyFacts]
         )
     }
 
@@ -484,7 +495,8 @@ public enum BuiltInTemplates {
                                     recurrence: .interval(.months(2), anchor: .completion), firstDue: .afterInterval(.months(2)),
                                     reminders: profile([3, 0], .comfort, grace: 14)),
             ],
-            components: BuiltInComponents.espresso
+            components: BuiltInComponents.espresso,
+            pockets: [.upcoming, .history, .money, .keyFacts]
         )
     }
 }
