@@ -13,6 +13,7 @@ struct MoveAssetSheet: View {
     private enum Choice: Hashable {
         case asset(UUID)
         case newMember
+        case standalone
     }
 
     @Environment(\.modelContext) private var context
@@ -27,6 +28,7 @@ struct MoveAssetSheet: View {
 
     private var destinations: [Asset] { AssetActions.moveDestinations(for: asset, among: assets) }
     private var offersNewMember: Bool { AssetActions.offersNewMember(for: asset) }
+    private var offersStandalone: Bool { AssetActions.offersStandalone(for: asset) }
 
     /// The holder's name the document would move to, for the rename offer.
     private var newHolderName: String? {
@@ -35,7 +37,7 @@ struct MoveAssetSheet: View {
         case .newMember?:
             let name = newMemberName.trimmingCharacters(in: .whitespacesAndNewlines)
             return name.isEmpty ? nil : name
-        case nil: return nil
+        case .standalone?, nil: return nil
         }
     }
 
@@ -46,7 +48,7 @@ struct MoveAssetSheet: View {
     var body: some View {
         NavigationStack {
             Group {
-                if destinations.isEmpty && !offersNewMember {
+                if destinations.isEmpty && !offersNewMember && !offersStandalone {
                     DSEmptyState(
                         "Nu ai unde să-l muți",
                         systemImage: "arrow.turn.up.right",
@@ -81,6 +83,16 @@ struct MoveAssetSheet: View {
                             if index > 0 { DSRowSeparator() }
                             DSCheckRow(title: Text(verbatim: destination.name), isOn: choice == .asset(destination.id)) {
                                 choice = .asset(destination.id)
+                            }
+                            .padding(.vertical, DS.Space.xxs)
+                        }
+                        if offersStandalone {
+                            if !destinations.isEmpty { DSRowSeparator() }
+                            DSCheckRow(
+                                title: Text("În Abonamente, fără locuință", comment: "Move option: a subscription stands on its own, like a phone plan."),
+                                isOn: choice == .standalone
+                            ) {
+                                choice = .standalone
                             }
                             .padding(.vertical, DS.Space.xxs)
                         }
@@ -132,6 +144,8 @@ struct MoveAssetSheet: View {
         case .newMember?:
             guard newHolderName != nil else { reveals = true; return }
             target = .newMember(name: newMemberName)
+        case .standalone?:
+            target = .standalone
         case nil:
             return
         }
@@ -148,7 +162,9 @@ struct MoveAssetSheet: View {
 extension AssetActions.MoveReceipt {
     /// "Mutat la „Manole Corina”", for the toast with the undo.
     var toastTitle: LocalizedStringResource {
-        let place = child.parent?.name ?? ""
+        guard let place = child.parent?.name else {
+            return LocalizedStringResource("Mutat în Abonamente", comment: "Toast after a subscription was taken out of its home.")
+        }
         return LocalizedStringResource("Mutat la „\(place)”", comment: "Toast after moving something under another parent.")
     }
 }

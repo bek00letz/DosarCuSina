@@ -11,6 +11,8 @@ extension AssetActions {
         case asset(UUID)
         /// A new household member with this name, made in the same save (documents only).
         case newMember(name: String)
+        /// Filed under nothing: a subscription taken out of its home, into Abonamente.
+        case standalone
     }
 
     /// What a move changed, so it can be taken back.
@@ -26,6 +28,8 @@ extension AssetActions {
     /// category, or a household member for a personal document filed under no one.
     /// Nil when it isn't something filed under something else.
     public static func parentTemplateKey(for child: Asset) -> String? {
+        // A subscription can go under a home (gas, internet) or stand on its own (a phone plan).
+        if child.templateKey == BuiltInTemplates.Key.subscription { return BuiltInTemplates.Key.home }
         if let parent = child.parent { return parent.templateKey }
         return child.templateKey == BuiltInTemplates.Key.documents ? BuiltInTemplates.Key.member : nil
     }
@@ -33,6 +37,11 @@ extension AssetActions {
     /// Whether "O persoană nouă" is offered: only personal documents go under people.
     public static func offersNewMember(for child: Asset) -> Bool {
         child.templateKey == BuiltInTemplates.Key.documents && parentTemplateKey(for: child) == BuiltInTemplates.Key.member
+    }
+
+    /// Whether "În Abonamente" is offered: a subscription filed under a home can stand on its own.
+    public static func offersStandalone(for child: Asset) -> Bool {
+        child.templateKey == BuiltInTemplates.Key.subscription && child.parent != nil
     }
 
     /// The other parents `child` can move to: the same kind as its parent, never
@@ -60,8 +69,10 @@ extension AssetActions {
         let previousName = child.name
         return try UnitOfWork.perform(in: context) {
             var created: Asset?
-            let parent: Asset
+            let parent: Asset?
             switch target {
+            case .standalone:
+                parent = nil
             case .asset(let id):
                 var descriptor = FetchDescriptor<Asset>(predicate: #Predicate { $0.id == id })
                 descriptor.fetchLimit = 1
