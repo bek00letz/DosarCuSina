@@ -68,6 +68,65 @@ struct SchemaMigrationTests {
         #expect(four["Obligation"] != Self.versionThree["Obligation"], "A deadline keeps its travel margin")
     }
 
+    /// Version 4 as it shipped: version 3 with a deadline's travel margin.
+    static let versionFour: [String: String] = versionThree.merging(["Obligation": "unknown"]) { $1 }
+
+    @Test func theFrozenVersionFourKeepsTheShapeItShippedWith() {
+        #expect(Self.fingerprint(DosarSchemaV4.models) == Self.versionFour)
+    }
+
+    @Test func versionFiveChangesOnlyDeadlines() {
+        let five = Self.fingerprint(DosarSchemaV5.models)
+        for (entity, hash) in Self.versionFour where entity != "Obligation" {
+            #expect(five[entity] == hash, "\(entity) is as version 4 shipped it")
+        }
+        #expect(five["Obligation"] != Self.versionFour["Obligation"], "A deadline knows whether the person set its reminders")
+    }
+
+    @Test func aStoreFromVersionFourOpensWithItsDeadlines() throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Dosar-v4.store")
+        let deadlineID = UUID()
+
+        // Written by version 4: a passport's deadline with its cut-off, as a phone has it today.
+        do {
+            let schema = Schema(versionedSchema: DosarSchemaV4.self)
+            let container = try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)])
+            let context = ModelContext(container)
+            let passport = DosarSchemaV4.Asset(name: "Pașaport", templateKey: "documents")
+            passport.valuesData = StoredJSON.encode(FieldValues([DocumentType.typeFieldKey: .text(DocumentType.passport)]))
+            let renewal = DosarSchemaV4.Obligation(title: "Reînnoire")
+            renewal.id = deadlineID
+            renewal.blueprintKey = BuiltInBlueprints.documentRenew
+            renewal.kindRaw = ObligationKind.renewal.rawValue
+            renewal.reminderLeadDays = [90, 0]
+            renewal.consequenceRaw = Consequence.legal.rawValue
+            renewal.followUpAfterLapse = true
+            renewal.travelMarginDays = 180
+            context.insert(passport)
+            context.insert(renewal)
+            renewal.asset = passport
+            try context.save()
+        }
+
+        // Opened by this version: everything kept, and the reminders aren't marked as the person's.
+        let container = try PersistenceController.makeContainer(storeURL: url)
+        let context = ModelContext(container)
+        let renewal = try #require(try context.fetch(FetchDescriptor<Obligation>()).first)
+        #expect(renewal.id == deadlineID)
+        #expect(renewal.asset?.name == "Pașaport")
+        #expect(renewal.reminders == ReminderProfile(leadDays: [90, 0], consequence: .legal, followUpAfterLapse: true, travelMarginDays: 180))
+        #expect(!renewal.remindersCustomized)
+
+        // The new attribute is kept.
+        renewal.remindersCustomized = true
+        try UnitOfWork.save(context)
+        let reopened = ModelContext(try PersistenceController.makeContainer(storeURL: url))
+        #expect(try reopened.fetch(FetchDescriptor<Obligation>()).first?.remindersCustomized == true)
+    }
+
     @Test func aStoreFromVersionThreeOpensWithItsDeadlines() throws {
         let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
@@ -150,7 +209,7 @@ struct SchemaMigrationTests {
         #expect(firm.assets?.map(\.id) == [car.id])
         let template = try #require(try context.fetch(FetchDescriptor<CategoryTemplate>()).first)
         #expect(template.behavior == .standard, "A category from before version 3 behaves as standard until the built-ins are upgraded")
-        let policy = try #require(try context.fetch(FetchDescriptor<DosarSchemaV4.Attachment>()).first)
+        let policy = try #require(try context.fetch(FetchDescriptor<DosarSchemaV5.Attachment>()).first)
         #expect(policy.validUntil == nil)
         #expect(policy.asset?.id == car.id)
 

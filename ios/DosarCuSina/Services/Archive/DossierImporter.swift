@@ -246,6 +246,7 @@ struct DossierImporter {
             obligation.setDueDay(dto.dueDate, calendar: calendar)
             obligation.dueMetric = dto.dueMetric
             obligation.reminders = dto.reminders
+            obligation.remindersCustomized = dto.remindersCustomized ?? false
             obligation.reminderMinuteOfDay = dto.reminderMinuteOfDay
             obligation.recurrence = dto.recurrence
             obligation.estimatedCost = dto.estimatedCost

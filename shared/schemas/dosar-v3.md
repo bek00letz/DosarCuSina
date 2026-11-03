@@ -254,7 +254,9 @@ Built-in option keys:
 `dueMetric`?, `reminders`, `reminderMinuteOfDay`?, `recurrence`,
 `estimatedCost`?, `provider`?, `reference`?, `status`
 (`active|paused|done|archived`), `snoozedUntil`?, `isExample`, `createdAt`,
-`updatedAt`.
+`updatedAt`, `remindersCustomized`?.
+
+- **`remindersCustomized`** (optional): `true` when the person set this deadline's reminders themselves. Written only when true; a missing key is `false`. A deadline that isn't customised takes its blueprint's profile for its asset's values again whenever a value that profile depends on changes (the `reminderVariants` field, such as a document's type or a pet's species); a customised one keeps its own.
 
 **Household obligations** have no `assetId`. The one in use today is the yearly rental income declaration:
 

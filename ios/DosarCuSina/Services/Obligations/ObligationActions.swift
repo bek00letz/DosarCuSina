@@ -137,16 +137,19 @@ public final class ObligationActions {
         try save()
     }
 
-    /// Changes how the obligation reminds (lead days, grace, follow-up after lapsing).
+    /// Changes how the obligation reminds (lead days, grace, follow-up after lapsing), as the
+    /// person chose: from now on its reminders stay as set when its section changes.
     public func setReminders(_ obligation: Obligation, _ profile: ReminderProfile) throws {
         obligation.reminders = profile
+        obligation.remindersCustomized = true
         obligation.updatedAt = now()
         try save()
     }
 
-    /// The "follow up after it lapses" checkbox.
+    /// The "follow up after it lapses" checkbox: the person's choice, kept like `setReminders`.
     public func setFollowUpAfterLapse(_ obligation: Obligation, _ isOn: Bool) throws {
         obligation.followUpAfterLapse = isOn
+        obligation.remindersCustomized = true
         obligation.updatedAt = now()
         try save()
     }
@@ -246,7 +249,7 @@ public final class ObligationActions {
     }
 }
 
-extension DosarSchemaV4.Obligation {
+extension DosarSchemaV5.Obligation {
     /// The counter unit for metric-based obligations, such as kilometres.
     public var metricUnit: MeasurementUnit? {
         if case .metric(_, let unit, _) = recurrence { return unit }

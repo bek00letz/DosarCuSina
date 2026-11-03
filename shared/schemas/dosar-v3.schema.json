@@ -258,7 +258,8 @@
           "recurrence": { "$ref": "#/$defs/recurrence" },
           "estimatedCost": { "$ref": "#/$defs/money" },
           "status": { "enum": ["active", "paused", "done", "archived"] },
-          "snoozedUntil": { "$ref": "#/$defs/timestamp" }
+          "snoozedUntil": { "$ref": "#/$defs/timestamp" },
+          "remindersCustomized": { "type": "boolean" }
         }
       }
     },

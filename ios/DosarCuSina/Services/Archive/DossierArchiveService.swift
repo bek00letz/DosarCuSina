@@ -246,7 +246,8 @@ public struct DossierArchiveService {
                 reminders: obligation.reminders, reminderMinuteOfDay: obligation.reminderMinuteOfDay,
                 recurrence: obligation.recurrence, estimatedCost: obligation.estimatedCost, provider: obligation.provider,
                 reference: obligation.reference, status: obligation.statusRaw, snoozedUntil: obligation.snoozedUntil,
-                isExample: obligation.isExample, createdAt: obligation.createdAt, updatedAt: obligation.updatedAt
+                isExample: obligation.isExample, createdAt: obligation.createdAt, updatedAt: obligation.updatedAt,
+                remindersCustomized: obligation.remindersCustomized ? true : nil
             )
         }
         let historyDTOs = entries.map { entry in
