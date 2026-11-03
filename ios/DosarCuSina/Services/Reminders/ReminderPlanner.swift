@@ -162,8 +162,9 @@ public enum ReminderPlanner {
         }
         let remindsOnTheDay = obligation.reminders.leadDays.contains(0)
         let beforeAnchor = day < anchor || (day == anchor && !remindsOnTheDay)
-        // Past a travel cut-off the document still expires: one reminder before it does.
-        let beforeExpiry = anchor < obligation.dueDay && day < obligation.dueDay
+        // Past a travel cut-off the document still expires: one reminder by the day it does
+        // (nothing reminds on the expiry day itself, the leads count from the cut-off).
+        let beforeExpiry = anchor < obligation.dueDay && day <= obligation.dueDay
         guard beforeAnchor || beforeExpiry else { return nil }
         return (day, fire)
     }
