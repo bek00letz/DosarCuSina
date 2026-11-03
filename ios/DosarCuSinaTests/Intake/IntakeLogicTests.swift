@@ -61,15 +61,15 @@ struct ReminderPresetTests {
     }
 
     @Test func theSentenceListsLeadsLargestFirst() {
-        #expect(ReminderWording.sentence(leadDays: [7, 30]) == "Te anunț cu o lună și cu 7 zile înainte.")
-        #expect(ReminderWording.sentence(leadDays: [30, 7, 0]) == "Te anunț cu o lună și cu 7 zile înainte și în ziua termenului.")
-        #expect(ReminderWording.sentence(leadDays: [0]) == "Te anunț în ziua termenului.")
-        #expect(ReminderWording.sentence(leadDays: []) == "Nu te anunț dinainte.")
-        #expect(ReminderWording.rowTitle(days: 14) == "Cu 14 zile înainte")
+        #expect(ReminderWording.sentence(ReminderProfile(leadDays: [7, 30], consequence: .legal)) == "Te anunț cu o lună și cu 7 zile înainte.")
+        #expect(ReminderWording.sentence(ReminderProfile(leadDays: [30, 7, 0], consequence: .legal)) == "Te anunț cu o lună și cu 7 zile înainte și în ziua termenului.")
+        #expect(ReminderWording.sentence(ReminderProfile(leadDays: [0], consequence: .legal)) == "Te anunț în ziua termenului.")
+        #expect(ReminderWording.sentence(ReminderProfile(leadDays: [], consequence: .legal)) == "Nu te anunț dinainte.")
+        #expect(ReminderWording.rowTitle(days: 14, from: .dueDay) == "Cu 14 zile înainte")
     }
 
     @Test func presetsKeepTheEnginesOwnValues() {
-        #expect(ReminderPreset.rows(for: [180, 60]) == [180, 60, 30, 14, 7, 1, 0], "A passport's 6 months stays a row of its own")
+        #expect(ReminderPreset.rows(for: [90, 0]) == [90, 60, 30, 14, 7, 1, 0], "A passport's 3 months stays a row of its own")
         #expect(ReminderPreset.toggling(7, in: [30, 0]) == [30, 7, 0])
         #expect(ReminderPreset.toggling(30, in: [30, 7, 0]) == [7, 0])
     }
@@ -145,7 +145,7 @@ struct CaptureFilingTests {
 
         let templates = try TemplateStore(context: context).templatesByKey()
         let preview = try #require(CaptureReminderPreview.text(for: review, templates: templates, assets: [], calendar: .bucharest, today: CalendarDay("2026-11-02")))
-        #expect(preview == "Expiră pe 12 august 2031. Te anunț cu 6 luni și cu 2 luni înainte.")
+        #expect(preview == "Expiră pe 12 august 2031. Bun de călătorit până pe 12 februarie 2031. Te anunț cu 3 luni înainte de ultima zi bună de călătorit și în ziua aceea.")
 
         let outcome = try await CaptureFiler(context: context, calendar: .bucharest, now: { noon("2026-11-02") }).save(review)
         let passport = try #require(outcome.asset)
@@ -153,7 +153,7 @@ struct CaptureFilingTests {
         #expect(passport.value("document.number") == .text("050000000"))
         let renewal = try #require(passport.activeObligations.first { $0.blueprintKey == "document.renew" })
         #expect(renewal.dueDay(in: .bucharest) == CalendarDay("2031-08-12"))
-        #expect(renewal.reminderLeadDays == [180, 60], "The passport's own profile")
+        #expect(renewal.reminders == ReminderProfile(leadDays: [90, 0], consequence: .legal, travelMarginDays: 180), "The passport's own profile")
     }
 
     @Test func aBillRemindsToPayOnlyThroughItsSubscription() async throws {

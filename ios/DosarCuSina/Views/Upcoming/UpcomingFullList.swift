@@ -23,9 +23,9 @@ struct UpcomingFullList: View {
         List {
             switch mode {
             case .later:
-                let window = AttentionModel.Limits.standard.soonWindowDays
+                // What Urmează counts under "Mai târziu": the rule calls it later.
                 let later = snapshots
-                    .filter { $0.status == .active && !isSnoozed($0) && today.days(to: $0.dueDay) > window }
+                    .filter { $0.status == .active && !isSnoozed($0) && AttentionModel.entry(for: $0, today: today).urgency == .later }
                     .sorted { $0.dueDay < $1.dueDay }
                 if later.isEmpty {
                     Text("Nimic mai departe de o lună.").dsFont(.body)

@@ -40,6 +40,23 @@ enum DueWording {
         return "\(verb(for: kind, daysRemaining: days)) \(when) · \(date(due, today: today))"
     }
 
+    /// A document with a travel cut-off (a passport) shows both its dates instead of one due
+    /// line: "Expiră pe 12 august 2027" and "Bun de călătorit până pe 12 februarie 2027". Once
+    /// the cut-off has passed: "A fost bun de călătorit până pe …"; once it has expired, only
+    /// "A expirat pe …". Nil for everything without a cut-off, which keeps `line`.
+    static func travelLines(due: CalendarDay, rule: UrgencyRule, today: CalendarDay, calendar: Calendar = .current) -> [String]? {
+        guard let cutoff = rule.travelCutoff(before: due, calendar: calendar) else { return nil }
+        let expiry = date(due, today: today)
+        guard today <= due else { return [String(localized: "A expirat pe \(expiry)", comment: "A passport's line once it has expired")] }
+        let travel = date(cutoff, today: today)
+        return [
+            String(localized: "Expiră pe \(expiry)", comment: "A passport's expiry, on its page"),
+            today <= cutoff
+                ? String(localized: "Bun de călătorit până pe \(travel)", comment: "A passport's last day good for travel, six months before it expires")
+                : String(localized: "A fost bun de călătorit până pe \(travel)", comment: "A passport past its last day good for travel, before it expires"),
+        ]
+    }
+
     /// Why it matters, in one plain sentence, from the consequence.
     static func consequence(_ consequence: Consequence) -> String {
         switch consequence {

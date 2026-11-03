@@ -655,7 +655,7 @@ struct CaptureFiler {
 }
 
 /// The reminder a review will set, in plain words, read from its filing plan:
-/// "Expiră pe 12 august 2031. Te anunț cu 6 luni și cu 2 luni înainte." It names a
+/// "Expiră pe 12 august 2031. Te anunț cu 3 luni și cu o lună înainte." It names a
 /// reminder exactly when saving makes or moves one.
 enum CaptureReminderPreview {
     @MainActor
@@ -675,7 +675,8 @@ enum CaptureReminderPreview {
         default: String(localized: "Expiră pe \(date).")
         }
         if let deadline = plan.deadline {
-            return opening + " " + ReminderWording.sentence(leadDays: deadline.reminders.leadDays)
+            let travel = ReminderWording.travelLine(expiring: day, profile: deadline.reminders, today: today)
+            return [opening, travel, ReminderWording.sentence(deadline.reminders)].compactMap { $0 }.joined(separator: " ")
         }
         switch plan.quiet {
         case .notWanted?:

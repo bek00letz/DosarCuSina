@@ -54,8 +54,8 @@ public enum BuiltInTemplates {
 
     private static func ron(_ amount: Decimal) -> Money { Money(amount, currency: "RON") }
 
-    private static func profile(_ leadDays: [Int], _ consequence: Consequence, grace: Int = 0, followUp: Bool? = nil) -> ReminderProfile {
-        ReminderProfile(leadDays: leadDays, consequence: consequence, graceDays: grace, followUpAfterLapse: followUp)
+    private static func profile(_ leadDays: [Int], _ consequence: Consequence, grace: Int = 0, followUp: Bool? = nil, travelMargin: Int = 0) -> ReminderProfile {
+        ReminderProfile(leadDays: leadDays, consequence: consequence, graceDays: grace, followUpAfterLapse: followUp, travelMarginDays: travelMargin)
     }
 
     // MARK: Mainstays
@@ -232,7 +232,9 @@ public enum BuiltInTemplates {
                                     firstDue: .field(key: DocumentFields.expiry, offsetDays: 0),
                                     reminders: profile([90, 30], .legal),
                                     reminderVariants: ReminderProfileVariants(field: "document.type", variants: [
-                                        DocumentType.passport: profile([180, 60], .legal),
+                                        // Counted from the day it stops being good for travel (its type's margin):
+                                        // three months before it, and on the day.
+                                        DocumentType.passport: profile([90, 0], .legal, travelMargin: DocumentType.travelMarginDays(for: DocumentType.passport)),
                                         DocumentType.idCard: profile([90, 30], .legal),
                                         DocumentType.drivingLicence: profile([60, 30], .legal),
                                         DocumentType.euHealthCard: profile([30, 7], .health),

@@ -134,6 +134,14 @@ public enum ReadinessEngine {
         asset.values[DocumentFields.expiry]?.dateValue
     }
 
+    /// The last day a document expiring on `expiry` is good for travel: its type's travel
+    /// margin before it (a passport: six months), by the one urgency rule; the expiry itself
+    /// for a type without one.
+    static func goodForTravelUntil(_ document: ReadinessAsset, expiry: CalendarDay, calendar: Calendar) -> CalendarDay {
+        let rule = UrgencyRule(graceDays: 0, firstLeadDays: 0, maxWindowDays: 0, travelMarginDays: DocumentType.travelMarginDays(in: document.values))
+        return rule.travelCutoff(before: expiry, calendar: calendar) ?? expiry
+    }
+
     static func trip(start: CalendarDay, end: CalendarDay, region: ReadinessScenario.Region, driving: Bool, withPet: Bool, assets: [ReadinessAsset], calendar: Calendar) -> [ReadinessItem] {
         var items: [ReadinessItem] = []
         let passports = documents(of: DocumentType.passport, in: assets)
@@ -141,8 +149,8 @@ public enum ReadinessEngine {
 
         switch region {
         case .outsideEU:
-            // Most countries outside the EU ask for 6 months of validity after you return.
-            let needed = RecurrenceEngine.add(.months(6), to: end, calendar: calendar)
+            // Outside the EU a passport must still be good for travel when the trip ends: its
+            // type's margin before it expires, the same cut-off its reminders and urgency use.
             if passports.isEmpty {
                 items.append(ReadinessItem(id: "trip.passport", status: .missing, title: String(localized: "Pașaport"),
                                            detail: String(localized: "Nu ai un pașaport în dosar. Adaugă-l ca să verificăm valabilitatea."), route: .category(BuiltInTemplates.Key.documents)))
@@ -153,12 +161,13 @@ public enum ReadinessEngine {
                                                detail: String(localized: "Adaugă data de expirare."), route: .asset(passport.id)))
                     continue
                 }
-                let ok = expiry >= needed
+                let goodUntil = Self.goodForTravelUntil(passport, expiry: expiry, calendar: calendar)
+                let ok = DueDayValidity.covers(through: end, due: goodUntil)
                 items.append(ReadinessItem(
                     id: "trip.passport.\(passport.id)", status: ok ? .ok : .problem, title: passport.name,
                     detail: ok
-                        ? String(localized: "Valabil până pe \(DosarFormat.longDay(expiry)), cu 6 luni după întoarcere.")
-                        : String(localized: "Expiră pe \(DosarFormat.longDay(expiry)). Multe țări cer valabilitate până pe \(DosarFormat.longDay(needed))."),
+                        ? String(localized: "Bun de călătorit până pe \(DosarFormat.longDay(goodUntil)), după ce te întorci.")
+                        : String(localized: "Bun de călătorit doar până pe \(DosarFormat.longDay(goodUntil)). Expiră pe \(DosarFormat.longDay(expiry)), iar multe țări cer 6 luni de valabilitate după întoarcere."),
                     route: .asset(passport.id)
                 ))
             }

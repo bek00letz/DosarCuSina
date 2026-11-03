@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV3 {
+extension DosarSchemaV4 {
     /// Something that has to be done by a date, once or on a schedule: ITP, RCA,
     /// local taxes, a vaccine, a subscription renewal.
     ///
@@ -19,14 +19,18 @@ extension DosarSchemaV3 {
         public var dueDate: Date = Date()
         /// For counter-based obligations, the reading at which it is due (for example 160 000 km).
         public var dueMetric: Double?
-        /// Reminder profile, stored flat: lead days (largest first; `0` is the due day),
-        /// consequence and grace days. Read and write it through `reminders`.
+        /// Reminder profile, stored flat: lead days (largest first; `0` is the day they count
+        /// from), consequence, grace days and the travel margin. Read and write it through `reminders`.
         public var reminderLeadDays: [Int] = [30, 7, 0]
         public var consequenceRaw: String = Consequence.comfort.rawValue
         public var graceDays: Int = 0
         /// Remind once the day after the due date if it is still open. The reminder
         /// setup screen shows it as a checkbox; defaults come from the blueprint profile.
         public var followUpAfterLapse: Bool = false
+        /// How long before the due day its document stops being good for travel (a
+        /// passport: 180, six months); 0 for everything else. From the document type,
+        /// through the blueprint's profile (`ReminderProfile.travelMarginDays`). Version 4.
+        public var travelMarginDays: Int = 0
         /// Minutes after midnight for this obligation's reminders; nil uses the app setting.
         public var reminderMinuteOfDay: Int?
         /// JSON `RecurrenceRule`.
@@ -75,6 +79,7 @@ extension DosarSchemaV3 {
             self.consequenceRaw = profile.consequence.rawValue
             self.graceDays = profile.graceDays
             self.followUpAfterLapse = profile.followUpAfterLapse
+            self.travelMarginDays = profile.travelMarginDays
             self.estimatedCostAmount = estimatedCost?.amount
             self.estimatedCostCurrency = estimatedCost?.currency
         }
@@ -96,7 +101,8 @@ extension DosarSchemaV3 {
                     leadDays: reminderLeadDays,
                     consequence: Consequence(stored: consequenceRaw),
                     graceDays: graceDays,
-                    followUpAfterLapse: followUpAfterLapse
+                    followUpAfterLapse: followUpAfterLapse,
+                    travelMarginDays: travelMarginDays
                 )
             }
             set {
@@ -108,6 +114,7 @@ extension DosarSchemaV3 {
                 }
                 graceDays = newValue.graceDays
                 followUpAfterLapse = newValue.followUpAfterLapse
+                travelMarginDays = newValue.travelMarginDays
             }
         }
 

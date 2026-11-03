@@ -59,12 +59,9 @@ public enum AttentionModel {
     public struct Limits: Hashable, Sendable {
         /// Most items shown as "needs you now".
         public var maxNow: Int
-        /// Days ahead that count as "soon" and get listed per asset.
-        public var soonWindowDays: Int
 
-        public init(maxNow: Int = 5, soonWindowDays: Int = UrgencyRule.upcomingWindowDays) {
+        public init(maxNow: Int = 5) {
             self.maxNow = maxNow
-            self.soonWindowDays = soonWindowDays
         }
 
         public static let standard = Limits()
@@ -101,7 +98,9 @@ public enum AttentionModel {
             if item.urgency.isAlarming { needsAction += 1 }
             if item.urgency.needsAttentionNow {
                 nowCandidates.append(item)
-            } else if item.daysRemaining <= limits.soonWindowDays {
+            } else if item.urgency == .upcoming {
+                // "Curând" is what the rule calls upcoming: the next month, or the month
+                // before a passport stops being good for travel.
                 soonEntries.append(item)
             } else {
                 later.count += 1

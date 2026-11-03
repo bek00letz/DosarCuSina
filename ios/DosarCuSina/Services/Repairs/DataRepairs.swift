@@ -30,6 +30,7 @@ struct DataRepairs {
         HeroFromReadingsStep(),
         CascoInRCAFieldsStep(),
         HomePolicyWithoutDeadlineStep(),
+        TravelCutoffStep(),
     ]
 
     static func step(_ id: DataRepairStepID) -> any DataRepairStep {
@@ -83,6 +84,7 @@ enum DataRepairStepID: String, CaseIterable, Sendable, Hashable {
     case heroFromReadings = "hero-from-readings"
     case cascoInRCAFields = "casco-in-rca-fields"
     case homePolicyWithoutDeadline = "home-policy-without-deadline"
+    case travelCutoff = "travel-cutoff"
 }
 
 /// One thing a repair would change, in plain words, with what applying it needs.
@@ -111,6 +113,8 @@ struct DataRepairFinding: Identifiable, Hashable, Sendable {
         case cascoInRCA(assetID: UUID, policyNumber: String)
         /// A home policy filed without its deadline: the deadline is made on the policy's end.
         case homePolicyDeadline(assetID: UUID, attachmentID: UUID, blueprintKey: String, day: CalendarDay)
+        /// A deadline gets its document type's travel margin and the leads counted from it.
+        case travelCutoff(obligationID: UUID, marginDays: Int)
     }
 }
 

@@ -25,7 +25,7 @@ struct DosarFormatTests {
         #expect(DueWording.line(kind: .legal, due: due, today: today, calendar: calendar) == "Expiră în 5 zile · 7 noiembrie")
         #expect(DueWording.line(kind: .payment, due: today, today: today, calendar: calendar) == "De plătit azi · 2 noiembrie")
         #expect(DueWording.date(CalendarDay("2031-08-12"), today: today) == "12 august 2031")
-        #expect(ReminderWording.expiryLine(CalendarDay("2031-08-12"), leadDays: [180, 60], today: today).hasPrefix("Expiră pe 12 august 2031."))
+        #expect(ReminderWording.expiryLine(CalendarDay("2031-08-12"), profile: ReminderProfile(leadDays: [90, 30], consequence: .legal), today: today).hasPrefix("Expiră pe 12 august 2031."))
     }
 
     @Test("A day counted in a zone and written there is the same day", arguments: zones)

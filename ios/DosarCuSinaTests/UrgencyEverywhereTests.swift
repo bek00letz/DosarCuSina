@@ -119,8 +119,8 @@ struct UrgencyEverywhereTests {
             let plan = ReminderPlanner.plan([item], now: due.adding(days: -800, calendar: calendar).noonDate(in: calendar), calendar: calendar)
             for lead in profile.leadDays where lead >= 2 {
                 let reminder = try #require(plan.first { $0.identifier.hasSuffix(".d\(lead)") })
-                #expect(reminder.title == "În \(ReminderWording.phrase(days: lead)): Termen", "\(lead) days before \(iso)")
-                #expect(ReminderWording.rowTitle(days: lead) == "Cu \(ReminderWording.phrase(days: lead)) înainte")
+                #expect(reminder.title == "\(DurationWording.inside(ReminderWording.phrase(days: lead), startsSentence: true)): Termen", "\(lead) days before \(iso)")
+                #expect(ReminderWording.rowTitle(days: lead, from: .dueDay) == "Cu \(ReminderWording.phrase(days: lead)) înainte")
             }
         }
     }
@@ -148,10 +148,10 @@ struct UrgencyEverywhereTests {
         let twenty = rca.urgencyRule.urgency(of: due, today: due.adding(days: -20, calendar: calendar), calendar: calendar)
         #expect(twenty == .soon && twenty.tone == .soon)
 
-        // A passport reminds six months ahead but needs the person only in its last month.
-        let passport = ReminderProfile(leadDays: [180, 60], consequence: .legal).urgencyRule
-        #expect(passport.urgency(of: due, today: CalendarDay("2026-09-30"), calendar: calendar) == .later)
-        #expect(passport.urgency(of: due, today: CalendarDay("2027-02-28"), calendar: calendar) == .soon)
+        // A deadline that reminds six months ahead needs the person only in its last month.
+        let sixMonths = ReminderProfile(leadDays: [180, 60], consequence: .legal).urgencyRule
+        #expect(sixMonths.urgency(of: due, today: CalendarDay("2026-09-30"), calendar: calendar) == .later)
+        #expect(sixMonths.urgency(of: due, today: CalendarDay("2027-02-28"), calendar: calendar) == .soon)
 
         // A cat vaccine a few days late is calm everywhere; past its grace it is overdue.
         let vaccine = ReminderProfile(leadDays: [1], consequence: .health, graceDays: 7).urgencyRule
@@ -218,9 +218,9 @@ struct UrgencyEverywhereTests {
         #expect(DueWording.relative(daysRemaining: -7, from: start, calendar: calendar) == "acum 7 zile")
         #expect(ReminderPlanner.specificTitle("ITP", daysBefore: 30, from: start, calendar: calendar) == "Într-o lună: ITP")
         #expect(ReminderPlanner.genericTitle(daysBefore: 365, from: start, calendar: calendar) == "Ai o scadență într-un an")
-        #expect(ReminderWording.rowTitle(days: 30) == "Cu o lună înainte")
-        #expect(ReminderWording.rowTitle(days: 1) == "Cu o zi înainte")
-        #expect(ReminderWording.rowTitle(days: 365) == "Cu un an înainte")
+        #expect(ReminderWording.rowTitle(days: 30, from: .dueDay) == "Cu o lună înainte")
+        #expect(ReminderWording.rowTitle(days: 1, from: .dueDay) == "Cu o zi înainte")
+        #expect(ReminderWording.rowTitle(days: 365, from: .dueDay) == "Cu un an înainte")
         #expect(UpcomingActions.snoozeTitle(days: 7) == "Peste 7 zile")
         #expect(TemplateStoreError.inUse(assetCount: 1).errorDescription == "Categoria are încă un activ. Mută-l sau șterge-l mai întâi.")
     }

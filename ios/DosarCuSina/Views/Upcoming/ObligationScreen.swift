@@ -120,9 +120,13 @@ private struct ObligationPage: View {
                 .dsFont(.display)
                 .accessibilityAddTraits(.isHeader)
             if obligation.status == .active {
-                Text(verbatim: DueWording.line(kind: obligation.kind, due: obligation.dueDay(), today: today))
-                    .dsFont(.headline, numeric: true)
-                    .foregroundStyle(DSStatus.urgent(obligation.urgency().tone)?.textColor ?? DS.Palette.label)
+                let lines = DueWording.travelLines(due: obligation.dueDay(), rule: obligation.reminders.urgencyRule, today: today)
+                    ?? [DueWording.line(kind: obligation.kind, due: obligation.dueDay(), today: today)]
+                ForEach(lines, id: \.self) { line in
+                    Text(verbatim: line)
+                        .dsFont(.headline, numeric: true)
+                        .foregroundStyle(DSStatus.urgent(obligation.urgency().tone)?.textColor ?? DS.Palette.label)
+                }
                 if obligation.isSnoozed() {
                     Label("Amânat. Îți amintesc din nou pe \(DueWording.date(CalendarDay(obligation.snoozedUntil ?? Date()), today: today)).", systemImage: "clock.arrow.circlepath")
                         .dsFont(.subheadline)
@@ -302,14 +306,14 @@ private struct ObligationPage: View {
                 ReminderPermissionNotice()
                 DSCard {
                     VStack(alignment: .leading, spacing: DS.Space.xs) {
-                        Text(verbatim: ReminderWording.sentence(leadDays: profile.leadDays))
+                        Text(verbatim: ReminderWording.sentence(profile))
                             .dsFont(.headline)
                         if profile.followUpAfterLapse {
                             Text(verbatim: ReminderWording.followUp).dsFont(.footnote)
                         }
                         DS.Hairline().padding(.vertical, DS.Space.xxs)
                         ForEach(ReminderPreset.rows(for: profile.leadDays), id: \.self) { days in
-                            DSCheckRow(title: Text(verbatim: ReminderWording.rowTitle(days: days)), isOn: profile.leadDays.contains(days)) {
+                            DSCheckRow(title: Text(verbatim: ReminderWording.rowTitle(days: days, from: .init(profile))), isOn: profile.leadDays.contains(days)) {
                                 setLead(days, on: !profile.leadDays.contains(days))
                             }
                         }
@@ -354,7 +358,7 @@ private struct ObligationPage: View {
         let current = obligation.reminders
         var leads = Set(current.leadDays)
         if on { leads.insert(days) } else { leads.remove(days) }
-        let profile = ReminderProfile(leadDays: Array(leads), consequence: current.consequence, graceDays: current.graceDays, followUpAfterLapse: current.followUpAfterLapse)
+        let profile = current.withLeadDays(Array(leads))
         saveRequest = ReminderSaveRequest {
             run { try ObligationActions(context: context).setReminders(obligation, profile) }
         }
@@ -537,7 +541,8 @@ private struct CustomLeadSheet: View {
         NavigationStack {
             VStack(alignment: .leading, spacing: DS.Space.l) {
                 Stepper(value: $days, in: 1...365) {
-                    Text(verbatim: ReminderWording.rowTitle(days: days))
+                    // The sheet only adds a lead before the day (1 to 365 days), worded the same either way.
+                    Text(verbatim: ReminderWording.rowTitle(days: days, from: .dueDay))
                         .dsFont(.headline, numeric: true)
                 }
                 .frame(minHeight: 44)

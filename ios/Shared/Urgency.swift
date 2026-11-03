@@ -98,18 +98,26 @@ public enum ReminderLead: Hashable, Sendable {
 /// The one rule for how urgent a deadline is, from its reminder profile:
 /// - late within its grace days is calm ("withinGrace"), later than that is overdue;
 /// - it needs the person from the day its first reminder goes out, but never
-///   earlier than its consequence's window (a passport that reminds six months
+///   earlier than its consequence's window (an ID card that reminds three months
 ///   ahead joins "Acum" only in its last month);
-/// - otherwise it is upcoming within a month, later after that.
+/// - a document that stops being good for travel before it expires (a passport, six
+///   months before) has a travel cut-off: its reminders count back from the cut-off,
+///   and from the cut-off on it needs the person, whatever its consequence's window;
+/// - otherwise it is upcoming within a month (of its cut-off, when it has one), later after that.
 ///
 /// The widget gets it in the snapshot, so it counts down the same way at every midnight.
 public struct UrgencyRule: Hashable, Sendable, Codable {
     /// Days after the due day that are still fine.
     public var graceDays: Int
-    /// The earliest reminder, in days before the due day (0 when it reminds only on the day).
+    /// The earliest reminder, in days before the day reminders count from (the travel
+    /// cut-off when there is one, else the due day); 0 when it reminds only on that day.
     public var firstLeadDays: Int
     /// The furthest ahead its consequence lets it ask for attention, in days (30 is a month).
     public var maxWindowDays: Int
+    /// How long before the due day the document stops being good for travel, in days
+    /// (whole months as calendar months, like a lead: 180 is six months); 0 when it is
+    /// good for travel until it expires. Declared by the document type (`DocumentType.travelMarginDays`).
+    public var travelMarginDays: Int
 
     /// What "Curând" covers: the next month.
     public static let upcomingWindowDays = 30
@@ -117,19 +125,36 @@ public struct UrgencyRule: Hashable, Sendable, Codable {
     /// A date nothing reminds about: urgent only on the day and once it has passed.
     public static let noReminders = UrgencyRule(graceDays: 0, firstLeadDays: 0, maxWindowDays: 0)
 
-    public init(graceDays: Int, firstLeadDays: Int, maxWindowDays: Int) {
+    public init(graceDays: Int, firstLeadDays: Int, maxWindowDays: Int, travelMarginDays: Int = 0) {
         self.graceDays = max(0, graceDays)
         self.firstLeadDays = max(0, firstLeadDays)
         self.maxWindowDays = max(0, maxWindowDays)
+        self.travelMarginDays = max(0, travelMarginDays)
+    }
+
+    /// The last day a document with a travel margin is good for travel ("Bun de călătorit
+    /// până pe …"): the margin before its due day, the last valid day. Nil when it is good
+    /// for travel until it expires.
+    public func travelCutoff(before due: CalendarDay, calendar: Calendar = .current) -> CalendarDay? {
+        guard travelMarginDays > 0 else { return nil }
+        return ReminderLead(days: travelMarginDays).day(before: due, calendar: calendar)
+    }
+
+    /// The day its reminders count back from: the travel cut-off, else the due day.
+    public func reminderAnchor(for due: CalendarDay, calendar: Calendar = .current) -> CalendarDay {
+        travelCutoff(before: due, calendar: calendar) ?? due
     }
 
     /// The first day it needs the person: the later of its first reminder (at least the
-    /// day before) and its consequence's window. A rule with no window starts on the due day.
+    /// day before) and its consequence's window, and never later than its travel cut-off.
+    /// A rule with no window and no cut-off starts on the due day.
     public func attentionStart(before due: CalendarDay, calendar: Calendar = .current) -> CalendarDay {
-        guard maxWindowDays > 0 else { return due }
-        let reminded = ReminderLead(days: max(firstLeadDays, 1)).day(before: due, calendar: calendar)
+        let cutoff = travelCutoff(before: due, calendar: calendar)
+        guard maxWindowDays > 0 else { return cutoff ?? due }
+        let reminded = ReminderLead(days: max(firstLeadDays, 1)).day(before: reminderAnchor(for: due, calendar: calendar), calendar: calendar)
         let window = ReminderLead(days: maxWindowDays).day(before: due, calendar: calendar)
-        return max(reminded, window)
+        let capped = max(reminded, window)
+        return cutoff.map { min(capped, $0) } ?? capped
     }
 
     /// How many days ahead of `due` it needs the person.
@@ -142,7 +167,20 @@ public struct UrgencyRule: Hashable, Sendable, Codable {
         if days < 0 { return -days <= graceDays ? .withinGrace : .overdue }
         if days == 0 { return .today }
         if today >= attentionStart(before: due, calendar: calendar) { return .soon }
-        if days <= Self.upcomingWindowDays { return .upcoming }
+        if today.days(to: reminderAnchor(for: due, calendar: calendar), calendar: calendar) <= Self.upcomingWindowDays { return .upcoming }
         return .later
+    }
+
+    private enum CodingKeys: String, CodingKey { case graceDays, firstLeadDays, maxWindowDays, travelMarginDays }
+
+    /// A snapshot written before the travel margin existed reads as having none.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            graceDays: try c.decode(Int.self, forKey: .graceDays),
+            firstLeadDays: try c.decode(Int.self, forKey: .firstLeadDays),
+            maxWindowDays: try c.decode(Int.self, forKey: .maxWindowDays),
+            travelMarginDays: try c.decodeIfPresent(Int.self, forKey: .travelMarginDays) ?? 0
+        )
     }
 }
