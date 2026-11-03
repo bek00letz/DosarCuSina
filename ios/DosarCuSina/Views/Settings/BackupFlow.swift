@@ -143,7 +143,8 @@ final class BackupFlow {
         }
         do {
             let package = try await Self.readPackage(at: pending.url, password: pending.password)
-            let result = try DossierArchiveService(container: container).importPackage(package, mode: mode)
+            // Written away from the main thread: a large backup never pauses the screen.
+            let result = try await DossierArchiveService(container: container).importPackageAway(package, mode: mode)
             resultText = BackupWording.result(result)
             doneCount += 1
             // What the copy brought may need repairs (deadlines from a first-version copy):

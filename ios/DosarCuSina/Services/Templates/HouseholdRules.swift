@@ -8,7 +8,6 @@ import SwiftData
 /// a single "Declarația unică" for rental income every year by 25 May (Codul
 /// fiscal, art. 120–122; ANAF). It has no asset: it isn't about one property
 /// but about the household's income, so it shows in Urmează but in no section.
-@MainActor
 public enum HouseholdRules {
     public static let rentalDeclarationKey = "household.rentalDeclaration"
 
