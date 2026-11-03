@@ -69,7 +69,7 @@ struct SchemaMigrationTests {
     }
 
     /// Version 4 as it shipped: version 3 with a deadline's travel margin.
-    static let versionFour: [String: String] = versionThree.merging(["Obligation": "unknown"]) { $1 }
+    static let versionFour: [String: String] = versionThree.merging(["Obligation": "u0tiMcTlS/moad/uiA4LliY6jt452A0rMNTLoP3U33Y="]) { $1 }
 
     @Test func theFrozenVersionFourKeepsTheShapeItShippedWith() {
         #expect(Self.fingerprint(DosarSchemaV4.models) == Self.versionFour)
