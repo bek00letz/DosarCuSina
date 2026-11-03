@@ -53,6 +53,8 @@ struct SharePracticeView: View {
         .task {
             startedAt = Date()
             sampleURL = try? SampleInvoice.writePDF()
+            // The inbox knows the practice by these exact bytes, whatever the file is called on the way.
+            if let sampleURL { try? ShareInbox.shared()?.expectPractice(fileAt: sampleURL) }
         }
         .task(id: arrived) {
             // The extension also signals the app; this check covers a missed signal.
@@ -234,7 +236,7 @@ enum SampleInvoice {
     ]
     static var total: Decimal { lines.reduce(0) { $0 + $1.amount } }
 
-    /// Writes the PDF the share practice sends, named so the inbox recognizes it.
+    /// Writes the PDF the share practice sends. The inbox recognizes it by its bytes (`ShareInbox.expectPractice`).
     static func writePDF(date: Date = Date()) throws -> URL {
         let url = FileManager.default.temporaryDirectory.appending(path: ShareInbox.practiceFileName)
         let page = CGRect(x: 0, y: 0, width: 595, height: 842)
