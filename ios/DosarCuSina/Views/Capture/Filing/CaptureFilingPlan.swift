@@ -58,6 +58,9 @@ struct CaptureFilingPlan {
     var deadline: Deadline?
     var quiet: Quiet?
     var provider: Provider?
+    /// The document's photo is kept. Not for a bank card unless the person asked: its
+    /// photo shows the card's whole number.
+    var keepsPhoto = true
 
     /// Saving makes or moves a deadline, so asking for the reminder permission first is worth it.
     var schedulesReminder: Bool { deadline != nil }
@@ -76,6 +79,7 @@ struct CaptureFilingPlan {
         plan.blueprint = template.flatMap { review.deadlineBlueprint(in: $0.definition) }
         plan.day = review.reminderDay
         plan.provider = CaptureFiler.provider(of: review)
+        plan.keepsPhoto = review.keepsPhoto
 
         guard let day = plan.day else { return plan }
         guard review.destination != .none, let template else {
@@ -110,7 +114,7 @@ struct CaptureFilingPlan {
             plan.deadline = Deadline(blueprint: blueprint, day: day, action: .renew(obligationID: existing.id), reminders: existing.reminders)
             return plan
         }
-        guard blueprint.isWorthScheduling(on: day, today: today) else {
+        guard blueprint.isWorthScheduling(on: day, today: today, values: values) else {
             plan.quiet = .dayPassed
             return plan
         }

@@ -33,6 +33,10 @@ enum CloudFieldFormat: Hashable, Sendable {
     case coverage
     /// The machine-readable zone's lines, checked by their own digits.
     case machineReadableZone
+    /// A bank card's last four digits, and never more.
+    case cardLastFour
+    /// One of the card network keys (`PaymentCardNetwork`).
+    case cardNetwork
 }
 
 /// One field a provider is asked for.
@@ -70,7 +74,8 @@ struct CloudSchema: Sendable {
 
     /// The fields one kind of document carries.
     private static func fields(of kind: CaptureDocumentKind) -> [CloudField] {
-        if kind.isIdentityDocument { return identityFields(kind) }
+        // A personal document is asked for what its templates read, as they print it.
+        if kind.isPersonalDocument { return identityFields(kind) }
         return kind.expectedKeys.map { key in
             let format = format(of: key)
             return CloudField(name: key.rawValue, key: key, format: format, description: description(of: key, format: format))
@@ -105,10 +110,17 @@ struct CloudSchema: Sendable {
                     add(field.key, .date, labels: field.labels)
                 case .sex: add(field.key, .sex, labels: field.labels)
                 case .country: add(field.key, .country, labels: field.labels)
-                case .text: add(field.key, .text, labels: field.labels)
+                case .text, .bankName, .recordResult: add(field.key, .text, labels: field.labels)
                 case .categories: add(field.key, .categories, labels: field.labels)
+                case .cardLastFour: add(field.key, .cardLastFour, labels: field.labels)
+                case .cardExpiry: add(field.key, .date, labels: field.labels)
+                case .cardNetwork: add(field.key, .cardNetwork, labels: field.labels)
                 }
             }
+        }
+        // The day a deadline follows is asked for even where the templates don't print it.
+        if let deadline = kind.profile.deadlineField, !fields.contains(where: { $0.key == deadline }) {
+            add(deadline, format(of: deadline), labels: [])
         }
         if templates.contains(where: { !$0.machineReadableFormats.isEmpty }) {
             fields.append(CloudField(name: zoneName, key: nil, format: .machineReadableZone,
@@ -197,6 +209,11 @@ struct CloudSchema: Sendable {
         case .nationality: "The nationality, as a three-letter code when printed so."
         case .issuer: "The issuing authority."
         case .licenceCategories: "The driving licence categories."
+        case .holderName: "The holder's full name, as printed."
+        case .recordResult: "What the certificate says about the holder's record, copied as printed (for example that they don't appear in it)."
+        case .cardLastFour: "Only the last four digits of the card number. Never the whole number, never the security code."
+        case .cardNetwork: "The card network printed on the card: \(PaymentCardNetwork.visa), \(PaymentCardNetwork.mastercard), "
+            + "\(PaymentCardNetwork.maestro), \(PaymentCardNetwork.amex) or \(PaymentCardNetwork.other)."
         default: "As printed."
         }
         let how: String = switch format {
@@ -248,6 +265,9 @@ struct CloudSchema: Sendable {
         case .coverage:
             return ["type": ["string", "null"], "description": description,
                     "enum": .array(InsuranceCover.all.map(JSONValue.string) + [.null])]
+        case .cardNetwork:
+            return ["type": ["string", "null"], "description": description,
+                    "enum": .array(PaymentCardNetwork.all.map(JSONValue.string) + [.null])]
         case .lineItems:
             return [
                 "type": "array", "description": description,
@@ -392,6 +412,13 @@ enum CloudAnswerMapper {
                 // The same for the cover: kept when it names a known one.
                 guard let cover = InsuranceCover.key(for: raw.string), InsuranceCover.all.contains(cover) else { continue }
                 add(key, .text(cover), grounded)
+            case .cardNetwork:
+                guard let network = raw.string.flatMap({ PaymentCardNetwork.options.option(for: $0)?.key }) else { continue }
+                add(key, .text(network), grounded)
+            case .cardLastFour:
+                // Whatever came back, only its last four digits are kept: never a whole number.
+                guard let lastFour = raw.string.flatMap(PaymentCardNumbers.lastFour(of:)) else { continue }
+                add(key, .text(lastFour), groundedText(lastFour))
             case .text, .documentNumber, .country, .plate, .phone:
                 guard let text = raw.string?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty, text.lowercased() != "null" else { continue }
                 var value = field.format == .documentNumber || field.format == .plate ? text.uppercased() : text
@@ -405,7 +432,7 @@ enum CloudAnswerMapper {
         }
 
         // The holder, as the identity readers name them.
-        if kind.isIdentityDocument, !fields.contains(where: { $0.key == .holderName }),
+        if kind.isPersonalDocument, !fields.contains(where: { $0.key == .holderName }),
            let surname = fields.first(where: { $0.key == .surname }) {
             let given = fields.first { $0.key == .givenNames }
             let full = [given?.value.text, surname.value.text].compactMap { $0 }.joined(separator: " ")

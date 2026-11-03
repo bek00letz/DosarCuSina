@@ -91,8 +91,9 @@ public final class AssetActions {
     ) throws -> Asset {
         // Something of the person's never lands inside an example without asking.
         try ExampleOwnership.requireReal(parent, creatingExample: isExample)
+        // A bank card keeps only its last four digits; no field keeps a card number (`PaymentCardNumbers`).
         let prepared = try SecretFields.sealing(
-            values.normalizingChoices(for: template.definition).applyingRules(of: template.definition, previous: nil, calendar: calendar),
+            PaymentCardNumbers.sanitizing(values.normalizingChoices(for: template.definition).applyingRules(of: template.definition, previous: nil, calendar: calendar)),
             definition: template.definition, sealer: sealer
         )
         let today = CalendarDay(now(), calendar: calendar)
@@ -141,10 +142,10 @@ public final class AssetActions {
             let template = try TemplateStore(context: context).template(forKey: asset.templateKey)
             let values = try template.map {
                 try SecretFields.sealing(
-                    values.normalizingChoices(for: $0.definition).applyingRules(of: $0.definition, previous: previous, calendar: calendar),
+                    PaymentCardNumbers.sanitizing(values.normalizingChoices(for: $0.definition).applyingRules(of: $0.definition, previous: previous, calendar: calendar)),
                     definition: $0.definition, sealer: sealer
                 )
-            } ?? values
+            } ?? PaymentCardNumbers.sanitizing(values)
             asset.name = name
             asset.values = values
             asset.notes = notes
@@ -173,7 +174,7 @@ public final class AssetActions {
                           previous[fieldKey] != values[fieldKey], values[fieldKey]?.dateValue != nil,
                           blueprint.appliesWhen?.isMet(by: values) ?? true,
                           let day = RecurrenceEngine.firstDue(for: blueprint, values: values, today: today, calendar: calendar),
-                          blueprint.isWorthScheduling(on: day, today: today) else { continue }
+                          blueprint.isWorthScheduling(on: day, today: today, values: values) else { continue }
                     try HouseholdMutations.makeObligation(from: blueprint, for: asset, firstDue: day, today: today, calendar: calendar, in: context)
                 }
                 if let reading = HouseholdMutations.heroMetricValue(of: asset, template: template.definition),

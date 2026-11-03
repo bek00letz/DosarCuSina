@@ -62,8 +62,8 @@ enum IdentityDocumentReader {
                 add(field.key, found.value, regional, found.source)
                 continue
             }
-            if field.searchesEverywhere, let found = anywhere(in: text, format: field.format) {
-                add(field.key, found.value, found.tier == .deterministic ? 0.97 : anywhere, found.source, tier: found.tier)
+            if field.searchesEverywhere, let found = anywhere(in: text, format: field.format, window: window(field.key)) {
+                add(field.key, found.value, found.confidence, found.source, tier: found.tier)
             }
         }
 
@@ -125,7 +125,36 @@ enum IdentityDocumentReader {
                 .filter { !$0.isEmpty }
             guard !tokens.isEmpty, tokens.allSatisfy(drivingCategories.contains) else { return nil }
             return Parsed(value: .text(tokens.joined(separator: ", ")), passed: true)
+        case .cardLastFour:
+            // Only the last four digits ever leave this line; the number itself is never a value.
+            return PaymentCardNumbers.lastFour(in: value, strict: true).map { Parsed(value: .text($0), passed: true) }
+        case .cardExpiry:
+            return cardExpiry(in: value, window: window).map { Parsed(value: .day($0), passed: true) }
+        case .cardNetwork:
+            if let network = PaymentCardNetwork.read(in: RomanianText.fold(value)) { return Parsed(value: .text(network), passed: true) }
+            let digits = PaymentCardNumbers.runs(in: value, strict: true).first?.digits
+            return digits.flatMap(PaymentCardNumbers.network(ofNumber:)).map { Parsed(value: .text($0), passed: false) }
+        case .bankName:
+            return RomanianBanks.name(in: RomanianText.fold(value)).map { Parsed(value: .text($0), passed: true) }
+        case .recordResult:
+            let folded = RomanianText.fold(value)
+            guard folded.contains("figureaza"), value.count <= 160 else { return nil }
+            return Parsed(value: .text(value.trimmingCharacters(in: .whitespacesAndNewlines.union(CharacterSet(charactersIn: ".:;")))), passed: true)
         }
+    }
+
+    /// A card's expiry printed as month and year ("08/28", "08/2028"): the last day of
+    /// that month, the two-digit year read in the expiry's window. The latest one when a
+    /// card prints two (a "member since" month is earlier).
+    static func cardExpiry(in value: String, window: DateWindow) -> CaptureDay? {
+        let pattern = #"(?<![\d/])(0[1-9]|1[0-2])\s?[/\-.]\s?(\d{4}|\d{2})(?![\d/])"#
+        let days = TextPattern.matches(pattern, in: value).compactMap { match -> CaptureDay? in
+            guard let month = match[1].flatMap(Int.init), let yearText = match[2], let year = Int(yearText) else { return nil }
+            let first = yearText.count == 2 ? window.resolve(twoDigitYear: year, month: month, day: 1) : CaptureDay(year: year, month: month, day: 1)
+            guard let first else { return nil }
+            return (28...31).reversed().lazy.compactMap { CaptureDay(year: first.year, month: first.month, day: $0) }.first
+        }
+        return days.filter(window.contains).max() ?? days.max()
     }
 
     /// A validity range at its label: two dates, the first before the second, on the
@@ -151,14 +180,35 @@ enum IdentityDocumentReader {
 
     /// A line anywhere that is exactly a value of this format (a CNP: anywhere on a line,
     /// but only with a valid control digit).
-    private static func anywhere(in text: CaptureText, format: IdentityFormat) -> (value: CaptureValue, source: String, tier: CaptureTier)? {
-        if case .personalNumber = format {
-            return RomanianFieldExtractor.personalNumber(in: text).map { (.text($0.0), $0.1, .deterministic) }
+    private static func anywhere(in text: CaptureText, format: IdentityFormat, window: DateWindow) -> (value: CaptureValue, source: String?, confidence: Double, tier: CaptureTier)? {
+        switch format {
+        case .personalNumber:
+            return RomanianFieldExtractor.personalNumber(in: text).map { (.text($0.0), $0.1, 0.97, .deterministic) }
+        case .cardNetwork:
+            // The network's printed name wins over what the number's first digits suggest.
+            if let network = PaymentCardNetwork.read(in: text.joinedFolded) { return (.text(network), nil, anywhere, .heuristic) }
+            let digits = text.joiningRows().original.lazy.compactMap { PaymentCardNumbers.runs(in: $0, strict: true).first?.digits }.first
+            return digits.flatMap(PaymentCardNumbers.network(ofNumber:)).map { (.text($0), nil, failedFormat, .heuristic) }
+        case .cardLastFour, .bankName, .recordResult:
+            // Fragments on one row read together, so a number printed in groups is one number.
+            // A card's line is never kept as the source: it would carry the card's number.
+            let rows = text.joiningRows()
+            for line in rows.original + [rows.original.joined(separator: " ")] {
+                guard let parsed = parse(line, as: format) else { continue }
+                // A network told only by the number's first digits is worth a look.
+                return (parsed.value, format == .recordResult ? line : nil, parsed.passed ? anywhere : failedFormat, .heuristic)
+            }
+            return nil
+        case .cardExpiry:
+            let days = text.joiningRows().original.compactMap { cardExpiry(in: $0, window: window) }
+            return (days.filter(window.contains).max() ?? days.max()).map { (.day($0), nil, anywhere, .heuristic) }
+        default:
+            break
         }
         guard case .documentNumber(let pattern) = format else { return nil }
         let whole = "^" + pattern.replacingOccurrences(of: #"\b"#, with: "") + "$"
         for line in text.original {
-            if let parsed = parse(line, as: .documentNumber(pattern: whole)) { return (parsed.value, line, .heuristic) }
+            if let parsed = parse(line, as: .documentNumber(pattern: whole)) { return (parsed.value, line, anywhere, .heuristic) }
         }
         return nil
     }

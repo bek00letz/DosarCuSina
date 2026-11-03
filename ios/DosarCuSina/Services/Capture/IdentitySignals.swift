@@ -1,6 +1,7 @@
 import Foundation
 
-/// Whether a page may be an identity document, whatever kind the reading settled on.
+/// Whether a page may be an identity or other personal document (a cazier, a health card,
+/// a bank card), whatever kind the reading settled on.
 /// A weak reading is often a glared ID card the classifier didn't recognise, so
 /// sending a page to the AI provider without asking needs the phone to be sure it is
 /// NOT one (`AIProviderSettings.automaticReading`).
@@ -10,12 +11,19 @@ enum IdentitySignals {
         "carte de identitate", "carte electronica de identitate", "identity card", "carte d'identite",
         "pasaport", "passport", "passeport", "permis de conducere", "driving licence", "permis de conduire",
         "cod numeric personal", "data nasterii", "date of birth", "locul nasterii", "place of birth", "cetatenie",
+        "cazier", "card european de asigurari", "european health insurance card", "asigurari sociale de sanatate",
+        "valid thru", "good thru",
     ]
 
     static func mayBeIdentity(_ result: CaptureResult) -> Bool {
-        if result.kind.isIdentityDocument || result.kindAlternatives.contains(where: { $0.value.isIdentityDocument }) { return true }
+        if result.kind.isPersonalDocument || result.kindAlternatives.contains(where: { $0.value.isPersonalDocument }) { return true }
         let text = result.source?.text ?? result.recognizedText
-        return hasMachineReadableZone(text) || hasPersonalNumber(text) || hasIdentityWords(text)
+        return hasMachineReadableZone(text) || hasPersonalNumber(text) || hasIdentityWords(text) || hasCardNumber(text)
+    }
+
+    /// A card number, whole or already masked ("•••• 4821"): a bank card, or a page that shows one.
+    static func hasCardNumber(_ text: String) -> Bool {
+        text.contains(PaymentCardNumbers.mask) || PaymentCardNumbers.containsCardNumber(text)
     }
 
     /// Fillers of a machine-readable zone: a run of `<`, or a long line of zone characters with `<<` in it.

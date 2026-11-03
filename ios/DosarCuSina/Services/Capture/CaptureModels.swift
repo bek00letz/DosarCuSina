@@ -11,6 +11,14 @@ public enum CaptureDocumentKind: String, Codable, Sendable, CaseIterable {
     case passport
     case identityCard
     case drivingLicence
+    /// A criminal record certificate: judiciar, fiscal or auto (`DocumentType.Variant`).
+    case criminalRecord
+    /// A health insurance card: the European one (the card's printed fields are set by
+    /// the EU and by CNAS), or the national one.
+    case healthInsuranceCard
+    /// A bank card. Only its bank, network, kind, last four digits and expiry are kept;
+    /// its full number never is (`PaymentCardNumbers`).
+    case bankCard
     case vehicleRegistration
     case rcaPolicy
     case insurancePolicy
@@ -27,11 +35,20 @@ public enum CaptureDocumentKind: String, Codable, Sendable, CaseIterable {
     case other
 
     /// Identity documents hold personal data and belong in a sensitive category by default.
+    /// Only these carry a machine-readable zone, a back to add and the essentials a weak
+    /// reading is judged by.
     public var isIdentityDocument: Bool {
         switch self {
         case .passport, .identityCard, .drivingLicence: true
         default: false
         }
+    }
+
+    /// A document of its holder's, filed under them in the personal documents category
+    /// and named after them: an identity document, a cazier, a health card, a bank card.
+    /// Its kind profile names its document type; its fields come from its templates.
+    public var isPersonalDocument: Bool {
+        profile.documentType != nil
     }
 }
 
@@ -204,6 +221,14 @@ public struct CaptureFieldKey: RawRepresentable, Hashable, Codable, Sendable, Ex
     public static let licenceCategories: CaptureFieldKey = "licenceCategories"
     /// Which variant of its document type this is (a `DocumentType.Variant` key), from the matched layout.
     public static let documentVariant: CaptureFieldKey = "documentVariant"
+    /// What a criminal record certificate says, as printed: "Nu figurează în cazierul judiciar".
+    public static let recordResult: CaptureFieldKey = "recordResult"
+
+    // Bank cards: never the full number.
+    /// The last four digits of a bank card's number, and nothing more.
+    public static let cardLastFour: CaptureFieldKey = "cardLastFour"
+    /// The card's network, as a `PaymentCardNetwork` key.
+    public static let cardNetwork: CaptureFieldKey = "cardNetwork"
 
     // Validity
     public static let issueDate: CaptureFieldKey = "issueDate"

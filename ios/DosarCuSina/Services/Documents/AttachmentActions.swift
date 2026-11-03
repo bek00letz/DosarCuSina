@@ -106,7 +106,8 @@ public final class AttachmentActions {
         let attachment = Attachment(fileName: draft.fileName, contentType: draft.contentType, data: draft.originalData, kind: draft.kind)
         attachment.title = draft.title
         attachment.thumbnailData = draft.thumbnail
-        attachment.extractedText = draft.extractedText
+        // No card number is kept in a document's text, whoever wrote it (`PaymentCardNumbers`).
+        attachment.extractedText = draft.extractedText.map { PaymentCardNumbers.redact($0) }
         attachment.documentDate = draft.documentDate?.noonDate(in: calendar)
         attachment.documentID = draft.documentID
         attachment.sha256 = draft.sha256

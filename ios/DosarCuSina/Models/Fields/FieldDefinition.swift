@@ -195,6 +195,10 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
 public enum FieldDerivation: Hashable, Sendable, Codable {
     /// A date field plus a number of months from another field (purchase date + warranty months).
     case addMonths(dateField: String, monthsField: String)
+    /// A document's last valid day from the day it was issued, when its type and variant
+    /// have a documented validity (`DocumentType.validityMonthsAfterIssue`: a cazier
+    /// judiciar, six months).
+    case validityAfterIssue(issueField: String)
 
     private enum CodingKeys: String, CodingKey { case type, date, months }
 
@@ -203,6 +207,8 @@ public enum FieldDerivation: Hashable, Sendable, Codable {
         switch try c.decode(String.self, forKey: .type) {
         case "addMonths":
             self = .addMonths(dateField: try c.decode(String.self, forKey: .date), monthsField: try c.decode(String.self, forKey: .months))
+        case "validityAfterIssue":
+            self = .validityAfterIssue(issueField: try c.decode(String.self, forKey: .date))
         default:
             throw DecodingError.dataCorruptedError(forKey: .type, in: c, debugDescription: "Unknown derivation")
         }
@@ -215,6 +221,9 @@ public enum FieldDerivation: Hashable, Sendable, Codable {
             try c.encode("addMonths", forKey: .type)
             try c.encode(date, forKey: .date)
             try c.encode(months, forKey: .months)
+        case .validityAfterIssue(let issue):
+            try c.encode("validityAfterIssue", forKey: .type)
+            try c.encode(issue, forKey: .date)
         }
     }
 
@@ -222,6 +231,7 @@ public enum FieldDerivation: Hashable, Sendable, Codable {
     public var inputs: [String] {
         switch self {
         case .addMonths(let date, let months): return [date, months]
+        case .validityAfterIssue(let issue): return [issue, DocumentType.typeFieldKey, DocumentType.variantFieldKey]
         }
     }
 
@@ -230,6 +240,11 @@ public enum FieldDerivation: Hashable, Sendable, Codable {
         case .addMonths(let dateField, let monthsField):
             guard let day = values[dateField]?.dateValue, let months = values[monthsField]?.numberValue, months > 0 else { return nil }
             return .date(RecurrenceEngine.add(.months(Int(months)), to: day, calendar: calendar))
+        case .validityAfterIssue(let issueField):
+            guard let issued = values[issueField]?.dateValue,
+                  let until = DocumentType.validUntil(issued: issued, type: values[DocumentType.typeFieldKey]?.textValue,
+                                                      variant: values[DocumentType.variantFieldKey]?.textValue, calendar: calendar) else { return nil }
+            return .date(until)
         }
     }
 }

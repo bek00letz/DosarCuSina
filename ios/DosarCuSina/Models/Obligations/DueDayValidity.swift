@@ -37,10 +37,12 @@ extension ObligationBlueprint {
 
     /// Whether a deadline from this blueprint is worth making on `day`: a day still ahead,
     /// or one that passed for something that must be renewed by law (an identity card that
-    /// expired still needs renewing). A warranty, a minimum period or a bill that passed
-    /// is only history. Capture's filing plan and a section's edits both ask this.
-    public func isWorthScheduling(on day: CalendarDay, today: CalendarDay) -> Bool {
-        day >= today || (kind == .renewal && reminders.consequence == .legal)
+    /// expired still needs renewing). A warranty, a minimum period, a bill, a bank card or a
+    /// cazier that passed is only history. What the law asks is the profile the section's
+    /// values give (`reminders(for:)`: a document's type). Capture's filing plan and a
+    /// section's edits both ask this.
+    public func isWorthScheduling(on day: CalendarDay, today: CalendarDay, values: FieldValues = FieldValues()) -> Bool {
+        day >= today || (kind == .renewal && reminders(for: values).consequence == .legal)
     }
 }
 

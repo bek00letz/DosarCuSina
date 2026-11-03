@@ -78,6 +78,9 @@ struct CaptureKindProfile: Sendable {
     var deadlineIsOptIn = false
     /// What a new section made from it is called.
     var sectionName: SectionNameRule = .title
+    /// Its photo is kept only when the person asks ("Păstrează și poza cardului"): a bank
+    /// card's photo shows its whole number, which the binder never keeps otherwise.
+    var photoIsOptIn = false
 
     /// How a new section made from a document is named.
     enum SectionNameRule: Sendable {
@@ -190,6 +193,11 @@ struct CaptureKindProfile: Sendable {
         identity(.passport, type: DocumentType.passport, name: "Pașaport", model: "passport data page"),
         identity(.identityCard, type: DocumentType.idCard, name: "Carte de identitate", model: "identity card"),
         identity(.drivingLicence, type: DocumentType.drivingLicence, name: "Permis de conducere", model: "EU driving licence"),
+        identity(.criminalRecord, type: DocumentType.criminalRecord, name: "Cazier",
+                 model: "Romanian criminal record certificate (certificat de cazier judiciar, fiscal or auto)"),
+        identity(.healthInsuranceCard, type: DocumentType.euHealthCard, name: "Card european de sănătate", model: "European health insurance card"),
+        identity(.bankCard, type: DocumentType.bankCard, name: "Card bancar",
+                 model: "bank card (debit or credit); never copy its full number, only its last four digits", photoIsOptIn: true),
         CaptureKindProfile(
             kind: .vehicleRegistration, templateKey: BuiltInTemplates.Key.vehicle, filing: .newSection, blueprintKey: nil,
             readsCover: false, defaultCover: nil, deadlineField: nil, documentDateFields: issuedOn,
@@ -296,16 +304,26 @@ struct CaptureKindProfile: Sendable {
     /// The codes that find a bill's or a contract's subscription, most specific first.
     static let subscriptionCodes: [CaptureFieldKey] = [.podCode, .clcCode, .phoneNumber, .contractNumber, .clientCode]
 
-    /// An identity document: a personal document of its holder, renewed by its expiry.
-    private static func identity(_ kind: CaptureDocumentKind, type: String, name: LocalizedStringResource, model: String) -> CaptureKindProfile {
-        CaptureKindProfile(
+    /// A personal document of its holder (an identity document, a cazier, a health card, a
+    /// bank card), read with its templates and renewed by its expiry. Its read text is
+    /// kept like an identity document's: never searched.
+    private static func identity(_ kind: CaptureDocumentKind, type: String, name: LocalizedStringResource, model: String,
+                                 photoIsOptIn: Bool = false) -> CaptureKindProfile {
+        var expected = IdentityTemplates.all.filter { $0.kind == kind }.flatMap { $0.fields.map(\.key) }
+            .reduce(into: [CaptureFieldKey]()) { keys, key in if !keys.contains(key) { keys.append(key) } }
+        // The day the deadline follows is always asked for, even where it is worked out
+        // from another (a cazier judiciar's, six months from its issue).
+        if !expected.contains(.expiryDate) { expected.append(.expiryDate) }
+        var profile = CaptureKindProfile(
             kind: kind, templateKey: BuiltInTemplates.Key.documents, filing: .newSection, blueprintKey: BuiltInBlueprints.documentRenew,
             readsCover: false, defaultCover: nil, deadlineField: .expiryDate, documentDateFields: issuedOn,
             documentKind: .identity, documentType: type, trade: nil,
-            expectedKeys: IdentityTemplates.all.filter { $0.kind == kind }.flatMap { $0.fields.map(\.key) }.reduce(into: []) { keys, key in if !keys.contains(key) { keys.append(key) } },
+            expectedKeys: expected,
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: [.documentNumber],
             name: name, titleRule: .name, modelDescription: model, sectionName: .holder
         )
+        profile.photoIsOptIn = photoIsOptIn
+        return profile
     }
 }
 
