@@ -83,7 +83,7 @@ struct UpcomingFullList: View {
     private func months(of items: [ObligationSnapshot]) -> [Month] {
         var result: [Month] = []
         for item in items {
-            let title = item.dueDay.startDate().formatted(.dateTime.month(.wide).year().locale(.dosarDefault)).capitalized(with: .dosarDefault)
+            let title = DosarFormat.monthYear(item.dueDay).capitalized(with: .dosarDefault)
             if result.last?.title == title {
                 result[result.count - 1].items.append(item)
             } else {

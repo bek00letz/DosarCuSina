@@ -34,30 +34,11 @@ ios/DosarCuSina/Views/Section/SectionPockets.swift:built-in-key-in-views:3
 ios/DosarCuSina/Views/Section/SectionScreen.swift:built-in-key-in-views:4
 ios/DosarCuSina/Views/Upcoming/UpcomingRoot.swift:built-in-key-in-views
 
-# date-format: One source for dates (review finding 7): DosarFormat and DueWording move to their own files in ios/Shared and grow the formats these need. SectionPockets is DosarFormat and ReminderPresets is DueWording until then.
-ios/DosarCuSina/Intents/DosarIntents.swift:date-format:2
-ios/DosarCuSina/Models/Fields/FieldFormatting.swift:date-format
-ios/DosarCuSina/Services/Attention/MissingBills.swift:date-format
+# date-format: Dates are written by DosarFormat (ios/Shared) and DueWording. What's left reads dates; it goes with the shared number and date reader.
 ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:date-format:2
-ios/DosarCuSina/Services/Readiness/ReadinessEngine.swift:date-format
-ios/DosarCuSina/Services/Reminders/ReminderPlanner.swift:date-format
-ios/DosarCuSina/Services/Search/SearchIndexBuilder.swift:date-format:3
-ios/DosarCuSina/Views/Add/AddRoot.swift:date-format:2
-ios/DosarCuSina/Views/Add/AddVisitFlow.swift:date-format:3
-ios/DosarCuSina/Views/Capture/Filing/CaptureMapping.swift:date-format
-ios/DosarCuSina/Views/Onboarding/SharePracticeView.swift:date-format
-ios/DosarCuSina/Views/Section/SectionHero.swift:date-format
-ios/DosarCuSina/Views/Section/SectionPockets.swift:date-format:2
-ios/DosarCuSina/Views/Section/SectionWording.swift:date-format
-ios/DosarCuSina/Views/Upcoming/ObligationScreen.swift:date-format:2
-ios/DosarCuSina/Views/Upcoming/ReminderPresets.swift:date-format:2
-ios/DosarCuSina/Views/Upcoming/UpcomingActions.swift:date-format
-ios/DosarCuSina/Views/Upcoming/UpcomingFullList.swift:date-format
-ios/DosarCuSinaWidgets/UpcomingWidget.swift:date-format
 
 # format-string: Machine text (ISO days, hashes): one shared helper, then these go.
 ios/DosarCuSina/Models/Schema/RecordModels.swift:format-string
-ios/DosarCuSina/Models/Values/CalendarDay.swift:format-string:2
 ios/DosarCuSina/Services/Capture/CaptureModels.swift:format-string
 ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:format-string
 
@@ -74,8 +55,6 @@ ios/DosarCuSina/Models/Templates/ComponentCatalog.swift:romanian-locale
 ios/DosarCuSina/Services/Capture/CaptureText.swift:romanian-locale
 ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:romanian-locale:2
 ios/DosarCuSina/Views/Capture/Filing/CaptureMapping.swift:romanian-locale
-ios/DosarCuSina/Views/Onboarding/SharePracticeView.swift:romanian-locale
-ios/DosarCuSinaWidgets/UpcomingWidget.swift:romanian-locale
 
 # save-outside-unit-of-work: One unit of work around every multi-step flow (agreed fix 7); start-up and migrations save through UnitOfWork too.
 ios/DosarCuSina/App/DosarCuSinaApp.swift:save-outside-unit-of-work

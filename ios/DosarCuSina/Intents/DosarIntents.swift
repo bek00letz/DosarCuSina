@@ -13,7 +13,7 @@ public struct ObligationEntity: AppEntity, Sendable {
     public let dueDay: CalendarDay
 
     public var displayRepresentation: DisplayRepresentation {
-        let due = dueDay.startDate().formatted(.dateTime.day().month(.wide).locale(.dosarDefault))
+        let due = DosarFormat.dayMonth(dueDay)
         if let assetName {
             return DisplayRepresentation(title: "\(title)", subtitle: "\(assetName) · \(due)")
         }
@@ -106,7 +106,7 @@ public struct CompleteObligationIntent: AppIntent {
         case .skipped, .snoozed:
             throw IntentError.notFound
         case .completed(let next?):
-            let date = next.startDate().formatted(.dateTime.day().month(.wide).year().locale(.dosarDefault))
+            let date = DosarFormat.longDay(next)
             return .result(dialog: IntentDialog(stringLiteral: String(localized: "Gata. Următoarea scadență e pe \(date).")))
         case .completed(nil):
             return .result(dialog: IntentDialog(stringLiteral: String(localized: "Gata, am bifat-o.")))

@@ -32,7 +32,7 @@ public struct CalendarDay: Hashable, Comparable, Sendable, Codable, CustomString
     }
 
     public var isoString: String {
-        String(format: "%04d-%02d-%02d", year, month, day)
+        "\(ISODigits.padded(year, to: 4))-\(ISODigits.padded(month, to: 2))-\(ISODigits.padded(day, to: 2))"
     }
 
     public var description: String { isoString }
@@ -99,7 +99,7 @@ public struct MonthDay: Hashable, Comparable, Sendable, Codable {
         self.init(month: month, day: day)
     }
 
-    public var isoString: String { String(format: "%02d-%02d", month, day) }
+    public var isoString: String { "\(ISODigits.padded(month, to: 2))-\(ISODigits.padded(day, to: 2))" }
 
     /// This month-day in `year`, clamped to the month's last day (29 February becomes 28 in common years).
     public func day(inYear year: Int, calendar: Calendar = .current) -> CalendarDay {
@@ -124,5 +124,14 @@ public struct MonthDay: Hashable, Comparable, Sendable, Codable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(isoString)
+    }
+}
+
+/// Digits for machine text such as ISO days: ASCII, zero-padded, never localized.
+enum ISODigits {
+    /// `padded(7, to: 2)` is "07"; a longer number is kept whole.
+    static func padded(_ number: Int, to width: Int) -> String {
+        let digits = String(number)
+        return String(repeating: "0", count: max(0, width - digits.count)) + digits
     }
 }

@@ -237,7 +237,7 @@ public enum ReminderPlanner {
             } else {
                 title = specificTitle(obligation.title, daysBefore: daysBefore, from: fireDate, calendar: calendar)
             }
-            let dueText = obligation.dueDay.startDate(in: calendar).formatted(.dateTime.day().month(.wide).locale(locale))
+            let dueText = DosarFormat.dayMonth(obligation.dueDay, locale: locale)
             if let assetName = obligation.assetName, !assetName.isEmpty {
                 body = String(localized: "\(assetName) · scadent pe \(dueText)", comment: "Reminder body: asset name and due date")
             } else {

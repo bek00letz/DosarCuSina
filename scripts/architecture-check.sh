@@ -123,7 +123,7 @@ rule date-format "$app" '(^|/)(DosarFormat|DueWording)\.swift$' \
     '\.dateTime([^A-Za-z0-9_]|$)|(^|[^A-Za-z0-9_])DateFormatter\(\)|\.formatted\(date:|Text\([^)]*, *style: *\.(date|time|relative|offset|timer)' - \
     'Write dates with DosarFormat (or DueWording and CalendarDay for due days), so every screen, widget and notification writes them the same way.'
 
-rule romanian-locale "$app" '^ios/DosarCuSina/Models/Values/Money\.swift$' \
+rule romanian-locale "$app" '^ios/Shared/DosarLocale\.swift$' \
     'Locale\(identifier: *"ro' - \
     'Use Locale.dosarDefault, the one place that decides which Romanian locale the app writes in.'
 

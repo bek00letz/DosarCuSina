@@ -73,10 +73,10 @@ enum PersonalDocumentFiling {
     }
 
     /// "Expiră pe … Te anunț cu 3 luni și cu o lună înainte.", from the type's reminder profile.
-    static func reminderLine(_ draft: PersonalDocumentDraft, template: CategoryTemplate, actions: AssetActions, today: CalendarDay, calendar: Calendar = .current) -> String? {
+    static func reminderLine(_ draft: PersonalDocumentDraft, template: CategoryTemplate, actions: AssetActions, today: CalendarDay) -> String? {
         guard let expiry = draft.expiry,
               let plan = planned(draft, template: template, actions: actions).first(where: { $0.isSelected }) else { return nil }
-        return ReminderWording.expiryLine(expiry, leadDays: plan.blueprint.reminders(for: draft.values).leadDays, today: today, calendar: calendar)
+        return ReminderWording.expiryLine(expiry, leadDays: plan.blueprint.reminders(for: draft.values).leadDays, today: today)
     }
 
     /// Creates the document under `holder` with its deadline, as one step.
