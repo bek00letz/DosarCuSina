@@ -52,9 +52,12 @@ public enum Consequence: String, Codable, CaseIterable, Sendable {
 /// how much missing it costs, how late is still fine, and whether to nudge
 /// once after the due date passes.
 ///
-/// Encoding: `{"leadDays": [60, 30], "consequence": "legal", "graceDays": 0, "followUpAfterLapse": true}`.
+/// Encoding: `{"leadDays": [60, 30], "consequence": "legal", "graceDays": 0, "followUpAfterLapse": true}`,
+/// with `"travelMarginDays": 180` only for a document that stops being good for travel
+/// before it expires (a passport).
 public struct ReminderProfile: Hashable, Sendable, Codable {
-    /// Days before the due date to remind, largest first; `0` is the due day.
+    /// Days before the due date to remind, largest first; `0` is the due day. With a
+    /// travel margin, they count back from the travel cut-off instead (`UrgencyRule.reminderAnchor`).
     public var leadDays: [Int]
     public var consequence: Consequence
     /// Days after the due date that are still acceptable. Within them, the item
@@ -62,27 +65,43 @@ public struct ReminderProfile: Hashable, Sendable, Codable {
     public var graceDays: Int
     /// One notification the day after the due date if it is still open, then silence.
     public var followUpAfterLapse: Bool
+    /// How long before its due day the document stops being good for travel, in days
+    /// (180 is six calendar months); 0 for everything that is good until it expires. Comes
+    /// only from the document type (`DocumentType.travelMarginDays`), never chosen by hand.
+    public var travelMarginDays: Int
 
     /// Whether a consequence follows up after lapsing by default: yes for legal and financial.
     public static func defaultFollowUp(for consequence: Consequence) -> Bool {
         consequence == .legal || consequence == .financial
     }
 
-    public init(leadDays: [Int], consequence: Consequence, graceDays: Int = 0, followUpAfterLapse: Bool? = nil) {
+    public init(leadDays: [Int], consequence: Consequence, graceDays: Int = 0, followUpAfterLapse: Bool? = nil, travelMarginDays: Int = 0) {
         self.leadDays = Array(Set(leadDays.map(abs))).sorted(by: >)
         self.consequence = consequence
         self.graceDays = max(0, graceDays)
         self.followUpAfterLapse = followUpAfterLapse ?? Self.defaultFollowUp(for: consequence)
+        self.travelMarginDays = max(0, travelMarginDays)
     }
 
     /// How urgent the item is on every surface: it needs the person from its earliest
-    /// reminder, capped by what its consequence warrants (a passport reminds 180 days
-    /// ahead but only crowds Urmează in the last month), and late within its grace is calm.
+    /// reminder, capped by what its consequence warrants (an ID card reminds 90 days
+    /// ahead but only crowds Urmează in the last month), from its travel cut-off when it
+    /// has one, and late within its grace is calm.
     public var urgencyRule: UrgencyRule {
-        UrgencyRule(graceDays: graceDays, firstLeadDays: leadDays.first ?? 0, maxWindowDays: consequence.maxAttentionWindowDays)
+        UrgencyRule(graceDays: graceDays, firstLeadDays: leadDays.first ?? 0, maxWindowDays: consequence.maxAttentionWindowDays,
+                    travelMarginDays: travelMarginDays)
     }
 
-    private enum CodingKeys: String, CodingKey { case leadDays, consequence, graceDays, followUpAfterLapse }
+    /// It stops being good for travel before it expires (a passport): its leads count from that day.
+    public var hasTravelCutoff: Bool { travelMarginDays > 0 }
+
+    /// The same profile with other leads, everything else kept (the travel margin included).
+    public func withLeadDays(_ leads: [Int]) -> ReminderProfile {
+        ReminderProfile(leadDays: leads, consequence: consequence, graceDays: graceDays, followUpAfterLapse: followUpAfterLapse,
+                        travelMarginDays: travelMarginDays)
+    }
+
+    private enum CodingKeys: String, CodingKey { case leadDays, consequence, graceDays, followUpAfterLapse, travelMarginDays }
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -90,7 +109,8 @@ public struct ReminderProfile: Hashable, Sendable, Codable {
             leadDays: try c.decodeIfPresent([Int].self, forKey: .leadDays) ?? [7, 0],
             consequence: Consequence(stored: try c.decodeIfPresent(String.self, forKey: .consequence)),
             graceDays: try c.decodeIfPresent(Int.self, forKey: .graceDays) ?? 0,
-            followUpAfterLapse: try c.decodeIfPresent(Bool.self, forKey: .followUpAfterLapse)
+            followUpAfterLapse: try c.decodeIfPresent(Bool.self, forKey: .followUpAfterLapse),
+            travelMarginDays: try c.decodeIfPresent(Int.self, forKey: .travelMarginDays) ?? 0
         )
     }
 
@@ -100,11 +120,13 @@ public struct ReminderProfile: Hashable, Sendable, Codable {
         try c.encode(consequence.rawValue, forKey: .consequence)
         try c.encode(graceDays, forKey: .graceDays)
         try c.encode(followUpAfterLapse, forKey: .followUpAfterLapse)
+        // Written only when there is one, so every other profile reads exactly as before.
+        if travelMarginDays > 0 { try c.encode(travelMarginDays, forKey: .travelMarginDays) }
     }
 }
 
 /// A blueprint's profile that depends on an asset value, such as the document
-/// type: a passport reminds 180 days ahead, an ID card 90.
+/// type: an ID card reminds 90 days ahead, a driving licence 60.
 ///
 /// Encoding: `{"field": "document.type", "variants": {"Pașaport": {…profile…}}}`.
 public struct ReminderProfileVariants: Hashable, Sendable, Codable {

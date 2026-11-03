@@ -10,7 +10,7 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld an"
+                  "value": "un an"
                 }
               },
               "few": {
@@ -39,7 +39,7 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld lună"
+                  "value": "o lună"
                 }
               },
               "few": {
@@ -68,7 +68,7 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld săptămână"
+                  "value": "o săptămână"
                 }
               },
               "few": {
@@ -97,7 +97,7 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld zi"
+                  "value": "o zi"
                 }
               },
               "few": {

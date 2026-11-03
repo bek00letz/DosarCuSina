@@ -362,7 +362,7 @@ private struct ObligationsStep: View {
                             DSCheckRow(
                                 title: Text(verbatim: plan.blueprint.title),
                                 subtitle: Text(verbatim: [
-                                    ReminderWording.sentence(leadDays: plan.blueprint.reminders(for: model.values).leadDays),
+                                    ReminderWording.sentence(plan.blueprint.reminders(for: model.values)),
                                     plan.blueprint.note,
                                 ].compactMap { $0 }.joined(separator: "\n")),
                                 isOn: $plan.isSelected

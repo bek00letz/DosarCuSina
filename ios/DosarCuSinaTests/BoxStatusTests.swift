@@ -26,7 +26,7 @@ struct BoxStatusTests {
     }
 
     @Test("Romanian day counts", arguments: [
-        (1, "1 zi"), (2, "2 zile"), (19, "19 zile"), (20, "20 de zile"), (21, "21 de zile"),
+        (1, "o zi"), (2, "2 zile"), (19, "19 zile"), (20, "20 de zile"), (21, "21 de zile"),
         (101, "101 zile"), (119, "119 zile"), (120, "120 de zile"), (0, "0 zile"),
     ])
     func dayCounts(count: Int, text: String) {
@@ -35,7 +35,7 @@ struct BoxStatusTests {
 
     @Test("Distances step up from days to weeks, months and years, never rounding up", arguments: [
         (5, "5 zile"), (20, "20 de zile"), (21, "3 săptămâni"), (27, "3 săptămâni"),
-        (87, "2 luni și 3 săptămâni"), (92, "3 luni"), (400, "1 an și 1 lună"),
+        (87, "2 luni și 3 săptămâni"), (92, "3 luni"), (400, "un an și o lună"),
         (3_077, "8 ani"), (14_000, "38 de ani"), (-14_000, "38 de ani"),
     ])
     func durations(days: Int, text: String) {

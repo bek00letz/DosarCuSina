@@ -171,7 +171,7 @@ private struct SuggestionRow: View {
         HStack(alignment: .center, spacing: DS.Space.s) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: blueprint.title).dsFont(.headline)
-                Text(verbatim: ReminderWording.sentence(leadDays: blueprint.reminders(for: values).leadDays))
+                Text(verbatim: ReminderWording.sentence(blueprint.reminders(for: values)))
                     .dsFont(.subheadline)
                 if let note = blueprint.note {
                     Text(verbatim: note).dsFont(.footnote)
@@ -209,7 +209,7 @@ struct FirstDateSheet: View {
                     Text("Când e următoarea dată pentru „\(title)”?", comment: "Question when adding an obligation that needs a date.")
                         .dsFont(.title)
                     DSDateField("Data", date: $date, isRequired: true, footnote: "De exemplu, data până la care e valabil ITP-ul de acum.")
-                    Text(verbatim: ReminderWording.sentence(leadDays: reminders.leadDays))
+                    Text(verbatim: ReminderWording.sentence(reminders))
                         .dsFont(.subheadline)
                 }
                 .padding(DS.Space.m)
@@ -282,7 +282,7 @@ struct CustomObligationSheet: View {
                     DSTextField("Ce trebuie făcut", text: $title, prompt: "Plata asigurării, verificarea stingătorului", isRequired: true)
                     DSDateField("Până când", date: $date, isRequired: true)
                     DSChoiceField("Se repetă", selection: $repeats, options: Repeat.allCases, isRequired: true) { $0.title }
-                    Text(verbatim: ReminderWording.sentence(leadDays: Self.reminders.leadDays))
+                    Text(verbatim: ReminderWording.sentence(Self.reminders))
                         .dsFont(.subheadline)
                 }
                 .padding(DS.Space.m)

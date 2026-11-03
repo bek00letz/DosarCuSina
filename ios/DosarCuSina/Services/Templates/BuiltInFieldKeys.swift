@@ -26,9 +26,14 @@ public enum VehicleFields {
 public enum HomeFields {
     public static let pod = "home.pod"
     public static let clc = "home.clc"
+    /// The mandatory policy's (PAD). Earlier versions kept any home policy here.
     public static let insurer = "home.insurer"
     public static let policyNumber = "home.policyNumber"
     public static let claimsPhone = "home.claimsPhone"
+    /// The optional (facultative) policy's, kept apart from PAD's like a car's CASCO from its RCA.
+    public static let optionalInsurer = "home.optionalInsurer"
+    public static let optionalPolicyNumber = "home.optionalPolicyNumber"
+    public static let optionalClaimsPhone = "home.optionalClaimsPhone"
 }
 
 public enum DocumentFields {

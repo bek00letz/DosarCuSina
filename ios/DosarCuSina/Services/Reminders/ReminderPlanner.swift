@@ -2,7 +2,7 @@ import Foundation
 
 /// A local notification the app wants pending.
 public struct PlannedReminder: Hashable, Sendable, Identifiable {
-    /// `obligation.<uuid>.d<days>`, `.catchup`, `.lapse` or `.snooze`, or
+    /// `obligation.<uuid>.d<days>` (`.t<days>` before a travel cut-off), `.catchup`, `.lapse` or `.snooze`, or
     /// `ReminderPlanner.continueIdentifier` for the "open the app" reminder.
     public var identifier: String
     /// The obligation it is about; nil only for the "open the app" reminder.
@@ -31,6 +31,9 @@ public struct PlannedReminder: Hashable, Sendable, Identifiable {
 /// - Each lead of the profile reminds once, at the reminder time. A lead of whole
 ///   months is calendar months (`ReminderLead`): "6 luni" fires on the same day of the
 ///   month six months before, so its title reads "În 6 luni", like the lead itself.
+/// - A document with a travel cut-off (a passport) counts its leads back from the cut-off
+///   (`UrgencyRule.reminderAnchor`), and its reminders say how long it is still good for
+///   travel. The follow-up after it lapses stays the day after it expires.
 /// - A deadline that became known after its warnings had passed gets one
 ///   catch-up reminder at the next reminder time, so it is never silent.
 /// - iOS keeps 64 pending notifications. When there are more, the plan keeps
@@ -43,6 +46,9 @@ public enum ReminderPlanner {
     public static let lapseSuffix = "lapse"
     /// Identifier suffix of the one reminder for warnings that passed before the deadline was known.
     public static let catchUpSuffix = "catchup"
+    /// Prefix of a lead's suffix: `d` for days before the due day, `t` for days before a
+    /// travel cut-off (never read back as a due day, so a button acts only on the cycle it carries).
+    static func leadSuffix(_ days: Int, travel: Bool) -> String { "\(travel ? "t" : "d")\(days)" }
     /// The "open the app so reminders continue" reminder. It sits under the same
     /// prefix so the reconciler owns it like any other reminder.
     public static let continueIdentifier = "obligation.continue"
@@ -96,17 +102,17 @@ public enum ReminderPlanner {
         let minute = obligation.reminderMinuteOfDay ?? defaultMinuteOfDay
         let snoozedUntil = obligation.snoozedUntil.flatMap { $0 > now ? $0 : nil }
         let profile = obligation.reminders
+        let cutoff = profile.urgencyRule.travelCutoff(before: obligation.dueDay, calendar: calendar)
         func make(_ day: CalendarDay, _ fire: Date, _ suffix: String) -> PlannedReminder {
-            reminder(for: obligation, daysBefore: day.days(to: obligation.dueDay, calendar: calendar), fireDate: fire,
-                     identifierSuffix: suffix, calendar: calendar, locale: locale)
+            reminder(for: obligation, on: day, fireDate: fire, identifierSuffix: suffix, calendar: calendar, locale: locale)
         }
 
         for offset in profile.leadDays {
-            let day = ReminderLead(days: offset).day(before: obligation.dueDay, calendar: calendar)
+            let day = ReminderLead(days: offset).day(before: cutoff ?? obligation.dueDay, calendar: calendar)
             let fire = fireDate(day: day, minuteOfDay: minute, calendar: calendar)
             guard fire > now else { continue }
             if let snoozedUntil, fire < snoozedUntil { continue }
-            result.append(make(day, fire, "d\(offset)"))
+            result.append(make(day, fire, leadSuffix(offset, travel: cutoff != nil)))
         }
 
         if snoozedUntil == nil, let (day, fire) = catchUp(for: obligation, minuteOfDay: minute, calendar: calendar), fire > now {
@@ -134,16 +140,17 @@ public enum ReminderPlanner {
     }
 
     /// The one catch-up reminder for a deadline whose warnings (lead days before
-    /// the due day) had all passed by the time it became known: the first reminder
-    /// time after that, as long as it falls before the due day, or on it when the
-    /// profile doesn't remind on the due day itself. Anchored to when the cycle
+    /// the day they count from) had all passed by the time it became known: the first
+    /// reminder time after that, as long as it falls before that day, or on it when the
+    /// profile doesn't remind on the day itself. Anchored to when the cycle
     /// became known, so it fires once and never repeats.
     static func catchUp(for obligation: ObligationSnapshot, minuteOfDay: Int, calendar: Calendar) -> (CalendarDay, Date)? {
         guard let knownSince = obligation.cycleKnownSince else { return nil }
         let warnings = obligation.reminders.leadDays.filter { $0 > 0 }
         guard !warnings.isEmpty else { return nil }
+        let anchor = obligation.reminders.urgencyRule.reminderAnchor(for: obligation.dueDay, calendar: calendar)
         let warningFires = warnings.map {
-            fireDate(day: ReminderLead(days: $0).day(before: obligation.dueDay, calendar: calendar), minuteOfDay: minuteOfDay, calendar: calendar)
+            fireDate(day: ReminderLead(days: $0).day(before: anchor, calendar: calendar), minuteOfDay: minuteOfDay, calendar: calendar)
         }
         guard warningFires.allSatisfy({ $0 <= knownSince }) else { return nil }
 
@@ -154,7 +161,11 @@ public enum ReminderPlanner {
             fire = fireDate(day: day, minuteOfDay: minuteOfDay, calendar: calendar)
         }
         let remindsOnTheDay = obligation.reminders.leadDays.contains(0)
-        guard day < obligation.dueDay || (day == obligation.dueDay && !remindsOnTheDay) else { return nil }
+        let beforeAnchor = day < anchor || (day == anchor && !remindsOnTheDay)
+        // Past a travel cut-off the document still expires: one reminder by the day it does
+        // (nothing reminds on the expiry day itself, the leads count from the cut-off).
+        let beforeExpiry = anchor < obligation.dueDay && day <= obligation.dueDay
+        guard beforeAnchor || beforeExpiry else { return nil }
         return (day, fire)
     }
 
@@ -219,22 +230,40 @@ public enum ReminderPlanner {
 
     // MARK: Copy
 
+    /// The reminder that fires on `day`. Before a travel cut-off (and on it) it says how
+    /// long the document is still good for travel; otherwise how long until the due day.
     static func reminder(
         for obligation: ObligationSnapshot,
-        daysBefore: Int,
+        on day: CalendarDay,
         fireDate: Date,
         identifierSuffix: String,
         calendar: Calendar,
         locale: Locale
     ) -> PlannedReminder {
+        let daysBefore = day.days(to: obligation.dueDay, calendar: calendar)
+        let rule = obligation.reminders.urgencyRule
+        let cutoff = rule.travelCutoff(before: obligation.dueDay, calendar: calendar).flatMap { day <= $0 ? $0 : nil }
         let title: String
         let body: String
-        if obligation.isSensitive {
+        if let cutoff {
+            let daysToCutoff = day.days(to: cutoff, calendar: calendar)
+            title = obligation.isSensitive
+                ? genericTravelTitle(daysBefore: daysToCutoff, from: fireDate, calendar: calendar)
+                : travelTitle(obligation.title, daysBefore: daysToCutoff, from: fireDate, calendar: calendar)
+            let cutoffText = DosarFormat.dayMonth(cutoff, locale: locale)
+            if obligation.isSensitive {
+                body = String(localized: "Deschide Dosar cu Șină pentru detalii.", comment: "Reminder body for protected categories")
+            } else if let assetName = obligation.assetName, !assetName.isEmpty {
+                body = String(localized: "\(assetName) · bun de călătorit până pe \(cutoffText)", comment: "Reminder body: a document's name and the last day it is good for travel")
+            } else {
+                body = String(localized: "Bun de călătorit până pe \(cutoffText)", comment: "Reminder body: the last day a document is good for travel")
+            }
+        } else if obligation.isSensitive {
             title = genericTitle(daysBefore: daysBefore, from: fireDate, calendar: calendar)
             body = String(localized: "Deschide Dosar cu Șină pentru detalii.", comment: "Reminder body for protected categories")
         } else {
             let fireDay = CalendarDay(fireDate, calendar: calendar)
-            if obligation.reminders.urgencyRule.urgency(of: obligation.dueDay, today: fireDay, calendar: calendar) == .withinGrace {
+            if rule.urgency(of: obligation.dueDay, today: fireDay, calendar: calendar) == .withinGrace {
                 // Still within the grace the person accepts, so the follow-up stays calm.
                 title = String(localized: "Încă de făcut: \(obligation.title)", comment: "Follow-up reminder title the day after the due date, when some lateness is fine")
             } else {
@@ -264,7 +293,7 @@ public enum ReminderPlanner {
         )
     }
 
-    /// Durations are worked out from the day the reminder fires, so "În 1 lună"
+    /// Durations are worked out from the day the reminder fires, so "Într-o lună"
     /// is true when the person reads it, and say what every screen says that day.
     static func specificTitle(_ title: String, daysBefore: Int, from fireDate: Date, calendar: Calendar = .current) -> String {
         switch daysBefore {
@@ -273,7 +302,30 @@ public enum ReminderPlanner {
         case 1: return String(localized: "Mâine: \(title)", comment: "Reminder title, due tomorrow")
         default:
             let phrase = DurationWording.distance(days: daysBefore, from: fireDate, calendar: calendar)
-            return String(localized: "În \(phrase): \(title)", comment: "Reminder title: due in a duration such as '7 zile' or '9 luni', then the obligation.")
+            return String(localized: "\(DurationWording.inside(phrase, startsSentence: true)): \(title)", comment: "Reminder title: due in a duration such as 'În 7 zile' or 'Într-o lună', then the obligation.")
+        }
+    }
+
+    /// Before a travel cut-off: "Bun de călătorit încă 3 luni: Pașaport"; on it, "Azi e
+    /// ultima zi bună de călătorit: Pașaport".
+    static func travelTitle(_ title: String, daysBefore: Int, from fireDate: Date, calendar: Calendar = .current) -> String {
+        switch daysBefore {
+        case ...0: return String(localized: "Azi e ultima zi bună de călătorit: \(title)", comment: "Reminder title on the last day a document is good for travel (a passport, six months before it expires)")
+        case 1: return String(localized: "Mâine e ultima zi bună de călătorit: \(title)", comment: "Reminder title the day before a document stops being good for travel")
+        default:
+            let phrase = DurationWording.distance(days: daysBefore, from: fireDate, calendar: calendar)
+            return String(localized: "Bun de călătorit încă \(phrase): \(title)", comment: "Reminder title: a document is good for travel for a duration such as '3 luni' or 'o lună', then the deadline.")
+        }
+    }
+
+    /// The same for a protected category, naming nothing: "Un act e bun de călătorit încă 3 luni".
+    static func genericTravelTitle(daysBefore: Int, from fireDate: Date, calendar: Calendar = .current) -> String {
+        switch daysBefore {
+        case ...0: return String(localized: "Azi e ultima zi în care un act e bun de călătorit", comment: "Generic reminder title on the last day a document is good for travel")
+        case 1: return String(localized: "Mâine e ultima zi în care un act e bun de călătorit", comment: "Generic reminder title the day before a document stops being good for travel")
+        default:
+            let phrase = DurationWording.distance(days: daysBefore, from: fireDate, calendar: calendar)
+            return String(localized: "Un act e bun de călătorit încă \(phrase)", comment: "Generic reminder title: a document is good for travel for a duration such as '3 luni'.")
         }
     }
 
@@ -284,7 +336,7 @@ public enum ReminderPlanner {
         case 1: return String(localized: "Ai o scadență mâine", comment: "Generic reminder title")
         default:
             let phrase = DurationWording.distance(days: daysBefore, from: fireDate, calendar: calendar)
-            return String(localized: "Ai o scadență în \(phrase)", comment: "Generic reminder title: due in a duration such as '7 zile' or '2 luni'.")
+            return String(localized: "Ai o scadență \(DurationWording.inside(phrase))", comment: "Generic reminder title: due in a duration such as 'în 7 zile' or 'într-o lună'.")
         }
     }
 }

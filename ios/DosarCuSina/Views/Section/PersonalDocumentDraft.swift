@@ -76,7 +76,7 @@ enum PersonalDocumentFiling {
     static func reminderLine(_ draft: PersonalDocumentDraft, template: CategoryTemplate, actions: AssetActions, today: CalendarDay) -> String? {
         guard let expiry = draft.expiry,
               let plan = planned(draft, template: template, actions: actions).first(where: { $0.isSelected }) else { return nil }
-        return ReminderWording.expiryLine(expiry, leadDays: plan.blueprint.reminders(for: draft.values).leadDays, today: today)
+        return ReminderWording.expiryLine(expiry, profile: plan.blueprint.reminders(for: draft.values), today: today)
     }
 
     /// How urgent the expiry is, by the deadline it would start: what the badge on the

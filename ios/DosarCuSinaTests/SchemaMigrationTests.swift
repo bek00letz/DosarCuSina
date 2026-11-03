@@ -32,12 +32,83 @@ struct SchemaMigrationTests {
         #expect(Self.fingerprint(DosarSchemaV2.models) == Self.versionTwo)
     }
 
+    /// Version 3 as it shipped: version 2 with a firm's tax ID, a category's behaviour and a
+    /// paper's last valid day. Every entity but deadlines is pinned again by version 4 below,
+    /// which was made from the shipped models.
+    static let versionThree: [String: String] = [
+        "Asset": "58a6RIU1oRUxD3p2eFaJmRdPZEPsiXxOu/r0Cdbm4z0=",
+        "Attachment": "djPOkwOcI2y3EekaK6X63Ktf1r+QFW98LFYaEkrkrwE=",
+        "AttachmentPage": "JuCkdlh81AVcycaJFrC8aBf8R7nkEg6kKyfUIOP9QdI=",
+        "CategoryTemplate": "6ISuox65O5PR9u6cYpQ9MKBEqdCrUMgGOFTuEMpsZhg=",
+        "HistoryEntry": "PuXnfDrnwWK/La9Ngj9fOIPjAGMOxeYuOxGRZz3Tz5o=",
+        "MeasurementLog": "mIGxZoQpHOMXhYrVjhP+5Mo5Qa9Gh9Y4Dzk9+PZ4hwc=",
+        "Obligation": "Xum2PE0uCd+kj/oD/bGcZ/ZZOPlFS2+2EGGSQUHwpL0=",
+        "Provider": "q0DxoXrt4EWS6yXxmvgMH5Z2iOyuc8aZ5QoFphvUZw4=",
+        "ServiceItem": "oLmMn8P7Qhm9kwaqXLTT6ppsedzdzLP99yAFaoqtgCw=",
+    ]
+
     @Test func versionThreeIsANewShape() {
         let three = Self.fingerprint(DosarSchemaV3.models)
         #expect(three["Provider"] != Self.versionTwo["Provider"])
         #expect(three["CategoryTemplate"] != Self.versionTwo["CategoryTemplate"])
         #expect(three["Attachment"] != Self.versionTwo["Attachment"])
         #expect(three["Asset"] == Self.versionTwo["Asset"], "Only what version 3 adds changes")
+    }
+
+    @Test func theFrozenVersionThreeKeepsTheShapeItShippedWith() {
+        #expect(Self.fingerprint(DosarSchemaV3.models) == Self.versionThree)
+        #expect(Self.versionThree["Obligation"] == Self.versionTwo["Obligation"], "Version 3 didn't change deadlines")
+    }
+
+    @Test func versionFourChangesOnlyDeadlines() {
+        let four = Self.fingerprint(DosarSchemaV4.models)
+        for (entity, hash) in Self.versionThree where entity != "Obligation" {
+            #expect(four[entity] == hash, "\(entity) is as version 3 shipped it")
+        }
+        #expect(four["Obligation"] != Self.versionThree["Obligation"], "A deadline keeps its travel margin")
+    }
+
+    @Test func aStoreFromVersionThreeOpensWithItsDeadlines() throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Dosar-v3.store")
+        let deadlineID = UUID()
+
+        // Written by version 3: a passport's deadline, as a phone has it today.
+        do {
+            let schema = Schema(versionedSchema: DosarSchemaV3.self)
+            let container = try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)])
+            let context = ModelContext(container)
+            let passport = DosarSchemaV3.Asset(name: "Pașaport", templateKey: "documents")
+            passport.valuesData = StoredJSON.encode(FieldValues([DocumentType.typeFieldKey: .text(DocumentType.passport)]))
+            let renewal = DosarSchemaV3.Obligation(title: "Reînnoire")
+            renewal.id = deadlineID
+            renewal.blueprintKey = BuiltInBlueprints.documentRenew
+            renewal.kindRaw = ObligationKind.renewal.rawValue
+            renewal.reminderLeadDays = [180, 60]
+            renewal.consequenceRaw = Consequence.legal.rawValue
+            renewal.followUpAfterLapse = true
+            context.insert(passport)
+            context.insert(renewal)
+            renewal.asset = passport
+            try context.save()
+        }
+
+        // Opened by this version: everything kept, no travel margin until the repair list adds it.
+        let container = try PersistenceController.makeContainer(storeURL: url)
+        let context = ModelContext(container)
+        let renewal = try #require(try context.fetch(FetchDescriptor<Obligation>()).first)
+        #expect(renewal.id == deadlineID)
+        #expect(renewal.asset?.name == "Pașaport")
+        #expect(renewal.reminders == ReminderProfile(leadDays: [180, 60], consequence: .legal, followUpAfterLapse: true))
+        #expect(renewal.travelMarginDays == 0)
+
+        // The new attribute is kept.
+        renewal.travelMarginDays = 180
+        try UnitOfWork.save(context)
+        let reopened = ModelContext(try PersistenceController.makeContainer(storeURL: url))
+        #expect(try reopened.fetch(FetchDescriptor<Obligation>()).first?.reminders.travelMarginDays == 180)
     }
 
     @Test func aStoreFromVersionTwoOpensWithEverythingInIt() throws {
@@ -79,7 +150,7 @@ struct SchemaMigrationTests {
         #expect(firm.assets?.map(\.id) == [car.id])
         let template = try #require(try context.fetch(FetchDescriptor<CategoryTemplate>()).first)
         #expect(template.behavior == .standard, "A category from before version 3 behaves as standard until the built-ins are upgraded")
-        let policy = try #require(try context.fetch(FetchDescriptor<DosarSchemaV3.Attachment>()).first)
+        let policy = try #require(try context.fetch(FetchDescriptor<DosarSchemaV4.Attachment>()).first)
         #expect(policy.validUntil == nil)
         #expect(policy.asset?.id == car.id)
 
