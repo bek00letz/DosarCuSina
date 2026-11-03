@@ -33,44 +33,102 @@ struct DSAdaptiveStack<Content: View>: View {
 
     var body: some View {
         DSAdaptiveStackLayout(
-            horizontal: HStackLayout(alignment: verticalAlignment, spacing: spacing),
-            vertical: VStackLayout(alignment: horizontalAlignment, spacing: stackedSpacing ?? spacing)
+            horizontalAlignment: horizontalAlignment,
+            verticalAlignment: verticalAlignment,
+            spacing: spacing,
+            stackedSpacing: stackedSpacing ?? spacing
         ) {
             content
         }
     }
 }
 
-/// The layout behind `DSAdaptiveStack`: an `HStackLayout` when the pieces' natural
-/// widths fit the width offered, a `VStackLayout` otherwise.
+/// The layout behind `DSAdaptiveStack`: a row when the pieces' natural widths fit
+/// the width offered, a column otherwise. In a row, pieces that can grow (a
+/// `frame(maxWidth: .infinity)`) share what is left; in a column every piece is
+/// offered the whole width, so text wraps instead of running past the edge.
 struct DSAdaptiveStackLayout: Layout {
-    let horizontal: HStackLayout
-    let vertical: VStackLayout
+    let horizontalAlignment: HorizontalAlignment
+    let verticalAlignment: VerticalAlignment
+    let spacing: CGFloat
+    let stackedSpacing: CGFloat
 
-    /// Whether the pieces fit side by side in `width` at their natural size.
+    /// The width the pieces take side by side, at their natural size.
+    private func naturalRowWidth(_ subviews: Subviews) -> CGFloat {
+        let widths = subviews.map { $0.sizeThatFits(.unspecified).width }
+        return widths.reduce(0, +) + spacing * CGFloat(max(subviews.count - 1, 0))
+    }
+
+    /// Whether the pieces fit side by side in `width`.
     func fitsSideBySide(in width: CGFloat?, subviews: Subviews) -> Bool {
         guard let width, width.isFinite else { return true }
-        var cache = horizontal.makeCache(subviews: subviews)
-        let natural = horizontal.sizeThatFits(proposal: .unspecified, subviews: subviews, cache: &cache)
-        return natural.width <= width + 0.5
+        return naturalRowWidth(subviews) <= width + 0.5
+    }
+
+    /// Each piece's width in a row of `width`: its natural width, plus an equal
+    /// share of what is left for the pieces that can grow.
+    private func rowWidths(_ subviews: Subviews, width: CGFloat?) -> [CGFloat] {
+        let natural = subviews.map { $0.sizeThatFits(.unspecified).width }
+        guard let width, width.isFinite else { return natural }
+        let growing = subviews.indices.filter { index in
+            subviews[index].sizeThatFits(ProposedViewSize(width: .infinity, height: nil)).width > natural[index] + 0.5
+        }
+        let left = max(width - naturalRowWidth(subviews), 0)
+        guard !growing.isEmpty, left > 0 else { return natural }
+        let share = left / CGFloat(growing.count)
+        return subviews.indices.map { growing.contains($0) ? natural[$0] + share : natural[$0] }
+    }
+
+    /// Where each piece of a row sits vertically, and the row's height.
+    private func rowOffsets(_ subviews: Subviews, widths: [CGFloat]) -> (offsets: [CGFloat], height: CGFloat) {
+        let dimensions = subviews.indices.map { subviews[$0].dimensions(in: ProposedViewSize(width: widths[$0], height: nil)) }
+        let guides = dimensions.map { $0[verticalAlignment] }
+        let line = guides.max() ?? 0
+        let offsets = guides.map { line - $0 }
+        let height = zip(offsets, dimensions).map { $0 + $1.height }.max() ?? 0
+        return (offsets, height)
+    }
+
+    private func columnSizes(_ subviews: Subviews, width: CGFloat?) -> [CGSize] {
+        subviews.map { $0.sizeThatFits(ProposedViewSize(width: width, height: nil)) }
     }
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        guard !subviews.isEmpty else { return .zero }
         if fitsSideBySide(in: proposal.width, subviews: subviews) {
-            var stack = horizontal.makeCache(subviews: subviews)
-            return horizontal.sizeThatFits(proposal: proposal, subviews: subviews, cache: &stack)
+            let widths = rowWidths(subviews, width: proposal.width)
+            let total = widths.reduce(0, +) + spacing * CGFloat(subviews.count - 1)
+            return CGSize(width: total, height: rowOffsets(subviews, widths: widths).height)
         }
-        var stack = vertical.makeCache(subviews: subviews)
-        return vertical.sizeThatFits(proposal: proposal, subviews: subviews, cache: &stack)
+        let sizes = columnSizes(subviews, width: proposal.width)
+        let height = sizes.map(\.height).reduce(0, +) + stackedSpacing * CGFloat(subviews.count - 1)
+        return CGSize(width: proposal.width ?? (sizes.map(\.width).max() ?? 0), height: height)
     }
 
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        guard !subviews.isEmpty else { return }
         if fitsSideBySide(in: bounds.width, subviews: subviews) {
-            var stack = horizontal.makeCache(subviews: subviews)
-            horizontal.placeSubviews(in: bounds, proposal: proposal, subviews: subviews, cache: &stack)
-        } else {
-            var stack = vertical.makeCache(subviews: subviews)
-            vertical.placeSubviews(in: bounds, proposal: proposal, subviews: subviews, cache: &stack)
+            let widths = rowWidths(subviews, width: bounds.width)
+            let (offsets, _) = rowOffsets(subviews, widths: widths)
+            var x = bounds.minX
+            for index in subviews.indices {
+                subviews[index].place(at: CGPoint(x: x, y: bounds.minY + offsets[index]), proposal: ProposedViewSize(width: widths[index], height: nil))
+                x += widths[index] + spacing
+            }
+            return
+        }
+        var y = bounds.minY
+        for (index, size) in columnSizes(subviews, width: bounds.width).enumerated() {
+            let width = min(size.width, bounds.width)
+            let x: CGFloat
+            switch horizontalAlignment {
+            case .trailing: x = bounds.maxX - width
+            case .center: x = bounds.midX - width / 2
+            default: x = bounds.minX
+            }
+            subviews[index].place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(width: width, height: nil))
+            y += size.height + stackedSpacing
         }
     }
 }
+
