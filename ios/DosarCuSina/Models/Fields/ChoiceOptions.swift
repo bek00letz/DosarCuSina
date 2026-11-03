@@ -347,10 +347,10 @@ public enum InsuranceCover {
         (home, ["asigurare facultativa", "locuinta", "locuintei", "bunuri", "imobil"]),
     ]
 
-    /// The cover a policy's text names, matching whole words ("pad" never matches
-    /// "padding" or "Padina"), or nil when it names none.
-    public static func read(in text: String) -> String? {
+    /// The cover a policy's text names, among `covers`, matching whole words ("pad" never
+    /// matches "padding" or "Padina"), or nil when it names none.
+    public static func read(in text: String, among covers: [String] = all) -> String? {
         let haystack = " " + SearchText.normalize(text) + " "
-        return words.first { entry in entry.names.contains { haystack.contains(" \($0) ") } }?.cover
+        return words.first { entry in covers.contains(entry.cover) && entry.names.contains { haystack.contains(" \($0) ") } }?.cover
     }
 }

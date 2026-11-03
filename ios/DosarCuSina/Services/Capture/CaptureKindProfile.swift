@@ -125,12 +125,19 @@ struct CaptureKindProfile: Sendable {
         InsuranceCover.home: (BuiltInTemplates.Key.home, BuiltInBlueprints.homeInsurance),
     ]
 
-    /// The cover of a policy: as read or chosen, else this kind's own (RCA), else CASCO
-    /// for a policy that names a car, else a home's optional policy. Nil for a kind that
-    /// isn't a policy.
+    /// The covers a policy of this kind can have: an RCA policy is RCA; any other policy is
+    /// CASCO, PAD or a home's optional one (an RCA is a kind of its own).
+    var covers: [String] {
+        guard readsCover else { return [] }
+        return defaultCover.map { [$0] } ?? InsuranceCover.all.filter { $0 != InsuranceCover.rca }
+    }
+
+    /// The cover of a policy: as read or chosen (one this kind can have), else this kind's
+    /// own (RCA), else CASCO for a policy that names a car, else a home's optional policy.
+    /// Nil for a kind that isn't a policy.
     func cover(read: String?, hasVehicle: Bool) -> String? {
         guard readsCover else { return nil }
-        if let read = InsuranceCover.key(for: read) { return read }
+        if let read = InsuranceCover.key(for: read), covers.contains(read) { return read }
         if let defaultCover { return defaultCover }
         return hasVehicle ? InsuranceCover.casco : InsuranceCover.home
     }

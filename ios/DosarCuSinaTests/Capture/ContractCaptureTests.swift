@@ -115,10 +115,10 @@ struct ContractCaptureTests {
         #expect(result.kind == .contract)
         let end = try #require(CaptureDay(year: 2028, month: 3, day: 15))
         #expect(result.field(.minimumPeriodEnd)?.value == .day(end))
-        #expect(result.reminder == CaptureReminderHint(day: end, profileKey: "minimumPeriod", leadDays: [30, 0]))
-        #expect(result.suggestions.contains { $0.destination == .obligation(blueprintKey: "subscriptionMinimumEnds", templateKey: "subscriptions") })
-        #expect(CaptureMapping.blueprintKey("subscriptionMinimumEnds") == SubscriptionFields.minimumEndsBlueprint)
-        #expect(CaptureMapping.templateKey(for: .contract) == BuiltInTemplates.Key.subscription)
+        #expect(result.reminder == CaptureReminderHint(day: end, blueprintKey: SubscriptionFields.minimumEndsBlueprint, templateKey: BuiltInTemplates.Key.subscription))
+        #expect(result.suggestions.contains { $0.destination == .obligation(blueprintKey: SubscriptionFields.minimumEndsBlueprint, templateKey: BuiltInTemplates.Key.subscription) })
+        #expect(CaptureDocumentKind.contract.profile.blueprintKey == SubscriptionFields.minimumEndsBlueprint)
+        #expect(CaptureDocumentKind.contract.profile.templateKey == BuiltInTemplates.Key.subscription)
         #expect(DocumentKind(capturedKind: .contract) == .contract)
     }
 

@@ -31,10 +31,10 @@ struct CaptureAnalyzerTests {
 
         let routing = route(analysis)
         let reminder = try #require(routing.reminder)
-        #expect(reminder.profileKey == "passport")
-        #expect(reminder.leadDays.first == 270)
+        #expect(reminder.blueprintKey == BuiltInBlueprints.documentRenew)
+        #expect(reminder.templateKey == BuiltInTemplates.Key.documents, "Lead times are the blueprint's: capture keeps none of its own")
         #expect(routing.suggestions.contains { $0.destination == .newAsset(templateKey: "documents") })
-        #expect(routing.suggestions.contains { $0.destination == .obligation(blueprintKey: "passportRenewal", templateKey: "documents") })
+        #expect(routing.suggestions.contains { $0.destination == .obligation(blueprintKey: BuiltInBlueprints.documentRenew, templateKey: "documents") })
     }
 
     @Test("Car service invoice: provider, total, km and parts keyed by component")
@@ -74,7 +74,7 @@ struct CaptureAnalyzerTests {
         let routing = route(analysis)
         let history = try #require(routing.suggestions.first { $0.destination == .historyEntry(templateKey: "vehicle") })
         #expect(history.assetHints.contains(CaptureAssetHint(key: .licensePlate, value: "B 123 ABC")))
-        #expect(routing.suggestions.contains { $0.destination == .provider(name: "EXEMPLU SERVICE AUTO S.R.L.", trade: "mecanic") })
+        #expect(routing.suggestions.contains { $0.destination == .provider(name: "EXEMPLU SERVICE AUTO S.R.L.", trade: ProviderTrade.mechanic.rawValue) })
         #expect(routing.reminder == nil)
     }
 
@@ -103,9 +103,9 @@ struct CaptureAnalyzerTests {
         #expect(byKey[.vin]?.value.text == "WVWZZZAUZJW000000")
 
         let routing = route(analysis)
-        #expect(routing.reminder?.profileKey == "rca")
-        #expect(routing.reminder?.leadDays == [30, 7, 0])
-        #expect(routing.suggestions.first?.destination == .obligation(blueprintKey: "rca", templateKey: "vehicle"))
+        #expect(routing.reminder?.blueprintKey == BuiltInBlueprints.vehicleRCA)
+        #expect(byKey[.coverageType]?.value.text == InsuranceCover.rca)
+        #expect(routing.suggestions.first?.destination == .obligation(blueprintKey: BuiltInBlueprints.vehicleRCA, templateKey: "vehicle"))
     }
 
     @Test("Receipt with a warranty: purchase facts and the last day of warranty")
@@ -131,9 +131,9 @@ struct CaptureAnalyzerTests {
         #expect(byKey[.productName]?.value.text?.hasPrefix("Hotă bucătărie") == true)
 
         let routing = route(analysis)
-        #expect(routing.suggestions.first?.destination == .newAsset(templateKey: "warranties"))
+        #expect(routing.suggestions.first?.destination == .newAsset(templateKey: BuiltInTemplates.Key.purchase))
         #expect(routing.reminder?.day == CaptureDay(year: 2027, month: 6, day: 10))
-        #expect(routing.reminder?.leadDays == [30])
+        #expect(routing.reminder?.blueprintKey == BuiltInBlueprints.warrantyEnds)
     }
 
     @Test("Driving licence: numbered EU fields give the expiry; renewal warned two months ahead")
@@ -155,7 +155,7 @@ struct CaptureAnalyzerTests {
         #expect(byKey[.issueDate]?.value.day == CaptureDay(year: 2021, month: 3, day: 12))
         #expect(byKey[.documentNumber]?.value.text == "123456789")
         #expect(byKey[.holderName]?.value.text == "ION EXEMPLU")
-        #expect(route(analysis).reminder?.leadDays == [60, 30])
+        #expect(route(analysis).reminder?.blueprintKey == BuiltInBlueprints.documentRenew)
     }
 
     @Test("Vet record: next vaccine date, warned only the day before")
@@ -173,8 +173,8 @@ struct CaptureAnalyzerTests {
         #expect(byKey[.microchip]?.value.text == "642000000000001")
         #expect(byKey[.nextDoseDate]?.value.day == CaptureDay(year: 2026, month: 11, day: 18))
         let routing = route(analysis)
-        #expect(routing.reminder?.profileKey == "petVaccine")
-        #expect(routing.reminder?.leadDays == [1])
+        #expect(routing.reminder?.blueprintKey == BuiltInBlueprints.petVaccine)
+        #expect(routing.reminder?.templateKey == BuiltInTemplates.Key.pet)
     }
 
     @Test("ITP report: next inspection and odometer")
@@ -191,7 +191,7 @@ struct CaptureAnalyzerTests {
         let byKey = Dictionary(analysis.fields.map { ($0.key, $0) }, uniquingKeysWith: { a, _ in a })
         #expect(byKey[.expiryDate]?.value.day == CaptureDay(year: 2027, month: 3, day: 14))
         #expect(byKey[.odometer]?.value == .metric(value: 86_420, unit: "km"))
-        #expect(route(analysis).reminder?.profileKey == "itp")
+        #expect(route(analysis).reminder?.blueprintKey == BuiltInBlueprints.vehicleITP)
     }
 
     @Test("A known utility invoice is claimed by the specialized parser")

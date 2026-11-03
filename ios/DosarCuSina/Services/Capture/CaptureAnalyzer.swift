@@ -333,7 +333,7 @@ public struct CaptureAnalyzer: Sendable {
         }
         // The cover: an RCA policy is RCA; any other policy's is read once, as whole words.
         // When the page names none, the review asks the person to pick it.
-        if let cover = kind.profile.defaultCover ?? InsuranceCover.read(in: haystack) {
+        if let cover = kind.profile.defaultCover ?? InsuranceCover.read(in: haystack, among: kind.profile.covers) {
             fields.add(.coverageType, .text(cover), 0.7, nil)
         }
         addVehicleIdentity(text, into: &fields)

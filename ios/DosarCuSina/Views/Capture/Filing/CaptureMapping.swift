@@ -143,10 +143,10 @@ enum CaptureMapping {
 
     /// The choices a capture field offers in the review, kept as their stable keys: the
     /// service a contract is for, the cover of a policy. Nil for a field typed as text.
-    static func choices(for key: CaptureFieldKey) -> [ChoiceOption]? {
+    static func choices(for key: CaptureFieldKey, kind: CaptureDocumentKind) -> [ChoiceOption]? {
         switch key {
         case .serviceKind: ServiceKind.options
-        case .coverageType: InsuranceCover.options
+        case .coverageType: InsuranceCover.options.filter { kind.profile.covers.contains($0.key) }
         default: nil
         }
     }

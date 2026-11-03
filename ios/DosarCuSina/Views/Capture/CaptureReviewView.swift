@@ -561,7 +561,7 @@ private struct CaptureFieldEditor: View {
 
     @ViewBuilder private var editor: some View {
         let title = LocalizedStringKey(field.label)
-        if let choices = CaptureMapping.choices(for: field.key) {
+        if let choices = CaptureMapping.choices(for: field.key, kind: kind) {
             // A choice, kept as its stable key: the service, a policy's cover.
             DSChoiceField(title, selection: Binding(
                 get: { field.value?.text.flatMap { choices.option(for: $0)?.key } },

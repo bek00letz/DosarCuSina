@@ -83,7 +83,7 @@ struct ReadingArbiterTests {
         #expect(read.readWithCloudModel)
         let expiry = try #require(CaptureDay(year: 2027, month: 10, day: 31))
         #expect(read.field(.expiryDate)?.value.day == expiry)
-        #expect(read.reminder?.profileKey == "rca")
+        #expect(read.reminder?.blueprintKey == BuiltInBlueprints.vehicleRCA)
         #expect(read.field(.provider)?.value.text == "Exemplu Asigurări S.A.", "The bill reader's provider is not the policy's")
 
         // The review follows the corrected kind: routing, blueprint, reminder, place and title.
@@ -233,7 +233,7 @@ struct ReadingArbiterTests {
         #expect(after.kindAlternatives == [CaptureAlternative(.rcaPolicy, source: .cloudModel)], "The AI's is offered beside it")
         #expect(after.title == "Polița mașinii")
         #expect(after.blueprintKey != "vehicle.rca", "What depends on the kind follows theirs")
-        #expect(after.blueprintKey == CaptureMapping.blueprintKey("casco"))
+        #expect(after.blueprintKey == BuiltInBlueprints.vehicleCASCO)
     }
 
     // MARK: A weak reading

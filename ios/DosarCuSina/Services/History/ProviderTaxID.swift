@@ -9,7 +9,7 @@ public enum ProviderTaxID {
         var rest = Substring(text.trimmingCharacters(in: .whitespacesAndNewlines).uppercased())
         if rest.hasPrefix("RO") { rest = rest.dropFirst(2) }
         let digits = rest.filter { !$0.isWhitespace && $0 != "." && $0 != "-" }
-        guard (2...10).contains(digits.count), digits.allSatisfy(\.isASCIIDigit) else { return nil }
+        guard (2...10).contains(digits.count), digits.allSatisfy({ ("0"..."9").contains($0) }) else { return nil }
         // Leading zeros carry nothing.
         let trimmed = digits.drop { $0 == "0" }
         return trimmed.isEmpty ? nil : String(trimmed)
