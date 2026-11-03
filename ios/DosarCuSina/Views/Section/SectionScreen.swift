@@ -87,8 +87,15 @@ private struct SectionContent: View {
                     DocumentPhotoPrompt(asset: asset, toast: $toast)
                 }
                 SecretFieldsCard(asset: asset, definition: definition)
+                // The situations this section offers sit under what comes up next, or under the hero.
+                if !definition.pockets.contains(.upcoming) {
+                    SituationsCard(assetID: asset.id, definition: definition)
+                }
                 ForEach(definition.pockets, id: \.self) { pocket in
                     PocketView(pocket: pocket, asset: asset, definition: definition, toast: $toast, error: $error)
+                    if pocket == .upcoming {
+                        SituationsCard(assetID: asset.id, definition: definition)
+                    }
                 }
                 deleteButton
             }
@@ -225,8 +232,6 @@ private struct DocumentPhotoPrompt: View {
     @Binding var toast: DSToast?
 
     @State private var isChoosingSource = false
-    @State private var source: CaptureSource?
-    @State private var flow: CaptureFlowInput?
     @State private var errorMessage: String?
 
     var body: some View {
@@ -242,36 +247,23 @@ private struct DocumentPhotoPrompt: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                DSPrimaryButton("Adaugă poza actului", systemImage: "camera.fill") { isChoosingSource = true }
+                DSPrimaryButton("Adaugă poza actului", systemImage: "camera.fill") {
+                    errorMessage = nil
+                    isChoosingSource = true
+                }
                 if let errorMessage {
                     DSNotice(.error, title: "Nu s-a deschis", message: LocalizedStringKey(errorMessage))
                 }
             }
         }
-        .confirmationDialog(Text("Adaugă poza actului", comment: "Title of the photo source choice for a document."), isPresented: $isChoosingSource, titleVisibility: .visible) {
-            if CaptureSource.isCameraAvailable {
-                Button { source = .camera } label: { Text("Fotografiază actul", comment: "Photo source: camera.") }
-            }
-            Button { source = .photos } label: { Text("Alege din poze", comment: "Photo source: library.") }
-            Button { source = .files } label: { Text("Din Fișiere", comment: "Photo source: files.") }
-            Button(role: .cancel) {} label: { Text("Renunță", comment: "Cancels a choice.") }
-        }
-        .captureSourcePicker($source) { payload in
-            errorMessage = nil
-            flow = CaptureFlowInput(payload: payload, preferredAssetID: asset.id)
-        } onError: { error in
-            errorMessage = SaveFailure.message(for: error, formKept: false)
-        }
-        .sheet(item: $flow) { input in
-            CaptureFlowView(input: input) { result in
-                flow = nil
-                switch result {
-                case .filed(let message, _), .visitSaved(let message):
-                    toast = DSToast(title: message, actionTitle: nil, action: nil)
-                case .dismissed:
-                    break
-                }
-            }
+        .photoFirstCapture(
+            isPresented: $isChoosingSource,
+            title: Text("Adaugă poza actului", comment: "Title of the photo source choice for a document."),
+            assetID: asset.id
+        ) { message in
+            toast = DSToast(title: message, actionTitle: nil, action: nil)
+        } onError: { message in
+            errorMessage = message
         }
     }
 }

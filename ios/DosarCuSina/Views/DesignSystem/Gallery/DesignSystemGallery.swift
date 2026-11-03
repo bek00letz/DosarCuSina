@@ -367,7 +367,26 @@ private struct GalleryCards: View {
                     }
                 }
             }
-            GallerySection(title: "Rând care se adaptează", note: "DSAdaptiveStack: alăturate când încap pe un rând, una sub alta când nu. Măriți textul ca să vedeți.") {
+            GallerySection(title: "Liste de pregătire", note: "DSReadinessRow: pregătit, de verificat, de rezolvat sau lipsă, cu motivul. Tot rândul se apasă: deschide ce e acolo sau adaugă ce lipsește. Ce iei cu tine se bifează cu DSCheckRow.") {
+                DSCard {
+                    VStack(alignment: .leading, spacing: 0) {
+                        DSStatusLine(text: "Un lucru de rezolvat · 2 lucruri nu sunt în dosar", tone: .alarming)
+                            .padding(.bottom, DS.Space.xs)
+                        DSRowSeparator()
+                        DSReadinessRow(status: .ok, title: Text(verbatim: "Carte de identitate"), detail: Text(verbatim: "Valabilă până pe 12 august 2031. Ajunge pentru toată UE.")) {}
+                        DSRowSeparator()
+                        DSReadinessRow(status: .problem, title: Text(verbatim: "Pașaport"), detail: Text(verbatim: "Bun de călătorit doar până pe 3 iunie. Fă-ți altul înainte de plecare.")) {}
+                        DSRowSeparator()
+                        DSReadinessRow(status: .warning, title: Text(verbatim: "Rovinietă"), detail: Text(verbatim: "Expiră pe 15 iulie, cât ești plecat.")) {}
+                        DSRowSeparator()
+                        DSReadinessRow(status: .missing, title: Text(verbatim: "Card european de sănătate"), detail: Text(verbatim: "Nu e în dosar."),
+                                       actionTitle: Text(verbatim: "Adaugă")) {}
+                        DSRowSeparator()
+                        DSCheckRow(title: Text(verbatim: "Constatarea amiabilă"), subtitle: Text(verbatim: "După ce o semnați amândoi."), isOn: $cabinFilter)
+                    }
+                }
+            }
+            GallerySection(title: "Rând care se adaptează", note:"DSAdaptiveStack: alăturate când încap pe un rând, una sub alta când nu. Măriți textul ca să vedeți.") {
                 DSCard {
                     DSAdaptiveStack(spacing: DS.Space.s) {
                         Text(verbatim: "Asigurarea locuinței, PAD").dsFont(.headline)

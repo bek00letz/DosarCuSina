@@ -10,6 +10,8 @@ struct DeadlineForm: View {
     let assetID: UUID
     /// Opens with "Alt termen" chosen, as from a section's own "Alt termen".
     var startsWithOwn = false
+    /// Opens with this usual deadline of the category chosen (a checklist's "Adaugă" for RCA).
+    var startsWithBlueprint: String?
     /// Called once the deadline is saved, with the confirmation to show.
     let onSaved: (LocalizedStringResource) -> Void
 
@@ -97,10 +99,16 @@ struct DeadlineForm: View {
         .dsDiscardGuard(hasChanges: !ownTitle.isEmpty || due != nil || (choice != nil && choice != initialChoice))
         .onAppear {
             if choice == nil, startsWithOwn { choice = .own }
+            if choice == nil, let key = startsWithBlueprint, let blueprint = blueprints.first(where: { $0.key == key }) {
+                select(.blueprint(key), blueprint: blueprint, asset: asset)
+            }
         }
     }
 
-    private var initialChoice: Choice? { startsWithOwn ? .own : nil }
+    private var initialChoice: Choice? {
+        if startsWithOwn { return .own }
+        return startsWithBlueprint.map(Choice.blueprint)
+    }
 
     private var canSave: Bool {
         guard due != nil, let choice else { return false }

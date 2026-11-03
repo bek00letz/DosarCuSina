@@ -219,21 +219,16 @@ struct TravelCutoffTests {
 
     // MARK: The trip check
 
-    private func document(_ type: String, expires: String) -> ReadinessAsset {
-        var values = FieldValues()
-        values[DocumentType.typeFieldKey] = .text(type)
-        values[DocumentFields.expiry] = .date(CalendarDay(expires))
-        return ReadinessAsset(name: DocumentType.label(for: type) ?? type, templateKey: BuiltInTemplates.Key.documents, values: values)
-    }
 
     @Test("Outside the EU, the passport must be good for travel until the trip ends", arguments: [
         ("2027-02-12", ReadinessStatus.ok),
         ("2027-02-13", ReadinessStatus.problem),
     ])
     func theTripCheckUsesTheSameCutoff(end iso: String, expected: ReadinessStatus) {
+        let passports = [ReadinessAsset.personalDocument(DocumentType.passport, expires: expiry.isoString)]
         let items = ReadinessEngine.check(
-            .tripAbroad(start: CalendarDay("2027-02-01"), end: CalendarDay(iso), region: .outsideEU, driving: false, withPet: false),
-            assets: [document(DocumentType.passport, expires: expiry.isoString)], calendar: calendar
+            .trip(.everyone(start: "2027-02-01", end: iso, region: .outsideEU, in: passports)),
+            assets: passports, calendar: calendar
         )
         let passport = items.first { $0.id.hasPrefix("trip.passport") }
         #expect(passport?.status == expected)
@@ -241,11 +236,12 @@ struct TravelCutoffTests {
     }
 
     @Test func inTheEUAnIdentityCardIsGoodUntilItExpires() {
+        let cards = [ReadinessAsset.personalDocument(DocumentType.idCard, expires: expiry.isoString)]
         let items = ReadinessEngine.check(
-            .tripAbroad(start: CalendarDay("2027-08-01"), end: CalendarDay("2027-08-12"), region: .europeanUnion, driving: false, withPet: false),
-            assets: [document(DocumentType.idCard, expires: expiry.isoString)], calendar: calendar
+            .trip(.everyone(start: "2027-08-01", end: "2027-08-12", region: .europeanUnion, in: cards)),
+            assets: cards, calendar: calendar
         )
-        #expect(items.first { $0.id == "trip.identity" }?.status == .ok)
+        #expect(items.first { $0.id == "trip.identity.unfiled" }?.status == .ok)
     }
 
     // MARK: Existing passports

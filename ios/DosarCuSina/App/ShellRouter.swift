@@ -72,6 +72,12 @@ enum ShellRouting {
             return ShellRoutePlan(tab: .dosar, path: [.agenda, route])
         case .settings(let section):
             return ShellRoutePlan(tab: .dosar, path: [], sheet: .settings(section))
+        case .readiness(let readiness):
+            // Over the section it belongs to; a trip for the household opens over Urmează.
+            if let id = readiness.assetID {
+                return ShellRoutePlan(tab: .dosar, path: [.asset(id), route])
+            }
+            return ShellRoutePlan(tab: .upcoming, path: [route])
         }
     }
 }
