@@ -85,16 +85,24 @@ final class LockWindowController {
         if let pending = state.cover { show(pending) }
     }
 
+    /// The window the lock and the cover are drawn in, once it exists.
+    var coverWindow: UIWindow? { window }
+
+    /// Called on every update of the app's view, so showing the same thing again
+    /// changes nothing: in particular, a pending hide is never cancelled by an
+    /// update that still says "no cover".
     func show(_ cover: LockCover?) {
         guard let scene = appWindow?.windowScene else {
             state.cover = cover
             return
         }
-        hideTask?.cancel()
         if let cover {
+            hideTask?.cancel()
+            hideTask = nil
             let window = self.window ?? makeWindow(in: scene)
             let wasHidden = window.isHidden
             state.cover = cover
+            window.isUserInteractionEnabled = true
             window.isHidden = false
             if cover == .lock {
                 window.makeKey()
@@ -102,12 +110,13 @@ final class LockWindowController {
             }
         } else if state.cover != nil {
             state.cover = nil
-            // The layer fades out first; the window goes once it has.
+            // Taps reach the app at once; the layer fades out, then the window goes.
+            window?.isUserInteractionEnabled = false
+            appWindow?.makeKey()
             hideTask = Task { [weak self] in
                 try? await Task.sleep(for: .milliseconds(400))
                 guard !Task.isCancelled, let self, self.state.cover == nil else { return }
                 self.window?.isHidden = true
-                self.appWindow?.makeKey()
             }
         }
     }
