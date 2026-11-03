@@ -37,6 +37,7 @@ private struct ObligationPage: View {
     @State private var isAddingToCalendar = false
     @State private var isRescheduling = false
     @State private var isAddingCustomLead = false
+    @State private var isEditingReminders = false
     @State private var saveRequest: ReminderSaveRequest?
     @State private var unlockFailed = false
 
@@ -88,6 +89,9 @@ private struct ObligationPage: View {
                 if let days { setLead(days, on: true) }
             }
             .presentationDetents([.medium])
+        }
+        .sheet(isPresented: $isEditingReminders) {
+            ReminderSettingsSheet(obligation: obligation) { isEditingReminders = false }
         }
         .sheet(isPresented: $isRescheduling) {
             RescheduleSheet(current: obligation.dueDay()) { day in
@@ -298,10 +302,48 @@ private struct ObligationPage: View {
 
     // MARK: Reminders
 
+    /// Off: the settings moved to their own sheet (`ReminderSettingsSheet`). The inline card
+    /// below is kept, switched off, as the way back until the owner has used the sheet.
+    private static let editsRemindersInline = false
+
     @ViewBuilder private var reminders: some View {
         if obligation.status == .active {
+            if Self.editsRemindersInline {
+                inlineReminderEditor
+            } else {
+                reminderSummary
+            }
+        }
+    }
+
+    /// What the deadline reminds, in words, and the way into its settings.
+    private var reminderSummary: some View {
+        let profile = obligation.reminders
+        return VStack(alignment: .leading, spacing: DS.Space.s) {
+            DSSectionHeader("Când te anunț")
+            ReminderPermissionNotice()
+            DSCard {
+                VStack(alignment: .leading, spacing: DS.Space.xs) {
+                    Text(verbatim: ReminderWording.sentence(profile))
+                        .dsFont(.headline)
+                    if profile.followUpAfterLapse {
+                        Text(verbatim: ReminderWording.followUp).dsFont(.footnote)
+                    }
+                    DS.Hairline().padding(.vertical, DS.Space.xxs)
+                    Button { isEditingReminders = true } label: {
+                        DSListRow("Schimbă când te anunț", systemImage: "bell", showsChevron: true)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    /// The settings as they were on the page, before the sheet. Switched off
+    /// (`editsRemindersInline`); remove once the owner agrees.
+    @ViewBuilder private var inlineReminderEditor: some View {
+        if obligation.status == .active {
             let profile = obligation.reminders
-            let usual = DeadlineReminders.restorable(obligation, in: context)
             VStack(alignment: .leading, spacing: DS.Space.s) {
                 DSSectionHeader("Când te anunț")
                 ReminderPermissionNotice()
@@ -334,35 +376,10 @@ private struct ObligationPage: View {
                                 run { try ObligationActions(context: context).setFollowUpAfterLapse(obligation, isOn) }
                             }
                         }
-                        if let usual {
-                            VStack(alignment: .leading, spacing: DS.Space.xs) {
-                                DS.Hairline().padding(.vertical, DS.Space.xxs)
-                                restoreUsualRow(usual)
-                            }
-                            .transition(.opacity)
-                        }
                     }
                 }
-                .dsAnimation(value: usual)
             }
         }
-    }
-
-    /// "Revino la cele obișnuite", offered only when the person set this deadline's reminders
-    /// and they differ from what its document gives. It says what the usual ones are before
-    /// the tap, and the toast takes it back.
-    private func restoreUsualRow(_ usual: ReminderProfile) -> some View {
-        let sentence = ReminderWording.sentence(usual)
-        return Button {
-            saveRequest = ReminderSaveRequest { restoreUsualReminders() }
-        } label: {
-            DSListRow(title: Text("Revino la cele obișnuite", comment: "Reminder settings: put back the reminders the deadline's document gives."),
-                      subtitle: Text(verbatim: sentence), systemImage: "arrow.uturn.backward", trailing: { EmptyView() })
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Text("Revino la cele obișnuite"))
-        .accessibilityValue(Text(verbatim: sentence))
-        .accessibilityHint(Text("Pune la loc zilele în care anunț de obicei pentru acest termen.", comment: "VoiceOver hint of the button that puts back the usual reminders."))
     }
 
     // MARK: More
@@ -387,16 +404,6 @@ private struct ObligationPage: View {
         let profile = current.withLeadDays(Array(leads))
         saveRequest = ReminderSaveRequest {
             run { try ObligationActions(context: context).setReminders(obligation, profile) }
-        }
-    }
-
-    private func restoreUsualReminders() {
-        do {
-            guard let restored = try ObligationActions(context: context).restoreUsualReminders(obligation) else { return }
-            let sentence = ReminderWording.sentence(restored.value)
-            toast = .undo("Am pus la loc cele obișnuite. \(sentence)", receipt: restored.receipt)
-        } catch {
-            toast = UpcomingActions.failureToast(error)
         }
     }
 
@@ -561,7 +568,7 @@ private struct ObligationCompleteSheet: View {
 // MARK: - Small sheets
 
 /// A reminder this many days before, beyond the presets.
-private struct CustomLeadSheet: View {
+struct CustomLeadSheet: View {
     let onClose: (Int?) -> Void
     @State private var days = 3
 
