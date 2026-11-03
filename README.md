@@ -7,7 +7,7 @@ A documents binder for the rare-but-predictable parts of life admin. A *dosar cu
 - **Calm.** The list of what's next stays short, and reminders come as early as each renewal needs, no earlier.
 - **Offline.** Everything works without a network or an account.
 
-The app is in Romanian. It is built for people who aren't tech-savvy: four labelled tabs, big buttons, nothing hidden behind a swipe.
+The app is in Romanian. It is for everyone, and built so that people who aren't comfortable with technology can use it just as well: four labelled tabs, big buttons, nothing hidden behind a swipe.
 
 ## Privacy
 
