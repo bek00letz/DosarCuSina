@@ -95,12 +95,25 @@ enum ReminderWording {
 
     /// "Expiră pe 12 august 2031. Te anunț cu 3 luni și cu o lună înainte." The line
     /// under an expiry date, shown before saving so the reminder is never a surprise. A
-    /// passport's says when it stops being good for travel too.
-    static func expiryLine(_ day: CalendarDay, profile: ReminderProfile, today: CalendarDay, calendar: Calendar = .current) -> String {
+    /// passport's says when it stops being good for travel too. A document whose validity
+    /// follows its issue by a rule (`validityMonths`: a cazier judiciar) says so instead of
+    /// "Expiră pe".
+    static func expiryLine(_ day: CalendarDay, profile: ReminderProfile, today: CalendarDay, validityMonths: Int? = nil,
+                           calendar: Calendar = .current) -> String {
         let date = DueWording.date(day, today: today)
-        return [String(localized: "Expiră pe \(date)."), travelLine(expiring: day, profile: profile, today: today, calendar: calendar), sentence(profile)]
+        let opening = validityMonths.map { validityOpening(day, months: $0, today: today) } ?? String(localized: "Expiră pe \(date).")
+        return [opening, travelLine(expiring: day, profile: profile, today: today, calendar: calendar), sentence(profile)]
             .compactMap { $0 }
             .joined(separator: " ")
+    }
+
+    /// "E valabil până pe 15 aprilie 2027, la 6 luni de la eliberare." A validity worked out
+    /// from the issue date by the document's rule, not printed on it. The one wording, for
+    /// "Scriu eu" and capture's review.
+    static func validityOpening(_ day: CalendarDay, months: Int, today: CalendarDay) -> String {
+        let date = DueWording.date(day, today: today)
+        return String(localized: "E valabil până pe \(date), la \(CalendarCount.months(months)) de la eliberare.",
+                      comment: "Capture review: a document's validity worked out from its issue date, e.g. „la 6 luni de la eliberare”.")
     }
 
     /// The follow-up line under the sentence, when it is on.

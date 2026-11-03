@@ -44,6 +44,23 @@ struct SettledDecisionsTests {
         #expect(card.attentionStart(before: due, calendar: calendar) == CalendarDay("2027-07-12"))
     }
 
+    /// "Cazier, the health card and bank cards: the owner's answers" in DECISIONS.
+    @Test func cazierHealthCardAndBankCardAnswers() throws {
+        // A cazier fiscal or auto has no validity rule, so no reminder, until one is confirmed.
+        for variant in [DocumentType.Variant.criminalRecordFiscal, DocumentType.Variant.criminalRecordDriving] {
+            #expect(DocumentType.validityMonths(type: DocumentType.criminalRecord, variant: variant) == nil)
+        }
+        // A cazier judiciar reminds a week before and on the day, as "Doar să nu uit".
+        let renew = try #require(BuiltInTemplates.documents.blueprints.first { $0.key == BuiltInBlueprints.documentRenew })
+        let cazier = renew.reminders(for: FieldValues([DocumentType.typeFieldKey: .text(DocumentType.criminalRecord)]))
+        #expect(cazier.leadDays == [7, 0])
+        #expect(cazier.consequence == .comfort)
+        // The national health card stays typed in: no kind of capture files it.
+        #expect(!CaptureDocumentKind.allCases.contains { $0.profile.documentType == DocumentType.nationalHealthCard })
+        // A bank card is read only on the phone.
+        #expect(DocumentType.readOnPhoneOnly == [DocumentType.bankCard])
+    }
+
     @Test func monthRemindersFireOnTheSameDayOfTheMonth() {
         #expect(ReminderLead(days: 90).day(before: CalendarDay("2027-08-12"), calendar: calendar) == CalendarDay("2027-05-12"))
         #expect(ReminderLead(days: 30).day(before: CalendarDay("2027-03-31"), calendar: calendar) == CalendarDay("2027-02-28"))

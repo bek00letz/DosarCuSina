@@ -291,7 +291,7 @@ struct PersonalDocumentCaptureTests {
         try expectNoCardNumber(in: reading)
     }
 
-    @Test("A bank card is never sent to the AI provider without asking")
+    @Test("A bank card or a cazier is never sent by itself (a bank card never at all: PhoneOnlyReadingTests)")
     func bankCardAsksFirst() async throws {
         let result = try await read(Self.bankCard)
         #expect(IdentitySignals.mayBeIdentity(result))

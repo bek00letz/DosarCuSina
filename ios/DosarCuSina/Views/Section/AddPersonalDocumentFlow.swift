@@ -247,13 +247,29 @@ private struct PersonalDocumentForm: View {
 
     private var expirySection: some View {
         VStack(alignment: .leading, spacing: DS.Space.xs) {
-            DSExpiryDateField("Valabil până la", date: expiryBinding, urgencyRule: expiryRule)
+            if draft.isDatedByIssue {
+                // A cazier prints the day it was issued; how long it is valid follows from its rule.
+                DSDateField("Eliberat pe", date: issuedBinding, in: Date.distantPast...Date.now, footnote: "Data scrisă pe act.")
+            } else {
+                DSExpiryDateField("Valabil până la", date: expiryBinding, urgencyRule: expiryRule)
+            }
             if let line = reminderLine {
                 Text(verbatim: line)
                     .dsFont(.subheadline)
                     .fixedSize(horizontal: false, vertical: true)
                 Text("Amintirea o poți schimba oricând, din pagina termenului.", comment: "Footnote under a document's reminder line.")
                     .dsFont(.footnote)
+            } else if draft.isDatedByIssue, draft.validityMonths == nil {
+                if draft.variant == nil, !draft.variantOptions.isEmpty, let type = draft.type.flatMap(DocumentType.label(for:)) {
+                    Text("Alege ce fel de \(type.lowercased(with: .dosarDefault)) e, ca să știu cât timp e valabil.",
+                         comment: "Footnote under a cazier's issue date before its variant is chosen.")
+                        .dsFont(.footnote)
+                } else {
+                    // A cazier fiscal or auto: no rule is known, so nothing reminds.
+                    Text("Nu știu cât timp e valabil, așa că nu îți amintesc de el.",
+                         comment: "Footnote under the issue date of a document with no known validity, e.g. a cazier fiscal.")
+                        .dsFont(.footnote)
+                }
             } else {
                 Text("Fără o dată nu am când să-ți amintesc. O poți adăuga oricând.", comment: "Footnote when a document has no expiry date.")
                     .dsFont(.footnote)
@@ -275,15 +291,23 @@ private struct PersonalDocumentForm: View {
         }
     }
 
+    private var issuedBinding: Binding<Date?> {
+        Binding {
+            draft.issued?.noonDate(in: calendar)
+        } set: { date in
+            draft.issued = date.map { CalendarDay($0, calendar: calendar) }
+        }
+    }
+
     private var expiryRule: UrgencyRule {
-        guard let template = templates.first else { return .noReminders }
+        guard let template = documentsTemplate else { return .noReminders }
         return PersonalDocumentFiling.urgencyRule(draft, template: template, actions: AssetActions(context: context, calendar: calendar))
     }
 
     private var reminderLine: String? {
         guard let template = documentsTemplate else { return nil }
         return PersonalDocumentFiling.reminderLine(draft, template: template, actions: AssetActions(context: context, calendar: calendar),
-                                                   today: CalendarDay(Date(), calendar: calendar))
+                                                   today: CalendarDay(Date(), calendar: calendar), calendar: calendar)
     }
 
     // MARK: Save

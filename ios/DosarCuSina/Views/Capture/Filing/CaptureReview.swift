@@ -93,6 +93,9 @@ struct CaptureReview: Identifiable {
     /// The person asked to keep the photo of a document whose photo is kept only on
     /// request ("Păstrează și poza cardului"). Off until they turn it on.
     var keepsPhotoOnRequest = false
+    /// The person is adding a document read only on the phone (the capture started from a
+    /// bank card's page): the AI provider never reads it.
+    var staysOnPhone = false
     var suggested: Suggested
     /// Kinds another reader saw, offered beside the kind shown ("Pe telefon părea: …").
     var kindAlternatives: [CaptureAlternative<CaptureDocumentKind>]
@@ -408,6 +411,15 @@ struct CaptureReview: Identifiable {
     /// The person's AI provider read this document.
     var usedCloudModel: Bool { result.readWithCloudModel }
 
+    /// Whether the person's AI provider may read this document (`PhoneOnlyReading`): never
+    /// one read only on the phone, whether the person is adding one, chose that kind, or the
+    /// phone read one (or can't be sure it didn't). The review offers "Citește mai bine"
+    /// only when it may.
+    var providerMayRead: Bool {
+        !staysOnPhone && !PhoneOnlyReading.isPhoneOnly(kind) && !PhoneOnlyReading.mayBeOne(result)
+            && !kindAlternatives.contains { PhoneOnlyReading.isPhoneOnly($0.value) }
+    }
+
     // MARK: Building
 
     /// A review with the destination worked out from what was read: an existing
@@ -572,6 +584,7 @@ struct CaptureReview: Identifiable {
         if previous.remindsToPay != before.remindsToPay { merged.remindsToPay = previous.remindsToPay }
         merged.filesAsPersonalDocument = previous.filesAsPersonalDocument
         merged.keepsPhotoOnRequest = previous.keepsPhotoOnRequest
+        merged.staysOnPhone = previous.staysOnPhone
         return merged
     }
 }

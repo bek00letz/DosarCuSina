@@ -241,9 +241,15 @@ public final class CaptureEngine: Sendable {
 
         // 4. The person's AI provider: a second opinion on the whole page, on request.
         // `ReadingArbiter` ranks it against the phone's reading by evidence. Closing the
-        // capture before this point means nothing is sent.
+        // capture before this point means nothing is sent. A page that may be a bank card
+        // (`PhoneOnlyReading`, on what the phone read of these very pages) is never sent,
+        // whoever asked: the tap, the automatic reading, or a reading again with added pages.
         try Task.checkCancellation()
-        if options.useCloudModel, let model = cloudModel {
+        let staysOnPhone = PhoneOnlyReading.mayBeOne(kinds: [analysis.kind, reading.kind], text: text)
+        if options.useCloudModel, staysOnPhone {
+            CaptureLog.engine.info("Not sending to the AI provider: read only on the phone")
+            notices.append(.readOnPhoneOnly)
+        } else if options.useCloudModel, let model = cloudModel {
             switch model.availability() {
             case .available:
                 do {

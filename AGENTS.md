@@ -45,7 +45,7 @@ When a tradeoff comes up between shipping fast and getting these details right, 
 5. **Test lightly while working, fully once.** Run only the suites that cover your change while you iterate; after a fix, rerun only what failed. Run the whole suite (`./tests/run_tests.sh`) once before opening the pull request, and say in it which simulator you used. The pull request runs it again on GitHub (see "Checks on every pull request").
 6. **Only simulators that are already installed.** Pick from `xcrun simctl list devices available`. Never download a simulator runtime or platform, and don't create devices for other OS versions. If a task truly needs one that isn't there, ask.
 7. **No screenshots without asking.** Verify with builds and tests first. If only a screenshot or the simulator can show something, ask the person you work with before taking one, or ask them to look.
-8. **Placeholder data only**, everywhere: code, tests, previews, fixtures, screenshots, commit messages. Plates like `B-123-ABC`, cars like `VW Golf 2018`, firms like `ENGIE Romania S.A.`, email like `nume@exemplu.ro`. A made-up CNP uses county code `99` with a valid control digit, such as `1800101990006`; the privacy check rejects any other CNP that passes the checksum.
+8. **Placeholder data only**, everywhere: code, tests, previews, fixtures, screenshots, commit messages. Plates like `B-123-ABC`, cars like `VW Golf 2018`, firms like `ENGIE Romania S.A.`, email like `nume@exemplu.ro`. A made-up CNP uses county code `99` with a valid control digit, such as `1800101990006`; the privacy check rejects any other CNP that passes the checksum. Card numbers are only the published test numbers, such as `4111 1111 1111 1111`; the privacy check rejects any other number that passes the card check digit.
 9. **End each session by updating [docs/HANDOFF.md](docs/HANDOFF.md)**: append a "last session" entry and fix anything in "current state" your work changed.
 10. **Ask before design choices.** When a layout or product change could reasonably go more than one way, name the options and ask. Obvious bugs with one clear fix: just fix them.
 11. **Keep a way back.** When replacing something that works, keep the old version disabled (not deleted) until the new one is proven, and ask before removing it. `ios/Legacy/` and `tests/legacy/` are kept this way.
@@ -59,7 +59,7 @@ Rules are checked, not remembered. Every pull request, and every push to `main`,
 
 | Check | What it does | When it fails |
 | :--- | :--- | :--- |
-| `privacy-check` | [scripts/privacy-check.sh](scripts/privacy-check.sh) over every commit: no private paths, keys, home-folder paths or real CNPs. | Remove the value from every commit (rewrite the branch). |
+| `privacy-check` | [scripts/privacy-check.sh](scripts/privacy-check.sh) over every commit: no private paths, keys, home-folder paths, real CNPs or card numbers. | Remove the value from every commit (rewrite the branch). |
 | `architecture-check` | [scripts/architecture-check.sh](scripts/architecture-check.sh): code that goes around the paths in the architecture map below, such as `context.save()` outside `UnitOfWork`, `localizedDescription` shown to people, `String(format:)`, a hand-written plural, an animation curve outside `DS.Motion`, a bare `ProgressView()`, a notification or widget reload outside `SideEffectsCoordinator`, a built-in category key in a view, a stack in a tab root. Comments and tests don't count. | Each line names the file, the rule and what to use instead. Use that. |
 | `build-and-test` | Builds the app, its widgets and share extension and runs `DosarCuSinaTests` through `./tests/run_tests.sh`, on GitHub's Xcode 27 Mac with an iPhone simulator it finds there. | The log is in the run; a failed run keeps the full log and result bundle as `test-results`. Reproduce with `./tests/run_tests.sh`. |
 
@@ -251,7 +251,7 @@ The standing rule above is the bar. These are the SwiftUI specifics.
 - **Local first, no central database:** data lives in SwiftData on the device. Sync, when it comes, uses the person's own private iCloud. There are no servers of ours, no accounts, no analytics and no telemetry. Don't add any SDK that phones home.
 
 ## 4.2 What protects the repository
-- The versioned pre-commit hook [.githooks/pre-commit](.githooks/pre-commit) and the pull request workflow [.github/workflows/privacy-check.yml](.github/workflows/privacy-check.yml) run the same script, [scripts/privacy-check.sh](scripts/privacy-check.sh). It blocks private and credential paths, keys and tokens, home-folder paths and real-looking CNPs.
+- The versioned pre-commit hook [.githooks/pre-commit](.githooks/pre-commit) and the pull request workflow [.github/workflows/privacy-check.yml](.github/workflows/privacy-check.yml) run the same script, [scripts/privacy-check.sh](scripts/privacy-check.sh). It blocks private and credential paths, keys and tokens, home-folder paths, real-looking CNPs and card numbers other than the published test numbers it lists.
 - The script lists patterns only. Never add a finding, a trace or a real value to it.
 - Links in documents are relative to the repository. Never write an absolute path from your machine.
 

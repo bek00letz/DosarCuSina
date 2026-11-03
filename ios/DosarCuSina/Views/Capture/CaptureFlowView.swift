@@ -70,9 +70,16 @@ struct CaptureFlowView: View {
         // Starts once; a sheet SwiftUI rebuilds finds the reading already running.
         .task {
             guard session.phase == .idle else { return }
-            session.headsForProtectedPlace = headsForProtectedPlace
+            session.destination = CaptureSession.Destination(isProtected: headsForProtectedPlace, staysOnPhone: startsOnPhoneOnlyDocument)
             session.read()
         }
+    }
+
+    /// The capture started from a document read only on the phone (a bank card's own page,
+    /// "Adaugă poza actului"): the AI provider never reads it (`PhoneOnlyReading`).
+    private var startsOnPhoneOnlyDocument: Bool {
+        guard let id = input.preferredAssetID, let asset = assets.first(where: { $0.id == id }) else { return false }
+        return PhoneOnlyReading.holdsOne(asset.values)
     }
 
     /// The capture started from a person's documents or a locked section.
@@ -103,6 +110,7 @@ struct CaptureFlowView: View {
         var review = CaptureReview(result: result, assets: assets, context: context)
         if let preferred = input.preferredAssetID { review.destination = .asset(preferred) }
         review.filesAsPersonalDocument = input.filesAsPersonalDocument
+        review.staysOnPhone = session.destination.staysOnPhone
         return review
     }
 
