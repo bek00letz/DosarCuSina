@@ -169,6 +169,8 @@ All engines are pure where they can be (no database, no notification centre) and
 
 First dates come from a field on the asset (a document's expiry), one interval from today, the next fixed date, or the person. All calendar arithmetic handles month ends and 29 February.
 
+A series counted from its due dates remembers its day of the month: each date is that day, or the month's last day when the month is shorter (31 January, 28 February, 31 March; 29 February, then 28 February until the next leap year). The day is read from the obligation's own completions (`RecurrenceEngine.seriesStart`: back through every completion that moved the date to the next cycle); a date the person moved by hand starts a new series. Nothing new is stored, so archives carry it as they are.
+
 ### 4.3 Reminder profiles
 
 Each obligation carries a profile: lead days, a consequence (legal, financial, health, comfort), grace days, and an optional follow-up. The lead time follows how hard the renewal is, not a fixed schedule:
@@ -185,7 +187,13 @@ Profiles can vary by a field value (document type, pet species). The person can 
 
 **Follow-up after a lapse:** one reminder the day after the due date if it is still open, then silence. On by default for legal and financial items; the person can turn it on or off for any item.
 
-Reminders fire at the person's chosen time of day (09:00 by default), keep the wall-clock time across daylight-saving changes, and stay within the system's limit on pending notifications. The last reminders for consequential items may break through Focus. Notification buttons *Am rezolvat* and *Amână 3 zile* (snooze 3 days) go through `ObligationActions`.
+Reminders fire at the person's chosen time of day (09:00 by default) and keep the wall-clock time across daylight-saving changes. The last reminders for consequential items may break through Focus. A duration in a reminder ("În 1 lună") is worked out from the day it fires.
+
+**Catch-up:** a deadline that became known after all its warnings (lead days before the due day) had passed gets one catch-up reminder at the next reminder time, as long as that is before the due day (or on it, when the profile doesn't remind on the day): an identity card added 20 days before it expires, with leads of 90 and 30, says "În 20 de zile: Carte de identitate". It counts from when the obligation last changed, so it fires once.
+
+**The system's limit:** iOS keeps 64 pending notifications; the plan uses at most 60. When there are more, it keeps every deadline's next reminder first, most consequential first (legal, financial, health, comfort), then the rest by time, and gives its last place to a reminder to open the app: „Deschide Dosar cu Șină o clipă” / „Ca să-ți amintim în continuare de termene, deschide aplicația.”, at the reminder time the day before the first reminder that didn't fit. A background refresh (`BackgroundRefresh`, on this phone only, when iOS allows) plans again and rewrites the widget snapshot, so the person rarely sees it.
+
+**Buttons on reminders,** *Am rezolvat* and *Amână 3 zile* (snooze 3 days), go through the one way in for actions from outside the app (6).
 
 ### 4.4 Attention model
 
@@ -323,15 +331,16 @@ Among the phone's own unprovable readings the more confident value wins (a model
 
 ## 6. Side effects
 
-`SideEffectsCoordinator` is the only path from saved data to anything outside the database. Views and actions never schedule anything themselves; they save, and the coordinator runs after the save (debounced), when preferences change, when the day changes and when the app becomes active.
+`SideEffectsCoordinator` is the only path from saved data to anything outside the database. Views and actions never schedule anything themselves; they save, and the coordinator runs after the save (debounced), when preferences change, when the day changes, when the app becomes active, after every action from outside the app and in the background refresh. There is one per database (`SideEffectsCoordinator.shared(for:)`) and its passes run one after another. What leaves the app (reminders, the badge, widgets, Siri and Shortcuts, Spotlight) is one list, `ObligationSnapshot.fetchForOutside`, which leaves examples out.
 
-- **Notifications** — `ReminderPlanner` (pure) works out every reminder that should be pending; `NotificationReconciler` makes the system match it, touching only its own identifiers. Notification permission is asked only after an in-app explanation or from Settings, never by a save on its own.
+- **Notifications** — `ReminderPlanner` (pure) works out every reminder that should be pending (4.3); `NotificationReconciler` makes the system match it, touching only its own identifiers, and clears reminders already shown whose cycle has closed. Every reminder about a deadline carries the due day of its cycle. Notification permission is asked only after an in-app explanation or from Settings, never by a save on its own.
+- **Actions from outside the app** — reminder buttons, widget *Gata*, Siri and Shortcuts go through one way in, `IntentEngine.perform`: it changes the obligation through `ObligationActions` only while it is still on the cycle the person saw (a tap for a closed cycle, or one that can't say which, changes nothing), then runs a coordinator pass. A reminder button or widget tap that couldn't be saved is shown calmly at the top of Urmează (*Nu s-a salvat*) until its cycle closes or the person hides it; Siri says it at once. Reminders planned before they carried their cycle are read from their identifier and the day they were shown.
 - **App badge** — overdue plus due today.
-- **Widgets** (`DosarCuSinaWidgets`) — Home Screen (small, medium) and Lock Screen (inline, rectangular), drawn from a snapshot file in the App Group. Sensitive sections show a generic title and no *Gata* (done) button. *Gata* completes through `ObligationActions`: on iOS 27 inside the app; on iOS 26 the widget queues the request, hides the item at once, and the app applies it next time it runs, only if the obligation is still on the same cycle.
+- **Widgets** (`DosarCuSinaWidgets`) — Home Screen (small, medium) and Lock Screen (inline, rectangular), drawn from a snapshot file in the App Group. Sensitive sections show a generic title and no *Gata* (done) button. *Gata* completes through the same way in: on iOS 27 inside the app; on iOS 26 the widget queues the request, hides the item at once, and the app applies it next time it runs (or in the background refresh), only if the obligation is still on the same cycle. Only applied or stale requests leave the queue; one that couldn't be saved stays to be tried again.
 - **Spotlight** — the coordinator accepts indexers that rebuild after every pass. No Spotlight indexer is registered yet.
 - **Example data** never notifies, never badges and never reaches widgets.
 
-Integrations are optional, one tap, and asked in context: *Adaugă în Calendar* uses the system's event editor (no calendar permission), and contacts come from the system contact picker (no contacts permission). The app works fully without them. Siri and Shortcuts can list what needs attention and complete an obligation, through the same engine.
+Integrations are optional, one tap, and asked in context: *Adaugă în Calendar* uses the system's event editor (no calendar permission), and contacts come from the system contact picker (no contacts permission). The app works fully without them. Siri and Shortcuts can list what needs attention and complete an obligation, through the same engine, never with examples. Siri asks to unlock the phone first; with the app lock on, they open the app instead of answering.
 
 ## 7. Security
 

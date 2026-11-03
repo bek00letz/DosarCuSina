@@ -46,16 +46,19 @@ public struct ObligationQuery: EntityQuery {
 enum IntentError: Error, CustomLocalizedStringResourceConvertible {
     case storeUnavailable
     case notFound
+    case appLocked
 
     var localizedStringResource: LocalizedStringResource {
         switch self {
         case .storeUnavailable: return "Datele nu pot fi deschise acum. Deschide aplicația și încearcă din nou."
         case .notFound: return "Obligația nu mai e activă. Poate ai bifat-o deja."
+        case .appLocked: return "Dosar cu Șină e protejat cu Face ID. Deschide aplicația ca să vezi termenele."
         }
     }
 }
 
-/// Intents use the same database and the same engine as the app.
+/// Intents use the same database and the same engine as the app, and see only
+/// what may leave the app (`ObligationSnapshot.fetchForOutside`): never examples.
 @MainActor
 enum IntentStore {
     static func container() throws -> ModelContainer {
@@ -64,13 +67,20 @@ enum IntentStore {
     }
 
     static func snapshots() throws -> [ObligationSnapshot] {
-        try ObligationSnapshot.fetchAll(in: ModelContext(container()))
+        try ObligationSnapshot.fetchForOutside(in: ModelContext(container()))
     }
+
+    /// With the app lock on, intents that read or change deadlines open the app,
+    /// which asks for Face ID, instead of answering.
+    static var opensAppInstead: Bool { AppPreferences.shared.appLockEnabled }
 }
 
 public struct CompleteObligationIntent: AppIntent {
     public static let title: LocalizedStringResource = "Marchează ca rezolvat"
     public static let description = IntentDescription("Bifează o obligație. Dacă se repetă, trece la următoarea scadență.")
+    /// Siri asks to unlock the phone first.
+    public static let authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
+    public static var supportedModes: IntentModes { [.background, .foreground(.dynamic)] }
 
     @Parameter(title: "Obligație")
     public var obligation: ObligationEntity
@@ -83,30 +93,42 @@ public struct CompleteObligationIntent: AppIntent {
 
     public func perform() async throws -> some IntentResult & ProvidesDialog {
         let id = obligation.id
-        let (message, container) = try await MainActor.run { () throws -> (String, ModelContainer) in
-            let container = try IntentStore.container()
-            switch try IntentEngine.complete(obligationID: id, in: container.mainContext) {
-            case .skipped:
-                throw IntentError.notFound
-            case .completed(let next?):
-                let date = next.startDate().formatted(.dateTime.day().month(.wide).year().locale(.dosarDefault))
-                return (String(localized: "Gata. Următoarea scadență e pe \(date)."), container)
-            case .completed(nil):
-                return (String(localized: "Gata, am bifat-o."), container)
-            }
+        if await MainActor.run(body: { IntentStore.opensAppInstead }) {
+            await MainActor.run { AppNavigator.shared.open(.obligation(id)) }
+            guard systemContext.currentMode.canContinueInForeground else { throw IntentError.appLocked }
+            throw needsToContinueInForegroundError("Deschide Dosar cu Șină ca să bifezi.", alwaysConfirm: false)
         }
-        await IntentEngine.refreshSideEffects(container: container)
-        return .result(dialog: IntentDialog(stringLiteral: message))
+        // The cycle Siri resolved the deadline on: a shortcut run later never closes the next one.
+        let request = OutsideRequest(obligationId: id, cycle: obligation.dueDay, action: .complete, surface: .shortcut)
+        let container = try await MainActor.run { try IntentStore.container() }
+        let outcome = try await IntentEngine.perform(request, container: container)
+        switch outcome {
+        case .skipped, .snoozed:
+            throw IntentError.notFound
+        case .completed(let next?):
+            let date = next.startDate().formatted(.dateTime.day().month(.wide).year().locale(.dosarDefault))
+            return .result(dialog: IntentDialog(stringLiteral: String(localized: "Gata. Următoarea scadență e pe \(date).")))
+        case .completed(nil):
+            return .result(dialog: IntentDialog(stringLiteral: String(localized: "Gata, am bifat-o.")))
+        }
     }
 }
 
 public struct UpcomingObligationsIntent: AppIntent {
     public static let title: LocalizedStringResource = "Ce scadențe am"
     public static let description = IntentDescription("Spune ce obligații au nevoie de atenție acum.")
+    /// Siri asks to unlock the phone first.
+    public static let authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
+    public static var supportedModes: IntentModes { [.background, .foreground(.dynamic)] }
 
     public init() {}
 
     public func perform() async throws -> some IntentResult & ProvidesDialog {
+        if await MainActor.run(body: { IntentStore.opensAppInstead }) {
+            await MainActor.run { AppNavigator.shared.open(.upcoming) }
+            guard systemContext.currentMode.canContinueInForeground else { throw IntentError.appLocked }
+            throw needsToContinueInForegroundError("Deschide Dosar cu Șină ca să vezi termenele.", alwaysConfirm: false)
+        }
         let message = try await MainActor.run { () throws -> String in
             let digest = AttentionModel.digest(try IntentStore.snapshots())
             guard !digest.now.isEmpty else {

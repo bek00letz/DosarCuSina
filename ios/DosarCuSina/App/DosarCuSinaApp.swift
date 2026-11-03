@@ -16,6 +16,7 @@ struct DosarCuSinaApp: App {
 
     init() {
         UNUserNotificationCenter.current().delegate = Self.notificationResponder
+        BackgroundRefresh.register()
     }
 
     var body: some Scene {
@@ -43,8 +44,13 @@ struct DosarCuSinaApp: App {
             }
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active {
+            switch phase {
+            case .active:
                 sideEffects?.setNeedsReconcile(allowPermissionPrompt: false)
+            case .background:
+                BackgroundRefresh.schedule()
+            default:
+                break
             }
         }
     }
@@ -64,7 +70,8 @@ struct DosarCuSinaApp: App {
             }
         }
         DocumentFileProtection.apply(toStoreAt: PersistenceController.defaultStoreURL)
-        let coordinator = SideEffectsCoordinator(container: container)
+        // The same coordinator notification buttons, widgets, Siri and the background refresh use.
+        let coordinator = SideEffectsCoordinator.shared(for: container)
         coordinator.start()
         sideEffects = coordinator
     }

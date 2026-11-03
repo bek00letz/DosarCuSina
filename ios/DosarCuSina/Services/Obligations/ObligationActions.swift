@@ -75,7 +75,7 @@ public final class ObligationActions {
             HouseholdMutations.recordReading(metricReading, on: asset, at: completedAt, unit: obligation.metricUnit, in: context)
         }
 
-        let recurrenceContext = HouseholdMutations.recurrenceContext(for: obligation, currentMetric: metricReading)
+        let recurrenceContext = HouseholdMutations.recurrenceContext(for: obligation, currentMetric: metricReading, calendar: calendar)
         if let next = RecurrenceEngine.nextDue(
             after: obligation.dueDay(in: calendar),
             completedOn: completedDay,

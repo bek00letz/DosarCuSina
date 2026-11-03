@@ -82,7 +82,6 @@ ios/DosarCuSina/App/DosarCuSinaApp.swift:save-outside-unit-of-work
 ios/DosarCuSina/Services/Templates/ChoiceMigration.swift:save-outside-unit-of-work
 
 # silent-action-failure: Failures go through the shared error path (agreed fixes 2 and 7).
-ios/DosarCuSina/Services/Reminders/NotificationResponder.swift:silent-action-failure:2
 ios/DosarCuSina/Views/Section/RecordScreens.swift:silent-action-failure
 ios/DosarCuSina/Views/Upcoming/ObligationScreen.swift:silent-action-failure:2
 ios/DosarCuSina/Views/Upcoming/UpcomingActions.swift:silent-action-failure:2

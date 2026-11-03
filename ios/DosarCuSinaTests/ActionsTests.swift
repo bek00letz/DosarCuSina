@@ -144,25 +144,42 @@ struct ActionsTests {
         #expect(cat.value("pet.weight") == .number(4.6))
     }
 
-    @Test func notificationButtonsUseTheSameEngine() async throws {
+    /// Changed on purpose: the buttons used to complete whatever cycle was current.
+    /// They now carry the cycle they were about, go through the one way in for
+    /// outside actions, and an old one changes nothing.
+    @Test func notificationButtonsUseTheSameEngineForTheirOwnCycle() async throws {
         let container = try makeInMemoryContainer()
         let context = container.mainContext
         try TemplateStore(context: context).installBuiltIns()
-        let actions = ObligationActions(context: context, calendar: calendar)
-        let item = try actions.create(title: "RCA", kind: .insurance, dueDay: CalendarDay(Date(), calendar: calendar), for: nil,
+        let actions = ObligationActions(context: context)
+        let item = try actions.create(title: "RCA", kind: .insurance, dueDay: CalendarDay(Date()), for: nil,
                                       recurrence: .interval(.years(1), anchor: .dueDate))
-        let before = item.dueDay(in: calendar)
+        let before = item.dueDay()
         let navigator = AppNavigator()
-        let responder = NotificationResponder(containerProvider: { container }, navigator: navigator)
+        let center = FakeNotificationCenter(status: .authorized)
+        let folder = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let coordinator = SideEffectsCoordinator(container: container, notificationClient: center, widgetWriter: WidgetSnapshotWriter(directory: folder))
+        let failures = OutsideActionFailures(suiteName: "tests.\(UUID().uuidString)")
+        let responder = NotificationResponder(containerProvider: { container }, navigator: navigator, sideEffects: { _ in coordinator }, failures: failures)
 
-        await responder.handle(action: ReminderActions.complete, obligationId: item.id, deepLink: nil)
+        await responder.handle(action: ReminderActions.complete, payload: ReminderPayload(obligationId: item.id, cycle: before))
         #expect(item.history.count == 1)
-        #expect(item.dueDay(in: calendar) == RecurrenceEngine.add(.years(1), to: before, calendar: calendar))
+        #expect(item.dueDay() == RecurrenceEngine.add(.years(1), to: before))
+        #expect(coordinator.lastReconciledAt != nil, "Reminders are planned again after the button")
 
-        await responder.handle(action: ReminderActions.snooze, obligationId: item.id, deepLink: nil)
+        await responder.handle(action: ReminderActions.complete, payload: ReminderPayload(obligationId: item.id, cycle: before))
+        #expect(item.history.count == 1, "A second tap for the same cycle changes nothing")
+
+        await responder.handle(action: ReminderActions.snooze, payload: ReminderPayload(obligationId: item.id, cycle: before))
+        #expect(item.snoozedUntil == nil, "Nor does a snooze for a closed cycle")
+        await responder.handle(action: ReminderActions.snooze, payload: ReminderPayload(obligationId: item.id, cycle: item.dueDay()))
         #expect(item.snoozedUntil != nil)
 
-        await responder.handle(action: "com.apple.UNNotificationDefaultActionIdentifier", obligationId: item.id, deepLink: DeepLink.url(for: .obligation(item.id)))
+        await responder.handle(action: "com.apple.UNNotificationDefaultActionIdentifier",
+                               payload: ReminderPayload(obligationId: item.id, cycle: nil, deepLink: DeepLink.url(for: .obligation(item.id))))
         #expect(navigator.pendingRoute == .obligation(item.id))
+        #expect(failures.all().isEmpty)
     }
 }

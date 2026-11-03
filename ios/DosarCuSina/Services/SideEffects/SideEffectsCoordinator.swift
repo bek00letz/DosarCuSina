@@ -3,7 +3,8 @@ import SwiftData
 import Observation
 
 /// Something else that is rebuilt from the database after every save, such as a
-/// Spotlight index. Register it with `SideEffectsCoordinator.register(_:)`.
+/// Spotlight index. Register it with `SideEffectsCoordinator.register(_:)`. It gets
+/// what may leave the app (`ObligationSnapshot.fetchForOutside`), never examples.
 @MainActor
 public protocol SideEffectIndexer: AnyObject {
     func reconcile(obligations: [ObligationSnapshot], context: ModelContext) async
@@ -14,13 +15,20 @@ public protocol SideEffectIndexer: AnyObject {
 /// schedule anything themselves; they save, and this runs after the save.
 ///
 /// Triggers: every `ModelContext.didSave` (debounced), preference changes, the
-/// day changing, and `reconcileNow()` when the app becomes active.
+/// day changing, `reconcileNow()` when the app becomes active, every action from
+/// outside the app (`IntentEngine`) and the background refresh.
+///
+/// There is one per database (`shared(for:)`), and its passes run one after
+/// another, so two reconcilers never work on the notification center at once.
 @MainActor
 @Observable
 public final class SideEffectsCoordinator {
     /// Shown in Settings.
     public private(set) var reminderAuthorization: ReminderAuthorization = .notDetermined
     public private(set) var lastReconciledAt: Date?
+    /// What the last pass did, or why it couldn't run.
+    public private(set) var lastOutcome: NotificationReconciler.Outcome?
+    public private(set) var lastFailure: String?
 
     @ObservationIgnored private let container: ModelContainer
     @ObservationIgnored private let reconciler: NotificationReconciler
@@ -32,6 +40,22 @@ public final class SideEffectsCoordinator {
     @ObservationIgnored private var observers: [Task<Void, Never>] = []
     @ObservationIgnored private var pending: Task<Void, Never>?
     @ObservationIgnored private var pendingAllowsPrompt = false
+    @ObservationIgnored private var inFlight: Task<Void, Never>?
+
+    @ObservationIgnored private static var instance: SideEffectsCoordinator?
+
+    /// The coordinator for this database: the app's own when it is running, so
+    /// intents, notification buttons, widget taps and the background refresh all
+    /// go through the same one.
+    public static func shared(for container: ModelContainer) -> SideEffectsCoordinator {
+        if let instance, instance.container === container { return instance }
+        let coordinator = SideEffectsCoordinator(container: container)
+        instance = coordinator
+        return coordinator
+    }
+
+    /// The running coordinator, if the app has made one.
+    public static var running: SideEffectsCoordinator? { instance }
 
     /// Delay that folds bursts of saves (an import, a batch edit) into one pass.
     public static let debounce: Duration = .milliseconds(300)
@@ -85,20 +109,42 @@ public final class SideEffectsCoordinator {
     }
 
     /// Rebuilds reminders, badge, widget snapshot and indexes from the database now.
+    /// A pass asked for while another runs waits for it, then runs on what is saved.
     public func reconcileNow(allowPermissionPrompt: Bool = false) async {
-        let context = ModelContext(container)
-        guard let obligations = try? ObligationSnapshot.fetchAll(in: context, calendar: calendar) else { return }
-        let date = now()
-        // Example records are for exploring the app; they never notify, badge or reach widgets.
-        let real = obligations.filter { !$0.isExample }
-        let plan = ReminderPlanner.plan(real, now: date, calendar: calendar, defaultMinuteOfDay: preferences.reminderMinuteOfDay)
-        let badge = AttentionModel.digest(real, now: date, calendar: calendar).needsActionCount
+        let previous = inFlight
+        let pass = Task { [weak self] in
+            await previous?.value
+            await self?.runPass(allowPermissionPrompt: allowPermissionPrompt)
+        }
+        inFlight = pass
+        await pass.value
+    }
 
-        widgetWriter.write(WidgetSnapshot.make(from: real, now: date, calendar: calendar))
-        let outcome = await reconciler.apply(plan, badgeCount: badge, allowPermissionPrompt: allowPermissionPrompt)
+    private func runPass(allowPermissionPrompt: Bool) async {
+        let context = ModelContext(container)
+        let outside: [ObligationSnapshot]
+        do {
+            // Example records are for exploring the app; they never notify, badge or reach widgets.
+            outside = try ObligationSnapshot.fetchForOutside(in: context, calendar: calendar)
+        } catch {
+            lastFailure = String(describing: error)
+            return
+        }
+        let date = now()
+        let plan = ReminderPlanner.plan(outside, now: date, calendar: calendar, defaultMinuteOfDay: preferences.reminderMinuteOfDay)
+        let badge = AttentionModel.digest(outside, now: date, calendar: calendar).needsActionCount
+        let openCycles = Dictionary(
+            outside.filter { $0.status == .active }.map { ($0.id, $0.dueDay) },
+            uniquingKeysWith: { first, _ in first }
+        )
+
+        widgetWriter.write(WidgetSnapshot.make(from: outside, now: date, calendar: calendar))
+        let outcome = await reconciler.apply(plan, badgeCount: badge, openCycles: openCycles, allowPermissionPrompt: allowPermissionPrompt)
         reminderAuthorization = outcome.authorization
+        lastOutcome = outcome
+        lastFailure = nil
         for indexer in indexers {
-            await indexer.reconcile(obligations: obligations, context: context)
+            await indexer.reconcile(obligations: outside, context: context)
         }
         lastReconciledAt = date
     }

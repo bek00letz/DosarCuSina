@@ -277,8 +277,16 @@ enum HouseholdMutations {
         return obligation
     }
 
-    static func recurrenceContext(for obligation: Obligation, currentMetric: Double?) -> RecurrenceContext {
-        guard let asset = obligation.asset else { return RecurrenceContext(currentMetric: currentMetric) }
+    static func recurrenceContext(for obligation: Obligation, currentMetric: Double?, calendar: Calendar = .current) -> RecurrenceContext {
+        // Only completions that moved the date take part (not the one being recorded now).
+        let steps = obligation.history.filter { $0.nextDueDate != nil }.map {
+            RecurrenceEngine.SeriesStep(
+                cycle: $0.cycleDueDate.map { CalendarDay($0, calendar: calendar) },
+                next: $0.nextDueDate.map { CalendarDay($0, calendar: calendar) }
+            )
+        }
+        let seriesDay = RecurrenceEngine.seriesStart(current: obligation.dueDay(in: calendar), completions: steps).day
+        guard let asset = obligation.asset else { return RecurrenceContext(currentMetric: currentMetric, seriesDayOfMonth: seriesDay) }
         let unit = obligation.metricUnit
         let readings = (asset.measurements ?? [])
             .filter { $0.kind.isCumulative && (unit == nil || $0.unit == unit) }
@@ -287,7 +295,8 @@ enum HouseholdMutations {
         return RecurrenceContext(
             assetValues: asset.values,
             readings: readings,
-            currentMetric: currentMetric ?? readings.last?.metric ?? self.currentMetric(of: asset)
+            currentMetric: currentMetric ?? readings.last?.metric ?? self.currentMetric(of: asset),
+            seriesDayOfMonth: seriesDay
         )
     }
 
