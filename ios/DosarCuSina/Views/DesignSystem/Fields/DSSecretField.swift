@@ -17,7 +17,6 @@ struct DSSecretField: View {
     @State private var isReplacing = false
     @State private var visibility = DSValidationVisibility()
     @Environment(\.dsRevealsValidation) private var revealsValidation
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     init(_ title: LocalizedStringKey, value: Binding<String>, footnote: LocalizedStringKey? = nil, isPIN: Bool = true) {
         self.title = title
@@ -70,10 +69,7 @@ struct DSSecretField: View {
 
     /// "Păstrat" with "Schimbă" and "Scoate".
     private var kept: some View {
-        let layout = dynamicTypeSize.isAccessibilitySize
-            ? AnyLayout(VStackLayout(alignment: .leading, spacing: DS.Space.s))
-            : AnyLayout(HStackLayout(spacing: DS.Space.s))
-        return layout {
+        return DSAdaptiveStack(spacing: DS.Space.s) {
             Label {
                 Text("Păstrat, ascuns", comment: "A secret field that already holds a code.")
             } icon: {

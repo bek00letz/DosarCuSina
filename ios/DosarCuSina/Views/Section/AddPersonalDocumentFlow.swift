@@ -121,7 +121,6 @@ private struct PersonalDocumentForm: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.calendar) private var calendar
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Query private var templates: [CategoryTemplate]
 
     @State private var isEditingName = false
@@ -226,10 +225,7 @@ private struct PersonalDocumentForm: View {
                 if isEditingName {
                     DSTextField("Nume", text: nameBinding, footnote: "Așa apare în Acte.")
                 } else {
-                    let layout = dynamicTypeSize.isAccessibilitySize
-                        ? AnyLayout(VStackLayout(alignment: .leading, spacing: DS.Space.s))
-                        : AnyLayout(HStackLayout(spacing: DS.Space.s))
-                    layout {
+                    DSAdaptiveStack(spacing: DS.Space.s) {
                         Text(verbatim: draft.name(holder: holder.name))
                             .dsFont(.headline)
                             .frame(maxWidth: .infinity, alignment: .leading)

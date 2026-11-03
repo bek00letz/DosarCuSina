@@ -367,6 +367,15 @@ private struct GalleryCards: View {
                     }
                 }
             }
+            GallerySection(title: "Rând care se adaptează", note: "DSAdaptiveStack: alăturate când încap pe un rând, una sub alta când nu. Măriți textul ca să vedeți.") {
+                DSCard {
+                    DSAdaptiveStack(spacing: DS.Space.s) {
+                        Text(verbatim: "Asigurarea locuinței, PAD").dsFont(.headline)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        DSStatusBadge(.soon, text: Text(verbatim: "Expiră în 3 săptămâni"))
+                    }
+                }
+            }
             GallerySection(title: "Note și exemple", note: "Stelele se pot apăsa doar unde se dă o notă; o atingere pe nota curentă o șterge.") {
                 DSCard {
                     VStack(alignment: .leading, spacing: DS.Space.s) {
