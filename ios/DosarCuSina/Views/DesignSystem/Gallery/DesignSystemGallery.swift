@@ -501,7 +501,7 @@ private struct GalleryFeedback: View {
             GallerySection(title: "Confirmare cu anulare", note: "Dispare după 5 secunde (10 cu VoiceOver), la glisare în jos sau la anulare.") {
                 DSCard {
                     Button {
-                        toast = .undo("ITP marcat ca rezolvat") {}
+                        toast = DSToast(title: "ITP marcat ca rezolvat", action: {})
                     } label: {
                         Text(verbatim: "Marchează ITP ca rezolvat").frame(maxWidth: .infinity)
                     }

@@ -120,7 +120,7 @@ extension AttachmentActions {
     @discardableResult
     func fileForTest(_ ref: CapturedDocumentRef, from store: CaptureDocumentStore, title: String?, asset: Asset? = nil) async throws -> DosarCuSina.Attachment {
         let document = try await resolve(ref, from: store)
-        let attachment = try fileCaptured(document, title: title, asset: asset).attachment
+        let attachment = try fileCaptured(document, title: title, asset: asset)
         await store.release(ref)
         return attachment
     }

@@ -52,10 +52,9 @@ struct MoveTests {
         let receipt = try h.actions.move(h.card, to: .asset(h.ion.id), renamingTo: proposed)
         #expect(h.card.parent?.id == h.ion.id)
         #expect(h.card.name == "Carte de identitate – Popescu Ion")
-        #expect(receipt.previousParent?.id == h.corina.id)
         #expect(!h.context.hasChanges, "Saved in one step")
 
-        try h.actions.undoMove(receipt)
+        try receipt.undo()
         #expect(h.card.parent?.id == h.corina.id)
         #expect(h.card.name == "Carte de identitate – Manole Corina")
     }
@@ -77,11 +76,11 @@ struct MoveTests {
     @Test func aNewPersonAndTheMoveAreOneStepAndUndoRemovesThePerson() throws {
         let h = try household()
         let receipt = try h.actions.move(h.card, to: .newMember(name: "Manole Ana"), renamingTo: "Carte de identitate – Manole Ana")
-        let ana = try #require(receipt.createdParent)
+        let ana = try #require(h.card.parent)
+        #expect(ana.name == "Manole Ana")
         #expect(ana.templateKey == BuiltInTemplates.Key.member)
-        #expect(h.card.parent?.id == ana.id)
 
-        try h.actions.undoMove(receipt)
+        try receipt.undo()
         let names = try h.context.fetch(FetchDescriptor<Asset>()).map(\.name)
         #expect(!names.contains("Manole Ana"))
         #expect(h.card.parent?.id == h.corina.id)

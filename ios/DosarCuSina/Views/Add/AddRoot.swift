@@ -183,9 +183,10 @@ struct AddRoot: View {
     /// Hides the item at once and removes it for good once the undo has passed.
     private func dismiss(_ item: InboxItem) {
         hiddenItems.insert(item.id)
-        toast = DSToast.undo("Am scos „\(InboxWording.title(item))” din De verificat.") {
+        // Outside the database: the item only leaves the inbox once the toast has passed.
+        toast = DSToast(title: "Am scos „\(InboxWording.title(item))” din De verificat.", action: {
             hiddenItems.remove(item.id)
-        }
+        })
         Task {
             try? await Task.sleep(for: .seconds(11))
             if hiddenItems.contains(item.id) {

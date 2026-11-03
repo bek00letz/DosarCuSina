@@ -171,19 +171,18 @@ struct KeyFactsPocket: View {
     }
 
     private func remove(_ fact: CustomFact) {
-        let previous = asset.customFacts
-        apply(previous.filter { $0.id != fact.id })
         editing = nil
-        toast = .undo(LocalizedStringResource("Am șters „\(fact.label)”", comment: "Toast after deleting a custom fact row.")) {
-            apply(previous)
-        }
+        guard let receipt = apply(asset.customFacts.filter { $0.id != fact.id }) else { return }
+        toast = .undo(LocalizedStringResource("Am șters „\(fact.label)”", comment: "Toast after deleting a custom fact row."), receipt: receipt)
     }
 
-    private func apply(_ facts: [CustomFact]) {
+    @discardableResult
+    private func apply(_ facts: [CustomFact]) -> UndoReceipt? {
         do {
-            try AssetActions(context: context).setCustomFacts(asset, facts)
+            return try AssetActions(context: context).setCustomFacts(asset, facts)
         } catch {
             self.error = UserFacingError(error)
+            return nil
         }
     }
 }

@@ -22,10 +22,15 @@ import SwiftData
 ///   left unsaved on the context are saved before the unit opens.
 ///
 /// Work that must only happen once the changes are kept goes in `afterCommit(in:_:)`.
+///
+/// An action the person can take back opens its unit with `performUndoable(in:_:)`,
+/// which returns the step's `UndoReceipt`: what the whole unit changed, recorded as it saves.
 @MainActor
 public enum UnitOfWork {
     private final class Scope {
         var afterCommit: [@MainActor () async -> Void] = []
+        /// Filled when the unit saves, when an undoable action ran in it.
+        var receipt: UndoReceipt?
     }
 
     private static var open: [ObjectIdentifier: Scope] = [:]
@@ -70,12 +75,31 @@ public enum UnitOfWork {
             abort(context)
             throw error
         }
-        try commit(context)
+        try commit(context, scope: scope)
         if !scope.afterCommit.isEmpty {
             let actions = scope.afterCommit
             Task { @MainActor in for action in actions { await action() } }
         }
         return result
+    }
+
+    /// Runs `work` as one step, like `perform(in:_:)`, and returns with its result the
+    /// receipt that takes the step back. Opened inside another unit, it joins it, and the
+    /// receipt covers that whole unit: the step the person took is the outer one (a filing
+    /// that completes a deadline is undone as one filing). The receipt is usable once the
+    /// outermost unit has saved.
+    public static func performUndoable<T>(in context: ModelContext, _ work: () throws -> T) throws -> Undoable<T> {
+        if let scope = open[ObjectIdentifier(context)] {
+            let receipt = scope.receipt ?? UndoReceipt(context: context)
+            scope.receipt = receipt
+            return Undoable(value: try work(), receipt: receipt)
+        }
+        let receipt = UndoReceipt(context: context)
+        let value = try perform(in: context) {
+            open[ObjectIdentifier(context)]?.receipt = receipt
+            return try work()
+        }
+        return Undoable(value: value, receipt: receipt)
     }
 
     /// Opens a unit on the context, or returns nil when one is already open (the caller joins it).
@@ -90,13 +114,17 @@ public enum UnitOfWork {
     }
 
     /// Saves everything the unit recorded and closes it; on failure, rolls all of it back.
-    private static func commit(_ context: ModelContext) throws {
+    private static func commit(_ context: ModelContext, scope: Scope) throws {
         do {
             if let failure = failingCommits.removeValue(forKey: ObjectIdentifier(context)) {
                 throw failure
             }
+            // What an undoable step changed is read before the save, while the store still
+            // holds the state the unit started from.
+            let pending = scope.receipt?.prepare()
             try context.save()
             open[ObjectIdentifier(context)] = nil
+            if let pending { scope.receipt?.seal(pending) }
         } catch {
             abort(context)
             throw error

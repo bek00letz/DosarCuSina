@@ -333,7 +333,7 @@ struct UpcomingRoot: View {
             let actions = UpcomingActions(context: context)
             guard let obligation = actions.obligation(entry.id) else { return }
             do {
-                toast = try actions.complete(obligation, title: obligation.title).toast
+                toast = try actions.complete(obligation, title: obligation.title)
             } catch {
                 toast = UpcomingActions.failureToast(error)
             }

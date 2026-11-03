@@ -87,8 +87,9 @@ struct CaptureFiler {
         var visit: HistoryEntry?
         /// The deadline's next date, when the filing moved one.
         var nextDue: CalendarDay?
-        /// Where a kept document was before it moved here, to take the move back.
-        var movedDocument: RefileReceipt?
+        /// Takes the whole filing back: what it made goes, what it changed or moved
+        /// (a kept document, the section's values, the deadline) goes back as it was.
+        var receipt: UndoReceipt?
     }
 
     enum FilingError: LocalizedError, Equatable {
@@ -180,13 +181,15 @@ struct CaptureFiler {
         var document: CapturedDocument?
         if let ref { document = try await documents.resolve(ref, from: store) }
         // From here nothing waits: one step, everything or nothing.
-        let outcome = try UnitOfWork.perform(in: context) {
+        let filing = try UnitOfWork.performUndoable(in: context) {
             switch intent {
             case .review(let review): try fileReview(review, document: document)
             case .completion(let completion): try fileCompletion(completion, document: document)
             case .visit(let visit): try fileVisit(visit, document: document)
             }
         }
+        var outcome = filing.value
+        outcome.receipt = filing.receipt
         // Kept: this capture's hold on its pages ends (they're in the binder now).
         if let ref { await store.release(ref) }
         return outcome
@@ -310,8 +313,7 @@ struct CaptureFiler {
                 historyEntry: outcome.completion ?? outcome.bill,
                 provider: provider
             )
-            outcome.attachment = filed.attachment
-            outcome.movedDocument = filed.moved
+            outcome.attachment = filed
         }
         return outcome
     }
@@ -356,8 +358,7 @@ struct CaptureFiler {
                 historyEntry: outcome.completion,
                 provider: provider
             )
-            outcome.attachment = filed.attachment
-            outcome.movedDocument = filed.moved
+            outcome.attachment = filed
         }
         return outcome
     }
@@ -384,7 +385,7 @@ struct CaptureFiler {
             calendar: calendar,
             odometerSource: visit.odometerSource,
             lowerReading: lowerReading
-        )
+        ).value
         var outcome = Outcome(asset: visit.asset, visit: entry)
         if let document {
             let filed = try AttachmentActions(context: context, calendar: calendar).fileCaptured(
@@ -397,8 +398,7 @@ struct CaptureFiler {
                 historyEntry: entry,
                 provider: provider
             )
-            outcome.attachment = filed.attachment
-            outcome.movedDocument = filed.moved
+            outcome.attachment = filed
         }
         return outcome
     }
@@ -452,7 +452,7 @@ struct CaptureFiler {
             return nil
         }
         if done || obligation.recurrence.repeats {
-            let entry = try actions.complete(obligation, on: date, cost: cost)
+            let entry = try actions.complete(obligation, on: date, cost: cost).value
             if obligation.status == .active, let day, obligation.dueDay(in: calendar) != day {
                 try actions.reschedule(obligation, to: day)
             }

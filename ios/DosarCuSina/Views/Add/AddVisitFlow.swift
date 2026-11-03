@@ -71,8 +71,8 @@ private struct VisitForm: View {
     @State private var newProviderName = ""
     @State private var isSaving = false
     @State private var saved: HistoryEntry?
-    /// Where an invoice already in the binder was before it moved to this visit, for "Anulează".
-    @State private var movedInvoice: RefileReceipt?
+    /// What saving the visit did, for "Anulează vizita": a kept invoice goes back where it was.
+    @State private var receipt: UndoReceipt?
     @State private var toast: DSToast?
     @State private var exampleQuestion: ExampleSectionQuestion?
     @State private var readingQuestion: LowerReadingQuestion?
@@ -98,7 +98,7 @@ private struct VisitForm: View {
     var body: some View {
         Group {
             if let saved {
-                VisitSavedView(entry: saved, asset: asset) { finish(true) } onUndo: { undo(saved) }
+                VisitSavedView(entry: saved, asset: asset) { finish(true) } onUndo: { undo() }
             } else {
                 form
             }
@@ -403,7 +403,7 @@ private struct VisitForm: View {
                     documentTitle: draft.documentTitle,
                     documentText: draft.documentText
                 )))
-                movedInvoice = outcome.movedDocument
+                receipt = outcome.receipt
                 withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { saved = outcome.visit }
             } catch let question as ExampleSectionQuestion {
                 exampleQuestion = question
@@ -423,14 +423,15 @@ private struct VisitForm: View {
         }
     }
 
-    private func undo(_ entry: HistoryEntry) {
+    private func undo() {
         do {
-            try HistoryActions(context: context).undoVisit(entry, restoring: movedInvoice)
-            movedInvoice = nil
+            guard let receipt else { throw UndoError.unavailable }
+            try receipt.undo()
+            self.receipt = nil
             saved = nil
-            toast = DSToast(title: "Vizita a fost anulată.", systemImage: "arrow.uturn.backward.circle.fill", tint: DS.Palette.accent, actionTitle: nil, action: nil)
+            toast = DSToast(title: "Vizita a fost anulată.", systemImage: "arrow.uturn.backward.circle.fill", tint: DS.Palette.accent, actionTitle: nil)
         } catch {
-            toast = UpcomingActions.failureToast(error)
+            toast = .failure(error)
         }
     }
 
