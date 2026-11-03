@@ -58,9 +58,10 @@ enum DSBoxTone: Sendable, Equatable {
 }
 
 extension BoxStatus {
+    /// Drawn from the urgency's tone: red only when it is late past its grace.
     var tone: DSBoxTone {
-        if isAlarming { return .alarming }
-        return entry == nil ? .allGood : .pending
+        guard entry != nil else { return .allGood }
+        return urgencyTone == .overdue ? .alarming : .pending
     }
 }
 

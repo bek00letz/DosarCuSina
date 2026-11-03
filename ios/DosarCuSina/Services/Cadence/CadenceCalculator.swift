@@ -57,15 +57,6 @@ public final class CadenceCalculator: Sendable {
         }
     }
     
-    /// Categorized urgency status for a lifecycle event.
-    public enum EventUrgencyStatus: Sendable, Equatable {
-        case completed
-        case overdue(days: Int)
-        case urgent(days: Int)
-        case upcoming(days: Int)
-        case planned(days: Int)
-    }
-    
     public init() {}
     
     // MARK: - Calendar Cadence Engine
@@ -360,28 +351,5 @@ public final class CadenceCalculator: Sendable {
         let startOfDue = calendar.startOfDay(for: dueDate)
         let components = calendar.dateComponents([.day], from: startOfToday, to: startOfDue)
         return components.day ?? 0
-    }
-    
-    /// Determines the urgency status of a deadline.
-    public static func calculateUrgencyStatus(
-        dueDate: Date,
-        isCompleted: Bool,
-        currentDate: Date = Date(),
-        calendar: Calendar = .current
-    ) -> EventUrgencyStatus {
-        if isCompleted {
-            return .completed
-        }
-        
-        let remaining = daysRemaining(from: currentDate, to: dueDate, calendar: calendar)
-        if remaining < 0 {
-            return .overdue(days: abs(remaining))
-        } else if remaining <= 7 {
-            return .urgent(days: remaining)
-        } else if remaining <= 30 {
-            return .upcoming(days: remaining)
-        } else {
-            return .planned(days: remaining)
-        }
     }
 }

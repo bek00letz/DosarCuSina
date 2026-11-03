@@ -136,11 +136,8 @@ public struct UpcomingObligationsIntent: AppIntent {
             }
             let lines = digest.now.map { entry -> String in
                 let title = entry.obligation.isSensitive ? String(localized: "o scadență protejată") : entry.obligation.title
-                switch entry.urgency {
-                case .overdue: return String(localized: "\(title), depășit")
-                case .today: return String(localized: "\(title), azi")
-                default: return String(localized: "\(title), în \(DurationWording.phrase(days: entry.daysRemaining))")
-                }
+                let when = WhenWording.phrase(entry.urgency, daysRemaining: entry.daysRemaining)
+                return String(localized: "\(title), \(when)", comment: "Siri: a deadline and when it is due, e.g. 'ITP, în 5 zile'.")
             }
             return lines.formatted(.list(type: .and).locale(.dosarDefault))
         }

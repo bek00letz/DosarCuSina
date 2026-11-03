@@ -151,7 +151,7 @@ struct SectionHero: View {
             ExpiryLine(label: definition.key == BuiltInTemplates.Key.purchase
                        ? String(localized: "Garanție până la", comment: "Hero: warranty end date.")
                        : String(localized: "Valabil până la", comment: "Hero: document valid until."),
-                       day: expiry)
+                       day: expiry, rule: DateUrgency.rule(for: expiry, on: asset))
         }
         if let holder = asset.parent {
             Label {
@@ -170,7 +170,7 @@ struct SectionHero: View {
             .compactMap { child in child.value("document.expiry")?.dateValue.map { (child, $0) } }
             .min { $0.1 < $1.1 }
         if let next {
-            ExpiryLine(label: String(localized: "Următorul act care expiră: \(next.0.name)", comment: "Hero of a person: the next document to expire."), day: next.1)
+            ExpiryLine(label: String(localized: "Următorul act care expiră: \(next.0.name)", comment: "Hero of a person: the next document to expire."), day: next.1, rule: DateUrgency.rule(for: next.1, on: next.0))
         } else {
             Text("Niciun act cu dată de expirare încă.", comment: "Hero of a person with no documents.")
                 .dsFont(.subheadline)
@@ -201,23 +201,21 @@ struct SectionHero: View {
     }
 }
 
-/// "Valabil până la 14 mar. 2027" with a badge saying how far that is.
+/// "Valabil până la 14 mar. 2027" with a badge saying how far that is, drawn from
+/// the urgency of the deadline that date drives.
 struct ExpiryLine: View {
     let label: String
     let day: CalendarDay
+    let rule: UrgencyRule
     @Environment(\.calendar) private var calendar
 
     var body: some View {
-        let date = day.startDate(in: calendar)
-        let days = DSDayMath.daysRemaining(until: date, calendar: calendar)
+        let today = CalendarDay(Date(), calendar: calendar)
         VStack(alignment: .leading, spacing: DS.Space.xxs) {
             Text(verbatim: label).dsFont(.captionEmphasized)
             Text(verbatim: DosarFormat.longDay(day))
                 .dsFont(.title, numeric: true)
-            DSStatusBadge(
-                days < 0 ? .overdue : (days <= 60 ? .soon : .done),
-                text: Text(DSDueText.expiryText(daysRemaining: days, soonWithinDays: 60))
-            )
+            DSStatusBadge(expiry: rule.urgency(of: day, today: today, calendar: calendar), daysRemaining: today.days(to: day, calendar: calendar))
         }
         .accessibilityElement(children: .combine)
     }

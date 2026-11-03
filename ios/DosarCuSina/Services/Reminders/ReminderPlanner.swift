@@ -28,7 +28,9 @@ public struct PlannedReminder: Hashable, Sendable, Identifiable {
 /// Pure: no notification center, no database, no clock of its own, so every
 /// rule is testable.
 ///
-/// - Each lead day of the profile reminds once, at the reminder time.
+/// - Each lead of the profile reminds once, at the reminder time. A lead of whole
+///   months is calendar months (`ReminderLead`): "6 luni" fires on the same day of the
+///   month six months before, so its title reads "În 6 luni", like the lead itself.
 /// - A deadline that became known after its warnings had passed gets one
 ///   catch-up reminder at the next reminder time, so it is never silent.
 /// - iOS keeps 64 pending notifications. When there are more, the plan keeps
@@ -100,7 +102,7 @@ public enum ReminderPlanner {
         }
 
         for offset in profile.leadDays {
-            let day = obligation.dueDay.adding(days: -offset, calendar: calendar)
+            let day = ReminderLead(days: offset).day(before: obligation.dueDay, calendar: calendar)
             let fire = fireDate(day: day, minuteOfDay: minute, calendar: calendar)
             guard fire > now else { continue }
             if let snoozedUntil, fire < snoozedUntil { continue }
@@ -141,7 +143,7 @@ public enum ReminderPlanner {
         let warnings = obligation.reminders.leadDays.filter { $0 > 0 }
         guard !warnings.isEmpty else { return nil }
         let warningFires = warnings.map {
-            fireDate(day: obligation.dueDay.adding(days: -$0, calendar: calendar), minuteOfDay: minuteOfDay, calendar: calendar)
+            fireDate(day: ReminderLead(days: $0).day(before: obligation.dueDay, calendar: calendar), minuteOfDay: minuteOfDay, calendar: calendar)
         }
         guard warningFires.allSatisfy({ $0 <= knownSince }) else { return nil }
 
@@ -231,7 +233,8 @@ public enum ReminderPlanner {
             title = genericTitle(daysBefore: daysBefore, from: fireDate, calendar: calendar)
             body = String(localized: "Deschide Dosar cu Șină pentru detalii.", comment: "Reminder body for protected categories")
         } else {
-            if daysBefore < 0, obligation.reminders.graceDays > 0 {
+            let fireDay = CalendarDay(fireDate, calendar: calendar)
+            if obligation.reminders.urgencyRule.urgency(of: obligation.dueDay, today: fireDay, calendar: calendar) == .withinGrace {
                 // Still within the grace the person accepts, so the follow-up stays calm.
                 title = String(localized: "Încă de făcut: \(obligation.title)", comment: "Follow-up reminder title the day after the due date, when some lateness is fine")
             } else {
@@ -262,14 +265,14 @@ public enum ReminderPlanner {
     }
 
     /// Durations are worked out from the day the reminder fires, so "În 1 lună"
-    /// is true when the person reads it.
+    /// is true when the person reads it, and say what every screen says that day.
     static func specificTitle(_ title: String, daysBefore: Int, from fireDate: Date, calendar: Calendar = .current) -> String {
         switch daysBefore {
         case ..<0: return String(localized: "Depășit: \(title)", comment: "Reminder title for an overdue obligation")
         case 0: return String(localized: "Azi: \(title)", comment: "Reminder title, due today")
         case 1: return String(localized: "Mâine: \(title)", comment: "Reminder title, due tomorrow")
         default:
-            let phrase = DurationWording.phrase(days: daysBefore, from: fireDate, calendar: calendar)
+            let phrase = DurationWording.distance(days: daysBefore, from: fireDate, calendar: calendar)
             return String(localized: "În \(phrase): \(title)", comment: "Reminder title: due in a duration such as '7 zile' or '9 luni', then the obligation.")
         }
     }
@@ -280,7 +283,7 @@ public enum ReminderPlanner {
         case 0: return String(localized: "Ai o scadență azi", comment: "Generic reminder title")
         case 1: return String(localized: "Ai o scadență mâine", comment: "Generic reminder title")
         default:
-            let phrase = DurationWording.phrase(days: daysBefore, from: fireDate, calendar: calendar)
+            let phrase = DurationWording.distance(days: daysBefore, from: fireDate, calendar: calendar)
             return String(localized: "Ai o scadență în \(phrase)", comment: "Generic reminder title: due in a duration such as '7 zile' or '2 luni'.")
         }
     }

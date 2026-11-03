@@ -30,35 +30,6 @@
         }
       }
     },
-    "%lld ani": {
-      "comment": "A number of years, with Romanian plural forms.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld an"
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld ani"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld de ani"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "%lld contacte": {
       "comment": "Agenda box: how many people and firms are saved.",
       "localizations": {
@@ -139,35 +110,6 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld de intrări de arătat cumpărătorului."
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "%lld luni": {
-      "comment": "A number of months, with Romanian plural forms.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld lună"
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld luni"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld de luni"
                 }
               }
             }
@@ -262,35 +204,6 @@
         }
       }
     },
-    "%lld săptămâni": {
-      "comment": "A number of weeks, with Romanian plural forms.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld săptămână"
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld săptămâni"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld de săptămâni"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "%lld termene": {
       "comment": "A number of obligations, with Romanian plural forms.",
       "localizations": {
@@ -342,35 +255,6 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld de termene mai departe"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "%lld zile": {
-      "comment": "A number of days, with Romanian plural forms: 1 zi, 2 zile, 20 de zile.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld zi"
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld zile"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld de zile"
                 }
               }
             }
