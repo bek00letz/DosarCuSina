@@ -19,11 +19,11 @@ struct SpotlightTests {
         let indexer: SpotlightIndexer
         let car: Asset
         let rca: Obligation
-        let policy: Attachment
+        let policy: DosarCuSina.Attachment
         let home: Asset
         let passport: Asset
         let passportRenewal: Obligation
-        let passportPhoto: Attachment
+        let passportPhoto: DosarCuSina.Attachment
         let enabled: Switch
     }
 
@@ -211,7 +211,7 @@ struct SpotlightTests {
         try examples.loadExamples()
         let exampleRoutes = try h.context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.isExample })).map { AppRoute.asset($0.id) }
             + h.context.fetch(FetchDescriptor<Obligation>(predicate: #Predicate { $0.isExample })).map { AppRoute.obligation($0.id) }
-            + h.context.fetch(FetchDescriptor<Attachment>(predicate: #Predicate { $0.isExample })).map { AppRoute.document($0.id) }
+            + h.context.fetch(FetchDescriptor<DosarCuSina.Attachment>(predicate: #Predicate { $0.isExample })).map { AppRoute.document($0.id) }
         #expect(!exampleRoutes.isEmpty)
         try await pass(h)
         #expect(Set(h.index.items.values.map(\.route)).isDisjoint(with: exampleRoutes))
