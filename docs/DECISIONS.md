@@ -8,6 +8,10 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-03
 
+### Who the app is for
+- **Decided:** this replaces "the reference user is aged 50–60 and not tech-savvy" (below, kept as it was). The app is for everyone who keeps papers, deadlines and the people who help with them. It must be just as usable by someone in their 50s or 60s who isn't at ease with phones: that person is the test case for every screen, not the whole audience.
+- **Why:** reading the old line as "the app is for older people" leads to designs that talk down or leave out what everyone else needs. Designing for everyone, then checking each screen against the person who finds phones hardest, keeps both.
+
 ### What a kind of document means, written once
 - **Decided:** every kind of captured document has one entry in `CaptureKindProfile`: its category, its deadline (a real blueprint of the catalog; for a policy, the one its cover names), the field that dates it, how it is kept (`DocumentKind`, `DocumentType`), the issuer's trade, the fields it carries (the AI provider is asked for exactly these), whether it opens the visit form, and its title (a personal document takes its type's name). Routing, the field rules, the review and the filer read it; capture has no names of its own for categories, deadlines or trades any more.
 - **Decided:** how early a deadline reminds comes only from its blueprint (or the kind's default profile). Capture's own lead times are gone, so a passport reminds 6 months and 2 months before, as the catalog says, wherever it is added.
