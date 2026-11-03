@@ -82,7 +82,7 @@ struct CategoryEditSheet: View {
     private var trimmedName: String { draft.name.trimmingCharacters(in: .whitespacesAndNewlines) }
 
     private func attemptSave() {
-        guard !trimmedName.isEmpty else { reveals = true; return }
+        guard draft.isComplete else { reveals = true; return }
         do {
             let effects = try TemplateStore(context: context).effects(of: draft.switches, on: template)
             if effects.isEmpty { save(changingDeadlines: false) } else { question = effects }
@@ -127,19 +127,24 @@ struct CategoryEditSheet: View {
             let names = Self.places(effects.resuming)
             lines.append(String(localized: "Revizia e pe pauză la \(names). O pornesc din nou?", comment: "A service turned back on: its paused deadlines, by section."))
         }
+        if !effects.retiming.isEmpty {
+            let names = Self.places(effects.retiming)
+            lines.append(String(localized: "Revizia de la \(names) e programată după vechiul interval. Folosesc noul interval de la următoarea revizie? Data de acum rămâne.", comment: "A service's interval changed: its running deadlines, by section."))
+        }
         return lines.joined(separator: "\n\n")
     }
 
     private func changeTitle(_ effects: TemplateStore.SwitchEffects) -> Text {
-        switch (effects.pausing.isEmpty, effects.resuming.isEmpty) {
-        case (false, true): Text("Pune pe pauză", comment: "Pauses the service deadlines a category change turned off.")
-        case (true, false): Text("Pornește din nou", comment: "Resumes the paused service deadlines a category change turned back on.")
+        switch (!effects.pausing.isEmpty, !effects.resuming.isEmpty, !effects.retiming.isEmpty) {
+        case (true, false, false): Text("Pune pe pauză", comment: "Pauses the service deadlines a category change turned off.")
+        case (false, true, false): Text("Pornește din nou", comment: "Resumes the paused service deadlines a category change turned back on.")
+        case (false, false, true): Text("Folosește noul interval", comment: "Gives running service deadlines the category's new interval.")
         default: Text("Da, schimbă-le", comment: "Pauses and resumes the service deadlines a category change touches.")
         }
     }
 
     private func keepTitle(_ effects: TemplateStore.SwitchEffects) -> Text {
-        if effects.pausing.isEmpty {
+        if effects.pausing.isEmpty && effects.retiming.isEmpty {
             Text("Lasă-le pe pauză", comment: "Saves the category change and leaves its paused deadlines paused.")
         } else {
             Text("Lasă-le cum sunt", comment: "Saves the category change and leaves its deadlines as they are.")

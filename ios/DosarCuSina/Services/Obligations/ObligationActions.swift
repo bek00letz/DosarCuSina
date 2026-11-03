@@ -203,6 +203,18 @@ public final class ObligationActions {
         try UnitOfWork.performUndoable(in: context) { try setStatus(.active, of: obligation) }.receipt
     }
 
+    /// Changes how the obligation repeats (a service every 150 hours instead of 100). The
+    /// due day and the counter it is due at stay; the new rule counts from the next cycle.
+    /// Undoable, like `pause`.
+    @discardableResult
+    public func setRecurrence(_ obligation: Obligation, _ rule: RecurrenceRule) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) {
+            obligation.recurrence = rule
+            obligation.updatedAt = now()
+            try save()
+        }.receipt
+    }
+
     public func archive(_ obligation: Obligation) throws {
         try setStatus(.archived, of: obligation)
     }

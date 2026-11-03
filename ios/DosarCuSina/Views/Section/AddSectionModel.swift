@@ -13,6 +13,11 @@ struct CustomSectionDraft: Equatable {
     /// the switches are proven (`CustomSectionStep.offersPocketList`).
     var pockets: Set<SectionPocket> = Set(SectionPocket.standard)
 
+    /// Whether it can be saved: it has a name, and a service says how often.
+    var isComplete: Bool {
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && (switches.service?.every ?? 1) > 0
+    }
+
     /// The colour every category of one's own gets.
     static let tint: TemplateTint = .gray
 

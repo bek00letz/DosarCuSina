@@ -1,33 +1,58 @@
 import Foundation
 
 /// The few plain questions a category of the person's own answers ("Are acte", "Are facturi
-/// și contracte", "Are revizii", one box or one per section), read from and written to the
-/// category's own data: its pockets, its behaviour, a counter field and a service blueprint.
-/// Nothing stores the switches themselves, so there is one source of truth and a custom
-/// category behaves exactly like a built-in with the same data.
+/// și contracte", "Are revizii" and how often, one box or one per section), read from and
+/// written to the category's own data: its pockets, its behaviour, a counter field and a
+/// service blueprint. Nothing stores the switches themselves, so there is one source of truth
+/// and a custom category behaves exactly like a built-in with the same data.
 ///
 /// Each switch touches only what it owns. Pockets it doesn't own (people, money, products…),
 /// fields and blueprints the category had before stay as they are, and applying the switches
 /// a definition reads changes nothing. Turning a switch off never deletes anything: a hidden
 /// pocket's records stay, a counter's values and readings stay under their own key, and the
-/// deadlines it made keep going until the person says otherwise (`TemplateStore.applySwitches`).
+/// deadlines it made keep going until the person says otherwise (`TemplateStore.editCustom`).
 public struct CategorySwitches: Hashable, Sendable {
-    /// What a service is counted by.
-    public enum Service: String, Hashable, Sendable, CaseIterable {
-        /// Once a year, with no counter (a piano, a boiler of one's own).
-        case yearly
+    /// What a service is counted by. Raw values name the service blueprint
+    /// (`custom.service.<raw>`) and are part of the `.dosar` contract.
+    public enum Counter: String, Hashable, Sendable, CaseIterable {
+        /// Every so many months, with no counter (a piano, a boiler of one's own).
+        case time = "yearly"
         /// Every so many kilometres, or once a year (a trailer, a motorbike).
         case kilometres
         /// Every so many engine hours, or once a year (a boat, a generator).
         case engineHours
 
-        /// The counter it reads, when it has one.
+        /// The counter the hero shows, when it has one.
         public var unit: MeasurementUnit? {
             switch self {
-            case .yearly: nil
+            case .time: nil
             case .kilometres: .kilometres
             case .engineHours: .engineHours
             }
+        }
+
+        /// What `Service.every` counts: months, kilometres or hours.
+        public var everyUnit: MeasurementUnit { unit ?? .months }
+
+        /// Where the interval starts: the car's 10.000 km, 100 hours, a year.
+        public var defaultEvery: Int {
+            switch self {
+            case .time: 12
+            case .kilometres: 10_000
+            case .engineHours: 100
+            }
+        }
+    }
+
+    /// A regular service: what it is counted by, and every how many months, kilometres or hours.
+    public struct Service: Hashable, Sendable {
+        public var counter: Counter
+        /// Months for `.time`, kilometres or hours for a counter; at least 1.
+        public var every: Int
+
+        public init(_ counter: Counter, every: Int? = nil) {
+            self.counter = counter
+            self.every = max(1, every ?? counter.defaultEvery)
         }
     }
 
@@ -44,7 +69,7 @@ public struct CategorySwitches: Hashable, Sendable {
     /// Its sections keep ongoing contracts with their bills (the Abonamente pocket), and bills
     /// and contracts read from a photo can be filed under them, as under a home.
     public var hasBills: Bool
-    /// Its sections have a regular service, counted by time or by a counter; nil for none.
+    /// Its sections have a regular service; nil for none.
     public var service: Service?
     public var boxes: Boxes
 
@@ -68,7 +93,7 @@ public struct CategorySwitches: Hashable, Sendable {
     /// The counter's field: one key per unit, so a value typed in hours never reads as kilometres.
     public static func counterFieldKey(_ unit: MeasurementUnit) -> String { "custom.counter.\(unit.key)" }
 
-    public static func serviceBlueprintKey(_ service: Service) -> String { serviceBlueprintPrefix + service.rawValue }
+    public static func serviceBlueprintKey(_ counter: Counter) -> String { serviceBlueprintPrefix + counter.rawValue }
 
     /// Whether a blueprint is one the switches make.
     public static func isServiceBlueprint(_ key: String) -> Bool { key.hasPrefix(serviceBlueprintPrefix) }
@@ -78,14 +103,26 @@ public struct CategorySwitches: Hashable, Sendable {
 
     // MARK: Reading
 
-    /// The switches a category's data answers.
+    /// The switches a category's data answers. The interval is read from the service
+    /// blueprint's own rule, so it lives in one place.
     public init(reading definition: TemplateDefinition) {
         hasDocuments = definition.pockets.contains(.documents)
         hasBills = definition.pockets.contains(.subscriptions)
-        service = Service.allCases.first { service in
-            definition.blueprints.contains { $0.key == Self.serviceBlueprintKey(service) }
-        }
+        service = Counter.allCases.lazy.compactMap { counter -> Service? in
+            guard let blueprint = definition.blueprints.first(where: { $0.key == Self.serviceBlueprintKey(counter) }) else { return nil }
+            return Service(counter, every: Self.every(in: blueprint.recurrence))
+        }.first
         boxes = definition.behavior.box == .wholeCategory ? .oneForAll : .perSection
+    }
+
+    /// The interval a service blueprint's rule says, in its counter's unit; nil when it says none.
+    static func every(in rule: RecurrenceRule) -> Int? {
+        switch rule {
+        case .metric(let every, _, _): Int(every.rounded())
+        case .interval(let interval, _) where interval.unit == .month: interval.every
+        case .interval(let interval, _) where interval.unit == .year: interval.every * 12
+        default: nil
+        }
     }
 
     // MARK: Writing
@@ -113,12 +150,18 @@ public struct CategorySwitches: Hashable, Sendable {
         }
 
         if service != current.service {
-            result.blueprints.removeAll { Self.isServiceBlueprint($0.key) }
-            result.sections.removeAll { $0.key == Self.counterSectionKey }
-            if let service {
-                result.blueprints.append(Self.serviceBlueprint(service))
-                if let field = Self.counterField(service) {
-                    result.sections.append(FieldSection(key: Self.counterSectionKey, title: field.label, fields: [field]))
+            if let service, let old = current.service, old.counter == service.counter,
+               let index = result.blueprints.firstIndex(where: { $0.key == Self.serviceBlueprintKey(service.counter) }) {
+                // Only how often: the same blueprint, in place, with its new rule.
+                result.blueprints[index] = Self.serviceBlueprint(service)
+            } else {
+                result.blueprints.removeAll { Self.isServiceBlueprint($0.key) }
+                result.sections.removeAll { $0.key == Self.counterSectionKey }
+                if let service {
+                    result.blueprints.append(Self.serviceBlueprint(service))
+                    if let field = Self.counterField(service.counter) {
+                        result.sections.append(FieldSection(key: Self.counterSectionKey, title: field.label, fields: [field]))
+                    }
                 }
             }
         }
@@ -133,36 +176,50 @@ public struct CategorySwitches: Hashable, Sendable {
 
     // MARK: What a service brings
 
-    /// The counter the hero shows and the service counts by; nil for a yearly service.
-    public static func counterField(_ service: Service) -> FieldDefinition? {
-        guard let unit = service.unit else { return nil }
-        let label = switch service {
+    /// The counter the hero shows and the service counts by; nil for a service by time.
+    public static func counterField(_ counter: Counter) -> FieldDefinition? {
+        guard let unit = counter.unit else { return nil }
+        let label = switch counter {
         case .kilometres: String(localized: "Kilometraj", comment: "Counter field of a category of one's own, in kilometres.")
         case .engineHours: String(localized: "Ore de motor", comment: "Counter field of a category of one's own, in engine hours.")
-        case .yearly: ""
+        case .time: ""
         }
         return FieldDefinition(key: counterFieldKey(unit), label: label, type: .metric, role: .heroMetric, isEssential: true, unit: unit)
     }
 
+    /// The months of a service by time, as whole years when they are.
+    static func interval(months: Int) -> RecurrenceInterval {
+        months % 12 == 0 ? .years(months / 12) : .months(months)
+    }
+
     /// The service deadline it suggests, like a car's "Revizie periodică": by its counter or
-    /// once a year, whichever comes first, reminded two weeks and a day before, with a month's grace.
+    /// once a year, whichever comes first (or every so many months, for one by time),
+    /// reminded two weeks and a day before, with a month's grace.
     public static func serviceBlueprint(_ service: Service) -> ObligationBlueprint {
-        let recurrence: RecurrenceRule = switch service {
-        case .yearly: .interval(.years(1), anchor: .completion)
-        case .kilometres: .metric(every: 10_000, unit: .kilometres, fallback: .years(1))
-        case .engineHours: .metric(every: 100, unit: .engineHours, fallback: .years(1))
-        }
-        let note: String? = switch service {
-        case .yearly: nil
-        case .kilometres: String(localized: "La 10.000 km sau o dată pe an, ce vine întâi.", comment: "Note of the service deadline of a category of one's own.")
-        case .engineHours: String(localized: "La 100 de ore de motor sau o dată pe an, ce vine întâi.", comment: "Note of the service deadline of a category of one's own.")
+        let every = service.every
+        let recurrence: RecurrenceRule
+        let firstDue: RecurrenceInterval
+        let note: String
+        switch service.counter {
+        case .time:
+            recurrence = .interval(interval(months: every), anchor: .completion)
+            firstDue = interval(months: every)
+            note = String(localized: "O dată la \(every) luni.", comment: "Note of the service deadline of a category of one's own: every so many months.")
+        case .kilometres:
+            recurrence = .metric(every: Double(every), unit: .kilometres, fallback: .years(1))
+            firstDue = .years(1)
+            note = String(localized: "La \(every) km sau o dată pe an, ce vine întâi.", comment: "Note of the service deadline of a category of one's own: every so many kilometres.")
+        case .engineHours:
+            recurrence = .metric(every: Double(every), unit: .engineHours, fallback: .years(1))
+            firstDue = .years(1)
+            note = String(localized: "La \(every) ore de motor sau o dată pe an, ce vine întâi.", comment: "Note of the service deadline of a category of one's own: every so many engine hours.")
         }
         return ObligationBlueprint(
-            key: serviceBlueprintKey(service),
+            key: serviceBlueprintKey(service.counter),
             title: String(localized: "Revizie periodică", comment: "Service deadline of a category of one's own."),
             kind: .maintenance,
             recurrence: recurrence,
-            firstDue: .afterInterval(.years(1)),
+            firstDue: .afterInterval(firstDue),
             reminders: ReminderProfile(leadDays: [14, 1], consequence: .comfort, graceDays: 30),
             note: note
         )
