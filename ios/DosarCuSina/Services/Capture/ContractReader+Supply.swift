@@ -124,45 +124,53 @@ extension ContractReader {
         "vrei", "vreti", "afla", "aflati", "solicita", "beneficiaz", "opteaz", "optati", "incearca", "descopera", "seteaz",
     ]
 
-    private static let statementKeywords = directDebitStatements.map { RomanianText.Keyword($0, as: .word) }
-    private static let denialKeywords = directDebitDenials.map { RomanianText.Keyword($0, as: .word) }
-    private static let offerKeywords = directDebitOffers.map { RomanianText.Keyword($0, as: .stem) }
+    /// The wordings above, compiled once for one reading (a page's lines, or one answer).
+    private struct DirectDebitRules {
+        let statements = ContractReader.directDebitStatements.map { RomanianText.Keyword($0, as: .word) }
+        let denials = ContractReader.directDebitDenials.map { RomanianText.Keyword($0, as: .word) }
+        let offers = ContractReader.directDebitOffers.map { RomanianText.Keyword($0, as: .stem) }
+
+        func states(_ line: String) -> Bool {
+            let folded = RomanianText.fold(line)
+            guard statements.contains(where: { $0.isFound(inFolded: folded) }) else { return false }
+            return !deniesOrOffers(folded)
+        }
+
+        /// A "no", an offer, a list of ways to pay, or a question ("Ai debit direct activ?").
+        func deniesOrOffers(_ folded: String) -> Bool {
+            folded.contains("?") || denials.contains { $0.isFound(inFolded: folded) } || offers.contains { $0.isFound(inFolded: folded) }
+        }
+
+        /// A heading alone on its line, with no offer or list on the lines around it.
+        func isHeading(_ line: Int, in text: CaptureText) -> Bool {
+            let words = RomanianText.words(text.original[line]).joined(separator: " ")
+            guard ContractReader.directDebitHeadings.contains(words) else { return false }
+            let around = [line - 1, line + 1].filter { text.folded.indices.contains($0) && text.pages[$0] == text.pages[line] }
+            return !around.contains { deniesOrOffers(text.folded[$0]) }
+        }
+    }
 
     /// Whether a line (or a sentence) says the bill is paid by direct debit, and says
     /// nothing that turns it into a "no" or an offer. The one rule for every reader: the
     /// phone's and the AI provider's answer alike.
     static func statesDirectDebit(_ line: String) -> Bool {
-        let folded = RomanianText.fold(line)
-        guard statementKeywords.contains(where: { $0.isFound(inFolded: folded) }) else { return false }
-        return !deniesOrOffers(folded)
-    }
-
-    /// A "no", an offer, a list of ways to pay, or a question ("Ai debit direct activ?").
-    private static func deniesOrOffers(_ folded: String) -> Bool {
-        folded.contains("?") || denialKeywords.contains { $0.isFound(inFolded: folded) } || offerKeywords.contains { $0.isFound(inFolded: folded) }
-    }
-
-    /// A heading alone on its line, with no offer or list on the lines around it.
-    private static func isHeading(_ line: Int, in text: CaptureText) -> Bool {
-        let words = RomanianText.words(text.original[line]).joined(separator: " ")
-        guard directDebitHeadings.contains(words) else { return false }
-        let around = [line - 1, line + 1].filter { text.folded.indices.contains($0) && text.pages[$0] == text.pages[line] }
-        return !around.contains { deniesOrOffers(text.folded[$0]) }
+        DirectDebitRules().states(line)
     }
 
     /// The printed statement that the bill is paid by direct debit, when there is one: on a
     /// line, across a line break, or as a heading standing alone.
     static func directDebit(in text: CaptureText) -> CaptureField? {
+        let rules = DirectDebitRules()
         for index in text.original.indices {
             let line = text.original[index]
             var statement: String?
-            if statesDirectDebit(line) || isHeading(index, in: text) {
+            if rules.states(line) || rules.isHeading(index, in: text) {
                 statement = line
             } else if index + 1 < text.original.count, text.pages[index + 1] == text.pages[index],
-                      !statesDirectDebit(text.original[index + 1]) {
+                      !rules.states(text.original[index + 1]) {
                 // "Factura se va achita prin debit" / "direct la data scadenței."
                 let joined = line + " " + text.original[index + 1]
-                if statesDirectDebit(joined) { statement = joined }
+                if rules.states(joined) { statement = joined }
             }
             guard let statement else { continue }
             let printed = statement.trimmingCharacters(in: .whitespaces)
