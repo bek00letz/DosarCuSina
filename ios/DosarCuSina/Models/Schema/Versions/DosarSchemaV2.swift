@@ -5,9 +5,9 @@ import SwiftData
 /// opened and migrated (`DosarMigrationPlan`). Only what is stored is kept here: the
 /// attributes and relationships exactly as they were, with no behaviour.
 ///
-/// Never change this file. `SchemaFingerprintTests` compares it with the shape version 2
+/// Never change this file. `SchemaMigrationTests` compares it with the shape version 2
 /// stores have on people's phones.
-public enum DosarSchemaV2Snapshot: VersionedSchema {
+public enum DosarSchemaV2: VersionedSchema {
     public static let versionIdentifier = Schema.Version(2, 0, 0)
 
     public static var models: [any PersistentModel.Type] {

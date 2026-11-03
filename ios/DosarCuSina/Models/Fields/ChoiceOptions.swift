@@ -305,3 +305,52 @@ public enum ServiceKind {
         key.flatMap { options.option(for: $0)?.label }
     }
 }
+
+/// What an insurance policy covers. Capture reads it once from the page
+/// (`InsuranceCover.read(in:)`), the review offers it as a choice, and the AI provider
+/// answers with one of these keys. Which deadline and which fields a cover fills is
+/// the kind profile's job (`CaptureKindProfile`).
+public enum InsuranceCover {
+    public static let rca = "coverage.rca"
+    public static let casco = "coverage.casco"
+    public static let pad = "coverage.pad"
+    public static let home = "coverage.home"
+
+    public static let all = [rca, casco, pad, home]
+
+    public static var options: [ChoiceOption] {
+        [
+            option(rca, "RCA", ["Răspundere civilă auto", "Asigurare obligatorie auto"]),
+            option(casco, "CASCO", ["Asigurare facultativă auto"]),
+            option(pad, "Asigurare obligatorie a locuinței (PAD)", ["PAD", "PAID"]),
+            option(home, "Asigurare facultativă a locuinței", ["Facultativă", "Asigurare locuință"]),
+        ]
+    }
+
+    /// The cover's name, in a few words: "CASCO".
+    public static func label(for key: String?) -> String? {
+        key.flatMap { options.option(for: $0)?.label }
+    }
+
+    /// The stored key for a cover read or typed: a key as it is, or a label or alias
+    /// ("CASCO", "PAD", "Facultativă") as its key. Nil for anything else.
+    public static func key(for text: String?) -> String? {
+        text.flatMap { options.option(for: $0)?.key }
+    }
+
+    /// The words that name each cover on a policy, matched as whole words, most specific
+    /// first: a CASCO policy that quotes the RCA rules is still CASCO.
+    static let words: [(cover: String, names: [String])] = [
+        (casco, ["casco"]),
+        (pad, ["pad", "paid", "asigurare obligatorie a locuintei", "asigurarea obligatorie a locuintelor"]),
+        (rca, ["rca", "raspundere civila auto", "raspunderii civile auto"]),
+        (home, ["asigurare facultativa", "locuinta", "locuintei", "bunuri", "imobil"]),
+    ]
+
+    /// The cover a policy's text names, matching whole words ("pad" never matches
+    /// "padding" or "Padina"), or nil when it names none.
+    public static func read(in text: String) -> String? {
+        let haystack = " " + SearchText.normalize(text) + " "
+        return words.first { entry in entry.names.contains { haystack.contains(" \($0) ") } }?.cover
+    }
+}

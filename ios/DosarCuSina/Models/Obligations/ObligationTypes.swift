@@ -358,6 +358,46 @@ public enum FirstDueRule: Hashable, Sendable, Codable {
     }
 }
 
+/// A fact a deadline needs at hand, by what it is for, not by how its field is called.
+/// Raw values are part of the `.dosar` contract.
+public enum BlueprintFactRole: String, Codable, CaseIterable, Sendable {
+    /// Who issued the policy.
+    case insurer
+    case policyNumber
+    /// The line to call for a claim or assistance.
+    case claimsPhone
+}
+
+/// Which of the section's fields hold the facts one deadline needs: a car's CASCO keeps
+/// its own insurer, policy number and claims phone, apart from its RCA. The deadline page,
+/// the claim checklist and capture's filing all read a deadline's facts through these
+/// roles, never by guessing from field names.
+public struct BlueprintFacts: Hashable, Sendable, Codable {
+    public var insurer: String?
+    public var policyNumber: String?
+    public var claimsPhone: String?
+
+    public init(insurer: String? = nil, policyNumber: String? = nil, claimsPhone: String? = nil) {
+        self.insurer = insurer
+        self.policyNumber = policyNumber
+        self.claimsPhone = claimsPhone
+    }
+
+    /// The field that holds `role`, if the deadline names one.
+    public func field(for role: BlueprintFactRole) -> String? {
+        switch role {
+        case .insurer: insurer
+        case .policyNumber: policyNumber
+        case .claimsPhone: claimsPhone
+        }
+    }
+
+    /// Every field the deadline names, with its role.
+    public var fields: [(role: BlueprintFactRole, field: String)] {
+        BlueprintFactRole.allCases.compactMap { role in field(for: role).map { (role, $0) } }
+    }
+}
+
 /// A suggested obligation that comes with a template (ITP and RCA for a car,
 /// vaccines for a pet). Creating an asset turns chosen blueprints into obligations.
 public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
@@ -378,6 +418,8 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
     public var isSuggested: Bool
     /// One short sentence explaining why it matters, shown in the add flow.
     public var note: String?
+    /// The section's fields that hold this deadline's facts (a policy's insurer, number and claims phone).
+    public var facts: BlueprintFacts?
 
     public var id: String { key }
 
@@ -392,8 +434,10 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
         appliesWhen: BlueprintCondition? = nil,
         estimatedCost: Money? = nil,
         isSuggested: Bool = true,
-        note: String? = nil
+        note: String? = nil,
+        facts: BlueprintFacts? = nil
     ) {
+        self.facts = facts
         self.key = key
         self.title = title
         self.kind = kind
@@ -416,7 +460,7 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case key, title, kind, recurrence, firstDue, reminders, reminderVariants, appliesWhen, estimatedCost, isSuggested, note
+        case key, title, kind, recurrence, firstDue, reminders, reminderVariants, appliesWhen, estimatedCost, isSuggested, note, facts
     }
 
     public init(from decoder: Decoder) throws {
@@ -432,5 +476,6 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
         estimatedCost = try c.decodeIfPresent(Money.self, forKey: .estimatedCost)
         isSuggested = try c.decodeIfPresent(Bool.self, forKey: .isSuggested) ?? true
         note = try c.decodeIfPresent(String.self, forKey: .note)
+        facts = try? c.decodeIfPresent(BlueprintFacts.self, forKey: .facts)
     }
 }

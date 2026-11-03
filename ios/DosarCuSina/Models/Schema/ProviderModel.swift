@@ -47,7 +47,7 @@ public enum ProviderTrade: String, Codable, CaseIterable, Sendable {
     }
 }
 
-extension DosarSchemaV2 {
+extension DosarSchemaV3 {
     /// A person or business the household relies on: the mechanic, the plumber
     /// who changed the tap, the vet, the insurance agent. Linked to the assets
     /// they look after and to the history entries of the work they did, so
@@ -69,6 +69,9 @@ extension DosarSchemaV2 {
         /// Contacts framework identifier, when linked to the address book. It only
         /// resolves on the device that picked it; the fields above are the source of truth.
         public var contactIdentifier: String?
+        /// A firm's tax ID (CUI), digits only, as read off its invoices or policies. Two
+        /// records with the same CUI are the same firm, whatever their names say.
+        public var taxID: String?
         public var isExample: Bool = false
         public var createdAt: Date = Date()
         public var updatedAt: Date = Date()

@@ -10,7 +10,9 @@ public enum ReadinessScenario: Hashable, Sendable {
 
     case tripAbroad(start: CalendarDay, end: CalendarDay, region: Region, driving: Bool, withPet: Bool)
     case sellingVehicle(assetId: UUID)
-    case insuranceClaim(assetId: UUID)
+    /// A claim on one of the asset's policies: the deadline `blueprintKey` names (CASCO),
+    /// or, when nil, the first of its policies the binder follows.
+    case insuranceClaim(assetId: UUID, blueprintKey: String? = nil)
 }
 
 /// How one check came out. Problems sort first.
@@ -63,6 +65,9 @@ public struct ReadinessAsset: Hashable, Sendable {
     public var historyCount: Int
     /// Kinds of current (not archived) documents filed on it.
     public var documentKinds: [DocumentKind]
+    /// The facts each of its category's deadlines keeps (a policy's number and claims
+    /// phone), in the category's order.
+    public var facts: [ReadinessFacts]
 
     public init(
         id: UUID = UUID(),
@@ -71,7 +76,8 @@ public struct ReadinessAsset: Hashable, Sendable {
         values: FieldValues = FieldValues(),
         obligations: [String: ReadinessObligation] = [:],
         historyCount: Int = 0,
-        documentKinds: [DocumentKind] = []
+        documentKinds: [DocumentKind] = [],
+        facts: [ReadinessFacts] = []
     ) {
         self.id = id
         self.name = name
@@ -80,6 +86,23 @@ public struct ReadinessAsset: Hashable, Sendable {
         self.obligations = obligations
         self.historyCount = historyCount
         self.documentKinds = documentKinds
+        self.facts = facts
+    }
+}
+
+/// One deadline's fact roles, as the readiness checks read them.
+public struct ReadinessFacts: Hashable, Sendable {
+    public var blueprintKey: String
+    public var facts: BlueprintFacts
+
+    public init(blueprintKey: String, facts: BlueprintFacts) {
+        self.blueprintKey = blueprintKey
+        self.facts = facts
+    }
+
+    /// Every deadline of `template` that keeps facts, in the template's order.
+    public static func of(_ template: TemplateDefinition) -> [ReadinessFacts] {
+        template.blueprints.compactMap { blueprint in blueprint.facts.map { ReadinessFacts(blueprintKey: blueprint.key, facts: $0) } }
     }
 }
 
@@ -92,8 +115,8 @@ public enum ReadinessEngine {
             items = trip(start: start, end: end, region: region, driving: driving, withPet: withPet, assets: assets, calendar: calendar)
         case .sellingVehicle(let id):
             items = assets.first { $0.id == id }.map { sale(of: $0) } ?? []
-        case .insuranceClaim(let id):
-            items = assets.first { $0.id == id }.map { claim(on: $0) } ?? []
+        case .insuranceClaim(let id, let blueprintKey):
+            items = assets.first { $0.id == id }.map { claim(on: $0, blueprintKey: blueprintKey) } ?? []
         }
         return items.sorted { $0.status != $1.status ? $0.status < $1.status : $0.title < $1.title }
     }
@@ -189,7 +212,7 @@ public enum ReadinessEngine {
             return ReadinessItem(id: "\(key).\(asset.id)", status: .missing, title: "\(title) · \(asset.name)",
                                  detail: String(localized: "Nu e în dosar."), route: .asset(asset.id))
         }
-        let ok = obligation.due > day
+        let ok = DueDayValidity.covers(through: day, due: obligation.due)
         return ReadinessItem(
             id: "\(key).\(asset.id)", status: ok ? .ok : failing, title: "\(title) · \(asset.name)",
             detail: ok ? String(localized: "Valabil.") : String(localized: "Expiră înainte de întoarcere."),
@@ -231,7 +254,7 @@ public enum ReadinessEngine {
         // The rabies vaccine must be at least 21 days old at the border and still valid on return.
         let latestAllowed = start.adding(days: -21, calendar: calendar)
         let doneInTime = rabies.lastDone.map { $0 <= latestAllowed } ?? false
-        let validOnReturn = rabies.due > end
+        let validOnReturn = DueDayValidity.covers(through: end, due: rabies.due)
         let status: ReadinessStatus = doneInTime && validOnReturn ? .ok : .problem
         let detail: String
         if !validOnReturn {
@@ -271,11 +294,21 @@ public enum ReadinessEngine {
 
     // MARK: Insurance claim
 
-    static func claim(on asset: ReadinessAsset) -> [ReadinessItem] {
-        let prefix = asset.templateKey == BuiltInTemplates.Key.home ? "home" : "vehicle"
-        let policyNumber = asset.values["\(prefix).policyNumber"]?.textValue
-            ?? asset.obligations["\(prefix == "home" ? "home.pad" : "vehicle.rca")"]?.reference
-        let claimsPhone = asset.values["\(prefix).claimsPhone"]?.textValue
+    /// The policy a claim is about: the one asked for, else the first the binder follows
+    /// (an active deadline), else the category's first policy.
+    static func claimPolicy(on asset: ReadinessAsset, blueprintKey: String?) -> ReadinessFacts? {
+        if let blueprintKey { return asset.facts.first { $0.blueprintKey == blueprintKey } }
+        return asset.facts.first { asset.obligations[$0.blueprintKey] != nil } ?? asset.facts.first
+    }
+
+    static func claim(on asset: ReadinessAsset, blueprintKey: String? = nil) -> [ReadinessItem] {
+        // Each policy keeps its own facts: a CASCO claim never shows the RCA's number.
+        let policy = claimPolicy(on: asset, blueprintKey: blueprintKey)
+        func fact(_ role: BlueprintFactRole) -> String? {
+            policy?.facts.field(for: role).flatMap { asset.values[$0]?.textValue }
+        }
+        let policyNumber = fact(.policyNumber) ?? policy.flatMap { asset.obligations[$0.blueprintKey]?.reference }
+        let claimsPhone = fact(.claimsPhone)
         return [
             ReadinessItem(id: "claim.policyNumber", status: policyNumber == nil ? .missing : .ok, title: String(localized: "Număr poliță"),
                           detail: policyNumber ?? String(localized: "Adaugă-l: îl cere asigurătorul la primul telefon."), route: .asset(asset.id)),
@@ -292,7 +325,8 @@ extension ReadinessAsset {
     /// Readiness view of every asset in the binder.
     @MainActor
     public static func fetchAll(in context: ModelContext, calendar: Calendar = .current) throws -> [ReadinessAsset] {
-        try context.fetch(FetchDescriptor<Asset>()).map { asset in
+        let templates = try TemplateStore(context: context).templatesByKey()
+        return try context.fetch(FetchDescriptor<Asset>()).map { asset in
             var obligations: [String: ReadinessObligation] = [:]
             for obligation in asset.activeObligations {
                 guard let key = obligation.blueprintKey else { continue }
@@ -302,7 +336,8 @@ extension ReadinessAsset {
             return ReadinessAsset(
                 id: asset.id, name: asset.name, templateKey: asset.templateKey, values: asset.values, obligations: obligations,
                 historyCount: (asset.history ?? []).count,
-                documentKinds: (asset.attachments ?? []).filter { !$0.isArchived }.map(\.kind)
+                documentKinds: (asset.attachments ?? []).filter { !$0.isArchived }.map(\.kind),
+                facts: templates[asset.templateKey].map { ReadinessFacts.of($0.definition) } ?? []
             )
         }
     }

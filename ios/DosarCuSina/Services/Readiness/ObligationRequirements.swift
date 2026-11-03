@@ -88,7 +88,7 @@ public enum ObligationRequirements {
             return (asset.attachments ?? []).contains { $0.kind == kind && !$0.isArchived }
         case .validObligation(let key):
             guard let other = asset.activeObligations.first(where: { $0.blueprintKey == key }) else { return false }
-            return other.dueDay(in: calendar) >= day
+            return other.isValid(on: day, calendar: calendar)
         }
     }
 }

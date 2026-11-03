@@ -1,0 +1,30 @@
+import Foundation
+
+/// What a deadline's due day means for whether something is still valid, decided once.
+///
+/// Today the due day is the **last valid day**, the way policies and identity documents
+/// print it: an RCA "valabilă până la 12.08.2027" still covers 12 August. Whether it should
+/// rather be the first day without cover is the owner's call; flipping
+/// `dueDayIsLastValidDay` changes every check that asks (`Obligation.isValid(on:)`, the
+/// "Ce-ți trebuie" list, the readiness checks), and nothing else needs to.
+public enum DueDayValidity {
+    /// The due day is the last day something is valid (true), or the first day it isn't (false).
+    public static let dueDayIsLastValidDay = true
+
+    /// Whether something due on `due` is still valid on `day`.
+    public static func isValid(due: CalendarDay, on day: CalendarDay) -> Bool {
+        dueDayIsLastValidDay ? day <= due : day < due
+    }
+
+    /// Whether something due on `due` stays valid every day up to and including `day`.
+    public static func covers(through day: CalendarDay, due: CalendarDay) -> Bool {
+        isValid(due: due, on: day)
+    }
+}
+
+extension Obligation {
+    /// Whether this deadline is still valid on `day` (an RCA on the day of a trip). See `DueDayValidity`.
+    public func isValid(on day: CalendarDay, calendar: Calendar = .current) -> Bool {
+        DueDayValidity.isValid(due: dueDay(in: calendar), on: day)
+    }
+}
