@@ -127,9 +127,10 @@ public struct CaptureAnalyzer: Sendable {
         let template = IdentityTemplates.template(for: kind, text: text, machineReadableFormat: mrz?.format)
         if template != nil { text = lines }
         switch kind {
-        case .passport, .identityCard, .drivingLicence:
+        case .passport, .identityCard, .drivingLicence, .criminalRecord, .healthInsuranceCard, .bankCard:
             // Printed labels, read with the document's template. The MRZ (when on the
             // photo) already added checked values, which win; agreeing values reinforce.
+            // A personal document is read the same way, whatever it is: a new one is a template.
             if let template {
                 fields.add(IdentityDocumentReader.read(text, template: template, today: today))
                 if let variant = template.documentVariant {

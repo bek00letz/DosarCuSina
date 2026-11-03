@@ -115,6 +115,8 @@ public enum DocumentType {
     public static let passport = "documentType.passport"
     public static let drivingLicence = "documentType.drivingLicence"
     public static let euHealthCard = "documentType.euHealthCard"
+    /// The national health insurance card (cardul național de asigurări sociale de sănătate).
+    public static let nationalHealthCard = "documentType.nationalHealthCard"
     public static let greenCard = "documentType.greenCard"
     public static let bankCard = "documentType.bankCard"
     public static let eSignature = "documentType.eSignature"
@@ -126,7 +128,8 @@ public enum DocumentType {
             option(idCard, "Carte de identitate", ["Buletin", "CI", "ID card"]),
             option(passport, "Pașaport", ["Pasaport", "Passport"]),
             option(drivingLicence, "Permis de conducere", ["Permis", "Driving licence"]),
-            option(euHealthCard, "Card european de sănătate", ["CEASS", "EHIC"]),
+            option(euHealthCard, "Card european de sănătate", ["CEASS", "EHIC", "Card european de asigurări sociale de sănătate"]),
+            option(nationalHealthCard, "Card național de sănătate", ["Card de sănătate", "Cardul de sănătate", "Card național de asigurări sociale de sănătate"]),
             option(greenCard, "Carte verde", ["Green card"]),
             option(bankCard, "Card bancar", ["Card"]),
             option(eSignature, "Semnătură electronică", ["Certificat digital", "Token"]),
@@ -163,6 +166,34 @@ public enum DocumentType {
     /// The travel margin of a document from its values: its type's (a variant has its type's).
     public static func travelMarginDays(in values: FieldValues) -> Int {
         travelMarginDays(for: values[typeFieldKey]?.textValue)
+    }
+
+    // MARK: Validity
+
+    /// How long a kind of document is valid after it is issued, in months, when that is a
+    /// documented rule rather than a date printed on it. Data, read by the documents
+    /// category's expiry (`FieldDerivation.validityAfterIssue`) and by capture's review.
+    ///
+    /// Only the criminal record certificate (cazier judiciar): "Certificatele de cazier
+    /// judiciar sunt valabile 6 luni de la data eliberării", as Romania states it in the
+    /// European Commission's repository of public documents (entry 431105), under Legea
+    /// nr. 290/2004 privind cazierul judiciar. A cazier fiscal or auto has no rule here.
+    public static let validityMonthsAfterIssue: [String: Int] = [Variant.criminalRecordJudicial: 6]
+
+    /// The months a document of this type and variant is valid after it is issued, if a rule says so.
+    public static func validityMonths(type: String?, variant: String?) -> Int? {
+        guard let type, let key = options.option(for: type)?.key else { return nil }
+        if let variant, variants.contains(where: { $0.type == key && $0.option.key == variant }), let months = validityMonthsAfterIssue[variant] {
+            return months
+        }
+        return validityMonthsAfterIssue[key]
+    }
+
+    /// The last day a document issued on `issued` is valid by its rule: the same day,
+    /// `validityMonths` later (a shorter month ends on its last day). Nil without a rule.
+    public static func validUntil(issued: CalendarDay, type: String?, variant: String?, calendar: Calendar = .current) -> CalendarDay? {
+        guard let months = validityMonths(type: type, variant: variant) else { return nil }
+        return RecurrenceEngine.add(.months(months), to: issued, calendar: calendar)
     }
 
     // MARK: Variants

@@ -83,6 +83,9 @@ struct CaptureReviewView: View {
                 notices
                 fieldsSection
                 destinationSection
+                if review.kind.profile.photoIsOptIn {
+                    KeepPhotoChoice(keepsPhoto: $review.keepsPhotoOnRequest)
+                }
                 reminderSection
                 if let errorMessage {
                     DSNotice(.error, title: "Nu s-a salvat", message: LocalizedStringKey(errorMessage))
@@ -105,7 +108,7 @@ struct CaptureReviewView: View {
         .sheet(isPresented: $isPickingDestination) {
             CaptureDestinationPicker(
                 destination: $review.destination, newAssetName: $review.newAssetName, templates: templates, assets: assets,
-                offersNewHolder: review.kind.isIdentityDocument,
+                offersNewHolder: review.kind.isPersonalDocument,
                 filesUnderSubscription: review.kind.profile.filing == .subscription
             )
         }
@@ -275,7 +278,7 @@ struct CaptureReviewView: View {
                     .disabled(rereading != nil)
             }
             VStack(alignment: .leading, spacing: DS.Space.xxs) {
-                if review.kind.isIdentityDocument {
+                if review.kind.isPersonalDocument {
                     Text("Poza actului se trimite la \(cloudProvider.name), cu cheia ta.")
                 } else {
                     Text("Prima pagină se trimite la \(cloudProvider.name), cu cheia ta.")

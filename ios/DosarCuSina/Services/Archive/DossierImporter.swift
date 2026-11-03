@@ -198,7 +198,8 @@ struct DossierImporter {
             asset.notes = dto.notes
             // Choice values written as display text (v2 backups, older builds) become option keys.
             let definition = definitions[dto.templateKey]
-            let values = definition.map { dto.values.normalizingChoices(for: $0) } ?? dto.values
+            // No card number comes in with a backup: a card keeps only its last four digits.
+            let values = PaymentCardNumbers.sanitizing(definition.map { dto.values.normalizingChoices(for: $0) } ?? dto.values)
             // Secrets this phone keeps for the record stay; an archive never brings any.
             asset.valuesData = StoredJSON.encode(SecretFields.keepingLocalSecrets(values, from: phone.secrets[id] ?? FieldValues(), definition: definition))
             asset.customFacts = SecretFields.keepingLocalSecretFacts(dto.customFacts ?? [], from: phone.secretFacts[id] ?? [])
@@ -400,7 +401,8 @@ struct DossierImporter {
             attachment.byteCount = dto.byteCount
             attachment.sha256 = dto.sha256 ?? attachment.sha256
             attachment.thumbnailData = dto.thumbnailPath.flatMap { package.files[$0] }
-            attachment.extractedText = dto.extractedText
+            // A backup from anywhere brings no card number into a document's text.
+            attachment.extractedText = dto.extractedText.map { PaymentCardNumbers.redact($0) }
             attachment.documentDate = dto.documentDate?.noonDate(in: calendar)
             attachment.validUntil = dto.validUntil?.noonDate(in: calendar)
             attachment.isArchived = dto.isArchived

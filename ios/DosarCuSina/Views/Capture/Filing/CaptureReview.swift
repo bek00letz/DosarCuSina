@@ -90,6 +90,9 @@ struct CaptureReview: Identifiable {
     /// Filed under a household member, it becomes one of their documents whatever
     /// its kind (a cazier, a bank card), not a loose paper on the person.
     var filesAsPersonalDocument = false
+    /// The person asked to keep the photo of a document whose photo is kept only on
+    /// request ("Păstrează și poza cardului"). Off until they turn it on.
+    var keepsPhotoOnRequest = false
     var suggested: Suggested
     /// Kinds another reader saw, offered beside the kind shown ("Pe telefon părea: …").
     var kindAlternatives: [CaptureAlternative<CaptureDocumentKind>]
@@ -155,11 +158,34 @@ struct CaptureReview: Identifiable {
     }
 
     /// The day the reminder follows (expiry, due date, next dose), from the current values:
-    /// the kind's deadline field, and for a minimum period the end its terms give.
+    /// the kind's deadline field, for a minimum period the end its terms give, and for a
+    /// document valid for a set time after it is issued (a cazier judiciar) that time
+    /// after its issue date.
     var reminderDay: CalendarDay? {
         let field = kind.profile.deadlineField
         if field == .minimumPeriodEnd { return minimumPeriodEnd }
-        return field.flatMap { value($0)?.day }.map(CaptureMapping.calendarDay)
+        if let day = field.flatMap({ value($0)?.day }) { return CaptureMapping.calendarDay(day) }
+        return validityEnd
+    }
+
+    /// The last valid day by the document's rule, from its issue date, when it prints no
+    /// expiry: what saving writes through the documents category's own derivation.
+    var validityEnd: CalendarDay? {
+        guard kind.profile.deadlineField == .expiryDate, value(.expiryDate) == nil,
+              let issued = value(.issueDate)?.day else { return nil }
+        return DocumentType.validUntil(issued: CaptureMapping.calendarDay(issued), type: kind.profile.documentType,
+                                       variant: value(.documentVariant)?.text)
+    }
+
+    /// The months a document of this kind and variant is valid after its issue, when a rule says so.
+    var validityMonths: Int? {
+        DocumentType.validityMonths(type: kind.profile.documentType, variant: value(.documentVariant)?.text)
+    }
+
+    /// Saving keeps the document's photo: always, except where the kind keeps it only on
+    /// request (a bank card) and the person hasn't asked.
+    var keepsPhoto: Bool {
+        !kind.profile.photoIsOptIn || keepsPhotoOnRequest
     }
 
     /// When a contract's minimum period ends: as printed, or its length after its start.
@@ -444,8 +470,8 @@ struct CaptureReview: Identifiable {
                 return .asset(match.id)
             }
         }
-        // 2. An identity document goes to its holder: the matching member, or a new one.
-        if kind.isIdentityDocument {
+        // 2. A personal document goes to its holder: the matching member, or a new one.
+        if kind.isPersonalDocument {
             let values = Dictionary(fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
             if let holder = CaptureMapping.holderName(values), let holders = behaviors.key(withRole: .holder) {
                 let members = candidates.filter { behaviors.plays(.holder, $0.templateKey) }.map { (id: $0.id, name: $0.name) }
@@ -545,6 +571,7 @@ struct CaptureReview: Identifiable {
         if previous.newAssetName != before.newAssetName { merged.newAssetName = previous.newAssetName }
         if previous.remindsToPay != before.remindsToPay { merged.remindsToPay = previous.remindsToPay }
         merged.filesAsPersonalDocument = previous.filesAsPersonalDocument
+        merged.keepsPhotoOnRequest = previous.keepsPhotoOnRequest
         return merged
     }
 }

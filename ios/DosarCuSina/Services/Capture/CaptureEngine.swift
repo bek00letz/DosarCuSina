@@ -299,6 +299,7 @@ public final class CaptureEngine: Sendable {
             document = stored.ref
         }
 
+        // No card number goes further than this, whatever the kind.
         return CaptureResult(
             kind: reading.kind,
             kindConfidence: reading.confidence,
@@ -315,7 +316,7 @@ public final class CaptureEngine: Sendable {
             fieldAlternatives: settled.alternatives,
             readWithCloudModel: readWithCloudModel,
             source: source
-        )
+        ).withoutCardNumbers()
     }
 
     // MARK: - Reading as another kind
@@ -351,7 +352,7 @@ public final class CaptureEngine: Sendable {
             fieldAlternatives: settled.alternatives,
             readWithCloudModel: result.readWithCloudModel,
             source: result.source
-        )
+        ).withoutCardNumbers()
     }
 
     struct Settled {

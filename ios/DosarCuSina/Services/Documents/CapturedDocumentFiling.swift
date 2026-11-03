@@ -2,18 +2,9 @@ import Foundation
 import SwiftData
 
 extension DocumentKind {
-    /// The binder's kind for what capture recognized.
+    /// The binder's kind for what capture recognized: the kind profile's, the one place it is written.
     public init(capturedKind: CaptureDocumentKind) {
-        switch capturedKind {
-        case .passport, .identityCard, .drivingLicence, .vehicleRegistration: self = .identity
-        case .rcaPolicy, .insurancePolicy: self = .policy
-        case .utilityInvoice, .serviceInvoice: self = .invoice
-        case .fiscalReceipt: self = .receipt
-        case .warrantyCertificate: self = .warranty
-        case .itpReport, .medicalResult, .veterinaryRecord: self = .report
-        case .contract: self = .contract
-        case .other: self = .other
-        }
+        self = capturedKind.profile.documentKind
     }
 }
 
@@ -126,7 +117,7 @@ extension AttachmentActions {
         attachment.isExample = isExample
         if let title, !title.isEmpty { attachment.title = title }
         if let kind { attachment.kind = kind }
-        if let extractedText { attachment.extractedText = extractedText }
+        if let extractedText { attachment.extractedText = PaymentCardNumbers.redact(extractedText) }
         if let documentDate { attachment.documentDate = documentDate.noonDate(in: calendar) }
         try UnitOfWork.save(context)
     }

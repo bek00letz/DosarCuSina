@@ -8,10 +8,13 @@ enum CaptureMapping {
     // MARK: Kinds
 
     /// A name a person recognizes, used as the document title and a new section's name.
-    /// Identity documents carry their holder: "Carte de identitate – Manole Corina Ioana".
+    /// A personal document is called what its variant or type is called, with its holder
+    /// when it names one: "Carte de identitate – Manole Corina Ioana", "Cazier judiciar –
+    /// Manole Corina", "Card de debit".
     static func defaultTitle(for kind: CaptureDocumentKind, fields: [CaptureFieldKey: CaptureValue]) -> String {
-        if kind.isIdentityDocument, let holder = holderName(fields) {
-            return DocumentNaming.name(document: kind.profile.title, holder: holder)
+        if let type = kind.profile.documentType {
+            let document = DocumentType.documentName(type: type, variant: fields[.documentVariant]?.text)
+            return DocumentNaming.name(document: document, holder: holderName(fields))
         }
         return kind.profile.defaultTitle(fields: fields)
     }
@@ -39,6 +42,9 @@ enum CaptureMapping {
         .licenceCategories: [DocumentFields.categories],
         .issueDate: [DocumentFields.issueDate],
         .issuer: [DocumentFields.issuer],
+        .recordResult: [DocumentFields.recordResult],
+        .cardNetwork: [DocumentFields.cardNetwork],
+        .cardLastFour: [DocumentFields.cardLastFour],
         .podCode: [HomeFields.pod, SubscriptionFields.pod],
         .clcCode: [HomeFields.clc, SubscriptionFields.clc],
         .clientCode: [SubscriptionFields.clientCode],
@@ -147,6 +153,7 @@ enum CaptureMapping {
         switch key {
         case .serviceKind: ServiceKind.options
         case .coverageType: InsuranceCover.options.filter { kind.profile.covers.contains($0.key) }
+        case .cardNetwork: PaymentCardNetwork.options
         default: nil
         }
     }
@@ -170,6 +177,9 @@ enum CaptureMapping {
         case .expiryDate: return String(localized: "Valabil până la")
         case .dueDate: return String(localized: "De plătit până la")
         case .issuer: return String(localized: "Emis de")
+        case .recordResult: return String(localized: "Ce scrie pe cazier")
+        case .cardNetwork: return String(localized: "Tip card")
+        case .cardLastFour: return String(localized: "Ultimele 4 cifre")
         case .provider: return String(localized: "Furnizor")
         case .providerTaxID: return String(localized: "CUI furnizor")
         case .providerPhone: return String(localized: "Telefon furnizor")
@@ -218,7 +228,7 @@ enum CaptureMapping {
     /// Anything not listed follows in the order it was read.
     static let reviewOrder: [CaptureFieldKey] = [
         .surname, .givenNames, .personalNumber, .birthDate, .sex, .nationality,
-        .documentNumber, .licenceCategories, .issuer, .coverageType, .issueDate, .startDate, .expiryDate,
+        .documentNumber, .licenceCategories, .recordResult, .cardNetwork, .cardLastFour, .issuer, .coverageType, .issueDate, .startDate, .expiryDate,
     ]
 
     /// Whether the review shows a field. Everything read is shown (identity documents
@@ -238,6 +248,7 @@ enum CaptureMapping {
         case .text(let text):
             if ServiceKind.all.contains(text) { return ServiceKind.label(for: text) ?? text }
             if InsuranceCover.all.contains(text) { return InsuranceCover.label(for: text) ?? text }
+            if PaymentCardNetwork.all.contains(text) { return PaymentCardNetwork.label(for: text) ?? text }
             return text
         case .day(let day):
             return DosarFormat.longDay(CalendarDay(year: day.year, month: day.month, day: day.day))

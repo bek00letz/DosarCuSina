@@ -9,13 +9,15 @@ import Foundation
 ///   examples, and only titles, without those numbers or the values a category keeps
 ///   out of search (`mayShowOutside`, `outsideText`).
 public enum SearchPrivacy {
-    /// The text with every CNP-shaped number and every sealed value taken out.
+    /// The text with every CNP-shaped number, every card number and every sealed value
+    /// taken out. A card number is never searched, even by its last four digits.
     public static func redacting(_ text: String) -> String {
-        guard text.contains(where: \.isNumber) || text.contains(SecretSealer.prefix) else { return text }
+        guard text.contains(where: \.isNumber) || text.contains(SecretSealer.prefix) || text.contains(PaymentCardNumbers.mask) else { return text }
         var result = text
         for range in cnpShapedRanges(in: result).reversed() {
             result.replaceSubrange(range, with: "")
         }
+        result = PaymentCardNumbers.redact(result).replacingOccurrences(of: PaymentCardNumbers.maskedPattern, with: "", options: .regularExpression)
         if result.contains(SecretSealer.prefix) {
             result = result.split(separator: " ", omittingEmptySubsequences: false)
                 .filter { !SecretSealer.isSealed(String($0)) }

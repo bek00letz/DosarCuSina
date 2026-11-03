@@ -59,6 +59,9 @@ public enum DocumentClassifier {
         }
         // A fiscal receipt beats a generic invoice when "bon fiscal" is printed.
         if CaptureText.containsWord("bon fiscal", inFolded: haystack) { scores[.serviceInvoice] = (scores[.serviceInvoice] ?? 0) * 0.5 }
+        // A whole card number printed on the page is the strongest sign of a bank card; a
+        // receipt or a statement shows it masked, so it doesn't count there.
+        if PaymentCardNumbers.containsCardNumber(text.joinedOriginal) { scores[.bankCard, default: 0] += cardNumberWeight }
 
         // Ties go to the kind listed first in `CaptureDocumentKind`, so the result never depends on dictionary order.
         let order = Dictionary(uniqueKeysWithValues: CaptureDocumentKind.allCases.enumerated().map { ($1, $0) })
@@ -73,6 +76,9 @@ public enum DocumentClassifier {
         let strength = min(best.value / 6, 1)
         return Classification(kind: best.key, confidence: 0.4 + 0.5 * margin * strength + 0.1 * strength)
     }
+
+    /// What a whole card number on the page weighs for a bank card.
+    static let cardNumberWeight = 5.0
 
     /// Signals whose longer forms mean something else, so they only count whole:
     /// a meter's "index" isn't the "indexare" of a price.

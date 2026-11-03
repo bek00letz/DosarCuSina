@@ -449,6 +449,8 @@ private struct ObligationCompleteSheet: View {
     @State private var isSaving = false
     @State private var exampleQuestion: ExampleSectionQuestion?
     @State private var readingQuestion: LowerReadingQuestion?
+    /// A bank card's photo is kept only when the person asks.
+    @State private var keepsPhotoOnRequest = false
 
     private var isReading: Bool { session.phase == .reading }
     private var document: CaptureResult? { session.result }
@@ -464,6 +466,9 @@ private struct ObligationCompleteSheet: View {
                         }
                     }
                     documentSection
+                    if let document, document.kind.profile.photoIsOptIn {
+                        KeepPhotoChoice(keepsPhoto: $keepsPhotoOnRequest)
+                    }
                     if let errorMessage {
                         DSNotice(.error, title: "Nu s-a salvat", message: LocalizedStringKey(errorMessage))
                     }
@@ -511,8 +516,15 @@ private struct ObligationCompleteSheet: View {
             DSSectionHeader("Actul nou", subtitle: "Opțional. Din el iau data următoare.")
             if let document {
                 let next = CaptureFiler.nextDay(in: document)
-                DSNotice(.success, title: "Am citit actul",
-                         message: next.map { "Următorul termen: \(DueWording.date($0, today: CalendarDay(Date())))." } ?? "Nu am găsit o dată nouă pe el. Îl păstrez oricum.")
+                // A bank card's photo is kept only on request, so it isn't promised here.
+                let message: LocalizedStringKey = if let next {
+                    "Următorul termen: \(DueWording.date(next, today: CalendarDay(Date())))."
+                } else if document.kind.profile.photoIsOptIn {
+                    "Nu am găsit o dată nouă pe el."
+                } else {
+                    "Nu am găsit o dată nouă pe el. Îl păstrez oricum."
+                }
+                DSNotice(.success, title: "Am citit actul", message: message)
                 Button("Alege alt act") { isChoosingSource = true }
                     .frame(minHeight: 44)
             } else {
@@ -543,7 +555,7 @@ private struct ObligationCompleteSheet: View {
                 var filer = CaptureFiler(context: context)
                 filer.lowerReading = lowerReading
                 let outcome = try await filer.file(.completion(.init(
-                    obligation: obligation, date: date, cost: cost, document: document
+                    obligation: obligation, date: date, cost: cost, document: document, keepsPhotoOnRequest: keepsPhotoOnRequest
                 )))
                 let message: LocalizedStringResource = outcome.nextDue.map {
                     "\(title): gata. Următorul termen e pe \(DueWording.date($0, today: CalendarDay(Date())))."

@@ -260,9 +260,7 @@ struct DocumentRowLink: View {
             NavigationLink(value: AppRoute.asset(document.id)) {
                 DSListRow(
                     title: Text(verbatim: document.name),
-                    subtitle: document.value(DocumentFields.expiry)?.dateValue.map {
-                        Text(verbatim: String(localized: "Valabil până la \(DosarFormat.day($0))", comment: "Document row: valid until."))
-                    },
+                    subtitle: DocumentSummary.line(document.values).map { Text(verbatim: $0) },
                     systemImage: "person.text.rectangle",
                     showsChevron: true
                 ) {

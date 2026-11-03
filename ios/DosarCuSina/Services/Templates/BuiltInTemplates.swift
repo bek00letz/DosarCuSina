@@ -214,7 +214,20 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: DocumentFields.categories, label: String(localized: "Categorii"), type: .text),
                     FieldDefinition(key: DocumentFields.issuer, label: String(localized: "Emis de"), type: .text, role: .issuer),
                     FieldDefinition(key: DocumentFields.issueDate, label: String(localized: "Data emiterii"), type: .date, role: .startDate),
-                    FieldDefinition(key: DocumentFields.expiry, label: String(localized: "Valabil până la"), type: .expiryDate, role: .expiryDate, isEssential: true),
+                    // A cazier judiciar is valid six months from its issue (`DocumentType.validityMonthsAfterIssue`):
+                    // its expiry follows the issue date unless one is given.
+                    FieldDefinition(key: DocumentFields.expiry, label: String(localized: "Valabil până la"), type: .expiryDate, role: .expiryDate, isEssential: true,
+                                    derivation: .validityAfterIssue(issueField: DocumentFields.issueDate)),
+                    // What a cazier says, as printed. Sensitive: never searched, never outside the app.
+                    FieldDefinition(key: DocumentFields.recordResult, label: String(localized: "Ce scrie pe cazier"), type: .text, isSensitive: true,
+                                    appliesWhen: BlueprintCondition(field: DocumentType.typeFieldKey, oneOf: [DocumentType.criminalRecord])),
+                    // A bank card keeps its network and its last four digits, never its whole number
+                    // (`PaymentCardNumbers`), and never a PIN or a security code.
+                    FieldDefinition(key: DocumentFields.cardNetwork, label: String(localized: "Tip card"), type: .choice, options: PaymentCardNetwork.options,
+                                    appliesWhen: bankCard),
+                    FieldDefinition(key: DocumentFields.cardLastFour, label: String(localized: "Ultimele 4 cifre"), type: .text, isSensitive: true,
+                                    appliesWhen: bankCard,
+                                    footnote: String(localized: "Doar ultimele 4 cifre. Numărul întreg al cardului nu se păstrează.")),
                 ]),
                 // The two codes that come with the electronic identity card, named as on
                 // carteadeidentitate.gov.ro. Secret: sealed, shown only after a fresh Face ID,
@@ -239,16 +252,25 @@ public enum BuiltInTemplates {
                                         DocumentType.idCard: profile([90, 30], .legal),
                                         DocumentType.drivingLicence: profile([60, 30], .legal),
                                         DocumentType.euHealthCard: profile([30, 7], .health),
+                                        DocumentType.nationalHealthCard: profile([30, 7], .health),
                                         DocumentType.greenCard: profile([30, 7], .legal),
-                                        DocumentType.bankCard: profile([30, 7], .financial),
+                                        // A month before it expires, and on the day.
+                                        DocumentType.bankCard: profile([30, 0], .financial),
                                         DocumentType.eSignature: profile([30, 7], .financial),
-                                        DocumentType.criminalRecord: profile([7, 0], .legal),
+                                        // A cazier is asked for a purpose, not renewed by law: one that
+                                        // expired is only history, and it never crowds Acum.
+                                        DocumentType.criminalRecord: profile([7, 0], .comfort),
                                     ]),
                                     note: String(localized: "Programările durează. Pentru pașaport, multe țări cer 6 luni de valabilitate.")),
             ],
             pockets: [.upcoming, .documents, .keyFacts],
             behavior: CategoryBehavior(box: .wholeCategory, listing: .byHolder, role: .personalDocument)
         )
+    }
+
+    /// Only a bank card has a network and last four digits.
+    private static var bankCard: BlueprintCondition {
+        BlueprintCondition(field: DocumentType.typeFieldKey, oneOf: [DocumentType.bankCard])
     }
 
     /// Only the electronic identity card carries PIN codes.

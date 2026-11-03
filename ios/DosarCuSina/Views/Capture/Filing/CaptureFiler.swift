@@ -48,6 +48,8 @@ struct CaptureFiler {
         var date: Date
         var cost: Money?
         var document: CaptureResult?
+        /// The person asked to keep the photo of a document kept only on request (a bank card).
+        var keepsPhotoOnRequest = false
     }
 
     /// A visit from the visit form, with the invoice it was read from.
@@ -227,7 +229,9 @@ struct CaptureFiler {
             try ExampleOwnership.requireReal(asset)
             if let documentsKey = try Self.personalDocumentsKey(for: review, destinationTemplateKey: asset.templateKey, templates: templates) {
                 // A person: the document becomes one of their documents, named after them.
-                let name = review.kind.isIdentityDocument ? review.title : DocumentNaming.name(document: review.title, holder: asset.name)
+                // Named after its holder as printed, else after the person it goes to.
+                let namesHolder = review.kind.isPersonalDocument && CaptureMapping.holderName(review.valuesByKey) != nil
+                let name = namesHolder ? review.title : DocumentNaming.name(document: review.title, holder: asset.name)
                 outcome.asset = try createSection(review, templateKey: documentsKey, name: name, parent: asset, plan: plan, templates: templates)
                 break
             }
@@ -298,8 +302,9 @@ struct CaptureFiler {
         let provider = try self.provider(plan.provider, asset: outcome.asset)
 
         // 4. The document, linked to all of it: the new pages, or the copy already
-        // kept when the same photo was filed before (it moves here, never lost).
-        if let document {
+        // kept when the same photo was filed before (it moves here, never lost). A bank
+        // card's photo only when the person asked: it shows the card's whole number.
+        if let document, plan.keepsPhoto {
             let title = review.title.trimmingCharacters(in: .whitespacesAndNewlines)
             let filed = try AttachmentActions(context: context, calendar: calendar).fileCaptured(
                 document,
@@ -327,6 +332,7 @@ struct CaptureFiler {
             if obligation.asset != nil { try ExampleOwnership.requireReal(obligation.asset) }
             var review = CaptureReview(result: result, assets: [], context: context)
             review.destination = obligation.asset.map { .asset($0.id) } ?? .none
+            review.keepsPhotoOnRequest = completion.keepsPhotoOnRequest
             return review
         }
 
@@ -343,8 +349,8 @@ struct CaptureFiler {
         outcome.completion = try renew(obligation, to: newDay, done: true, on: completion.date, cost: completion.cost)
         if obligation.status == .active { outcome.nextDue = obligation.dueDay(in: calendar) }
 
-        // 3. Who issued it, and 4. the document.
-        if let review, let document {
+        // 3. Who issued it, and 4. the document (a bank card's photo only on request).
+        if let review, let document, review.keepsPhoto {
             let provider = try self.provider(Self.provider(of: review), asset: obligation.asset)
             let filed = try AttachmentActions(context: context, calendar: calendar).fileCaptured(
                 document,
@@ -503,7 +509,7 @@ struct CaptureFiler {
     }
 
     /// The category a document becomes when it is filed under a person (a category whose
-    /// part is `holder`): an identity document, or a capture started from their documents
+    /// part is `holder`): a personal document, or a capture started from their documents
     /// (`filesAsPersonalDocument`) whatever its kind, becomes one of their personal
     /// documents. Nil otherwise.
     static func holderDocumentTemplateKey(for review: CaptureReview, destinationTemplateKey: String, templates: [String: CategoryTemplate]) -> String? {
@@ -514,7 +520,7 @@ struct CaptureFiler {
     /// Whether the review files a personal document of the person it goes to: an identity
     /// document, or anything started from their documents.
     static func filesAsPersonalDocument(_ review: CaptureReview, destinationTemplateKey: String, templates: [String: CategoryTemplate]) -> Bool {
-        templates.plays(.holder, destinationTemplateKey) && (review.kind.isIdentityDocument || review.filesAsPersonalDocument)
+        templates.plays(.holder, destinationTemplateKey) && (review.kind.isPersonalDocument || review.filesAsPersonalDocument)
     }
 
     /// The category a personal document is filed in, for a review that files one; the
@@ -630,7 +636,7 @@ struct CaptureFiler {
                 planned.isSelected = plan.deadline != nil
             } else if planned.blueprint.isFieldDriven, let day = planned.firstDue {
                 // Another date the document fills follows the same rule (`isWorthScheduling`).
-                planned.isSelected = planned.isSelected && planned.blueprint.isWorthScheduling(on: day, today: today)
+                planned.isSelected = planned.isSelected && planned.blueprint.isWorthScheduling(on: day, today: today, values: values)
             }
             // Dates the person still has to give (the current ITP) are left for the section page.
             planned.isSelected = planned.isSelected && planned.firstDue != nil
@@ -672,6 +678,10 @@ enum CaptureReminderPreview {
         case .minimumPeriodEnd?: String(localized: "Perioada minimă se termină pe \(date). De atunci poți, de regulă, renunța fără penalități.")
         case .nextDoseDate?: String(localized: "Următoarea doză e pe \(date).")
         case .warrantyUntil?: String(localized: "Garanția se termină pe \(date).")
+        case .expiryDate? where review.validityEnd == day:
+            // Not printed: the document's rule gives it (a cazier judiciar, six months from its issue).
+            String(localized: "E valabil până pe \(date), la \(CalendarCount.months(review.validityMonths ?? 0)) de la eliberare.",
+                   comment: "Capture review: a document's validity worked out from its issue date, e.g. „la 6 luni de la eliberare”.")
         default: String(localized: "Expiră pe \(date).")
         }
         if let deadline = plan.deadline {

@@ -40,7 +40,7 @@ public enum CaptureRouter {
                 suggest(.attachOnly, 0.6, hints: [])
             } else if let templateKey {
                 suggest(.newAsset(templateKey: templateKey))
-                if let obligation, kind.isIdentityDocument { suggest(obligation) }
+                if let obligation, kind.isPersonalDocument { suggest(obligation) }
             }
         case .intoSection:
             if let obligation { suggest(obligation) }
@@ -55,7 +55,7 @@ public enum CaptureRouter {
             suggestions.append(CaptureSuggestion(destination: .attachOnly, confidence: 0.5))
         }
 
-        if let provider = text(.provider), !kind.isIdentityDocument {
+        if let provider = text(.provider), !kind.isPersonalDocument {
             suggestions.append(CaptureSuggestion(destination: .provider(name: provider, trade: profile.trade?.rawValue), confidence: confidence * 0.9))
         }
         let day = profile.deadlineField.flatMap { lookup[$0]?.value.day }

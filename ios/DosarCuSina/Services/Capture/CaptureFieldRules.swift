@@ -24,11 +24,19 @@ extension CaptureDocumentKind {
             return Self.identityKeys.contains(key)
         case .drivingLicence:
             return Self.identityKeys.contains(key) || key == .licenceCategories
+        case _ where isPersonalDocument:
+            // Another personal document carries what its templates read, its holder and its
+            // variant, and nothing else: a bank card has no CNP, a cazier no total.
+            return IdentityTemplates.fieldKeys(for: self).contains(key) || key == .holderName || key == .documentVariant
         default:
             if key == .lineItems { return profile.carriesLineItems }
-            return !Self.personalKeys.contains(key)
+            return !Self.personalKeys.contains(key) && !Self.personalDocumentKeys.contains(key)
         }
     }
+
+    /// Fields only personal documents carry: what a cazier says, a bank card's network and
+    /// last four digits.
+    static let personalDocumentKeys: Set<CaptureFieldKey> = [.recordResult, .cardNetwork, .cardLastFour]
 
     /// The longest description a line item can have; anything longer is prose
     /// (terms, consent clauses), not something done or bought.

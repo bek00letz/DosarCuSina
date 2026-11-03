@@ -58,6 +58,13 @@ enum DosarFormat {
         write(date, .numericDay, locale: locale, timeZone: calendar.timeZone)
     }
 
+    /// "08/28": the month a bank card is valid through, as cards print it.
+    static func cardExpiry(_ day: CalendarDay) -> String {
+        let calendar = gregorian(in: .gmt)
+        let style = Date.VerbatimFormatStyle(format: "\(month: .twoDigits)/\(year: .twoDigits)", timeZone: .gmt, calendar: calendar)
+        return day.startDate(in: calendar).formatted(style)
+    }
+
     /// "14:05"
     static func time(_ date: Date, locale: Locale = .dosarDefault, calendar: Calendar = .current) -> String {
         write(date, .time, locale: locale, timeZone: calendar.timeZone)

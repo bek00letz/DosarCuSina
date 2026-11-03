@@ -46,6 +46,12 @@ public enum DocumentFields {
     public static let issuer = "document.issuer"
     public static let issueDate = "document.issueDate"
     public static let expiry = "document.expiry"
+    /// What a cazier says: "Nu figurează în cazierul judiciar", as printed.
+    public static let recordResult = "document.recordResult"
+    /// A bank card's network (`PaymentCardNetwork`).
+    public static let cardNetwork = "document.cardNetwork"
+    /// A bank card's last four digits, and never more (`PaymentCardNumbers.sanitizing`).
+    public static let cardLastFour = "document.cardLastFour"
 }
 
 public enum PetFields {

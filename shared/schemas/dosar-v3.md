@@ -153,6 +153,7 @@ sides, a field that is `secret` or `isSensitive` on the device stays so.
   - **`footnote`:** one short line shown under the field.
   - **`defaultValue`:** a field value (see below), filled in when an asset is created and the field is empty. An example is `{"type": "number", "value": 24}` for warranty months.
   - **`derivation`:** `{"type": "addMonths", "date": "purchase.date", "months": "purchase.warrantyMonths"}`. The value is worked out again whenever one of its inputs changes, or while the field is empty. A value the person sets by hand stays until an input changes.
+  - **`derivation` `validityAfterIssue`:** `{"type": "validityAfterIssue", "date": "document.issueDate"}`. A document's last valid day from its issue date, when its `document.type` and `document.variant` have a documented validity (today only `documentVariant.criminalRecord.judicial`: six months). Its inputs are the issue date, the type and the variant. A reader that doesn't know a derivation type ignores the derivation and keeps the value as stored.
   - **Options:** `[{"key": "fuel.diesel", "label": "Motorină", "aliases": ["Diesel"]}]`. Readers also accept a plain array of strings, from older definitions, and use each string as both key and label. An option may carry `appliesWhen` (same shape as above): it is offered only while that value matches, so a document's variants follow its type.
   - **Types:** `text`, `longText`, `number`, `year`, `money`, `date`, `expiryDate`, `toggle`, `choice`, `multiChoice`, `url`, `phone`, `email`, `address`, `plate`, `vin`, `microchip`, `iban`, `metric`, `secret`.
   - **`secret`:** a code kept hidden, such as an identity card's PIN. Its values are never written to an archive: writers leave them out, and readers ignore any they find and keep the ones already on the device for the same asset, in both import modes. A value sealed on the device (text starting with `sealed:v1:`) is a secret wherever it sits, so writers never write one under any field.
@@ -232,6 +233,8 @@ leaves the asset at the top level.
 
 A reader skips a single value it can't read and keeps the rest of the asset.
 
+**A bank card's number is never written.** A bank card (`document.type` `documentType.bankCard`) carries `document.cardNetwork` and `document.cardLastFour`, which holds four digits and nothing more. Writers write no card number in any value or `extractedText`; readers mask any they find (a run of 14 to 19 digits that starts like a card number and passes the Luhn check, or is printed in groups of four) to its last four digits after `••••`, and cut `document.cardLastFour` to its last four digits. A cazier keeps what it says, as printed, in `document.recordResult`.
+
 **Choice values are option keys**, such as `fuel.diesel`, `vehicleUse.personal`, `documentType.passport` or `species.dog`, never display text. Single choices are `text` values and multiple choices are `choices` values. Labels come from the field's options, so they follow the reader's language.
 
 **On import**, a choice value that isn't a key is matched against the options' labels and aliases, ignoring case and diacritics. This covers v2 backups and Android data that stored Romanian text. A match is stored as the key; text no option recognizes is kept as written.
@@ -242,7 +245,8 @@ Built-in option keys:
 | :--- | :--- |
 | `vehicle.fuel` | `fuel.petrol`, `fuel.diesel`, `fuel.hybrid`, `fuel.plugInHybrid`, `fuel.electric`, `fuel.lpg` |
 | `vehicle.usage` | `vehicleUse.personal`, `vehicleUse.commercial` |
-| `document.type` | `documentType.idCard`, `documentType.passport`, `documentType.drivingLicence`, `documentType.euHealthCard`, `documentType.greenCard`, `documentType.bankCard`, `documentType.eSignature`, `documentType.criminalRecord`, `documentType.other` |
+| `document.type` | `documentType.idCard`, `documentType.passport`, `documentType.drivingLicence`, `documentType.euHealthCard`, `documentType.nationalHealthCard`, `documentType.greenCard`, `documentType.bankCard`, `documentType.eSignature`, `documentType.criminalRecord`, `documentType.other` |
+| `document.cardNetwork` | `cardNetwork.visa`, `cardNetwork.mastercard`, `cardNetwork.maestro`, `cardNetwork.amex`, `cardNetwork.other` |
 | `pet.species` | `species.cat`, `species.dog`, `species.other` |
 | `health.bloodType` | `bloodType.0Positive`, `bloodType.0Negative`, `bloodType.aPositive`, `bloodType.aNegative`, `bloodType.bPositive`, `bloodType.bNegative`, `bloodType.abPositive`, `bloodType.abNegative` |
 | `subscription.cycle` | `billing.monthly`, `billing.quarterly`, `billing.yearly` |
@@ -318,6 +322,7 @@ diacritics, and words joined by `-`.
 - **Fingerprint:** `sha256` is the hash of the original file, or of the page images joined in order when there is no original.
 - **Replaced documents:** a replaced document is kept with `isArchived: true` and `supersededById` pointing to its replacement.
 - **`validUntil`:** a calendar day, the last day the document itself is valid, as read when it was filed (a policy's end). Its deadline moving on later doesn't change it.
+- **`extractedText`:** what was read off the document, with any card number masked ("•••• 1111"); a reader masks any it finds the same way.
 
 ## Import modes
 
