@@ -264,7 +264,7 @@ public enum ReminderPlanner {
         )
     }
 
-    /// Durations are worked out from the day the reminder fires, so "În 1 lună"
+    /// Durations are worked out from the day the reminder fires, so "Într-o lună"
     /// is true when the person reads it, and say what every screen says that day.
     static func specificTitle(_ title: String, daysBefore: Int, from fireDate: Date, calendar: Calendar = .current) -> String {
         switch daysBefore {
@@ -273,7 +273,7 @@ public enum ReminderPlanner {
         case 1: return String(localized: "Mâine: \(title)", comment: "Reminder title, due tomorrow")
         default:
             let phrase = DurationWording.distance(days: daysBefore, from: fireDate, calendar: calendar)
-            return String(localized: "În \(phrase): \(title)", comment: "Reminder title: due in a duration such as '7 zile' or '9 luni', then the obligation.")
+            return String(localized: "\(DurationWording.inside(phrase, startsSentence: true)): \(title)", comment: "Reminder title: due in a duration such as 'În 7 zile' or 'Într-o lună', then the obligation.")
         }
     }
 
@@ -284,7 +284,7 @@ public enum ReminderPlanner {
         case 1: return String(localized: "Ai o scadență mâine", comment: "Generic reminder title")
         default:
             let phrase = DurationWording.distance(days: daysBefore, from: fireDate, calendar: calendar)
-            return String(localized: "Ai o scadență în \(phrase)", comment: "Generic reminder title: due in a duration such as '7 zile' or '2 luni'.")
+            return String(localized: "Ai o scadență \(DurationWording.inside(phrase))", comment: "Generic reminder title: due in a duration such as 'în 7 zile' or 'într-o lună'.")
         }
     }
 }

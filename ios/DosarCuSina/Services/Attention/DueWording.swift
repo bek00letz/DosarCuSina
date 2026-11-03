@@ -2,7 +2,7 @@ import Foundation
 
 /// When something is due, in plain words: "Expiră în 5 zile · 7 noiembrie".
 enum DueWording {
-    /// "în 5 zile", "azi", "mâine", "acum 3 zile", in the same durations as every
+    /// "în 5 zile", "într-o lună", "azi", "mâine", "acum 3 zile", in the same durations as every
     /// other surface (`DurationWording.distance`).
     static func relative(daysRemaining days: Int, from today: Date = Date(), calendar: Calendar = .current) -> String {
         switch days {
@@ -10,7 +10,7 @@ enum DueWording {
         case ..<0: return String(localized: "acum \(DurationWording.distance(days: days, from: today, calendar: calendar))", comment: "Due: this long ago")
         case 0: return String(localized: "azi", comment: "Due: today")
         case 1: return String(localized: "mâine", comment: "Due: tomorrow")
-        default: return String(localized: "în \(DurationWording.distance(days: days, from: today, calendar: calendar))", comment: "Due: in this long")
+        default: return DurationWording.inside(DurationWording.distance(days: days, from: today, calendar: calendar))
         }
     }
 

@@ -2,7 +2,7 @@ import Foundation
 
 // Plain-language wording for section pages, kept out of the views so it is tested.
 
-/// A pet's or a person's age in plain words: "3 ani", "1 an și 4 luni", "5 luni".
+/// A pet's or a person's age in plain words: "3 ani", "un an și 4 luni", "5 luni".
 enum AgeWording {
     static func text(born: CalendarDay, today: CalendarDay, calendar: Calendar = .current) -> String? {
         guard born <= today else { return nil }

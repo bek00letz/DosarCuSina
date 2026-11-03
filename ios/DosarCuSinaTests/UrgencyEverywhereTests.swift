@@ -184,12 +184,12 @@ struct UrgencyEverywhereTests {
     }
 
     @Test @MainActor func countedStringsUseTheirPluralForms() {
-        #expect(DayCount.phrase(1) == "1 zi")
+        #expect(DayCount.phrase(1) == "o zi")
         #expect(DayCount.phrase(20) == "20 de zile")
         #expect(CalendarCount.weeks(3) == "3 săptămâni")
-        #expect(CalendarCount.months(1) == "1 lună")
+        #expect(CalendarCount.months(1) == "o lună")
         #expect(CalendarCount.years(20) == "20 de ani")
-        #expect(TemplateStoreError.inUse(assetCount: 1).errorDescription == "Categoria are încă 1 activ. Mută-l sau șterge-l mai întâi.")
+        #expect(TemplateStoreError.inUse(assetCount: 1).errorDescription == "Categoria are încă un activ. Mută-l sau șterge-l mai întâi.")
         #expect(TemplateStoreError.inUse(assetCount: 3).errorDescription == "Categoria are încă 3 active. Mută-le sau șterge-le mai întâi.")
         #expect(TemplateStoreError.inUse(assetCount: 20).errorDescription == "Categoria are încă 20 de active. Mută-le sau șterge-le mai întâi.")
         let jobs = { (n: Int) in HistoryActions.visitTitle(for: (1...n).map { LineItemDraft(name: "Lucrare \($0)") }) }
@@ -197,5 +197,31 @@ struct UrgencyEverywhereTests {
         #expect(jobs(20) == "Revizie: 20 de lucrări")
         #expect(UpcomingActions.snoozeTitle(days: 1) == "Mâine")
         #expect(UpcomingActions.snoozeTitle(days: 14) == "Peste 14 zile")
+    }
+
+    /// A count of one is a word, two and up are digits; „în” joins „o” and „un”, so no
+    /// phrase reads "în o lună" or "1 lună".
+    @Test @MainActor func countsOfOneAreWordsInEveryPhrase() {
+        let start = noon("2026-11-01")
+        #expect(DurationWording.inside("5 zile") == "în 5 zile")
+        #expect(DurationWording.inside(CalendarCount.months(1)) == "într-o lună")
+        #expect(DurationWording.inside(CalendarCount.years(1)) == "într-un an")
+        #expect(DurationWording.inside(CalendarCount.weeks(1), startsSentence: true) == "Într-o săptămână")
+        #expect(DurationWording.inside(DurationWording.yearsAndMonths(years: 1, months: 4)) == "într-un an și 4 luni")
+        #expect(DurationWording.distance(days: 30, from: start, calendar: calendar) == "o lună")
+        #expect(WhenWording.phrase(.soon, daysRemaining: 30, from: start, calendar: calendar) == "într-o lună")
+        #expect(WhenWording.phrase(.withinGrace, daysRemaining: -1, from: start, calendar: calendar) == "întârziat cu o zi")
+        #expect(WhenWording.phrase(.overdue, daysRemaining: -1, from: start, calendar: calendar) == "depășit de o zi")
+        #expect(WhenWording.standalone(.soon, daysRemaining: 30, from: start, calendar: calendar) == "Într-o lună")
+        #expect(DSDueText.expiryText(.soon, daysRemaining: 365, from: start, calendar: calendar) == "Expiră într-un an")
+        #expect(DueWording.relative(daysRemaining: 30, from: start, calendar: calendar) == "într-o lună")
+        #expect(DueWording.relative(daysRemaining: -7, from: start, calendar: calendar) == "acum 7 zile")
+        #expect(ReminderPlanner.specificTitle("ITP", daysBefore: 30, from: start, calendar: calendar) == "Într-o lună: ITP")
+        #expect(ReminderPlanner.genericTitle(daysBefore: 365, from: start, calendar: calendar) == "Ai o scadență într-un an")
+        #expect(ReminderWording.rowTitle(days: 30) == "Cu o lună înainte")
+        #expect(ReminderWording.rowTitle(days: 1) == "Cu o zi înainte")
+        #expect(ReminderWording.rowTitle(days: 365) == "Cu un an înainte")
+        #expect(UpcomingActions.snoozeTitle(days: 7) == "Peste 7 zile")
+        #expect(TemplateStoreError.inUse(assetCount: 1).errorDescription == "Categoria are încă un activ. Mută-l sau șterge-l mai întâi.")
     }
 }

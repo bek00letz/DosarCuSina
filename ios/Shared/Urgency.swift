@@ -86,7 +86,7 @@ public enum ReminderLead: Hashable, Sendable {
         }
     }
 
-    /// "7 zile", "1 lună", "6 luni", "1 an", "1 an și 6 luni".
+    /// "7 zile", "o lună", "6 luni", "un an", "un an și 6 luni".
     public var wording: String {
         switch self {
         case .days(let n): return DayCount.phrase(n)

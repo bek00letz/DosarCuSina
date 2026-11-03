@@ -411,7 +411,7 @@ private struct GalleryChips: View {
 private struct GalleryStatus: View {
     var body: some View {
         GalleryPage {
-            GallerySection(title: "Termene", note: "Un ITP: ton și cuvinte din regula de urgență, ca în Urmează. Pluralele românești: 1 zi, 2 zile, 20 de zile.") {
+            GallerySection(title: "Termene", note: "Un ITP: ton și cuvinte din regula de urgență, ca în Urmează. Pluralele românești: o zi, 2 zile, 20 de zile.") {
                 DSCard {
                     DSFlowLayout {
                         ForEach([-25, -3, -1, 0, 1, 2, 12, 20, 45], id: \.self) { days in

@@ -39,7 +39,7 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld contact"
+                  "value": "un contact"
                 }
               },
               "few": {
@@ -68,7 +68,7 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld document"
+                  "value": "un document"
                 }
               },
               "few": {
@@ -97,7 +97,7 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld intrare de arătat cumpărătorului."
+                  "value": "O intrare de arătat cumpărătorului."
                 }
               },
               "few": {
@@ -155,7 +155,7 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld secțiune"
+                  "value": "o secțiune"
                 }
               },
               "few": {
@@ -184,7 +184,7 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld secțiune nu și-a găsit locul din copie și e acum direct în dosar."
+                  "value": "O secțiune nu și-a găsit locul din copie și e acum direct în dosar."
                 }
               },
               "few": {
@@ -213,7 +213,7 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld termen"
+                  "value": "un termen"
                 }
               },
               "few": {
@@ -356,7 +356,7 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Categoria are încă %lld activ. Mută-l sau șterge-l mai întâi."
+                  "value": "Categoria are încă un activ. Mută-l sau șterge-l mai întâi."
                 }
               },
               "few": {
@@ -430,7 +430,7 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Parola are cel puțin %lld caracter."
+                  "value": "Parola are cel puțin un caracter."
                 }
               },
               "few": {
@@ -465,7 +465,7 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Revizie: %lld lucrare"
+                  "value": "Revizie: o lucrare"
                 }
               },
               "few": {

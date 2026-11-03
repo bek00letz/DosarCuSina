@@ -39,7 +39,7 @@ enum DSDueText {
             return String(localized: "Expiră azi", comment: "Badge: a document expires today.")
         case .soon, .upcoming, .later:
             if days == 1 { return String(localized: "Expiră mâine", comment: "Badge: a document expires tomorrow.") }
-            return String(localized: "Expiră în \(distance)", comment: "Badge: a document expires in a duration such as '5 zile' or '8 ani'.")
+            return String(localized: "Expiră \(DurationWording.inside(distance))", comment: "Badge: a document expires in a duration such as 'în 5 zile' or 'într-un an'.")
         }
     }
 }

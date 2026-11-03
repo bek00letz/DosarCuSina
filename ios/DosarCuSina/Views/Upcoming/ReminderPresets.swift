@@ -31,7 +31,7 @@ enum ReminderPreset: Int, CaseIterable, Identifiable, Sendable {
 }
 
 enum ReminderWording {
-    /// A lead in words: "1 zi", "7 zile", "1 lună", "6 luni", "1 an". The one wording
+    /// A lead in words: "o zi", "7 zile", "o lună", "6 luni", "un an". The one wording
     /// for leads (`DurationWording.lead`), so the reminder that fires reads the same.
     static func phrase(days: Int) -> String {
         DurationWording.lead(days: days)
@@ -44,7 +44,7 @@ enum ReminderWording {
             : String(localized: "Cu \(phrase(days: days)) înainte", comment: "Reminder choice: this long before the due day")
     }
 
-    /// "Te anunț cu 1 lună și cu 7 zile înainte și în ziua termenului."
+    /// "Te anunț cu o lună și cu 7 zile înainte și în ziua termenului."
     static func sentence(leadDays: [Int]) -> String {
         let before = leadDays.filter { $0 > 0 }.sorted(by: >).map { String(localized: "cu \(phrase(days: $0))", comment: "Part of the reminder sentence") }
         let onTheDay = leadDays.contains(0)
@@ -59,7 +59,7 @@ enum ReminderWording {
             : String(localized: "Te anunț \(list) înainte.", comment: "Reminder sentence: leads before the due day")
     }
 
-    /// "Expiră pe 12 august 2031. Te anunț cu 3 luni și cu 1 lună înainte." The line
+    /// "Expiră pe 12 august 2031. Te anunț cu 3 luni și cu o lună înainte." The line
     /// under an expiry date, shown before saving so the reminder is never a surprise.
     static func expiryLine(_ day: CalendarDay, leadDays: [Int], today: CalendarDay) -> String {
         let date = DueWording.date(day, today: today)
