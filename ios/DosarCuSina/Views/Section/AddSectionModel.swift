@@ -7,7 +7,22 @@ import Observation
 struct CustomSectionDraft: Equatable {
     var name = ""
     var symbol = CustomSectionDraft.symbols[0]
+    /// What it keeps, as a few plain questions (`CategorySwitches`).
+    var switches = CategorySwitches.defaults
+    /// The first version's free choice of pockets. Kept, not shown, as a way back until
+    /// the switches are proven (`CustomSectionStep.offersPocketList`).
     var pockets: Set<SectionPocket> = Set(SectionPocket.standard)
+
+    /// The colour every category of one's own gets.
+    static let tint: TemplateTint = .gray
+
+    /// The category it describes, as it would be saved.
+    func definition(key: String) -> TemplateDefinition {
+        if CustomSectionStep.offersPocketList {
+            return TemplateDefinition(key: key, name: name, symbol: symbol, tint: Self.tint, sections: [], pockets: Array(pockets))
+        }
+        return switches.definition(key: key, name: name, symbol: symbol, tint: Self.tint)
+    }
 
     /// Symbols offered for a section of one's own.
     static let symbols = [
@@ -56,7 +71,7 @@ final class AddSectionModel {
     var definition: TemplateDefinition? {
         if let template { return template.definition }
         guard let custom else { return nil }
-        return TemplateDefinition(key: "draft", name: custom.name, symbol: custom.symbol, tint: .indigo, sections: [], pockets: Array(custom.pockets))
+        return custom.definition(key: "draft")
     }
 
     /// The fields asked for when adding: only those marked essential.
@@ -92,9 +107,9 @@ final class AddSectionModel {
 
     /// Works out the suggested obligations from what was typed so far.
     func planObligations(context: ModelContext) {
-        guard let template else { planned = []; return }
+        guard let definition else { planned = []; return }
         let previous = Dictionary(planned.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        planned = AssetActions(context: context).plannedObligations(for: template, values: values).map { plan in
+        planned = AssetActions(context: context).plannedObligations(for: definition, values: values).map { plan in
             guard let old = previous[plan.id] else { return plan }
             var merged = plan
             merged.isSelected = old.isSelected
@@ -121,7 +136,11 @@ final class AddSectionModel {
             category = template
         } else if let custom {
             let name = custom.name.trimmingCharacters(in: .whitespacesAndNewlines)
-            category = try store.createCustom(name: name, symbol: custom.symbol, pockets: SectionPocket.ordered(custom.pockets))
+            if CustomSectionStep.offersPocketList {
+                category = try store.createCustom(name: name, symbol: custom.symbol, pockets: SectionPocket.ordered(custom.pockets), tint: CustomSectionDraft.tint)
+            } else {
+                category = try store.createCustom(name: name, symbol: custom.symbol, switches: custom.switches, tint: CustomSectionDraft.tint)
+            }
         } else {
             throw AddSectionError.noCategory
         }
