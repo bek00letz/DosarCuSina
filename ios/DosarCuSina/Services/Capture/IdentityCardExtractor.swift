@@ -195,7 +195,6 @@ enum IdentityDocumentReader {
             let rows = text.joiningRows()
             for line in rows.original + [rows.original.joined(separator: " ")] {
                 guard let parsed = parse(line, as: format) else { continue }
-                // A network told only by the number's first digits is worth a look.
                 return (parsed.value, format == .recordResult ? line : nil, parsed.passed ? anywhere : failedFormat, .heuristic)
             }
             return nil
