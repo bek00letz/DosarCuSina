@@ -70,14 +70,15 @@ struct BinderFlowTests {
         let context = try makeContext()
         let before = try TemplateStore(context: context).all().count
         let model = AddSectionModel(request: .topLevel)
-        model.chooseCustom(CustomSectionDraft(name: "Barca", symbol: "sailboat.fill", pockets: [.history, .keyFacts]))
+        model.chooseCustom(CustomSectionDraft(name: "Barca", symbol: "sailboat.fill", switches: CategorySwitches(hasDocuments: false, hasBills: true)))
         #expect(try TemplateStore(context: context).all().count == before)
         let boat = try model.create(context: context)
         let template = try #require(try TemplateStore(context: context).template(forKey: boat.templateKey))
         #expect(template.isCustom)
         #expect(template.name == "Barca")
         #expect(template.symbol == "sailboat.fill")
-        #expect(template.pockets == [.history, .keyFacts])
+        #expect(template.pockets == SectionPocket.ordered(CategorySwitches.basePockets + [.subscriptions]), "What its switches say")
+        #expect(template.behavior.role == .home)
         #expect(boat.name == "Barca")
     }
 
