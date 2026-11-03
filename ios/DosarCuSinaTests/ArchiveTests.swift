@@ -196,7 +196,7 @@ struct ArchiveTests {
         #expect(result == expected)
         let names = { (container: ModelContainer) in Set(try ModelContext(container).fetch(FetchDescriptor<Asset>()).map(\.name)) }
         #expect(try names(away) == names(here))
-        #expect(try ModelContext(away).fetchCount(FetchDescriptor<Attachment>()) == ModelContext(here).fetchCount(FetchDescriptor<Attachment>()))
+        #expect(try ModelContext(away).fetchCount(FetchDescriptor<DosarSchemaV4.Attachment>()) == ModelContext(here).fetchCount(FetchDescriptor<DosarSchemaV4.Attachment>()))
 
         // A failure part way leaves nothing behind.
         var broken = package
