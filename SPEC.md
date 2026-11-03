@@ -68,7 +68,7 @@ Editing uses the design system's fields and asks before discarding changes. Fiel
 ### 2.4 Category boxes and Agenda
 
 - **Acte** groups documents by the household member they belong to, soonest expiry first, plus a group for documents not filed under anyone.
-- **Adding a document for a person** (from Acte or the person's page) starts with the person chosen and three choices: *Fotografiază*, *Din poze* and *Scriu eu*. A photo goes through capture (5.4) and is filed as one of that person's documents whatever its kind. *Scriu eu* is one screen: the type in big rows; a variant only for types that have real ones (*Ce fel de cazier?* judiciar, fiscal or auto; card de debit or de credit; carte de identitate electronică (CEI) or fără cip; pașaport simplu electronic or temporar); a name that comes by itself, "<document> – <Surname Given names>", with *Schimbă*; the expiry with its reminder in plain words (*Expiră pe 30 iunie 2027. Te anunț cu 6 luni și cu două luni înainte.*); and *Salvează*. The reminder comes from the type's profile and can be changed on the deadline page. Both ways land on the document's page.
+- **Adding a document for a person** (from Acte or the person's page) starts with the person chosen and three choices: *Fotografiază*, *Din poze* and *Scriu eu*. A photo goes through capture (5.4) and is filed as one of that person's documents whatever its kind. *Scriu eu* is one screen: the type in big rows; a variant only for types that have real ones (*Ce fel de cazier?* judiciar, fiscal or auto; card de debit or de credit; carte de identitate electronică (CEI) or fără cip; pașaport simplu electronic or temporar); a name that comes by itself, "<document> – <Surname Given names>", with *Schimbă*; the expiry with its reminder in plain words (*Expiră pe 30 iunie 2027. Te anunț cu 6 luni și cu 2 luni înainte.*); and *Salvează*. The reminder comes from the type's profile and can be changed on the deadline page. Both ways land on the document's page.
 - **Garanții** groups products by whether their warranty still covers them.
 - **Abonamente** lists every subscription, those under a home included, with what they cost a month: the price, or the last bill for a contract billed by use (amounts are never added across currencies). A subscription's page shows its bills in Istoric and, in Bani, *Ultima factură*, how it compares with the one before (*Cu 32,10 lei mai mult decât cea dinainte.*) and the average bill over the last year, one per currency.
 - **Agendă** lists everyone the household relies on, grouped by trade or by section, best rated first, with the last job and its price, and real buttons to call or message. A provider's page shows their jobs, ratings and *Aș chema din nou* (would call again).
@@ -90,7 +90,7 @@ Four big buttons: camera (document scanner), photos, files, and *Scriu eu* (I'll
 
 - *Scriu eu*: pick the section (or make one), then add a deadline, a visit or a document.
 - *Am fost la service* (visit flow): one visit with many parts. Big check rows grouped by the template's components, each with an optional cost and brand; the date, the counter, the total and who did it; and an invoice photo that ticks the rows by itself. It saves once, then shows what changed with a way to take it back.
-- *Adaugă o secțiune*: pick a ready-made category or describe one's own (*Altceva…*: name, symbol, pockets), fill only the essentials, then choose the deadlines to start with, each with its reminders said plainly (*Te anunț cu 30 de zile înainte*).
+- *Adaugă o secțiune*: pick a ready-made category or describe one's own (*Altceva…*: name, symbol, pockets), fill only the essentials, then choose the deadlines to start with, each with its reminders said plainly (*Te anunț cu 1 lună și cu 7 zile înainte*).
 
 ### 2.7 Caută
 
@@ -189,9 +189,11 @@ Each obligation carries a profile: lead days, a consequence (legal, financial, h
 
 Profiles can vary by a field value (document type, pet species). The person can change any profile.
 
+**Leads.** A lead is stored in days. A lead of a whole number of months (30 days each, a year being 365) is that many calendar months (`ReminderLead`): a 1-month reminder for 31 March fires on 28 February, a 6-month one for 15 December on 15 June. Any other lead is that many days. A lead reads the same wherever it appears, in its settings (*Cu 6 luni înainte*), in the sentence under a date and in the reminder it fires (*În 6 luni: Pașaport*).
+
 **Follow-up after a lapse:** one reminder the day after the due date if it is still open, then silence. On by default for legal and financial items; the person can turn it on or off for any item.
 
-Reminders fire at the person's chosen time of day (09:00 by default) and keep the wall-clock time across daylight-saving changes. The last reminders for consequential items may break through Focus. A duration in a reminder ("În 1 lună") is worked out from the day it fires.
+Reminders fire at the person's chosen time of day (09:00 by default) and keep the wall-clock time across daylight-saving changes. The last reminders for consequential items may break through Focus. A duration in a reminder ("În 1 lună") is worked out from the day it fires, so it says what every screen says that day; a reminder after the due day says *Încă de făcut* while the lateness is within grace and *Depășit* after.
 
 **Catch-up:** a deadline that became known after all its warnings (lead days before the due day) had passed gets one catch-up reminder at the next reminder time, as long as that is before the due day (or on it, when the profile doesn't remind on the day): an identity card added 20 days before it expires, with leads of 90 and 30, says "În 20 de zile: Carte de identitate". It counts from when the obligation last changed, so it fires once.
 
@@ -201,13 +203,26 @@ Reminders fire at the person's chosen time of day (09:00 by default) and keep th
 
 ### 4.4 Attention model
 
-`AttentionModel` ranks open obligations by consequence first, then by closeness, then by cost. Closeness can lift an item by a few consequence steps but an overdue chore never beats a legal deadline. Lateness within grace counts like "due soon", not like overdue. Each consequence has a maximum attention window (legal 30 days, financial 21, health 7, comfort 3), so a passport that reminds 180 days ahead only joins the list in the last month.
+**One urgency rule.** How urgent a deadline is comes from one rule, `UrgencyRule` (`ReminderProfile.urgencyRule`), in `ios/Shared` so the app and the widget compile the same code:
 
-The digest has a capped *now* (5 items), a *soon* window grouped per asset (30 days), and *later* as counts. Overdue plus due today feed the app badge and widgets.
+| Urgency | When | Tone |
+| :--- | :--- | :--- |
+| overdue | late by more than its grace days | red, exclamation mark |
+| today | due today | amber, clock |
+| within grace | late, within its grace days | amber, clock |
+| soon | from the day its first reminder goes out, but never earlier than its consequence's window (legal a month, financial 21 days, health 7, comfort 3) | amber, clock |
+| upcoming | within the next month | calm |
+| later | further out | calm |
+
+The first four need the person now: they are *Acum* in Urmează, the line on their box and an amber or red badge on their section's page. Overdue and today count on the app's badge. A passport that reminds 180 days ahead needs the person only in its last month. Every surface (Urmează, the binder's boxes, a section's badges and hero, expiry fields, the deadline page, the widget, the badge, Siri, reminders) takes the urgency and only draws it; a date shown on a page (an expiry, a warranty's end) takes the rule of the deadline it drives (`DateUrgency`), and a date no deadline reminds about is urgent only on the day and after.
+
+`AttentionModel` ranks open obligations by consequence first, then by closeness, then by cost. Closeness can lift an item by a few consequence steps but an overdue chore never beats a legal deadline. Lateness within grace counts like "due soon", not like overdue.
+
+The digest has a capped *now* (5 items), a *soon* window grouped per asset (30 days), and *later* as counts. Overdue plus due today feed the app badge; the widget snapshot carries each deadline's rule, so the widget's tone, words and count match the app's at every midnight it covers.
 
 ### 4.5 Box status
 
-`BoxStatus` takes the obligations of a box (and of what is filed under it), ranks them exactly as Urmează does, and shows only the top one if it is inside its attention window. Distances read in the unit a person feels (4.9).
+`BoxStatus` takes the obligations of a box (and of what is filed under it), ranks them exactly as Urmează does, and shows only the top one if it needs the person now, in its urgency's tone. Distances read in the unit a person feels (4.9).
 
 ### 4.6 Readiness
 
@@ -227,7 +242,9 @@ What never reaches the index (`SearchPrivacy`): text read off a document filed i
 
 ### 4.9 Wording
 
-How far away something is reads in the unit a person feels, never rounded up: days under three weeks, then weeks, then months and weeks, then years and months (years only from three years). `DurationWording`, `DayCount` and `CalendarCount` are the one way to write these, with Romanian plural forms from the String Catalog.
+How far away something is reads in the unit a person feels, never rounded up: days under three weeks, then weeks, then months and weeks, then years and months (years only from three years). A reminder's lead reads in the unit it was chosen in: days, or whole months and years (*7 zile*, *1 lună*, *6 luni*, *1 an*). `DurationWording` (`distance` and `lead`), `DayCount` and `CalendarCount` are the one way to write these, in `ios/Shared` with their plural forms in `Shared.xcstrings`, so the widget writes them the same way. When a deadline is, in a few words, is `WhenWording`: *azi*, *mâine*, *în 5 zile*, *întârziat cu 2 zile* (within grace), *depășit de 3 zile* (past grace), on the boxes, the badges, the widget and Siri.
+
+Every counted string has plural variations (*1 zi*, *2 zile*, *20 de zile*); `scripts/plural-check.py` checks it after every build.
 
 ### 4.10 Subscriptions and their bills
 

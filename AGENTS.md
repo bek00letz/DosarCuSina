@@ -101,6 +101,17 @@ Every action saves once and rolls back on failure. Views never write models dire
 
 Pure engines (no database) sit beside them: `ReadingSeries` (the one cleaned series of readings every rate and projection reads), `RecurrenceEngine`, `AttentionModel` (with `missingBills`, the calm notes in Urmează), `BoxStatus`, `ReminderPlanner`, `MaintenanceLog`, `BillHistory` (a subscription's bill trend and the missing bill), `ReadinessEngine`, `SearchEngine`. Ranking, dates and wording come from these; screens never recompute them.
 
+## How urgent, and how long
+
+| Job | Use | File |
+| :--- | :--- | :--- |
+| How urgent a deadline is, on any surface (Urmează, boxes, badges, hero, expiry fields, deadline page, widget, badge, Siri, reminders) | `UrgencyRule` (`ReminderProfile.urgencyRule`; `AttentionModel.entry(for:)` for a snapshot, `Obligation.urgency()` for a model) | [ios/Shared/Urgency.swift](ios/Shared/Urgency.swift) |
+| The rule behind a date shown on a page (an expiry, a warranty's end) | `DateUrgency.rule(for:on:)`, and `rule(forField:…)` in a form | [Services/Attention/DateUrgency.swift](ios/DosarCuSina/Services/Attention/DateUrgency.swift) |
+| When a reminder's lead falls (whole months are calendar months) | `ReminderLead` | [ios/Shared/Urgency.swift](ios/Shared/Urgency.swift) |
+| How long, how far, and when in a few words | `DurationWording.distance` and `.lead`, `WhenWording`, `DayCount`, `CalendarCount` | [ios/Shared/DurationWording.swift](ios/Shared/DurationWording.swift) |
+
+Screens draw an urgency's tone (`DSStatus(tone)`, `DSStatusBadge(urgency:daysRemaining:)`, `DSStatusBadge(expiry:daysRemaining:)`); they never compare a number of days with a threshold (the `urgency-threshold` check).
+
 ## Everything outside the database
 
 `UnitOfWork` ([Services/Persistence/UnitOfWork.swift](ios/DosarCuSina/Services/Persistence/UnitOfWork.swift)) is how actions save. Every action saves through `UnitOfWork.save(context)`; never call `context.save()` from an action or a view. When one tap does several things (file a document under a new person, log a visit with its invoice, complete a deadline with the new document), wrap them in `UnitOfWork.perform(in:)`: the actions inside only record their changes and the unit saves once, everything or nothing. A unit never waits: it takes synchronous work only, so gather what takes time (a capture's pages, Face ID) before it opens; then no other save can slip into it or be rolled back with it. Actions never roll back on their own; an action that does several things wraps them in `perform`, which joins the caller's unit. Work that must only happen once the changes are kept goes in `UnitOfWork.afterCommit(in:)`. Show save failures with `SaveFailure.message(for:formKept:)`, never the system's error text.
@@ -164,14 +175,15 @@ Everything visual comes from [Views/DesignSystem/](ios/DosarCuSina/Views/DesignS
 - **Ratings:** `DSStarRating`, read-only or tappable.
 - **Example data:** `DSExampleBadge` marks every example record.
 - **Value rows:** `DSReadOnlyValueRow` for amounts and facts, `DSActionValueRow` for a value with one labelled action (copy, call), `DSSecretValueRow` for a masked code shown or copied after Face ID. Every copy goes through `Clipboard.copy(_:_:)`: `.personal` for anything read off an identity document, a sensitive value or anything from a locked section (this phone only, gone after a minute). Their buttons sit beside the value, or under it when they don't fit (`DSValueWithActions`), and never wrap their label.
+- **Status badges:** `DSStatusBadge(urgency:daysRemaining:)` for a due day and `DSStatusBadge(expiry:daysRemaining:)` for an expiry draw the urgency the rule gives them; the design system draws a tone, never decides one.
 - **States and feedback:** `DSEmptyState`, `DSErrorState`, `DSLockedState`, `DSDelayedProgress` (waits before showing), `DSToast.undo`, `dsDiscardGuard`.
 - **Fields:** the `DS…Field` controls under `Fields/`, one per field type (`DSSecretField` for secrets). Number and money fields turn text into a value only while the person types; showing a value never changes it.
 - [DesignSystemGallery.swift](ios/DosarCuSina/Views/DesignSystem/Gallery/DesignSystemGallery.swift) shows every component. Add new ones there.
 
 ## Words, numbers and dates
 
-- **String Catalog:** [Resources/Localizable.xcstrings](ios/DosarCuSina/Resources/Localizable.xcstrings) (the widgets have their own in `ios/DosarCuSinaWidgets/`). Romanian is the source language. Every count uses plural variations (*1 zi*, *2 zile*, *20 de zile*); never write `count == 1 ? … : …`.
-- **Distances in time:** `DurationWording` (days, then weeks, months and weeks, years and months; never rounded up), `DayCount` and `CalendarCount`, in [Services/Attention/BoxStatus.swift](ios/DosarCuSina/Services/Attention/BoxStatus.swift).
+- **String Catalog:** [Resources/Localizable.xcstrings](ios/DosarCuSina/Resources/Localizable.xcstrings) (the widgets have their own in `ios/DosarCuSinaWidgets/`, and code in `ios/Shared` uses the `Shared` table, [ios/Shared/Shared.xcstrings](ios/Shared/Shared.xcstrings), which both compile). Romanian is the source language. Every count uses plural variations (*1 zi*, *2 zile*, *20 de zile*); never write `count == 1 ? … : …`. `scripts/plural-check.py` fails the test run for a counted string without them; an integer that isn't a count goes in `scripts/not-counts.txt` with its reason.
+- **Distances in time:** `DurationWording.distance` (days, then weeks, months and weeks, years and months; never rounded up), `DurationWording.lead` for a reminder's lead, `WhenWording` for "azi", "în 5 zile", "depășit de 3 zile", `DayCount` and `CalendarCount`, in [ios/Shared/DurationWording.swift](ios/Shared/DurationWording.swift).
 - **Reading numbers:** `RomanianNumber.read(_:as:from:)` ([Models/Values/RomanianNumber.swift](ios/DosarCuSina/Models/Values/RomanianNumber.swift)), told the kind (money, count, meter index, kilometres), for every capture reader and every field; `RomanianNumber.format` writes what it reads back; `canonical` reads the machine form of archives and stored JSON. Never parse a number another way.
 - **Money and dates:** `Money.formatted` ([Models/Values/Money.swift](ios/DosarCuSina/Models/Values/Money.swift)) and `Locale.dosarDefault`, the one app locale, Romanian whatever the phone's region ([ios/Shared/DosarLocale.swift](ios/Shared/DosarLocale.swift)). Never `String(format:)`.
 - **Writing dates:** `DosarFormat` ([ios/Shared/DosarFormat.swift](ios/Shared/DosarFormat.swift)) for every date the app, widgets, notifications and search write, and `DueWording` ([Services/Attention/DueWording.swift](ios/DosarCuSina/Services/Attention/DueWording.swift)) for "Expiră în 5 zile · 7 noiembrie". A due day is a `CalendarDay` ([ios/Shared/CalendarDay.swift](ios/Shared/CalendarDay.swift)) and is written as one, never turned into a `Date` first: midnight in one time zone is the evening before in another. A moment (`Date`) is written in the time zone of the calendar the days are counted in.
