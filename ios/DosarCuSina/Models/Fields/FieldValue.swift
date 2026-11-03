@@ -122,6 +122,9 @@ public enum FieldValue: Hashable, Sendable, Codable {
 /// by a newer app version) instead of losing the whole asset.
 public struct FieldValues: Hashable, Sendable, Codable, Sequence {
     public private(set) var storage: [String: FieldValue]
+    /// Values this build can't read (a value kind from a newer build or archive), kept as
+    /// they were stored and written back unchanged. Gone only when the field gets a new value.
+    private var unreadable: [String: JSONValue] = [:]
 
     public init(_ storage: [String: FieldValue] = [:]) {
         self.storage = storage
@@ -130,6 +133,7 @@ public struct FieldValues: Hashable, Sendable, Codable, Sequence {
     public subscript(key: String) -> FieldValue? {
         get { storage[key] }
         set {
+            unreadable.removeValue(forKey: key)
             if let newValue, !newValue.isEmpty {
                 storage[key] = newValue
             } else {
@@ -210,18 +214,25 @@ public struct FieldValues: Hashable, Sendable, Codable, Sequence {
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: AnyKey.self)
         var result: [String: FieldValue] = [:]
+        var kept: [String: JSONValue] = [:]
         for key in c.allKeys {
             if let value = try? c.decode(FieldValue.self, forKey: key) {
                 result[key.stringValue] = value
+            } else if let raw = try? c.decode(JSONValue.self, forKey: key) {
+                kept[key.stringValue] = raw
             }
         }
         storage = result
+        unreadable = kept
     }
 
     public func encode(to encoder: Encoder) throws {
         var c = encoder.container(keyedBy: AnyKey.self)
         for (key, value) in storage {
             try c.encode(value, forKey: AnyKey(stringValue: key))
+        }
+        for (key, raw) in unreadable where storage[key] == nil {
+            try c.encode(raw, forKey: AnyKey(stringValue: key))
         }
     }
 }

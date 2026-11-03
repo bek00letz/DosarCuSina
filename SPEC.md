@@ -98,7 +98,9 @@ One field over sections, deadlines, history, components, people and the text rea
 
 ### 2.8 Settings
 
-Reminder time, app lock and section locks, which categories show on the binder, backup (export and import), the optional AI provider and its key, examples, storage and about. Settings can open scrolled to a section from a link.
+Reminder time, app lock and section locks, which categories show on the binder, backup (export and import), the repair list (*Date de verificat*), the optional AI provider and its key, examples, storage and about. Settings can open scrolled to a section from a link (`dosarcusina://settings/repairs` opens the repair list).
+
+**The repair list.** Data an earlier version saved wrongly is found by `DataRepairs`, an ordered registry of idempotent steps with stored ids, after the built-in categories are installed at launch and after every import, and changed only with the owner's OK. Each entry says what looks wrong and what the repair does, as a question ("Kilometrajul la VW Golf pare greșit: 457 km. Corectez la 45.724?"), with *Corectează* and *Lasă așa*; a group of the same kind has *Toate* (correct or leave all). "Lasă așa" is remembered on the phone. When there is something new, one calm prompt says so once ("Am găsit date de verificat", the first entry, "Nu schimb nimic fără tine", with *Arată-mi* and *Mai târziu*), only when no sheet, lock or onboarding is in front. Steps that change only how a value is stored (choice text to option keys) run by themselves. The steps: choice keys; deadlines from a first-version copy (blueprint and rule, such as the legal ITP rule); documents moved with their old links; visits without their invoice; firms kept twice; deadlines closed twice by an old reminder; counter readings 10 or more times off both neighbours or equal to the reading before them divided by a power of ten; round-hundred visit readings above the next reading; a hero value that differs from its readings. Applying runs in one unit of work.
 
 ## 3. Data model
 
@@ -146,6 +148,8 @@ An obligation is never copied to make the next cycle. Completing it writes a his
 ### 3.5 History, maintenance log and providers
 
 Every asset type has a smart maintenance log. Line items point at the template's components (matched from free text and synonyms, without diacritics), so the history answers "when did I last change it" whatever the bill called it: when, how far the counter has moved since, what it cost, the supplier and who did it. With two or more past jobs it estimates the next one from the asset's own pace, and says it is an estimate.
+
+**Readings.** Every reading (the edit form, the visit form, "Gata", capture) goes through one path, `recordReading`, which knows where it came from: read by the person, from a document (dated by the document) or estimated (never stored: the visit form shows its estimate only greyed in the empty field). A counter reading lower than one recorded before it asks "Kilometrajul e mai mic decât ultima dată. Corectez citirea veche?": *Corectează citirea veche* removes the higher earlier readings, *Lasă citirea veche* keeps the new one aside (listed, not counted), *Anulează* goes back to the number. The hero value (the kilometres on the section) is always worked out from the readings, and undoing "Gata" or a visit takes its reading back. Every rate and projection reads one cleaned series (`ReadingSeries`): the longest run of readings that never goes down, the earlier ones winning a tie; a reading left out is flagged, never a reason to stop projecting.
 
 A provider's rating is the average of their rated jobs, or the person's own rating when no job is rated.
 
@@ -368,7 +372,9 @@ The format, its JSON Schema and golden fixtures are in [shared/schemas/dosar-v3.
 
 ## 9. Localisation
 
-- The app speaks Romanian. Romanian (`ro`) is the development language and the String Catalog's source language; dates and money are written the Romanian way (*1.250,50 lei*, *14 noiembrie 2026*) whatever the device region.
+- The app speaks Romanian. Romanian (`ro`) is the development language and the String Catalog's source language; numbers, dates and money are written the Romanian way (*1.250,50 lei*, *14 noiembrie 2026*) whatever the device region or number format, in one locale (`Locale.dosarDefault`).
+- Every number is read by one reader, `RomanianNumber`, told what it is (money, a count, a meter index or kilometres): a comma is the decimal mark and a dot groups thousands; kilometres and counts are whole ("45,724 km" is 45724); money or a meter index with one mark and three digits after it follows the Romanian rule and, read off a document, is marked "Verifică"; what can't be read one way only is refused with a message in the field. Archives keep the machine form ("1250.5").
+- A stored value this build can't read (from a newer version) is kept as stored and never written back downgraded; an unknown consequence or kind of deadline behaves as the loudest (legal).
 - Every user-facing string goes through the String Catalog. Counts use plural variations (Romanian *one / few / other*: *1 zi*, *2 zile*, *20 de zile*), never hand-written `count == 1` checks.
 - Data from the person or from templates is shown verbatim, never translated.
 - How the app writes is in [docs/COPY_GUIDE.md](docs/COPY_GUIDE.md).

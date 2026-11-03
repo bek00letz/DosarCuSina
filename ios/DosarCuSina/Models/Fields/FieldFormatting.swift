@@ -96,18 +96,14 @@ public enum FieldFormatter {
                 : .invalid(String(localized: "Numărul de telefon nu e complet.", comment: "Phone field error"))
         case .year:
             let latest = Calendar.current.component(.year, from: Date()) + 1
-            guard let year = parseNumber(text), year == year.rounded(), (1900...Double(latest)).contains(year) else {
+            guard let year = RomanianNumber.value(text, as: .count).map({ NSDecimalNumber(decimal: $0).doubleValue }), (1900...Double(latest)).contains(year) else {
                 return .invalid(String(localized: "Scrie anul cu patru cifre, de exemplu 2018.", comment: "Year field error"))
             }
             return .valid
         case .number, .metric:
-            return parseNumber(text) != nil
-                ? .valid
-                : .invalid(String(localized: "Scrie doar cifre.", comment: "Number field error"))
+            return validation(of: text, as: .meterIndex)
         case .money:
-            return Money.parseAmount(text) != nil
-                ? .valid
-                : .invalid(String(localized: "Scrie suma în cifre, de exemplu 350 sau 1.250,50.", comment: "Money field error"))
+            return validation(of: text, as: .money)
         case .secret:
             return text.allSatisfy(\.isNumber)
                 ? .valid
@@ -121,16 +117,18 @@ public enum FieldFormatter {
 
     /// Turns typed text into a stored value, or nil when the text is empty or unreadable.
     /// Dates, toggles and multi-choice come from their own controls, not from text.
-    public static func value(from raw: String, as type: FieldType, currency: String = Money.defaultCurrency) -> FieldValue? {
+    /// `unit` is the field's unit: kilometres are read as whole numbers.
+    public static func value(from raw: String, as type: FieldType, currency: String = Money.defaultCurrency, unit: String? = nil) -> FieldValue? {
         let text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return nil }
         switch type.valueKind {
         case .text:
             return .text(normalize(text, as: type))
         case .number:
-            return parseNumber(text).map(FieldValue.number)
+            let kind = type == .year ? NumberKind.count : NumberKind.forField(unit: unit)
+            return RomanianNumber.value(text, as: kind, unit: unit).map { .number(NSDecimalNumber(decimal: $0).doubleValue) }
         case .money:
-            return Money.parseAmount(text).map { .money(Money($0, currency: currency)) }
+            return RomanianNumber.value(text, as: .money).map { .money(Money($0, currency: currency)) }
         case .date:
             return CalendarDay(isoString: text).map(FieldValue.date)
         case .bool, .choices:
@@ -139,7 +137,16 @@ public enum FieldFormatter {
     }
 
     public static func parseNumber(_ raw: String) -> Double? {
-        Money.parseAmount(raw).map { NSDecimalNumber(decimal: $0).doubleValue }
+        RomanianNumber.value(raw, as: .meterIndex).map { NSDecimalNumber(decimal: $0).doubleValue }
+    }
+
+    /// The one reader's answer as a field validation: its message when it refuses.
+    private static func validation(of text: String, as kind: NumberKind) -> FieldValidation {
+        switch RomanianNumber.read(text, as: kind) {
+        case .success: return .valid
+        case .failure(.empty): return .empty
+        case .failure(let problem): return .invalid(problem.message(for: kind))
+        }
     }
 
     // MARK: Display

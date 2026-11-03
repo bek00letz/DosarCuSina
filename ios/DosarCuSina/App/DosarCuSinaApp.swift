@@ -55,11 +55,14 @@ struct DosarCuSinaApp: App {
         }
     }
 
-    /// Installs built-in categories and starts the side-effects pipeline, once per container.
+    /// Installs built-in categories, looks for data to repair and starts the side-effects
+    /// pipeline, once per container.
     private func start(with container: ModelContainer) {
         guard sideEffects == nil else { return }
         _ = try? TemplateStore(context: container.mainContext).installBuiltIns()
-        _ = try? ChoiceMigration.migrateStoredValues(in: container.mainContext)
+        // The repair list: steps that change nothing anyone sees run now; the rest wait for
+        // the owner, and the shell's calm prompt says when there is something new.
+        try? DataRepairCenter.shared.refresh(in: container.mainContext, announce: true)
         if (try? HouseholdRules.reconcile(in: container.mainContext, today: CalendarDay(Date()))) == true {
             try? container.mainContext.save()
         }

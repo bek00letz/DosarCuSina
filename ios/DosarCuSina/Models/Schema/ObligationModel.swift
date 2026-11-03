@@ -79,9 +79,14 @@ extension DosarSchemaV2 {
             self.estimatedCostCurrency = estimatedCost?.currency
         }
 
+        /// An unknown stored kind (from a newer build or archive) reads as the loudest and
+        /// stays stored as it was until the person picks another.
         public var kind: ObligationKind {
-            get { ObligationKind(rawValue: kindRaw) ?? .routine }
-            set { kindRaw = newValue.rawValue }
+            get { ObligationKind(stored: kindRaw) }
+            set {
+                guard ObligationKind(rawValue: kindRaw) != nil || newValue != ObligationKind(stored: kindRaw) else { return }
+                kindRaw = newValue.rawValue
+            }
         }
 
         /// How this obligation reminds. Set from its blueprint, changeable by the person.
@@ -89,14 +94,18 @@ extension DosarSchemaV2 {
             get {
                 ReminderProfile(
                     leadDays: reminderLeadDays,
-                    consequence: Consequence(rawValue: consequenceRaw) ?? .comfort,
+                    consequence: Consequence(stored: consequenceRaw),
                     graceDays: graceDays,
                     followUpAfterLapse: followUpAfterLapse
                 )
             }
             set {
                 reminderLeadDays = newValue.leadDays
-                consequenceRaw = newValue.consequence.rawValue
+                // An unknown consequence read as the loudest is kept as stored, never
+                // written back as what this build understood.
+                if Consequence(rawValue: consequenceRaw) != nil || newValue.consequence != Consequence(stored: consequenceRaw) {
+                    consequenceRaw = newValue.consequence.rawValue
+                }
                 graceDays = newValue.graceDays
                 followUpAfterLapse = newValue.followUpAfterLapse
             }

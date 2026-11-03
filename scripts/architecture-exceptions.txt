@@ -42,13 +42,6 @@ ios/DosarCuSina/Models/Schema/RecordModels.swift:format-string
 ios/DosarCuSina/Services/Capture/CaptureModels.swift:format-string
 ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:format-string
 
-# number-parser: The five number readers become one shared reader (review finding 3). A file named RomanianNumber*.swift is the reader's home and is allowed.
-ios/DosarCuSina/Models/Values/Money.swift:number-parser
-ios/DosarCuSina/Services/Capture/RomanianFieldExtractor.swift:number-parser:3
-ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:number-parser:4
-ios/DosarCuSina/Views/DesignSystem/Fields/DSNumberFields.swift:number-parser
-
-
 # romanian-locale: Locale.dosarDefault everywhere, folding included.
 ios/DosarCuSina/Models/Fields/ChoiceOptions.swift:romanian-locale
 ios/DosarCuSina/Models/Templates/ComponentCatalog.swift:romanian-locale
@@ -58,7 +51,6 @@ ios/DosarCuSina/Views/Capture/Filing/CaptureMapping.swift:romanian-locale
 
 # save-outside-unit-of-work: One unit of work around every multi-step flow (agreed fix 7); start-up and migrations save through UnitOfWork too.
 ios/DosarCuSina/App/DosarCuSinaApp.swift:save-outside-unit-of-work
-ios/DosarCuSina/Services/Templates/ChoiceMigration.swift:save-outside-unit-of-work
 
 # silent-action-failure: Failures go through the shared error path (agreed fixes 2 and 7).
 ios/DosarCuSina/Views/Section/RecordScreens.swift:silent-action-failure

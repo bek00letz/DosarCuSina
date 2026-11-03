@@ -146,6 +146,9 @@ final class BackupFlow {
             let result = try DossierArchiveService(container: container).importPackage(package, mode: mode)
             resultText = BackupWording.result(result)
             doneCount += 1
+            // What the copy brought may need repairs (deadlines from a first-version copy):
+            // the repair list looks again, and the prompt says so once Settings closes.
+            try? DataRepairCenter.shared.refresh(in: container.mainContext, announce: true)
         } catch {
             self.error = UserFacingError(error, doing: String(localized: "Copia nu s-a pus înapoi", comment: "Title of an import error."))
         }

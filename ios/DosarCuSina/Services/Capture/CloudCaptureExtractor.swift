@@ -115,6 +115,17 @@ struct CloudSchema: Sendable {
         return fields
     }
 
+    /// A whole number from a provider's answer: a JSON number that is whole, or text read
+    /// by the one number reader ("45.724" km is 45724). Never cut short: 45,7 is refused.
+    static func wholeNumber(_ raw: JSONValue, kind: NumberKind) -> Int? {
+        switch raw {
+        case .int(let value): return value
+        case .number(let value): return value == value.rounded() ? Int(exactly: value) : nil
+        case .string(let text): return RomanianNumber.value(text, as: kind, from: .document).flatMap { Int(exactly: NSDecimalNumber(decimal: $0).doubleValue) }
+        default: return nil
+        }
+    }
+
     static func format(of key: CaptureFieldKey) -> CloudFieldFormat {
         switch key {
         case .issueDate, .startDate, .expiryDate, .dueDate, .purchaseDate, .warrantyUntil, .nextDoseDate, .firstRegistrationDate, .birthDate,
@@ -365,8 +376,7 @@ enum CloudAnswerMapper {
                 let amounts = Set(printed.folded.flatMap { RomanianFieldExtractor.amounts(inLine: $0).map(\.amount) })
                 add(key, .money(CaptureMoney(amount: decimal, currencyCode: currency)), amounts.contains(decimal) ? grounded : candidate)
             case .integer:
-                guard let number = raw.double, number >= 0, number < 10_000_000 else { continue }
-                let value = Int(number)
+                guard let value = CloudSchema.wholeNumber(raw, kind: key == .odometer ? .kilometres : .count), value >= 0, value < 10_000_000 else { continue }
                 if key == .minimumMonths, !ContractReader.plausibleMonths.contains(value) { continue }
                 let typed: CaptureValue = key == .odometer ? .metric(value: Decimal(value), unit: "km") : .number(Decimal(value))
                 add(key, typed, compactText.contains(String(value)) ? grounded : candidate)

@@ -107,7 +107,7 @@ enum ModelAnswerMapper {
 
         let currency = normalizedCurrency(answers.currency)
         let printedAmounts = Set(CaptureText(sourceText).folded.flatMap { RomanianFieldExtractor.amounts(inLine: $0).map(\.amount) })
-        if let raw = answers.totalAmount, let amount = RomanianFieldExtractor.parseAmount(raw), amount > 0,
+        if let raw = answers.totalAmount, let amount = RomanianFieldExtractor.amount(raw)?.value, amount > 0,
            printedAmounts.contains(amount) {
             fields.append(CaptureField(key: .total, value: .money(CaptureMoney(amount: amount, currencyCode: currency)), confidence: confidence, sourceText: nil, tier: tier))
         }
@@ -120,7 +120,7 @@ enum ModelAnswerMapper {
         let items = answers.lineItems.compactMap { item -> CaptureLineItem? in
             let description = item.description.trimmingCharacters(in: .whitespaces)
             guard !description.isEmpty else { return nil }
-            let money = item.amount.flatMap(RomanianFieldExtractor.parseAmount).map { CaptureMoney(amount: $0, currencyCode: currency) }
+            let money = item.amount.flatMap { RomanianFieldExtractor.amount($0)?.value }.map { CaptureMoney(amount: $0, currencyCode: currency) }
             return CaptureLineItem(description: description, amount: money, componentKey: resolver.componentKey(for: description))
         }
         if !items.isEmpty {

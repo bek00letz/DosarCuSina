@@ -408,6 +408,7 @@ private struct ObligationCompleteSheet: View {
     @State private var errorMessage: String?
     @State private var isSaving = false
     @State private var exampleQuestion: ExampleSectionQuestion?
+    @State private var readingQuestion: LowerReadingQuestion?
 
     private var isReading: Bool { session.phase == .reading }
     private var document: CaptureResult? { session.result }
@@ -439,6 +440,7 @@ private struct ObligationCompleteSheet: View {
             }
             .dsDiscardGuard(hasChanges: amount != nil || document != nil)
             .examplePrompt($exampleQuestion) { save() }
+            .readingPrompt($readingQuestion) { save(lowerReading: $0) }
             .onChange(of: document?.id) { _, _ in
                 if amount == nil, let total = document?.field(.total)?.value.money {
                     amount = total.amount
@@ -490,7 +492,7 @@ private struct ObligationCompleteSheet: View {
         session.read(payload)
     }
 
-    private func save() {
+    private func save(lowerReading: LowerReadingAnswer? = nil) {
         guard let date else { return }
         isSaving = true
         errorMessage = nil
@@ -498,7 +500,9 @@ private struct ObligationCompleteSheet: View {
         Task {
             do {
                 let cost = amount.map { Money($0, currency: currency) }
-                let outcome = try await CaptureFiler(context: context).file(.completion(.init(
+                var filer = CaptureFiler(context: context)
+                filer.lowerReading = lowerReading
+                let outcome = try await filer.file(.completion(.init(
                     obligation: obligation, date: date, cost: cost, document: document
                 )))
                 let message: LocalizedStringResource = outcome.nextDue.map {
@@ -515,6 +519,9 @@ private struct ObligationCompleteSheet: View {
             } catch let question as ExampleSectionQuestion {
                 isSaving = false
                 exampleQuestion = question
+            } catch let question as LowerReadingQuestion {
+                isSaving = false
+                readingQuestion = question
             } catch {
                 isSaving = false
                 errorMessage = SaveFailure.message(for: error, formKept: true)

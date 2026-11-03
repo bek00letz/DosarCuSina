@@ -70,6 +70,7 @@ struct CaptureReviewView: View {
     @State private var backError: String?
     /// The person added something to an example section: "Păstrezi … ca al tău?".
     @State private var exampleQuestion: ExampleSectionQuestion?
+    @State private var readingQuestion: LowerReadingQuestion?
 
     private var templatesByKey: [String: CategoryTemplate] {
         Dictionary(templates.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
@@ -121,6 +122,7 @@ struct CaptureReviewView: View {
         .task(id: review.result.id) { await explainCloudFailure() }
         .onChange(of: rereadResult?.id) { _, _ in mergeReread() }
         .examplePrompt($exampleQuestion) { save() }
+        .readingPrompt($readingQuestion) { save(lowerReading: $0) }
         // The pages belong to the capture session, which lets go of them when the capture ends.
     }
 
@@ -456,16 +458,21 @@ struct CaptureReviewView: View {
         }
     }
 
-    private func save() {
+    private func save(lowerReading: LowerReadingAnswer? = nil) {
         isSaving = true
         Task {
             do {
-                let outcome = try await CaptureFiler(context: context).save(review)
+                var filer = CaptureFiler(context: context)
+                filer.lowerReading = lowerReading
+                let outcome = try await filer.save(review)
                 let place = outcome.asset?.name
                 onClose(.filed(message: place.map { "Salvat în \($0)." } ?? "Actul e salvat.", assetID: outcome.asset?.id))
             } catch let question as ExampleSectionQuestion {
                 isSaving = false
                 exampleQuestion = question
+            } catch let question as LowerReadingQuestion {
+                isSaving = false
+                readingQuestion = question
             } catch {
                 isSaving = false
                 errorMessage = SaveFailure.message(for: error, formKept: true)
@@ -564,6 +571,8 @@ private struct CaptureFieldEditor: View {
     private enum EditorKind {
         case date
         case money(currencyCode: String)
+        /// A number, with its unit when it is a reading ("km").
+        case number(unit: String?)
         case text
     }
 
@@ -571,10 +580,13 @@ private struct CaptureFieldEditor: View {
         switch field.value {
         case .day?: .date
         case .money(let money)?: .money(currencyCode: money.currencyCode)
+        case .number?: .number(unit: nil)
+        case .metric(_, let unit)?: .number(unit: unit)
         case nil:
             switch CloudSchema.format(of: field.key) {
             case .date: .date
             case .money: .money(currencyCode: Money.defaultCurrency)
+            case .integer: .number(unit: field.key == .odometer ? "km" : nil)
             default: .text
             }
         default: .text
@@ -596,6 +608,12 @@ private struct CaptureFieldEditor: View {
                 get: { field.value?.money?.currencyCode ?? currencyCode },
                 set: { code in if let amount = field.value?.money?.amount { field.confirm(.money(CaptureMoney(amount: amount, currencyCode: code))) } }
             ))
+        case .number(let unit):
+            // The one number field: what it can't read clearly it refuses in the field.
+            DSMetricField(title, value: Binding(
+                get: { Self.number(of: field.value) },
+                set: { number in field.confirm(number.map { Self.value(Decimal($0).rounded(scale: 6), unit: unit) }) }
+            ), unit: unit ?? "", fractionDigits: 0...3)
         case .text:
             DSTextField(title, text: Binding(
                 get: { Self.text(of: field.value) },
@@ -627,16 +645,18 @@ private struct CaptureFieldEditor: View {
 
     static func value(_ text: String, like original: CaptureValue?) -> CaptureValue? {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return nil }
-        switch original {
-        case .number?:
-            return Money.parseAmount(trimmed).map(CaptureValue.number) ?? .text(trimmed)
-        case .metric(_, let unit)?:
-            let digits = trimmed.replacingOccurrences(of: unit, with: "")
-            return Money.parseAmount(digits).map { .metric(value: $0, unit: unit) } ?? .text(trimmed)
-        default:
-            return .text(trimmed)
+        return trimmed.isEmpty ? nil : .text(trimmed)
+    }
+
+    static func number(of value: CaptureValue?) -> Double? {
+        switch value {
+        case .number(let number)?, .metric(let number, _)?: NSDecimalNumber(decimal: number).doubleValue
+        default: nil
         }
+    }
+
+    static func value(_ number: Decimal, unit: String?) -> CaptureValue {
+        unit.map { .metric(value: number, unit: $0) } ?? .number(number)
     }
 }
 

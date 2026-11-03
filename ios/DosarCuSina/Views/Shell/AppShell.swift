@@ -72,6 +72,9 @@ struct AppShell: View {
             }
             .environment(router)
         }
+        .dataRepairPrompt(isAllowed: router.sheet == nil && preferences.hasCompletedOnboarding && !vault.isAppLocked) {
+            router.open(.settings(.repairs))
+        }
         .background(LockWindowHost(cover: cover, scenePhase: scenePhase, vault: vault))
         .task { consumeRoute() }
         .onChange(of: navigator.pendingRoute) { _, _ in consumeRoute() }

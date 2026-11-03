@@ -19,6 +19,7 @@ struct AssetEditSheet: View {
     @State private var photoItem: PhotosPickerItem?
     @State private var revealsValidation = false
     @State private var error: UserFacingError?
+    @State private var readingQuestion: LowerReadingQuestion?
     @State private var savedCount = 0
     @State private var isMoving = false
     @State private var toast: DSToast?
@@ -80,7 +81,7 @@ struct AssetEditSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(action: save) {
+                    Button { save() } label: {
                         Text("Gata", comment: "Closes an editor and keeps what was typed.")
                     }
                     .keyboardShortcut(.return, modifiers: .command)
@@ -97,6 +98,7 @@ struct AssetEditSheet: View {
             .dsToast($toast)
         }
         .dsDiscardGuard(hasChanges: hasChanges)
+        .readingPrompt($readingQuestion) { save(lowerReading: $0) }
     }
 
     /// Where it is filed, and "Mută la…".
@@ -128,7 +130,7 @@ struct AssetEditSheet: View {
         }
     }
 
-    private func save() {
+    private func save(lowerReading: LowerReadingAnswer? = nil) {
         guard hasChanges else { dismiss(); return }
         guard !trimmedName.isEmpty, FieldValuesCheck.canSave(values, fields: definition.allFields) else {
             revealsValidation = true
@@ -143,11 +145,13 @@ struct AssetEditSheet: View {
                 }
                 if trimmedName != asset.name || values != asset.values || notes != (asset.notes ?? "") {
                     let note = notes.trimmingCharacters(in: .whitespacesAndNewlines)
-                    try actions.update(asset, name: trimmedName, values: values, notes: note.isEmpty ? nil : note)
+                    try actions.update(asset, name: trimmedName, values: values, notes: note.isEmpty ? nil : note, lowerReading: lowerReading)
                 }
             }
             savedCount += 1
             dismiss()
+        } catch let question as LowerReadingQuestion {
+            readingQuestion = question
         } catch {
             self.error = UserFacingError(error)
         }

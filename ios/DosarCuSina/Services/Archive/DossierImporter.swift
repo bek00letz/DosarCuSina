@@ -238,7 +238,8 @@ struct DossierImporter {
             obligation.title = dto.title
             obligation.notes = dto.notes
             obligation.blueprintKey = dto.blueprintKey
-            obligation.kindRaw = ObligationKind(rawValue: dto.kind)?.rawValue ?? ObligationKind.routine.rawValue
+            // Kept as the archive has it: a kind from a newer build reads as the loudest.
+            obligation.kindRaw = dto.kind
             obligation.setDueDay(dto.dueDate, calendar: calendar)
             obligation.dueMetric = dto.dueMetric
             obligation.reminders = dto.reminders

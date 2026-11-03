@@ -75,6 +75,7 @@ private struct VisitForm: View {
     @State private var movedInvoice: RefileReceipt?
     @State private var toast: DSToast?
     @State private var exampleQuestion: ExampleSectionQuestion?
+    @State private var readingQuestion: LowerReadingQuestion?
 
     private var isReading: Bool { session.phase == .reading }
 
@@ -155,6 +156,7 @@ private struct VisitForm: View {
             }
         }
         .examplePrompt($exampleQuestion) { save() }
+        .readingPrompt($readingQuestion) { save(lowerReading: $0) }
     }
 
     // MARK: Invoice
@@ -266,8 +268,13 @@ private struct VisitForm: View {
                     .environment(\.locale, .dosarDefault)
                     .frame(minHeight: 44)
                     if let counterField, let unit = counterField.unit {
-                        DSMetricField(LocalizedStringKey(counterField.label), value: $draft.odometer, unit: unit,
-                                      footnote: "Am pus o estimare. Corecteaz-o dacă știi cifra exactă.")
+                        DSMetricField(LocalizedStringKey(counterField.label), value: Binding(
+                            get: { draft.odometer },
+                            set: { draft.odometer = $0; draft.odometerSource = .person }
+                        ), unit: unit,
+                                      footnote: draft.odometer == nil && draft.odometerEstimate != nil
+                                          ? "Cifra gri e doar o estimare. Scrie cifra de la bord, dacă o știi." : nil,
+                                      placeholder: draft.odometerEstimate)
                     }
                     DSMoneyField("Total plătit", amount: $draft.total, currencyCode: $draft.currency,
                                  footnote: partsSumNote)
@@ -336,11 +343,9 @@ private struct VisitForm: View {
     private func start() {
         guard !didStart else { return }
         didStart = true
-        let readings = (asset.measurements ?? [])
-            .filter { $0.kind.isCumulative && $0.unit == counterField?.unit }
-            .map { CadenceCalculator.TelemetryReading(date: $0.recordedAt, metric: $0.value) }
+        let readings = HouseholdMutations.readingSeries(of: asset, unit: counterField?.unit).readings
         let fallback = counterField.flatMap { asset.value($0.key)?.numberValue }
-        draft.odometer = counterField == nil ? nil : OdometerEstimate.value(readings: readings, fallback: fallback, now: Date())
+        draft.odometerEstimate = counterField == nil ? nil : OdometerEstimate.value(readings: readings, fallback: fallback, now: Date())
         if let prefill { apply(prefill) }
     }
 
@@ -373,7 +378,7 @@ private struct VisitForm: View {
         }
     }
 
-    private func save() {
+    private func save(lowerReading: LowerReadingAnswer? = nil) {
         errorMessage = nil
         isSaving = true
         Task {
@@ -381,7 +386,9 @@ private struct VisitForm: View {
             do {
                 // The provider, the visit and the invoice are one unit of work: all kept, or
                 // none; an invoice already in the binder moves to the visit, never left out.
-                let outcome = try await CaptureFiler(context: context).file(.visit(.init(
+                var filer = CaptureFiler(context: context)
+                filer.lowerReading = lowerReading
+                let outcome = try await filer.file(.visit(.init(
                     asset: asset,
                     kind: wording.kind,
                     occurredAt: draft.date,
@@ -389,6 +396,7 @@ private struct VisitForm: View {
                     extraItems: draft.extraItems,
                     totalCost: draft.totalMoney,
                     odometer: draft.odometer,
+                    odometerSource: draft.odometerSource,
                     provider: providerChoice,
                     rating: draft.rating,
                     document: draft.document,
@@ -399,6 +407,8 @@ private struct VisitForm: View {
                 withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { saved = outcome.visit }
             } catch let question as ExampleSectionQuestion {
                 exampleQuestion = question
+            } catch let question as LowerReadingQuestion {
+                readingQuestion = question
             } catch {
                 errorMessage = SaveFailure.message(for: error, formKept: true)
             }

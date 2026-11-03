@@ -15,7 +15,7 @@ struct RomanianFieldExtractorTests {
         ("350", Decimal(string: "350")),
     ])
     func amounts(raw: String, expected: Decimal?) {
-        #expect(RomanianFieldExtractor.parseAmount(raw) == expected)
+        #expect(RomanianFieldExtractor.amount(raw)?.value == expected)
     }
 
     @Test("Amounts on a line skip the dates")

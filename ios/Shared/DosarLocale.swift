@@ -1,10 +1,8 @@
 import Foundation
 
 extension Locale {
-    /// The locale used for numbers, dates and money: the user's locale when it
-    /// is Romanian, otherwise Romanian formatting so amounts read as on bills.
-    public static var dosarDefault: Locale {
-        let current = Locale.current
-        return current.language.languageCode?.identifier == "ro" ? current : Locale(identifier: "ro_RO")
-    }
+    /// The one locale the app and its widgets write numbers, dates and money in, whatever
+    /// the phone's region or number format, so what the app writes `RomanianNumber` reads
+    /// back the same. Injected once at the app's root as the environment's locale.
+    public static let dosarDefault = Locale(identifier: "ro_RO")
 }

@@ -3,8 +3,8 @@ import SwiftData
 
 /// Repairs for data that earlier versions filed wrongly, before capture had one filer.
 /// None of them runs by itself: each finds what it would change (`…Candidates`) so the
-/// owner's repair list can show it and ask, and repairs only what was approved. Each is
-/// idempotent: running it again changes nothing more.
+/// repair list (`DataRepairs`) can show it and ask, and repairs only what was approved.
+/// Each is idempotent: running it again changes nothing more.
 @MainActor
 public struct CaptureRepairs {
     public let context: ModelContext
@@ -18,7 +18,7 @@ public struct CaptureRepairs {
     /// A document whose deadline or history entry belongs to another section than the
     /// document itself: it was moved here ("A photo already in the binder moves to where
     /// it's added now") and kept its links to the old place.
-    public struct StaleDocumentLinks: Identifiable, Equatable {
+    public struct StaleDocumentLinks: Identifiable, Hashable, Sendable {
         public let attachmentID: UUID
         public let obligationID: UUID?
         public let historyEntryID: UUID?
@@ -56,7 +56,7 @@ public struct CaptureRepairs {
     /// section: the visit form was given a photo already in the binder and saved
     /// without it. The invoice is the only one filed in the week before the visit,
     /// or on its day, and belongs to no history entry.
-    public struct VisitWithoutInvoice: Identifiable, Equatable {
+    public struct VisitWithoutInvoice: Identifiable, Hashable, Sendable {
         public let visitID: UUID
         public let invoiceID: UUID
         public var id: UUID { visitID }
@@ -104,7 +104,7 @@ public struct CaptureRepairs {
 
     /// Firms kept twice under the same name (the visit form and capture each made one):
     /// the one kept first, and the copies that would merge into it.
-    public struct DuplicateProviders: Identifiable, Equatable {
+    public struct DuplicateProviders: Identifiable, Hashable, Sendable {
         public let keptID: UUID
         public let duplicateIDs: [UUID]
         public var id: UUID { keptID }
