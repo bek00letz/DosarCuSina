@@ -178,11 +178,7 @@ private struct SuggestionRow: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            Button(action: add) {
-                Text("Adaugă", comment: "Adds a suggested obligation.")
-                    .frame(minHeight: 30)
-            }
-            .buttonStyle(.bordered)
+            DSCompactButton("Adaugă", action: add)
         }
         .padding(.vertical, DS.Space.xxs)
         .accessibilityElement(children: .combine)

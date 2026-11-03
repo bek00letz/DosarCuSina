@@ -25,6 +25,24 @@ extension DS {
     }
 }
 
+// MARK: - Controls
+
+extension DS {
+    /// Sizes for things people tap. `HitTargetTests` measures the DS buttons and
+    /// field actions at several text sizes and checks each is at least `minimumHitTarget`.
+    enum Control {
+        /// The smallest tap target: 44 pt. A borderless button's label is its whole
+        /// target, so its frame is at least this tall.
+        static let minimumHitTarget: CGFloat = 44
+        /// The label of a full-width button. The large control size adds padding
+        /// above and below it, so the button is about 50 pt.
+        static let fullWidthLabel: CGFloat = 34
+        /// The label of a compact button beside a row. With the large control
+        /// size's padding the button is at least 44 pt.
+        static let compactLabel: CGFloat = 30
+    }
+}
+
 // MARK: - Corner radii
 
 extension DS {

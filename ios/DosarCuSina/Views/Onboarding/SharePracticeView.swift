@@ -81,13 +81,9 @@ struct SharePracticeView: View {
     @ViewBuilder private var shareButton: some View {
         if let sampleURL {
             ShareLink(item: PracticeInvoiceFile(url: sampleURL), preview: SharePreview(Text("Factură de probă"), image: Image(systemName: "doc.text"))) {
-                Label("Trimite factura de probă", systemImage: "square.and.arrow.up")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity, minHeight: 34)
+                DSButtonLabel(title: Text("Trimite factura de probă"), systemImage: "square.and.arrow.up")
             }
-            .buttonStyle(.borderedProminent)
-            .buttonBorderShape(.roundedRectangle(radius: DS.Radius.control + 2))
-            .controlSize(.large)
+            .dsFullWidthButton(prominent: true)
         } else {
             DSPrimaryButton("Trimite factura de probă", systemImage: "square.and.arrow.up") {}
                 .disabled(true)

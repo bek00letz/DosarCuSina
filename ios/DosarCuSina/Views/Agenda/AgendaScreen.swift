@@ -140,15 +140,9 @@ struct ProviderCard: View {
     }
 
     private func contactButton(_ title: String, systemImage: String, url: URL?) -> some View {
-        Button {
+        DSSecondaryButton(verbatim: title, systemImage: systemImage) {
             if let url { openURL(url) }
-        } label: {
-            Label { Text(verbatim: title) } icon: { Image(systemName: systemImage) }
-                .font(.subheadline.weight(.semibold))
-                .frame(maxWidth: .infinity, minHeight: 30)
         }
-        .buttonStyle(.bordered)
-        .controlSize(.large)
         .disabled(url == nil)
         .accessibilityLabel(Text(verbatim: "\(title), \(provider.name)"))
     }

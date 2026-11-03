@@ -30,16 +30,5 @@ ios/DosarCuSina/Views/Capture/Filing/CaptureMapping.swift:romanian-locale
 # save-outside-unit-of-work: One unit of work around every multi-step flow (agreed fix 7); start-up and migrations save through UnitOfWork too.
 ios/DosarCuSina/App/DosarCuSinaApp.swift:save-outside-unit-of-work
 
-# small-hit-target: 44 pt tap targets, or no minimum where nothing is tapped.
-ios/DosarCuSina/Views/Agenda/AgendaScreen.swift:small-hit-target
-ios/DosarCuSina/Views/DesignSystem/Components/DSButtons.swift:small-hit-target
-ios/DosarCuSina/Views/DesignSystem/Fields/DSChoiceFields.swift:small-hit-target
-ios/DosarCuSina/Views/DesignSystem/Fields/DSContactField.swift:small-hit-target
-ios/DosarCuSina/Views/DesignSystem/Fields/DSDateFields.swift:small-hit-target
-ios/DosarCuSina/Views/Onboarding/SharePracticeView.swift:small-hit-target
-ios/DosarCuSina/Views/Section/KeyFactsPocket.swift:small-hit-target:2
-ios/DosarCuSina/Views/Section/SectionLists.swift:small-hit-target
-ios/DosarCuSina/Views/Upcoming/ObligationScreen.swift:small-hit-target
-
 # system-error-text: SaveFailure.message and UserFacingError (review finding 9).
 ios/DosarCuSina/Views/Onboarding/OnboardingFlow.swift:system-error-text

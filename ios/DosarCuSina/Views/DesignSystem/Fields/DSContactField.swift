@@ -72,7 +72,7 @@ struct DSContactField: View {
                         } icon: {
                             Image(systemName: "person.crop.circle.badge.plus")
                         }
-                        .frame(maxWidth: .infinity, minHeight: 28, alignment: .leading)
+                        .frame(maxWidth: .infinity, minHeight: DS.Control.minimumHitTarget, alignment: .leading)
                         .contentShape(.rect)
                     }
                     .buttonStyle(.borderless)

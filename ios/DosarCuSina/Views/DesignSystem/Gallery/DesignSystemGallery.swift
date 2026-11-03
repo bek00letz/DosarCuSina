@@ -272,6 +272,14 @@ private struct GalleryButtons: View {
                     }
                 }
             }
+            GallerySection(title: "Buton mic lângă un rând", note: "DSCompactButton: textul nu se rupe, ținta are cel puțin 44 pt.") {
+                DSCard {
+                    HStack(spacing: DS.Space.s) {
+                        Text(verbatim: "ITP").dsFont(.headline).frame(maxWidth: .infinity, alignment: .leading)
+                        DSCompactButton("Adaugă") {}
+                    }
+                }
+            }
             GallerySection(title: "Suprafețe apăsabile", note: "Răspuns imediat la atingere; cu Reducere mișcare doar se estompează.") {
                 Button {} label: {
                     DSCard {
