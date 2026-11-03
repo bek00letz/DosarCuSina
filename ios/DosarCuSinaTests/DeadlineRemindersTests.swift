@@ -1,0 +1,159 @@
+import Foundation
+import SwiftData
+import Testing
+@testable import DosarCuSina
+
+/// A deadline's reminders follow what they come from: when a value its blueprint's profile
+/// depends on changes (a document's type, a pet's species), the deadline reminds as the new
+/// value asks, its travel cut-off included, unless the person set its reminders themselves.
+@MainActor
+@Suite("A deadline's reminders follow its document")
+struct DeadlineRemindersTests {
+    let calendar = Calendar.bucharest
+    let today = noon("2026-11-03")
+    let expiry = CalendarDay("2031-08-12")
+
+    private func profile(_ blueprintKey: String, in template: TemplateDefinition, _ field: String, _ value: String) throws -> ReminderProfile {
+        try #require(template.blueprints.first { $0.key == blueprintKey }).reminders(for: FieldValues([field: .text(value)]))
+    }
+
+    private func documentProfile(_ type: String) throws -> ReminderProfile {
+        try profile(BuiltInBlueprints.documentRenew, in: BuiltInTemplates.documents, DocumentType.typeFieldKey, type)
+    }
+
+    private func document(_ type: String, in context: ModelContext) throws -> (Asset, Obligation) {
+        let documents = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.documents))
+        let actions = AssetActions(context: context, calendar: calendar, now: { today })
+        var values = FieldValues()
+        values[DocumentType.typeFieldKey] = .text(type)
+        values[DocumentFields.expiry] = .date(expiry)
+        let asset = try actions.create(name: "Carte de identitate", template: documents, values: values,
+                                       obligations: actions.plannedObligations(for: documents, values: values))
+        return (asset, try #require(asset.activeObligations.first))
+    }
+
+    private func edit(_ asset: Asset, in context: ModelContext, _ change: (inout FieldValues) -> Void) throws {
+        var values = asset.values
+        change(&values)
+        try AssetActions(context: context, calendar: calendar, now: { today }).update(asset, name: asset.name, values: values, notes: asset.notes)
+    }
+
+    // MARK: Documents
+
+    @Test func changingTheTypeGivesTheDeadlineTheNewTypesReminders() throws {
+        let context = try makeContext()
+        let (card, renewal) = try document(DocumentType.idCard, in: context)
+        #expect(try renewal.reminders == documentProfile(DocumentType.idCard))
+        #expect(renewal.travelMarginDays == 0)
+
+        // Editează: it was a passport all along.
+        try edit(card, in: context) { $0[DocumentType.typeFieldKey] = .text(DocumentType.passport) }
+        let passport = try documentProfile(DocumentType.passport)
+        #expect(renewal.reminders == passport, "Its leads, consequence, grace, follow-up and cut-off")
+        #expect(renewal.travelMarginDays == 180)
+        #expect(renewal.updatedAt == today)
+
+        // And back: the cut-off goes with the type.
+        try edit(card, in: context) { $0[DocumentType.typeFieldKey] = .text(DocumentType.idCard) }
+        #expect(try renewal.reminders == documentProfile(DocumentType.idCard))
+        #expect(renewal.travelMarginDays == 0)
+        #expect(!renewal.remindersCustomized)
+    }
+
+    @Test func aDeadlineWhoseRemindersThePersonSetIsLeftAlone() throws {
+        let context = try makeContext()
+        let (card, renewal) = try document(DocumentType.idCard, in: context)
+        let mine = ReminderProfile(leadDays: [120, 14], consequence: .legal, followUpAfterLapse: false)
+        try ObligationActions(context: context, calendar: calendar, now: { today }).setReminders(renewal, mine)
+        #expect(renewal.remindersCustomized)
+
+        try edit(card, in: context) { $0[DocumentType.typeFieldKey] = .text(DocumentType.passport) }
+        #expect(renewal.reminders == mine, "The person's reminders stay as set")
+        #expect(renewal.travelMarginDays == 0)
+    }
+
+    @Test func theFollowUpCheckboxCountsAsThePersonsChoice() throws {
+        let context = try makeContext()
+        let (card, renewal) = try document(DocumentType.idCard, in: context)
+        try ObligationActions(context: context, calendar: calendar, now: { today }).setFollowUpAfterLapse(renewal, false)
+        #expect(renewal.remindersCustomized)
+        try edit(card, in: context) { $0[DocumentType.typeFieldKey] = .text(DocumentType.drivingLicence) }
+        #expect(try renewal.reminders.leadDays == documentProfile(DocumentType.idCard).leadDays)
+        #expect(!renewal.followUpAfterLapse)
+    }
+
+    /// Only a value the profile reads moves it: a deadline saved with other reminders (an
+    /// earlier catalog) isn't touched when the expiry or the name changes.
+    @Test func otherChangesLeaveTheRemindersAsTheyAre() throws {
+        let context = try makeContext()
+        let (card, renewal) = try document(DocumentType.idCard, in: context)
+        let earlier = ReminderProfile(leadDays: [60, 30], consequence: .legal)
+        renewal.reminders = earlier
+        try UnitOfWork.save(context)
+
+        try edit(card, in: context) { $0[DocumentFields.expiry] = .date(CalendarDay("2032-01-10")) }
+        try AssetActions(context: context, calendar: calendar, now: { today }).update(card, name: "Buletin", values: card.values, notes: "Nou")
+        #expect(renewal.reminders == earlier)
+        #expect(renewal.dueDay(in: calendar) == CalendarDay("2032-01-10"), "The due day still follows the expiry")
+    }
+
+    @Test func aDoneDeadlineIsNotTouchedButAPausedOneIs() throws {
+        let context = try makeContext()
+        let (card, renewal) = try document(DocumentType.idCard, in: context)
+        renewal.status = .paused
+        try UnitOfWork.save(context)
+        try edit(card, in: context) { $0[DocumentType.typeFieldKey] = .text(DocumentType.passport) }
+        #expect(renewal.travelMarginDays == 180, "Paused still follows: it reminds again when resumed")
+
+        renewal.status = .done
+        try UnitOfWork.save(context)
+        try edit(card, in: context) { $0[DocumentType.typeFieldKey] = .text(DocumentType.idCard) }
+        #expect(renewal.travelMarginDays == 180, "Done is history")
+    }
+
+    // MARK: Pets
+
+    @Test func aPetsSpeciesChangesItsRabiesReminders() throws {
+        let context = try makeContext()
+        let pets = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.pet))
+        let actions = AssetActions(context: context, calendar: calendar, now: { today })
+        var values = FieldValues()
+        values["pet.species"] = .text(PetSpecies.cat)
+        let planned = actions.plannedObligations(for: pets, values: values).map { plan -> PlannedObligation in
+            var plan = plan
+            plan.isSelected = plan.blueprint.key == BuiltInBlueprints.petRabies
+            plan.firstDue = CalendarDay("2027-03-01")
+            return plan
+        }
+        let pet = try actions.create(name: "Pisica", template: pets, values: values, obligations: planned)
+        let rabies = try #require(pet.activeObligations.first { $0.blueprintKey == BuiltInBlueprints.petRabies })
+        let cat = try profile(BuiltInBlueprints.petRabies, in: BuiltInTemplates.pet, "pet.species", PetSpecies.cat)
+        let dog = try profile(BuiltInBlueprints.petRabies, in: BuiltInTemplates.pet, "pet.species", PetSpecies.dog)
+        #expect(cat != dog)
+        #expect(rabies.reminders == cat)
+
+        try edit(pet, in: context) { $0["pet.species"] = .text(PetSpecies.dog) }
+        #expect(rabies.reminders == dog, "A dog's rabies vaccine reminds as the law asks")
+    }
+
+    // MARK: Backups
+
+    @Test func theFlagTravelsInABackup() throws {
+        let source = try makeInMemoryContainer()
+        let context = ModelContext(source)
+        try TemplateStore(context: context).installBuiltIns()
+        let (_, renewal) = try document(DocumentType.idCard, in: context)
+        try ObligationActions(context: context, calendar: calendar, now: { today })
+            .setReminders(renewal, ReminderProfile(leadDays: [100], consequence: .legal))
+        let data = try DossierArchiveService(container: source, calendar: calendar).exportData(exportedAt: today)
+        let entries = Dictionary(uniqueKeysWithValues: try DosarZipEngine.unpackArchive(data).map { ($0.path, $0.data) })
+        let written = String(decoding: try #require(entries[DossierV3.Path.obligations]), as: UTF8.self)
+        #expect(written.contains(#""remindersCustomized" : true"#))
+
+        let target = try makeInMemoryContainer()
+        try DossierArchiveService(container: target, calendar: calendar).importArchive(data, mode: .replace)
+        let copy = try #require(try ModelContext(target).fetch(FetchDescriptor<Obligation>()).first { $0.id == renewal.id })
+        #expect(copy.remindersCustomized)
+        #expect(copy.reminders.leadDays == [100])
+    }
+}

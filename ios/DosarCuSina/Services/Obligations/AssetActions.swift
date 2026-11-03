@@ -121,7 +121,8 @@ public final class AssetActions {
     }
 
     /// Saves edits. Obligations whose first date comes from a field (a document's
-    /// renewal follows its expiry date) move with that field. A changed hero value (the
+    /// renewal follows its expiry date) move with that field, and their reminders follow a
+    /// changed value they depend on (`DeadlineReminders.follow`). A changed hero value (the
     /// kilometres) is a new reading through `recordReading`, dated `readingDate` (a
     /// document's date) or now; a lower counter throws `LowerReadingQuestion` until
     /// `lowerReading` answers it, and the hero value is then worked out from the readings.
@@ -149,6 +150,9 @@ public final class AssetActions {
             asset.notes = notes
             asset.updatedAt = now()
             if let template {
+                // A value the deadlines' reminders depend on changed (the document's type, a
+                // pet's species): they remind as the new value asks, unless the person set them.
+                DeadlineReminders.follow(asset, template: template.definition, from: previous, now: now())
                 let blueprints = Dictionary(template.blueprints.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
                 for obligation in asset.activeObligations {
                     guard let key = obligation.blueprintKey, let blueprint = blueprints[key],

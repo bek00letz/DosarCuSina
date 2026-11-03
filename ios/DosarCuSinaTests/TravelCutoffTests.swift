@@ -281,10 +281,44 @@ struct TravelCutoffTests {
         #expect(message == "„Pașaport” e bun de călătorit doar până pe 12 februarie 2027, cu 6 luni înainte să expire. Schimb când te anunț? Te anunț cu 3 luni înainte de ultima zi bună de călătorit și în ziua aceea.")
 
         try repairs.apply(found)
-        #expect(renewal.reminders == ReminderProfile(leadDays: [90, 0], consequence: .legal, followUpAfterLapse: false, travelMarginDays: 180),
-                "The person's follow-up choice is kept")
+        #expect(renewal.reminders == passportProfile, "It takes the passport's reminders, as changing the type in Editează does")
+        #expect(renewal.travelMarginDays == 180)
         #expect(card.activeObligations.first?.reminders == idCardProfile)
         #expect(try repairs.detect().filter { $0.step == .travelCutoff }.isEmpty, "Applied once, not found again")
+    }
+
+    /// The same rule both ways: a deadline that still counts from a cut-off its document no
+    /// longer has is offered too, and one whose reminders the person set is left alone.
+    @Test @MainActor func theRepairChecksTheSameRuleAsEditing() throws {
+        let context = try makeContext()
+        let fixed = noon("2026-11-03")
+        let documents = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.documents))
+        let assets = AssetActions(context: context, calendar: calendar, now: { fixed })
+        func document(_ name: String, type: String) throws -> Obligation {
+            var values = FieldValues()
+            values[DocumentType.typeFieldKey] = .text(type)
+            values[DocumentFields.expiry] = .date(expiry)
+            let asset = try assets.create(name: name, template: documents, values: values,
+                                          obligations: assets.plannedObligations(for: documents, values: values))
+            return try #require(asset.activeObligations.first)
+        }
+        // A card that was a passport before reminders followed the type: it kept the cut-off.
+        let card = try document("Carte de identitate", type: DocumentType.idCard)
+        card.reminders = passportProfile
+        // A passport whose reminders the person set before margins existed.
+        let own = try document("Pașaport", type: DocumentType.passport)
+        own.reminders = ReminderProfile(leadDays: [200], consequence: .legal)
+        own.remindersCustomized = true
+        try UnitOfWork.save(context)
+
+        let repairs = DataRepairs(context: context, calendar: calendar,
+                                  ledger: DataRepairLedger(defaults: try #require(UserDefaults(suiteName: "travel-\(UUID().uuidString)"))))
+        let found = try repairs.detect().filter { $0.step == .travelCutoff }
+        #expect(found.count == 1, "Only the card; the person's own reminders stay")
+        #expect(found.first?.message.hasPrefix("La „Carte de identitate” contează doar data de expirare. Schimb când te anunț?") == true)
+        try repairs.apply(found)
+        #expect(card.reminders == idCardProfile)
+        #expect(own.reminders == ReminderProfile(leadDays: [200], consequence: .legal))
     }
 }
 
