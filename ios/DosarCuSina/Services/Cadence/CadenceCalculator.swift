@@ -276,42 +276,34 @@ public final class CadenceCalculator: Sendable {
             )
         }
         
-        // Sort readings chronologically
-        let sorted = readings.sorted { $0.date < $1.date }
+        // The one cleaned series: a reading that breaks the order (a typo, one kept aside)
+        // is skipped and flagged, never a reason to stop projecting.
+        let series = ReadingSeries(readings)
+        let sorted = series.readings
+        let hasRollback = !series.setAside.isEmpty
         
         var calculatedRate: Double? = nil
-        var hasRollback = false
         
-        // Check for anomalies & compute burn rate if we have >= 2 points
+        // Compute burn rate if we have >= 2 points
         if sorted.count >= 2 {
-            // Check for negative delta between any consecutive readings
-            for i in 1..<sorted.count {
-                if sorted[i].metric < sorted[i - 1].metric {
-                    hasRollback = true
-                    break
-                }
+            let first = sorted.first!
+            let last = sorted.last!
+            let deltaMetric = last.metric - first.metric
+            
+            let startOfFirst = calendar.startOfDay(for: first.date)
+            let startOfLast = calendar.startOfDay(for: last.date)
+            let deltaDays: Double
+            if let compDays = calendar.dateComponents([.day], from: startOfFirst, to: startOfLast).day, compDays > 0 {
+                let timeDiffFirst = first.date.timeIntervalSince(startOfFirst)
+                let timeDiffLast = last.date.timeIntervalSince(startOfLast)
+                deltaDays = Double(compDays) + ((timeDiffLast - timeDiffFirst) / 86400.0)
+            } else {
+                deltaDays = last.date.timeIntervalSince(first.date) / 86400.0
             }
             
-            if !hasRollback {
-                let first = sorted.first!
-                let last = sorted.last!
-                let deltaMetric = last.metric - first.metric
-                
-                let startOfFirst = calendar.startOfDay(for: first.date)
-                let startOfLast = calendar.startOfDay(for: last.date)
-                let deltaDays: Double
-                if let compDays = calendar.dateComponents([.day], from: startOfFirst, to: startOfLast).day, compDays > 0 {
-                    let timeDiffFirst = first.date.timeIntervalSince(startOfFirst)
-                    let timeDiffLast = last.date.timeIntervalSince(startOfLast)
-                    deltaDays = Double(compDays) + ((timeDiffLast - timeDiffFirst) / 86400.0)
-                } else {
-                    deltaDays = last.date.timeIntervalSince(first.date) / 86400.0
-                }
-                
-                // Guard against zero time delta or zero metric progression
-                if deltaDays > 0.001 && deltaMetric > 0 {
-                    calculatedRate = deltaMetric / deltaDays
-                }
+            // Guard against zero time delta or zero metric progression
+            if deltaDays > 0.001 && deltaMetric > 0 {
+                calculatedRate = deltaMetric / deltaDays
             }
         }
         

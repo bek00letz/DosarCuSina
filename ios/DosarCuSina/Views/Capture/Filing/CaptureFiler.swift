@@ -26,6 +26,9 @@ struct CaptureFiler {
     var now: () -> Date = { Date() }
     /// Opens locked sections before the filing writes into one.
     var vault: BiometricVaultManager = .shared
+    /// The person's answer when a counter reading in this filing is lower than an earlier one
+    /// (`LowerReadingQuestion`); nil until they have been asked.
+    var lowerReading: LowerReadingAnswer?
 
     /// What the person is filing.
     enum Intent {
@@ -63,6 +66,8 @@ struct CaptureFiler {
         var extraItems: [LineItemDraft] = []
         var totalCost: Money?
         var odometer: Double?
+        /// Read off the invoice or typed; an estimate never reaches the filer.
+        var odometerSource: ReadingSource = .person
         var provider: ProviderChoice = .none
         var rating: Int?
         var document: CapturedDocumentRef?
@@ -387,7 +392,9 @@ struct CaptureFiler {
             odometer: visit.odometer,
             provider: provider,
             rating: visit.rating,
-            calendar: calendar
+            calendar: calendar,
+            odometerSource: visit.odometerSource,
+            lowerReading: lowerReading
         )
         var outcome = Outcome(asset: visit.asset, visit: entry)
         if let document {
@@ -423,7 +430,11 @@ struct CaptureFiler {
             changed = true
         }
         if changed {
-            try AssetActions(context: context, calendar: calendar, now: now).update(asset, name: asset.name, values: merged, notes: asset.notes)
+            // A reading on the document (the kilometres on an invoice) is dated by the document.
+            try AssetActions(context: context, calendar: calendar, now: now).update(
+                asset, name: asset.name, values: merged, notes: asset.notes,
+                readingSource: .document, readingDate: review.documentDay?.noonDate(in: calendar), lowerReading: lowerReading
+            )
         }
     }
 

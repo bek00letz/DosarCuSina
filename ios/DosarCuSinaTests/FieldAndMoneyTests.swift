@@ -128,7 +128,7 @@ struct MoneyTests {
         ("1.234,56", "1234.56"), ("1234.5", "1234.5"), ("1 234,50", "1234.5"), ("12,5", "12.5"), ("1.250", "1250"), ("350", "350"),
     ])
     func parsesAmounts(raw: String, expected: String) {
-        #expect(Money.parseAmount(raw) == Decimal(string: expected))
+        #expect(RomanianNumber.value(raw, as: .money) == Decimal(string: expected))
     }
 
     @Test func totalsNeverMixCurrencies() {

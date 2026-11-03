@@ -127,37 +127,13 @@ public enum RomanianFieldExtractor {
 
     // MARK: - Money
 
-    /// Parses Romanian and international amount formats into a `Decimal`:
-    /// `1.234,56`, `1 234,56`, `1234.56`, `1,234.56`, `350`.
-    public static func parseAmount(_ raw: String) -> Decimal? {
-        var value = raw.filter { $0.isNumber || $0 == "," || $0 == "." }
-        guard !value.isEmpty, value.contains(where: \.isNumber) else { return nil }
-        // Ten or more digits with no separators is an identifier (CNP, IBAN digits,
-        // account or meter number), never an amount on a household document.
-        guard !(value.allSatisfy(\.isNumber) && value.count >= 10) else { return nil }
-        let lastComma = value.lastIndex(of: ",")
-        let lastDot = value.lastIndex(of: ".")
-        switch (lastComma, lastDot) {
-        case let (comma?, dot?):
-            if comma > dot {
-                value = value.replacingOccurrences(of: ".", with: "").replacingOccurrences(of: ",", with: ".")
-            } else {
-                value = value.replacingOccurrences(of: ",", with: "")
-            }
-        case (_?, nil):
-            // In Romanian the comma is the decimal mark; several commas can only be thousands groups.
-            value = value.filter { $0 == "," }.count > 1
-                ? value.replacingOccurrences(of: ",", with: "")
-                : value.replacingOccurrences(of: ",", with: ".")
-        case let (nil, dot?):
-            let decimals = value.distance(from: dot, to: value.endIndex) - 1
-            if decimals == 3 || value.filter({ $0 == "." }).count > 1 {
-                value = value.replacingOccurrences(of: ".", with: "")
-            }
-        case (nil, nil):
-            break
-        }
-        return Decimal(string: value, locale: Locale(identifier: "en_US_POSIX"))
+    /// An amount printed on a document, read by the one number reader (`RomanianNumber`).
+    /// Ten or more digits with no separators is an identifier (CNP, IBAN digits, account or
+    /// meter number), never an amount on a household document.
+    static func amount(_ raw: String) -> RomanianNumber.Reading? {
+        let digits = raw.filter { !$0.isWhitespace }
+        guard !(digits.allSatisfy(\.isNumber) && digits.count >= 10) else { return nil }
+        return try? RomanianNumber.read(raw, as: .money, from: .document).get()
     }
 
     /// An amount: `1.234,56`, `1 234,56` (space groups only with decimals), `1,234.56`, `350`, `350,00`.
@@ -165,6 +141,8 @@ public enum RomanianFieldExtractor {
 
     struct AmountMatch {
         let amount: Decimal
+        /// Read by the Romanian rule where another reading was possible ("3,750"): "Verifică".
+        let isAmbiguous: Bool
         let range: Range<String.Index>
     }
 
@@ -173,8 +151,8 @@ public enum RomanianFieldExtractor {
         let dateRanges = dates(inLine: line, index: 0).map(\.range)
         return TextPattern.matches(amountPattern, in: line).compactMap { match in
             guard !dateRanges.contains(where: { $0.overlaps(match.range) }),
-                  let raw = match[1], let amount = parseAmount(raw) else { return nil }
-            return AmountMatch(amount: amount, range: match.range)
+                  let raw = match[1], let reading = amount(raw) else { return nil }
+            return AmountMatch(amount: reading.value, isAmbiguous: reading.needsCheck, range: match.range)
         }
     }
 
@@ -204,33 +182,34 @@ public enum RomanianFieldExtractor {
     ]
 
     /// The amount to pay: a strongly labelled total first, then a plain "total" line that isn't VAT.
-    static func total(in text: CaptureText) -> (money: CaptureMoney, source: String, strong: Bool)? {
+    /// `ambiguous` when the amount could have been read another way ("3,750"): the field gets "Verifică".
+    static func total(in text: CaptureText) -> (money: CaptureMoney, source: String, strong: Bool, ambiguous: Bool)? {
         let fallbackCurrency = dominantCurrency(in: text)
-        func amountNear(_ index: Int, after labels: [String]) -> CaptureMoney? {
+        func amountNear(_ index: Int, after labels: [String]) -> (money: CaptureMoney, ambiguous: Bool)? {
             let line = text.folded[index]
             let labelEnd = labels.compactMap { line.range(of: $0)?.upperBound }.min() ?? line.startIndex
             let onLine = amounts(inLine: line).filter { $0.range.lowerBound >= labelEnd }
             if let last = onLine.last {
-                return CaptureMoney(amount: last.amount, currencyCode: currency(inLine: line) ?? fallbackCurrency)
+                return (CaptureMoney(amount: last.amount, currencyCode: currency(inLine: line) ?? fallbackCurrency), last.isAmbiguous)
             }
             if index + 1 < text.folded.count, let next = amounts(inLine: text.folded[index + 1]).last {
-                return CaptureMoney(amount: next.amount, currencyCode: currency(inLine: text.folded[index + 1]) ?? fallbackCurrency)
+                return (CaptureMoney(amount: next.amount, currencyCode: currency(inLine: text.folded[index + 1]) ?? fallbackCurrency), next.isAmbiguous)
             }
             return nil
         }
 
         for label in strongTotalLabels {
             for index in text.lines(containing: [label]) {
-                if let money = amountNear(index, after: [label]) {
-                    return (money, text.original[index], true)
+                if let found = amountNear(index, after: [label]) {
+                    return (found.money, text.original[index], true, found.ambiguous)
                 }
             }
         }
         for index in text.lines(containing: ["total"]).reversed() {
             let line = text.folded[index]
             guard !line.contains("tva"), !line.contains("subtotal"), !line.contains("fara") else { continue }
-            if let money = amountNear(index, after: ["total"]) {
-                return (money, text.original[index], false)
+            if let found = amountNear(index, after: ["total"]) {
+                return (found.money, text.original[index], false, found.ambiguous)
             }
         }
         return nil
@@ -260,7 +239,7 @@ public enum RomanianFieldExtractor {
             var descriptionEnd = amount.range.lowerBound
             if let match = TextPattern.matches(#"(?<![\w.,])(\d+(?:[.,]\d+)?)\s*(buc|bucati|bucata|l|litri|ore|h|set|kit|x)\b"#, in: line).last,
                match.range.upperBound <= amount.range.lowerBound {
-                quantity = match[1].flatMap(parseAmount)
+                quantity = match[1].flatMap { RomanianNumber.value($0, as: .meterIndex, from: .document) }
                 descriptionEnd = match.range.lowerBound
             }
             let descriptionPart = String(line[..<descriptionEnd])
@@ -463,16 +442,16 @@ public enum RomanianFieldExtractor {
 
     /// An odometer reading. Prefers a labelled value ("Km bord: 86.420") over a bare "86420 km".
     static func odometer(in text: CaptureText) -> (km: Decimal, source: String, labelled: Bool)? {
-        let number = #"(\d{1,3}(?:[. ]\d{3})+|\d{3,7})"#
+        let number = #"(\d{1,3}(?:[., ]\d{3})+|\d{3,7})(?!\d|[.,]\d)"#
         for (index, line) in text.folded.enumerated() {
             if let match = TextPattern.first(#"(?:kilometraj|km\s*bord|km\s*la\s*bord|odometru|rulaj|km\s*parcursi)\s*[:.]?\s*"# + number, in: line),
-               let raw = match[1], let km = parseAmount(raw.replacingOccurrences(of: " ", with: "")) {
+               let raw = match[1], let km = RomanianNumber.value(raw, as: .kilometres, from: .document) {
                 return (km, text.original[index], true)
             }
         }
         for (index, line) in text.folded.enumerated() {
             if let match = TextPattern.first(number + #"\s*km\b"#, in: line),
-               let raw = match[1], let km = parseAmount(raw.replacingOccurrences(of: " ", with: "")), km >= 100 {
+               let raw = match[1], let km = RomanianNumber.value(raw, as: .kilometres, from: .document), km >= 100 {
                 return (km, text.original[index], false)
             }
         }

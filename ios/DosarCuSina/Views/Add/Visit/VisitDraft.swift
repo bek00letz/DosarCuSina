@@ -59,7 +59,12 @@ struct VisitDraft: Equatable {
     var ticked: [String] = []
     var parts: [String: Part] = [:]
     var extras: [Extra] = []
+    /// The counter as typed or read off the invoice; nil until then. The estimate is only a
+    /// greyed placeholder (`odometerEstimate`) and is never saved.
     var odometer: Double?
+    /// Where `odometer` came from: the invoice, until the person types over it.
+    var odometerSource: ReadingSource = .person
+    var odometerEstimate: Double?
     var total: Decimal?
     var currency: String = Money.defaultCurrency
     var provider: ProviderChoice = .none
@@ -153,6 +158,7 @@ struct VisitDraft: Equatable {
         }
         if odometer == nil, case .metric(let value, _)? = fields[.odometer] {
             odometer = NSDecimalNumber(decimal: value).doubleValue
+            odometerSource = .document
         }
         if provider == .none, let name = fields[.provider]?.text, !name.isEmpty {
             provider = .new(name)
@@ -185,14 +191,14 @@ struct VisitChange: Identifiable, Equatable {
     }
 }
 
-/// The counter (odometer) a visit starts with: the latest reading, moved on by
-/// the usual pace since then, rounded up to the hundred. Easy to correct; it only saves a few taps.
+/// What the visit form shows greyed in the empty counter field: the last reading of the
+/// cleaned series, moved on by the usual pace since then, to the nearest hundred but never
+/// below that reading. A placeholder only: it is never saved (`ReadingSource.estimate`).
 enum OdometerEstimate {
     static func value(readings: [CadenceCalculator.TelemetryReading], fallback: Double?, now: Date) -> Double? {
-        guard let latest = readings.max(by: { $0.date < $1.date }) else { return fallback }
+        guard let latest = ReadingSeries(readings).latest else { return fallback }
         guard let rate = MaintenanceLog.monthlyRate(readings) else { return latest.metric }
         let days = max(0, now.timeIntervalSince(latest.date) / 86_400)
-        // Rounded up, so the estimate is never below the last real reading.
-        return ((latest.metric + rate * days / 30) / 100).rounded(.up) * 100
+        return max(latest.metric, ((latest.metric + rate * days / 30) / 100).rounded() * 100)
     }
 }

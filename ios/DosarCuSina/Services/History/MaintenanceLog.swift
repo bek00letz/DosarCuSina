@@ -148,9 +148,10 @@ public enum MaintenanceLog {
     }
 
     /// How far the counter moves in 30 days, from readings that span at least
-    /// `minimumSpanDays`. Nil when there isn't enough to say honestly.
+    /// `minimumSpanDays`, over the one cleaned series (`ReadingSeries`): a reading that
+    /// breaks the order is skipped. Nil when there isn't enough to say honestly.
     public static func monthlyRate(_ readings: [CadenceCalculator.TelemetryReading], minimumSpanDays: Int = 30) -> Double? {
-        let ordered = readings.sorted { $0.date < $1.date }
+        let ordered = ReadingSeries(readings).readings
         guard let first = ordered.first, let last = ordered.last, ordered.count >= 2 else { return nil }
         let days = last.date.timeIntervalSince(first.date) / 86_400
         let distance = last.metric - first.metric
@@ -176,7 +177,7 @@ public enum MaintenanceLog {
         let lastDay = CalendarDay(last.date, calendar: calendar)
         let dueMetric = both(last.metricAtTime, typical.metric).map { $0 + $1 }
 
-        if let dueMetric, let rate = monthlyRate(readings), let current = currentMetric ?? readings.max(by: { $0.date < $1.date })?.metric {
+        if let dueMetric, let rate = monthlyRate(readings), let current = currentMetric ?? ReadingSeries(readings).current {
             let days = Int(((dueMetric - current) / rate * 30).rounded())
             return NextEstimate(day: today.adding(days: max(0, days), calendar: calendar), metric: dueMetric, basis: .distance, sampleCount: typical.sampleCount)
         }

@@ -77,27 +77,32 @@ public final class HistoryActions {
         items: [LineItemDraft] = [],
         providers: [Provider] = [],
         rating: Int? = nil,
-        asExample: Bool = false
+        asExample: Bool = false,
+        lowerReading: LowerReadingAnswer? = nil
     ) throws -> HistoryEntry {
-        let isExample = try ExampleOwnership.requireReal(asset, creatingExample: asExample)
-        let date = occurredAt ?? now()
-        let entry = HistoryEntry(kind: kind, title: title, occurredAt: date)
-        entry.metricReading = metricReading
-        entry.totalCost = totalCost
-        entry.note = note
-        entry.rating = rating.map { min(max($0, 1), 5) }
-        entry.isExample = isExample
-        context.insert(entry)
-        entry.asset = asset
-        entry.providers = providers
-        HouseholdMutations.addItems(items, to: entry, in: context)
-        if let metricReading {
-            let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
-            let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) }
-            HouseholdMutations.recordReading(metricReading, on: asset, at: date, unit: unit, in: context)
+        // One step: a question about a lower reading leaves nothing half-changed.
+        return try UnitOfWork.perform(in: context) {
+            let isExample = try ExampleOwnership.requireReal(asset, creatingExample: asExample)
+            let date = occurredAt ?? now()
+            let entry = HistoryEntry(kind: kind, title: title, occurredAt: date)
+            entry.metricReading = metricReading
+            entry.totalCost = totalCost
+            entry.note = note
+            entry.rating = rating.map { min(max($0, 1), 5) }
+            entry.isExample = isExample
+            context.insert(entry)
+            entry.asset = asset
+            entry.providers = providers
+            HouseholdMutations.addItems(items, to: entry, in: context)
+            if let metricReading {
+                let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
+                let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) }
+                try HouseholdMutations.recordReading(metricReading, on: asset, at: date, source: .person, unit: unit,
+                                                     answer: lowerReading, isExample: isExample, in: context)
+            }
+            try save()
+            return entry
         }
-        try save()
-        return entry
     }
 
     /// One ticked component on the visit checklist, with what it cost if known.
@@ -129,39 +134,45 @@ public final class HistoryActions {
         provider: Provider? = nil,
         documents: [DocumentDraft] = [],
         rating: Int? = nil,
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
+        odometerSource: ReadingSource = .person,
+        lowerReading: LowerReadingAnswer? = nil
     ) throws -> HistoryEntry {
-        let isExample = try ExampleOwnership.requireReal(asset)
-        let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
-        let catalog = template?.components ?? []
-        let ticked = checklist.map { item in
-            LineItemDraft(
-                name: catalog.first { $0.key == item.componentKey }?.name ?? item.componentKey,
-                componentKey: item.componentKey,
-                partBrandOrCode: item.partBrandOrCode,
-                cost: item.cost
-            )
+        // One step: a question about a lower reading leaves nothing half-changed.
+        return try UnitOfWork.perform(in: context) {
+            let isExample = try ExampleOwnership.requireReal(asset)
+            let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
+            let catalog = template?.components ?? []
+            let ticked = checklist.map { item in
+                LineItemDraft(
+                    name: catalog.first { $0.key == item.componentKey }?.name ?? item.componentKey,
+                    componentKey: item.componentKey,
+                    partBrandOrCode: item.partBrandOrCode,
+                    cost: item.cost
+                )
+            }
+            let items = ticked + extraItems
+            let date = occurredAt ?? now()
+            let entry = HistoryEntry(kind: kind, title: title ?? Self.visitTitle(for: items), occurredAt: date)
+            entry.metricReading = odometer
+            entry.totalCost = totalCost
+            entry.rating = rating.map { min(max($0, 1), 5) }
+            entry.isExample = isExample
+            context.insert(entry)
+            entry.asset = asset
+            entry.providers = provider.map { [$0] } ?? []
+            HouseholdMutations.addItems(items, to: entry, in: context)
+            if let odometer {
+                let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) }
+                try HouseholdMutations.recordReading(odometer, on: asset, at: date, source: odometerSource, unit: unit,
+                                                     answer: lowerReading, isExample: isExample, in: context)
+            }
+            for draft in documents {
+                _ = AttachmentActions.insert(draft, asset: asset, obligation: nil, historyEntry: entry, provider: nil, isExample: isExample, calendar: calendar, in: context)
+            }
+            try save()
+            return entry
         }
-        let items = ticked + extraItems
-        let date = occurredAt ?? now()
-        let entry = HistoryEntry(kind: kind, title: title ?? Self.visitTitle(for: items), occurredAt: date)
-        entry.metricReading = odometer
-        entry.totalCost = totalCost
-        entry.rating = rating.map { min(max($0, 1), 5) }
-        entry.isExample = isExample
-        context.insert(entry)
-        entry.asset = asset
-        entry.providers = provider.map { [$0] } ?? []
-        HouseholdMutations.addItems(items, to: entry, in: context)
-        if let odometer {
-            let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) }
-            HouseholdMutations.recordReading(odometer, on: asset, at: date, unit: unit, in: context)
-        }
-        for draft in documents {
-            _ = AttachmentActions.insert(draft, asset: asset, obligation: nil, historyEntry: entry, provider: nil, isExample: isExample, calendar: calendar, in: context)
-        }
-        try save()
-        return entry
     }
 
     /// "Ulei și filtru, Plăcuțe frână față" for short visits, a plain title for long ones.

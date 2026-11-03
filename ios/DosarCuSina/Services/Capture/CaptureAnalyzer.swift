@@ -249,9 +249,14 @@ public struct CaptureAnalyzer: Sendable {
             fields.add(.invoiceNumber, .text(invoice.value), 0.7, invoice.source)
         }
         if let total = RomanianFieldExtractor.total(in: text) {
-            fields.add(.total, .money(total.money), total.strong ? 0.8 : 0.6, total.source)
+            fields.add(.total, .money(total.money), Self.confidence(total.strong ? 0.8 : 0.6, ambiguous: total.ambiguous), total.source)
         }
         addIssueDate(text, years: years, into: &fields)
+    }
+
+    /// A confidence that marks the field "Verifică" when its amount could be read two ways ("3,750").
+    static func confidence(_ confidence: Double, ambiguous: Bool) -> Double {
+        ambiguous ? min(confidence, CaptureField.checkThreshold - 0.1) : confidence
     }
 
     private func addIssuer(_ text: CaptureText, into fields: inout FieldSet) {
@@ -321,7 +326,7 @@ public struct CaptureAnalyzer: Sendable {
             fields.add(.expiryDate, .day(expiry.day), 0.65, expiry.source)
         }
         if let premium = RomanianFieldExtractor.total(in: text) {
-            fields.add(.total, .money(premium.money), premium.strong ? 0.75 : 0.5, premium.source)
+            fields.add(.total, .money(premium.money), Self.confidence(premium.strong ? 0.75 : 0.5, ambiguous: premium.ambiguous), premium.source)
         }
         if let classValue = RomanianFieldExtractor.bonusMalus(in: text) {
             fields.add(.bonusMalusClass, .text(classValue), 0.7, nil)
@@ -349,7 +354,7 @@ public struct CaptureAnalyzer: Sendable {
             fields.add(.purchaseDate, .day(purchaseDate.0), purchaseDate.2, purchaseDate.1)
         }
         if let total = RomanianFieldExtractor.total(in: text) {
-            fields.add(.purchasePrice, .money(total.money), total.strong ? 0.8 : 0.65, total.source)
+            fields.add(.purchasePrice, .money(total.money), Self.confidence(total.strong ? 0.8 : 0.65, ambiguous: total.ambiguous), total.source)
         }
         if let serial = RomanianFieldExtractor.serialNumber(in: text) {
             fields.add(.serialNumber, .text(serial.value), 0.7, serial.source)

@@ -50,49 +50,54 @@ public final class ObligationActions {
         note: String? = nil,
         items: [LineItemDraft] = [],
         providers: [Provider] = [],
-        rating: Int? = nil
+        rating: Int? = nil,
+        lowerReading: LowerReadingAnswer? = nil
     ) throws -> HistoryEntry {
-        guard obligation.status == .active else { throw ObligationActionError.notActive }
-        let completedAt = date ?? now()
-        let completedDay = CalendarDay(completedAt, calendar: calendar)
+        // One step: a question about a lower reading leaves nothing half-changed.
+        return try UnitOfWork.perform(in: context) {
+            guard obligation.status == .active else { throw ObligationActionError.notActive }
+            let completedAt = date ?? now()
+            let completedDay = CalendarDay(completedAt, calendar: calendar)
 
-        let entry = HistoryEntry(kind: .forCompleting(obligation.kind), title: obligation.title, occurredAt: completedAt)
-        entry.cycleDueDate = obligation.dueDate
-        entry.previousStatusRaw = obligation.statusRaw
-        entry.previousDueMetric = obligation.dueMetric
-        entry.totalCost = cost
-        entry.metricReading = metricReading
-        entry.note = note
-        entry.rating = rating.map { min(max($0, 1), 5) }
-        entry.isExample = obligation.isExample
-        context.insert(entry)
-        entry.obligation = obligation
-        entry.asset = obligation.asset
-        entry.providers = providers
-        HouseholdMutations.addItems(items, to: entry, in: context)
+            let entry = HistoryEntry(kind: .forCompleting(obligation.kind), title: obligation.title, occurredAt: completedAt)
+            entry.cycleDueDate = obligation.dueDate
+            entry.previousStatusRaw = obligation.statusRaw
+            entry.previousDueMetric = obligation.dueMetric
+            entry.totalCost = cost
+            entry.metricReading = metricReading
+            entry.note = note
+            entry.rating = rating.map { min(max($0, 1), 5) }
+            entry.isExample = obligation.isExample
+            context.insert(entry)
+            entry.obligation = obligation
+            entry.asset = obligation.asset
+            entry.providers = providers
+            HouseholdMutations.addItems(items, to: entry, in: context)
 
-        if let metricReading, let asset = obligation.asset {
-            HouseholdMutations.recordReading(metricReading, on: asset, at: completedAt, unit: obligation.metricUnit, in: context)
+            if let metricReading, let asset = obligation.asset {
+                try HouseholdMutations.recordReading(metricReading, on: asset, at: completedAt, source: .person, unit: obligation.metricUnit,
+                                                     answer: lowerReading, isExample: obligation.isExample, in: context)
+            }
+
+            let recurrenceContext = HouseholdMutations.recurrenceContext(for: obligation, currentMetric: metricReading, calendar: calendar)
+            if let next = RecurrenceEngine.nextDue(
+                after: obligation.dueDay(in: calendar),
+                completedOn: completedDay,
+                rule: obligation.recurrence,
+                context: recurrenceContext,
+                calendar: calendar
+            ) {
+                obligation.setDueDay(next.day, calendar: calendar)
+                obligation.dueMetric = next.metric
+                entry.nextDueDate = obligation.dueDate
+            } else {
+                obligation.status = .done
+            }
+            obligation.snoozedUntil = nil
+            obligation.updatedAt = now()
+            try save()
+            return entry
         }
-
-        let recurrenceContext = HouseholdMutations.recurrenceContext(for: obligation, currentMetric: metricReading, calendar: calendar)
-        if let next = RecurrenceEngine.nextDue(
-            after: obligation.dueDay(in: calendar),
-            completedOn: completedDay,
-            rule: obligation.recurrence,
-            context: recurrenceContext,
-            calendar: calendar
-        ) {
-            obligation.setDueDay(next.day, calendar: calendar)
-            obligation.dueMetric = next.metric
-            entry.nextDueDate = obligation.dueDate
-        } else {
-            obligation.status = .done
-        }
-        obligation.snoozedUntil = nil
-        obligation.updatedAt = now()
-        try save()
-        return entry
     }
 
     /// A completion from before the binder knew the obligation (last year's ITP): logged
@@ -123,6 +128,8 @@ public final class ObligationActions {
             return
         }
         guard obligation.history.first?.id == entry.id else { throw ObligationActionError.notLatestCompletion }
+        // The reading "Gata" recorded goes too, and the hero value follows the readings left.
+        HouseholdMutations.removeReading(recordedBy: entry, in: context)
         obligation.dueDate = cycleDueDate
         obligation.dueMetric = entry.previousDueMetric
         obligation.status = entry.previousStatusRaw.flatMap(ObligationStatus.init(rawValue:)) ?? .active

@@ -352,9 +352,8 @@ public final class RomanianUtilityParser: Sendable {
         ]
         for p in patterns {
             if let match = firstMatch(for: p, in: text, captureGroup: 1) {
-                let normalized = match.replacingOccurrences(of: ",", with: ".")
-                if let val = Double(normalized) {
-                    return val
+                if let value = try? RomanianNumber.read(match, as: .meterIndex, from: .document).get().doubleValue {
+                    return value
                 }
             }
         }
@@ -387,9 +386,8 @@ public final class RomanianUtilityParser: Sendable {
         
         for pattern in patterns {
             if let match = firstMatch(for: pattern, in: text, captureGroup: 1) {
-                let normalized = match.replacingOccurrences(of: ",", with: ".")
-                if let val = Double(normalized) {
-                    return val
+                if let value = try? RomanianNumber.read(match, as: .meterIndex, from: .document).get().doubleValue {
+                    return value
                 }
             }
         }
@@ -597,53 +595,10 @@ public final class RomanianUtilityParser: Sendable {
         Self.parseDate(rawString)
     }
     
-    /// Parses Romanian and European currency strings (e.g., "1.450,50 lei", "1 450,50 RON", "123,45", "50.00 lei", "2.500,00 EUR")
+    /// An amount printed on a bill ("1.450,50 lei", "1 450,50 RON", "123,45"), read by the
+    /// one number reader (`RomanianNumber`). Nil when it can't be read one way only.
     public static func normalizeRomanianAmount(_ raw: String) -> Double? {
-        var str = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        // Remove non-breaking spaces (\u{00A0}, \u{202F})
-        str = str.replacingOccurrences(of: "\u{00A0}", with: " ")
-        str = str.replacingOccurrences(of: "\u{202F}", with: " ")
-        
-        // Strip common currency words and symbols
-        let suffixes = ["lei", "LEI", "Lei", "ron", "RON", "Ron", "eur", "EUR", "Eur", "€", "usd", "USD", "$"]
-        for s in suffixes {
-            str = str.replacingOccurrences(of: s, with: "")
-        }
-        str = str.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        // Handle space as thousand separator: "1 450,50" -> "1450,50"
-        str = str.replacingOccurrences(of: " ", with: "")
-        
-        guard !str.isEmpty else { return nil }
-        
-        // Handles "1.450,50" -> "1450.50"
-        if str.contains(",") && str.contains(".") {
-            if let lastComma = str.lastIndex(of: ","), let lastDot = str.lastIndex(of: ".") {
-                if lastComma > lastDot {
-                    // European/Romanian: thousand separator . and decimal ,
-                    str = str.replacingOccurrences(of: ".", with: "")
-                    str = str.replacingOccurrences(of: ",", with: ".")
-                } else {
-                    // US: thousand separator , and decimal .
-                    str = str.replacingOccurrences(of: ",", with: "")
-                }
-            }
-        } else if str.contains(",") {
-            str = str.replacingOccurrences(of: ",", with: ".")
-        } else if str.contains(".") {
-            // Thousands separator without decimals: e.g. "1.450", "14.500"
-            // In Romanian formatting, when there is no comma and the last dot has exactly 3 digits following it,
-            // this represents thousands grouping without decimals.
-            if let lastDot = str.lastIndex(of: ".") {
-                let afterDot = str[str.index(after: lastDot)...]
-                if afterDot.count == 3 && afterDot.allSatisfy({ $0.isNumber }) {
-                    str = str.replacingOccurrences(of: ".", with: "")
-                }
-            }
-        }
-        
-        return Double(str)
+        try? RomanianNumber.read(raw, as: .money, from: .document).get().doubleValue
     }
     
     public static func parseRomanianAmount(_ raw: String) -> Double? {

@@ -118,9 +118,9 @@ struct IdentityCardTests {
 
     @Test("Identifiers are never money, and never a billed line")
     func identifiersAreNotMoney() {
-        #expect(RomanianFieldExtractor.parseAmount("1800101990006") == nil)
-        #expect(RomanianFieldExtractor.parseAmount("1250") == 1250)
-        #expect(RomanianFieldExtractor.parseAmount("1.250,50") == Decimal(string: "1250.50"))
+        #expect(RomanianFieldExtractor.amount("1800101990006") == nil)
+        #expect(RomanianFieldExtractor.amount("1250")?.value == 1250)
+        #expect(RomanianFieldExtractor.amount("1.250,50")?.value == Decimal(string: "1250.50"))
         let items = RomanianFieldExtractor.lineItems(
             in: CaptureText("CNP / PIN 1800101990006\nPlăcuțe frână față 320,00"),
             currency: "RON", resolver: CatalogComponentResolver()

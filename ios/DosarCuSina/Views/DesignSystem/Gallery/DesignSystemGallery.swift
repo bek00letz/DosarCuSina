@@ -497,6 +497,7 @@ private struct GalleryFeedback: View {
     @State private var isLoading = true
     @State private var showsSpinner = false
     @State private var exampleQuestion: ExampleSectionQuestion?
+    @State private var readingQuestion: LowerReadingQuestion?
 
     var body: some View {
         GalleryPage {
@@ -540,9 +541,20 @@ private struct GalleryFeedback: View {
                     .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
                 }
             }
+            GallerySection(title: "O citire mai mică", note: "Un contor doar crește. Corectează șterge citirea veche, Lasă păstrează cea nouă deoparte, Anulează întoarce la formular.") {
+                DSCard {
+                    Button {
+                        readingQuestion = LowerReadingQuestion(previous: 45_724, previousDate: .now, value: 4_572, unit: "km")
+                    } label: {
+                        Text(verbatim: "Scrie 4.572 km").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
+                }
+            }
         }
         .dsToast($toast)
         .examplePrompt($exampleQuestion) {}
+        .readingPrompt($readingQuestion) { _ in }
     }
 }
 
