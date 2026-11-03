@@ -184,18 +184,18 @@ extension ReadinessEngine {
         func latest(_ list: [ReadinessAsset]) -> (ReadinessAsset, CalendarDay)? {
             list.compactMap { document in expiry(document).map { (document, $0) } }.max { $0.1 < $1.1 }
         }
-        if let (card, until) = latest(cards), DueDayValidity.covers(through: end, due: until) {
+        if case let (card, until)? = latest(cards), DueDayValidity.covers(through: end, due: until) {
             return ReadinessItem(id: id, status: .ok, title: typeTitle(DocumentType.idCard),
                                  detail: String(localized: "Valabilă până pe \(DosarFormat.longDay(until)). Ajunge pentru toată UE.", comment: "Trip check: an ID card valid for the whole trip."),
                                  action: .open(.asset(card.id)))
         }
-        if let (passport, until) = latest(passports), DueDayValidity.covers(through: end, due: until) {
+        if case let (passport, until)? = latest(passports), DueDayValidity.covers(through: end, due: until) {
             let why = cards.isEmpty
                 ? String(localized: "Valabil până pe \(DosarFormat.longDay(until)). În UE ajunge și pașaportul.", comment: "Trip check: no ID card, but the passport is valid inside the EU.")
                 : String(localized: "Valabil până pe \(DosarFormat.longDay(until)). Ia-l pe el: cartea de identitate nu mai e valabilă la întoarcere.", comment: "Trip check: the ID card ends before return, the passport covers the trip.")
             return ReadinessItem(id: id, status: .ok, title: typeTitle(DocumentType.passport), detail: why, action: .open(.asset(passport.id)))
         }
-        if let (card, until) = latest(cards) {
+        if case let (card, until)? = latest(cards) {
             return ReadinessItem(id: id, status: .problem, title: typeTitle(DocumentType.idCard),
                                  detail: String(localized: "Expiră pe \(DosarFormat.longDay(until)), înainte să te întorci. Fă-ți alta sau ia un pașaport valabil.", comment: "Trip check: the ID card expires before the end of an EU trip."),
                                  action: .open(.asset(card.id)))
@@ -302,7 +302,7 @@ extension ReadinessEngine {
         let greenCards = documents(of: DocumentType.greenCard, in: assets).compactMap { card in expiry(card).map { (card, $0) } }
         let greenTitle = String(localized: "Carte verde (RCA)", comment: "Trip check: the green card, which comes with the RCA.")
         let greenID = "trip.greenCard.\(car.id)"
-        if let (card, until) = greenCards.max(by: { $0.1 < $1.1 }), DueDayValidity.covers(through: plan.end, due: until) {
+        if case let (card, until)? = greenCards.max(by: { $0.1 < $1.1 }), DueDayValidity.covers(through: plan.end, due: until) {
             items.append(ReadinessItem(id: greenID, status: .ok, title: greenTitle,
                                        detail: String(localized: "Valabilă până pe \(DosarFormat.longDay(until)).", comment: "Readiness: something valid until a day (feminine)."),
                                        action: .open(.asset(card.id))))
@@ -354,7 +354,7 @@ extension ReadinessEngine {
         let title = typeTitle(DocumentType.drivingLicence)
         let going = plan.travellers.flatMap { personalDocuments(of: $0, in: assets) }
         let licences = documents(of: DocumentType.drivingLicence, in: going).compactMap { licence in expiry(licence).map { (licence, $0) } }
-        if let (licence, until) = licences.max(by: { $0.1 < $1.1 }) {
+        if case let (licence, until)? = licences.max(by: { $0.1 < $1.1 }) {
             if DueDayValidity.covers(through: plan.end, due: until) {
                 return ReadinessItem(id: id, status: .ok, title: title,
                                      detail: String(localized: "Valabil până pe \(DosarFormat.longDay(until)).", comment: "Readiness: a deadline valid until a day."),
