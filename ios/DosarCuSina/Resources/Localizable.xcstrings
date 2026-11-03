@@ -117,6 +117,64 @@
         }
       }
     },
+    "%lld lucruri de rezolvat": {
+      "comment": "Readiness summary: how many checks need the person.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Un lucru de rezolvat"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld lucruri de rezolvat"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de lucruri de rezolvat"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld lucruri nu sunt în dosar": {
+      "comment": "Readiness summary: how many things aren't in the binder.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Un lucru nu e în dosar"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld lucruri nu sunt în dosar"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de lucruri nu sunt în dosar"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld poze": {
       "comment": "Photos received from another app",
       "localizations": {

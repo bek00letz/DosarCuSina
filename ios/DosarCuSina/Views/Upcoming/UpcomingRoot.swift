@@ -131,6 +131,16 @@ struct UpcomingRoot: View {
                         sectionHeader("Mai târziu", subtitle: nil)
                     }
                 }
+                Section {
+                    // The situations that are about the whole household, from the one list of them.
+                    ForEach(ReadinessSituation.allCases.filter(\.isHouseholdWide)) { situation in
+                        if let route = situation.route(for: nil) {
+                            SituationLink(situation: situation, route: route, inList: true)
+                        }
+                    }
+                } header: {
+                    sectionHeader("Pregătește-te", subtitle: nil)
+                }
                 if snapshots.contains(where: \.isExample) {
                     Section {
                         Text("Unele termene sunt date de exemplu, marcate „Exemplu”. Le ștergi din Setări › Exemple.")

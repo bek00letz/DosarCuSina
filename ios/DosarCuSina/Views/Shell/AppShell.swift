@@ -136,6 +136,7 @@ struct RouteScreen: View {
         case .agenda: AgendaScreen()
         case .category(let key): CategoryScreen(templateKey: key)
         case .addVisit(let id): AddVisitFlow(assetID: id)
+        case .readiness(let readiness): ReadinessScreen(route: readiness)
         case .home, .upcoming, .search, .intake, .settings:
             // Tabs and sheets aren't pushed; hand them to the router instead.
             Color.clear.task { router.open(route) }

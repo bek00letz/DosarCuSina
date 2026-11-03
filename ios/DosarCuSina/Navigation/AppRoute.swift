@@ -25,6 +25,8 @@ public enum AppRoute: Hashable, Sendable, Codable {
     /// The Adaugă tab: scan or add something.
     case intake
     case settings(SettingsSection?)
+    /// A situation's checklist: a trip, selling the car, a claim (`ReadinessSituation`).
+    case readiness(ReadinessRoute)
 }
 
 public enum SettingsSection: String, Hashable, Sendable, Codable, CaseIterable {
@@ -46,6 +48,8 @@ public enum SettingsSection: String, Hashable, Sendable, Codable, CaseIterable {
 ///   `dosarcusina://provider/<uuid>`, `dosarcusina://document/<uuid>`
 /// - `dosarcusina://category/<key>`
 /// - `dosarcusina://settings` or `dosarcusina://settings/<section>`
+/// - `dosarcusina://ready/trip`, `dosarcusina://ready/trip/<member uuid>`,
+///   `dosarcusina://ready/sale/<asset uuid>`, `dosarcusina://ready/claim/<asset uuid>`
 public enum DeepLink {
     public static let scheme = "dosarcusina"
 
@@ -82,6 +86,9 @@ public enum DeepLink {
         case .settings(let section):
             components.host = "settings"
             if let section { components.path = "/" + section.rawValue }
+        case .readiness(let readiness):
+            components.host = "ready"
+            components.path = "/" + readiness.situation.rawValue + (readiness.assetID.map { "/" + $0.uuidString.lowercased() } ?? "")
         }
         return components.url ?? URL(string: "\(scheme)://home")!
     }
@@ -103,7 +110,21 @@ public enum DeepLink {
         case "document": return argument.flatMap(UUID.init(uuidString:)).map(AppRoute.document)
         case "category": return argument.map(AppRoute.category)
         case "settings": return .settings(argument.flatMap(SettingsSection.init(rawValue:)))
+        case "ready": return readiness(situation: argument, id: url.pathComponents.dropFirst(2).first)
         default: return nil
+        }
+    }
+}
+
+extension DeepLink {
+    /// `ready/<situation>[/<uuid>]`: a trip may name a member; a sale or a claim must name its section.
+    private static func readiness(situation: String?, id argument: String?) -> AppRoute? {
+        let id = argument.flatMap(UUID.init(uuidString:))
+        switch situation.flatMap(ReadinessSituation.init(rawValue:)) {
+        case .trip: return .readiness(.trip(holderID: id))
+        case .sale: return id.map { .readiness(.sale(assetID: $0)) }
+        case .claim: return id.map { .readiness(.claim(assetID: $0)) }
+        case nil: return nil
         }
     }
 }
