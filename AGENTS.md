@@ -154,7 +154,8 @@ Everything visual comes from [Views/DesignSystem/](ios/DosarCuSina/Views/DesignS
 
 - **String Catalog:** [Resources/Localizable.xcstrings](ios/DosarCuSina/Resources/Localizable.xcstrings) (the widgets have their own in `ios/DosarCuSinaWidgets/`). Romanian is the source language. Every count uses plural variations (*1 zi*, *2 zile*, *20 de zile*); never write `count == 1 ? … : …`.
 - **Distances in time:** `DurationWording` (days, then weeks, months and weeks, years and months; never rounded up), `DayCount` and `CalendarCount`, in [Services/Attention/BoxStatus.swift](ios/DosarCuSina/Services/Attention/BoxStatus.swift).
-- **Money and dates:** `Money.formatted` and `Locale.dosarDefault` ([Models/Values/Money.swift](ios/DosarCuSina/Models/Values/Money.swift)), `CalendarDay` for due days. Never `String(format:)`.
+- **Money and dates:** `Money.formatted` ([Models/Values/Money.swift](ios/DosarCuSina/Models/Values/Money.swift)) and `Locale.dosarDefault` ([ios/Shared/DosarLocale.swift](ios/Shared/DosarLocale.swift)). Never `String(format:)`.
+- **Writing dates:** `DosarFormat` ([ios/Shared/DosarFormat.swift](ios/Shared/DosarFormat.swift)) for every date the app, widgets, notifications and search write, and `DueWording` ([Services/Attention/DueWording.swift](ios/DosarCuSina/Services/Attention/DueWording.swift)) for "Expiră în 5 zile · 7 noiembrie". A due day is a `CalendarDay` ([ios/Shared/CalendarDay.swift](ios/Shared/CalendarDay.swift)) and is written as one, never turned into a `Date` first: midnight in one time zone is the evening before in another. A moment (`Date`) is written in the time zone of the calendar the days are counted in.
 - Copy follows [docs/COPY_GUIDE.md](docs/COPY_GUIDE.md).
 
 ## The placeholder-view contract

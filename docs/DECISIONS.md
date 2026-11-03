@@ -6,6 +6,12 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ---
 
+## 2026-11-03
+
+### A due day is written as the day it is
+- **Decided:** every date the app writes goes through `DosarFormat`, which lives in `ios/Shared` with `CalendarDay` and `Locale.dosarDefault` so the widget writes dates the same way. A `CalendarDay` (a due day, an expiry) is written straight from its year, month and day, never turned into a `Date` first. A `Date` (when a visit happened) is written in the time zone of the calendar the days are counted in. Both use the Gregorian calendar, whatever the phone is set to.
+- **Why:** due days were turned into midnight in the calendar the days are counted in, then written in the phone's own time zone. Whenever the two differed (the tests' Bucharest calendar on GitHub's UTC Mac, a calendar kept from before the phone changed time zone) the date read a day early. Tests run in UTC on GitHub, and the runner's time zone is never set to Bucharest to hide it.
+
 ## 2026-11-02
 
 ### Rules are checked, not remembered
