@@ -19,7 +19,10 @@ extension View {
     /// The search tab's field, on the search tab's navigation stack, with the screen's prompt.
     func shellSearch(_ query: SearchQuery) -> some View {
         @Bindable var query = query
-        return searchable(text: $query.text, prompt: Text("Nume, număr, piesă, meseriaș…", comment: "Search field prompt."))
+        // Always shown under the title: the field is the whole point of Caută, so it never
+        // hides on scroll or waits to be pulled down.
+        return searchable(text: $query.text, placement: .navigationBarDrawer(displayMode: .always),
+                          prompt: Text("Nume, număr, piesă, meseriaș…", comment: "Search field prompt."))
             .onSubmit(of: .search) { query.submit() }
             .environment(query)
     }
