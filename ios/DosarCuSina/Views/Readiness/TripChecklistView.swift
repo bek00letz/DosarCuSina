@@ -11,7 +11,6 @@ struct TripChecklistView: View {
     let holderTemplateKey: String?
 
     @Environment(\.calendar) private var calendar
-    @Environment(ShellRouter.self) private var router
     @State private var plan: TripPlan?
     @State private var draft = TripDraft()
     @State private var isEditing = false

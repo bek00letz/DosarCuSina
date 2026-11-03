@@ -96,7 +96,7 @@ struct DSReadinessRow: View {
         .disabled(!isTappable)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(title)
-        .accessibilityValue(Text(verbatim: status.spokenTitle) + Text(verbatim: ", ") + detail)
+        .accessibilityValue(Text("\(Text(verbatim: status.spokenTitle)), \(detail)", comment: "VoiceOver: a check's outcome, then why. Keep both."))
         .accessibilityHint(actionTitle ?? Text(verbatim: ""))
         .accessibilityAddTraits(isTappable ? .isButton : [])
     }
