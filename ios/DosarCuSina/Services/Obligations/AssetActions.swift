@@ -121,7 +121,8 @@ public final class AssetActions {
     }
 
     /// Saves edits. Obligations whose first date comes from a field (a document's
-    /// renewal follows its expiry date) move with that field. A changed hero value (the
+    /// renewal follows its expiry date) move with that field, and their reminders follow a
+    /// changed value they depend on (`DeadlineReminders.follow`). A changed hero value (the
     /// kilometres) is a new reading through `recordReading`, dated `readingDate` (a
     /// document's date) or now; a lower counter throws `LowerReadingQuestion` until
     /// `lowerReading` answers it, and the hero value is then worked out from the readings.
@@ -149,6 +150,9 @@ public final class AssetActions {
             asset.notes = notes
             asset.updatedAt = now()
             if let template {
+                // A value the deadlines' reminders depend on changed (the document's type, a
+                // pet's species): they remind as the new value asks, unless the person set them.
+                DeadlineReminders.follow(asset, template: template.definition, from: previous, now: now())
                 let blueprints = Dictionary(template.blueprints.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
                 for obligation in asset.activeObligations {
                     guard let key = obligation.blueprintKey, let blueprint = blueprints[key],
@@ -223,7 +227,7 @@ public final class AssetActions {
         kind: MeasurementKind,
         name: String? = nil,
         value: Double,
-        unit: String? = nil,
+        unit: MeasurementUnit? = nil,
         at date: Date? = nil,
         asExample: Bool = false,
         lowerReading: LowerReadingAnswer? = nil
@@ -353,7 +357,7 @@ enum HouseholdMutations {
     /// The asset's counter: the last reading of the cleaned series, else its hero metric field.
     static func currentMetric(of asset: Asset) -> Double? {
         let counters = (asset.measurements ?? []).filter { $0.kind.isCumulative && !$0.isDeleted }
-        if let unit = counters.max(by: { $0.recordedAt < $1.recordedAt })?.unit,
+        if let unit = counters.max(by: { $0.recordedAt < $1.recordedAt })?.measurementUnit,
            let current = readingSeries(of: asset, unit: unit).current {
             return current
         }
@@ -377,20 +381,17 @@ enum HouseholdMutations {
         heroMetricField(of: template).flatMap { values[$0.key]?.numberValue }
     }
 
-    static func heroMetricUnit(template: TemplateDefinition) -> String? {
+    static func heroMetricUnit(template: TemplateDefinition) -> MeasurementUnit? {
         heroMetricField(of: template)?.unit
     }
 }
 
 extension MeasurementKind {
     /// The usual kind for a unit, used when a reading comes from a template field.
-    public static func forUnit(_ unit: String?) -> MeasurementKind {
-        switch unit {
-        case "km": return .odometer
-        case "kg": return .bodyWeight
-        case "h": return .engineHours
-        case "kWh": return .electricity
-        default: return .cycles
-        }
+    public static func forUnit(_ unit: MeasurementUnit?) -> MeasurementKind {
+        let kinds: [MeasurementUnit: MeasurementKind] = [
+            .kilometres: .odometer, .kilograms: .bodyWeight, .engineHours: .engineHours, .kilowattHours: .electricity,
+        ]
+        return unit.flatMap { kinds[$0] } ?? .cycles
     }
 }

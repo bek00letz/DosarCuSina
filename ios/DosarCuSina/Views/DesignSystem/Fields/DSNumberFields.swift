@@ -4,7 +4,7 @@ import SwiftUI
 /// through `RomanianNumber`, so a value shown and read back never changes.
 enum DSNumberText {
     /// The field's validation for what was typed: the reader's message when it refuses.
-    static func validation(_ text: String, as kind: NumberKind, unit: String? = nil, isRequired: Bool) -> (DSValidation, Decimal?) {
+    static func validation(_ text: String, as kind: NumberKind, unit: MeasurementUnit? = nil, isRequired: Bool) -> (DSValidation, Decimal?) {
         switch RomanianNumber.read(text, as: kind, unit: unit) {
         case .success(let reading):
             return (.valid, reading.value)
@@ -133,8 +133,8 @@ struct DSMoneyField: View {
 struct DSMetricField: View {
     let title: LocalizedStringKey
     @Binding var value: Double?
-    /// The unit as shown after the number, e.g. "km", "h", "kg". Comes from the template.
-    let unit: String
+    /// The unit shown after the number ("km", "h", "kg"), from the template; nil for none.
+    let unit: MeasurementUnit?
     var fractionDigits: ClosedRange<Int> = 0...1
     /// False for numbers read as labels rather than amounts, such as a year.
     var groupsDigits: Bool = true
@@ -152,7 +152,7 @@ struct DSMetricField: View {
     init(
         _ title: LocalizedStringKey,
         value: Binding<Double?>,
-        unit: String,
+        unit: MeasurementUnit?,
         fractionDigits: ClosedRange<Int> = 0...1,
         groupsDigits: Bool = true,
         isRequired: Bool = false,
@@ -204,8 +204,8 @@ struct DSMetricField: View {
                     .keyboardType(fractionDigits.upperBound > 0 ? .decimalPad : .numberPad)
                     .font(.body.monospacedDigit())
                     .focused($isFocused)
-                    .accessibilityHint(Text(verbatim: unit))
-                Text(verbatim: unit)
+                    .accessibilityHint(Text(verbatim: unit?.label ?? ""))
+                Text(verbatim: unit?.label ?? "")
                     .foregroundStyle(DS.Palette.secondaryLabel)
                     .accessibilityHidden(true)
             }

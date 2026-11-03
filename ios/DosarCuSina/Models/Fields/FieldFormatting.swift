@@ -118,7 +118,7 @@ public enum FieldFormatter {
     /// Turns typed text into a stored value, or nil when the text is empty or unreadable.
     /// Dates, toggles and multi-choice come from their own controls, not from text.
     /// `unit` is the field's unit: kilometres are read as whole numbers.
-    public static func value(from raw: String, as type: FieldType, currency: String = Money.defaultCurrency, unit: String? = nil) -> FieldValue? {
+    public static func value(from raw: String, as type: FieldType, currency: String = Money.defaultCurrency, unit: MeasurementUnit? = nil) -> FieldValue? {
         let text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return nil }
         switch type.valueKind {
@@ -165,7 +165,7 @@ public enum FieldFormatter {
     }
 
     /// Human-readable text for a stored value, using the field's type and unit.
-    public static func display(_ value: FieldValue, as type: FieldType, unit: String? = nil, locale: Locale = .dosarDefault) -> String {
+    public static func display(_ value: FieldValue, as type: FieldType, unit: MeasurementUnit? = nil, locale: Locale = .dosarDefault) -> String {
         switch value {
         case _ where SecretFields.isSealed(value):
             // Sealed text is a secret whatever the field's type says.
@@ -182,7 +182,7 @@ public enum FieldFormatter {
             return number.formatted(.number.grouping(.never).precision(.fractionLength(0)).locale(locale))
         case .number(let number):
             let formatted = number.formatted(.number.locale(locale).precision(.fractionLength(0...2)))
-            if let unit, !unit.isEmpty { return "\(formatted) \(unit)" }
+            if let unit { return "\(formatted) \(unit.label)" }
             return formatted
         case .money(let money):
             return money.formatted(locale: locale)

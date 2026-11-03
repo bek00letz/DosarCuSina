@@ -243,7 +243,7 @@ enum CaptureMapping {
             return DosarFormat.longDay(CalendarDay(year: day.year, month: day.month, day: day.day))
         case .money(let amount): return Self.money(amount).formattedCompact()
         case .number(let number): return NSDecimalNumber(decimal: number).stringValue
-        case .metric(let number, let unit): return "\(NSDecimalNumber(decimal: number).stringValue) \(unit)"
+        case .metric(let number, let unit): return "\(NSDecimalNumber(decimal: number).stringValue) \(unit.label)"
         case .lineItems(let items): return items.map(\.description).joined(separator: ", ")
         }
     }

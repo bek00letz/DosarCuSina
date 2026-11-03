@@ -246,6 +246,7 @@ struct DossierImporter {
             obligation.setDueDay(dto.dueDate, calendar: calendar)
             obligation.dueMetric = dto.dueMetric
             obligation.reminders = dto.reminders
+            obligation.remindersCustomized = dto.remindersCustomized ?? false
             obligation.reminderMinuteOfDay = dto.reminderMinuteOfDay
             obligation.recurrence = dto.recurrence
             obligation.estimatedCost = dto.estimatedCost
@@ -356,7 +357,9 @@ struct DossierImporter {
         for dto in package.measurements {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.measurements) }
             guard map[id] == nil else { result.skipped += 1; continue }
-            let log = MeasurementLog(id: id, kind: MeasurementKind(rawValue: dto.kind) ?? .custom, name: dto.name, value: dto.value, unit: dto.unit, recordedAt: dto.recordedAt)
+            let log = MeasurementLog(id: id, kind: MeasurementKind(rawValue: dto.kind) ?? .custom, name: dto.name, value: dto.value, recordedAt: dto.recordedAt)
+            // Any label an earlier version wrote ("m³", "mc", "kWh") is kept as its key; no unit stays none.
+            log.unit = MeasurementUnit.storedKey(for: dto.unit)
             log.secondaryValue = dto.secondaryValue
             log.unitPriceAmount = dto.unitPrice?.amount
             log.unitPriceCurrency = dto.unitPrice?.currency

@@ -373,7 +373,7 @@ enum DossierV2Converter {
     static func convert(_ dto: MeasurementLogDTO) -> DossierV3.Measurement {
         DossierV3.Measurement(
             id: DossierV3.id(dto.id), assetId: DossierV3.id(dto.assetId), kind: measurementKind(domain: dto.domainRawValue, unit: dto.unit).rawValue,
-            name: dto.metricName, value: dto.value, secondaryValue: dto.secondaryValue, unit: dto.unit, recordedAt: dto.recordedAt,
+            name: dto.metricName, value: dto.value, secondaryValue: dto.secondaryValue, unit: MeasurementUnit.storedKey(for: dto.unit), recordedAt: dto.recordedAt,
             unitPrice: dto.unitPrice.map { Money(Decimal($0)) }, isSelfRead: dto.isSelfRead, referenceMin: dto.referenceMin,
             referenceMax: dto.referenceMax, source: dto.labOrProviderName, notes: dto.notes, isExample: false
         )
@@ -390,7 +390,7 @@ enum DossierV2Converter {
         if text.contains("tensiune") { return .bloodPressure }
         if text.contains("greutate") { return .bodyWeight }
         if text.contains("dioptri") { return .diopters }
-        if text.contains("kilometraj") || unit == "km" { return .odometer }
+        if text.contains("kilometraj") || MeasurementUnit(unit) == .kilometres { return .odometer }
         if text.contains("analiz") || text.contains("biomarker") { return .biomarker }
         return .custom
     }

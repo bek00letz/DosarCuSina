@@ -109,6 +109,8 @@ public enum DossierV3 {
         public var isExample: Bool
         public var createdAt: Date
         public var updatedAt: Date
+        /// The person set the reminders themselves; written only when true, missing reads as false.
+        public var remindersCustomized: Bool? = nil
     }
 
     public struct HistoryEntry: Codable, Hashable, Sendable {

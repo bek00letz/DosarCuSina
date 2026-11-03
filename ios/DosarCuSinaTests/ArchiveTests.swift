@@ -88,7 +88,7 @@ struct ArchiveTests {
         let boats = try #require(templates["custom.0b6c6f43-6c1e-4d1a-9c55-7d3b4f1f2a10"])
         #expect(boats.isCustom)
         #expect(boats.sections.first?.fields.count == 2)
-        #expect(boats.blueprints.first?.recurrence == .metric(every: 100, unit: "h", fallback: .years(1)))
+        #expect(boats.blueprints.first?.recurrence == .metric(every: 100, unit: .engineHours, fallback: .years(1)))
         let vehicle = try #require(templates[BuiltInTemplates.Key.vehicle])
         #expect(vehicle.isOnHome == false, "Household preferences travel with the archive")
         #expect(!vehicle.sections.isEmpty, "Built-in definitions come from this app's catalog")
@@ -196,7 +196,7 @@ struct ArchiveTests {
         #expect(result == expected)
         let names = { (container: ModelContainer) in Set(try ModelContext(container).fetch(FetchDescriptor<Asset>()).map(\.name)) }
         #expect(try names(away) == names(here))
-        #expect(try ModelContext(away).fetchCount(FetchDescriptor<DosarSchemaV4.Attachment>()) == ModelContext(here).fetchCount(FetchDescriptor<DosarSchemaV4.Attachment>()))
+        #expect(try ModelContext(away).fetchCount(FetchDescriptor<DosarSchemaV5.Attachment>()) == ModelContext(here).fetchCount(FetchDescriptor<DosarSchemaV5.Attachment>()))
 
         // A failure part way leaves nothing behind.
         var broken = package
@@ -216,7 +216,7 @@ struct ArchiveTests {
         let context = ModelContext(container)
         let firm = try #require(try context.fetch(FetchDescriptor<Provider>()).first { $0.name == "Service auto exemplu" })
         #expect(firm.taxID == "12345678")
-        let policies = try context.fetch(FetchDescriptor<DosarSchemaV4.Attachment>()).filter { $0.title == "Poliță RCA 2025" }
+        let policies = try context.fetch(FetchDescriptor<DosarSchemaV5.Attachment>()).filter { $0.title == "Poliță RCA 2025" }
         #expect(policies.first?.validUntil.map { CalendarDay($0, calendar: calendar) } == CalendarDay("2026-12-14"),
                 "Last year's policy keeps last year's end, whatever its deadline says now")
 

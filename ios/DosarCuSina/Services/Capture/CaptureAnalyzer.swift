@@ -158,7 +158,7 @@ public struct CaptureAnalyzer: Sendable {
             addVehicleIdentity(text, into: &fields)
             addLineItems(text, into: &fields)
             if let odometer = RomanianFieldExtractor.odometer(in: text) {
-                fields.add(.odometer, .metric(value: odometer.km, unit: "km"), odometer.labelled ? 0.8 : 0.55, odometer.source)
+                fields.add(.odometer, .metric(value: odometer.km, unit: .kilometres), odometer.labelled ? 0.8 : 0.55, odometer.source)
             }
         case .fiscalReceipt, .warrantyCertificate:
             addPurchase(text, kind: kind, years: years, into: &fields)
@@ -168,7 +168,7 @@ public struct CaptureAnalyzer: Sendable {
                 fields.add(.expiryDate, .day(expiry.day), 0.8, expiry.source)
             }
             if let odometer = RomanianFieldExtractor.odometer(in: text) {
-                fields.add(.odometer, .metric(value: odometer.km, unit: "km"), odometer.labelled ? 0.8 : 0.55, odometer.source)
+                fields.add(.odometer, .metric(value: odometer.km, unit: .kilometres), odometer.labelled ? 0.8 : 0.55, odometer.source)
             }
             addIssuer(text, into: &fields)
             addIssueDate(text, years: years, into: &fields)

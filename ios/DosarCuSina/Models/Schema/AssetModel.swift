@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV4 {
+extension DosarSchemaV5 {
     /// Something the household looks after: a car, a home, a pet, a passport.
     /// Its details live in `values`, described by the template named in `templateKey`.
     @Model

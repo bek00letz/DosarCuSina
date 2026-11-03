@@ -62,7 +62,7 @@ struct CaptureAnalyzerTests {
         #expect(byKey[.providerTaxID]?.tier == .deterministic)
         #expect(byKey[.total]?.value.money == CaptureMoney(amount: 695, currencyCode: "RON"))
         #expect(byKey[.licensePlate]?.value.text == "B 123 ABC")
-        #expect(byKey[.odometer]?.value == .metric(value: 86_420, unit: "km"))
+        #expect(byKey[.odometer]?.value == .metric(value: 86_420, unit: .kilometres))
         #expect(byKey[.invoiceNumber]?.value.text == "AUT 004512")
         #expect(byKey[.issueDate]?.value.day == CaptureDay(year: 2025, month: 3, day: 14))
 
@@ -190,7 +190,7 @@ struct CaptureAnalyzerTests {
         #expect(analysis.kind == .itpReport)
         let byKey = Dictionary(analysis.fields.map { ($0.key, $0) }, uniquingKeysWith: { a, _ in a })
         #expect(byKey[.expiryDate]?.value.day == CaptureDay(year: 2027, month: 3, day: 14))
-        #expect(byKey[.odometer]?.value == .metric(value: 86_420, unit: "km"))
+        #expect(byKey[.odometer]?.value == .metric(value: 86_420, unit: .kilometres))
         #expect(route(analysis).reminder?.blueprintKey == BuiltInBlueprints.vehicleITP)
     }
 

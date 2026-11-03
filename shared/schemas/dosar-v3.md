@@ -42,6 +42,29 @@ files, even when empty. Readers treat a missing data file as an empty array.
 - **Money:** `{"amount": "175.50", "currency": "RON"}`. The amount is a decimal string with a dot; the currency is ISO 4217. Amounts in different currencies are never added together.
 - **Optional values** are omitted rather than written as `null`. Readers accept either.
 - **Enumerations** are lowercase-camel strings. A reader that meets an unknown value keeps the record and falls back: unknown field types become `text`, unknown kinds become the generic one (`routine`, `note`, `other`), unknown trades are kept as text.
+- **Units** (a field's `unit`, a metric recurrence's `unit`, a measurement's `unit`) are keys, never display text. A reader shows its own label for each.
+
+  | Key | Unit | Label in Romanian |
+  | :--- | :--- | :--- |
+  | `km` | kilometres | km |
+  | `h` | engine hours | h |
+  | `kwh` | kilowatt-hours | kWh |
+  | `m3` | cubic metres | m³ |
+  | `gcal` | gigacalories | Gcal |
+  | `kg` | kilograms | kg |
+  | `mgdl` | milligrams per decilitre | mg/dL |
+  | `mmhg` | millimetres of mercury | mmHg |
+  | `dpt` | dioptres | dpt |
+  | `cm3` | cubic centimetres | cm³ |
+  | `hp` | horsepower | CP |
+  | `m2` | square metres | m² |
+  | `months` | months | luni |
+  | `shots` | coffees made by an espresso machine | cafele |
+
+  - **Older archives** wrote the Romanian label instead (`m³`, `mc`, `kWh`, `Gcal`, `luni`, `cafele`, `CP`, `m²`, `cm³`). Readers match a unit against the keys and labels above ignoring case, diacritics and superscripts (`m³` is `m3`), and keep the key.
+  - **A unit of the person's own** (a custom category's "ore motor") isn't in the table: it is written as typed, and read and shown as written.
+  - **No unit** is an empty string for a measurement, and a missing key for a field.
+  - Readers older than this table show a key as it is (`m3` instead of `m³`); the number and its unit are unchanged.
 
 ## Integrity
 
@@ -149,7 +172,7 @@ sides, a field that is `secret` or `isSensitive` on the device stays so.
 {"type": "legal", "rule": "vehicleITP"}
 ```
 
-- **`unit`:** `day|week|month|year`.
+- **`unit`:** `day|week|month|year` for an interval and `fallbackUnit`; for a `metric` recurrence, the counter's unit key (see Units above), such as `km` or `h`.
 - **`anchor`:** `dueDate` counts the next cycle from the previous due date; `completion` counts it from the day it was done.
 - **Fixed dates:** the next cycle is the first listed date after the previous due date. 29 February becomes 28 February in common years, and month ends clamp (31 January plus one month is 28 or 29 February).
 - **`vehicleITP`:** 6 months for cars in ridesharing or taxi use; otherwise 2 years while the car is at most 12 years old and 1 year after, counted from the inspection.
@@ -231,7 +254,9 @@ Built-in option keys:
 `dueMetric`?, `reminders`, `reminderMinuteOfDay`?, `recurrence`,
 `estimatedCost`?, `provider`?, `reference`?, `status`
 (`active|paused|done|archived`), `snoozedUntil`?, `isExample`, `createdAt`,
-`updatedAt`.
+`updatedAt`, `remindersCustomized`?.
+
+- **`remindersCustomized`** (optional): `true` when the person set this deadline's reminders themselves. Written only when true; a missing key is `false`. A deadline that isn't customised takes its blueprint's profile for its asset's values again whenever a value that profile depends on changes (the `reminderVariants` field, such as a document's type or a pet's species); a customised one keeps its own.
 
 **Household obligations** have no `assetId`. The one in use today is the yearly rental income declaration:
 
@@ -278,6 +303,8 @@ diacritics, and words joined by `-`.
 `name`, `value`, `secondaryValue`?, `unit`, `recordedAt`, `unitPrice`?,
 `isSelfRead`, `referenceMin`?, `referenceMax`?, `source`?, `notes`?,
 `isExample`.
+
+- **`unit`:** a unit key (see Units above), or `""` when the reading has none. Readings in the same unit form one series: a counter's readings are matched to its field and its metric deadlines by this key.
 
 ### Attachment (`data/attachments.json`)
 

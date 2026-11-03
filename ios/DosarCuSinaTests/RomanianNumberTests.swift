@@ -113,16 +113,16 @@ struct RomanianNumberTests {
     }
 
     @Test func fieldKindsFollowTheUnit() {
-        #expect(NumberKind.forField(unit: "km") == .kilometres)
-        #expect(NumberKind.forField(unit: "kg") == .meterIndex)
-        #expect(NumberKind.forField(unit: "", allowsDecimals: false) == .count)
+        #expect(NumberKind.forField(unit: .kilometres) == .kilometres)
+        #expect(NumberKind.forField(unit: .kilograms) == .meterIndex)
+        #expect(NumberKind.forField(unit: nil, allowsDecimals: false) == .count)
     }
 
     /// K1 turned around: every reader in the app gives the same answer.
     @Test func everyReaderAgrees() {
         #expect(RomanianNumber.value("45,724", as: .money) == RomanianFieldExtractor.amount("45,724")?.value)
-        #expect(FieldFormatter.value(from: "45.724", as: .metric, unit: "km") == .number(45724))
-        #expect(FieldFormatter.value(from: "45,724", as: .metric, unit: "km") == .number(45724))
+        #expect(FieldFormatter.value(from: "45.724", as: .metric, unit: .kilometres) == .number(45724))
+        #expect(FieldFormatter.value(from: "45,724", as: .metric, unit: .kilometres) == .number(45724))
         let bill = RomanianUtilityParser.shared.parseUtilityBill(text: "ENGIE Romania\nCod client: 1234567890\nIndex nou: 12.345 mc")
         #expect(bill.indexReading == 12345)
         #expect(RomanianFieldExtractor.odometer(in: CaptureText("Total 86,420 km"))?.km == 86420)

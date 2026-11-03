@@ -33,7 +33,7 @@ public struct HistoryDeletion: Equatable {
     }
 }
 
-extension DosarSchemaV4.Obligation {
+extension DosarSchemaV5.Obligation {
     /// The completion the deadline's current cycle comes from: the one that closed the
     /// latest cycle. Ordered by the cycle closed, which only moves forward, so a completion
     /// dated in the past ("on date" last month) still counts as the latest when it is.

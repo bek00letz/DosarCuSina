@@ -106,7 +106,7 @@ struct ActionsTests {
         let (asset, _) = try car(in: context)
         let actions = ObligationActions(context: context, calendar: calendar, now: { noon("2026-11-02") })
         let service = try actions.create(title: "Revizie", kind: .maintenance, dueDay: CalendarDay("2026-11-02"), for: asset,
-                                         recurrence: .metric(every: 15_000, unit: "km", fallback: .years(1)))
+                                         recurrence: .metric(every: 15_000, unit: .kilometres, fallback: .years(1)))
         try actions.complete(service, metricReading: 101_000)
         #expect(service.dueMetric == 116_000)
         #expect(asset.value("vehicle.odometer") == .number(101_000), "The reading updates the odometer")
@@ -138,9 +138,9 @@ struct ActionsTests {
         var values = FieldValues()
         values["pet.weight"] = .number(4.2)
         let cat = try actions.create(name: "Pisica de test", template: template, values: values)
-        try actions.recordMeasurement(on: cat, kind: .bodyWeight, value: 4.0, unit: "kg", at: noon("2026-06-01"))
+        try actions.recordMeasurement(on: cat, kind: .bodyWeight, value: 4.0, unit: .kilograms, at: noon("2026-06-01"))
         #expect(cat.value("pet.weight") == .number(4.2), "An older reading doesn't replace a newer one")
-        try actions.recordMeasurement(on: cat, kind: .bodyWeight, value: 4.6, unit: "kg", at: noon("2026-11-02"))
+        try actions.recordMeasurement(on: cat, kind: .bodyWeight, value: 4.6, unit: .kilograms, at: noon("2026-11-02"))
         #expect(cat.value("pet.weight") == .number(4.6))
     }
 

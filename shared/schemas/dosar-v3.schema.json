@@ -32,7 +32,7 @@
       "properties": {
         "type": { "enum": ["none", "interval", "fixedDates", "metric", "legal"] },
         "every": { "type": "number" },
-        "unit": { "type": "string" },
+        "unit": { "type": "string", "description": "day, week, month or year; for a metric recurrence or a field, a unit key such as km, h, kwh or m3 (dosar-v3.md, Units)" },
         "anchor": { "enum": ["dueDate", "completion"] },
         "dates": { "type": "array", "items": { "$ref": "#/$defs/monthDay" } },
         "fallbackEvery": { "type": "integer", "minimum": 1 },
@@ -100,7 +100,7 @@
             ]
           }
         },
-        "unit": { "type": "string" },
+        "unit": { "type": "string", "description": "A unit key such as km, kg or months, or the unit of the person's own as typed (dosar-v3.md, Units)" },
         "placeholder": { "type": "string" },
         "defaultValue": { "$ref": "#/$defs/fieldValue" },
         "derivation": {
@@ -258,7 +258,8 @@
           "recurrence": { "$ref": "#/$defs/recurrence" },
           "estimatedCost": { "$ref": "#/$defs/money" },
           "status": { "enum": ["active", "paused", "done", "archived"] },
-          "snoozedUntil": { "$ref": "#/$defs/timestamp" }
+          "snoozedUntil": { "$ref": "#/$defs/timestamp" },
+          "remindersCustomized": { "type": "boolean" }
         }
       }
     },

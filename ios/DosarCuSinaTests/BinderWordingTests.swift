@@ -39,7 +39,7 @@ struct BinderWordingTests {
             date: noon("2025-03-14", calendar: calendar), metricAtTime: 124_300, metricSince: 18_200, daysSince: 600,
             cost: Money(420), partBrandOrCode: nil, supplierName: nil, providerNames: [], providerIds: []
         )
-        let line = ComponentLine.detail(occurrence, unit: "km", locale: ro, calendar: calendar)
+        let line = ComponentLine.detail(occurrence, unit: .kilometres, locale: ro, calendar: calendar)
         #expect(line.hasPrefix("acum 18.200 km · 14 mar. 2025 · 420"))
         #expect(line.contains("RON") || line.contains("lei"))
     }

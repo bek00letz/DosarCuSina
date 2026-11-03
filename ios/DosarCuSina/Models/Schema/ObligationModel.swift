@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV4 {
+extension DosarSchemaV5 {
     /// Something that has to be done by a date, once or on a schedule: ITP, RCA,
     /// local taxes, a vaccine, a subscription renewal.
     ///
@@ -31,6 +31,10 @@ extension DosarSchemaV4 {
         /// passport: 180, six months); 0 for everything else. From the document type,
         /// through the blueprint's profile (`ReminderProfile.travelMarginDays`). Version 4.
         public var travelMarginDays: Int = 0
+        /// The person set this deadline's reminders themselves (leads, grace or the follow-up),
+        /// so they stay as set when the section changes. False: the reminders follow what the
+        /// blueprint gives for the section's values (`DeadlineReminders`). Version 5.
+        public var remindersCustomized: Bool = false
         /// Minutes after midnight for this obligation's reminders; nil uses the app setting.
         public var reminderMinuteOfDay: Int?
         /// JSON `RecurrenceRule`.

@@ -246,7 +246,8 @@ public struct DossierArchiveService {
                 reminders: obligation.reminders, reminderMinuteOfDay: obligation.reminderMinuteOfDay,
                 recurrence: obligation.recurrence, estimatedCost: obligation.estimatedCost, provider: obligation.provider,
                 reference: obligation.reference, status: obligation.statusRaw, snoozedUntil: obligation.snoozedUntil,
-                isExample: obligation.isExample, createdAt: obligation.createdAt, updatedAt: obligation.updatedAt
+                isExample: obligation.isExample, createdAt: obligation.createdAt, updatedAt: obligation.updatedAt,
+                remindersCustomized: obligation.remindersCustomized ? true : nil
             )
         }
         let historyDTOs = entries.map { entry in
@@ -282,7 +283,7 @@ public struct DossierArchiveService {
         let measurementDTOs = measurements.map { log in
             DossierV3.Measurement(
                 id: DossierV3.id(log.id), assetId: DossierV3.id(log.asset?.id), kind: log.kindRaw, name: log.name,
-                value: log.value, secondaryValue: log.secondaryValue, unit: log.unit, recordedAt: log.recordedAt,
+                value: log.value, secondaryValue: log.secondaryValue, unit: MeasurementUnit.storedKey(for: log.unit), recordedAt: log.recordedAt,
                 unitPrice: log.unitPrice, isSelfRead: log.isSelfRead, referenceMin: log.referenceMin,
                 referenceMax: log.referenceMax, source: log.source, notes: log.notes, isExample: log.isExample
             )

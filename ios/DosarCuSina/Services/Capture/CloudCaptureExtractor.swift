@@ -372,7 +372,7 @@ enum CloudAnswerMapper {
             case .integer:
                 guard let value = CloudSchema.wholeNumber(raw, kind: key == .odometer ? .kilometres : .count), value >= 0, value < 10_000_000 else { continue }
                 if key == .minimumMonths, !ContractReader.plausibleMonths.contains(value) { continue }
-                let typed: CaptureValue = key == .odometer ? .metric(value: Decimal(value), unit: "km") : .number(Decimal(value))
+                let typed: CaptureValue = key == .odometer ? .metric(value: Decimal(value), unit: .kilometres) : .number(Decimal(value))
                 add(key, typed, compactText.contains(String(value)) ? grounded : candidate)
             case .lineItems:
                 let currency = ModelAnswerMapper.normalizedCurrency(nil)

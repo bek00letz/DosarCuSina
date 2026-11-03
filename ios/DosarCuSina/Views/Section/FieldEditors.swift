@@ -40,9 +40,9 @@ struct FieldEditor: View {
         case .secret:
             DSSecretField(title, value: textBinding, footnote: footnote)
         case .number, .metric:
-            DSMetricField(title, value: numberBinding, unit: field.unit ?? "", isRequired: isRequired)
+            DSMetricField(title, value: numberBinding, unit: field.unit, isRequired: isRequired)
         case .year:
-            DSMetricField(title, value: numberBinding, unit: "", fractionDigits: 0...0, groupsDigits: false, isRequired: isRequired) { year in
+            DSMetricField(title, value: numberBinding, unit: nil, fractionDigits: 0...0, groupsDigits: false, isRequired: isRequired) { year in
                 FieldEditor.validation(FieldFormatter.validate(String(Int(year)), as: .year))
             }
         case .money:
