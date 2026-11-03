@@ -232,13 +232,8 @@ private struct CustomFactEditor: View {
                 DSToggleField("Nu arăta în căutare", isOn: $isSensitive)
             }
             HStack(spacing: DS.Space.s) {
-                Button(role: .destructive, action: onDelete) {
-                    Text("Șterge rândul", comment: "Deletes a custom fact row.")
-                        .frame(maxWidth: .infinity, minHeight: 34)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
-                Button {
+                DSSecondaryButton(Text("Șterge rândul", comment: "Deletes a custom fact row."), role: .destructive, action: onDelete)
+                DSPrimaryButton(Text("Gata", comment: "Closes an editor and keeps what was typed.")) {
                     if isEmpty {
                         onCancel()
                     } else {
@@ -249,12 +244,7 @@ private struct CustomFactEditor: View {
                         fact.isSensitive = isSensitive || isSecret
                         onSave(fact)
                     }
-                } label: {
-                    Text("Gata", comment: "Closes an editor and keeps what was typed.")
-                        .frame(maxWidth: .infinity, minHeight: 34)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
             }
         }
         .padding(.vertical, DS.Space.xs)

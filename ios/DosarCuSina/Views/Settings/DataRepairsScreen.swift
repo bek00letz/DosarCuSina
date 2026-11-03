@@ -95,10 +95,7 @@ private struct DataRepairRow: View {
             Text(verbatim: finding.message)
                 .dsFont(.body)
                 .fixedSize(horizontal: false, vertical: true)
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: DS.Space.s) { buttons }
-                VStack(alignment: .leading, spacing: DS.Space.xs) { buttons }
-            }
+            DSAdaptiveStack(spacing: DS.Space.s, stackedSpacing: DS.Space.xs) { buttons }
         }
         .padding(.vertical, DS.Space.xs)
     }

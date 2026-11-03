@@ -133,7 +133,7 @@ private struct DSDateInput<Accessory: View>: View {
                     } icon: {
                         Image(systemName: "calendar.badge.plus")
                     }
-                    .frame(maxWidth: .infinity, minHeight: 28, alignment: .leading)
+                    .frame(maxWidth: .infinity, minHeight: DS.Control.minimumHitTarget, alignment: .leading)
                     .contentShape(.rect)
                 }
                 .buttonStyle(.borderless)

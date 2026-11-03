@@ -17,13 +17,14 @@ struct AddRoot: View {
     @State private var toast: DSToast?
     @State private var hiddenItems: Set<UUID> = []
     @State private var practiceItem: InboxItem?
+    @State private var unreadableItem: UnreadableInboxItem?
 
     private var inbox: IntakeInbox { .shared }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.xl) {
-                if !pending.isEmpty { reviewSection }
+                if !pending.isEmpty || !inbox.unreadable.isEmpty { reviewSection }
                 waysIn
                 shareCard
             }
@@ -32,6 +33,7 @@ struct AddRoot: View {
         .background(DS.Palette.background)
         .navigationTitle("Adaugă")
         .dsAnimation(value: pending.map(\.id))
+        .dsAnimation(value: inbox.unreadable.map(\.id))
         .dsToast($toast)
         .captureSourcePicker($source) { payload in
             flow = CaptureFlowInput(payload: payload)
@@ -55,6 +57,17 @@ struct AddRoot: View {
             Button("Renunță", role: .cancel) {}
         } message: { _ in
             Text("Ai văzut cum ajunge aici o factură. Datele de pe ea nu sunt reale.")
+        }
+        .confirmationDialog(
+            Text("Nu am putut deschide ce ai trimis"),
+            isPresented: Binding(get: { unreadableItem != nil }, set: { if !$0 { unreadableItem = nil } }),
+            titleVisibility: .visible,
+            presenting: unreadableItem
+        ) { item in
+            Button("Șterge", role: .destructive) { inbox.remove(item) }
+            Button("Renunță", role: .cancel) {}
+        } message: { _ in
+            Text("S-a stricat pe drum sau vine de la o versiune mai nouă a aplicației. Trimite-l din nou din aplicația din care a venit.")
         }
         .sheet(isPresented: $isAddingManually) {
             ManualAddFlow { message in
@@ -127,12 +140,16 @@ struct AddRoot: View {
 
     private var reviewSection: some View {
         VStack(alignment: .leading, spacing: DS.Space.s) {
-            DSSectionHeader("De verificat", subtitle: "Ce ai trimis din alte aplicații.", count: pending.count)
+            DSSectionHeader("De verificat", subtitle: "Ce ai trimis din alte aplicații.", count: pending.count + inbox.unreadable.count)
             DSCard {
                 VStack(alignment: .leading, spacing: DS.Space.xs) {
                     ForEach(Array(pending.enumerated()), id: \.element.id) { index, item in
                         if index > 0 { DS.Hairline() }
                         inboxRow(item)
+                    }
+                    ForEach(Array(inbox.unreadable.enumerated()), id: \.element.id) { index, item in
+                        if index > 0 || !pending.isEmpty { DS.Hairline() }
+                        unreadableRow(item)
                     }
                 }
             }
@@ -159,6 +176,22 @@ struct AddRoot: View {
         }
         .accessibilityAction(named: Text("Șterge")) { dismiss(item) }
         .accessibilityHint(Text("Deschide ca să verifici și să salvezi."))
+    }
+
+    /// Something that arrived but couldn't be opened: said calmly, with a way to remove it.
+    private func unreadableRow(_ item: UnreadableInboxItem) -> some View {
+        Button { unreadableItem = item } label: {
+            DSListRow(
+                title: Text("Nu am putut deschide"),
+                subtitle: Text(verbatim: InboxWording.received(item.setAsideAt)),
+                systemImage: "questionmark.folder",
+                showsChevron: true,
+                trailing: { EmptyView() }
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityAction(named: Text("Șterge")) { inbox.remove(item) }
+        .accessibilityHint(Text("Spune ce poți face cu el."))
     }
 
     // MARK: Actions

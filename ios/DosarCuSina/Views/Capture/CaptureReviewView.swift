@@ -674,10 +674,7 @@ private struct CaptureAlternativeNote: View {
     let onUse: () -> Void
 
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(alignment: .firstTextBaseline, spacing: DS.Space.s) { note; button }
-            VStack(alignment: .leading, spacing: DS.Space.xxs) { note; button }
-        }
+        DSAdaptiveStack(verticalAlignment: .firstTextBaseline, spacing: DS.Space.s, stackedSpacing: DS.Space.xxs) { note; button }
     }
 
     private var note: some View {

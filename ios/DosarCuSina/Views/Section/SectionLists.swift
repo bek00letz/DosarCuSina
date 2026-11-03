@@ -121,7 +121,15 @@ struct ObligationListScreen: View {
             }
         }
         .sheet(isPresented: $isAddingCustom) {
-            CustomObligationSheet(asset: asset)
+            NavigationStack {
+                DeadlineForm(assetID: asset.id, startsWithOwn: true) { _ in
+                    isAddingCustom = false
+                    addedCount += 1
+                }
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
+                }
+            }
         }
         .userErrorAlert($error)
         .examplePrompt($exampleQuestion) { retryAfterKeeping?() }
@@ -178,11 +186,7 @@ private struct SuggestionRow: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            Button(action: add) {
-                Text("Adaugă", comment: "Adds a suggested obligation.")
-                    .frame(minHeight: 30)
-            }
-            .buttonStyle(.bordered)
+            DSCompactButton("Adaugă", action: add)
         }
         .padding(.vertical, DS.Space.xxs)
         .accessibilityElement(children: .combine)
@@ -232,101 +236,6 @@ struct FirstDateSheet: View {
         }
         .dsDiscardGuard(hasChanges: date != nil)
         .presentationDetents([.medium, .large])
-    }
-}
-
-/// A deadline of the person's own: a name, a date, and whether it repeats.
-struct CustomObligationSheet: View {
-    let asset: Asset
-
-    enum Repeat: String, CaseIterable, Hashable {
-        case never, monthly, yearly
-
-        var title: String {
-            switch self {
-            case .never: String(localized: "O singură dată", comment: "Repeat option.")
-            case .monthly: String(localized: "În fiecare lună", comment: "Repeat option.")
-            case .yearly: String(localized: "În fiecare an", comment: "Repeat option.")
-            }
-        }
-
-        var rule: RecurrenceRule {
-            switch self {
-            case .never: .none
-            case .monthly: .interval(.months(1), anchor: .dueDate)
-            case .yearly: .interval(.years(1), anchor: .dueDate)
-            }
-        }
-    }
-
-    /// Reminders for the person's own deadlines: a week ahead and on the day.
-    static let reminders = ReminderProfile(leadDays: [7, 0], consequence: .financial)
-
-    @Environment(\.modelContext) private var context
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.calendar) private var calendar
-    @State private var title = ""
-    @State private var date: Date?
-    @State private var repeats: Repeat? = .never
-    @State private var reveals = false
-    @State private var error: UserFacingError?
-    /// Adding to an example asks "Păstrezi … ca al tău?"; yes adds it again.
-    @State private var exampleQuestion: ExampleSectionQuestion?
-    @State private var retryAfterKeeping: (() -> Void)?
-    @State private var saveRequest: ReminderSaveRequest?
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: DS.Space.l) {
-                    DSTextField("Ce trebuie făcut", text: $title, prompt: "Plata asigurării, verificarea stingătorului", isRequired: true)
-                    DSDateField("Până când", date: $date, isRequired: true)
-                    DSChoiceField("Se repetă", selection: $repeats, options: Repeat.allCases, isRequired: true) { $0.title }
-                    Text(verbatim: ReminderWording.sentence(Self.reminders))
-                        .dsFont(.subheadline)
-                }
-                .padding(DS.Space.m)
-            }
-            .background(DS.Palette.background)
-            .environment(\.dsRevealsValidation, reveals)
-            .navigationTitle(Text("Alt termen", comment: "Adds an obligation that isn't in the suggestions."))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(action: save) { Text("Adaugă", comment: "Adds a suggested obligation.") }
-                }
-            }
-            .userErrorAlert($error)
-            .examplePrompt($exampleQuestion) { retryAfterKeeping?() }
-            .reminderPermissionGate($saveRequest)
-        }
-        .dsDiscardGuard(hasChanges: !title.isEmpty || date != nil)
-    }
-
-    private func save() {
-        let name = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !name.isEmpty, let date else { reveals = true; return }
-        saveRequest = ReminderSaveRequest { performSave(name: name, date: date) }
-    }
-
-    private func performSave(name: String, date: Date) {
-        do {
-            try ObligationActions(context: context).create(
-                title: name,
-                kind: .renewal,
-                dueDay: CalendarDay(date, calendar: calendar),
-                for: asset,
-                recurrence: (repeats ?? .never).rule,
-                reminders: Self.reminders
-            )
-            dismiss()
-        } catch let question as ExampleSectionQuestion {
-            retryAfterKeeping = { performSave(name: name, date: date) }
-            exampleQuestion = question
-        } catch {
-            self.error = UserFacingError(error)
-        }
     }
 }
 

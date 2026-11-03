@@ -380,9 +380,26 @@ public struct DossierArchiveService {
     /// everything or nothing.
     @discardableResult
     public func importPackage(_ package: DossierV3.Package, mode: ArchiveImportMode) throws -> ArchiveImportResult {
+        try Self.write(package, mode: mode, container: container, calendar: calendar)
+    }
+
+    /// The same, away from the main thread, so a large backup never pauses the
+    /// screen while it is written. The app's screens see the records once it saves.
+    @discardableResult
+    public func importPackageAway(_ package: DossierV3.Package, mode: ArchiveImportMode) async throws -> ArchiveImportResult {
+        let container = container
+        let calendar = calendar
+        return try await Task.detached(priority: .userInitiated) {
+            try Self.write(package, mode: mode, container: container, calendar: calendar)
+        }.value
+    }
+
+    /// The one way a package is written: on a context of its own, saved once,
+    /// everything or nothing.
+    nonisolated private static func write(_ package: DossierV3.Package, mode: ArchiveImportMode, container: ModelContainer, calendar: Calendar) throws -> ArchiveImportResult {
         let context = ModelContext(container)
         context.autosaveEnabled = false
-        return try UnitOfWork.perform(in: context) {
+        return try UnitOfWork.performPrivate(in: context) {
             try DossierImporter(context: context, package: package, mode: mode, calendar: calendar).run()
         }
     }

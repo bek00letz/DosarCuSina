@@ -32,7 +32,7 @@ struct SearchScreen: View {
     @Environment(BiometricVaultManager.self) private var vault
     @Environment(SearchQuery.self) private var search
 
-    @State private var index: SearchIndex?
+    @State private var store: SearchIndexStore?
     @State private var results: [SearchResult] = []
     @State private var recent = RecentSearches.shared
     @State private var searchTask: Task<Void, Never>?
@@ -64,9 +64,16 @@ struct SearchScreen: View {
         .navigationTitle(Text("Caută", comment: "Title of the search tab."))
         .onChange(of: search.submissions) { _, _ in recent.add(trimmedQuery, results: index?.search(trimmedQuery) ?? []) }
         .onChange(of: search.text) { _, _ in scheduleSearch() }
-        .task { rebuild() }
-        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave)) { _ in rebuild() }
+        .task {
+            // One index per database, kept up to date off the main thread after every save.
+            let shared = SearchIndexStore.shared(for: context.container)
+            shared.start()
+            store = shared
+        }
+        .onChange(of: store?.generation) { _, _ in runSearch() }
     }
+
+    private var index: SearchIndex? { store?.index }
 
     private var trimmedQuery: String { search.text.trimmingCharacters(in: .whitespacesAndNewlines) }
 
@@ -126,11 +133,6 @@ struct SearchScreen: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, DS.Space.xl)
-    }
-
-    private func rebuild() {
-        index = try? SearchIndexBuilder(context: context).build()
-        runSearch()
     }
 
     private func scheduleSearch() {

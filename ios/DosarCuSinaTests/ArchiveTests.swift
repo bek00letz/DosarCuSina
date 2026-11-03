@@ -184,6 +184,30 @@ struct ArchiveTests {
         #expect(names == ["VW Golf editat", "Barca de pe lac", "Doar aici"])
     }
 
+    /// A backup is written away from the main thread, so a large one never pauses the
+    /// screen; it writes exactly what the same backup writes on the main thread.
+    @MainActor
+    @Test func aBackupIsWrittenAwayFromTheMainThreadTheSameWay() async throws {
+        let package = try DossierArchiveReader.read(try Fixtures.archive("dosar-v3/household"))
+        let here = try makeInMemoryContainer()
+        let away = try makeInMemoryContainer()
+        let expected = try DossierArchiveService(container: here, calendar: calendar).importPackage(package, mode: .replace)
+        let result = try await DossierArchiveService(container: away, calendar: calendar).importPackageAway(package, mode: .replace)
+        #expect(result == expected)
+        let names = { (container: ModelContainer) in Set(try ModelContext(container).fetch(FetchDescriptor<Asset>()).map(\.name)) }
+        #expect(try names(away) == names(here))
+        #expect(try ModelContext(away).fetchCount(FetchDescriptor<DosarSchemaV4.Attachment>()) == ModelContext(here).fetchCount(FetchDescriptor<DosarSchemaV4.Attachment>()))
+
+        // A failure part way leaves nothing behind.
+        var broken = package
+        broken.files = [:]
+        let empty = try makeInMemoryContainer()
+        await #expect(throws: (any Error).self) {
+            try await DossierArchiveService(container: empty, calendar: calendar).importPackageAway(broken, mode: .replace)
+        }
+        #expect(try ModelContext(empty).fetchCount(FetchDescriptor<Asset>()) == 0)
+    }
+
     @Test("A firm's CUI, a paper's validity and a category's behaviour travel in the archive")
     func versionThreeFactsTravel() throws {
         let container = try makeInMemoryContainer()

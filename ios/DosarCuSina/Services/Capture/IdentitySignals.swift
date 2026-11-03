@@ -5,7 +5,7 @@ import Foundation
 /// sending a page to the AI provider without asking needs the phone to be sure it is
 /// NOT one (`AIProviderSettings.automaticReading`).
 enum IdentitySignals {
-    /// Words printed only on identity documents, folded (`CaptureText.fold`).
+    /// Words printed only on identity documents, folded (`RomanianText.fold`).
     static let identityWords = [
         "carte de identitate", "carte electronica de identitate", "identity card", "carte d'identite",
         "pasaport", "passport", "passeport", "permis de conducere", "driving licence", "permis de conduire",
@@ -34,7 +34,7 @@ enum IdentitySignals {
     }
 
     static func hasIdentityWords(_ text: String) -> Bool {
-        let folded = CaptureText.fold(text)
+        let folded = RomanianText.fold(text)
         return identityWords.contains { folded.contains($0) }
     }
 }

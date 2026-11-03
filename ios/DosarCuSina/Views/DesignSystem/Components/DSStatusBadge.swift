@@ -50,6 +50,10 @@ struct DSStatusBadge: View {
     let status: DSStatus
     let text: Text
 
+    /// Grows with the text, so one line is always a capsule and a badge that
+    /// wraps at the largest sizes becomes a rounded rectangle, not a tall pill.
+    @ScaledMetric(relativeTo: .caption) private var cornerRadius: CGFloat = 12
+
     /// A badge with custom wording.
     init(_ status: DSStatus, text: Text) {
         self.status = status
@@ -80,15 +84,17 @@ struct DSStatusBadge: View {
             Image(systemName: status.systemImage)
                 .imageScale(.small)
                 .foregroundStyle(status.color)
+            // Wraps instead of being cut off when the row is narrow or the text is large.
             text
                 .foregroundStyle(status.textColor)
-                .lineLimit(1)
+                .lineLimit(1...3)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .font(.system(.caption, weight: .semibold))
         .monospacedDigit()
         .padding(.horizontal, DS.Space.xs)
         .padding(.vertical, DS.Space.xxs)
-        .background(status.color.opacity(0.14), in: .capsule)
+        .background(status.color.opacity(0.14), in: .rect(cornerRadius: cornerRadius, style: .continuous))
         .accessibilityElement(children: .combine)
     }
 }

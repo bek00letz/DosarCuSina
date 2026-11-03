@@ -1,5 +1,17 @@
 import SwiftUI
 
+// Motion for every target. The app, its widgets and its share extension all compile
+// this file, so the share sheet moves with the same springs as the app and waits
+// the same time before it shows a spinner.
+
+/// Namespace for the Dosar cu Șină design system.
+///
+/// Every screen builds on these tokens and components instead of hand-tuned values,
+/// so spacing, corners, color, type and motion stay consistent across the app.
+/// Motion and the delayed spinner live here, in `ios/Shared`; the rest of the
+/// design system is in the app's `Views/DesignSystem`.
+enum DS {}
+
 extension DS {
     /// Motion presets. All are springs (interruptible, velocity-preserving) between 0.2 and 0.4 s.
     ///
@@ -15,6 +27,17 @@ extension DS {
 
         /// The fade used instead of movement when Reduce Motion is on.
         static let reducedFade = Animation.easeOut(duration: 0.18)
+
+        /// A steady highlight that keeps sweeping, such as a skeleton's shimmer.
+        /// It never settles, so it isn't a spring; nothing else should use it.
+        static let sweep = Animation.linear(duration: 1.4).repeatForever(autoreverses: false)
+
+        /// How long work may take before a spinner shows (`DSDelayedProgress`).
+        static let progressDelay: Duration = .milliseconds(400)
+
+        /// How long a short confirmation stays before it goes by itself, when
+        /// nothing else is waiting on it (the share sheet's "Trimis").
+        static let confirmationDwell: Duration = .seconds(2.5)
 
         /// The animation to use given the person's Reduce Motion setting.
         static func animation(_ animation: Animation, reduceMotion: Bool) -> Animation {
@@ -42,6 +65,37 @@ private struct DSAnimationModifier<V: Equatable>: ViewModifier {
 
     func body(content: Content) -> some View {
         content.animation(DS.Motion.animation(animation, reduceMotion: reduceMotion), value: value)
+    }
+}
+
+// MARK: - Delayed progress
+
+/// A spinner that stays invisible for a short delay, so fast work never flashes a spinner.
+/// Its space is always reserved, so nothing jumps when it appears.
+struct DSDelayedProgress: View {
+    /// The words under the spinner; `nil` for a spinner that a title nearby already explains.
+    var label: LocalizedStringKey? = "Se încarcă…"
+    var delay: Duration = DS.Motion.progressDelay
+
+    @State private var isVisible = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        ProgressView {
+            if let label {
+                Text(label)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .opacity(isVisible ? 1 : 0)
+        .accessibilityHidden(!isVisible)
+        .task {
+            try? await Task.sleep(for: delay)
+            withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) {
+                isVisible = true
+            }
+        }
     }
 }
 

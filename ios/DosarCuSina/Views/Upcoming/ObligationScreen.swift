@@ -287,7 +287,7 @@ private struct ObligationPage: View {
                                     }
                                 }
                             }
-                            .frame(minHeight: 32)
+                            .padding(.vertical, DS.Space.xxs)
                             .accessibilityElement(children: .combine)
                         }
                     }

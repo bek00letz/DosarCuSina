@@ -207,7 +207,7 @@ public enum RomanianFieldExtractor {
         }
         for index in text.lines(containing: ["total"]).reversed() {
             let line = text.folded[index]
-            guard !line.contains("tva"), !line.contains("subtotal"), !line.contains("fara") else { continue }
+            guard !["tva", "subtotal", "fara"].contains(where: { CaptureText.containsWord($0, inFolded: line) }) else { continue }
             if let found = amountNear(index, after: ["total"]) {
                 return (found.money, text.original[index], false, found.ambiguous)
             }
@@ -227,8 +227,9 @@ public enum RomanianFieldExtractor {
     /// Lines that look like an invoice or receipt line: a description followed by an amount.
     static func lineItems(in text: CaptureText, currency: String, resolver: any CaptureComponentResolving) -> [CaptureLineItem] {
         var items: [CaptureLineItem] = []
+        let nonItems = nonItemWords.map { RomanianText.Keyword($0) }
         for (index, line) in text.folded.enumerated() {
-            guard !nonItemWords.contains(where: { line.contains($0) }) else { continue }
+            guard !nonItems.contains(where: { $0.isFound(inFolded: line) }) else { continue }
             // A line carrying a personal number is never a billed item.
             guard personalNumber(in: CaptureText(text.original[index])) == nil else { continue }
             let found = amounts(inLine: line)
@@ -475,7 +476,7 @@ public enum RomanianFieldExtractor {
         for (index, line) in text.folded.enumerated() {
             let compact = line.replacingOccurrences(of: " ", with: "")
             if let match = TextPattern.first(#"(?<!\d)(\d{15})(?!\d)"#, in: compact), let value = match[1],
-               line.contains("cip") || line.contains("transponder") || value.hasPrefix("642") {
+               ["microcip", "cip", "transponder"].contains(where: { CaptureText.containsWord($0, inFolded: line) }) || value.hasPrefix("642") {
                 return (value, text.original[index])
             }
         }

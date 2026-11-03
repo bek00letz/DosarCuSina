@@ -7,31 +7,18 @@ import SwiftUI
 // MARK: - Read-only
 
 /// A label and a value on one card row, read and compared down a column: costs,
-/// totals, prices. Nothing to tap. The value uses tabular digits, and at
-/// accessibility sizes it moves under the label.
+/// totals, prices. Nothing to tap. The value uses tabular digits, and when the
+/// two don't fit on one line it moves under the label (`DSAdaptiveStack`).
 struct DSReadOnlyValueRow: View {
     let label: Text
     let value: Text
 
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
     var body: some View {
-        Group {
-            if dynamicTypeSize.isAccessibilitySize {
-                VStack(alignment: .leading, spacing: 2) {
-                    label.dsFont(.subheadline)
-                    value.dsFont(.headline, numeric: true)
-                }
+        DSAdaptiveStack(verticalAlignment: .firstTextBaseline, spacing: DS.Space.s, stackedSpacing: 2) {
+            label.dsFont(.body)
+                .foregroundStyle(DS.Palette.secondaryLabel)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            } else {
-                HStack(alignment: .firstTextBaseline, spacing: DS.Space.s) {
-                    label.dsFont(.body)
-                        .foregroundStyle(DS.Palette.secondaryLabel)
-                    Spacer(minLength: DS.Space.xs)
-                    value.dsFont(.headline, numeric: true)
-                        .multilineTextAlignment(.trailing)
-                }
-            }
+            value.dsFont(.headline, numeric: true)
         }
         .padding(.vertical, DS.Space.xs)
         .frame(minHeight: 44)
@@ -93,23 +80,20 @@ struct DSActionValueRow: View {
 }
 
 /// A value with its buttons: side by side when everything fits on one line, the
-/// buttons on their own line under the value otherwise. Button labels never wrap,
-/// so a narrow screen or large text moves the buttons down instead of breaking
-/// "Copiază" into syllables. The one layout for every value-with-actions row.
+/// buttons on their own line under the value otherwise, and under each other when
+/// even they don't fit side by side. Button labels never wrap, so a narrow screen
+/// or large text moves the buttons down instead of breaking "Copiază" into
+/// syllables. The one layout for every value-with-actions row.
 struct DSValueWithActions<Value: View, Actions: View>: View {
     @ViewBuilder let value: () -> Value
     @ViewBuilder let actions: () -> Actions
 
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(spacing: DS.Space.s) {
-                value().frame(maxWidth: .infinity, alignment: .leading)
-                HStack(spacing: DS.Space.xs) { actions() }
-            }
-            VStack(alignment: .leading, spacing: DS.Space.s) {
-                value().frame(maxWidth: .infinity, alignment: .leading)
-                HStack(spacing: DS.Space.xs) { actions() }
-            }
+        DSAdaptiveStack(spacing: DS.Space.s) {
+            value().frame(maxWidth: .infinity, alignment: .leading)
+            // Buttons that don't fit beside each other stack too, so none runs off the screen.
+            DSAdaptiveStack(spacing: DS.Space.xs) { actions() }
+                .layoutPriority(1)
         }
     }
 }
@@ -121,10 +105,11 @@ struct DSValueActionLabel: View {
     let systemImage: String
 
     var body: some View {
+        // One line, never wrapped; the row moves the button down instead, and a
+        // label wider than the whole screen shortens rather than running off it.
         Label(title, systemImage: systemImage)
             .font(.subheadline.weight(.semibold))
             .lineLimit(1)
-            .fixedSize()
             .frame(minHeight: 44)
     }
 }

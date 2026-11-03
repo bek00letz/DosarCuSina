@@ -357,6 +357,18 @@ enum StorageWording {
 
 // MARK: - Despre
 
+/// What Despre promises, built from what the app really does.
+enum AboutWording {
+    /// No account, no tracking, and the internet only for the AI service the person
+    /// chose. The services are named from `AIProvider`, so a new one is never left out.
+    static var privacy: String {
+        String(
+            localized: "Fără cont, fără reclame, fără urmărire. Copia de siguranță o faci tu, când vrei. Internetul îl folosim doar dacă pui cheia ta de la un serviciu AI (\(AIProvider.everyServiceInASentence)). Atunci actele citite cu el ajung la acel serviciu.",
+            comment: "About: privacy explanation. The argument lists the AI services, such as „Google Gemini, OpenAI, Anthropic Claude sau unul compatibil”."
+        )
+    }
+}
+
 private struct AboutSettings: View {
     @State private var isShowingGallery = false
 
@@ -365,7 +377,7 @@ private struct AboutSettings: View {
             VStack(alignment: .leading, spacing: DS.Space.xs) {
                 Text("Datele tale stau pe telefonul tău", comment: "About: privacy headline.")
                     .dsFont(.headline)
-                Text("Fără cont, fără reclame, fără urmărire. Copia de siguranță o faci tu, când vrei. Internetul îl folosim doar dacă pui o cheie Google, pentru citirea documentelor.", comment: "About: privacy explanation.")
+                Text(verbatim: AboutWording.privacy)
                     .dsFont(.footnote)
             }
             .padding(.vertical, DS.Space.xs)

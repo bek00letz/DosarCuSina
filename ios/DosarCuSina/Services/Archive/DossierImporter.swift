@@ -13,7 +13,9 @@ import SwiftData
 ///   this phone keeps for the same records stay, in both modes;
 /// - parents follow the same rule as "Mută la…", so nothing ends up filed under itself;
 /// - no record's last change is later than now.
-@MainActor
+///
+/// It touches only the context it is given, so a backup is written away from the
+/// main thread (`DossierArchiveService.importPackageAway`).
 struct DossierImporter {
     let context: ModelContext
     let package: DossierV3.Package

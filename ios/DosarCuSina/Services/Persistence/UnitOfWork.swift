@@ -83,6 +83,22 @@ public enum UnitOfWork {
         return result
     }
 
+    /// Runs `work` on a context that one task made for itself and nothing else
+    /// touches (a backup written away from the main thread), as one step: saved once at
+    /// the end, everything rolled back if anything fails. No other save can join it,
+    /// because no one else has the context, so it needs no bookkeeping and runs on any
+    /// thread. Actions that save through `save(_:)` belong on the main actor's units.
+    nonisolated public static func performPrivate<T>(in context: ModelContext, _ work: () throws -> T) throws -> T {
+        do {
+            let result = try work()
+            try context.save()
+            return result
+        } catch {
+            context.rollback()
+            throw error
+        }
+    }
+
     /// Runs `work` as one step, like `perform(in:_:)`, and returns with its result the
     /// receipt that takes the step back. Opened inside another unit, it joins it, and the
     /// receipt covers that whole unit: the step the person took is the outer one (a filing

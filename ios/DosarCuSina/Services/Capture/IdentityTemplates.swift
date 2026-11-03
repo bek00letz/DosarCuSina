@@ -224,7 +224,7 @@ enum IdentityTemplates {
         let haystack = text.joinedFolded
         func score(_ template: IdentityTemplate) -> Int {
             let zone = machineReadableFormat.map { template.machineReadableFormats.contains($0) ? 5 : 0 } ?? 0
-            return zone + template.distinctive.filter { DocumentClassifier.containsWord($0, in: haystack) }.count
+            return zone + template.distinctive.filter { CaptureText.containsWord($0, inFolded: haystack) }.count
         }
         // Ties keep the first listed.
         let best = candidates.map(score).max() ?? 0

@@ -262,7 +262,7 @@ enum CaptureMapping {
 
     /// "ION-ANDREI ȘTEFĂNESCU" → "Ion-Andrei Ștefănescu". Words start after spaces, hyphens and apostrophes.
     static func titleCased(_ text: String) -> String {
-        let romanian = Locale(identifier: "ro_RO")
+        let romanian = Locale.dosarDefault
         var result = ""
         var startsWord = true
         for character in text.trimmingCharacters(in: .whitespacesAndNewlines) {
@@ -280,7 +280,7 @@ enum CaptureMapping {
 
     /// The words of a name for comparing people: folded (no case, no diacritics), in any order.
     static func nameWords(_ name: String) -> [String] {
-        CaptureText.fold(name)
+        RomanianText.fold(name)
             .components(separatedBy: CharacterSet.letters.inverted)
             .filter { !$0.isEmpty }
     }

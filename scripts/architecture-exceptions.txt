@@ -7,14 +7,6 @@
 #
 # Format: path:rule, or path:rule:count when a file breaks the rule more than once.
 # The note above each group says which piece of work removes it.
-# animation-curve: Springs from DS.Motion; the shimmer needs a DS.Motion token for a steady sweep, the share extension needs the tokens in ios/Shared.
-ios/DosarCuSina/Views/Capture/DocumentPagesViewer.swift:animation-curve:2
-ios/DosarCuSina/Views/DesignSystem/Components/DSLoading.swift:animation-curve
-ios/DosarCuSinaShare/ShareViewController.swift:animation-curve
-
-# bare-progress-view: The share extension draws its own spinner; it needs DSDelayedProgress in ios/Shared.
-ios/DosarCuSinaShare/ShareViewController.swift:bare-progress-view
-
 # built-in-key-in-views: Ask the category's behaviour (CategoryBehavior) instead. Left: the add-section menu's own wording and shortlist (AddSectionFlow), the visit wording (VisitDraft, the "visit wording as a template field" gap) and a refresh query (UpcomingRoot).
 ios/DosarCuSina/Views/Add/Visit/VisitDraft.swift:built-in-key-in-views:2
 ios/DosarCuSina/Views/Section/AddSectionFlow.swift:built-in-key-in-views:12
@@ -29,25 +21,7 @@ ios/DosarCuSina/Services/Capture/CaptureModels.swift:format-string
 ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:format-string
 
 # romanian-locale: Locale.dosarDefault everywhere, folding included.
-ios/DosarCuSina/Models/Fields/ChoiceOptions.swift:romanian-locale
-ios/DosarCuSina/Models/Templates/ComponentCatalog.swift:romanian-locale
-ios/DosarCuSina/Services/Capture/CaptureText.swift:romanian-locale
 ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:romanian-locale:2
-ios/DosarCuSina/Views/Capture/Filing/CaptureMapping.swift:romanian-locale
 
 # save-outside-unit-of-work: One unit of work around every multi-step flow (agreed fix 7); start-up and migrations save through UnitOfWork too.
 ios/DosarCuSina/App/DosarCuSinaApp.swift:save-outside-unit-of-work
-
-# small-hit-target: 44 pt tap targets, or no minimum where nothing is tapped.
-ios/DosarCuSina/Views/Agenda/AgendaScreen.swift:small-hit-target
-ios/DosarCuSina/Views/DesignSystem/Components/DSButtons.swift:small-hit-target
-ios/DosarCuSina/Views/DesignSystem/Fields/DSChoiceFields.swift:small-hit-target
-ios/DosarCuSina/Views/DesignSystem/Fields/DSContactField.swift:small-hit-target
-ios/DosarCuSina/Views/DesignSystem/Fields/DSDateFields.swift:small-hit-target
-ios/DosarCuSina/Views/Onboarding/SharePracticeView.swift:small-hit-target
-ios/DosarCuSina/Views/Section/KeyFactsPocket.swift:small-hit-target:2
-ios/DosarCuSina/Views/Section/SectionLists.swift:small-hit-target
-ios/DosarCuSina/Views/Upcoming/ObligationScreen.swift:small-hit-target
-
-# system-error-text: SaveFailure.message and UserFacingError (review finding 9).
-ios/DosarCuSina/Views/Onboarding/OnboardingFlow.swift:system-error-text

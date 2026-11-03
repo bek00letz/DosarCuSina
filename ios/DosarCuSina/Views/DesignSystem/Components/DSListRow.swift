@@ -14,7 +14,6 @@ struct DSListRow<Trailing: View>: View {
     var showsChevron: Bool = false
     @ViewBuilder var trailing: Trailing
 
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         HStack(spacing: DS.Space.s) {
@@ -22,19 +21,13 @@ struct DSListRow<Trailing: View>: View {
                 DSIconWell(systemImage: systemImage, tint: tint)
             }
 
-            if dynamicTypeSize.isAccessibilitySize {
-                VStack(alignment: .leading, spacing: DS.Space.xxs) {
-                    titleBlock
-                    trailing.dsFont(.subheadline)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            } else {
+            DSAdaptiveStack(spacing: DS.Space.s, stackedSpacing: DS.Space.xxs) {
                 titleBlock
                     .frame(maxWidth: .infinity, alignment: .leading)
                 trailing
                     .dsFont(.subheadline)
-                    .multilineTextAlignment(.trailing)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             if showsChevron {
                 Image(systemName: "chevron.forward")

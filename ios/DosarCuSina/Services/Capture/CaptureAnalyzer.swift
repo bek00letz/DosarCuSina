@@ -305,7 +305,7 @@ public struct CaptureAnalyzer: Sendable {
 
     private func addInsurance(_ text: CaptureText, kind: CaptureDocumentKind, years: DateWindow, into fields: inout FieldSet) {
         let haystack = text.joinedFolded
-        if let insurer = insurerNames.first(where: { DocumentClassifier.containsWord($0.keyword, in: haystack) }) {
+        if let insurer = insurerNames.first(where: { CaptureText.containsWord($0.keyword, inFolded: haystack) }) {
             fields.add(.provider, .text(insurer.name), 0.85, nil)
         } else {
             addIssuer(text, into: &fields)

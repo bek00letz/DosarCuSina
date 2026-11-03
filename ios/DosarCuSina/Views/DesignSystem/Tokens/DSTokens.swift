@@ -1,10 +1,7 @@
 import SwiftUI
 
-/// Namespace for the Dosar cu Șină design system.
-///
-/// Every screen builds on these tokens and components instead of hand-tuned values,
-/// so spacing, corners, color, type and motion stay consistent across the app.
-enum DS {}
+// The `DS` namespace, its motion and the delayed spinner are in ios/Shared/DSMotion.swift,
+// so the widgets and the share extension use them too.
 
 // MARK: - Spacing (4/8 pt grid)
 
@@ -25,6 +22,24 @@ extension DS {
         static let xl: CGFloat = 24
         /// 32 pt — around empty and error states.
         static let xxl: CGFloat = 32
+    }
+}
+
+// MARK: - Controls
+
+extension DS {
+    /// Sizes for things people tap. `HitTargetTests` measures the DS buttons and
+    /// field actions at several text sizes and checks each is at least `minimumHitTarget`.
+    enum Control {
+        /// The smallest tap target: 44 pt. A borderless button's label is its whole
+        /// target, so its frame is at least this tall.
+        static let minimumHitTarget: CGFloat = 44
+        /// The label of a full-width button. The large control size adds padding
+        /// above and below it, so the button is about 50 pt.
+        static let fullWidthLabel: CGFloat = 34
+        /// The label of a compact button beside a row. With the large control
+        /// size's padding the button is at least 44 pt.
+        static let compactLabel: CGFloat = 30
     }
 }
 

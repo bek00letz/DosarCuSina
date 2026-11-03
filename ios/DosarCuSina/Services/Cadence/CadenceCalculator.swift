@@ -14,7 +14,6 @@ public final class CadenceCalculator: Sendable {
         case weeks(Int)
         case months(Int)
         case years(Int)
-        case annual
     }
     
     /// A single timestamped telemetry observation.
@@ -66,43 +65,11 @@ public final class CadenceCalculator: Sendable {
         return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
     }
     
-    /// Computes the next calendar due date based on a day-count cadence.
-    ///
-    /// For annual intervals (365 or 366 days), accurately preserves the anniversary date
-    /// and clamps February 29th to February 28th on non-leap years.
-    ///
-    /// - Parameters:
-    ///   - lastDate: The reference or previous due date.
-    ///   - cadenceDays: The recurrence interval in days.
-    ///   - calendar: Calendar to use for arithmetic (defaults to `.current`).
-    /// - Returns: The calculated next due date.
-    public static func calculateNextDueDate(
-        from lastDate: Date,
-        cadenceDays: Int,
-        calendar: Calendar = .current
-    ) -> Date {
-        guard cadenceDays > 0 else { return lastDate }
-        
-        // Annual recurrence heuristic: 365 or 366 days
-        if cadenceDays == 365 || cadenceDays == 366 {
-            return addYears(to: lastDate, years: 1, calendar: calendar)
-        }
-        
-        // Biannual recurrence heuristic: 730 or 731 days
-        if cadenceDays == 730 || cadenceDays == 731 {
-            return addYears(to: lastDate, years: 2, calendar: calendar)
-        }
-        
-        // Standard day addition
-        return calendar.date(byAdding: .day, value: cadenceDays, to: lastDate)
-            ?? lastDate.addingTimeInterval(Double(cadenceDays) * 86400.0)
-    }
-    
     /// Computes the next calendar due date based on an explicit cadence interval enum.
     ///
     /// - Parameters:
     ///   - lastDate: The reference date.
-    ///   - interval: Recurrence interval (.days, .weeks, .months, .years, .annual).
+    ///   - interval: Recurrence interval (.days, .weeks, .months, .years).
     ///   - calendar: Calendar instance.
     /// - Returns: The next due date.
     public static func calculateNextDueDate(
@@ -128,9 +95,6 @@ public final class CadenceCalculator: Sendable {
         case .years(let years):
             guard years > 0 else { return lastDate }
             return addYears(to: lastDate, years: years, calendar: calendar)
-            
-        case .annual:
-            return addYears(to: lastDate, years: 1, calendar: calendar)
         }
     }
     
@@ -335,21 +299,5 @@ public final class CadenceCalculator: Sendable {
             isEstimatedFromBaseline: isBaseline,
             hasRollbackAnomaly: hasRollback
         )
-    }
-    
-    // MARK: - Urgency & Status Utilities
-    
-    /// Computes the exact number of days remaining until `dueDate`.
-    ///
-    /// Negative values indicate the deadline has passed.
-    public static func daysRemaining(
-        from currentDate: Date = Date(),
-        to dueDate: Date,
-        calendar: Calendar = .current
-    ) -> Int {
-        let startOfToday = calendar.startOfDay(for: currentDate)
-        let startOfDue = calendar.startOfDay(for: dueDate)
-        let components = calendar.dateComponents([.day], from: startOfToday, to: startOfDue)
-        return components.day ?? 0
     }
 }

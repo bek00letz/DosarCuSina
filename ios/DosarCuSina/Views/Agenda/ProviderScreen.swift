@@ -28,7 +28,6 @@ private struct ProviderContent: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(BiometricVaultManager.self) private var vault
 
     @State private var notes: String
@@ -109,8 +108,7 @@ private struct ProviderContent: View {
     @ViewBuilder
     private var contactActions: some View {
         if let phone = provider.phone {
-            let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: DS.Space.s)) : AnyLayout(HStackLayout(spacing: DS.Space.s))
-            layout {
+            DSAdaptiveStack(spacing: DS.Space.s) {
                 DSPrimaryButton("Sună", systemImage: "phone.fill") {
                     if let url = PhoneLinks.call(phone) { openURL(url) }
                 }

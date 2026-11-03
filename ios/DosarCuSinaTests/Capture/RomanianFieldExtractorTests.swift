@@ -26,7 +26,7 @@ struct RomanianFieldExtractorTests {
 
     @Test("Dates in numeric, written and Roman-numeral forms")
     func dates() {
-        let line = CaptureText.fold("Emisă la 15.11.2026, scadentă pe 3 decembrie 2026, recepție 01/XII/2026, ISO 2026-12-20")
+        let line = RomanianText.fold("Emisă la 15.11.2026, scadentă pe 3 decembrie 2026, recepție 01/XII/2026, ISO 2026-12-20")
         let days = RomanianFieldExtractor.dates(inLine: line, index: 0).map(\.day)
         #expect(days == [
             CaptureDay(year: 2026, month: 11, day: 15)!,

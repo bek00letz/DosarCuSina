@@ -59,12 +59,9 @@ public struct ChoiceOption: Hashable, Sendable, Codable, Identifiable {
         return ([label] + aliases).contains { Self.fold($0) == needle }
     }
 
-    /// Case and diacritics folded, whitespace collapsed, signs kept (so "A+" and "A-" stay apart).
+    /// Folded (`RomanianText.fold`), whitespace collapsed, signs kept (so "A+" and "A-" stay apart).
     static func fold(_ text: String) -> String {
-        text.replacingOccurrences(of: "−", with: "-")
-            .replacingOccurrences(of: "ş", with: "ș").replacingOccurrences(of: "ţ", with: "ț")
-            .folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "ro_RO"))
-            .split(whereSeparator: \.isWhitespace).joined(separator: " ")
+        RomanianText.fold(text).split(whereSeparator: \.isWhitespace).joined(separator: " ")
     }
 }
 

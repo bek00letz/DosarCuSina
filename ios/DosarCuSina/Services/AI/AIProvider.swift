@@ -44,6 +44,14 @@ public enum AIProvider: String, CaseIterable, Sendable, Codable, Identifiable {
         }
     }
 
+    /// Every service a document can go to, for sentences that must stay true as
+    /// providers are added: „Google Gemini, OpenAI, Anthropic Claude sau unul compatibil”.
+    public static var everyServiceInASentence: String {
+        let named = allCases.filter { $0 != .openAICompatible }.map(\.name)
+        let compatible = String(localized: "unul compatibil", comment: "The last item of the AI services list: any OpenAI-compatible service.")
+        return (named + [compatible]).formatted(.list(type: .or).locale(.dosarDefault))
+    }
+
     /// The model used unless the person picks another. Checked against each provider's
     /// documentation; one place to change when a model is retired.
     public var defaultModel: String {

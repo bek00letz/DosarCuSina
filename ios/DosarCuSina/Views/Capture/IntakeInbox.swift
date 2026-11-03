@@ -14,6 +14,8 @@ final class IntakeInbox {
 
     /// Items waiting for review, newest first.
     private(set) var items: [InboxItem] = []
+    /// Items that arrived but couldn't be opened, set aside, newest first.
+    private(set) var unreadable: [UnreadableInboxItem] = []
     /// Bumps every time something new arrives, for the share practice.
     private(set) var arrivals = 0
 
@@ -22,16 +24,26 @@ final class IntakeInbox {
 
     init(inbox: ShareInbox? = .shared()) {
         self.inbox = inbox
-        self.items = inbox?.items() ?? []
+        let contents = inbox?.contents() ?? ShareInbox.Contents()
+        self.items = contents.items
+        self.unreadable = contents.unreadable
     }
 
     var count: Int { items.count }
 
     /// Re-reads the inbox folder.
     func refresh() {
-        let fresh = inbox?.items() ?? []
+        let contents = inbox?.contents() ?? ShareInbox.Contents()
+        let fresh = contents.items
         if Set(fresh.map(\.id)).subtracting(items.map(\.id)).isEmpty == false { arrivals += 1 }
         if fresh != items { items = fresh }
+        if contents.unreadable != unreadable { unreadable = contents.unreadable }
+    }
+
+    /// Removes something that couldn't be opened.
+    func remove(_ item: UnreadableInboxItem) {
+        try? inbox?.removeUnreadable(item.id)
+        unreadable.removeAll { $0.id == item.id }
     }
 
     /// Removes an item once it was filed or the person dismissed it.

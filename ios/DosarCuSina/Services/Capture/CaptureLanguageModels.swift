@@ -133,7 +133,7 @@ enum ModelAnswerMapper {
 
     /// Letters and digits only, uppercased, so "B-123 ABC" and "B 123 ABC" compare equal.
     static func compact(_ text: String) -> String {
-        CaptureText.fold(text).uppercased().filter { $0.isLetter || $0.isNumber }
+        RomanianText.fold(text).uppercased().filter { $0.isLetter || $0.isNumber }
     }
 
     static func isoDay(_ value: String) -> CaptureDay? {
@@ -143,7 +143,7 @@ enum ModelAnswerMapper {
     }
 
     static func normalizedCurrency(_ value: String?) -> String {
-        switch CaptureText.fold(value ?? "") {
+        switch RomanianText.fold(value ?? "") {
         case "eur", "euro", "€": "EUR"
         case "usd", "$": "USD"
         default: "RON"

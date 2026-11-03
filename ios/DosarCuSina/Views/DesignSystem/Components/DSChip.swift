@@ -8,6 +8,9 @@ struct DSChip: View {
     var isSelected: Bool
     let action: () -> Void
 
+    /// Grows with the text: a capsule on one line, a rounded rectangle if it wraps.
+    @ScaledMetric(relativeTo: .subheadline) private var cornerRadius: CGFloat = 17
+
     init(_ title: LocalizedStringKey, systemImage: String? = nil, isSelected: Bool, action: @escaping () -> Void) {
         self.title = Text(title)
         self.systemImage = systemImage
@@ -34,14 +37,17 @@ struct DSChip: View {
                     Image(systemName: systemImage)
                         .imageScale(.small)
                 }
+                // One line where there is room; wraps rather than being cut off
+                // when a chip is wider than the screen at the largest text sizes.
                 title
-                    .lineLimit(1)
+                    .lineLimit(1...3)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .font(.system(.subheadline, weight: isSelected ? .semibold : .regular))
             .foregroundStyle(isSelected ? Color(uiColor: .systemBackground) : DS.Palette.label)
             .padding(.horizontal, DS.Space.s)
             .padding(.vertical, 7)
-            .background(isSelected ? DS.Palette.label : DS.Palette.fill, in: .capsule)
+            .background(isSelected ? DS.Palette.label : DS.Palette.fill, in: .rect(cornerRadius: cornerRadius, style: .continuous))
             .frame(minHeight: 44)
         }
         .buttonStyle(.dsPressable)
@@ -100,10 +106,10 @@ struct DSFlowLayout: Layout {
         for row in rows {
             var x = bounds.minX
             for index in row.indices {
-                let size = subviews[index].sizeThatFits(.unspecified)
+                let size = fittedSize(of: subviews[index], maxWidth: bounds.width)
                 subviews[index].place(
                     at: CGPoint(x: x, y: y + (row.height - size.height) / 2),
-                    proposal: ProposedViewSize(width: min(size.width, bounds.width), height: size.height)
+                    proposal: ProposedViewSize(width: size.width, height: size.height)
                 )
                 x += size.width + spacing
             }
@@ -117,11 +123,19 @@ struct DSFlowLayout: Layout {
         var height: CGFloat = 0
     }
 
+    /// A child's natural size, or, when it is wider than a whole line, its size
+    /// at the line's width (a chip that wraps instead of being cut off).
+    private func fittedSize(of subview: LayoutSubview, maxWidth: CGFloat) -> CGSize {
+        let natural = subview.sizeThatFits(.unspecified)
+        guard natural.width > maxWidth, maxWidth.isFinite else { return natural }
+        return subview.sizeThatFits(ProposedViewSize(width: maxWidth, height: nil))
+    }
+
     private func arrange(subviews: Subviews, maxWidth: CGFloat) -> [Row] {
         var rows: [Row] = []
         var current = Row()
         for index in subviews.indices {
-            let size = subviews[index].sizeThatFits(.unspecified)
+            let size = fittedSize(of: subviews[index], maxWidth: maxWidth)
             let needed = current.indices.isEmpty ? size.width : current.width + spacing + size.width
             if needed > maxWidth, !current.indices.isEmpty {
                 rows.append(current)

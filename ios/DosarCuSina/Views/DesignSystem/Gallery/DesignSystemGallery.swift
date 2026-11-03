@@ -272,6 +272,14 @@ private struct GalleryButtons: View {
                     }
                 }
             }
+            GallerySection(title: "Buton mic lângă un rând", note: "DSCompactButton: textul nu se rupe, ținta are cel puțin 44 pt.") {
+                DSCard {
+                    HStack(spacing: DS.Space.s) {
+                        Text(verbatim: "ITP").dsFont(.headline).frame(maxWidth: .infinity, alignment: .leading)
+                        DSCompactButton("Adaugă") {}
+                    }
+                }
+            }
             GallerySection(title: "Suprafețe apăsabile", note: "Răspuns imediat la atingere; cu Reducere mișcare doar se estompează.") {
                 Button {} label: {
                     DSCard {
@@ -356,6 +364,15 @@ private struct GalleryCards: View {
                         DSRowSeparator()
                         // A secret: in the app, "Arată" and "Copiază" ask for Face ID first, every time.
                         DSSecretValueRow(title: Text(verbatim: "PIN pentru autentificare"), isSet: true) { .revealed("0000") }
+                    }
+                }
+            }
+            GallerySection(title: "Rând care se adaptează", note: "DSAdaptiveStack: alăturate când încap pe un rând, una sub alta când nu. Măriți textul ca să vedeți.") {
+                DSCard {
+                    DSAdaptiveStack(spacing: DS.Space.s) {
+                        Text(verbatim: "Asigurarea locuinței, PAD").dsFont(.headline)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        DSStatusBadge(.soon, text: Text(verbatim: "Expiră în 3 săptămâni"))
                     }
                 }
             }

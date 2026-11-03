@@ -59,10 +59,7 @@ struct CaptureLineItemsEditor: View {
                 }
                 .accessibilityHint(Text("Corectează sau elimină rândul", comment: "VoiceOver hint on a bill line in the review."))
             }
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: DS.Space.xs) { listActions }
-                VStack(alignment: .leading, spacing: DS.Space.xs) { listActions }
-            }
+            DSAdaptiveStack(spacing: DS.Space.xs) { listActions }
             .padding(.top, DS.Space.xs)
         }
         .sheet(item: $editing) { editing in

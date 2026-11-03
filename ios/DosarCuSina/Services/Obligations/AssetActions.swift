@@ -267,7 +267,7 @@ public final class AssetActions {
 
     /// The one rule for filing something under something else, in the app and
     /// in a restored backup: never under itself, nor under anything filed under it.
-    static func canFile(_ child: Asset, under parent: Asset) -> Bool {
+    nonisolated static func canFile(_ child: Asset, under parent: Asset) -> Bool {
         var seen: Set<UUID> = []
         var current: Asset? = parent
         while let next = current {

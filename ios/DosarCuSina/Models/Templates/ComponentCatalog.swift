@@ -80,16 +80,11 @@ public enum ComponentCatalog {
     }
 }
 
-/// Text normalization shared by search and component matching: lowercase,
-/// no diacritics (so "polita" finds "poliță"), letters and digits only.
+/// Text normalization shared by search and component matching: the folded words
+/// (`RomanianText.words`), so "polita" finds "poliță".
 public enum SearchText {
     public static func normalize(_ text: String) -> String {
-        let folded = text
-            .replacingOccurrences(of: "ş", with: "ș").replacingOccurrences(of: "ţ", with: "ț")
-            .replacingOccurrences(of: "Ş", with: "Ș").replacingOccurrences(of: "Ţ", with: "Ț")
-            .folding(options: [.diacriticInsensitive, .caseInsensitive, .widthInsensitive], locale: Locale(identifier: "ro_RO"))
-        let words = folded.split { !$0.isLetter && !$0.isNumber }
-        return words.joined(separator: " ")
+        RomanianText.words(text).joined(separator: " ")
     }
 
     public static func tokens(_ text: String) -> [String] {

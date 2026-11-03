@@ -82,6 +82,17 @@ struct BinderWordingTests {
         #expect(warranty.line?.contains("garanție până la 15 ian. 2028") == true || warranty.line?.contains("până la 15 ian. 2028") == true)
     }
 
+    /// Settings › Despre promises when the internet is used. It names every service a
+    /// document can go to, so adding a provider can't leave the promise behind.
+    @Test func aboutNamesEveryAIServiceItCanSendTo() {
+        let about = AboutWording.privacy
+        for provider in AIProvider.allCases where provider != .openAICompatible {
+            #expect(about.contains(provider.name), "Despre doesn't name \(provider.name)")
+        }
+        #expect(about.contains("compatibil"))
+        #expect(!about.contains("cheie Google"))
+    }
+
     @Test func keyTestResultsTellOfflineApartFromABadKey() {
         #expect(AIProviderError(transport: URLError(.notConnectedToInternet)) == .offline)
         #expect(AIProviderError(transport: URLError(.timedOut)) == .offline)

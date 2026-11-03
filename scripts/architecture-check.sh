@@ -91,7 +91,7 @@ rule urgency-threshold '^ios/(DosarCuSina/(Views|Intents)|DosarCuSinaWidgets)/' 
     '[dD]ays[A-Za-z]* *(<|<=|>|>=) *-?[0-9]|soonWithinDays' - \
     "How urgent a date is comes from the one rule: UrgencyRule (ReminderProfile.urgencyRule, DateUrgency for a date on a page). Draw its tone and WhenWording; don't compare days yourself."
 
-rule animation-curve "$app" '^ios/DosarCuSina/Views/DesignSystem/Tokens/DSMotion\.swift$' \
+rule animation-curve "$app" '^ios/Shared/DSMotion\.swift$' \
     '\.(easeInOut|easeIn|easeOut|linear)([^A-Za-z0-9_]|$)|\.spring\(|\.interpolatingSpring|\.(bouncy|snappy|smooth)([^A-Za-z0-9_]|$)|UIView\.animate|Animation\.default' \
     'progressViewStyle|gaugeStyle' \
     'Animate with a DS.Motion spring through dsAnimation, so Reduce Motion turns movement into a short fade.'
@@ -100,7 +100,7 @@ rule number-parser "$app" '(^|/)RomanianNumber[^/]*\.swift$' \
     'Decimal\(string: *[a-z]|replacingOccurrences\(of: *",", *with: *"\."\)|NumberFormatter\(\)|\.number\.parseStrategy|ParseStrategy' - \
     'Read numbers from text with the one shared reader. Readers that disagree turn 45,724 into 45.724.'
 
-rule bare-progress-view "$app" "$design_system" \
+rule bare-progress-view "$app" "$design_system|^ios/Shared/DSMotion\\.swift\$" \
     'ProgressView\(' - \
     'Use DSDelayedProgress: it waits before it shows and keeps its space, so fast work never flashes a spinner.'
 
