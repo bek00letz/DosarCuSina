@@ -25,6 +25,3 @@ ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:romanian-locale:2
 
 # save-outside-unit-of-work: One unit of work around every multi-step flow (agreed fix 7); start-up and migrations save through UnitOfWork too.
 ios/DosarCuSina/App/DosarCuSinaApp.swift:save-outside-unit-of-work
-
-# system-error-text: SaveFailure.message and UserFacingError (review finding 9).
-ios/DosarCuSina/Views/Onboarding/OnboardingFlow.swift:system-error-text
