@@ -732,7 +732,6 @@ private struct GalleryEditSheet: View {
     NavigationStack { GalleryStatus() }
         .environment(\.dynamicTypeSize, .accessibility3)
 }
-#endif
 
 /// Sample deadlines for the gallery, drawn by the same urgency rule as the app.
 private enum GallerySample {
@@ -745,3 +744,4 @@ private enum GallerySample {
         return rule.urgency(of: today.adding(days: days), today: today)
     }
 }
+#endif

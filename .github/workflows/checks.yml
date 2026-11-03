@@ -5,6 +5,8 @@
 #                       DosarCuSinaTests and checks every counted string has plural
 #                       forms (scripts/plural-check.py), through tests/run_tests.sh
 #                       like a local run
+#   release-build       builds the same targets in the Release configuration, the one
+#                       TestFlight and the App Store get
 # The privacy check has its own workflow (privacy-check.yml).
 name: Checks
 
@@ -99,3 +101,21 @@ jobs:
           path: ${{ runner.temp }}/results
           retention-days: 7
           if-no-files-found: ignore
+
+  release-build:
+    name: release-build
+    # The configuration TestFlight and the App Store get: code that only builds in
+    # development (inside `#if DEBUG`, for example) must not break it.
+    runs-on: xcode-27
+    timeout-minutes: 45
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Build the app, widgets and share extension for release
+        run: |
+          xcodebuild build -quiet \
+            -project ios/DosarCuSina.xcodeproj -scheme DosarCuSina \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO
