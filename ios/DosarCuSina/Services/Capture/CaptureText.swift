@@ -37,7 +37,7 @@ public struct CaptureText: Sendable {
             }
         }
         self.original = original
-        self.folded = original.map(Self.fold)
+        self.folded = original.map(RomanianText.fold)
         self.boxes = boxes
         self.pages = numbers
     }
@@ -78,26 +78,32 @@ public struct CaptureText: Sendable {
         return CaptureText(pages: pagesOut)
     }
 
-    /// Lowercases, strips diacritics (ș/ş → s, ț/ţ → t, ă/â → a, î → i) and unifies spaces.
-    public static func fold(_ text: String) -> String {
-        text
-            .folding(options: [.diacriticInsensitive, .caseInsensitive, .widthInsensitive], locale: Locale(identifier: "ro_RO"))
-            .lowercased()
-            .replacingOccurrences(of: "\u{00A0}", with: " ")
-            .replacingOccurrences(of: "\u{202F}", with: " ")
-    }
-
     public var joinedFolded: String { folded.joined(separator: "\n") }
     public var joinedOriginal: String { original.joined(separator: "\n") }
 
-    /// Indexes of lines whose folded text contains any of the labels.
-    func lines(containing labels: [String]) -> [Int] {
-        folded.indices.filter { index in labels.contains { folded[index].contains($0) } }
+    /// Whether a keyword is in already folded text: folded, phrase-aware, never the
+    /// middle of a word ("paid" isn't in "unpaid"). Short words match whole, longer
+    /// ones may take an ending (`RomanianText.WordMatch.natural`), unless `match` says.
+    /// The one keyword match for every reader, the classifier and the router.
+    public static func containsWord(_ phrase: String, inFolded folded: String, as match: RomanianText.WordMatch? = nil) -> Bool {
+        RomanianText.Keyword(phrase, as: match).isFound(inFolded: folded)
     }
 
-    /// True when any label appears anywhere.
+    /// Whether a keyword is anywhere in the text (`containsWord(_:inFolded:as:)`).
+    public func containsWord(_ phrase: String, as match: RomanianText.WordMatch? = nil) -> Bool {
+        Self.containsWord(phrase, inFolded: joinedFolded, as: match)
+    }
+
+    /// Indexes of lines that contain any of the labels, as keywords.
+    func lines(containing labels: [String]) -> [Int] {
+        let keywords = labels.map { RomanianText.Keyword($0) }
+        return folded.indices.filter { index in keywords.contains { $0.isFound(inFolded: folded[index]) } }
+    }
+
+    /// True when any label appears anywhere, as a keyword.
     func contains(any labels: [String]) -> Bool {
-        labels.contains { joinedFolded.contains($0) }
+        let haystack = joinedFolded
+        return labels.contains { Self.containsWord($0, inFolded: haystack) }
     }
 }
 

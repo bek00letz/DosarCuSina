@@ -208,7 +208,7 @@ public enum SubscriptionMatcher {
     /// The provider as people say it: "ENGIE Romania S.A." is "ENGIE".
     public static func shortProviderName(_ name: String) -> String {
         let kept = name.split(separator: " ").filter { word in
-            let folded = CaptureText.fold(String(word)).replacingOccurrences(of: ".", with: "")
+            let folded = RomanianText.fold(String(word)).replacingOccurrences(of: ".", with: "")
             return folded.contains(where: { $0.isLetter || $0.isNumber }) && !providerFillers.contains(folded)
         }
         return kept.isEmpty ? name : kept.joined(separator: " ")
@@ -220,7 +220,7 @@ public enum SubscriptionMatcher {
     /// The words that name a provider, without the company form or the country:
     /// "ENGIE Romania S.A." and "Engie" are the same provider.
     static func providerWords(_ name: String) -> Set<String> {
-        return Set(CaptureText.fold(name).replacingOccurrences(of: ".", with: "")
+        return Set(RomanianText.fold(name).replacingOccurrences(of: ".", with: "")
             .components(separatedBy: CharacterSet.alphanumerics.inverted)
             .filter { $0.count >= 2 && !providerFillers.contains($0) })
     }

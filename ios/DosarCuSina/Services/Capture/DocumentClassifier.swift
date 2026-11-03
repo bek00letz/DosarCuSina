@@ -44,21 +44,21 @@ public enum DocumentClassifier {
         var scores: [CaptureDocumentKind: Double] = [:]
         for (kind, words) in signals {
             scores[kind] = words.reduce(0) { total, signal in
-                total + (containsWord(signal.0, in: haystack) ? signal.1 : 0)
+                total + (CaptureText.containsWord(signal.0, inFolded: haystack, as: wholeWords.contains(signal.0) ? .word : nil) ? signal.1 : 0)
             }
         }
         // An RCA policy is also an insurance policy; prefer the specific kind when RCA terms are present.
         if let rca = scores[.rcaPolicy], rca >= 3 { scores[.insurancePolicy] = (scores[.insurancePolicy] ?? 0) * 0.5 }
         // A contract mentions the gas, the POD and the client code a bill does; a bill
         // quotes its contract. What decides is whether there is something to pay.
-        let isBill = billMarkers.contains { haystack.contains($0) }
+        let isBill = billMarkers.contains { CaptureText.containsWord($0, inFolded: haystack) }
         if let contract = scores[.contract], contract >= 4, !isBill {
             scores[.utilityInvoice] = (scores[.utilityInvoice] ?? 0) * 0.5
         } else if isBill {
             scores[.contract] = (scores[.contract] ?? 0) * 0.5
         }
         // A fiscal receipt beats a generic invoice when "bon fiscal" is printed.
-        if haystack.contains("bon fiscal") { scores[.serviceInvoice] = (scores[.serviceInvoice] ?? 0) * 0.5 }
+        if CaptureText.containsWord("bon fiscal", inFolded: haystack) { scores[.serviceInvoice] = (scores[.serviceInvoice] ?? 0) * 0.5 }
 
         // Ties go to the kind listed first in `CaptureDocumentKind`, so the result never depends on dictionary order.
         let order = Dictionary(uniqueKeysWithValues: CaptureDocumentKind.allCases.enumerated().map { ($1, $0) })
@@ -74,10 +74,7 @@ public enum DocumentClassifier {
         return Classification(kind: best.key, confidence: 0.4 + 0.5 * margin * strength + 0.1 * strength)
     }
 
-    /// Whole-word match for short keywords (so "rca" doesn't match "marca"), substring match for phrases.
-    static func containsWord(_ word: String, in text: String) -> Bool {
-        guard word.count <= 4, !word.contains(" ") else { return text.contains(word) }
-        let escaped = NSRegularExpression.escapedPattern(for: word)
-        return TextPattern.first(#"(?<![a-z0-9])"# + escaped + #"(?![a-z0-9])"#, in: text) != nil
-    }
+    /// Signals whose longer forms mean something else, so they only count whole:
+    /// a meter's "index" isn't the "indexare" of a price.
+    static let wholeWords: Set<String> = ["index"]
 }

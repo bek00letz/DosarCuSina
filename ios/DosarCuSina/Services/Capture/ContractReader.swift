@@ -48,7 +48,7 @@ enum ContractReader {
             if dates.count >= 2, dates[0].day < dates[1].day {
                 fields.append(field(.startDate, .day(dates[0].day), 0.65, found.source))
                 fields.append(field(.minimumPeriodEnd, .day(dates[1].day), 0.7, found.source))
-            } else if let only = dates.first, found.folded.contains("pana") {
+            } else if let only = dates.first, CaptureText.containsWord("pana", inFolded: found.folded) {
                 fields.append(field(.minimumPeriodEnd, .day(only.day), 0.65, found.source))
             }
         }
@@ -161,7 +161,7 @@ enum ContractReader {
         let haystack = text.joinedFolded
         var scores = serviceSignals.map { signal in
             (signal.service, signal.words.reduce(0) { total, word in
-                total + (DocumentClassifier.containsWord(word.0, in: haystack) ? word.1 : 0)
+                total + (CaptureText.containsWord(word.0, inFolded: haystack) ? word.1 : 0)
             })
         }
         if identifiers.contains(.phoneNumber), let index = scores.firstIndex(where: { $0.0 == ServiceKind.mobile }) {

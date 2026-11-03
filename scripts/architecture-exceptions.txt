@@ -21,11 +21,7 @@ ios/DosarCuSina/Services/Capture/CaptureModels.swift:format-string
 ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:format-string
 
 # romanian-locale: Locale.dosarDefault everywhere, folding included.
-ios/DosarCuSina/Models/Fields/ChoiceOptions.swift:romanian-locale
-ios/DosarCuSina/Models/Templates/ComponentCatalog.swift:romanian-locale
-ios/DosarCuSina/Services/Capture/CaptureText.swift:romanian-locale
 ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:romanian-locale:2
-ios/DosarCuSina/Views/Capture/Filing/CaptureMapping.swift:romanian-locale
 
 # save-outside-unit-of-work: One unit of work around every multi-step flow (agreed fix 7); start-up and migrations save through UnitOfWork too.
 ios/DosarCuSina/App/DosarCuSinaApp.swift:save-outside-unit-of-work

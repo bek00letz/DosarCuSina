@@ -105,7 +105,7 @@ enum IdentityDocumentReader {
             let joined = match.groups.dropFirst().compactMap { $0 }.joined().uppercased()
             return joined.contains(where: \.isNumber) ? Parsed(value: .text(joined), passed: true) : nil
         case .date, .dateRange:
-            return RomanianFieldExtractor.dates(inLine: CaptureText.fold(value), index: 0, window: window).first.map { Parsed(value: .day($0.day), passed: true) }
+            return RomanianFieldExtractor.dates(inLine: RomanianText.fold(value), index: 0, window: window).first.map { Parsed(value: .day($0.day), passed: true) }
         case .sex:
             let letters = value.uppercased().filter(\.isLetter)
             guard let letter = letters.first(where: { $0 == "M" || $0 == "F" }) else { return nil }

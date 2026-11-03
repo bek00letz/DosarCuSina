@@ -170,7 +170,7 @@ struct LabelledLayout<Key: Hashable> {
 
     private func value(at position: Position) -> Found? {
         if let rest = restOfLine(after: position) {
-            return Found(label: position, lines: [position.line], labelLines: [], value: rest, folded: CaptureText.fold(rest), source: text.original[position.line])
+            return Found(label: position, lines: [position.line], labelLines: [], value: rest, folded: RomanianText.fold(rest), source: text.original[position.line])
         }
         let labelLines = labelBlock(below: position)
         let lines: [Int]
@@ -182,7 +182,7 @@ struct LabelledLayout<Key: Hashable> {
         guard !lines.isEmpty else { return nil }
         let value = lines.map { text.original[$0] }.joined(separator: " ")
         let source = ([position.line] + labelLines + lines).map { text.original[$0] }.joined(separator: " ")
-        return Found(label: position, lines: lines, labelLines: labelLines, value: value, folded: CaptureText.fold(value), source: source)
+        return Found(label: position, lines: lines, labelLines: labelLines, value: value, folded: RomanianText.fold(value), source: source)
     }
 
     /// What follows the label on its own line, when no other label follows it there.
