@@ -9,7 +9,7 @@ import UIKit
 @MainActor
 @Suite("Hit targets")
 struct HitTargetTests {
-    static let sizes: [DynamicTypeSize] = [.xSmall, .large, .xxxLarge, .accessibility3, .accessibility5]
+    nonisolated static let sizes: [DynamicTypeSize] = [.xSmall, .large, .xxxLarge, .accessibility3, .accessibility5]
 
     private func size<V: View>(of view: V, at typeSize: DynamicTypeSize, width: CGFloat = 375) -> CGSize {
         let host = UIHostingController(rootView: view.environment(\.dynamicTypeSize, typeSize))
