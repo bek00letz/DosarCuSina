@@ -567,29 +567,42 @@ private struct ObligationCompleteSheet: View {
 
 // MARK: - Small sheets
 
-/// A reminder this many days before, beyond the presets.
-struct CustomLeadSheet: View {
-    let onClose: (Int?) -> Void
+/// "Altă zi": a reminder this many days before, beyond the presets. A page pushed inside
+/// the reminder settings sheet, whose back button is the way out without adding.
+struct CustomLeadPage: View {
+    let onAdd: (Int) -> Void
     @State private var days = 3
 
     var body: some View {
-        NavigationStack {
+        ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.l) {
                 Stepper(value: $days, in: 1...365) {
-                    // The sheet only adds a lead before the day (1 to 365 days), worded the same either way.
+                    // The page only adds a lead before the day (1 to 365 days), worded the same either way.
                     Text(verbatim: ReminderWording.rowTitle(days: days, from: .dueDay))
                         .dsFont(.headline, numeric: true)
                 }
                 .frame(minHeight: 44)
-                DSPrimaryButton("Adaugă", systemImage: "plus") { onClose(days) }
-                Spacer()
+                DSPrimaryButton("Adaugă", systemImage: "plus") { onAdd(days) }
             }
             .padding(DS.Space.m)
-            .navigationTitle("Altă zi")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Renunță") { onClose(nil) } }
-            }
+        }
+        .background(DS.Palette.background)
+        .navigationTitle("Altă zi")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+/// The same page in a sheet of its own, with "Renunță": only for the deadline page's
+/// inline reminder settings, kept switched off as the way back (`editsRemindersInline`).
+struct CustomLeadSheet: View {
+    let onClose: (Int?) -> Void
+
+    var body: some View {
+        NavigationStack {
+            CustomLeadPage { days in onClose(days) }
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) { Button("Renunță") { onClose(nil) } }
+                }
         }
     }
 }

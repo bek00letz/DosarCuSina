@@ -8,6 +8,20 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-03
 
+### The iPhone's search
+- **Decided:** section names, deadlines ("RCA – VW Golf", with its due day under it) and document titles appear in the iPhone's search (Spotlight). Nothing else: no field values, notes, history, firms, or text read off a document.
+- **Decided:** a category behind Face ID shows nothing there at all, titles included, whether or not it is open now. Turning a lock on removes what was shown. This is stricter than Caută, where a locked section still shows its title.
+- **Why:** Caută is inside the app, which the person has opened; Spotlight is reachable by anyone holding the unlocked phone, and showing a title is a promise the lock doesn't make.
+- **Decided:** examples never appear (deadlines come from the one list of what may leave the app, `ObligationSnapshot.fetchForOutside`); neither does a closed one-off deadline or an archived document. A title never carries a CNP-shaped number, a sealed value, or a value its category keeps out of search (a document number, with or without spaces); a title that is only such a number isn't shown. The rules are `SearchPrivacy.mayShowOutside` and `outsideText`, beside the in-app search's, so there is one definition.
+- **Decided:** "Arată în căutarea iPhone-ului" in Settings, on by default. Off deletes the app's whole index.
+- **Decided:** the app lock doesn't change what appears, the same as widgets and reminders; opening a result waits for Face ID. *Alternative:* nothing in Spotlight while the app lock is on, as Siri opens the app instead of answering.
+- **Decided:** Core Spotlight items, not App Intents' entity indexing. Entity indexing would need new section and document entities with queries and open intents, which Shortcuts could list outside the app lock, and the words that leave the app would come from each entity's display. Items keep one builder (`SpotlightCatalog`) in charge of every word, the opt-out is one call, and a result opens through the same link parser as everything else. A deadline's item still points to its Siri entity on iOS 27. The index is readable only while the phone is unlocked.
+- **Decided:** one indexer, `SpotlightIndexer`, on the coordinator's hook. It writes only what changed, from a ledger of fingerprints on the phone (no titles), and rewrites everything when the ledger and the index disagree.
+
+### "Altă zi…" is a page, not a second sheet
+- **Decided:** in "Când te anunț", "Altă zi…" pushes a page inside the sheet, with a back button, instead of opening a sheet on top. Back adds nothing; "Adaugă" adds the day and comes back.
+- **Why:** one sheet with a way back reads like the system's own settings sheets; a sheet on a sheet is easy to lose track of.
+
 ### Situations live where they belong
 - **Decided (owner):** a car's page has a *Situații* group with *Vinzi mașina* and *Ai avut o daună*; a home's page has *Ai avut o daună*; *Pleci din țară* is on a person's page and on Urmează. Each opens a checklist: what's ready, what's missing and what to bring.
 - **Decided:** the situations are listed once, `ReadinessSituation`, which says where each is offered (by what the category does, not by its key: a trip on a household member, a sale on a section that keeps an RCA, a claim on any section whose deadlines keep a policy's facts) and where it opens. A "Pregătește-te pentru…" section in Dosar would be a loop over it.

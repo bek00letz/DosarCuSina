@@ -19,6 +19,7 @@ public final class AppPreferences {
         static let reminderMinuteOfDay = "preferences.reminderMinuteOfDay"
         static let appLockEnabled = "preferences.appLockEnabled"
         static let hasCompletedOnboarding = "preferences.hasCompletedOnboarding"
+        static let showsInSpotlight = "preferences.showsInSpotlight"
     }
 
     @ObservationIgnored private let defaults: UserDefaults
@@ -38,12 +39,20 @@ public final class AppPreferences {
         didSet { store(hasCompletedOnboarding, Key.hasCompletedOnboarding) }
     }
 
+    /// "Arată în căutarea iPhone-ului": sections, deadlines and documents from categories
+    /// not behind Face ID appear in Spotlight (`SpotlightIndexer`). Default on; off deletes
+    /// the app's whole index.
+    public var showsInSpotlight: Bool {
+        didSet { store(showsInSpotlight, Key.showsInSpotlight) }
+    }
+
     public init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         let minute = defaults.object(forKey: Key.reminderMinuteOfDay) as? Int
         self.reminderMinuteOfDay = minute.map { min(max($0, 0), 24 * 60 - 1) } ?? Self.defaultReminderMinuteOfDay
         self.appLockEnabled = defaults.bool(forKey: Key.appLockEnabled)
         self.hasCompletedOnboarding = defaults.bool(forKey: Key.hasCompletedOnboarding)
+        self.showsInSpotlight = defaults.object(forKey: Key.showsInSpotlight) as? Bool ?? true
     }
 
     private func store(_ value: Any, _ key: String) {

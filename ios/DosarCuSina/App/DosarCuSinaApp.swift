@@ -1,3 +1,4 @@
+import CoreSpotlight
 import SwiftUI
 import SwiftData
 import UserNotifications
@@ -41,6 +42,11 @@ struct DosarCuSinaApp: App {
             .environment(\.locale, .dosarDefault)
             .onOpenURL { url in
                 navigator.open(url)
+            }
+            // A result tapped in the iPhone's search opens like a link, after unlocking.
+            .onContinueUserActivity(CSSearchableItemActionType) { activity in
+                guard let identifier = activity.userInfo?[CSSearchableItemActivityIdentifier] as? String else { return }
+                navigator.open(spotlightIdentifier: identifier)
             }
         }
         .onChange(of: scenePhase) { _, phase in

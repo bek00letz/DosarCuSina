@@ -124,18 +124,19 @@ struct ReminderSettingsSheet: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("Gata", action: onClose) }
             }
+            // "Altă zi…" is a page inside this sheet, with a back button, not a sheet on
+            // top of it: back adds nothing, "Adaugă" adds the day and comes back.
+            .navigationDestination(isPresented: $isAddingCustomLead) {
+                CustomLeadPage { days in
+                    isAddingCustomLead = false
+                    setLeads(obligation.reminders.leadDays + [days])
+                }
+            }
         }
         .dsToast($toast)
         .reminderPermissionGate($saveRequest)
         .sensoryFeedback(.success, trigger: restoredCount)
         .presentationDetents([.large])
-        .sheet(isPresented: $isAddingCustomLead) {
-            CustomLeadSheet { days in
-                isAddingCustomLead = false
-                if let days { setLeads(obligation.reminders.leadDays + [days]) }
-            }
-            .presentationDetents([.medium])
-        }
     }
 
     private func setLeads(_ leads: [Int]) {

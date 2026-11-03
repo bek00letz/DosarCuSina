@@ -2,16 +2,17 @@ import Foundation
 import SwiftData
 import Observation
 
-/// Something else that is rebuilt from the database after every save, such as a
-/// Spotlight index. Register it with `SideEffectsCoordinator.register(_:)`. It gets
-/// what may leave the app (`ObligationSnapshot.fetchForOutside`), never examples.
+/// Something else that is rebuilt from the database after every save: the Spotlight
+/// index (`SpotlightIndexer`, registered by `SideEffectsCoordinator.shared(for:)`).
+/// Register it with `SideEffectsCoordinator.register(_:)`. It gets what may leave the
+/// app (`ObligationSnapshot.fetchForOutside`), never examples.
 @MainActor
 public protocol SideEffectIndexer: AnyObject {
     func reconcile(obligations: [ObligationSnapshot], context: ModelContext) async
 }
 
 /// The one path from saved data to everything outside the database: pending
-/// reminders, the app badge and the widget snapshot. Views and actions never
+/// reminders, the app badge, the widget snapshot and Spotlight. Views and actions never
 /// schedule anything themselves; they save, and this runs after the save.
 ///
 /// Triggers: every `ModelContext.didSave` (debounced), preference changes, the
@@ -47,9 +48,12 @@ public final class SideEffectsCoordinator {
     /// The coordinator for this database: the app's own when it is running, so
     /// intents, notification buttons, widget taps and the background refresh all
     /// go through the same one.
+    /// It indexes Spotlight with the app's one indexer (`SpotlightIndexer`), whichever of
+    /// them made it first.
     public static func shared(for container: ModelContainer) -> SideEffectsCoordinator {
         if let instance, instance.container === container { return instance }
         let coordinator = SideEffectsCoordinator(container: container)
+        coordinator.register(SpotlightIndexer())
         instance = coordinator
         return coordinator
     }
