@@ -268,9 +268,16 @@ struct CaptureReviewView: View {
             }
             .transition(.opacity)
         }
+        // A bank card, or a page that may be one, is read only on the phone: no button, and
+        // one plain line so the person isn't left wondering where it went.
+        if onReadWithCloud != nil, CaptureRunner.hasCloudKey, !review.usedCloudModel, !review.providerMayRead {
+            Text("Cardurile bancare se citesc doar pe telefon.", comment: "Capture review: why a bank card can't be read by the AI provider.")
+                .dsFont(.footnote)
+                .fixedSize(horizontal: false, vertical: true)
+        }
         // Offered whenever a provider is set up, whatever the phone read: a confident
         // reading can be wrong too, and only a second opinion can tell.
-        if let onReadWithCloud, CaptureRunner.hasCloudKey, !review.usedCloudModel, !asksToSendToProvider {
+        if let onReadWithCloud, CaptureRunner.hasCloudKey, !review.usedCloudModel, !asksToSendToProvider, review.providerMayRead {
             if rereading == .cloud {
                 DSDelayedProgress(label: "Citesc cu \(cloudProvider.shortName)…")
                     .frame(maxWidth: .infinity, minHeight: 44)

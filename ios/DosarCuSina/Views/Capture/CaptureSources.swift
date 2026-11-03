@@ -154,11 +154,20 @@ final class CaptureSession {
     /// The pages read, with any the person added (the back of a card).
     private(set) var payload: CaptureRequest.Payload?
 
+    /// Where a capture is headed, as far as reading it with the AI provider goes.
+    struct Destination: Equatable {
+        /// A locked section or a person's documents: "Citește automat" asks first, whatever the page.
+        var isProtected = false
+        /// The person is adding a document read only on the phone (a bank card's own page):
+        /// the provider never reads it (`PhoneOnlyReading`).
+        var staysOnPhone = false
+    }
+
     @ObservationIgnored let ownerID: UUID?
     @ObservationIgnored private let reader: Reader
-    @ObservationIgnored private let automaticReading: @MainActor (CaptureResult, _ headedForProtectedPlace: Bool) -> AIProviderSettings.AutomaticReading
-    /// The capture goes to a locked section or a person's documents: "Citește automat" asks first, whatever the page.
-    @ObservationIgnored var headsForProtectedPlace = false
+    @ObservationIgnored private let automaticReading: @MainActor (CaptureResult, Destination) -> AIProviderSettings.AutomaticReading
+    /// Where the capture is headed, set by what presents it before the first reading.
+    @ObservationIgnored var destination = Destination()
     @ObservationIgnored private var usesCloud = false
     /// The provider read, or the person answered, for this document: never asked again.
     @ObservationIgnored private var hasAnsweredSending = false
@@ -170,8 +179,8 @@ final class CaptureSession {
         ownerID: UUID? = nil,
         store: CaptureDocumentStore = .shared(),
         reader: @escaping Reader = { try await CaptureRunner.run($0, useCloudModel: $1, ownerID: $2) },
-        automaticReading: @escaping @MainActor (CaptureResult, Bool) -> AIProviderSettings.AutomaticReading = {
-            AIProviderSettings.standard.automaticReading(after: $0, headedForProtectedPlace: $1)
+        automaticReading: @escaping @MainActor (CaptureResult, Destination) -> AIProviderSettings.AutomaticReading = {
+            AIProviderSettings.standard.automaticReading(after: $0, headedForProtectedPlace: $1.isProtected, staysOnPhone: $1.staysOnPhone)
         }
     ) {
         self.payload = payload
@@ -220,7 +229,7 @@ final class CaptureSession {
     /// The person chose to have a weak phone reading read by their AI provider too, or
     /// "Citește automat" asks for it. For an identity document it waits for their yes.
     private func afterReading(_ result: CaptureResult) {
-        switch automaticReading(result, headsForProtectedPlace) {
+        switch automaticReading(result, destination) {
         case .none: break
         case .read:
             CaptureLog.engine.info("Reading with the AI provider automatically: \(ReadingArbiter.weaknesses(of: result).map(\.rawValue).sorted().joined(separator: ","), privacy: .public)")
@@ -237,12 +246,22 @@ final class CaptureSession {
         if send { readAgain(.cloud) }
     }
 
+    /// Whether the person's AI provider may read this document at all: never one read only
+    /// on the phone (`PhoneOnlyReading`), whether the person is adding one or the phone read one.
+    func providerMayRead(_ reading: CaptureResult?) -> Bool {
+        !destination.staysOnPhone && !(reading.map { PhoneOnlyReading.mayBeOne($0) } ?? false)
+    }
+
     /// The one way to read a document again while its review stays on screen: with added
     /// pages, or by the person's AI provider (on a tap, by itself after a weak reading, or
     /// after the person said yes). The review merges the new reading with what they changed.
+    /// A document read only on the phone is never sent; added pages are read on the phone,
+    /// and the engine checks what it read of them before anything leaves (`PhoneOnlyReading`).
     func readAgain(_ what: CaptureReread, payload newPayload: CaptureRequest.Payload? = nil) {
         guard rereading == nil, let payload = newPayload ?? payload else { return }
-        let cloud = usesCloud || what == .cloud
+        let mayUseProvider = providerMayRead(rereadResult ?? result)
+        guard what != .cloud || mayUseProvider else { return }
+        let cloud = (usesCloud || what == .cloud) && mayUseProvider
         if what == .cloud { hasAnsweredSending = true; asksToSendToProvider = false }
         readAgainError = nil
         rereading = what

@@ -423,6 +423,9 @@ public enum CaptureNotice: Hashable, Codable, Sendable {
     case onDeviceModelFailed
     /// The cloud model was asked for but couldn't run.
     case cloudModelFailed(reason: String)
+    /// The cloud model was asked for, but what the phone read may be a document read only
+    /// on the phone (`PhoneOnlyReading`: a bank card), so nothing was sent.
+    case readOnPhoneOnly
     /// Only the first pages of a long PDF were read.
     case pagesTruncated(readPages: Int, totalPages: Int)
     /// An identity card read from one photo without its machine-readable zone: the

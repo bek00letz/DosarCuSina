@@ -716,8 +716,7 @@ enum CaptureReminderPreview {
         case .warrantyUntil?: String(localized: "Garanția se termină pe \(date).")
         case .expiryDate? where review.validityEnd == day:
             // Not printed: the document's rule gives it (a cazier judiciar, six months from its issue).
-            String(localized: "E valabil până pe \(date), la \(CalendarCount.months(review.validityMonths ?? 0)) de la eliberare.",
-                   comment: "Capture review: a document's validity worked out from its issue date, e.g. „la 6 luni de la eliberare”.")
+            ReminderWording.validityOpening(day, months: review.validityMonths ?? 0, today: today)
         default: String(localized: "Expiră pe \(date).")
         }
         if let deadline = plan.deadline {

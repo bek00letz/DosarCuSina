@@ -100,6 +100,9 @@ struct CaptureReview: Identifiable {
     var turnsOnDirectDebit = false
     /// The person chose the place themselves, even the one suggested: nothing to check.
     private(set) var placeConfirmed = false
+    /// The person is adding a document read only on the phone (the capture started from a
+    /// bank card's page): the AI provider never reads it.
+    var staysOnPhone = false
     var suggested: Suggested
     /// Kinds another reader saw, offered beside the kind shown ("Pe telefon părea: …").
     var kindAlternatives: [CaptureAlternative<CaptureDocumentKind>]
@@ -447,6 +450,15 @@ struct CaptureReview: Identifiable {
     /// The person's AI provider read this document.
     var usedCloudModel: Bool { result.readWithCloudModel }
 
+    /// Whether the person's AI provider may read this document (`PhoneOnlyReading`): never
+    /// one read only on the phone, whether the person is adding one, chose that kind, or the
+    /// phone read one (or can't be sure it didn't). The review offers "Citește mai bine"
+    /// only when it may.
+    var providerMayRead: Bool {
+        !staysOnPhone && !PhoneOnlyReading.isPhoneOnly(kind) && !PhoneOnlyReading.mayBeOne(result)
+            && !kindAlternatives.contains { PhoneOnlyReading.isPhoneOnly($0.value) }
+    }
+
     // MARK: Building
 
     /// A review with the destination worked out from what was read: an existing
@@ -630,6 +642,7 @@ struct CaptureReview: Identifiable {
         merged.keepsPhotoOnRequest = previous.keepsPhotoOnRequest
         merged.turnsOnDirectDebit = previous.turnsOnDirectDebit
         if previous.placeConfirmed { merged.placeConfirmed = true }
+        merged.staysOnPhone = previous.staysOnPhone
         return merged
     }
 }
