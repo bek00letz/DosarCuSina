@@ -421,6 +421,35 @@
     "Opțiuni contact": {
       "comment": "VoiceOver label of the menu next to a linked contact."
     },
+    "Parola are cel puțin %lld caractere.": {
+      "comment": "Backup password: the shortest it may be.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Parola are cel puțin %lld caracter."
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Parola are cel puțin %lld caractere."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Parola are cel puțin %lld de caractere."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Renunți la modificări?": {
       "comment": "Title of the dialog shown when closing a sheet with unsaved changes."
     },
