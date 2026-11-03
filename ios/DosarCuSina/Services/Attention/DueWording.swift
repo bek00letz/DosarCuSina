@@ -2,7 +2,7 @@ import Foundation
 
 /// When something is due, in plain words: "Expiră în 5 zile · 7 noiembrie".
 enum DueWording {
-    /// "în 5 zile", "azi", "mâine", "acum 3 zile", in the same durations as every
+    /// "în 5 zile", "într-o lună", "azi", "mâine", "acum 3 zile", in the same durations as every
     /// other surface (`DurationWording.distance`).
     static func relative(daysRemaining days: Int, from today: Date = Date(), calendar: Calendar = .current) -> String {
         switch days {
@@ -10,7 +10,7 @@ enum DueWording {
         case ..<0: return String(localized: "acum \(DurationWording.distance(days: days, from: today, calendar: calendar))", comment: "Due: this long ago")
         case 0: return String(localized: "azi", comment: "Due: today")
         case 1: return String(localized: "mâine", comment: "Due: tomorrow")
-        default: return String(localized: "în \(DurationWording.distance(days: days, from: today, calendar: calendar))", comment: "Due: in this long")
+        default: return DurationWording.inside(DurationWording.distance(days: days, from: today, calendar: calendar))
         }
     }
 
@@ -38,6 +38,23 @@ enum DueWording {
         let days = today.days(to: due, calendar: calendar)
         let when = relative(daysRemaining: days, from: today.startDate(in: calendar), calendar: calendar)
         return "\(verb(for: kind, daysRemaining: days)) \(when) · \(date(due, today: today))"
+    }
+
+    /// A document with a travel cut-off (a passport) shows both its dates instead of one due
+    /// line: "Expiră pe 12 august 2027" and "Bun de călătorit până pe 12 februarie 2027". Once
+    /// the cut-off has passed: "A fost bun de călătorit până pe …"; once it has expired, only
+    /// "A expirat pe …". Nil for everything without a cut-off, which keeps `line`.
+    static func travelLines(due: CalendarDay, rule: UrgencyRule, today: CalendarDay, calendar: Calendar = .current) -> [String]? {
+        guard let cutoff = rule.travelCutoff(before: due, calendar: calendar) else { return nil }
+        let expiry = date(due, today: today)
+        guard today <= due else { return [String(localized: "A expirat pe \(expiry)", comment: "A passport's line once it has expired")] }
+        let travel = date(cutoff, today: today)
+        return [
+            String(localized: "Expiră pe \(expiry)", comment: "A passport's expiry, on its page"),
+            today <= cutoff
+                ? String(localized: "Bun de călătorit până pe \(travel)", comment: "A passport's last day good for travel, six months before it expires")
+                : String(localized: "A fost bun de călătorit până pe \(travel)", comment: "A passport past its last day good for travel, before it expires"),
+        ]
     }
 
     /// Why it matters, in one plain sentence, from the consequence.

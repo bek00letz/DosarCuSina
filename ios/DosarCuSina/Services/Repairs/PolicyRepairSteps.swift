@@ -143,3 +143,118 @@ struct HomePolicyWithoutDeadlineStep: DataRepairStep {
         }
     }
 }
+
+// MARK: - A home's policy facts, kept apart by cover
+
+/// Earlier versions kept one insurer, policy number and claims phone for a home, which its
+/// PAD and its optional policy shared. They now stay where PAD keeps them (the PAD
+/// deadline's `BlueprintFacts`); this step finds homes whose facts belong to the optional
+/// policy:
+///
+/// - a policy filed on the home that carries the number says which (its deadline, else its
+///   text: PAD by name, any other home policy is the optional one);
+/// - with no such paper, the home's running deadlines say it when only one of the two runs.
+///
+/// When the cover can be told and it is the optional policy, the repair moves the facts
+/// there, filling only what the optional policy lacks. When it can't be told, the entry asks
+/// the owner to check ("Verifică"): applying it moves them, "Lasă așa" keeps them as PAD's.
+/// A home whose facts are PAD's, or that already keeps the two apart, isn't listed.
+struct HomePolicySetsStep: DataRepairStep {
+    static let id = DataRepairStepID.homePolicySets
+    var title: String { String(localized: "Asigurările locuinței", comment: "Repair group: a home's shared policy facts split into PAD and the optional policy.") }
+
+    enum Cover { case pad, optional, unknown }
+
+    struct Candidate {
+        let asset: Asset
+        /// What names the facts in the list: the policy number, else the insurer, else the phone.
+        let label: String
+        let cover: Cover
+        let pad: BlueprintFacts
+        let optional: BlueprintFacts
+    }
+
+    static func candidates(in context: ModelContext) throws -> [Candidate] {
+        let templates = try TemplateStore(context: context).templatesByKey()
+        return try context.fetch(FetchDescriptor<Asset>(sortBy: [SortDescriptor(\.createdAt)])).compactMap { asset in
+            guard !asset.isExample, templates.plays(.home, asset.templateKey), let template = templates[asset.templateKey]?.definition,
+                  let pad = template.blueprints.first(where: { $0.key == BuiltInBlueprints.homePAD })?.facts,
+                  let optional = template.blueprints.first(where: { $0.key == BuiltInBlueprints.homeInsurance })?.facts,
+                  pad != optional else { return nil }
+            let values = asset.values
+            func text(_ facts: BlueprintFacts, _ role: BlueprintFactRole) -> String? {
+                facts.field(for: role).flatMap { values[$0]?.textValue }.flatMap { $0.isEmpty ? nil : $0 }
+            }
+            let held = BlueprintFactRole.allCases.compactMap { text(pad, $0) }
+            // Nothing kept, or the two already apart: nothing to tell.
+            guard let first = held.first, BlueprintFactRole.allCases.allSatisfy({ text(optional, $0) == nil }) else { return nil }
+            let number = text(pad, .policyNumber)
+            let cover = Self.cover(of: asset, number: number)
+            guard cover != .pad else { return nil }
+            return Candidate(asset: asset, label: number ?? first, cover: cover, pad: pad, optional: optional)
+        }
+    }
+
+    /// Which policy the home's kept facts are: from the papers that carry its number, else
+    /// from the deadlines running.
+    static func cover(of asset: Asset, number: String?) -> Cover {
+        let wanted = number.map(ModelAnswerMapper.compact) ?? ""
+        let papers = (asset.attachments ?? []).filter { attachment in
+            guard attachment.kind == .policy, !attachment.isArchived, wanted.count >= 4 else { return false }
+            return attachment.extractedText.map { ModelAnswerMapper.compact($0).contains(wanted) } ?? false
+        }
+        let fromPapers = Set(papers.compactMap { paper -> Cover? in
+            switch paper.obligation?.blueprintKey {
+            case BuiltInBlueprints.homePAD?: return .pad
+            case BuiltInBlueprints.homeInsurance?: return .optional
+            default: break
+            }
+            guard let text = paper.extractedText,
+                  // A car's policy filed under the home says nothing about the home's.
+                  InsuranceCover.read(in: text, among: [InsuranceCover.rca, InsuranceCover.casco]) == nil else { return nil }
+            return InsuranceCover.read(in: text, among: [InsuranceCover.pad]) != nil ? .pad : .optional
+        })
+        if fromPapers.count == 1, let only = fromPapers.first { return only }
+        if fromPapers.count > 1 { return .unknown }
+        let running = Set((asset.obligations ?? []).filter { $0.status == .active || $0.status == .paused }.compactMap(\.blueprintKey))
+        switch (running.contains(BuiltInBlueprints.homePAD), running.contains(BuiltInBlueprints.homeInsurance)) {
+        case (true, false): return .pad
+        case (false, true): return .optional
+        default: return .unknown
+        }
+    }
+
+    func findings(_ scan: inout DataRepairScan) throws -> [DataRepairFinding] {
+        try Self.candidates(in: scan.context).map { candidate in
+            let name = candidate.asset.name
+            let label = candidate.label
+            let message = candidate.cover == .optional
+                ? String(localized: "La \(name), „\(label)” e de la asigurarea facultativă, dar stă la PAD. O mut la asigurarea facultativă, cu asigurătorul și telefonul de daune?",
+                         comment: "Repair: a home's optional policy facts kept where PAD's are.")
+                : String(localized: "Verifică asigurarea de la \(name): „\(label)” stă la PAD și nu-mi dau seama dacă e PAD sau asigurarea facultativă. E cea facultativă? O mut acolo, cu asigurătorul și telefonul de daune.",
+                         comment: "Repair: a home's policy facts whose cover can't be told. Applying moves them to the optional policy; leaving keeps them as PAD's.")
+            return DataRepairFinding(
+                id: "\(Self.id.rawValue):\(candidate.asset.id.uuidString):\(label)",
+                step: Self.id,
+                message: message,
+                subject: .homePolicySet(assetID: candidate.asset.id, policyNumber: label)
+            )
+        }
+    }
+
+    func apply(_ findings: [DataRepairFinding], in context: ModelContext, calendar: Calendar) throws {
+        let approved = Set(findings.compactMap { finding -> String? in
+            guard case .homePolicySet(let id, let label) = finding.subject else { return nil }
+            return "\(id.uuidString):\(label)"
+        })
+        for candidate in try Self.candidates(in: context) where approved.contains("\(candidate.asset.id.uuidString):\(candidate.label)") {
+            var values = candidate.asset.values
+            for role in BlueprintFactRole.allCases {
+                guard let from = candidate.pad.field(for: role), let value = values[from] else { continue }
+                if let to = candidate.optional.field(for: role), values[to] == nil { values[to] = value }
+                values[from] = nil
+            }
+            candidate.asset.values = values
+        }
+    }
+}

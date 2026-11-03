@@ -63,7 +63,8 @@ struct PersonalDocumentTests {
         #expect(document.value(DocumentType.variantFieldKey)?.textValue == DocumentType.Variant.passportTemporary)
         let renewal = try #require(document.activeObligations.first)
         #expect(renewal.blueprintKey == "document.renew")
-        #expect(renewal.reminderLeadDays == [180, 60], "The passport's profile, not a separate step")
+        #expect(renewal.reminders == ReminderProfile(leadDays: [90, 0], consequence: .legal, travelMarginDays: 180),
+                "The passport's profile, with its travel cut-off, not a separate step")
     }
 
     @Test func aDocumentWithoutAnExpiryHasNoDeadline() throws {

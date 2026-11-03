@@ -26,7 +26,7 @@ public struct BoxStatus: Hashable, Sendable {
     /// Urmează tab ranks them. Only what is inside its attention window counts;
     /// anything further out is "all good" for now.
     public static func make(_ obligations: [ObligationSnapshot], now: Date = Date(), calendar: Calendar = .current) -> BoxStatus {
-        let digest = AttentionModel.digest(obligations, now: now, calendar: calendar, limits: .init(maxNow: 1, soonWindowDays: 0))
+        let digest = AttentionModel.digest(obligations, now: now, calendar: calendar, limits: .init(maxNow: 1))
         if let top = digest.now.first { return BoxStatus(state: .pending(top)) }
         return BoxStatus(state: .allGood)
     }

@@ -288,7 +288,7 @@ private struct AddDeadlineForm: View {
                     recurrence: (repeats ?? .never).rule
                 )
             }
-            onClose("Am adăugat \(obligation.title). \(ReminderWording.sentence(leadDays: obligation.reminderLeadDays))")
+            onClose("Am adăugat \(obligation.title). \(ReminderWording.sentence(obligation.reminders))")
         } catch {
             errorMessage = SaveFailure.message(for: error, formKept: true)
         }

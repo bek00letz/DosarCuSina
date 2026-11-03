@@ -411,7 +411,7 @@ private struct GalleryChips: View {
 private struct GalleryStatus: View {
     var body: some View {
         GalleryPage {
-            GallerySection(title: "Termene", note: "Un ITP: ton și cuvinte din regula de urgență, ca în Urmează. Pluralele românești: 1 zi, 2 zile, 20 de zile.") {
+            GallerySection(title: "Termene", note: "Un ITP: ton și cuvinte din regula de urgență, ca în Urmează. Pluralele românești: o zi, 2 zile, 20 de zile.") {
                 DSCard {
                     DSFlowLayout {
                         ForEach([-25, -3, -1, 0, 1, 2, 12, 20, 45], id: \.self) { days in
@@ -421,7 +421,7 @@ private struct GalleryStatus: View {
                     }
                 }
             }
-            GallerySection(title: "Expirări", note: "Pentru acte și garanții. Un pașaport cere atenție în ultima lună, ca în Urmează.") {
+            GallerySection(title: "Expirări", note: "Pentru acte și garanții. Un pașaport cere atenție din ziua în care nu mai e bun de călătorit, cu 6 luni înainte să expire, ca în Urmează.") {
                 DSCard {
                     DSFlowLayout {
                         ForEach([-40, 0, 9, 150, 400], id: \.self) { days in
@@ -600,7 +600,7 @@ private struct GalleryFields: View {
                     VStack(spacing: DS.Space.m) {
                         DSMoneyField("Cost estimat", amount: $amount, currencyCode: $currency)
                         DSDateField("Data cumpărării", date: $date)
-                        DSExpiryDateField("Pașaport valabil până la", date: $expiry, urgencyRule: GallerySample.passport, footnote: "Te anunț cu 6 luni înainte, pentru călătorii în afara UE.")
+                        DSExpiryDateField("Pașaport valabil până la", date: $expiry, urgencyRule: GallerySample.passport, footnote: "Bun de călătorit până cu 6 luni înainte să expire. Te anunț cu 3 luni înainte de ziua aceea.")
                         DSToggleField("Mementouri", isOn: $reminders, systemImage: "bell.fill")
                     }
                 }
@@ -701,7 +701,7 @@ private struct GalleryEditSheet: View {
 /// Sample deadlines for the gallery, drawn by the same urgency rule as the app.
 private enum GallerySample {
     static let itp = ObligationKind.legal.defaultProfile.urgencyRule
-    static let passport = ReminderProfile(leadDays: [180, 60], consequence: .legal).urgencyRule
+    static let passport = ReminderProfile(leadDays: [90, 0], consequence: .legal, travelMarginDays: DocumentType.travelMarginDays(for: DocumentType.passport)).urgencyRule
 
     /// The urgency of a deadline `days` from today.
     static func urgency(in days: Int, rule: UrgencyRule = itp) -> AttentionUrgency {

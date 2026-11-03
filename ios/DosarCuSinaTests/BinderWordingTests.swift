@@ -8,7 +8,7 @@ struct BinderWordingTests {
     let ro = Locale(identifier: "ro_RO")
 
     @Test("Years and months use the catalog's plural forms", arguments: [
-        (1, "1 an", "1 lună"), (2, "2 ani", "2 luni"), (19, "19 ani", "19 luni"), (20, "20 de ani", "20 de luni"),
+        (1, "un an", "o lună"), (2, "2 ani", "2 luni"), (19, "19 ani", "19 luni"), (20, "20 de ani", "20 de luni"),
     ])
     func calendarCounts(count: Int, years: String, months: String) {
         #expect(CalendarCount.years(count) == years)
@@ -18,7 +18,7 @@ struct BinderWordingTests {
     @Test func agesReadNaturally() {
         let today = CalendarDay("2026-11-02")
         #expect(AgeWording.text(born: CalendarDay("2023-06-10"), today: today, calendar: calendar) == "3 ani")
-        #expect(AgeWording.text(born: CalendarDay("2025-07-01"), today: today, calendar: calendar) == "1 an și 4 luni")
+        #expect(AgeWording.text(born: CalendarDay("2025-07-01"), today: today, calendar: calendar) == "un an și 4 luni")
         #expect(AgeWording.text(born: CalendarDay("2026-06-01"), today: today, calendar: calendar) == "5 luni")
         #expect(AgeWording.text(born: CalendarDay("2026-10-20"), today: today, calendar: calendar) == "sub o lună")
         #expect(AgeWording.text(born: CalendarDay("2027-01-01"), today: today, calendar: calendar) == nil)
@@ -99,7 +99,7 @@ struct BinderWordingTests {
             counts: .init(templates: 13, assets: 1, obligations: 20, historyEntries: 4, serviceItems: 2, providers: 1, measurements: 0, attachments: 3)
         )
         let text = BackupWording.summary(summary, locale: ro)
-        #expect(text.contains("1 secțiune"))
+        #expect(text.contains("o secțiune"))
         #expect(text.contains("20 de termene"))
         #expect(text.contains("3 documente"))
     }

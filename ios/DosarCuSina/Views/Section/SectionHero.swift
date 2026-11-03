@@ -220,6 +220,10 @@ struct ExpiryLine: View {
             Text(verbatim: label).dsFont(.captionEmphasized)
             Text(verbatim: DosarFormat.longDay(day))
                 .dsFont(.title, numeric: true)
+            // A passport also says until when it is good for travel (its type's margin).
+            if let travel = DueWording.travelLines(due: day, rule: rule, today: today, calendar: calendar)?.dropFirst().first {
+                Text(verbatim: travel).dsFont(.subheadline, numeric: true)
+            }
             DSStatusBadge(expiry: rule.urgency(of: day, today: today, calendar: calendar), daysRemaining: today.days(to: day, calendar: calendar))
         }
         .accessibilityElement(children: .combine)

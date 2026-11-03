@@ -143,6 +143,31 @@ public enum DocumentType {
         options.option(for: type)?.label
     }
 
+    // MARK: Travel
+
+    /// How long before its printed expiry a type of document stops being good for travel,
+    /// in days (whole months count as calendar months, as a reminder's lead does: 180 is six
+    /// months). Data, read by the catalog's reminder profile for the type, the deadline
+    /// page and the trip check; no code asks for a type by name.
+    ///
+    /// Only a passport (every variant of it) has one: many countries refuse entry with less
+    /// than six months left, and six months covers every country's rule, including those
+    /// that ask for three. It is fixed, not a setting. An identity card is good for travel
+    /// in the EU until it expires, and every other document keeps its plain expiry.
+    public static let travelMargins: [String: Int] = [passport: 180]
+
+    /// The travel margin of a type (its key, or a label stored by an earlier version); 0 when
+    /// it is good for travel until it expires.
+    public static func travelMarginDays(for type: String?) -> Int {
+        guard let type, let key = options.option(for: type)?.key else { return 0 }
+        return travelMargins[key] ?? 0
+    }
+
+    /// The travel margin of a document from its values: its type's (a variant has its type's).
+    public static func travelMarginDays(in values: FieldValues) -> Int {
+        travelMarginDays(for: values[typeFieldKey]?.textValue)
+    }
+
     // MARK: Variants
 
     /// The kinds of a document type that really differ: what the paper is called,

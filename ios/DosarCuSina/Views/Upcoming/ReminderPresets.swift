@@ -4,7 +4,7 @@ import Foundation
 ///
 /// Lead days are the obligation's own (`ReminderProfile.leadDays`); presets are
 /// only a friendlier way to pick them. A profile from a blueprint may hold
-/// other values (a passport's 180 days): those show as their own rows, worded
+/// other values (a passport's 90 days): those show as their own rows, worded
 /// the same way, so nothing the engine knows is hidden.
 enum ReminderPreset: Int, CaseIterable, Identifiable, Sendable {
     case dueDay = 0
@@ -31,39 +31,76 @@ enum ReminderPreset: Int, CaseIterable, Identifiable, Sendable {
 }
 
 enum ReminderWording {
-    /// A lead in words: "1 zi", "7 zile", "1 lună", "6 luni", "1 an". The one wording
+    /// A lead in words: "o zi", "7 zile", "o lună", "6 luni", "un an". The one wording
     /// for leads (`DurationWording.lead`), so the reminder that fires reads the same.
     static func phrase(days: Int) -> String {
         DurationWording.lead(days: days)
     }
 
-    /// The row title for one lead: "În ziua termenului", "Cu 7 zile înainte".
-    static func rowTitle(days: Int) -> String {
-        days == 0
-            ? String(localized: "În ziua termenului", comment: "Reminder choice: on the due day")
-            : String(localized: "Cu \(phrase(days: days)) înainte", comment: "Reminder choice: this long before the due day")
+    /// The day a profile's leads count back from, as the person reads it: the due day, or
+    /// for a document with a travel cut-off (a passport) the last day it is good for travel.
+    enum Anchor: Sendable {
+        case dueDay
+        case travelCutoff
+
+        init(_ profile: ReminderProfile) {
+            self = profile.hasTravelCutoff ? .travelCutoff : .dueDay
+        }
     }
 
-    /// "Te anunț cu 1 lună și cu 7 zile înainte și în ziua termenului."
-    static func sentence(leadDays: [Int]) -> String {
+    /// The row title for one lead: "În ziua termenului", "Cu 7 zile înainte", and for a
+    /// passport "În ultima zi bună de călătorit".
+    static func rowTitle(days: Int, from anchor: Anchor) -> String {
+        guard days == 0 else {
+            return String(localized: "Cu \(phrase(days: days)) înainte", comment: "Reminder choice: this long before the due day")
+        }
+        switch anchor {
+        case .dueDay: return String(localized: "În ziua termenului", comment: "Reminder choice: on the due day")
+        case .travelCutoff: return String(localized: "În ultima zi bună de călătorit", comment: "Reminder choice: on the last day a passport is good for travel")
+        }
+    }
+
+    /// "Te anunț cu o lună și cu 7 zile înainte și în ziua termenului." For a passport:
+    /// "Te anunț cu 3 luni înainte de ultima zi bună de călătorit și în ziua aceea."
+    static func sentence(_ profile: ReminderProfile) -> String {
+        let leadDays = profile.leadDays
         let before = leadDays.filter { $0 > 0 }.sorted(by: >).map { String(localized: "cu \(phrase(days: $0))", comment: "Part of the reminder sentence") }
         let onTheDay = leadDays.contains(0)
-        if before.isEmpty {
-            return onTheDay
-                ? String(localized: "Te anunț în ziua termenului.", comment: "Reminder sentence: only on the due day")
-                : String(localized: "Nu te anunț dinainte.", comment: "Reminder sentence: no reminders chosen")
+        guard !before.isEmpty else {
+            guard onTheDay else { return String(localized: "Nu te anunț dinainte.", comment: "Reminder sentence: no reminders chosen") }
+            switch Anchor(profile) {
+            case .dueDay: return String(localized: "Te anunț în ziua termenului.", comment: "Reminder sentence: only on the due day")
+            case .travelCutoff: return String(localized: "Te anunț în ultima zi bună de călătorit.", comment: "Reminder sentence: only on the last day a passport is good for travel")
+            }
         }
         let list = before.formatted(.list(type: .and).locale(.dosarDefault))
-        return onTheDay
-            ? String(localized: "Te anunț \(list) înainte și în ziua termenului.", comment: "Reminder sentence: leads before, and on the day")
-            : String(localized: "Te anunț \(list) înainte.", comment: "Reminder sentence: leads before the due day")
+        switch Anchor(profile) {
+        case .dueDay:
+            return onTheDay
+                ? String(localized: "Te anunț \(list) înainte și în ziua termenului.", comment: "Reminder sentence: leads before, and on the day")
+                : String(localized: "Te anunț \(list) înainte.", comment: "Reminder sentence: leads before the due day")
+        case .travelCutoff:
+            return onTheDay
+                ? String(localized: "Te anunț \(list) înainte de ultima zi bună de călătorit și în ziua aceea.", comment: "Reminder sentence for a passport: leads before the last day it is good for travel, and on that day")
+                : String(localized: "Te anunț \(list) înainte de ultima zi bună de călătorit.", comment: "Reminder sentence for a passport: leads before the last day it is good for travel")
+        }
     }
 
-    /// "Expiră pe 12 august 2031. Te anunț cu 3 luni și cu 1 lună înainte." The line
-    /// under an expiry date, shown before saving so the reminder is never a surprise.
-    static func expiryLine(_ day: CalendarDay, leadDays: [Int], today: CalendarDay) -> String {
+    /// "Bun de călătorit până pe 12 februarie 2031." for a document with a travel cut-off
+    /// expiring on `day`; nil for every other document.
+    static func travelLine(expiring day: CalendarDay, profile: ReminderProfile, today: CalendarDay, calendar: Calendar = .current) -> String? {
+        guard let cutoff = profile.urgencyRule.travelCutoff(before: day, calendar: calendar) else { return nil }
+        return String(localized: "Bun de călătorit până pe \(DueWording.date(cutoff, today: today)).", comment: "A passport's last day good for travel, six months before it expires")
+    }
+
+    /// "Expiră pe 12 august 2031. Te anunț cu 3 luni și cu o lună înainte." The line
+    /// under an expiry date, shown before saving so the reminder is never a surprise. A
+    /// passport's says when it stops being good for travel too.
+    static func expiryLine(_ day: CalendarDay, profile: ReminderProfile, today: CalendarDay, calendar: Calendar = .current) -> String {
         let date = DueWording.date(day, today: today)
-        return String(localized: "Expiră pe \(date).") + " " + sentence(leadDays: leadDays)
+        return [String(localized: "Expiră pe \(date)."), travelLine(expiring: day, profile: profile, today: today, calendar: calendar), sentence(profile)]
+            .compactMap { $0 }
+            .joined(separator: " ")
     }
 
     /// The follow-up line under the sentence, when it is on.

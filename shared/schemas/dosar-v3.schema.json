@@ -58,7 +58,8 @@
         "leadDays": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
         "consequence": { "enum": ["legal", "financial", "health", "comfort"] },
         "graceDays": { "type": "integer", "minimum": 0 },
-        "followUpAfterLapse": { "type": "boolean", "description": "Defaults to true for legal and financial, false otherwise." }
+        "followUpAfterLapse": { "type": "boolean", "description": "Defaults to true for legal and financial, false otherwise." },
+        "travelMarginDays": { "type": "integer", "minimum": 0, "description": "How long before the due date the document stops being good for travel (a passport: 180, six calendar months). Leads count back from that day. Missing means 0." }
       }
     },
     "fieldValue": {

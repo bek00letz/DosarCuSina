@@ -54,8 +54,8 @@ public enum BuiltInTemplates {
 
     private static func ron(_ amount: Decimal) -> Money { Money(amount, currency: "RON") }
 
-    private static func profile(_ leadDays: [Int], _ consequence: Consequence, grace: Int = 0, followUp: Bool? = nil) -> ReminderProfile {
-        ReminderProfile(leadDays: leadDays, consequence: consequence, graceDays: grace, followUpAfterLapse: followUp)
+    private static func profile(_ leadDays: [Int], _ consequence: Consequence, grace: Int = 0, followUp: Bool? = nil, travelMargin: Int = 0) -> ReminderProfile {
+        ReminderProfile(leadDays: leadDays, consequence: consequence, graceDays: grace, followUpAfterLapse: followUp, travelMarginDays: travelMargin)
     }
 
     // MARK: Mainstays
@@ -145,9 +145,13 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: "home.meterReadTo", label: String(localized: "Autocitire până la ziua"), type: .number),
                 ]),
                 FieldSection(key: "home.insurance", title: String(localized: "Asigurare"), fields: [
-                    FieldDefinition(key: HomeFields.insurer, label: String(localized: "Asigurător"), type: .text, role: .issuer),
-                    FieldDefinition(key: HomeFields.policyNumber, label: String(localized: "Număr poliță"), type: .text, role: .keyFact),
-                    FieldDefinition(key: HomeFields.claimsPhone, label: String(localized: "Telefon pentru daune"), type: .phone, role: .keyFact),
+                    FieldDefinition(key: HomeFields.insurer, label: String(localized: "Asigurător PAD"), type: .text, role: .issuer),
+                    FieldDefinition(key: HomeFields.policyNumber, label: String(localized: "Număr poliță PAD"), type: .text, role: .keyFact),
+                    FieldDefinition(key: HomeFields.claimsPhone, label: String(localized: "Telefon daune PAD"), type: .phone, role: .keyFact),
+                    // The optional policy is separate from PAD: its own insurer, policy and claims line.
+                    FieldDefinition(key: HomeFields.optionalInsurer, label: String(localized: "Asigurător facultativă"), type: .text),
+                    FieldDefinition(key: HomeFields.optionalPolicyNumber, label: String(localized: "Număr poliță facultativă"), type: .text, role: .keyFact),
+                    FieldDefinition(key: HomeFields.optionalClaimsPhone, label: String(localized: "Telefon daune facultativă"), type: .phone, role: .keyFact),
                 ]),
                 FieldSection(key: "home.heating", title: String(localized: "Centrală termică"), fields: [
                     FieldDefinition(key: "home.boilerModel", label: String(localized: "Model"), type: .text),
@@ -165,11 +169,14 @@ public enum BuiltInTemplates {
                                     isSuggested: false),
                 ObligationBlueprint(key: BuiltInBlueprints.homePAD, title: String(localized: "Asigurare obligatorie (PAD)"), kind: .insurance, recurrence: .interval(.years(1), anchor: .dueDate), firstDue: .ask,
                                     reminders: profile([30, 7, 0], .legal),
-                                    estimatedCost: ron(130), facts: homeInsuranceFacts),
+                                    estimatedCost: ron(130),
+                                    facts: BlueprintFacts(insurer: HomeFields.insurer, policyNumber: HomeFields.policyNumber, claimsPhone: HomeFields.claimsPhone)),
                 // An optional policy on top of PAD: renewed yearly, like CASCO for a car.
                 ObligationBlueprint(key: BuiltInBlueprints.homeInsurance, title: String(localized: "Asigurare facultativă"), kind: .insurance,
                                     recurrence: .interval(.years(1), anchor: .dueDate), firstDue: .ask,
-                                    reminders: profile([30, 7, 0], .financial), isSuggested: false, facts: homeInsuranceFacts),
+                                    reminders: profile([30, 7, 0], .financial), isSuggested: false,
+                                    facts: BlueprintFacts(insurer: HomeFields.optionalInsurer, policyNumber: HomeFields.optionalPolicyNumber,
+                                                          claimsPhone: HomeFields.optionalClaimsPhone)),
                 ObligationBlueprint(key: "home.buildingTax", title: String(localized: "Impozit pe clădire"), kind: .tax,
                                     recurrence: .fixedDates([MonthDay(month: 3, day: 31), MonthDay(month: 9, day: 30)]), firstDue: .nextFixedDate,
                                     reminders: profile([14, 1], .financial), note: String(localized: "Plata integrală până la 31 martie poate aduce o reducere.")),
@@ -180,12 +187,6 @@ public enum BuiltInTemplates {
             pockets: [.upcoming, .tenants, .products, .subscriptions, .documents, .history, .people, .money, .keyFacts],
             behavior: CategoryBehavior(role: .home)
         )
-    }
-
-    /// A home keeps one insurer, policy number and claims phone, which its PAD and its
-    /// optional policy share.
-    private static var homeInsuranceFacts: BlueprintFacts {
-        BlueprintFacts(insurer: HomeFields.insurer, policyNumber: HomeFields.policyNumber, claimsPhone: HomeFields.claimsPhone)
     }
 
     public static var documents: TemplateDefinition {
@@ -232,7 +233,9 @@ public enum BuiltInTemplates {
                                     firstDue: .field(key: DocumentFields.expiry, offsetDays: 0),
                                     reminders: profile([90, 30], .legal),
                                     reminderVariants: ReminderProfileVariants(field: "document.type", variants: [
-                                        DocumentType.passport: profile([180, 60], .legal),
+                                        // Counted from the day it stops being good for travel (its type's margin):
+                                        // three months before it, and on the day.
+                                        DocumentType.passport: profile([90, 0], .legal, travelMargin: DocumentType.travelMarginDays(for: DocumentType.passport)),
                                         DocumentType.idCard: profile([90, 30], .legal),
                                         DocumentType.drivingLicence: profile([60, 30], .legal),
                                         DocumentType.euHealthCard: profile([30, 7], .health),
