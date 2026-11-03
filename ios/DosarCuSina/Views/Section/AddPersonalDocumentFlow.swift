@@ -248,7 +248,7 @@ private struct PersonalDocumentForm: View {
 
     private var expirySection: some View {
         VStack(alignment: .leading, spacing: DS.Space.xs) {
-            DSExpiryDateField("Valabil până la", date: expiryBinding)
+            DSExpiryDateField("Valabil până la", date: expiryBinding, urgencyRule: expiryRule)
             if let line = reminderLine {
                 Text(verbatim: line)
                     .dsFont(.subheadline)
@@ -274,6 +274,11 @@ private struct PersonalDocumentForm: View {
         } set: { date in
             draft.expiry = date.map { CalendarDay($0, calendar: calendar) }
         }
+    }
+
+    private var expiryRule: UrgencyRule {
+        guard let template = templates.first else { return .noReminders }
+        return PersonalDocumentFiling.urgencyRule(draft, template: template, actions: AssetActions(context: context, calendar: calendar))
     }
 
     private var reminderLine: String? {

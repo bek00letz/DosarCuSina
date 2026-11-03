@@ -296,7 +296,8 @@ private struct EssentialsStep: View {
                     footnote: "Cum îi spui acasă: „Golful”, „Apartamentul”, „PawPaw”."
                 )
                 ForEach(fields) { field in
-                    FieldEditor(field: field, values: $model.values)
+                    FieldEditor(field: field, values: $model.values,
+                                urgencyRule: DateUrgency.rule(forField: field.key, values: model.values, definition: model.definition))
                 }
                 if model.template?.key == BuiltInTemplates.Key.documents, model.request.parentID == nil {
                     holderPicker

@@ -1,36 +1,45 @@
 import SwiftUI
 
 extension DSStatus {
-    /// Display classification for a due date. The obligation engine owns the real
-    /// attention rules; this is the shared mapping from "days left" to a badge.
-    /// - Parameters:
-    ///   - daysRemaining: Whole calendar days from today to the due date (negative when late).
-    ///   - soonWithinDays: How many days ahead still counts as "soon".
-    static func forDue(daysRemaining: Int, isDone: Bool, soonWithinDays: Int = 14) -> DSStatus {
-        if isDone { return .done }
-        if daysRemaining < 0 { return .overdue }
-        if daysRemaining <= soonWithinDays { return .soon }
-        return .later
+    /// How an urgency's tone is drawn. The tone comes from the one urgency rule
+    /// (`UrgencyRule`, ios/Shared/Urgency.swift); the design system never decides it.
+    init(_ tone: UrgencyTone) {
+        switch tone {
+        case .overdue: self = .overdue
+        case .soon: self = .soon
+        case .calm: self = .later
+        }
+    }
+
+    /// The status a line about a due day takes its text colour from, or nil when
+    /// nothing is needed yet and the line keeps its own colour.
+    static func urgent(_ tone: UrgencyTone) -> DSStatus? {
+        tone == .calm ? nil : DSStatus(tone)
     }
 }
 
-/// Plain-language wording for how far away a due date is, with correct Romanian plurals
-/// ("în 2 zile", "în 20 de zile").
+/// Badge wording for a due day, from its urgency.
 enum DSDueText {
-    static func text(daysRemaining days: Int, isDone: Bool = false) -> LocalizedStringResource {
-        if isDone {
-            return LocalizedStringResource("Rezolvat", comment: "Badge on a completed obligation.")
+    /// "Azi", "Mâine", "În 5 zile", "Întârziat cu 2 zile", "Depășit de 3 zile".
+    static func text(_ urgency: AttentionUrgency, daysRemaining days: Int, from today: Date = Date(), calendar: Calendar = .current) -> String {
+        WhenWording.standalone(urgency, daysRemaining: days, from: today, calendar: calendar)
+    }
+
+    /// For documents and warranties: "Valabil" until it needs the person, then
+    /// "Expiră în 20 de zile", "Expiră mâine", "Expiră azi", "Expirat de 3 zile".
+    static func expiryText(_ urgency: AttentionUrgency, daysRemaining days: Int, from today: Date = Date(), calendar: Calendar = .current) -> String {
+        if urgency.tone == .calm {
+            return String(localized: "Valabil", comment: "Badge: a document is valid and not close to expiring.")
         }
-        switch days {
-        case ..<0:
-            let late = -days
-            return LocalizedStringResource("Întârziat cu \(DurationWording.phrase(days: late))", comment: "Badge: the obligation is late, by a duration such as '5 zile' or '2 luni'.")
-        case 0:
-            return LocalizedStringResource("Azi", comment: "Badge: the obligation is due today.")
-        case 1:
-            return LocalizedStringResource("Mâine", comment: "Badge: the obligation is due tomorrow.")
-        default:
-            return LocalizedStringResource("În \(DurationWording.phrase(days: days))", comment: "Badge: the obligation is due in a duration such as '5 zile' or '2 luni și 3 săptămâni'.")
+        let distance = DurationWording.distance(days: days, from: today, calendar: calendar)
+        switch urgency {
+        case .overdue, .withinGrace:
+            return String(localized: "Expirat de \(distance)", comment: "Badge: a document expired this long ago, e.g. '5 zile' or '3 ani'.")
+        case .today:
+            return String(localized: "Expiră azi", comment: "Badge: a document expires today.")
+        case .soon, .upcoming, .later:
+            if days == 1 { return String(localized: "Expiră mâine", comment: "Badge: a document expires tomorrow.") }
+            return String(localized: "Expiră în \(distance)", comment: "Badge: a document expires in a duration such as '5 zile' or '8 ani'.")
         }
     }
 }
@@ -52,11 +61,17 @@ struct DSStatusBadge: View {
         self.init(status, text: Text(status.title))
     }
 
-    /// A badge for a due date: picks the status and the wording from the days remaining.
-    init(daysRemaining: Int, isDone: Bool = false, soonWithinDays: Int = 14) {
+    /// A badge for a due day, drawn from its urgency: "În 5 zile", "Azi", "Depășit de 3 zile".
+    init(urgency: AttentionUrgency, daysRemaining: Int) {
+        self.init(DSStatus(urgency.tone), text: Text(verbatim: DSDueText.text(urgency, daysRemaining: daysRemaining)))
+    }
+
+    /// A badge for an expiry, drawn from its urgency: "Valabil" while nothing is needed
+    /// yet, then how far it is.
+    init(expiry urgency: AttentionUrgency, daysRemaining: Int) {
         self.init(
-            DSStatus.forDue(daysRemaining: daysRemaining, isDone: isDone, soonWithinDays: soonWithinDays),
-            text: Text(DSDueText.text(daysRemaining: daysRemaining, isDone: isDone))
+            urgency.tone == .calm ? .done : DSStatus(urgency.tone),
+            text: Text(verbatim: DSDueText.expiryText(urgency, daysRemaining: daysRemaining))
         )
     }
 

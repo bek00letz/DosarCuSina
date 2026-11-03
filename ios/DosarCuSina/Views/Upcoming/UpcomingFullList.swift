@@ -63,13 +63,7 @@ struct UpcomingFullList: View {
     }
 
     private func row(_ item: ObligationSnapshot, today: CalendarDay) -> some View {
-        let days = today.days(to: item.dueDay)
-        let entry = AttentionEntry(
-            obligation: item,
-            daysRemaining: days,
-            urgency: AttentionModel.urgency(daysRemaining: days, profile: item.reminders),
-            score: 0
-        )
+        let entry = AttentionModel.entry(for: item, today: today)
         return NavigationLink(value: AppRoute.obligation(item.id)) {
             UpcomingRow(entry: entry, today: today, isLocked: vault.isLocked(sectionIsSensitive: item.isSensitive))
         }

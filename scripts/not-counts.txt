@@ -1,0 +1,10 @@
+# Localized strings with an integer that isn't a count, so they need no plural
+# forms. scripts/plural-check.py reads this list. One key per line, exactly as the
+# String Catalog writes it, then a tab and the reason.
+Pagina %lld	A page's number, not how many.
+Pagina %lld din %lld	A page's number and the number of the last page.
+Pasul %lld din %lld	A step's number and the number of the last step.
+Nota %lld din 5	A rating, one to five stars.
+Autocitire între %lld și %lld ale lunii	Days of the month.
+Seria de șasiu are 17 caractere. Ai scris %lld.	The number stands alone, with no noun to agree with.
+Copia e pusă înapoi. Noi: %lld. Actualizate: %lld.	Numbers after a label, with no noun to agree with.

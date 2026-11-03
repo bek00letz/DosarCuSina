@@ -23,6 +23,9 @@ public struct WidgetFeed: Decodable, Hashable, Sendable {
         public var kind: String
         public var isSensitive: Bool
         public var deepLink: URL
+        /// The app's urgency rule for it. A snapshot from before it was written has
+        /// none, and reads as a deadline nothing reminds about until the app rewrites it.
+        public var urgency: UrgencyRule?
 
         public var id: UUID { obligationId }
     }
@@ -54,6 +57,10 @@ public struct WidgetRow: Hashable, Sendable, Identifiable {
     public var symbol: String
     /// Whole days until due; negative when late.
     public var daysRemaining: Int
+    /// By the app's one rule, so the widget draws what the app draws.
+    public var urgency: AttentionUrgency
+    /// "Azi", "În 5 zile", "Depășit de 3 zile": the same words as the app.
+    public var when: String
     public var dueDate: Date
     /// `yyyy-MM-dd` of the cycle shown, so a tap on "Gata" closes this cycle only.
     public var dueKey: String
@@ -75,18 +82,21 @@ public enum WidgetContent {
     ) -> [WidgetRow] {
         guard let feed else { return [] }
         let done = Set(completed.map { "\($0.obligationId.uuidString.lowercased())|\($0.dueDay)" })
-        let today = calendar.startOfDay(for: now)
+        let today = CalendarDay(now, calendar: calendar)
         return feed.items.compactMap { item -> WidgetRow? in
             guard !done.contains("\(item.obligationId.uuidString.lowercased())|\(item.dueDate)"),
-                  let due = day(item.dueDate, calendar: calendar) else { return nil }
-            let days = calendar.dateComponents([.day], from: today, to: due).day ?? 0
+                  let dueDay = CalendarDay(isoString: item.dueDate) else { return nil }
+            let days = today.days(to: dueDay, calendar: calendar)
+            let urgency = (item.urgency ?? .noReminders).urgency(of: dueDay, today: today, calendar: calendar)
             return WidgetRow(
                 id: item.obligationId,
                 title: item.isSensitive ? protectedTitle : item.title,
                 subtitle: item.isSensitive ? nil : item.assetName,
                 symbol: item.isSensitive ? "lock.fill" : item.symbol,
                 daysRemaining: days,
-                dueDate: due,
+                urgency: urgency,
+                when: WhenWording.standalone(urgency, daysRemaining: days, from: now, calendar: calendar),
+                dueDate: dueDay.startDate(in: calendar),
                 dueKey: item.dueDate,
                 deepLink: item.deepLink,
                 canComplete: !item.isSensitive
@@ -96,15 +106,9 @@ public enum WidgetContent {
         .map { $0 }
     }
 
-    /// How many need doing now (late or due today), after widget completions.
+    /// How many need doing now, after widget completions: the app badge's count
+    /// (late past grace, or due today), by the same rule.
     public static func needsActionCount(_ rows: [WidgetRow]) -> Int {
-        rows.filter { $0.daysRemaining <= 0 }.count
-    }
-
-    /// Midnight starting a `yyyy-MM-dd` day in `calendar`.
-    static func day(_ iso: String, calendar: Calendar) -> Date? {
-        let parts = iso.prefix(10).split(separator: "-").compactMap { Int($0) }
-        guard parts.count == 3 else { return nil }
-        return calendar.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2]))
+        rows.filter { $0.urgency.isAlarming }.count
     }
 }

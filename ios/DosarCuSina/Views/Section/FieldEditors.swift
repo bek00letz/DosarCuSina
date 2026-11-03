@@ -6,14 +6,17 @@ struct FieldEditor: View {
     let field: FieldDefinition
     @Binding var values: FieldValues
     var isRequired = false
+    /// For an expiry: the rule of the deadline it drives (`DateUrgency.rule(forField:…)`).
+    var urgencyRule: UrgencyRule = .noReminders
 
     @Environment(\.calendar) private var calendar
     @State private var currency: String
 
-    init(field: FieldDefinition, values: Binding<FieldValues>, isRequired: Bool = false) {
+    init(field: FieldDefinition, values: Binding<FieldValues>, isRequired: Bool = false, urgencyRule: UrgencyRule = .noReminders) {
         self.field = field
         self._values = values
         self.isRequired = isRequired
+        self.urgencyRule = urgencyRule
         _currency = State(initialValue: values.wrappedValue[field.key]?.moneyValue?.currency ?? Money.defaultCurrency)
     }
 
@@ -47,7 +50,7 @@ struct FieldEditor: View {
         case .date:
             DSDateField(title, date: dateBinding, isRequired: isRequired)
         case .expiryDate:
-            DSExpiryDateField(title, date: dateBinding, isRequired: isRequired)
+            DSExpiryDateField(title, date: dateBinding, urgencyRule: urgencyRule, isRequired: isRequired)
         case .toggle:
             DSToggleField(title, isOn: boolBinding)
         case .choice:

@@ -31,24 +31,20 @@ enum ReminderPreset: Int, CaseIterable, Identifiable, Sendable {
 }
 
 enum ReminderWording {
-    /// "o zi", "5 zile", "o săptămână", "două săptămâni", "o lună", "6 luni", "un an".
+    /// A lead in words: "1 zi", "7 zile", "1 lună", "6 luni", "1 an". The one wording
+    /// for leads (`DurationWording.lead`), so the reminder that fires reads the same.
     static func phrase(days: Int) -> String {
-        let days = abs(days)
-        if days > 0, days % 365 == 0 { return years(days / 365) }
-        if days >= 30, days % 30 == 0 { return months(days / 30) }
-        if days >= 7, days % 7 == 0 { return weeks(days / 7) }
-        if days == 1 { return String(localized: "o zi", comment: "Reminder lead: one day") }
-        return DayCount.phrase(days)
+        DurationWording.lead(days: days)
     }
 
-    /// The row title for one lead: "În ziua termenului", "Cu o săptămână înainte".
+    /// The row title for one lead: "În ziua termenului", "Cu 7 zile înainte".
     static func rowTitle(days: Int) -> String {
         days == 0
             ? String(localized: "În ziua termenului", comment: "Reminder choice: on the due day")
             : String(localized: "Cu \(phrase(days: days)) înainte", comment: "Reminder choice: this long before the due day")
     }
 
-    /// "Te anunț cu o lună și cu o săptămână înainte, și în ziua termenului."
+    /// "Te anunț cu 1 lună și cu 7 zile înainte și în ziua termenului."
     static func sentence(leadDays: [Int]) -> String {
         let before = leadDays.filter { $0 > 0 }.sorted(by: >).map { String(localized: "cu \(phrase(days: $0))", comment: "Part of the reminder sentence") }
         let onTheDay = leadDays.contains(0)
@@ -63,7 +59,7 @@ enum ReminderWording {
             : String(localized: "Te anunț \(list) înainte.", comment: "Reminder sentence: leads before the due day")
     }
 
-    /// "Expiră pe 12 august 2031. Te anunț cu 3 luni și cu o lună înainte." The line
+    /// "Expiră pe 12 august 2031. Te anunț cu 3 luni și cu 1 lună înainte." The line
     /// under an expiry date, shown before saving so the reminder is never a surprise.
     static func expiryLine(_ day: CalendarDay, leadDays: [Int], today: CalendarDay) -> String {
         let date = DueWording.date(day, today: today)
@@ -72,31 +68,4 @@ enum ReminderWording {
 
     /// The follow-up line under the sentence, when it is on.
     static let followUp = String(localized: "Dacă nu e rezolvat, îți mai amintesc o dată a doua zi după termen.", comment: "Reminder sentence: follow-up after the due date")
-
-    private static func months(_ n: Int) -> String {
-        switch n {
-        case 1: return String(localized: "o lună", comment: "Reminder lead: one month")
-        case 2: return String(localized: "două luni", comment: "Reminder lead: two months")
-        case 3...19: return String(localized: "\(n) luni", comment: "Reminder lead: 3–19 months")
-        default: return String(localized: "\(n) de luni", comment: "Reminder lead: 20 or more months")
-        }
-    }
-
-    private static func weeks(_ n: Int) -> String {
-        switch n {
-        case 1: return String(localized: "o săptămână", comment: "Reminder lead: one week")
-        case 2: return String(localized: "două săptămâni", comment: "Reminder lead: two weeks")
-        case 3...19: return String(localized: "\(n) săptămâni", comment: "Reminder lead: 3–19 weeks")
-        default: return String(localized: "\(n) de săptămâni", comment: "Reminder lead: 20 or more weeks")
-        }
-    }
-
-    private static func years(_ n: Int) -> String {
-        switch n {
-        case 1: return String(localized: "un an", comment: "Reminder lead: one year")
-        case 2: return String(localized: "doi ani", comment: "Reminder lead: two years")
-        case 3...19: return String(localized: "\(n) ani", comment: "Reminder lead: 3–19 years")
-        default: return String(localized: "\(n) de ani", comment: "Reminder lead: 20 or more years")
-        }
-    }
 }

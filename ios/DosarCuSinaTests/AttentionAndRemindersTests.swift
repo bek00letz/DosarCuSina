@@ -93,9 +93,11 @@ struct ReminderProfileTests {
         let passport = snapshot("Pașaport", kind: .renewal, due: "2027-03-20", offsets: [180, 60], consequence: .legal)
         let digest = AttentionModel.digest([vignette, licence, passport], now: today, calendar: calendar)
         #expect(digest.now.map(\.obligation.title) == ["Permis"], "The vignette is 10 days out but only needs a week")
-        #expect(ReminderProfile(leadDays: [180, 60], consequence: .legal).attentionWindowDays == 30)
-        #expect(ReminderProfile(leadDays: [7, 0], consequence: .legal).attentionWindowDays == 7)
-        #expect(ReminderProfile(leadDays: [1], consequence: .health).attentionWindowDays == 1)
+        // A month ahead of 1 December is 1 November: 30 days.
+        let due = CalendarDay("2026-12-01")
+        #expect(ReminderProfile(leadDays: [180, 60], consequence: .legal).urgencyRule.windowDays(before: due, calendar: calendar) == 30)
+        #expect(ReminderProfile(leadDays: [7, 0], consequence: .legal).urgencyRule.windowDays(before: due, calendar: calendar) == 7)
+        #expect(ReminderProfile(leadDays: [1], consequence: .health).urgencyRule.windowDays(before: due, calendar: calendar) == 1)
     }
 
     @Test func followUpComesTheDayAfterLapsingAndOnlyWhenAskedFor() {

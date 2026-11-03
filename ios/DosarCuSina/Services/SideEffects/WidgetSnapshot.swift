@@ -18,7 +18,10 @@ import WidgetKit
 ///     "symbol": "car.fill", "tint": "blue",
 ///     "dueDate": "2026-11-15",      // calendar day; the widget works out days left itself
 ///     "kind": "legal", "isSensitive": false,
-///     "deepLink": "dosarcusina://obligation/…"
+///     "deepLink": "dosarcusina://obligation/…",
+///     "urgency": {                  // its urgency rule, so the widget counts down
+///       "graceDays": 0, "firstLeadDays": 30, "maxWindowDays": 30   // like the app
+///     }
 ///   }]
 /// }
 /// ```
@@ -40,6 +43,9 @@ public struct WidgetSnapshot: Codable, Hashable, Sendable {
         public var kind: ObligationKind
         public var isSensitive: Bool
         public var deepLink: URL
+        /// The one urgency rule (`ReminderProfile.urgencyRule`), so the widget's tone,
+        /// wording and count match the app's on every day the timeline covers.
+        public var urgency: UrgencyRule
     }
 
     public var version: Int
@@ -65,7 +71,8 @@ public struct WidgetSnapshot: Codable, Hashable, Sendable {
                 dueDate: obligation.dueDay,
                 kind: obligation.kind,
                 isSensitive: obligation.isSensitive,
-                deepLink: DeepLink.url(for: .obligation(obligation.id))
+                deepLink: DeepLink.url(for: .obligation(obligation.id)),
+                urgency: obligation.reminders.urgencyRule
             )
         }
         return WidgetSnapshot(version: currentVersion, generatedAt: generatedAt, needsActionCount: digest.needsActionCount, items: Array(items))

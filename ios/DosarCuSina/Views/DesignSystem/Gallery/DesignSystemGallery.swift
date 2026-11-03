@@ -315,12 +315,12 @@ private struct GalleryCards: View {
                             .padding(.horizontal, DS.Space.m)
                         DS.Hairline().padding(.leading, 62)
                         DSListRow(title: Text(verbatim: "ITP"), subtitle: Text(verbatim: "Auto Test SRL"), systemImage: "checkmark.shield.fill", tint: .green, showsChevron: true) {
-                            DSStatusBadge(daysRemaining: 12)
+                            DSStatusBadge(urgency: GallerySample.urgency(in: 12), daysRemaining: 12)
                         }
                         .padding(.horizontal, DS.Space.m)
                         DS.Hairline().padding(.leading, 62)
                         DSListRow(title: Text(verbatim: "RCA"), subtitle: Text(verbatim: "Poliță anuală"), systemImage: "car.side.fill", tint: .orange, showsChevron: true) {
-                            DSStatusBadge(daysRemaining: -3)
+                            DSStatusBadge(urgency: GallerySample.urgency(in: -3), daysRemaining: -3)
                         }
                         .padding(.horizontal, DS.Space.m)
                     }
@@ -411,24 +411,21 @@ private struct GalleryChips: View {
 private struct GalleryStatus: View {
     var body: some View {
         GalleryPage {
-            GallerySection(title: "Termene", note: "Pluralele românești: o zi, 2 zile, 20 de zile.") {
+            GallerySection(title: "Termene", note: "Un ITP: ton și cuvinte din regula de urgență, ca în Urmează. Pluralele românești: 1 zi, 2 zile, 20 de zile.") {
                 DSCard {
                     DSFlowLayout {
                         ForEach([-25, -3, -1, 0, 1, 2, 12, 20, 45], id: \.self) { days in
-                            DSStatusBadge(daysRemaining: days)
+                            DSStatusBadge(urgency: GallerySample.urgency(in: days), daysRemaining: days)
                         }
-                        DSStatusBadge(daysRemaining: 3, isDone: true)
+                        DSStatusBadge(.done)
                     }
                 }
             }
-            GallerySection(title: "Expirări", note: "Pentru acte și garanții. Pașaportul avertizează cu 180 de zile înainte.") {
+            GallerySection(title: "Expirări", note: "Pentru acte și garanții. Un pașaport cere atenție în ultima lună, ca în Urmează.") {
                 DSCard {
                     DSFlowLayout {
                         ForEach([-40, 0, 9, 150, 400], id: \.self) { days in
-                            DSStatusBadge(
-                                days < 0 ? .overdue : (days <= 180 ? .soon : .done),
-                                text: Text(DSDueText.expiryText(daysRemaining: days, soonWithinDays: 180))
-                            )
+                            DSStatusBadge(expiry: GallerySample.urgency(in: days, rule: GallerySample.passport), daysRemaining: days)
                         }
                     }
                 }
@@ -603,7 +600,7 @@ private struct GalleryFields: View {
                     VStack(spacing: DS.Space.m) {
                         DSMoneyField("Cost estimat", amount: $amount, currencyCode: $currency)
                         DSDateField("Data cumpărării", date: $date)
-                        DSExpiryDateField("Pașaport valabil până la", date: $expiry, soonWithinDays: 180, footnote: "Avertizăm cu 6 luni înainte, pentru călătorii în afara UE.")
+                        DSExpiryDateField("Pașaport valabil până la", date: $expiry, urgencyRule: GallerySample.passport, footnote: "Te anunț cu 6 luni înainte, pentru călătorii în afara UE.")
                         DSToggleField("Mementouri", isOn: $reminders, systemImage: "bell.fill")
                     }
                 }
@@ -700,3 +697,15 @@ private struct GalleryEditSheet: View {
         .environment(\.dynamicTypeSize, .accessibility3)
 }
 #endif
+
+/// Sample deadlines for the gallery, drawn by the same urgency rule as the app.
+private enum GallerySample {
+    static let itp = ObligationKind.legal.defaultProfile.urgencyRule
+    static let passport = ReminderProfile(leadDays: [180, 60], consequence: .legal).urgencyRule
+
+    /// The urgency of a deadline `days` from today.
+    static func urgency(in days: Int, rule: UrgencyRule = itp) -> AttentionUrgency {
+        let today = CalendarDay(Date())
+        return rule.urgency(of: today.adding(days: days), today: today)
+    }
+}

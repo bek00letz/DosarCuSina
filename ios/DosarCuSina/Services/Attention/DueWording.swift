@@ -2,14 +2,15 @@ import Foundation
 
 /// When something is due, in plain words: "Expiră în 5 zile · 7 noiembrie".
 enum DueWording {
-    /// "în 5 zile", "azi", "mâine", "acum 3 zile".
-    static func relative(daysRemaining days: Int) -> String {
+    /// "în 5 zile", "azi", "mâine", "acum 3 zile", in the same durations as every
+    /// other surface (`DurationWording.distance`).
+    static func relative(daysRemaining days: Int, from today: Date = Date(), calendar: Calendar = .current) -> String {
         switch days {
         case -1: return String(localized: "ieri", comment: "Due: yesterday")
-        case ..<0: return String(localized: "acum \(DurationWording.phrase(days: days))", comment: "Due: this long ago")
+        case ..<0: return String(localized: "acum \(DurationWording.distance(days: days, from: today, calendar: calendar))", comment: "Due: this long ago")
         case 0: return String(localized: "azi", comment: "Due: today")
         case 1: return String(localized: "mâine", comment: "Due: tomorrow")
-        default: return String(localized: "în \(DurationWording.phrase(days: days))", comment: "Due: in this long")
+        default: return String(localized: "în \(DurationWording.distance(days: days, from: today, calendar: calendar))", comment: "Due: in this long")
         }
     }
 
@@ -35,7 +36,8 @@ enum DueWording {
     /// "Expiră în 5 zile · 7 noiembrie", "De plătit azi · 2 noiembrie", "A expirat acum 3 zile · 30 octombrie".
     static func line(kind: ObligationKind, due: CalendarDay, today: CalendarDay, calendar: Calendar = .current) -> String {
         let days = today.days(to: due, calendar: calendar)
-        return "\(verb(for: kind, daysRemaining: days)) \(relative(daysRemaining: days)) · \(date(due, today: today))"
+        let when = relative(daysRemaining: days, from: today.startDate(in: calendar), calendar: calendar)
+        return "\(verb(for: kind, daysRemaining: days)) \(when) · \(date(due, today: today))"
     }
 
     /// Why it matters, in one plain sentence, from the consequence.

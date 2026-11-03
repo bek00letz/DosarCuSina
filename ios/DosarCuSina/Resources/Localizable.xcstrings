@@ -30,35 +30,6 @@
         }
       }
     },
-    "%lld ani": {
-      "comment": "A number of years, with Romanian plural forms.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld an"
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld ani"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld de ani"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "%lld contacte": {
       "comment": "Agenda box: how many people and firms are saved.",
       "localizations": {
@@ -117,8 +88,8 @@
         }
       }
     },
-    "%lld luni": {
-      "comment": "A number of months, with Romanian plural forms.",
+    "%lld intrări de arătat cumpărătorului.": {
+      "comment": "Readiness: how many history entries a buyer can be shown.",
       "localizations": {
         "ro": {
           "variations": {
@@ -126,19 +97,19 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld lună"
+                  "value": "%lld intrare de arătat cumpărătorului."
                 }
               },
               "few": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld luni"
+                  "value": "%lld intrări de arătat cumpărătorului."
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld de luni"
+                  "value": "%lld de intrări de arătat cumpărătorului."
                 }
               }
             }
@@ -233,35 +204,6 @@
         }
       }
     },
-    "%lld săptămâni": {
-      "comment": "A number of weeks, with Romanian plural forms.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld săptămână"
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld săptămâni"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld de săptămâni"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "%lld termene": {
       "comment": "A number of obligations, with Romanian plural forms.",
       "localizations": {
@@ -313,35 +255,6 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld de termene mai departe"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "%lld zile": {
-      "comment": "A number of days, with Romanian plural forms: 1 zi, 2 zile, 20 de zile.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld zi"
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld zile"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld de zile"
                 }
               }
             }
@@ -434,6 +347,35 @@
     "Azi": {
       "comment": "Badge: the obligation is due today."
     },
+    "Categoria are încă %lld active. Mută-le sau șterge-le mai întâi.": {
+      "comment": "Shown when deleting a category that still has assets",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Categoria are încă %lld activ. Mută-l sau șterge-l mai întâi."
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Categoria are încă %lld active. Mută-le sau șterge-le mai întâi."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Categoria are încă %lld de active. Mută-le sau șterge-le mai întâi."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Ce ai completat până acum nu se va salva.": {
       "comment": "Explains what discarding unsaved changes means."
     },
@@ -479,11 +421,69 @@
     "Opțiuni contact": {
       "comment": "VoiceOver label of the menu next to a linked contact."
     },
+    "Parola are cel puțin %lld caractere.": {
+      "comment": "Backup password: the shortest it may be.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Parola are cel puțin %lld caracter."
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Parola are cel puțin %lld caractere."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Parola are cel puțin %lld de caractere."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Renunți la modificări?": {
       "comment": "Title of the dialog shown when closing a sheet with unsaved changes."
     },
     "Renunță la modificări": {
       "comment": "Destructive button that closes the sheet and drops unsaved changes."
+    },
+    "Revizie: %lld lucrări": {
+      "comment": "History entry title for a visit with many jobs",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Revizie: %lld lucrare"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Revizie: %lld lucrări"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Revizie: %lld de lucrări"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Rezolvat": {
       "comment": "Status or badge of an obligation that has been completed."

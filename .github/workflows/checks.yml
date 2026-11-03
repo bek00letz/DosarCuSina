@@ -1,8 +1,10 @@
 # Runs on every pull request and every push to main:
 #   architecture-check  the rules in AGENTS.md (scripts/architecture-check.sh), the same
 #                       script the pre-commit hook runs
-#   build-and-test      builds the app with its widgets and share extension and runs
-#                       DosarCuSinaTests, through tests/run_tests.sh like a local run
+#   build-and-test      builds the app with its widgets and share extension, runs
+#                       DosarCuSinaTests and checks every counted string has plural
+#                       forms (scripts/plural-check.py), through tests/run_tests.sh
+#                       like a local run
 # The privacy check has its own workflow (privacy-check.yml).
 name: Checks
 
@@ -34,7 +36,9 @@ jobs:
           fetch-depth: 0
 
       - name: Check the rules against their fixtures
-        run: scripts/architecture-check.sh --self-test
+        run: |
+          scripts/architecture-check.sh --self-test
+          python3 scripts/plural-check.py --self-test
 
       - name: Check the code
         env:

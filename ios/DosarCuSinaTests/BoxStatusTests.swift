@@ -39,18 +39,18 @@ struct BoxStatusTests {
         (3_077, "8 ani"), (14_000, "38 de ani"), (-14_000, "38 de ani"),
     ])
     func durations(days: Int, text: String) {
-        #expect(DurationWording.phrase(days: days, from: today, calendar: calendar) == text)
+        #expect(DurationWording.distance(days: days, from: today, calendar: calendar) == text)
     }
 
     @Test func overdueTodayTomorrowAndGraceReadDifferently() {
         func line(_ due: String, consequence: Consequence = .legal, grace: Int = 0) -> String {
             BoxStatus.make([snapshot("RCA", kind: .insurance, due: due, offsets: [7, 0], consequence: consequence, grace: grace)], now: today, calendar: calendar)
-                .line(isSensitive: false)
+                .line(isSensitive: false, now: today, calendar: calendar)
         }
         #expect(line("2026-10-31") == "RCA · depășit de 2 zile")
         #expect(line("2026-11-02") == "RCA · azi")
         #expect(line("2026-11-03") == "RCA · mâine")
-        #expect(line("2026-10-31", consequence: .health, grace: 7) == "RCA · întârziat 2 zile")
+        #expect(line("2026-10-31", consequence: .health, grace: 7) == "RCA · întârziat cu 2 zile")
         let late = BoxStatus.make([snapshot("RCA", kind: .insurance, due: "2026-10-31", offsets: [7], consequence: .legal)], now: today, calendar: calendar)
         #expect(late.isAlarming)
     }

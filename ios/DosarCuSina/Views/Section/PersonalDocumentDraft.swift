@@ -79,6 +79,13 @@ enum PersonalDocumentFiling {
         return ReminderWording.expiryLine(expiry, leadDays: plan.blueprint.reminders(for: draft.values).leadDays, today: today)
     }
 
+    /// How urgent the expiry is, by the deadline it would start: what the badge on the
+    /// expiry field shows, and what the document's page will show once it is saved.
+    static func urgencyRule(_ draft: PersonalDocumentDraft, template: CategoryTemplate, actions: AssetActions) -> UrgencyRule {
+        planned(draft, template: template, actions: actions).first(where: { $0.isSelected })?
+            .blueprint.reminders(for: draft.values).urgencyRule ?? .noReminders
+    }
+
     /// Creates the document under `holder` with its deadline, as one step.
     @discardableResult
     static func save(_ draft: PersonalDocumentDraft, holder: Asset, context: ModelContext,
