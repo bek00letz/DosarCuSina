@@ -40,7 +40,7 @@ struct DSToast: Identifiable {
     }
 
     /// Whether the toast shows its button.
-    var offersAction: Bool {
+    @MainActor var offersAction: Bool {
         actionTitle != nil && (action != nil || receipt?.canUndo == true)
     }
 }

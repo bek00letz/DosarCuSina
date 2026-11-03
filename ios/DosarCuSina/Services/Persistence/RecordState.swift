@@ -71,7 +71,7 @@ public struct StoredProperty<Model: PersistentModel> {
 
     static func toMany<Target: UndoableRecord>(_ name: String, _ keyPath: ReferenceWritableKeyPath<Model, [Target]?>) -> Self {
         Self(name: name, read: { model in
-            .many(Set((model[keyPath: keyPath] ?? []).filter { !$0.isDeleted }.map(RecordRef.init)))
+            .many(Set((model[keyPath: keyPath] ?? []).filter { !$0.isDeleted }.map { RecordRef($0) }))
         }) { model, value, resolve in
             guard case .many(let refs) = value else { return assertionFailure("\(name) is a relationship to many records") }
             model[keyPath: keyPath] = refs.compactMap { resolve($0) as? Target }
