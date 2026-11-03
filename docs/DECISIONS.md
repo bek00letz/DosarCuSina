@@ -8,6 +8,11 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-03
 
+### The last open questions, answered
+- **Decided (owner):** the card-number rule of the privacy check stays strict: any number that passes the card check digit is refused unless it is a published test number, so a made-up IMEI in a test must fail that check digit (or be built when the test runs).
+- **Decided (owner):** the bill choices stay as built: a bill picks a home by itself only when street, number and flat match and no other home is close (otherwise "Verifică"); the only home still takes a bill supplied elsewhere, marked "Verifică"; turning direct debit on pauses the bill reminder rather than deleting it; the supply address isn't stored on subscriptions outside a home for now.
+- **Why:** the strict rule errs toward keeping real numbers out of a public repository; the bill choices are cautious until they are tried on real bills, and each is one rule that is easy to change.
+
 ### A category's service says how often
 - **Decided (owner):** this replaces "the service numbers are the car's rule by another counter" in the entry below. When *Are revizii* is on, the form asks how often, by the counter chosen: *La câți km?*, *La câte ore?* or *La câte luni?*, starting at the car's numbers (10.000 km, 100 hours, 12 months). The same field is in Setări › *Categoriile tale*.
 - **Decided:** the interval lives only in the category's service blueprint, as its rule (`.metric(every:)`, or `.interval` in months, whole years written as years), and is read back from it (`CategorySwitches.Service`). Changing only the interval changes that blueprint's rule in place; the counter field and its values stay.

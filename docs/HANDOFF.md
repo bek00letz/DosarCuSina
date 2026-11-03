@@ -6,7 +6,7 @@ A living document: where work stands, so the next person or agent can pick up. K
 
 ## Current state
 
-The template-engine overhaul (waves 1 and 2) is merged. The app builds for iOS 26 with Swift 6 and has more than 470 tests in `ios/DosarCuSinaTests`.
+The template-engine overhaul (waves 1 and 2) is merged. The app builds for iOS 26 with Swift 6 and has more than 850 tests in `ios/DosarCuSinaTests`, run on every pull request.
 
 | Area | What's built |
 | :--- | :--- |
@@ -48,7 +48,6 @@ Nothing at the moment.
 - **Removing `ios/Legacy/`** (and `tests/legacy/`). Kept as a way back; remove only once the new app has been used for a while and the owner agrees.
 - **The visit wording as a template field.** The visit flow's title and wording should come from the template, not from code.
 - **Box order is kept on the device only.** It isn't part of the household data, so it won't sync or travel in an archive.
-- **Permission descriptions** for Calendar, Reminders and Contacts in the project settings still describe the first version; the app now uses the system's event editor and contact picker without asking for those permissions.
 - **Architecture exceptions.** `scripts/architecture-exceptions.txt` lists the places that broke a rule before the check existed: built-in category keys in views, small tap targets, saves outside `UnitOfWork`, the system's error text, silent `try?` on actions and a few more. Each group says which piece of work removes it; remove lines as they're fixed.
 
 - **The legacy utility parser** (`RomanianUtilityParser`) reads numbers through `RomanianNumber` but returns them as `Double`, so a meter index that could read two ways isn't marked "Verifică" when it comes through that parser. It goes when the parser becomes label tables (kind profiles).
@@ -68,14 +67,7 @@ Nothing at the moment.
 
 ## Questions for the owner
 
-1. **IMEIs and the privacy check.** An IMEI carries the same check digit as a card, so a new line with a made-up IMEI that passes it is stopped by the card number rule. *Recommendation:* keep the rule as you asked it (any 13 to 19 digits); a test that needs an IMEI can use one that fails the check digit. *Alternative:* count only runs that start like a card network's numbers, as the app's own masking does.
-
-From the supply address and direct debit work (2026-11-03):
-
-2. **How sure an address must be to pick a home by itself.** Now: the same street and number and the same flat (at the most precise level either side names), and no other home even likely; anything less is suggested with "Verifică". *Recommendation:* keep it cautious until it has been tried on real bills; it can be loosened later in one place (`SubscriptionMatcher.house(at:among:)`).
-3. **The only home, at another address.** Kept as before but marked "Verifică" (the bill may be for a parent's flat the person pays for). *Recommendation:* keep; offering "Locuință nouă" there instead is the alternative.
-4. **Pause or delete the bill reminder when direct debit turns on.** Now paused (kept, out of Urmează and reminders, taken up by the next bill). *Recommendation:* keep pausing; it is the way back and keeps the reminder's history.
-5. **Keep the supply address on the subscription too.** Only a home without an address takes it now. *Recommendation:* add "Adresa locului de consum" to the subscription when a standalone subscription needs it; it is a catalog change.
+None waiting. The last ones (the IMEI rule and the four bill choices) were answered on 2026-11-03 and are in [DECISIONS.md](DECISIONS.md).
 
 ## How to pick up work
 

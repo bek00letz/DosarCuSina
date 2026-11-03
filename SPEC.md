@@ -467,5 +467,4 @@ iOS 26 and later, Swift 6, SwiftUI and SwiftData. Targets: the app, the widget e
 - **Android port.** Paused. The code under `android/` is from the first version and does not follow this spec. The `.dosar` format is the contract it will follow.
 - **Partners.** Optional, privacy-first offers from vetted companies (an insurance broker, for example) on fair commission. See the decision log.
 - **Household sharing** through iCloud.
-- **Password-protected export.**
 - **Reminders app** integration. Not built; Calendar is.
