@@ -55,6 +55,7 @@ enum CaptureMapping {
         .minimumMonths: [SubscriptionFields.minimumMonths],
         .minimumPeriodEnd: [SubscriptionFields.minimumUntil],
         .monthlyPrice: [SubscriptionFields.price],
+        .supplyAddress: [HomeFields.address],
         .provider: [SubscriptionFields.provider],
         .microchip: [PetFields.microchip],
         .serialNumber: [PurchaseFieldKeys.serial],
@@ -207,6 +208,8 @@ enum CaptureMapping {
         case .minimumMonths: return String(localized: "Perioadă minimă (luni)")
         case .minimumPeriodEnd: return String(localized: "Perioada minimă se termină")
         case .monthlyPrice: return String(localized: "Preț pe lună")
+        case .supplyAddress: return String(localized: "Adresa locului de consum")
+        case .directDebit: return String(localized: "Plata prin debit direct")
         case .productName: return String(localized: "Produs")
         case .serialNumber: return String(localized: "Serie")
         case .retailer: return String(localized: "Magazin")
@@ -236,7 +239,8 @@ enum CaptureMapping {
     static func isShownInReview(_ key: CaptureFieldKey, among keys: Set<CaptureFieldKey>) -> Bool {
         switch key {
         // Bookkeeping, not something read off the page: filing uses it, people don't need to check it.
-        case .lineItems, .documentCode, .issuingCountry, .documentVariant: return false
+        // Direct debit is a suggestion the person confirms beside the reminder, not a value to edit.
+        case .lineItems, .documentCode, .issuingCountry, .documentVariant, .directDebit: return false
         case .holderName: return !keys.contains(.surname) && !keys.contains(.givenNames)
         default: return true
         }

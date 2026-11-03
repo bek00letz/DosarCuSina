@@ -143,6 +143,10 @@ struct CaptureFiler {
         if review.kind.profile.deadlineIsOptIn, let total = review.total, template.field(SubscriptionFields.lastBill) != nil {
             values[SubscriptionFields.lastBill] = .money(total)
         }
+        // Direct debit only when the person confirmed what the bill says; never from the reading alone.
+        if review.turnsOnDirectDebit, template.field(SubscriptionFields.directDebit) != nil {
+            values[SubscriptionFields.directDebit] = .bool(true)
+        }
         if let type = review.kind.profile.documentType, template.field(DocumentType.typeFieldKey) != nil {
             values[DocumentType.typeFieldKey] = .text(type)
             // The layout that was read says which variant this is (the electronic card or the older one).
@@ -237,11 +241,13 @@ struct CaptureFiler {
             }
             if Self.filesUnderSubscription(review, destinationTemplateKey: asset.templateKey, templates: templates) {
                 // A home: the bill or contract goes to its subscription there, or a new one.
+                try fillHomeAddress(asset, from: review, templates: templates)
                 outcome.asset = try subscription(for: review, under: asset, plan: plan, templates: templates)
                 break
             }
             if templates.plays(.subscription, asset.templateKey), review.kind.profile.filing == .subscription,
                let template = templates[asset.templateKey] {
+                try fillHomeAddress(asset.parent, from: review, templates: templates)
                 try updateSubscription(asset, from: review, template: template)
                 outcome.asset = asset
                 break
@@ -260,8 +266,9 @@ struct CaptureFiler {
             } else if Self.filesUnderSubscription(review, destinationTemplateKey: templateKey, templates: templates) {
                 // A new home with the bill's or contract's subscription under it, in one save.
                 guard let homeTemplate = templates[templateKey], let subscriptions = templates.key(withRole: .subscription) else { throw FilingError.missingSection }
+                let home = AssetActions.NewParent(name: name, template: homeTemplate, values: Self.homeValues(from: review, for: homeTemplate.definition))
                 outcome.asset = try createSection(review, templateKey: subscriptions, name: Self.subscriptionName(review),
-                                                  newParent: AssetActions.NewParent(name: name, template: homeTemplate), plan: plan, templates: templates)
+                                                  newParent: home, plan: plan, templates: templates)
             } else {
                 outcome.asset = try createSection(review, templateKey: templateKey, name: name, parent: nil, plan: plan, templates: templates)
             }
@@ -271,7 +278,9 @@ struct CaptureFiler {
         // or a new one is made. A new section already made it with its other deadlines.
         if let asset = outcome.asset, let blueprint = plan.blueprint {
             if let deadline = plan.deadline {
-                if let existing = asset.activeObligations.first(where: { $0.blueprintKey == blueprint.key }) {
+                if let existing = CaptureFilingPlan.existingDeadline(blueprint, in: asset, takesUpPaused: review.kind.profile.deadlineIsOptIn) {
+                    // A bill reminder paused while the bank paid: this bill asks for one again.
+                    if existing.status == .paused { try obligations.resume(existing) }
                     outcome.completion = try renew(existing, to: deadline.day, done: false, on: nil, cost: review.total)
                 } else {
                     _ = try obligations.create(from: deadline.blueprint, for: asset, firstDue: deadline.day)
@@ -554,6 +563,30 @@ struct CaptureFiler {
         return SubscriptionNaming.name(provider: review.value(.provider)?.text, service: review.value(.serviceKind)?.text)
     }
 
+    /// What a bill or a contract tells the home it is filed under: the address it is
+    /// supplied at, for the home's own address. Nothing for any other document.
+    static func homeValues(from review: CaptureReview, for home: TemplateDefinition) -> FieldValues {
+        var values = FieldValues()
+        guard review.kind.profile.filing == .subscription, let address = review.value(.supplyAddress),
+              let key = CaptureMapping.fieldKey(for: .supplyAddress, kind: review.kind, in: home, deadline: nil),
+              let definition = home.field(key), let value = CaptureMapping.fieldValue(address, for: definition) else { return values }
+        values[key] = value
+        return values
+    }
+
+    /// A home without an address takes the one its bill is supplied at, so the next bill
+    /// finds it. An address the person wrote is never changed.
+    private func fillHomeAddress(_ home: Asset?, from review: CaptureReview, templates: [String: CategoryTemplate]) throws {
+        guard let home, templates.plays(.home, home.templateKey), let template = templates[home.templateKey] else { return }
+        var merged = home.values
+        for (key, value) in Self.homeValues(from: review, for: template.definition)
+        where (merged[key]?.textValue ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            merged[key] = value
+        }
+        guard merged != home.values else { return }
+        try AssetActions(context: context, calendar: calendar, now: now).update(home, name: home.name, values: merged, notes: home.notes)
+    }
+
     /// The day a bill is logged on: the day it was issued, else today.
     static func billDay(_ review: CaptureReview, today: CalendarDay) -> CalendarDay {
         review.value(.issueDate)?.day.map(CaptureMapping.calendarDay) ?? today
@@ -591,6 +624,9 @@ struct CaptureFiler {
         for (key, value) in read where key != SubscriptionFields.lastBill {
             if merged[key] == nil || (terms.contains(key) && merged[key] != value) { merged[key] = value }
         }
+        // The person confirmed the bill's direct debit: it turns on, and the bill reminder
+        // already made pauses with it (`BillReminders`, through `AssetActions.update`).
+        if let directDebit = read[SubscriptionFields.directDebit] { merged[SubscriptionFields.directDebit] = directDebit }
         if let lastBill = read[SubscriptionFields.lastBill] {
             let issued = Self.billDay(review, today: CalendarDay(now(), calendar: calendar))
             let newest = (subscription.history ?? []).filter { $0.kind == .payment && !$0.isCompletion }

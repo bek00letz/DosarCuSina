@@ -107,7 +107,8 @@ struct CaptureReviewView: View {
         .reminderPermissionGate($saveRequest)
         .sheet(isPresented: $isPickingDestination) {
             CaptureDestinationPicker(
-                destination: $review.destination, newAssetName: $review.newAssetName, templates: templates, assets: assets,
+                destination: Binding(get: { review.destination }, set: { review.choosePlace($0) }),
+                newAssetName: $review.newAssetName, templates: templates, assets: assets,
                 offersNewHolder: review.kind.isPersonalDocument,
                 filesUnderSubscription: review.kind.profile.filing == .subscription
             )
@@ -358,11 +359,38 @@ struct CaptureReviewView: View {
                         )
                     }
                     .buttonStyle(.plain)
+                    if let check = review.placeCheck {
+                        VStack(alignment: .leading, spacing: DS.Space.xxs) {
+                            Label("Verifică", systemImage: "exclamationmark.circle.fill")
+                                .font(.system(.caption, weight: .semibold))
+                                .foregroundStyle(DSStatus.soon.textColor)
+                            Text(placeCheckText(check))
+                                .dsFont(.footnote)
+                        }
+                        .accessibilityElement(children: .combine)
+                        .transition(.opacity)
+                    }
                     if case .newAsset(let key) = review.destination {
                         DSTextField(newAssetNameTitle(key), text: $review.newAssetName, isRequired: true)
                     }
                 }
             }
+        }
+    }
+
+    /// A printed line, kept short enough to read in a row: cut at a word, with "…".
+    static func shortened(_ text: String, limit: Int = 90) -> String {
+        guard text.count > limit else { return text }
+        let cut = text.prefix(limit)
+        let atWord = cut.lastIndex(of: " ").map { cut[..<$0] } ?? cut
+        return atWord.trimmingCharacters(in: .whitespacesAndNewlines.union(.punctuationCharacters)) + "…"
+    }
+
+    /// Why the home was chosen without being sure: the supply address only partly agrees.
+    private func placeCheckText(_ check: SubscriptionMatcher.HouseCheck) -> LocalizedStringKey {
+        switch check {
+        case .addressPartlyAgrees: "Adresa locului de consum seamănă cu cea a locuinței, dar nu e chiar aceeași."
+        case .addressDiffers: "Adresa locului de consum nu e cea a locuinței."
         }
     }
 
@@ -433,11 +461,20 @@ struct CaptureReviewView: View {
 
     @ViewBuilder private var reminderSection: some View {
         let text = CaptureReminderPreview.text(for: review, templates: templatesByKey, assets: assets, today: CalendarDay(Date()))
-        if text != nil || review.kind.profile.deadlineIsOptIn {
+        let directDebit = review.directDebitStatement(assets: assets)
+        if text != nil || review.kind.profile.deadlineIsOptIn || directDebit != nil {
             VStack(alignment: .leading, spacing: DS.Space.s) {
                 DSSectionHeader("Când te anunț")
                 DSCard {
                     VStack(alignment: .leading, spacing: DS.Space.s) {
+                        if let directDebit {
+                            // What the bill says, offered: turned on only by the person.
+                            DSCheckRow(title: Text("Plătesc prin debit direct"),
+                                       subtitle: Text("Pe factură scrie: „\(Self.shortened(directDebit))”. Dacă e așa, nu îți mai amintesc s-o plătești."),
+                                       isOn: review.turnsOnDirectDebit) {
+                                withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { review.turnsOnDirectDebit.toggle() }
+                            }
+                        }
                         if review.kind.profile.deadlineIsOptIn, review.reminderDay != nil, !review.paysByDirectDebit(assets: assets) {
                             DSCheckRow(title: Text("Amintește-mi să o plătesc"), isOn: review.remindsToPay) {
                                 review.remindsToPay.toggle()
