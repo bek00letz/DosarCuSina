@@ -11,6 +11,7 @@ struct UndoReceiptTests {
 
     // MARK: A household
 
+    @MainActor
     struct Household {
         let context: ModelContext
         let car: Asset
@@ -78,6 +79,7 @@ struct UndoReceiptTests {
 
         var testDescription: String { rawValue }
 
+        @MainActor
         func run(in house: Household) async throws -> UndoReceipt {
             let context = house.context
             let obligations = ObligationActions(context: context, calendar: .bucharest, now: { noon("2026-11-03") })
