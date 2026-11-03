@@ -63,6 +63,8 @@ Editing uses the design system's fields and asks before discarding changes. Fiel
 
 **Mută la…** (move to). Anything filed under something else (a document under a household member, a tenancy or a product under a home) moves from its page, and so does any subscription: between homes, under a home, or out to Abonamente (*În Abonamente, fără locuință*). It moves through the toolbar's *Mai multe* menu or the edit sheet. A short list offers the other parents of the same kind and, for a document, *O persoană nouă*. A document named after its holder ("Carte de identitate – Manole Corina") offers to take the new holder's name. The move is one save; the toast offers *Anulează*, which also removes a person made only for the move (see 4.1a).
 
+**Situații.** A page whose category offers a situation (`ReadinessSituation.offered`) shows a *Situații* group under its *Urmează* pocket (under the hero when it has none): *Vinzi mașina* and *Ai avut o daună* on a car, *Ai avut o daună* on a home, *Pleci din țară* on a household member. Each opens its checklist (4.6).
+
 **A document's page** asks for its picture when it has none (*Adaugă poza actului*, through capture, which fills in what it reads), and shows its secret fields under *Coduri PIN* (see 7).
 
 ### 2.4 Category boxes and Agenda
@@ -81,6 +83,8 @@ A calm, short list built on the attention model (4.4):
 - *Curând* (soon): the rest of the next month, one collapsed row per section.
 - *Mai târziu* (later): a count that opens the full list.
 - *Din timp*: calm notes with nothing due, today a bill that hasn't come (*Factura de la ENGIE n-a venit luna asta*), each opening its subscription (4.10).
+
+*Pregătește-te* at the end holds the situations about the whole household; today *Pleci din țară* (4.6).
 
 Snoozed and paused items are counted, not listed. Tapping a deadline opens its page: when it is and why it matters, last time's price and who did it, the policy number and claims phone of that deadline's own policy, what to bring (with what the binder already holds ticked), the actions (*Am rezolvat* — done, snooze, reschedule, pause, add to Calendar) and how it reminds.
 
@@ -249,7 +253,15 @@ The digest has a capped *now* (5 items), *soon* (what the rule calls upcoming: t
 
 `ObligationRequirements` lists what to bring for each built-in obligation (the papers an ITP station asks for, what a passport renewal needs) and whether the binder already holds each: a value on the asset, a current document of the right kind, or another obligation that must still be valid on the day. The obligation page shows it.
 
-`ReadinessEngine` checks scenarios such as a trip abroad (inside or outside the EU, driving, with a pet; outside the EU a passport must still be good for travel, by its cut-off, when the trip ends), selling a vehicle or an insurance claim, and returns a checklist with problems first. The engine and its tests exist; no screen uses the scenarios yet.
+**Situations.** `ReadinessSituation` lists them once: *Pleci din țară* (a trip), *Vinzi mașina* (selling a vehicle) and *Ai avut o daună* (an insurance claim). It says where each is offered (a trip on a household member and on Urmează, a sale on a section that keeps an RCA, a claim on any section whose deadlines keep a policy's facts) and its route (`AppRoute.readiness`, `dosarcusina://ready/trip[/<member>]`, `ready/sale/<asset>`, `ready/claim/<asset>`). A checklist opened from a section sits over it; the household's trip sits over Urmează.
+
+`ReadinessEngine` turns a situation and what the binder holds into a checklist: groups (a person, a car, a pet; what to photograph), each check with an outcome (*de rezolvat*, *de verificat*, *nu e în dosar*, *pregătit*, or something to bring that the person ticks off), a reason in plain words, and what a tap does: open the document or deadline, or add what is missing through the flow that adds it (a person's document photo first, a paper on the section photo first, the deadline form with that deadline chosen, the section's edit sheet). Problems come first in each group. Every rule is in the engine; screens only draw it.
+
+- **Trip.** The person says when they leave and come back, inside the EU or outside it, where to (only for them), who goes (household members, and documents filed under no one as one more), which cars and which pets. A trip from a member's page starts with that member; from Urmează with everyone. Per person: inside the EU an identity card valid until its printed expiry, or else a passport, also until its printed expiry; outside the EU a passport good for travel, by its type's cut-off (a passport: six months before it expires), until the trip ends; inside the EU the European health card. Per car: RCA and ITP valid until the return, the green card (included with a valid RCA, or one filed on its own), the vignette for the way to the border and back (amber when it ends during the trip, red when it has ended before), and a valid driving licence among the people going. Per pet: the passport's number and the rabies vaccine, given at least 21 days before leaving and valid on return; outside the EU, a reminder to ask the vet what the country asks. The trip is kept on this phone (`TripPlanStore`) until the day after it ends; it is not in the binder, backups or search.
+- **Selling a car.** What the buyer asks for (the registration certificate, the CIV number, the VIN, a valid ITP, the RCA, which doesn't pass to the buyer, the service history and invoices, the contract and the seller's ID card), the money to settle first (any tax or payment deadline of the car whose day has passed, with its amount; the car tax for the year, fines and a lease or loan, as reminders), and what to do after (take the car off one's name at the tax office, cancel each policy, each opening its deadline).
+- **Insurance claim.** The policy to call, each with its own facts by role (`BlueprintFacts`): a car's RCA or CASCO, a home's PAD or optional policy. With more than one, the screen asks *Ce asigurare folosești*, each with when it applies; the first the binder follows comes first. Its insurer, its claims phone (*Sună*) and its number (*Copiază*; a minute only from a section behind Face ID), whether it is still valid, whether the policy is filed, then what to photograph and the papers to have at hand, for a car or for a home.
+
+While a category a checklist reads asks for Face ID and isn't open (`ReadinessEngine.readsSensitive`: a trip reads people, their documents, health cards, cars and pets; a sale or a claim reads its section), the screen names nothing and offers to unlock.
 
 ### 4.7 Search
 
@@ -431,5 +443,5 @@ iOS 26 and later, Swift 6, SwiftUI and SwiftData. Targets: the app, the widget e
 - **Partners.** Optional, privacy-first offers from vetted companies (an insurance broker, for example) on fair commission. See the decision log.
 - **Household sharing** through iCloud.
 - **Password-protected export.**
-- **Spotlight indexing** (the hook exists) and **readiness scenarios on screen** (the engine exists).
+- **Spotlight indexing** (the hook exists). Checklists already have routes and links for it.
 - **Reminders app** integration. Not built; Calendar is.
