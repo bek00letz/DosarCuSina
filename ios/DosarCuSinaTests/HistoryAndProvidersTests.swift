@@ -127,13 +127,14 @@ struct HistoryAndProvidersTests {
         let station = try ProviderActions(context: context).create(name: "Stație ITP exemplu", trades: [.inspectionStation])
         let actions = ObligationActions(context: context, calendar: calendar, now: { noon("2026-03-01") })
         let itp = try actions.create(title: "ITP", kind: .legal, dueDay: CalendarDay("2026-03-05"), for: car, recurrence: .legal(.vehicleITP))
-        let entry = try actions.complete(itp, cost: Money(180), items: [LineItemDraft(name: "Lamele ștergătoare")], providers: [station])
+        let done = try actions.complete(itp, cost: Money(180), items: [LineItemDraft(name: "Lamele ștergătoare")], providers: [station])
+        let entry = done.value
         #expect(entry.kind == .inspection)
         #expect(car.timeline.count == 1)
         #expect(entry.items?.first?.componentKey == "body.wipers")
         #expect(ProviderDirectory(context: context).providers(for: car).map(\.name) == ["Stație ITP exemplu"])
 
-        try actions.undo(entry)
+        try done.receipt.undo()
         #expect(car.timeline.isEmpty, "Undo removes the history entry too")
     }
 

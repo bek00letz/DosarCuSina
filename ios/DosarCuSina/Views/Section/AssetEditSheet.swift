@@ -91,9 +91,10 @@ struct AssetEditSheet: View {
             .userErrorAlert($error)
             .sensoryFeedback(.success, trigger: savedCount)
             .sheet(isPresented: $isMoving) {
-                MoveAssetSheet(asset: asset) { receipt in
-                    followName(from: receipt.previousName)
-                    toast = .undo(receipt.toastTitle) { undoMove(receipt) }
+                MoveAssetSheet(asset: asset) { moved in
+                    followName(from: moved.previousName)
+                    let renamed = asset.name
+                    toast = .undo(moved.toastTitle, receipt: moved.receipt) { followName(from: renamed) }
                 }
             }
             .dsToast($toast)
@@ -119,16 +120,6 @@ struct AssetEditSheet: View {
     /// the person had already typed one of their own.
     private func followName(from previousName: String) {
         if name == previousName { name = asset.name }
-    }
-
-    private func undoMove(_ receipt: AssetActions.MoveReceipt) {
-        do {
-            let renamed = asset.name
-            try AssetActions(context: context).undoMove(receipt)
-            followName(from: renamed)
-        } catch {
-            self.error = UserFacingError(error)
-        }
     }
 
     private func save(lowerReading: LowerReadingAnswer? = nil) {

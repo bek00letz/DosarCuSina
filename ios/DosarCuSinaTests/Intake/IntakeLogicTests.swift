@@ -260,14 +260,15 @@ struct VisitDraftTests {
         #expect(draft.extraItems.map(\.name) == ["Odorizant"])
 
         let history = HistoryActions(context: context, now: { noon("2026-11-02") })
-        let entry = try history.recordVisit(on: car, occurredAt: draft.date, checklist: draft.checklistItems, extraItems: draft.extraItems,
+        let visit = try history.recordVisit(on: car, occurredAt: draft.date, checklist: draft.checklistItems, extraItems: draft.extraItems,
                                             totalCost: draft.totalMoney, odometer: draft.odometer, calendar: .bucharest)
+        let entry = visit.value
         #expect(car.value("vehicle.odometer") == .number(150_000))
         let changes = VisitChange.changes(of: entry, on: car)
         #expect(changes.map(\.name) == ["Odorizant", "Plăcuțe frână față"], "Free-text jobs show too")
         #expect(changes.allSatisfy { $0.previous == nil })
 
-        try history.undoVisit(entry)
+        try visit.receipt.undo()
         #expect(car.history?.isEmpty == true)
         #expect(car.value("vehicle.odometer") == .number(142_500), "The counter goes back to the last real reading")
         #expect(car.measurements?.contains { $0.value == 150_000 } == false)

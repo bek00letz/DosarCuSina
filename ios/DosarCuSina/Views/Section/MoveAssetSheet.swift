@@ -8,7 +8,15 @@ import SwiftData
 struct MoveAssetSheet: View {
     let asset: Asset
     /// Called after the move is saved, with what to take back.
-    let onMoved: (AssetActions.MoveReceipt) -> Void
+    let onMoved: (Moved) -> Void
+
+    /// A move just saved: its receipt, the name before it, and the toast's words.
+    struct Moved {
+        let receipt: UndoReceipt
+        let previousName: String
+        /// "Mutat la „Manole Corina”", for the toast with the undo.
+        let toastTitle: LocalizedStringResource
+    }
 
     private enum Choice: Hashable {
         case asset(UUID)
@@ -150,19 +158,18 @@ struct MoveAssetSheet: View {
             return
         }
         do {
+            let previousName = asset.name
             let receipt = try AssetActions(context: context).move(asset, to: target, renamingTo: renames ? proposedName : nil)
             dismiss()
-            onMoved(receipt)
+            onMoved(Moved(receipt: receipt, previousName: previousName, toastTitle: toastTitle))
         } catch {
             self.error = UserFacingError(error)
         }
     }
-}
 
-extension AssetActions.MoveReceipt {
-    /// "Mutat la „Manole Corina”", for the toast with the undo.
-    var toastTitle: LocalizedStringResource {
-        guard let place = child.parent?.name else {
+    /// Where it is now, for the toast.
+    private var toastTitle: LocalizedStringResource {
+        guard let place = asset.parent?.name else {
             return LocalizedStringResource("Mutat în Abonamente", comment: "Toast after a subscription was taken out of its home.")
         }
         return LocalizedStringResource("Mutat la „\(place)”", comment: "Toast after moving something under another parent.")

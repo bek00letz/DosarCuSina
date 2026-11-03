@@ -355,8 +355,7 @@ struct SubscriptionFilingTests {
         let actions = AssetActions(context: context)
         let receipt = try actions.move(internet, to: .standalone)
         #expect(internet.parent == nil)
-        #expect(String(localized: receipt.toastTitle) == "Mutat în Abonamente")
-        try actions.undoMove(receipt)
+        try receipt.undo()
         #expect(internet.parent?.id == pipera.id)
     }
 

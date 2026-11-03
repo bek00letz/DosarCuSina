@@ -369,12 +369,9 @@ private struct ObligationPage: View {
     }
 
     private func reschedule(to day: CalendarDay) {
-        let previous = obligation.dueDay()
         do {
-            try ObligationActions(context: context).reschedule(obligation, to: day)
-            toast = DSToast.undo("Termenul e acum pe \(DueWording.date(day, today: today)).") {
-                try? ObligationActions(context: context).reschedule(obligation, to: previous)
-            }
+            let receipt = try ObligationActions(context: context).reschedule(obligation, to: day)
+            toast = .undo("Termenul e acum pe \(DueWording.date(day, today: today)).", receipt: receipt)
         } catch {
             toast = UpcomingActions.failureToast(error)
         }
@@ -504,12 +501,7 @@ private struct ObligationCompleteSheet: View {
                 let message: LocalizedStringResource = outcome.nextDue.map {
                     "\(title): gata. Următorul termen e pe \(DueWording.date($0, today: CalendarDay(Date())))."
                 } ?? "\(title): gata."
-                let toast: DSToast
-                if let entry = outcome.completion {
-                    toast = DSToast.undo(message) { try? ObligationActions(context: context).undo(entry) }
-                } else {
-                    toast = DSToast(title: message, actionTitle: nil, action: nil)
-                }
+                let toast: DSToast = outcome.receipt.map { .undo(message, receipt: $0) } ?? DSToast(title: message, actionTitle: nil)
                 session.close()
                 onClose(toast)
             } catch let question as ExampleSectionQuestion {

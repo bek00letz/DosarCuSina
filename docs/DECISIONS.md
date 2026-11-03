@@ -8,6 +8,16 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-03
 
+### One undo for every action; deleting from Istoric is separate
+- **Decided:** every action the person can take back returns an undo receipt, made by its own unit of work: the records it created, and every stored property of the records it changed or deleted, read from the store just before it saves. "Anulează" puts all of it back in one unit of work, as if the step never happened (change times included), and refuses when any of those records changed again since, so it never overwrites something newer. The three earlier undo paths (the visit's, the completion's, the move's) are gone.
+- **Decided (owner):** the three earlier undo paths stay deleted, not kept disabled; git history is the way back. An owner-approved exception to "keep a way back".
+- **Decided:** a receipt covers the whole step the person took: an action inside a filing is undone with the filing. Undoing a filing that kept a new photo removes that photo too; the visit's "Anulează vizita" already did.
+- **Decided:** receipts live in memory, only while the toast offers them. No database change.
+- **Decided:** deleting a record from Istoric is not undo. Its line items and the reading it recorded go; the documents filed with it stay in the binder; a completion moves its deadline back only when it's the latest one, judged by the cycle it closed (a completion dated in the past still counts), and an older one leaves the deadline alone. The confirmation says which, with the date.
+- **Decided (owner):** deleting a visit or a completion from Istoric takes the reading it recorded with it, and the value on the section follows the readings left.
+- **Why:** each undo path forgot something different: undoing "Gata" left a mistyped reading, undoing a visit found its reading by matching numbers, a move's undo knew nothing about a document's other fields, and a completion dated in the past couldn't be undone at all ("Poți anula doar ultima bifare"). Deleting an old completion went through the same undo, so it was refused, and the dialog promised a date change that didn't happen.
+- **Open (owner, until sync is designed):** undo also restores the records' change times; when sync comes, an undone step may need a fresh change time so other devices take it.
+
 ### Who the app is for
 - **Decided:** this replaces "the reference user is aged 50–60 and not tech-savvy" (below, kept as it was). The app is for everyone who keeps papers, deadlines and the people who help with them. It must be just as usable by someone in their 50s or 60s who isn't at ease with phones: that person is the test case for every screen, not the whole audience.
 - **Why:** reading the old line as "the app is for older people" leads to designs that talk down or leave out what everyone else needs. Designing for everyone, then checking each screen against the person who finds phones hardest, keeps both.

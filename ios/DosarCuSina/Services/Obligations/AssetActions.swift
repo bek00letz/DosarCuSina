@@ -205,11 +205,14 @@ public final class AssetActions {
 
     /// Replaces the free label–value rows shown under Date importante. A secret
     /// row (a code) is sealed before it is saved, like a PIN field.
-    public func setCustomFacts(_ asset: Asset, _ facts: [CustomFact]) throws {
-        let kept = facts.filter { !$0.label.trimmingCharacters(in: .whitespaces).isEmpty || !$0.value.trimmingCharacters(in: .whitespaces).isEmpty }
-        asset.customFacts = try SecretFields.sealingFacts(kept, sealer: sealer)
-        asset.updatedAt = now()
-        try save()
+    @discardableResult
+    public func setCustomFacts(_ asset: Asset, _ facts: [CustomFact]) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) {
+            let kept = facts.filter { !$0.label.trimmingCharacters(in: .whitespaces).isEmpty || !$0.value.trimmingCharacters(in: .whitespaces).isEmpty }
+            asset.customFacts = try SecretFields.sealingFacts(kept, sealer: sealer)
+            asset.updatedAt = now()
+            try save()
+        }.receipt
     }
 
     /// Records a measured value of any kind (a meter index, a weight, a lab value) through the

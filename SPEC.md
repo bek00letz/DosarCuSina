@@ -61,7 +61,7 @@ A section is the page of one asset. One vertical scroll: a hero, then the catego
 
 Editing uses the design system's fields and asks before discarding changes. Fields that depend on another value (a document's variant on its type, the PIN codes on the electronic identity card) appear only while it matches. Deleting a section asks what happens to what is filed under it: keep those records on their own, or delete them too.
 
-**Mută la…** (move to). Anything filed under something else (a document under a household member, a tenancy or a product under a home) moves from its page, and so does any subscription: between homes, under a home, or out to Abonamente (*În Abonamente, fără locuință*). It moves through the toolbar's *Mai multe* menu or the edit sheet. A short list offers the other parents of the same kind and, for a document, *O persoană nouă*. A document named after its holder ("Carte de identitate – Manole Corina") offers to take the new holder's name. The move is one save; the toast offers *Anulează*, which also removes a person made only for the move.
+**Mută la…** (move to). Anything filed under something else (a document under a household member, a tenancy or a product under a home) moves from its page, and so does any subscription: between homes, under a home, or out to Abonamente (*În Abonamente, fără locuință*). It moves through the toolbar's *Mai multe* menu or the edit sheet. A short list offers the other parents of the same kind and, for a document, *O persoană nouă*. A document named after its holder ("Carte de identitate – Manole Corina") offers to take the new holder's name. The move is one save; the toast offers *Anulează*, which also removes a person made only for the move (see 4.1a).
 
 **A document's page** asks for its picture when it has none (*Adaugă poza actului*, through capture, which fills in what it reads), and shows its secret fields under *Coduri PIN* (see 7).
 
@@ -134,7 +134,7 @@ Every category is one template engine. A `TemplateDefinition` declares sections 
 
 ### 3.2 Parent and child
 
-An asset can be filed under another: a tenancy under its property, a product under a home, a document under its holder. The engine refuses loops. A box's status includes what is filed under it. Moving to another parent of the same kind goes through `AssetActions.move` (one save, with `undoMove`).
+An asset can be filed under another: a tenancy under its property, a product under a home, a document under its holder. The engine refuses loops. A box's status includes what is filed under it. Moving to another parent of the same kind goes through `AssetActions.move` (one save, with its undo receipt).
 
 ### 3.3 Household members
 
@@ -146,13 +146,19 @@ A subscription (template `subscription`, keys in `SubscriptionFields`) is one on
 
 ### 3.4 Obligations
 
-An obligation is never copied to make the next cycle. Completing it writes a history entry and moves its due date forward; only the latest completion can be undone. Statuses: active, paused, done (a one-off that was completed) and archived. Snoozing hides it and its reminders until a date, then reminds once.
+An obligation is never copied to make the next cycle. Completing it writes a history entry and moves its due date forward; the toast's *Anulează* takes the step back (4.1a), and deleting a completion from Istoric is a separate thing (3.5). Statuses: active, paused, done (a one-off that was completed) and archived. Snoozing hides it and its reminders until a date, then reminds once.
 
 ### 3.5 History, maintenance log and providers
 
 Every asset type has a smart maintenance log. Line items point at the template's components (matched from free text and synonyms, without diacritics), so the history answers "when did I last change it" whatever the bill called it: when, how far the counter has moved since, what it cost, the supplier and who did it. With two or more past jobs it estimates the next one from the asset's own pace, and says it is an estimate.
 
 **Readings.** Every reading (the edit form, the visit form, "Gata", capture) goes through one path, `recordReading`, which knows where it came from: read by the person, from a document (dated by the document) or estimated (never stored: the visit form shows its estimate only greyed in the empty field). A counter reading lower than one recorded before it asks "Kilometrajul e mai mic decât ultima dată. Corectez citirea veche?": *Corectează citirea veche* removes the higher earlier readings, *Lasă citirea veche* keeps the new one aside (listed, not counted), *Anulează* goes back to the number. The hero value (the kilometres on the section) is always worked out from the readings, and undoing "Gata" or a visit takes its reading back. Every rate and projection reads one cleaned series (`ReadingSeries`): the longest run of readings that never goes down, the earlier ones winning a tie; a reading left out is flagged, never a reason to stop projecting.
+
+**Deleting from Istoric.** A record's page offers *Șterge din istoric*, with a confirmation that says what happens (`HistoryDeletion`, which `HistoryActions.delete` then does exactly):
+- its line items go, and so does the reading it recorded (*Se șterge și citirea de 45.724 km notată aici.*); the value on the section follows the readings left;
+- the documents filed with it stay in the binder, under the same section (*Ce ai atașat rămâne în dosar.*);
+- a completion moves its deadline back to the cycle it closed only when it's the latest one (*Termenul revine la 10 noiembrie 2026, ca și cum nu l-ai fi rezolvat.*); an older one leaves the deadline as it is (*Termenul rămâne cum e acum.*). The latest is the one that closed the latest cycle (`Obligation.latestCompletion`), so a completion recorded with a past date still counts.
+This is for an older record; the step just taken is undone from its toast.
 
 A provider's rating is the average of their rated jobs, or the person's own rating when no job is rated.
 
@@ -162,7 +168,15 @@ All engines are pure where they can be (no database, no notification centre) and
 
 ### 4.1 Obligation actions
 
-`ObligationActions` is the only way to change an obligation: complete, undo, snooze, reschedule, pause, resume, archive, delete, change reminders, create from a blueprint. It is used by every screen, notification buttons, widgets and Shortcuts alike. Each call saves once; side effects follow from the save.
+`ObligationActions` is the only way to change an obligation: complete, snooze, reschedule, pause, resume, archive, delete, change reminders, create from a blueprint. It is used by every screen, notification buttons, widgets and Shortcuts alike. Each call saves once; side effects follow from the save. Complete, snooze and reschedule return an undo receipt (4.1a).
+
+### 4.1a Undo
+
+Every action the person can take back returns an `UndoReceipt`, made by its own unit of work (`UnitOfWork.performUndoable`): "Gata", amânare, a new due day, a visit, a filing from capture (the review, "Am rezolvat" with the new document, a visit with its invoice), *Mută la…*, deleting one of the section's own rows and archiving a document. When the unit saves, the receipt records the records it created and, read from the store just before the save, every stored property of the records it changed or deleted. An action that runs inside a larger step (a filing that completes a deadline) is undone with that whole step.
+
+The toast's *Anulează* (`DSToast.undo`, which takes the receipt) runs it in one unit of work: deleted records come back, changed ones get their values and links back (a kept invoice goes back where it was, with its title and kind), created ones go (undoing "Gata" removes the reading it recorded). It is "as if it never happened", the records' change times included. It refuses when any of those records changed again since ("Nu mai pot anula, pentru că între timp s-a schimbat ceva aici. Corectează de mână ce e nevoie."), so it never overwrites something newer, and a receipt works once. A step that changed nothing offers no *Anulează*. Actions that can't be undone don't return a receipt. Receipts live in memory, only while the toast offers them.
+
+Every model lists its stored properties for this (`UndoableRecord`), and a test checks the lists against the schema, so a new property can't be left out of undo.
 
 ### 4.2 Recurrence
 
@@ -296,7 +310,7 @@ The review screen shows what was read, where it could go, and the reminder it su
 
 **One filer.** `CaptureFiler` is the only way a captured document comes into the binder, with three intents: the review's "Salvează", "Am rezolvat" with a photo of the new document, and a visit with its invoice. All three write the values read onto the section, find the firm by its CUI, then by its name, before making a new one (`ProviderActions.findOrCreate`; an insurer is kept in Agendă too), and file the document the same way, with the last day it is valid as read. A policy's facts go into the fields its own deadline names, so a CASCO fills CASCO's and "Am rezolvat" on a CASCO fills CASCO's. One rule decides what a new document's date does to a deadline: a deadline whose date comes from a field (a document's expiry) takes the new date in that field; a repeating one closes the cycle that was due and moves to the document's date; a one-off moves; an older date never moves a deadline back; "Am rezolvat" closes the cycle even without a later date. A new RCA policy through "Am rezolvat" brings its number, insurer and claims phone onto the car. What takes time (Face ID, the pages) happens before the one save, so nothing else can slip into it.
 
-**One document, one place.** Capture names its document with one reference: pages it read, waiting with this capture's own claim, or a document the binder already keeps. Two captures of the same photo (shared from two apps) each hold their own claim, so closing one never takes the pages the other needs; saving both files one document, which ends up where the later one put it. A capture whose pages are gone stops with "Poza actului nu mai e aici. Adaug-o din nou, apoi salvează." and saves nothing. A kept document that moves belongs to its new place only: its old deadline, history entry and firm links are replaced, its archived state stays, and it takes what was read now. Undoing a visit puts a moved invoice back where it was. Moving a document out of a locked section, or writing into an existing locked section, asks for Face ID or the passcode first.
+**One document, one place.** Capture names its document with one reference: pages it read, waiting with this capture's own claim, or a document the binder already keeps. Two captures of the same photo (shared from two apps) each hold their own claim, so closing one never takes the pages the other needs; saving both files one document, which ends up where the later one put it. A capture whose pages are gone stops with "Poza actului nu mai e aici. Adaug-o din nou, apoi salvează." and saves nothing. A kept document that moves belongs to its new place only: its old deadline, history entry and firm links are replaced, its archived state stays, and it takes what was read now. Undoing a visit or any other filing puts a moved document back where it was. Moving a document out of a locked section, or writing into an existing locked section, asks for Face ID or the passcode first.
 
 **Closing a capture.** A capture lives as long as what shows it. Closing the sheet, by "Închide", by saving or by swiping it down, stops any reading still running (a request to the AI provider not yet sent is never sent) and lets go of the pages.
 

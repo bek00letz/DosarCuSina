@@ -106,9 +106,9 @@ struct ReadingTests {
         oilChange.asset = golf
         try context.save()
         let actions = ObligationActions(context: context, calendar: .bucharest, now: { noon("2026-05-20") })
-        let entry = try actions.complete(oilChange, metricReading: 55_000)
+        let done = try actions.complete(oilChange, metricReading: 55_000)
         #expect(golf.value("vehicle.odometer") == .number(55_000))
-        try actions.undo(entry)
+        try done.receipt.undo()
         #expect(golf.measurements?.map(\.value) == [45_724])
         #expect(golf.value("vehicle.odometer") == .number(45_724))
     }
