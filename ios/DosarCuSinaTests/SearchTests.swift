@@ -94,3 +94,59 @@ struct BinderSearchTests {
         #expect(index.search("POL-000000").first?.document.subtitle?.contains("arhivat") == true)
     }
 }
+
+/// Caută keeps its index off the main thread and reads again only what a save touched.
+@MainActor
+@Suite("Search index kept up to date")
+struct SearchIndexerTests {
+    private final class Captured: @unchecked Sendable {
+        var changes: [SearchChanges] = []
+    }
+
+    @Test func aSaveReadsOnlyWhatItTouched() async throws {
+        let context = try makeContext()
+        let template = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.vehicle))
+        let assets = AssetActions(context: context, calendar: .bucharest, now: { noon("2026-11-03") })
+        let car = try assets.create(name: "VW Golf", template: template, values: FieldValues())
+        let other = try assets.create(name: "Dacia Logan", template: template, values: FieldValues())
+        let obligations = ObligationActions(context: context, calendar: .bucharest, now: { noon("2026-11-03") })
+        _ = try obligations.create(title: "Rovinietă", kind: .legal, dueDay: CalendarDay("2027-01-10"), for: other)
+
+        let indexer = SearchIndexer(container: context.container)
+        let first = try await indexer.rebuild()
+        let everything = await indexer.lastRecordsRead
+        #expect(first.search("golf").contains { $0.document.title == "VW Golf" })
+
+        // A new deadline: only it is read.
+        let itp = try obligations.create(title: "Inspecția tehnică", kind: .legal, dueDay: CalendarDay("2027-03-01"), for: car)
+        var index = try await indexer.apply(SearchChanges(changed: [itp.persistentModelID]))
+        #expect(await indexer.lastRecordsRead == 1)
+        #expect(index.search("inspectia").first?.document.subtitle?.hasPrefix("VW Golf") == true)
+
+        // A rename: the car and what shows its name, never the other car's records.
+        try assets.update(car, name: "Golf de familie", values: car.values, notes: car.notes)
+        index = try await indexer.apply(SearchChanges(changed: [car.persistentModelID]))
+        #expect(await indexer.lastRecordsRead < everything)
+        #expect(index.search("inspectia").first?.document.subtitle?.hasPrefix("Golf de familie") == true)
+        #expect(index.search("rovinieta").first?.document.subtitle?.hasPrefix("Dacia Logan") == true)
+
+        // A deletion takes its documents out, and the index matches a full read.
+        let id = itp.persistentModelID
+        try obligations.delete(itp)
+        index = try await indexer.apply(SearchChanges(deleted: [id]))
+        #expect(index.search("inspectia").isEmpty)
+        #expect(index.count == (try SearchIndexBuilder(context: ModelContext(context.container)).build().count))
+    }
+
+    @Test func savesSayWhatTheyChanged() throws {
+        let context = try makeContext()
+        let captured = Captured()
+        let token = NotificationCenter.default.addObserver(forName: ModelContext.didSave, object: context, queue: nil) { note in
+            captured.changes.append(SearchChanges(note))
+        }
+        defer { NotificationCenter.default.removeObserver(token) }
+        let template = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.vehicle))
+        let car = try AssetActions(context: context).create(name: "VW Golf", template: template, values: FieldValues())
+        #expect(captured.changes.contains { $0.changed.contains(car.persistentModelID) })
+    }
+}

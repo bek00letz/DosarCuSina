@@ -79,12 +79,28 @@ public struct SearchIndex: Sendable {
     private let entries: [Entry]
 
     public init(_ documents: [SearchDocument]) {
-        entries = documents.map { document in
-            Entry(document: document, words: document.fields.map { SearchText.normalize($0.text).split(separator: " ") })
-        }
+        entries = documents.map(Self.entry)
+    }
+
+    private init(entries: [Entry]) {
+        self.entries = entries
+    }
+
+    private static func entry(_ document: SearchDocument) -> Entry {
+        Entry(document: document, words: document.fields.map { SearchText.normalize($0.text).split(separator: " ") })
+    }
+
+    /// The same index with some documents taken out and others put in; only the new
+    /// ones are prepared again.
+    public func updating(removing ids: Set<String>, adding documents: [SearchDocument]) -> SearchIndex {
+        let replaced = ids.union(documents.map(\.id))
+        return SearchIndex(entries: entries.filter { !replaced.contains($0.document.id) } + documents.map(Self.entry))
     }
 
     public var count: Int { entries.count }
+
+    /// Every document in the index.
+    public var documents: [SearchDocument] { entries.map(\.document) }
 
     public func search(_ query: String, limit: Int = 50, kinds: Set<SearchResultKind>? = nil) -> [SearchResult] {
         let tokens = SearchText.tokens(query)

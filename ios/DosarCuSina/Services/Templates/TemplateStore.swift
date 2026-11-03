@@ -111,8 +111,15 @@ public struct TemplateStore {
 
     /// Templates keyed by `key`, for looking up many assets at once.
     public func templatesByKey() throws -> [String: CategoryTemplate] {
+        try Self.templatesByKey(in: context)
+    }
+
+    /// Templates keyed by `key` on any context, such as search's own off the main
+    /// thread. The first in the binder's order wins when a key repeats.
+    nonisolated public static func templatesByKey(in context: ModelContext) throws -> [String: CategoryTemplate] {
         var result: [String: CategoryTemplate] = [:]
-        for template in try all() where result[template.key] == nil {
+        let all = try context.fetch(FetchDescriptor<CategoryTemplate>(sortBy: [SortDescriptor(\.homeOrder), SortDescriptor(\.createdAt)]))
+        for template in all where result[template.key] == nil {
             result[template.key] = template
         }
         return result

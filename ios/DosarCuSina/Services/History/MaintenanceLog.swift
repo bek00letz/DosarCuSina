@@ -211,8 +211,8 @@ public enum MaintenanceLog {
 }
 
 extension HistoryItemSnapshot {
-    /// Line items of one asset's history.
-    @MainActor
+    /// Line items of one asset's history. Reads the records only, on whatever
+    /// context they belong to (search builds its index off the main thread).
     public static func items(of asset: Asset) -> [HistoryItemSnapshot] {
         (asset.history ?? []).flatMap { entry in
             (entry.items ?? []).map { item in
