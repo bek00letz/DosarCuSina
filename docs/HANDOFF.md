@@ -21,11 +21,11 @@ The template-engine overhaul (waves 1 and 2) is merged. The app builds for iOS 2
 | Widgets | Home Screen (small, medium) and Lock Screen (inline, rectangular), with "Gata". |
 | Reminders | Each reminder carries its cycle; buttons, widget taps, Siri and Shortcuts go through one guarded way in (`IntentEngine.perform`) and re-plan after; a catch-up for a deadline added late; trimming by consequence with a last "open the app" reminder; background refresh; unsaved taps shown in Urmează. |
 | Search | Diacritic-insensitive search over the whole binder, locked sections show titles only; read text from locked sections and anything shaped like a CNP are never indexed (`SearchPrivacy`). |
-| Settings and locks | Reminder time, app lock and section locks (drawn in their own window above every sheet; links wait for unlocking), categories on the binder, backup, the optional AI provider and its key, examples, storage. |
-| Engines | Obligation, asset, history, attachment and provider actions; recurrence (a series keeps its day of the month); reminder profiles with follow-up after a lapse; attention model; box status; readiness (requirements on screen, scenarios engine only); search; household rules (rental income declaration); wording. |
+| Settings and locks | Reminder time, app lock and section locks (drawn in their own window above every sheet; links wait for unlocking), categories on the binder, backup, the repair list (*Date de verificat*, with a calm prompt when there is something new), the optional AI provider and its key, examples, storage. |
+| Engines | Obligation, asset, history, attachment and provider actions; one way to record a reading and one cleaned series of readings; the repair registry (`DataRepairs`); recurrence (a series keeps its day of the month); reminder profiles with follow-up after a lapse; attention model; box status; readiness (requirements on screen, scenarios engine only); search; household rules (rental income declaration); wording. |
 | Side effects | Notifications, badge and widget snapshot through `SideEffectsCoordinator`. |
 | Archive | `.dosar` v3 export and import (merge or replace), optional password (whole file encrypted), Face ID before export and "Înlocuiește tot" when any lock is on, built-ins always from the app, v2 import, golden fixtures in `shared/`. |
-| Localisation | Romanian String Catalog with plural variations; Romanian formats for dates and money. |
+| Localisation | Romanian String Catalog with plural variations; one app locale for numbers, dates and money; one number reader (`RomanianNumber`) for every reader and field. |
 | Repository | README, SPEC, AGENTS, CONTRIBUTING, SECURITY, decision log, this handoff, pull request and proposal templates. Every pull request and push to `main` runs `privacy-check`, `architecture-check` (15 rules from AGENTS.md, with an exceptions list that only shrinks) and `build-and-test` (app, widgets, share extension and tests on GitHub's Xcode 27 Mac); the pre-commit hook runs the first two. |
 
 ## In progress
@@ -39,8 +39,6 @@ Nothing at the moment.
 
 - **Capture doesn't know cazier, bank cards and the other document types.** A photo of one taken from a person is filed as one of their documents, without a type; the person picks it in Editează.
 
-- **A counter reading lower than the last one is kept as a new reading.** It should replace the wrong one as a correction; until then a mistyped kilometre reading stays in the vehicle's history and can skew estimates.
-
 - **iCloud sync** to the person's private iCloud. The schema is ready; the store is local only.
 - **Android port.** Paused; `android/` is the first version. The `.dosar` format is the contract.
 - **Import writes on the main thread.** Reading, checking and decrypting a backup run in the background; writing the records into the database still runs on the main thread, in one unit of work. A very large backup can pause the screen while it is written.
@@ -52,13 +50,14 @@ Nothing at the moment.
 - **Readiness scenarios** (trip abroad, selling a vehicle, insurance claim): the engine and tests exist, no screen uses them.
 - **Permission descriptions** for Calendar, Reminders and Contacts in the project settings still describe the first version; the app now uses the system's event editor and contact picker without asking for those permissions.
 - **Dates written in the phone's time zone.** Due days are worked out in the Bucharest calendar but written with `.formatted(.dateTime…)` in the phone's own time zone, so on a phone set to another zone every date reads a day early ("Expiră pe 11 august" for 12 August). The `build-and-test` check runs in UTC and shows it in five tests (binder wording, reminder presets, capture review, adding a person's document, subscriptions from capture). The fix belongs with one source for dates: `DosarFormat` and `DueWording` take the calendar's time zone, and the `date-format` exceptions go with it.
-- **Architecture exceptions.** `scripts/architecture-exceptions.txt` lists 168 places that broke a rule before the check existed: built-in category keys in views (82), date formats outside `DosarFormat` (29), small tap targets, number readers, saves outside `UnitOfWork`, the system's error text, silent `try?` on actions and a few more. Each group says which piece of work removes it; remove lines as they're fixed.
+- **Architecture exceptions.** `scripts/architecture-exceptions.txt` lists the places that broke a rule before the check existed: built-in category keys in views, date formats outside `DosarFormat`, small tap targets, saves outside `UnitOfWork`, the system's error text, silent `try?` on actions and a few more. Each group says which piece of work removes it; remove lines as they're fixed.
 
-- **Repairs waiting for the owner.** `CaptureRepairs` finds documents moved with their old place's links, visits saved without their invoice and firms kept twice, and repairs only what is approved. Nothing calls them yet; the repair list that asks comes with the numbers session.
+- **The legacy utility parser** (`RomanianUtilityParser`) reads numbers through `RomanianNumber` but returns them as `Double`, so a meter index that could read two ways isn't marked "Verifică" when it comes through that parser. It goes when the parser becomes label tables (kind profiles).
+- **Readings from a bill.** A meter index read off a bill isn't recorded as a reading on the home or subscription yet; only a section's hero value (the kilometres) is.
+- **Values from a newer version, the rest.** Unknown field values, consequences and kinds are kept and read loudest. An unknown recurrence still reads as one-off (it is stored unchanged until edited), and archives carry the downgraded form; template sections and custom facts still fall back whole when one entry can't be read.
 - **Firms don't keep their CUI.** `ProviderActions.findOrCreate` matches by name; the filer and the visit already pass the CUI they read. Matching it first comes with the provider tax-ID field, in one coordinated step with the new database version, its migration and the `.dosar` mapping (together with the kind profiles).
-- **Undo.** Only the visit's "Anulează" knows what it moved (a kept invoice goes back). Undo receipts for every action, deleting an older completion from Istoric, and the reading "Gata" leaves behind when undone are for a later session.
+- **Undo.** Only the visit's "Anulează" knows what it moved (a kept invoice goes back). Undo receipts for every action and deleting an older completion from Istoric are for a later session. Undoing "Gata" or a visit now takes its reading back; a "Corectează citirea veche" answer (old readings removed) isn't undone with it.
 
-- **Deadlines an old reminder may have closed twice.** `LikelyDoubleCompletions.find` lists them and `undoSecond` undoes one (idempotent); nothing calls them yet. The coming repair list should show each one and run `undoSecond` only with the person's OK.
 - **Siri and Shortcuts with the app lock on** open the app instead of answering. Not tried on a device yet.
 
 ## How to pick up work
@@ -83,6 +82,13 @@ Newest first. Copy this template:
 ```
 
 Never write security findings, crash traces or local paths here. See [SECURITY.md](../SECURITY.md).
+
+### 2026-11-03 — owner (with Claude) — `claude/fix-numbers-repairs-0114a1`
+- **Did:** one Romanian number reader (`RomanianNumber`, told the kind: money, count, meter index, kilometres; the owner's rule: comma decimal, dot thousands, kilometres and counts whole, a document's doubtful number marked "Verifică", anything unclear refused in the field) for every capture reader, the bill parser, `FieldFormatter`, the number and money fields and the review's number editor; one app locale. One way to record a reading (`recordReading`, with its source; estimates never stored; a lower counter asks "Corectez citirea veche?"; the hero value from the readings; capture dated by the document; undo of "Gata" takes its reading back) and one cleaned series (`ReadingSeries`) for every rate and projection. The repair list (`DataRepairs`: ordered steps with stored ids, after launch and imports, one by one or all of one kind, dismissals remembered, a calm prompt for what's new; Settings → Date de verificat) with nine steps, `ChoiceMigration` the first. One rule for values from a newer version.
+- **Tests:** new `RomanianNumberTests` (one tricky-input table per kind), `ReadingTests`, `DataRepairTests` (each step's fixture applied twice, the v2 archive fixture); `NumberInputTests` replaced. Covering suites while working and the whole suite once on iPhone 17e.
+- **Left open:** see "Known gaps" (the bill parser's doubtful numbers, meter readings from bills, recurrences from a newer version). Not tried by eye in the simulator: the repair prompt, the list, the lower-reading question and the greyed estimate.
+- **Next:** on the owner's phone, open the app: the prompt should offer "Kilometrajul la … pare greșit: 457 km. Corectez la 45.724?" Then kind profiles and fact roles.
+- **Decisions:** "One number reader, the Romanian way", "Counter readings: one way in, and a lower reading asks", "The repair list" and "Values from a newer version" (2026-11-03).
 
 ### 2026-11-02 — owner (with Claude) — `claude/fix-guardrails-350990`
 - **Did:** the rules are checked on every pull request. A new workflow, `Checks`, runs `architecture-check` (on Linux, seconds) and `build-and-test` (on GitHub's `xcode-27` Mac: builds the app with its widgets and share extension and runs `DosarCuSinaTests` through `tests/run_tests.sh`, with the compiled system modules cached and a 60-minute limit). `scripts/architecture-check.sh` has 15 rules from AGENTS.md and the agreed fixes, each with a plain message, a failing and a passing fixture (`--self-test`), and today's 168 violations in `scripts/architecture-exceptions.txt`, which fails when a line is fixed but not removed and, on a pull request, when a line is added without the owner's `architecture-exception` label. The pre-commit hook runs it after the privacy check. `tests/run_tests.sh` picks the newest installed iOS at or above the project's deployment target (read from the project, not hard-coded) and can keep its build products and results for CI. README now asks for Xcode 27: the app uses the iOS 27 SDK.

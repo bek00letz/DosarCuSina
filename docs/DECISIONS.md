@@ -6,6 +6,30 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ---
 
+## 2026-11-03
+
+### One number reader, the Romanian way
+- **Decided (owner):** every number the app reads, from a document or from a field, goes through one reader, `RomanianNumber`, told what the number is: money, a count, a meter index (or another measured value) or kilometres. A comma is the decimal mark and a dot groups thousands ("1.250,50"); a number with both marks takes the last one as the decimal mark ("1,250.50" too). Kilometres and counts are whole, so "45,724 km" and "45.724 km" are both 45724. Money or a meter index with one mark and exactly three digits after it follows the Romanian rule ("3,750" lei is 3,75; "Index nou: 12.345" is 12345) and, from a document, is marked "Verifică". Anything that can't be read one way only ("-", ".", "12-5", "5²", "12 km" as money) is refused with a message in the field, never read as 0 or cut short.
+- **Decided:** the app writes numbers, money and dates in one locale, Romanian, whatever the phone's region or number format (`Locale.dosarDefault`, injected once at the root). Archives and stored JSON keep the machine form ("1250.5"), read with `RomanianNumber.canonical`.
+- **Why:** five readers disagreed: "45,724" was 45724 to one and 45,724 to another, a gas index "12.345" lost its thousands, "86,420 km" became 420, and "3,750" lei became 3.750 lei. A field that writes in one convention and reads in another turned a car's 45.724 km into 457.
+
+### Counter readings: one way in, and a lower reading asks
+- **Decided:** every reading (the edit form, the visit form, "Gata", capture, examples) is recorded by one path, `HouseholdMutations.recordReading` (`AssetActions.recordReading` on its own), with where it came from: read by the person, from a document, or estimated. A document's reading is dated by the document.
+- **Decided (owner):** a counter reading lower than one recorded before it asks: "Kilometrajul e mai mic decât ultima dată. Corectez citirea veche?" "Corectează citirea veche" (yes) removes the higher earlier readings (and the same number on the visit that logged them) and keeps the new one; "Lasă citirea veche" (no) keeps the new one aside, in the list but not counted. "Anulează" goes back to the form to fix the number; nothing is saved before an answer.
+- **Decided:** an estimate is only a greyed placeholder in the visit form ("Cifra gri e doar o estimare"); it is never stored. The hero value (the kilometres on the section) is always worked out from the readings, and undoing "Gata" or a visit takes back the reading it recorded.
+- **Decided:** every rate and projection reads one cleaned series, `ReadingSeries`: the longest run of readings that never goes down, in date order, the earlier ones winning a tie. A reading that breaks the order is skipped and flagged, never a reason to stop projecting.
+- **Why:** the visit form saved its rounded-up guess as a real reading; the next real one then looked like a drop, and one drop switched off every kilometre-based projection for good. A second rate calculator had no check at all.
+
+### The repair list
+- **Decided (owner):** data an earlier version saved wrongly is repaired only with the owner's OK. `DataRepairs` is an ordered registry of idempotent steps with stored ids; detection runs after the built-in categories are installed at launch and after every import. What it finds is one short list in Settings (*Date de verificat*) and one calm prompt when there is something new ("Am găsit date de verificat", "Arată-mi" or "Mai târziu"). Each entry says in plain words what looks wrong and what the repair does ("Kilometrajul la VW Golf pare greșit: 457 km. Corectez la 45.724?"), and is applied or left as it is one by one, or all of one kind; "Lasă așa" is remembered on the phone. Applying runs in one unit of work.
+- **Decided:** a step that changes only how a value is stored, never what it says, runs by itself (choice values stored as text become option keys, the old `ChoiceMigration`).
+- **Decided:** the steps today, in order: choice keys; deadlines from a first-version copy (a blueprint-less running deadline whose title and kind match one of its category's blueprints gets that blueprint and its rule, such as the legal ITP rule); documents moved with their old links; visits saved without their invoice; firms kept twice; deadlines an old reminder closed twice; counter readings 10 or more times off both neighbours, or equal to the reading before them divided by a power of ten; round-hundred visit readings above the next reading (the old estimate); a hero value that differs from its readings.
+- **Why:** repairs were scattered (a migration inside the template store, functions nothing called), and the owner's own car shows 457 km for 45.724.
+
+### Values from a newer version
+- **Decided:** one rule for stored values this build can't read: keep them raw, behave as the loudest case, never write back a downgraded value. An unknown field value is kept as stored and written back unchanged; an unknown consequence or kind of deadline reads as legal (the loudest) and stays stored as it was until the person changes it.
+- **Why:** an unreadable value was dropped on the next save, and an unknown consequence read as "comfort", so a legal deadline from a newer build would have lost its urgent reminders.
+
 ## 2026-11-02
 
 ### Rules are checked, not remembered
