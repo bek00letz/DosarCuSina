@@ -146,6 +146,7 @@ public enum FieldFormatter {
 
     /// Human-readable text for a value of `field`. Choice keys show their labels.
     public static func display(_ value: FieldValue, field: FieldDefinition, locale: Locale = .dosarDefault, calendar: Calendar = .current) -> String {
+        if SecretFields.isSealed(value) { return SecretFields.mask }
         switch (field.type, value) {
         case (.choice, .text(let key)):
             return field.label(forChoice: key)
@@ -159,6 +160,9 @@ public enum FieldFormatter {
     /// Human-readable text for a stored value, using the field's type and unit.
     public static func display(_ value: FieldValue, as type: FieldType, unit: String? = nil, locale: Locale = .dosarDefault, calendar: Calendar = .current) -> String {
         switch value {
+        case _ where SecretFields.isSealed(value):
+            // Sealed text is a secret whatever the field's type says.
+            return SecretFields.mask
         case .text(let text):
             switch type {
             // A secret never shows through a general path; only `SecretReveal` opens it.

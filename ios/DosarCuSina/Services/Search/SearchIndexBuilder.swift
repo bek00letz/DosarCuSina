@@ -4,6 +4,11 @@ import SwiftData
 /// Builds the search index from the database: assets with their field values,
 /// obligations, history entries and their components, providers and their
 /// trades, and documents with their extracted text.
+///
+/// What never reaches the index, whatever a record or its template says
+/// (`SearchPrivacy`): text read off a document filed in a locked section or off
+/// an identity document, sensitive and secret values, and any number shaped
+/// like a CNP or sealed value, wherever it was typed or read.
 @MainActor
 public struct SearchIndexBuilder {
     public let context: ModelContext
@@ -35,7 +40,14 @@ public struct SearchIndexBuilder {
         for attachment in try context.fetch(FetchDescriptor<Attachment>()) {
             documents.append(attachmentDocument(attachment, templates: templates))
         }
-        return SearchIndex(documents)
+        return SearchIndex(documents.map(Self.redacted))
+    }
+
+    /// The document with every CNP-shaped number and sealed value taken out of what can be matched.
+    static func redacted(_ document: SearchDocument) -> SearchDocument {
+        var result = document
+        result.fields = document.fields.map { SearchField(SearchPrivacy.redacting($0.text), weight: $0.weight) }
+        return result
     }
 
     // MARK: Documents
@@ -65,7 +77,7 @@ public struct SearchIndexBuilder {
                 fields.append(SearchField(value.textValue?.filter { $0.isLetter || $0.isNumber }, weight: weight))
             }
         }
-        for fact in asset.customFacts where !fact.isSensitive {
+        for fact in SecretFields.strippingFacts(asset.customFacts) where !fact.isSensitive {
             fields.append(SearchField("\(fact.label) \(fact.value)", weight: SearchField.Weight.value))
         }
         fields.append(SearchField(asset.notes, weight: SearchField.Weight.note))
@@ -155,21 +167,35 @@ public struct SearchIndexBuilder {
         )
     }
 
+    /// The section a document is filed in: its own, or the one of the deadline,
+    /// visit, part or reading it belongs to.
+    static func section(of attachment: Attachment) -> Asset? {
+        attachment.asset
+            ?? attachment.obligation?.asset
+            ?? attachment.historyEntry?.asset
+            ?? attachment.serviceItem?.entry?.asset
+            ?? attachment.measurement?.asset
+    }
+
     private func attachmentDocument(_ attachment: Attachment, templates: [String: CategoryTemplate]) -> SearchDocument {
         let title = attachment.title ?? attachment.fileName
+        let section = Self.section(of: attachment)
+        let isLocked = isSensitive(section, templates)
+        // Text read off an identity document, or off anything filed in a locked
+        // section, holds personal numbers: never indexed, whatever its kind says.
+        let readText = isLocked || attachment.kind == .identity ? nil : attachment.extractedText
         return SearchDocument(
             id: id(.document, attachment.id), kind: .document, title: title,
-            subtitle: [attachment.asset?.name, attachment.isArchived ? String(localized: "arhivat") : nil].compactMap { $0 }.joined(separator: " · "),
+            subtitle: [section?.name, attachment.isArchived ? String(localized: "arhivat") : nil].compactMap { $0 }.joined(separator: " · "),
             route: .document(attachment.id),
             fields: [
                 SearchField(title, weight: SearchField.Weight.title),
                 SearchField(attachment.fileName, weight: SearchField.Weight.label),
-                SearchField(attachment.asset?.name, weight: SearchField.Weight.label),
-                // The text read off an identity document holds its CNP and birth date: never indexed.
-                SearchField(attachment.kind == .identity ? nil : attachment.extractedText, weight: SearchField.Weight.extracted),
+                SearchField(section?.name, weight: SearchField.Weight.label),
+                SearchField(readText, weight: SearchField.Weight.extracted),
             ],
             date: attachment.documentDate ?? attachment.createdAt,
-            isSensitive: isSensitive(attachment.asset, templates)
+            isSensitive: isLocked
         )
     }
 }

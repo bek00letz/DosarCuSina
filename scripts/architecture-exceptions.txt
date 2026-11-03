@@ -67,8 +67,6 @@ ios/DosarCuSina/Services/Capture/RomanianFieldExtractor.swift:number-parser:3
 ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:number-parser:4
 ios/DosarCuSina/Views/DesignSystem/Fields/DSNumberFields.swift:number-parser
 
-# pasteboard-write: Clipboard.copy moves into the design system beside the value rows.
-ios/DosarCuSina/Views/Shell/ShellSupport.swift:pasteboard-write
 
 # romanian-locale: Locale.dosarDefault everywhere, folding included.
 ios/DosarCuSina/Models/Fields/ChoiceOptions.swift:romanian-locale
@@ -81,7 +79,6 @@ ios/DosarCuSinaWidgets/UpcomingWidget.swift:romanian-locale
 
 # save-outside-unit-of-work: One unit of work around every multi-step flow (agreed fix 7); start-up and migrations save through UnitOfWork too.
 ios/DosarCuSina/App/DosarCuSinaApp.swift:save-outside-unit-of-work
-ios/DosarCuSina/Services/Archive/DossierArchiveService.swift:save-outside-unit-of-work
 ios/DosarCuSina/Services/Documents/DocumentStorage.swift:save-outside-unit-of-work
 ios/DosarCuSina/Services/Examples/ExampleDataService.swift:save-outside-unit-of-work:2
 ios/DosarCuSina/Services/Templates/ChoiceMigration.swift:save-outside-unit-of-work
@@ -104,7 +101,6 @@ ios/DosarCuSina/Views/Section/SectionLists.swift:small-hit-target
 ios/DosarCuSina/Views/Upcoming/ObligationScreen.swift:small-hit-target
 
 # system-error-text: SaveFailure.message and UserFacingError (review finding 9).
-ios/DosarCuSina/Services/Persistence/PersistenceController.swift:system-error-text
 ios/DosarCuSina/Views/Add/AddVisitFlow.swift:system-error-text
 ios/DosarCuSina/Views/Onboarding/OnboardingFlow.swift:system-error-text
 ios/DosarCuSina/Views/Upcoming/ObligationScreen.swift:system-error-text:2

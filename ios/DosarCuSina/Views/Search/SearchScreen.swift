@@ -30,7 +30,7 @@ struct SearchScreen: View {
                             NavigationLink(value: result.document.route) {
                                 SearchResultRow(result: result, query: trimmedQuery, isLocked: vault.isLocked(sectionIsSensitive: result.document.isSensitive))
                             }
-                            .simultaneousGesture(TapGesture().onEnded { recent.add(trimmedQuery) })
+                            .simultaneousGesture(TapGesture().onEnded { recent.add(trimmedQuery, results: results) })
                         }
                     } header: {
                         Label { Text(verbatim: group.kind.groupTitle) } icon: { Image(systemName: group.kind.systemImage) }
@@ -40,7 +40,7 @@ struct SearchScreen: View {
         }
         .navigationTitle(Text("Caută", comment: "Title of the search tab."))
         .searchable(text: $query, prompt: Text("Nume, număr, piesă, meseriaș…", comment: "Search field prompt."))
-        .onSubmit(of: .search) { recent.add(trimmedQuery) }
+        .onSubmit(of: .search) { recent.add(trimmedQuery, results: index?.search(trimmedQuery) ?? []) }
         .onChange(of: query) { _, _ in scheduleSearch() }
         .task { rebuild() }
         .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave)) { _ in rebuild() }

@@ -204,6 +204,35 @@
         }
       }
     },
+    "%lld secțiuni nu și-au găsit locul din copie și sunt acum direct în dosar.": {
+      "comment": "After importing a backup: sections whose parent couldn't be used, with Romanian plural forms.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld secțiune nu și-a găsit locul din copie și e acum direct în dosar."
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld secțiuni nu și-au găsit locul din copie și sunt acum direct în dosar."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de secțiuni nu și-au găsit locul din copie și sunt acum direct în dosar."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld săptămâni": {
       "comment": "A number of weeks, with Romanian plural forms.",
       "localizations": {

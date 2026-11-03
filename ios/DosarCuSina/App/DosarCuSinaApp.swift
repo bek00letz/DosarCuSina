@@ -27,8 +27,10 @@ struct DosarCuSinaApp: App {
                         .modelContainer(container)
                         .environment(\.sideEffects, sideEffects)
                         .task { start(with: container) }
-                case .failed(let message):
-                    StoreRecoveryView(message: message, retry: persistence.retry, startFresh: persistence.startFresh)
+                case .waitingForUnlock:
+                    StoreWaitingView()
+                case .failed(let failure):
+                    StoreRecoveryView(failure: failure, retry: persistence.retry, startFresh: persistence.startFresh)
                 }
             }
             .environment(navigator)

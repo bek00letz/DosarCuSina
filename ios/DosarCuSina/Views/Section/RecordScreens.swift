@@ -355,7 +355,8 @@ private struct DocumentFacts: View {
                 VStack(spacing: 0) {
                     ForEach(Array(rows.enumerated()), id: \.element.key) { index, row in
                         if index > 0 { DSRowSeparator() }
-                        DSActionValueRow(title: Text(verbatim: row.label), value: row.text, action: .copy)
+                        // Read off an identity document: personal, so it stays on this phone and expires.
+                        DSActionValueRow(title: Text(verbatim: row.label), value: row.text, action: .copy, copies: .personal)
                             .padding(.vertical, DS.Space.xs)
                     }
                 }

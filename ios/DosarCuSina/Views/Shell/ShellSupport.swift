@@ -1,9 +1,10 @@
 import SwiftUI
 import SwiftData
 import UIKit
+import UniformTypeIdentifiers
 
 // Small pieces every binder screen shares: the side-effects coordinator in the
-// environment, human error alerts, photo thumbnails and copy-to-clipboard.
+// environment, human error alerts, photo thumbnails and phone links.
 
 extension EnvironmentValues {
     /// The pipeline that turns saved data into reminders, badge and widgets.
@@ -109,14 +110,7 @@ extension Asset {
     }
 }
 
-// MARK: - Copy and call
-
-@MainActor
-enum Clipboard {
-    static func copy(_ text: String) {
-        UIPasteboard.general.string = text
-    }
-}
+// MARK: - Call
 
 enum PhoneLinks {
     /// A `tel:` link for a phone number, keeping only the digits and a leading plus.

@@ -219,7 +219,7 @@
             "items": {
               "type": "object",
               "required": ["label", "value"],
-              "properties": { "id": { "$ref": "#/$defs/uuid" }, "label": { "type": "string" }, "value": { "type": "string" }, "isSensitive": { "type": "boolean" } }
+              "properties": { "id": { "$ref": "#/$defs/uuid" }, "label": { "type": "string" }, "value": { "type": "string" }, "isSensitive": { "type": "boolean" }, "isSecret": { "type": "boolean", "description": "Never written by a writer; ignored by a reader." } }
             }
           },
           "photoPath": { "$ref": "#/$defs/path" },

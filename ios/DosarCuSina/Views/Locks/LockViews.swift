@@ -109,7 +109,7 @@ struct AppLockView: View {
     }
 }
 
-/// Hides the screen in the app switcher while the app lock is on.
+/// Hides the screen in the app switcher (`LockCover.privacy`).
 struct PrivacyCover: View {
     var body: some View {
         ZStack {

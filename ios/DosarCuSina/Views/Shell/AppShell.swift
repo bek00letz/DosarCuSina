@@ -2,7 +2,9 @@ import SwiftUI
 import SwiftData
 
 /// The app once the store is open: four labelled tabs, every route through one
-/// router, onboarding once, and the app lock over everything when it is on.
+/// router, onboarding once, and the app lock over everything when it is on, in
+/// a window of its own above every sheet (`LockWindowHost`). Links and opened
+/// files wait until the app is unlocked.
 ///
 /// Each tab is wrapped in a `NavigationStack` here, with every `AppRoute`
 /// registered as a destination, so any screen can push with
@@ -14,6 +16,17 @@ struct AppShell: View {
     @Environment(\.scenePhase) private var scenePhase
 
     @State private var router = ShellRouter()
+    @Query(filter: #Predicate<CategoryTemplate> { $0.isSensitive }) private var lockedCategories: [CategoryTemplate]
+
+    private var cover: LockCover? {
+        LockCover.decide(
+            appLockEnabled: preferences.appLockEnabled,
+            anySectionLocked: !lockedCategories.isEmpty,
+            isSessionUnlocked: vault.isSessionUnlocked,
+            isActive: scenePhase == .active,
+            isAuthenticating: vault.isAuthenticating
+        )
+    }
 
     var body: some View {
         TabView(selection: Binding(get: { router.tab }, set: { router.select($0) })) {
@@ -59,17 +72,10 @@ struct AppShell: View {
             }
             .environment(router)
         }
-        .overlay {
-            if vault.isAppLocked {
-                AppLockView().transition(.opacity)
-            } else if preferences.appLockEnabled, scenePhase != .active, !vault.isAuthenticating {
-                // Hides the screen in the app switcher, but not behind a Face ID prompt.
-                PrivacyCover().transition(.opacity)
-            }
-        }
-        .dsAnimation(value: vault.isAppLocked)
+        .background(LockWindowHost(cover: cover, scenePhase: scenePhase, vault: vault))
         .task { consumeRoute() }
         .onChange(of: navigator.pendingRoute) { _, _ in consumeRoute() }
+        .onChange(of: vault.isAppLocked) { _, _ in consumeRoute() }
     }
 
     @ViewBuilder

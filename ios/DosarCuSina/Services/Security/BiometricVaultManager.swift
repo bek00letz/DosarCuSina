@@ -154,6 +154,15 @@ public final class BiometricVaultManager {
         }
     }
 
+    /// Asks for Face ID or the passcode before the whole binder leaves the app
+    /// or is replaced (a backup, "Înlocuiește tot"), whenever any lock is on.
+    /// It asks every time, even with the session open, and never opens or
+    /// closes the session. With no lock on, nothing is asked.
+    public func confirmWholeBinder(anySectionLocked: Bool, reason: String) async -> UnlockResult {
+        guard appLockEnabled() || anySectionLocked else { return .success }
+        return await authenticateForReveal(reason: reason)
+    }
+
     /// Closes the session now.
     public func lock() {
         isSessionUnlocked = false

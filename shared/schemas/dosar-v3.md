@@ -9,6 +9,7 @@ plain ZIP file (DEFLATE or STORE entries) with JSON inside, readable with
 - **MIME type:** `application/vnd.dosarcusina.dossier+zip`
 - **JSON Schema:** [`dosar-v3.schema.json`](dosar-v3.schema.json)
 - **Golden fixtures:** [`../fixtures/dosar-v3/household`](../fixtures/dosar-v3/household) (v3) and [`../fixtures/dosar-v2/ios-export`](../fixtures/dosar-v2/ios-export) (v2, still importable). Every implementation must import both.
+- **With a password:** the same ZIP, encrypted whole; see [Password-protected archives](#password-protected-archives).
 
 ## Layout
 
@@ -58,6 +59,12 @@ Entry paths must be relative, use `/`, and contain no empty, `.` or `..`
 components, no `\`, and no `:`. Readers enforce size limits; the iOS reader
 accepts at most 20 000 entries, 128 MB per entry and 512 MB in total.
 
+Archives are plain ZIP, never ZIP64: at most 65 535 entries and 4 GB. A
+writer refuses a household larger than that rather than write a damaged
+file; a reader refuses an archive marked as ZIP64. Entry dates run from 1980
+to 2107; a writer puts an earlier or later date at the nearest end (the real
+export time is `manifest.exportedAt`).
+
 ## `manifest.json`
 
 ```json
@@ -98,9 +105,13 @@ Keys from earlier builds:
 
 - **`warranty`:** became `purchase`. Readers move such assets over and rename their fields (`warranty.purchaseDate` → `purchase.date`, `warranty.expiry` → `purchase.warrantyUntil`, other `warranty.*` → `purchase.*`).
 - **`rental`:** retired. If assets still use it, readers keep it as a custom category. Custom keys
-start with `custom.`. For a built-in template, a reader keeps its own
-definition unless the archive's `version` is higher, and always applies the
-household preferences (`homeOrder`, `isOnHome`, `isSensitive`).
+start with `custom.`. A built-in template always takes the reader's own
+definition, whatever the archive says about it (`name`, `sections`, field
+types, `blueprints`, `version`, `isBuiltIn`): a key that names a built-in is a
+built-in. From the archive, a reader takes only the household preferences:
+`homeOrder`, `isOnHome` and `isSensitive`, the last one only towards locked (a
+category locked on the device stays locked). For a custom template on both
+sides, a field that is `secret` or `isSensitive` on the device stays so.
 
 - **Section:** `key`, `title`, `fields`.
 - **Field:** `key`, `label`, `type`, `role`?, `isEssential`, `isSensitive`, `options`?, `unit`?, `placeholder`?, `defaultValue`?, `derivation`?, `appliesWhen`?, `footnote`?.
@@ -110,7 +121,7 @@ household preferences (`homeOrder`, `isOnHome`, `isSensitive`).
   - **`derivation`:** `{"type": "addMonths", "date": "purchase.date", "months": "purchase.warrantyMonths"}`. The value is worked out again whenever one of its inputs changes, or while the field is empty. A value the person sets by hand stays until an input changes.
   - **Options:** `[{"key": "fuel.diesel", "label": "Motorină", "aliases": ["Diesel"]}]`. Readers also accept a plain array of strings, from older definitions, and use each string as both key and label. An option may carry `appliesWhen` (same shape as above): it is offered only while that value matches, so a document's variants follow its type.
   - **Types:** `text`, `longText`, `number`, `year`, `money`, `date`, `expiryDate`, `toggle`, `choice`, `multiChoice`, `url`, `phone`, `email`, `address`, `plate`, `vin`, `microchip`, `iban`, `metric`, `secret`.
-  - **`secret`:** a code kept hidden, such as an identity card's PIN. Its values are never written to an archive: writers leave them out, and readers ignore any they find and keep the ones already on the device for the same asset.
+  - **`secret`:** a code kept hidden, such as an identity card's PIN. Its values are never written to an archive: writers leave them out, and readers ignore any they find and keep the ones already on the device for the same asset, in both import modes. A value sealed on the device (text starting with `sealed:v1:`) is a secret wherever it sits, so writers never write one under any field.
   - **Roles:** `identifier`, `subtitle`, `heroMetric`, `keyFact`, `documentNumber`, `holder`, `issuer`, `expiryDate`, `startDate`, `purchaseDate`, `purchasePrice`, `retailer`, `warrantyUntil`, `location`.
 - **Component:** `key`, `name`, `group`, `synonyms`.
 - **Blueprint:** `key`, `title`, `kind`, `recurrence`, `firstDue`, `reminders`, `reminderVariants`?, `appliesWhen`?, `estimatedCost`?, `isSuggested`, `note`?.
@@ -161,10 +172,16 @@ household preferences (`homeOrder`, `isOnHome`, `isSensitive`).
 
 `customFacts` holds free rows under Date importante:
 `[{"id": "…", "label": "Loc în port", "value": "Ponton 3", "isSensitive": false}]`.
+A secret row (`"isSecret": true`, a code such as an alarm or Wi-Fi password)
+is kept only on the device: writers leave it out, readers ignore any they
+find and keep the device's own secret rows for the same asset.
 
 `parentId` files the asset under another: a tenancy under its property, a
 product under a home, a document under its holder. Deleting a parent never
-deletes its children unless the person says so.
+deletes its children unless the person says so. A reader links parents with
+the same rule as the app: an asset is never filed under itself or under
+anything filed under it. A parent that would do that, or that is missing,
+leaves the asset at the top level.
 
 `values` maps field keys to typed values:
 
@@ -262,8 +279,35 @@ diacritics, and words joined by `-`.
 
 ## Import modes
 
-- **Replace:** removes everything, then writes the archive. It is all or nothing: a failure leaves the existing data untouched.
+- **Replace:** removes everything, then writes the archive. It is all or nothing: a failure leaves the existing data untouched. Secrets the device keeps (PIN codes, secret rows) stay with their records, and locks stay on.
 - **Merge:** keeps local data. Templates, assets, obligations and providers update when the archive's `updatedAt` is newer. History entries, line items, measurements and attachments are added when their `id` is new.
+
+In both modes a timestamp later than the moment of import is taken as now.
+
+## Password-protected archives
+
+An archive can be protected with a password. The file keeps the `.dosar`
+extension and type; its bytes are the plain ZIP above, encrypted whole. All
+integers are big-endian.
+
+| Bytes | Contents |
+| :--- | :--- |
+| 8 | `DOSARENC` (ASCII), which tells it from a ZIP |
+| 1 | Version: `1` |
+| 1 | Key derivation: `1` = PBKDF2-HMAC-SHA256 |
+| 4 | Iterations (the iOS writer uses 600 000; readers accept 1 to 10 000 000) |
+| 16 | Salt, random |
+| 4 | Chunk size in bytes (the iOS writer uses 1 MiB) |
+| 8 | Nonce prefix, random |
+| rest | The ZIP in chunks of the chunk size (the last may be shorter, and is the only one when the ZIP fits in one), each encrypted with AES-256-GCM and followed by its 16-byte tag |
+
+The 32-byte key is PBKDF2-HMAC-SHA256 of the password (UTF-8, Unicode
+normalization form C) with the salt and the iterations. Chunk `i` (from 0)
+uses the 12-byte nonce `prefix ‖ i` (4 bytes) and authenticates, as
+additional data, the whole 42-byte header followed by one byte: `1` for the
+last chunk and `0` for the others. A reader that fails to open any chunk
+stops: the password is wrong or the file was changed, cut or reordered.
+The password is never stored in the archive or on the device.
 
 ## Changes from version 2
 
