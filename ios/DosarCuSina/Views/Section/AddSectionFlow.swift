@@ -198,7 +198,7 @@ struct CustomSectionStep: View {
     /// The first version's step chose pockets one by one. Off: a category of one's own
     /// answers a few plain questions instead (`CategorySwitches`, `CustomCategoryForm`).
     /// Kept as a way back until the switches are proven; remove it with the owner's OK.
-    static let offersPocketList = false
+    nonisolated static let offersPocketList = false
 
     private var draft: Binding<CustomSectionDraft> {
         Binding { model.custom ?? CustomSectionDraft() } set: { model.custom = $0 }
