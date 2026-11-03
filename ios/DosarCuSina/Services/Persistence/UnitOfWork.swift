@@ -12,8 +12,16 @@ import SwiftData
 /// leaves half a filing behind (a person without their document, a section
 /// without its photo).
 ///
-/// Work that must only happen once the changes are kept, such as releasing a
-/// capture's pages, goes in `afterCommit(in:_:)`.
+/// A unit belongs to the code that opened it, and only to it:
+/// - **It never waits.** `perform` takes synchronous work only. Whatever a step
+///   needs that takes time (a capture's pages, Face ID, a reading) is gathered
+///   before the unit opens. While a unit is open nothing else runs on the main
+///   actor, so another screen's save can't slip into it, and it can't be rolled
+///   back with it: that save happens before or after, on its own.
+/// - **A rollback takes back only the unit's own changes.** Changes someone else
+///   left unsaved on the context are saved before the unit opens.
+///
+/// Work that must only happen once the changes are kept goes in `afterCommit(in:_:)`.
 @MainActor
 public enum UnitOfWork {
     private final class Scope {
@@ -47,23 +55,8 @@ public enum UnitOfWork {
     /// and the unit saves once at the end. If `work` throws or the save fails,
     /// every change made inside it is rolled back and the error is rethrown.
     /// A unit opened inside another one joins it.
-    public static func perform<T>(in context: ModelContext, _ work: () async throws -> T) async throws -> T {
-        guard let scope = begin(context) else { return try await work() }
-        let result: T
-        do {
-            result = try await work()
-        } catch {
-            abort(context)
-            throw error
-        }
-        try commit(context)
-        for action in scope.afterCommit { await action() }
-        return result
-    }
-
-    /// The same as `perform(in:_:)`, for work that doesn't wait on anything.
     public static func perform<T>(in context: ModelContext, _ work: () throws -> T) throws -> T {
-        guard let scope = begin(context) else { return try work() }
+        guard let scope = try begin(context) else { return try work() }
         let result: T
         do {
             result = try work()
@@ -80,9 +73,11 @@ public enum UnitOfWork {
     }
 
     /// Opens a unit on the context, or returns nil when one is already open (the caller joins it).
-    private static func begin(_ context: ModelContext) -> Scope? {
+    /// What another screen left unsaved is saved first, so this unit's rollback can't take it.
+    private static func begin(_ context: ModelContext) throws -> Scope? {
         let key = ObjectIdentifier(context)
         guard open[key] == nil else { return nil }
+        if context.hasChanges { try context.save() }
         let scope = Scope()
         open[key] = scope
         return scope
@@ -111,11 +106,11 @@ public enum UnitOfWork {
 
     /// Runs `action` once the open unit of work has saved, or right away when
     /// no unit is open. Nothing runs when the unit fails.
-    public static func afterCommit(in context: ModelContext, _ action: @escaping @MainActor () async -> Void) async {
+    public static func afterCommit(in context: ModelContext, _ action: @escaping @MainActor () async -> Void) {
         if let scope = open[ObjectIdentifier(context)] {
             scope.afterCommit.append(action)
         } else {
-            await action()
+            Task { @MainActor in await action() }
         }
     }
 }

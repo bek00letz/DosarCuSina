@@ -437,6 +437,8 @@ public struct CloudCaptureExtractor: CaptureSemanticExtracting {
         guard let page = input.firstPage, let jpeg = Self.jpeg(page) else { return SemanticExtraction(kind: nil, fields: []) }
         let schema = CloudSchema(kind: input.kind)
         CaptureLog.engine.info("Reading with \(config.provider.rawValue, privacy: .public), \(schema.fields.count) fields")
+        // A capture closed by now sends nothing.
+        try Task.checkCancellation()
         let answer = try await client.read(CloudReadingRequest(instructions: schema.instructions, schema: schema.json, jpeg: jpeg), config: config)
         let fields = CloudAnswerMapper.fields(from: answer, schema: schema, recognizedText: input.text, today: input.today, resolver: resolver)
         return SemanticExtraction(kind: CloudAnswerMapper.kind(from: answer), fields: fields)

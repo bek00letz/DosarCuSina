@@ -24,6 +24,10 @@ struct CaptureReviewView: View {
     var rereadResult: CaptureResult?
     /// Why the last reading again didn't work.
     var readAgainError: String?
+    /// "Citește automat" wants to send this identity document's photo: ask first.
+    var asksToSendToProvider = false
+    /// The answer to "Trimit poza la <provider>?".
+    var onAnswerSending: ((Bool) -> Void)?
     let onClose: (CaptureFlowResult) -> Void
 
     init(
@@ -34,6 +38,8 @@ struct CaptureReviewView: View {
         rereading: CaptureReread? = nil,
         rereadResult: CaptureResult? = nil,
         readAgainError: String? = nil,
+        asksToSendToProvider: Bool = false,
+        onAnswerSending: ((Bool) -> Void)? = nil,
         onClose: @escaping (CaptureFlowResult) -> Void
     ) {
         self._review = State(initialValue: review)
@@ -43,6 +49,8 @@ struct CaptureReviewView: View {
         self.rereading = rereading
         self.rereadResult = rereadResult
         self.readAgainError = readAgainError
+        self.asksToSendToProvider = asksToSendToProvider
+        self.onAnswerSending = onAnswerSending
         self.onClose = onClose
     }
 
@@ -60,6 +68,8 @@ struct CaptureReviewView: View {
     @State private var isShowingPages = false
     @State private var backSource: CaptureSource?
     @State private var backError: String?
+    /// The person added something to an example section: "Păstrezi … ca al tău?".
+    @State private var exampleQuestion: ExampleSectionQuestion?
 
     private var templatesByKey: [String: CategoryTemplate] {
         Dictionary(templates.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
@@ -76,7 +86,7 @@ struct CaptureReviewView: View {
                 if let errorMessage {
                     DSNotice(.error, title: "Nu s-a salvat", message: LocalizedStringKey(errorMessage))
                 }
-                DSPrimaryButton(review.duplicateAttachmentID == nil ? "Salvează" : "Salvează doar datele", systemImage: "checkmark") {
+                DSPrimaryButton("Salvează", systemImage: "checkmark") {
                     requestSave()
                 }
                 .disabled(isSaving)
@@ -110,13 +120,8 @@ struct CaptureReviewView: View {
         .task(id: review.documentID) { await loadThumbnail() }
         .task(id: review.result.id) { await explainCloudFailure() }
         .onChange(of: rereadResult?.id) { _, _ in mergeReread() }
-        .onDisappear {
-            // Closing without saving drops the pages from capture's memory. Not while the
-            // camera covers the screen for the back of the card: the review comes back.
-            if !isSaving, backSource == nil, !isShowingPages, let id = review.documentID {
-                Task { await CaptureDocumentStore.shared().discard(id: id) }
-            }
-        }
+        .examplePrompt($exampleQuestion) { save() }
+        // The pages belong to the capture session, which lets go of them when the capture ends.
     }
 
     // MARK: Document
@@ -146,7 +151,7 @@ struct CaptureReviewView: View {
                     Text(verbatim: CaptureMapping.kindTitle(review.kind))
                         .dsFont(.title)
                     Menu {
-                        Picker(selection: $review.kind) {
+                        Picker(selection: Binding(get: { review.kind }, set: { chooseKind($0) })) {
                             ForEach(CaptureDocumentKind.allCases, id: \.self) { kind in
                                 Text(verbatim: CaptureMapping.kindTitle(kind)).tag(kind)
                             }
@@ -156,10 +161,9 @@ struct CaptureReviewView: View {
                             .font(.subheadline.weight(.medium))
                             .frame(minHeight: 44)
                     }
-                    .onChange(of: review.kind) { _, _ in review.kindChanged(assets: assets) }
                     ForEach(review.kindAlternatives, id: \.self) { alternative in
                         CaptureAlternativeNote(text: kindAlternativeText(alternative)) {
-                            withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { review.useKind(alternative) }
+                            chooseKind(alternative.value, from: alternative)
                         }
                         .transition(.opacity)
                     }
@@ -168,6 +172,12 @@ struct CaptureReviewView: View {
                 }
             }
         }
+    }
+
+    /// Another kind, the person's choice: the page is read again as that kind, keeping their edits.
+    private func chooseKind(_ kind: CaptureDocumentKind, from alternative: CaptureAlternative<CaptureDocumentKind>? = nil) {
+        let read = review.choosingKind(kind, from: alternative, assets: assets, context: context)
+        withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { review = read }
     }
 
     /// "Pe telefon părea: Factură de utilități", beside a kind another reader didn't keep.
@@ -235,9 +245,26 @@ struct CaptureReviewView: View {
         if let cloudMessage {
             DSNotice(.warning, title: "\(cloudProvider.name) nu a citit actul", message: LocalizedStringKey(cloudMessage))
         }
+        if asksToSendToProvider, let onAnswerSending {
+            // An identity document's photo never leaves the phone by itself: one question, for this document.
+            VStack(alignment: .leading, spacing: DS.Space.s) {
+                DSNotice(.info, title: "Trimit poza la \(cloudProvider.name)?",
+                         message: "Nu sunt sigur ce am citit. \(cloudProvider.name) poate citi actul mai bine, cu cheia ta. Fără un da, poza rămâne pe telefon.")
+                DSSecondaryButton("Trimite poza", systemImage: "sparkles") { onAnswerSending(true) }
+                DSSecondaryButton("Nu, rămâne pe telefon", systemImage: "iphone") { onAnswerSending(false) }
+                if let policy = cloudProvider.dataPolicyURL {
+                    Link(destination: policy) {
+                        Text("Cum folosește \(cloudProvider.name) ce trimiți", comment: "Link to the AI provider's data-use terms.")
+                            .frame(minHeight: 44, alignment: .leading)
+                    }
+                    .dsFont(.footnote)
+                }
+            }
+            .transition(.opacity)
+        }
         // Offered whenever a provider is set up, whatever the phone read: a confident
         // reading can be wrong too, and only a second opinion can tell.
-        if let onReadWithCloud, CaptureRunner.hasCloudKey, !review.usedCloudModel {
+        if let onReadWithCloud, CaptureRunner.hasCloudKey, !review.usedCloudModel, !asksToSendToProvider {
             if rereading == .cloud {
                 DSDelayedProgress(label: "Citesc cu \(cloudProvider.shortName)…")
                     .frame(maxWidth: .infinity, minHeight: 44)
@@ -281,6 +308,24 @@ struct CaptureReviewView: View {
                     ForEach(fields) { field in
                         if let index = review.fields.firstIndex(where: { $0.id == field.id }) {
                             CaptureFieldEditor(field: $review.fields[index], kind: review.kind)
+                        }
+                    }
+                    let addable = review.addableKeys
+                    if !addable.isEmpty {
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text("Nu am găsit pe act:")
+                                .dsFont(.footnote)
+                            ForEach(addable, id: \.self) { key in
+                                Button {
+                                    withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { review.addField(key) }
+                                } label: {
+                                    Label("Adaugă: \(CaptureMapping.label(for: key))", systemImage: "plus.circle")
+                                        .font(.subheadline.weight(.medium))
+                                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                                        .contentShape(.rect)
+                                }
+                                .buttonStyle(.borderless)
+                            }
                         }
                     }
                     if review.showsLineItems {
@@ -418,6 +463,9 @@ struct CaptureReviewView: View {
                 let outcome = try await CaptureFiler(context: context).save(review)
                 let place = outcome.asset?.name
                 onClose(.filed(message: place.map { "Salvat în \($0)." } ?? "Actul e salvat.", assetID: outcome.asset?.id))
+            } catch let question as ExampleSectionQuestion {
+                isSaving = false
+                exampleQuestion = question
             } catch {
                 isSaving = false
                 errorMessage = SaveFailure.message(for: error, formKept: true)
@@ -432,15 +480,11 @@ struct CaptureReviewView: View {
     }
 
     /// Merges the newest reading into the review, keeping everything the person changed.
-    /// Pages a reading with added pages replaced are let go.
+    /// The capture session lets go of pages a reading with added pages replaced.
     private func mergeReread() {
         guard let result = rereadResult, result.id != review.result.id else { return }
-        let previousDocument = review.documentID
         let merged = CaptureReview(result: result, assets: assets, context: context).carryingEdits(from: review, assets: assets)
         withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { review = merged }
-        if let previousDocument, previousDocument != merged.documentID {
-            Task { await CaptureDocumentStore.shared().discard(id: previousDocument) }
-        }
     }
 
     /// Says what went wrong with the cloud reading: offline, the key, the quota, the model.
@@ -514,22 +558,45 @@ private struct CaptureFieldEditor: View {
         }
     }
 
-    @ViewBuilder private func valueEditor(_ title: LocalizedStringKey) -> some View {
+    /// What kind of editor a value needs: from the value read, or, for an expected field the
+    /// person added empty, from what that field holds. It stays the same while they type,
+    /// so the editor keeps its focus.
+    private enum EditorKind {
+        case date
+        case money(currencyCode: String)
+        case text
+    }
+
+    private var editorKind: EditorKind {
         switch field.value {
-        case .day?:
+        case .day?: .date
+        case .money(let money)?: .money(currencyCode: money.currencyCode)
+        case nil:
+            switch CloudSchema.format(of: field.key) {
+            case .date: .date
+            case .money: .money(currencyCode: Money.defaultCurrency)
+            default: .text
+            }
+        default: .text
+        }
+    }
+
+    @ViewBuilder private func valueEditor(_ title: LocalizedStringKey) -> some View {
+        switch editorKind {
+        case .date:
             DSDateField(title, date: Binding(
                 get: { field.value?.day?.date() },
                 set: { field.confirm($0.map { .day(CaptureDay(date: $0)) }) }
             ))
-        case .money(let money)?:
+        case .money(let currencyCode):
             DSMoneyField(title, amount: Binding(
                 get: { field.value?.money?.amount },
-                set: { amount in field.confirm(amount.map { .money(CaptureMoney(amount: $0, currencyCode: money.currencyCode)) }) }
+                set: { amount in field.confirm(amount.map { .money(CaptureMoney(amount: $0, currencyCode: field.value?.money?.currencyCode ?? currencyCode)) }) }
             ), currencyCode: Binding(
-                get: { field.value?.money?.currencyCode ?? money.currencyCode },
+                get: { field.value?.money?.currencyCode ?? currencyCode },
                 set: { code in if let amount = field.value?.money?.amount { field.confirm(.money(CaptureMoney(amount: amount, currencyCode: code))) } }
             ))
-        default:
+        case .text:
             DSTextField(title, text: Binding(
                 get: { Self.text(of: field.value) },
                 set: { text in field.confirm(Self.value(text, like: field.value)) }

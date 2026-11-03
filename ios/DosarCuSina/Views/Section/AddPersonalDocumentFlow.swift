@@ -129,6 +129,8 @@ private struct PersonalDocumentForm: View {
     @State private var errorMessage: String?
     @State private var saveRequest: ReminderSaveRequest?
     @State private var savedCount = 0
+    /// A document for an example person asks "Păstrezi … ca a ta?" first.
+    @State private var exampleQuestion: ExampleSectionQuestion?
 
     init(holder: Asset, draft: Binding<PersonalDocumentDraft>, onSaved: @escaping (Asset) -> Void) {
         self.holder = holder
@@ -166,6 +168,7 @@ private struct PersonalDocumentForm: View {
             }
         }
         .reminderPermissionGate($saveRequest)
+        .examplePrompt($exampleQuestion) { save() }
         .sensoryFeedback(.success, trigger: savedCount)
     }
 
@@ -297,6 +300,8 @@ private struct PersonalDocumentForm: View {
             savedCount += 1
             draft = PersonalDocumentDraft()
             onSaved(document)
+        } catch let question as ExampleSectionQuestion {
+            exampleQuestion = question
         } catch {
             errorMessage = SaveFailure.message(for: error, formKept: true)
         }

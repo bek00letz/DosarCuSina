@@ -203,11 +203,6 @@ public struct TemplateStore {
     }
 
     private func save() throws {
-        do {
-            try UnitOfWork.save(context)
-        } catch {
-            context.rollback()
-            throw error
-        }
+        try UnitOfWork.save(context)
     }
 }

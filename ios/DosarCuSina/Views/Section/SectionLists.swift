@@ -65,6 +65,9 @@ struct ObligationListScreen: View {
     @State private var datePrompt: ObligationBlueprint?
     @State private var isAddingCustom = false
     @State private var error: UserFacingError?
+    /// Adding to an example asks "Păstrezi … ca al tău?"; yes adds it again.
+    @State private var exampleQuestion: ExampleSectionQuestion?
+    @State private var retryAfterKeeping: (() -> Void)?
     @State private var saveRequest: ReminderSaveRequest?
     @State private var addedCount = 0
 
@@ -121,6 +124,7 @@ struct ObligationListScreen: View {
             CustomObligationSheet(asset: asset)
         }
         .userErrorAlert($error)
+        .examplePrompt($exampleQuestion) { retryAfterKeeping?() }
         .reminderPermissionGate($saveRequest)
         .sensoryFeedback(.success, trigger: addedCount)
     }
@@ -148,6 +152,9 @@ struct ObligationListScreen: View {
         do {
             try ObligationActions(context: context).create(from: blueprint, for: asset, firstDue: firstDue)
             addedCount += 1
+        } catch let question as ExampleSectionQuestion {
+            retryAfterKeeping = { performCreate(blueprint, firstDue: firstDue) }
+            exampleQuestion = question
         } catch {
             self.error = UserFacingError(error)
         }
@@ -263,6 +270,9 @@ struct CustomObligationSheet: View {
     @State private var repeats: Repeat? = .never
     @State private var reveals = false
     @State private var error: UserFacingError?
+    /// Adding to an example asks "Păstrezi … ca al tău?"; yes adds it again.
+    @State private var exampleQuestion: ExampleSectionQuestion?
+    @State private var retryAfterKeeping: (() -> Void)?
     @State private var saveRequest: ReminderSaveRequest?
 
     var body: some View {
@@ -288,6 +298,7 @@ struct CustomObligationSheet: View {
                 }
             }
             .userErrorAlert($error)
+            .examplePrompt($exampleQuestion) { retryAfterKeeping?() }
             .reminderPermissionGate($saveRequest)
         }
         .dsDiscardGuard(hasChanges: !title.isEmpty || date != nil)
@@ -310,6 +321,9 @@ struct CustomObligationSheet: View {
                 reminders: Self.reminders
             )
             dismiss()
+        } catch let question as ExampleSectionQuestion {
+            retryAfterKeeping = { performSave(name: name, date: date) }
+            exampleQuestion = question
         } catch {
             self.error = UserFacingError(error)
         }

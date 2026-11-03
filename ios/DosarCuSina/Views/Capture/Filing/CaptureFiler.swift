@@ -1,15 +1,22 @@
 import Foundation
 import SwiftData
 
-/// The one save path for a reviewed capture. It only orchestrates the engine:
-/// - the section: `AssetActions.create` or `AssetActions.update` with the values read;
-/// - the deadline: `ObligationActions` (complete the old cycle and move to the new
-///   date, or create it from the template's blueprint);
-/// - who issued it: `ProviderActions`;
+/// The one filer for every captured document, whichever way it came in: the review's
+/// "Salvează", "Am rezolvat" with a photo of the new document, and a visit with its
+/// invoice (`Intent`). Each is one unit of work, and each writes the same way:
+/// - the values read, onto the section: `AssetActions.create` or `AssetActions.update`;
+/// - the deadline: one rule (`renew`) for a new document's date, through `ObligationActions`
+///   (close the cycle that was due and move to the new date, write the field a document's
+///   expiry drives, or create it from the template's blueprint);
+/// - who issued it: `ProviderActions`, an existing firm by name before a new one;
 /// - a bill or a contract: its ongoing contract, a subscription found by
 ///   `SubscriptionMatcher` or made under its home; a bill is logged in its history
 ///   (`HistoryActions`) with its own due date to pay by;
-/// - the document itself: `AttachmentActions.fileCaptured`, linked to all of the above.
+/// - the document itself: `AttachmentActions.fileCaptured`, new pages or a kept copy
+///   that moves here, linked to all of the above.
+///
+/// What takes time happens before the unit opens: Face ID for a locked section the
+/// filing writes into or moves a document out of, and the pages from capture's store.
 /// Side effects (reminders, widgets) follow every save through `SideEffectsCoordinator`.
 @MainActor
 struct CaptureFiler {
@@ -17,6 +24,51 @@ struct CaptureFiler {
     var store: CaptureDocumentStore = .shared()
     var calendar: Calendar = .current
     var now: () -> Date = { Date() }
+    /// Opens locked sections before the filing writes into one.
+    var vault: BiometricVaultManager = .shared
+
+    /// What the person is filing.
+    enum Intent {
+        /// The review's "Salvează".
+        case review(CaptureReview)
+        /// "Am rezolvat" with what the person has in hand.
+        case completion(Completion)
+        /// A visit (a service, a repair, a check-up) with its invoice.
+        case visit(Visit)
+    }
+
+    /// "Am rezolvat": the date, what it cost, and optionally the new document (the new
+    /// policy, the ITP report), whose date sets the next deadline and whose values
+    /// update the section, as a review would.
+    struct Completion {
+        var obligation: Obligation
+        var date: Date
+        var cost: Money?
+        var document: CaptureResult?
+    }
+
+    /// A visit from the visit form, with the invoice it was read from.
+    struct Visit {
+        enum ProviderChoice {
+            case none
+            case existing(Provider)
+            /// Typed or read off the invoice (with the CUI read, if any): an existing firm with
+            /// this name is used before a new one.
+            case named(String, trade: ProviderTrade, taxID: String? = nil)
+        }
+        var asset: Asset
+        var kind: HistoryKind
+        var occurredAt: Date
+        var checklist: [HistoryActions.ChecklistItem]
+        var extraItems: [LineItemDraft] = []
+        var totalCost: Money?
+        var odometer: Double?
+        var provider: ProviderChoice = .none
+        var rating: Int?
+        var document: CapturedDocumentRef?
+        var documentTitle: String?
+        var documentText: String?
+    }
 
     struct Outcome {
         var asset: Asset?
@@ -26,18 +78,33 @@ struct CaptureFiler {
         var completion: HistoryEntry?
         /// A bill, logged in its subscription's history.
         var bill: HistoryEntry?
+        /// The visit logged.
+        var visit: HistoryEntry?
+        /// The deadline's next date, when the filing moved one.
+        var nextDue: CalendarDay?
+        /// Where a kept document was before it moved here, to take the move back.
+        var movedDocument: RefileReceipt?
     }
 
     enum FilingError: LocalizedError, Equatable {
         case missingSection
         case missingName
+        /// The section is locked and wasn't opened.
+        case locked
 
         var errorDescription: String? {
             switch self {
             case .missingSection: return String(localized: "Secțiunea aleasă nu mai există. Alege alta.")
             case .missingName: return String(localized: "Scrie un nume pentru secțiunea nouă.")
+            case .locked: return String(localized: "Secțiunea e protejată. Deschide-o cu Face ID sau cu codul, apoi salvează.")
             }
         }
+    }
+
+    /// The next deadline printed on a captured document (expiry, due date, next dose).
+    static func nextDay(in result: CaptureResult) -> CalendarDay? {
+        let keys: [CaptureFieldKey] = [.expiryDate, .nextDoseDate, .warrantyUntil, .dueDate]
+        return keys.lazy.compactMap { result.field($0)?.value.day }.first.map(CaptureMapping.calendarDay)
     }
 
     // MARK: Plan
@@ -103,13 +170,45 @@ struct CaptureFiler {
 
     // MARK: Save
 
-    /// One "Salvează" is one unit of work: the section, the deadline, who issued it
-    /// and the document are all kept, or none of them is (see `UnitOfWork`).
+    /// The review's "Salvează": the section, the deadline, who issued it and the
+    /// document are all kept, or none of them is (see `UnitOfWork`).
     func save(_ review: CaptureReview) async throws -> Outcome {
-        try await UnitOfWork.perform(in: context) { try await fileAll(review) }
+        try await file(.review(review))
     }
 
-    private func fileAll(_ review: CaptureReview) async throws -> Outcome {
+    /// Files what the person confirmed, as one unit of work.
+    func file(_ intent: Intent) async throws -> Outcome {
+        let ref = documentRef(of: intent)
+        let documents = AttachmentActions(context: context, calendar: calendar)
+        // What takes time comes first: opening a locked section, then the pages.
+        try await openLockedSections(for: intent, keptDocument: ref?.keptAttachmentID.flatMap(documents.attachment(id:)))
+        var document: CapturedDocument?
+        if let ref { document = try await documents.resolve(ref, from: store) }
+        // From here nothing waits: one step, everything or nothing.
+        let outcome = try UnitOfWork.perform(in: context) {
+            switch intent {
+            case .review(let review): try fileReview(review, document: document)
+            case .completion(let completion): try fileCompletion(completion, document: document)
+            case .visit(let visit): try fileVisit(visit, document: document)
+            }
+        }
+        // Kept: this capture's hold on its pages ends (they're in the binder now).
+        if let ref { await store.release(ref) }
+        return outcome
+    }
+
+    /// The document an intent files, if any.
+    private func documentRef(of intent: Intent) -> CapturedDocumentRef? {
+        switch intent {
+        case .review(let review): review.document
+        case .completion(let completion): completion.document?.document
+        case .visit(let visit): visit.document
+        }
+    }
+
+    // MARK: Intents
+
+    private func fileReview(_ review: CaptureReview, document: CapturedDocument?) throws -> Outcome {
         let templates = try TemplateStore(context: context).templatesByKey()
         var outcome = Outcome()
         let today = CalendarDay(now(), calendar: calendar)
@@ -125,6 +224,8 @@ struct CaptureFiler {
             var descriptor = FetchDescriptor<Asset>(predicate: #Predicate { $0.id == id })
             descriptor.fetchLimit = 1
             guard let asset = try context.fetch(descriptor).first else { throw FilingError.missingSection }
+            // What was read never lands in an example without the person keeping it as theirs.
+            try ExampleOwnership.requireReal(asset)
             if let documentsKey = Self.holderDocumentTemplateKey(for: review, destinationTemplateKey: asset.templateKey) {
                 // A person: the document becomes one of their documents, named after them.
                 let name = review.kind.isIdentityDocument ? review.title : DocumentNaming.name(document: review.title, holder: asset.name)
@@ -142,20 +243,7 @@ struct CaptureFiler {
                 outcome.asset = asset
                 break
             }
-            if let template = templates[asset.templateKey] {
-                var merged = asset.values
-                var changed = false
-                for (key, value) in Self.values(from: review, for: template.definition) where merged[key] != value {
-                    // "B 123 ABC" read off a policy doesn't rewrite the "B-123-ABC" the person typed.
-                    if let old = merged[key]?.textValue, let new = value.textValue,
-                       CaptureMapping.normalizedIdentifier(old) == CaptureMapping.normalizedIdentifier(new) { continue }
-                    merged[key] = value
-                    changed = true
-                }
-                if changed {
-                    try AssetActions(context: context, calendar: calendar, now: now).update(asset, name: asset.name, values: merged, notes: asset.notes)
-                }
-            }
+            try writeValues(of: review, to: asset, templates: templates)
             outcome.asset = asset
         case .newAsset(let templateKey):
             let name = review.newAssetName.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -187,18 +275,7 @@ struct CaptureFiler {
             let key = deadline.key, day = deadline.day
             if let existing = asset.activeObligations.first(where: { $0.blueprintKey == key }) {
                 outcome.obligation = existing
-                let due = existing.dueDay(in: calendar)
-                if due < day {
-                    if blueprint.recurrence.repeats {
-                        // A new policy or inspection closes the cycle that was due and sets the next date.
-                        outcome.completion = try obligations.complete(existing, cost: review.total)
-                        if existing.status == .active, existing.dueDay(in: calendar) != day {
-                            try obligations.reschedule(existing, to: day)
-                        }
-                    } else if due != day {
-                        try obligations.reschedule(existing, to: day)
-                    }
-                }
+                outcome.completion = try renew(existing, to: day, done: false, on: nil, cost: review.total)
             } else if day >= today {
                 outcome.obligation = try obligations.create(from: blueprint, for: asset, firstDue: day)
             }
@@ -210,6 +287,7 @@ struct CaptureFiler {
             // Field-driven deadlines (a document's renewal, a warranty's end) follow the values written above.
             outcome.obligation = asset.activeObligations.first
         }
+        outcome.nextDue = outcome.obligation?.dueDay(in: calendar)
 
         // A bill, in its subscription's history: what it came to and when, for the trend
         // and for knowing when the next one is due.
@@ -225,15 +303,14 @@ struct CaptureFiler {
         }
 
         // 3. Who issued it.
-        let provider = try provider(for: review, asset: outcome.asset)
+        let provider = try self.provider(for: review, asset: outcome.asset)
 
         // 4. The document, linked to all of it: the new pages, or the copy already
         // kept when the same photo was filed before (it moves here, never lost).
-        if let documentID = review.documentID ?? review.duplicateAttachmentID {
+        if let document {
             let title = review.title.trimmingCharacters(in: .whitespacesAndNewlines)
-            outcome.attachment = try await AttachmentActions(context: context, calendar: calendar).fileCaptured(
-                documentID: documentID,
-                from: store,
+            let filed = try AttachmentActions(context: context, calendar: calendar).fileCaptured(
+                document,
                 title: title.isEmpty ? nil : title,
                 kind: CaptureMapping.documentKind(for: review.kind),
                 extractedText: review.result.recognizedText.isEmpty ? nil : review.result.recognizedText,
@@ -243,8 +320,183 @@ struct CaptureFiler {
                 historyEntry: outcome.completion ?? outcome.bill,
                 provider: provider
             )
+            outcome.attachment = filed.attachment
+            outcome.movedDocument = filed.moved
         }
         return outcome
+    }
+
+    /// "Am rezolvat": the same steps as the review, for the deadline the person closed.
+    private func fileCompletion(_ completion: Completion, document: CapturedDocument?) throws -> Outcome {
+        let obligation = completion.obligation
+        let today = CalendarDay(now(), calendar: calendar)
+        var outcome = Outcome(asset: obligation.asset, obligation: obligation)
+        let review = try completion.document.map { result -> CaptureReview in
+            if obligation.asset != nil { try ExampleOwnership.requireReal(obligation.asset) }
+            var review = CaptureReview(result: result, assets: [], context: context)
+            review.destination = obligation.asset.map { .asset($0.id) } ?? .none
+            return review
+        }
+
+        // 1. The values read, onto the section: a new RCA policy brings its number, insurer and claims phone.
+        if let review, let asset = obligation.asset {
+            try writeValues(of: review, to: asset, templates: try TemplateStore(context: context).templatesByKey())
+        }
+
+        // 2. The deadline: the cycle closes, and the new document's date sets the next one.
+        let newDay = completion.document.flatMap(Self.nextDay(in:)).flatMap { $0 > today ? $0 : nil }
+        outcome.completion = try renew(obligation, to: newDay, done: true, on: completion.date, cost: completion.cost)
+        if obligation.status == .active { outcome.nextDue = obligation.dueDay(in: calendar) }
+
+        // 3. Who issued it, and 4. the document.
+        if let review, let document {
+            let provider = try self.provider(for: review, asset: obligation.asset)
+            let filed = try AttachmentActions(context: context, calendar: calendar).fileCaptured(
+                document,
+                title: CaptureMapping.defaultTitle(for: review.kind, fields: review.valuesByKey),
+                kind: CaptureMapping.documentKind(for: review.kind),
+                extractedText: review.result.recognizedText.isEmpty ? nil : review.result.recognizedText,
+                documentDate: review.documentDay ?? CalendarDay(completion.date, calendar: calendar),
+                asset: obligation.asset,
+                obligation: obligation,
+                historyEntry: outcome.completion,
+                provider: provider
+            )
+            outcome.attachment = filed.attachment
+            outcome.movedDocument = filed.moved
+        }
+        return outcome
+    }
+
+    /// A visit with its invoice: the provider, the entry and the document, together.
+    private func fileVisit(_ visit: Visit, document: CapturedDocument?) throws -> Outcome {
+        let provider: Provider? = switch visit.provider {
+        case .none: nil
+        case .existing(let provider): provider
+        case .named(let name, let trade, let taxID):
+            try ProviderActions(context: context, now: now).findOrCreate(name: name, taxID: taxID, trade: trade, linkedTo: visit.asset)
+        }
+        if let provider, case .existing = visit.provider { try ProviderActions(context: context, now: now).link(provider, to: visit.asset) }
+        let entry = try HistoryActions(context: context, now: now).recordVisit(
+            on: visit.asset,
+            kind: visit.kind,
+            occurredAt: visit.occurredAt,
+            checklist: visit.checklist,
+            extraItems: visit.extraItems,
+            totalCost: visit.totalCost,
+            odometer: visit.odometer,
+            provider: provider,
+            rating: visit.rating,
+            calendar: calendar
+        )
+        var outcome = Outcome(asset: visit.asset, visit: entry)
+        if let document {
+            let filed = try AttachmentActions(context: context, calendar: calendar).fileCaptured(
+                document,
+                title: visit.documentTitle,
+                kind: .invoice,
+                extractedText: visit.documentText,
+                documentDate: CalendarDay(visit.occurredAt, calendar: calendar),
+                asset: visit.asset,
+                historyEntry: entry,
+                provider: provider
+            )
+            outcome.attachment = filed.attachment
+            outcome.movedDocument = filed.moved
+        }
+        return outcome
+    }
+
+    // MARK: Shared steps
+
+    /// What a captured document's values change on a section that already exists: what
+    /// was read replaces what was there, except a value that only differs in how it's written.
+    private func writeValues(of review: CaptureReview, to asset: Asset, templates: [String: CategoryTemplate]) throws {
+        guard let template = templates[asset.templateKey] else { return }
+        var merged = asset.values
+        var changed = false
+        for (key, value) in Self.values(from: review, for: template.definition) where merged[key] != value {
+            // "B 123 ABC" read off a policy doesn't rewrite the "B-123-ABC" the person typed.
+            if let old = merged[key]?.textValue, let new = value.textValue,
+               CaptureMapping.normalizedIdentifier(old) == CaptureMapping.normalizedIdentifier(new) { continue }
+            merged[key] = value
+            changed = true
+        }
+        if changed {
+            try AssetActions(context: context, calendar: calendar, now: now).update(asset, name: asset.name, values: merged, notes: asset.notes)
+        }
+    }
+
+    /// The one rule for what a new document's date does to the deadline it renews,
+    /// for the review and for "Am rezolvat":
+    /// - a deadline whose date comes from a field (a document's expiry): the field takes the
+    ///   new date, and the deadline follows it;
+    /// - a repeating one: the cycle that was due closes (a completion in the history) and the
+    ///   next date is the document's;
+    /// - a one-off: it moves to the document's date.
+    /// An older date never moves a deadline back. `done` is the person's "Am rezolvat": the
+    /// cycle closes even when the document has no later date. Returns the completion written.
+    private func renew(_ obligation: Obligation, to day: CalendarDay?, done: Bool, on date: Date?, cost: Money?) throws -> HistoryEntry? {
+        let actions = ObligationActions(context: context, calendar: calendar, now: now)
+        let due = obligation.dueDay(in: calendar)
+        guard done || (day.map { $0 > due } ?? false) else { return nil }
+        if let day, let asset = obligation.asset, let field = fieldDrivingDueDate(of: obligation) {
+            if asset.values[field] != .date(day) {
+                var values = asset.values
+                values[field] = .date(day)
+                try AssetActions(context: context, calendar: calendar, now: now).update(asset, name: asset.name, values: values, notes: asset.notes)
+            }
+            return nil
+        }
+        if done || obligation.recurrence.repeats {
+            let entry = try actions.complete(obligation, on: date, cost: cost)
+            if obligation.status == .active, let day, obligation.dueDay(in: calendar) != day {
+                try actions.reschedule(obligation, to: day)
+            }
+            return entry
+        }
+        if let day { try actions.reschedule(obligation, to: day) }
+        return nil
+    }
+
+    /// The asset field a one-off obligation takes its date from (a document's expiry).
+    private func fieldDrivingDueDate(of obligation: Obligation) -> String? {
+        guard let key = obligation.blueprintKey, let asset = obligation.asset,
+              let template = try? TemplateStore(context: context).template(forKey: asset.templateKey),
+              let blueprint = template.blueprints.first(where: { $0.key == key }),
+              !blueprint.recurrence.repeats,
+              case .field(let field, _) = blueprint.firstDue else { return nil }
+        return field
+    }
+
+    /// Asks for Face ID or the passcode before the filing writes into a locked section
+    /// that already exists, or moves a document out of one. A new section reveals
+    /// nothing, so it doesn't ask. Nothing is written when the person doesn't open it.
+    private func openLockedSections(for intent: Intent, keptDocument: Attachment?) async throws {
+        let templates = try TemplateStore(context: context).templatesByKey()
+        var keys: [String] = []
+        func add(_ asset: Asset?) {
+            var current = asset
+            while let node = current { keys.append(node.templateKey); current = node.parent }
+        }
+        switch intent {
+        case .review(let review):
+            switch review.destination {
+            case .none: break
+            case .asset(let id):
+                add(try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.id == id })).first)
+            case .newAsset:
+                break
+            }
+        case .completion(let completion):
+            if completion.document != nil { add(completion.obligation.asset) }
+        case .visit(let visit):
+            add(visit.asset)
+        }
+        add(keptDocument?.asset)
+        guard keys.contains(where: { templates[$0]?.isSensitive == true }), !vault.isSessionUnlocked else { return }
+        let result = await vault.unlock(reason: String(localized: "Deschide secțiunea protejată ca să salvez actul."))
+        guard result == .success else { throw FilingError.locked }
     }
 
     /// The template a document becomes when it is filed under a person: an identity
@@ -369,21 +621,11 @@ struct CaptureFiler {
         return try actions.create(name: name.isEmpty ? CaptureMapping.kindTitle(review.kind) : name, template: template, values: values, obligations: planned, parent: parent, newParent: newParent)
     }
 
-    /// Drops the pages of a capture the person didn't keep.
-    func discard(_ review: CaptureReview) async {
-        if let id = review.documentID { await store.discard(id: id) }
-    }
-
     private func provider(for review: CaptureReview, asset: Asset?) throws -> Provider? {
-        guard let trade = CaptureMapping.providerTrade(for: review.kind),
-              let name = review.value(.provider)?.text?.trimmingCharacters(in: .whitespacesAndNewlines), !name.isEmpty else { return nil }
-        let actions = ProviderActions(context: context, now: now)
-        let wanted = SearchText.normalize(name)
-        if let existing = try context.fetch(FetchDescriptor<Provider>()).first(where: { SearchText.normalize($0.name) == wanted }) {
-            if let asset { try actions.link(existing, to: asset) }
-            return existing
-        }
-        return try actions.create(name: name, trades: [trade], phone: review.value(.providerPhone)?.text, linkedTo: asset.map { [$0] } ?? [])
+        guard let trade = CaptureMapping.providerTrade(for: review.kind), let name = review.value(.provider)?.text else { return nil }
+        return try ProviderActions(context: context, now: now).findOrCreate(
+            name: name, taxID: review.value(.providerTaxID)?.text, trade: trade, phone: review.value(.providerPhone)?.text, linkedTo: asset
+        )
     }
 }
 

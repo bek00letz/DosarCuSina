@@ -403,11 +403,14 @@ private struct ObligationCompleteSheet: View {
     @State private var currency = Money.defaultCurrency
     @State private var source: CaptureSource?
     @State private var isChoosingSource = false
-    @State private var isReading = false
-    @State private var document: CaptureResult?
-    @State private var readError: String?
+    /// Reading the new document. It ends with the sheet: a reading still running stops.
+    @State private var session = CaptureSession()
     @State private var errorMessage: String?
     @State private var isSaving = false
+    @State private var exampleQuestion: ExampleSectionQuestion?
+
+    private var isReading: Bool { session.phase == .reading }
+    private var document: CaptureResult? { session.result }
 
     var body: some View {
         NavigationStack {
@@ -435,6 +438,13 @@ private struct ObligationCompleteSheet: View {
                 ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
             }
             .dsDiscardGuard(hasChanges: amount != nil || document != nil)
+            .examplePrompt($exampleQuestion) { save() }
+            .onChange(of: document?.id) { _, _ in
+                if amount == nil, let total = document?.field(.total)?.value.money {
+                    amount = total.amount
+                    currency = total.currencyCode
+                }
+            }
             .confirmationDialog("Actul nou", isPresented: $isChoosingSource, titleVisibility: .visible) {
                 if CaptureSource.isCameraAvailable { Button("Fotografiază actul") { source = .camera } }
                 Button("Alege din poze") { source = .photos }
@@ -443,8 +453,8 @@ private struct ObligationCompleteSheet: View {
             }
             .captureSourcePicker($source) { payload in
                 read(payload)
-            } onError: { error in
-                readError = error.localizedDescription
+            } onError: { _ in
+                errorMessage = String(localized: "Poza nu s-a putut deschide. Încearcă din nou.")
             }
         }
     }
@@ -458,7 +468,7 @@ private struct ObligationCompleteSheet: View {
         VStack(alignment: .leading, spacing: DS.Space.s) {
             DSSectionHeader("Actul nou", subtitle: "Opțional. Din el iau data următoare.")
             if let document {
-                let next = ObligationCompletion.nextDay(in: document)
+                let next = CaptureFiler.nextDay(in: document)
                 DSNotice(.success, title: "Am citit actul",
                          message: next.map { "Următorul termen: \(DueWording.date($0, today: CalendarDay(Date())))." } ?? "Nu am găsit o dată nouă pe el. Îl păstrez oricum.")
                 Button("Alege alt act") { isChoosingSource = true }
@@ -469,29 +479,15 @@ private struct ObligationCompleteSheet: View {
                 }
                 .disabled(isReading)
                 if isReading { DSDelayedProgress(label: "Citesc actul…") }
-                if let readError {
-                    DSNotice(.warning, title: "Actul nu s-a citit", message: LocalizedStringKey(readError))
+                if session.phase == .failed {
+                    DSNotice(.warning, title: "Actul nu s-a citit", message: "Încearcă o poză mai clară, cu actul întins și fără umbre.")
                 }
             }
         }
     }
 
     private func read(_ payload: CaptureRequest.Payload) {
-        isReading = true
-        readError = nil
-        Task {
-            defer { isReading = false }
-            do {
-                let result = try await CaptureRunner.run(payload, ownerID: obligation.asset?.id)
-                document = result
-                if amount == nil, let total = result.field(.total)?.value.money {
-                    amount = total.amount
-                    currency = total.currencyCode
-                }
-            } catch {
-                readError = String(localized: "Încearcă o poză mai clară, cu actul întins și fără umbre.")
-            }
-        }
+        session.read(payload)
     }
 
     private func save() {
@@ -502,23 +498,26 @@ private struct ObligationCompleteSheet: View {
         Task {
             do {
                 let cost = amount.map { Money($0, currency: currency) }
-                let outcome = try await ObligationCompletion(context: context).complete(
-                    obligation, on: date, cost: cost, document: document,
-                    title: document.map { CaptureMapping.defaultTitle(for: $0.kind, fields: Dictionary($0.fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })) }
-                )
+                let outcome = try await CaptureFiler(context: context).file(.completion(.init(
+                    obligation: obligation, date: date, cost: cost, document: document
+                )))
                 let message: LocalizedStringResource = outcome.nextDue.map {
                     "\(title): gata. Următorul termen e pe \(DueWording.date($0, today: CalendarDay(Date())))."
                 } ?? "\(title): gata."
                 let toast: DSToast
-                if let entry = outcome.entry {
+                if let entry = outcome.completion {
                     toast = DSToast.undo(message) { try? ObligationActions(context: context).undo(entry) }
                 } else {
                     toast = DSToast(title: message, actionTitle: nil, action: nil)
                 }
+                session.close()
                 onClose(toast)
+            } catch let question as ExampleSectionQuestion {
+                isSaving = false
+                exampleQuestion = question
             } catch {
                 isSaving = false
-                errorMessage = error.localizedDescription
+                errorMessage = SaveFailure.message(for: error, formKept: true)
             }
         }
     }

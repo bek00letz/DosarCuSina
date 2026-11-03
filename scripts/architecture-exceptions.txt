@@ -79,8 +79,6 @@ ios/DosarCuSinaWidgets/UpcomingWidget.swift:romanian-locale
 
 # save-outside-unit-of-work: One unit of work around every multi-step flow (agreed fix 7); start-up and migrations save through UnitOfWork too.
 ios/DosarCuSina/App/DosarCuSinaApp.swift:save-outside-unit-of-work
-ios/DosarCuSina/Services/Documents/DocumentStorage.swift:save-outside-unit-of-work
-ios/DosarCuSina/Services/Examples/ExampleDataService.swift:save-outside-unit-of-work:2
 ios/DosarCuSina/Services/Templates/ChoiceMigration.swift:save-outside-unit-of-work
 
 # silent-action-failure: Failures go through the shared error path (agreed fixes 2 and 7).
@@ -101,7 +99,5 @@ ios/DosarCuSina/Views/Section/SectionLists.swift:small-hit-target
 ios/DosarCuSina/Views/Upcoming/ObligationScreen.swift:small-hit-target
 
 # system-error-text: SaveFailure.message and UserFacingError (review finding 9).
-ios/DosarCuSina/Views/Add/AddVisitFlow.swift:system-error-text
 ios/DosarCuSina/Views/Onboarding/OnboardingFlow.swift:system-error-text
-ios/DosarCuSina/Views/Upcoming/ObligationScreen.swift:system-error-text:2
 ios/DosarCuSina/Views/Upcoming/UpcomingActions.swift:system-error-text

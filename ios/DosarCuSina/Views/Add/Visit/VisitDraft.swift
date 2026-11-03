@@ -64,17 +64,20 @@ struct VisitDraft: Equatable {
     var currency: String = Money.defaultCurrency
     var provider: ProviderChoice = .none
     var rating: Int?
-    /// A captured invoice waiting in capture's store, filed with the visit.
-    var documentID: UUID?
+    /// The captured invoice, filed with the visit: new pages, or a copy the binder already
+    /// keeps (it moves to the visit).
+    var document: CapturedDocumentRef?
     var documentTitle: String?
     var documentText: String?
+    /// The CUI read off the invoice, for finding who did the job.
+    var providerTaxID: String?
 
     init(date: Date) {
         self.date = date
     }
 
     var isEmpty: Bool {
-        ticked.isEmpty && extras.allSatisfy { $0.name.trimmingCharacters(in: .whitespaces).isEmpty } && total == nil && documentID == nil
+        ticked.isEmpty && extras.allSatisfy { $0.name.trimmingCharacters(in: .whitespaces).isEmpty } && total == nil && document == nil
     }
 
     func isTicked(_ key: String) -> Bool { ticked.contains(key) }
@@ -154,7 +157,8 @@ struct VisitDraft: Equatable {
         if provider == .none, let name = fields[.provider]?.text, !name.isEmpty {
             provider = .new(name)
         }
-        if let id = result.documentID { documentID = id }
+        if let document = result.document { self.document = document }
+        if let taxID = fields[.providerTaxID]?.text { providerTaxID = taxID }
         documentText = result.recognizedText.isEmpty ? nil : result.recognizedText
     }
 }

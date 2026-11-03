@@ -19,6 +19,8 @@ struct AddSectionFlow: View {
     @State private var model: AddSectionModel
     @State private var path: [Step] = []
     @State private var error: UserFacingError?
+    /// A section under an example asks "Păstrezi … ca al tău?" first.
+    @State private var exampleQuestion: ExampleSectionQuestion?
     @State private var saveRequest: ReminderSaveRequest?
     @State private var createdCount = 0
 
@@ -44,6 +46,7 @@ struct AddSectionFlow: View {
         }
         .dsDiscardGuard(hasChanges: model.hasChanges)
         .userErrorAlert($error)
+        .examplePrompt($exampleQuestion) { create() }
         .reminderPermissionGate($saveRequest)
         .sensoryFeedback(.success, trigger: createdCount)
         .task { preselect() }
@@ -98,6 +101,8 @@ struct AddSectionFlow: View {
             createdCount += 1
             dismiss()
             onCreated(asset)
+        } catch let question as ExampleSectionQuestion {
+            exampleQuestion = question
         } catch {
             self.error = UserFacingError(error)
         }

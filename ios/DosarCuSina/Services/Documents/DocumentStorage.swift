@@ -68,6 +68,10 @@ public struct DocumentStorage {
     /// Re-encodes old, large page images at a smaller size in one save. Returns the bytes saved.
     @discardableResult
     public func compact(policy: CompactionPolicy = CompactionPolicy(), now: Date = Date()) throws -> Int {
+        try UnitOfWork.perform(in: context) { try compactPages(policy: policy, now: now) }
+    }
+
+    private func compactPages(policy: CompactionPolicy, now: Date) throws -> Int {
         var saved = 0
         for attachment in try context.fetch(FetchDescriptor<Attachment>()) where isCandidate(attachment, policy: policy, now: now) {
             for page in attachment.orderedPages {
@@ -81,12 +85,7 @@ public struct DocumentStorage {
             attachment.byteCount = (attachment.fileData?.count ?? 0) + attachment.orderedPages.reduce(0) { $0 + ($1.imageData?.count ?? 0) }
             attachment.compactedAt = now
         }
-        do {
-            try context.save()
-        } catch {
-            context.rollback()
-            throw error
-        }
+        try UnitOfWork.save(context)
         return saved
     }
 

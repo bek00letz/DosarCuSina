@@ -76,15 +76,17 @@ public final class HistoryActions {
         note: String? = nil,
         items: [LineItemDraft] = [],
         providers: [Provider] = [],
-        rating: Int? = nil
+        rating: Int? = nil,
+        asExample: Bool = false
     ) throws -> HistoryEntry {
+        let isExample = try ExampleOwnership.requireReal(asset, creatingExample: asExample)
         let date = occurredAt ?? now()
         let entry = HistoryEntry(kind: kind, title: title, occurredAt: date)
         entry.metricReading = metricReading
         entry.totalCost = totalCost
         entry.note = note
         entry.rating = rating.map { min(max($0, 1), 5) }
-        entry.isExample = asset.isExample
+        entry.isExample = isExample
         context.insert(entry)
         entry.asset = asset
         entry.providers = providers
@@ -129,6 +131,7 @@ public final class HistoryActions {
         rating: Int? = nil,
         calendar: Calendar = .current
     ) throws -> HistoryEntry {
+        let isExample = try ExampleOwnership.requireReal(asset)
         let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
         let catalog = template?.components ?? []
         let ticked = checklist.map { item in
@@ -145,7 +148,7 @@ public final class HistoryActions {
         entry.metricReading = odometer
         entry.totalCost = totalCost
         entry.rating = rating.map { min(max($0, 1), 5) }
-        entry.isExample = asset.isExample
+        entry.isExample = isExample
         context.insert(entry)
         entry.asset = asset
         entry.providers = provider.map { [$0] } ?? []
@@ -155,7 +158,7 @@ public final class HistoryActions {
             HouseholdMutations.recordReading(odometer, on: asset, at: date, unit: unit, in: context)
         }
         for draft in documents {
-            _ = AttachmentActions.insert(draft, asset: asset, obligation: nil, historyEntry: entry, provider: nil, calendar: calendar, in: context)
+            _ = AttachmentActions.insert(draft, asset: asset, obligation: nil, historyEntry: entry, provider: nil, isExample: isExample, calendar: calendar, in: context)
         }
         try save()
         return entry

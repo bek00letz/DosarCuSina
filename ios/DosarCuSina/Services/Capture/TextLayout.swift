@@ -53,7 +53,7 @@ public struct TextBox: Hashable, Sendable, Codable {
 }
 
 /// One recognized line, with where it sits on its page when recognition knows.
-public struct RecognizedLine: Hashable, Sendable {
+public struct RecognizedLine: Hashable, Sendable, Codable {
     public var text: String
     /// Nil for text that has no position (pasted text, a PDF's text layer, the MRZ).
     public var box: TextBox?

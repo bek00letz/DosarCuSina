@@ -89,21 +89,25 @@ public final class AssetActions {
         newParent: NewParent? = nil,
         isExample: Bool = false
     ) throws -> Asset {
+        // Something of the person's never lands inside an example without asking.
+        try ExampleOwnership.requireReal(parent, creatingExample: isExample)
         let prepared = try SecretFields.sealing(
             values.normalizingChoices(for: template.definition).applyingRules(of: template.definition, previous: nil, calendar: calendar),
             definition: template.definition, sealer: sealer
         )
-        let asset = Asset(name: name, templateKey: template.key, values: prepared, notes: notes, isExample: isExample)
-        context.insert(asset)
-        if let newParent {
-            let holder = Asset(name: newParent.name, templateKey: newParent.template.key, values: FieldValues(), notes: nil, isExample: isExample)
-            context.insert(holder)
-            asset.parent = holder
-        } else {
-            asset.parent = parent
-        }
         let today = CalendarDay(now(), calendar: calendar)
-        do {
+        // One step: a failure part-way leaves no section without its deadlines. Inside a
+        // caller's unit this joins it, and only that unit rolls back.
+        return try UnitOfWork.perform(in: context) {
+            let asset = Asset(name: name, templateKey: template.key, values: prepared, notes: notes, isExample: isExample)
+            context.insert(asset)
+            if let newParent {
+                let holder = Asset(name: newParent.name, templateKey: newParent.template.key, values: FieldValues(), notes: nil, isExample: isExample)
+                context.insert(holder)
+                asset.parent = holder
+            } else {
+                asset.parent = parent
+            }
             for planned in obligations where planned.isSelected {
                 try HouseholdMutations.makeObligation(from: planned.blueprint, for: asset, firstDue: planned.firstDue, today: today, calendar: calendar, in: context)
             }
@@ -111,12 +115,8 @@ public final class AssetActions {
                 HouseholdMutations.addMeasurement(reading, unit: HouseholdMutations.heroMetricUnit(template: template.definition), to: asset, at: now(), in: context)
             }
             try HouseholdRules.reconcile(in: context, today: today, calendar: calendar)
-            try UnitOfWork.save(context)
-        } catch {
-            context.rollback()
-            throw error
+            return asset
         }
-        return asset
     }
 
     /// Saves edits. Obligations whose first date comes from a field (a document's
@@ -170,10 +170,12 @@ public final class AssetActions {
         name: String? = nil,
         value: Double,
         unit: String? = nil,
-        at date: Date? = nil
+        at date: Date? = nil,
+        asExample: Bool = false
     ) throws -> MeasurementLog {
+        let isExample = try ExampleOwnership.requireReal(asset, creatingExample: asExample)
         let log = MeasurementLog(kind: kind, name: name ?? "", value: value, unit: unit, recordedAt: date ?? now())
-        log.isExample = asset.isExample
+        log.isExample = isExample
         context.insert(log)
         log.asset = asset
         HouseholdMutations.syncHeroMetric(of: asset, with: log, in: context)

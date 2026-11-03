@@ -52,7 +52,7 @@ struct NewHolderSaveTests {
         ]
         let review = CaptureReview(
             result: CaptureResult(kind: .identityCard, kindConfidence: 0.9, fields: fields, suggestions: [], reminder: nil,
-                                  recognizedText: "", barcodes: [], documentID: nil, notices: []),
+                                  recognizedText: "", barcodes: [], document: nil, notices: []),
             assets: [], context: context
         )
         #expect(review.destination == .newAsset(templateKey: BuiltInTemplates.Key.member))

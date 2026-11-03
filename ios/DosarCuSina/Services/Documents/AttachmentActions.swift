@@ -60,7 +60,7 @@ public struct DocumentDraft: Sendable {
 @MainActor
 public final class AttachmentActions {
     public let context: ModelContext
-    private let calendar: Calendar
+    let calendar: Calendar
 
     public init(context: ModelContext, calendar: Calendar = .current) {
         self.context = context
@@ -83,7 +83,8 @@ public final class AttachmentActions {
         historyEntry: HistoryEntry? = nil,
         provider: Provider? = nil
     ) throws -> Attachment {
-        let attachment = Self.insert(draft, asset: asset, obligation: obligation, historyEntry: historyEntry, provider: provider, calendar: calendar, in: context)
+        let isExample = try ExampleOwnership.requireReal(asset ?? obligation?.asset ?? historyEntry?.asset)
+        let attachment = Self.insert(draft, asset: asset, obligation: obligation, historyEntry: historyEntry, provider: provider, isExample: isExample, calendar: calendar, in: context)
         try save()
         if let storeURL = context.container.configurations.first?.url, storeURL.isFileURL, storeURL.path() != "/dev/null" {
             DocumentFileProtection.apply(toStoreAt: storeURL)
@@ -98,6 +99,7 @@ public final class AttachmentActions {
         obligation: Obligation?,
         historyEntry: HistoryEntry?,
         provider: Provider?,
+        isExample: Bool,
         calendar: Calendar,
         in context: ModelContext
     ) -> Attachment {
@@ -109,7 +111,7 @@ public final class AttachmentActions {
         attachment.documentID = draft.documentID
         attachment.sha256 = draft.sha256
         attachment.byteCount = (draft.originalData?.count ?? 0) + draft.pageImages.reduce(0) { $0 + $1.count }
-        attachment.isExample = (asset ?? obligation?.asset ?? historyEntry?.asset)?.isExample ?? false
+        attachment.isExample = isExample
         context.insert(attachment)
         for (index, image) in draft.pageImages.enumerated() {
             let page = AttachmentPage(index: index, imageData: image)

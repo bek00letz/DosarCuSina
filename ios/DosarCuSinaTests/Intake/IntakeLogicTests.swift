@@ -19,10 +19,10 @@ private func ron(_ amount: Decimal) -> CaptureValue {
 }
 
 /// A capture result routed the way the engine routes it.
-private func capture(_ kind: CaptureDocumentKind, _ fields: [CaptureField], documentID: UUID? = nil) -> CaptureResult {
+private func capture(_ kind: CaptureDocumentKind, _ fields: [CaptureField], document: CapturedDocumentRef? = nil) -> CaptureResult {
     let routing = CaptureRouter.route(kind: kind, kindConfidence: 0.9, fields: fields)
     return CaptureResult(kind: kind, kindConfidence: 0.9, fields: fields, suggestions: routing.suggestions, reminder: routing.reminder,
-                         recognizedText: "", barcodes: [], documentID: documentID, notices: [])
+                         recognizedText: "", barcodes: [], document: document, notices: [])
 }
 
 @MainActor
@@ -203,9 +203,9 @@ struct CaptureFilingTests {
         let car = try makeCar(context, rcaDue: "2026-11-10")
         let rca = try #require(car.activeObligations.first)
         let document = capture(.rcaPolicy, [field(.expiryDate, day("2027-11-12"))])
-        let outcome = try await ObligationCompletion(context: context, calendar: .bucharest, now: { noon("2026-11-02") })
-            .complete(rca, on: noon("2026-11-02"), cost: Money(1_150), document: document, title: nil)
-        #expect(outcome.entry?.totalCost == Money(1_150))
+        let outcome = try await CaptureFiler(context: context, calendar: .bucharest, now: { noon("2026-11-02") })
+            .file(.completion(.init(obligation: rca, date: noon("2026-11-02"), cost: Money(1_150), document: document)))
+        #expect(outcome.completion?.totalCost == Money(1_150))
         #expect(outcome.nextDue == CalendarDay("2027-11-12"))
         #expect(rca.dueDay(in: .bucharest) == CalendarDay("2027-11-12"))
     }
@@ -231,7 +231,7 @@ struct VisitDraftTests {
             field(.total, ron(1_000)),
             field(.provider, .text("Service Exemplu SRL")),
             field(.issueDate, day("2026-10-30")),
-        ], documentID: UUID()), components: components, calendar: .bucharest)
+        ], document: .pending(id: UUID(), claim: UUID())), components: components, calendar: .bucharest)
 
         #expect(draft.ticked == ["brakes.padsFront", "engine.oil"])
         #expect(draft.parts["engine.oil"]?.cost == 420, "Oil and its filter add up on one row")
@@ -239,7 +239,7 @@ struct VisitDraftTests {
         #expect(draft.total == 1_000)
         #expect(draft.provider == .new("Service Exemplu SRL"))
         #expect(CalendarDay(draft.date, calendar: .bucharest) == CalendarDay("2026-10-30"))
-        #expect(draft.documentID != nil)
+        #expect(draft.document != nil)
         #expect(draft.partsSum == 1_000)
     }
 

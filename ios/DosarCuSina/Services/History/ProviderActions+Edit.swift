@@ -38,11 +38,6 @@ extension ProviderActions {
         provider.notes = clean(details.notes)
         provider.contactIdentifier = details.contactIdentifier
         provider.updatedAt = Date()
-        do {
-            try UnitOfWork.save(context)
-        } catch {
-            context.rollback()
-            throw error
-        }
+        try UnitOfWork.save(context)
     }
 }

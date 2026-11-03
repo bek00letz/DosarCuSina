@@ -32,7 +32,7 @@ struct IdentityFilingTests {
     private func card(notices: [CaptureNotice] = []) -> CaptureResult {
         let routing = CaptureRouter.route(kind: .identityCard, kindConfidence: 0.95, fields: cardFields)
         return CaptureResult(kind: .identityCard, kindConfidence: 0.95, fields: cardFields, suggestions: routing.suggestions,
-                             reminder: routing.reminder, recognizedText: "", barcodes: [], documentID: nil, notices: notices)
+                             reminder: routing.reminder, recognizedText: "", barcodes: [], document: nil, notices: notices)
     }
 
     @Test("Named after the holder, surname first, in title case with diacritics")
@@ -133,7 +133,7 @@ struct IdentityFilingTests {
         withZone.append(field(.nationality, .text("ROU"), confidence: 0.95, tier: .deterministic))
         let routing = CaptureRouter.route(kind: .identityCard, kindConfidence: 0.98, fields: withZone)
         let after = CaptureReview(result: CaptureResult(kind: .identityCard, kindConfidence: 0.98, fields: withZone, suggestions: routing.suggestions,
-                                                        reminder: routing.reminder, recognizedText: "", barcodes: [], documentID: nil, notices: []),
+                                                        reminder: routing.reminder, recognizedText: "", barcodes: [], document: nil, notices: []),
                                   assets: [], context: context).carryingEdits(from: before, assets: [])
         #expect(after.value(.nationality) == .text("Română"))
         #expect(after.value(.documentNumber) == .text("SP1236344"))
@@ -156,7 +156,7 @@ struct IdentityFilingTests {
         withZone.append(CaptureField(key: .expiryDate, value: .day(CaptureDay(year: 2035, month: 4, day: 7)!), confidence: 0.99, sourceText: zone, tier: .deterministic))
         let routing = CaptureRouter.route(kind: .identityCard, kindConfidence: 0.98, fields: withZone)
         var after = CaptureReview(result: CaptureResult(kind: .identityCard, kindConfidence: 0.98, fields: withZone, suggestions: routing.suggestions,
-                                                        reminder: routing.reminder, recognizedText: "", barcodes: [], documentID: nil, notices: []),
+                                                        reminder: routing.reminder, recognizedText: "", barcodes: [], document: nil, notices: []),
                                   assets: [], context: context).carryingEdits(from: before, assets: [])
 
         let edited = try #require(after.fields.first { $0.key == .documentNumber })

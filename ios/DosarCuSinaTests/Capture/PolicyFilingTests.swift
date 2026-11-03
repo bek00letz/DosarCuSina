@@ -39,22 +39,74 @@ struct PolicyFilingTests {
         #expect(RomanianUtilityParser.shared.detectProvider(in: "DIGI ROMANIA S.A. FACTURA") == .digi)
     }
 
-    @Test func correctingTheKindBringsItsDeadline() throws {
+    /// The text of an RCA policy, as the phone read it.
+    private static let policyText = """
+        POLIȚĂ DE ASIGURARE OBLIGATORIE RCA
+        Asigurător: Exemplu Asigurări S.A.
+        Seria RO/00/X Nr. 000000000
+        Nr. înmatriculare B 123 ABC
+        Valabilă de la 01.11.2026 până la 31.10.2027
+        Total de plată: 1.150,00 lei
+        """
+
+    /// The policy as a phone that took it for a bill would hand it to the review: the
+    /// bill's fields, but the policy's own text kept for reading again.
+    private func readAsABill() -> CaptureResult {
+        let today = Date(timeIntervalSince1970: 1_793_577_600) // 2 November 2026
+        let due = CaptureDay(year: 2026, month: 11, day: 20)!
+        return CaptureResult(
+            kind: .utilityInvoice, kindConfidence: 0.7,
+            fields: [CaptureField(key: .dueDate, value: .day(due), confidence: 0.6, tier: .heuristic)],
+            suggestions: [], reminder: nil, recognizedText: Self.policyText, barcodes: [], document: nil, notices: [],
+            source: CaptureReadingSource(text: Self.policyText, pages: [], barcodes: [], referenceDate: today,
+                                         modelFields: [], aiFields: nil, isSinglePhoto: false)
+        )
+    }
+
+    @Test func correctingTheKindReadsThePageAgainAsThatKind() throws {
         let context = try makeContext()
         let (car, _) = try car(context)
-        let expiry = try #require(CaptureDay(year: 2027, month: 10, day: 31))
-        var review = CaptureReview(
-            result: CaptureResult(kind: .utilityInvoice, kindConfidence: 0.95, fields: [
-                CaptureField(key: .expiryDate, value: .day(expiry), confidence: 0.8, tier: .heuristic),
-                CaptureField(key: .licensePlate, value: .text("B 123 ABC"), confidence: 0.8, tier: .heuristic),
-            ], suggestions: [], reminder: nil, recognizedText: "", barcodes: [], documentID: nil, notices: []),
-            assets: [car], context: context
-        )
+        let review = CaptureReview(result: readAsABill(), assets: [car], context: context)
         #expect(review.blueprintKey == nil)
-        review.kind = .rcaPolicy
-        review.kindChanged(assets: [car])
-        #expect(review.blueprintKey == "vehicle.rca")
-        #expect(!review.remindsToPay, "Not a bill any more")
+
+        let corrected = review.choosingKind(.rcaPolicy, assets: [car], context: context)
+        #expect(corrected.kind == .rcaPolicy)
+        #expect(corrected.blueprintKey == "vehicle.rca")
+        #expect(!corrected.remindsToPay, "Not a bill any more")
+        let expiry = try #require(CaptureDay(year: 2027, month: 10, day: 31))
+        #expect(corrected.value(.expiryDate) == .day(expiry), "The policy's own expiry, read from its text")
+        #expect(corrected.reminderDay == CaptureMapping.calendarDay(expiry))
+        #expect(corrected.value(.dueDate) == nil, "The bill's payment date doesn't stay on a policy")
+    }
+
+    @Test func correctingTheKindKeepsWhatThePersonTyped() throws {
+        let context = try makeContext()
+        let (car, _) = try car(context)
+        var review = CaptureReview(result: readAsABill(), assets: [car], context: context)
+        review.title = "Polița mașinii"
+        if let index = review.fields.firstIndex(where: { $0.key == .dueDate }) { review.fields[index].confirm(nil) }
+        let corrected = review.choosingKind(.rcaPolicy, assets: [car], context: context)
+        #expect(corrected.title == "Polița mașinii")
+        #expect(corrected.kindAlternatives.allSatisfy { $0.value != .rcaPolicy })
+        // A later reading doesn't take the person's kind away.
+        let again = CaptureReview(result: readAsABill(), assets: [car], context: context).carryingEdits(from: corrected, assets: [car])
+        #expect(again.kind == .rcaPolicy)
+    }
+
+    @Test func anExpectedFieldThatWasntReadCanBeAdded() throws {
+        let context = try makeContext()
+        let (car, _) = try car(context)
+        // A bill's reading of a page with no dates on it.
+        let bare = CaptureResult(kind: .utilityInvoice, kindConfidence: 0.7, fields: [], suggestions: [], reminder: nil,
+                                 recognizedText: "", barcodes: [], document: nil, notices: [])
+        var review = CaptureReview(result: bare, assets: [car], context: context).choosingKind(.rcaPolicy, assets: [car], context: context)
+        #expect(review.addableKeys.contains(.expiryDate))
+        #expect(!review.addableKeys.contains(.dueDate), "Only what this kind carries")
+        review.addField(.expiryDate)
+        let expiry = try #require(CaptureDay(year: 2027, month: 10, day: 31))
+        let index = try #require(review.fields.firstIndex { $0.key == .expiryDate })
+        review.fields[index].confirm(.day(expiry))
+        #expect(!review.addableKeys.contains(.expiryDate))
         #expect(review.reminderDay == CaptureMapping.calendarDay(expiry))
     }
 }

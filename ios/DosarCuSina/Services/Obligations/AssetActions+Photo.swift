@@ -7,11 +7,6 @@ extension AssetActions {
     public func setPhoto(_ asset: Asset, _ data: Data?) throws {
         asset.photoData = data
         asset.updatedAt = Date()
-        do {
-            try UnitOfWork.save(context)
-        } catch {
-            context.rollback()
-            throw error
-        }
+        try UnitOfWork.save(context)
     }
 }
