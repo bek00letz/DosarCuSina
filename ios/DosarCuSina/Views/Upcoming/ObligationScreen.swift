@@ -301,6 +301,7 @@ private struct ObligationPage: View {
     @ViewBuilder private var reminders: some View {
         if obligation.status == .active {
             let profile = obligation.reminders
+            let usual = DeadlineReminders.restorable(obligation, in: context)
             VStack(alignment: .leading, spacing: DS.Space.s) {
                 DSSectionHeader("Când te anunț")
                 ReminderPermissionNotice()
@@ -333,10 +334,35 @@ private struct ObligationPage: View {
                                 run { try ObligationActions(context: context).setFollowUpAfterLapse(obligation, isOn) }
                             }
                         }
+                        if let usual {
+                            VStack(alignment: .leading, spacing: DS.Space.xs) {
+                                DS.Hairline().padding(.vertical, DS.Space.xxs)
+                                restoreUsualRow(usual)
+                            }
+                            .transition(.opacity)
+                        }
                     }
                 }
+                .dsAnimation(value: usual)
             }
         }
+    }
+
+    /// "Revino la cele obișnuite", offered only when the person set this deadline's reminders
+    /// and they differ from what its document gives. It says what the usual ones are before
+    /// the tap, and the toast takes it back.
+    private func restoreUsualRow(_ usual: ReminderProfile) -> some View {
+        let sentence = ReminderWording.sentence(usual)
+        return Button {
+            saveRequest = ReminderSaveRequest { restoreUsualReminders() }
+        } label: {
+            DSListRow(title: Text("Revino la cele obișnuite", comment: "Reminder settings: put back the reminders the deadline's document gives."),
+                      subtitle: Text(verbatim: sentence), systemImage: "arrow.uturn.backward", trailing: { EmptyView() })
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text("Revino la cele obișnuite"))
+        .accessibilityValue(Text(verbatim: sentence))
+        .accessibilityHint(Text("Pune la loc zilele în care anunț de obicei pentru acest termen.", comment: "VoiceOver hint of the button that puts back the usual reminders."))
     }
 
     // MARK: More
@@ -361,6 +387,16 @@ private struct ObligationPage: View {
         let profile = current.withLeadDays(Array(leads))
         saveRequest = ReminderSaveRequest {
             run { try ObligationActions(context: context).setReminders(obligation, profile) }
+        }
+    }
+
+    private func restoreUsualReminders() {
+        do {
+            guard let restored = try ObligationActions(context: context).restoreUsualReminders(obligation) else { return }
+            let sentence = ReminderWording.sentence(restored.value)
+            toast = .undo("Am pus la loc cele obișnuite. \(sentence)", receipt: restored.receipt)
+        } catch {
+            toast = UpcomingActions.failureToast(error)
         }
     }
 

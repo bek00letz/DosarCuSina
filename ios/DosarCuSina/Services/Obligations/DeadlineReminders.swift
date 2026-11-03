@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 
 /// The one rule for a deadline's reminders following what they come from.
 ///
@@ -17,7 +18,9 @@ import Foundation
 ///
 /// Editează and capture's filing reach it through `AssetActions.update`; the repair list's
 /// travel cut-off step (`TravelCutoffStep`) finds deadlines saved before it and gives them the
-/// same profile, with the owner's OK. Nothing else writes a deadline's profile from its section.
+/// same profile, with the owner's OK. "Revino la cele obișnuite"
+/// (`ObligationActions.restoreUsualReminders`) gives a customised deadline its `usual`
+/// reminders back. Nothing else writes a deadline's profile from its section.
 @MainActor
 enum DeadlineReminders {
     /// The reminders `obligation`'s blueprint gives for `values`, whether or not the person
@@ -25,6 +28,30 @@ enum DeadlineReminders {
     static func usual(for obligation: Obligation, blueprint: ObligationBlueprint?, values: FieldValues) -> ReminderProfile? {
         guard let blueprint, obligation.blueprintKey == blueprint.key else { return nil }
         return blueprint.reminders(for: values)
+    }
+
+    /// The reminders `obligation`'s blueprint gives for its section's current values, with the
+    /// category looked up in `context`; nil for a deadline not made from a blueprint, or whose
+    /// category is gone.
+    static func usual(for obligation: Obligation, in context: ModelContext) -> ReminderProfile? {
+        guard let asset = obligation.asset, let key = obligation.blueprintKey,
+              let template = try? TemplateStore(context: context).template(forKey: asset.templateKey) else { return nil }
+        return usual(for: obligation, blueprint: template.definition.blueprints.first { $0.key == key }, values: asset.values)
+    }
+
+    /// The usual reminders, when "Revino la cele obișnuite" has something to give back: the
+    /// person set this deadline's reminders and they differ from what its document gives.
+    static func restorable(_ obligation: Obligation, in context: ModelContext) -> ReminderProfile? {
+        guard obligation.remindersCustomized, let usual = usual(for: obligation, in: context),
+              usual != obligation.reminders else { return nil }
+        return usual
+    }
+
+    /// Whether `profile` is the person's own for `obligation`: anything but its usual reminders.
+    /// Setting exactly the usual ones back by hand lets it follow its document again. A
+    /// deadline not made from a blueprint has no usual ones, so whatever is set is the person's.
+    static func isCustomized(_ profile: ReminderProfile, for obligation: Obligation, in context: ModelContext) -> Bool {
+        usual(for: obligation, in: context).map { $0 != profile } ?? true
     }
 
     /// The profile `obligation` follows for `values`, or nil when it isn't from `blueprint` or

@@ -138,10 +138,12 @@ public final class ObligationActions {
     }
 
     /// Changes how the obligation reminds (lead days, grace, follow-up after lapsing), as the
-    /// person chose: from now on its reminders stay as set when its section changes.
+    /// person chose: from now on its reminders stay as set when its section changes (all but
+    /// the travel cut-off, which follows the document). Choosing exactly the usual ones lets
+    /// them follow the document again (`DeadlineReminders.isCustomized`).
     public func setReminders(_ obligation: Obligation, _ profile: ReminderProfile) throws {
         obligation.reminders = profile
-        obligation.remindersCustomized = true
+        obligation.remindersCustomized = DeadlineReminders.isCustomized(profile, for: obligation, in: context)
         obligation.updatedAt = now()
         try save()
     }
@@ -149,9 +151,24 @@ public final class ObligationActions {
     /// The "follow up after it lapses" checkbox: the person's choice, kept like `setReminders`.
     public func setFollowUpAfterLapse(_ obligation: Obligation, _ isOn: Bool) throws {
         obligation.followUpAfterLapse = isOn
-        obligation.remindersCustomized = true
+        obligation.remindersCustomized = DeadlineReminders.isCustomized(obligation.reminders, for: obligation, in: context)
         obligation.updatedAt = now()
         try save()
+    }
+
+    /// "Revino la cele obișnuite": a deadline whose reminders the person set gets back the ones
+    /// its document gives (`DeadlineReminders.restorable`) and follows its document again.
+    /// Undoable; nil when there is nothing to give back.
+    @discardableResult
+    public func restoreUsualReminders(_ obligation: Obligation) throws -> Undoable<ReminderProfile>? {
+        guard let usual = DeadlineReminders.restorable(obligation, in: context) else { return nil }
+        return try UnitOfWork.performUndoable(in: context) {
+            obligation.reminders = usual
+            obligation.remindersCustomized = false
+            obligation.updatedAt = now()
+            try save()
+            return usual
+        }
     }
 
     @discardableResult
