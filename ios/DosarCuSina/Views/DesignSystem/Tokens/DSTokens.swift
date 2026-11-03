@@ -1,10 +1,7 @@
 import SwiftUI
 
-/// Namespace for the Dosar cu Șină design system.
-///
-/// Every screen builds on these tokens and components instead of hand-tuned values,
-/// so spacing, corners, color, type and motion stay consistent across the app.
-enum DS {}
+// The `DS` namespace, its motion and the delayed spinner are in ios/Shared/DSMotion.swift,
+// so the widgets and the share extension use them too.
 
 // MARK: - Spacing (4/8 pt grid)
 

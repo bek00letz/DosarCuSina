@@ -194,9 +194,7 @@ struct ShareConfirmationView: View {
     let model: ShareModel
     let onDone: () -> Void
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
-    @State private var showsProgress = false
 
     var body: some View {
         VStack(spacing: 16) {
@@ -230,7 +228,7 @@ struct ShareConfirmationView: View {
         .frame(maxWidth: 480)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(uiColor: .systemGroupedBackground))
-        .animation(reduceMotion ? .easeOut(duration: 0.18) : .spring(duration: 0.32, bounce: 0.1), value: model.phase)
+        .dsAnimation(value: model.phase)
         .sensoryFeedback(trigger: model.phase) { _, phase in
             switch phase {
             case .saved: .success
@@ -238,14 +236,11 @@ struct ShareConfirmationView: View {
             case .working: nil
             }
         }
-        .task {
-            // Only show a spinner if copying takes a moment.
-            try? await Task.sleep(for: .milliseconds(400))
-            showsProgress = true
-        }
         .task(id: model.phase) {
+            // With VoiceOver on, the person closes it when they've heard it.
             guard case .saved = model.phase, !voiceOverEnabled else { return }
-            try? await Task.sleep(for: .seconds(2.5))
+            try? await Task.sleep(for: DS.Motion.confirmationDwell)
+            guard !Task.isCancelled else { return }
             onDone()
         }
     }
@@ -253,7 +248,8 @@ struct ShareConfirmationView: View {
     @ViewBuilder private var symbol: some View {
         switch model.phase {
         case .working:
-            ProgressView().controlSize(.large).opacity(showsProgress ? 1 : 0)
+            // Only shows if copying takes a moment; the title already says what's happening.
+            DSDelayedProgress(label: nil).controlSize(.large)
         case .saved:
             Image(systemName: "checkmark.circle.fill")
         case .unsupported, .failed, .tooLarge:

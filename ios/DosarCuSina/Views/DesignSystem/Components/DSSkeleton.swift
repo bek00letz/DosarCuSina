@@ -1,30 +1,5 @@
 import SwiftUI
 
-/// A spinner that stays invisible for a short delay, so fast work never flashes a spinner.
-/// Its space is always reserved, so nothing jumps when it appears.
-struct DSDelayedProgress: View {
-    var label: LocalizedStringKey = "Se încarcă…"
-    var delay: Duration = .milliseconds(400)
-
-    @State private var isVisible = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    var body: some View {
-        ProgressView {
-            Text(label)
-                .dsFont(.footnote)
-        }
-        .opacity(isVisible ? 1 : 0)
-        .accessibilityHidden(!isVisible)
-        .task {
-            try? await Task.sleep(for: delay)
-            withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) {
-                isVisible = true
-            }
-        }
-    }
-}
-
 extension View {
     /// Shows this view as a placeholder shape while `isActive`, keeping the real layout,
     /// so content swaps in without moving anything. A soft shimmer runs unless Reduce Motion is on.
@@ -77,7 +52,7 @@ private struct DSShimmer: View {
         }
         .blendMode(.plusLighter)
         .onAppear {
-            withAnimation(.linear(duration: 1.4).repeatForever(autoreverses: false)) {
+            withAnimation(DS.Motion.sweep) {
                 phase = 1
             }
         }

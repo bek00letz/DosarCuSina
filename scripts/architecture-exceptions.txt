@@ -7,14 +7,6 @@
 #
 # Format: path:rule, or path:rule:count when a file breaks the rule more than once.
 # The note above each group says which piece of work removes it.
-# animation-curve: Springs from DS.Motion; the shimmer needs a DS.Motion token for a steady sweep, the share extension needs the tokens in ios/Shared.
-ios/DosarCuSina/Views/Capture/DocumentPagesViewer.swift:animation-curve:2
-ios/DosarCuSina/Views/DesignSystem/Components/DSLoading.swift:animation-curve
-ios/DosarCuSinaShare/ShareViewController.swift:animation-curve
-
-# bare-progress-view: The share extension draws its own spinner; it needs DSDelayedProgress in ios/Shared.
-ios/DosarCuSinaShare/ShareViewController.swift:bare-progress-view
-
 # built-in-key-in-views: Ask the category's behaviour (CategoryBehavior) instead. Left: the add-section menu's own wording and shortlist (AddSectionFlow), the visit wording (VisitDraft, the "visit wording as a template field" gap) and a refresh query (UpcomingRoot).
 ios/DosarCuSina/Views/Add/Visit/VisitDraft.swift:built-in-key-in-views:2
 ios/DosarCuSina/Views/Section/AddSectionFlow.swift:built-in-key-in-views:12

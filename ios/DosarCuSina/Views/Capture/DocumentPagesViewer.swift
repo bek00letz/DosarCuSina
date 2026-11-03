@@ -58,7 +58,7 @@ struct DocumentPagesViewer: View {
         .presentationBackground(.clear)
         .onAppear {
             guard reduceMotion else { return }
-            withAnimation(.easeInOut(duration: 0.2)) { isShown = true }
+            withAnimation(DS.Motion.reducedFade) { isShown = true }
         }
     }
 
@@ -73,7 +73,7 @@ struct DocumentPagesViewer: View {
     /// Closes the viewer: with Reduce Motion, a fade instead of the slide down.
     private func close() {
         guard reduceMotion else { return dismiss() }
-        withAnimation(.easeInOut(duration: 0.2)) {
+        withAnimation(DS.Motion.reducedFade) {
             isShown = false
         } completion: {
             var transaction = Transaction()
