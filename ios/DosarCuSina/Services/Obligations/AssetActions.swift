@@ -54,9 +54,14 @@ public final class AssetActions {
 
     /// The template's blueprints with first dates worked out from `values`, for the add flow.
     public func plannedObligations(for template: CategoryTemplate, values: FieldValues) -> [PlannedObligation] {
+        plannedObligations(for: template.definition, values: values)
+    }
+
+    /// The same for a category not saved yet: one of the person's own, while they describe it.
+    public func plannedObligations(for definition: TemplateDefinition, values: FieldValues) -> [PlannedObligation] {
         let today = CalendarDay(now(), calendar: calendar)
-        let values = values.applyingRules(of: template.definition, previous: nil, calendar: calendar)
-        return template.blueprints.filter { $0.appliesWhen?.isMet(by: values) ?? true }.map { blueprint in
+        let values = values.applyingRules(of: definition, previous: nil, calendar: calendar)
+        return definition.blueprints.filter { $0.appliesWhen?.isMet(by: values) ?? true }.map { blueprint in
             PlannedObligation(
                 blueprint: blueprint,
                 firstDue: RecurrenceEngine.firstDue(for: blueprint, values: values, today: today, calendar: calendar),

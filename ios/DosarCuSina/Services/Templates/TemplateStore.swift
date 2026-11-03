@@ -5,9 +5,13 @@ public enum TemplateStoreError: LocalizedError, Equatable {
     /// The category still has assets; move or delete them first.
     case inUse(assetCount: Int)
     case builtInCannotBeDeleted
+    /// What a built-in category does is the app's; only categories of one's own have switches.
+    case builtInBehaviourIsFixed
 
     public var errorDescription: String? {
         switch self {
+        case .builtInBehaviourIsFixed:
+            return String(localized: "Categoriile incluse se poartă mereu la fel. Poți schimba doar categoriile tale.", comment: "Shown when changing what a built-in category keeps.")
         case .inUse(let count):
             return String(localized: "Categoria are încă \(count) active. Mută-le sau șterge-le mai întâi.", comment: "Shown when deleting a category that still has assets")
         case .builtInCannotBeDeleted:
@@ -158,6 +162,69 @@ public struct TemplateStore {
         template.pockets = pockets
         try save()
         return template
+    }
+
+    /// Creates a category of the person's own from the few plain questions it answers
+    /// (`CategorySwitches`): its pockets, its box, a counter and a service deadline.
+    @discardableResult
+    public func createCustom(name: String, symbol: String, switches: CategorySwitches, tint: TemplateTint = .gray, isSensitive: Bool = false) throws -> CategoryTemplate {
+        var definition = switches.definition(key: TemplateDefinition.newCustomKey(), name: name, symbol: symbol, tint: tint)
+        definition.isSensitiveByDefault = isSensitive
+        let order = ((try all()).map(\.homeOrder).max() ?? -1) + 1
+        let template = CategoryTemplate(definition: definition, isBuiltIn: false, homeOrder: order)
+        context.insert(template)
+        try save()
+        return template
+    }
+
+    /// The deadlines a change of switches touches: the service deadlines a switch turns off
+    /// (still running) and the ones it turns back on (paused). Nothing changes until the
+    /// person says so (`editCustom(_:name:symbol:switches:changingDeadlines:)`).
+    public struct SwitchEffects {
+        /// Running deadlines whose service the change turns off.
+        public var pausing: [Obligation] = []
+        /// Paused deadlines whose service the change turns back on.
+        public var resuming: [Obligation] = []
+
+        public var isEmpty: Bool { pausing.isEmpty && resuming.isEmpty }
+    }
+
+    public func effects(of switches: CategorySwitches, on template: CategoryTemplate) throws -> SwitchEffects {
+        let before = Set(template.blueprints.map(\.key).filter(CategorySwitches.isServiceBlueprint))
+        let after = Set(switches.applied(to: template.definition).blueprints.map(\.key).filter(CategorySwitches.isServiceBlueprint))
+        let key = template.key
+        let assets = try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.templateKey == key }, sortBy: [SortDescriptor(\.name)]))
+        var effects = SwitchEffects()
+        for obligation in assets.flatMap({ $0.obligations ?? [] }) {
+            guard let blueprint = obligation.blueprintKey else { continue }
+            if obligation.status == .active, before.contains(blueprint), !after.contains(blueprint) {
+                effects.pausing.append(obligation)
+            } else if obligation.status == .paused, after.contains(blueprint), !before.contains(blueprint) {
+                effects.resuming.append(obligation)
+            }
+        }
+        return effects
+    }
+
+    /// Renames a category of the person's own and changes its symbol and switches, as one
+    /// step the toast can take back. Nothing filed is deleted: a pocket turned off only
+    /// hides, and comes back with what it had. With `changingDeadlines`, the service
+    /// deadlines a switch turned off are paused and the paused ones it turned back on run
+    /// again (`effects(of:on:)`), in the same step.
+    @discardableResult
+    public func editCustom(_ template: CategoryTemplate, name: String, symbol: String, switches: CategorySwitches, changingDeadlines: Bool) throws -> UndoReceipt {
+        guard !template.isBuiltIn else { throw TemplateStoreError.builtInBehaviourIsFixed }
+        let effects = changingDeadlines ? try effects(of: switches, on: template) : SwitchEffects()
+        return try UnitOfWork.performUndoable(in: context) {
+            var definition = switches.applied(to: template.definition)
+            definition.name = name
+            definition.symbol = symbol
+            template.apply(definition)
+            let actions = ObligationActions(context: context)
+            for obligation in effects.pausing { try actions.pause(obligation) }
+            for obligation in effects.resuming { try actions.resume(obligation) }
+            try save()
+        }.receipt
     }
 
     /// Changes which pockets a category shows.

@@ -9,6 +9,8 @@ struct SettingsScreen: View {
     @Environment(\.dismiss) private var dismiss
     /// The repair list, open right away when a link or the repair prompt asks for it.
     @State private var showsRepairs: Bool
+    /// Confirms a saved change to a category of one's own, with its undo.
+    @State private var toast: DSToast?
 
     init(initialSection: SettingsSection?) {
         self.initialSection = initialSection
@@ -23,6 +25,7 @@ struct SettingsScreen: View {
                     LockSettings().id(SettingsSection.privacy)
                     SpotlightSettings()
                     SectionVisibilitySettings().id(SettingsSection.categories)
+                    CustomCategorySettings(toast: $toast)
                     ExampleSettings().id(SettingsSection.examples)
                     BackupSettings().id(SettingsSection.backup)
                     DataRepairSettings(isShowingList: $showsRepairs).id(SettingsSection.repairs)
@@ -37,6 +40,7 @@ struct SettingsScreen: View {
                 }
             }
             .navigationDestination(isPresented: $showsRepairs) { DataRepairsScreen() }
+            .dsToast($toast)
             .navigationTitle(Text("Setări", comment: "Toolbar button that opens settings."))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -235,6 +239,48 @@ private struct SectionVisibilitySettings: View {
             try TemplateStore(context: context).setOnHome(template, isOn)
         } catch {
             self.error = UserFacingError(error)
+        }
+    }
+}
+
+// MARK: - Categoriile tale
+
+/// The person's own categories, each opening its name, symbol and switches
+/// (`CategoryEditSheet`). Built-in categories behave as they always do, so they aren't here.
+private struct CustomCategorySettings: View {
+    @Binding var toast: DSToast?
+    @Query(sort: [SortDescriptor(\CategoryTemplate.homeOrder)]) private var templates: [CategoryTemplate]
+    @State private var editing: CategoryTemplate?
+
+    var body: some View {
+        let custom = templates.filter(\.isCustom)
+        if !custom.isEmpty {
+            Section {
+                ForEach(custom) { template in
+                    Button {
+                        editing = template
+                    } label: {
+                        DSListRow(
+                            title: Text(verbatim: template.name),
+                            subtitle: Text(verbatim: CustomCategoryForm.summary(of: CategorySwitches(reading: template.definition))),
+                            systemImage: template.symbol,
+                            tint: template.tintColor,
+                            showsChevron: true
+                        ) { EmptyView() }
+                    }
+                    .buttonStyle(.dsPressable)
+                    .accessibilityHint(Text("Schimbă ce ține minte categoria.", comment: "VoiceOver hint of a category of one's own in Settings."))
+                }
+            } header: {
+                Text("Categoriile tale", comment: "Settings section: the person's own categories.")
+            } footer: {
+                Text("Alege ce ține minte fiecare. Categoriile incluse în aplicație rămân cum sunt.", comment: "Footer of the person's own categories in Settings.")
+            }
+            .sheet(item: $editing) { template in
+                CategoryEditSheet(template: template) { receipt in
+                    toast = .undo("Am schimbat „\(template.name)”.", receipt: receipt)
+                }
+            }
         }
     }
 }
