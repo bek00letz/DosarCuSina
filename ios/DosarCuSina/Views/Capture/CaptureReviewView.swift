@@ -106,7 +106,7 @@ struct CaptureReviewView: View {
             CaptureDestinationPicker(
                 destination: $review.destination, newAssetName: $review.newAssetName, templates: templates, assets: assets,
                 offersNewHolder: review.kind.isIdentityDocument,
-                filesUnderSubscription: CaptureMapping.filesUnderSubscription(review.kind)
+                filesUnderSubscription: review.kind.profile.filing == .subscription
             )
         }
         .fullScreenCover(isPresented: $isShowingPages) {
@@ -363,11 +363,18 @@ struct CaptureReviewView: View {
         }
     }
 
+    /// The part the category `key` plays (a person, a subscription, a home), if any.
+    private func role(of key: String) -> CategoryBehavior.Role? {
+        templatesByKey[key]?.behavior.role
+    }
+
+    private var filesUnderSubscription: Bool { review.kind.profile.filing == .subscription }
+
     private func newAssetNameTitle(_ key: String) -> LocalizedStringKey {
-        switch key {
-        case BuiltInTemplates.Key.member: "Numele persoanei"
-        case BuiltInTemplates.Key.subscription: "Numele abonamentului"
-        case BuiltInTemplates.Key.home where CaptureMapping.filesUnderSubscription(review.kind): "Numele locuinței"
+        switch role(of: key) {
+        case .holder?: "Numele persoanei"
+        case .subscription?: "Numele abonamentului"
+        case .home? where filesUnderSubscription: "Numele locuinței"
         default: "Numele secțiunii noi"
         }
     }
@@ -376,9 +383,9 @@ struct CaptureReviewView: View {
         switch review.destination {
         case .none: return String(localized: "Doar păstrez actul")
         case .asset(let id): return assets.first { $0.id == id }?.name ?? String(localized: "Secțiune ștearsă")
-        case .newAsset(let key) where key == BuiltInTemplates.Key.member:
+        case .newAsset(let key) where role(of: key) == .holder:
             return String(localized: "Persoană nouă: \(review.newAssetName)")
-        case .newAsset(let key) where key == BuiltInTemplates.Key.subscription:
+        case .newAsset(let key) where role(of: key) == .subscription:
             return String(localized: "Abonament nou: \(review.newAssetName)")
         case .newAsset(let key): return String(localized: "Secțiune nouă în \(templatesByKey[key]?.name ?? key)")
         }
@@ -389,20 +396,20 @@ struct CaptureReviewView: View {
         case .none: return String(localized: "Îl găsești în Caută.")
         case .asset(let id):
             guard let asset = assets.first(where: { $0.id == id }) else { return "" }
-            if asset.templateKey == BuiltInTemplates.Key.member { return String(localized: "Actul stă la actele acestei persoane.") }
-            if CaptureMapping.filesUnderSubscription(review.kind) {
+            if role(of: asset.templateKey) == .holder { return String(localized: "Actul stă la actele acestei persoane.") }
+            if filesUnderSubscription {
                 if let subscription = review.existingSubscription(assets: assets), subscription.id != asset.id {
                     return String(localized: "La abonamentul „\(subscription.name)”")
                 }
-                if asset.templateKey == BuiltInTemplates.Key.home {
+                if role(of: asset.templateKey) == .home {
                     return String(localized: "Abonament nou aici: \(CaptureFiler.subscriptionName(review))")
                 }
                 if let parent = asset.parent { return String(localized: "Abonament la \(parent.name)") }
             }
             return templatesByKey[asset.templateKey]?.name ?? ""
-        case .newAsset(let key) where key == BuiltInTemplates.Key.member:
+        case .newAsset(let key) where role(of: key) == .holder:
             return String(localized: "Se adaugă în Acte când salvezi.")
-        case .newAsset(let key) where key == BuiltInTemplates.Key.home && CaptureMapping.filesUnderSubscription(review.kind):
+        case .newAsset(let key) where role(of: key) == .home && filesUnderSubscription:
             return String(localized: "Se creează când salvezi, cu abonamentul „\(CaptureFiler.subscriptionName(review))”.")
         case .newAsset: return String(localized: "Se creează când salvezi.")
         }
@@ -414,7 +421,7 @@ struct CaptureReviewView: View {
         case .asset(let id):
             let asset = assets.first { $0.id == id }
             return asset?.symbolOverride ?? asset.flatMap { templatesByKey[$0.templateKey]?.symbol } ?? "folder"
-        case .newAsset(let key) where key == BuiltInTemplates.Key.member: return "person.crop.circle.badge.plus"
+        case .newAsset(let key) where role(of: key) == .holder: return "person.crop.circle.badge.plus"
         case .newAsset(let key): return templatesByKey[key]?.symbol ?? "folder.badge.plus"
         }
     }
@@ -423,12 +430,12 @@ struct CaptureReviewView: View {
 
     @ViewBuilder private var reminderSection: some View {
         let text = CaptureReminderPreview.text(for: review, templates: templatesByKey, assets: assets, today: CalendarDay(Date()))
-        if text != nil || review.kind == .utilityInvoice {
+        if text != nil || review.kind.profile.deadlineIsOptIn {
             VStack(alignment: .leading, spacing: DS.Space.s) {
                 DSSectionHeader("Când te anunț")
                 DSCard {
                     VStack(alignment: .leading, spacing: DS.Space.s) {
-                        if review.kind == .utilityInvoice, review.reminderDay != nil, !review.paysByDirectDebit(assets: assets) {
+                        if review.kind.profile.deadlineIsOptIn, review.reminderDay != nil, !review.paysByDirectDebit(assets: assets) {
                             DSCheckRow(title: Text("Amintește-mi să o plătesc"), isOn: review.remindsToPay) {
                                 review.remindsToPay.toggle()
                             }
@@ -554,12 +561,12 @@ private struct CaptureFieldEditor: View {
 
     @ViewBuilder private var editor: some View {
         let title = LocalizedStringKey(field.label)
-        if field.key == .serviceKind {
-            // A choice, kept as its stable key.
+        if let choices = CaptureMapping.choices(for: field.key) {
+            // A choice, kept as its stable key: the service, a policy's cover.
             DSChoiceField(title, selection: Binding(
-                get: { field.value?.text },
+                get: { field.value?.text.flatMap { choices.option(for: $0)?.key } },
                 set: { key in field.confirm(key.map(CaptureValue.text)) }
-            ), options: ServiceKind.all) { ServiceKind.label(for: $0) ?? $0 }
+            ), options: choices.map(\.key)) { key in choices.option(for: key)?.label ?? key }
         } else {
             valueEditor(title)
         }
@@ -720,8 +727,8 @@ private struct CaptureDestinationPicker: View {
             List {
                 Section {
                     choice(.none, title: String(localized: "Doar păstrez actul"), subtitle: String(localized: "Fără secțiune; îl găsești în Caută."), symbol: "tray")
-                    if offersNewHolder {
-                        choice(.newAsset(templateKey: BuiltInTemplates.Key.member), title: String(localized: "Persoană nouă"),
+                    if offersNewHolder, let holders = templates.first(where: { $0.behavior.role == .holder }) {
+                        choice(.newAsset(templateKey: holders.key), title: String(localized: "Persoană nouă"),
                                subtitle: String(localized: "Actele stau grupate pe persoane."), symbol: "person.crop.circle.badge.plus")
                     }
                 }
@@ -747,7 +754,7 @@ private struct CaptureDestinationPicker: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Închide") { dismiss() } }
             }
             .navigationDestination(isPresented: $isPickingNewCategory) {
-                List(templates.filter { $0.key != BuiltInTemplates.Key.member }) { template in
+                List(templates.filter { $0.behavior.role != .holder }) { template in
                     choice(.newAsset(templateKey: template.key), title: template.name, subtitle: template.summary, symbol: template.symbol)
                 }
                 .navigationTitle("Ce fel de secțiune")
@@ -756,15 +763,20 @@ private struct CaptureDestinationPicker: View {
         }
     }
 
+    /// What the asset's category does.
+    private func behavior(of asset: Asset) -> CategoryBehavior {
+        templates.first { $0.key == asset.templateKey }?.behavior ?? .standard
+    }
+
     /// What choosing an asset means: an example is marked; for a bill, a home holds its
     /// subscription and a subscription says whose it is.
     private func subtitle(for asset: Asset) -> String? {
         if asset.isExample { return String(localized: "Exemplu") }
         guard filesUnderSubscription else { return nil }
-        if asset.templateKey == BuiltInTemplates.Key.home {
+        if behavior(of: asset).role == .home {
             return String(localized: "La abonamentul de aici, sau unul nou", comment: "Destination picker: a bill filed under a home goes to its subscription there.")
         }
-        if asset.templateKey == BuiltInTemplates.Key.subscription, let parent = asset.parent { return parent.name }
+        if behavior(of: asset).role == .subscription, let parent = asset.parent { return parent.name }
         return nil
     }
 

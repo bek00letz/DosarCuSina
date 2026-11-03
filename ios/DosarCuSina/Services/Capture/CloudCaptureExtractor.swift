@@ -29,6 +29,8 @@ enum CloudFieldFormat: Hashable, Sendable {
     case phone
     /// One of the service keys (`ServiceKind`).
     case serviceKind
+    /// One of the cover keys (`InsuranceCover`).
+    case coverage
     /// The machine-readable zone's lines, checked by their own digits.
     case machineReadableZone
 }
@@ -133,6 +135,7 @@ struct CloudSchema: Sendable {
         case .total, .purchasePrice, .monthlyPrice: .money
         case .warrantyMonths, .odometer, .meterIndex, .minimumMonths: .integer
         case .serviceKind: .serviceKind
+        case .coverageType: .coverage
         case .lineItems: .lineItems
         case .vin: .vin
         case .licensePlate: .plate
@@ -169,6 +172,9 @@ struct CloudSchema: Sendable {
         case .clientCode: "The client code."
         case .contractNumber: "The contract's number (or the addendum's), as printed."
         case .serviceKind: "What the service is: gas, electricity, water, fixed internet or TV, a mobile phone plan, or something else."
+        case .coverageType: "What the policy covers: \(InsuranceCover.rca) (compulsory motor insurance), \(InsuranceCover.casco) (motor damage), "
+            + "\(InsuranceCover.pad) (compulsory home insurance) or \(InsuranceCover.home) (optional home insurance)."
+        case .providerTaxID: "The issuer's tax ID (CUI or CIF), digits only, without RO."
         case .phoneNumber: "The customer's own mobile phone number the plan is for (not the provider's support line)."
         case .minimumMonths: "The minimum contract period in months (perioada minimă), e.g. 24."
         case .minimumPeriodEnd: "The last day of the minimum contract period."
@@ -239,6 +245,9 @@ struct CloudSchema: Sendable {
         case .serviceKind:
             return ["type": ["string", "null"], "description": description,
                     "enum": .array(ServiceKind.all.map(JSONValue.string) + [.null])]
+        case .coverage:
+            return ["type": ["string", "null"], "description": description,
+                    "enum": .array(InsuranceCover.all.map(JSONValue.string) + [.null])]
         case .lineItems:
             return [
                 "type": "array", "description": description,
@@ -269,24 +278,9 @@ struct CloudSchema: Sendable {
         return text
     }
 
+    /// What the provider is told a kind is, from the kind's profile.
     static func documentName(_ kind: CaptureDocumentKind) -> String {
-        switch kind {
-        case .passport: "passport data page"
-        case .identityCard: "identity card"
-        case .drivingLicence: "EU driving licence"
-        case .vehicleRegistration: "vehicle registration certificate"
-        case .rcaPolicy: "compulsory motor insurance (RCA) policy"
-        case .insurancePolicy: "insurance policy"
-        case .utilityInvoice: "utility, internet, TV or phone bill"
-        case .contract: "contract or addendum for gas, electricity, water, internet, TV or a mobile plan"
-        case .serviceInvoice: "car service invoice"
-        case .fiscalReceipt: "fiscal receipt"
-        case .warrantyCertificate: "warranty certificate"
-        case .itpReport: "periodic technical inspection (ITP) report"
-        case .veterinaryRecord: "veterinary record"
-        case .medicalResult: "medical test result"
-        case .other: "household document"
-        }
+        kind.profile.modelDescription
     }
 }
 
@@ -394,6 +388,10 @@ enum CloudAnswerMapper {
                 // A judgement about the page, not text copied from it: kept when it names a known service.
                 guard let service = raw.string, ServiceKind.all.contains(service) else { continue }
                 add(key, .text(service), grounded)
+            case .coverage:
+                // The same for the cover: kept when it names a known one.
+                guard let cover = InsuranceCover.key(for: raw.string), InsuranceCover.all.contains(cover) else { continue }
+                add(key, .text(cover), grounded)
             case .text, .documentNumber, .country, .plate, .phone:
                 guard let text = raw.string?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty, text.lowercased() != "null" else { continue }
                 var value = field.format == .documentNumber || field.format == .plate ? text.uppercased() : text

@@ -18,6 +18,8 @@ public enum ProviderTrade: String, Codable, CaseIterable, Sendable {
     case doctor
     case dentist
     case insuranceAgent
+    /// The insurance company that issued a policy (RCA, CASCO, PAD).
+    case insurer
     case accountant
     case tenant
     case emergencyContact
@@ -39,6 +41,7 @@ public enum ProviderTrade: String, Codable, CaseIterable, Sendable {
         case .doctor: return String(localized: "Medic")
         case .dentist: return String(localized: "Stomatolog")
         case .insuranceAgent: return String(localized: "Agent de asigurări")
+        case .insurer: return String(localized: "Asigurător")
         case .accountant: return String(localized: "Contabil")
         case .tenant: return String(localized: "Chiriaș")
         case .emergencyContact: return String(localized: "Contact pentru urgențe")

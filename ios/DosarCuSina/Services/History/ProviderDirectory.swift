@@ -36,20 +36,35 @@ public final class ProviderActions {
     }
 
     /// The one way capture and the visit form name who issued a document or did a job:
-    /// the firm already in Oameni, or a new one. A firm is the same when its name reads
-    /// the same once case, diacritics and spacing are set aside (`SearchText.normalize`).
-    /// Callers pass the CUI read off the document as `taxID`; the CUI match comes with
-    /// the provider tax-ID field. The firm is linked to `asset` either way.
+    /// the firm already in Agendă, or a new one. A firm is the same when it has the CUI
+    /// read off the document (`taxID`), whatever its name says; without a CUI match, when
+    /// its name reads the same once case, diacritics and spacing are set aside
+    /// (`SearchText.normalize`) and it has no other CUI. A firm found keeps the CUI it
+    /// lacked. The firm is linked to `asset` either way.
     @discardableResult
     public func findOrCreate(name: String, taxID: String? = nil, trade: ProviderTrade, phone: String? = nil, linkedTo asset: Asset? = nil) throws -> Provider? {
         let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return nil }
+        let taxID = ProviderTaxID.normalized(taxID)
+        let providers = try context.fetch(FetchDescriptor<Provider>())
         let wanted = SearchText.normalize(name)
-        if let existing = try context.fetch(FetchDescriptor<Provider>()).first(where: { SearchText.normalize($0.name) == wanted }) {
+        let byTaxID = taxID.flatMap { id in providers.first { $0.taxID == id } }
+        let byName = providers.first { SearchText.normalize($0.name) == wanted && ($0.taxID == nil || taxID == nil || $0.taxID == taxID) }
+        if let existing = byTaxID ?? byName {
             if let asset { try link(existing, to: asset) }
+            if existing.taxID == nil, let taxID {
+                existing.taxID = taxID
+                existing.updatedAt = now()
+                try save()
+            }
             return existing
         }
-        return try create(name: name, trades: [trade], phone: phone, linkedTo: asset.map { [$0] } ?? [])
+        let created = try create(name: name, trades: [trade], phone: phone, linkedTo: asset.map { [$0] } ?? [])
+        if let taxID {
+            created.taxID = taxID
+            try save()
+        }
+        return created
     }
 
     public func link(_ provider: Provider, to asset: Asset) throws {

@@ -159,6 +159,19 @@ public final class AssetActions {
                     obligation.setDueDay(day.adding(days: offset, calendar: calendar), calendar: calendar)
                     obligation.updatedAt = now()
                 }
+                // A field that drives a deadline gets a value and the section has none from
+                // it: the deadline is made, as adding the section would have (a policy's end
+                // typed in later, a warranty's end read off a receipt).
+                let today = CalendarDay(now(), calendar: calendar)
+                let kept = Set((asset.obligations ?? []).filter { $0.status == .active || $0.status == .paused }.compactMap(\.blueprintKey))
+                for blueprint in template.blueprints where !kept.contains(blueprint.key) {
+                    guard case .field(let fieldKey, _) = blueprint.firstDue,
+                          previous[fieldKey] != values[fieldKey], values[fieldKey]?.dateValue != nil,
+                          blueprint.appliesWhen?.isMet(by: values) ?? true,
+                          let day = RecurrenceEngine.firstDue(for: blueprint, values: values, today: today, calendar: calendar),
+                          blueprint.isWorthScheduling(on: day, today: today) else { continue }
+                    try HouseholdMutations.makeObligation(from: blueprint, for: asset, firstDue: day, today: today, calendar: calendar, in: context)
+                }
                 if let reading = HouseholdMutations.heroMetricValue(of: asset, template: template.definition),
                    reading != HouseholdMutations.heroMetricValue(values: previous, template: template.definition) {
                     try HouseholdMutations.recordReading(reading, on: asset, at: readingDate ?? now(), source: readingSource,

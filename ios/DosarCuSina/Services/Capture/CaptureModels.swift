@@ -337,13 +337,13 @@ public struct CaptureAssetHint: Hashable, Codable, Sendable {
 /// Where the captured information could go. The user confirms; nothing is saved automatically.
 public struct CaptureSuggestion: Hashable, Codable, Sendable {
     public enum Destination: Hashable, Codable, Sendable {
-        /// Create a new asset from a template (`vehicle`, `home`, `pet`, `health`, `documents`, `warranties`, `subscriptions`).
+        /// Create a new asset from a template of the binder's catalog (`vehicle`, `documents`, `purchase`).
         case newAsset(templateKey: String)
-        /// Add or update an obligation from a blueprint (e.g. `rca`, `itp`, `passportRenewal`).
+        /// Add or update an obligation from a blueprint of that template (`vehicle.rca`, `document.renew`).
         case obligation(blueprintKey: String, templateKey: String?)
         /// Log what happened in the asset's history (a service visit, a bill, a vaccine).
         case historyEntry(templateKey: String?)
-        /// Remember who did the work or issued the document.
+        /// Remember who did the work or issued the document; `trade` is a `ProviderTrade` raw value.
         case provider(name: String, trade: String?)
         /// Keep the document on file without creating anything else.
         case attachOnly
@@ -361,19 +361,20 @@ public struct CaptureSuggestion: Hashable, Codable, Sendable {
     }
 }
 
-/// How early to warn about the date this document carries.
+/// The deadline the date on this document sets. How early it reminds is the blueprint's
+/// (`ObligationBlueprint.reminders`), never capture's.
 public struct CaptureReminderHint: Hashable, Codable, Sendable {
     /// The day that matters (expiry, due date, next dose).
     public let day: CaptureDay
-    /// The reminder profile Core should apply, e.g. `passport`, `rca`, `petVaccine`.
-    public let profileKey: String
-    /// Days before ``day`` to warn, longest first. A fallback when Core has no profile for the key.
-    public let leadDays: [Int]
+    /// The deadline, as a blueprint of the binder's catalog: `vehicle.rca`, `document.renew`.
+    public let blueprintKey: String
+    /// The category whose blueprint it is.
+    public let templateKey: String
 
-    public init(day: CaptureDay, profileKey: String, leadDays: [Int]) {
+    public init(day: CaptureDay, blueprintKey: String, templateKey: String) {
         self.day = day
-        self.profileKey = profileKey
-        self.leadDays = leadDays.sorted(by: >)
+        self.blueprintKey = blueprintKey
+        self.templateKey = templateKey
     }
 }
 

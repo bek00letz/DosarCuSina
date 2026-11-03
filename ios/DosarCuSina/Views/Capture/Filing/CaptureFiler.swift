@@ -106,9 +106,10 @@ struct CaptureFiler {
         }
     }
 
-    /// The next deadline printed on a captured document (expiry, due date, next dose).
+    /// The next deadline printed on a captured document: the day its kind's deadline
+    /// follows, else any expiry, next dose, warranty end or due date it carries.
     static func nextDay(in result: CaptureResult) -> CalendarDay? {
-        let keys: [CaptureFieldKey] = [.expiryDate, .nextDoseDate, .warrantyUntil, .dueDate]
+        let keys: [CaptureFieldKey] = (result.kind.profile.deadlineField.map { [$0] } ?? []) + [.expiryDate, .nextDoseDate, .warrantyUntil, .dueDate]
         return keys.lazy.compactMap { result.field($0)?.value.day }.first.map(CaptureMapping.calendarDay)
     }
 
@@ -116,24 +117,30 @@ struct CaptureFiler {
 
     /// Template values the review would write to `template`, from the fields read.
     static func values(from review: CaptureReview, for template: TemplateDefinition) -> FieldValues {
+        values(from: review, for: template, deadline: review.deadlineBlueprint(in: template))
+    }
+
+    /// The same, for the deadline `deadline` the document sets in `template`: a policy's
+    /// facts go where that deadline keeps them.
+    static func values(from review: CaptureReview, for template: TemplateDefinition, deadline: ObligationBlueprint?) -> FieldValues {
         var values = FieldValues()
         for field in review.fields {
             guard let value = field.value,
-                  let key = CaptureMapping.fieldKey(for: field.key, kind: review.kind, in: template, coverage: review.value(.coverageType)?.text),
+                  let key = CaptureMapping.fieldKey(for: field.key, kind: review.kind, in: template, deadline: deadline),
                   let definition = template.field(key),
                   let converted = CaptureMapping.fieldValue(value, for: definition) else { continue }
             if values[key] == nil { values[key] = converted }
         }
         // A contract's minimum period ends where the review says (its printed end, or the
         // person's corrected start and length), so the deadline and the field agree.
-        if review.kind == .contract, let end = review.minimumPeriodEnd, template.field(SubscriptionFields.minimumUntil) != nil {
+        if review.kind.profile.deadlineField == .minimumPeriodEnd, let end = review.minimumPeriodEnd, template.field(SubscriptionFields.minimumUntil) != nil {
             values[SubscriptionFields.minimumUntil] = .date(end)
         }
         // A bill's amount is the subscription's last bill (`updateSubscription` keeps the newest).
-        if review.kind == .utilityInvoice, let total = review.total, template.field(SubscriptionFields.lastBill) != nil {
+        if review.kind.profile.deadlineIsOptIn, let total = review.total, template.field(SubscriptionFields.lastBill) != nil {
             values[SubscriptionFields.lastBill] = .money(total)
         }
-        if let type = CaptureMapping.documentType(for: review.kind), template.field(DocumentType.typeFieldKey) != nil {
+        if let type = review.kind.profile.documentType, template.field(DocumentType.typeFieldKey) != nil {
             values[DocumentType.typeFieldKey] = .text(type)
             // The layout that was read says which variant this is (the electronic card or the older one).
             if let variant = review.value(.documentVariant)?.text,
@@ -145,32 +152,15 @@ struct CaptureFiler {
         return values
     }
 
-    /// Whether saving would create or move a deadline, so the reminder permission is worth asking first.
-    func touchesReminders(_ review: CaptureReview) -> Bool {
-        let assets = (try? context.fetch(FetchDescriptor<Asset>())) ?? []
-        guard let day = review.reminderDay, review.destination != .none else { return false }
-        if CaptureMapping.filesUnderSubscription(review.kind) {
-            return Self.deadline(for: review, paysByDirectDebit: review.paysByDirectDebit(assets: assets),
-                                 today: CalendarDay(now(), calendar: calendar)) != nil && day >= CalendarDay(now(), calendar: calendar)
-        }
-        return review.blueprintKey != nil || review.kind.isIdentityDocument || review.kind == .warrantyCertificate || review.kind == .fiscalReceipt
+    /// What saving `review` will do, as the review shows it (`CaptureFilingPlan`).
+    func plan(for review: CaptureReview) throws -> CaptureFilingPlan {
+        CaptureFilingPlan.make(for: review, templates: try TemplateStore(context: context).templatesByKey(),
+                               assets: try context.fetch(FetchDescriptor<Asset>()), today: CalendarDay(now(), calendar: calendar), calendar: calendar)
     }
 
-    /// The deadline a review sets: its blueprint and day. A bill's only when the person
-    /// wants the reminder, the bank doesn't pay it by itself and the day is still ahead;
-    /// the end of a minimum period only while it is ahead (once it passed, there is no
-    /// moment left to act on).
-    static func deadline(for review: CaptureReview, paysByDirectDebit: Bool, today: CalendarDay) -> (key: String, day: CalendarDay)? {
-        guard let key = review.blueprintKey, let day = review.reminderDay else { return nil }
-        switch key {
-        case SubscriptionFields.billBlueprint:
-            guard review.remindsToPay, !paysByDirectDebit, day >= today else { return nil }
-        case SubscriptionFields.minimumEndsBlueprint:
-            guard day >= today else { return nil }
-        default:
-            break
-        }
-        return (key, day)
+    /// Whether saving would create or move a deadline, so the reminder permission is worth asking first.
+    func touchesReminders(_ review: CaptureReview) -> Bool {
+        (try? plan(for: review))?.schedulesReminder ?? false
     }
 
     // MARK: Save
@@ -218,8 +208,9 @@ struct CaptureFiler {
         var outcome = Outcome()
         let today = CalendarDay(now(), calendar: calendar)
         let obligations = ObligationActions(context: context, calendar: calendar, now: now)
-        let assets = try context.fetch(FetchDescriptor<Asset>())
-        var deadline = Self.deadline(for: review, paysByDirectDebit: review.paysByDirectDebit(assets: assets), today: today)
+        // What the review showed is what happens: one plan, worked out before anything changes.
+        let plan = CaptureFilingPlan.make(for: review, templates: templates, assets: try context.fetch(FetchDescriptor<Asset>()),
+                                          today: today, calendar: calendar)
 
         // 1. The section.
         switch review.destination {
@@ -231,18 +222,18 @@ struct CaptureFiler {
             guard let asset = try context.fetch(descriptor).first else { throw FilingError.missingSection }
             // What was read never lands in an example without the person keeping it as theirs.
             try ExampleOwnership.requireReal(asset)
-            if let documentsKey = Self.holderDocumentTemplateKey(for: review, destinationTemplateKey: asset.templateKey) {
+            if let documentsKey = Self.holderDocumentTemplateKey(for: review, destinationTemplateKey: asset.templateKey, templates: templates) {
                 // A person: the document becomes one of their documents, named after them.
                 let name = review.kind.isIdentityDocument ? review.title : DocumentNaming.name(document: review.title, holder: asset.name)
-                outcome.asset = try createSection(review, templateKey: documentsKey, name: name, parent: asset, deadline: deadline, templates: templates)
+                outcome.asset = try createSection(review, templateKey: documentsKey, name: name, parent: asset, plan: plan, templates: templates)
                 break
             }
-            if Self.filesUnderSubscription(review, destinationTemplateKey: asset.templateKey) {
+            if Self.filesUnderSubscription(review, destinationTemplateKey: asset.templateKey, templates: templates) {
                 // A home: the bill or contract goes to its subscription there, or a new one.
-                outcome.asset = try subscription(for: review, under: asset, deadline: deadline, templates: templates)
+                outcome.asset = try subscription(for: review, under: asset, plan: plan, templates: templates)
                 break
             }
-            if asset.templateKey == BuiltInTemplates.Key.subscription, CaptureMapping.filesUnderSubscription(review.kind),
+            if templates.plays(.subscription, asset.templateKey), review.kind.profile.filing == .subscription,
                let template = templates[asset.templateKey] {
                 try updateSubscription(asset, from: review, template: template)
                 outcome.asset = asset
@@ -253,50 +244,43 @@ struct CaptureFiler {
         case .newAsset(let templateKey):
             let name = review.newAssetName.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !name.isEmpty else { throw FilingError.missingName }
-            if let documentsKey = Self.holderDocumentTemplateKey(for: review, destinationTemplateKey: templateKey) {
+            if let documentsKey = Self.holderDocumentTemplateKey(for: review, destinationTemplateKey: templateKey, templates: templates) {
                 // A new person, named after the holder, with the document filed under them,
                 // in one save: a failure leaves neither behind.
                 guard let memberTemplate = templates[templateKey] else { throw FilingError.missingSection }
                 outcome.asset = try createSection(review, templateKey: documentsKey, name: review.title,
-                                                  newParent: AssetActions.NewParent(name: name, template: memberTemplate), deadline: deadline, templates: templates)
-            } else if Self.filesUnderSubscription(review, destinationTemplateKey: templateKey) {
+                                                  newParent: AssetActions.NewParent(name: name, template: memberTemplate), plan: plan, templates: templates)
+            } else if Self.filesUnderSubscription(review, destinationTemplateKey: templateKey, templates: templates) {
                 // A new home with the bill's or contract's subscription under it, in one save.
-                guard let homeTemplate = templates[templateKey] else { throw FilingError.missingSection }
-                outcome.asset = try createSection(review, templateKey: BuiltInTemplates.Key.subscription, name: Self.subscriptionName(review),
-                                                  newParent: AssetActions.NewParent(name: name, template: homeTemplate), deadline: deadline, templates: templates)
+                guard let homeTemplate = templates[templateKey], let subscriptions = templates.key(withRole: .subscription) else { throw FilingError.missingSection }
+                outcome.asset = try createSection(review, templateKey: subscriptions, name: Self.subscriptionName(review),
+                                                  newParent: AssetActions.NewParent(name: name, template: homeTemplate), plan: plan, templates: templates)
             } else {
-                outcome.asset = try createSection(review, templateKey: templateKey, name: name, parent: nil, deadline: deadline, templates: templates)
+                outcome.asset = try createSection(review, templateKey: templateKey, name: name, parent: nil, plan: plan, templates: templates)
             }
         }
 
-        // A bill's own deadline waits for the bank: none when it pays by direct debit.
-        if review.kind == .utilityInvoice, let asset = outcome.asset, SubscriptionFields.paysByDirectDebit(asset.values) {
-            deadline = nil
-        }
-
-        // 2. The deadline.
-        if let asset = outcome.asset, let deadline,
-           let blueprint = templates[asset.templateKey]?.blueprints.first(where: { $0.key == deadline.key }) {
-            let key = deadline.key, day = deadline.day
-            if let existing = asset.activeObligations.first(where: { $0.blueprintKey == key }) {
-                outcome.obligation = existing
-                outcome.completion = try renew(existing, to: day, done: false, on: nil, cost: review.total)
-            } else if day >= today {
-                outcome.obligation = try obligations.create(from: blueprint, for: asset, firstDue: day)
+        // 2. The deadline, as the plan says: the section's own moves (or its cycle closes),
+        // or a new one is made. A new section already made it with its other deadlines.
+        if let asset = outcome.asset, let blueprint = plan.blueprint {
+            if let deadline = plan.deadline {
+                if let existing = asset.activeObligations.first(where: { $0.blueprintKey == blueprint.key }) {
+                    outcome.completion = try renew(existing, to: deadline.day, done: false, on: nil, cost: review.total)
+                } else {
+                    _ = try obligations.create(from: deadline.blueprint, for: asset, firstDue: deadline.day)
+                }
             }
-            if key == SubscriptionFields.billBlueprint, let bill = outcome.obligation, bill.dueDay(in: calendar) == day {
+            outcome.obligation = asset.activeObligations.first { $0.blueprintKey == blueprint.key }
+            if let deadline = plan.deadline, review.kind.profile.deadlineIsOptIn, let bill = outcome.obligation, bill.dueDay(in: calendar) == deadline.day {
                 // This bill's amount and number on its reminder.
                 try obligations.setDetails(bill, estimatedCost: review.total, reference: review.value(.invoiceNumber)?.text)
             }
-        } else if let asset = outcome.asset, review.kind.isIdentityDocument || review.kind == .warrantyCertificate || review.kind == .fiscalReceipt {
-            // Field-driven deadlines (a document's renewal, a warranty's end) follow the values written above.
-            outcome.obligation = asset.activeObligations.first
         }
         outcome.nextDue = outcome.obligation?.dueDay(in: calendar)
 
         // A bill, in its subscription's history: what it came to and when, for the trend
         // and for knowing when the next one is due.
-        if review.kind == .utilityInvoice, let asset = outcome.asset, asset.templateKey == BuiltInTemplates.Key.subscription {
+        if review.kind.profile.deadlineIsOptIn, let asset = outcome.asset, templates.plays(.subscription, asset.templateKey) {
             outcome.bill = try HistoryActions(context: context, now: now).record(
                 on: asset,
                 kind: .payment,
@@ -308,7 +292,7 @@ struct CaptureFiler {
         }
 
         // 3. Who issued it.
-        let provider = try self.provider(for: review, asset: outcome.asset)
+        let provider = try self.provider(plan.provider, asset: outcome.asset)
 
         // 4. The document, linked to all of it: the new pages, or the copy already
         // kept when the same photo was filed before (it moves here, never lost).
@@ -317,9 +301,10 @@ struct CaptureFiler {
             let filed = try AttachmentActions(context: context, calendar: calendar).fileCaptured(
                 document,
                 title: title.isEmpty ? nil : title,
-                kind: CaptureMapping.documentKind(for: review.kind),
+                kind: review.kind.profile.documentKind,
                 extractedText: review.result.recognizedText.isEmpty ? nil : review.result.recognizedText,
                 documentDate: review.documentDay,
+                validUntil: review.validUntil,
                 asset: outcome.asset,
                 obligation: outcome.obligation,
                 historyEntry: outcome.completion ?? outcome.bill,
@@ -343,9 +328,12 @@ struct CaptureFiler {
             return review
         }
 
-        // 1. The values read, onto the section: a new RCA policy brings its number, insurer and claims phone.
+        // 1. The values read, onto the section: a new RCA policy brings its number, insurer and
+        // claims phone, into the fields of the deadline being closed (a CASCO's into CASCO's).
         if let review, let asset = obligation.asset {
-            try writeValues(of: review, to: asset, templates: try TemplateStore(context: context).templatesByKey())
+            let templates = try TemplateStore(context: context).templatesByKey()
+            let closing = obligation.blueprintKey.flatMap { key in templates[asset.templateKey]?.blueprints.first { $0.key == key } }
+            try writeValues(of: review, to: asset, templates: templates, deadline: closing)
         }
 
         // 2. The deadline: the cycle closes, and the new document's date sets the next one.
@@ -355,13 +343,14 @@ struct CaptureFiler {
 
         // 3. Who issued it, and 4. the document.
         if let review, let document {
-            let provider = try self.provider(for: review, asset: obligation.asset)
+            let provider = try self.provider(Self.provider(of: review), asset: obligation.asset)
             let filed = try AttachmentActions(context: context, calendar: calendar).fileCaptured(
                 document,
                 title: CaptureMapping.defaultTitle(for: review.kind, fields: review.valuesByKey),
-                kind: CaptureMapping.documentKind(for: review.kind),
+                kind: review.kind.profile.documentKind,
                 extractedText: review.result.recognizedText.isEmpty ? nil : review.result.recognizedText,
                 documentDate: review.documentDay ?? CalendarDay(completion.date, calendar: calendar),
+                validUntil: review.validUntil,
                 asset: obligation.asset,
                 obligation: obligation,
                 historyEntry: outcome.completion,
@@ -418,11 +407,14 @@ struct CaptureFiler {
 
     /// What a captured document's values change on a section that already exists: what
     /// was read replaces what was there, except a value that only differs in how it's written.
-    private func writeValues(of review: CaptureReview, to asset: Asset, templates: [String: CategoryTemplate]) throws {
+    /// `deadline` is the deadline the values belong to, when the caller knows it better than
+    /// the document does ("Am rezolvat" on a CASCO).
+    private func writeValues(of review: CaptureReview, to asset: Asset, templates: [String: CategoryTemplate], deadline: ObligationBlueprint? = nil) throws {
         guard let template = templates[asset.templateKey] else { return }
         var merged = asset.values
         var changed = false
-        for (key, value) in Self.values(from: review, for: template.definition) where merged[key] != value {
+        let read = Self.values(from: review, for: template.definition, deadline: deadline ?? review.deadlineBlueprint(in: template.definition))
+        for (key, value) in read where merged[key] != value {
             // "B 123 ABC" read off a policy doesn't rewrite the "B-123-ABC" the person typed.
             if let old = merged[key]?.textValue, let new = value.textValue,
                CaptureMapping.normalizedIdentifier(old) == CaptureMapping.normalizedIdentifier(new) { continue }
@@ -510,38 +502,42 @@ struct CaptureFiler {
         guard result == .success else { throw FilingError.locked }
     }
 
-    /// The template a document becomes when it is filed under a person: an identity
-    /// document going to a household member becomes one of their documents. Nil otherwise.
-    static func holderDocumentTemplateKey(for kind: CaptureDocumentKind, destinationTemplateKey: String) -> String? {
-        guard kind.isIdentityDocument, destinationTemplateKey == BuiltInTemplates.Key.member else { return nil }
-        return CaptureMapping.templateKey(for: kind)
+    /// The category a document becomes when it is filed under a person (a category whose
+    /// part is `holder`): an identity document becomes one of their personal documents.
+    /// Nil otherwise.
+    static func holderDocumentTemplateKey(for kind: CaptureDocumentKind, destinationTemplateKey: String, templates: [String: CategoryTemplate]) -> String? {
+        guard kind.isIdentityDocument, templates.plays(.holder, destinationTemplateKey) else { return nil }
+        return templates.key(withRole: .personalDocument)
     }
 
     /// The same for a review: a capture started from a household member's documents
     /// (`filesAsPersonalDocument`) becomes one of their documents whatever its kind.
-    static func holderDocumentTemplateKey(for review: CaptureReview, destinationTemplateKey: String) -> String? {
-        if let key = holderDocumentTemplateKey(for: review.kind, destinationTemplateKey: destinationTemplateKey) { return key }
-        guard review.filesAsPersonalDocument, destinationTemplateKey == BuiltInTemplates.Key.member else { return nil }
-        return BuiltInTemplates.Key.documents
+    static func holderDocumentTemplateKey(for review: CaptureReview, destinationTemplateKey: String, templates: [String: CategoryTemplate]) -> String? {
+        if let key = holderDocumentTemplateKey(for: review.kind, destinationTemplateKey: destinationTemplateKey, templates: templates) { return key }
+        guard review.filesAsPersonalDocument, templates.plays(.holder, destinationTemplateKey) else { return nil }
+        return templates.key(withRole: .personalDocument)
     }
 
-    /// The template the document's values land in, for the review's reminder preview.
-    static func filedTemplateKey(for review: CaptureReview, destinationTemplateKey: String) -> String {
-        if filesUnderSubscription(review, destinationTemplateKey: destinationTemplateKey) { return BuiltInTemplates.Key.subscription }
-        return holderDocumentTemplateKey(for: review, destinationTemplateKey: destinationTemplateKey) ?? destinationTemplateKey
+    /// The category the document's values land in, when it is filed under `destinationTemplateKey`.
+    static func filedTemplateKey(for review: CaptureReview, destinationTemplateKey: String, templates: [String: CategoryTemplate]) -> String {
+        if filesUnderSubscription(review, destinationTemplateKey: destinationTemplateKey, templates: templates),
+           let subscriptions = templates.key(withRole: .subscription) {
+            return subscriptions
+        }
+        return holderDocumentTemplateKey(for: review, destinationTemplateKey: destinationTemplateKey, templates: templates) ?? destinationTemplateKey
     }
 
     // MARK: Subscriptions
 
     /// A bill or a contract filed under a home goes to the home's subscription for it.
-    static func filesUnderSubscription(_ review: CaptureReview, destinationTemplateKey: String) -> Bool {
-        CaptureMapping.filesUnderSubscription(review.kind) && destinationTemplateKey == BuiltInTemplates.Key.home
+    static func filesUnderSubscription(_ review: CaptureReview, destinationTemplateKey: String, templates: [String: CategoryTemplate]) -> Bool {
+        review.kind.profile.filing == .subscription && templates.plays(.home, destinationTemplateKey)
     }
 
     /// What a new subscription made from the review is called.
     static func subscriptionName(_ review: CaptureReview) -> String {
         let name = review.newAssetName.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !name.isEmpty, case .newAsset(let key) = review.destination, key == BuiltInTemplates.Key.subscription { return name }
+        if !name.isEmpty, case .newAsset(let key) = review.destination, review.behaviors.plays(.subscription, key) { return name }
         return SubscriptionNaming.name(provider: review.value(.provider)?.text, service: review.value(.serviceKind)?.text)
     }
 
@@ -552,10 +548,10 @@ struct CaptureFiler {
 
     /// The home's subscription the bill or contract belongs to, updated with what was
     /// read, or a new one under the home.
-    private func subscription(for review: CaptureReview, under home: Asset, deadline: (key: String, day: CalendarDay)?,
+    private func subscription(for review: CaptureReview, under home: Asset, plan: CaptureFilingPlan,
                               templates: [String: CategoryTemplate]) throws -> Asset {
-        guard let template = templates[BuiltInTemplates.Key.subscription] else { throw FilingError.missingSection }
-        let children = (home.children ?? []).filter { $0.templateKey == BuiltInTemplates.Key.subscription }
+        guard let key = templates.key(withRole: .subscription), let template = templates[key] else { throw FilingError.missingSection }
+        let children = (home.children ?? []).filter { templates.plays(.subscription, $0.templateKey) }
         let decision = SubscriptionMatcher.match(
             review.subscriptionReading,
             subscriptions: children.map { SubscriptionMatcher.Subscription(id: $0.id, parentID: home.id, values: $0.values) },
@@ -565,8 +561,7 @@ struct CaptureFiler {
             try updateSubscription(existing, from: review, template: template)
             return existing
         }
-        return try createSection(review, templateKey: BuiltInTemplates.Key.subscription, name: Self.subscriptionName(review),
-                                 parent: home, deadline: deadline, templates: templates)
+        return try createSection(review, templateKey: key, name: Self.subscriptionName(review), parent: home, plan: plan, templates: templates)
     }
 
     /// What a bill or a contract adds to a subscription that already exists. A bill fills
@@ -575,7 +570,7 @@ struct CaptureFiler {
     /// terms: the number, the start, the minimum period and the price.
     private func updateSubscription(_ subscription: Asset, from review: CaptureReview, template: CategoryTemplate) throws {
         let read = Self.values(from: review, for: template.definition)
-        let terms: Set<String> = review.kind == .contract
+        let terms: Set<String> = review.kind.profile.deadlineField == .minimumPeriodEnd
             ? [SubscriptionFields.contractNumber, SubscriptionFields.startDate, SubscriptionFields.minimumMonths,
                SubscriptionFields.minimumUntil, SubscriptionFields.price]
             : []
@@ -610,20 +605,25 @@ struct CaptureFiler {
         )
     }
 
-    /// A new section with the values read and the deadlines its template plans.
+    /// A new section with the values read and the deadlines its template plans. The
+    /// document's own deadline is the plan's: on its day, or not made when the plan says so.
     private func createSection(_ review: CaptureReview, templateKey: String, name: String, parent: Asset? = nil,
-                               newParent: AssetActions.NewParent? = nil, deadline: (key: String, day: CalendarDay)?,
+                               newParent: AssetActions.NewParent? = nil, plan: CaptureFilingPlan,
                                templates: [String: CategoryTemplate]) throws -> Asset {
         let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let template = templates[templateKey] else { throw FilingError.missingSection }
         let actions = AssetActions(context: context, calendar: calendar, now: now)
         let values = Self.values(from: review, for: template.definition)
+        let today = CalendarDay(now(), calendar: calendar)
         let planned = actions.plannedObligations(for: template, values: values).map { planned -> PlannedObligation in
             var planned = planned
-            if planned.blueprint.key == review.blueprintKey {
+            if planned.blueprint.key == plan.blueprint?.key {
                 // The document's own deadline: its day, or none when it isn't wanted or has passed.
-                planned.firstDue = deadline?.day
-                planned.isSelected = deadline != nil
+                planned.firstDue = plan.deadline?.day
+                planned.isSelected = plan.deadline != nil
+            } else if planned.blueprint.isFieldDriven, let day = planned.firstDue {
+                // Another date the document fills follows the same rule (`isWorthScheduling`).
+                planned.isSelected = planned.isSelected && planned.blueprint.isWorthScheduling(on: day, today: today)
             }
             // Dates the person still has to give (the current ITP) are left for the section page.
             planned.isSelected = planned.isSelected && planned.firstDue != nil
@@ -632,78 +632,66 @@ struct CaptureFiler {
         return try actions.create(name: name.isEmpty ? CaptureMapping.kindTitle(review.kind) : name, template: template, values: values, obligations: planned, parent: parent, newParent: newParent)
     }
 
-    private func provider(for review: CaptureReview, asset: Asset?) throws -> Provider? {
-        guard let trade = CaptureMapping.providerTrade(for: review.kind), let name = review.value(.provider)?.text else { return nil }
+    /// Who issued a document a review files, as its plan names them.
+    static func provider(of review: CaptureReview) -> CaptureFilingPlan.Provider? {
+        guard let trade = review.kind.profile.trade, let name = review.value(.provider)?.text else { return nil }
+        return CaptureFilingPlan.Provider(name: name, taxID: review.value(.providerTaxID)?.text, trade: trade, phone: review.value(.providerPhone)?.text)
+    }
+
+    /// The firm in Agendă, by its CUI, else by its name, else a new one, linked to the section.
+    private func provider(_ provider: CaptureFilingPlan.Provider?, asset: Asset?) throws -> Provider? {
+        guard let provider else { return nil }
         return try ProviderActions(context: context, now: now).findOrCreate(
-            name: name, taxID: review.value(.providerTaxID)?.text, trade: trade, phone: review.value(.providerPhone)?.text, linkedTo: asset
+            name: provider.name, taxID: provider.taxID, trade: provider.trade, phone: provider.phone, linkedTo: asset
         )
     }
 }
 
-/// The reminder a review will set, in plain words: "Expiră pe 12 august 2031. Te anunț cu 6 luni și cu 2 luni înainte."
+/// The reminder a review will set, in plain words, read from its filing plan:
+/// "Expiră pe 12 august 2031. Te anunț cu 6 luni și cu 2 luni înainte." It names a
+/// reminder exactly when saving makes or moves one.
 enum CaptureReminderPreview {
     @MainActor
     static func text(for review: CaptureReview, templates: [String: CategoryTemplate], assets: [Asset], calendar: Calendar = .current, today: CalendarDay) -> String? {
-        guard let day = review.reminderDay else { return nil }
-        if review.kind == .utilityInvoice && !review.remindsToPay { return nil }
+        text(for: review, plan: CaptureFilingPlan.make(for: review, templates: templates, assets: assets, today: today, calendar: calendar), today: today)
+    }
+
+    static func text(for review: CaptureReview, plan: CaptureFilingPlan, today: CalendarDay) -> String? {
+        guard let day = plan.day else { return nil }
         let date = DueWording.date(day, today: today)
-        if review.kind == .utilityInvoice, review.paysByDirectDebit(assets: assets) {
+        let field = review.kind.profile.deadlineField
+        let opening: String = switch field {
+        case .dueDate?: String(localized: "De plătit până pe \(date).")
+        case .minimumPeriodEnd?: String(localized: "Perioada minimă se termină pe \(date). De atunci poți, de regulă, renunța fără penalități.")
+        case .nextDoseDate?: String(localized: "Următoarea doză e pe \(date).")
+        case .warrantyUntil?: String(localized: "Garanția se termină pe \(date).")
+        default: String(localized: "Expiră pe \(date).")
+        }
+        if let deadline = plan.deadline {
+            return opening + " " + ReminderWording.sentence(leadDays: deadline.reminders.leadDays)
+        }
+        switch plan.quiet {
+        case .notWanted?:
+            return nil
+        case .paidByDirectDebit?:
             return String(localized: "De plătit până pe \(date). Se plătește prin debit direct, așa că nu îți amintesc.")
-        }
-        if review.kind == .contract, day < today {
-            // The minimum period is over: nothing to remind about, but worth knowing.
-            return String(localized: "Perioada minimă s-a terminat pe \(date). De regulă, poți renunța oricând, anunțând cu cel mult o lună înainte.")
-        }
-        let leadDays: [Int]
-        if review.kind == .utilityInvoice {
-            leadDays = ObligationKind.payment.defaultProfile.leadDays
-        } else if let blueprint = blueprint(for: review, templates: templates, assets: assets) {
-            let values = templateValues(for: review, templates: templates, assets: assets)
-            leadDays = blueprint.reminders(for: values).leadDays
-        } else {
-            leadDays = review.result.reminder?.leadDays ?? []
-        }
-        let opening: String
-        switch CaptureMapping.reminderField(for: review.kind) {
-        case .dueDate?: opening = String(localized: "De plătit până pe \(date).")
-        case .minimumPeriodEnd?: opening = String(localized: "Perioada minimă se termină pe \(date). De atunci poți, de regulă, renunța fără penalități.")
-        case .nextDoseDate?: opening = String(localized: "Următoarea doză e pe \(date).")
-        case .warrantyUntil?: opening = String(localized: "Garanția se termină pe \(date).")
-        default: opening = String(localized: "Expiră pe \(date).")
-        }
-        guard review.destination != .none else {
-            if review.kind == .utilityInvoice {
+        case .needsPlace?:
+            if review.kind.profile.deadlineIsOptIn {
                 return opening + " " + String(localized: "Alege abonamentul ei ca să îți amintesc s-o plătești.")
             }
             return opening + " " + String(localized: "Alege unde îl pui ca să te anunț din timp.")
+        case .dayPassed?:
+            if field == .minimumPeriodEnd {
+                // The minimum period is over: nothing to remind about, but worth knowing.
+                return String(localized: "Perioada minimă s-a terminat pe \(date). De regulă, poți renunța oricând, anunțând cu cel mult o lună înainte.")
+            }
+            return opening + " " + String(localized: "Data a trecut, așa că nu îți mai amintesc.")
+        case .alreadyLater(let later)?:
+            return opening + " " + String(localized: "Termenul de aici e deja pe \(DueWording.date(later, today: today)), așa că rămâne așa.")
+        case .noSuchDeadline?:
+            return opening + " " + String(localized: "Categoria aleasă nu are acest termen, așa că nu îți amintesc.")
+        case nil:
+            return nil
         }
-        return opening + " " + ReminderWording.sentence(leadDays: leadDays)
-    }
-
-    @MainActor
-    private static func templateKey(for review: CaptureReview, assets: [Asset]) -> String? {
-        switch review.destination {
-        case .none: return nil
-        case .asset(let id): return assets.first { $0.id == id }.map { CaptureFiler.filedTemplateKey(for: review, destinationTemplateKey: $0.templateKey) }
-        case .newAsset(let key): return CaptureFiler.filedTemplateKey(for: review, destinationTemplateKey: key)
-        }
-    }
-
-    @MainActor
-    private static func blueprint(for review: CaptureReview, templates: [String: CategoryTemplate], assets: [Asset]) -> ObligationBlueprint? {
-        guard let templateKey = templateKey(for: review, assets: assets), let template = templates[templateKey] else { return nil }
-        if let key = review.blueprintKey, let blueprint = template.blueprints.first(where: { $0.key == key }) { return blueprint }
-        // Field-driven deadlines: the blueprint whose first date comes from the field the reminder follows.
-        let values = CaptureFiler.values(from: review, for: template.definition)
-        return template.blueprints.first { blueprint in
-            if case .field(let key, _) = blueprint.firstDue, values[key] != nil { return true }
-            return false
-        }
-    }
-
-    @MainActor
-    private static func templateValues(for review: CaptureReview, templates: [String: CategoryTemplate], assets: [Asset]) -> FieldValues {
-        guard let key = templateKey(for: review, assets: assets), let template = templates[key] else { return FieldValues() }
-        return CaptureFiler.values(from: review, for: template.definition)
     }
 }

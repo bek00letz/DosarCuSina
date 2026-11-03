@@ -90,7 +90,7 @@ struct CaptureFlowView: View {
 
     @ViewBuilder private func content(for result: CaptureResult) -> some View {
         let review = review(for: result)
-        if CaptureMapping.opensVisitFlow(result.kind), review.duplicateAttachmentID == nil, case .asset(let id) = review.destination {
+        if result.kind.profile.opensVisitFlow, review.duplicateAttachmentID == nil, case .asset(let id) = review.destination {
             AddVisitFlow(assetID: id, prefill: result) { saved in
                 finish(saved ? .visitSaved(message: "Vizita e în istoric.") : .dismissed)
             }

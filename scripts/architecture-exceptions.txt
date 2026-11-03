@@ -18,10 +18,6 @@ ios/DosarCuSinaShare/ShareViewController.swift:bare-progress-view
 # built-in-key-in-views: Category behaviour as template data (agreed fix 6, review finding 5).
 ios/DosarCuSina/Views/Add/ManualAddFlow.swift:built-in-key-in-views
 ios/DosarCuSina/Views/Add/Visit/VisitDraft.swift:built-in-key-in-views:2
-ios/DosarCuSina/Views/Capture/CaptureReviewView.swift:built-in-key-in-views:14
-ios/DosarCuSina/Views/Capture/Filing/CaptureFiler.swift:built-in-key-in-views:12
-ios/DosarCuSina/Views/Capture/Filing/CaptureMapping.swift:built-in-key-in-views:8
-ios/DosarCuSina/Views/Capture/Filing/CaptureReview.swift:built-in-key-in-views:8
 ios/DosarCuSina/Views/Dosar/BinderLayout.swift:built-in-key-in-views:5
 ios/DosarCuSina/Views/Dosar/CategoryScreen.swift:built-in-key-in-views:5
 ios/DosarCuSina/Views/Dosar/DosarHomeView.swift:built-in-key-in-views

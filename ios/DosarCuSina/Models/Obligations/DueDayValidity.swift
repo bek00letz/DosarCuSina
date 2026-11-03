@@ -22,6 +22,28 @@ public enum DueDayValidity {
     }
 }
 
+extension ObligationBlueprint {
+    /// Its day comes from a field of the section (a document's expiry), not from itself.
+    public var isFieldDriven: Bool {
+        if case .field = firstDue { return true }
+        return false
+    }
+
+    /// The field it takes its day from, when it is field-driven.
+    public var drivingField: String? {
+        if case .field(let key, _) = firstDue { return key }
+        return nil
+    }
+
+    /// Whether a deadline from this blueprint is worth making on `day`: a day still ahead,
+    /// or one that passed for something that must be renewed by law (an identity card that
+    /// expired still needs renewing). A warranty, a minimum period or a bill that passed
+    /// is only history. Capture's filing plan and a section's edits both ask this.
+    public func isWorthScheduling(on day: CalendarDay, today: CalendarDay) -> Bool {
+        day >= today || (kind == .renewal && reminders.consequence == .legal)
+    }
+}
+
 extension Obligation {
     /// Whether this deadline is still valid on `day` (an RCA on the day of a trip). See `DueDayValidity`.
     public func isValid(on day: CalendarDay, calendar: Calendar = .current) -> Bool {

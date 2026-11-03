@@ -52,7 +52,7 @@ struct SchemaMigrationTests {
             let container = try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)])
             let context = ModelContext(container)
             let car = DosarSchemaV2.Asset(name: "VW Golf 2018", templateKey: "vehicle")
-            car.valuesData = StoredJSON.encode(["vehicle.plate": FieldValue.text("B-123-ABC")] as FieldValues)
+            car.valuesData = StoredJSON.encode(FieldValues(["vehicle.plate": .text("B-123-ABC")]))
             let firm = DosarSchemaV2.Provider(name: "ENGIE Romania S.A.")
             firm.trades = [ProviderTrade.mechanic.rawValue]
             let template = DosarSchemaV2.CategoryTemplate(key: "vehicle")
@@ -79,7 +79,7 @@ struct SchemaMigrationTests {
         #expect(firm.assets?.map(\.id) == [car.id])
         let template = try #require(try context.fetch(FetchDescriptor<CategoryTemplate>()).first)
         #expect(template.behavior == .standard, "A category from before version 3 behaves as standard until the built-ins are upgraded")
-        let policy = try #require(try context.fetch(FetchDescriptor<Attachment>()).first)
+        let policy = try #require(try context.fetch(FetchDescriptor<DosarSchemaV3.Attachment>()).first)
         #expect(policy.validUntil == nil)
         #expect(policy.asset?.id == car.id)
 

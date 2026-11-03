@@ -331,12 +331,11 @@ public struct CaptureAnalyzer: Sendable {
         if let classValue = RomanianFieldExtractor.bonusMalus(in: text) {
             fields.add(.bonusMalusClass, .text(classValue), 0.7, nil)
         }
-        let coverage: String
-        if kind == .rcaPolicy { coverage = "RCA" }
-        else if haystack.contains("casco") { coverage = "CASCO" }
-        else if DocumentClassifier.containsWord("pad", in: haystack) || haystack.contains("paid") { coverage = "PAD" }
-        else { coverage = "Facultativă" }
-        fields.add(.coverageType, .text(coverage), 0.7, nil)
+        // The cover: an RCA policy is RCA; any other policy's is read once, as whole words.
+        // When the page names none, the review asks the person to pick it.
+        if let cover = kind.profile.defaultCover ?? InsuranceCover.read(in: haystack) {
+            fields.add(.coverageType, .text(cover), 0.7, nil)
+        }
         addVehicleIdentity(text, into: &fields)
     }
 
