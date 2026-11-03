@@ -9,7 +9,7 @@ import Testing
 @Suite("Units as keys")
 struct MeasurementUnitTests {
     /// Every spelling an earlier version stored, and the unit it is.
-    static let earlierLabels: [(label: String, unit: MeasurementUnit)] = [
+    nonisolated static let earlierLabels: [(label: String, unit: MeasurementUnit)] = [
         ("km", .kilometres), ("KM", .kilometres),
         ("h", .engineHours),
         ("kWh", .kilowattHours), ("kwh", .kilowattHours),
