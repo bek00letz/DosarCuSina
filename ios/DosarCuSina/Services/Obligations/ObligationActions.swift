@@ -190,12 +190,17 @@ public final class ObligationActions {
         try save()
     }
 
-    public func pause(_ obligation: Obligation) throws {
-        try setStatus(.paused, of: obligation)
+    /// Stops the obligation and its reminders until it is resumed. Undoable; inside a
+    /// larger step (an edit that turns on direct debit), the receipt takes back that whole step.
+    @discardableResult
+    public func pause(_ obligation: Obligation) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) { try setStatus(.paused, of: obligation) }.receipt
     }
 
-    public func resume(_ obligation: Obligation) throws {
-        try setStatus(.active, of: obligation)
+    /// Starts a paused obligation again. Undoable, like `pause`.
+    @discardableResult
+    public func resume(_ obligation: Obligation) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) { try setStatus(.active, of: obligation) }.receipt
     }
 
     public func archive(_ obligation: Obligation) throws {
