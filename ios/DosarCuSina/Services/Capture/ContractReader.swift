@@ -2,8 +2,9 @@ import Foundation
 
 /// Reads what ties a bill or a contract to its ongoing service: what the service is,
 /// the codes that identify it (client code, contract number, POD, CLC, the phone
-/// number of a mobile plan) and, on a contract, its terms (the start, the minimum
-/// period and its end, the monthly price).
+/// number of a mobile plan), where it is supplied and whether the bank pays it by direct
+/// debit, and, on a contract, its terms (the start, the minimum period and its end, the
+/// monthly price).
 ///
 /// The labels are data, one table read with `LabelledLayout`, so a new wording is a
 /// new row, not new reading code. Pure: plain text in, fields out.
@@ -87,6 +88,9 @@ enum ContractReader {
         if let service = serviceKind(in: text, identifiers: identifiers) {
             fields.append(field(.serviceKind, .text(service), 0.7, nil))
         }
+        // Where it is supplied, and whether the bank pays it (`ContractReader+Supply`).
+        if let address = supplyAddress(in: text) { fields.append(address) }
+        if let directDebit = directDebit(in: text) { fields.append(directDebit) }
         return fields
     }
 

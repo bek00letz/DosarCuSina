@@ -24,6 +24,8 @@ public enum VehicleFields {
 }
 
 public enum HomeFields {
+    /// Where the home is; a bill's supply address is matched against it (`SubscriptionMatcher.house(at:among:)`).
+    public static let address = "home.address"
     public static let pod = "home.pod"
     public static let clc = "home.clc"
     /// The mandatory policy's (PAD). Earlier versions kept any home policy here.

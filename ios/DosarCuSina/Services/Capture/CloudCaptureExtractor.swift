@@ -191,6 +191,10 @@ struct CloudSchema: Sendable {
         case .minimumMonths: "The minimum contract period in months (perioada minimă), e.g. 24."
         case .minimumPeriodEnd: "The last day of the minimum contract period."
         case .monthlyPrice: "The monthly price of the subscription or plan."
+        case .supplyAddress: "The address where the gas, electricity, water, internet or TV is supplied (adresa locului de consum, "
+            + "adresa de instalare), as printed. Never the customer's billing or correspondence address."
+        case .directDebit: "Only if the bill states that it is paid by direct debit (the bank pays it automatically), "
+            + "that statement copied as printed. Null when it isn't, and for an offer or invitation to set up direct debit."
         case .podCode: "The POD code of the consumption point."
         case .clcCode: "The CLC code of the consumption point."
         case .meterIndex: "The meter reading."
@@ -427,6 +431,10 @@ enum CloudAnswerMapper {
                     guard ContractReader.isMobileNumber(value) else { continue }
                     value = ContractReader.displayPhone(value)
                 }
+                // The same rules as the phone's reading: an address that names a place, and
+                // a statement that the bill is paid by direct debit, never an offer of it.
+                if key == .supplyAddress, PostalAddress(value) == nil || value.count > ContractReader.addressMaxLength { continue }
+                if key == .directDebit, !ContractReader.statesDirectDebit(value) { continue }
                 add(key, .text(value), groundedText(value))
             }
         }

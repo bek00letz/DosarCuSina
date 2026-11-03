@@ -30,9 +30,14 @@ extension CaptureDocumentKind {
             return IdentityTemplates.fieldKeys(for: self).contains(key) || key == .holderName || key == .documentVariant
         default:
             if key == .lineItems { return profile.carriesLineItems }
+            if Self.subscriptionKeys.contains(key) { return profile.filing == .subscription }
             return !Self.personalKeys.contains(key) && !Self.personalDocumentKeys.contains(key)
         }
     }
+
+    /// Fields only bills and contracts carry: where the service is supplied and whether
+    /// the bank pays it. A policy or a receipt has neither, whatever a model reads into it.
+    static let subscriptionKeys: Set<CaptureFieldKey> = [.supplyAddress, .directDebit]
 
     /// Fields only personal documents carry: what a cazier says, a bank card's network and
     /// last four digits.

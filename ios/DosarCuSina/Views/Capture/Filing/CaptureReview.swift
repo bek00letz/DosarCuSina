@@ -76,6 +76,8 @@ struct CaptureReview: Identifiable {
         var newAssetName: String
         var remindsToPay: Bool
         var fields: [CaptureFieldKey: CaptureValue]
+        /// Why the suggested place is worth a look: the supply address only partly agrees.
+        var placeCheck: SubscriptionMatcher.HouseCheck? = nil
     }
 
     let id = UUID()
@@ -93,6 +95,11 @@ struct CaptureReview: Identifiable {
     /// The person asked to keep the photo of a document whose photo is kept only on
     /// request ("Păstrează și poza cardului"). Off until they turn it on.
     var keepsPhotoOnRequest = false
+    /// The person confirmed that the bank pays this subscription by direct debit, as the
+    /// bill says ("Plătesc prin debit direct"). Never on until they turn it on.
+    var turnsOnDirectDebit = false
+    /// The person chose the place themselves, even the one suggested: nothing to check.
+    private(set) var placeConfirmed = false
     /// The person is adding a document read only on the phone (the capture started from a
     /// bank card's page): the AI provider never reads it.
     var staysOnPhone = false
@@ -345,9 +352,11 @@ struct CaptureReview: Identifiable {
             suggested.remindsToPay = remindsToPay
         }
         let values = Dictionary(currentFields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
-        if destination == suggested.destination {
-            destination = Self.suggestDestination(kind: kind, suggestions: suggestions, fields: currentFields, assets: assets, behaviors: behaviors)
+        if destination == suggested.destination, !placeConfirmed {
+            let place = Self.suggestPlace(kind: kind, suggestions: suggestions, fields: currentFields, assets: assets, behaviors: behaviors)
+            destination = place.destination
             suggested.destination = destination
+            suggested.placeCheck = place.check
         }
         if title == suggested.title {
             title = CaptureMapping.defaultTitle(for: kind, fields: values)
@@ -374,8 +383,22 @@ struct CaptureReview: Identifiable {
             provider: values[.provider]?.text,
             service: values[.serviceKind]?.text,
             codes: codes.compactMapValues { values[$0]?.text },
-            isBill: kind == .utilityInvoice
+            isBill: kind == .utilityInvoice,
+            supplyAddress: values[.supplyAddress]?.text
         )
+    }
+
+    /// The place to check, when the supply address chose it without being sure and the
+    /// person hasn't chosen it themselves: "Verifică".
+    var placeCheck: SubscriptionMatcher.HouseCheck? {
+        guard !placeConfirmed, destination == suggested.destination else { return nil }
+        return suggested.placeCheck
+    }
+
+    /// The person chose where the document goes, from the list: their choice, nothing to check.
+    mutating func choosePlace(_ place: Destination) {
+        destination = place
+        placeConfirmed = true
     }
 
     /// The subscription that already exists and that saving would file into: the one
@@ -396,10 +419,26 @@ struct CaptureReview: Identifiable {
         return children.first { $0.id == match }
     }
 
-    /// The bank pays the subscription this bill goes to by direct debit.
+    /// The bank pays the subscription this bill goes to by direct debit: it already says
+    /// so, or the person just confirmed what the bill says.
     @MainActor
     func paysByDirectDebit(assets: [Asset]) -> Bool {
+        turnsOnDirectDebit || subscriptionPaysByDirectDebit(assets: assets)
+    }
+
+    @MainActor
+    private func subscriptionPaysByDirectDebit(assets: [Asset]) -> Bool {
         existingSubscription(assets: assets).map { SubscriptionFields.paysByDirectDebit($0.values) } ?? false
+    }
+
+    /// What the bill prints about direct debit ("Factura se achită prin debit direct"), when
+    /// it says it is paid so and its subscription doesn't know yet: the review offers to turn
+    /// "Plătesc prin debit direct" on. Never turned on by itself.
+    @MainActor
+    func directDebitStatement(assets: [Asset]) -> String? {
+        guard kind.profile.filing == .subscription, kind.allows(.directDebit),
+              let statement = value(.directDebit)?.text, !subscriptionPaysByDirectDebit(assets: assets) else { return nil }
+        return statement
     }
 
     /// Which reading tier filled most of the fields, for the subtle note.
@@ -442,33 +481,50 @@ struct CaptureReview: Identifiable {
         let values = Dictionary(result.fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
         self.title = CaptureMapping.defaultTitle(for: result.kind, fields: values)
         self.remindsToPay = result.kind.profile.deadlineIsOptIn
-        self.destination = Self.suggestDestination(kind: result.kind, suggestions: result.suggestions, fields: result.fields, assets: assets, behaviors: behaviors)
+        let place = Self.suggestPlace(kind: result.kind, suggestions: result.suggestions, fields: result.fields, assets: assets, behaviors: behaviors)
+        self.destination = place.destination
         self.newAssetName = Self.defaultAssetName(kind: result.kind, values: values)
-        self.suggested = Suggested(kind: kind, title: title, destination: destination, newAssetName: newAssetName, remindsToPay: remindsToPay, fields: values)
+        self.suggested = Suggested(kind: kind, title: title, destination: destination, newAssetName: newAssetName, remindsToPay: remindsToPay,
+                                   fields: values, placeCheck: place.check)
     }
 
     /// Where a document of `kind` goes, from what routing suggests for it.
     @MainActor
     static func suggestDestination(kind: CaptureDocumentKind, suggestions: [CaptureSuggestion], fields: [CaptureField], assets: [Asset],
                                    behaviors: [String: CategoryBehavior]) -> Destination {
+        suggestPlace(kind: kind, suggestions: suggestions, fields: fields, assets: assets, behaviors: behaviors).destination
+    }
+
+    /// Where a document of `kind` goes, and what the person should check about it: a bill
+    /// put in a home by a supply address that only partly agrees is marked "Verifică".
+    @MainActor
+    static func suggestPlace(kind: CaptureDocumentKind, suggestions: [CaptureSuggestion], fields: [CaptureField], assets: [Asset],
+                             behaviors: [String: CategoryBehavior]) -> (destination: Destination, check: SubscriptionMatcher.HouseCheck?) {
         let candidates = assets.filter { !$0.isExample }
         // A bill or a contract: its ongoing contract, or where a new one goes.
         if kind.profile.filing == .subscription {
             let values = Dictionary(fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
-            let decision = SubscriptionMatcher.match(
+            let placement = SubscriptionMatcher.place(
                 subscriptionReading(kind: kind, values: values),
                 subscriptions: candidates.filter { behaviors.plays(.subscription, $0.templateKey) }
                     .map { SubscriptionMatcher.Subscription(id: $0.id, parentID: $0.parent?.id, values: $0.values) },
                 homes: candidates.filter { behaviors.plays(.home, $0.templateKey) }.map { SubscriptionMatcher.Home(id: $0.id, values: $0.values) }
             )
-            switch decision {
-            case .existing(let id): return .asset(id)
+            switch placement.decision {
+            case .existing(let id): return (.asset(id), placement.check)
             // A home: filed into a new subscription under it (`CaptureFiler`).
-            case .newUnder(let home): return .asset(home)
-            case .newStandalone: return behaviors.key(withRole: .subscription).map { .newAsset(templateKey: $0) } ?? .none
-            case .undecided: return .none
+            case .newUnder(let home): return (.asset(home), placement.check)
+            case .newStandalone: return (behaviors.key(withRole: .subscription).map { .newAsset(templateKey: $0) } ?? .none, nil)
+            case .undecided: return (.none, nil)
             }
         }
+        return (otherDestination(kind: kind, suggestions: suggestions, fields: fields, candidates: candidates, behaviors: behaviors), nil)
+    }
+
+    /// Where any other document goes: by an identifier, its holder, or its category.
+    @MainActor
+    private static func otherDestination(kind: CaptureDocumentKind, suggestions: [CaptureSuggestion], fields: [CaptureField], candidates: [Asset],
+                                         behaviors: [String: CategoryBehavior]) -> Destination {
         // 1. An identifier on the document matches a section.
         let hints = suggestions.flatMap(\.assetHints)
         for hint in hints {
@@ -579,11 +635,13 @@ struct CaptureReview: Identifiable {
             merged.kindChanged(assets: assets)
         }
         if previous.title != before.title { merged.title = previous.title }
-        if previous.destination != before.destination { merged.destination = previous.destination }
+        if previous.destination != before.destination || previous.placeConfirmed { merged.destination = previous.destination }
         if previous.newAssetName != before.newAssetName { merged.newAssetName = previous.newAssetName }
         if previous.remindsToPay != before.remindsToPay { merged.remindsToPay = previous.remindsToPay }
         merged.filesAsPersonalDocument = previous.filesAsPersonalDocument
         merged.keepsPhotoOnRequest = previous.keepsPhotoOnRequest
+        merged.turnsOnDirectDebit = previous.turnsOnDirectDebit
+        if previous.placeConfirmed { merged.placeConfirmed = true }
         merged.staysOnPhone = previous.staysOnPhone
         return merged
     }

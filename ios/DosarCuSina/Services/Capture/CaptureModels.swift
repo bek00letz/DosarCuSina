@@ -278,6 +278,12 @@ public struct CaptureFieldKey: RawRepresentable, Hashable, Codable, Sendable, Ex
     public static let minimumPeriodEnd: CaptureFieldKey = "minimumPeriodEnd"
     /// The price per month the contract states.
     public static let monthlyPrice: CaptureFieldKey = "monthlyPrice"
+    /// Where the service is supplied ("Adresa locului de consum"), as printed. Never the
+    /// payer's billing address.
+    public static let supplyAddress: CaptureFieldKey = "supplyAddress"
+    /// The bill says the bank pays it by direct debit: the statement as printed ("Factura
+    /// se achită prin debit direct"). Only a suggestion; the person turns it on.
+    public static let directDebit: CaptureFieldKey = "directDebit"
 
     // Purchases and warranties
     public static let productName: CaptureFieldKey = "productName"

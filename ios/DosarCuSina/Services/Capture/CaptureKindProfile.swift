@@ -227,7 +227,7 @@ struct CaptureKindProfile: Sendable {
             readsCover: false, defaultCover: nil, deadlineField: .dueDate, documentDateFields: issuedOn,
             documentKind: .invoice, documentType: nil, trade: nil,
             expectedKeys: [.provider, .serviceKind, .invoiceNumber, .issueDate, .dueDate, .total, .clientCode, .contractNumber, .podCode, .clcCode,
-                           .phoneNumber, .meterIndex],
+                           .phoneNumber, .meterIndex, .supplyAddress, .directDebit],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: true, identifierKeys: subscriptionCodes,
             name: "Factură de utilități", titleRule: .wordAndProvider("Factură"), modelDescription: "utility, internet, TV or phone bill", deadlineIsOptIn: true, sectionName: .subscription
         ),
@@ -236,7 +236,7 @@ struct CaptureKindProfile: Sendable {
             readsCover: false, defaultCover: nil, deadlineField: .minimumPeriodEnd, documentDateFields: issuedOn,
             documentKind: .contract, documentType: nil, trade: nil,
             expectedKeys: [.provider, .serviceKind, .contractNumber, .clientCode, .startDate, .minimumMonths, .minimumPeriodEnd, .monthlyPrice,
-                           .phoneNumber, .podCode, .clcCode],
+                           .phoneNumber, .podCode, .clcCode, .supplyAddress],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: subscriptionCodes,
             name: "Contract sau act adițional", titleRule: .wordAndProvider("Contract"),
             modelDescription: "contract or addendum for gas, electricity, water, internet, TV or a mobile plan", sectionName: .subscription

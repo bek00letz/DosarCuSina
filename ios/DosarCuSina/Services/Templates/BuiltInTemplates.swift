@@ -132,7 +132,7 @@ public enum BuiltInTemplates {
             heroStyle: .home,
             sections: [
                 FieldSection(key: "home.place", title: String(localized: "Locuința"), fields: [
-                    FieldDefinition(key: "home.address", label: String(localized: "Adresă"), type: .address, role: .location, isEssential: true),
+                    FieldDefinition(key: HomeFields.address, label: String(localized: "Adresă"), type: .address, role: .location, isEssential: true),
                     FieldDefinition(key: "home.area", label: String(localized: "Suprafață utilă"), type: .number, unit: .squareMetres),
                     FieldDefinition(key: "home.year", label: String(localized: "An construcție"), type: .year),
                     FieldDefinition(key: "home.cadastral", label: String(localized: "Număr cadastral"), type: .text),
