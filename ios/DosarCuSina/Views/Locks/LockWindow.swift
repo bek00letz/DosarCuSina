@@ -88,6 +88,9 @@ final class LockWindowController {
     /// The window the lock and the cover are drawn in, once it exists.
     var coverWindow: UIWindow? { window }
 
+    /// The hide waiting for the fade to end, if one is; tests wait on it.
+    var pendingHide: Task<Void, Never>? { hideTask }
+
     /// Called on every update of the app's view, so showing the same thing again
     /// changes nothing: in particular, a pending hide is never cancelled by an
     /// update that still says "no cover".

@@ -33,7 +33,9 @@ struct LockWindowTests {
         // keep the empty window on top.
         controller.show(nil)
         controller.show(nil)
-        try await Task.sleep(for: .milliseconds(700))
+        let hide = try #require(controller.pendingHide, "An update after uncovering left the hide in place")
+        await hide.value
+        #expect(!hide.isCancelled, "No update cancelled the hide")
         #expect(cover.isHidden, "The window is gone once its fade has ended")
         withExtendedLifetime(appWindow) {}
     }
@@ -45,8 +47,9 @@ struct LockWindowTests {
         controller.attach(to: appWindow)
         controller.show(.privacy)
         controller.show(nil)
+        let hide = try #require(controller.pendingHide)
         controller.show(.privacy)
-        try await Task.sleep(for: .milliseconds(700))
+        await hide.value
         let cover = try #require(controller.coverWindow)
         #expect(!cover.isHidden)
         #expect(cover.isUserInteractionEnabled)
