@@ -106,7 +106,8 @@ struct CaptureFilingPlan {
                 plan.quiet = .alreadyLater(due)
                 return plan
             }
-            plan.deadline = Deadline(blueprint: blueprint, day: day, action: .renew(obligationID: existing.id), reminders: reminders)
+            // It keeps reminding the way it does now, the person's own changes included.
+            plan.deadline = Deadline(blueprint: blueprint, day: day, action: .renew(obligationID: existing.id), reminders: existing.reminders)
             return plan
         }
         guard blueprint.isWorthScheduling(on: day, today: today) else {
