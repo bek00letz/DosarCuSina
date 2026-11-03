@@ -175,6 +175,7 @@ sides, a field that is `secret` or `isSensitive` on the device stays so.
 - **`followUpAfterLapse`:** one reminder the day after the due date if the obligation is still open, then nothing more.
   - **Default:** on for `legal` and `financial`, off otherwise. Readers apply this default when the key is missing.
   - **Per obligation:** the person can change it on each obligation.
+- **`travelMarginDays`** (optional): how long before the due date the document stops being good for travel, in days, whole months counting as calendar months (180 is six months). Only a passport's profile has it (180). Leads then count back from that day, and the obligation is urgent from it on. Written only when it isn't 0; readers treat a missing key as 0.
 - **`reminderVariants`:** `{"field": "document.type", "variants": {"Pașaport": {…profile…}}}`. It chooses a profile by an asset value.
 
 ### Asset (`data/assets.json`)

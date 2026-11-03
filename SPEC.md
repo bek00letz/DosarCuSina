@@ -100,17 +100,17 @@ One field over sections, deadlines, history, components, people and the text rea
 
 Reminder time, app lock and section locks, which categories show on the binder, backup (export and import), the repair list (*Date de verificat*), the optional AI provider and its key, examples, storage and about. Settings can open scrolled to a section from a link (`dosarcusina://settings/repairs` opens the repair list).
 
-**The repair list.** Data an earlier version saved wrongly is found by `DataRepairs`, an ordered registry of idempotent steps with stored ids, after the built-in categories are installed at launch and after every import, and changed only with the owner's OK. Each entry says what looks wrong and what the repair does, as a question ("Kilometrajul la VW Golf pare greșit: 457 km. Corectez la 45.724?"), with *Corectează* and *Lasă așa*; a group of the same kind has *Toate* (correct or leave all). "Lasă așa" is remembered on the phone. When there is something new, one calm prompt says so once ("Am găsit date de verificat", the first entry, "Nu schimb nimic fără tine", with *Arată-mi* and *Mai târziu*), only when no sheet, lock or onboarding is in front. Steps that change only how a value is stored (choice text to option keys) run by themselves. The steps: choice keys; deadlines from a first-version copy (blueprint and rule, such as the legal ITP rule); documents moved with their old links; visits without their invoice; firms kept twice; deadlines closed twice by an old reminder; counter readings 10 or more times off both neighbours or equal to the reading before them divided by a power of ten; round-hundred visit readings above the next reading; a hero value that differs from its readings. Applying runs in one unit of work.
+**The repair list.** Data an earlier version saved wrongly is found by `DataRepairs`, an ordered registry of idempotent steps with stored ids, after the built-in categories are installed at launch and after every import, and changed only with the owner's OK. Each entry says what looks wrong and what the repair does, as a question ("Kilometrajul la VW Golf pare greșit: 457 km. Corectez la 45.724?"), with *Corectează* and *Lasă așa*; a group of the same kind has *Toate* (correct or leave all). "Lasă așa" is remembered on the phone. When there is something new, one calm prompt says so once ("Am găsit date de verificat", the first entry, "Nu schimb nimic fără tine", with *Arată-mi* and *Mai târziu*), only when no sheet, lock or onboarding is in front. Steps that change only how a value is stored (choice text to option keys) run by themselves. The steps: choice keys; deadlines from a first-version copy (blueprint and rule, such as the legal ITP rule); documents moved with their old links; visits without their invoice; firms kept twice; deadlines closed twice by an old reminder; counter readings 10 or more times off both neighbours or equal to the reading before them divided by a power of ten; round-hundred visit readings above the next reading; a hero value that differs from its readings; a CASCO policy's facts kept in a car's RCA fields; a home policy kept without its deadline; a passport deadline without its travel cut-off (it gets the cut-off and its reminders counted from it, "„Pașaport” e bun de călătorit doar până pe …, cu 6 luni înainte să expire. Schimb când te anunț?"); a home's policy facts kept where PAD's are when they are the optional policy's (moved when a filed policy or the one deadline running says so; otherwise "Verifică asigurarea de la …", and "Lasă așa" keeps them as PAD's). Applying runs in one unit of work.
 
 ## 3. Data model
 
-SwiftData, a versioned schema (`DosarSchemaV3`; version 2 frozen beside it) with a migration plan: every change to what is stored is a new version with a stage and a test that opens a store from the version before. The shapes follow CloudKit's rules from day one (every property optional or defaulted, every relationship optional, nothing unique) so iCloud sync can be added without reshaping. Complex values (field values, template sections, recurrence rules) are stored as JSON with sorted keys, the same encoding the `.dosar` archive uses. Every record has `isExample`.
+SwiftData, a versioned schema (`DosarSchemaV4`; versions 2 and 3 frozen beside it) with a migration plan: every change to what is stored is a new version with a stage and a test that opens a store from the version before. The shapes follow CloudKit's rules from day one (every property optional or defaulted, every relationship optional, nothing unique) so iCloud sync can be added without reshaping. Complex values (field values, template sections, recurrence rules) are stored as JSON with sorted keys, the same encoding the `.dosar` archive uses. Every record has `isExample`.
 
 | Model | What it is |
 | :--- | :--- |
 | `CategoryTemplate` | A category (Mașini, Locuințe, Acte…) and the household's preferences for it: order, whether it shows on the binder, whether it is locked. |
 | `Asset` | Something the household looks after. Its details are field values described by its template. It can have a parent and children. |
-| `Obligation` | Something to do by a date, once or on a schedule, with a reminder profile. |
+| `Obligation` | Something to do by a date, once or on a schedule, with a reminder profile (and, for a passport, the travel margin its reminders count from). |
 | `HistoryEntry` | Something that happened: a visit, repair, purchase, inspection, payment, vaccination or a completed obligation. |
 | `ServiceItem` | One line of a history entry, keyed to a component, with costs, brand, supplier and warranty. |
 | `MeasurementLog` | A reading: odometer, meter index, weight, lab value. Readings are the source of truth for counters. |
@@ -124,8 +124,9 @@ Every category is one template engine. A `TemplateDefinition` declares sections 
 - Built-in templates ship in the app (car, home, documents, pet, health, warranties, subscriptions, other, and starters hidden from the binder: bikes, plants, tenancies, household members, espresso machines). They are installed and upgraded by version; upgrades keep the household's preferences, and renamed or retired templates move their assets over so nothing disappears.
 - Custom templates are the person's own and travel in archives in full.
 - What a category does is data on it (`CategoryBehavior`): its box on the binder (one per section, one for the whole category, or none because its sections live inside another), what its page lists (plainly, by person, by warranty, by monthly cost), its part for other categories (the people documents are filed under, personal documents, subscriptions, homes) and the pocket of a parent its sections show in. Screens ask the category, never which built-in it is, so a category of the person's own can behave like Acte or Garanții.
-- A blueprint names the fields that hold its facts (`BlueprintFacts`: insurer, policy number, claims phone). A car's RCA and CASCO each keep their own; a home's PAD and its optional insurance share the home's.
+- A blueprint names the fields that hold its facts (`BlueprintFacts`: insurer, policy number, claims phone). A car's RCA and CASCO each keep their own, and so do a home's PAD and its optional insurance (PAD keeps the home's insurance fields, the optional policy `HomeFields.optional…`).
 - A deadline's due day is its last valid day (`DueDayValidity`): an RCA valid until 12 August covers 12 August.
+- A document type can say how long before its expiry it stops being good for travel (`DocumentType.travelMargins`). Only a passport (every variant of it) has one, six months, because many countries refuse entry with less left; an identity card is good for travel in the EU until it expires, and every other document keeps its plain expiry. The passport's page and hero show both dates: *Expiră pe 12 august 2027* and *Bun de călătorit până pe 12 februarie 2027*.
 - Choice values are stored as stable option keys, never as display text. Older stored text is migrated at launch.
 - A field, and a choice option, can carry a condition (`appliesWhen`): it is offered only while another value matches. A document's variants are data on its type (`DocumentType.variants`), offered only for that type; a value that no longer fits is dropped on save.
 - A `secret` field holds a code to keep hidden (see 7).
@@ -186,19 +187,20 @@ Each obligation carries a profile: lead days, a consequence (legal, financial, h
 | :--- | :--- |
 | Rovinietă (road vignette) | 7 days before and on the day |
 | Driving licence | 60 and 30 days before |
-| Passport | 180 and 60 days before |
+| Identity card | 90 and 30 days before |
+| Passport | 3 months before the last day it is good for travel, and on that day (9 and 6 months before it expires) |
 | Cat vaccine | 1 day before, with a week's grace |
 | Dog rabies vaccine | 10 and 4 days before, legal, no grace |
 
-Profiles can vary by a field value (document type, pet species). The person can change any profile.
+Profiles can vary by a field value (document type, pet species). The person can change any profile's leads. A passport's profile also carries its type's travel margin (`ReminderProfile.travelMarginDays`, stored on the deadline): its leads count back from the cut-off, its reminders say how long it is still good for travel (*Bun de călătorit încă 3 luni: …*, *Azi e ultima zi bună de călătorit: …*; in a locked category *Un act e bun de călătorit încă 3 luni*), and its settings say so (*Te anunț cu 3 luni înainte de ultima zi bună de călătorit și în ziua aceea.*). The follow-up after it lapses stays the day after it expires.
 
-**Leads.** A lead is stored in days. A lead of a whole number of months (30 days each, a year being 365) is that many calendar months (`ReminderLead`): a 1-month reminder for 31 March fires on 28 February, a 6-month one for 15 December on 15 June. Any other lead is that many days. A lead reads the same wherever it appears, in its settings (*Cu 6 luni înainte*), in the sentence under a date and in the reminder it fires (*În 6 luni: Pașaport*).
+**Leads.** A lead is stored in days. A lead of a whole number of months (30 days each, a year being 365) is that many calendar months (`ReminderLead`): a 1-month reminder for 31 March fires on 28 February, a 6-month one for 15 December on 15 June. Any other lead is that many days. A lead reads the same wherever it appears, in its settings (*Cu 6 luni înainte*), in the sentence under a date and in the reminder it fires (*În 6 luni: …*, *Într-o lună: …*).
 
 **Follow-up after a lapse:** one reminder the day after the due date if it is still open, then silence. On by default for legal and financial items; the person can turn it on or off for any item.
 
-Reminders fire at the person's chosen time of day (09:00 by default) and keep the wall-clock time across daylight-saving changes. The last reminders for consequential items may break through Focus. A duration in a reminder ("În 1 lună") is worked out from the day it fires, so it says what every screen says that day; a reminder after the due day says *Încă de făcut* while the lateness is within grace and *Depășit* after.
+Reminders fire at the person's chosen time of day (09:00 by default) and keep the wall-clock time across daylight-saving changes. The last reminders for consequential items may break through Focus. A duration in a reminder ("Într-o lună") is worked out from the day it fires, so it says what every screen says that day; a reminder after the due day says *Încă de făcut* while the lateness is within grace and *Depășit* after.
 
-**Catch-up:** a deadline that became known after all its warnings (lead days before the due day) had passed gets one catch-up reminder at the next reminder time, as long as that is before the due day (or on it, when the profile doesn't remind on the day): an identity card added 20 days before it expires, with leads of 90 and 30, says "În 20 de zile: Carte de identitate". It counts from when the obligation last changed, so it fires once.
+**Catch-up:** a deadline that became known after all its warnings (lead days before the due day) had passed gets one catch-up reminder at the next reminder time, as long as that is before the due day (or on it, when the profile doesn't remind on the day; a passport added after its travel cut-off still gets one before it expires): an identity card added 20 days before it expires, with leads of 90 and 30, says "În 20 de zile: Carte de identitate". It counts from when the obligation last changed, so it fires once.
 
 **The system's limit:** iOS keeps 64 pending notifications; the plan uses at most 60. When there are more, it keeps every deadline's next reminder first, most consequential first (legal, financial, health, comfort), then the rest by time, and gives its last place to a reminder to open the app: „Deschide Dosar cu Șină o clipă” / „Ca să-ți amintim în continuare de termene, deschide aplicația.”, at the reminder time the day before the first reminder that didn't fit. A background refresh (`BackgroundRefresh`, on this phone only, when iOS allows) plans again and rewrites the widget snapshot, so the person rarely sees it.
 
@@ -213,15 +215,15 @@ Reminders fire at the person's chosen time of day (09:00 by default) and keep th
 | overdue | late by more than its grace days | red, exclamation mark |
 | today | due today | amber, clock |
 | within grace | late, within its grace days | amber, clock |
-| soon | from the day its first reminder goes out, but never earlier than its consequence's window (legal a month, financial 21 days, health 7, comfort 3) | amber, clock |
-| upcoming | within the next month | calm |
+| soon | from the day its first reminder goes out, but never earlier than its consequence's window (legal a month, financial 21 days, health 7, comfort 3); a passport from its travel cut-off on | amber, clock |
+| upcoming | within the next month (of a passport's cut-off) | calm |
 | later | further out | calm |
 
-The first four need the person now: they are *Acum* in Urmează, the line on their box and an amber or red badge on their section's page. Overdue and today count on the app's badge. A passport that reminds 180 days ahead needs the person only in its last month. Every surface (Urmează, the binder's boxes, a section's badges and hero, expiry fields, the deadline page, the widget, the badge, Siri, reminders) takes the urgency and only draws it; a date shown on a page (an expiry, a warranty's end) takes the rule of the deadline it drives (`DateUrgency`), and a date no deadline reminds about is urgent only on the day and after.
+The first four need the person now: they are *Acum* in Urmează, the line on their box and an amber or red badge on their section's page. Overdue and today count on the app's badge. An identity card that reminds 90 days ahead needs the person only in its last month; a passport needs the person from the day it stops being good for travel, six months before it expires. Every surface (Urmează, the binder's boxes, a section's badges and hero, expiry fields, the deadline page, the widget, the badge, Siri, reminders) takes the urgency and only draws it; a date shown on a page (an expiry, a warranty's end) takes the rule of the deadline it drives (`DateUrgency`), and a date no deadline reminds about is urgent only on the day and after.
 
 `AttentionModel` ranks open obligations by consequence first, then by closeness, then by cost. Closeness can lift an item by a few consequence steps but an overdue chore never beats a legal deadline. Lateness within grace counts like "due soon", not like overdue.
 
-The digest has a capped *now* (5 items), a *soon* window grouped per asset (30 days), and *later* as counts. Overdue plus due today feed the app badge; the widget snapshot carries each deadline's rule, so the widget's tone, words and count match the app's at every midnight it covers.
+The digest has a capped *now* (5 items), *soon* (what the rule calls upcoming: the next 30 days, or the month before a passport's cut-off) grouped per asset, and *later* as counts. Overdue plus due today feed the app badge; the widget snapshot carries each deadline's rule, so the widget's tone, words and count match the app's at every midnight it covers.
 
 ### 4.5 Box status
 
@@ -231,7 +233,7 @@ The digest has a capped *now* (5 items), a *soon* window grouped per asset (30 d
 
 `ObligationRequirements` lists what to bring for each built-in obligation (the papers an ITP station asks for, what a passport renewal needs) and whether the binder already holds each: a value on the asset, a current document of the right kind, or another obligation that must still be valid on the day. The obligation page shows it.
 
-`ReadinessEngine` checks scenarios such as a trip abroad (inside or outside the EU, driving, with a pet), selling a vehicle or an insurance claim, and returns a checklist with problems first. The engine and its tests exist; no screen uses the scenarios yet.
+`ReadinessEngine` checks scenarios such as a trip abroad (inside or outside the EU, driving, with a pet; outside the EU a passport must still be good for travel, by its cut-off, when the trip ends), selling a vehicle or an insurance claim, and returns a checklist with problems first. The engine and its tests exist; no screen uses the scenarios yet.
 
 ### 4.7 Search
 
@@ -245,9 +247,9 @@ What never reaches the index (`SearchPrivacy`): text read off a document filed i
 
 ### 4.9 Wording
 
-How far away something is reads in the unit a person feels, never rounded up: days under three weeks, then weeks, then months and weeks, then years and months (years only from three years). A reminder's lead reads in the unit it was chosen in: days, or whole months and years (*7 zile*, *1 lună*, *6 luni*, *1 an*). `DurationWording` (`distance` and `lead`), `DayCount` and `CalendarCount` are the one way to write these, in `ios/Shared` with their plural forms in `Shared.xcstrings`, so the widget writes them the same way. When a deadline is, in a few words, is `WhenWording`: *azi*, *mâine*, *în 5 zile*, *întârziat cu 2 zile* (within grace), *depășit de 3 zile* (past grace), on the boxes, the badges, the widget and Siri.
+How far away something is reads in the unit a person feels, never rounded up: days under three weeks, then weeks, then months and weeks, then years and months (years only from three years). A reminder's lead reads in the unit it was chosen in: days, or whole months and years (*7 zile*, *o lună*, *6 luni*, *un an*). A count of one is a word, two and up are digits (*o zi*, *o săptămână*, *o lună*, *un an*; *2 luni*, *20 de zile*), from the plural "one" variants; "în" before a duration is joined as Romanian writes it (*într-o lună*, *într-un an*) by `DurationWording.inside`, the one way to write "in this long". `DurationWording` (`distance` and `lead`), `DayCount` and `CalendarCount` are the one way to write these, in `ios/Shared` with their plural forms in `Shared.xcstrings`, so the widget writes them the same way. When a deadline is, in a few words, is `WhenWording`: *azi*, *mâine*, *în 5 zile*, *întârziat cu o zi* (within grace), *depășit de 3 zile* (past grace), on the boxes, the badges, the widget and Siri.
 
-Every counted string has plural variations (*1 zi*, *2 zile*, *20 de zile*); `scripts/plural-check.py` checks it after every build.
+Every counted string has plural variations (*o zi*, *2 zile*, *20 de zile*); `scripts/plural-check.py` checks it after every build.
 
 ### 4.10 Subscriptions and their bills
 
@@ -397,7 +399,7 @@ The format, its JSON Schema and golden fixtures are in [shared/schemas/dosar-v3.
 - The app speaks Romanian. Romanian (`ro`) is the development language and the String Catalog's source language; numbers, dates and money are written the Romanian way (*1.250,50 lei*, *14 noiembrie 2026*) whatever the device region or number format, in one locale (`Locale.dosarDefault`).
 - Every number is read by one reader, `RomanianNumber`, told what it is (money, a count, a meter index or kilometres): a comma is the decimal mark and a dot groups thousands; kilometres and counts are whole ("45,724 km" is 45724); money or a meter index with one mark and three digits after it follows the Romanian rule and, read off a document, is marked "Verifică"; what can't be read one way only is refused with a message in the field. Archives keep the machine form ("1250.5").
 - A stored value this build can't read (from a newer version) is kept as stored and never written back downgraded; an unknown consequence or kind of deadline behaves as the loudest (legal).
-- Every user-facing string goes through the String Catalog. Counts use plural variations (Romanian *one / few / other*: *1 zi*, *2 zile*, *20 de zile*), never hand-written `count == 1` checks.
+- Every user-facing string goes through the String Catalog. Counts use plural variations (Romanian *one / few / other*: *o zi*, *2 zile*, *20 de zile*), never hand-written `count == 1` checks.
 - Data from the person or from templates is shown verbatim, never translated.
 - How the app writes is in [docs/COPY_GUIDE.md](docs/COPY_GUIDE.md).
 
