@@ -15,15 +15,6 @@ extension AssetActions {
         case standalone
     }
 
-    /// What a move changed, so it can be taken back.
-    public struct MoveReceipt {
-        public let child: Asset
-        public let previousParent: Asset?
-        public let previousName: String
-        /// The household member made for the move, if any.
-        public let createdParent: Asset?
-    }
-
     /// The kind of parent `child` can be filed under: its current parent's
     /// category, or a household member for a personal document filed under no one.
     /// Nil when it isn't something filed under something else.
@@ -63,12 +54,11 @@ extension AssetActions {
 
     /// Files `child` under `target` in one save, optionally renaming it. For a new
     /// household member, the person and the move are kept together or not at all.
+    /// The receipt takes the move back: the old place and name return, and a person
+    /// made for the move goes away again.
     @discardableResult
-    public func move(_ child: Asset, to target: MoveTarget, renamingTo newName: String? = nil) throws -> MoveReceipt {
-        let previousParent = child.parent
-        let previousName = child.name
-        return try UnitOfWork.perform(in: context) {
-            var created: Asset?
+    public func move(_ child: Asset, to target: MoveTarget, renamingTo newName: String? = nil) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) {
             let parent: Asset?
             switch target {
             case .standalone:
@@ -85,27 +75,11 @@ extension AssetActions {
                     throw AssetActionError.missingDestination
                 }
                 parent = try create(name: name, template: template, values: FieldValues(), isExample: child.isExample)
-                created = parent
             }
             try setParent(child, parent)
             if let newName = newName?.trimmingCharacters(in: .whitespacesAndNewlines), !newName.isEmpty, newName != child.name {
                 try update(child, name: newName, values: child.values, notes: child.notes)
             }
-            return MoveReceipt(child: child, previousParent: previousParent, previousName: previousName, createdParent: created)
-        }
-    }
-
-    /// Takes a move back: the old parent and name return, and a person made only
-    /// for the move goes away again. One save.
-    public func undoMove(_ receipt: MoveReceipt) throws {
-        try UnitOfWork.perform(in: context) {
-            try setParent(receipt.child, receipt.previousParent)
-            if receipt.child.name != receipt.previousName {
-                try update(receipt.child, name: receipt.previousName, values: receipt.child.values, notes: receipt.child.notes)
-            }
-            if let created = receipt.createdParent, (created.children ?? []).allSatisfy({ $0.id == receipt.child.id }) {
-                try delete(created, children: .keep)
-            }
-        }
+        }.receipt
     }
 }

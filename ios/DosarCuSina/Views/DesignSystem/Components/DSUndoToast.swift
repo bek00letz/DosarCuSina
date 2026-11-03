@@ -10,15 +10,38 @@ struct DSToast: Identifiable {
     var tint: Color = DSStatus.done.color
     /// Set to `nil` for a toast without an undo button.
     var actionTitle: Text? = Text("Anulează", comment: "Toast button that reverses the action just taken.")
+    /// The button's work for something outside the database (an item leaving the inbox).
+    /// A saved change is taken back with `receipt` instead.
     var action: (@MainActor () -> Void)?
+    /// What "Anulează" takes back: the receipt of the action just taken.
+    var receipt: UndoReceipt?
+    /// Runs after the receipt took the step back, for a screen that shows what changed.
+    var afterUndo: (@MainActor () -> Void)?
     /// How long the toast stays. VoiceOver users get twice as long.
     var duration: Duration = .seconds(5)
     /// Haptic played when the toast appears, matching what just happened.
     var feedback: SensoryFeedback? = .success
 
-    /// A toast confirming something that can be undone, e.g. "ITP marcat ca rezolvat".
-    static func undo(_ title: LocalizedStringResource, action: @escaping @MainActor () -> Void) -> DSToast {
-        DSToast(title: title, action: action)
+    /// A toast confirming a saved change the person can take back, e.g. "ITP: gata". The
+    /// button appears only when the receipt has something to undo.
+    static func undo(_ title: LocalizedStringResource, receipt: UndoReceipt, afterUndo: (@MainActor () -> Void)? = nil) -> DSToast {
+        DSToast(title: title, receipt: receipt, afterUndo: afterUndo)
+    }
+
+    /// A failed save or undo, said in plain words with what to do next.
+    static func failure(_ error: any Error) -> DSToast {
+        DSToast(
+            title: "\(SaveFailure.message(for: error, formKept: false))",
+            systemImage: "exclamationmark.circle.fill",
+            tint: DSStatus.overdue.color,
+            actionTitle: nil,
+            feedback: .error
+        )
+    }
+
+    /// Whether the toast shows its button.
+    var offersAction: Bool {
+        actionTitle != nil && (action != nil || receipt?.canUndo == true)
     }
 }
 
@@ -42,9 +65,7 @@ private struct DSToastModifier: ViewModifier {
                 ZStack {
                     if let toast {
                         DSToastView(toast: toast) {
-                            toast.action?()
-                            actionCount += 1
-                            dismiss()
+                            run(toast)
                         } onDismiss: {
                             dismiss()
                         }
@@ -73,6 +94,24 @@ private struct DSToastModifier: ViewModifier {
     private func dismiss() {
         toast = nil
     }
+
+    /// The button: the receipt takes the step back (a failure says why, in its place), or
+    /// the toast's own action runs.
+    private func run(_ shown: DSToast) {
+        actionCount += 1
+        guard let receipt = shown.receipt else {
+            shown.action?()
+            dismiss()
+            return
+        }
+        do {
+            try receipt.undo()
+            shown.afterUndo?()
+            dismiss()
+        } catch {
+            toast = .failure(error)
+        }
+    }
 }
 
 private struct DSToastView: View {
@@ -95,7 +134,7 @@ private struct DSToastView: View {
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            if let actionTitle = toast.actionTitle, toast.action != nil {
+            if let actionTitle = toast.actionTitle, toast.offersAction {
                 Button(action: onAction) {
                     actionTitle
                         .font(.subheadline.weight(.semibold))

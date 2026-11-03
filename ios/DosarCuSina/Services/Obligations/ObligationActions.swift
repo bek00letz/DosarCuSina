@@ -4,8 +4,6 @@ import SwiftData
 public enum ObligationActionError: LocalizedError, Equatable {
     /// Only active obligations can be completed or snoozed.
     case notActive
-    /// Only the most recent completion can be undone.
-    case notLatestCompletion
     /// The blueprint needs a date the person has to enter.
     case missingFirstDueDate(blueprintKey: String)
 
@@ -13,8 +11,6 @@ public enum ObligationActionError: LocalizedError, Equatable {
         switch self {
         case .notActive:
             return String(localized: "Obligația e pusă pe pauză sau încheiată. Reactiveaz-o mai întâi.")
-        case .notLatestCompletion:
-            return String(localized: "Poți anula doar ultima bifare.")
         case .missingFirstDueDate:
             return String(localized: "Alege data la care e scadentă prima dată.")
         }
@@ -36,11 +32,13 @@ public final class ObligationActions {
         self.now = now
     }
 
-    // MARK: Complete and undo
+    // MARK: Complete
 
     /// Records that the obligation was done and moves it to its next cycle, or
     /// closes it when it doesn't repeat. The record is a `HistoryEntry` in the
-    /// asset's history, the same history repairs and visits go into.
+    /// asset's history, the same history repairs and visits go into. The receipt
+    /// takes it all back ("Anulează"), the reading it recorded included; deleting an
+    /// older completion from Istoric is `HistoryActions.delete`.
     @discardableResult
     public func complete(
         _ obligation: Obligation,
@@ -52,9 +50,9 @@ public final class ObligationActions {
         providers: [Provider] = [],
         rating: Int? = nil,
         lowerReading: LowerReadingAnswer? = nil
-    ) throws -> HistoryEntry {
+    ) throws -> Undoable<HistoryEntry> {
         // One step: a question about a lower reading leaves nothing half-changed.
-        return try UnitOfWork.perform(in: context) {
+        return try UnitOfWork.performUndoable(in: context) {
             guard obligation.status == .active else { throw ObligationActionError.notActive }
             let completedAt = date ?? now()
             let completedDay = CalendarDay(completedAt, calendar: calendar)
@@ -119,39 +117,18 @@ public final class ObligationActions {
         return entry
     }
 
-    /// Puts the obligation back the way it was before `entry` completed it and
-    /// removes the entry. Only the latest completion can be undone.
-    public func undo(_ entry: HistoryEntry) throws {
-        guard let obligation = entry.obligation, let cycleDueDate = entry.cycleDueDate else {
-            context.delete(entry)
-            try save()
-            return
-        }
-        guard obligation.history.first?.id == entry.id else { throw ObligationActionError.notLatestCompletion }
-        // The reading "Gata" recorded goes too, and the hero value follows the readings left.
-        HouseholdMutations.removeReading(recordedBy: entry, in: context)
-        obligation.dueDate = cycleDueDate
-        obligation.dueMetric = entry.previousDueMetric
-        obligation.status = entry.previousStatusRaw.flatMap(ObligationStatus.init(rawValue:)) ?? .active
-        obligation.updatedAt = now()
-        context.delete(entry)
-        try save()
-    }
-
-    public func undoLastCompletion(of obligation: Obligation) throws {
-        guard let latest = obligation.history.first else { return }
-        try undo(latest)
-    }
-
     // MARK: Schedule
 
     /// Hides the obligation and its reminders for `days` days, then reminds once.
-    public func snooze(_ obligation: Obligation, days: Int) throws {
-        guard obligation.status == .active else { throw ObligationActionError.notActive }
-        let today = CalendarDay(now(), calendar: calendar)
-        obligation.snoozedUntil = today.adding(days: max(1, days), calendar: calendar).startDate(in: calendar)
-        obligation.updatedAt = now()
-        try save()
+    @discardableResult
+    public func snooze(_ obligation: Obligation, days: Int) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) {
+            guard obligation.status == .active else { throw ObligationActionError.notActive }
+            let today = CalendarDay(now(), calendar: calendar)
+            obligation.snoozedUntil = today.adding(days: max(1, days), calendar: calendar).startDate(in: calendar)
+            obligation.updatedAt = now()
+            try save()
+        }.receipt
     }
 
     public func clearSnooze(_ obligation: Obligation) throws {
@@ -174,11 +151,14 @@ public final class ObligationActions {
         try save()
     }
 
-    public func reschedule(_ obligation: Obligation, to day: CalendarDay) throws {
-        obligation.setDueDay(day, calendar: calendar)
-        obligation.snoozedUntil = nil
-        obligation.updatedAt = now()
-        try save()
+    @discardableResult
+    public func reschedule(_ obligation: Obligation, to day: CalendarDay) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) {
+            obligation.setDueDay(day, calendar: calendar)
+            obligation.snoozedUntil = nil
+            obligation.updatedAt = now()
+            try save()
+        }.receipt
     }
 
     /// What it is expected to cost and the number it quotes (a bill's amount and number).

@@ -125,8 +125,8 @@ private struct SectionContent: View {
             AssetEditSheet(asset: asset, definition: definition)
         }
         .sheet(isPresented: $isMoving) {
-            MoveAssetSheet(asset: asset) { receipt in
-                toast = .undo(receipt.toastTitle) { undoMove(receipt) }
+            MoveAssetSheet(asset: asset) { moved in
+                toast = .undo(moved.toastTitle, receipt: moved.receipt)
             }
         }
         .confirmationDialog(deleteTitle, isPresented: $isConfirmingDelete, titleVisibility: .visible) {
@@ -174,14 +174,6 @@ private struct SectionContent: View {
             return Text("Are lucruri trecute sub el, de exemplu chiriași, produse sau acte. Dacă le păstrezi, rămân în dosar fără să fie sub „\(asset.name)”. Termenele, istoricul și documentele lui se șterg de pe acest telefon.", comment: "Delete confirmation when the asset has children.")
         }
         return Text("Termenele, istoricul și documentele lui se șterg de pe acest telefon.", comment: "Delete confirmation message.")
-    }
-
-    private func undoMove(_ receipt: AssetActions.MoveReceipt) {
-        do {
-            try AssetActions(context: context).undoMove(receipt)
-        } catch {
-            self.error = UserFacingError(error)
-        }
     }
 
     private func delete(children: AssetActions.ChildrenOnDelete) {

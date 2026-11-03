@@ -101,7 +101,7 @@ struct CapturedDocumentFilingTests {
         #expect(kept.historyEntry?.id != house.repair.id, "No link to the old place's history")
         #expect(kept.historyEntry.map { $0.asset?.id == house.car.id } ?? true)
         #expect(kept.isArchived, "Its archived state stays as it was")
-        #expect(outcome.movedDocument?.attachmentID == kept.id, "The move can be taken back")
+        #expect(outcome.receipt?.canUndo == true, "The move can be taken back")
     }
 
     @Test("New pages are filed the same way through every entry point, and leave capture once kept", arguments: EntryPoint.allCases)
@@ -216,8 +216,7 @@ struct CapturedDocumentFilingTests {
         let kept = try AttachmentActions(context: house.context).file(DocumentDraft(fileName: "factura.heic", kind: .invoice, pageImages: [Data([5])]),
                                                                        asset: house.home, historyEntry: house.repair)
         let outcome = try await file(.visit, .kept(attachmentID: kept.id), in: house, store: CaptureDocumentStore())
-        let visit = try #require(outcome.visit)
-        try HistoryActions(context: house.context).undoVisit(visit, restoring: outcome.movedDocument)
+        try #require(outcome.receipt).undo()
         #expect(try attachments(house.context).count == 1, "The older invoice wasn't deleted")
         #expect(kept.asset?.id == house.home.id)
         #expect(kept.historyEntry?.id == house.repair.id)
@@ -445,7 +444,7 @@ struct CaptureRepairTests {
         var draft = DocumentDraft(fileName: "factura.heic", kind: .invoice, pageImages: [Data([8])])
         draft.documentDate = CalendarDay(Date()).adding(days: -2, calendar: .current)
         let invoice = try AttachmentActions(context: context).file(draft, asset: car)
-        let visit = try HistoryActions(context: context).recordVisit(on: car, checklist: [])
+        let visit = try HistoryActions(context: context).recordVisit(on: car, checklist: []).value
         let repairs = CaptureRepairs(context: context)
 
         let found = try repairs.visitsWithoutInvoiceCandidates()
@@ -481,7 +480,7 @@ struct ProviderLookupTests {
         let kept = try actions.create(name: "Service Exemplu SRL", trades: [.mechanic])
         kept.createdAt = Date(timeIntervalSince1970: 1_700_000_000)
         let copy = try actions.create(name: "SERVICE EXEMPLU SRL", trades: [.tyreShop], phone: "0700 000 001", linkedTo: [car])
-        let visit = try HistoryActions(context: context).recordVisit(on: car, checklist: [], provider: copy)
+        let visit = try HistoryActions(context: context).recordVisit(on: car, checklist: [], provider: copy).value
         try context.save()
         let repairs = CaptureRepairs(context: context)
 

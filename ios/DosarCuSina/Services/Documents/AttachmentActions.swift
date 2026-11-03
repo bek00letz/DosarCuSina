@@ -133,9 +133,12 @@ public final class AttachmentActions {
         try save()
     }
 
-    public func setArchived(_ attachment: Attachment, _ isArchived: Bool) throws {
-        attachment.isArchived = isArchived
-        try save()
+    @discardableResult
+    public func setArchived(_ attachment: Attachment, _ isArchived: Bool) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) {
+            attachment.isArchived = isArchived
+            try save()
+        }.receipt
     }
 
     /// Deletes a document. Only for an explicit request from the person.

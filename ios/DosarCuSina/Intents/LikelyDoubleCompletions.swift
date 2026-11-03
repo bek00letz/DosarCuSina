@@ -15,7 +15,7 @@ enum LikelyDoubleCompletions {
 
     struct Candidate: Hashable, Sendable {
         var obligationId: UUID
-        /// The completion to offer to undo: the latest, so `ObligationActions.undo` accepts it.
+        /// The completion to offer to delete: the latest, so deleting it moves the deadline back.
         var historyEntryId: UUID
         var closedCycle: CalendarDay
     }
@@ -43,9 +43,10 @@ enum LikelyDoubleCompletions {
         try context.fetch(FetchDescriptor<Obligation>()).compactMap { candidate(for: $0, calendar: calendar) }
     }
 
-    /// Undoes the second completion of a case the person confirmed. Safe to run
-    /// again: it acts only while that completion is still the latest and still
-    /// looks like a stale tap, and returns whether it changed anything.
+    /// Deletes the second completion of a case the person confirmed, as Istoric would: it is
+    /// the latest, so the deadline goes back to the cycle it closed. Safe to run again: it
+    /// acts only while that completion is still the latest and still looks like a stale
+    /// tap, and returns whether it changed anything.
     @MainActor
     @discardableResult
     static func undoSecond(_ candidate: Candidate, in context: ModelContext, calendar: Calendar = .current) throws -> Bool {
@@ -54,9 +55,9 @@ enum LikelyDoubleCompletions {
         descriptor.fetchLimit = 1
         guard let obligation = try context.fetch(descriptor).first,
               self.candidate(for: obligation, calendar: calendar) == candidate,
-              let entry = obligation.history.first
+              let entry = obligation.history.first, obligation.latestCompletion?.id == entry.id
         else { return false }
-        try ObligationActions(context: context, calendar: calendar).undo(entry)
+        try HistoryActions(context: context).delete(entry)
         return true
     }
 

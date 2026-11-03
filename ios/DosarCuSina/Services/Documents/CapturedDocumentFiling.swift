@@ -55,19 +55,6 @@ public enum CapturedDocumentError: LocalizedError, Equatable {
     }
 }
 
-/// Where a kept document was before it moved, so the step that moved it can be taken back.
-public struct RefileReceipt: Sendable {
-    public let attachmentID: UUID
-    let assetID: UUID?
-    let obligationID: UUID?
-    let historyEntryID: UUID?
-    let providerID: UUID?
-    let title: String?
-    let kind: DocumentKind
-    let extractedText: String?
-    let documentDate: Date?
-}
-
 extension AttachmentActions {
     /// What a capture's document is now: its pages waiting in `store`, or the copy the
     /// binder keeps. A pending capture whose same photo another capture filed meanwhile
@@ -94,6 +81,7 @@ extension AttachmentActions {
     /// its archived state stays as it was, and it takes what was read now (kind, text,
     /// date, title). The pages leave capture's memory once the filing is kept (see
     /// `CaptureFiler`), so a failed save can be retried with everything still there.
+    /// The filing's undo receipt puts a moved copy back where it was.
     @discardableResult
     public func fileCaptured(
         _ document: CapturedDocument,
@@ -106,20 +94,20 @@ extension AttachmentActions {
         obligation: Obligation? = nil,
         historyEntry: HistoryEntry? = nil,
         provider: Provider? = nil
-    ) throws -> (attachment: Attachment, moved: RefileReceipt?) {
-        let filed: (attachment: Attachment, moved: RefileReceipt?)
+    ) throws -> Attachment {
+        let filed: Attachment
         switch document {
         case .new(let processed, _):
             let draft = processed.draft(title: title, kind: kind, extractedText: extractedText, documentDate: documentDate)
-            filed = (try file(draft, asset: asset, obligation: obligation, historyEntry: historyEntry, provider: provider), nil)
+            filed = try file(draft, asset: asset, obligation: obligation, historyEntry: historyEntry, provider: provider)
         case .kept(let attachment):
-            let receipt = try refile(attachment, title: title, kind: kind, extractedText: extractedText, documentDate: documentDate,
-                                     asset: asset, obligation: obligation, historyEntry: historyEntry, provider: provider)
-            filed = (attachment, receipt)
+            try refile(attachment, title: title, kind: kind, extractedText: extractedText, documentDate: documentDate,
+                       asset: asset, obligation: obligation, historyEntry: historyEntry, provider: provider)
+            filed = attachment
         }
         // How long the paper itself is valid, as read now: its deadline moving on later never changes it.
         if let validUntil {
-            filed.attachment.validUntil = validUntil.noonDate(in: calendar)
+            filed.validUntil = validUntil.noonDate(in: calendar)
             try UnitOfWork.save(context)
         }
         return filed
@@ -127,15 +115,10 @@ extension AttachmentActions {
 
     /// Moves a kept document to where it's being filed now, keeping its pages.
     private func refile(_ attachment: Attachment, title: String?, kind: DocumentKind?, extractedText: String?, documentDate: CalendarDay?,
-                        asset: Asset?, obligation: Obligation?, historyEntry: HistoryEntry?, provider: Provider?) throws -> RefileReceipt {
+                        asset: Asset?, obligation: Obligation?, historyEntry: HistoryEntry?, provider: Provider?) throws {
         let destination = asset ?? obligation?.asset ?? historyEntry?.asset
         // A document that becomes the person's never stays an example: only the loader makes those.
         let isExample = try ExampleOwnership.requireReal(destination)
-        let receipt = RefileReceipt(
-            attachmentID: attachment.id, assetID: attachment.asset?.id, obligationID: attachment.obligation?.id,
-            historyEntryID: attachment.historyEntry?.id, providerID: attachment.provider?.id, title: attachment.title,
-            kind: attachment.kind, extractedText: attachment.extractedText, documentDate: attachment.documentDate
-        )
         attachment.asset = destination
         attachment.obligation = obligation
         attachment.historyEntry = historyEntry
@@ -146,20 +129,6 @@ extension AttachmentActions {
         if let extractedText { attachment.extractedText = extractedText }
         if let documentDate { attachment.documentDate = documentDate.noonDate(in: calendar) }
         try UnitOfWork.save(context)
-        return receipt
-    }
-
-    /// Puts a moved document back where it was (the visit's "Anulează").
-    func restore(_ receipt: RefileReceipt) {
-        guard let attachment = attachment(id: receipt.attachmentID) else { return }
-        attachment.asset = receipt.assetID.flatMap { id in fetchOne(FetchDescriptor<Asset>(predicate: #Predicate { $0.id == id })) }
-        attachment.obligation = receipt.obligationID.flatMap { id in fetchOne(FetchDescriptor<Obligation>(predicate: #Predicate { $0.id == id })) }
-        attachment.historyEntry = receipt.historyEntryID.flatMap { id in fetchOne(FetchDescriptor<HistoryEntry>(predicate: #Predicate { $0.id == id })) }
-        attachment.provider = receipt.providerID.flatMap { id in fetchOne(FetchDescriptor<Provider>(predicate: #Predicate { $0.id == id })) }
-        attachment.title = receipt.title
-        attachment.kind = receipt.kind
-        attachment.extractedText = receipt.extractedText
-        attachment.documentDate = receipt.documentDate
     }
 
     /// The id of a filed document with this fingerprint, for capture's duplicate check.

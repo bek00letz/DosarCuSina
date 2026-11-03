@@ -121,6 +121,7 @@ public final class HistoryActions {
     /// Records one visit (a service, a repair, a check-up) with every part ticked on
     /// the checklist, all in one save: the entry, its line items, the odometer
     /// reading (also logged as a measurement), the provider and the documents.
+    /// The receipt takes it all back ("Anulează vizita").
     @discardableResult
     public func recordVisit(
         on asset: Asset,
@@ -137,9 +138,9 @@ public final class HistoryActions {
         calendar: Calendar = .current,
         odometerSource: ReadingSource = .person,
         lowerReading: LowerReadingAnswer? = nil
-    ) throws -> HistoryEntry {
+    ) throws -> Undoable<HistoryEntry> {
         // One step: a question about a lower reading leaves nothing half-changed.
-        return try UnitOfWork.perform(in: context) {
+        return try UnitOfWork.performUndoable(in: context) {
             let isExample = try ExampleOwnership.requireReal(asset)
             let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
             let catalog = template?.components ?? []
@@ -197,9 +198,26 @@ public final class HistoryActions {
         try save()
     }
 
+    /// Deletes a record from Istoric, as `HistoryDeletion` describes: its line items and the
+    /// reading it recorded go with it, the documents filed with it stay in the binder, and
+    /// a completion moves its deadline back only when it's the latest one. This is for an
+    /// older record; the step just taken is undone with its receipt.
     public func delete(_ entry: HistoryEntry) throws {
-        context.delete(entry)
-        try save()
+        let effect = HistoryDeletion(of: entry)
+        try UnitOfWork.perform(in: context) {
+            if let reopened = effect.reopensCycle, let obligation = entry.obligation {
+                obligation.dueDate = reopened
+                obligation.dueMetric = entry.previousDueMetric
+                if obligation.status == .done {
+                    obligation.status = entry.previousStatusRaw.flatMap(ObligationStatus.init(rawValue:)) ?? .active
+                }
+                obligation.updatedAt = now()
+            }
+            if effect.removedReading != nil { HouseholdMutations.removeReading(recordedBy: entry, in: context) }
+            for attachment in entry.attachments ?? [] { attachment.historyEntry = nil }
+            context.delete(entry)
+            try save()
+        }
     }
 
     private func save() throws {

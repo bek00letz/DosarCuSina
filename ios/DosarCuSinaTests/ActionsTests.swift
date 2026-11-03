@@ -26,7 +26,7 @@ struct ActionsTests {
         let rca = try actions.create(title: "RCA", kind: .insurance, dueDay: CalendarDay("2026-11-10"), for: asset,
                                      recurrence: .interval(.years(1), anchor: .dueDate))
 
-        let entry = try actions.complete(rca, cost: Money(1_200))
+        let entry = try actions.complete(rca, cost: Money(1_200)).value
 
         #expect(rca.status == .active)
         #expect(rca.dueDay(in: calendar) == CalendarDay("2027-11-10"))
@@ -57,9 +57,10 @@ struct ActionsTests {
         let first = try actions.complete(itp)
         let second = try actions.complete(itp)
 
-        #expect(throws: ObligationActionError.notLatestCompletion) { try actions.undo(first) }
-        try actions.undo(second)
-        try actions.undo(first)
+        #expect(throws: UndoError.changedSince, "The first step's deadline changed again since") { try first.receipt.undo() }
+        try second.receipt.undo()
+        try first.receipt.undo()
+        #expect(throws: UndoError.unavailable) { try first.receipt.undo() }
 
         #expect(itp.dueDay(in: calendar) == CalendarDay("2026-11-05"))
         #expect(itp.status == .active)
@@ -70,8 +71,7 @@ struct ActionsTests {
         let context = try makeContext()
         let actions = ObligationActions(context: context, calendar: calendar, now: { noon("2026-11-02") })
         let task = try actions.create(title: "Cazier", kind: .renewal, dueDay: CalendarDay("2026-11-20"), for: nil)
-        try actions.complete(task)
-        try actions.undoLastCompletion(of: task)
+        try actions.complete(task).receipt.undo()
         #expect(task.status == .active)
     }
 

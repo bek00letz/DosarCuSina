@@ -27,9 +27,9 @@ struct UpcomingActions {
     }
 
     /// Completes and returns the toast with its undo.
-    func complete(_ obligation: Obligation, title: String, cost: Money? = nil, on date: Date? = nil) throws -> (entry: HistoryEntry, toast: DSToast) {
+    func complete(_ obligation: Obligation, title: String, cost: Money? = nil, on date: Date? = nil) throws -> DSToast {
         let actions = ObligationActions(context: context, calendar: calendar)
-        let entry = try actions.complete(obligation, on: date, cost: cost)
+        let done = try actions.complete(obligation, on: date, cost: cost)
         let message: LocalizedStringResource
         if obligation.status == .active {
             let next = DosarFormat.longDay(obligation.dueDay(in: calendar))
@@ -37,18 +37,13 @@ struct UpcomingActions {
         } else {
             message = "\(title): gata."
         }
-        let toast = DSToast.undo(message) {
-            try? ObligationActions(context: context, calendar: calendar).undo(entry)
-        }
-        return (entry, toast)
+        return .undo(message, receipt: done.receipt)
     }
 
     func snooze(_ obligation: Obligation, days: Int, title: String) throws -> DSToast {
-        try ObligationActions(context: context, calendar: calendar).snooze(obligation, days: days)
+        let receipt = try ObligationActions(context: context, calendar: calendar).snooze(obligation, days: days)
         let phrase = Self.snoozeTitle(days: days).lowercased()
-        var toast = DSToast.undo("Am amânat \(title). Îți amintesc \(phrase).") {
-            try? ObligationActions(context: context, calendar: calendar).clearSnooze(obligation)
-        }
+        var toast = DSToast.undo("Am amânat \(title). Îți amintesc \(phrase).", receipt: receipt)
         toast.systemImage = "clock.arrow.circlepath"
         toast.tint = DS.Palette.accent
         toast.feedback = .impact(weight: .light)
@@ -56,13 +51,6 @@ struct UpcomingActions {
     }
 
     static func failureToast(_ error: Error) -> DSToast {
-        DSToast(
-            title: "\(error.localizedDescription)",
-            systemImage: "exclamationmark.circle.fill",
-            tint: DSStatus.overdue.color,
-            actionTitle: nil,
-            action: nil,
-            feedback: .error
-        )
+        .failure(error)
     }
 }
