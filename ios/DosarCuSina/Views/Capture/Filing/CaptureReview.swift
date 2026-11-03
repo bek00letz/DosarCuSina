@@ -220,6 +220,7 @@ struct CaptureReview: Identifiable {
     /// The deadline this document sets in `template`: the profile's blueprint when the
     /// category keeps it, else (a category of the person's own) the deadline that follows
     /// the field the document's date fills.
+    @MainActor
     func deadlineBlueprint(in template: TemplateDefinition) -> ObligationBlueprint? {
         if let key = blueprintKey, let blueprint = template.blueprints.first(where: { $0.key == key }) { return blueprint }
         guard kind.profile.deadlineField != nil else { return nil }

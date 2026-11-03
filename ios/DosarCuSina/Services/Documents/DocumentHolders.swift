@@ -16,16 +16,20 @@ public struct HolderGroup: Identifiable {
 /// Members are a name only; no personal identification number is stored on them.
 @MainActor
 public enum DocumentHolders {
-    public static func groups(in context: ModelContext, includeExamples: Bool = true, calendar: Calendar = .current) throws -> [HolderGroup] {
-        let documentsKey = BuiltInTemplates.Key.documents
-        let memberKey = BuiltInTemplates.Key.member
+    /// The documents of `category` (the household's personal documents when nil), grouped
+    /// by the person each is filed under: whoever's category plays the `holder` part.
+    public static func groups(in context: ModelContext, category: String? = nil, includeExamples: Bool = true, calendar: Calendar = .current) throws -> [HolderGroup] {
+        let store = TemplateStore(context: context)
+        let templates = try store.templatesByKey()
+        guard let documentsKey = category ?? templates.key(withRole: .personalDocument) else { return [] }
         let documents = try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.templateKey == documentsKey }))
             .filter { includeExamples || !$0.isExample }
-        let members = try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.templateKey == memberKey }, sortBy: [SortDescriptor(\.createdAt)]))
-            .filter { includeExamples || !$0.isExample }
+        let members = try context.fetch(FetchDescriptor<Asset>(sortBy: [SortDescriptor(\.createdAt)]))
+            .filter { templates.plays(.holder, $0.templateKey) && (includeExamples || !$0.isExample) }
+        let expiryDefinition = templates[documentsKey]?.definition
 
         func expiry(_ asset: Asset) -> CalendarDay {
-            asset.value("document.expiry")?.dateValue ?? CalendarDay(year: 9999, month: 12, day: 31)
+            expiryDefinition.flatMap { AssetFacts.expiry(asset.values, template: $0) } ?? CalendarDay(year: 9999, month: 12, day: 31)
         }
         var groups = members.map { member in
             HolderGroup(holder: member, documents: documents.filter { $0.parent?.id == member.id }.sorted { expiry($0) < expiry($1) })

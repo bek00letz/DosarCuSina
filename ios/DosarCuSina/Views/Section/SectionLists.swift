@@ -416,9 +416,11 @@ struct PeopleListScreen: View {
 
 struct DocumentListScreen: View {
     let asset: Asset
+    @Query private var templates: [CategoryTemplate]
 
     var body: some View {
-        let personal = (asset.children ?? []).filter { $0.templateKey == BuiltInTemplates.Key.documents }.sorted { $0.name < $1.name }
+        let documentKeys = Set(templates.filter { $0.behavior.role == .personalDocument }.map(\.key))
+        let personal = (asset.children ?? []).filter { documentKeys.contains($0.templateKey) }.sorted { $0.name < $1.name }
         let papers = (asset.attachments ?? []).sorted { $0.createdAt > $1.createdAt }
         List {
             if !personal.isEmpty {

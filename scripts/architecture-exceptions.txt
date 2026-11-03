@@ -15,19 +15,9 @@ ios/DosarCuSinaShare/ShareViewController.swift:animation-curve
 # bare-progress-view: The share extension draws its own spinner; it needs DSDelayedProgress in ios/Shared.
 ios/DosarCuSinaShare/ShareViewController.swift:bare-progress-view
 
-# built-in-key-in-views: Category behaviour as template data (agreed fix 6, review finding 5).
-ios/DosarCuSina/Views/Add/ManualAddFlow.swift:built-in-key-in-views
+# built-in-key-in-views: Ask the category's behaviour (CategoryBehavior) instead. Left: the add-section menu's own wording and shortlist (AddSectionFlow), the visit wording (VisitDraft, the "visit wording as a template field" gap) and a refresh query (UpcomingRoot).
 ios/DosarCuSina/Views/Add/Visit/VisitDraft.swift:built-in-key-in-views:2
-ios/DosarCuSina/Views/Dosar/BinderLayout.swift:built-in-key-in-views:5
-ios/DosarCuSina/Views/Dosar/CategoryScreen.swift:built-in-key-in-views:5
-ios/DosarCuSina/Views/Dosar/DosarHomeView.swift:built-in-key-in-views
-ios/DosarCuSina/Views/Section/AddPersonalDocumentFlow.swift:built-in-key-in-views
 ios/DosarCuSina/Views/Section/AddSectionFlow.swift:built-in-key-in-views:12
-ios/DosarCuSina/Views/Section/PersonalDocumentDraft.swift:built-in-key-in-views
-ios/DosarCuSina/Views/Section/SectionHero.swift:built-in-key-in-views:3
-ios/DosarCuSina/Views/Section/SectionLists.swift:built-in-key-in-views
-ios/DosarCuSina/Views/Section/SectionPockets.swift:built-in-key-in-views:3
-ios/DosarCuSina/Views/Section/SectionScreen.swift:built-in-key-in-views:4
 ios/DosarCuSina/Views/Upcoming/UpcomingRoot.swift:built-in-key-in-views
 
 # date-format: Dates are written by DosarFormat (ios/Shared) and DueWording. What's left reads dates; it goes with the shared number and date reader.

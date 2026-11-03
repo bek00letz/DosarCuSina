@@ -227,7 +227,7 @@ struct BinderBoxes {
         self.vault = vault
         snapshots = (try? ObligationSnapshot.fetchAll(in: context)) ?? []
         defaultOrder = BinderLayout.defaultOrder(
-            templates: byKey.values.map { .init(key: $0.key, homeOrder: $0.homeOrder, isOnHome: $0.isOnHome) },
+            templates: byKey.values.map { .init(key: $0.key, homeOrder: $0.homeOrder, isOnHome: $0.isOnHome, box: $0.behavior.box) },
             assets: assets.map { .init(id: $0.id, templateKey: $0.templateKey, isTopLevel: $0.parent == nil, createdAt: $0.createdAt) }
         )
     }
@@ -254,7 +254,7 @@ struct BinderBoxes {
         case .category(let key):
             guard let template = templatesByKey[key] else { return nil }
             let isLocked = vault.isLocked(template)
-            let members = Set(assets.filter { $0.templateKey == key || Self.belongsToCategory($0, key) }.map(\.id))
+            let members = Set(assets.filter { $0.templateKey == key || belongsToCategory($0, key) }.map(\.id))
             let status = BoxStatus.make(snapshots.filter { $0.assetId.map(members.contains) ?? false })
             let all = assets.filter { $0.templateKey == key }
             return BinderBox(
@@ -285,9 +285,9 @@ struct BinderBoxes {
         }
     }
 
-    /// Household members' obligations count towards Acte, where their documents live.
-    private static func belongsToCategory(_ asset: Asset, _ key: String) -> Bool {
-        key == BuiltInTemplates.Key.documents && asset.templateKey == BuiltInTemplates.Key.member
+    /// A person's own deadlines count towards the box their personal documents live in (Acte).
+    private func belongsToCategory(_ asset: Asset, _ key: String) -> Bool {
+        templatesByKey[key]?.behavior.role == .personalDocument && templatesByKey[asset.templateKey]?.behavior.role == .holder
     }
 }
 

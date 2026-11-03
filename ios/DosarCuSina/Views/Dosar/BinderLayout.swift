@@ -45,30 +45,20 @@ enum BinderBoxID: Hashable, Sendable {
 
 /// Which boxes the Dosar grid shows and in what order. Pure, so it is tested.
 ///
-/// - Categories with many small records (Acte, Garanții, Abonamente) get one box each.
-/// - Every other category on the home screen gets one box per top-level asset.
-/// - Tenancies and household members never get a box: they live inside a home and
-///   inside Acte. Anything filed under another asset lives inside its parent.
+/// What each category gets is its own data (`CategoryBehavior.box`), never its key:
+/// - a category with many small records (Acte, Garanții, Abonamente) gets one box;
+/// - every other category on the home screen gets one box per top-level asset;
+/// - a category that lives inside another (tenancies in a home, people in Acte) gets
+///   none. Anything filed under another asset lives inside its parent.
 /// - Agenda comes last. The order follows the categories' home order until the
 ///   person rearranges the boxes; then their order wins and new boxes slot in
 ///   next to their neighbours.
 enum BinderLayout {
-    static let categoryBoxKeys: Set<String> = [
-        BuiltInTemplates.Key.documents,
-        BuiltInTemplates.Key.purchase,
-        BuiltInTemplates.Key.subscription,
-    ]
-
-    /// Categories whose records only appear inside another box.
-    static let nestedKeys: Set<String> = [
-        BuiltInTemplates.Key.tenancy,
-        BuiltInTemplates.Key.member,
-    ]
-
     struct TemplateInfo: Hashable, Sendable {
         var key: String
         var homeOrder: Int
         var isOnHome: Bool
+        var box: CategoryBehavior.Box = .perSection
     }
 
     struct AssetInfo: Hashable, Sendable {
@@ -78,24 +68,19 @@ enum BinderLayout {
         var createdAt: Date
     }
 
-    /// Whether assets of `templateKey` get boxes of their own.
-    static func hasAssetBoxes(_ templateKey: String) -> Bool {
-        !categoryBoxKeys.contains(templateKey) && !nestedKeys.contains(templateKey)
-    }
-
     static func defaultOrder(templates: [TemplateInfo], assets: [AssetInfo]) -> [BinderBoxID] {
         var result: [BinderBoxID] = []
-        let installed = Set(templates.map(\.key))
+        let boxes = Dictionary(templates.map { ($0.key, $0.box) }, uniquingKeysWith: { first, _ in first })
         let topLevel = assets.filter(\.isTopLevel).sorted { $0.createdAt < $1.createdAt }
         for template in templates.sorted(by: { $0.homeOrder < $1.homeOrder }) where template.isOnHome {
-            if categoryBoxKeys.contains(template.key) {
-                result.append(.category(template.key))
-            } else if hasAssetBoxes(template.key) {
-                result += topLevel.filter { $0.templateKey == template.key }.map { .asset($0.id) }
+            switch template.box {
+            case .wholeCategory: result.append(.category(template.key))
+            case .perSection: result += topLevel.filter { $0.templateKey == template.key }.map { .asset($0.id) }
+            case .insideOther: break
             }
         }
         // An asset whose category isn't installed still shows, as a standard box.
-        result += topLevel.filter { !installed.contains($0.templateKey) && hasAssetBoxes($0.templateKey) }.map { .asset($0.id) }
+        result += topLevel.filter { boxes[$0.templateKey] == nil }.map { .asset($0.id) }
         result.append(.agenda)
         return result
     }

@@ -36,19 +36,25 @@ private struct CategoryContent: View {
     @Environment(\.modelContext) private var context
     @Environment(ShellRouter.self) private var router
     @Query(sort: \Asset.name) private var assets: [Asset]
+    @Query private var categories: [CategoryTemplate]
+
+    /// The category of the people documents are filed under.
+    private var holderKey: String? { categories.first { $0.behavior.role == .holder }?.key }
 
     var body: some View {
         let mine = assets.filter { $0.templateKey == template.key }
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.xl) {
-                switch template.key {
-                case BuiltInTemplates.Key.documents:
+                // What the page lists is the category's own data, so a category of the
+                // person's own can be listed by holder, by warranty or by monthly cost too.
+                switch template.behavior.listing {
+                case .byHolder:
                     documents
-                case BuiltInTemplates.Key.purchase:
+                case .byWarranty:
                     warranties(mine)
-                case BuiltInTemplates.Key.subscription:
+                case .byMonthlyCost:
                     subscriptions(mine)
-                default:
+                case .plain:
                     plainList(mine)
                 }
             }
@@ -63,14 +69,14 @@ private struct CategoryContent: View {
 
     @ViewBuilder
     private var documents: some View {
-        let groups = (try? DocumentHolders.groups(in: context)) ?? []
+        let groups = (try? DocumentHolders.groups(in: context, category: template.key)) ?? []
         if groups.isEmpty {
             emptyState(
                 title: "Niciun act încă",
                 message: "Adaugă buletinul, pașaportul sau permisul. Îți spunem cu luni înainte când trebuie reînnoite.",
                 action: "Adaugă o persoană"
             ) {
-                router.present(.addSection(AddSectionRequest(templateKey: BuiltInTemplates.Key.member)))
+                if let holderKey { router.present(.addSection(AddSectionRequest(templateKey: holderKey))) }
             }
         }
         ForEach(groups) { group in
@@ -101,7 +107,7 @@ private struct CategoryContent: View {
         }
         if !groups.isEmpty {
             DSSecondaryButton("Adaugă o persoană", systemImage: "person.badge.plus") {
-                router.present(.addSection(AddSectionRequest(templateKey: BuiltInTemplates.Key.member)))
+                if let holderKey { router.present(.addSection(AddSectionRequest(templateKey: holderKey))) }
             }
         }
     }
