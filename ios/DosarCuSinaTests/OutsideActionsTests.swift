@@ -191,12 +191,17 @@ struct OutsideActionsTests {
 
     @Test func likelyDoubleCompletionsAreFoundNotChanged() throws {
         typealias C = LikelyDoubleCompletions.Completion
-        let first = C(id: UUID(), occurredAt: noon("2026-11-03"), cycle: CalendarDay("2026-11-05"))
-        let stale = C(id: UUID(), occurredAt: noon("2026-11-04"), cycle: CalendarDay("2026-12-05"))
+        let first = C(id: UUID(), occurredAt: noon("2026-11-03"), cycle: CalendarDay("2026-11-05"), next: CalendarDay("2026-12-05"))
+        let stale = C(id: UUID(), occurredAt: noon("2026-11-04"), cycle: CalendarDay("2026-12-05"), next: CalendarDay("2027-01-05"))
         #expect(LikelyDoubleCompletions.isLikely(latest: stale, previous: first, calendar: calendar))
 
-        let nextMonth = C(id: UUID(), occurredAt: noon("2026-12-04"), cycle: CalendarDay("2026-12-05"))
+        let nextMonth = C(id: UUID(), occurredAt: noon("2026-12-04"), cycle: CalendarDay("2026-12-05"), next: CalendarDay("2027-01-05"))
         #expect(!LikelyDoubleCompletions.isLikely(latest: nextMonth, previous: first, calendar: calendar), "A month apart is two real payments")
+        let movedByHand = C(id: UUID(), occurredAt: noon("2026-11-04"), cycle: CalendarDay("2026-12-20"), next: CalendarDay("2027-01-20"))
+        #expect(!LikelyDoubleCompletions.isLikely(latest: movedByHand, previous: first, calendar: calendar), "Only consecutive cycles")
+        let lateThenOnTime = C(id: UUID(), occurredAt: noon("2026-11-04"), cycle: CalendarDay("2026-11-05"), next: CalendarDay("2026-12-05"))
+        let late = C(id: UUID(), occurredAt: noon("2026-11-03"), cycle: CalendarDay("2026-10-05"), next: CalendarDay("2026-11-05"))
+        #expect(!LikelyDoubleCompletions.isLikely(latest: lateThenOnTime, previous: late, calendar: calendar), "Catching up on a late month is real")
 
         let context = try makeContext()
         let actions = ObligationActions(context: context, calendar: calendar, now: { noon("2026-11-03") })
@@ -207,6 +212,45 @@ struct OutsideActionsTests {
         let found = try LikelyDoubleCompletions.find(in: context, calendar: calendar)
         #expect(found.map(\.obligationId) == [rent.id])
         #expect(found.first?.historyEntryId == rent.history.first?.id)
-        #expect(rent.history.count == 2, "Nothing is changed without the person")
+        #expect(rent.history.count == 2, "Finding changes nothing")
+
+        // Only with the person's OK, and safe to run twice.
+        let candidate = try #require(found.first)
+        #expect(try LikelyDoubleCompletions.undoSecond(candidate, in: context, calendar: calendar))
+        #expect(rent.history.count == 1)
+        #expect(rent.dueDay(in: calendar) == CalendarDay("2026-12-05"))
+        #expect(try !LikelyDoubleCompletions.undoSecond(candidate, in: context, calendar: calendar))
+        #expect(rent.history.count == 1)
+        #expect(try LikelyDoubleCompletions.find(in: context, calendar: calendar).isEmpty)
+    }
+
+    /// The review's probe, turned around: an old "Am rezolvat" left in Notification
+    /// Center, tapped after the deadline was done in the app, closes nothing.
+    @Test func aStaleNotificationNoLongerClosesTheNextCycle() async throws {
+        let container = try makeInMemoryContainer()
+        let context = container.mainContext
+        try TemplateStore(context: context).installBuiltIns()
+        let actions = ObligationActions(context: context, calendar: calendar)
+        let rca = try actions.create(title: "RCA", kind: .insurance, dueDay: CalendarDay(Date(), calendar: calendar), for: nil,
+                                     recurrence: .interval(.years(1), anchor: .dueDate))
+        let first = rca.dueDay(in: calendar)
+        // The reminder shown today, as the notification center hands it back.
+        let identifier = ReminderPlanner.identifier(obligationId: rca.id, suffix: "d0")
+        let payload = ReminderPayload(identifier: identifier, userInfo: ["obligationId": rca.id.uuidString, "dueDay": first.isoString],
+                                      deliveredAt: Date(), calendar: calendar)
+        // Done in the app.
+        try actions.complete(rca)
+        #expect(rca.dueDay(in: calendar) == RecurrenceEngine.add(.years(1), to: first, calendar: calendar))
+
+        let folder = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let coordinator = SideEffectsCoordinator(container: container, notificationClient: FakeNotificationCenter(status: .authorized),
+                                                 widgetWriter: WidgetSnapshotWriter(directory: folder), calendar: calendar)
+        let responder = NotificationResponder(containerProvider: { container }, navigator: AppNavigator(),
+                                              sideEffects: { _ in coordinator }, failures: OutsideActionFailures(suiteName: "tests.\(UUID().uuidString)"))
+        await responder.handle(action: ReminderActions.complete, payload: payload, calendar: calendar)
+        #expect(rca.history.count == 1, "The stale tap completed nothing")
+        #expect(rca.dueDay(in: calendar) == RecurrenceEngine.add(.years(1), to: first, calendar: calendar), "Next year's cycle stays open")
     }
 }

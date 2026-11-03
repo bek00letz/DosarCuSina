@@ -13,7 +13,7 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 - **Why:** a reminder carried only the deadline, so tapping "Am rezolvat" on two reminders for the same RCA, or on an old one after it was done in the app, closed next year's cycle; and after a button, the old reminders still fired. The widget already had the right guard; the reminders used a weaker second path.
 - **Decided:** a reminder button or widget tap that couldn't be saved is never dropped. It is shown calmly at the top of Urmează (*Nu s-a salvat*) until its cycle closes or the person hides it; a widget tap stays queued and is tried again. Siri says a failure at once.
 - **Why:** the person saw "Gata" and moved on; a deadline that silently stays open breaks the app's promise.
-- **Decided:** a deadline whose warnings had all passed before it became known gets one catch-up reminder at the next reminder time ("În 20 de zile: Carte de identitate"), in the same wording as every other reminder. Durations in reminders are worked out from the day they fire.
+- **Decided:** a deadline whose warnings had all passed before it became known gets one catch-up reminder at the next reminder time (the same day if it's still before it, otherwise the next morning), in the same wording as every other reminder: "În 20 de zile: Carte de identitate". The owner chose both. Durations in reminders are worked out from the day they fire.
 - **Why:** an identity card added 20 days before it expires, with leads of 90 and 30 days, got no reminder before it expired.
 - **Decided:** when a household has more reminders than iOS keeps, the plan keeps every deadline's next reminder first, most consequential first, then the rest by time, and its last place goes to „Deschide Dosar cu Șină o clipă” / „Ca să-ți amintim în continuare de termene, deschide aplicația.”, the day before the first reminder that didn't fit. The owner chose this wording.
 - **Why:** only the 60 soonest were kept, so a busy household lost a passport's warning months ahead, with nothing to say so.
@@ -23,7 +23,7 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 - **Why:** a payment on the 31st became due on the 28th for good after February, because each date was worked out from the previous, shortened one.
 - **Decided:** Siri, Shortcuts, widgets, reminders and Spotlight read one list of what may leave the app, which leaves examples out. Siri asks to unlock the phone first, and with the app lock on, Siri and Shortcuts open the app instead of answering.
 - **Why:** Siri suggested example deadlines, and one rule in one place keeps every surface the same.
-- **Decided:** deadlines that an old reminder may have closed twice (two completions a few days apart, the second closing a cycle still well ahead) are found by `LikelyDoubleCompletions` and left as they are. The coming repair list offers to undo the second one, only with the person's OK.
+- **Decided:** deadlines that an old reminder may have closed twice (the two latest completions a few days apart, closing consecutive cycles, the second still well ahead) are found by `LikelyDoubleCompletions.find` and left as they are. The coming repair list offers to undo the second one with `LikelyDoubleCompletions.undoSecond`, only with the person's OK; running it again changes nothing.
 - **Why:** such a cycle can't be told apart with certainty from one paid early.
 
 ### Bills and contracts belong to their subscription
