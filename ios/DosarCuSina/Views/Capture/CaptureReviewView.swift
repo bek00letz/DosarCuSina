@@ -579,7 +579,7 @@ private struct CaptureFieldEditor: View {
         case date
         case money(currencyCode: String)
         /// A number, with its unit when it is a reading ("km").
-        case number(unit: String?)
+        case number(unit: MeasurementUnit?)
         case text
     }
 
@@ -593,7 +593,7 @@ private struct CaptureFieldEditor: View {
             switch CloudSchema.format(of: field.key) {
             case .date: .date
             case .money: .money(currencyCode: Money.defaultCurrency)
-            case .integer: .number(unit: field.key == .odometer ? "km" : nil)
+            case .integer: .number(unit: field.key == .odometer ? .kilometres : nil)
             default: .text
             }
         default: .text
@@ -620,7 +620,7 @@ private struct CaptureFieldEditor: View {
             DSMetricField(title, value: Binding(
                 get: { Self.number(of: field.value) },
                 set: { number in field.confirm(number.map { Self.value(Decimal($0).rounded(scale: 6), unit: unit) }) }
-            ), unit: unit ?? "", fractionDigits: 0...3)
+            ), unit: unit, fractionDigits: 0...3)
         case .text:
             DSTextField(title, text: Binding(
                 get: { Self.text(of: field.value) },
@@ -645,7 +645,7 @@ private struct CaptureFieldEditor: View {
         switch value {
         case .text(let text)?: return text
         case .number(let number)?: return NSDecimalNumber(decimal: number).stringValue
-        case .metric(let number, let unit)?: return "\(NSDecimalNumber(decimal: number).stringValue) \(unit)"
+        case .metric(let number, let unit)?: return "\(NSDecimalNumber(decimal: number).stringValue) \(unit.label)"
         default: return ""
         }
     }
@@ -662,7 +662,7 @@ private struct CaptureFieldEditor: View {
         }
     }
 
-    static func value(_ number: Decimal, unit: String?) -> CaptureValue {
+    static func value(_ number: Decimal, unit: MeasurementUnit?) -> CaptureValue {
         unit.map { .metric(value: number, unit: $0) } ?? .number(number)
     }
 }

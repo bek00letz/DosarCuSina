@@ -47,7 +47,7 @@ struct UndoReceiptTests {
                                              recurrence: .interval(.years(1), anchor: .dueDate))
             try obligations.snooze(rca, days: 1)
             let oil = try obligations.create(title: "Schimb ulei", kind: .maintenance, dueDay: CalendarDay("2027-06-01"), for: car,
-                                             recurrence: .metric(every: 10_000, unit: "km", fallback: .years(1)))
+                                             recurrence: .metric(every: 10_000, unit: .kilometres, fallback: .years(1)))
             let kit = try obligations.create(title: "Trusă medicală", kind: .legal, dueDay: CalendarDay("2026-12-01"), for: car)
             let mechanic = try ProviderActions(context: context).create(name: "Service Exemplu SRL", trades: [.mechanic])
             let repair = try HistoryActions(context: context, now: { noon("2026-10-01") }).record(on: home, kind: .repair, title: "Robinet nou")

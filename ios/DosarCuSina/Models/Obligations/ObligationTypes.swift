@@ -255,7 +255,7 @@ public enum LegalRule: String, Codable, Sendable, CaseIterable {
 /// - `{"type": "none"}`
 /// - `{"type": "interval", "every": 2, "unit": "year", "anchor": "completion"}`
 /// - `{"type": "fixedDates", "dates": ["03-31", "09-30"]}`
-/// - `{"type": "metric", "every": 10000, "unit": "km", "fallbackEvery": 1, "fallbackUnit": "year"}`
+/// - `{"type": "metric", "every": 10000, "unit": "km", "fallbackEvery": 1, "fallbackUnit": "year"}` (the unit by its key, `MeasurementUnit`)
 /// - `{"type": "legal", "rule": "vehicleITP"}`
 public enum RecurrenceRule: Hashable, Sendable, Codable {
     case none
@@ -263,7 +263,7 @@ public enum RecurrenceRule: Hashable, Sendable, Codable {
     /// Due on the same calendar days every year, such as 31 March and 30 September.
     case fixedDates([MonthDay])
     /// Due every `every` units of an asset counter, with a calendar fallback when there are no readings.
-    case metric(every: Double, unit: String, fallback: RecurrenceInterval?)
+    case metric(every: Double, unit: MeasurementUnit, fallback: RecurrenceInterval?)
     case legal(LegalRule)
 
     public var repeats: Bool {
@@ -290,7 +290,7 @@ public enum RecurrenceRule: Hashable, Sendable, Codable {
                let unit = RecurrenceInterval.Unit(rawValue: try c.decodeIfPresent(String.self, forKey: .fallbackUnit) ?? "") {
                 fallback = RecurrenceInterval(every: every, unit: unit)
             }
-            self = .metric(every: try c.decode(Double.self, forKey: .every), unit: try c.decode(String.self, forKey: .unit), fallback: fallback)
+            self = .metric(every: try c.decode(Double.self, forKey: .every), unit: try c.decode(MeasurementUnit.self, forKey: .unit), fallback: fallback)
         case "legal":
             if let rule = LegalRule(rawValue: try c.decode(String.self, forKey: .rule)) {
                 self = .legal(rule)

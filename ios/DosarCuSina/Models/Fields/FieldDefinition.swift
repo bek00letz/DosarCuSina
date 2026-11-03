@@ -97,8 +97,8 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
     public var isSensitive: Bool
     /// Options for `choice` and `multiChoice`. Values store the option keys.
     public var options: [ChoiceOption]?
-    /// Unit for `number` and `metric`, such as `km` or `kg`.
-    public var unit: String?
+    /// Unit for `number` and `metric` (kilometres, kilograms), stored by its key.
+    public var unit: MeasurementUnit?
     /// Example shown in an empty field.
     public var placeholder: String?
     /// Filled in when the asset is created and the person left it empty,
@@ -143,7 +143,7 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
         isEssential: Bool = false,
         isSensitive: Bool = false,
         options: [ChoiceOption]? = nil,
-        unit: String? = nil,
+        unit: MeasurementUnit? = nil,
         placeholder: String? = nil,
         defaultValue: FieldValue? = nil,
         derivation: FieldDerivation? = nil,
@@ -179,7 +179,8 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
         isEssential = try c.decodeIfPresent(Bool.self, forKey: .isEssential) ?? false
         isSensitive = try c.decodeIfPresent(Bool.self, forKey: .isSensitive) ?? false
         options = try c.decodeIfPresent([ChoiceOption].self, forKey: .options)
-        unit = try c.decodeIfPresent(String.self, forKey: .unit)
+        // Any label written so far ("m³", "luni") reads as its unit; it is written back as the key.
+        unit = MeasurementUnit(try c.decodeIfPresent(String.self, forKey: .unit))
         placeholder = try c.decodeIfPresent(String.self, forKey: .placeholder)
         defaultValue = try? c.decodeIfPresent(FieldValue.self, forKey: .defaultValue)
         derivation = try? c.decodeIfPresent(FieldDerivation.self, forKey: .derivation)

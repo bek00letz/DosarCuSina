@@ -256,7 +256,7 @@ struct ExampleOwnershipTests {
         case .document:
             _ = try AttachmentActions(context: context).file(DocumentDraft(fileName: "poza.heic", kind: .other, pageImages: [Data([6])]), asset: car)
         case .reading:
-            _ = try AssetActions(context: context).recordMeasurement(on: car, kind: .odometer, value: 150_000, unit: "km")
+            _ = try AssetActions(context: context).recordMeasurement(on: car, kind: .odometer, value: 150_000, unit: .kilometres)
         case .childSection:
             let template = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.other))
             _ = try AssetActions(context: context).create(name: "Scaun copil", template: template, values: FieldValues(), parent: car)

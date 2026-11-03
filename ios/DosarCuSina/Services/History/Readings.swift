@@ -27,19 +27,19 @@ public struct LowerReadingQuestion: LocalizedError, Equatable, Sendable {
     public let previous: Double
     public let previousDate: Date
     public let value: Double
-    public let unit: String
+    public let unit: MeasurementUnit?
 
     /// "Kilometrajul e mai mic decât ultima dată. Corectez citirea veche?"
     public var question: String {
-        unit == "km"
+        unit == .kilometres
             ? String(localized: "Kilometrajul e mai mic decât ultima dată. Corectez citirea veche?", comment: "Asked when a kilometre reading is lower than an earlier one.")
             : String(localized: "Citirea e mai mică decât ultima dată. Corectez citirea veche?", comment: "Asked when a counter reading (a meter, engine hours) is lower than an earlier one.")
     }
 
     /// What each answer does, with both numbers.
     public var explanation: String {
-        let before = "\(RomanianNumber.format(Decimal(previous), fractionDigits: 0...1)) \(unit)"
-        let now = "\(RomanianNumber.format(Decimal(value), fractionDigits: 0...1)) \(unit)"
+        let before = MeasurementUnit.written(previous, in: unit)
+        let now = MeasurementUnit.written(value, in: unit)
         let day = DosarFormat.day(previousDate)
         return String(localized: "Ultima dată: \(before), pe \(day). Acum: \(now). Dacă o corectezi, citirea veche se șterge. Dacă o lași, cea nouă rămâne deoparte.", comment: "Explains the lower-reading question: the earlier reading, the new one, and what each answer does.")
     }
@@ -95,8 +95,8 @@ public struct ReadingSeries: Sendable, Equatable {
 
 extension HouseholdMutations {
     /// The asset's readings in `unit` (all units when nil), as the one cleaned series.
-    static func readingSeries(of asset: Asset, unit: String?) -> ReadingSeries {
-        let logs = (asset.measurements ?? []).filter { !$0.isDeleted && (unit == nil || $0.unit == unit) }
+    static func readingSeries(of asset: Asset, unit: MeasurementUnit?) -> ReadingSeries {
+        let logs = (asset.measurements ?? []).filter { !$0.isDeleted && (unit == nil || $0.measurementUnit == unit) }
         let cumulative = logs.allSatisfy(\.kind.isCumulative)
         return ReadingSeries(logs.map { .init(date: $0.recordedAt, metric: $0.value) }, cumulative: cumulative)
     }
@@ -116,7 +116,7 @@ extension HouseholdMutations {
         on asset: Asset,
         at date: Date,
         source: ReadingSource,
-        unit: String?,
+        unit: MeasurementUnit?,
         kind: MeasurementKind? = nil,
         name: String = "",
         answer: LowerReadingAnswer? = nil,
@@ -128,7 +128,7 @@ extension HouseholdMutations {
         let unit = unit ?? kind.defaultUnit
         if kind.isCumulative {
             let earlier = (asset.measurements ?? []).filter {
-                !$0.isDeleted && $0.unit == unit && $0.kind.isCumulative && $0.recordedAt <= date
+                !$0.isDeleted && $0.measurementUnit == unit && $0.kind.isCumulative && $0.recordedAt <= date
             }
             let higher = earlier.filter { $0.value > value }
             if let highest = higher.max(by: { $0.value < $1.value }) {

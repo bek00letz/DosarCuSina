@@ -21,9 +21,9 @@ enum AgeWording {
 /// The "last time" line for a component in the Istoric pocket:
 /// "acum 18.200 km · 14 mar. 2025 · 420 lei".
 enum ComponentLine {
-    static func detail(_ occurrence: ComponentOccurrence, unit: String?, locale: Locale = .dosarDefault, calendar: Calendar = .current) -> String {
+    static func detail(_ occurrence: ComponentOccurrence, unit: MeasurementUnit?, locale: Locale = .dosarDefault, calendar: Calendar = .current) -> String {
         var parts: [String] = []
-        if let since = occurrence.metricSince, let unit, !unit.isEmpty {
+        if let since = occurrence.metricSince, let unit = unit?.label {
             let distance = since.formatted(.number.locale(locale).precision(.fractionLength(0)))
             parts.append(String(localized: "acum \(distance) \(unit)", comment: "How far the counter has moved since a job, e.g. 'acum 18.200 km'."))
         }

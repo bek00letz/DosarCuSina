@@ -196,15 +196,14 @@ struct DoubleCompletionsStep: DataRepairStep {
 /// Words for a counter, by its unit.
 enum CounterWording {
     /// "Kilometrajul la VW Golf" or "Contorul la Apartament".
-    static func subject(unit: String, asset: String) -> String {
-        unit == "km"
+    static func subject(unit: MeasurementUnit?, asset: String) -> String {
+        unit == .kilometres
             ? String(localized: "Kilometrajul la \(asset)", comment: "Repair: the subject of a kilometre reading.")
             : String(localized: "Contorul la \(asset)", comment: "Repair: the subject of another counter reading.")
     }
 
-    static func amount(_ value: Double, unit: String) -> String {
-        let number = RomanianNumber.format(Decimal(value), fractionDigits: 0...1)
-        return unit.isEmpty ? number : "\(number) \(unit)"
+    static func amount(_ value: Double, unit: MeasurementUnit?) -> String {
+        MeasurementUnit.written(value, in: unit)
     }
 }
 
@@ -255,7 +254,7 @@ struct CounterOutliersStep: DataRepairStep {
         var found: [DataRepairFinding] = []
         for asset in try scan.context.fetch(FetchDescriptor<Asset>()) where !asset.isExample {
             let counters = (asset.measurements ?? []).filter { $0.kind.isCumulative }
-            for (unit, logs) in Dictionary(grouping: counters, by: \.unit) {
+            for (unit, logs) in Dictionary(grouping: counters, by: \.measurementUnit) {
                 let ordered = logs.sorted { ($0.recordedAt, $0.value) < ($1.recordedAt, $1.value) }
                 for (index, verdict) in Self.verdicts(ordered.map(\.value)).sorted(by: { $0.key < $1.key }) {
                     let log = ordered[index]
@@ -320,7 +319,7 @@ struct EstimatedVisitReadingsStep: DataRepairStep {
               reading.truncatingRemainder(dividingBy: 100) == 0, let asset = entry.asset else { return nil }
         let logs = (asset.measurements ?? []).filter { !$0.isDeleted && $0.kind.isCumulative }
         guard let log = logs.first(where: { $0.recordedAt == entry.occurredAt && $0.value == reading }) else { return nil }
-        let next = logs.filter { $0.unit == log.unit && $0.recordedAt > log.recordedAt }.min { $0.recordedAt < $1.recordedAt }
+        let next = logs.filter { $0.measurementUnit == log.measurementUnit && $0.recordedAt > log.recordedAt }.min { $0.recordedAt < $1.recordedAt }
         guard let next, next.value < reading else { return nil }
         return log
     }
@@ -331,8 +330,8 @@ struct EstimatedVisitReadingsStep: DataRepairStep {
             guard let log = Self.estimatedLog(for: entry), !scan.flaggedReadings.contains(log.id), let asset = entry.asset else { continue }
             scan.flaggedReadings.insert(log.id)
             scan.flaggedAssets.insert(asset.id)
-            let subject = CounterWording.subject(unit: log.unit, asset: asset.name)
-            let shown = CounterWording.amount(log.value, unit: log.unit)
+            let subject = CounterWording.subject(unit: log.measurementUnit, asset: asset.name)
+            let shown = CounterWording.amount(log.value, unit: log.measurementUnit)
             let day = DosarFormat.day(entry.occurredAt, calendar: scan.calendar)
             found.append(DataRepairFinding(
                 id: "\(Self.id.rawValue):\(entry.id.uuidString):\(log.value)",
@@ -375,7 +374,7 @@ struct HeroFromReadingsStep: DataRepairStep {
         return try scan.context.fetch(FetchDescriptor<Asset>()).compactMap { asset in
             guard !asset.isExample, !scan.flaggedAssets.contains(asset.id),
                   let mismatch = Self.mismatch(of: asset, templates: templates) else { return nil }
-            let unit = mismatch.field.unit ?? ""
+            let unit = mismatch.field.unit
             let subject = CounterWording.subject(unit: unit, asset: asset.name)
             let corrected = RomanianNumber.format(Decimal(mismatch.current), fractionDigits: 0...1)
             let message: String

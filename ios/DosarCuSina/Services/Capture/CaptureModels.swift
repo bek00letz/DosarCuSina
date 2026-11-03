@@ -133,8 +133,8 @@ public enum CaptureValue: Hashable, Codable, Sendable {
     case day(CaptureDay)
     case money(CaptureMoney)
     case number(Decimal)
-    /// A meter reading such as an odometer: `value` in `unit` (`km`, `h`, `kWh`, `mc`).
-    case metric(value: Decimal, unit: String)
+    /// A meter reading such as an odometer: `value` in `unit` (kilometres, engine hours, m³).
+    case metric(value: Decimal, unit: MeasurementUnit)
     case lineItems([CaptureLineItem])
 
     public var text: String? { if case .text(let value) = self { value } else { nil } }

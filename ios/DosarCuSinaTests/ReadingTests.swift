@@ -45,13 +45,13 @@ struct ReadingTests {
         let golf = try car(context)
         try edit(golf, km: 4_572, in: context, answer: .keepAside)
         #expect(golf.value("vehicle.odometer") == .number(45_724), "The hero value is worked out from the readings")
-        let series = HouseholdMutations.readingSeries(of: golf, unit: "km")
+        let series = HouseholdMutations.readingSeries(of: golf, unit: .kilometres)
         #expect(series.current == 45_724)
         #expect(series.setAside.map(\.metric) == [4_572])
     }
 
     @Test func theQuestionNamesBothReadings() {
-        let question = LowerReadingQuestion(previous: 45_724, previousDate: noon("2026-01-10"), value: 4_572, unit: "km")
+        let question = LowerReadingQuestion(previous: 45_724, previousDate: noon("2026-01-10"), value: 4_572, unit: .kilometres)
         #expect(question.question == "Kilometrajul e mai mic decât ultima dată. Corectez citirea veche?")
         #expect(question.explanation.contains("45.724 km"))
         #expect(question.explanation.contains("4.572 km"))
@@ -101,7 +101,7 @@ struct ReadingTests {
         let context = try makeContext()
         let golf = try car(context)
         let oilChange = Obligation(title: "Schimb ulei", kind: .maintenance, dueDay: CalendarDay("2026-06-01"),
-                                   recurrence: .metric(every: 10_000, unit: "km", fallback: .years(1)), calendar: .bucharest)
+                                   recurrence: .metric(every: 10_000, unit: .kilometres, fallback: .years(1)), calendar: .bucharest)
         context.insert(oilChange)
         oilChange.asset = golf
         try context.save()

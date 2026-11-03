@@ -115,7 +115,7 @@ enum ModelAnswerMapper {
             fields.append(CaptureField(key: .warrantyMonths, value: .number(Decimal(months)), confidence: confidence - 0.05, sourceText: nil, tier: tier))
         }
         if let km = answers.odometerKm, km > 0, compactSource.contains(String(km)) {
-            fields.append(CaptureField(key: .odometer, value: .metric(value: Decimal(km), unit: "km"), confidence: confidence, sourceText: nil, tier: tier))
+            fields.append(CaptureField(key: .odometer, value: .metric(value: Decimal(km), unit: .kilometres), confidence: confidence, sourceText: nil, tier: tier))
         }
         let items = answers.lineItems.compactMap { item -> CaptureLineItem? in
             let description = item.description.trimmingCharacters(in: .whitespaces)

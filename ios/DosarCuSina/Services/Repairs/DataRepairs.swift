@@ -32,6 +32,7 @@ struct DataRepairs {
         HomePolicyWithoutDeadlineStep(),
         TravelCutoffStep(),
         HomePolicySetsStep(),
+        UnitKeysStep(),
     ]
 
     static func step(_ id: DataRepairStepID) -> any DataRepairStep {
@@ -87,6 +88,7 @@ enum DataRepairStepID: String, CaseIterable, Sendable, Hashable {
     case homePolicyWithoutDeadline = "home-policy-without-deadline"
     case travelCutoff = "travel-cutoff"
     case homePolicySets = "home-policy-sets"
+    case unitKeys = "unit-keys"
 }
 
 /// One thing a repair would change, in plain words, with what applying it needs.

@@ -155,9 +155,9 @@ private struct HistoryEntryContent: View {
     /// "45.724 km": a reading with the unit of the section's counter.
     private func readingText(_ reading: Double) -> String {
         let template = entry.asset.flatMap { asset in (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil }
-        let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) } ?? ""
+        let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) }
         let number = reading.formatted(.number.locale(.dosarDefault).precision(.fractionLength(0)))
-        return unit.isEmpty ? number : "\(number) \(unit)"
+        return unit.map { "\(number) \($0.label)" } ?? number
     }
 
     private func rate(_ value: Int?) {

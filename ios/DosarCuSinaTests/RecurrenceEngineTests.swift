@@ -73,7 +73,7 @@ struct RecurrenceEngineTests {
         ]
         let fast = RecurrenceEngine.nextDue(
             after: CalendarDay("2026-02-10"), completedOn: CalendarDay("2026-02-10"),
-            rule: .metric(every: 15_000, unit: "km", fallback: .years(1)),
+            rule: .metric(every: 15_000, unit: .kilometres, fallback: .years(1)),
             context: RecurrenceContext(readings: readings, currentMetric: 102_000), calendar: calendar
         )
         #expect(fast?.metric == 117_000)
@@ -82,7 +82,7 @@ struct RecurrenceEngineTests {
         // Barely driven: the calendar fallback wins.
         let slow = RecurrenceEngine.nextDue(
             after: CalendarDay("2026-02-10"), completedOn: CalendarDay("2026-02-10"),
-            rule: .metric(every: 15_000, unit: "km", fallback: .years(1)),
+            rule: .metric(every: 15_000, unit: .kilometres, fallback: .years(1)),
             context: RecurrenceContext(readings: [
                 CadenceCalculator.TelemetryReading(date: start, metric: 100_000),
                 CadenceCalculator.TelemetryReading(date: calendar.date(byAdding: .day, value: 40, to: start)!, metric: 100_100),
@@ -94,7 +94,7 @@ struct RecurrenceEngineTests {
 
     @Test func metricRuleWithoutReadingsFallsBack() {
         let next = RecurrenceEngine.nextDue(after: CalendarDay("2026-02-10"), completedOn: CalendarDay("2026-02-10"),
-                                            rule: .metric(every: 150, unit: "km", fallback: .months(1)), calendar: calendar)
+                                            rule: .metric(every: 150, unit: .kilometres, fallback: .months(1)), calendar: calendar)
         #expect(next?.day == CalendarDay("2026-03-10"))
         #expect(next?.metric == nil)
     }
@@ -119,7 +119,7 @@ struct RecurrenceEngineTests {
             .none,
             .interval(.years(2), anchor: .completion),
             .fixedDates([MonthDay(month: 9, day: 30), MonthDay(month: 3, day: 31)]),
-            .metric(every: 15_000, unit: "km", fallback: .years(1)),
+            .metric(every: 15_000, unit: .kilometres, fallback: .years(1)),
             .legal(.vehicleITP),
         ]
         for rule in rules {

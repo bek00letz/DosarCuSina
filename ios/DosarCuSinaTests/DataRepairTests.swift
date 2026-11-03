@@ -42,7 +42,7 @@ struct DataRepairTests {
 
     @discardableResult
     private func reading(_ value: Double, on day: String, of asset: Asset, in context: ModelContext) -> MeasurementLog {
-        let log = MeasurementLog(kind: .odometer, name: "", value: value, unit: "km", recordedAt: noon(day))
+        let log = MeasurementLog(kind: .odometer, name: "", value: value, unit: .kilometres, recordedAt: noon(day))
         context.insert(log)
         log.asset = asset
         return log

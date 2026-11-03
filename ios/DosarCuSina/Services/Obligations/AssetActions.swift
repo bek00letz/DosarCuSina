@@ -223,7 +223,7 @@ public final class AssetActions {
         kind: MeasurementKind,
         name: String? = nil,
         value: Double,
-        unit: String? = nil,
+        unit: MeasurementUnit? = nil,
         at date: Date? = nil,
         asExample: Bool = false,
         lowerReading: LowerReadingAnswer? = nil
@@ -353,7 +353,7 @@ enum HouseholdMutations {
     /// The asset's counter: the last reading of the cleaned series, else its hero metric field.
     static func currentMetric(of asset: Asset) -> Double? {
         let counters = (asset.measurements ?? []).filter { $0.kind.isCumulative && !$0.isDeleted }
-        if let unit = counters.max(by: { $0.recordedAt < $1.recordedAt })?.unit,
+        if let unit = counters.max(by: { $0.recordedAt < $1.recordedAt })?.measurementUnit,
            let current = readingSeries(of: asset, unit: unit).current {
             return current
         }
@@ -377,20 +377,17 @@ enum HouseholdMutations {
         heroMetricField(of: template).flatMap { values[$0.key]?.numberValue }
     }
 
-    static func heroMetricUnit(template: TemplateDefinition) -> String? {
+    static func heroMetricUnit(template: TemplateDefinition) -> MeasurementUnit? {
         heroMetricField(of: template)?.unit
     }
 }
 
 extension MeasurementKind {
     /// The usual kind for a unit, used when a reading comes from a template field.
-    public static func forUnit(_ unit: String?) -> MeasurementKind {
-        switch unit {
-        case "km": return .odometer
-        case "kg": return .bodyWeight
-        case "h": return .engineHours
-        case "kWh": return .electricity
-        default: return .cycles
-        }
+    public static func forUnit(_ unit: MeasurementUnit?) -> MeasurementKind {
+        let kinds: [MeasurementUnit: MeasurementKind] = [
+            .kilometres: .odometer, .kilograms: .bodyWeight, .engineHours: .engineHours, .kilowattHours: .electricity,
+        ]
+        return unit.flatMap { kinds[$0] } ?? .cycles
     }
 }

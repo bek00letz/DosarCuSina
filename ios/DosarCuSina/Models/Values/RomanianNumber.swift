@@ -16,8 +16,8 @@ public enum NumberKind: Sendable, Hashable, CaseIterable {
 
     /// The kind of a typed field's number: kilometres by their unit, whole numbers
     /// when the field shows no decimals (a year), any other measured value otherwise.
-    public static func forField(unit: String?, allowsDecimals: Bool = true) -> NumberKind {
-        if unit?.lowercased() == "km" { return .kilometres }
+    public static func forField(unit: MeasurementUnit?, allowsDecimals: Bool = true) -> NumberKind {
+        if unit == .kilometres { return .kilometres }
         return allowsDecimals ? .meterIndex : .count
     }
 }
@@ -98,7 +98,7 @@ public enum RomanianNumber {
 
     /// Reads `raw` as a number of `kind`. A label before a colon ("Index nou: 12.345") and
     /// the kind's unit after the number ("86.420 km", "350 lei", or `unit`) are allowed.
-    public static func read(_ raw: String, as kind: NumberKind, from origin: NumberOrigin = .typed, unit: String? = nil) -> Result<Reading, Problem> {
+    public static func read(_ raw: String, as kind: NumberKind, from origin: NumberOrigin = .typed, unit: MeasurementUnit? = nil) -> Result<Reading, Problem> {
         var text = raw
         for space in ["\u{00A0}", "\u{202F}", "\u{2009}", "\t"] { text = text.replacingOccurrences(of: space, with: " ") }
         text = text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -119,7 +119,7 @@ public enum RomanianNumber {
     }
 
     /// The value of `raw`, or nil when it isn't clearly a number of `kind`.
-    public static func value(_ raw: String, as kind: NumberKind, from origin: NumberOrigin = .typed, unit: String? = nil) -> Decimal? {
+    public static func value(_ raw: String, as kind: NumberKind, from origin: NumberOrigin = .typed, unit: MeasurementUnit? = nil) -> Decimal? {
         try? read(raw, as: kind, from: origin, unit: unit).get().value
     }
 
@@ -148,19 +148,20 @@ public enum RomanianNumber {
         return text[text.index(after: colon)...].trimmingCharacters(in: .whitespaces)
     }
 
-    /// Units a kind may carry after its number, lowercased and without diacritics.
+    /// Units a kind may carry after its number, folded (`MeasurementUnit.fold`). Measured
+    /// units come from the unit catalog, in every spelling it reads.
     private static func units(for kind: NumberKind) -> [String] {
         switch kind {
         case .money: return ["lei", "leu", "ron", "eur", "euro", "€", "usd", "$"]
-        case .kilometres: return ["km"]
-        case .meterIndex: return ["mc", "m³", "m3", "kwh", "gcal", "kg"]
+        case .kilometres: return Array(MeasurementUnit.kilometres.spellings)
+        case .meterIndex: return MeasurementUnit.meterUnits.flatMap(\.spellings)
         case .count: return []
         }
     }
 
-    private static func droppingUnit(_ text: String, kind: NumberKind, unit: String?) -> String {
-        let folded = text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
-        let candidates = (units(for: kind) + [unit].compactMap { $0?.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil) })
+    private static func droppingUnit(_ text: String, kind: NumberKind, unit: MeasurementUnit?) -> String {
+        let folded = MeasurementUnit.fold(text)
+        let candidates = (units(for: kind) + (unit.map { Array($0.spellings) } ?? []))
             .filter { !$0.isEmpty }
             .sorted { $0.count > $1.count }
         for candidate in candidates where folded.hasSuffix(candidate) {

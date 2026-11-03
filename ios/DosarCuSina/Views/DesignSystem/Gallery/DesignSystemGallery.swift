@@ -558,7 +558,7 @@ private struct GalleryFeedback: View {
             GallerySection(title: "O citire mai mică", note: "Un contor doar crește. Corectează șterge citirea veche, Lasă păstrează cea nouă deoparte, Anulează întoarce la formular.") {
                 DSCard {
                     Button {
-                        readingQuestion = LowerReadingQuestion(previous: 45_724, previousDate: .now, value: 4_572, unit: "km")
+                        readingQuestion = LowerReadingQuestion(previous: 45_724, previousDate: .now, value: 4_572, unit: .kilometres)
                     } label: {
                         Text(verbatim: "Scrie 4.572 km").frame(maxWidth: .infinity)
                     }
@@ -606,7 +606,7 @@ private struct GalleryFields: View {
                         DSTextField("Serie de șasiu (VIN)", text: $vin, kind: .vin, validator: { value in
                             value.count == 17 ? .valid : .invalid("Seria de șasiu are 17 caractere. Ai scris \(value.count).")
                         })
-                        DSMetricField("Kilometraj", value: $odometer, unit: "km")
+                        DSMetricField("Kilometraj", value: $odometer, unit: .kilometres)
                         DSChoiceField("Combustibil", selection: $fuel, options: ["Benzină", "Motorină", "Hibrid", "Electric", "GPL"]) { $0 }
                         DSContactField("Mecanic", contact: $contact)
                     }

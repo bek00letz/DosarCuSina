@@ -88,7 +88,7 @@ struct ArchiveTests {
         let boats = try #require(templates["custom.0b6c6f43-6c1e-4d1a-9c55-7d3b4f1f2a10"])
         #expect(boats.isCustom)
         #expect(boats.sections.first?.fields.count == 2)
-        #expect(boats.blueprints.first?.recurrence == .metric(every: 100, unit: "h", fallback: .years(1)))
+        #expect(boats.blueprints.first?.recurrence == .metric(every: 100, unit: .engineHours, fallback: .years(1)))
         let vehicle = try #require(templates[BuiltInTemplates.Key.vehicle])
         #expect(vehicle.isOnHome == false, "Household preferences travel with the archive")
         #expect(!vehicle.sections.isEmpty, "Built-in definitions come from this app's catalog")
