@@ -1,14 +1,37 @@
 import SwiftUI
 import SwiftData
 
+/// What is typed in Caută's search field. The field belongs to the tab view, which is
+/// where the system draws a search tab's field (in the tab bar); the search screen
+/// reads it from here.
+@MainActor
+@Observable
+final class SearchQuery {
+    var text = ""
+    /// Goes up each time the person submits the field.
+    private(set) var submissions = 0
+
+    func submit() { submissions += 1 }
+}
+
+extension View {
+    /// The search tab's field, on the tab view, with the screen's prompt.
+    func shellSearch(_ query: SearchQuery) -> some View {
+        @Bindable var query = query
+        return searchable(text: $query.text, prompt: Text("Nume, număr, piesă, meseriaș…", comment: "Search field prompt."))
+            .onSubmit(of: .search) { query.submit() }
+            .environment(query)
+    }
+}
+
 /// Caută: one field over the whole binder (sections, deadlines, history, people
 /// and the text of scanned documents), ignoring diacritics. Results are grouped,
 /// matching words are highlighted, and locked sections show only titles.
 struct SearchScreen: View {
     @Environment(\.modelContext) private var context
     @Environment(BiometricVaultManager.self) private var vault
+    @Environment(SearchQuery.self) private var search
 
-    @State private var query = ""
     @State private var index: SearchIndex?
     @State private var results: [SearchResult] = []
     @State private var recent = RecentSearches.shared
@@ -39,14 +62,13 @@ struct SearchScreen: View {
             }
         }
         .navigationTitle(Text("Caută", comment: "Title of the search tab."))
-        .searchable(text: $query, prompt: Text("Nume, număr, piesă, meseriaș…", comment: "Search field prompt."))
-        .onSubmit(of: .search) { recent.add(trimmedQuery, results: index?.search(trimmedQuery) ?? []) }
-        .onChange(of: query) { _, _ in scheduleSearch() }
+        .onChange(of: search.submissions) { _, _ in recent.add(trimmedQuery, results: index?.search(trimmedQuery) ?? []) }
+        .onChange(of: search.text) { _, _ in scheduleSearch() }
         .task { rebuild() }
         .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave)) { _ in rebuild() }
     }
 
-    private var trimmedQuery: String { query.trimmingCharacters(in: .whitespacesAndNewlines) }
+    private var trimmedQuery: String { search.text.trimmingCharacters(in: .whitespacesAndNewlines) }
 
     @ViewBuilder
     private var recentSection: some View {
@@ -64,7 +86,7 @@ struct SearchScreen: View {
             Section {
                 ForEach(recent.items, id: \.self) { item in
                     Button {
-                        query = item
+                        search.text = item
                     } label: {
                         Label { Text(verbatim: item).foregroundStyle(DS.Palette.label) } icon: { Image(systemName: "clock.arrow.circlepath") }
                             .frame(minHeight: 44)

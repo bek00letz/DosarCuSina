@@ -16,6 +16,7 @@ struct AppShell: View {
     @Environment(\.scenePhase) private var scenePhase
 
     @State private var router = ShellRouter()
+    @State private var search = SearchQuery()
     @Query(filter: #Predicate<CategoryTemplate> { $0.isSensitive }) private var lockedCategories: [CategoryTemplate]
 
     private var cover: LockCover? {
@@ -60,6 +61,8 @@ struct AppShell: View {
                 Label { Text("Caută", comment: "Tab: search.") } icon: { Image(systemName: "magnifyingglass") }
             }
         }
+        // A search tab's field lives on the tab view; iOS draws it in the tab bar.
+        .shellSearch(search)
         .environment(router)
         .intakeHandoff()
         .sheet(item: $router.sheet) { sheet in
