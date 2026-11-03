@@ -309,7 +309,10 @@ struct PersonalDocumentCaptureTests {
         // Grouped in fours like a card, even with a misread check digit.
         #expect(PaymentCardNumbers.redact("4111 1111 1111 1112") == "•••• 1112")
         // Not cards: a CNP, an IMEI, a health card's 20 digits, a bill's payment code, an invoice number.
-        for text in ["CNP 1800101990006", "IMEI 352099001761481", "80642000000000000001", "1234567890123456789012345678", "Factura 1234567"] {
+        // A made-up IMEI (prefix 99, no real maker) given its check digit here, so no
+        // number that passes a card's check digit is written in the repository.
+        let imei = Self.withCheckDigit("99000086247185")
+        for text in ["CNP 1800101990006", "IMEI \(imei)", "80642000000000000001", "1234567890123456789012345678", "Factura 1234567"] {
             #expect(PaymentCardNumbers.redact(text) == text, "\(text)")
         }
         // On a bank card, any long run goes, whatever it starts with.
@@ -348,5 +351,16 @@ struct PersonalDocumentCaptureTests {
         let encoded = String(decoding: try JSONEncoder().encode(result), as: UTF8.self)
         #expect(!Self.holdsTestNumber(encoded))
         #expect(!PaymentCardNumbers.containsCardNumber(encoded))
+    }
+
+    /// `digits` followed by the Luhn check digit that makes the whole number pass.
+    static func withCheckDigit(_ digits: String) -> String {
+        let values = digits.compactMap(\.wholeNumberValue)
+        let sum = values.reversed().enumerated().reduce(0) { total, item in
+            let (index, digit) = item
+            let doubled = index.isMultiple(of: 2) ? digit * 2 : digit
+            return total + (doubled > 9 ? doubled - 9 : doubled)
+        }
+        return digits + String((10 - sum % 10) % 10)
     }
 }

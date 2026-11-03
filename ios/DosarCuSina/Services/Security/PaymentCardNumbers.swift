@@ -86,7 +86,7 @@ public enum PaymentCardNumbers {
     struct Run {
         let range: Range<String.Index>
         let digits: String
-        /// Printed in groups of four ("4000 0012 3456 7899").
+        /// Printed in groups of four ("4111 1111 1111 1111").
         let groupedInFours: Bool
 
         /// A card number by the "anywhere" rule.
