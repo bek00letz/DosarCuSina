@@ -40,7 +40,7 @@ struct ObligationRow: View {
             subtitle: Text(verbatim: DosarFormat.day(obligation.dueDay())),
             showsChevron: true
         ) {
-            DSStatusBadge(daysRemaining: obligation.daysRemaining())
+            DSStatusBadge(urgency: obligation.urgency(), daysRemaining: obligation.daysRemaining())
         }
     }
 }
@@ -136,21 +136,24 @@ struct ChildRow: View {
             showsChevron: true
         ) {
             if let day = summary?.endDay {
-                ExpiryBadge(day: day)
+                ExpiryBadge(day: day, rule: DateUrgency.rule(for: day, on: child))
             }
         }
     }
 }
 
-/// A small badge for an end date: only shown when it is within two months or past.
+/// A small badge for an end date, shown once the deadline it drives needs the person
+/// (the same moment it joins Urmează) or once it has passed.
 struct ExpiryBadge: View {
     let day: CalendarDay
+    let rule: UrgencyRule
     @Environment(\.calendar) private var calendar
 
     var body: some View {
-        let days = DSDayMath.daysRemaining(until: day.startDate(in: calendar), calendar: calendar)
-        if days <= 60 {
-            DSStatusBadge(days < 0 ? .overdue : .soon, text: Text(DSDueText.expiryText(daysRemaining: days, soonWithinDays: 60)))
+        let today = CalendarDay(Date(), calendar: calendar)
+        let urgency = rule.urgency(of: day, today: today, calendar: calendar)
+        if urgency.tone != .calm {
+            DSStatusBadge(expiry: urgency, daysRemaining: today.days(to: day, calendar: calendar))
         }
     }
 }
@@ -263,7 +266,7 @@ struct DocumentRowLink: View {
                     systemImage: "person.text.rectangle",
                     showsChevron: true
                 ) {
-                    if let day = document.value(DocumentFields.expiry)?.dateValue { ExpiryBadge(day: day) }
+                    if let day = document.value(DocumentFields.expiry)?.dateValue { ExpiryBadge(day: day, rule: DateUrgency.rule(for: day, on: document)) }
                 }
             }
             .buttonStyle(.dsPressable)
@@ -275,7 +278,9 @@ struct DocumentRowLink: View {
                     systemImage: attachment.kind.systemImage,
                     showsChevron: true
                 ) {
-                    if let day = attachment.validUntilDay { ExpiryBadge(day: day) }
+                    if let day = attachment.validUntilDay {
+                        ExpiryBadge(day: day, rule: attachment.obligation?.reminders.urgencyRule ?? DateUrgency.rule(for: day, on: attachment.asset))
+                    }
                 }
             }
             .buttonStyle(.dsPressable)

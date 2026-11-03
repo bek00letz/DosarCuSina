@@ -57,6 +57,13 @@ public struct CalendarDay: Hashable, Comparable, Sendable, Codable, CustomString
         return CalendarDay(shifted, calendar: calendar)
     }
 
+    /// The same day `months` calendar months away, or that month's last day when it is
+    /// shorter (31 March less one month is 28 or 29 February).
+    public func adding(months: Int, calendar: Calendar = .current) -> CalendarDay {
+        let shifted = calendar.date(byAdding: .month, value: months, to: startDate(in: calendar)) ?? startDate(in: calendar)
+        return CalendarDay(shifted, calendar: calendar)
+    }
+
     /// Whole days from `self` to `other` (negative when `other` is earlier).
     public func days(to other: CalendarDay, calendar: Calendar = .current) -> Int {
         calendar.dateComponents([.day], from: startDate(in: calendar), to: other.startDate(in: calendar)).day ?? 0

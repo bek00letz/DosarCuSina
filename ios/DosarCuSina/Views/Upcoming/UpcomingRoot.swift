@@ -390,11 +390,8 @@ struct UpcomingRow: View {
         .accessibilityHint(Text("Glisează pentru Gata sau Amână."))
     }
 
+    /// The tone of its urgency, the same one its badge and box use.
     private var statusColor: Color {
-        switch entry.urgency {
-        case .overdue: DSStatus.overdue.textColor
-        case .today: DSStatus.soon.textColor
-        default: DS.Palette.secondaryLabel
-        }
+        DSStatus.urgent(entry.urgency.tone)?.textColor ?? DS.Palette.secondaryLabel
     }
 }

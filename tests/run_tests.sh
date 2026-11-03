@@ -7,6 +7,8 @@
 #   SIMULATOR_ID=<udid> ./tests/run_tests.sh
 #
 # Building for the tests builds the app with its widgets and share extension.
+# After the tests, scripts/plural-check.py checks that every counted string the
+# build found has plural forms in its String Catalog.
 #
 # It never downloads runtimes or creates simulators: it picks an iPhone that is
 # already installed with the newest iOS the project supports (its deployment
@@ -92,10 +94,21 @@ set -e
 # Build errors and warnings, each failed test with what it expected, and the verdict.
 grep -E "failed on|error:|warning:|\*\* TEST" "$LOG" | sort -u || true
 grep -E "^✘ |^↳ " "$LOG" || true
+
+# Every counted string has plural forms. The build wrote each file's localizable
+# strings, integers marked, to DerivedData; the check reads them against the catalogs.
+PLURALS=0
+if [[ -d "$DERIVED_DATA/Build/Intermediates.noindex" ]]; then
+    python3 "$REPO_ROOT/scripts/plural-check.py" "$DERIVED_DATA" || PLURALS=$?
+fi
+
 if [[ $STATUS -ne 0 ]]; then
     echo "iOS tests failed (exit $STATUS)." >&2
     [[ -n "${RESULTS_DIR:-}" ]] && echo "The full log is $LOG, the result bundle $RESULT_BUNDLE." >&2
     exit "$STATUS"
+fi
+if [[ $PLURALS -ne 0 ]]; then
+    exit "$PLURALS"
 fi
 
 if [[ "$RUN_ANDROID" == true ]]; then

@@ -54,6 +54,9 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				CompleteFromWidgetIntent.swift,
+				DurationWording.swift,
+				Shared.xcstrings,
+				Urgency.swift,
 				WidgetCompletionQueue.swift,
 				WidgetFeed.swift,
 			);

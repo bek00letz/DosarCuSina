@@ -86,6 +86,11 @@ rule hand-written-plural "$app" - \
     '(==|!=) *1 *\? *("|Text\(|String\(localized|LocalizedStringKey|NSLocalizedString)' - \
     'Counts use plural variations in the String Catalog (1 zi, 2 zile, 20 de zile), never a choice between two strings.'
 
+# Screens, widgets and Siri draw an urgency; they never work one out from a number of days.
+rule urgency-threshold '^ios/(DosarCuSina/(Views|Intents)|DosarCuSinaWidgets)/' - \
+    '[dD]ays[A-Za-z]* *(<|<=|>|>=) *-?[0-9]|soonWithinDays' - \
+    "How urgent a date is comes from the one rule: UrgencyRule (ReminderProfile.urgencyRule, DateUrgency for a date on a page). Draw its tone and WhenWording; don't compare days yourself."
+
 rule animation-curve "$app" '^ios/DosarCuSina/Views/DesignSystem/Tokens/DSMotion\.swift$' \
     '\.(easeInOut|easeIn|easeOut|linear)([^A-Za-z0-9_]|$)|\.spring\(|\.interpolatingSpring|\.(bouncy|snappy|smooth)([^A-Za-z0-9_]|$)|UIView\.animate|Animation\.default' \
     'progressViewStyle|gaugeStyle' \

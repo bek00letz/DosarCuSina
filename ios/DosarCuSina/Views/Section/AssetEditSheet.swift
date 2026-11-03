@@ -59,7 +59,8 @@ struct AssetEditSheet: View {
                             VStack(alignment: .leading, spacing: DS.Space.m) {
                                 DSSectionHeader(verbatim: section.title)
                                 ForEach(fields) { field in
-                                    FieldEditor(field: field, values: $values)
+                                    FieldEditor(field: field, values: $values,
+                                                urgencyRule: DateUrgency.rule(forField: field.key, values: values, definition: definition, asset: asset))
                                 }
                             }
                         }

@@ -120,10 +120,9 @@ private struct ObligationPage: View {
                 .dsFont(.display)
                 .accessibilityAddTraits(.isHeader)
             if obligation.status == .active {
-                let days = today.days(to: obligation.dueDay())
                 Text(verbatim: DueWording.line(kind: obligation.kind, due: obligation.dueDay(), today: today))
                     .dsFont(.headline, numeric: true)
-                    .foregroundStyle(days < 0 ? DSStatus.overdue.textColor : DS.Palette.label)
+                    .foregroundStyle(DSStatus.urgent(obligation.urgency().tone)?.textColor ?? DS.Palette.label)
                 if obligation.isSnoozed() {
                     Label("Amânat. Îți amintesc din nou pe \(DueWording.date(CalendarDay(obligation.snoozedUntil ?? Date()), today: today)).", systemImage: "clock.arrow.circlepath")
                         .dsFont(.subheadline)

@@ -22,8 +22,9 @@ public enum Consequence: String, Codable, CaseIterable, Sendable {
         }
     }
 
-    /// The most days ahead an item of this consequence is promoted to "needs you now".
-    /// Earlier reminders still go out per the profile's lead days.
+    /// The most days ahead an item of this consequence is promoted to "needs you now"
+    /// (30 is a calendar month, like a reminder's lead). Earlier reminders still go out
+    /// per the profile's lead days.
     public var maxAttentionWindowDays: Int {
         switch self {
         case .legal: return 30
@@ -74,11 +75,11 @@ public struct ReminderProfile: Hashable, Sendable, Codable {
         self.followUpAfterLapse = followUpAfterLapse ?? Self.defaultFollowUp(for: consequence)
     }
 
-    /// Days ahead at which the item joins "needs you now": its earliest reminder,
-    /// capped by what its consequence warrants (a passport reminds 180 days ahead
-    /// but only crowds the Radar in the last month).
-    public var attentionWindowDays: Int {
-        min(max(leadDays.first ?? 0, 1), consequence.maxAttentionWindowDays)
+    /// How urgent the item is on every surface: it needs the person from its earliest
+    /// reminder, capped by what its consequence warrants (a passport reminds 180 days
+    /// ahead but only crowds Urmează in the last month), and late within its grace is calm.
+    public var urgencyRule: UrgencyRule {
+        UrgencyRule(graceDays: graceDays, firstLeadDays: leadDays.first ?? 0, maxWindowDays: consequence.maxAttentionWindowDays)
     }
 
     private enum CodingKeys: String, CodingKey { case leadDays, consequence, graceDays, followUpAfterLapse }

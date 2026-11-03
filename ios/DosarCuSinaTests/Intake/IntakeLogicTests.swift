@@ -46,24 +46,26 @@ private func makeCar(_ context: ModelContext, rcaDue: String? = nil, odometer: D
 @Suite("Reminder presets in plain words")
 struct ReminderPresetTests {
     @Test func leadsReadInNaturalUnits() {
-        #expect(ReminderWording.phrase(days: 1) == "o zi")
+        #expect(ReminderWording.phrase(days: 1) == "1 zi")
         #expect(ReminderWording.phrase(days: 3) == "3 zile")
-        #expect(ReminderWording.phrase(days: 7) == "o săptămână")
-        #expect(ReminderWording.phrase(days: 14) == "două săptămâni")
-        #expect(ReminderWording.phrase(days: 30) == "o lună")
-        #expect(ReminderWording.phrase(days: 60) == "două luni")
+        #expect(ReminderWording.phrase(days: 7) == "7 zile")
+        #expect(ReminderWording.phrase(days: 14) == "14 zile")
+        #expect(ReminderWording.phrase(days: 30) == "1 lună")
+        #expect(ReminderWording.phrase(days: 60) == "2 luni")
         #expect(ReminderWording.phrase(days: 180) == "6 luni")
         #expect(ReminderWording.phrase(days: 270) == "9 luni")
-        #expect(ReminderWording.phrase(days: 365) == "un an")
+        #expect(ReminderWording.phrase(days: 360) == "1 an")
+        #expect(ReminderWording.phrase(days: 365) == "1 an")
+        #expect(ReminderWording.phrase(days: 540) == "1 an și 6 luni")
         #expect(ReminderWording.phrase(days: 25) == "25 de zile")
     }
 
     @Test func theSentenceListsLeadsLargestFirst() {
-        #expect(ReminderWording.sentence(leadDays: [7, 30]) == "Te anunț cu o lună și cu o săptămână înainte.")
-        #expect(ReminderWording.sentence(leadDays: [30, 7, 0]) == "Te anunț cu o lună și cu o săptămână înainte și în ziua termenului.")
+        #expect(ReminderWording.sentence(leadDays: [7, 30]) == "Te anunț cu 1 lună și cu 7 zile înainte.")
+        #expect(ReminderWording.sentence(leadDays: [30, 7, 0]) == "Te anunț cu 1 lună și cu 7 zile înainte și în ziua termenului.")
         #expect(ReminderWording.sentence(leadDays: [0]) == "Te anunț în ziua termenului.")
         #expect(ReminderWording.sentence(leadDays: []) == "Nu te anunț dinainte.")
-        #expect(ReminderWording.rowTitle(days: 14) == "Cu două săptămâni înainte")
+        #expect(ReminderWording.rowTitle(days: 14) == "Cu 14 zile înainte")
     }
 
     @Test func presetsKeepTheEnginesOwnValues() {
@@ -143,7 +145,7 @@ struct CaptureFilingTests {
 
         let templates = try TemplateStore(context: context).templatesByKey()
         let preview = try #require(CaptureReminderPreview.text(for: review, templates: templates, assets: [], calendar: .bucharest, today: CalendarDay("2026-11-02")))
-        #expect(preview == "Expiră pe 12 august 2031. Te anunț cu 6 luni și cu două luni înainte.")
+        #expect(preview == "Expiră pe 12 august 2031. Te anunț cu 6 luni și cu 2 luni înainte.")
 
         let outcome = try await CaptureFiler(context: context, calendar: .bucharest, now: { noon("2026-11-02") }).save(review)
         let passport = try #require(outcome.asset)
