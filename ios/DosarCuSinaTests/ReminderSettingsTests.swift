@@ -26,7 +26,7 @@ struct ReminderSettingsTests {
 
     private func height(of form: ReminderSettingsForm, at typeSize: DynamicTypeSize = .large) -> CGFloat {
         let host = UIHostingController(rootView: form.environment(\.dynamicTypeSize, typeSize))
-        return host.sizeThatFits(in: CGSize(width: 375, height: .greatestFiniteMagnitude)).height
+        return host.sizeThatFits(in: CGSize(width: CGFloat(375), height: CGFloat.greatestFiniteMagnitude)).height
     }
 
     @Test func theSheetOffersTheUsualOnesOnlyOnceThePersonChangedThem() throws {
