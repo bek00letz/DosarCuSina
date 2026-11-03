@@ -39,7 +39,7 @@ struct CategorySwitchesTests {
 
     @Test("A service by a counter is a hero counter and a service deadline, like a car's")
     func serviceByCounter() throws {
-        let boat = definition(CategorySwitches(service: .engineHours))
+        let boat = definition(CategorySwitches(service: CategorySwitches.Service(.engineHours)))
         let counter = try #require(boat.fields(withRole: .heroMetric).first)
         #expect(counter.key == "custom.counter.h")
         #expect(counter.type == .metric && counter.unit == .engineHours && counter.isEssential)
@@ -47,7 +47,7 @@ struct CategorySwitchesTests {
         #expect(service.key == "custom.service.engineHours")
         #expect(service.recurrence == .metric(every: 100, unit: .engineHours, fallback: .years(1)))
 
-        let trailer = definition(CategorySwitches(service: .kilometres))
+        let trailer = definition(CategorySwitches(service: CategorySwitches.Service(.kilometres)))
         #expect(trailer.fields(withRole: .heroMetric).first?.unit == .kilometres)
         let car = try #require(BuiltInTemplates.vehicle.blueprints.first { $0.key == "vehicle.service" })
         let byKilometres = try #require(trailer.blueprints.first)
@@ -56,9 +56,37 @@ struct CategorySwitchesTests {
     }
 
     @Test func yearlyServiceHasNoCounter() {
-        let piano = definition(CategorySwitches(service: .yearly))
+        let piano = definition(CategorySwitches(service: CategorySwitches.Service(.time)))
         #expect(piano.fields(withRole: .heroMetric).isEmpty)
         #expect(piano.blueprints.map(\.recurrence) == [.interval(.years(1), anchor: .completion)])
+    }
+
+    @Test("How often is asked, starts at the car's numbers and lives in the blueprint's own rule")
+    func intervalIsTheBlueprintsRule() throws {
+        #expect(CategorySwitches.Service(.kilometres).every == 10_000)
+        #expect(CategorySwitches.Service(.engineHours).every == 100)
+        #expect(CategorySwitches.Service(.time).every == 12)
+
+        let boat = definition(CategorySwitches(service: CategorySwitches.Service(.engineHours, every: 150)))
+        #expect(boat.blueprints.map(\.recurrence) == [.metric(every: 150, unit: .engineHours, fallback: .years(1))])
+        let trailer = definition(CategorySwitches(service: CategorySwitches.Service(.kilometres, every: 7_500)))
+        #expect(trailer.blueprints.map(\.recurrence) == [.metric(every: 7_500, unit: .kilometres, fallback: .years(1))])
+        let boiler = try #require(definition(CategorySwitches(service: CategorySwitches.Service(.time, every: 6))).blueprints.first)
+        #expect(boiler.recurrence == .interval(.months(6), anchor: .completion))
+        #expect(boiler.firstDue == .afterInterval(.months(6)), "The first one comes after the same interval")
+        let piano = try #require(definition(CategorySwitches(service: CategorySwitches.Service(.time, every: 24))).blueprints.first)
+        #expect(piano.recurrence == .interval(.years(2), anchor: .completion), "Whole years stay years")
+        #expect(CategorySwitches.Service(.engineHours, every: 0).every == 1, "A new service is never every zero")
+    }
+
+    @Test("Changing only how often keeps the blueprint and its counter")
+    func changingTheIntervalChangesOnlyTheRule() {
+        let before = definition(CategorySwitches(service: CategorySwitches.Service(.engineHours)))
+        let after = CategorySwitches(service: CategorySwitches.Service(.engineHours, every: 200)).applied(to: before)
+        #expect(after.blueprints.map(\.key) == before.blueprints.map(\.key))
+        #expect(after.sections == before.sections)
+        #expect(after.blueprints.first?.recurrence == .metric(every: 200, unit: .engineHours, fallback: .years(1)))
+        #expect(CategorySwitches(reading: after).service == CategorySwitches.Service(.engineHours, every: 200))
     }
 
     @Test func oneBoxForAllIsAWholeCategoryBox() {
@@ -68,9 +96,12 @@ struct CategorySwitchesTests {
 
     @Test("Every answer reads back from the data it wrote")
     func switchesReadBack() {
+        let services: [CategorySwitches.Service?] = [nil] + CategorySwitches.Counter.allCases.flatMap { counter in
+            [CategorySwitches.Service(counter), CategorySwitches.Service(counter, every: 7), CategorySwitches.Service(counter, every: 36)].map(Optional.some)
+        }
         for documents in [true, false] {
             for bills in [true, false] {
-                for service in [nil] + CategorySwitches.Service.allCases.map(Optional.some) {
+                for service in services {
                     for boxes in [CategorySwitches.Boxes.perSection, .oneForAll] {
                         let switches = CategorySwitches(hasDocuments: documents, hasBills: bills, service: service, boxes: boxes)
                         #expect(CategorySwitches(reading: definition(switches)) == switches)
@@ -96,7 +127,7 @@ struct CategorySwitchesTests {
                                        sections: [FieldSection(key: "tool", title: "Unealtă", fields: [FieldDefinition(key: "tool.serial", label: "Serie", type: .text)])],
                                        blueprints: [ObligationBlueprint(key: "tool.check", title: "Verificare", kind: .maintenance, recurrence: .interval(.years(1), anchor: .completion))],
                                        pockets: [.upcoming, .products, .keyFacts])
-        let changed = CategorySwitches(hasDocuments: true, hasBills: true, service: .kilometres, boxes: .oneForAll).applied(to: older)
+        let changed = CategorySwitches(hasDocuments: true, hasBills: true, service: CategorySwitches.Service(.kilometres), boxes: .oneForAll).applied(to: older)
         #expect(changed.pockets == [.upcoming, .products, .subscriptions, .documents, .keyFacts])
         #expect(changed.sections.map(\.key) == ["tool", CategorySwitches.counterSectionKey])
         #expect(changed.blueprints.map(\.key) == ["tool.check", "custom.service.kilometres"])
@@ -136,7 +167,7 @@ struct CustomCategoryBehaviourTests {
         let context = try makeContext()
         var draft = CustomSectionDraft()
         draft.name = "Bărci"
-        draft.switches.service = .engineHours
+        draft.switches.service = CategorySwitches.Service(.engineHours, every: 150)
         let model = AddSectionModel(request: AddSectionRequest())
         model.chooseCustom(draft)
         #expect(model.essentialFields.map(\.key) == ["custom.counter.h"])
@@ -144,6 +175,7 @@ struct CustomCategoryBehaviourTests {
         model.planObligations(context: context)
         #expect(model.planned.map(\.blueprint.key) == ["custom.service.engineHours"])
         #expect(model.planned.first?.isSelected == true)
+        #expect(model.planned.first?.blueprint.recurrence == .metric(every: 150, unit: .engineHours, fallback: .years(1)), "The interval the person typed")
         #expect(model.planned.first?.firstDue != nil, "A year from today, or sooner by the hours")
 
         model.name = "Barca"
@@ -159,7 +191,7 @@ struct CustomCategoryBehaviourTests {
     @Test("In Urmează, a trailer's service sits exactly where a car's would")
     func upcomingLikeACar() throws {
         let context = try makeContext()
-        let trailers = try TemplateStore(context: context).createCustom(name: "Rulote", symbol: "car.side.rear.open", switches: CategorySwitches(service: .kilometres))
+        let trailers = try TemplateStore(context: context).createCustom(name: "Rulote", symbol: "car.side.rear.open", switches: CategorySwitches(service: CategorySwitches.Service(.kilometres)))
         var trailerValues = FieldValues()
         trailerValues["custom.counter.km"] = .number(42_000)
         let trailer = try section("Rulota", of: trailers, values: trailerValues, serviceKey: "custom.service.kilometres", due: "2026-11-15", context)
@@ -211,7 +243,7 @@ struct CustomCategoryBehaviourTests {
     func offAndOnKeepsTheData() throws {
         let context = try makeContext()
         let store = TemplateStore(context: context)
-        let all = CategorySwitches(hasDocuments: true, hasBills: true, service: .engineHours)
+        let all = CategorySwitches(hasDocuments: true, hasBills: true, service: CategorySwitches.Service(.engineHours))
         let boats = try store.createCustom(name: "Bărci", symbol: "sailboat.fill", switches: all)
         var values = FieldValues()
         values["custom.counter.h"] = .number(350)
@@ -259,11 +291,55 @@ struct CustomCategoryBehaviourTests {
     func changingTheCounterAsks() throws {
         let context = try makeContext()
         let store = TemplateStore(context: context)
-        let boats = try store.createCustom(name: "Bărci", symbol: "sailboat.fill", switches: CategorySwitches(service: .kilometres))
+        let boats = try store.createCustom(name: "Bărci", symbol: "sailboat.fill", switches: CategorySwitches(service: CategorySwitches.Service(.kilometres)))
         let boat = try section("Barca", of: boats, values: FieldValues(), serviceKey: "custom.service.kilometres", due: "2027-05-01", context)
-        let effects = try store.effects(of: CategorySwitches(service: .engineHours), on: boats)
+        let effects = try store.effects(of: CategorySwitches(service: CategorySwitches.Service(.engineHours)), on: boats)
         #expect(effects.pausing.map(\.id) == boat.activeObligations.map(\.id))
-        #expect(try store.effects(of: CategorySwitches(service: .kilometres, boxes: .oneForAll), on: boats).isEmpty, "A box changes no deadline")
+        #expect(try store.effects(of: CategorySwitches(service: CategorySwitches.Service(.kilometres), boxes: .oneForAll), on: boats).isEmpty, "A box changes no deadline")
+    }
+
+    @Test("A new interval asks first, then counts from the next service; the day stays, and Anulează takes it back")
+    func changingTheIntervalAsks() throws {
+        let context = try makeContext()
+        let store = TemplateStore(context: context)
+        let boats = try store.createCustom(name: "Bărci", symbol: "sailboat.fill", switches: CategorySwitches(service: CategorySwitches.Service(.engineHours)))
+        let boat = try section("Barca", of: boats, values: FieldValues(), serviceKey: "custom.service.engineHours", due: "2027-05-01", context)
+        let service = try #require(boat.activeObligations.first)
+        let oftener = CategorySwitches(service: CategorySwitches.Service(.engineHours, every: 50))
+
+        let effects = try store.effects(of: oftener, on: boats)
+        #expect(effects.retiming.map(\.id) == [service.id])
+        #expect(effects.pausing.isEmpty && effects.resuming.isEmpty)
+
+        // Left as it was: the category counts by 50 hours, this deadline still by 100.
+        let kept = try store.editCustom(boats, name: "Bărci", symbol: "sailboat.fill", switches: oftener, changingDeadlines: false)
+        #expect(CategorySwitches(reading: boats.definition).service?.every == 50)
+        #expect(service.recurrence == .metric(every: 100, unit: .engineHours, fallback: .years(1)))
+        try kept.undo()
+
+        let receipt = try store.editCustom(boats, name: "Bărci", symbol: "sailboat.fill", switches: oftener, changingDeadlines: true)
+        #expect(service.recurrence == .metric(every: 50, unit: .engineHours, fallback: .years(1)))
+        #expect(service.status == .active)
+        #expect(service.dueDay(in: calendar) == CalendarDay("2027-05-01"), "The day already set stays")
+        #expect(try store.effects(of: oftener, on: boats).isEmpty, "Nothing left to ask")
+
+        try receipt.undo()
+        #expect(service.recurrence == .metric(every: 100, unit: .engineHours, fallback: .years(1)))
+        #expect(CategorySwitches(reading: boats.definition).service?.every == 100)
+    }
+
+    @Test("A deadline turned back on takes the interval it has now")
+    func resumedDeadlinesTakeTheNewInterval() throws {
+        let context = try makeContext()
+        let store = TemplateStore(context: context)
+        let pianos = try store.createCustom(name: "Piane", symbol: "music.note", switches: CategorySwitches(service: CategorySwitches.Service(.time)))
+        let piano = try section("Pianul", of: pianos, values: FieldValues(), serviceKey: "custom.service.yearly", due: "2027-02-01", context)
+        let tuning = try #require(piano.activeObligations.first)
+        try store.editCustom(pianos, name: "Piane", symbol: "music.note", switches: CategorySwitches(), changingDeadlines: true)
+        #expect(tuning.status == .paused)
+        try store.editCustom(pianos, name: "Piane", symbol: "music.note", switches: CategorySwitches(service: CategorySwitches.Service(.time, every: 6)), changingDeadlines: true)
+        #expect(tuning.status == .active)
+        #expect(tuning.recurrence == .interval(.months(6), anchor: .completion))
     }
 
     @Test func renamingKeepsTheKeyAndTheSections() throws {
@@ -292,7 +368,7 @@ struct CustomCategoryBehaviourTests {
         let container = try makeInMemoryContainer()
         let context = ModelContext(container)
         try TemplateStore(context: context).installBuiltIns()
-        let switches = CategorySwitches(hasDocuments: false, hasBills: true, service: .engineHours, boxes: .oneForAll)
+        let switches = CategorySwitches(hasDocuments: false, hasBills: true, service: CategorySwitches.Service(.engineHours), boxes: .oneForAll)
         let boats = try TemplateStore(context: context).createCustom(name: "Bărci", symbol: "sailboat.fill", switches: switches)
         let data = try DossierArchiveService(container: container, calendar: calendar).exportData(exportedAt: noon(today))
 

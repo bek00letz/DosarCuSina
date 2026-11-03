@@ -455,6 +455,64 @@
     "Expiră azi": {
       "comment": "Badge: a document expires today."
     },
+    "La %lld km sau o dată pe an, ce vine întâi.": {
+      "comment": "Note of the service deadline of a category of one's own: every so many kilometres.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La un kilometru sau o dată pe an, ce vine întâi."
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La %lld km sau o dată pe an, ce vine întâi."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La %lld de km sau o dată pe an, ce vine întâi."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "La %lld ore de motor sau o dată pe an, ce vine întâi.": {
+      "comment": "Note of the service deadline of a category of one's own: every so many engine hours.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La o oră de motor sau o dată pe an, ce vine întâi."
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La %lld ore de motor sau o dată pe an, ce vine întâi."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La %lld de ore de motor sau o dată pe an, ce vine întâi."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Mai târziu": {
       "comment": "Status of an obligation that is not due soon."
     },
@@ -475,6 +533,35 @@
     },
     "O adresă de e-mail.": {
       "comment": "VoiceOver hint for an email field."
+    },
+    "O dată la %lld luni.": {
+      "comment": "Note of the service deadline of a category of one's own: every so many months.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "O dată pe lună."
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "O dată la %lld luni."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "O dată la %lld de luni."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Opțiuni contact": {
       "comment": "VoiceOver label of the menu next to a linked contact."

@@ -178,39 +178,52 @@ public struct TemplateStore {
     }
 
     /// The deadlines a change of switches touches: the service deadlines a switch turns off
-    /// (still running) and the ones it turns back on (paused). Nothing changes until the
-    /// person says so (`editCustom(_:name:symbol:switches:changingDeadlines:)`).
+    /// (still running), the ones it turns back on (paused), and the running ones whose
+    /// interval it changes. Nothing changes until the person says so
+    /// (`editCustom(_:name:symbol:switches:changingDeadlines:)`).
     public struct SwitchEffects {
         /// Running deadlines whose service the change turns off.
         public var pausing: [Obligation] = []
         /// Paused deadlines whose service the change turns back on.
         public var resuming: [Obligation] = []
+        /// Running deadlines that count by another interval from now on.
+        public var retiming: [Obligation] = []
 
-        public var isEmpty: Bool { pausing.isEmpty && resuming.isEmpty }
+        public var isEmpty: Bool { pausing.isEmpty && resuming.isEmpty && retiming.isEmpty }
     }
 
     public func effects(of switches: CategorySwitches, on template: CategoryTemplate) throws -> SwitchEffects {
         let before = Set(template.blueprints.map(\.key).filter(CategorySwitches.isServiceBlueprint))
-        let after = Set(switches.applied(to: template.definition).blueprints.map(\.key).filter(CategorySwitches.isServiceBlueprint))
+        let rules = Self.serviceRules(of: switches.applied(to: template.definition))
         let key = template.key
         let assets = try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.templateKey == key }, sortBy: [SortDescriptor(\.name)]))
         var effects = SwitchEffects()
         for obligation in assets.flatMap({ $0.obligations ?? [] }) {
-            guard let blueprint = obligation.blueprintKey else { continue }
-            if obligation.status == .active, before.contains(blueprint), !after.contains(blueprint) {
+            guard let blueprint = obligation.blueprintKey, CategorySwitches.isServiceBlueprint(blueprint) else { continue }
+            let rule = rules[blueprint]
+            if obligation.status == .active, before.contains(blueprint), rule == nil {
                 effects.pausing.append(obligation)
-            } else if obligation.status == .paused, after.contains(blueprint), !before.contains(blueprint) {
+            } else if obligation.status == .paused, rule != nil, !before.contains(blueprint) {
                 effects.resuming.append(obligation)
+            } else if obligation.status == .active, let rule, obligation.recurrence != rule {
+                effects.retiming.append(obligation)
             }
         }
         return effects
     }
 
+    /// Each service blueprint's rule, by key.
+    private static func serviceRules(of definition: TemplateDefinition) -> [String: RecurrenceRule] {
+        Dictionary(definition.blueprints.filter { CategorySwitches.isServiceBlueprint($0.key) }.map { ($0.key, $0.recurrence) },
+                   uniquingKeysWith: { first, _ in first })
+    }
+
     /// Renames a category of the person's own and changes its symbol and switches, as one
     /// step the toast can take back. Nothing filed is deleted: a pocket turned off only
-    /// hides, and comes back with what it had. With `changingDeadlines`, the service
-    /// deadlines a switch turned off are paused and the paused ones it turned back on run
-    /// again (`effects(of:on:)`), in the same step.
+    /// hides, and comes back with what it had. With `changingDeadlines`, in the same step,
+    /// the service deadlines a switch turned off are paused, the paused ones it turned back
+    /// on run again, and running ones (and those resumed) count by the new interval from
+    /// their next cycle; their due day stays (`effects(of:on:)`).
     @discardableResult
     public func editCustom(_ template: CategoryTemplate, name: String, symbol: String, switches: CategorySwitches, changingDeadlines: Bool) throws -> UndoReceipt {
         guard !template.isBuiltIn else { throw TemplateStoreError.builtInBehaviourIsFixed }
@@ -220,9 +233,14 @@ public struct TemplateStore {
             definition.name = name
             definition.symbol = symbol
             template.apply(definition)
+            let rules = Self.serviceRules(of: definition)
             let actions = ObligationActions(context: context)
             for obligation in effects.pausing { try actions.pause(obligation) }
             for obligation in effects.resuming { try actions.resume(obligation) }
+            for obligation in effects.resuming + effects.retiming {
+                guard let key = obligation.blueprintKey, let rule = rules[key], obligation.recurrence != rule else { continue }
+                try actions.setRecurrence(obligation, rule)
+            }
             try save()
         }.receipt
     }

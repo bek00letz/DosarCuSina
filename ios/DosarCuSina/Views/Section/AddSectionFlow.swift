@@ -225,7 +225,7 @@ struct CustomSectionStep: View {
         .safeAreaInset(edge: .bottom) {
             BottomBar {
                 DSPrimaryButton("Continuă") {
-                    guard let custom = model.custom, !custom.name.trimmingCharacters(in: .whitespaces).isEmpty else {
+                    guard let custom = model.custom, custom.isComplete else {
                         reveals = true
                         return
                     }
