@@ -8,9 +8,10 @@ import SwiftData
 /// month; a document changed from a passport to another type before reminders followed the
 /// type still counts from a cut-off it doesn't have.
 ///
-/// It is a check of the one rule (`DeadlineReminders`): a deadline whose reminders the person
-/// didn't set follows its blueprint's profile for its section's values. Applying gives it that
-/// profile through the same path Editează uses. It asks, because it changes when the person
+/// It is a check of the one rule (`DeadlineReminders`): a deadline follows its blueprint's
+/// profile for its section's values, and one whose reminders the person set follows only its
+/// travel margin. Applying gives it that profile through the same path Editează uses, so the
+/// person's own leads, grace and follow-up stay. It asks, because it changes when the person
 /// is reminded. Nothing names a document type: any blueprint whose profile has a margin, or
 /// lost one, is covered.
 struct TravelCutoffStep: DataRepairStep {

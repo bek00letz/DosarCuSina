@@ -7,26 +7,42 @@ import Foundation
 /// cut-off, an identity card 90 and 30 days before it expires, a dog's rabies vaccine as the
 /// law asks. When a value that profile depends on changes (a document's type, a pet's
 /// species: whatever its `reminderVariants` reads), the deadline takes the new profile
-/// whole: its leads, consequence, grace, follow-up and travel margin. A deadline whose
-/// reminders the person set themselves (`Obligation.remindersCustomized`) keeps them.
+/// whole: its leads, consequence, grace, follow-up and travel margin.
+///
+/// A deadline whose reminders the person set themselves (`Obligation.remindersCustomized`)
+/// keeps its leads, consequence, grace and follow-up, but its travel margin still follows the
+/// document: the cut-off is a fact about the document, not a preference. A customised
+/// passport that turns out to be an identity card stops counting from one, and the other way
+/// round; its leads then count from the new anchor.
 ///
 /// Editează and capture's filing reach it through `AssetActions.update`; the repair list's
 /// travel cut-off step (`TravelCutoffStep`) finds deadlines saved before it and gives them the
 /// same profile, with the owner's OK. Nothing else writes a deadline's profile from its section.
 @MainActor
 enum DeadlineReminders {
-    /// The profile `obligation` follows for `values`, or nil when it keeps its own: the person
-    /// set its reminders, it isn't from `blueprint`, or it is done or archived.
-    static func expected(for obligation: Obligation, blueprint: ObligationBlueprint?, values: FieldValues) -> ReminderProfile? {
-        guard let blueprint, obligation.blueprintKey == blueprint.key, !obligation.remindersCustomized,
-              obligation.status == .active || obligation.status == .paused else { return nil }
+    /// The reminders `obligation`'s blueprint gives for `values`, whether or not the person
+    /// changed them; nil when it isn't from `blueprint`.
+    static func usual(for obligation: Obligation, blueprint: ObligationBlueprint?, values: FieldValues) -> ReminderProfile? {
+        guard let blueprint, obligation.blueprintKey == blueprint.key else { return nil }
         return blueprint.reminders(for: values)
     }
 
+    /// The profile `obligation` follows for `values`, or nil when it isn't from `blueprint` or
+    /// is done or archived: its blueprint's profile whole, or for a deadline whose reminders
+    /// the person set, their own with the document's travel margin.
+    static func expected(for obligation: Obligation, blueprint: ObligationBlueprint?, values: FieldValues) -> ReminderProfile? {
+        guard obligation.status == .active || obligation.status == .paused,
+              let usual = usual(for: obligation, blueprint: blueprint, values: values) else { return nil }
+        guard obligation.remindersCustomized else { return usual }
+        var own = obligation.reminders
+        own.travelMarginDays = usual.travelMarginDays
+        return own
+    }
+
     /// After a section's values changed from `previous` to its current ones: each of its
-    /// deadlines whose blueprint gives another profile for the new values takes it, unless the
-    /// person set its reminders. Values the profile doesn't read change nothing. Doesn't save;
-    /// returns the deadlines that changed.
+    /// deadlines whose blueprint gives another profile for the new values takes it; one whose
+    /// reminders the person set takes only the new travel margin. Values the profile doesn't
+    /// read change nothing. Doesn't save; returns the deadlines that changed.
     @discardableResult
     static func follow(_ asset: Asset, template: TemplateDefinition, from previous: FieldValues, now: Date) -> [Obligation] {
         let values = asset.values
@@ -42,8 +58,8 @@ enum DeadlineReminders {
         return changed
     }
 
-    /// Gives `obligation` the profile its blueprint gives for its section's values; false when
-    /// it already has it or keeps its own.
+    /// Gives `obligation` the profile it follows for its section's values (`expected`); false
+    /// when it already has it or follows nothing.
     @discardableResult
     static func refresh(_ obligation: Obligation, template: TemplateDefinition, now: Date) -> Bool {
         guard let asset = obligation.asset,

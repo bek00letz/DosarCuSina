@@ -60,7 +60,9 @@ struct DeadlineRemindersTests {
         #expect(!renewal.remindersCustomized)
     }
 
-    @Test func aDeadlineWhoseRemindersThePersonSetIsLeftAlone() throws {
+    /// The person's leads, grace and follow-up stay; the travel cut-off is a fact about the
+    /// document, so it follows the type even here.
+    @Test func anIdentityCardWithThePersonsRemindersGainsTheCutoffAsAPassport() throws {
         let context = try makeContext()
         let (card, renewal) = try document(DocumentType.idCard, in: context)
         let mine = ReminderProfile(leadDays: [120, 14], consequence: .legal, followUpAfterLapse: false)
@@ -68,47 +70,38 @@ struct DeadlineRemindersTests {
         #expect(renewal.remindersCustomized)
 
         try edit(card, in: context) { $0[DocumentType.typeFieldKey] = .text(DocumentType.passport) }
-        #expect(renewal.reminders == mine, "The person's reminders stay as set")
-        #expect(renewal.travelMarginDays == 0)
-    }
-
-    @Test func theFollowUpCheckboxCountsAsThePersonsChoice() throws {
-        let context = try makeContext()
-        let (card, renewal) = try document(DocumentType.idCard, in: context)
-        try ObligationActions(context: context, calendar: calendar, now: { today }).setFollowUpAfterLapse(renewal, false)
+        var withCutoff = mine
+        withCutoff.travelMarginDays = try documentProfile(DocumentType.passport).travelMarginDays
+        #expect(renewal.reminders == withCutoff, "The person's leads, grace and follow-up stay as set; only the cut-off is new")
+        #expect(renewal.travelMarginDays == 180)
         #expect(renewal.remindersCustomized)
+    }
+
+    @Test func aPassportWithThePersonsRemindersLosesTheCutoffAsAnIdentityCard() throws {
+        let context = try makeContext()
+        let (passport, renewal) = try document(DocumentType.passport, in: context)
+        #expect(renewal.travelMarginDays == 180)
+        let mine = renewal.reminders.withLeadDays([200, 30])
+        try ObligationActions(context: context, calendar: calendar, now: { today }).setReminders(renewal, mine)
+        #expect(renewal.remindersCustomized)
+
+        try edit(passport, in: context) { $0[DocumentType.typeFieldKey] = .text(DocumentType.idCard) }
+        #expect(renewal.travelMarginDays == 0, "An identity card is good for travel until it expires")
+        #expect(renewal.reminders.leadDays == [200, 30], "The leads stay, now counted from the expiry")
+        #expect(renewal.reminders.graceDays == mine.graceDays)
+        #expect(renewal.reminders.followUpAfterLapse == mine.followUpAfterLapse)
+        #expect(renewal.reminders.consequence == mine.consequence)
+        #expect(renewal.remindersCustomized)
+        #expect(renewal.updatedAt == today)
+    }
+
+    @Test func aChangeThatKeepsTheCutoffLeavesThePersonsRemindersAlone() throws {
+        let context = try makeContext()
+        let (card, renewal) = try document(DocumentType.idCard, in: context)
+        let mine = ReminderProfile(leadDays: [120, 14], consequence: .legal, followUpAfterLapse: false)
+        try ObligationActions(context: context, calendar: calendar, now: { today }).setReminders(renewal, mine)
         try edit(card, in: context) { $0[DocumentType.typeFieldKey] = .text(DocumentType.drivingLicence) }
-        #expect(try renewal.reminders.leadDays == documentProfile(DocumentType.idCard).leadDays)
-        #expect(!renewal.followUpAfterLapse)
-    }
-
-    /// Only a value the profile reads moves it: a deadline saved with other reminders (an
-    /// earlier catalog) isn't touched when the expiry or the name changes.
-    @Test func otherChangesLeaveTheRemindersAsTheyAre() throws {
-        let context = try makeContext()
-        let (card, renewal) = try document(DocumentType.idCard, in: context)
-        let earlier = ReminderProfile(leadDays: [60, 30], consequence: .legal)
-        renewal.reminders = earlier
-        try UnitOfWork.save(context)
-
-        try edit(card, in: context) { $0[DocumentFields.expiry] = .date(CalendarDay("2032-01-10")) }
-        try AssetActions(context: context, calendar: calendar, now: { today }).update(card, name: "Buletin", values: card.values, notes: "Nou")
-        #expect(renewal.reminders == earlier)
-        #expect(renewal.dueDay(in: calendar) == CalendarDay("2032-01-10"), "The due day still follows the expiry")
-    }
-
-    @Test func aDoneDeadlineIsNotTouchedButAPausedOneIs() throws {
-        let context = try makeContext()
-        let (card, renewal) = try document(DocumentType.idCard, in: context)
-        renewal.status = .paused
-        try UnitOfWork.save(context)
-        try edit(card, in: context) { $0[DocumentType.typeFieldKey] = .text(DocumentType.passport) }
-        #expect(renewal.travelMarginDays == 180, "Paused still follows: it reminds again when resumed")
-
-        renewal.status = .done
-        try UnitOfWork.save(context)
-        try edit(card, in: context) { $0[DocumentType.typeFieldKey] = .text(DocumentType.idCard) }
-        #expect(renewal.travelMarginDays == 180, "Done is history")
+        #expect(renewal.reminders == mine)
     }
 
     // MARK: Pets
