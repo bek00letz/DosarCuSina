@@ -37,6 +37,7 @@ private struct ObligationPage: View {
     @State private var isAddingToCalendar = false
     @State private var isRescheduling = false
     @State private var isAddingCustomLead = false
+    @State private var isEditingReminders = false
     @State private var saveRequest: ReminderSaveRequest?
     @State private var unlockFailed = false
 
@@ -89,6 +90,9 @@ private struct ObligationPage: View {
             }
             .presentationDetents([.medium])
         }
+        .sheet(isPresented: $isEditingReminders) {
+            ReminderSettingsSheet(obligation: obligation) { isEditingReminders = false }
+        }
         .sheet(isPresented: $isRescheduling) {
             RescheduleSheet(current: obligation.dueDay()) { day in
                 isRescheduling = false
@@ -120,10 +124,13 @@ private struct ObligationPage: View {
                 .dsFont(.display)
                 .accessibilityAddTraits(.isHeader)
             if obligation.status == .active {
-                let days = today.days(to: obligation.dueDay())
-                Text(verbatim: DueWording.line(kind: obligation.kind, due: obligation.dueDay(), today: today))
-                    .dsFont(.headline, numeric: true)
-                    .foregroundStyle(days < 0 ? DSStatus.overdue.textColor : DS.Palette.label)
+                let lines = DueWording.travelLines(due: obligation.dueDay(), rule: obligation.reminders.urgencyRule, today: today)
+                    ?? [DueWording.line(kind: obligation.kind, due: obligation.dueDay(), today: today)]
+                ForEach(lines, id: \.self) { line in
+                    Text(verbatim: line)
+                        .dsFont(.headline, numeric: true)
+                        .foregroundStyle(DSStatus.urgent(obligation.urgency().tone)?.textColor ?? DS.Palette.label)
+                }
                 if obligation.isSnoozed() {
                     Label("Amânat. Îți amintesc din nou pe \(DueWording.date(CalendarDay(obligation.snoozedUntil ?? Date()), today: today)).", systemImage: "clock.arrow.circlepath")
                         .dsFont(.subheadline)
@@ -185,9 +192,10 @@ private struct ObligationPage: View {
 
     @ViewBuilder private var lastTime: some View {
         let last = obligation.history.first
-        let asset = obligation.asset
-        let policyNumber = obligation.reference ?? asset.flatMap { fact(in: $0, suffix: "policyNumber") }
-        let claimsPhone = asset.flatMap { fact(in: $0, suffix: "claimsPhone") }
+        // This deadline's own facts, by its blueprint's roles: CASCO's page shows CASCO's policy.
+        let facts = DeadlineFacts.of(obligation, template: template?.definition)
+        let policyNumber = facts.policyNumber
+        let claimsPhone = facts.claimsPhone
         let documents = documentsOnFile
         if last != nil || policyNumber != nil || claimsPhone != nil || !documents.isEmpty {
             VStack(alignment: .leading, spacing: DS.Space.s) {
@@ -212,7 +220,7 @@ private struct ObligationPage: View {
                                 Button { AppNavigator.shared.open(.document(document.id)) } label: {
                                     DSListRow(
                                         title: Text(verbatim: document.title ?? document.fileName),
-                                        subtitle: document.documentDate.map { Text(verbatim: $0.formatted(.dateTime.day().month(.wide).year().locale(.dosarDefault))) },
+                                        subtitle: document.documentDate.map { Text(verbatim: DosarFormat.longDay($0)) },
                                         systemImage: "doc.text",
                                         showsChevron: true,
                                         trailing: { EmptyView() }
@@ -230,7 +238,7 @@ private struct ObligationPage: View {
     @ViewBuilder private func lastCompletion(_ entry: HistoryEntry) -> some View {
         VStack(alignment: .leading, spacing: DS.Space.xs) {
             HStack(alignment: .firstTextBaseline) {
-                Text(verbatim: entry.occurredAt.formatted(.dateTime.day().month(.wide).year().locale(.dosarDefault)))
+                Text(verbatim: DosarFormat.longDay(entry.occurredAt))
                     .dsFont(.headline)
                 Spacer()
                 if !entry.effectiveCost.isEmpty {
@@ -249,10 +257,6 @@ private struct ObligationPage: View {
                 }
             }
         }
-    }
-
-    private func fact(in asset: Asset, suffix: String) -> String? {
-        asset.values.first { key, value in key.hasSuffix(".\(suffix)") && value.textValue != nil }?.value.textValue
     }
 
     private var documentsOnFile: [Attachment] {
@@ -287,7 +291,7 @@ private struct ObligationPage: View {
                                     }
                                 }
                             }
-                            .frame(minHeight: 32)
+                            .padding(.vertical, DS.Space.xxs)
                             .accessibilityElement(children: .combine)
                         }
                     }
@@ -298,7 +302,46 @@ private struct ObligationPage: View {
 
     // MARK: Reminders
 
+    /// Off: the settings moved to their own sheet (`ReminderSettingsSheet`). The inline card
+    /// below is kept, switched off, as the way back until the owner has used the sheet.
+    private static let editsRemindersInline = false
+
     @ViewBuilder private var reminders: some View {
+        if obligation.status == .active {
+            if Self.editsRemindersInline {
+                inlineReminderEditor
+            } else {
+                reminderSummary
+            }
+        }
+    }
+
+    /// What the deadline reminds, in words, and the way into its settings.
+    private var reminderSummary: some View {
+        let profile = obligation.reminders
+        return VStack(alignment: .leading, spacing: DS.Space.s) {
+            DSSectionHeader("Când te anunț")
+            ReminderPermissionNotice()
+            DSCard {
+                VStack(alignment: .leading, spacing: DS.Space.xs) {
+                    Text(verbatim: ReminderWording.sentence(profile))
+                        .dsFont(.headline)
+                    if profile.followUpAfterLapse {
+                        Text(verbatim: ReminderWording.followUp).dsFont(.footnote)
+                    }
+                    DS.Hairline().padding(.vertical, DS.Space.xxs)
+                    Button { isEditingReminders = true } label: {
+                        DSListRow("Schimbă când te anunț", systemImage: "bell", showsChevron: true)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    /// The settings as they were on the page, before the sheet. Switched off
+    /// (`editsRemindersInline`); remove once the owner agrees.
+    @ViewBuilder private var inlineReminderEditor: some View {
         if obligation.status == .active {
             let profile = obligation.reminders
             VStack(alignment: .leading, spacing: DS.Space.s) {
@@ -306,14 +349,14 @@ private struct ObligationPage: View {
                 ReminderPermissionNotice()
                 DSCard {
                     VStack(alignment: .leading, spacing: DS.Space.xs) {
-                        Text(verbatim: ReminderWording.sentence(leadDays: profile.leadDays))
+                        Text(verbatim: ReminderWording.sentence(profile))
                             .dsFont(.headline)
                         if profile.followUpAfterLapse {
                             Text(verbatim: ReminderWording.followUp).dsFont(.footnote)
                         }
                         DS.Hairline().padding(.vertical, DS.Space.xxs)
                         ForEach(ReminderPreset.rows(for: profile.leadDays), id: \.self) { days in
-                            DSCheckRow(title: Text(verbatim: ReminderWording.rowTitle(days: days)), isOn: profile.leadDays.contains(days)) {
+                            DSCheckRow(title: Text(verbatim: ReminderWording.rowTitle(days: days, from: .init(profile))), isOn: profile.leadDays.contains(days)) {
                                 setLead(days, on: !profile.leadDays.contains(days))
                             }
                         }
@@ -358,7 +401,7 @@ private struct ObligationPage: View {
         let current = obligation.reminders
         var leads = Set(current.leadDays)
         if on { leads.insert(days) } else { leads.remove(days) }
-        let profile = ReminderProfile(leadDays: Array(leads), consequence: current.consequence, graceDays: current.graceDays, followUpAfterLapse: current.followUpAfterLapse)
+        let profile = current.withLeadDays(Array(leads))
         saveRequest = ReminderSaveRequest {
             run { try ObligationActions(context: context).setReminders(obligation, profile) }
         }
@@ -373,12 +416,9 @@ private struct ObligationPage: View {
     }
 
     private func reschedule(to day: CalendarDay) {
-        let previous = obligation.dueDay()
         do {
-            try ObligationActions(context: context).reschedule(obligation, to: day)
-            toast = DSToast.undo("Termenul e acum pe \(DueWording.date(day, today: today)).") {
-                try? ObligationActions(context: context).reschedule(obligation, to: previous)
-            }
+            let receipt = try ObligationActions(context: context).reschedule(obligation, to: day)
+            toast = .undo("Termenul e acum pe \(DueWording.date(day, today: today)).", receipt: receipt)
         } catch {
             toast = UpcomingActions.failureToast(error)
         }
@@ -403,11 +443,17 @@ private struct ObligationCompleteSheet: View {
     @State private var currency = Money.defaultCurrency
     @State private var source: CaptureSource?
     @State private var isChoosingSource = false
-    @State private var isReading = false
-    @State private var document: CaptureResult?
-    @State private var readError: String?
+    /// Reading the new document. It ends with the sheet: a reading still running stops.
+    @State private var session = CaptureSession()
     @State private var errorMessage: String?
     @State private var isSaving = false
+    @State private var exampleQuestion: ExampleSectionQuestion?
+    @State private var readingQuestion: LowerReadingQuestion?
+    /// A bank card's photo is kept only when the person asks.
+    @State private var keepsPhotoOnRequest = false
+
+    private var isReading: Bool { session.phase == .reading }
+    private var document: CaptureResult? { session.result }
 
     var body: some View {
         NavigationStack {
@@ -420,6 +466,9 @@ private struct ObligationCompleteSheet: View {
                         }
                     }
                     documentSection
+                    if let document, document.kind.profile.photoIsOptIn {
+                        KeepPhotoChoice(keepsPhoto: $keepsPhotoOnRequest)
+                    }
                     if let errorMessage {
                         DSNotice(.error, title: "Nu s-a salvat", message: LocalizedStringKey(errorMessage))
                     }
@@ -435,6 +484,14 @@ private struct ObligationCompleteSheet: View {
                 ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
             }
             .dsDiscardGuard(hasChanges: amount != nil || document != nil)
+            .examplePrompt($exampleQuestion) { save() }
+            .readingPrompt($readingQuestion) { save(lowerReading: $0) }
+            .onChange(of: document?.id) { _, _ in
+                if amount == nil, let total = document?.field(.total)?.value.money {
+                    amount = total.amount
+                    currency = total.currencyCode
+                }
+            }
             .confirmationDialog("Actul nou", isPresented: $isChoosingSource, titleVisibility: .visible) {
                 if CaptureSource.isCameraAvailable { Button("Fotografiază actul") { source = .camera } }
                 Button("Alege din poze") { source = .photos }
@@ -443,8 +500,8 @@ private struct ObligationCompleteSheet: View {
             }
             .captureSourcePicker($source) { payload in
                 read(payload)
-            } onError: { error in
-                readError = error.localizedDescription
+            } onError: { _ in
+                errorMessage = String(localized: "Poza nu s-a putut deschide. Încearcă din nou.")
             }
         }
     }
@@ -458,9 +515,16 @@ private struct ObligationCompleteSheet: View {
         VStack(alignment: .leading, spacing: DS.Space.s) {
             DSSectionHeader("Actul nou", subtitle: "Opțional. Din el iau data următoare.")
             if let document {
-                let next = ObligationCompletion.nextDay(in: document)
-                DSNotice(.success, title: "Am citit actul",
-                         message: next.map { "Următorul termen: \(DueWording.date($0, today: CalendarDay(Date())))." } ?? "Nu am găsit o dată nouă pe el. Îl păstrez oricum.")
+                let next = CaptureFiler.nextDay(in: document)
+                // A bank card's photo is kept only on request, so it isn't promised here.
+                let message: LocalizedStringKey = if let next {
+                    "Următorul termen: \(DueWording.date(next, today: CalendarDay(Date())))."
+                } else if document.kind.profile.photoIsOptIn {
+                    "Nu am găsit o dată nouă pe el."
+                } else {
+                    "Nu am găsit o dată nouă pe el. Îl păstrez oricum."
+                }
+                DSNotice(.success, title: "Am citit actul", message: message)
                 Button("Alege alt act") { isChoosingSource = true }
                     .frame(minHeight: 44)
             } else {
@@ -469,32 +533,20 @@ private struct ObligationCompleteSheet: View {
                 }
                 .disabled(isReading)
                 if isReading { DSDelayedProgress(label: "Citesc actul…") }
-                if let readError {
-                    DSNotice(.warning, title: "Actul nu s-a citit", message: LocalizedStringKey(readError))
+                if session.phase == .failed {
+                    DSNotice(.warning, title: "Actul nu s-a citit", message: "Încearcă o poză mai clară, cu actul întins și fără umbre.")
                 }
             }
         }
     }
 
     private func read(_ payload: CaptureRequest.Payload) {
-        isReading = true
-        readError = nil
-        Task {
-            defer { isReading = false }
-            do {
-                let result = try await CaptureRunner.run(payload, ownerID: obligation.asset?.id)
-                document = result
-                if amount == nil, let total = result.field(.total)?.value.money {
-                    amount = total.amount
-                    currency = total.currencyCode
-                }
-            } catch {
-                readError = String(localized: "Încearcă o poză mai clară, cu actul întins și fără umbre.")
-            }
-        }
+        // A bank card's new card is read only on the phone, like any bank card (`PhoneOnlyReading`).
+        session.destination.staysOnPhone = obligation.asset.map { PhoneOnlyReading.holdsOne($0.values) } ?? false
+        session.read(payload)
     }
 
-    private func save() {
+    private func save(lowerReading: LowerReadingAnswer? = nil) {
         guard let date else { return }
         isSaving = true
         errorMessage = nil
@@ -502,23 +554,26 @@ private struct ObligationCompleteSheet: View {
         Task {
             do {
                 let cost = amount.map { Money($0, currency: currency) }
-                let outcome = try await ObligationCompletion(context: context).complete(
-                    obligation, on: date, cost: cost, document: document,
-                    title: document.map { CaptureMapping.defaultTitle(for: $0.kind, fields: Dictionary($0.fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })) }
-                )
+                var filer = CaptureFiler(context: context)
+                filer.lowerReading = lowerReading
+                let outcome = try await filer.file(.completion(.init(
+                    obligation: obligation, date: date, cost: cost, document: document, keepsPhotoOnRequest: keepsPhotoOnRequest
+                )))
                 let message: LocalizedStringResource = outcome.nextDue.map {
                     "\(title): gata. Următorul termen e pe \(DueWording.date($0, today: CalendarDay(Date())))."
                 } ?? "\(title): gata."
-                let toast: DSToast
-                if let entry = outcome.entry {
-                    toast = DSToast.undo(message) { try? ObligationActions(context: context).undo(entry) }
-                } else {
-                    toast = DSToast(title: message, actionTitle: nil, action: nil)
-                }
+                let toast: DSToast = outcome.receipt.map { .undo(message, receipt: $0) } ?? DSToast(title: message, actionTitle: nil)
+                session.close()
                 onClose(toast)
+            } catch let question as ExampleSectionQuestion {
+                isSaving = false
+                exampleQuestion = question
+            } catch let question as LowerReadingQuestion {
+                isSaving = false
+                readingQuestion = question
             } catch {
                 isSaving = false
-                errorMessage = error.localizedDescription
+                errorMessage = SaveFailure.message(for: error, formKept: true)
             }
         }
     }
@@ -526,28 +581,42 @@ private struct ObligationCompleteSheet: View {
 
 // MARK: - Small sheets
 
-/// A reminder this many days before, beyond the presets.
-private struct CustomLeadSheet: View {
-    let onClose: (Int?) -> Void
+/// "Altă zi": a reminder this many days before, beyond the presets. A page pushed inside
+/// the reminder settings sheet, whose back button is the way out without adding.
+struct CustomLeadPage: View {
+    let onAdd: (Int) -> Void
     @State private var days = 3
 
     var body: some View {
-        NavigationStack {
+        ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.l) {
                 Stepper(value: $days, in: 1...365) {
-                    Text(verbatim: ReminderWording.rowTitle(days: days))
+                    // The page only adds a lead before the day (1 to 365 days), worded the same either way.
+                    Text(verbatim: ReminderWording.rowTitle(days: days, from: .dueDay))
                         .dsFont(.headline, numeric: true)
                 }
                 .frame(minHeight: 44)
-                DSPrimaryButton("Adaugă", systemImage: "plus") { onClose(days) }
-                Spacer()
+                DSPrimaryButton("Adaugă", systemImage: "plus") { onAdd(days) }
             }
             .padding(DS.Space.m)
-            .navigationTitle("Altă zi")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Renunță") { onClose(nil) } }
-            }
+        }
+        .background(DS.Palette.background)
+        .navigationTitle("Altă zi")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+/// The same page in a sheet of its own, with "Renunță": only for the deadline page's
+/// inline reminder settings, kept switched off as the way back (`editsRemindersInline`).
+struct CustomLeadSheet: View {
+    let onClose: (Int?) -> Void
+
+    var body: some View {
+        NavigationStack {
+            CustomLeadPage { days in onClose(days) }
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) { Button("Renunță") { onClose(nil) } }
+                }
         }
     }
 }

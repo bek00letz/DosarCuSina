@@ -15,8 +15,8 @@ public struct StoredFile: Codable, Hashable, Sendable {
 
 /// What capture made of a document: its pages, a thumbnail, the original PDF if
 /// there was one, and a fingerprint. It is a description only; the bytes stay
-/// with `CaptureDocumentStore` until `AttachmentActions.fileCaptured` turns them
-/// into an `Attachment`, the one record of every document.
+/// with `CaptureDocumentStore` until `CaptureFiler` turns them into an
+/// `Attachment`, the one record of every document.
 public struct StoredDocument: Codable, Hashable, Sendable, Identifiable {
     public let id: UUID
     /// SHA-256 of the original bytes (or of the pages), used to spot the same document twice.
@@ -44,12 +44,40 @@ public struct ProcessedDocument: Sendable {
     public let originalPDF: Data?
 }
 
+/// Which document a capture is about: pages it just read, or a document the binder
+/// already keeps (the same photo was filed before). The one way capture, the review
+/// and filing name a document, so a capture's id and a kept document's id are never
+/// mixed up.
+public enum CapturedDocumentRef: Hashable, Codable, Sendable {
+    /// Pages waiting in `CaptureDocumentStore` under `id`. `claim` is this capture's
+    /// own hold on them: the pages stay while any capture still holds them.
+    case pending(id: UUID, claim: UUID)
+    /// The same photo is already in the binder as this `Attachment`.
+    case kept(attachmentID: UUID)
+
+    /// The pages waiting in capture's store, when there are any.
+    public var pendingID: UUID? {
+        if case .pending(let id, _) = self { return id }
+        return nil
+    }
+
+    /// The document already in the binder, when it is one.
+    public var keptAttachmentID: UUID? {
+        if case .kept(let id) = self { return id }
+        return nil
+    }
+}
+
 /// Turns captured pages into what the binder keeps: pages sized for reading
 /// small print, a thumbnail and a fingerprint, with duplicates recognized.
 ///
 /// It keeps nothing on disk. A processed document waits here, in memory, until
-/// the person confirms the capture and `AttachmentActions.fileCaptured` stores
-/// it as an `Attachment`; a discarded capture leaves no trace.
+/// the person confirms the capture and `CaptureFiler` stores it as an `Attachment`;
+/// a discarded capture leaves no trace.
+///
+/// Every capture that reads a document holds its own claim on the pages, even when
+/// two captures read the same photo (shared twice, from two apps). The pages go
+/// once no capture holds them: closing one review never takes pages another still needs.
 public actor CaptureDocumentStore {
     /// Pages are kept sharp enough to read small print on a policy or an invoice.
     public static let pageMaxLongEdge = 2560
@@ -60,8 +88,13 @@ public actor CaptureDocumentStore {
     /// Finds an already filed document by its fingerprint; returns its id.
     public typealias DuplicateLookup = @Sendable (String) async -> UUID?
 
+    private struct Waiting {
+        var processed: ProcessedDocument
+        var claims: Set<UUID>
+    }
+
     private var duplicateLookup: DuplicateLookup?
-    private var pending: [UUID: ProcessedDocument] = [:]
+    private var pending: [UUID: Waiting] = [:]
 
     public init(duplicateLookup: DuplicateLookup? = nil) {
         self.duplicateLookup = duplicateLookup
@@ -108,20 +141,31 @@ public actor CaptureDocumentStore {
         case encodingFailed
     }
 
-    /// Processes a document, or returns the existing one (filed or still pending)
-    /// when the same content was captured before.
-    public func store(_ request: StoreRequest) async throws -> (document: StoredDocument, isDuplicate: Bool) {
+    /// What storing a capture gave: the reference the capture holds, and the
+    /// processed document when its pages wait here.
+    public struct Stored: Sendable {
+        public let ref: CapturedDocumentRef
+        /// Nil when the same photo is already in the binder.
+        public let document: StoredDocument?
+        /// The same content was captured before: it waits for another capture, or is already kept.
+        public let isDuplicate: Bool
+    }
+
+    /// Processes a document, or points at the existing one (still waiting, or already
+    /// in the binder) when the same content was captured before. Each call is a new
+    /// claim: release it with `release(_:)` when the capture ends.
+    public func store(_ request: StoreRequest) async throws -> Stored {
         guard !request.pages.isEmpty || request.originalPDF != nil else { throw StoreError.nothingToStore }
 
         // Hash the original bytes when we have them, so a duplicate costs no encoding.
         let originalHash = (request.originalPDF ?? request.sourceData).map(Hashing.sha256)
-        if let originalHash, let duplicate = await existing(originalHash, kind: request.kind) { return (duplicate, true) }
+        if let originalHash, let duplicate = await existing(originalHash) { return duplicate }
 
         let encodedPages = try request.pages.map { page in
             try ImageEncoding.encode(page, maxLongEdge: Self.pageMaxLongEdge, quality: Self.pageQuality)
         }
         let contentHash = originalHash ?? Hashing.sha256(encodedPages.reduce(into: Data()) { $0.append($1.data) })
-        if originalHash == nil, let duplicate = await existing(contentHash, kind: request.kind) { return (duplicate, true) }
+        if originalHash == nil, let duplicate = await existing(contentHash) { return duplicate }
 
         var pages: [StoredFile] = []
         for (offset, page) in encodedPages.enumerated() {
@@ -140,38 +184,43 @@ public actor CaptureDocumentStore {
             id: UUID(), contentHash: contentHash, kind: request.kind, ownerID: request.ownerID, title: request.title,
             capturedAt: request.capturedAt, pages: pages, thumbnail: thumbnail, original: original
         )
-        pending[document.id] = ProcessedDocument(document: document, pageData: encodedPages.map(\.data), thumbnailData: thumbnailData, originalPDF: request.originalPDF)
-        return (document, false)
+        let claim = UUID()
+        pending[document.id] = Waiting(
+            processed: ProcessedDocument(document: document, pageData: encodedPages.map(\.data), thumbnailData: thumbnailData, originalPDF: request.originalPDF),
+            claims: [claim]
+        )
+        return Stored(ref: .pending(id: document.id, claim: claim), document: document, isDuplicate: false)
     }
 
     // MARK: Pending documents
 
     /// A processed document still waiting to be filed.
     public func processed(id: UUID) -> ProcessedDocument? {
-        pending[id]
+        pending[id]?.processed
     }
 
-    /// Hands a processed document over for filing and forgets it.
-    public func take(id: UUID) -> ProcessedDocument? {
-        pending.removeValue(forKey: id)
-    }
-
-    /// Drops a capture the person didn't keep.
-    public func discard(id: UUID) {
-        pending.removeValue(forKey: id)
+    /// Ends one capture's hold on its pages: once filed, or when the capture is
+    /// closed without saving. The pages go when no capture holds them any more.
+    /// Releasing twice, or a reference to a kept document, does nothing.
+    public func release(_ ref: CapturedDocumentRef) {
+        guard case .pending(let id, let claim) = ref, var waiting = pending[id] else { return }
+        waiting.claims.remove(claim)
+        pending[id] = waiting.claims.isEmpty ? nil : waiting
     }
 
     public var pendingCount: Int { pending.count }
 
     // MARK: Private
 
-    private func existing(_ contentHash: String, kind: CaptureDocumentKind) async -> StoredDocument? {
-        if let waiting = pending.values.first(where: { $0.document.contentHash == contentHash }) {
-            return waiting.document
+    /// The same content, captured before: still waiting (a new claim on it), or in the binder.
+    private func existing(_ contentHash: String) async -> Stored? {
+        if let (id, waiting) = pending.first(where: { $0.value.processed.document.contentHash == contentHash }) {
+            let claim = UUID()
+            pending[id]?.claims.insert(claim)
+            return Stored(ref: .pending(id: id, claim: claim), document: waiting.processed.document, isDuplicate: true)
         }
         guard let lookup = duplicateLookup, let id = await lookup(contentHash) else { return nil }
-        // Already in the binder: report it by its attachment id.
-        return StoredDocument(id: id, contentHash: contentHash, kind: kind, ownerID: nil, title: nil, capturedAt: Date(), pages: [], thumbnail: nil, original: nil)
+        return Stored(ref: .kept(attachmentID: id), document: nil, isDuplicate: true)
     }
 }
 

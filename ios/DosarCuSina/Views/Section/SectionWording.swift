@@ -2,7 +2,7 @@ import Foundation
 
 // Plain-language wording for section pages, kept out of the views so it is tested.
 
-/// A pet's or a person's age in plain words: "3 ani", "1 an și 4 luni", "5 luni".
+/// A pet's or a person's age in plain words: "3 ani", "un an și 4 luni", "5 luni".
 enum AgeWording {
     static func text(born: CalendarDay, today: CalendarDay, calendar: Calendar = .current) -> String? {
         guard born <= today else { return nil }
@@ -21,13 +21,13 @@ enum AgeWording {
 /// The "last time" line for a component in the Istoric pocket:
 /// "acum 18.200 km · 14 mar. 2025 · 420 lei".
 enum ComponentLine {
-    static func detail(_ occurrence: ComponentOccurrence, unit: String?, locale: Locale = .dosarDefault, calendar: Calendar = .current) -> String {
+    static func detail(_ occurrence: ComponentOccurrence, unit: MeasurementUnit?, locale: Locale = .dosarDefault, calendar: Calendar = .current) -> String {
         var parts: [String] = []
-        if let since = occurrence.metricSince, let unit, !unit.isEmpty {
+        if let since = occurrence.metricSince, let unit = unit?.label {
             let distance = since.formatted(.number.locale(locale).precision(.fractionLength(0)))
             parts.append(String(localized: "acum \(distance) \(unit)", comment: "How far the counter has moved since a job, e.g. 'acum 18.200 km'."))
         }
-        parts.append(occurrence.date.formatted(.dateTime.day().month(.abbreviated).year().locale(locale)))
+        parts.append(DosarFormat.day(occurrence.date, locale: locale, calendar: calendar))
         if let cost = occurrence.cost {
             parts.append(cost.formattedCompact(locale: locale))
         }

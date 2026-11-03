@@ -25,6 +25,8 @@ public enum AppRoute: Hashable, Sendable, Codable {
     /// The Adaugă tab: scan or add something.
     case intake
     case settings(SettingsSection?)
+    /// A situation's checklist: a trip, selling the car, a claim (`ReadinessSituation`).
+    case readiness(ReadinessRoute)
 }
 
 public enum SettingsSection: String, Hashable, Sendable, Codable, CaseIterable {
@@ -33,6 +35,8 @@ public enum SettingsSection: String, Hashable, Sendable, Codable, CaseIterable {
     case categories
     case backup
     case examples
+    /// The repair list: data an earlier version saved wrongly, waiting for an OK.
+    case repairs
     case about
 }
 
@@ -44,6 +48,8 @@ public enum SettingsSection: String, Hashable, Sendable, Codable, CaseIterable {
 ///   `dosarcusina://provider/<uuid>`, `dosarcusina://document/<uuid>`
 /// - `dosarcusina://category/<key>`
 /// - `dosarcusina://settings` or `dosarcusina://settings/<section>`
+/// - `dosarcusina://ready/trip`, `dosarcusina://ready/trip/<member uuid>`,
+///   `dosarcusina://ready/sale/<asset uuid>`, `dosarcusina://ready/claim/<asset uuid>`
 public enum DeepLink {
     public static let scheme = "dosarcusina"
 
@@ -80,6 +86,9 @@ public enum DeepLink {
         case .settings(let section):
             components.host = "settings"
             if let section { components.path = "/" + section.rawValue }
+        case .readiness(let readiness):
+            components.host = "ready"
+            components.path = "/" + readiness.situation.rawValue + (readiness.assetID.map { "/" + $0.uuidString.lowercased() } ?? "")
         }
         return components.url ?? URL(string: "\(scheme)://home")!
     }
@@ -101,13 +110,28 @@ public enum DeepLink {
         case "document": return argument.flatMap(UUID.init(uuidString:)).map(AppRoute.document)
         case "category": return argument.map(AppRoute.category)
         case "settings": return .settings(argument.flatMap(SettingsSection.init(rawValue:)))
+        case "ready": return readiness(situation: argument, id: url.pathComponents.dropFirst(2).first)
         default: return nil
         }
     }
 }
 
+extension DeepLink {
+    /// `ready/<situation>[/<uuid>]`: a trip may name a member; a sale or a claim must name its section.
+    private static func readiness(situation: String?, id argument: String?) -> AppRoute? {
+        let id = argument.flatMap(UUID.init(uuidString:))
+        switch situation.flatMap(ReadinessSituation.init(rawValue:)) {
+        case .trip: return .readiness(.trip(holderID: id))
+        case .sale: return id.map { .readiness(.sale(assetID: $0)) }
+        case .claim: return id.map { .readiness(.claim(assetID: $0)) }
+        case nil: return nil
+        }
+    }
+}
+
 /// Holds a route that arrived from outside the UI (a notification tap, a
-/// widget, a URL) until the screen hierarchy consumes it.
+/// widget, a URL) until the screen hierarchy consumes it. While the app lock is
+/// closed nothing is handed out: links and opened files wait until unlocking.
 @MainActor
 @Observable
 public final class AppNavigator {
@@ -117,7 +141,11 @@ public final class AppNavigator {
     /// A `.dosar` file opened from Files, Mail or AirDrop, waiting for the import screen.
     public private(set) var pendingArchiveURL: URL?
 
-    public init() {}
+    @ObservationIgnored private let isAppLocked: @MainActor () -> Bool
+
+    public init(isAppLocked: @escaping @MainActor () -> Bool = { BiometricVaultManager.shared.isAppLocked }) {
+        self.isAppLocked = isAppLocked
+    }
 
     public func open(_ route: AppRoute) {
         pendingRoute = route
@@ -136,14 +164,27 @@ public final class AppNavigator {
         return true
     }
 
-    /// Returns the pending archive once and clears it.
+    /// Opens a result tapped in the iPhone's search, by the identifier it was indexed
+    /// with (`SpotlightEntry.identifier`). Like any link, it waits while the app is locked.
+    @discardableResult
+    public func open(spotlightIdentifier identifier: String) -> Bool {
+        guard let route = SpotlightEntry.route(forIdentifier: identifier) else { return false }
+        open(route)
+        return true
+    }
+
+    /// Returns the pending archive once and clears it. While the app is locked
+    /// it stays pending and nothing is returned.
     public func consumeArchiveURL() -> URL? {
+        guard !isAppLocked() else { return nil }
         defer { pendingArchiveURL = nil }
         return pendingArchiveURL
     }
 
-    /// Returns the pending route once and clears it.
+    /// Returns the pending route once and clears it. While the app is locked it
+    /// stays pending, so a link or a notification opens only after unlocking.
     public func consume() -> AppRoute? {
+        guard !isAppLocked() else { return nil }
         defer { pendingRoute = nil }
         return pendingRoute
     }

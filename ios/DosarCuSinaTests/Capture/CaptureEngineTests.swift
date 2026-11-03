@@ -63,8 +63,8 @@ struct CaptureEngineTests {
 
         #expect(result.kind == .passport)
         #expect(result.field(.expiryDate)?.value.day == CaptureDay(year: 2031, month: 4, day: 15))
-        #expect(result.reminder?.leadDays.first == 270)
-        let documentID = try #require(result.documentID)
+        #expect(result.reminder?.blueprintKey == BuiltInBlueprints.documentRenew)
+        let documentID = try #require(result.document?.pendingID)
         #expect(await store.processed(id: documentID)?.document.kind == .passport)
     }
 
@@ -120,7 +120,7 @@ struct CaptureEngineTests {
         let engine = makeEngine(text: "", onDevice: nil, cloud: nil, store: store)
 
         let result = try await engine.capture(CaptureRequest(.text("Total de plată 210,40 lei"), options: CaptureOptions(referenceDate: today)))
-        #expect(result.documentID == nil)
+        #expect(result.document == nil)
         #expect(await store.pendingCount == 0)
     }
 

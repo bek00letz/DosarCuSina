@@ -6,19 +6,23 @@ struct FieldEditor: View {
     let field: FieldDefinition
     @Binding var values: FieldValues
     var isRequired = false
+    /// For an expiry: the rule of the deadline it drives (`DateUrgency.rule(forField:…)`).
+    var urgencyRule: UrgencyRule = .noReminders
 
     @Environment(\.calendar) private var calendar
     @State private var currency: String
 
-    init(field: FieldDefinition, values: Binding<FieldValues>, isRequired: Bool = false) {
+    init(field: FieldDefinition, values: Binding<FieldValues>, isRequired: Bool = false, urgencyRule: UrgencyRule = .noReminders) {
         self.field = field
         self._values = values
         self.isRequired = isRequired
+        self.urgencyRule = urgencyRule
         _currency = State(initialValue: values.wrappedValue[field.key]?.moneyValue?.currency ?? Money.defaultCurrency)
     }
 
     private var title: LocalizedStringKey { LocalizedStringKey(field.label) }
     private var prompt: LocalizedStringKey? { field.placeholder.map { LocalizedStringKey($0) } }
+    private var footnote: LocalizedStringKey? { field.footnote.map { LocalizedStringKey($0) } }
 
     var body: some View {
         switch field.type {
@@ -29,13 +33,16 @@ struct FieldEditor: View {
                 kind: FieldEditor.textKind(for: field.type),
                 prompt: prompt,
                 isRequired: isRequired,
+                footnote: footnote,
                 validator: { FieldEditor.validation(FieldFormatter.validate($0, as: field.type)) },
                 formatter: { FieldFormatter.normalize($0, as: field.type) }
             )
+        case .secret:
+            DSSecretField(title, value: textBinding, footnote: footnote)
         case .number, .metric:
-            DSMetricField(title, value: numberBinding, unit: field.unit ?? "", isRequired: isRequired)
+            DSMetricField(title, value: numberBinding, unit: field.unit, isRequired: isRequired)
         case .year:
-            DSMetricField(title, value: numberBinding, unit: "", fractionDigits: 0...0, groupsDigits: false, isRequired: isRequired) { year in
+            DSMetricField(title, value: numberBinding, unit: nil, fractionDigits: 0...0, groupsDigits: false, isRequired: isRequired) { year in
                 FieldEditor.validation(FieldFormatter.validate(String(Int(year)), as: .year))
             }
         case .money:
@@ -43,11 +50,11 @@ struct FieldEditor: View {
         case .date:
             DSDateField(title, date: dateBinding, isRequired: isRequired)
         case .expiryDate:
-            DSExpiryDateField(title, date: dateBinding, isRequired: isRequired)
+            DSExpiryDateField(title, date: dateBinding, urgencyRule: urgencyRule, isRequired: isRequired)
         case .toggle:
             DSToggleField(title, isOn: boolBinding)
         case .choice:
-            DSChoiceField(title, selection: choiceBinding, options: (field.options ?? []).map(\.key), isRequired: isRequired) {
+            DSChoiceField(title, selection: choiceBinding, options: field.options(for: values).map(\.key), isRequired: isRequired) {
                 field.label(forChoice: $0)
             }
         case .multiChoice:

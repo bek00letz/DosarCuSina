@@ -7,6 +7,15 @@ struct SettingsScreen: View {
     let initialSection: SettingsSection?
 
     @Environment(\.dismiss) private var dismiss
+    /// The repair list, open right away when a link or the repair prompt asks for it.
+    @State private var showsRepairs: Bool
+    /// Confirms a saved change to a category of one's own, with its undo.
+    @State private var toast: DSToast?
+
+    init(initialSection: SettingsSection?) {
+        self.initialSection = initialSection
+        _showsRepairs = State(initialValue: initialSection == .repairs)
+    }
 
     var body: some View {
         NavigationStack {
@@ -14,9 +23,12 @@ struct SettingsScreen: View {
                 List {
                     NotificationSettings().id(SettingsSection.notifications)
                     LockSettings().id(SettingsSection.privacy)
+                    SpotlightSettings()
                     SectionVisibilitySettings().id(SettingsSection.categories)
+                    CustomCategorySettings(toast: $toast)
                     ExampleSettings().id(SettingsSection.examples)
                     BackupSettings().id(SettingsSection.backup)
+                    DataRepairSettings(isShowingList: $showsRepairs).id(SettingsSection.repairs)
                     StorageSettings()
                     AISettings()
                     AboutSettings().id(SettingsSection.about)
@@ -27,6 +39,8 @@ struct SettingsScreen: View {
                     withAnimation(DS.Motion.standard) { proxy.scrollTo(initialSection, anchor: .top) }
                 }
             }
+            .navigationDestination(isPresented: $showsRepairs) { DataRepairsScreen() }
+            .dsToast($toast)
             .navigationTitle(Text("Setări", comment: "Toolbar button that opens settings."))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -120,7 +134,7 @@ private struct LockSettings: View {
 
     var body: some View {
         let used = Set(assets.map(\.templateKey))
-        let shown = templates.filter { used.contains($0.key) || BinderLayout.categoryBoxKeys.contains($0.key) || $0.isSensitive }
+        let shown = templates.filter { used.contains($0.key) || $0.behavior.box == .wholeCategory || $0.isSensitive }
         Section {
             Toggle(isOn: Binding(get: { preferences.appLockEnabled }, set: setAppLock)) {
                 VStack(alignment: .leading, spacing: 2) {
@@ -143,7 +157,7 @@ private struct LockSettings: View {
         } header: {
             Text("Secțiuni protejate", comment: "Settings section: per-section locks.")
         } footer: {
-            Text("O secțiune protejată se deschide doar cu \(vault.biometryName), chiar dacă aplicația nu e blocată. Restul aplicației merge normal.", comment: "Footer of the section locks.")
+            Text("O secțiune protejată se deschide doar cu \(vault.biometryName), chiar dacă aplicația nu e blocată, și nu apare în căutarea iPhone-ului. Restul aplicației merge normal.", comment: "Footer of the section locks.")
         }
         .userErrorAlert($error)
     }
@@ -168,6 +182,27 @@ private struct LockSettings: View {
     }
 }
 
+// MARK: - Căutarea iPhone-ului
+
+/// Whether sections, deadlines and documents appear in Spotlight. Off deletes the app's
+/// whole index; the coordinator does it after the preference changes (`SpotlightIndexer`).
+private struct SpotlightSettings: View {
+    @Environment(AppPreferences.self) private var preferences
+    @Environment(BiometricVaultManager.self) private var vault
+
+    var body: some View {
+        @Bindable var preferences = preferences
+        Section {
+            Toggle(isOn: $preferences.showsInSpotlight) {
+                Text("Arată în căutarea iPhone-ului", comment: "Setting: show sections, deadlines and documents in Spotlight.")
+            }
+            .frame(minHeight: 44)
+        } footer: {
+            Text("Numele secțiunilor, termenele și titlurile actelor apar când cauți pe iPhone. Ce e protejat cu \(vault.biometryName), codurile, numerele de pe acte și exemplele nu apar niciodată. Cât timp toată aplicația e blocată, nu apare nimic.", comment: "Footer of the Spotlight setting: what appears, what never does, and that nothing appears while the whole app is locked.")
+        }
+    }
+}
+
 // MARK: - Secțiuni
 
 private struct SectionVisibilitySettings: View {
@@ -178,7 +213,7 @@ private struct SectionVisibilitySettings: View {
 
     var body: some View {
         Section {
-            ForEach(templates.filter { !BinderLayout.nestedKeys.contains($0.key) }) { template in
+            ForEach(templates.filter { $0.behavior.box != .insideOther }) { template in
                 Toggle(isOn: Binding(get: { template.isOnHome }, set: { setOnHome(template, $0) })) {
                     Label { Text(verbatim: template.name) } icon: { Image(systemName: template.symbol).foregroundStyle(template.tintColor) }
                 }
@@ -204,6 +239,48 @@ private struct SectionVisibilitySettings: View {
             try TemplateStore(context: context).setOnHome(template, isOn)
         } catch {
             self.error = UserFacingError(error)
+        }
+    }
+}
+
+// MARK: - Categoriile tale
+
+/// The person's own categories, each opening its name, symbol and switches
+/// (`CategoryEditSheet`). Built-in categories behave as they always do, so they aren't here.
+private struct CustomCategorySettings: View {
+    @Binding var toast: DSToast?
+    @Query(sort: [SortDescriptor(\CategoryTemplate.homeOrder)]) private var templates: [CategoryTemplate]
+    @State private var editing: CategoryTemplate?
+
+    var body: some View {
+        let custom = templates.filter(\.isCustom)
+        if !custom.isEmpty {
+            Section {
+                ForEach(custom) { template in
+                    Button {
+                        editing = template
+                    } label: {
+                        DSListRow(
+                            title: Text(verbatim: template.name),
+                            subtitle: Text(verbatim: CustomCategoryForm.summary(of: CategorySwitches(reading: template.definition))),
+                            systemImage: template.symbol,
+                            tint: template.tintColor,
+                            showsChevron: true
+                        ) { EmptyView() }
+                    }
+                    .buttonStyle(.dsPressable)
+                    .accessibilityHint(Text("Schimbă ce ține minte categoria.", comment: "VoiceOver hint of a category of one's own in Settings."))
+                }
+            } header: {
+                Text("Categoriile tale", comment: "Settings section: the person's own categories.")
+            } footer: {
+                Text("Alege ce ține minte fiecare. Categoriile incluse în aplicație rămân cum sunt.", comment: "Footer of the person's own categories in Settings.")
+            }
+            .sheet(item: $editing) { template in
+                CategoryEditSheet(template: template) { receipt in
+                    toast = .undo("Am schimbat „\(template.name)”.", receipt: receipt)
+                }
+            }
         }
     }
 }
@@ -348,21 +425,27 @@ enum StorageWording {
 
 // MARK: - Despre
 
+/// What Despre promises, built from what the app really does.
+enum AboutWording {
+    /// No account, no tracking, and the internet only for the AI service the person
+    /// chose. The services are named from `AIProvider`, so a new one is never left out.
+    static var privacy: String {
+        String(
+            localized: "Fără cont, fără reclame, fără urmărire. Copia de siguranță o faci tu, când vrei. Internetul îl folosim doar dacă pui cheia ta de la un serviciu AI (\(AIProvider.everyServiceInASentence)). Atunci actele citite cu el ajung la acel serviciu.",
+            comment: "About: privacy explanation. The argument lists the AI services, such as „Google Gemini, OpenAI, Anthropic Claude sau unul compatibil”."
+        )
+    }
+}
+
 private struct AboutSettings: View {
     @State private var isShowingGallery = false
 
     var body: some View {
         Section {
-            LabeledContent {
-                Text(verbatim: Bundle.main.shortVersion).monospacedDigit()
-            } label: {
-                Text("Versiunea", comment: "About: app version.")
-            }
-            .frame(minHeight: 44)
             VStack(alignment: .leading, spacing: DS.Space.xs) {
                 Text("Datele tale stau pe telefonul tău", comment: "About: privacy headline.")
                     .dsFont(.headline)
-                Text("Fără cont, fără reclame, fără urmărire. Copia de siguranță o faci tu, când vrei. Internetul îl folosim doar dacă pui o cheie Google, pentru citirea documentelor.", comment: "About: privacy explanation.")
+                Text(verbatim: AboutWording.privacy)
                     .dsFont(.footnote)
             }
             .padding(.vertical, DS.Space.xs)
@@ -375,6 +458,8 @@ private struct AboutSettings: View {
             }
             .sheet(isPresented: $isShowingGallery) { DesignSystemGallery() }
             #endif
+            // Last, so it's easy to find: which build this phone runs, copyable.
+            DSActionValueRow(title: Text("Versiunea", comment: "About: app version and build."), value: BuildInfo.current.summary, action: .copy)
         } header: {
             Text("Despre", comment: "Settings section.")
         }

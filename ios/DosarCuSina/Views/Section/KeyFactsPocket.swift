@@ -3,7 +3,8 @@ import SwiftData
 
 /// Date importante: the template's key facts and the person's own rows.
 /// Tap a row to copy it, tap a phone number to call. Own rows are added and
-/// edited right here.
+/// edited right here; a code (an alarm, a Wi-Fi password) is kept as a secret
+/// row, sealed like a PIN and shown or copied only after Face ID.
 struct KeyFactsPocket: View {
     let asset: Asset
     let definition: TemplateDefinition
@@ -12,6 +13,22 @@ struct KeyFactsPocket: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) private var openURL
+    @Environment(BiometricVaultManager.self) private var vault
+    @Query private var templates: [CategoryTemplate]
+
+    init(asset: Asset, definition: TemplateDefinition, toast: Binding<DSToast?>, error: Binding<UserFacingError?>) {
+        self.asset = asset
+        self.definition = definition
+        _toast = toast
+        _error = error
+        let key = asset.templateKey
+        _templates = Query(filter: #Predicate<CategoryTemplate> { $0.key == key })
+    }
+
+    /// Anything copied from a locked section, or a sensitive row, is personal.
+    private func clipboardKind(for row: FactRow) -> Clipboard.Kind {
+        row.isSensitive || templates.first?.isSensitive == true ? .personal : .ordinary
+    }
     /// The custom row being edited, or a new one.
     @State private var editing: CustomFact?
     @State private var copiedCount = 0
@@ -20,7 +37,7 @@ struct KeyFactsPocket: View {
         let rows = AssetFacts.factRows(asset.values, customFacts: asset.customFacts, template: definition)
         DSPocketCard(SectionPocket.keyFacts.title) {
             if rows.isEmpty && editing == nil {
-                PocketEmptyLine(text: String(localized: "Pune aici ce cauți des: numărul poliței, codul de client, parola de la Wi-Fi.", comment: "Empty Date importante pocket."))
+                PocketEmptyLine(text: String(localized: "Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN.", comment: "Empty Date importante pocket."))
             }
             ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                 if index > 0 { DSRowSeparator() }
@@ -45,7 +62,45 @@ struct KeyFactsPocket: View {
         .sensoryFeedback(.success, trigger: copiedCount)
     }
 
+    @ViewBuilder
     private func factRow(_ row: FactRow) -> some View {
+        if row.isSecret {
+            secretRow(row)
+        } else {
+            plainRow(row)
+        }
+    }
+
+    /// A code: masked, shown or copied only after a fresh Face ID.
+    private func secretRow(_ row: FactRow) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            DSSecretValueRow(title: Text(verbatim: row.label), isSet: row.sealed != nil) {
+                guard let sealed = row.sealed else { return .notAuthenticated }
+                return await SecretReveal(vault: vault).open(
+                    sealed,
+                    reason: String(localized: "Arată \(row.label)", comment: "Face ID reason when showing a secret code.")
+                )
+            }
+            editButton(row)
+        }
+    }
+
+    @ViewBuilder
+    private func editButton(_ row: FactRow) -> some View {
+        if row.isCustom, let fact = asset.customFacts.first(where: { $0.id.uuidString == row.id }) {
+            Button {
+                editing = fact
+            } label: {
+                Text("Editează", comment: "Edits one of the person's own rows.")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.borderless)
+        }
+    }
+
+    private func plainRow(_ row: FactRow) -> some View {
         HStack(spacing: DS.Space.xs) {
             Button {
                 activate(row)
@@ -86,17 +141,7 @@ struct KeyFactsPocket: View {
                 }
             }
 
-            if row.isCustom, let fact = asset.customFacts.first(where: { $0.id.uuidString == row.id }) {
-                Button {
-                    editing = fact
-                } label: {
-                    Text("Editează", comment: "Edits one of the person's own rows.")
-                        .font(.subheadline.weight(.semibold))
-                        .frame(minWidth: 44, minHeight: 44)
-                        .contentShape(.rect)
-                }
-                .buttonStyle(.borderless)
-            }
+            editButton(row)
         }
     }
 
@@ -109,7 +154,7 @@ struct KeyFactsPocket: View {
     }
 
     private func copy(_ row: FactRow) {
-        Clipboard.copy(row.text)
+        Clipboard.copy(row.text, clipboardKind(for: row))
         copiedCount += 1
         toast = DSToast(title: LocalizedStringResource("Am copiat „\(row.label)”", comment: "Toast after copying a fact."), systemImage: "doc.on.doc.fill", actionTitle: nil, feedback: nil)
     }
@@ -126,28 +171,32 @@ struct KeyFactsPocket: View {
     }
 
     private func remove(_ fact: CustomFact) {
-        let previous = asset.customFacts
-        apply(previous.filter { $0.id != fact.id })
         editing = nil
-        toast = .undo(LocalizedStringResource("Am șters „\(fact.label)”", comment: "Toast after deleting a custom fact row.")) {
-            apply(previous)
-        }
+        guard let receipt = apply(asset.customFacts.filter { $0.id != fact.id }) else { return }
+        toast = .undo(LocalizedStringResource("Am șters „\(fact.label)”", comment: "Toast after deleting a custom fact row."), receipt: receipt)
     }
 
-    private func apply(_ facts: [CustomFact]) {
+    @discardableResult
+    private func apply(_ facts: [CustomFact]) -> UndoReceipt? {
         do {
-            try AssetActions(context: context).setCustomFacts(asset, facts)
+            return try AssetActions(context: context).setCustomFacts(asset, facts)
         } catch {
             self.error = UserFacingError(error)
+            return nil
         }
     }
 }
 
-/// Inline editor for one of the person's own rows. Saves on "Gata".
+/// Inline editor for one of the person's own rows. Saves on "Gata". A row
+/// whose label names a code ("Parolă Wi-Fi", "Cod alarmă") starts as a secret
+/// until the person sets the switch themselves.
 private struct CustomFactEditor: View {
     @State private var label: String
     @State private var value: String
     @State private var isSensitive: Bool
+    @State private var isSecret: Bool
+    /// The person set "Cod secret" themselves, so the label no longer decides it.
+    @State private var choseSecret: Bool
     private let original: CustomFact
     let onSave: (CustomFact) -> Void
     let onDelete: () -> Void
@@ -158,6 +207,9 @@ private struct CustomFactEditor: View {
         _label = State(initialValue: fact.label)
         _value = State(initialValue: fact.value)
         _isSensitive = State(initialValue: fact.isSensitive)
+        _isSecret = State(initialValue: fact.isSecret)
+        // A row already saved keeps what it is; a new one follows its label.
+        _choseSecret = State(initialValue: !fact.label.isEmpty || !fact.value.isEmpty)
         self.onSave = onSave
         self.onDelete = onDelete
         self.onCancel = onCancel
@@ -169,35 +221,49 @@ private struct CustomFactEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Space.s) {
-            DSTextField("Ce este", text: $label, prompt: "Cod alarmă, Wi-Fi, număr contract")
-            DSTextField("Valoarea", text: $value)
-            DSToggleField("Nu arăta în căutare", isOn: $isSensitive, footnote: "Pentru coduri și parole.")
+            DSTextField("Ce este", text: $label, prompt: "Număr contract, cod alarmă, parolă Wi-Fi")
+            if isSecret {
+                DSSecretField("Codul", value: $value, footnote: "Îl vezi sau îl copiezi doar după Face ID.", isPIN: false)
+            } else {
+                DSTextField("Valoarea", text: $value)
+            }
+            DSToggleField("Cod secret", isOn: Binding(get: { isSecret }, set: setSecret), footnote: "Ascuns ca un PIN. Nu intră în căutare și nici în copia de siguranță.")
+            if !isSecret {
+                DSToggleField("Nu arăta în căutare", isOn: $isSensitive)
+            }
             HStack(spacing: DS.Space.s) {
-                Button(role: .destructive, action: onDelete) {
-                    Text("Șterge rândul", comment: "Deletes a custom fact row.")
-                        .frame(maxWidth: .infinity, minHeight: 34)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
-                Button {
+                DSSecondaryButton(Text("Șterge rândul", comment: "Deletes a custom fact row."), role: .destructive, action: onDelete)
+                DSPrimaryButton(Text("Gata", comment: "Closes an editor and keeps what was typed.")) {
                     if isEmpty {
                         onCancel()
                     } else {
                         var fact = original
                         fact.label = label.trimmingCharacters(in: .whitespaces)
-                        fact.value = value.trimmingCharacters(in: .whitespaces)
-                        fact.isSensitive = isSensitive
+                        fact.value = isSecret ? value : value.trimmingCharacters(in: .whitespaces)
+                        fact.isSecret = isSecret
+                        fact.isSensitive = isSensitive || isSecret
                         onSave(fact)
                     }
-                } label: {
-                    Text("Gata", comment: "Closes an editor and keeps what was typed.")
-                        .frame(maxWidth: .infinity, minHeight: 34)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
             }
         }
         .padding(.vertical, DS.Space.xs)
         .transition(.opacity)
+        .onChange(of: label) { _, newLabel in
+            guard !choseSecret else { return }
+            let looksLikeCode = CustomFact.looksLikeCode(newLabel)
+            if looksLikeCode != isSecret { switchSecret(to: looksLikeCode) }
+        }
+    }
+
+    private func setSecret(_ on: Bool) {
+        choseSecret = true
+        switchSecret(to: on)
+    }
+
+    /// A kept code is never turned back into plain text: switching off clears it, to be typed again.
+    private func switchSecret(to on: Bool) {
+        if !on, SecretSealer.isSealed(value) { value = "" }
+        isSecret = on
     }
 }

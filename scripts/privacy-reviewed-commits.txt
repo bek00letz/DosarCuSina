@@ -1,0 +1,5 @@
+# Past commits the card-number rule of scripts/privacy-check.sh skips, after the owner
+# reviewed them. Each line: the full commit id, the rule, and why. Commit ids and reasons
+# only, never a value. Add a line only with the owner's OK, and only for a commit whose
+# lines were checked not to be anyone's real number and were fixed in a later commit.
+4159b5d86be142762321ef5559e3517ead6900c4 card-number  A code comment's example and a test's sample IMEI that pass the card check digit; neither is a real card; replaced in 55cb47f (owner reviewed, 2026-11-03).

@@ -16,7 +16,7 @@ How the app talks. Short, plain Romanian, like a calm person who knows the rules
 - Romanian quotes: „așa”. Apostrophe: ’. En dash for ranges and asides: 9–17, 2 – 3 zile. Ellipsis character: … (not three dots), only for things still in progress („Se încarcă…”).
 - Diacritics always: ș and ț with comma below (not ş/ţ with cedilla), ă, â, î.
 - Numbers, money and dates go through format styles so they follow the locale: 1.250,50 lei, 14 noiembrie 2026. Never build them with `String(format:)`.
-- Plurals go through the String Catalog. Romanian has three forms: „1 zi”, „2 zile”, „20 de zile”. Never write `count == 1 ? … : …` by hand.
+- Plurals go through the String Catalog. Romanian has three forms: „o zi”, „2 zile”, „20 de zile”. A count of one is a word („o lună”, „un an”, „un document”), two and up are digits. „În” before a duration joins „o” and „un”: „într-o lună”, „într-un an” (`DurationWording.inside`). Never write `count == 1 ? … : …` by hand.
 
 ## Errors
 

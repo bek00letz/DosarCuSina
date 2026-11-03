@@ -26,6 +26,8 @@ public struct CaptureAnalyzer: Sendable {
         public let text: CaptureText
         public let kind: CaptureDocumentKind
         public let kindConfidence: Double
+        /// What the kind rests on, for `ReadingArbiter`.
+        public let kindEvidence: CaptureKindEvidence
         public let fields: [CaptureField]
         public let notices: [CaptureNotice]
         /// Whether a machine-readable zone was found.
@@ -55,84 +57,122 @@ public struct CaptureAnalyzer: Sendable {
             .map { ($0.id, $0.name) }
     }
 
+    /// Below this classifier confidence, a provider-specific reader may claim a document
+    /// of another kind; above it, the classifier's kind stands.
+    static let specializedClaimBelow = 0.6
+
     // MARK: - Analysis
 
-    public func analyze(text rawText: String, barcodes: [CaptureBarcode] = [], referenceDate: Date = Date()) -> Analysis {
-        analyze(CaptureText(rawText), rawText: rawText, barcodes: barcodes, referenceDate: referenceDate)
+    /// `kind`, when given, is what the document is known to be (the AI provider named it),
+    /// so the patterns read it as that kind instead of classifying it again.
+    public func analyze(text rawText: String, barcodes: [CaptureBarcode] = [], referenceDate: Date = Date(), as kind: CaptureDocumentKind? = nil) -> Analysis {
+        analyze(CaptureText(rawText), rawText: rawText, barcodes: barcodes, referenceDate: referenceDate, as: kind)
     }
 
     /// Recognized pages, with where each line sits, so labels find the values in their columns.
-    public func analyze(pages: [[RecognizedLine]], barcodes: [CaptureBarcode] = [], referenceDate: Date = Date()) -> Analysis {
+    public func analyze(pages: [[RecognizedLine]], barcodes: [CaptureBarcode] = [], referenceDate: Date = Date(), as kind: CaptureDocumentKind? = nil) -> Analysis {
         let text = CaptureText(pages: pages)
-        return analyze(text, rawText: text.joinedOriginal, barcodes: barcodes, referenceDate: referenceDate)
+        return analyze(text, rawText: text.joinedOriginal, barcodes: barcodes, referenceDate: referenceDate, as: kind)
     }
 
     /// `lines` keeps recognized fragments apart, with their positions, for documents read
     /// by their printed labels (identity documents). Every other reader works on whole
     /// rows, so an invoice line's description and amount stay on one line.
-    func analyze(_ lines: CaptureText, rawText: String, barcodes: [CaptureBarcode], referenceDate: Date) -> Analysis {
+    func analyze(_ lines: CaptureText, rawText: String, barcodes: [CaptureBarcode], referenceDate: Date, as knownKind: CaptureDocumentKind? = nil) -> Analysis {
         var notices: [CaptureNotice] = []
         var fields = FieldSet()
         var text = lines.joiningRows()
+        let today = CaptureDay(date: referenceDate)
+        // Two-digit years on documents no rule covers take the century nearest today.
+        let years = DateWindow.around(today)
 
         let mrz = MRZParser.parse(text: rawText, referenceDate: referenceDate)
-        let specialized = specializedParsers.lazy.compactMap { $0.parse(text) }.first
+        let classification = knownKind.map { DocumentClassifier.Classification(kind: $0, confidence: 1) }
+            ?? DocumentClassifier.classify(text: text, mrz: mrz)
+        // A provider-specific reader claims a document only when the classifier agrees
+        // or isn't sure: an RCA policy that mentions "digital" stays a policy. A known
+        // kind is never claimed by a reader of another.
+        let specialized = specializedParsers.lazy
+            .compactMap { $0.parse(text) }
+            .first { parse in
+                // A contract quotes the provider's name and codes too; a bill reader never takes it.
+                parse.kind == classification.kind
+                    || (knownKind == nil && classification.confidence < Self.specializedClaimBelow && classification.kind != .contract)
+            }
 
         let kind: CaptureDocumentKind
         let kindConfidence: Double
+        var kindEvidence: CaptureKindEvidence
         if let specialized {
             kind = specialized.kind
             kindConfidence = 0.95
+            kindEvidence = specialized.kind == classification.kind ? .providerFormat : .providerFormatAlone
             fields.add(specialized.fields)
         } else {
-            let classification = DocumentClassifier.classify(text: text, mrz: mrz)
             kind = classification.kind
             kindConfidence = classification.confidence
+            kindEvidence = .classifier
+        }
+        if let mrz, mrz.allChecksValid, kind.isIdentityDocument {
+            kindEvidence = .machineReadableZone
+        } else if kind == .utilityInvoice, !kindEvidence.isDeterministic, barcodes.contains(where: \.isPaymentCode) {
+            kindEvidence = .paymentBarcode
         }
 
         if let mrz {
-            fields.add(mrzFields(mrz))
+            fields.add(Self.machineReadableFields(mrz))
             if !mrz.allChecksValid { notices.append(.machineReadableZoneUnverified) }
         }
 
         let template = IdentityTemplates.template(for: kind, text: text, machineReadableFormat: mrz?.format)
         if template != nil { text = lines }
         switch kind {
-        case .passport, .identityCard, .drivingLicence:
+        case .passport, .identityCard, .drivingLicence, .criminalRecord, .healthInsuranceCard, .bankCard:
             // Printed labels, read with the document's template. The MRZ (when on the
             // photo) already added checked values, which win; agreeing values reinforce.
-            if let template { fields.add(IdentityDocumentReader.read(text, template: template)) }
+            // A personal document is read the same way, whatever it is: a new one is a template.
+            if let template {
+                fields.add(IdentityDocumentReader.read(text, template: template, today: today))
+                if let variant = template.documentVariant {
+                    fields.add(.documentVariant, .text(variant), 0.9, nil, tier: .deterministic)
+                }
+            }
         case .vehicleRegistration:
             addVehicleIdentity(text, into: &fields)
             for (key, entry) in RomanianFieldExtractor.registrationFields(in: text).sorted(by: { $0.key.rawValue < $1.key.rawValue }) {
                 fields.add(key, entry.0, 0.65, entry.1)
             }
         case .rcaPolicy, .insurancePolicy:
-            addInsurance(text, kind: kind, into: &fields)
+            addInsurance(text, kind: kind, years: years, into: &fields)
         case .utilityInvoice:
-            addInvoiceBasics(text, into: &fields)
-            if let due = RomanianFieldExtractor.labelledDate(["scadent", "termen de plata", "data scadentei", "de platit pana la"], in: text) {
+            addInvoiceBasics(text, years: years, into: &fields)
+            if let due = RomanianFieldExtractor.labelledDate(["scadent", "termen de plata", "data scadentei", "de platit pana la"], in: text, window: years) {
                 fields.add(.dueDate, .day(due.day), 0.75, due.source)
             }
+            // What ties the bill to its contract: the codes and the service.
+            fields.add(ContractReader.identifierFields(in: text))
+        case .contract:
+            addContractProvider(text, into: &fields)
+            fields.add(ContractReader.contractFields(in: text, window: years))
         case .serviceInvoice:
-            addInvoiceBasics(text, into: &fields)
+            addInvoiceBasics(text, years: years, into: &fields)
             addVehicleIdentity(text, into: &fields)
             addLineItems(text, into: &fields)
             if let odometer = RomanianFieldExtractor.odometer(in: text) {
-                fields.add(.odometer, .metric(value: odometer.km, unit: "km"), odometer.labelled ? 0.8 : 0.55, odometer.source)
+                fields.add(.odometer, .metric(value: odometer.km, unit: .kilometres), odometer.labelled ? 0.8 : 0.55, odometer.source)
             }
         case .fiscalReceipt, .warrantyCertificate:
-            addPurchase(text, kind: kind, into: &fields)
+            addPurchase(text, kind: kind, years: years, into: &fields)
         case .itpReport:
             addVehicleIdentity(text, into: &fields)
-            if let expiry = RomanianFieldExtractor.labelledDate(["valabila pana la", "valabil pana la", "urmatoarea inspectie", "data urmatoarei inspectii", "valabilitate"], in: text) {
+            if let expiry = RomanianFieldExtractor.labelledDate(["valabila pana la", "valabil pana la", "urmatoarea inspectie", "data urmatoarei inspectii", "valabilitate"], in: text, window: years) {
                 fields.add(.expiryDate, .day(expiry.day), 0.8, expiry.source)
             }
             if let odometer = RomanianFieldExtractor.odometer(in: text) {
-                fields.add(.odometer, .metric(value: odometer.km, unit: "km"), odometer.labelled ? 0.8 : 0.55, odometer.source)
+                fields.add(.odometer, .metric(value: odometer.km, unit: .kilometres), odometer.labelled ? 0.8 : 0.55, odometer.source)
             }
             addIssuer(text, into: &fields)
-            addIssueDate(text, into: &fields)
+            addIssueDate(text, years: years, into: &fields)
         case .veterinaryRecord:
             if let chip = RomanianFieldExtractor.microchip(in: text) {
                 fields.add(.microchip, .text(chip.value), 0.85, chip.source)
@@ -140,16 +180,16 @@ public struct CaptureAnalyzer: Sendable {
             if let index = text.lines(containing: ["vaccin", "antirabic"]).first {
                 fields.add(.vaccineName, .text(text.original[index]), 0.55, text.original[index])
             }
-            if let next = RomanianFieldExtractor.labelledDate(["rapel", "revaccinare", "urmatorul vaccin", "urmatoarea vaccinare", "valabil pana la"], in: text) {
+            if let next = RomanianFieldExtractor.labelledDate(["rapel", "revaccinare", "urmatorul vaccin", "urmatoarea vaccinare", "valabil pana la"], in: text, window: years) {
                 fields.add(.nextDoseDate, .day(next.day), 0.75, next.source)
             }
             addIssuer(text, into: &fields)
-            addIssueDate(text, into: &fields)
+            addIssueDate(text, years: years, into: &fields)
         case .medicalResult:
             addIssuer(text, into: &fields)
-            addIssueDate(text, into: &fields)
+            addIssueDate(text, years: years, into: &fields)
         case .other:
-            addInvoiceBasics(text, into: &fields)
+            addInvoiceBasics(text, years: years, into: &fields)
         }
 
         if kind == .utilityInvoice || kind == .serviceInvoice || kind == .other,
@@ -168,14 +208,15 @@ public struct CaptureAnalyzer: Sendable {
             readable = text.original
         }
         return Analysis(
-            text: text, kind: kind, kindConfidence: kindConfidence, fields: fields.fields, notices: notices,
+            text: text, kind: kind, kindConfidence: kindConfidence, kindEvidence: kindEvidence, fields: fields.fields, notices: notices,
             hasMachineReadableZone: mrz != nil, readableText: readable.joined(separator: "\n")
         )
     }
 
     // MARK: - Field groups
 
-    private func mrzFields(_ mrz: MRZParser.Result) -> [CaptureField] {
+    /// The fields a machine-readable zone holds: certain where its check digits pass.
+    static func machineReadableFields(_ mrz: MRZParser.Result) -> [CaptureField] {
         let tier: CaptureTier = mrz.allChecksValid ? .deterministic : .heuristic
         let source = CaptureField.machineReadableSource
         var result: [CaptureField] = [
@@ -203,15 +244,20 @@ public struct CaptureAnalyzer: Sendable {
         return result
     }
 
-    private func addInvoiceBasics(_ text: CaptureText, into fields: inout FieldSet) {
+    private func addInvoiceBasics(_ text: CaptureText, years: DateWindow, into fields: inout FieldSet) {
         addIssuer(text, into: &fields)
         if let invoice = RomanianFieldExtractor.invoiceNumber(in: text) {
             fields.add(.invoiceNumber, .text(invoice.value), 0.7, invoice.source)
         }
         if let total = RomanianFieldExtractor.total(in: text) {
-            fields.add(.total, .money(total.money), total.strong ? 0.8 : 0.6, total.source)
+            fields.add(.total, .money(total.money), Self.confidence(total.strong ? 0.8 : 0.6, ambiguous: total.ambiguous), total.source)
         }
-        addIssueDate(text, into: &fields)
+        addIssueDate(text, years: years, into: &fields)
+    }
+
+    /// A confidence that marks the field "Verifică" when its amount could be read two ways ("3,750").
+    static func confidence(_ confidence: Double, ambiguous: Bool) -> Double {
+        ambiguous ? min(confidence, CaptureField.checkThreshold - 0.1) : confidence
     }
 
     private func addIssuer(_ text: CaptureText, into fields: inout FieldSet) {
@@ -223,10 +269,20 @@ public struct CaptureAnalyzer: Sendable {
         }
     }
 
-    private func addIssueDate(_ text: CaptureText, into fields: inout FieldSet) {
-        if let issue = RomanianFieldExtractor.labelledDate(["data emiterii", "data facturii", "data eliberarii", "emisa la", "data:"], in: text) {
+    /// Who provides the service: a provider whose documents the utility reader knows by
+    /// name, else the company printed as the issuer.
+    private func addContractProvider(_ text: CaptureText, into fields: inout FieldSet) {
+        let known = RomanianUtilityParser.shared.detectProvider(in: RomanianUtilityParser.normalizeDiacritics(text.joinedOriginal))
+        if known != .general {
+            fields.add(.provider, .text(known.displayName), 0.85, nil)
+        }
+        addIssuer(text, into: &fields)
+    }
+
+    private func addIssueDate(_ text: CaptureText, years: DateWindow, into fields: inout FieldSet) {
+        if let issue = RomanianFieldExtractor.labelledDate(["data emiterii", "data facturii", "data eliberarii", "emisa la", "data:"], in: text, window: years) {
             fields.add(.issueDate, .day(issue.day), 0.7, issue.source)
-        } else if let first = RomanianFieldExtractor.allDates(in: text).first {
+        } else if let first = RomanianFieldExtractor.allDates(in: text, window: years).first {
             fields.add(.issueDate, .day(first.day), 0.45, text.original[first.line])
         }
     }
@@ -248,9 +304,9 @@ public struct CaptureAnalyzer: Sendable {
         }
     }
 
-    private func addInsurance(_ text: CaptureText, kind: CaptureDocumentKind, into fields: inout FieldSet) {
+    private func addInsurance(_ text: CaptureText, kind: CaptureDocumentKind, years: DateWindow, into fields: inout FieldSet) {
         let haystack = text.joinedFolded
-        if let insurer = insurerNames.first(where: { DocumentClassifier.containsWord($0.keyword, in: haystack) }) {
+        if let insurer = insurerNames.first(where: { CaptureText.containsWord($0.keyword, inFolded: haystack) }) {
             fields.add(.provider, .text(insurer.name), 0.85, nil)
         } else {
             addIssuer(text, into: &fields)
@@ -264,28 +320,27 @@ public struct CaptureAnalyzer: Sendable {
         if let phone = RomanianFieldExtractor.claimsPhone(in: text) {
             fields.add(.claimsPhone, .text(phone.value), 0.75, phone.source)
         }
-        if let period = RomanianFieldExtractor.validityPeriod(in: text) {
+        if let period = RomanianFieldExtractor.validityPeriod(in: text, window: years) {
             fields.add(.startDate, .day(period.start), 0.75, period.source)
             fields.add(.expiryDate, .day(period.end), 0.8, period.source)
-        } else if let expiry = RomanianFieldExtractor.labelledDate(["pana la", "expira", "data expirarii", "valabila pana"], in: text) {
+        } else if let expiry = RomanianFieldExtractor.labelledDate(["pana la", "expira", "data expirarii", "valabila pana"], in: text, window: years) {
             fields.add(.expiryDate, .day(expiry.day), 0.65, expiry.source)
         }
         if let premium = RomanianFieldExtractor.total(in: text) {
-            fields.add(.total, .money(premium.money), premium.strong ? 0.75 : 0.5, premium.source)
+            fields.add(.total, .money(premium.money), Self.confidence(premium.strong ? 0.75 : 0.5, ambiguous: premium.ambiguous), premium.source)
         }
         if let classValue = RomanianFieldExtractor.bonusMalus(in: text) {
             fields.add(.bonusMalusClass, .text(classValue), 0.7, nil)
         }
-        let coverage: String
-        if kind == .rcaPolicy { coverage = "RCA" }
-        else if haystack.contains("casco") { coverage = "CASCO" }
-        else if DocumentClassifier.containsWord("pad", in: haystack) || haystack.contains("paid") { coverage = "PAD" }
-        else { coverage = "Facultativă" }
-        fields.add(.coverageType, .text(coverage), 0.7, nil)
+        // The cover: an RCA policy is RCA; any other policy's is read once, as whole words.
+        // When the page names none, the review asks the person to pick it.
+        if let cover = kind.profile.defaultCover ?? InsuranceCover.read(in: haystack, among: kind.profile.covers) {
+            fields.add(.coverageType, .text(cover), 0.7, nil)
+        }
         addVehicleIdentity(text, into: &fields)
     }
 
-    private func addPurchase(_ text: CaptureText, kind: CaptureDocumentKind, into fields: inout FieldSet) {
+    private func addPurchase(_ text: CaptureText, kind: CaptureDocumentKind, years: DateWindow, into fields: inout FieldSet) {
         if let taxID = RomanianFieldExtractor.taxID(in: text) {
             fields.add(.providerTaxID, .text(taxID.value), taxID.valid ? 0.97 : 0.5, text.original[taxID.line], tier: taxID.valid ? .deterministic : .heuristic)
         }
@@ -293,13 +348,13 @@ public struct CaptureAnalyzer: Sendable {
             fields.add(.retailer, .text(issuer.name), 0.65, text.original[issuer.line])
             fields.add(.provider, .text(issuer.name), 0.6, text.original[issuer.line])
         }
-        let purchaseDate = RomanianFieldExtractor.labelledDate(["data vanzarii", "data cumpararii", "data achizitiei", "data livrarii", "data:"], in: text).map { ($0.day, $0.source, 0.75) }
-            ?? RomanianFieldExtractor.allDates(in: text).first.map { ($0.day, text.original[$0.line], 0.55) }
+        let purchaseDate = RomanianFieldExtractor.labelledDate(["data vanzarii", "data cumpararii", "data achizitiei", "data livrarii", "data:"], in: text, window: years).map { ($0.day, $0.source, 0.75) }
+            ?? RomanianFieldExtractor.allDates(in: text, window: years).first.map { ($0.day, text.original[$0.line], 0.55) }
         if let purchaseDate {
             fields.add(.purchaseDate, .day(purchaseDate.0), purchaseDate.2, purchaseDate.1)
         }
         if let total = RomanianFieldExtractor.total(in: text) {
-            fields.add(.purchasePrice, .money(total.money), total.strong ? 0.8 : 0.65, total.source)
+            fields.add(.purchasePrice, .money(total.money), Self.confidence(total.strong ? 0.8 : 0.65, ambiguous: total.ambiguous), total.source)
         }
         if let serial = RomanianFieldExtractor.serialNumber(in: text) {
             fields.add(.serialNumber, .text(serial.value), 0.7, serial.source)
@@ -347,19 +402,15 @@ struct FieldSet {
 
 // MARK: - Merging tiers
 
-/// Combines fields from several tiers into one best answer per key.
+/// Combines fields from several readers into one best answer per key. Which value wins
+/// is decided in one place, `ReadingArbiter`.
 public enum FieldMerger {
 
-    /// A checksum-verified value is never replaced. Otherwise the more confident value wins,
-    /// and on a tie the more reliable tier wins.
     static func prefers(_ candidate: CaptureField, over existing: CaptureField) -> Bool {
-        if existing.tier == .deterministic && candidate.tier != .deterministic { return false }
-        if candidate.tier == .deterministic && existing.tier != .deterministic { return true }
-        if candidate.confidence != existing.confidence { return candidate.confidence > existing.confidence }
-        return candidate.tier < existing.tier
+        ReadingArbiter.prefers(candidate, over: existing)
     }
 
-    /// Merges a later tier's fields into earlier ones. When two tiers agree on a value,
+    /// Merges a later reader's fields into earlier ones. When two readers agree on a value,
     /// the agreement raises confidence, keeps the earlier source text, and counts as read
     /// from the document rather than guessed by a model.
     public static func merge(_ base: [CaptureField], with incoming: [CaptureField]) -> [CaptureField] {
@@ -371,13 +422,7 @@ public enum FieldMerger {
             }
             let existing = result[index]
             if existing.value == candidate.value {
-                result[index] = CaptureField(
-                    key: existing.key,
-                    value: existing.value,
-                    confidence: max(existing.confidence, candidate.confidence) + 0.1,
-                    sourceText: existing.sourceText ?? candidate.sourceText,
-                    tier: CaptureConsistency.trust(existing) >= CaptureConsistency.trust(candidate) ? existing.tier : candidate.tier
-                )
+                result[index] = ReadingArbiter.agreeing(existing, candidate)
             } else if prefers(candidate, over: existing) {
                 result[index] = candidate
             }

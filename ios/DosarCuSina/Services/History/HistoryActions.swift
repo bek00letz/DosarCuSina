@@ -76,26 +76,33 @@ public final class HistoryActions {
         note: String? = nil,
         items: [LineItemDraft] = [],
         providers: [Provider] = [],
-        rating: Int? = nil
+        rating: Int? = nil,
+        asExample: Bool = false,
+        lowerReading: LowerReadingAnswer? = nil
     ) throws -> HistoryEntry {
-        let date = occurredAt ?? now()
-        let entry = HistoryEntry(kind: kind, title: title, occurredAt: date)
-        entry.metricReading = metricReading
-        entry.totalCost = totalCost
-        entry.note = note
-        entry.rating = rating.map { min(max($0, 1), 5) }
-        entry.isExample = asset.isExample
-        context.insert(entry)
-        entry.asset = asset
-        entry.providers = providers
-        HouseholdMutations.addItems(items, to: entry, in: context)
-        if let metricReading {
-            let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
-            let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) }
-            HouseholdMutations.recordReading(metricReading, on: asset, at: date, unit: unit, in: context)
+        // One step: a question about a lower reading leaves nothing half-changed.
+        return try UnitOfWork.perform(in: context) {
+            let isExample = try ExampleOwnership.requireReal(asset, creatingExample: asExample)
+            let date = occurredAt ?? now()
+            let entry = HistoryEntry(kind: kind, title: title, occurredAt: date)
+            entry.metricReading = metricReading
+            entry.totalCost = totalCost
+            entry.note = note
+            entry.rating = rating.map { min(max($0, 1), 5) }
+            entry.isExample = isExample
+            context.insert(entry)
+            entry.asset = asset
+            entry.providers = providers
+            HouseholdMutations.addItems(items, to: entry, in: context)
+            if let metricReading {
+                let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
+                let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) }
+                try HouseholdMutations.recordReading(metricReading, on: asset, at: date, source: .person, unit: unit,
+                                                     answer: lowerReading, isExample: isExample, in: context)
+            }
+            try save()
+            return entry
         }
-        try save()
-        return entry
     }
 
     /// One ticked component on the visit checklist, with what it cost if known.
@@ -114,6 +121,7 @@ public final class HistoryActions {
     /// Records one visit (a service, a repair, a check-up) with every part ticked on
     /// the checklist, all in one save: the entry, its line items, the odometer
     /// reading (also logged as a measurement), the provider and the documents.
+    /// The receipt takes it all back ("Anulează vizita").
     @discardableResult
     public func recordVisit(
         on asset: Asset,
@@ -127,38 +135,45 @@ public final class HistoryActions {
         provider: Provider? = nil,
         documents: [DocumentDraft] = [],
         rating: Int? = nil,
-        calendar: Calendar = .current
-    ) throws -> HistoryEntry {
-        let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
-        let catalog = template?.components ?? []
-        let ticked = checklist.map { item in
-            LineItemDraft(
-                name: catalog.first { $0.key == item.componentKey }?.name ?? item.componentKey,
-                componentKey: item.componentKey,
-                partBrandOrCode: item.partBrandOrCode,
-                cost: item.cost
-            )
+        calendar: Calendar = .current,
+        odometerSource: ReadingSource = .person,
+        lowerReading: LowerReadingAnswer? = nil
+    ) throws -> Undoable<HistoryEntry> {
+        // One step: a question about a lower reading leaves nothing half-changed.
+        return try UnitOfWork.performUndoable(in: context) {
+            let isExample = try ExampleOwnership.requireReal(asset)
+            let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
+            let catalog = template?.components ?? []
+            let ticked = checklist.map { item in
+                LineItemDraft(
+                    name: catalog.first { $0.key == item.componentKey }?.name ?? item.componentKey,
+                    componentKey: item.componentKey,
+                    partBrandOrCode: item.partBrandOrCode,
+                    cost: item.cost
+                )
+            }
+            let items = ticked + extraItems
+            let date = occurredAt ?? now()
+            let entry = HistoryEntry(kind: kind, title: title ?? Self.visitTitle(for: items), occurredAt: date)
+            entry.metricReading = odometer
+            entry.totalCost = totalCost
+            entry.rating = rating.map { min(max($0, 1), 5) }
+            entry.isExample = isExample
+            context.insert(entry)
+            entry.asset = asset
+            entry.providers = provider.map { [$0] } ?? []
+            HouseholdMutations.addItems(items, to: entry, in: context)
+            if let odometer {
+                let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) }
+                try HouseholdMutations.recordReading(odometer, on: asset, at: date, source: odometerSource, unit: unit,
+                                                     answer: lowerReading, isExample: isExample, in: context)
+            }
+            for draft in documents {
+                _ = AttachmentActions.insert(draft, asset: asset, obligation: nil, historyEntry: entry, provider: nil, isExample: isExample, calendar: calendar, in: context)
+            }
+            try save()
+            return entry
         }
-        let items = ticked + extraItems
-        let date = occurredAt ?? now()
-        let entry = HistoryEntry(kind: kind, title: title ?? Self.visitTitle(for: items), occurredAt: date)
-        entry.metricReading = odometer
-        entry.totalCost = totalCost
-        entry.rating = rating.map { min(max($0, 1), 5) }
-        entry.isExample = asset.isExample
-        context.insert(entry)
-        entry.asset = asset
-        entry.providers = provider.map { [$0] } ?? []
-        HouseholdMutations.addItems(items, to: entry, in: context)
-        if let odometer {
-            let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) }
-            HouseholdMutations.recordReading(odometer, on: asset, at: date, unit: unit, in: context)
-        }
-        for draft in documents {
-            _ = AttachmentActions.insert(draft, asset: asset, obligation: nil, historyEntry: entry, provider: nil, calendar: calendar, in: context)
-        }
-        try save()
-        return entry
     }
 
     /// "Ulei și filtru, Plăcuțe frână față" for short visits, a plain title for long ones.
@@ -183,18 +198,30 @@ public final class HistoryActions {
         try save()
     }
 
+    /// Deletes a record from Istoric, as `HistoryDeletion` describes: its line items and the
+    /// reading it recorded go with it, the documents filed with it stay in the binder, and
+    /// a completion moves its deadline back only when it's the latest one. This is for an
+    /// older record; the step just taken is undone with its receipt.
     public func delete(_ entry: HistoryEntry) throws {
-        context.delete(entry)
-        try save()
+        let effect = HistoryDeletion(of: entry)
+        try UnitOfWork.perform(in: context) {
+            if let reopened = effect.reopensCycle, let obligation = entry.obligation {
+                obligation.dueDate = reopened
+                obligation.dueMetric = entry.previousDueMetric
+                if obligation.status == .done {
+                    obligation.status = entry.previousStatusRaw.flatMap(ObligationStatus.init(rawValue:)) ?? .active
+                }
+                obligation.updatedAt = now()
+            }
+            if effect.removedReading != nil { HouseholdMutations.removeReading(recordedBy: entry, in: context) }
+            for attachment in entry.attachments ?? [] { attachment.historyEntry = nil }
+            context.delete(entry)
+            try save()
+        }
     }
 
     private func save() throws {
-        do {
-            try context.save()
-        } catch {
-            context.rollback()
-            throw error
-        }
+        try UnitOfWork.save(context)
     }
 }
 

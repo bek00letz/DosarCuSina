@@ -119,25 +119,45 @@ private struct HistoryEntryContent: View {
             Button(role: .destructive, action: delete) { Text("Șterge", comment: "Confirm deleting.") }
             Button(role: .cancel) {} label: { Text("Păstrează", comment: "Cancel a delete.") }
         } message: {
-            if entry.isCompletion {
-                Text("Termenul revine la data de dinainte, ca și cum nu l-ai fi rezolvat.", comment: "Deleting a completion moves the obligation back.")
-            } else {
-                Text("Piesele și prețurile notate aici se șterg de pe acest telefon.", comment: "Delete confirmation for a history entry.")
-            }
+            Text(verbatim: deletionMessage)
         }
         .userErrorAlert($error)
     }
 
+    /// What deleting does, as `HistoryDeletion` works it out: the deadline, the reading, the documents.
+    private var deletionMessage: String {
+        let effect = HistoryDeletion(of: entry)
+        var sentences: [String] = []
+        if let reopened = effect.reopensCycle {
+            let day = DosarFormat.longDay(CalendarDay(reopened))
+            sentences.append(String(localized: "Termenul revine la \(day), ca și cum nu l-ai fi rezolvat.", comment: "Deleting the latest completion moves its deadline back to the day it was due."))
+        } else if effect.keepsDeadline {
+            sentences.append(String(localized: "Termenul rămâne cum e acum.", comment: "Deleting an older completion leaves its deadline alone."))
+        } else {
+            sentences.append(String(localized: "Piesele și prețurile notate aici se șterg de pe acest telefon.", comment: "Delete confirmation for a history entry."))
+        }
+        if let reading = effect.removedReading {
+            sentences.append(String(localized: "Se șterge și citirea de \(readingText(reading)) notată aici.", comment: "Deleting a history entry also removes the counter reading it recorded, such as '45.724 km'."))
+        }
+        if effect.keptDocuments > 0 {
+            sentences.append(String(localized: "Ce ai atașat rămâne în dosar.", comment: "Deleting a history entry keeps the documents filed with it."))
+        }
+        return sentences.joined(separator: " ")
+    }
+
     private var details: String {
         var parts = [DosarFormat.longDay(entry.occurredAt)]
-        if let reading = entry.metricReading {
-            let template = entry.asset.flatMap { asset in (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil }
-            let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) } ?? ""
-            let number = reading.formatted(.number.locale(.dosarDefault).precision(.fractionLength(0)))
-            parts.append(unit.isEmpty ? number : "\(number) \(unit)")
-        }
+        if let reading = entry.metricReading { parts.append(readingText(reading)) }
         if let asset = entry.asset { parts.append(asset.name) }
         return parts.joined(separator: " · ")
+    }
+
+    /// "45.724 km": a reading with the unit of the section's counter.
+    private func readingText(_ reading: Double) -> String {
+        let template = entry.asset.flatMap { asset in (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil }
+        let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) }
+        let number = reading.formatted(.number.locale(.dosarDefault).precision(.fractionLength(0)))
+        return unit.map { "\(number) \($0.label)" } ?? number
     }
 
     private func rate(_ value: Int?) {
@@ -150,12 +170,8 @@ private struct HistoryEntryContent: View {
 
     private func delete() {
         do {
-            // A completion is undone through the obligation engine so its due date moves back.
-            if entry.isCompletion, entry.obligation != nil {
-                try ObligationActions(context: context).undo(entry)
-            } else {
-                try HistoryActions(context: context).delete(entry)
-            }
+            // An older record, not the step just taken: what it does is `HistoryDeletion`.
+            try HistoryActions(context: context).delete(entry)
             dismiss()
         } catch {
             self.error = UserFacingError(error)
@@ -263,12 +279,10 @@ private struct DocumentContent: View {
 
     private func setArchived(_ value: Bool) {
         do {
-            try AttachmentActions(context: context).setArchived(attachment, value)
+            let receipt = try AttachmentActions(context: context).setArchived(attachment, value)
             toast = .undo(value
                 ? LocalizedStringResource("Mutat în arhivă", comment: "Toast after archiving a document.")
-                : LocalizedStringResource("Scos din arhivă", comment: "Toast after unarchiving a document.")) {
-                try? AttachmentActions(context: context).setArchived(attachment, !value)
-            }
+                : LocalizedStringResource("Scos din arhivă", comment: "Toast after unarchiving a document."), receipt: receipt)
         } catch {
             self.error = UserFacingError(error)
         }
@@ -290,6 +304,7 @@ private struct DocumentPreview: View {
 
     /// The page opened full screen, with pinch and double-tap to zoom.
     @State private var openPage: OpenPage?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private struct OpenPage: Identifiable {
         let index: Int
@@ -322,7 +337,7 @@ private struct DocumentPreview: View {
     }
 
     private func pageImage(_ image: UIImage, index: Int) -> some View {
-        Button { openPage = OpenPage(index: index) } label: {
+        Button { DocumentPagesViewer.present(reduceMotion: reduceMotion) { openPage = OpenPage(index: index) } } label: {
             Image(uiImage: image)
                 .resizable()
                 .scaledToFit()
@@ -354,7 +369,8 @@ private struct DocumentFacts: View {
                 VStack(spacing: 0) {
                     ForEach(Array(rows.enumerated()), id: \.element.key) { index, row in
                         if index > 0 { DSRowSeparator() }
-                        DSActionValueRow(title: Text(verbatim: row.label), value: row.text, action: .copy)
+                        // Read off an identity document: personal, so it stays on this phone and expires.
+                        DSActionValueRow(title: Text(verbatim: row.label), value: row.text, action: .copy, copies: .personal)
                             .padding(.vertical, DS.Space.xs)
                     }
                 }
@@ -366,7 +382,8 @@ private struct DocumentFacts: View {
     static func rows(_ values: FieldValues, definition: TemplateDefinition?) -> [(key: String, label: String, text: String)] {
         guard let definition else { return [] }
         return definition.allFields.compactMap { field in
-            guard field.type != .choice, let value = values[field.key] else { return nil }
+            // Secrets have their own rows on the document's page, behind a fresh Face ID.
+            guard field.type != .choice, !field.isSecret, let value = values[field.key] else { return nil }
             let text = FieldFormatter.display(value, field: field, locale: .dosarDefault)
             return text.isEmpty ? nil : (field.key, field.label, text)
         }

@@ -11,12 +11,15 @@ public struct SemanticInput: Sendable {
     public let firstPage: CGImage?
     public let kind: CaptureDocumentKind
     public let knownFields: [CaptureField]
+    /// "Today", for checking dates against their plausibility windows.
+    public let today: CaptureDay
 
-    public init(text: String, firstPage: CGImage?, kind: CaptureDocumentKind, knownFields: [CaptureField]) {
+    public init(text: String, firstPage: CGImage?, kind: CaptureDocumentKind, knownFields: [CaptureField], today: CaptureDay = CaptureDay(date: Date())) {
         self.text = text
         self.firstPage = firstPage
         self.kind = kind
         self.knownFields = knownFields
+        self.today = today
     }
 }
 
@@ -104,7 +107,7 @@ enum ModelAnswerMapper {
 
         let currency = normalizedCurrency(answers.currency)
         let printedAmounts = Set(CaptureText(sourceText).folded.flatMap { RomanianFieldExtractor.amounts(inLine: $0).map(\.amount) })
-        if let raw = answers.totalAmount, let amount = RomanianFieldExtractor.parseAmount(raw), amount > 0,
+        if let raw = answers.totalAmount, let amount = RomanianFieldExtractor.amount(raw)?.value, amount > 0,
            printedAmounts.contains(amount) {
             fields.append(CaptureField(key: .total, value: .money(CaptureMoney(amount: amount, currencyCode: currency)), confidence: confidence, sourceText: nil, tier: tier))
         }
@@ -112,12 +115,12 @@ enum ModelAnswerMapper {
             fields.append(CaptureField(key: .warrantyMonths, value: .number(Decimal(months)), confidence: confidence - 0.05, sourceText: nil, tier: tier))
         }
         if let km = answers.odometerKm, km > 0, compactSource.contains(String(km)) {
-            fields.append(CaptureField(key: .odometer, value: .metric(value: Decimal(km), unit: "km"), confidence: confidence, sourceText: nil, tier: tier))
+            fields.append(CaptureField(key: .odometer, value: .metric(value: Decimal(km), unit: .kilometres), confidence: confidence, sourceText: nil, tier: tier))
         }
         let items = answers.lineItems.compactMap { item -> CaptureLineItem? in
             let description = item.description.trimmingCharacters(in: .whitespaces)
             guard !description.isEmpty else { return nil }
-            let money = item.amount.flatMap(RomanianFieldExtractor.parseAmount).map { CaptureMoney(amount: $0, currencyCode: currency) }
+            let money = item.amount.flatMap { RomanianFieldExtractor.amount($0)?.value }.map { CaptureMoney(amount: $0, currencyCode: currency) }
             return CaptureLineItem(description: description, amount: money, componentKey: resolver.componentKey(for: description))
         }
         if !items.isEmpty {
@@ -130,7 +133,7 @@ enum ModelAnswerMapper {
 
     /// Letters and digits only, uppercased, so "B-123 ABC" and "B 123 ABC" compare equal.
     static func compact(_ text: String) -> String {
-        CaptureText.fold(text).uppercased().filter { $0.isLetter || $0.isNumber }
+        RomanianText.fold(text).uppercased().filter { $0.isLetter || $0.isNumber }
     }
 
     static func isoDay(_ value: String) -> CaptureDay? {
@@ -140,7 +143,7 @@ enum ModelAnswerMapper {
     }
 
     static func normalizedCurrency(_ value: String?) -> String {
-        switch CaptureText.fold(value ?? "") {
+        switch RomanianText.fold(value ?? "") {
         case "eur", "euro", "€": "EUR"
         case "usd", "$": "USD"
         default: "RON"

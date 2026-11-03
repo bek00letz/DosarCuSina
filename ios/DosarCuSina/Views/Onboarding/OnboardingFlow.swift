@@ -50,13 +50,13 @@ struct OnboardingFlow: View {
         .captureSourcePicker($source) { payload in
             flow = CaptureFlowInput(payload: payload)
         } onError: { error in
-            errorMessage = error.localizedDescription
+            errorMessage = SaveFailure.message(for: error, formKept: true)
         }
         .sheet(item: $flow) { input in
             CaptureFlowView(input: input) { result in
                 flow = nil
                 switch result {
-                case .filed(let message), .visitSaved(let message):
+                case .filed(let message, _), .visitSaved(let message):
                     photoMessage = message
                 case .dismissed:
                     break

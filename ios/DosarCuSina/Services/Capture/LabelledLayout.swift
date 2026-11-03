@@ -16,8 +16,10 @@ enum LabelWording: Hashable, Sendable {
             let digits = number.prefix { $0.isNumber }
             let letter = number.dropFirst(digits.count)
             // "1." needs its dot, so a date at the start of a line isn't a label; "4a" may drop it.
-            let tail = letter.isEmpty ? #"\.(?!\d)"# : #"\s?"# + NSRegularExpression.escapedPattern(for: String(letter)) + #"\.?(?![a-z0-9])"#
-            return #"^\s*"# + digits + tail
+            guard !letter.isEmpty else { return #"^\s*"# + digits + #"\.(?!\d)"# }
+            let suffix = #"\s?"# + NSRegularExpression.escapedPattern(for: String(letter))
+            // Lettered fields share rows ("4a. 20.04.2018  4c. SRPCIV"): mid-line, after a space and with their dot.
+            return #"(?:^\s*"# + digits + suffix + #"\.?|(?<=\s)"# + digits + suffix + #"\.)(?![a-z0-9])"#
         }
     }
 
@@ -116,21 +118,28 @@ struct LabelledLayout<Key: Hashable> {
 
     /// The value for a label, trying every place the label was printed.
     func found(for key: Key) -> Found? {
-        for position in positions where position.key == key {
-            if let found = value(at: position) { return found }
-        }
-        return nil
+        positions.lazy.filter { $0.key == key }.compactMap { value(at: $0) }.first
+    }
+
+    /// Every value printed for a label, top to bottom, for a reader that checks each one
+    /// (an address, where a column header may come before the real label).
+    func allFound(for key: Key) -> [Found] {
+        positions.filter { $0.key == key }.compactMap { value(at: $0) }
     }
 
     /// The date printed for a label: after it on its line, or in its value.
-    func day(for key: Key) -> (CaptureDay, String)? {
+    func day(for key: Key, window: DateWindow = .aroundToday) -> (CaptureDay, String)? {
         for position in positions where position.key == key {
             let line = text.folded[position.line]
-            if let match = RomanianFieldExtractor.dates(inLine: line, index: position.line).first(where: { $0.range.lowerBound >= position.end }) {
+            let nextLabel = (positionsByLine[position.line] ?? []).filter { $0.start > position.start }.map(\.start).min() ?? line.endIndex
+            // Only the text between this label and the next, so a field number ("3.") never
+            // reads as part of the date after it.
+            let segment = position.end < nextLabel ? String(line[position.end..<nextLabel]) : ""
+            if let match = RomanianFieldExtractor.dates(inLine: segment, index: position.line, window: window).first {
                 return (match.day, text.original[position.line])
             }
             if let found = value(at: position), found.lines != [position.line],
-               let match = RomanianFieldExtractor.dates(inLine: found.folded, index: position.line).first {
+               let match = RomanianFieldExtractor.dates(inLine: found.folded, index: position.line, window: window).first {
                 return (match.day, found.source)
             }
         }
@@ -164,7 +173,7 @@ struct LabelledLayout<Key: Hashable> {
 
     private func value(at position: Position) -> Found? {
         if let rest = restOfLine(after: position) {
-            return Found(label: position, lines: [position.line], labelLines: [], value: rest, folded: CaptureText.fold(rest), source: text.original[position.line])
+            return Found(label: position, lines: [position.line], labelLines: [], value: rest, folded: RomanianText.fold(rest), source: text.original[position.line])
         }
         let labelLines = labelBlock(below: position)
         let lines: [Int]
@@ -176,18 +185,71 @@ struct LabelledLayout<Key: Hashable> {
         guard !lines.isEmpty else { return nil }
         let value = lines.map { text.original[$0] }.joined(separator: " ")
         let source = ([position.line] + labelLines + lines).map { text.original[$0] }.joined(separator: " ")
-        return Found(label: position, lines: lines, labelLines: labelLines, value: value, folded: CaptureText.fold(value), source: source)
+        return Found(label: position, lines: lines, labelLines: labelLines, value: value, folded: RomanianText.fold(value), source: source)
     }
 
     /// What follows the label on its own line, when no other label follows it there.
+    /// What follows the label on its own line, up to the next label on that line, so two
+    /// fields sharing a row ("4a. 20.04.2018 4c. SRPCIV") each keep their own value.
     private func restOfLine(after position: Position) -> String? {
-        guard !(positionsByLine[position.line] ?? []).contains(where: { $0.start > position.start }) else { return nil }
         let folded = text.folded[position.line]
         let original = text.original[position.line]
-        let offset = folded.distance(from: folded.startIndex, to: position.end)
-        guard offset < original.count else { return nil }
-        let rest = String(original.dropFirst(offset)).trimmingCharacters(in: CharacterSet(charactersIn: " :/-.\t"))
+        let from = folded.distance(from: folded.startIndex, to: position.end)
+        let nextLabel = (positionsByLine[position.line] ?? []).filter { $0.start > position.start }.map(\.start).min()
+        let to = nextLabel.map { folded.distance(from: folded.startIndex, to: $0) } ?? original.count
+        guard from < min(to, original.count) else { return nil }
+        let rest = Self.droppingTranslations(String(original.dropFirst(from).prefix(min(to, original.count) - from)))
+            .trimmingCharacters(in: CharacterSet(charactersIn: " :/-.\t"))
         return rest.contains(where: { $0.isLetter || $0.isNumber }) ? rest : nil
+    }
+
+    /// A label's printed translations right after it belong to the label, not to the
+    /// value: "/Authority/Autorité" after "Autoritatea". Each "/" starts a translation,
+    /// which ends at the first word in capitals or with digits, where a value printed
+    /// on the same line begins ("…/Autorité SPCEEPS EXEMPLU").
+    static func droppingTranslations(_ rest: String) -> String {
+        var remaining = Substring(rest).drop { $0 == " " }
+        while remaining.first == "/" {
+            remaining = remaining.dropFirst().drop { $0 == " " }
+            while let word = remaining.split(separator: " ", maxSplits: 1).first.map({ $0.split(separator: "/").first ?? $0 }),
+                  !word.isEmpty, !isValueWord(word) {
+                remaining = remaining.dropFirst(word.count).drop { $0 == " " }
+            }
+        }
+        return String(remaining)
+    }
+
+    /// A word printed as a value rather than as a label: capitals, or digits.
+    private static func isValueWord(_ word: Substring) -> Bool {
+        let letters = word.filter(\.isLetter)
+        if word.contains(where: \.isNumber) { return true }
+        return letters.count >= 2 && letters.allSatisfy(\.isUppercase)
+    }
+
+    /// Everything on the label's row after it, up to the next label: the rest of its line and
+    /// the fragments beside it, left to right ("9." then "A" "B" "C" in their own boxes).
+    func restOfRow(for key: Key) -> (value: String, source: String)? {
+        for position in positions where position.key == key {
+            var parts = [restOfLine(after: position)].compactMap { $0 }
+            var sources = [text.original[position.line]]
+            if positionsByLine[position.line]?.contains(where: { $0.start > position.start }) != true,
+               let lineBox = text.boxes[position.line] {
+                let page = text.pages[position.line]
+                let right = text.boxes.indices
+                    .filter { index in
+                        guard index != position.line, text.pages[index] == page, let box = text.boxes[index] else { return false }
+                        return box.isOnSameRow(as: lineBox) && box.minX >= lineBox.maxX - 0.25 * lineBox.height
+                    }
+                    .sorted { (text.boxes[$0]?.minX ?? 0) < (text.boxes[$1]?.minX ?? 0) }
+                for index in right {
+                    if isLabelLine(index) { break }
+                    parts.append(text.original[index])
+                    sources.append(text.original[index])
+                }
+            }
+            if !parts.isEmpty { return (parts.joined(separator: " "), sources.joined(separator: " ")) }
+        }
+        return nil
     }
 
     /// Whether every label on a line is `key`: the label printed again in another language.

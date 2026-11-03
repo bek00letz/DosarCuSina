@@ -18,19 +18,20 @@ public enum MeasurementKind: String, Codable, CaseIterable, Sendable {
     case cycles
     case custom
 
-    public var defaultUnit: String {
+    /// The unit a reading of this kind is in when nothing says otherwise; nil when it has none.
+    public var defaultUnit: MeasurementUnit? {
         switch self {
-        case .electricity: return "kWh"
-        case .gas, .coldWater, .hotWater: return "m³"
-        case .thermalEnergy: return "Gcal"
-        case .biomarker: return "mg/dL"
-        case .bloodPressure: return "mmHg"
-        case .bodyWeight: return "kg"
-        case .diopters: return "dpt"
-        case .odometer: return "km"
-        case .engineHours: return "h"
-        case .cycles: return ""
-        case .custom: return ""
+        case .electricity: return .kilowattHours
+        case .gas, .coldWater, .hotWater: return .cubicMetres
+        case .thermalEnergy: return .gigacalories
+        case .biomarker: return .milligramsPerDecilitre
+        case .bloodPressure: return .millimetresOfMercury
+        case .bodyWeight: return .kilograms
+        case .diopters: return .dioptres
+        case .odometer: return .kilometres
+        case .engineHours: return .engineHours
+        case .cycles: return nil
+        case .custom: return nil
         }
     }
 
@@ -43,7 +44,7 @@ public enum MeasurementKind: String, Codable, CaseIterable, Sendable {
     }
 }
 
-extension DosarSchemaV2 {
+extension DosarSchemaV5 {
     /// A line in a history entry: a part replaced, a job done, a vaccine given.
     /// `componentKey` ties it to the template's component catalog so "when did I
     /// last change the brake pads" has one answer across entries.
@@ -103,6 +104,8 @@ extension DosarSchemaV2 {
         public var value: Double = 0
         /// Second part of a pair, such as the diastolic pressure.
         public var secondaryValue: Double?
+        /// The unit's key (`MeasurementUnit.key`), "" for none. Earlier versions stored its
+        /// label ("m³", "kWh"); read and write it through `measurementUnit`.
         public var unit: String = ""
         public var recordedAt: Date = Date()
         public var unitPriceAmount: Decimal?
@@ -121,13 +124,19 @@ extension DosarSchemaV2 {
         @Relationship(deleteRule: .nullify, inverse: \Attachment.measurement)
         public var attachments: [Attachment]? = []
 
-        public init(id: UUID = UUID(), kind: MeasurementKind, name: String, value: Double, unit: String? = nil, recordedAt: Date = Date()) {
+        public init(id: UUID = UUID(), kind: MeasurementKind, name: String, value: Double, unit: MeasurementUnit? = nil, recordedAt: Date = Date()) {
             self.id = id
             self.kindRaw = kind.rawValue
             self.name = name
             self.value = value
-            self.unit = unit ?? kind.defaultUnit
+            self.unit = (unit ?? kind.defaultUnit)?.key ?? ""
             self.recordedAt = recordedAt
+        }
+
+        /// The unit, read from any form it was stored in; nil when it has none.
+        public var measurementUnit: MeasurementUnit? {
+            get { MeasurementUnit(unit) }
+            set { unit = newValue?.key ?? "" }
         }
 
         public var kind: MeasurementKind {
@@ -176,6 +185,9 @@ extension DosarSchemaV2 {
         public var extractedText: String?
         /// The date printed on the document (issue or invoice date), noon of that day.
         public var documentDate: Date?
+        /// The last day the document itself is valid, as read when it was filed (a policy's
+        /// end), noon of that day. Its deadline moving on later never changes it.
+        public var validUntil: Date?
         /// Identifier of the source document in Capture's document store on this
         /// device. Local only: archives don't carry it.
         public var documentID: String?

@@ -9,5 +9,16 @@
     "recordedAt" : "2026-03-01T07:30:00Z",
     "unit" : "km",
     "value" : 142500
+  },
+  {
+    "assetId" : "8a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c52",
+    "id" : "5a6b7c8d-9e0f-4a1b-8c3d-4e5f6a7b8ca8",
+    "isExample" : false,
+    "isSelfRead" : true,
+    "kind" : "engineHours",
+    "name" : "",
+    "recordedAt" : "2026-01-12T10:05:00Z",
+    "unit" : "h",
+    "value" : 210
   }
 ]

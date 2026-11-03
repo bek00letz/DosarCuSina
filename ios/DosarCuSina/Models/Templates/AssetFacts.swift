@@ -37,6 +37,9 @@ public struct FactRow: Hashable, Sendable, Identifiable {
     public var isSensitive: Bool
     /// A free row the person added, editable in place.
     public var isCustom: Bool
+    /// A secret row: `text` is only the mask, and `sealed` the code, opened after Face ID.
+    public var isSecret = false
+    public var sealed: String?
 }
 
 /// Role-based reading of an asset's values, so screens and engines never hard-code field keys.
@@ -67,7 +70,10 @@ public enum AssetFacts {
         return fromTemplate.map {
             FactRow(id: $0.field.key, label: $0.field.label, text: $0.text, isCallable: $0.isCallable, isSensitive: $0.field.isSensitive, isCustom: false)
         } + customFacts.map {
-            FactRow(id: $0.id.uuidString, label: $0.label, text: $0.value, isCallable: false, isSensitive: $0.isSensitive, isCustom: true)
+            $0.isSecret
+                ? FactRow(id: $0.id.uuidString, label: $0.label, text: SecretFields.mask, isCallable: false, isSensitive: true, isCustom: true,
+                          isSecret: true, sealed: $0.value.isEmpty ? nil : $0.value)
+                : FactRow(id: $0.id.uuidString, label: $0.label, text: $0.value, isCallable: false, isSensitive: $0.isSensitive, isCustom: true)
         }
     }
 

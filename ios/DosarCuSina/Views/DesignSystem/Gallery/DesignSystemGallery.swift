@@ -272,6 +272,14 @@ private struct GalleryButtons: View {
                     }
                 }
             }
+            GallerySection(title: "Buton mic lângă un rând", note: "DSCompactButton: textul nu se rupe, ținta are cel puțin 44 pt.") {
+                DSCard {
+                    HStack(spacing: DS.Space.s) {
+                        Text(verbatim: "ITP").dsFont(.headline).frame(maxWidth: .infinity, alignment: .leading)
+                        DSCompactButton("Adaugă") {}
+                    }
+                }
+            }
             GallerySection(title: "Suprafețe apăsabile", note: "Răspuns imediat la atingere; cu Reducere mișcare doar se estompează.") {
                 Button {} label: {
                     DSCard {
@@ -315,12 +323,12 @@ private struct GalleryCards: View {
                             .padding(.horizontal, DS.Space.m)
                         DS.Hairline().padding(.leading, 62)
                         DSListRow(title: Text(verbatim: "ITP"), subtitle: Text(verbatim: "Auto Test SRL"), systemImage: "checkmark.shield.fill", tint: .green, showsChevron: true) {
-                            DSStatusBadge(daysRemaining: 12)
+                            DSStatusBadge(urgency: GallerySample.urgency(in: 12), daysRemaining: 12)
                         }
                         .padding(.horizontal, DS.Space.m)
                         DS.Hairline().padding(.leading, 62)
                         DSListRow(title: Text(verbatim: "RCA"), subtitle: Text(verbatim: "Poliță anuală"), systemImage: "car.side.fill", tint: .orange, showsChevron: true) {
-                            DSStatusBadge(daysRemaining: -3)
+                            DSStatusBadge(urgency: GallerySample.urgency(in: -3), daysRemaining: -3)
                         }
                         .padding(.horizontal, DS.Space.m)
                     }
@@ -353,6 +361,37 @@ private struct GalleryCards: View {
                         DSActionValueRow(title: Text(verbatim: "Număr poliță"), value: "RO/00/EX0001", action: .copy)
                         DSRowSeparator()
                         DSActionValueRow(title: Text(verbatim: "Telefon pentru daune"), value: "0700 000 001", action: .call)
+                        DSRowSeparator()
+                        // A secret: in the app, "Arată" and "Copiază" ask for Face ID first, every time.
+                        DSSecretValueRow(title: Text(verbatim: "PIN pentru autentificare"), isSet: true) { .revealed("0000") }
+                    }
+                }
+            }
+            GallerySection(title: "Liste de pregătire", note: "DSReadinessRow: pregătit, de verificat, de rezolvat sau lipsă, cu motivul. Tot rândul se apasă: deschide ce e acolo sau adaugă ce lipsește. Ce iei cu tine se bifează cu DSCheckRow.") {
+                DSCard {
+                    VStack(alignment: .leading, spacing: 0) {
+                        DSStatusLine(text: "Un lucru de rezolvat · 2 lucruri nu sunt în dosar", tone: .alarming)
+                            .padding(.bottom, DS.Space.xs)
+                        DSRowSeparator()
+                        DSReadinessRow(status: .ok, title: Text(verbatim: "Carte de identitate"), detail: Text(verbatim: "Valabilă până pe 12 august 2031. Ajunge pentru toată UE.")) {}
+                        DSRowSeparator()
+                        DSReadinessRow(status: .problem, title: Text(verbatim: "Pașaport"), detail: Text(verbatim: "Bun de călătorit doar până pe 3 iunie. Fă-ți altul înainte de plecare.")) {}
+                        DSRowSeparator()
+                        DSReadinessRow(status: .warning, title: Text(verbatim: "Rovinietă"), detail: Text(verbatim: "Expiră pe 15 iulie, cât ești plecat.")) {}
+                        DSRowSeparator()
+                        DSReadinessRow(status: .missing, title: Text(verbatim: "Card european de sănătate"), detail: Text(verbatim: "Nu e în dosar."),
+                                       actionTitle: Text(verbatim: "Adaugă")) {}
+                        DSRowSeparator()
+                        DSCheckRow(title: Text(verbatim: "Constatarea amiabilă"), subtitle: Text(verbatim: "După ce o semnați amândoi."), isOn: $cabinFilter)
+                    }
+                }
+            }
+            GallerySection(title: "Rând care se adaptează", note:"DSAdaptiveStack: alăturate când încap pe un rând, una sub alta când nu. Măriți textul ca să vedeți.") {
+                DSCard {
+                    DSAdaptiveStack(spacing: DS.Space.s) {
+                        Text(verbatim: "Asigurarea locuinței, PAD").dsFont(.headline)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        DSStatusBadge(.soon, text: Text(verbatim: "Expiră în 3 săptămâni"))
                     }
                 }
             }
@@ -408,24 +447,21 @@ private struct GalleryChips: View {
 private struct GalleryStatus: View {
     var body: some View {
         GalleryPage {
-            GallerySection(title: "Termene", note: "Pluralele românești: o zi, 2 zile, 20 de zile.") {
+            GallerySection(title: "Termene", note: "Un ITP: ton și cuvinte din regula de urgență, ca în Urmează. Pluralele românești: o zi, 2 zile, 20 de zile.") {
                 DSCard {
                     DSFlowLayout {
                         ForEach([-25, -3, -1, 0, 1, 2, 12, 20, 45], id: \.self) { days in
-                            DSStatusBadge(daysRemaining: days)
+                            DSStatusBadge(urgency: GallerySample.urgency(in: days), daysRemaining: days)
                         }
-                        DSStatusBadge(daysRemaining: 3, isDone: true)
+                        DSStatusBadge(.done)
                     }
                 }
             }
-            GallerySection(title: "Expirări", note: "Pentru acte și garanții. Pașaportul avertizează cu 180 de zile înainte.") {
+            GallerySection(title: "Expirări", note: "Pentru acte și garanții. Un pașaport cere atenție din ziua în care nu mai e bun de călătorit, cu 6 luni înainte să expire, ca în Urmează.") {
                 DSCard {
                     DSFlowLayout {
                         ForEach([-40, 0, 9, 150, 400], id: \.self) { days in
-                            DSStatusBadge(
-                                days < 0 ? .overdue : (days <= 180 ? .soon : .done),
-                                text: Text(DSDueText.expiryText(daysRemaining: days, soonWithinDays: 180))
-                            )
+                            DSStatusBadge(expiry: GallerySample.urgency(in: days, rule: GallerySample.passport), daysRemaining: days)
                         }
                     }
                 }
@@ -493,13 +529,15 @@ private struct GalleryFeedback: View {
     @State private var toast: DSToast?
     @State private var isLoading = true
     @State private var showsSpinner = false
+    @State private var exampleQuestion: ExampleSectionQuestion?
+    @State private var readingQuestion: LowerReadingQuestion?
 
     var body: some View {
         GalleryPage {
             GallerySection(title: "Confirmare cu anulare", note: "Dispare după 5 secunde (10 cu VoiceOver), la glisare în jos sau la anulare.") {
                 DSCard {
                     Button {
-                        toast = .undo("ITP marcat ca rezolvat") {}
+                        toast = DSToast(title: "ITP marcat ca rezolvat", action: {})
                     } label: {
                         Text(verbatim: "Marchează ITP ca rezolvat").frame(maxWidth: .infinity)
                     }
@@ -526,8 +564,30 @@ private struct GalleryFeedback: View {
                     .frame(minHeight: 44)
                 }
             }
+            GallerySection(title: "Un exemplu devine al tău", note: "Când adaugi ceva al tău la un exemplu. Posesivul se acordă cu felul secțiunii.") {
+                DSCard {
+                    Button {
+                        exampleQuestion = ExampleSectionQuestion(sectionID: UUID(), name: "VW Golf 2018", gender: .feminine)
+                    } label: {
+                        Text(verbatim: "Adaugă un termen la exemplu").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
+                }
+            }
+            GallerySection(title: "O citire mai mică", note: "Un contor doar crește. Corectează șterge citirea veche, Lasă păstrează cea nouă deoparte, Anulează întoarce la formular.") {
+                DSCard {
+                    Button {
+                        readingQuestion = LowerReadingQuestion(previous: 45_724, previousDate: .now, value: 4_572, unit: .kilometres)
+                    } label: {
+                        Text(verbatim: "Scrie 4.572 km").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
+                }
+            }
         }
         .dsToast($toast)
+        .examplePrompt($exampleQuestion) {}
+        .readingPrompt($readingQuestion) { _ in }
     }
 }
 
@@ -537,6 +597,7 @@ private struct GalleryFields: View {
     @State private var plate = ""
     @State private var vin = "WVWZZZ1KZ8W00000"
     @State private var microchip = ""
+    @State private var pin = ""
     @State private var iban = ""
     @State private var phone = ""
     @State private var email = ""
@@ -564,7 +625,7 @@ private struct GalleryFields: View {
                         DSTextField("Serie de șasiu (VIN)", text: $vin, kind: .vin, validator: { value in
                             value.count == 17 ? .valid : .invalid("Seria de șasiu are 17 caractere. Ai scris \(value.count).")
                         })
-                        DSMetricField("Kilometraj", value: $odometer, unit: "km")
+                        DSMetricField("Kilometraj", value: $odometer, unit: .kilometres)
                         DSChoiceField("Combustibil", selection: $fuel, options: ["Benzină", "Motorină", "Hibrid", "Electric", "GPL"]) { $0 }
                         DSContactField("Mecanic", contact: $contact)
                     }
@@ -575,7 +636,7 @@ private struct GalleryFields: View {
                     VStack(spacing: DS.Space.m) {
                         DSMoneyField("Cost estimat", amount: $amount, currencyCode: $currency)
                         DSDateField("Data cumpărării", date: $date)
-                        DSExpiryDateField("Pașaport valabil până la", date: $expiry, soonWithinDays: 180, footnote: "Avertizăm cu 6 luni înainte, pentru călătorii în afara UE.")
+                        DSExpiryDateField("Pașaport valabil până la", date: $expiry, urgencyRule: GallerySample.passport, footnote: "Bun de călătorit până cu 6 luni înainte să expire. Te anunț cu 3 luni înainte de ziua aceea.")
                         DSToggleField("Mementouri", isOn: $reminders, systemImage: "bell.fill")
                     }
                 }
@@ -584,6 +645,7 @@ private struct GalleryFields: View {
                 DSCard {
                     VStack(spacing: DS.Space.m) {
                         DSTextField("Microcip", text: $microchip, kind: .microchip)
+                        DSSecretField("PIN pentru semnare", value: $pin, footnote: "Rămâne ascuns; îl vezi doar după Face ID.")
                         DSTextField("IBAN", text: $iban, kind: .iban)
                         DSTextField("Telefon", text: $phone, kind: .phone)
                         DSTextField("E-mail", text: $email, kind: .email)
@@ -671,3 +733,15 @@ private struct GalleryEditSheet: View {
         .environment(\.dynamicTypeSize, .accessibility3)
 }
 #endif
+
+/// Sample deadlines for the gallery, drawn by the same urgency rule as the app.
+private enum GallerySample {
+    static let itp = ObligationKind.legal.defaultProfile.urgencyRule
+    static let passport = ReminderProfile(leadDays: [90, 0], consequence: .legal, travelMarginDays: DocumentType.travelMarginDays(for: DocumentType.passport)).urgencyRule
+
+    /// The urgency of a deadline `days` from today.
+    static func urgency(in days: Int, rule: UrgencyRule = itp) -> AttentionUrgency {
+        let today = CalendarDay(Date())
+        return rule.urgency(of: today.adding(days: days), today: today)
+    }
+}

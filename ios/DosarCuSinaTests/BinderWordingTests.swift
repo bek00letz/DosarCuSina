@@ -8,7 +8,7 @@ struct BinderWordingTests {
     let ro = Locale(identifier: "ro_RO")
 
     @Test("Years and months use the catalog's plural forms", arguments: [
-        (1, "1 an", "1 lună"), (2, "2 ani", "2 luni"), (19, "19 ani", "19 luni"), (20, "20 de ani", "20 de luni"),
+        (1, "un an", "o lună"), (2, "2 ani", "2 luni"), (19, "19 ani", "19 luni"), (20, "20 de ani", "20 de luni"),
     ])
     func calendarCounts(count: Int, years: String, months: String) {
         #expect(CalendarCount.years(count) == years)
@@ -18,7 +18,7 @@ struct BinderWordingTests {
     @Test func agesReadNaturally() {
         let today = CalendarDay("2026-11-02")
         #expect(AgeWording.text(born: CalendarDay("2023-06-10"), today: today, calendar: calendar) == "3 ani")
-        #expect(AgeWording.text(born: CalendarDay("2025-07-01"), today: today, calendar: calendar) == "1 an și 4 luni")
+        #expect(AgeWording.text(born: CalendarDay("2025-07-01"), today: today, calendar: calendar) == "un an și 4 luni")
         #expect(AgeWording.text(born: CalendarDay("2026-06-01"), today: today, calendar: calendar) == "5 luni")
         #expect(AgeWording.text(born: CalendarDay("2026-10-20"), today: today, calendar: calendar) == "sub o lună")
         #expect(AgeWording.text(born: CalendarDay("2027-01-01"), today: today, calendar: calendar) == nil)
@@ -39,7 +39,7 @@ struct BinderWordingTests {
             date: noon("2025-03-14", calendar: calendar), metricAtTime: 124_300, metricSince: 18_200, daysSince: 600,
             cost: Money(420), partBrandOrCode: nil, supplierName: nil, providerNames: [], providerIds: []
         )
-        let line = ComponentLine.detail(occurrence, unit: "km", locale: ro, calendar: calendar)
+        let line = ComponentLine.detail(occurrence, unit: .kilometres, locale: ro, calendar: calendar)
         #expect(line.hasPrefix("acum 18.200 km · 14 mar. 2025 · 420"))
         #expect(line.contains("RON") || line.contains("lei"))
     }
@@ -71,28 +71,34 @@ struct BinderWordingTests {
         var values = FieldValues()
         values["tenancy.rent"] = .money(Money(2000))
         values["tenancy.end"] = .date(CalendarDay("2027-08-31"))
-        let summary = ChildSummary.make(values, definition: BuiltInTemplates.tenancy, locale: ro, calendar: calendar)
+        let summary = ChildSummary.make(values, definition: BuiltInTemplates.tenancy, locale: ro)
         #expect(summary.endDay == CalendarDay("2027-08-31"))
         #expect(summary.line?.contains("până la 31 aug. 2027") == true)
         #expect(summary.line?.contains("2.000") == true)
 
         var product = FieldValues()
         product["purchase.warrantyUntil"] = .date(CalendarDay("2028-01-15"))
-        let warranty = ChildSummary.make(product, definition: BuiltInTemplates.purchase, locale: ro, calendar: calendar)
+        let warranty = ChildSummary.make(product, definition: BuiltInTemplates.purchase, locale: ro)
         #expect(warranty.line?.contains("garanție până la 15 ian. 2028") == true || warranty.line?.contains("până la 15 ian. 2028") == true)
     }
 
+    /// Settings › Despre promises when the internet is used. It names every service a
+    /// document can go to, so adding a provider can't leave the promise behind.
+    @Test func aboutNamesEveryAIServiceItCanSendTo() {
+        let about = AboutWording.privacy
+        for provider in AIProvider.allCases where provider != .openAICompatible {
+            #expect(about.contains(provider.name), "Despre doesn't name \(provider.name)")
+        }
+        #expect(about.contains("compatibil"))
+        #expect(!about.contains("cheie Google"))
+    }
+
     @Test func keyTestResultsTellOfflineApartFromABadKey() {
-        #expect(GeminiKeyStatus(statusCode: 200) == .valid)
-        #expect(GeminiKeyStatus(statusCode: 400) == .invalidKey)
-        #expect(GeminiKeyStatus(statusCode: 403) == .invalidKey)
-        #expect(GeminiKeyStatus(statusCode: 429) == .rateLimited)
-        #expect(GeminiKeyStatus(statusCode: 500) == .unavailable)
-        #expect(GeminiKeyStatus(error: URLError(.notConnectedToInternet)) == .offline)
-        #expect(GeminiKeyStatus(error: URLError(.timedOut)) == .offline)
-        #expect(GeminiKeyStatus(error: URLError(.badServerResponse)) == .unavailable)
-        let offline = AIKeyWording.message(.offline) ?? ""
-        let invalid = AIKeyWording.message(.invalidKey) ?? ""
+        #expect(AIProviderError(transport: URLError(.notConnectedToInternet)) == .offline)
+        #expect(AIProviderError(transport: URLError(.timedOut)) == .offline)
+        #expect(AIProviderError(transport: URLError(.badServerResponse)) == .badResponse)
+        let offline = AIKeyWording.message(.failed(.offline), provider: .gemini) ?? ""
+        let invalid = AIKeyWording.message(.failed(.invalidKey), provider: .gemini) ?? ""
         #expect(offline.contains("internet"))
         #expect(invalid.contains("cheia"))
         #expect(offline != invalid)
@@ -104,7 +110,7 @@ struct BinderWordingTests {
             counts: .init(templates: 13, assets: 1, obligations: 20, historyEntries: 4, serviceItems: 2, providers: 1, measurements: 0, attachments: 3)
         )
         let text = BackupWording.summary(summary, locale: ro)
-        #expect(text.contains("1 secțiune"))
+        #expect(text.contains("o secțiune"))
         #expect(text.contains("20 de termene"))
         #expect(text.contains("3 documente"))
     }

@@ -51,6 +51,8 @@ public final class DosarZipEngine: Sendable {
         case unsafeEntryPath(path: String)
         case duplicateEntry(path: String)
         case sizeLimitExceeded
+        /// More files, or bigger ones, than a plain zip can describe.
+        case tooLargeToWrite
         case zlibError(code: Int32, message: String)
 
         public var errorDescription: String? {
@@ -67,6 +69,8 @@ public final class DosarZipEngine: Sendable {
                 return String(localized: "Arhiva conține de două ori fișierul \(path).")
             case .sizeLimitExceeded:
                 return String(localized: "Arhiva e prea mare pentru a fi deschisă pe acest dispozitiv.")
+            case .tooLargeToWrite:
+                return String(localized: "Dosarul are prea multe fișiere pentru o singură copie. Arhivează documentele vechi de care nu mai ai nevoie, apoi încearcă din nou.")
             case .zlibError:
                 return String(localized: "Arhiva nu a putut fi dezarhivată.")
             }
@@ -203,7 +207,10 @@ public final class DosarZipEngine: Sendable {
     // MARK: - Packaging / Encoder
     
     /// Encodes a list of `Entry` items into a fully compliant standard PKZip `.zip` / `.dosar` archive byte buffer.
+    /// A plain zip describes at most 65,535 files and 4 GB; anything more is
+    /// refused with `tooLargeToWrite` instead of being written wrong.
     public static func createArchive(entries: [Entry]) throws -> Data {
+        guard entries.count <= Int(UInt16.max) else { throw ZipError.tooLargeToWrite }
         var archiveData = Data()
         var centralDirectoryData = Data()
         
@@ -226,6 +233,9 @@ public final class DosarZipEngine: Sendable {
             }
             
             let rawData = entry.data
+            let pathBytes = Array(entry.path.utf8)
+            guard rawData.count <= Int(UInt32.max), pathBytes.count <= Int(UInt16.max),
+                  archiveData.count <= Int(UInt32.max) else { throw ZipError.tooLargeToWrite }
             let crc = computeCRC32(rawData)
             let uncompressedSize = UInt32(rawData.count)
             
@@ -237,7 +247,6 @@ public final class DosarZipEngine: Sendable {
             let compressedSize = UInt32(payload.count)
             
             let (dosTime, dosDate) = dosDateTime(from: entry.modifiedDate)
-            let pathBytes = Array(entry.path.utf8)
             let localHeaderOffset = UInt32(archiveData.count)
             
             // 1. Local File Header
@@ -268,6 +277,7 @@ public final class DosarZipEngine: Sendable {
         }
         
         // 2. Central Directory
+        guard archiveData.count <= Int(UInt32.max) else { throw ZipError.tooLargeToWrite }
         let centralDirectoryOffset = UInt32(archiveData.count)
         for record in records {
             let pathBytes = Array(record.path.utf8)
@@ -291,6 +301,7 @@ public final class DosarZipEngine: Sendable {
             centralDirectoryData.append(contentsOf: pathBytes)
         }
         
+        guard centralDirectoryData.count <= Int(UInt32.max) else { throw ZipError.tooLargeToWrite }
         let centralDirectorySize = UInt32(centralDirectoryData.count)
         archiveData.append(centralDirectoryData)
         
@@ -310,8 +321,12 @@ public final class DosarZipEngine: Sendable {
     // MARK: - Unpackaging / Decoder
     
     /// Unpacks a PKZip `.zip` / `.dosar` archive byte buffer and returns all contained entries.
+    ///
+    /// Offsets in the archive count from the data's own start, so a slice of a
+    /// bigger buffer reads the same as a copy of it.
     public static func unpackArchive(_ archiveData: Data, limits: Limits = .standard) throws -> [Entry] {
         guard archiveData.count >= 22 else { throw ZipError.invalidZipArchive }
+        let base = archiveData.startIndex
         
         // Step 1: Locate End of Central Directory Record (EOCD)
         // Search backwards for 0x06054b50
@@ -328,7 +343,12 @@ public final class DosarZipEngine: Sendable {
             throw ZipError.endOfCentralDirectoryNotFound
         }
         
+        // A zip64 archive marks its counts and offsets with all ones; it is never
+        // one this app wrote, and its real values live elsewhere.
         let totalEntries = Int(readUInt16LE(archiveData, at: eocd + 10))
+        guard totalEntries != Int(UInt16.max),
+              readUInt32LE(archiveData, at: eocd + 12) != UInt32.max,
+              readUInt32LE(archiveData, at: eocd + 16) != UInt32.max else { throw ZipError.sizeLimitExceeded }
         let cdSize = Int(readUInt32LE(archiveData, at: eocd + 12))
         let cdOffset = Int(readUInt32LE(archiveData, at: eocd + 16))
         
@@ -361,7 +381,7 @@ public final class DosarZipEngine: Sendable {
             
             let nameStart = currentCD + 46
             guard nameStart + nameLen <= archiveData.count else { throw ZipError.invalidZipArchive }
-            let nameData = archiveData.subdata(in: nameStart..<(nameStart + nameLen))
+            let nameData = archiveData.subdata(in: (base + nameStart)..<(base + nameStart + nameLen))
             let path = String(data: nameData, encoding: .utf8) ?? String(decoding: nameData, as: UTF8.self)
             
             guard isSafeEntryPath(path) else {
@@ -384,7 +404,7 @@ public final class DosarZipEngine: Sendable {
                 
                 let dataStart = localHeaderOffset + 30 + localNameLen + localExtraLen
                 guard dataStart + compSize <= archiveData.count else { throw ZipError.invalidZipArchive }
-                let rawPayload = archiveData.subdata(in: dataStart..<(dataStart + compSize))
+                let rawPayload = archiveData.subdata(in: (base + dataStart)..<(base + dataStart + compSize))
                 
                 let extractedData: Data
                 if method == 0 {
@@ -419,7 +439,11 @@ public final class DosarZipEngine: Sendable {
     private static func dosDateTime(from date: Date) -> (time: UInt16, date: UInt16) {
         let calendar = Calendar.current
         let comps = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
-        let year = max(1980, comps.year ?? 1980)
+        // A zip date runs from 1980 to 2107. The manifest keeps the real export time,
+        // so a date outside that range is written as its nearest end.
+        guard let rawYear = comps.year, rawYear >= 1980 else { return (0, (1 << 5) | 1) }
+        guard rawYear <= 2107 else { return ((23 << 11) | (59 << 5) | 29, (127 << 9) | (12 << 5) | 31) }
+        let year = rawYear
         let month = max(1, comps.month ?? 1)
         let day = max(1, comps.day ?? 1)
         let hour = comps.hour ?? 0
@@ -452,16 +476,17 @@ public final class DosarZipEngine: Sendable {
     }
     
     private static func readUInt16LE(_ data: Data, at offset: Int) -> UInt16 {
-        let b0 = UInt16(data[offset])
-        let b1 = UInt16(data[offset + 1])
+        let b0 = UInt16(data[data.startIndex + offset])
+        let b1 = UInt16(data[data.startIndex + offset + 1])
         return b0 | (b1 << 8)
     }
     
     private static func readUInt32LE(_ data: Data, at offset: Int) -> UInt32 {
-        let b0 = UInt32(data[offset])
-        let b1 = UInt32(data[offset + 1])
-        let b2 = UInt32(data[offset + 2])
-        let b3 = UInt32(data[offset + 3])
+        let base = data.startIndex + offset
+        let b0 = UInt32(data[base])
+        let b1 = UInt32(data[base + 1])
+        let b2 = UInt32(data[base + 2])
+        let b3 = UInt32(data[base + 3])
         return b0 | (b1 << 8) | (b2 << 16) | (b3 << 24)
     }
 }

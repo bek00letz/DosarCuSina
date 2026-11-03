@@ -88,7 +88,6 @@ extension Provider {
 struct ProviderCard: View {
     let provider: Provider
     @Environment(\.openURL) private var openURL
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Space.xs) {
@@ -129,8 +128,7 @@ struct ProviderCard: View {
             .accessibilityElement(children: .combine)
 
             if let phone = provider.phone {
-                let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: DS.Space.xs)) : AnyLayout(HStackLayout(spacing: DS.Space.xs))
-                layout {
+                DSAdaptiveStack(spacing: DS.Space.xs) {
                     contactButton(String(localized: "Sună", comment: "Call a phone number."), systemImage: "phone.fill", url: PhoneLinks.call(phone))
                     contactButton(String(localized: "Mesaj", comment: "Send a text message."), systemImage: "message.fill", url: PhoneLinks.message(phone))
                 }
@@ -140,15 +138,9 @@ struct ProviderCard: View {
     }
 
     private func contactButton(_ title: String, systemImage: String, url: URL?) -> some View {
-        Button {
+        DSSecondaryButton(verbatim: title, systemImage: systemImage) {
             if let url { openURL(url) }
-        } label: {
-            Label { Text(verbatim: title) } icon: { Image(systemName: systemImage) }
-                .font(.subheadline.weight(.semibold))
-                .frame(maxWidth: .infinity, minHeight: 30)
         }
-        .buttonStyle(.bordered)
-        .controlSize(.large)
         .disabled(url == nil)
         .accessibilityLabel(Text(verbatim: "\(title), \(provider.name)"))
     }

@@ -20,6 +20,8 @@ public enum RomanianFieldExtractor {
         ("iulie", 7), ("august", 8), ("septembrie", 9), ("octombrie", 10), ("noiembrie", 11), ("decembrie", 12),
         ("ian", 1), ("feb", 2), ("mar", 3), ("apr", 4), ("iun", 6), ("iul", 7), ("aug", 8),
         ("sept", 9), ("sep", 9), ("oct", 10), ("noi", 11), ("nov", 11), ("dec", 12),
+        // English, as on bilingual passports ("12 IUN/JUN 31").
+        ("jan", 1), ("may", 5), ("jun", 6), ("jul", 7),
     ]
 
     private static let romanMonths: [String: Int] = [
@@ -27,8 +29,10 @@ public enum RomanianFieldExtractor {
         "vii": 7, "viii": 8, "ix": 9, "x": 10, "xi": 11, "xii": 12,
     ]
 
-    /// All dates on one folded line, in reading order.
-    static func dates(inLine line: String, index: Int) -> [DateMatch] {
+    /// All dates on one folded line, in reading order. A two-digit year takes the century
+    /// that puts the date inside `window` (see `DateWindow.resolve`), so "12.03.18" on an
+    /// identity card is 2018 and a birth year "52" is 1952.
+    static func dates(inLine line: String, index: Int, window: DateWindow = .aroundToday) -> [DateMatch] {
         var found: [DateMatch] = []
 
         for match in TextPattern.matches(#"(?<!\d)(\d{4})-(\d{2})-(\d{2})(?!\d)"#, in: line) {
@@ -42,8 +46,8 @@ public enum RomanianFieldExtractor {
             guard !found.contains(where: { $0.range.overlaps(match.range) }),
                   let d = match[1].flatMap(Int.init), let m = match[2].flatMap(Int.init),
                   let rawYear = match[3], let y = Int(rawYear) else { continue }
-            let year = rawYear.count == 2 ? 2000 + y : y
-            if let day = CaptureDay(year: year, month: m, day: d) {
+            let resolved = rawYear.count == 2 ? window.resolve(twoDigitYear: y, month: m, day: d) : CaptureDay(year: y, month: m, day: d)
+            if let day = resolved {
                 found.append(DateMatch(day: day, line: index, range: match.range))
             }
         }
@@ -73,22 +77,33 @@ public enum RomanianFieldExtractor {
             }
         }
 
+        // Passports print the month in two languages and may shorten the year: "12 IUN/JUN 31".
+        for match in TextPattern.matches(#"(?<!\d)(\d{1,2})\s+("# + names + #")\s*/\s*(?:"# + names + #")\.?\s+(\d{4}|\d{2})(?!\d)"#, in: line) {
+            guard !found.contains(where: { $0.range.overlaps(match.range) }),
+                  let d = match[1].flatMap(Int.init),
+                  let m = match[2].flatMap({ name in monthNames.first { $0.0 == name.lowercased() }?.1 }),
+                  let rawYear = match[3], let y = Int(rawYear),
+                  let day = rawYear.count == 2 ? window.resolve(twoDigitYear: y, month: m, day: d) : CaptureDay(year: y, month: m, day: d)
+            else { continue }
+            found.append(DateMatch(day: day, line: index, range: match.range))
+        }
+
         return found.sorted { $0.range.lowerBound < $1.range.lowerBound }
     }
 
-    static func allDates(in text: CaptureText) -> [DateMatch] {
-        text.folded.enumerated().flatMap { dates(inLine: $0.element, index: $0.offset) }
+    static func allDates(in text: CaptureText, window: DateWindow = .aroundToday) -> [DateMatch] {
+        text.folded.enumerated().flatMap { dates(inLine: $0.element, index: $0.offset, window: window) }
     }
 
     /// The first date after one of the labels: on the label's line (after the label), or on the next line.
-    static func labelledDate(_ labels: [String], in text: CaptureText) -> (day: CaptureDay, source: String)? {
+    static func labelledDate(_ labels: [String], in text: CaptureText, window: DateWindow = .aroundToday) -> (day: CaptureDay, source: String)? {
         for index in text.lines(containing: labels) {
             let line = text.folded[index]
             let labelEnd = labels.compactMap { line.range(of: $0)?.upperBound }.min() ?? line.startIndex
-            if let match = dates(inLine: line, index: index).first(where: { $0.range.lowerBound >= labelEnd }) {
+            if let match = dates(inLine: line, index: index, window: window).first(where: { $0.range.lowerBound >= labelEnd }) {
                 return (match.day, text.original[index])
             }
-            if index + 1 < text.folded.count, let match = dates(inLine: text.folded[index + 1], index: index + 1).first {
+            if index + 1 < text.folded.count, let match = dates(inLine: text.folded[index + 1], index: index + 1, window: window).first {
                 return (match.day, text.original[index] + " " + text.original[index + 1])
             }
         }
@@ -96,12 +111,12 @@ public enum RomanianFieldExtractor {
     }
 
     /// A validity period on one line ("valabilă de la 01.11.2026 până la 31.10.2027", "12.03.21-12.03.2031").
-    static func validityPeriod(in text: CaptureText) -> (start: CaptureDay, end: CaptureDay, source: String)? {
+    static func validityPeriod(in text: CaptureText, window: DateWindow = .aroundToday) -> (start: CaptureDay, end: CaptureDay, source: String)? {
         let labels = ["valabil", "perioada", "valabilitate", "validity", "de la", "asigurare"]
         for index in text.lines(containing: labels) {
-            var found = dates(inLine: text.folded[index], index: index)
+            var found = dates(inLine: text.folded[index], index: index, window: window)
             if found.count < 2, index + 1 < text.folded.count {
-                found += dates(inLine: text.folded[index + 1], index: index + 1)
+                found += dates(inLine: text.folded[index + 1], index: index + 1, window: window)
             }
             if found.count >= 2, found[0].day < found[1].day {
                 return (found[0].day, found[1].day, text.original[index])
@@ -112,37 +127,13 @@ public enum RomanianFieldExtractor {
 
     // MARK: - Money
 
-    /// Parses Romanian and international amount formats into a `Decimal`:
-    /// `1.234,56`, `1 234,56`, `1234.56`, `1,234.56`, `350`.
-    public static func parseAmount(_ raw: String) -> Decimal? {
-        var value = raw.filter { $0.isNumber || $0 == "," || $0 == "." }
-        guard !value.isEmpty, value.contains(where: \.isNumber) else { return nil }
-        // Ten or more digits with no separators is an identifier (CNP, IBAN digits,
-        // account or meter number), never an amount on a household document.
-        guard !(value.allSatisfy(\.isNumber) && value.count >= 10) else { return nil }
-        let lastComma = value.lastIndex(of: ",")
-        let lastDot = value.lastIndex(of: ".")
-        switch (lastComma, lastDot) {
-        case let (comma?, dot?):
-            if comma > dot {
-                value = value.replacingOccurrences(of: ".", with: "").replacingOccurrences(of: ",", with: ".")
-            } else {
-                value = value.replacingOccurrences(of: ",", with: "")
-            }
-        case (_?, nil):
-            // In Romanian the comma is the decimal mark; several commas can only be thousands groups.
-            value = value.filter { $0 == "," }.count > 1
-                ? value.replacingOccurrences(of: ",", with: "")
-                : value.replacingOccurrences(of: ",", with: ".")
-        case let (nil, dot?):
-            let decimals = value.distance(from: dot, to: value.endIndex) - 1
-            if decimals == 3 || value.filter({ $0 == "." }).count > 1 {
-                value = value.replacingOccurrences(of: ".", with: "")
-            }
-        case (nil, nil):
-            break
-        }
-        return Decimal(string: value, locale: Locale(identifier: "en_US_POSIX"))
+    /// An amount printed on a document, read by the one number reader (`RomanianNumber`).
+    /// Ten or more digits with no separators is an identifier (CNP, IBAN digits, account or
+    /// meter number), never an amount on a household document.
+    static func amount(_ raw: String) -> RomanianNumber.Reading? {
+        let digits = raw.filter { !$0.isWhitespace }
+        guard !(digits.allSatisfy(\.isNumber) && digits.count >= 10) else { return nil }
+        return try? RomanianNumber.read(raw, as: .money, from: .document).get()
     }
 
     /// An amount: `1.234,56`, `1 234,56` (space groups only with decimals), `1,234.56`, `350`, `350,00`.
@@ -150,6 +141,8 @@ public enum RomanianFieldExtractor {
 
     struct AmountMatch {
         let amount: Decimal
+        /// Read by the Romanian rule where another reading was possible ("3,750"): "Verifică".
+        let isAmbiguous: Bool
         let range: Range<String.Index>
     }
 
@@ -158,8 +151,8 @@ public enum RomanianFieldExtractor {
         let dateRanges = dates(inLine: line, index: 0).map(\.range)
         return TextPattern.matches(amountPattern, in: line).compactMap { match in
             guard !dateRanges.contains(where: { $0.overlaps(match.range) }),
-                  let raw = match[1], let amount = parseAmount(raw) else { return nil }
-            return AmountMatch(amount: amount, range: match.range)
+                  let raw = match[1], let reading = amount(raw) else { return nil }
+            return AmountMatch(amount: reading.value, isAmbiguous: reading.needsCheck, range: match.range)
         }
     }
 
@@ -189,33 +182,34 @@ public enum RomanianFieldExtractor {
     ]
 
     /// The amount to pay: a strongly labelled total first, then a plain "total" line that isn't VAT.
-    static func total(in text: CaptureText) -> (money: CaptureMoney, source: String, strong: Bool)? {
+    /// `ambiguous` when the amount could have been read another way ("3,750"): the field gets "Verifică".
+    static func total(in text: CaptureText) -> (money: CaptureMoney, source: String, strong: Bool, ambiguous: Bool)? {
         let fallbackCurrency = dominantCurrency(in: text)
-        func amountNear(_ index: Int, after labels: [String]) -> CaptureMoney? {
+        func amountNear(_ index: Int, after labels: [String]) -> (money: CaptureMoney, ambiguous: Bool)? {
             let line = text.folded[index]
             let labelEnd = labels.compactMap { line.range(of: $0)?.upperBound }.min() ?? line.startIndex
             let onLine = amounts(inLine: line).filter { $0.range.lowerBound >= labelEnd }
             if let last = onLine.last {
-                return CaptureMoney(amount: last.amount, currencyCode: currency(inLine: line) ?? fallbackCurrency)
+                return (CaptureMoney(amount: last.amount, currencyCode: currency(inLine: line) ?? fallbackCurrency), last.isAmbiguous)
             }
             if index + 1 < text.folded.count, let next = amounts(inLine: text.folded[index + 1]).last {
-                return CaptureMoney(amount: next.amount, currencyCode: currency(inLine: text.folded[index + 1]) ?? fallbackCurrency)
+                return (CaptureMoney(amount: next.amount, currencyCode: currency(inLine: text.folded[index + 1]) ?? fallbackCurrency), next.isAmbiguous)
             }
             return nil
         }
 
         for label in strongTotalLabels {
             for index in text.lines(containing: [label]) {
-                if let money = amountNear(index, after: [label]) {
-                    return (money, text.original[index], true)
+                if let found = amountNear(index, after: [label]) {
+                    return (found.money, text.original[index], true, found.ambiguous)
                 }
             }
         }
         for index in text.lines(containing: ["total"]).reversed() {
             let line = text.folded[index]
-            guard !line.contains("tva"), !line.contains("subtotal"), !line.contains("fara") else { continue }
-            if let money = amountNear(index, after: ["total"]) {
-                return (money, text.original[index], false)
+            guard !["tva", "subtotal", "fara"].contains(where: { CaptureText.containsWord($0, inFolded: line) }) else { continue }
+            if let found = amountNear(index, after: ["total"]) {
+                return (found.money, text.original[index], false, found.ambiguous)
             }
         }
         return nil
@@ -233,8 +227,9 @@ public enum RomanianFieldExtractor {
     /// Lines that look like an invoice or receipt line: a description followed by an amount.
     static func lineItems(in text: CaptureText, currency: String, resolver: any CaptureComponentResolving) -> [CaptureLineItem] {
         var items: [CaptureLineItem] = []
+        let nonItems = nonItemWords.map { RomanianText.Keyword($0) }
         for (index, line) in text.folded.enumerated() {
-            guard !nonItemWords.contains(where: { line.contains($0) }) else { continue }
+            guard !nonItems.contains(where: { $0.isFound(inFolded: line) }) else { continue }
             // A line carrying a personal number is never a billed item.
             guard personalNumber(in: CaptureText(text.original[index])) == nil else { continue }
             let found = amounts(inLine: line)
@@ -245,7 +240,7 @@ public enum RomanianFieldExtractor {
             var descriptionEnd = amount.range.lowerBound
             if let match = TextPattern.matches(#"(?<![\w.,])(\d+(?:[.,]\d+)?)\s*(buc|bucati|bucata|l|litri|ore|h|set|kit|x)\b"#, in: line).last,
                match.range.upperBound <= amount.range.lowerBound {
-                quantity = match[1].flatMap(parseAmount)
+                quantity = match[1].flatMap { RomanianNumber.value($0, as: .meterIndex, from: .document) }
                 descriptionEnd = match.range.lowerBound
             }
             let descriptionPart = String(line[..<descriptionEnd])
@@ -448,16 +443,16 @@ public enum RomanianFieldExtractor {
 
     /// An odometer reading. Prefers a labelled value ("Km bord: 86.420") over a bare "86420 km".
     static func odometer(in text: CaptureText) -> (km: Decimal, source: String, labelled: Bool)? {
-        let number = #"(\d{1,3}(?:[. ]\d{3})+|\d{3,7})"#
+        let number = #"(\d{1,3}(?:[., ]\d{3})+|\d{3,7})(?!\d|[.,]\d)"#
         for (index, line) in text.folded.enumerated() {
             if let match = TextPattern.first(#"(?:kilometraj|km\s*bord|km\s*la\s*bord|odometru|rulaj|km\s*parcursi)\s*[:.]?\s*"# + number, in: line),
-               let raw = match[1], let km = parseAmount(raw.replacingOccurrences(of: " ", with: "")) {
+               let raw = match[1], let km = RomanianNumber.value(raw, as: .kilometres, from: .document) {
                 return (km, text.original[index], true)
             }
         }
         for (index, line) in text.folded.enumerated() {
             if let match = TextPattern.first(number + #"\s*km\b"#, in: line),
-               let raw = match[1], let km = parseAmount(raw.replacingOccurrences(of: " ", with: "")), km >= 100 {
+               let raw = match[1], let km = RomanianNumber.value(raw, as: .kilometres, from: .document), km >= 100 {
                 return (km, text.original[index], false)
             }
         }
@@ -481,7 +476,7 @@ public enum RomanianFieldExtractor {
         for (index, line) in text.folded.enumerated() {
             let compact = line.replacingOccurrences(of: " ", with: "")
             if let match = TextPattern.first(#"(?<!\d)(\d{15})(?!\d)"#, in: compact), let value = match[1],
-               line.contains("cip") || line.contains("transponder") || value.hasPrefix("642") {
+               ["microcip", "cip", "transponder"].contains(where: { CaptureText.containsWord($0, inFolded: line) }) || value.hasPrefix("642") {
                 return (value, text.original[index])
             }
         }

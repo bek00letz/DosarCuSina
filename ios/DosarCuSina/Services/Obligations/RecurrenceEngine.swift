@@ -7,11 +7,20 @@ public struct RecurrenceContext: Sendable {
     public var readings: [CadenceCalculator.TelemetryReading]
     /// The counter now, when known.
     public var currentMetric: Double?
+    /// The day of the month a series counted from its due dates keeps (31 for
+    /// "the 31st"), from `RecurrenceEngine.seriesStart`. Nil uses the due day's own.
+    public var seriesDayOfMonth: Int?
 
-    public init(assetValues: FieldValues = FieldValues(), readings: [CadenceCalculator.TelemetryReading] = [], currentMetric: Double? = nil) {
+    public init(
+        assetValues: FieldValues = FieldValues(),
+        readings: [CadenceCalculator.TelemetryReading] = [],
+        currentMetric: Double? = nil,
+        seriesDayOfMonth: Int? = nil
+    ) {
         self.assetValues = assetValues
         self.readings = readings
         self.currentMetric = currentMetric
+        self.seriesDayOfMonth = seriesDayOfMonth
     }
 }
 
@@ -25,6 +34,10 @@ public struct NextDue: Hashable, Sendable {
 /// Pure date math for obligations: first due dates from blueprints and the
 /// next due date after a completion. All calendar arithmetic goes through
 /// `CadenceCalculator`, which handles month ends and 29 February.
+///
+/// A series counted from its due dates remembers its day of the month: every
+/// date is that day, or the month's last day when the month is shorter, so a
+/// payment on the 31st is due on 28 February and on 31 March again.
 public enum RecurrenceEngine {
 
     /// Counter-based obligations without a calendar fallback are re-checked after this long.
@@ -44,9 +57,11 @@ public enum RecurrenceEngine {
         case .none:
             return nil
 
-        case .interval(let interval, let anchor):
-            let base = anchor == .dueDate ? due : completedOn
-            return NextDue(day: add(interval, to: base, calendar: calendar))
+        case .interval(let interval, .dueDate):
+            return NextDue(day: add(interval, to: due, dayOfMonth: context.seriesDayOfMonth, calendar: calendar))
+
+        case .interval(let interval, .completion):
+            return NextDue(day: add(interval, to: completedOn, calendar: calendar))
 
         case .fixedDates(let dates):
             guard !dates.isEmpty else { return nil }
@@ -103,16 +118,43 @@ public enum RecurrenceEngine {
 
     // MARK: Building blocks
 
-    public static func add(_ interval: RecurrenceInterval, to day: CalendarDay, calendar: Calendar = .current) -> CalendarDay {
+    /// `day` moved on by `interval`. Months and years land on `dayOfMonth` (the
+    /// series' day), or the month's last day when it is shorter; without it, on
+    /// `day`'s own day.
+    public static func add(_ interval: RecurrenceInterval, to day: CalendarDay, dayOfMonth: Int? = nil, calendar: Calendar = .current) -> CalendarDay {
         let start = day.noonDate(in: calendar)
-        let cadence: CadenceCalculator.CalendarCadenceInterval
+        let next: Date
         switch interval.unit {
-        case .day: cadence = .days(interval.every)
-        case .week: cadence = .weeks(interval.every)
-        case .month: cadence = .months(interval.every)
-        case .year: cadence = .years(interval.every)
+        case .day: next = CadenceCalculator.calculateNextDueDate(from: start, interval: .days(interval.every), calendar: calendar)
+        case .week: next = CadenceCalculator.calculateNextDueDate(from: start, interval: .weeks(interval.every), calendar: calendar)
+        case .month: next = CadenceCalculator.addMonths(to: start, months: interval.every, dayOfMonth: dayOfMonth, calendar: calendar)
+        case .year: next = CadenceCalculator.addMonths(to: start, months: interval.every * 12, dayOfMonth: dayOfMonth, calendar: calendar)
         }
-        return CalendarDay(CadenceCalculator.calculateNextDueDate(from: start, interval: cadence, calendar: calendar), calendar: calendar)
+        return CalendarDay(next, calendar: calendar)
+    }
+
+    /// One completion as the series sees it: the cycle it closed and the due day it moved to.
+    public struct SeriesStep: Hashable, Sendable {
+        public var cycle: CalendarDay?
+        public var next: CalendarDay?
+
+        public init(cycle: CalendarDay?, next: CalendarDay?) {
+            self.cycle = cycle
+            self.next = next
+        }
+    }
+
+    /// The first due day of the unbroken series `current` belongs to. Walks back
+    /// through the completions, newest first, while each one moved the date to the
+    /// cycle after it; a due day the person set by hand starts a new series. Its day
+    /// of the month is the day the series keeps.
+    public static func seriesStart(current: CalendarDay, completions: [SeriesStep]) -> CalendarDay {
+        var start = current
+        for step in completions {
+            guard let next = step.next, next == start, let cycle = step.cycle else { break }
+            start = cycle
+        }
+        return start
     }
 
     /// The first of `dates` strictly after `day`.

@@ -30,6 +30,9 @@ public enum FieldType: String, Codable, CaseIterable, Sendable {
     case iban
     /// A running counter such as an odometer, engine hours or espresso shots.
     case metric
+    /// A code to keep hidden, such as an identity card's PIN: sealed when saved,
+    /// shown only after a fresh Face ID, never carried outside the binder (see `SecretFields`).
+    case secret
 
     /// The kind of `FieldValue` this type stores.
     public var valueKind: FieldValue.Kind {
@@ -39,7 +42,7 @@ public enum FieldType: String, Codable, CaseIterable, Sendable {
         case .date, .expiryDate: return .date
         case .toggle: return .bool
         case .multiChoice: return .choices
-        case .text, .longText, .choice, .url, .phone, .email, .address, .plate, .vin, .microchip, .iban:
+        case .text, .longText, .choice, .url, .phone, .email, .address, .plate, .vin, .microchip, .iban, .secret:
             return .text
         }
     }
@@ -94,8 +97,8 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
     public var isSensitive: Bool
     /// Options for `choice` and `multiChoice`. Values store the option keys.
     public var options: [ChoiceOption]?
-    /// Unit for `number` and `metric`, such as `km` or `kg`.
-    public var unit: String?
+    /// Unit for `number` and `metric` (kilometres, kilograms), stored by its key.
+    public var unit: MeasurementUnit?
     /// Example shown in an empty field.
     public var placeholder: String?
     /// Filled in when the asset is created and the person left it empty,
@@ -103,8 +106,23 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
     public var defaultValue: FieldValue?
     /// Worked out from other fields while the person hasn't set it themselves.
     public var derivation: FieldDerivation?
+    /// Shown and kept only while another value matches (a variant only for its
+    /// document type). A value left behind when it stops applying is dropped on save.
+    public var appliesWhen: BlueprintCondition?
+    /// One short line under the field: what it is and where to find it.
+    public var footnote: String?
 
     public var id: String { key }
+
+    /// Whether the field belongs on an asset with these values.
+    public func applies(to values: FieldValues) -> Bool {
+        appliesWhen?.isMet(by: values) ?? true
+    }
+
+    /// The choice options offered for these values.
+    public func options(for values: FieldValues) -> [ChoiceOption] {
+        (options ?? []).filter { $0.isOffered(for: values) }
+    }
 
     /// The label to show for a stored choice key (or legacy text).
     public func label(forChoice key: String) -> String {
@@ -125,11 +143,15 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
         isEssential: Bool = false,
         isSensitive: Bool = false,
         options: [ChoiceOption]? = nil,
-        unit: String? = nil,
+        unit: MeasurementUnit? = nil,
         placeholder: String? = nil,
         defaultValue: FieldValue? = nil,
-        derivation: FieldDerivation? = nil
+        derivation: FieldDerivation? = nil,
+        appliesWhen: BlueprintCondition? = nil,
+        footnote: String? = nil
     ) {
+        self.appliesWhen = appliesWhen
+        self.footnote = footnote
         self.defaultValue = defaultValue
         self.derivation = derivation
         self.key = key
@@ -144,7 +166,7 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case key, label, type, role, isEssential, isSensitive, options, unit, placeholder, defaultValue, derivation
+        case key, label, type, role, isEssential, isSensitive, options, unit, placeholder, defaultValue, derivation, appliesWhen, footnote
     }
 
     public init(from decoder: Decoder) throws {
@@ -157,10 +179,13 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
         isEssential = try c.decodeIfPresent(Bool.self, forKey: .isEssential) ?? false
         isSensitive = try c.decodeIfPresent(Bool.self, forKey: .isSensitive) ?? false
         options = try c.decodeIfPresent([ChoiceOption].self, forKey: .options)
-        unit = try c.decodeIfPresent(String.self, forKey: .unit)
+        // Any label written so far ("m³", "luni") reads as its unit; it is written back as the key.
+        unit = MeasurementUnit(try c.decodeIfPresent(String.self, forKey: .unit))
         placeholder = try c.decodeIfPresent(String.self, forKey: .placeholder)
         defaultValue = try? c.decodeIfPresent(FieldValue.self, forKey: .defaultValue)
         derivation = try? c.decodeIfPresent(FieldDerivation.self, forKey: .derivation)
+        appliesWhen = try? c.decodeIfPresent(BlueprintCondition.self, forKey: .appliesWhen)
+        footnote = try c.decodeIfPresent(String.self, forKey: .footnote)
     }
 }
 
@@ -170,6 +195,10 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
 public enum FieldDerivation: Hashable, Sendable, Codable {
     /// A date field plus a number of months from another field (purchase date + warranty months).
     case addMonths(dateField: String, monthsField: String)
+    /// A document's last valid day from the day it was issued, when its type and variant
+    /// have a documented validity (`DocumentType.validityMonthsAfterIssue`: a cazier
+    /// judiciar, six months).
+    case validityAfterIssue(issueField: String)
 
     private enum CodingKeys: String, CodingKey { case type, date, months }
 
@@ -178,6 +207,8 @@ public enum FieldDerivation: Hashable, Sendable, Codable {
         switch try c.decode(String.self, forKey: .type) {
         case "addMonths":
             self = .addMonths(dateField: try c.decode(String.self, forKey: .date), monthsField: try c.decode(String.self, forKey: .months))
+        case "validityAfterIssue":
+            self = .validityAfterIssue(issueField: try c.decode(String.self, forKey: .date))
         default:
             throw DecodingError.dataCorruptedError(forKey: .type, in: c, debugDescription: "Unknown derivation")
         }
@@ -190,6 +221,9 @@ public enum FieldDerivation: Hashable, Sendable, Codable {
             try c.encode("addMonths", forKey: .type)
             try c.encode(date, forKey: .date)
             try c.encode(months, forKey: .months)
+        case .validityAfterIssue(let issue):
+            try c.encode("validityAfterIssue", forKey: .type)
+            try c.encode(issue, forKey: .date)
         }
     }
 
@@ -197,6 +231,7 @@ public enum FieldDerivation: Hashable, Sendable, Codable {
     public var inputs: [String] {
         switch self {
         case .addMonths(let date, let months): return [date, months]
+        case .validityAfterIssue(let issue): return [issue, DocumentType.typeFieldKey, DocumentType.variantFieldKey]
         }
     }
 
@@ -205,6 +240,11 @@ public enum FieldDerivation: Hashable, Sendable, Codable {
         case .addMonths(let dateField, let monthsField):
             guard let day = values[dateField]?.dateValue, let months = values[monthsField]?.numberValue, months > 0 else { return nil }
             return .date(RecurrenceEngine.add(.months(Int(months)), to: day, calendar: calendar))
+        case .validityAfterIssue(let issueField):
+            guard let issued = values[issueField]?.dateValue,
+                  let until = DocumentType.validUntil(issued: issued, type: values[DocumentType.typeFieldKey]?.textValue,
+                                                      variant: values[DocumentType.variantFieldKey]?.textValue, calendar: calendar) else { return nil }
+            return .date(until)
         }
     }
 }

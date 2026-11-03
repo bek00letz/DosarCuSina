@@ -32,7 +32,7 @@
       "properties": {
         "type": { "enum": ["none", "interval", "fixedDates", "metric", "legal"] },
         "every": { "type": "number" },
-        "unit": { "type": "string" },
+        "unit": { "type": "string", "description": "day, week, month or year; for a metric recurrence or a field, a unit key such as km, h, kwh or m3 (dosar-v3.md, Units)" },
         "anchor": { "enum": ["dueDate", "completion"] },
         "dates": { "type": "array", "items": { "$ref": "#/$defs/monthDay" } },
         "fallbackEvery": { "type": "integer", "minimum": 1 },
@@ -58,7 +58,8 @@
         "leadDays": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
         "consequence": { "enum": ["legal", "financial", "health", "comfort"] },
         "graceDays": { "type": "integer", "minimum": 0 },
-        "followUpAfterLapse": { "type": "boolean", "description": "Defaults to true for legal and financial, false otherwise." }
+        "followUpAfterLapse": { "type": "boolean", "description": "Defaults to true for legal and financial, false otherwise." },
+        "travelMarginDays": { "type": "integer", "minimum": 0, "description": "How long before the due date the document stops being good for travel (a passport: 180, six calendar months). Leads count back from that day. Missing means 0." }
       }
     },
     "fieldValue": {
@@ -91,21 +92,24 @@
                 "properties": {
                   "key": { "type": "string" },
                   "label": { "type": "string" },
-                  "aliases": { "type": "array", "items": { "type": "string" } }
+                  "aliases": { "type": "array", "items": { "type": "string" } },
+                  "appliesWhen": { "type": "object", "required": ["field", "oneOf"], "properties": { "field": { "type": "string" }, "oneOf": { "type": "array", "items": { "type": "string" } } } }
                 }
               },
               { "type": "string", "description": "Older definitions: the text is both key and label." }
             ]
           }
         },
-        "unit": { "type": "string" },
+        "unit": { "type": "string", "description": "A unit key such as km, kg or months, or the unit of the person's own as typed (dosar-v3.md, Units)" },
         "placeholder": { "type": "string" },
         "defaultValue": { "$ref": "#/$defs/fieldValue" },
         "derivation": {
           "type": "object",
           "required": ["type"],
           "properties": { "type": { "const": "addMonths" }, "date": { "type": "string" }, "months": { "type": "string" } }
-        }
+        },
+        "appliesWhen": { "type": "object", "required": ["field", "oneOf"], "properties": { "field": { "type": "string" }, "oneOf": { "type": "array", "items": { "type": "string" } } } },
+        "footnote": { "type": "string" }
       }
     },
     "blueprint": {
@@ -125,6 +129,10 @@
             "field": { "type": "string" },
             "variants": { "type": "object", "additionalProperties": { "$ref": "#/$defs/reminderProfile" } }
           }
+        },
+        "facts": {
+          "type": "object",
+          "properties": { "insurer": { "type": "string" }, "policyNumber": { "type": "string" }, "claimsPhone": { "type": "string" } }
         },
         "appliesWhen": {
           "type": "object",
@@ -187,6 +195,16 @@
             "type": "array",
             "items": { "enum": ["upcoming", "tenants", "products", "subscriptions", "documents", "history", "people", "money", "keyFacts"] }
           },
+          "behavior": {
+            "type": "object",
+            "properties": {
+              "box": { "type": "string" },
+              "listing": { "type": "string" },
+              "role": { "type": "string" },
+              "parentPocket": { "type": "string" },
+              "addedOnlyUnderParent": { "type": "boolean" }
+            }
+          },
           "components": {
             "type": "array",
             "items": {
@@ -216,7 +234,7 @@
             "items": {
               "type": "object",
               "required": ["label", "value"],
-              "properties": { "id": { "$ref": "#/$defs/uuid" }, "label": { "type": "string" }, "value": { "type": "string" }, "isSensitive": { "type": "boolean" } }
+              "properties": { "id": { "$ref": "#/$defs/uuid" }, "label": { "type": "string" }, "value": { "type": "string" }, "isSensitive": { "type": "boolean" }, "isSecret": { "type": "boolean", "description": "Never written by a writer; ignored by a reader." } }
             }
           },
           "photoPath": { "$ref": "#/$defs/path" },
@@ -240,7 +258,8 @@
           "recurrence": { "$ref": "#/$defs/recurrence" },
           "estimatedCost": { "$ref": "#/$defs/money" },
           "status": { "enum": ["active", "paused", "done", "archived"] },
-          "snoozedUntil": { "$ref": "#/$defs/timestamp" }
+          "snoozedUntil": { "$ref": "#/$defs/timestamp" },
+          "remindersCustomized": { "type": "boolean" }
         }
       }
     },
@@ -287,6 +306,7 @@
           "trades": { "type": "array", "items": { "type": "string" } },
           "manualRating": { "type": "integer", "minimum": 1, "maximum": 5 },
           "wouldCallAgain": { "type": "boolean" },
+          "taxID": { "type": "string", "pattern": "^[1-9][0-9]{1,9}$" },
           "assetIds": { "type": "array", "items": { "$ref": "#/$defs/uuid" } }
         }
       }
@@ -316,6 +336,7 @@
           "pagePaths": { "type": "array", "items": { "$ref": "#/$defs/path" } },
           "thumbnailPath": { "$ref": "#/$defs/path" },
           "documentDate": { "$ref": "#/$defs/day" },
+          "validUntil": { "$ref": "#/$defs/day" },
           "supersededById": { "$ref": "#/$defs/uuid" }
         }
       }

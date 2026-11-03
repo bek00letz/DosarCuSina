@@ -113,3 +113,15 @@ func snapshot(
         isExample: isExample
     )
 }
+
+extension AttachmentActions {
+    /// Files a capture's pages the way `CaptureFiler` does (resolve, file, then let go of
+    /// the claim), for tests of the store and the binder.
+    @discardableResult
+    func fileForTest(_ ref: CapturedDocumentRef, from store: CaptureDocumentStore, title: String?, asset: Asset? = nil) async throws -> DosarCuSina.Attachment {
+        let document = try await resolve(ref, from: store)
+        let attachment = try fileCaptured(document, title: title, asset: asset)
+        await store.release(ref)
+        return attachment
+    }
+}

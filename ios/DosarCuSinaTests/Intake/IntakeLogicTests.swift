@@ -19,10 +19,10 @@ private func ron(_ amount: Decimal) -> CaptureValue {
 }
 
 /// A capture result routed the way the engine routes it.
-private func capture(_ kind: CaptureDocumentKind, _ fields: [CaptureField], documentID: UUID? = nil) -> CaptureResult {
+private func capture(_ kind: CaptureDocumentKind, _ fields: [CaptureField], document: CapturedDocumentRef? = nil) -> CaptureResult {
     let routing = CaptureRouter.route(kind: kind, kindConfidence: 0.9, fields: fields)
     return CaptureResult(kind: kind, kindConfidence: 0.9, fields: fields, suggestions: routing.suggestions, reminder: routing.reminder,
-                         recognizedText: "", barcodes: [], documentID: documentID, notices: [])
+                         recognizedText: "", barcodes: [], document: document, notices: [])
 }
 
 @MainActor
@@ -48,26 +48,28 @@ struct ReminderPresetTests {
     @Test func leadsReadInNaturalUnits() {
         #expect(ReminderWording.phrase(days: 1) == "o zi")
         #expect(ReminderWording.phrase(days: 3) == "3 zile")
-        #expect(ReminderWording.phrase(days: 7) == "o săptămână")
-        #expect(ReminderWording.phrase(days: 14) == "două săptămâni")
+        #expect(ReminderWording.phrase(days: 7) == "7 zile")
+        #expect(ReminderWording.phrase(days: 14) == "14 zile")
         #expect(ReminderWording.phrase(days: 30) == "o lună")
-        #expect(ReminderWording.phrase(days: 60) == "două luni")
+        #expect(ReminderWording.phrase(days: 60) == "2 luni")
         #expect(ReminderWording.phrase(days: 180) == "6 luni")
         #expect(ReminderWording.phrase(days: 270) == "9 luni")
+        #expect(ReminderWording.phrase(days: 360) == "un an")
         #expect(ReminderWording.phrase(days: 365) == "un an")
+        #expect(ReminderWording.phrase(days: 540) == "un an și 6 luni")
         #expect(ReminderWording.phrase(days: 25) == "25 de zile")
     }
 
     @Test func theSentenceListsLeadsLargestFirst() {
-        #expect(ReminderWording.sentence(leadDays: [7, 30]) == "Te anunț cu o lună și cu o săptămână înainte.")
-        #expect(ReminderWording.sentence(leadDays: [30, 7, 0]) == "Te anunț cu o lună și cu o săptămână înainte și în ziua termenului.")
-        #expect(ReminderWording.sentence(leadDays: [0]) == "Te anunț în ziua termenului.")
-        #expect(ReminderWording.sentence(leadDays: []) == "Nu te anunț dinainte.")
-        #expect(ReminderWording.rowTitle(days: 14) == "Cu două săptămâni înainte")
+        #expect(ReminderWording.sentence(ReminderProfile(leadDays: [7, 30], consequence: .legal)) == "Te anunț cu o lună și cu 7 zile înainte.")
+        #expect(ReminderWording.sentence(ReminderProfile(leadDays: [30, 7, 0], consequence: .legal)) == "Te anunț cu o lună și cu 7 zile înainte și în ziua termenului.")
+        #expect(ReminderWording.sentence(ReminderProfile(leadDays: [0], consequence: .legal)) == "Te anunț în ziua termenului.")
+        #expect(ReminderWording.sentence(ReminderProfile(leadDays: [], consequence: .legal)) == "Nu te anunț dinainte.")
+        #expect(ReminderWording.rowTitle(days: 14, from: .dueDay) == "Cu 14 zile înainte")
     }
 
     @Test func presetsKeepTheEnginesOwnValues() {
-        #expect(ReminderPreset.rows(for: [180, 60]) == [180, 60, 30, 14, 7, 1, 0], "A passport's 6 months stays a row of its own")
+        #expect(ReminderPreset.rows(for: [90, 0]) == [90, 60, 30, 14, 7, 1, 0], "A passport's 3 months stays a row of its own")
         #expect(ReminderPreset.toggling(7, in: [30, 0]) == [30, 7, 0])
         #expect(ReminderPreset.toggling(30, in: [30, 7, 0]) == [7, 0])
     }
@@ -143,7 +145,7 @@ struct CaptureFilingTests {
 
         let templates = try TemplateStore(context: context).templatesByKey()
         let preview = try #require(CaptureReminderPreview.text(for: review, templates: templates, assets: [], calendar: .bucharest, today: CalendarDay("2026-11-02")))
-        #expect(preview == "Expiră pe 12 august 2031. Te anunț cu 6 luni și cu două luni înainte.")
+        #expect(preview == "Expiră pe 12 august 2031. Bun de călătorit până pe 12 februarie 2031. Te anunț cu 3 luni înainte de ultima zi bună de călătorit și în ziua aceea.")
 
         let outcome = try await CaptureFiler(context: context, calendar: .bucharest, now: { noon("2026-11-02") }).save(review)
         let passport = try #require(outcome.asset)
@@ -151,10 +153,10 @@ struct CaptureFilingTests {
         #expect(passport.value("document.number") == .text("050000000"))
         let renewal = try #require(passport.activeObligations.first { $0.blueprintKey == "document.renew" })
         #expect(renewal.dueDay(in: .bucharest) == CalendarDay("2031-08-12"))
-        #expect(renewal.reminderLeadDays == [180, 60], "The passport's own profile")
+        #expect(renewal.reminders == ReminderProfile(leadDays: [90, 0], consequence: .legal, travelMarginDays: 180), "The passport's own profile")
     }
 
-    @Test func aBillCanRemindToPayWithoutASection() async throws {
+    @Test func aBillRemindsToPayOnlyThroughItsSubscription() async throws {
         let context = try makeContext()
         var review = CaptureReview(result: capture(.utilityInvoice, [
             field(.provider, .text("ENGIE Romania S.A.")),
@@ -162,11 +164,13 @@ struct CaptureFilingTests {
             field(.total, ron(250)),
             field(.invoiceNumber, .text("EX-123")),
         ]), assets: [], context: context)
-        review.destination = .none
+        #expect(review.destination == .newAsset(templateKey: BuiltInTemplates.Key.subscription), "No home yet: a subscription of its own")
         #expect(review.remindsToPay)
+        #expect(CaptureFiler(context: context).touchesReminders(review))
         let outcome = try await CaptureFiler(context: context, calendar: .bucharest, now: { noon("2026-11-02") }).save(review)
         let bill = try #require(outcome.obligation)
-        #expect(bill.title == "Factură ENGIE Romania S.A.")
+        #expect(bill.title == "Factura de plătit")
+        #expect(bill.asset?.templateKey == BuiltInTemplates.Key.subscription)
         #expect(bill.kind == .payment)
         #expect(bill.dueDay(in: .bucharest) == CalendarDay("2026-11-20"))
         #expect(bill.estimatedCost == Money(250))
@@ -174,23 +178,26 @@ struct CaptureFilingTests {
 
         review.remindsToPay = false
         #expect(!CaptureFiler(context: context).touchesReminders(review))
+        review.remindsToPay = true
+        review.destination = .none
+        #expect(!CaptureFiler(context: context).touchesReminders(review), "Kept without a place, a bill reminds through nothing")
     }
 
     @Test func theOnlySectionOfAKindIsSuggestedAndExamplesNever() throws {
         let context = try makeContext()
         let car = try makeCar(context)
         let itp = capture(.itpReport, [field(.expiryDate, day("2028-11-01"))])
-        #expect(CaptureReview.suggestDestination(result: itp, assets: [car]) == .asset(car.id))
+        #expect(CaptureReview.suggestDestination(kind: itp.kind, suggestions: itp.suggestions, fields: itp.fields, assets: [car], behaviors: try TemplateStore(context: context).behaviorsByKey()) == .asset(car.id))
         car.isExample = true
-        #expect(CaptureReview.suggestDestination(result: itp, assets: [car]) == .newAsset(templateKey: BuiltInTemplates.Key.vehicle))
+        #expect(CaptureReview.suggestDestination(kind: itp.kind, suggestions: itp.suggestions, fields: itp.fields, assets: [car], behaviors: try TemplateStore(context: context).behaviorsByKey()) == .newAsset(templateKey: BuiltInTemplates.Key.vehicle))
     }
 
     @Test func invoicesWithPartsOpenTheVisitFlow() {
-        #expect(CaptureMapping.opensVisitFlow(.serviceInvoice))
-        #expect(CaptureMapping.opensVisitFlow(.veterinaryRecord))
-        #expect(!CaptureMapping.opensVisitFlow(.rcaPolicy))
-        #expect(CaptureMapping.blueprintKey("passportRenewal") == "document.renew")
-        #expect(CaptureMapping.templateKey("warranties") == BuiltInTemplates.Key.purchase)
+        #expect(CaptureDocumentKind.serviceInvoice.profile.opensVisitFlow)
+        #expect(CaptureDocumentKind.veterinaryRecord.profile.opensVisitFlow)
+        #expect(!CaptureDocumentKind.rcaPolicy.profile.opensVisitFlow)
+        #expect(CaptureDocumentKind.passport.profile.blueprintKey == BuiltInBlueprints.documentRenew)
+        #expect(CaptureDocumentKind.warrantyCertificate.profile.templateKey == BuiltInTemplates.Key.purchase)
     }
 
     @Test func completingWithANewDocumentTakesItsDate() async throws {
@@ -198,9 +205,9 @@ struct CaptureFilingTests {
         let car = try makeCar(context, rcaDue: "2026-11-10")
         let rca = try #require(car.activeObligations.first)
         let document = capture(.rcaPolicy, [field(.expiryDate, day("2027-11-12"))])
-        let outcome = try await ObligationCompletion(context: context, calendar: .bucharest, now: { noon("2026-11-02") })
-            .complete(rca, on: noon("2026-11-02"), cost: Money(1_150), document: document, title: nil)
-        #expect(outcome.entry?.totalCost == Money(1_150))
+        let outcome = try await CaptureFiler(context: context, calendar: .bucharest, now: { noon("2026-11-02") })
+            .file(.completion(.init(obligation: rca, date: noon("2026-11-02"), cost: Money(1_150), document: document)))
+        #expect(outcome.completion?.totalCost == Money(1_150))
         #expect(outcome.nextDue == CalendarDay("2027-11-12"))
         #expect(rca.dueDay(in: .bucharest) == CalendarDay("2027-11-12"))
     }
@@ -226,7 +233,7 @@ struct VisitDraftTests {
             field(.total, ron(1_000)),
             field(.provider, .text("Service Exemplu SRL")),
             field(.issueDate, day("2026-10-30")),
-        ], documentID: UUID()), components: components, calendar: .bucharest)
+        ], document: .pending(id: UUID(), claim: UUID())), components: components, calendar: .bucharest)
 
         #expect(draft.ticked == ["brakes.padsFront", "engine.oil"])
         #expect(draft.parts["engine.oil"]?.cost == 420, "Oil and its filter add up on one row")
@@ -234,7 +241,7 @@ struct VisitDraftTests {
         #expect(draft.total == 1_000)
         #expect(draft.provider == .new("Service Exemplu SRL"))
         #expect(CalendarDay(draft.date, calendar: .bucharest) == CalendarDay("2026-10-30"))
-        #expect(draft.documentID != nil)
+        #expect(draft.document != nil)
         #expect(draft.partsSum == 1_000)
     }
 
@@ -253,14 +260,15 @@ struct VisitDraftTests {
         #expect(draft.extraItems.map(\.name) == ["Odorizant"])
 
         let history = HistoryActions(context: context, now: { noon("2026-11-02") })
-        let entry = try history.recordVisit(on: car, occurredAt: draft.date, checklist: draft.checklistItems, extraItems: draft.extraItems,
+        let visit = try history.recordVisit(on: car, occurredAt: draft.date, checklist: draft.checklistItems, extraItems: draft.extraItems,
                                             totalCost: draft.totalMoney, odometer: draft.odometer, calendar: .bucharest)
+        let entry = visit.value
         #expect(car.value("vehicle.odometer") == .number(150_000))
         let changes = VisitChange.changes(of: entry, on: car)
         #expect(changes.map(\.name) == ["Odorizant", "Plăcuțe frână față"], "Free-text jobs show too")
         #expect(changes.allSatisfy { $0.previous == nil })
 
-        try history.undoVisit(entry)
+        try visit.receipt.undo()
         #expect(car.history?.isEmpty == true)
         #expect(car.value("vehicle.odometer") == .number(142_500), "The counter goes back to the last real reading")
         #expect(car.measurements?.contains { $0.value == 150_000 } == false)

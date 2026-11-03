@@ -19,29 +19,10 @@ public struct Money: Hashable, Sendable, Codable {
         self.currency = currency.uppercased()
     }
 
+    /// An amount in the machine form archives and stored JSON use ("12.50").
     public init?(amountString: String, currency: String) {
-        guard let value = Money.parseAmount(amountString) else { return nil }
+        guard let value = RomanianNumber.canonical(amountString) else { return nil }
         self.init(value, currency: currency)
-    }
-
-    /// Parses `"1234.5"`, `"1.234,50"`, `"1 234,50"` and `"12,5"` into a decimal.
-    /// The last `,` or `.` followed by one or two digits is treated as the decimal separator.
-    public static func parseAmount(_ raw: String) -> Decimal? {
-        var text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        text = text.replacingOccurrences(of: "\u{00A0}", with: "").replacingOccurrences(of: " ", with: "")
-        guard !text.isEmpty else { return nil }
-        let separators: Set<Character> = [",", "."]
-        if let last = text.lastIndex(where: { separators.contains($0) }) {
-            let fraction = text[text.index(after: last)...]
-            let whole = text[..<last].filter { !separators.contains($0) }
-            if fraction.count <= 2 {
-                text = whole + "." + fraction
-            } else {
-                text = whole + fraction
-            }
-        }
-        guard text.allSatisfy({ $0.isNumber || $0 == "." || $0 == "-" }) else { return nil }
-        return Decimal(string: text, locale: Locale(identifier: "en_US_POSIX"))
     }
 
     /// Plain decimal string with a dot separator, as written to archives.
@@ -73,7 +54,7 @@ public struct Money: Hashable, Sendable, Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let currency = try container.decode(String.self, forKey: .currency)
         let raw = try container.decode(String.self, forKey: .amount)
-        guard let value = Money.parseAmount(raw) else {
+        guard let value = RomanianNumber.canonical(raw) else {
             throw DecodingError.dataCorruptedError(forKey: .amount, in: container, debugDescription: "Not a decimal: \(raw)")
         }
         self.init(value, currency: currency)
@@ -121,15 +102,6 @@ public struct MoneyTotals: Hashable, Sendable {
     /// Localized display such as `1.200 RON · 15 EUR`.
     public func formatted(locale: Locale = .dosarDefault) -> String {
         amounts.map { $0.formattedCompact(locale: locale) }.joined(separator: " · ")
-    }
-}
-
-extension Locale {
-    /// The locale used for numbers, dates and money: the user's locale when it
-    /// is Romanian, otherwise Romanian formatting so amounts read as on bills.
-    public static var dosarDefault: Locale {
-        let current = Locale.current
-        return current.language.languageCode?.identifier == "ro" ? current : Locale(identifier: "ro_RO")
     }
 }
 

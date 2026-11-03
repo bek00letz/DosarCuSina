@@ -26,7 +26,7 @@ struct ActionsTests {
         let rca = try actions.create(title: "RCA", kind: .insurance, dueDay: CalendarDay("2026-11-10"), for: asset,
                                      recurrence: .interval(.years(1), anchor: .dueDate))
 
-        let entry = try actions.complete(rca, cost: Money(1_200))
+        let entry = try actions.complete(rca, cost: Money(1_200)).value
 
         #expect(rca.status == .active)
         #expect(rca.dueDay(in: calendar) == CalendarDay("2027-11-10"))
@@ -57,9 +57,10 @@ struct ActionsTests {
         let first = try actions.complete(itp)
         let second = try actions.complete(itp)
 
-        #expect(throws: ObligationActionError.notLatestCompletion) { try actions.undo(first) }
-        try actions.undo(second)
-        try actions.undo(first)
+        #expect(throws: UndoError.changedSince, "The first step's deadline changed again since") { try first.receipt.undo() }
+        try second.receipt.undo()
+        try first.receipt.undo()
+        #expect(throws: UndoError.unavailable) { try first.receipt.undo() }
 
         #expect(itp.dueDay(in: calendar) == CalendarDay("2026-11-05"))
         #expect(itp.status == .active)
@@ -70,8 +71,7 @@ struct ActionsTests {
         let context = try makeContext()
         let actions = ObligationActions(context: context, calendar: calendar, now: { noon("2026-11-02") })
         let task = try actions.create(title: "Cazier", kind: .renewal, dueDay: CalendarDay("2026-11-20"), for: nil)
-        try actions.complete(task)
-        try actions.undoLastCompletion(of: task)
+        try actions.complete(task).receipt.undo()
         #expect(task.status == .active)
     }
 
@@ -106,7 +106,7 @@ struct ActionsTests {
         let (asset, _) = try car(in: context)
         let actions = ObligationActions(context: context, calendar: calendar, now: { noon("2026-11-02") })
         let service = try actions.create(title: "Revizie", kind: .maintenance, dueDay: CalendarDay("2026-11-02"), for: asset,
-                                         recurrence: .metric(every: 15_000, unit: "km", fallback: .years(1)))
+                                         recurrence: .metric(every: 15_000, unit: .kilometres, fallback: .years(1)))
         try actions.complete(service, metricReading: 101_000)
         #expect(service.dueMetric == 116_000)
         #expect(asset.value("vehicle.odometer") == .number(101_000), "The reading updates the odometer")
@@ -138,31 +138,48 @@ struct ActionsTests {
         var values = FieldValues()
         values["pet.weight"] = .number(4.2)
         let cat = try actions.create(name: "Pisica de test", template: template, values: values)
-        try actions.recordMeasurement(on: cat, kind: .bodyWeight, value: 4.0, unit: "kg", at: noon("2026-06-01"))
+        try actions.recordMeasurement(on: cat, kind: .bodyWeight, value: 4.0, unit: .kilograms, at: noon("2026-06-01"))
         #expect(cat.value("pet.weight") == .number(4.2), "An older reading doesn't replace a newer one")
-        try actions.recordMeasurement(on: cat, kind: .bodyWeight, value: 4.6, unit: "kg", at: noon("2026-11-02"))
+        try actions.recordMeasurement(on: cat, kind: .bodyWeight, value: 4.6, unit: .kilograms, at: noon("2026-11-02"))
         #expect(cat.value("pet.weight") == .number(4.6))
     }
 
-    @Test func notificationButtonsUseTheSameEngine() async throws {
+    /// Changed on purpose: the buttons used to complete whatever cycle was current.
+    /// They now carry the cycle they were about, go through the one way in for
+    /// outside actions, and an old one changes nothing.
+    @Test func notificationButtonsUseTheSameEngineForTheirOwnCycle() async throws {
         let container = try makeInMemoryContainer()
         let context = container.mainContext
         try TemplateStore(context: context).installBuiltIns()
-        let actions = ObligationActions(context: context, calendar: calendar)
-        let item = try actions.create(title: "RCA", kind: .insurance, dueDay: CalendarDay(Date(), calendar: calendar), for: nil,
+        let actions = ObligationActions(context: context)
+        let item = try actions.create(title: "RCA", kind: .insurance, dueDay: CalendarDay(Date()), for: nil,
                                       recurrence: .interval(.years(1), anchor: .dueDate))
-        let before = item.dueDay(in: calendar)
+        let before = item.dueDay()
         let navigator = AppNavigator()
-        let responder = NotificationResponder(containerProvider: { container }, navigator: navigator)
+        let center = FakeNotificationCenter(status: .authorized)
+        let folder = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let coordinator = SideEffectsCoordinator(container: container, notificationClient: center, widgetWriter: WidgetSnapshotWriter(directory: folder))
+        let failures = OutsideActionFailures(suiteName: "tests.\(UUID().uuidString)")
+        let responder = NotificationResponder(containerProvider: { container }, navigator: navigator, sideEffects: { _ in coordinator }, failures: failures)
 
-        await responder.handle(action: ReminderActions.complete, obligationId: item.id, deepLink: nil)
+        await responder.handle(action: ReminderActions.complete, payload: ReminderPayload(obligationId: item.id, cycle: before))
         #expect(item.history.count == 1)
-        #expect(item.dueDay(in: calendar) == RecurrenceEngine.add(.years(1), to: before, calendar: calendar))
+        #expect(item.dueDay() == RecurrenceEngine.add(.years(1), to: before))
+        #expect(coordinator.lastReconciledAt != nil, "Reminders are planned again after the button")
 
-        await responder.handle(action: ReminderActions.snooze, obligationId: item.id, deepLink: nil)
+        await responder.handle(action: ReminderActions.complete, payload: ReminderPayload(obligationId: item.id, cycle: before))
+        #expect(item.history.count == 1, "A second tap for the same cycle changes nothing")
+
+        await responder.handle(action: ReminderActions.snooze, payload: ReminderPayload(obligationId: item.id, cycle: before))
+        #expect(item.snoozedUntil == nil, "Nor does a snooze for a closed cycle")
+        await responder.handle(action: ReminderActions.snooze, payload: ReminderPayload(obligationId: item.id, cycle: item.dueDay()))
         #expect(item.snoozedUntil != nil)
 
-        await responder.handle(action: "com.apple.UNNotificationDefaultActionIdentifier", obligationId: item.id, deepLink: DeepLink.url(for: .obligation(item.id)))
+        await responder.handle(action: "com.apple.UNNotificationDefaultActionIdentifier",
+                               payload: ReminderPayload(obligationId: item.id, cycle: nil, deepLink: DeepLink.url(for: .obligation(item.id))))
         #expect(navigator.pendingRoute == .obligation(item.id))
+        #expect(failures.all().isEmpty)
     }
 }

@@ -93,9 +93,11 @@ struct ReminderProfileTests {
         let passport = snapshot("Pașaport", kind: .renewal, due: "2027-03-20", offsets: [180, 60], consequence: .legal)
         let digest = AttentionModel.digest([vignette, licence, passport], now: today, calendar: calendar)
         #expect(digest.now.map(\.obligation.title) == ["Permis"], "The vignette is 10 days out but only needs a week")
-        #expect(ReminderProfile(leadDays: [180, 60], consequence: .legal).attentionWindowDays == 30)
-        #expect(ReminderProfile(leadDays: [7, 0], consequence: .legal).attentionWindowDays == 7)
-        #expect(ReminderProfile(leadDays: [1], consequence: .health).attentionWindowDays == 1)
+        // A month ahead of 1 December is 1 November: 30 days.
+        let due = CalendarDay("2026-12-01")
+        #expect(ReminderProfile(leadDays: [180, 60], consequence: .legal).urgencyRule.windowDays(before: due, calendar: calendar) == 30)
+        #expect(ReminderProfile(leadDays: [7, 0], consequence: .legal).urgencyRule.windowDays(before: due, calendar: calendar) == 7)
+        #expect(ReminderProfile(leadDays: [1], consequence: .health).urgencyRule.windowDays(before: due, calendar: calendar) == 1)
     }
 
     @Test func followUpComesTheDayAfterLapsingAndOnlyWhenAskedFor() {
@@ -163,7 +165,8 @@ struct ReminderProfileTests {
         let blueprint = try #require(BuiltInTemplates.documents.blueprints.first)
         var values = FieldValues()
         values["document.type"] = .text(DocumentType.passport)
-        #expect(blueprint.reminders(for: values).leadDays == [180, 60])
+        #expect(blueprint.reminders(for: values).leadDays == [90, 0], "Counted from the day it stops being good for travel")
+        #expect(blueprint.reminders(for: values).travelMarginDays == 180)
         values["document.type"] = .text(DocumentType.drivingLicence)
         #expect(blueprint.reminders(for: values).leadDays == [60, 30])
         values["document.type"] = .text(DocumentType.idCard)
@@ -247,11 +250,48 @@ struct ReminderPlannerTests {
         #expect(!plan.contains { $0.identifier.hasSuffix(".d7") })
     }
 
-    @Test func respectsTheSystemLimitByKeepingTheSoonest() {
-        let items = (0..<40).map { snapshot("O\($0)", due: CalendarDay("2026-11-10").adding(days: $0, calendar: calendar).isoString, offsets: [7, 1, 0]) }
-        let plan = ReminderPlanner.plan(items, now: noon("2026-11-02"), calendar: calendar)
+    /// Changed on purpose: the limit used to keep the soonest reminders by time alone,
+    /// so a busy household lost a passport's warning months ahead without a sign.
+    /// Now every deadline's next reminder comes first, the legal ones before the
+    /// rest, and the last place tells the person to open the app.
+    @Test func respectsTheSystemLimitByConsequenceThenTime() {
+        let now = noon("2026-11-02")
+        let legal = (0..<20).map { i in
+            snapshot("Legal \(i)", kind: .insurance, due: CalendarDay("2026-12-01").adding(days: i * 15, calendar: calendar).isoString)
+        }
+        let bills = (0..<30).map { i in
+            snapshot("Factură \(i)", kind: .payment, due: CalendarDay("2026-11-04").adding(days: i % 25, calendar: calendar).isoString)
+        }
+        let chores = (0..<150).map { i in
+            snapshot("Udat \(i)", kind: .routine, due: CalendarDay("2026-11-03").adding(days: i % 10, calendar: calendar).isoString)
+        }
+        let all = legal + bills + chores
+        let plan = ReminderPlanner.plan(all, now: now, calendar: calendar)
+
         #expect(plan.count == ReminderPlanner.defaultLimit)
-        #expect(plan.map(\.fireDate) == plan.map(\.fireDate).sorted())
+        for item in legal {
+            let next = ReminderPlanner.candidates(for: item, now: now, calendar: calendar, defaultMinuteOfDay: AppPreferences.defaultReminderMinuteOfDay, locale: .dosarDefault)
+                .min { $0.fireDate < $1.fireDate }
+            #expect(next.map { first in plan.contains { $0.identifier == first.identifier } } == true, "\(item.title) keeps its next reminder")
+        }
+        let last = plan.last
+        #expect(last?.identifier == ReminderPlanner.continueIdentifier, "The list ends with the reminder to open the app")
+        #expect(last?.title == "Deschide Dosar cu Șină o clipă")
+        let kept = plan.dropLast()
+        #expect(kept.map(\.fireDate) == kept.map(\.fireDate).sorted())
+        let dropped = all.flatMap {
+            ReminderPlanner.candidates(for: $0, now: now, calendar: calendar, defaultMinuteOfDay: AppPreferences.defaultReminderMinuteOfDay, locale: .dosarDefault)
+        }.filter { candidate in !plan.contains { $0.identifier == candidate.identifier } }
+        let runsOut = dropped.map(\.fireDate).min()
+        #expect(runsOut.map { (last?.fireDate ?? .distantFuture) < $0 } == true, "It fires before the first reminder that didn't fit")
+    }
+
+    @Test func noOpenTheAppReminderWhenEverythingFits() {
+        let items = (0..<5).map { snapshot("O\($0)", due: CalendarDay("2026-11-10").adding(days: $0, calendar: calendar).isoString, offsets: [7, 1, 0]) }
+        let plan = ReminderPlanner.plan(items, now: noon("2026-11-02"), calendar: calendar)
+        #expect(plan.count == 15)
+        #expect(!plan.contains { $0.identifier == ReminderPlanner.continueIdentifier })
+        #expect(plan.allSatisfy { $0.cycle != nil && $0.obligationId != nil }, "Every reminder about a deadline carries its cycle")
     }
 
     @Test func identifiersRoundTrip() {
@@ -292,6 +332,16 @@ actor FakeNotificationCenter: NotificationCenterClient {
 
     func remove(identifiers: [String]) async {
         for identifier in identifiers { pendingReminders.removeValue(forKey: identifier) }
+    }
+
+    private(set) var deliveredReminders: [DeliveredReminder] = []
+
+    func deliver(_ reminder: DeliveredReminder) { deliveredReminders.append(reminder) }
+
+    func delivered() async -> [DeliveredReminder] { deliveredReminders }
+
+    func removeDelivered(identifiers: [String]) async {
+        deliveredReminders.removeAll { identifiers.contains($0.identifier) }
     }
 
     func setBadgeCount(_ count: Int) async { badge = count }

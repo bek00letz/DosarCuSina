@@ -1,30 +1,18 @@
 import SwiftUI
 
-/// Locale-aware number parsing for typed input: accepts "1.250,50" and "1250,5" in Romanian,
-/// "1,250.50" in English. Pure and small so it can be unit tested.
-enum DSNumberInput {
-    /// Parses what a person typed into a decimal, or `nil` if it isn't a number.
-    static func decimal(from text: String, locale: Locale) -> Decimal? {
-        let decimalSeparator = locale.decimalSeparator ?? "."
-        let groupingSeparator = locale.groupingSeparator ?? ""
-        var cleaned = text.trimmingCharacters(in: .whitespacesAndNewlines)
-            .replacingOccurrences(of: "\u{00A0}", with: "")
-            .replacingOccurrences(of: "\u{202F}", with: "")
-            .replacingOccurrences(of: " ", with: "")
-        guard !cleaned.isEmpty else { return nil }
-        if !groupingSeparator.isEmpty, groupingSeparator != decimalSeparator {
-            cleaned = cleaned.replacingOccurrences(of: groupingSeparator, with: "")
+/// What a number field shows for its value and how it reads what the person types: both
+/// through `RomanianNumber`, so a value shown and read back never changes.
+enum DSNumberText {
+    /// The field's validation for what was typed: the reader's message when it refuses.
+    static func validation(_ text: String, as kind: NumberKind, unit: MeasurementUnit? = nil, isRequired: Bool) -> (DSValidation, Decimal?) {
+        switch RomanianNumber.read(text, as: kind, unit: unit) {
+        case .success(let reading):
+            return (.valid, reading.value)
+        case .failure(.empty):
+            return (isRequired ? .requiredMissing : .valid, nil)
+        case .failure(let problem):
+            return (.invalid(LocalizedStringResource(stringLiteral: problem.message(for: kind))), nil)
         }
-        cleaned = cleaned.replacingOccurrences(of: decimalSeparator, with: ".")
-        let allowed = CharacterSet(charactersIn: "0123456789.-")
-        guard cleaned.unicodeScalars.allSatisfy(allowed.contains),
-              cleaned.filter({ $0 == "." }).count <= 1 else { return nil }
-        return Decimal(string: cleaned, locale: Locale(identifier: "en_US_POSIX"))
-    }
-
-    /// How a parsed amount reads back in the field once the person leaves it.
-    static func display(_ value: Decimal, locale: Locale, fractionDigits: ClosedRange<Int> = 0...2, groupsDigits: Bool = true) -> String {
-        value.formatted(.number.precision(.fractionLength(fractionDigits)).grouping(groupsDigits ? .automatic : .never).locale(locale))
     }
 }
 
@@ -44,7 +32,6 @@ struct DSMoneyField: View {
     @State private var text = ""
     @State private var visibility = DSValidationVisibility()
     @FocusState private var isFocused: Bool
-    @Environment(\.locale) private var locale
     @Environment(\.dsRevealsValidation) private var revealsValidation
 
     init(
@@ -66,15 +53,8 @@ struct DSMoneyField: View {
     }
 
     private var validation: DSValidation {
-        if text.trimmingCharacters(in: .whitespaces).isEmpty {
-            return isRequired ? .requiredMissing : .valid
-        }
-        guard let value = DSNumberInput.decimal(from: text, locale: locale) else {
-            return .invalid(LocalizedStringResource("Scrie suma doar cu cifre, de exemplu 1.250,50.", comment: "Validation message when a money amount isn't a number."))
-        }
-        if value < 0 {
-            return .invalid(LocalizedStringResource("Suma nu poate fi negativă.", comment: "Validation message when a money amount is below zero."))
-        }
+        let (validation, value) = DSNumberText.validation(text, as: .money, isRequired: isRequired)
+        guard let value else { return validation }
         return validator?(value) ?? .valid
     }
 
@@ -125,7 +105,10 @@ struct DSMoneyField: View {
             if !isFocused { syncTextFromAmount() }
         }
         .onChange(of: text) { _, newText in
-            amount = DSNumberInput.decimal(from: newText, locale: locale)
+            // Only what the person types becomes the amount. Showing a stored amount
+            // changes the text too, and reading that back could change the amount.
+            guard isFocused else { return }
+            amount = RomanianNumber.value(newText, as: .money)
         }
         .onChange(of: isFocused) { _, focused in
             if !focused {
@@ -139,7 +122,7 @@ struct DSMoneyField: View {
     private func syncTextFromAmount() {
         // Keep what the person typed if it doesn't parse, so they can fix it.
         guard let amount else { return }
-        let display = DSNumberInput.display(amount, locale: locale)
+        let display = RomanianNumber.format(amount)
         if display != text { text = display }
     }
 }
@@ -150,29 +133,31 @@ struct DSMoneyField: View {
 struct DSMetricField: View {
     let title: LocalizedStringKey
     @Binding var value: Double?
-    /// The unit as shown after the number, e.g. "km", "h", "kg". Comes from the template.
-    let unit: String
+    /// The unit shown after the number ("km", "h", "kg"), from the template; nil for none.
+    let unit: MeasurementUnit?
     var fractionDigits: ClosedRange<Int> = 0...1
     /// False for numbers read as labels rather than amounts, such as a year.
     var groupsDigits: Bool = true
     var isRequired: Bool = false
     var footnote: LocalizedStringKey?
+    /// Shown greyed in the empty field, never as its value: an estimate the person can type over.
+    var placeholder: Double?
     var validator: ((Double) -> DSValidation)?
 
     @State private var text = ""
     @State private var visibility = DSValidationVisibility()
     @FocusState private var isFocused: Bool
-    @Environment(\.locale) private var locale
     @Environment(\.dsRevealsValidation) private var revealsValidation
 
     init(
         _ title: LocalizedStringKey,
         value: Binding<Double?>,
-        unit: String,
+        unit: MeasurementUnit?,
         fractionDigits: ClosedRange<Int> = 0...1,
         groupsDigits: Bool = true,
         isRequired: Bool = false,
         footnote: LocalizedStringKey? = nil,
+        placeholder: Double? = nil,
         validator: ((Double) -> DSValidation)? = nil
     ) {
         self.title = title
@@ -182,17 +167,24 @@ struct DSMetricField: View {
         self.groupsDigits = groupsDigits
         self.isRequired = isRequired
         self.footnote = footnote
+        self.placeholder = placeholder
         self.validator = validator
     }
 
+    /// Kilometres by their unit, whole numbers when the field shows no decimals.
+    private var kind: NumberKind {
+        NumberKind.forField(unit: unit, allowsDecimals: fractionDigits.upperBound > 0)
+    }
+
     private var validation: DSValidation {
-        if text.trimmingCharacters(in: .whitespaces).isEmpty {
-            return isRequired ? .requiredMissing : .valid
-        }
-        guard let parsed = DSNumberInput.decimal(from: text, locale: locale) else {
-            return .invalid(LocalizedStringResource("Scrie doar cifre, de exemplu 84.200.", comment: "Validation message when a reading such as kilometers isn't a number."))
-        }
+        let (validation, parsed) = DSNumberText.validation(text, as: kind, unit: unit, isRequired: isRequired)
+        guard let parsed else { return validation }
         return validator?(NSDecimalNumber(decimal: parsed).doubleValue) ?? .valid
+    }
+
+    private var prompt: Text {
+        guard let placeholder else { return Text(verbatim: "0") }
+        return Text(verbatim: RomanianNumber.format(Decimal(placeholder), fractionDigits: 0...fractionDigits.upperBound, groupsDigits: groupsDigits))
     }
 
     private var shownValidation: DSValidation {
@@ -208,12 +200,12 @@ struct DSMetricField: View {
             focus: { isFocused = true }
         ) {
             HStack(spacing: DS.Space.xs) {
-                TextField(title, text: $text, prompt: Text(verbatim: "0"))
+                TextField(title, text: $text, prompt: prompt)
                     .keyboardType(fractionDigits.upperBound > 0 ? .decimalPad : .numberPad)
                     .font(.body.monospacedDigit())
                     .focused($isFocused)
-                    .accessibilityHint(Text(verbatim: unit))
-                Text(verbatim: unit)
+                    .accessibilityHint(Text(verbatim: unit?.label ?? ""))
+                Text(verbatim: unit?.label ?? "")
                     .foregroundStyle(DS.Palette.secondaryLabel)
                     .accessibilityHidden(true)
             }
@@ -223,7 +215,10 @@ struct DSMetricField: View {
             if !isFocused { syncTextFromValue() }
         }
         .onChange(of: text) { _, newText in
-            value = DSNumberInput.decimal(from: newText, locale: locale).map { NSDecimalNumber(decimal: $0).doubleValue }
+            // Only what the person types becomes the value. Showing a stored value
+            // changes the text too, and reading that back could turn 45.724 km into 457.
+            guard isFocused else { return }
+            value = RomanianNumber.value(newText, as: kind, unit: unit).map { NSDecimalNumber(decimal: $0).doubleValue }
         }
         .onChange(of: isFocused) { _, focused in
             if !focused {
@@ -236,7 +231,7 @@ struct DSMetricField: View {
 
     private func syncTextFromValue() {
         guard let value else { return }
-        let display = DSNumberInput.display(Decimal(value), locale: locale, fractionDigits: 0...fractionDigits.upperBound, groupsDigits: groupsDigits)
+        let display = RomanianNumber.format(Decimal(value), fractionDigits: 0...fractionDigits.upperBound, groupsDigits: groupsDigits)
         if display != text { text = display }
     }
 }

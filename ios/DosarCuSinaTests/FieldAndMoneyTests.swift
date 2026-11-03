@@ -70,7 +70,7 @@ struct FieldFormatterTests {
 
     @Test func displayUsesUnitsAndRomanianFormatting() {
         let locale = Locale(identifier: "ro_RO")
-        #expect(FieldFormatter.display(.number(142_500), as: .metric, unit: "km", locale: locale) == "142.500 km")
+        #expect(FieldFormatter.display(.number(142_500), as: .metric, unit: .kilometres, locale: locale) == "142.500 km")
         #expect(FieldFormatter.display(.bool(true), as: .toggle, locale: locale) == "Da")
         #expect(FieldFormatter.display(.text("RO49AAAA1B31007593840000"), as: .iban, locale: locale) == "RO49 AAAA 1B31 0075 9384 0000")
     }
@@ -128,7 +128,7 @@ struct MoneyTests {
         ("1.234,56", "1234.56"), ("1234.5", "1234.5"), ("1 234,50", "1234.5"), ("12,5", "12.5"), ("1.250", "1250"), ("350", "350"),
     ])
     func parsesAmounts(raw: String, expected: String) {
-        #expect(Money.parseAmount(raw) == Decimal(string: expected))
+        #expect(RomanianNumber.value(raw, as: .money) == Decimal(string: expected))
     }
 
     @Test func totalsNeverMixCurrencies() {

@@ -12,13 +12,12 @@ struct UpcomingActions {
     /// Snooze lengths offered, in days.
     static let snoozeChoices: [Int] = [1, 3, 7, 14]
 
+    /// "Mâine", "Peste 3 zile", "Peste 14 zile": a length the person picks, worded
+    /// like a reminder's lead.
     static func snoozeTitle(days: Int) -> String {
-        switch days {
-        case 1: return String(localized: "Mâine")
-        case 7: return String(localized: "Peste o săptămână")
-        case 14: return String(localized: "Peste două săptămâni")
-        default: return String(localized: "Peste \(DurationWording.phrase(days: days))")
-        }
+        days == 1
+            ? String(localized: "Mâine", comment: "Snooze until tomorrow")
+            : String(localized: "Peste \(DurationWording.lead(days: days))", comment: "Snooze for a length such as '3 zile' or '14 zile'")
     }
 
     func obligation(_ id: UUID) -> Obligation? {
@@ -28,28 +27,23 @@ struct UpcomingActions {
     }
 
     /// Completes and returns the toast with its undo.
-    func complete(_ obligation: Obligation, title: String, cost: Money? = nil, on date: Date? = nil) throws -> (entry: HistoryEntry, toast: DSToast) {
+    func complete(_ obligation: Obligation, title: String, cost: Money? = nil, on date: Date? = nil) throws -> DSToast {
         let actions = ObligationActions(context: context, calendar: calendar)
-        let entry = try actions.complete(obligation, on: date, cost: cost)
+        let done = try actions.complete(obligation, on: date, cost: cost)
         let message: LocalizedStringResource
         if obligation.status == .active {
-            let next = obligation.dueDay(in: calendar).startDate(in: calendar).formatted(.dateTime.day().month(.wide).year().locale(.dosarDefault))
+            let next = DosarFormat.longDay(obligation.dueDay(in: calendar))
             message = "\(title): gata. Următorul termen e pe \(next)."
         } else {
             message = "\(title): gata."
         }
-        let toast = DSToast.undo(message) {
-            try? ObligationActions(context: context, calendar: calendar).undo(entry)
-        }
-        return (entry, toast)
+        return .undo(message, receipt: done.receipt)
     }
 
     func snooze(_ obligation: Obligation, days: Int, title: String) throws -> DSToast {
-        try ObligationActions(context: context, calendar: calendar).snooze(obligation, days: days)
+        let receipt = try ObligationActions(context: context, calendar: calendar).snooze(obligation, days: days)
         let phrase = Self.snoozeTitle(days: days).lowercased()
-        var toast = DSToast.undo("Am amânat \(title). Îți amintesc \(phrase).") {
-            try? ObligationActions(context: context, calendar: calendar).clearSnooze(obligation)
-        }
+        var toast = DSToast.undo("Am amânat \(title). Îți amintesc \(phrase).", receipt: receipt)
         toast.systemImage = "clock.arrow.circlepath"
         toast.tint = DS.Palette.accent
         toast.feedback = .impact(weight: .light)
@@ -57,13 +51,6 @@ struct UpcomingActions {
     }
 
     static func failureToast(_ error: Error) -> DSToast {
-        DSToast(
-            title: "\(error.localizedDescription)",
-            systemImage: "exclamationmark.circle.fill",
-            tint: DSStatus.overdue.color,
-            actionTitle: nil,
-            action: nil,
-            feedback: .error
-        )
+        .failure(error)
     }
 }

@@ -307,7 +307,7 @@ struct LayoutReadingTests {
             Card.line("XY123456", 0.3, 0.70, 0.2, 0.035),
             Card.line("AB654321", 0.7, 0.10, 0.2, 0.035),
         ]])
-        let read = IdentityDocumentReader.read(text, template: template)
+        let read = IdentityDocumentReader.read(text, template: template, today: CaptureDay(year: 2026, month: 11, day: 2)!)
         let number = read.first { $0.key == .documentNumber }
         #expect(number?.value.text == "XY123456")
         #expect(number?.needsCheck == true)

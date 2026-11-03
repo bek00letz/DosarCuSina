@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV2 {
+extension DosarSchemaV5 {
     /// A category of assets (Car, Home, a user's own "Bikes") and its field and
     /// obligation definitions, plus this household's preferences for it.
     ///
@@ -34,6 +34,9 @@ extension DosarSchemaV2 {
         public var componentsData: Data?
         /// `SectionPocket` raw values.
         public var pocketsRaw: [String] = SectionPocket.standard.map(\.rawValue)
+        /// JSON `CategoryBehavior`: its box, its list, its part for other categories.
+        /// Nil for a category from before version 3, which behaves as `standard`.
+        public var behaviorData: Data?
 
         public var createdAt: Date = Date()
         public var updatedAt: Date = Date()
@@ -58,8 +61,15 @@ extension DosarSchemaV2 {
             blueprintsData = StoredJSON.encode(definition.blueprints)
             componentsData = StoredJSON.encode(definition.components)
             pocketsRaw = definition.pockets.map(\.rawValue)
+            behaviorData = definition.behavior == .standard ? nil : StoredJSON.encode(definition.behavior)
             builtInVersion = isBuiltIn ? definition.version : 0
             updatedAt = Date()
+        }
+
+        /// What the category does in the binder.
+        public var behavior: CategoryBehavior {
+            get { StoredJSON.decode(CategoryBehavior.self, from: behaviorData) ?? .standard }
+            set { behaviorData = newValue == .standard ? nil : StoredJSON.encode(newValue); updatedAt = Date() }
         }
 
         public var tint: TemplateTint {
@@ -110,6 +120,7 @@ extension DosarSchemaV2 {
                 blueprints: blueprints,
                 components: components,
                 pockets: pockets,
+                behavior: behavior,
                 version: builtInVersion
             )
         }

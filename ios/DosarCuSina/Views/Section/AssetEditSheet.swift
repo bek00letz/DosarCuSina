@@ -8,6 +8,9 @@ import PhotosUI
 struct AssetEditSheet: View {
     let asset: Asset
     let definition: TemplateDefinition
+    /// Says what the edit changed that the person didn't see in the form (a bill reminder
+    /// paused by direct debit), as a toast on the page they return to.
+    let announce: (DSToast) -> Void
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -19,13 +22,17 @@ struct AssetEditSheet: View {
     @State private var photoItem: PhotosPickerItem?
     @State private var revealsValidation = false
     @State private var error: UserFacingError?
+    @State private var readingQuestion: LowerReadingQuestion?
     @State private var savedCount = 0
+    @State private var isMoving = false
+    @State private var toast: DSToast?
 
     private let originalPhoto: Data?
 
-    init(asset: Asset, definition: TemplateDefinition) {
+    init(asset: Asset, definition: TemplateDefinition, announce: @escaping (DSToast) -> Void = { _ in }) {
         self.asset = asset
         self.definition = definition
+        self.announce = announce
         _name = State(initialValue: asset.name)
         _values = State(initialValue: asset.values)
         _notes = State(initialValue: asset.notes ?? "")
@@ -46,13 +53,18 @@ struct AssetEditSheet: View {
                     VStack(alignment: .leading, spacing: DS.Space.m) {
                         DSTextField("Nume", text: $name, isRequired: true)
                         PhotoPickerRow(photoData: $photoData, item: $photoItem)
+                        if AssetActions.parentTemplateKey(for: asset) != nil {
+                            moveRow
+                        }
                     }
                     ForEach(definition.sections) { section in
-                        if !section.fields.isEmpty {
+                        let fields = section.fields.filter { $0.applies(to: values) }
+                        if !fields.isEmpty {
                             VStack(alignment: .leading, spacing: DS.Space.m) {
                                 DSSectionHeader(verbatim: section.title)
-                                ForEach(section.fields) { field in
-                                    FieldEditor(field: field, values: $values)
+                                ForEach(fields) { field in
+                                    FieldEditor(field: field, values: $values,
+                                                urgencyRule: DateUrgency.rule(forField: field.key, values: values, definition: definition, asset: asset))
                                 }
                             }
                         }
@@ -74,7 +86,7 @@ struct AssetEditSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(action: save) {
+                    Button { save() } label: {
                         Text("Gata", comment: "Closes an editor and keeps what was typed.")
                     }
                     .keyboardShortcut(.return, modifiers: .command)
@@ -82,11 +94,39 @@ struct AssetEditSheet: View {
             }
             .userErrorAlert($error)
             .sensoryFeedback(.success, trigger: savedCount)
+            .sheet(isPresented: $isMoving) {
+                MoveAssetSheet(asset: asset) { moved in
+                    followName(from: moved.previousName)
+                    let renamed = asset.name
+                    toast = .undo(moved.toastTitle, receipt: moved.receipt) { followName(from: renamed) }
+                }
+            }
+            .dsToast($toast)
         }
         .dsDiscardGuard(hasChanges: hasChanges)
+        .readingPrompt($readingQuestion) { save(lowerReading: $0) }
     }
 
-    private func save() {
+    /// Where it is filed, and "Mută la…".
+    private var moveRow: some View {
+        Button { isMoving = true } label: {
+            DSListRow(
+                title: Text("Mută la…", comment: "Menu item that files something under another parent."),
+                subtitle: asset.parent.map { Text("Acum e la „\($0.name)”.", comment: "Where the item is filed now, in the move sheet.") },
+                systemImage: "arrow.turn.up.right",
+                showsChevron: true
+            ) { EmptyView() }
+        }
+        .buttonStyle(.dsPressable)
+    }
+
+    /// A move that renamed the document carries the new name into the form, unless
+    /// the person had already typed one of their own.
+    private func followName(from previousName: String) {
+        if name == previousName { name = asset.name }
+    }
+
+    private func save(lowerReading: LowerReadingAnswer? = nil) {
         guard hasChanges else { dismiss(); return }
         guard !trimmedName.isEmpty, FieldValuesCheck.canSave(values, fields: definition.allFields) else {
             revealsValidation = true
@@ -94,15 +134,22 @@ struct AssetEditSheet: View {
         }
         do {
             let actions = AssetActions(context: context)
-            if photoData != originalPhoto {
-                try actions.setPhoto(asset, photoData)
-            }
-            if trimmedName != asset.name || values != asset.values || notes != (asset.notes ?? "") {
+            // The photo and the fields are one change: both are kept, or neither.
+            let outcome = try UnitOfWork.perform(in: context) { () -> AssetActions.EditOutcome? in
+                if photoData != originalPhoto {
+                    try actions.setPhoto(asset, photoData)
+                }
+                guard trimmedName != asset.name || values != asset.values || notes != (asset.notes ?? "") else { return nil }
                 let note = notes.trimmingCharacters(in: .whitespacesAndNewlines)
-                try actions.update(asset, name: trimmedName, values: values, notes: note.isEmpty ? nil : note)
+                return try actions.update(asset, name: trimmedName, values: values, notes: note.isEmpty ? nil : note, lowerReading: lowerReading)
             }
             savedCount += 1
+            if let bill = outcome?.billReminder {
+                announce(.undo(bill.value.toastTitle, receipt: bill.receipt))
+            }
             dismiss()
+        } catch let question as LowerReadingQuestion {
+            readingQuestion = question
         } catch {
             self.error = UserFacingError(error)
         }

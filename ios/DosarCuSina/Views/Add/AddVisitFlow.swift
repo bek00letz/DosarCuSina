@@ -5,7 +5,7 @@ import SwiftUI
 /// job. Big check rows grouped by the template's components, each with an
 /// optional cost and brand; the date, the counter, the total and who did it;
 /// and an invoice photo that ticks the rows by itself. One save through
-/// `HistoryActions.recordVisit`, then a summary of what changed.
+/// `CaptureFiler` (the visit and its invoice together), then a summary of what changed.
 struct AddVisitFlow: View {
     let assetID: UUID
     private let prefill: CaptureResult?
@@ -64,13 +64,20 @@ private struct VisitForm: View {
     @State private var didStart = false
     @State private var source: CaptureSource?
     @State private var isChoosingSource = false
-    @State private var isReading = false
+    /// Reading an invoice picked here. It ends with the form: a reading still running stops.
+    @State private var session = CaptureSession()
     @State private var readNote: String?
     @State private var errorMessage: String?
     @State private var newProviderName = ""
     @State private var isSaving = false
     @State private var saved: HistoryEntry?
+    /// What saving the visit did, for "Anulează vizita": a kept invoice goes back where it was.
+    @State private var receipt: UndoReceipt?
     @State private var toast: DSToast?
+    @State private var exampleQuestion: ExampleSectionQuestion?
+    @State private var readingQuestion: LowerReadingQuestion?
+
+    private var isReading: Bool { session.phase == .reading }
 
     private var template: CategoryTemplate? { try? TemplateStore(context: context).template(forKey: asset.templateKey) }
 
@@ -91,7 +98,7 @@ private struct VisitForm: View {
     var body: some View {
         Group {
             if let saved {
-                VisitSavedView(entry: saved, asset: asset) { finish(true) } onUndo: { undo(saved) }
+                VisitSavedView(entry: saved, asset: asset) { finish(true) } onUndo: { undo() }
             } else {
                 form
             }
@@ -138,15 +145,24 @@ private struct VisitForm: View {
         }
         .captureSourcePicker($source) { payload in
             read(payload)
-        } onError: { error in
-            readNote = error.localizedDescription
+        } onError: { _ in
+            readNote = String(localized: "Poza nu s-a putut deschide. Încearcă din nou.")
         }
+        .onChange(of: session.phase) { _, phase in
+            switch phase {
+            case .read(let result): apply(result)
+            case .failed: readNote = String(localized: "Încearcă o poză mai clară. Poți bifa și de mână.")
+            default: break
+            }
+        }
+        .examplePrompt($exampleQuestion) { save() }
+        .readingPrompt($readingQuestion) { save(lowerReading: $0) }
     }
 
     // MARK: Invoice
 
     @ViewBuilder private var invoiceCard: some View {
-        if draft.documentID == nil {
+        if draft.document == nil {
             DSActionCard("Atașează factura", subtitle: "Bifez singur ce scrie pe ea și trec sumele.", systemImage: "doc.viewfinder") {
                 isChoosingSource = true
             }
@@ -157,7 +173,7 @@ private struct VisitForm: View {
         } else {
             DSNotice(.success, title: "Factura e atașată", message: readNote.map { LocalizedStringKey($0) })
         }
-        if draft.documentID == nil, let readNote {
+        if draft.document == nil, let readNote {
             DSNotice(.warning, title: "Factura nu s-a citit", message: LocalizedStringKey(readNote))
         }
     }
@@ -204,7 +220,7 @@ private struct VisitForm: View {
 
     private func lastDone(_ key: String) -> String? {
         guard let last = MaintenanceLog.lastOccurrence(of: key, in: HistoryItemSnapshot.items(of: asset)) else { return nil }
-        let date = last.date.formatted(.dateTime.month(.wide).year().locale(.dosarDefault))
+        let date = DosarFormat.monthYear(last.date)
         return String(localized: "Ultima dată: \(date)")
     }
 
@@ -252,8 +268,13 @@ private struct VisitForm: View {
                     .environment(\.locale, .dosarDefault)
                     .frame(minHeight: 44)
                     if let counterField, let unit = counterField.unit {
-                        DSMetricField(LocalizedStringKey(counterField.label), value: $draft.odometer, unit: unit,
-                                      footnote: "Am pus o estimare. Corecteaz-o dacă știi cifra exactă.")
+                        DSMetricField(LocalizedStringKey(counterField.label), value: Binding(
+                            get: { draft.odometer },
+                            set: { draft.odometer = $0; draft.odometerSource = .person }
+                        ), unit: unit,
+                                      footnote: draft.odometer == nil && draft.odometerEstimate != nil
+                                          ? "Cifra gri e doar o estimare. Scrie cifra de la bord, dacă o știi." : nil,
+                                      placeholder: draft.odometerEstimate)
                     }
                     DSMoneyField("Total plătit", amount: $draft.total, currencyCode: $draft.currency,
                                  footnote: partsSumNote)
@@ -322,25 +343,15 @@ private struct VisitForm: View {
     private func start() {
         guard !didStart else { return }
         didStart = true
-        let readings = (asset.measurements ?? [])
-            .filter { $0.kind.isCumulative && $0.unit == counterField?.unit }
-            .map { CadenceCalculator.TelemetryReading(date: $0.recordedAt, metric: $0.value) }
+        let readings = HouseholdMutations.readingSeries(of: asset, unit: counterField?.unit).readings
         let fallback = counterField.flatMap { asset.value($0.key)?.numberValue }
-        draft.odometer = counterField == nil ? nil : OdometerEstimate.value(readings: readings, fallback: fallback, now: Date())
+        draft.odometerEstimate = counterField == nil ? nil : OdometerEstimate.value(readings: readings, fallback: fallback, now: Date())
         if let prefill { apply(prefill) }
     }
 
     private func read(_ payload: CaptureRequest.Payload) {
-        isReading = true
         readNote = nil
-        Task {
-            defer { isReading = false }
-            do {
-                apply(try await CaptureRunner.run(payload, ownerID: asset.id))
-            } catch {
-                readNote = String(localized: "Încearcă o poză mai clară. Poți bifa și de mână.")
-            }
-        }
+        session.read(payload)
     }
 
     private func apply(_ result: CaptureResult) {
@@ -358,7 +369,7 @@ private struct VisitForm: View {
         }
         let found = draft.ticked.count + draft.extras.count - before
         draft.documentTitle = CaptureMapping.defaultTitle(for: result.kind, fields: Dictionary(result.fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first }))
-        if draft.documentID != nil {
+        if draft.document != nil {
             readNote = found > 0
                 ? String(localized: "Am bifat \(found) rânduri de pe factură. Verifică-le.")
                 : String(localized: "Nu am găsit rânduri de bifat. Bifează de mână.")
@@ -367,59 +378,60 @@ private struct VisitForm: View {
         }
     }
 
-    private func save() {
+    private func save(lowerReading: LowerReadingAnswer? = nil) {
         errorMessage = nil
         isSaving = true
         Task {
             defer { isSaving = false }
             do {
-                let provider = try resolveProvider()
-                var documents: [DocumentDraft] = []
-                if let id = draft.documentID, let processed = await CaptureDocumentStore.shared().take(id: id) {
-                    documents.append(processed.draft(
-                        title: draft.documentTitle,
-                        kind: .invoice,
-                        extractedText: draft.documentText,
-                        documentDate: CalendarDay(draft.date)
-                    ))
-                }
-                let entry = try HistoryActions(context: context).recordVisit(
-                    on: asset,
+                // The provider, the visit and the invoice are one unit of work: all kept, or
+                // none; an invoice already in the binder moves to the visit, never left out.
+                var filer = CaptureFiler(context: context)
+                filer.lowerReading = lowerReading
+                let outcome = try await filer.file(.visit(.init(
+                    asset: asset,
                     kind: wording.kind,
                     occurredAt: draft.date,
                     checklist: draft.checklistItems,
                     extraItems: draft.extraItems,
                     totalCost: draft.totalMoney,
                     odometer: draft.odometer,
-                    provider: provider,
-                    documents: documents,
-                    rating: draft.rating
-                )
-                withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { saved = entry }
+                    odometerSource: draft.odometerSource,
+                    provider: providerChoice,
+                    rating: draft.rating,
+                    document: draft.document,
+                    documentTitle: draft.documentTitle,
+                    documentText: draft.documentText
+                )))
+                receipt = outcome.receipt
+                withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { saved = outcome.visit }
+            } catch let question as ExampleSectionQuestion {
+                exampleQuestion = question
+            } catch let question as LowerReadingQuestion {
+                readingQuestion = question
             } catch {
-                errorMessage = error.localizedDescription
+                errorMessage = SaveFailure.message(for: error, formKept: true)
             }
         }
     }
 
-    private func resolveProvider() throws -> Provider? {
+    private var providerChoice: CaptureFiler.Visit.ProviderChoice {
         switch draft.provider {
-        case .none: return nil
-        case .existing(let id): return allProviders.first { $0.id == id }
-        case .new(let name):
-            let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !trimmed.isEmpty else { return nil }
-            return try ProviderActions(context: context).create(name: trimmed, trades: [wording.trade], linkedTo: [asset])
+        case .none: return .none
+        case .existing(let id): return allProviders.first { $0.id == id }.map { .existing($0) } ?? .none
+        case .new(let name): return .named(name, trade: wording.trade, taxID: draft.providerTaxID)
         }
     }
 
-    private func undo(_ entry: HistoryEntry) {
+    private func undo() {
         do {
-            try HistoryActions(context: context).undoVisit(entry)
+            guard let receipt else { throw UndoError.unavailable }
+            try receipt.undo()
+            self.receipt = nil
             saved = nil
-            toast = DSToast(title: "Vizita a fost anulată.", systemImage: "arrow.uturn.backward.circle.fill", tint: DS.Palette.accent, actionTitle: nil, action: nil)
+            toast = DSToast(title: "Vizita a fost anulată.", systemImage: "arrow.uturn.backward.circle.fill", tint: DS.Palette.accent, actionTitle: nil)
         } catch {
-            toast = UpcomingActions.failureToast(error)
+            toast = .failure(error)
         }
     }
 
@@ -482,11 +494,11 @@ private struct VisitSavedView: View {
     }
 
     private func detail(_ change: VisitChange) -> String {
-        let day = entry.occurredAt.formatted(.dateTime.day().month(.wide).locale(.dosarDefault))
+        let day = DosarFormat.dayMonth(entry.occurredAt)
         guard let previous = change.previous else {
             return String(localized: "Pe \(day). Prima dată în dosar.")
         }
-        let before = previous.formatted(.dateTime.month(.wide).year().locale(.dosarDefault))
+        let before = DosarFormat.monthYear(previous)
         return String(localized: "Pe \(day). Înainte: \(before).")
     }
 }

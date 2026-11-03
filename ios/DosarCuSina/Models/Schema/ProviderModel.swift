@@ -18,6 +18,8 @@ public enum ProviderTrade: String, Codable, CaseIterable, Sendable {
     case doctor
     case dentist
     case insuranceAgent
+    /// The insurance company that issued a policy (RCA, CASCO, PAD).
+    case insurer
     case accountant
     case tenant
     case emergencyContact
@@ -39,6 +41,7 @@ public enum ProviderTrade: String, Codable, CaseIterable, Sendable {
         case .doctor: return String(localized: "Medic")
         case .dentist: return String(localized: "Stomatolog")
         case .insuranceAgent: return String(localized: "Agent de asigurări")
+        case .insurer: return String(localized: "Asigurător")
         case .accountant: return String(localized: "Contabil")
         case .tenant: return String(localized: "Chiriaș")
         case .emergencyContact: return String(localized: "Contact pentru urgențe")
@@ -47,7 +50,7 @@ public enum ProviderTrade: String, Codable, CaseIterable, Sendable {
     }
 }
 
-extension DosarSchemaV2 {
+extension DosarSchemaV5 {
     /// A person or business the household relies on: the mechanic, the plumber
     /// who changed the tap, the vet, the insurance agent. Linked to the assets
     /// they look after and to the history entries of the work they did, so
@@ -69,6 +72,9 @@ extension DosarSchemaV2 {
         /// Contacts framework identifier, when linked to the address book. It only
         /// resolves on the device that picked it; the fields above are the source of truth.
         public var contactIdentifier: String?
+        /// A firm's tax ID (CUI), digits only, as read off its invoices or policies. Two
+        /// records with the same CUI are the same firm, whatever their names say.
+        public var taxID: String?
         public var isExample: Bool = false
         public var createdAt: Date = Date()
         public var updatedAt: Date = Date()

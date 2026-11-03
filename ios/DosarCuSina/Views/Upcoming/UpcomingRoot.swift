@@ -13,9 +13,16 @@ struct UpcomingRoot: View {
     @Environment(\.modelContext) private var context
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Query private var obligations: [Obligation]
+    /// Subscriptions, so a bill filed or a subscription changed refreshes the missing-bill notes.
+    /// (`BuiltInTemplates.Key.subscription`; a macro predicate takes the key as written.)
+    @Query(filter: #Predicate<Asset> { $0.templateKey == "subscription" }) private var subscriptions: [Asset]
 
     @State private var snapshots: [ObligationSnapshot] = []
     @State private var digest: AttentionDigest?
+    /// Calm notes with nothing due: a bill that hasn't come.
+    @State private var notes: [AttentionNote] = []
+    /// Reminder buttons and widget taps that couldn't be saved, while their cycle is still open.
+    @State private var unsaved: [OutsideActionFailures.Failure] = []
     @State private var today = CalendarDay(Date())
     @State private var expanded: Set<String> = []
     @State private var toast: DSToast?
@@ -37,6 +44,7 @@ struct UpcomingRoot: View {
         .dsToast($toast)
         .task(id: changeToken) { reload() }
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in reload() }
+        .onReceive(NotificationCenter.default.publisher(for: OutsideActionFailures.didChange)) { _ in reload() }
         .confirmationDialog(
             Text("Amâni până când?"),
             isPresented: Binding(get: { snoozing != nil }, set: { if !$0 { snoozing = nil } }),
@@ -61,6 +69,11 @@ struct UpcomingRoot: View {
             hasher.combine(obligation.snoozedUntil)
             hasher.combine(obligation.asset?.name)
         }
+        for subscription in subscriptions {
+            hasher.combine(subscription.id)
+            hasher.combine(subscription.updatedAt)
+            hasher.combine(subscription.history?.count)
+        }
         return hasher.finalize()
     }
 
@@ -68,6 +81,8 @@ struct UpcomingRoot: View {
         today = CalendarDay(Date())
         snapshots = (try? ObligationSnapshot.fetchAll(in: context)) ?? []
         digest = AttentionModel.digest(snapshots)
+        notes = AttentionModel.missingBills((try? BillWatchSnapshot.fetchAll(in: context)) ?? [])
+        unsaved = OutsideActionFailures.shared.current(in: snapshots).map(\.failure)
     }
 
     // MARK: Content
@@ -75,6 +90,13 @@ struct UpcomingRoot: View {
     @ViewBuilder private var content: some View {
         if let digest {
             List {
+                if !unsaved.isEmpty {
+                    Section {
+                        ForEach(unsaved) { failure in unsavedRow(failure) }
+                    } header: {
+                        sectionHeader("Nu s-a salvat", subtitle: "Fă-o din nou de aici.")
+                    }
+                }
                 if digest.now.isEmpty && digest.soon.isEmpty {
                     Section { allClear(digest) }
                         .listRowBackground(Color.clear)
@@ -94,6 +116,13 @@ struct UpcomingRoot: View {
                         sectionHeader("Curând", subtitle: "În următoarele 30 de zile")
                     }
                 }
+                if !notes.isEmpty {
+                    Section {
+                        ForEach(notes) { note in noteRow(note) }
+                    } header: {
+                        sectionHeader("Din timp", subtitle: "Nimic de plătit acum, doar de știut.")
+                    }
+                }
                 if digest.later.count > 0 || digest.hiddenCount > 0 {
                     Section {
                         if digest.later.count > 0 { laterRow(digest.later) }
@@ -101,6 +130,16 @@ struct UpcomingRoot: View {
                     } header: {
                         sectionHeader("Mai târziu", subtitle: nil)
                     }
+                }
+                Section {
+                    // The situations that are about the whole household, from the one list of them.
+                    ForEach(ReadinessSituation.allCases.filter(\.isHouseholdWide)) { situation in
+                        if let route = situation.route(for: nil) {
+                            SituationLink(situation: situation, route: route, inList: true)
+                        }
+                    }
+                } header: {
+                    sectionHeader("Pregătește-te", subtitle: nil)
                 }
                 if snapshots.contains(where: \.isExample) {
                     Section {
@@ -186,6 +225,53 @@ struct UpcomingRoot: View {
         return String(localized: "\(count), primul pe \(first)", comment: "Deadlines in a section, and the date of the first")
     }
 
+    /// A calm note: no badge, no alarm colour, opens the subscription.
+    private func noteRow(_ note: AttentionNote) -> some View {
+        NavigationLink(value: AppRoute.asset(note.assetId)) {
+            DSListRow(
+                title: Text(verbatim: note.title),
+                subtitle: Text(verbatim: note.detail),
+                systemImage: "envelope.open",
+                trailing: { EmptyView() }
+            )
+        }
+        .accessibilityHint(Text("Deschide abonamentul.", comment: "VoiceOver hint of a missing-bill note."))
+    }
+
+    /// A reminder button or widget tap that couldn't be saved: says which and where,
+    /// and opens the deadline so it can be done again. It goes once that cycle is
+    /// done, or with a swipe.
+    private func unsavedRow(_ failure: OutsideActionFailures.Failure) -> some View {
+        let obligation = snapshots.first { $0.id == failure.obligationId }
+        let isLocked = vault.isLocked(sectionIsSensitive: obligation?.isSensitive ?? false)
+        let name = isLocked ? String(localized: "O scadență protejată") : (obligation?.title ?? "")
+        let title: String
+        switch failure.action {
+        case .complete: title = String(localized: "„\(name)” nu s-a bifat", comment: "Urmează: a reminder button or widget tap for this deadline couldn't be saved")
+        case .snooze: title = String(localized: "„\(name)” nu s-a amânat", comment: "Urmează: a snooze from a reminder couldn't be saved")
+        }
+        let when = DueWording.date(CalendarDay(failure.failedAt), today: today)
+        let detail: String
+        switch failure.surface {
+        case .widget: detail = String(localized: "Din widget, \(when)", comment: "Where and when an unsaved tap came from")
+        case .notification, .shortcut: detail = String(localized: "Din notificare, \(when)", comment: "Where and when an unsaved tap came from")
+        }
+        return NavigationLink(value: AppRoute.obligation(failure.obligationId)) {
+            DSListRow(
+                title: Text(verbatim: title),
+                subtitle: Text(verbatim: detail),
+                systemImage: "arrow.clockwise.circle",
+                trailing: { EmptyView() }
+            )
+        }
+        .swipeActions(edge: .trailing) {
+            Button { OutsideActionFailures.shared.dismiss(failure.obligationId) } label: { Label("Ascunde", systemImage: "eye.slash") }
+                .tint(DS.Palette.secondaryLabel)
+        }
+        .accessibilityAction(named: Text("Ascunde")) { OutsideActionFailures.shared.dismiss(failure.obligationId) }
+        .accessibilityHint(Text("Deschide termenul ca să-l faci din nou.", comment: "VoiceOver hint of an unsaved tap in Urmează."))
+    }
+
     private func laterRow(_ later: AttentionLaterSummary) -> some View {
         NavigationLink(value: UpcomingDestination.later) {
             DSListRow(
@@ -257,7 +343,7 @@ struct UpcomingRoot: View {
             let actions = UpcomingActions(context: context)
             guard let obligation = actions.obligation(entry.id) else { return }
             do {
-                toast = try actions.complete(obligation, title: obligation.title).toast
+                toast = try actions.complete(obligation, title: obligation.title)
             } catch {
                 toast = UpcomingActions.failureToast(error)
             }
@@ -314,11 +400,8 @@ struct UpcomingRow: View {
         .accessibilityHint(Text("Glisează pentru Gata sau Amână."))
     }
 
+    /// The tone of its urgency, the same one its badge and box use.
     private var statusColor: Color {
-        switch entry.urgency {
-        case .overdue: DSStatus.overdue.textColor
-        case .today: DSStatus.soon.textColor
-        default: DS.Palette.secondaryLabel
-        }
+        DSStatus.urgent(entry.urgency.tone)?.textColor ?? DS.Palette.secondaryLabel
     }
 }

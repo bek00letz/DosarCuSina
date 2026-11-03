@@ -71,9 +71,58 @@ struct DSSecondaryButton: View {
     }
 }
 
+/// A small action beside a row ("Adaugă" next to a suggestion): bordered, never
+/// wrapping its title, and still at least a 44 pt target.
+struct DSCompactButton: View {
+    private let title: Text
+    private let systemImage: String?
+    private let action: () -> Void
+
+    init(_ title: LocalizedStringKey, systemImage: String? = nil, action: @escaping () -> Void) {
+        self.title = Text(title)
+        self.systemImage = systemImage
+        self.action = action
+    }
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: DS.Space.xxs) {
+                if let systemImage {
+                    Image(systemName: systemImage).accessibilityHidden(true)
+                }
+                title.lineLimit(1).fixedSize()
+            }
+            .font(.subheadline.weight(.semibold))
+            .frame(minHeight: DS.Control.compactLabel)
+        }
+        .buttonStyle(.bordered)
+        .controlSize(.large)
+    }
+}
+
+extension View {
+    /// The full-width look for a control that isn't a plain button, such as a
+    /// `ShareLink`: give it a `DSButtonLabel` as its label.
+    func dsFullWidthButton(prominent: Bool) -> some View {
+        modifier(DSFullWidthButtonStyle(prominent: prominent))
+    }
+}
+
+private struct DSFullWidthButtonStyle: ViewModifier {
+    let prominent: Bool
+
+    func body(content: Content) -> some View {
+        if prominent {
+            content.buttonStyle(.borderedProminent).modifier(DSFullWidthButtonShape())
+        } else {
+            content.buttonStyle(.bordered).modifier(DSFullWidthButtonShape())
+        }
+    }
+}
+
 /// The label both full-width buttons share: an optional symbol and a title that
 /// wraps instead of truncating at large text sizes.
-private struct DSButtonLabel: View {
+struct DSButtonLabel: View {
     let title: Text
     let systemImage: String?
 
@@ -85,7 +134,7 @@ private struct DSButtonLabel: View {
             title.multilineTextAlignment(.center)
         }
         .font(.headline)
-        .frame(maxWidth: .infinity, minHeight: 34)
+        .frame(maxWidth: .infinity, minHeight: DS.Control.fullWidthLabel)
     }
 }
 

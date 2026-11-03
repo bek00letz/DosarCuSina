@@ -53,6 +53,7 @@ private struct SectionContent: View {
     @Query private var templates: [CategoryTemplate]
 
     @State private var isEditing = false
+    @State private var isMoving = false
     @State private var isConfirmingDelete = false
     @State private var error: UserFacingError?
     @State private var toast: DSToast?
@@ -82,8 +83,19 @@ private struct SectionContent: View {
         return ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.xl) {
                 SectionHero(asset: asset, definition: definition)
+                if definition.behavior.role == .personalDocument, (asset.attachments ?? []).isEmpty {
+                    DocumentPhotoPrompt(asset: asset, toast: $toast)
+                }
+                SecretFieldsCard(asset: asset, definition: definition)
+                // The situations this section offers sit under what comes up next, or under the hero.
+                if !definition.pockets.contains(.upcoming) {
+                    SituationsCard(assetID: asset.id, definition: definition)
+                }
                 ForEach(definition.pockets, id: \.self) { pocket in
                     PocketView(pocket: pocket, asset: asset, definition: definition, toast: $toast, error: $error)
+                    if pocket == .upcoming {
+                        SituationsCard(assetID: asset.id, definition: definition)
+                    }
                 }
                 deleteButton
             }
@@ -102,9 +114,27 @@ private struct SectionContent: View {
                 }
                 .keyboardShortcut("e", modifiers: .command)
             }
+            if AssetActions.parentTemplateKey(for: asset) != nil {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Button {
+                            isMoving = true
+                        } label: {
+                            Label { Text("Mută la…", comment: "Menu item that files something under another parent.") } icon: { Image(systemName: "arrow.turn.up.right") }
+                        }
+                    } label: {
+                        Label { Text("Mai multe", comment: "Toolbar menu with more actions for a section.") } icon: { Image(systemName: "ellipsis.circle") }
+                    }
+                }
+            }
         }
         .sheet(isPresented: $isEditing) {
-            AssetEditSheet(asset: asset, definition: definition)
+            AssetEditSheet(asset: asset, definition: definition) { toast = $0 }
+        }
+        .sheet(isPresented: $isMoving) {
+            MoveAssetSheet(asset: asset) { moved in
+                toast = .undo(moved.toastTitle, receipt: moved.receipt)
+            }
         }
         .confirmationDialog(deleteTitle, isPresented: $isConfirmingDelete, titleVisibility: .visible) {
             deleteActions
@@ -176,11 +206,11 @@ private struct PocketView: View {
         case .upcoming:
             UpcomingPocket(asset: asset)
         case .tenants:
-            ChildrenPocket(asset: asset, pocket: pocket, childKey: BuiltInTemplates.Key.tenancy)
+            ChildrenPocket(asset: asset, pocket: pocket)
         case .products:
-            ChildrenPocket(asset: asset, pocket: pocket, childKey: BuiltInTemplates.Key.purchase)
+            ChildrenPocket(asset: asset, pocket: pocket)
         case .subscriptions:
-            ChildrenPocket(asset: asset, pocket: pocket, childKey: BuiltInTemplates.Key.subscription)
+            ChildrenPocket(asset: asset, pocket: pocket)
         case .documents:
             DocumentsPocket(asset: asset)
         case .history:
@@ -191,6 +221,83 @@ private struct PocketView: View {
             MoneyPocket(asset: asset, definition: definition)
         case .keyFacts:
             KeyFactsPocket(asset: asset, definition: definition, toast: $toast, error: $error)
+        }
+    }
+}
+
+/// On a document that has no picture yet: "Adaugă poza actului", front and
+/// centre. The photo goes through capture, which fills in what it reads.
+private struct DocumentPhotoPrompt: View {
+    let asset: Asset
+    @Binding var toast: DSToast?
+
+    @State private var isChoosingSource = false
+    @State private var errorMessage: String?
+
+    var body: some View {
+        DSCard {
+            VStack(alignment: .leading, spacing: DS.Space.s) {
+                HStack(alignment: .top, spacing: DS.Space.s) {
+                    DSIconWell(systemImage: "camera.fill", tint: DS.Palette.accent)
+                    VStack(alignment: .leading, spacing: DS.Space.xxs) {
+                        Text("Nu are încă poza actului", comment: "Prompt on a document page without a picture.")
+                            .dsFont(.headline)
+                        Text("Cu poza la îndemână nu mai cauți actul prin casă. Ce citesc din ea completez aici.", comment: "Why to add a picture of a document.")
+                            .dsFont(.subheadline)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                DSPrimaryButton("Adaugă poza actului", systemImage: "camera.fill") {
+                    errorMessage = nil
+                    isChoosingSource = true
+                }
+                if let errorMessage {
+                    DSNotice(.error, title: "Nu s-a deschis", message: LocalizedStringKey(errorMessage))
+                }
+            }
+        }
+        .photoFirstCapture(
+            isPresented: $isChoosingSource,
+            title: Text("Adaugă poza actului", comment: "Title of the photo source choice for a document."),
+            assetID: asset.id
+        ) { message in
+            toast = DSToast(title: message, actionTitle: nil, action: nil)
+        } onError: { message in
+            errorMessage = message
+        }
+    }
+}
+
+/// The asset's secret fields (an electronic identity card's PIN codes), masked.
+/// Showing or copying one asks for Face ID every time, even with the section open.
+private struct SecretFieldsCard: View {
+    let asset: Asset
+    let definition: TemplateDefinition
+
+    @Environment(BiometricVaultManager.self) private var vault
+
+    var body: some View {
+        let fields = SecretFields.fields(in: definition).filter { $0.applies(to: asset.values) }
+        if !fields.isEmpty {
+            DSPocketCard(String(localized: "Coduri PIN", comment: "Header of the secret codes on a document page.")) {
+                ForEach(Array(fields.enumerated()), id: \.element.key) { index, field in
+                    if index > 0 { DSRowSeparator() }
+                    let sealed = asset.value(field.key)?.textValue
+                    DSSecretValueRow(
+                        title: Text(verbatim: field.label),
+                        footnote: sealed == nil
+                            ? Text("Îl poți scrie din Editează. Îl arăt doar după Face ID.", comment: "Footnote of an empty secret code row.")
+                            : nil,
+                        isSet: sealed != nil
+                    ) {
+                        guard let sealed else { return .notAuthenticated }
+                        return await SecretReveal(vault: vault).open(
+                            sealed,
+                            reason: String(localized: "Arată \(field.label)", comment: "Face ID reason when showing a secret code.")
+                        )
+                    }
+                }
+            }
         }
     }
 }

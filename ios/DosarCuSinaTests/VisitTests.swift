@@ -26,7 +26,7 @@ struct VisitTests {
             provider: mechanic,
             documents: [DocumentDraft(title: "Factură service", fileName: "factura.pdf", kind: .invoice, contentType: "com.adobe.pdf", originalData: Data([1, 2, 3]))],
             calendar: .bucharest
-        )
+        ).value
         #expect(entry.items?.count == 3)
         #expect(Set(entry.items?.compactMap(\.componentKey) ?? []) == ["engine.oil", "filters.cabin", "brakes.padsFront"])
         #expect(entry.items?.first { $0.componentKey == "filters.cabin" }?.name == "Filtru de habitaclu", "Names come from the catalog")

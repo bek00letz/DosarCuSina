@@ -1,33 +1,5 @@
 import SwiftUI
 
-/// Calendar-day arithmetic for due and expiry dates. Pure so it can be unit tested.
-enum DSDayMath {
-    /// Whole calendar days from `today` to `date` (negative when `date` is in the past),
-    /// counted between the starts of the two days so the time of day never matters.
-    static func daysRemaining(until date: Date, from today: Date = .now, calendar: Calendar = .current) -> Int {
-        let start = calendar.startOfDay(for: today)
-        let end = calendar.startOfDay(for: date)
-        return calendar.dateComponents([.day], from: start, to: end).day ?? 0
-    }
-}
-
-extension DSDueText {
-    /// Wording for documents and warranties: "Expiră în 20 de zile", "Expirat de 3 zile", "Valabil".
-    static func expiryText(daysRemaining days: Int, soonWithinDays: Int) -> LocalizedStringResource {
-        switch days {
-        case ..<0:
-            let ago = -days
-            return LocalizedStringResource("Expirat de \(DurationWording.phrase(days: ago))", comment: "Badge: a document expired this long ago, e.g. '5 zile' or '3 ani'.")
-        case 0:
-            return LocalizedStringResource("Expiră azi", comment: "Badge: a document expires today.")
-        case 1...soonWithinDays:
-            return LocalizedStringResource("Expiră în \(DurationWording.phrase(days: days))", comment: "Badge: a document expires in a duration such as '5 zile' or '8 ani'.")
-        default:
-            return LocalizedStringResource("Valabil", comment: "Badge: a document is valid and not close to expiring.")
-        }
-    }
-}
-
 /// An optional date. Empty until the person adds one, and it can be cleared again.
 struct DSDateField: View {
     let title: LocalizedStringKey
@@ -73,12 +45,13 @@ struct DSDateField: View {
     }
 }
 
-/// An expiry date that shows at a glance whether it's still valid.
-/// `soonWithinDays` sets when the warning starts, e.g. 180 for passports (the 6-month travel rule).
+/// An expiry date that shows at a glance whether it's still valid. `urgencyRule` is
+/// the rule of the deadline this date drives (from its reminders), so the badge here
+/// says what Urmează and the section's page will say.
 struct DSExpiryDateField: View {
     let title: LocalizedStringKey
     @Binding var date: Date?
-    var soonWithinDays: Int = 30
+    var urgencyRule: UrgencyRule = .noReminders
     var isRequired: Bool = false
     var footnote: LocalizedStringKey?
 
@@ -88,13 +61,13 @@ struct DSExpiryDateField: View {
     init(
         _ title: LocalizedStringKey,
         date: Binding<Date?>,
-        soonWithinDays: Int = 30,
+        urgencyRule: UrgencyRule = .noReminders,
         isRequired: Bool = false,
         footnote: LocalizedStringKey? = nil
     ) {
         self.title = title
         self._date = date
-        self.soonWithinDays = soonWithinDays
+        self.urgencyRule = urgencyRule
         self.isRequired = isRequired
         self.footnote = footnote
     }
@@ -108,10 +81,11 @@ struct DSExpiryDateField: View {
         ) {
             DSDateInput(title: title, date: $date, range: nil) {
                 if let date {
-                    let days = DSDayMath.daysRemaining(until: date, calendar: calendar)
+                    let today = CalendarDay(Date(), calendar: calendar)
+                    let day = CalendarDay(date, calendar: calendar)
                     DSStatusBadge(
-                        days < 0 ? .overdue : (days <= soonWithinDays ? .soon : .done),
-                        text: Text(DSDueText.expiryText(daysRemaining: days, soonWithinDays: soonWithinDays))
+                        expiry: urgencyRule.urgency(of: day, today: today, calendar: calendar),
+                        daysRemaining: today.days(to: day, calendar: calendar)
                     )
                     .transition(.opacity)
                 }
@@ -159,7 +133,7 @@ private struct DSDateInput<Accessory: View>: View {
                     } icon: {
                         Image(systemName: "calendar.badge.plus")
                     }
-                    .frame(maxWidth: .infinity, minHeight: 28, alignment: .leading)
+                    .frame(maxWidth: .infinity, minHeight: DS.Control.minimumHitTarget, alignment: .leading)
                     .contentShape(.rect)
                 }
                 .buttonStyle(.borderless)

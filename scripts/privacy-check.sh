@@ -15,6 +15,8 @@
 #   3. Added lines: absolute paths into someone's home folder.
 #   4. Added lines: Romanian personal numbers (CNP) with a valid control digit.
 #      Made-up ones use county code 99 and pass.
+#   5. Added lines: bank card numbers, 13 to 19 digits that pass the card check
+#      digit. Only the published test numbers listed below pass.
 #
 # It lists patterns only. Never write a finding, a trace or a real value here.
 # It never prints a matched value either: pull request logs are public.
@@ -69,6 +71,18 @@ home_path_pattern='(/Users/|/home/)[A-Za-z0-9._-]+/|file:/{3}'
 # A 13-digit number that could be a CNP; validated below.
 cnp_candidate='(^|[^0-9])[1-8][0-9]{12}([^0-9]|$)'
 
+# Thirteen digits or more, maybe with spaces or dashes between them, that could be a
+# card number; validated below.
+card_candidate='[0-9]([ -]?[0-9]){12}'
+
+# The only card numbers that may appear: test numbers that card networks and payment
+# providers publish for testing, which belong to no one. Digits only, separated by a
+# space. Add another only if it is published as a test number; never a real card's.
+allowed_card_numbers='4111111111111111 4242424242424242 4012888888881881'
+allowed_card_numbers+=' 5555555555554444 5105105105105100 2223003122003222'
+allowed_card_numbers+=' 378282246310005 371449635398431 6011111111111117'
+allowed_card_numbers+=' 30569309025904 3566002020360505'
+
 problems=0
 report() {
     # $1 where, $2 what is wrong
@@ -107,6 +121,29 @@ added=$(awk '
     }
     /^\+/ { print path "\t" line "\t" substr($0, 2); line++ }
 ' <<<"$diff_text")
+
+# The card rule skips past commits the owner reviewed and recorded in
+# scripts/privacy-reviewed-commits.txt (commit ids and a reason only, never a value):
+# lines that look like card numbers but aren't anyone's, already fixed in a later commit.
+card_added=$added
+reviewed_file=scripts/privacy-reviewed-commits.txt
+if [[ $mode == range && -f $reviewed_file ]]; then
+    reviewed=$(grep -Eo '^[0-9a-f]{40}[[:space:]]+card-number' "$reviewed_file" | cut -c1-40 | tr '\n' ' ' || true)
+    if [[ -n $reviewed ]]; then
+        card_diff=$(git log -p -U0 --format='@@@commit %H' --no-color --no-ext-diff --diff-filter=ACMR "$base..$head")
+        card_added=$(awk -v reviewed="$reviewed" '
+            BEGIN { n = split(reviewed, list, " "); for (i = 1; i <= n; i++) skip[list[i]] = 1 }
+            /^@@@commit / { commit = $2; next }
+            skip[commit] { next }
+            /^\+\+\+ / { path = substr($0, 5); sub(/^b\//, "", path); next }
+            /^@@ / {
+                split($0, parts, " "); start = parts[3]; sub(/^\+/, "", start)
+                split(start, numbers, ","); line = numbers[1] + 0; next
+            }
+            /^\+/ { print path "\t" line "\t" substr($0, 2); line++ }
+        ' <<<"$card_diff")
+    fi
+fi
 
 check_lines() {
     # $1 pattern, $2 message
@@ -152,6 +189,66 @@ if [[ -n $added ]]; then
             [[ -z $index ]] && continue
             report "$(sed -n "${index}p" <<<"$added" | cut -f1,2 | tr '\t' ':')" \
                 "This looks like a real personal number (CNP). Use a made-up one with county code 99 and a valid control digit."
+        done <<<"$flagged"
+    fi
+
+    # Card numbers: 13 to 19 digits that pass the card check digit (Luhn), printed whole
+    # or in groups of three digits or more with a space or a dash between them, as cards
+    # print them. Digits inside a longer word or code (a hash, an IBAN, an identifier)
+    # aren't a card. A made-up CNP (county code 99, as the rule above asks) isn't either.
+    card_lines=$(cut -f3- <<<"$card_added" | grep -nE -- "$card_candidate" || true)
+    if [[ -n $card_lines ]]; then
+        flagged=$(awk -F: -v allowed_list="$allowed_card_numbers" '
+            function luhn(s,   i, sum, d, doubled) {
+                sum = 0; doubled = 0
+                for (i = length(s); i >= 1; i--) {
+                    d = substr(s, i, 1) + 0
+                    if (doubled) { d *= 2; if (d > 9) d -= 9 }
+                    sum += d; doubled = !doubled
+                }
+                return sum % 10 == 0
+            }
+            function made_up_cnp(s,   i, sum, r, control) {
+                if (length(s) != 13 || substr(s, 8, 2) != "99") return 0
+                sum = 0
+                for (i = 1; i <= 12; i++) sum += substr(s, i, 1) * substr("279146358279", i, 1)
+                r = sum % 11; control = (r == 10) ? 1 : r
+                return control == substr(s, 13, 1) + 0
+            }
+            function card_number(s) {
+                return length(s) >= 13 && length(s) <= 19 && luhn(s) && !(s in allowed) && !made_up_cnp(s)
+            }
+            BEGIN {
+                count = split(allowed_list, list, " ")
+                for (i = 1; i <= count; i++) allowed[list[i]] = 1
+            }
+            {
+                index_ = $1; text = substr($0, length($1) + 2); found = 0
+                while (!found && match(text, /[0-9]+([ -][0-9]+)*/)) {
+                    before = (RSTART > 1) ? substr(text, RSTART - 1, 1) : ""
+                    after = substr(text, RSTART + RLENGTH, 1)
+                    run = substr(text, RSTART, RLENGTH)
+                    text = substr(text, RSTART + RLENGTH)
+                    if (before ~ /[A-Za-z0-9_]/ || after ~ /[A-Za-z0-9_]/) continue
+                    groups = split(run, group, "[ -]")
+                    # Every stretch of whole groups: one group by itself, or groups of three digits or more.
+                    for (first = 1; first <= groups && !found; first++) {
+                        digits = ""
+                        for (last = first; last <= groups; last++) {
+                            if (last > first && (length(group[first]) < 3 || length(group[last]) < 3)) break
+                            digits = digits group[last]
+                            if (length(digits) > 19) break
+                            if (card_number(digits)) { found = 1; break }
+                        }
+                    }
+                }
+                if (found) print index_
+            }
+        ' <<<"$card_lines")
+        while IFS= read -r index; do
+            [[ -z $index ]] && continue
+            report "$(sed -n "${index}p" <<<"$card_added" | cut -f1,2 | tr '\t' ':')" \
+                "This looks like a bank card number. Use a published test number, such as 4111 1111 1111 1111."
         done <<<"$flagged"
     fi
 fi

@@ -14,7 +14,6 @@ public final class CadenceCalculator: Sendable {
         case weeks(Int)
         case months(Int)
         case years(Int)
-        case annual
     }
     
     /// A single timestamped telemetry observation.
@@ -57,15 +56,6 @@ public final class CadenceCalculator: Sendable {
         }
     }
     
-    /// Categorized urgency status for a lifecycle event.
-    public enum EventUrgencyStatus: Sendable, Equatable {
-        case completed
-        case overdue(days: Int)
-        case urgent(days: Int)
-        case upcoming(days: Int)
-        case planned(days: Int)
-    }
-    
     public init() {}
     
     // MARK: - Calendar Cadence Engine
@@ -75,43 +65,11 @@ public final class CadenceCalculator: Sendable {
         return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
     }
     
-    /// Computes the next calendar due date based on a day-count cadence.
-    ///
-    /// For annual intervals (365 or 366 days), accurately preserves the anniversary date
-    /// and clamps February 29th to February 28th on non-leap years.
-    ///
-    /// - Parameters:
-    ///   - lastDate: The reference or previous due date.
-    ///   - cadenceDays: The recurrence interval in days.
-    ///   - calendar: Calendar to use for arithmetic (defaults to `.current`).
-    /// - Returns: The calculated next due date.
-    public static func calculateNextDueDate(
-        from lastDate: Date,
-        cadenceDays: Int,
-        calendar: Calendar = .current
-    ) -> Date {
-        guard cadenceDays > 0 else { return lastDate }
-        
-        // Annual recurrence heuristic: 365 or 366 days
-        if cadenceDays == 365 || cadenceDays == 366 {
-            return addYears(to: lastDate, years: 1, calendar: calendar)
-        }
-        
-        // Biannual recurrence heuristic: 730 or 731 days
-        if cadenceDays == 730 || cadenceDays == 731 {
-            return addYears(to: lastDate, years: 2, calendar: calendar)
-        }
-        
-        // Standard day addition
-        return calendar.date(byAdding: .day, value: cadenceDays, to: lastDate)
-            ?? lastDate.addingTimeInterval(Double(cadenceDays) * 86400.0)
-    }
-    
     /// Computes the next calendar due date based on an explicit cadence interval enum.
     ///
     /// - Parameters:
     ///   - lastDate: The reference date.
-    ///   - interval: Recurrence interval (.days, .weeks, .months, .years, .annual).
+    ///   - interval: Recurrence interval (.days, .weeks, .months, .years).
     ///   - calendar: Calendar instance.
     /// - Returns: The next due date.
     public static func calculateNextDueDate(
@@ -137,9 +95,6 @@ public final class CadenceCalculator: Sendable {
         case .years(let years):
             guard years > 0 else { return lastDate }
             return addYears(to: lastDate, years: years, calendar: calendar)
-            
-        case .annual:
-            return addYears(to: lastDate, years: 1, calendar: calendar)
         }
     }
     
@@ -177,8 +132,13 @@ public final class CadenceCalculator: Sendable {
     }
     
     /// Adds months to a date with end-of-month clamping (e.g., Jan 31 -> Feb 28/29).
-    public static func addMonths(to date: Date, months: Int, calendar: Calendar = .current) -> Date {
-        guard months != 0 else { return date }
+    ///
+    /// - Parameter dayOfMonth: the day a series keeps (31 for "the 31st"). The result
+    ///   is that day, or the target month's last day when it is shorter. Without it,
+    ///   the date's own day is used, so a date already clamped (28 February) would
+    ///   carry its shorter day forward.
+    public static func addMonths(to date: Date, months: Int, dayOfMonth: Int? = nil, calendar: Calendar = .current) -> Date {
+        guard months != 0 || dayOfMonth != nil else { return date }
         
         var components = calendar.dateComponents(
             [.year, .month, .day, .hour, .minute, .second, .timeZone],
@@ -208,7 +168,7 @@ public final class CadenceCalculator: Sendable {
         
         components.year = targetYear
         components.month = targetMonth
-        components.day = min(currentDay, daysInTargetMonth)
+        components.day = min(dayOfMonth ?? currentDay, daysInTargetMonth)
         
         return calendar.date(from: components)
             ?? calendar.date(byAdding: .month, value: months, to: date)
@@ -271,42 +231,34 @@ public final class CadenceCalculator: Sendable {
             )
         }
         
-        // Sort readings chronologically
-        let sorted = readings.sorted { $0.date < $1.date }
+        // The one cleaned series: a reading that breaks the order (a typo, one kept aside)
+        // is skipped and flagged, never a reason to stop projecting.
+        let series = ReadingSeries(readings)
+        let sorted = series.readings
+        let hasRollback = !series.setAside.isEmpty
         
         var calculatedRate: Double? = nil
-        var hasRollback = false
         
-        // Check for anomalies & compute burn rate if we have >= 2 points
+        // Compute burn rate if we have >= 2 points
         if sorted.count >= 2 {
-            // Check for negative delta between any consecutive readings
-            for i in 1..<sorted.count {
-                if sorted[i].metric < sorted[i - 1].metric {
-                    hasRollback = true
-                    break
-                }
+            let first = sorted.first!
+            let last = sorted.last!
+            let deltaMetric = last.metric - first.metric
+            
+            let startOfFirst = calendar.startOfDay(for: first.date)
+            let startOfLast = calendar.startOfDay(for: last.date)
+            let deltaDays: Double
+            if let compDays = calendar.dateComponents([.day], from: startOfFirst, to: startOfLast).day, compDays > 0 {
+                let timeDiffFirst = first.date.timeIntervalSince(startOfFirst)
+                let timeDiffLast = last.date.timeIntervalSince(startOfLast)
+                deltaDays = Double(compDays) + ((timeDiffLast - timeDiffFirst) / 86400.0)
+            } else {
+                deltaDays = last.date.timeIntervalSince(first.date) / 86400.0
             }
             
-            if !hasRollback {
-                let first = sorted.first!
-                let last = sorted.last!
-                let deltaMetric = last.metric - first.metric
-                
-                let startOfFirst = calendar.startOfDay(for: first.date)
-                let startOfLast = calendar.startOfDay(for: last.date)
-                let deltaDays: Double
-                if let compDays = calendar.dateComponents([.day], from: startOfFirst, to: startOfLast).day, compDays > 0 {
-                    let timeDiffFirst = first.date.timeIntervalSince(startOfFirst)
-                    let timeDiffLast = last.date.timeIntervalSince(startOfLast)
-                    deltaDays = Double(compDays) + ((timeDiffLast - timeDiffFirst) / 86400.0)
-                } else {
-                    deltaDays = last.date.timeIntervalSince(first.date) / 86400.0
-                }
-                
-                // Guard against zero time delta or zero metric progression
-                if deltaDays > 0.001 && deltaMetric > 0 {
-                    calculatedRate = deltaMetric / deltaDays
-                }
+            // Guard against zero time delta or zero metric progression
+            if deltaDays > 0.001 && deltaMetric > 0 {
+                calculatedRate = deltaMetric / deltaDays
             }
         }
         
@@ -347,44 +299,5 @@ public final class CadenceCalculator: Sendable {
             isEstimatedFromBaseline: isBaseline,
             hasRollbackAnomaly: hasRollback
         )
-    }
-    
-    // MARK: - Urgency & Status Utilities
-    
-    /// Computes the exact number of days remaining until `dueDate`.
-    ///
-    /// Negative values indicate the deadline has passed.
-    public static func daysRemaining(
-        from currentDate: Date = Date(),
-        to dueDate: Date,
-        calendar: Calendar = .current
-    ) -> Int {
-        let startOfToday = calendar.startOfDay(for: currentDate)
-        let startOfDue = calendar.startOfDay(for: dueDate)
-        let components = calendar.dateComponents([.day], from: startOfToday, to: startOfDue)
-        return components.day ?? 0
-    }
-    
-    /// Determines the urgency status of a deadline.
-    public static func calculateUrgencyStatus(
-        dueDate: Date,
-        isCompleted: Bool,
-        currentDate: Date = Date(),
-        calendar: Calendar = .current
-    ) -> EventUrgencyStatus {
-        if isCompleted {
-            return .completed
-        }
-        
-        let remaining = daysRemaining(from: currentDate, to: dueDate, calendar: calendar)
-        if remaining < 0 {
-            return .overdue(days: abs(remaining))
-        } else if remaining <= 7 {
-            return .urgent(days: remaining)
-        } else if remaining <= 30 {
-            return .upcoming(days: remaining)
-        } else {
-            return .planned(days: remaining)
-        }
     }
 }

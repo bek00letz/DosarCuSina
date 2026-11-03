@@ -19,6 +19,16 @@ enum IdentityFormat: Hashable, Sendable {
     case text
     /// Driving licence categories: "B", "A1 B C1".
     case categories
+    /// A bank card's number, kept only as its last four digits (`PaymentCardNumbers`).
+    case cardLastFour
+    /// A bank card's expiry, printed as month and year ("08/28"): the month's last day.
+    case cardExpiry
+    /// A bank card's network, from its printed name or its number's first digits.
+    case cardNetwork
+    /// The bank that issued a card, by its name (`RomanianBanks`).
+    case bankName
+    /// What a cazier says: the line with "figurează", as printed.
+    case recordResult
 }
 
 /// What a known identity document looks like, as data: how to recognize it, the
@@ -66,6 +76,10 @@ struct IdentityTemplate: Sendable {
     let otherLabels: [LabelWording]
     /// Rules the document's values must satisfy on top of the general ones.
     let agreements: [CaptureConsistency.Rule]
+    /// The document variant this layout identifies (the electronic identity card
+    /// or the older one), so filing sets it and the variant's fields, such as the
+    /// PIN codes, appear without asking.
+    var documentVariant: String? = nil
 
     /// The label table `LabelledLayout` reads with: each field's labels, then the others.
     var labelTable: [(IdentityLabelKey, [LabelWording])] {
@@ -79,19 +93,48 @@ enum IdentityLabelKey: Hashable, Sendable {
     case other
 }
 
-/// The identity documents a Romanian household keeps.
+/// The identity and other personal documents a Romanian household keeps, as templates:
+/// the identity card (both layouts), the passport, the EU driving licence, the cazier
+/// (judiciar, fiscal or auto), the European health insurance card and the bank card.
 ///
 /// The national health insurance card isn't here: its printed fields couldn't be
-/// confirmed against an official specimen, and it is being phased out.
+/// confirmed against an official specimen, and it is being phased out. It is a document
+/// type (`DocumentType.nationalHealthCard`) the person adds with its holder and expiry.
 enum IdentityTemplates {
 
-    static let all: [IdentityTemplate] = [electronicIdentityCard, identityCard, passport, drivingLicence]
+    static let all: [IdentityTemplate] = [
+        electronicIdentityCard, identityCard, passport, drivingLicence,
+        criminalRecordJudicial, criminalRecordFiscal, criminalRecordDriving,
+        europeanHealthCard,
+        bankCard, debitCard, creditCard,
+    ]
+
+    /// Every field key a kind's templates read.
+    static func fieldKeys(for kind: CaptureDocumentKind) -> Set<CaptureFieldKey> {
+        Set(all.filter { $0.kind == kind }.flatMap { template in
+            template.fields.flatMap { field -> [CaptureFieldKey] in
+                if case .dateRange(let start) = field.format { return [field.key, start] }
+                return [field.key]
+            }
+        })
+    }
 
     private static let personalNumberLabel = IdentityTemplate.Field(.personalNumber, ["cnp / pin", "cnp/pin", "cnp", "pin"], .personalNumber, searchesEverywhere: true)
     private static let cardSignals: [(String, Double)] = [
         ("carte de identitate", 4), ("carte electronica de identitate", 4), ("identity card", 3), ("buletin", 2), ("cnp", 1),
     ]
-    private static let issuedFromFourteen: [CaptureConsistency.Rule] = [
+    /// When an identity document's dates can fall. Every Romanian identity document is
+    /// valid for at most 10 years (the permanent card has no expiry date), so:
+    /// - an expiry is between 2000 (the first cards with a machine-readable zone) and
+    ///   15 years from today; anything else is a misread and is dropped;
+    /// - an issue date more than 15 years ago is possible only on a permanent card, so
+    ///   it is kept for a look rather than shown as fact.
+    /// These windows also decide the century of two-digit years (the zone, "12.03.18").
+    static let identityDates: [CaptureConsistency.Rule] = [
+        .within(.expiryDate, DateWindow.Rule(earliest: .day(year: 2000, month: 1, day: 1), latest: .yearsFromToday(15)), outside: .drop),
+        .within(.issueDate, DateWindow.Rule(earliest: .yearsFromToday(-15), latest: .today), outside: .verify),
+    ]
+    private static let issuedFromFourteen: [CaptureConsistency.Rule] = identityDates + [
         .atLeastYearsAfter(.issueDate, anchor: .birthDate, years: 14),
     ]
 
@@ -120,7 +163,8 @@ enum IdentityTemplates {
             "romania", "carte de identitate", "carte electronica de identitate", "identity card", "semnatura titularului",
             "semnatura", "holder's signature", "signature", "domiciliu", "address", "loc nastere", "locul nasterii", "place of birth",
         ].map(LabelWording.words),
-        agreements: issuedFromFourteen
+        agreements: issuedFromFourteen,
+        documentVariant: DocumentType.Variant.idCardElectronic
     )
 
     /// The older identity card: trilingual labels, "SERIA XT NR 123456" at the top,
@@ -145,7 +189,8 @@ enum IdentityTemplates {
             "loc nastere/lieu de naissance/place of birth", "loc nastere", "place of birth", "domiciliu/adresse/address", "domiciliu",
             "address", "romania", "roumanie", "carte de identitate", "identity card", "carte d'identite",
         ].map(LabelWording.words),
-        agreements: issuedFromFourteen
+        agreements: issuedFromFourteen,
+        documentVariant: DocumentType.Variant.idCardWithoutChip
     )
 
     /// The passport data page: bilingual labels with values under them, and a TD3 zone.
@@ -173,7 +218,7 @@ enum IdentityTemplates {
             "tip / type", "tip", "type", "cod tara / code", "cod tara", "code", "locul nasterii / place of birth", "locul nasterii",
             "place of birth", "semnatura titularului", "semnatura", "signature", "pasaport", "passport", "romania",
         ].map(LabelWording.words),
-        agreements: []
+        agreements: identityDates
     )
 
     /// The EU driving licence: numbered fields, the value after the number. On Romanian
@@ -199,6 +244,130 @@ enum IdentityTemplates {
         agreements: issuedFromFourteen
     )
 
+    // MARK: Cazier
+
+    /// The words a criminal record certificate is printed with. Its layout (Hotărârea
+    /// Guvernului nr. 345/2010, anexa 18) couldn't be checked against the specimen, so
+    /// these are the wordings such certificates use, read as labels with the value beside
+    /// or under them; the AI provider is asked for the same fields.
+    private static func criminalRecord(_ id: String, variant: String, distinctive: [String]) -> IdentityTemplate {
+        IdentityTemplate(
+            id: id,
+            kind: .criminalRecord,
+            signals: [("cazier judiciar", 5), ("cazierul judiciar", 4), ("certificat de cazier", 4), ("cazier fiscal", 5), ("cazierul fiscal", 4),
+                      ("cazier auto", 5), ("cazier rutier", 4), ("nu figureaza", 2)],
+            distinctive: distinctive,
+            machineReadableFormats: [],
+            fields: [
+                .init(.holderName, ["numele si prenumele", "nume si prenume"], .name),
+                .init(.surname, ["numele", "nume"], .name),
+                .init(.givenNames, ["prenumele", "prenume"], .name),
+                .init(.birthDate, ["data nasterii", "nascut la", "nascuta la", "nascut(a) la"], .date),
+                .init(.personalNumber, ["cod numeric personal", "cnp"], .personalNumber, searchesEverywhere: true),
+                .init(.documentNumber, ["nr. certificat", "certificat nr.", "certificat nr", "numarul certificatului", "numar certificat"],
+                      .documentNumber(pattern: #"\b([A-Z]{0,4}\s?\d{3,12}(?:/\d{1,6})?)\b"#)),
+                .init(.issueDate, ["data eliberarii", "eliberat la", "eliberat astazi", "data emiterii", "emis la"], .date),
+                .init(.issuer, ["eliberat de", "emis de", "unitatea emitenta", "emitent"], .text),
+                .init(.recordResult, [], .recordResult, searchesEverywhere: true),
+            ],
+            otherLabels: [
+                "romania", "ministerul afacerilor interne", "agentia nationala de administrare fiscala", "certificat de cazier judiciar",
+                "certificat de cazier fiscal", "prenumele parintilor", "prenume tata", "prenume mama", "locul nasterii", "domiciliul", "domiciliu",
+                "scopul", "solicitat pentru", "semnatura", "stampila",
+            ].map(LabelWording.words),
+            agreements: [
+                // A certificate is asked for a purpose and kept a few years at most.
+                .within(.issueDate, DateWindow.Rule(earliest: .yearsFromToday(-10), latest: .today), outside: .verify),
+            ],
+            documentVariant: variant
+        )
+    }
+
+    static let criminalRecordJudicial = criminalRecord("ro.cazier.judiciar", variant: DocumentType.Variant.criminalRecordJudicial,
+                                                       distinctive: ["cazier judiciar", "cazierul judiciar", "ministerul afacerilor interne"])
+    static let criminalRecordFiscal = criminalRecord("ro.cazier.fiscal", variant: DocumentType.Variant.criminalRecordFiscal,
+                                                     distinctive: ["cazier fiscal", "cazierul fiscal", "agentia nationala de administrare fiscala", "anaf"])
+    static let criminalRecordDriving = criminalRecord("ro.cazier.auto", variant: DocumentType.Variant.criminalRecordDriving,
+                                                      distinctive: ["cazier auto", "cazier rutier", "cazierul auto", "cazierul rutier"])
+
+    // MARK: Health insurance
+
+    /// A field of the European health insurance card: its number and caption, as the
+    /// card prints them above the value ("5. Data nașterii"), with or without the number.
+    private static func numberedCaption(_ number: Int, _ captions: [String]) -> [String] {
+        captions.flatMap { caption in ["\(number). \(caption)", "\(number).\(caption)", "\(number) \(caption)", caption] }
+    }
+
+    /// The European health insurance card, as the EU sets it (Decision No S2 of the
+    /// Administrative Commission, OJ C 106/26, 24.4.2010) and CNAS prints it (Ordinul CNAS
+    /// nr. 559/2006, anexa 1): numbered captions in the issuing state's language, each
+    /// value under its caption. 3 Nume, 4 Prenume, 5 Data nașterii (ZZ/LL/AAAA),
+    /// 6 Codul personal de identificare (the CNP), 7 Numărul de identificare al instituției,
+    /// 8 Numărul de identificare al cardului, 9 Data expirării (ZZ/LL/AAAA). Fields 1 and
+    /// 2 (blank, "RO") carry nothing to keep.
+    static let europeanHealthCard = IdentityTemplate(
+        id: "eu.ehic",
+        kind: .healthInsuranceCard,
+        signals: [("card european de asigurari de sanatate", 6), ("card european de asigurari sociale de sanatate", 6),
+                  ("cardul european de asigurari sociale de sanatate", 6), ("european health insurance card", 5), ("ceass", 3)],
+        distinctive: [],
+        machineReadableFormats: [],
+        fields: [
+            .init(.surname, numberedCaption(3, ["nume", "name"]), .name),
+            .init(.givenNames, numberedCaption(4, ["prenume", "given names"]), .name),
+            .init(.birthDate, numberedCaption(5, ["data nasterii", "date of birth"]), .date),
+            .init(.personalNumber, numberedCaption(6, ["codul personal de identificare", "cod personal de identificare", "personal identification number"]),
+                  .personalNumber, searchesEverywhere: true),
+            .init(.issuer, numberedCaption(7, ["numarul de identificare al institutiei", "identification number of the institution"]), .text),
+            .init(.documentNumber, numberedCaption(8, ["numarul de identificare al cardului", "identification number of the card"]),
+                  .documentNumber(pattern: #"\b(\d{10,20})\b"#)),
+            .init(.expiryDate, numberedCaption(9, ["data expirarii", "expiry date"]), .date),
+        ],
+        otherLabels: [
+            "card european de asigurari de sanatate", "european health insurance card", "casa nationala de asigurari de sanatate",
+            "www.ceass.ro", "ceass.ro",
+        ].map(LabelWording.words),
+        agreements: [
+            // Romania has issued the card since 1 January 2007 (Ordinul CNAS nr. 559/2006).
+            .within(.expiryDate, DateWindow.Rule(earliest: .day(year: 2007, month: 1, day: 1), latest: .yearsFromToday(10)), outside: .drop),
+        ]
+    )
+
+    // MARK: Bank cards
+
+    /// A bank card: its network, the last four digits of its number, the month it expires
+    /// and its bank, wherever they are printed. Its full number is never kept: the reader
+    /// takes only the last four digits, and the text kept is masked (`PaymentCardNumbers`).
+    /// Debit or credit, when the card says so, is its variant.
+    private static func paymentCard(_ id: String, variant: String?, distinctive: [String]) -> IdentityTemplate {
+        IdentityTemplate(
+            id: id,
+            kind: .bankCard,
+            signals: [("valid thru", 4), ("valid through", 4), ("good thru", 4), ("expires end", 3), ("mastercard", 3), ("maestro", 3),
+                      ("visa", 2), ("debit", 1), ("credit", 1), ("contactless", 1)],
+            distinctive: distinctive,
+            machineReadableFormats: [],
+            fields: [
+                .init(.cardLastFour, [], .cardLastFour, searchesEverywhere: true),
+                .init(.expiryDate, ["valid thru", "valid through", "good thru", "expires end", "expira la", "valabil pana la", "exp. date"],
+                      .cardExpiry, searchesEverywhere: true),
+                .init(.cardNetwork, [], .cardNetwork, searchesEverywhere: true),
+                .init(.issuer, [], .bankName, searchesEverywhere: true),
+            ],
+            otherLabels: ["debit", "credit", "contactless", "business", "member since", "client din"].map(LabelWording.words),
+            agreements: [
+                // A card lasts a few years; one that ended long ago or ends a decade on is a misread.
+                .within(.expiryDate, DateWindow.Rule(earliest: .yearsFromToday(-5), latest: .yearsFromToday(10)), outside: .drop),
+            ],
+            documentVariant: variant
+        )
+    }
+
+    /// A card that doesn't say whether it is debit or credit: no variant is guessed.
+    static let bankCard = paymentCard("card.bank", variant: nil, distinctive: [])
+    static let debitCard = paymentCard("card.debit", variant: DocumentType.Variant.bankCardDebit, distinctive: ["debit"])
+    static let creditCard = paymentCard("card.credit", variant: DocumentType.Variant.bankCardCredit, distinctive: ["credit"])
+
     /// The template for a document of `kind`: the one whose machine-readable zone and
     /// distinctive words match best. Nil for kinds that aren't identity documents.
     static func template(for kind: CaptureDocumentKind, text: CaptureText, machineReadableFormat: MRZParser.Format?) -> IdentityTemplate? {
@@ -207,7 +376,7 @@ enum IdentityTemplates {
         let haystack = text.joinedFolded
         func score(_ template: IdentityTemplate) -> Int {
             let zone = machineReadableFormat.map { template.machineReadableFormats.contains($0) ? 5 : 0 } ?? 0
-            return zone + template.distinctive.filter { DocumentClassifier.containsWord($0, in: haystack) }.count
+            return zone + template.distinctive.filter { CaptureText.containsWord($0, inFolded: haystack) }.count
         }
         // Ties keep the first listed.
         let best = candidates.map(score).max() ?? 0

@@ -9,6 +9,7 @@ struct SectionHero: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.calendar) private var calendar
+    @Query private var templates: [CategoryTemplate]
 
     var body: some View {
         DSCard(padding: DS.Space.l) {
@@ -76,7 +77,7 @@ struct SectionHero: View {
         case .document:
             documentDetails
         case .standard:
-            if asset.templateKey == BuiltInTemplates.Key.member {
+            if definition.behavior.role == .holder {
                 memberDetails
             } else {
                 standardDetails
@@ -147,11 +148,13 @@ struct SectionHero: View {
 
     @ViewBuilder
     private var documentDetails: some View {
-        if let expiry = AssetFacts.expiry(asset.values, template: definition) ?? AssetFacts.purchase(asset.values, template: definition).warrantyUntil {
-            ExpiryLine(label: definition.key == BuiltInTemplates.Key.purchase
-                       ? String(localized: "Garanție până la", comment: "Hero: warranty end date.")
-                       : String(localized: "Valabil până la", comment: "Hero: document valid until."),
-                       day: expiry)
+        // A document's own expiry, else (a product) the end of its warranty, named for what it is.
+        if let expiry = AssetFacts.expiry(asset.values, template: definition) {
+            ExpiryLine(label: String(localized: "Valabil până la", comment: "Hero: document valid until."), day: expiry,
+                       rule: DateUrgency.rule(for: expiry, on: asset))
+        } else if let warranty = AssetFacts.purchase(asset.values, template: definition).warrantyUntil {
+            ExpiryLine(label: String(localized: "Garanție până la", comment: "Hero: warranty end date."), day: warranty,
+                       rule: DateUrgency.rule(for: warranty, on: asset))
         }
         if let holder = asset.parent {
             Label {
@@ -165,12 +168,14 @@ struct SectionHero: View {
 
     @ViewBuilder
     private var memberDetails: some View {
-        let documents = (asset.children ?? []).filter { $0.templateKey == BuiltInTemplates.Key.documents }
-        let next = documents
-            .compactMap { child in child.value("document.expiry")?.dateValue.map { (child, $0) } }
+        // The person's personal documents, each by its own category's expiry field.
+        let documentTemplates = Dictionary(templates.filter { $0.behavior.role == .personalDocument }.map { ($0.key, $0.definition) },
+                                           uniquingKeysWith: { first, _ in first })
+        let next = (asset.children ?? [])
+            .compactMap { child in documentTemplates[child.templateKey].flatMap { AssetFacts.expiry(child.values, template: $0) }.map { (child, $0) } }
             .min { $0.1 < $1.1 }
         if let next {
-            ExpiryLine(label: String(localized: "Următorul act care expiră: \(next.0.name)", comment: "Hero of a person: the next document to expire."), day: next.1)
+            ExpiryLine(label: String(localized: "Următorul act care expiră: \(next.0.name)", comment: "Hero of a person: the next document to expire."), day: next.1, rule: DateUrgency.rule(for: next.1, on: next.0))
         } else {
             Text("Niciun act cu dată de expirare încă.", comment: "Hero of a person with no documents.")
                 .dsFont(.subheadline)
@@ -201,23 +206,25 @@ struct SectionHero: View {
     }
 }
 
-/// "Valabil până la 14 mar. 2027" with a badge saying how far that is.
+/// "Valabil până la 14 mar. 2027" with a badge saying how far that is, drawn from
+/// the urgency of the deadline that date drives.
 struct ExpiryLine: View {
     let label: String
     let day: CalendarDay
+    let rule: UrgencyRule
     @Environment(\.calendar) private var calendar
 
     var body: some View {
-        let date = day.startDate(in: calendar)
-        let days = DSDayMath.daysRemaining(until: date, calendar: calendar)
+        let today = CalendarDay(Date(), calendar: calendar)
         VStack(alignment: .leading, spacing: DS.Space.xxs) {
             Text(verbatim: label).dsFont(.captionEmphasized)
-            Text(date, format: .dateTime.day().month(.wide).year())
+            Text(verbatim: DosarFormat.longDay(day))
                 .dsFont(.title, numeric: true)
-            DSStatusBadge(
-                days < 0 ? .overdue : (days <= 60 ? .soon : .done),
-                text: Text(DSDueText.expiryText(daysRemaining: days, soonWithinDays: 60))
-            )
+            // A passport also says until when it is good for travel (its type's margin).
+            if let travel = DueWording.travelLines(due: day, rule: rule, today: today, calendar: calendar)?.dropFirst().first {
+                Text(verbatim: travel).dsFont(.subheadline, numeric: true)
+            }
+            DSStatusBadge(expiry: rule.urgency(of: day, today: today, calendar: calendar), daysRemaining: today.days(to: day, calendar: calendar))
         }
         .accessibilityElement(children: .combine)
     }

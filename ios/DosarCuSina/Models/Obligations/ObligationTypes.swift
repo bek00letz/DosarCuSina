@@ -22,8 +22,9 @@ public enum Consequence: String, Codable, CaseIterable, Sendable {
         }
     }
 
-    /// The most days ahead an item of this consequence is promoted to "needs you now".
-    /// Earlier reminders still go out per the profile's lead days.
+    /// The most days ahead an item of this consequence is promoted to "needs you now"
+    /// (30 is a calendar month, like a reminder's lead). Earlier reminders still go out
+    /// per the profile's lead days.
     public var maxAttentionWindowDays: Int {
         switch self {
         case .legal: return 30
@@ -35,15 +36,28 @@ public enum Consequence: String, Codable, CaseIterable, Sendable {
 
     /// Whether the last reminders may break through Focus.
     public var allowsTimeSensitiveReminders: Bool { self != .comfort }
+
+    /// What an unknown stored value (from a newer build or archive) behaves as: the
+    /// loudest, so a deadline never goes quiet because this build can't read its value.
+    public static let loudest = Consequence.legal
+
+    /// A stored value: unknown or missing reads as `loudest`. The stored text is kept as
+    /// it was (see `Obligation.reminders`), never written back downgraded.
+    public init(stored raw: String?) {
+        self = raw.flatMap(Consequence.init(rawValue:)) ?? .loudest
+    }
 }
 
 /// How an obligation reminds: how far ahead (driven by how long renewing takes),
 /// how much missing it costs, how late is still fine, and whether to nudge
 /// once after the due date passes.
 ///
-/// Encoding: `{"leadDays": [60, 30], "consequence": "legal", "graceDays": 0, "followUpAfterLapse": true}`.
+/// Encoding: `{"leadDays": [60, 30], "consequence": "legal", "graceDays": 0, "followUpAfterLapse": true}`,
+/// with `"travelMarginDays": 180` only for a document that stops being good for travel
+/// before it expires (a passport).
 public struct ReminderProfile: Hashable, Sendable, Codable {
-    /// Days before the due date to remind, largest first; `0` is the due day.
+    /// Days before the due date to remind, largest first; `0` is the due day. With a
+    /// travel margin, they count back from the travel cut-off instead (`UrgencyRule.reminderAnchor`).
     public var leadDays: [Int]
     public var consequence: Consequence
     /// Days after the due date that are still acceptable. Within them, the item
@@ -51,35 +65,52 @@ public struct ReminderProfile: Hashable, Sendable, Codable {
     public var graceDays: Int
     /// One notification the day after the due date if it is still open, then silence.
     public var followUpAfterLapse: Bool
+    /// How long before its due day the document stops being good for travel, in days
+    /// (180 is six calendar months); 0 for everything that is good until it expires. Comes
+    /// only from the document type (`DocumentType.travelMarginDays`), never chosen by hand.
+    public var travelMarginDays: Int
 
     /// Whether a consequence follows up after lapsing by default: yes for legal and financial.
     public static func defaultFollowUp(for consequence: Consequence) -> Bool {
         consequence == .legal || consequence == .financial
     }
 
-    public init(leadDays: [Int], consequence: Consequence, graceDays: Int = 0, followUpAfterLapse: Bool? = nil) {
+    public init(leadDays: [Int], consequence: Consequence, graceDays: Int = 0, followUpAfterLapse: Bool? = nil, travelMarginDays: Int = 0) {
         self.leadDays = Array(Set(leadDays.map(abs))).sorted(by: >)
         self.consequence = consequence
         self.graceDays = max(0, graceDays)
         self.followUpAfterLapse = followUpAfterLapse ?? Self.defaultFollowUp(for: consequence)
+        self.travelMarginDays = max(0, travelMarginDays)
     }
 
-    /// Days ahead at which the item joins "needs you now": its earliest reminder,
-    /// capped by what its consequence warrants (a passport reminds 180 days ahead
-    /// but only crowds the Radar in the last month).
-    public var attentionWindowDays: Int {
-        min(max(leadDays.first ?? 0, 1), consequence.maxAttentionWindowDays)
+    /// How urgent the item is on every surface: it needs the person from its earliest
+    /// reminder, capped by what its consequence warrants (an ID card reminds 90 days
+    /// ahead but only crowds Urmează in the last month), from its travel cut-off when it
+    /// has one, and late within its grace is calm.
+    public var urgencyRule: UrgencyRule {
+        UrgencyRule(graceDays: graceDays, firstLeadDays: leadDays.first ?? 0, maxWindowDays: consequence.maxAttentionWindowDays,
+                    travelMarginDays: travelMarginDays)
     }
 
-    private enum CodingKeys: String, CodingKey { case leadDays, consequence, graceDays, followUpAfterLapse }
+    /// It stops being good for travel before it expires (a passport): its leads count from that day.
+    public var hasTravelCutoff: Bool { travelMarginDays > 0 }
+
+    /// The same profile with other leads, everything else kept (the travel margin included).
+    public func withLeadDays(_ leads: [Int]) -> ReminderProfile {
+        ReminderProfile(leadDays: leads, consequence: consequence, graceDays: graceDays, followUpAfterLapse: followUpAfterLapse,
+                        travelMarginDays: travelMarginDays)
+    }
+
+    private enum CodingKeys: String, CodingKey { case leadDays, consequence, graceDays, followUpAfterLapse, travelMarginDays }
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         self.init(
             leadDays: try c.decodeIfPresent([Int].self, forKey: .leadDays) ?? [7, 0],
-            consequence: Consequence(rawValue: try c.decodeIfPresent(String.self, forKey: .consequence) ?? "") ?? .comfort,
+            consequence: Consequence(stored: try c.decodeIfPresent(String.self, forKey: .consequence)),
             graceDays: try c.decodeIfPresent(Int.self, forKey: .graceDays) ?? 0,
-            followUpAfterLapse: try c.decodeIfPresent(Bool.self, forKey: .followUpAfterLapse)
+            followUpAfterLapse: try c.decodeIfPresent(Bool.self, forKey: .followUpAfterLapse),
+            travelMarginDays: try c.decodeIfPresent(Int.self, forKey: .travelMarginDays) ?? 0
         )
     }
 
@@ -89,11 +120,13 @@ public struct ReminderProfile: Hashable, Sendable, Codable {
         try c.encode(consequence.rawValue, forKey: .consequence)
         try c.encode(graceDays, forKey: .graceDays)
         try c.encode(followUpAfterLapse, forKey: .followUpAfterLapse)
+        // Written only when there is one, so every other profile reads exactly as before.
+        if travelMarginDays > 0 { try c.encode(travelMarginDays, forKey: .travelMarginDays) }
     }
 }
 
 /// A blueprint's profile that depends on an asset value, such as the document
-/// type: a passport reminds 180 days ahead, an ID card 90.
+/// type: an ID card reminds 90 days ahead, a driving licence 60.
 ///
 /// Encoding: `{"field": "document.type", "variants": {"Pașaport": {…profile…}}}`.
 public struct ReminderProfileVariants: Hashable, Sendable, Codable {
@@ -147,6 +180,13 @@ public enum ObligationKind: String, Codable, CaseIterable, Sendable {
     case maintenance
     /// Everyday chores: watering plants, cleaning filters.
     case routine
+
+    /// What an unknown stored kind behaves as: the loudest (see `Consequence.loudest`).
+    public static let loudest = ObligationKind.legal
+
+    public init(stored raw: String?) {
+        self = raw.flatMap(ObligationKind.init(rawValue:)) ?? .loudest
+    }
 
     /// The profile used when a blueprint or the person doesn't give one.
     public var defaultProfile: ReminderProfile {
@@ -215,7 +255,7 @@ public enum LegalRule: String, Codable, Sendable, CaseIterable {
 /// - `{"type": "none"}`
 /// - `{"type": "interval", "every": 2, "unit": "year", "anchor": "completion"}`
 /// - `{"type": "fixedDates", "dates": ["03-31", "09-30"]}`
-/// - `{"type": "metric", "every": 10000, "unit": "km", "fallbackEvery": 1, "fallbackUnit": "year"}`
+/// - `{"type": "metric", "every": 10000, "unit": "km", "fallbackEvery": 1, "fallbackUnit": "year"}` (the unit by its key, `MeasurementUnit`)
 /// - `{"type": "legal", "rule": "vehicleITP"}`
 public enum RecurrenceRule: Hashable, Sendable, Codable {
     case none
@@ -223,7 +263,7 @@ public enum RecurrenceRule: Hashable, Sendable, Codable {
     /// Due on the same calendar days every year, such as 31 March and 30 September.
     case fixedDates([MonthDay])
     /// Due every `every` units of an asset counter, with a calendar fallback when there are no readings.
-    case metric(every: Double, unit: String, fallback: RecurrenceInterval?)
+    case metric(every: Double, unit: MeasurementUnit, fallback: RecurrenceInterval?)
     case legal(LegalRule)
 
     public var repeats: Bool {
@@ -250,7 +290,7 @@ public enum RecurrenceRule: Hashable, Sendable, Codable {
                let unit = RecurrenceInterval.Unit(rawValue: try c.decodeIfPresent(String.self, forKey: .fallbackUnit) ?? "") {
                 fallback = RecurrenceInterval(every: every, unit: unit)
             }
-            self = .metric(every: try c.decode(Double.self, forKey: .every), unit: try c.decode(String.self, forKey: .unit), fallback: fallback)
+            self = .metric(every: try c.decode(Double.self, forKey: .every), unit: try c.decode(MeasurementUnit.self, forKey: .unit), fallback: fallback)
         case "legal":
             if let rule = LegalRule(rawValue: try c.decode(String.self, forKey: .rule)) {
                 self = .legal(rule)
@@ -341,6 +381,46 @@ public enum FirstDueRule: Hashable, Sendable, Codable {
     }
 }
 
+/// A fact a deadline needs at hand, by what it is for, not by how its field is called.
+/// Raw values are part of the `.dosar` contract.
+public enum BlueprintFactRole: String, Codable, CaseIterable, Sendable {
+    /// Who issued the policy.
+    case insurer
+    case policyNumber
+    /// The line to call for a claim or assistance.
+    case claimsPhone
+}
+
+/// Which of the section's fields hold the facts one deadline needs: a car's CASCO keeps
+/// its own insurer, policy number and claims phone, apart from its RCA. The deadline page,
+/// the claim checklist and capture's filing all read a deadline's facts through these
+/// roles, never by guessing from field names.
+public struct BlueprintFacts: Hashable, Sendable, Codable {
+    public var insurer: String?
+    public var policyNumber: String?
+    public var claimsPhone: String?
+
+    public init(insurer: String? = nil, policyNumber: String? = nil, claimsPhone: String? = nil) {
+        self.insurer = insurer
+        self.policyNumber = policyNumber
+        self.claimsPhone = claimsPhone
+    }
+
+    /// The field that holds `role`, if the deadline names one.
+    public func field(for role: BlueprintFactRole) -> String? {
+        switch role {
+        case .insurer: insurer
+        case .policyNumber: policyNumber
+        case .claimsPhone: claimsPhone
+        }
+    }
+
+    /// Every field the deadline names, with its role.
+    public var fields: [(role: BlueprintFactRole, field: String)] {
+        BlueprintFactRole.allCases.compactMap { role in field(for: role).map { (role, $0) } }
+    }
+}
+
 /// A suggested obligation that comes with a template (ITP and RCA for a car,
 /// vaccines for a pet). Creating an asset turns chosen blueprints into obligations.
 public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
@@ -361,6 +441,8 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
     public var isSuggested: Bool
     /// One short sentence explaining why it matters, shown in the add flow.
     public var note: String?
+    /// The section's fields that hold this deadline's facts (a policy's insurer, number and claims phone).
+    public var facts: BlueprintFacts?
 
     public var id: String { key }
 
@@ -375,8 +457,10 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
         appliesWhen: BlueprintCondition? = nil,
         estimatedCost: Money? = nil,
         isSuggested: Bool = true,
-        note: String? = nil
+        note: String? = nil,
+        facts: BlueprintFacts? = nil
     ) {
+        self.facts = facts
         self.key = key
         self.title = title
         self.kind = kind
@@ -399,14 +483,14 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case key, title, kind, recurrence, firstDue, reminders, reminderVariants, appliesWhen, estimatedCost, isSuggested, note
+        case key, title, kind, recurrence, firstDue, reminders, reminderVariants, appliesWhen, estimatedCost, isSuggested, note, facts
     }
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         key = try c.decode(String.self, forKey: .key)
         title = try c.decode(String.self, forKey: .title)
-        kind = ObligationKind(rawValue: try c.decode(String.self, forKey: .kind)) ?? .routine
+        kind = ObligationKind(stored: try c.decode(String.self, forKey: .kind))
         recurrence = try c.decodeIfPresent(RecurrenceRule.self, forKey: .recurrence) ?? .none
         firstDue = try c.decodeIfPresent(FirstDueRule.self, forKey: .firstDue) ?? .ask
         reminders = try c.decodeIfPresent(ReminderProfile.self, forKey: .reminders) ?? kind.defaultProfile
@@ -415,5 +499,6 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
         estimatedCost = try c.decodeIfPresent(Money.self, forKey: .estimatedCost)
         isSuggested = try c.decodeIfPresent(Bool.self, forKey: .isSuggested) ?? true
         note = try c.decodeIfPresent(String.self, forKey: .note)
+        facts = try? c.decodeIfPresent(BlueprintFacts.self, forKey: .facts)
     }
 }

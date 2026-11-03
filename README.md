@@ -7,13 +7,13 @@ A documents binder for the rare-but-predictable parts of life admin. A *dosar cu
 - **Calm.** The list of what's next stays short, and reminders come as early as each renewal needs, no earlier.
 - **Offline.** Everything works without a network or an account.
 
-The app is in Romanian. It is built for people who aren't tech-savvy: four labelled tabs, big buttons, nothing hidden behind a swipe.
+The app is in Romanian. It is for everyone, and built so that people who aren't comfortable with technology can use it just as well: four labelled tabs, big buttons, nothing hidden behind a swipe.
 
 ## Privacy
 
 - Your data stays on your device. Sync through your own private iCloud is planned, not built.
 - No accounts, no analytics, no tracking, no servers of ours.
-- Reading documents happens on the phone. If you add your own free Gemini key in Settings, you can choose to have a single document read by Gemini; only that document's first page is sent, only when you tap. The key stays in the Keychain on your device.
+- Reading documents happens on the phone. If you add your own key for an AI provider in Settings (Google Gemini, OpenAI, Anthropic Claude, or an OpenAI-compatible service such as one on your home network), you can choose to have a single document read by it; only that document's first page is sent, only when you tap. Keys stay in the Keychain on your device.
 - Identity documents, health and any section you choose can be locked with Face ID.
 
 ## Status
@@ -27,12 +27,12 @@ What is built, and what isn't yet, is in [SPEC.md](SPEC.md). Where work stands r
 
 ## Requirements
 
-- A Mac with Xcode that includes the iOS 26 SDK (Xcode 26 or later).
+- A Mac with Xcode 27 or later: the app builds against the iOS 27 SDK and runs on iOS 26 and later.
 - An iPhone simulator running iOS 26 or later, already installed in Xcode.
 
 ## Build and run
 
-1. Clone the repository and turn on the privacy hook (once per clone):
+1. Clone the repository and turn on the hooks, which run the privacy and architecture checks before each commit (once per clone):
 
    ```sh
    git clone https://github.com/bek00letz/DosarCuSina.git
@@ -46,6 +46,8 @@ What is built, and what isn't yet, is in [SPEC.md](SPEC.md). Where work stands r
 On first launch the app is empty. Tap *Încarcă exemple* (load examples) to explore with made-up data, and remove it later in Settings.
 
 To run on your own iPhone, choose your team under Signing & Capabilities for the app, widget and share extension targets. You may need bundle identifiers and an App Group your team owns. Keep those changes out of your commits.
+
+Every build is stamped with a build number (the number of commits, so it only goes up) and the commit it came from, by `scripts/stamp-build-info.sh`. The app shows them at the bottom of Settings, under Despre: *Versiunea 1.0 (build 180) · 7754ec8*. Include that line when you report a problem.
 
 ## Tests
 
@@ -68,6 +70,12 @@ xcodebuild test -project ios/DosarCuSina.xcodeproj -scheme DosarCuSina \
 
 `xcrun simctl list devices available` lists the simulators you have.
 
+Every pull request runs the same script on GitHub (the `build-and-test` check, on an Xcode 27 Mac with an iPhone simulator it finds there), together with the privacy and architecture checks. [CONTRIBUTING.md](CONTRIBUTING.md#what-runs-on-every-pull-request) says what each does and how to fix a failure. The architecture check runs locally in about a second:
+
+```sh
+scripts/architecture-check.sh
+```
+
 ## Repository layout
 
 | Path | What's there |
@@ -82,8 +90,8 @@ xcodebuild test -project ios/DosarCuSina.xcodeproj -scheme DosarCuSina \
 | `android/` | The paused Android version. |
 | `tests/` | The test runner, plus legacy and Android scripts. |
 | `docs/` | Decisions, handoff notes, copy guide, archive. |
-| `scripts/`, `.githooks/` | The privacy check and the hook that runs it. |
-| `.github/` | Code owners, templates and the privacy check workflow. |
+| `scripts/`, `.githooks/` | The privacy and architecture checks, the architecture exceptions and fixtures, and the hook that runs both. |
+| `.github/` | Code owners, templates, and the workflows for the checks. |
 
 ## Contributing
 

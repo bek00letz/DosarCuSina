@@ -1,0 +1,27 @@
+# Code that broke a rule of scripts/architecture-check.sh before the rule existed.
+#
+# This list only shrinks. Fixing one of these is always welcome: remove its line
+# (or lower its count) in the same commit, and the check makes sure you do.
+# Never add a line or raise a count without the owner's OK; the pull request
+# check fails on that unless the owner labels it "architecture-exception".
+#
+# Format: path:rule, or path:rule:count when a file breaks the rule more than once.
+# The note above each group says which piece of work removes it.
+# built-in-key-in-views: Ask the category's behaviour (CategoryBehavior) instead. Left: the add-section menu's own wording and shortlist (AddSectionFlow), the visit wording (VisitDraft, the "visit wording as a template field" gap) and a refresh query (UpcomingRoot).
+ios/DosarCuSina/Views/Add/Visit/VisitDraft.swift:built-in-key-in-views:2
+ios/DosarCuSina/Views/Section/AddSectionFlow.swift:built-in-key-in-views:12
+ios/DosarCuSina/Views/Upcoming/UpcomingRoot.swift:built-in-key-in-views
+
+# date-format: Dates are written by DosarFormat (ios/Shared) and DueWording. What's left reads dates; it goes with the shared number and date reader.
+ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:date-format:2
+
+# format-string: Machine text (ISO days, hashes): one shared helper, then these go.
+ios/DosarCuSina/Models/Schema/RecordModels.swift:format-string
+ios/DosarCuSina/Services/Capture/CaptureModels.swift:format-string
+ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:format-string
+
+# romanian-locale: Locale.dosarDefault everywhere, folding included.
+ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:romanian-locale:2
+
+# save-outside-unit-of-work: One unit of work around every multi-step flow (agreed fix 7); start-up and migrations save through UnitOfWork too.
+ios/DosarCuSina/App/DosarCuSinaApp.swift:save-outside-unit-of-work

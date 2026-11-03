@@ -4,8 +4,6 @@ import SwiftData
 public enum ObligationActionError: LocalizedError, Equatable {
     /// Only active obligations can be completed or snoozed.
     case notActive
-    /// Only the most recent completion can be undone.
-    case notLatestCompletion
     /// The blueprint needs a date the person has to enter.
     case missingFirstDueDate(blueprintKey: String)
 
@@ -13,8 +11,6 @@ public enum ObligationActionError: LocalizedError, Equatable {
         switch self {
         case .notActive:
             return String(localized: "Obligația e pusă pe pauză sau încheiată. Reactiveaz-o mai întâi.")
-        case .notLatestCompletion:
-            return String(localized: "Poți anula doar ultima bifare.")
         case .missingFirstDueDate:
             return String(localized: "Alege data la care e scadentă prima dată.")
         }
@@ -36,11 +32,13 @@ public final class ObligationActions {
         self.now = now
     }
 
-    // MARK: Complete and undo
+    // MARK: Complete
 
     /// Records that the obligation was done and moves it to its next cycle, or
     /// closes it when it doesn't repeat. The record is a `HistoryEntry` in the
-    /// asset's history, the same history repairs and visits go into.
+    /// asset's history, the same history repairs and visits go into. The receipt
+    /// takes it all back ("Anulează"), the reading it recorded included; deleting an
+    /// older completion from Istoric is `HistoryActions.delete`.
     @discardableResult
     public func complete(
         _ obligation: Obligation,
@@ -50,82 +48,87 @@ public final class ObligationActions {
         note: String? = nil,
         items: [LineItemDraft] = [],
         providers: [Provider] = [],
-        rating: Int? = nil
-    ) throws -> HistoryEntry {
-        guard obligation.status == .active else { throw ObligationActionError.notActive }
-        let completedAt = date ?? now()
-        let completedDay = CalendarDay(completedAt, calendar: calendar)
+        rating: Int? = nil,
+        lowerReading: LowerReadingAnswer? = nil
+    ) throws -> Undoable<HistoryEntry> {
+        // One step: a question about a lower reading leaves nothing half-changed.
+        return try UnitOfWork.performUndoable(in: context) {
+            guard obligation.status == .active else { throw ObligationActionError.notActive }
+            let completedAt = date ?? now()
+            let completedDay = CalendarDay(completedAt, calendar: calendar)
 
-        let entry = HistoryEntry(kind: .forCompleting(obligation.kind), title: obligation.title, occurredAt: completedAt)
-        entry.cycleDueDate = obligation.dueDate
-        entry.previousStatusRaw = obligation.statusRaw
-        entry.previousDueMetric = obligation.dueMetric
+            let entry = HistoryEntry(kind: .forCompleting(obligation.kind), title: obligation.title, occurredAt: completedAt)
+            entry.cycleDueDate = obligation.dueDate
+            entry.previousStatusRaw = obligation.statusRaw
+            entry.previousDueMetric = obligation.dueMetric
+            entry.totalCost = cost
+            entry.metricReading = metricReading
+            entry.note = note
+            entry.rating = rating.map { min(max($0, 1), 5) }
+            entry.isExample = obligation.isExample
+            context.insert(entry)
+            entry.obligation = obligation
+            entry.asset = obligation.asset
+            entry.providers = providers
+            HouseholdMutations.addItems(items, to: entry, in: context)
+
+            if let metricReading, let asset = obligation.asset {
+                try HouseholdMutations.recordReading(metricReading, on: asset, at: completedAt, source: .person, unit: obligation.metricUnit,
+                                                     answer: lowerReading, isExample: obligation.isExample, in: context)
+            }
+
+            let recurrenceContext = HouseholdMutations.recurrenceContext(for: obligation, currentMetric: metricReading, calendar: calendar)
+            if let next = RecurrenceEngine.nextDue(
+                after: obligation.dueDay(in: calendar),
+                completedOn: completedDay,
+                rule: obligation.recurrence,
+                context: recurrenceContext,
+                calendar: calendar
+            ) {
+                obligation.setDueDay(next.day, calendar: calendar)
+                obligation.dueMetric = next.metric
+                entry.nextDueDate = obligation.dueDate
+            } else {
+                obligation.status = .done
+            }
+            obligation.snoozedUntil = nil
+            obligation.updatedAt = now()
+            try save()
+            return entry
+        }
+    }
+
+    /// A completion from before the binder knew the obligation (last year's ITP): logged
+    /// in the history with the cycle it closed, without moving the obligation. Only the
+    /// example loader uses it today, so its entry is an example exactly when the
+    /// obligation is one.
+    @discardableResult
+    func recordPastCompletion(of obligation: Obligation, on date: Date, cost: Money?) throws -> HistoryEntry {
+        let entry = HistoryEntry(kind: .forCompleting(obligation.kind), title: obligation.title, occurredAt: date)
+        entry.cycleDueDate = date
+        entry.nextDueDate = obligation.dueDate
+        entry.previousStatusRaw = ObligationStatus.active.rawValue
         entry.totalCost = cost
-        entry.metricReading = metricReading
-        entry.note = note
-        entry.rating = rating.map { min(max($0, 1), 5) }
         entry.isExample = obligation.isExample
         context.insert(entry)
         entry.obligation = obligation
         entry.asset = obligation.asset
-        entry.providers = providers
-        HouseholdMutations.addItems(items, to: entry, in: context)
-
-        if let metricReading, let asset = obligation.asset {
-            HouseholdMutations.recordReading(metricReading, on: asset, at: completedAt, unit: obligation.metricUnit, in: context)
-        }
-
-        let recurrenceContext = HouseholdMutations.recurrenceContext(for: obligation, currentMetric: metricReading)
-        if let next = RecurrenceEngine.nextDue(
-            after: obligation.dueDay(in: calendar),
-            completedOn: completedDay,
-            rule: obligation.recurrence,
-            context: recurrenceContext,
-            calendar: calendar
-        ) {
-            obligation.setDueDay(next.day, calendar: calendar)
-            obligation.dueMetric = next.metric
-            entry.nextDueDate = obligation.dueDate
-        } else {
-            obligation.status = .done
-        }
-        obligation.snoozedUntil = nil
-        obligation.updatedAt = now()
         try save()
         return entry
-    }
-
-    /// Puts the obligation back the way it was before `entry` completed it and
-    /// removes the entry. Only the latest completion can be undone.
-    public func undo(_ entry: HistoryEntry) throws {
-        guard let obligation = entry.obligation, let cycleDueDate = entry.cycleDueDate else {
-            context.delete(entry)
-            try save()
-            return
-        }
-        guard obligation.history.first?.id == entry.id else { throw ObligationActionError.notLatestCompletion }
-        obligation.dueDate = cycleDueDate
-        obligation.dueMetric = entry.previousDueMetric
-        obligation.status = entry.previousStatusRaw.flatMap(ObligationStatus.init(rawValue:)) ?? .active
-        obligation.updatedAt = now()
-        context.delete(entry)
-        try save()
-    }
-
-    public func undoLastCompletion(of obligation: Obligation) throws {
-        guard let latest = obligation.history.first else { return }
-        try undo(latest)
     }
 
     // MARK: Schedule
 
     /// Hides the obligation and its reminders for `days` days, then reminds once.
-    public func snooze(_ obligation: Obligation, days: Int) throws {
-        guard obligation.status == .active else { throw ObligationActionError.notActive }
-        let today = CalendarDay(now(), calendar: calendar)
-        obligation.snoozedUntil = today.adding(days: max(1, days), calendar: calendar).startDate(in: calendar)
-        obligation.updatedAt = now()
-        try save()
+    @discardableResult
+    public func snooze(_ obligation: Obligation, days: Int) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) {
+            guard obligation.status == .active else { throw ObligationActionError.notActive }
+            let today = CalendarDay(now(), calendar: calendar)
+            obligation.snoozedUntil = today.adding(days: max(1, days), calendar: calendar).startDate(in: calendar)
+            obligation.updatedAt = now()
+            try save()
+        }.receipt
     }
 
     public func clearSnooze(_ obligation: Obligation) throws {
@@ -134,33 +137,82 @@ public final class ObligationActions {
         try save()
     }
 
-    /// Changes how the obligation reminds (lead days, grace, follow-up after lapsing).
+    /// Changes how the obligation reminds (lead days, grace, follow-up after lapsing), as the
+    /// person chose: from now on its reminders stay as set when its section changes (all but
+    /// the travel cut-off, which follows the document). Choosing exactly the usual ones lets
+    /// them follow the document again (`DeadlineReminders.isCustomized`).
     public func setReminders(_ obligation: Obligation, _ profile: ReminderProfile) throws {
         obligation.reminders = profile
+        obligation.remindersCustomized = DeadlineReminders.isCustomized(profile, for: obligation, in: context)
         obligation.updatedAt = now()
         try save()
     }
 
-    /// The "follow up after it lapses" checkbox.
+    /// The "follow up after it lapses" checkbox: the person's choice, kept like `setReminders`.
     public func setFollowUpAfterLapse(_ obligation: Obligation, _ isOn: Bool) throws {
         obligation.followUpAfterLapse = isOn
+        obligation.remindersCustomized = DeadlineReminders.isCustomized(obligation.reminders, for: obligation, in: context)
         obligation.updatedAt = now()
         try save()
     }
 
-    public func reschedule(_ obligation: Obligation, to day: CalendarDay) throws {
-        obligation.setDueDay(day, calendar: calendar)
-        obligation.snoozedUntil = nil
+    /// "Revino la cele obișnuite": a deadline whose reminders the person set gets back the ones
+    /// its document gives (`DeadlineReminders.restorable`) and follows its document again.
+    /// Undoable; nil when there is nothing to give back.
+    @discardableResult
+    public func restoreUsualReminders(_ obligation: Obligation) throws -> Undoable<ReminderProfile>? {
+        guard let usual = DeadlineReminders.restorable(obligation, in: context) else { return nil }
+        return try UnitOfWork.performUndoable(in: context) {
+            obligation.reminders = usual
+            obligation.remindersCustomized = false
+            obligation.updatedAt = now()
+            try save()
+            return usual
+        }
+    }
+
+    @discardableResult
+    public func reschedule(_ obligation: Obligation, to day: CalendarDay) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) {
+            obligation.setDueDay(day, calendar: calendar)
+            obligation.snoozedUntil = nil
+            obligation.updatedAt = now()
+            try save()
+        }.receipt
+    }
+
+    /// What it is expected to cost and the number it quotes (a bill's amount and number).
+    public func setDetails(_ obligation: Obligation, estimatedCost: Money?, reference: String?) throws {
+        guard obligation.estimatedCost != estimatedCost || obligation.reference != reference else { return }
+        obligation.estimatedCost = estimatedCost
+        obligation.reference = reference
         obligation.updatedAt = now()
         try save()
     }
 
-    public func pause(_ obligation: Obligation) throws {
-        try setStatus(.paused, of: obligation)
+    /// Stops the obligation and its reminders until it is resumed. Undoable; inside a
+    /// larger step (an edit that turns on direct debit), the receipt takes back that whole step.
+    @discardableResult
+    public func pause(_ obligation: Obligation) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) { try setStatus(.paused, of: obligation) }.receipt
     }
 
-    public func resume(_ obligation: Obligation) throws {
-        try setStatus(.active, of: obligation)
+    /// Starts a paused obligation again. Undoable, like `pause`.
+    @discardableResult
+    public func resume(_ obligation: Obligation) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) { try setStatus(.active, of: obligation) }.receipt
+    }
+
+    /// Changes how the obligation repeats (a service every 150 hours instead of 100). The
+    /// due day and the counter it is due at stay; the new rule counts from the next cycle.
+    /// Undoable, like `pause`.
+    @discardableResult
+    public func setRecurrence(_ obligation: Obligation, _ rule: RecurrenceRule) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) {
+            obligation.recurrence = rule
+            obligation.updatedAt = now()
+            try save()
+        }.receipt
     }
 
     public func archive(_ obligation: Obligation) throws {
@@ -187,6 +239,7 @@ public final class ObligationActions {
         reference: String? = nil,
         notes: String? = nil
     ) throws -> Obligation {
+        let isExample = try ExampleOwnership.requireReal(asset)
         let obligation = Obligation(
             title: title,
             kind: kind,
@@ -201,7 +254,7 @@ public final class ObligationActions {
         obligation.notes = notes
         context.insert(obligation)
         obligation.asset = asset
-        obligation.isExample = asset?.isExample ?? false
+        obligation.isExample = isExample
         try save()
         return obligation
     }
@@ -210,6 +263,7 @@ public final class ObligationActions {
     /// blueprint's own rule; it is required when the blueprint asks for a date.
     @discardableResult
     public func create(from blueprint: ObligationBlueprint, for asset: Asset, firstDue: CalendarDay? = nil) throws -> Obligation {
+        try ExampleOwnership.requireReal(asset)
         let obligation = try HouseholdMutations.makeObligation(from: blueprint, for: asset, firstDue: firstDue, today: CalendarDay(now(), calendar: calendar), calendar: calendar, in: context)
         try save()
         return obligation
@@ -225,18 +279,13 @@ public final class ObligationActions {
     }
 
     private func save() throws {
-        do {
-            try context.save()
-        } catch {
-            context.rollback()
-            throw error
-        }
+        try UnitOfWork.save(context)
     }
 }
 
-extension DosarSchemaV2.Obligation {
-    /// The counter unit for metric-based obligations, such as `km`.
-    public var metricUnit: String? {
+extension DosarSchemaV5.Obligation {
+    /// The counter unit for metric-based obligations, such as kilometres.
+    public var metricUnit: MeasurementUnit? {
         if case .metric(_, let unit, _) = recurrence { return unit }
         return nil
     }

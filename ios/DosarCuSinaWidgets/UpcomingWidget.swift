@@ -34,11 +34,16 @@ struct UpcomingEntry: TimelineEntry {
     let rows: [WidgetRow]?
 
     static let placeholder = UpcomingEntry(date: .now, rows: [
-        WidgetRow(id: UUID(), title: String(localized: "ITP"), subtitle: "VW Golf", symbol: "car.fill", daysRemaining: 5,
-                  dueDate: .now.addingTimeInterval(5 * 86_400), dueKey: "", deepLink: URL(string: "dosarcusina://upcoming")!, canComplete: false),
-        WidgetRow(id: UUID(), title: String(localized: "Vaccin anual"), subtitle: "PawPaw", symbol: "pawprint.fill", daysRemaining: 12,
-                  dueDate: .now.addingTimeInterval(12 * 86_400), dueKey: "", deepLink: URL(string: "dosarcusina://upcoming")!, canComplete: false),
+        sample(String(localized: "ITP"), subtitle: "VW Golf", symbol: "car.fill", daysRemaining: 5, urgency: .soon),
+        sample(String(localized: "Vaccin anual"), subtitle: "PawPaw", symbol: "pawprint.fill", daysRemaining: 12, urgency: .upcoming),
     ])
+
+    private static func sample(_ title: String, subtitle: String, symbol: String, daysRemaining: Int, urgency: AttentionUrgency) -> WidgetRow {
+        WidgetRow(id: UUID(), title: title, subtitle: subtitle, symbol: symbol, daysRemaining: daysRemaining, urgency: urgency,
+                  when: WhenWording.standalone(urgency, daysRemaining: daysRemaining),
+                  dueDate: .now.addingTimeInterval(Double(daysRemaining) * 86_400), dueKey: "",
+                  deepLink: URL(string: "dosarcusina://upcoming")!, canComplete: false)
+    }
 }
 
 struct UpcomingProvider: TimelineProvider {
@@ -80,25 +85,18 @@ struct UpcomingProvider: TimelineProvider {
     }
 }
 
-// MARK: - Wording
+// MARK: - Tone
 
-enum WidgetWording {
-    /// "Azi", "Mâine", "În 5 zile", "Întârziat cu 3 zile".
-    static func when(_ days: Int) -> String {
-        switch days {
-        case ..<0: return String(localized: "Întârziat cu \(-days) zile", comment: "Widget: how many days late")
-        case 0: return String(localized: "Azi", comment: "Widget: due today")
-        case 1: return String(localized: "Mâine", comment: "Widget: due tomorrow")
-        default: return String(localized: "În \(days) zile", comment: "Widget: due in N days")
+/// The widget's colours for the app's urgency tones. The tone itself comes from the
+/// one urgency rule (`UrgencyRule`, ios/Shared), so a deadline looks the same here
+/// as in the app: red only when late past its grace.
+enum WidgetTone {
+    static func color(_ urgency: AttentionUrgency) -> Color {
+        switch urgency.tone {
+        case .overdue: .red
+        case .soon: .orange
+        case .calm: .secondary
         }
-    }
-
-    static func date(_ date: Date) -> String {
-        date.formatted(.dateTime.day().month(.wide).locale(Locale(identifier: "ro_RO")))
-    }
-
-    static func color(_ days: Int) -> Color {
-        days < 0 ? .red : (days == 0 ? .orange : .secondary)
     }
 }
 
@@ -127,7 +125,7 @@ struct UpcomingWidgetView: View {
     @ViewBuilder private var inline: some View {
         if let first = rows.first {
             ViewThatFits {
-                Text(verbatim: "\(first.title) · \(WidgetWording.when(first.daysRemaining))")
+                Text(verbatim: "\(first.title) · \(first.when)")
                 Text(verbatim: first.title)
             }
             .widgetURL(first.deepLink)
@@ -141,7 +139,7 @@ struct UpcomingWidgetView: View {
             VStack(alignment: .leading, spacing: 1) {
                 Label { Text(verbatim: first.title).font(.headline) } icon: { Image(systemName: first.symbol) }
                     .lineLimit(1)
-                Text(verbatim: WidgetWording.when(first.daysRemaining))
+                Text(verbatim: first.when)
                     .monospacedDigit()
                 if let subtitle = first.subtitle {
                     Text(verbatim: subtitle).foregroundStyle(.secondary).lineLimit(1)
@@ -170,10 +168,10 @@ struct UpcomingWidgetView: View {
                     Text(verbatim: subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
                 Spacer(minLength: 0)
-                Text(verbatim: WidgetWording.when(first.daysRemaining))
+                Text(verbatim: first.when)
                     .font(.subheadline.weight(.semibold))
                     .monospacedDigit()
-                    .foregroundStyle(WidgetWording.color(first.daysRemaining))
+                    .foregroundStyle(WidgetTone.color(first.urgency))
                 if first.canComplete {
                     doneButton(first)
                 }
@@ -203,10 +201,10 @@ struct UpcomingWidgetView: View {
                                     .accessibilityHidden(true)
                                 VStack(alignment: .leading, spacing: 0) {
                                     Text(verbatim: row.title).font(.subheadline.weight(.semibold)).lineLimit(1)
-                                    Text(verbatim: [row.subtitle, WidgetWording.when(row.daysRemaining)].compactMap { $0 }.joined(separator: " · "))
+                                    Text(verbatim: [row.subtitle, row.when].compactMap { $0 }.joined(separator: " · "))
                                         .font(.caption)
                                         .monospacedDigit()
-                                        .foregroundStyle(WidgetWording.color(row.daysRemaining))
+                                        .foregroundStyle(WidgetTone.color(row.urgency))
                                         .lineLimit(1)
                                 }
                                 Spacer(minLength: 0)

@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV2 {
+extension DosarSchemaV5 {
     /// Something that has to be done by a date, once or on a schedule: ITP, RCA,
     /// local taxes, a vaccine, a subscription renewal.
     ///
@@ -19,14 +19,22 @@ extension DosarSchemaV2 {
         public var dueDate: Date = Date()
         /// For counter-based obligations, the reading at which it is due (for example 160 000 km).
         public var dueMetric: Double?
-        /// Reminder profile, stored flat: lead days (largest first; `0` is the due day),
-        /// consequence and grace days. Read and write it through `reminders`.
+        /// Reminder profile, stored flat: lead days (largest first; `0` is the day they count
+        /// from), consequence, grace days and the travel margin. Read and write it through `reminders`.
         public var reminderLeadDays: [Int] = [30, 7, 0]
         public var consequenceRaw: String = Consequence.comfort.rawValue
         public var graceDays: Int = 0
         /// Remind once the day after the due date if it is still open. The reminder
         /// setup screen shows it as a checkbox; defaults come from the blueprint profile.
         public var followUpAfterLapse: Bool = false
+        /// How long before the due day its document stops being good for travel (a
+        /// passport: 180, six months); 0 for everything else. From the document type,
+        /// through the blueprint's profile (`ReminderProfile.travelMarginDays`). Version 4.
+        public var travelMarginDays: Int = 0
+        /// The person set this deadline's reminders themselves (leads, grace or the follow-up),
+        /// so they stay as set when the section changes. False: the reminders follow what the
+        /// blueprint gives for the section's values (`DeadlineReminders`). Version 5.
+        public var remindersCustomized: Bool = false
         /// Minutes after midnight for this obligation's reminders; nil uses the app setting.
         public var reminderMinuteOfDay: Int?
         /// JSON `RecurrenceRule`.
@@ -75,13 +83,19 @@ extension DosarSchemaV2 {
             self.consequenceRaw = profile.consequence.rawValue
             self.graceDays = profile.graceDays
             self.followUpAfterLapse = profile.followUpAfterLapse
+            self.travelMarginDays = profile.travelMarginDays
             self.estimatedCostAmount = estimatedCost?.amount
             self.estimatedCostCurrency = estimatedCost?.currency
         }
 
+        /// An unknown stored kind (from a newer build or archive) reads as the loudest and
+        /// stays stored as it was until the person picks another.
         public var kind: ObligationKind {
-            get { ObligationKind(rawValue: kindRaw) ?? .routine }
-            set { kindRaw = newValue.rawValue }
+            get { ObligationKind(stored: kindRaw) }
+            set {
+                guard ObligationKind(rawValue: kindRaw) != nil || newValue != ObligationKind(stored: kindRaw) else { return }
+                kindRaw = newValue.rawValue
+            }
         }
 
         /// How this obligation reminds. Set from its blueprint, changeable by the person.
@@ -89,16 +103,22 @@ extension DosarSchemaV2 {
             get {
                 ReminderProfile(
                     leadDays: reminderLeadDays,
-                    consequence: Consequence(rawValue: consequenceRaw) ?? .comfort,
+                    consequence: Consequence(stored: consequenceRaw),
                     graceDays: graceDays,
-                    followUpAfterLapse: followUpAfterLapse
+                    followUpAfterLapse: followUpAfterLapse,
+                    travelMarginDays: travelMarginDays
                 )
             }
             set {
                 reminderLeadDays = newValue.leadDays
-                consequenceRaw = newValue.consequence.rawValue
+                // An unknown consequence read as the loudest is kept as stored, never
+                // written back as what this build understood.
+                if Consequence(rawValue: consequenceRaw) != nil || newValue.consequence != Consequence(stored: consequenceRaw) {
+                    consequenceRaw = newValue.consequence.rawValue
+                }
                 graceDays = newValue.graceDays
                 followUpAfterLapse = newValue.followUpAfterLapse
+                travelMarginDays = newValue.travelMarginDays
             }
         }
 

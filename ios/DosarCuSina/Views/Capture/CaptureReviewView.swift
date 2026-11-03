@@ -1,6 +1,13 @@
-import Network
 import SwiftData
 import SwiftUI
+
+/// What is being read again while the review stays on screen.
+enum CaptureReread: Hashable, Sendable {
+    /// The pages the person added (the back of a card), read with the others.
+    case pages
+    /// The person's AI provider, on a tap or by itself after a weak reading.
+    case cloud
+}
 
 /// The confirm step of capture: what the document is, the values read from it
 /// (the uncertain ones marked), where it goes, and the reminder it sets.
@@ -9,29 +16,41 @@ struct CaptureReviewView: View {
     @State var review: CaptureReview
     let assets: [Asset]
     var onReadWithCloud: (() -> Void)?
-    /// Adds pages (the back of a card) and reads the document again, keeping the person's edits.
-    var onAddPages: ((CaptureReview, CaptureRequest.Payload) -> Void)?
-    /// A read with added pages is running.
-    var isReadingAgain = false
-    /// Why the last read with added pages didn't work.
+    /// Adds pages (the back of a card) and reads the document again.
+    var onAddPages: ((CaptureRequest.Payload) -> Void)?
+    /// What is being read again, if anything.
+    var rereading: CaptureReread?
+    /// The newest reading; merged into the review, keeping the person's edits.
+    var rereadResult: CaptureResult?
+    /// Why the last reading again didn't work.
     var readAgainError: String?
+    /// "Citește automat" wants to send this identity document's photo: ask first.
+    var asksToSendToProvider = false
+    /// The answer to "Trimit poza la <provider>?".
+    var onAnswerSending: ((Bool) -> Void)?
     let onClose: (CaptureFlowResult) -> Void
 
     init(
         review: CaptureReview,
         assets: [Asset],
         onReadWithCloud: (() -> Void)? = nil,
-        onAddPages: ((CaptureReview, CaptureRequest.Payload) -> Void)? = nil,
-        isReadingAgain: Bool = false,
+        onAddPages: ((CaptureRequest.Payload) -> Void)? = nil,
+        rereading: CaptureReread? = nil,
+        rereadResult: CaptureResult? = nil,
         readAgainError: String? = nil,
+        asksToSendToProvider: Bool = false,
+        onAnswerSending: ((Bool) -> Void)? = nil,
         onClose: @escaping (CaptureFlowResult) -> Void
     ) {
         self._review = State(initialValue: review)
         self.assets = assets
         self.onReadWithCloud = onReadWithCloud
         self.onAddPages = onAddPages
-        self.isReadingAgain = isReadingAgain
+        self.rereading = rereading
+        self.rereadResult = rereadResult
         self.readAgainError = readAgainError
+        self.asksToSendToProvider = asksToSendToProvider
+        self.onAnswerSending = onAnswerSending
         self.onClose = onClose
     }
 
@@ -49,6 +68,9 @@ struct CaptureReviewView: View {
     @State private var isShowingPages = false
     @State private var backSource: CaptureSource?
     @State private var backError: String?
+    /// The person added something to an example section: "Păstrezi … ca al tău?".
+    @State private var exampleQuestion: ExampleSectionQuestion?
+    @State private var readingQuestion: LowerReadingQuestion?
 
     private var templatesByKey: [String: CategoryTemplate] {
         Dictionary(templates.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
@@ -61,11 +83,14 @@ struct CaptureReviewView: View {
                 notices
                 fieldsSection
                 destinationSection
+                if review.kind.profile.photoIsOptIn {
+                    KeepPhotoChoice(keepsPhoto: $review.keepsPhotoOnRequest)
+                }
                 reminderSection
                 if let errorMessage {
                     DSNotice(.error, title: "Nu s-a salvat", message: LocalizedStringKey(errorMessage))
                 }
-                DSPrimaryButton(review.duplicateAttachmentID == nil ? "Salvează" : "Salvează doar datele", systemImage: "checkmark") {
+                DSPrimaryButton("Salvează", systemImage: "checkmark") {
                     requestSave()
                 }
                 .disabled(isSaving)
@@ -82,8 +107,10 @@ struct CaptureReviewView: View {
         .reminderPermissionGate($saveRequest)
         .sheet(isPresented: $isPickingDestination) {
             CaptureDestinationPicker(
-                destination: $review.destination, newAssetName: $review.newAssetName, templates: templates, assets: assets,
-                offersNewHolder: review.kind.isIdentityDocument
+                destination: Binding(get: { review.destination }, set: { review.choosePlace($0) }),
+                newAssetName: $review.newAssetName, templates: templates, assets: assets,
+                offersNewHolder: review.kind.isPersonalDocument,
+                filesUnderSubscription: review.kind.profile.filing == .subscription
             )
         }
         .fullScreenCover(isPresented: $isShowingPages) {
@@ -91,19 +118,16 @@ struct CaptureReviewView: View {
         }
         .captureSourcePicker($backSource, onPicked: { payload in
             backError = nil
-            onAddPages?(review, payload)
+            onAddPages?(payload)
         }, onError: { _ in
             backError = String(localized: "Poza nu s-a putut deschide. Încearcă din nou.")
         })
-        .task { await loadThumbnail() }
+        .task(id: review.documentID) { await loadThumbnail() }
         .task(id: review.result.id) { await explainCloudFailure() }
-        .onDisappear {
-            // Closing without saving drops the pages from capture's memory. Not while the
-            // camera covers the screen for the back of the card: the review comes back.
-            if !isSaving, backSource == nil, !isShowingPages, let id = review.documentID {
-                Task { await CaptureDocumentStore.shared().discard(id: id) }
-            }
-        }
+        .onChange(of: rereadResult?.id) { _, _ in mergeReread() }
+        .examplePrompt($exampleQuestion) { save() }
+        .readingPrompt($readingQuestion) { save(lowerReading: $0) }
+        // The pages belong to the capture session, which lets go of them when the capture ends.
     }
 
     // MARK: Document
@@ -111,7 +135,7 @@ struct CaptureReviewView: View {
     private var documentCard: some View {
         DSCard {
             HStack(alignment: .top, spacing: DS.Space.s) {
-                Button { isShowingPages = true } label: {
+                Button { DocumentPagesViewer.present(reduceMotion: reduceMotion) { isShowingPages = true } } label: {
                     Group {
                         if let thumbnail {
                             Image(uiImage: thumbnail).resizable().scaledToFill()
@@ -133,7 +157,7 @@ struct CaptureReviewView: View {
                     Text(verbatim: CaptureMapping.kindTitle(review.kind))
                         .dsFont(.title)
                     Menu {
-                        Picker(selection: $review.kind) {
+                        Picker(selection: Binding(get: { review.kind }, set: { chooseKind($0) })) {
                             ForEach(CaptureDocumentKind.allCases, id: \.self) { kind in
                                 Text(verbatim: CaptureMapping.kindTitle(kind)).tag(kind)
                             }
@@ -143,6 +167,12 @@ struct CaptureReviewView: View {
                             .font(.subheadline.weight(.medium))
                             .frame(minHeight: 44)
                     }
+                    ForEach(review.kindAlternatives, id: \.self) { alternative in
+                        CaptureAlternativeNote(text: kindAlternativeText(alternative)) {
+                            chooseKind(alternative.value, from: alternative)
+                        }
+                        .transition(.opacity)
+                    }
                     Text(verbatim: tierNote)
                         .dsFont(.footnote)
                 }
@@ -150,8 +180,26 @@ struct CaptureReviewView: View {
         }
     }
 
+    /// Another kind, the person's choice: the page is read again as that kind, keeping their edits.
+    private func chooseKind(_ kind: CaptureDocumentKind, from alternative: CaptureAlternative<CaptureDocumentKind>? = nil) {
+        let read = review.choosingKind(kind, from: alternative, assets: assets, context: context)
+        withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { review = read }
+    }
+
+    /// "Pe telefon părea: Factură de utilități", beside a kind another reader didn't keep.
+    private func kindAlternativeText(_ alternative: CaptureAlternative<CaptureDocumentKind>) -> String {
+        let kind = CaptureMapping.kindTitle(alternative.value)
+        return switch alternative.source {
+        case .phone: String(localized: "Pe telefon părea: \(kind)", comment: "The kind the phone read, beside the AI provider's.")
+        case .cloudModel: CaptureAlternativeNote.readBy(cloudProvider, value: kind)
+        case .checked: String(localized: "Codul de jos al actului arată: \(kind)", comment: "The kind the checked machine-readable zone shows.")
+        }
+    }
+
     private var tierNote: String {
-        if review.usedCloudModel { return String(localized: "Citit și cu Gemini, cu cheia ta.") }
+        if review.usedCloudModel {
+            return String(localized: "Citit și cu \(cloudProvider.shortName), cu cheia ta.", comment: "The AI provider read the document too. The argument is the provider's short name.")
+        }
         switch review.mainTier {
         case .onDeviceModel?: return String(localized: "Citit pe telefon, cu Apple Intelligence.")
         default: return String(localized: "Citit pe telefon. Nimic n-a plecat de aici.")
@@ -160,10 +208,10 @@ struct CaptureReviewView: View {
 
     /// The back of an identity card, when only the front was read.
     @ViewBuilder private var backPageNotice: some View {
-        if review.asksForBackPage || isReadingAgain {
+        if review.asksForBackPage || rereading == .pages {
             VStack(alignment: .leading, spacing: DS.Space.s) {
                 DSNotice(.info, title: "Ai și o poză cu spatele? Acolo e codul care confirmă datele.")
-                if isReadingAgain {
+                if rereading == .pages {
                     DSDelayedProgress(label: "Citesc și spatele…")
                         .frame(maxWidth: .infinity, minHeight: 44)
                 } else if onAddPages != nil {
@@ -172,7 +220,7 @@ struct CaptureReviewView: View {
                     }
                     DSSecondaryButton("Alege din poze", systemImage: "photo.on.rectangle") { backSource = .photos }
                 }
-                if let message = backError ?? readAgainError {
+                if let message = backError ?? (rereading == nil ? readAgainError : nil) {
                     DSNotice(.error, title: "Nu am putut citi spatele", message: LocalizedStringKey(message))
                 }
             }
@@ -183,7 +231,7 @@ struct CaptureReviewView: View {
     @ViewBuilder private var notices: some View {
         backPageNotice
         if let duplicate = review.duplicateAttachmentID {
-            DSNotice(.info, title: "Ai mai adăugat documentul ăsta", message: "Poți să-l deschizi, sau să salvezi doar datele de pe el.", actionTitle: "Vezi documentul") {
+            DSNotice(.info, title: "Ai mai adăugat poza asta", message: "Dacă salvezi, o pun la locul ales mai jos, împreună cu ce am citit.", actionTitle: "Vezi unde e acum") {
                 onClose(.dismissed)
                 AppNavigator.shared.open(.document(duplicate))
             }
@@ -191,7 +239,7 @@ struct CaptureReviewView: View {
         ForEach(Array(review.result.notices.enumerated()), id: \.offset) { _, notice in
             switch notice {
             case .littleTextRecognized:
-                DSNotice(.warning, title: "Am citit puțin text", message: "O poză mai clară, cu actul întins și fără umbre, ajută. Verifică valorile de mai jos.")
+                DSNotice(.info, title: "Poza e greu de citit", message: "O poză nouă, dreaptă și fără reflexii, ajută.")
             case .pagesTruncated(let read, _):
                 DSNotice(.info, title: "Am citit primele \(read) pagini", message: "E un document lung. Se păstrează tot, cu toate paginile.")
             case .machineReadableZoneUnverified:
@@ -201,14 +249,61 @@ struct CaptureReviewView: View {
             }
         }
         if let cloudMessage {
-            DSNotice(.warning, title: "Gemini nu a citit actul", message: LocalizedStringKey(cloudMessage))
+            DSNotice(.warning, title: "\(cloudProvider.name) nu a citit actul", message: LocalizedStringKey(cloudMessage))
         }
-        if let onReadWithCloud, CaptureRunner.hasCloudKey, !review.usedCloudModel, review.visibleFields.contains(where: \.needsCheck) || review.visibleFields.count < 2 {
-            DSSecondaryButton("Citește mai bine cu Gemini", systemImage: "sparkles", action: onReadWithCloud)
-            Text("Prima pagină se trimite la Google, cu cheia ta.")
+        if asksToSendToProvider, let onAnswerSending {
+            // An identity document's photo never leaves the phone by itself: one question, for this document.
+            VStack(alignment: .leading, spacing: DS.Space.s) {
+                DSNotice(.info, title: "Trimit poza la \(cloudProvider.name)?",
+                         message: "Nu sunt sigur ce am citit. \(cloudProvider.name) poate citi actul mai bine, cu cheia ta. Fără un da, poza rămâne pe telefon.")
+                DSSecondaryButton("Trimite poza", systemImage: "sparkles") { onAnswerSending(true) }
+                DSSecondaryButton("Nu, rămâne pe telefon", systemImage: "iphone") { onAnswerSending(false) }
+                if let policy = cloudProvider.dataPolicyURL {
+                    Link(destination: policy) {
+                        Text("Cum folosește \(cloudProvider.name) ce trimiți", comment: "Link to the AI provider's data-use terms.")
+                            .frame(minHeight: 44, alignment: .leading)
+                    }
+                    .dsFont(.footnote)
+                }
+            }
+            .transition(.opacity)
+        }
+        // A bank card, or a page that may be one, is read only on the phone: no button, and
+        // one plain line so the person isn't left wondering where it went.
+        if onReadWithCloud != nil, CaptureRunner.hasCloudKey, !review.usedCloudModel, !review.providerMayRead {
+            Text("Cardurile bancare se citesc doar pe telefon.", comment: "Capture review: why a bank card can't be read by the AI provider.")
                 .dsFont(.footnote)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        // Offered whenever a provider is set up, whatever the phone read: a confident
+        // reading can be wrong too, and only a second opinion can tell.
+        if let onReadWithCloud, CaptureRunner.hasCloudKey, !review.usedCloudModel, !asksToSendToProvider, review.providerMayRead {
+            if rereading == .cloud {
+                DSDelayedProgress(label: "Citesc cu \(cloudProvider.shortName)…")
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            } else {
+                DSSecondaryButton("Citește mai bine cu \(cloudProvider.shortName)", systemImage: "sparkles", action: onReadWithCloud)
+                    .disabled(rereading != nil)
+            }
+            VStack(alignment: .leading, spacing: DS.Space.xxs) {
+                if review.kind.isPersonalDocument {
+                    Text("Poza actului se trimite la \(cloudProvider.name), cu cheia ta.")
+                } else {
+                    Text("Prima pagină se trimite la \(cloudProvider.name), cu cheia ta.")
+                }
+                if let policy = cloudProvider.dataPolicyURL {
+                    Link(destination: policy) {
+                        Text("Cum folosește \(cloudProvider.name) ce trimiți", comment: "Link to the AI provider's data-use terms.")
+                            .frame(minHeight: 44, alignment: .leading)
+                    }
+                }
+            }
+            .dsFont(.footnote)
         }
     }
+
+    /// The AI provider the person set up in Settings.
+    private var cloudProvider: AIProvider { AIProviderSettings.standard.provider }
 
     // MARK: Fields
 
@@ -225,22 +320,29 @@ struct CaptureReviewView: View {
                     }
                     ForEach(fields) { field in
                         if let index = review.fields.firstIndex(where: { $0.id == field.id }) {
-                            CaptureFieldEditor(field: $review.fields[index])
+                            CaptureFieldEditor(field: $review.fields[index], kind: review.kind)
                         }
                     }
-                    if let lines = review.value(.lineItems)?.lineItems, !lines.isEmpty {
-                        VStack(alignment: .leading, spacing: DS.Space.xxs) {
-                            Text("Ce s-a făcut").dsFont(.footnote)
-                            ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
-                                HStack {
-                                    Text(verbatim: line.description).dsFont(.body)
-                                    Spacer()
-                                    if let amount = line.amount {
-                                        Text(verbatim: CaptureMapping.money(amount).formattedCompact()).dsFont(.body, numeric: true)
-                                    }
+                    let addable = review.addableKeys
+                    if !addable.isEmpty {
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text("Nu am găsit pe act:")
+                                .dsFont(.footnote)
+                            ForEach(addable, id: \.self) { key in
+                                Button {
+                                    withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { review.addField(key) }
+                                } label: {
+                                    Label("Adaugă: \(CaptureMapping.label(for: key))", systemImage: "plus.circle")
+                                        .font(.subheadline.weight(.medium))
+                                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                                        .contentShape(.rect)
                                 }
+                                .buttonStyle(.borderless)
                             }
                         }
+                    }
+                    if review.showsLineItems {
+                        CaptureLineItemsEditor(lines: $review.lineItems, currency: review.value(.total)?.money?.currencyCode ?? Money.defaultCurrency)
                     }
                 }
             }
@@ -264,12 +366,54 @@ struct CaptureReviewView: View {
                         )
                     }
                     .buttonStyle(.plain)
+                    if let check = review.placeCheck {
+                        VStack(alignment: .leading, spacing: DS.Space.xxs) {
+                            Label("Verifică", systemImage: "exclamationmark.circle.fill")
+                                .font(.system(.caption, weight: .semibold))
+                                .foregroundStyle(DSStatus.soon.textColor)
+                            Text(placeCheckText(check))
+                                .dsFont(.footnote)
+                        }
+                        .accessibilityElement(children: .combine)
+                        .transition(.opacity)
+                    }
                     if case .newAsset(let key) = review.destination {
-                        DSTextField(key == BuiltInTemplates.Key.member ? "Numele persoanei" : "Numele secțiunii noi",
-                                    text: $review.newAssetName, isRequired: true)
+                        DSTextField(newAssetNameTitle(key), text: $review.newAssetName, isRequired: true)
                     }
                 }
             }
+        }
+    }
+
+    /// A printed line, kept short enough to read in a row: cut at a word, with "…".
+    static func shortened(_ text: String, limit: Int = 90) -> String {
+        guard text.count > limit else { return text }
+        let cut = text.prefix(limit)
+        let atWord = cut.lastIndex(of: " ").map { cut[..<$0] } ?? cut
+        return atWord.trimmingCharacters(in: .whitespacesAndNewlines.union(.punctuationCharacters)) + "…"
+    }
+
+    /// Why the home was chosen without being sure: the supply address only partly agrees.
+    private func placeCheckText(_ check: SubscriptionMatcher.HouseCheck) -> LocalizedStringKey {
+        switch check {
+        case .addressPartlyAgrees: "Adresa locului de consum seamănă cu cea a locuinței, dar nu e chiar aceeași."
+        case .addressDiffers: "Adresa locului de consum nu e cea a locuinței."
+        }
+    }
+
+    /// The part the category `key` plays (a person, a subscription, a home), if any.
+    private func role(of key: String) -> CategoryBehavior.Role? {
+        templatesByKey[key]?.behavior.role
+    }
+
+    private var filesUnderSubscription: Bool { review.kind.profile.filing == .subscription }
+
+    private func newAssetNameTitle(_ key: String) -> LocalizedStringKey {
+        switch role(of: key) {
+        case .holder?: "Numele persoanei"
+        case .subscription?: "Numele abonamentului"
+        case .home? where filesUnderSubscription: "Numele locuinței"
+        default: "Numele secțiunii noi"
         }
     }
 
@@ -277,8 +421,10 @@ struct CaptureReviewView: View {
         switch review.destination {
         case .none: return String(localized: "Doar păstrez actul")
         case .asset(let id): return assets.first { $0.id == id }?.name ?? String(localized: "Secțiune ștearsă")
-        case .newAsset(let key) where key == BuiltInTemplates.Key.member:
+        case .newAsset(let key) where role(of: key) == .holder:
             return String(localized: "Persoană nouă: \(review.newAssetName)")
+        case .newAsset(let key) where role(of: key) == .subscription:
+            return String(localized: "Abonament nou: \(review.newAssetName)")
         case .newAsset(let key): return String(localized: "Secțiune nouă în \(templatesByKey[key]?.name ?? key)")
         }
     }
@@ -288,10 +434,21 @@ struct CaptureReviewView: View {
         case .none: return String(localized: "Îl găsești în Caută.")
         case .asset(let id):
             guard let asset = assets.first(where: { $0.id == id }) else { return "" }
-            if asset.templateKey == BuiltInTemplates.Key.member { return String(localized: "Actul stă la actele acestei persoane.") }
+            if role(of: asset.templateKey) == .holder { return String(localized: "Actul stă la actele acestei persoane.") }
+            if filesUnderSubscription {
+                if let subscription = review.existingSubscription(assets: assets), subscription.id != asset.id {
+                    return String(localized: "La abonamentul „\(subscription.name)”")
+                }
+                if role(of: asset.templateKey) == .home {
+                    return String(localized: "Abonament nou aici: \(CaptureFiler.subscriptionName(review))")
+                }
+                if let parent = asset.parent { return String(localized: "Abonament la \(parent.name)") }
+            }
             return templatesByKey[asset.templateKey]?.name ?? ""
-        case .newAsset(let key) where key == BuiltInTemplates.Key.member:
+        case .newAsset(let key) where role(of: key) == .holder:
             return String(localized: "Se adaugă în Acte când salvezi.")
+        case .newAsset(let key) where role(of: key) == .home && filesUnderSubscription:
+            return String(localized: "Se creează când salvezi, cu abonamentul „\(CaptureFiler.subscriptionName(review))”.")
         case .newAsset: return String(localized: "Se creează când salvezi.")
         }
     }
@@ -302,7 +459,7 @@ struct CaptureReviewView: View {
         case .asset(let id):
             let asset = assets.first { $0.id == id }
             return asset?.symbolOverride ?? asset.flatMap { templatesByKey[$0.templateKey]?.symbol } ?? "folder"
-        case .newAsset(let key) where key == BuiltInTemplates.Key.member: return "person.crop.circle.badge.plus"
+        case .newAsset(let key) where role(of: key) == .holder: return "person.crop.circle.badge.plus"
         case .newAsset(let key): return templatesByKey[key]?.symbol ?? "folder.badge.plus"
         }
     }
@@ -311,12 +468,21 @@ struct CaptureReviewView: View {
 
     @ViewBuilder private var reminderSection: some View {
         let text = CaptureReminderPreview.text(for: review, templates: templatesByKey, assets: assets, today: CalendarDay(Date()))
-        if text != nil || review.kind == .utilityInvoice {
+        let directDebit = review.directDebitStatement(assets: assets)
+        if text != nil || review.kind.profile.deadlineIsOptIn || directDebit != nil {
             VStack(alignment: .leading, spacing: DS.Space.s) {
                 DSSectionHeader("Când te anunț")
                 DSCard {
                     VStack(alignment: .leading, spacing: DS.Space.s) {
-                        if review.kind == .utilityInvoice, review.reminderDay != nil {
+                        if let directDebit {
+                            // What the bill says, offered: turned on only by the person.
+                            DSCheckRow(title: Text("Plătesc prin debit direct"),
+                                       subtitle: Text("Pe factură scrie: „\(Self.shortened(directDebit))”. Dacă e așa, nu îți mai amintesc s-o plătești."),
+                                       isOn: review.turnsOnDirectDebit) {
+                                withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { review.turnsOnDirectDebit.toggle() }
+                            }
+                        }
+                        if review.kind.profile.deadlineIsOptIn, review.reminderDay != nil, !review.paysByDirectDebit(assets: assets) {
                             DSCheckRow(title: Text("Amintește-mi să o plătesc"), isOn: review.remindsToPay) {
                                 review.remindsToPay.toggle()
                             }
@@ -346,16 +512,24 @@ struct CaptureReviewView: View {
         }
     }
 
-    private func save() {
+    private func save(lowerReading: LowerReadingAnswer? = nil) {
         isSaving = true
         Task {
             do {
-                let outcome = try await CaptureFiler(context: context).save(review)
+                var filer = CaptureFiler(context: context)
+                filer.lowerReading = lowerReading
+                let outcome = try await filer.save(review)
                 let place = outcome.asset?.name
-                onClose(.filed(message: place.map { "Salvat în \($0)." } ?? "Actul e salvat."))
+                onClose(.filed(message: place.map { "Salvat în \($0)." } ?? "Actul e salvat.", assetID: outcome.asset?.id))
+            } catch let question as ExampleSectionQuestion {
+                isSaving = false
+                exampleQuestion = question
+            } catch let question as LowerReadingQuestion {
+                isSaving = false
+                readingQuestion = question
             } catch {
                 isSaving = false
-                errorMessage = error.localizedDescription
+                errorMessage = SaveFailure.message(for: error, formKept: true)
             }
         }
     }
@@ -366,17 +540,20 @@ struct CaptureReviewView: View {
         pages = processed.pageData.compactMap(UIImage.init(data:))
     }
 
-    /// Tells "offline" apart from "the key wasn't accepted".
+    /// Merges the newest reading into the review, keeping everything the person changed.
+    /// The capture session lets go of pages a reading with added pages replaced.
+    private func mergeReread() {
+        guard let result = rereadResult, result.id != review.result.id else { return }
+        let merged = CaptureReview(result: result, assets: assets, context: context).carryingEdits(from: review, assets: assets)
+        withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { review = merged }
+    }
+
+    /// Says what went wrong with the cloud reading: offline, the key, the quota, the model.
     private func explainCloudFailure() async {
+        cloudMessage = nil
         for notice in review.result.notices {
             guard case .cloudModelFailed(let reason) = notice else { continue }
-            if reason == "noKey" {
-                cloudMessage = String(localized: "Nu ai adăugat o cheie Google. Citirea de pe telefon merge oricum.")
-            } else if await NetworkCheck.isOnline() {
-                cloudMessage = String(localized: "Google nu a acceptat cheia. Verifică în Setări dacă ai copiat-o întreagă.")
-            } else {
-                cloudMessage = String(localized: "Nu ești conectat la internet. Citirea de pe telefon a mers în continuare.")
-            }
+            cloudMessage = AIProviderError(code: reason).message(provider: cloudProvider)
         }
     }
 }
@@ -384,6 +561,9 @@ struct CaptureReviewView: View {
 /// One value read from the document: editable, with where it was read from.
 private struct CaptureFieldEditor: View {
     @Binding var field: CaptureReview.Field
+    /// The document's kind, for how a checked value is named.
+    let kind: CaptureDocumentKind
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Space.xxs) {
@@ -392,6 +572,13 @@ private struct CaptureFieldEditor: View {
                 Label("Verifică", systemImage: "exclamationmark.circle.fill")
                     .font(.system(.caption, weight: .semibold))
                     .foregroundStyle(DSStatus.soon.textColor)
+            }
+            // What other readers read: offered beside the value, never applied by itself.
+            ForEach(field.alternatives, id: \.self) { alternative in
+                CaptureAlternativeNote(text: alternativeText(alternative)) {
+                    withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { field.use(alternative) }
+                }
+                .transition(.opacity)
             }
             if let source = sourceText {
                 Text(source)
@@ -402,23 +589,86 @@ private struct CaptureFieldEditor: View {
         }
     }
 
+    /// "Pe telefon am citit: …", "Gemini a citit: …", "Pe spatele actului scrie: …".
+    private func alternativeText(_ alternative: CaptureAlternative<CaptureValue>) -> String {
+        let value = CaptureMapping.displayText(alternative.value)
+        return switch alternative.source {
+        case .phone:
+            String(localized: "Pe telefon am citit: \(value)", comment: "The phone's value, beside the AI provider's.")
+        case .cloudModel:
+            CaptureAlternativeNote.readBy(AIProviderSettings.standard.provider, value: value)
+        case .checked(machineReadable: true) where kind == .identityCard:
+            String(localized: "Pe spatele actului scrie: \(value)", comment: "What the machine-readable zone on the back of the card says.")
+        case .checked(machineReadable: true):
+            String(localized: "În codul de jos al actului scrie: \(value)", comment: "What the machine-readable zone says.")
+        case .checked:
+            String(localized: "Pe act scrie: \(value)", comment: "A value that passed its own check digit, beside a different one.")
+        }
+    }
+
     @ViewBuilder private var editor: some View {
         let title = LocalizedStringKey(field.label)
+        if let choices = CaptureMapping.choices(for: field.key, kind: kind) {
+            // A choice, kept as its stable key: the service, a policy's cover.
+            DSChoiceField(title, selection: Binding(
+                get: { field.value?.text.flatMap { choices.option(for: $0)?.key } },
+                set: { key in field.confirm(key.map(CaptureValue.text)) }
+            ), options: choices.map(\.key)) { key in choices.option(for: key)?.label ?? key }
+        } else {
+            valueEditor(title)
+        }
+    }
+
+    /// What kind of editor a value needs: from the value read, or, for an expected field the
+    /// person added empty, from what that field holds. It stays the same while they type,
+    /// so the editor keeps its focus.
+    private enum EditorKind {
+        case date
+        case money(currencyCode: String)
+        /// A number, with its unit when it is a reading ("km").
+        case number(unit: MeasurementUnit?)
+        case text
+    }
+
+    private var editorKind: EditorKind {
         switch field.value {
-        case .day?:
+        case .day?: .date
+        case .money(let money)?: .money(currencyCode: money.currencyCode)
+        case .number?: .number(unit: nil)
+        case .metric(_, let unit)?: .number(unit: unit)
+        case nil:
+            switch CloudSchema.format(of: field.key) {
+            case .date: .date
+            case .money: .money(currencyCode: Money.defaultCurrency)
+            case .integer: .number(unit: field.key == .odometer ? .kilometres : nil)
+            default: .text
+            }
+        default: .text
+        }
+    }
+
+    @ViewBuilder private func valueEditor(_ title: LocalizedStringKey) -> some View {
+        switch editorKind {
+        case .date:
             DSDateField(title, date: Binding(
                 get: { field.value?.day?.date() },
                 set: { field.confirm($0.map { .day(CaptureDay(date: $0)) }) }
             ))
-        case .money(let money)?:
+        case .money(let currencyCode):
             DSMoneyField(title, amount: Binding(
                 get: { field.value?.money?.amount },
-                set: { amount in field.confirm(amount.map { .money(CaptureMoney(amount: $0, currencyCode: money.currencyCode)) }) }
+                set: { amount in field.confirm(amount.map { .money(CaptureMoney(amount: $0, currencyCode: field.value?.money?.currencyCode ?? currencyCode)) }) }
             ), currencyCode: Binding(
-                get: { field.value?.money?.currencyCode ?? money.currencyCode },
-                set: { code in if let amount = field.value?.money?.amount { field.value = .money(CaptureMoney(amount: amount, currencyCode: code)) } }
+                get: { field.value?.money?.currencyCode ?? currencyCode },
+                set: { code in if let amount = field.value?.money?.amount { field.confirm(.money(CaptureMoney(amount: amount, currencyCode: code))) } }
             ))
-        default:
+        case .number(let unit):
+            // The one number field: what it can't read clearly it refuses in the field.
+            DSMetricField(title, value: Binding(
+                get: { Self.number(of: field.value) },
+                set: { number in field.confirm(number.map { Self.value(Decimal($0).rounded(scale: 6), unit: unit) }) }
+            ), unit: unit, fractionDigits: 0...3)
+        case .text:
             DSTextField(title, text: Binding(
                 get: { Self.text(of: field.value) },
                 set: { text in field.confirm(Self.value(text, like: field.value)) }
@@ -442,22 +692,62 @@ private struct CaptureFieldEditor: View {
         switch value {
         case .text(let text)?: return text
         case .number(let number)?: return NSDecimalNumber(decimal: number).stringValue
-        case .metric(let number, let unit)?: return "\(NSDecimalNumber(decimal: number).stringValue) \(unit)"
+        case .metric(let number, let unit)?: return "\(NSDecimalNumber(decimal: number).stringValue) \(unit.label)"
         default: return ""
         }
     }
 
     static func value(_ text: String, like original: CaptureValue?) -> CaptureValue? {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return nil }
-        switch original {
-        case .number?:
-            return Money.parseAmount(trimmed).map(CaptureValue.number) ?? .text(trimmed)
-        case .metric(_, let unit)?:
-            let digits = trimmed.replacingOccurrences(of: unit, with: "")
-            return Money.parseAmount(digits).map { .metric(value: $0, unit: unit) } ?? .text(trimmed)
+        return trimmed.isEmpty ? nil : .text(trimmed)
+    }
+
+    static func number(of value: CaptureValue?) -> Double? {
+        switch value {
+        case .number(let number)?, .metric(let number, _)?: NSDecimalNumber(decimal: number).doubleValue
+        default: nil
+        }
+    }
+
+    static func value(_ number: Decimal, unit: MeasurementUnit?) -> CaptureValue {
+        unit.map { .metric(value: number, unit: $0) } ?? .number(number)
+    }
+}
+
+/// A reading that wasn't kept, beside the one shown: what it says and "Folosește-l". The one
+/// mechanism for every alternative: the phone's value or kind, the AI's, a checked code's.
+private struct CaptureAlternativeNote: View {
+    let text: String
+    let onUse: () -> Void
+
+    var body: some View {
+        DSAdaptiveStack(verticalAlignment: .firstTextBaseline, spacing: DS.Space.s, stackedSpacing: DS.Space.xxs) { note; button }
+    }
+
+    private var note: some View {
+        Text(verbatim: text)
+            .dsFont(.footnote)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var button: some View {
+        Button(action: onUse) {
+            Text("Folosește-l", comment: "Applies a value another reader read instead of the one shown.")
+                .font(.subheadline.weight(.semibold))
+                .frame(minHeight: 44)
+                .contentShape(.rect)
+        }
+        .buttonStyle(.borderless)
+        .accessibilityLabel(Text("Folosește: \(text)", comment: "VoiceOver label of the button that applies another reader's value."))
+    }
+
+    /// "Gemini a citit: …", in the provider's own name.
+    static func readBy(_ provider: AIProvider, value: String) -> String {
+        switch provider {
+        case .openAICompatible:
+            String(localized: "Modelul tău a citit: \(value)", comment: "The value the person's own AI model read.")
         default:
-            return .text(trimmed)
+            String(localized: "\(provider.shortName) a citit: \(value)", comment: "The value the AI provider read. The first argument is the provider's short name.")
         }
     }
 }
@@ -470,6 +760,8 @@ private struct CaptureDestinationPicker: View {
     let assets: [Asset]
     /// An identity document can go to a new household member.
     var offersNewHolder = false
+    /// A bill or a contract: a home stands for its subscription there, or a new one.
+    var filesUnderSubscription = false
 
     @Environment(\.dismiss) private var dismiss
     @State private var isPickingNewCategory = false
@@ -479,15 +771,15 @@ private struct CaptureDestinationPicker: View {
             List {
                 Section {
                     choice(.none, title: String(localized: "Doar păstrez actul"), subtitle: String(localized: "Fără secțiune; îl găsești în Caută."), symbol: "tray")
-                    if offersNewHolder {
-                        choice(.newAsset(templateKey: BuiltInTemplates.Key.member), title: String(localized: "Persoană nouă"),
+                    if offersNewHolder, let holders = templates.first(where: { $0.behavior.role == .holder }) {
+                        choice(.newAsset(templateKey: holders.key), title: String(localized: "Persoană nouă"),
                                subtitle: String(localized: "Actele stau grupate pe persoane."), symbol: "person.crop.circle.badge.plus")
                     }
                 }
                 ForEach(templates.filter { template in assets.contains { $0.templateKey == template.key } }) { template in
                     Section {
                         ForEach(assets.filter { $0.templateKey == template.key }) { asset in
-                            choice(.asset(asset.id), title: asset.name, subtitle: asset.isExample ? String(localized: "Exemplu") : nil, symbol: asset.symbolOverride ?? template.symbol)
+                            choice(.asset(asset.id), title: asset.name, subtitle: subtitle(for: asset), symbol: asset.symbolOverride ?? template.symbol)
                         }
                     } header: {
                         Text(verbatim: template.name).textCase(nil)
@@ -506,13 +798,30 @@ private struct CaptureDestinationPicker: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Închide") { dismiss() } }
             }
             .navigationDestination(isPresented: $isPickingNewCategory) {
-                List(templates.filter { $0.key != BuiltInTemplates.Key.member }) { template in
+                List(templates.filter { $0.behavior.role != .holder }) { template in
                     choice(.newAsset(templateKey: template.key), title: template.name, subtitle: template.summary, symbol: template.symbol)
                 }
                 .navigationTitle("Ce fel de secțiune")
                 .navigationBarTitleDisplayMode(.inline)
             }
         }
+    }
+
+    /// What the asset's category does.
+    private func behavior(of asset: Asset) -> CategoryBehavior {
+        templates.first { $0.key == asset.templateKey }?.behavior ?? .standard
+    }
+
+    /// What choosing an asset means: an example is marked; for a bill, a home holds its
+    /// subscription and a subscription says whose it is.
+    private func subtitle(for asset: Asset) -> String? {
+        if asset.isExample { return String(localized: "Exemplu") }
+        guard filesUnderSubscription else { return nil }
+        if behavior(of: asset).role == .home {
+            return String(localized: "La abonamentul de aici, sau unul nou", comment: "Destination picker: a bill filed under a home goes to its subscription there.")
+        }
+        if behavior(of: asset).role == .subscription, let parent = asset.parent { return parent.name }
+        return nil
     }
 
     private func choice(_ value: CaptureReview.Destination, title: String, subtitle: String?, symbol: String) -> some View {
@@ -532,34 +841,5 @@ private struct CaptureDestinationPicker: View {
             )
         }
         .buttonStyle(.plain)
-    }
-}
-
-/// One look at whether there is a network path, for wording errors.
-enum NetworkCheck {
-    static func isOnline() async -> Bool {
-        let monitor = NWPathMonitor()
-        let satisfied: Bool = await withCheckedContinuation { continuation in
-            let once = OnceFlag()
-            monitor.pathUpdateHandler = { path in
-                if once.claim() { continuation.resume(returning: path.status == .satisfied) }
-            }
-            monitor.start(queue: DispatchQueue(label: "dosar.network-check"))
-        }
-        monitor.cancel()
-        return satisfied
-    }
-
-    private final class OnceFlag: @unchecked Sendable {
-        private let lock = NSLock()
-        private var claimed = false
-
-        func claim() -> Bool {
-            lock.lock()
-            defer { lock.unlock() }
-            if claimed { return false }
-            claimed = true
-            return true
-        }
     }
 }

@@ -36,7 +36,7 @@ public struct CaptureRequest: Sendable {
 public struct CaptureOptions: Sendable {
     /// Use Apple's on-device model when available. Private and offline, so on by default.
     public var useOnDeviceModel: Bool = true
-    /// Send the first page to the person's own Gemini key. Only when they ask for it on this capture.
+    /// Send the first page to the AI provider the person set up, with their own key. Only when they ask for it on this capture.
     public var useCloudModel: Bool = false
     /// Keep the pages in the document store.
     public var storeDocument: Bool = true
@@ -60,7 +60,9 @@ public struct CaptureOptions: Sendable {
 /// 1. **Deterministic**: the MRZ with check digits, barcodes and QR codes, known invoice formats, tax ID checksums.
 /// 2. **Heuristic**: Romanian dates, amounts, labels and identifiers in the recognized text.
 /// 3. **On-device model**: Apple's language model fills what patterns can't, when the device has it.
-/// 4. **Cloud model**: the person's Gemini key, only when they ask.
+/// 4. **Cloud model**: the AI provider the person set up with their own key, when they ask (or
+///    automatically after a weak reading, when they chose so): a full second opinion that
+///    `ReadingArbiter` ranks against the phone's reading by evidence.
 ///
 /// The result is a draft. Nothing is saved to the person's data until they confirm it;
 /// only the document's pages are kept, so they're never lost.
@@ -71,7 +73,7 @@ public final class CaptureEngine: Sendable {
 
     let analyzer: CaptureAnalyzer
     let recognizer: any CaptureRecognizing
-    let normalizer: DocumentImageNormalizer?
+    let normalizer: (any CapturePagePreparing)?
     let onDeviceModel: (any CaptureSemanticExtracting)?
     let cloudModel: (any CaptureSemanticExtracting)?
     let store: CaptureDocumentStore?
@@ -79,7 +81,7 @@ public final class CaptureEngine: Sendable {
     public init(
         analyzer: CaptureAnalyzer,
         recognizer: any CaptureRecognizing,
-        normalizer: DocumentImageNormalizer? = DocumentImageNormalizer(),
+        normalizer: (any CapturePagePreparing)? = DocumentImageNormalizer(),
         onDeviceModel: (any CaptureSemanticExtracting)?,
         cloudModel: (any CaptureSemanticExtracting)?,
         store: CaptureDocumentStore?
@@ -94,16 +96,11 @@ public final class CaptureEngine: Sendable {
 
     /// The engine as the app and the Share Extension use it.
     public static func standard(componentResolver: any CaptureComponentResolving = CatalogComponentResolver()) -> CaptureEngine {
-        #if canImport(UIKit)
-        let cloud: (any CaptureSemanticExtracting)? = GeminiCaptureExtractor(resolver: componentResolver)
-        #else
-        let cloud: (any CaptureSemanticExtracting)? = nil
-        #endif
-        return CaptureEngine(
+        CaptureEngine(
             analyzer: CaptureAnalyzer(specializedParsers: [UtilityInvoiceParser()], componentResolver: componentResolver),
             recognizer: VisionCaptureRecognizer(),
             onDeviceModel: OnDeviceModelExtractor(resolver: componentResolver),
-            cloudModel: cloud,
+            cloudModel: CloudCaptureExtractor(resolver: componentResolver),
             store: CaptureDocumentStore.shared()
         )
     }
@@ -115,7 +112,10 @@ public final class CaptureEngine: Sendable {
         let options = request.options
 
         // 1. Pages and text.
+        /// The pages as taken: what is kept and shown.
         var pages: [CGImage] = []
+        /// The pages as read: found, flattened, turned upright and enlarged.
+        var readImages: [CGImage] = []
         /// Recognized lines with their positions, page by page. Empty for pasted text and a PDF's text layer.
         var recognized: [[RecognizedLine]] = []
         var text = ""
@@ -129,9 +129,10 @@ public final class CaptureEngine: Sendable {
             for item in images {
                 var page = item.image
                 if let normalizer, !item.isPerspectiveCorrected {
-                    page = await normalizer.normalize(item.image)
+                    page = await normalizer.prepare(item.image)
                 }
-                pages.append(page)
+                pages.append(item.image)
+                readImages.append(page)
                 let read = try await recognizer.recognize(page)
                 recognized.append(read.items)
                 text += (text.isEmpty ? "" : "\n") + read.text
@@ -169,27 +170,66 @@ public final class CaptureEngine: Sendable {
         CaptureLog.engine.info("Recognized \(text.count) characters and \(barcodes.count) codes")
 
         // 2. Deterministic and heuristic tiers.
-        let analysis = recognized.isEmpty
+        var analysis = recognized.isEmpty
             ? analyzer.analyze(text: text, barcodes: barcodes, referenceDate: options.referenceDate)
             : analyzer.analyze(pages: recognized, barcodes: barcodes, referenceDate: options.referenceDate)
+
+        // One retry for photos that read poorly: each page's best other variant (a quarter
+        // turn, or the photo uncorrected), read once more; the better reading is kept.
+        if !readImages.isEmpty, let normalizer, Self.readsPoorly(analysis) {
+            var retried = recognized
+            var retriedImages = readImages
+            var retriedBarcodes: [CaptureBarcode] = []
+            var changed = false
+            for index in readImages.indices {
+                guard let variant = await normalizer.retryVariant(of: readImages[index], original: pages[index]),
+                      let read = try? await recognizer.recognize(variant) else { continue }
+                retried[index] = read.items
+                retriedImages[index] = variant
+                retriedBarcodes += read.barcodes
+                changed = true
+            }
+            if changed {
+                let second = analyzer.analyze(pages: retried, barcodes: barcodes + retriedBarcodes, referenceDate: options.referenceDate)
+                CaptureLog.engine.info("Retried a poor read: \(Self.readingScore(analysis)) → \(Self.readingScore(second))")
+                if Self.readingScore(second) > Self.readingScore(analysis) {
+                    analysis = second
+                    recognized = retried
+                    readImages = retriedImages
+                    barcodes += retriedBarcodes
+                    text = retried.map { $0.map(\.text).joined(separator: "\n") }.joined(separator: "\n")
+                }
+            }
+        }
         notices += analysis.notices
-        var fields = analysis.fields
-        var kind = analysis.kind
-        var kindConfidence = analysis.kindConfidence
+        // Still poor after the retry: say so calmly, once.
+        if Self.readsPoorly(analysis), !notices.contains(.littleTextRecognized) {
+            notices.append(.littleTextRecognized)
+        }
+        let today = CaptureDay(date: options.referenceDate)
+        var reading = ReadingArbiter.KindReading(kind: analysis.kind, confidence: analysis.kindConfidence, evidence: analysis.kindEvidence)
+        var kindAlternatives: [CaptureAlternative<CaptureDocumentKind>] = []
+        var readWithCloudModel = false
+        /// What the phone read so far, as the models are told it.
+        let known = CaptureConsistency.plausible(analysis.fields, kind: reading.kind, today: today)
+        /// The on-device model's answers, kept apart so the phone's reading can be redone for another kind.
+        var modelFields: [CaptureField] = []
+        var aiFields: [CaptureField]?
+        let firstPage = readImages.first ?? pdfThumbnail
 
         // 3. On-device model, unless the patterns already read everything that matters.
-        let alreadyComplete = kindConfidence >= 0.8 && kind.isComplete(fields)
+        let alreadyComplete = reading.confidence >= 0.8 && reading.kind.isComplete(known)
         if alreadyComplete { CaptureLog.engine.info("Skipping the on-device model: patterns found the essentials") }
+        try Task.checkCancellation()
         if options.useOnDeviceModel, !alreadyComplete, let model = onDeviceModel, !text.isEmpty {
             switch model.availability() {
             case .available:
                 do {
-                    let extraction = try await model.extract(SemanticInput(text: text, firstPage: pages.first ?? pdfThumbnail, kind: kind, knownFields: fields))
-                    fields = FieldMerger.merge(fields, with: extraction.fields)
-                    if let modelKind = extraction.kind, modelKind != kind, kindConfidence < 0.6 {
-                        kind = modelKind
-                        kindConfidence = 0.65
-                    }
+                    let extraction = try await model.extract(SemanticInput(text: text, firstPage: firstPage, kind: reading.kind, knownFields: known, today: today))
+                    modelFields = extraction.fields
+                    reading = ReadingArbiter.kind(reading, onDeviceModel: extraction.kind)
+                } catch is CancellationError {
+                    throw CancellationError()
                 } catch {
                     CaptureLog.engine.error("On-device model failed: \((error as NSError).domain, privacy: .public) \((error as NSError).code)")
                     notices.append(.onDeviceModelFailed)
@@ -199,61 +239,194 @@ public final class CaptureEngine: Sendable {
             }
         }
 
-        // 4. Cloud model, only on request.
-        if options.useCloudModel, let model = cloudModel {
+        // 4. The person's AI provider: a second opinion on the whole page, on request.
+        // `ReadingArbiter` ranks it against the phone's reading by evidence. Closing the
+        // capture before this point means nothing is sent. A page that may be a bank card
+        // (`PhoneOnlyReading`, on what the phone read of these very pages) is never sent,
+        // whoever asked: the tap, the automatic reading, or a reading again with added pages.
+        try Task.checkCancellation()
+        let staysOnPhone = PhoneOnlyReading.mayBeOne(kinds: [analysis.kind, reading.kind], text: text)
+        if options.useCloudModel, staysOnPhone {
+            CaptureLog.engine.info("Not sending to the AI provider: read only on the phone")
+            notices.append(.readOnPhoneOnly)
+        } else if options.useCloudModel, let model = cloudModel {
             switch model.availability() {
             case .available:
                 do {
-                    let extraction = try await model.extract(SemanticInput(text: text, firstPage: pages.first ?? pdfThumbnail, kind: kind, knownFields: fields))
-                    fields = FieldMerger.merge(fields, with: extraction.fields)
+                    let phone = FieldMerger.merge(known, with: CaptureConsistency.plausible(modelFields, kind: reading.kind, today: today))
+                    let extraction = try await model.extract(SemanticInput(text: text, firstPage: firstPage, kind: reading.kind, knownFields: phone, today: today))
+                    readWithCloudModel = true
+                    let decided = ReadingArbiter.kind(reading, secondOpinion: extraction.kind)
+                    if decided.reading.kind != reading.kind { CaptureLog.engine.info("Second opinion changed the kind") }
+                    reading = decided.reading
+                    kindAlternatives = decided.alternatives
+                    aiFields = extraction.fields
+                } catch is CancellationError {
+                    throw CancellationError()
                 } catch {
-                    notices.append(.cloudModelFailed(reason: "requestFailed"))
+                    let reason = AIProviderError(transport: error).code
+                    CaptureLog.engine.error("Cloud model failed: \(reason, privacy: .public)")
+                    notices.append(.cloudModelFailed(reason: reason))
                 }
             case .unavailable(let reason):
                 notices.append(.cloudModelFailed(reason: reason))
             }
         }
+        var isSinglePhoto = false
+        if case .images(let images) = request.payload, images.count == 1 { isSinglePhoto = true }
+        let source = CaptureReadingSource(
+            text: text, pages: recognized, barcodes: barcodes, referenceDate: options.referenceDate,
+            modelFields: modelFields, aiFields: aiFields, isSinglePhoto: isSinglePhoto
+        )
 
-        // Dates checked against each other, then only fields that belong on this kind
-        // of document, whichever tier found them.
-        fields = CaptureConsistency.resolve(fields, kind: kind, today: CaptureDay(date: options.referenceDate)).fields
-        fields = Self.derived(fields).filter { kind.allows($0.key) }
+        // The kind decided: its fields, from every reader, read as that kind.
+        let settled = settle(source, as: reading.kind, analysis: reading.kind == analysis.kind ? analysis : nil)
+        notices += settled.notices
+        CaptureLog.engine.info("Read \(settled.fields.count) fields, kind confidence \(reading.confidence), \(settled.alternatives.count) alternatives")
+        let routing = CaptureRouter.route(kind: reading.kind, kindConfidence: reading.confidence, fields: settled.fields)
 
-        // A card read from its front alone: the back carries the zone that confirms it.
-        if kind == .identityCard, !analysis.hasMachineReadableZone, case .images(let images) = request.payload, images.count == 1 {
-            notices.append(.identityBackMissing)
-        }
-        CaptureLog.engine.info("Read \(fields.count) fields, kind confidence \(kindConfidence)")
-        let routing = CaptureRouter.route(kind: kind, kindConfidence: kindConfidence, fields: fields)
-
-        // 5. Keep the pages.
-        var documentID: UUID?
+        // 5. Keep the pages, unless the capture was closed meanwhile.
+        try Task.checkCancellation()
+        var document: CapturedDocumentRef?
         if options.storeDocument, let store, !pages.isEmpty || pdfData != nil {
             let stored = try await store.store(CaptureDocumentStore.StoreRequest(
                 pages: pages,
                 originalPDF: pdfData,
                 thumbnailSource: pdfThumbnail,
                 sourceData: sourceData,
-                kind: kind,
+                kind: reading.kind,
                 ownerID: options.ownerID,
                 capturedAt: options.referenceDate
             ))
-            documentID = stored.document.id
-            if stored.isDuplicate { notices.append(.duplicateDocument(documentID: stored.document.id)) }
+            if Task.isCancelled {
+                await store.release(stored.ref)
+                throw CancellationError()
+            }
+            document = stored.ref
         }
 
+        // No card number goes further than this, whatever the kind.
         return CaptureResult(
-            kind: kind,
-            kindConfidence: kindConfidence,
-            fields: fields,
+            kind: reading.kind,
+            kindConfidence: reading.confidence,
+            fields: settled.fields,
             suggestions: routing.suggestions,
             reminder: routing.reminder,
             // For people: laid out like the document when positions are known, as read otherwise.
             recognizedText: recognized.isEmpty ? text : analysis.readableText,
             barcodes: barcodes,
-            documentID: documentID,
-            notices: notices
-        )
+            document: document,
+            notices: notices,
+            kindEvidence: reading.evidence,
+            kindAlternatives: kindAlternatives,
+            fieldAlternatives: settled.alternatives,
+            readWithCloudModel: readWithCloudModel,
+            source: source
+        ).withoutCardNumbers()
+    }
+
+    // MARK: - Reading as another kind
+
+    /// The same pages read as `kind`: when the person corrects the kind in the review.
+    /// The stored text is read again with that kind's patterns and labels, merged with
+    /// the models' answers through `ReadingArbiter`, and only the fields `kind` carries
+    /// are kept. Nothing is read from the pictures again and nothing is sent anywhere.
+    /// The review keeps what the person changed (`CaptureReview.carryingEdits`).
+    public func reinterpret(_ result: CaptureResult, as kind: CaptureDocumentKind) -> CaptureResult {
+        let settled: Settled
+        if let source = result.source {
+            settled = settle(source, as: kind, analysis: nil)
+        } else {
+            // A result made by hand has no text to read again: what it has, as this kind allows.
+            settled = Settled(fields: result.fields.filter { kind.allows($0.key) },
+                              alternatives: result.fieldAlternatives.filter { kind.allows($0.key) }, notices: [])
+        }
+        let structural = result.notices.filter { $0 != .valueFailedCheck && $0 != .identityBackMissing }
+        let routing = CaptureRouter.route(kind: kind, kindConfidence: 1, fields: settled.fields)
+        return CaptureResult(
+            kind: kind,
+            kindConfidence: 1,
+            fields: settled.fields,
+            suggestions: routing.suggestions,
+            reminder: routing.reminder,
+            recognizedText: result.recognizedText,
+            barcodes: result.barcodes,
+            document: result.document,
+            notices: structural + settled.notices,
+            kindEvidence: result.kindEvidence,
+            kindAlternatives: result.kindAlternatives.filter { $0.value != kind },
+            fieldAlternatives: settled.alternatives,
+            readWithCloudModel: result.readWithCloudModel,
+            source: result.source
+        ).withoutCardNumbers()
+    }
+
+    struct Settled {
+        var fields: [CaptureField]
+        var alternatives: [CaptureFieldAlternative]
+        var notices: [CaptureNotice]
+    }
+
+    /// Every reader's fields for a document of `kind`: the phone's patterns and labels
+    /// read as that kind (`analysis` when the text was already read so), Apple's model,
+    /// then the AI's second opinion, ranked by `ReadingArbiter`. Each reader's dates are
+    /// checked against their windows before merging, so an impossible date never pushes
+    /// out a possible one; then dates are checked against each other, and only fields
+    /// that belong on this kind of document are kept, whichever reader found them.
+    func settle(_ source: CaptureReadingSource, as kind: CaptureDocumentKind, analysis: CaptureAnalyzer.Analysis?) -> Settled {
+        let today = CaptureDay(date: source.referenceDate)
+        let analysis = analysis ?? (source.pages.isEmpty
+            ? analyzer.analyze(text: source.text, barcodes: source.barcodes, referenceDate: source.referenceDate, as: kind)
+            : analyzer.analyze(pages: source.pages, barcodes: source.barcodes, referenceDate: source.referenceDate, as: kind))
+        /// Set when a value falls outside its window or breaks a rule with another.
+        var failedCheck = false
+        func plausible(_ fields: [CaptureField]) -> [CaptureField] {
+            let kept = CaptureConsistency.plausible(fields, kind: kind, today: today)
+            if kept != fields { failedCheck = true }
+            return kept
+        }
+        var fields = FieldMerger.merge(plausible(analysis.fields), with: plausible(source.modelFields))
+        var alternatives: [CaptureFieldAlternative] = []
+        if let ai = source.aiFields {
+            let merged = ReadingArbiter.secondOpinion(phone: fields, ai: plausible(ai))
+            fields = merged.fields
+            alternatives = merged.alternatives
+        }
+        let resolved = CaptureConsistency.resolve(fields, kind: kind, today: today)
+        if !resolved.dropped.isEmpty || resolved.fields.contains(where: { field in
+            fields.contains { $0.key == field.key && $0.value == field.value && $0.confidence > field.confidence }
+        }) { failedCheck = true }
+        fields = Self.derived(resolved.fields).filter { kind.allows($0.key) }.compactMap { field in
+            // Lines that aren't lines (prose, zero amounts) go, whichever reader read them.
+            guard case .lineItems(let items) = field.value else { return field }
+            let real = CaptureDocumentKind.realLineItems(items)
+            guard !real.isEmpty else { return nil }
+            return CaptureField(key: field.key, value: .lineItems(real), confidence: field.confidence, sourceText: field.sourceText, tier: field.tier)
+        }
+        // An alternative stays only beside a value it differs from.
+        alternatives = alternatives.filter { alternative in
+            fields.contains { $0.key == alternative.key && $0.value != alternative.alternative.value }
+        }
+        var notices: [CaptureNotice] = failedCheck ? [.valueFailedCheck] : []
+        // A card read from its front alone: the back carries the zone that confirms it.
+        if kind == .identityCard, !analysis.hasMachineReadableZone, source.isSinglePhoto {
+            notices.append(.identityBackMissing)
+        }
+        return Settled(fields: fields, alternatives: alternatives, notices: notices)
+    }
+
+    /// Whether a reading is too poor to trust: little text, or an identity document
+    /// without any of the fields every such document carries.
+    static func readsPoorly(_ analysis: CaptureAnalyzer.Analysis) -> Bool {
+        if analysis.notices.contains(.littleTextRecognized) { return true }
+        return analysis.kind.isIdentityDocument && analysis.kind.lacksExpectedFields(analysis.fields)
+    }
+
+    /// How good a reading is, for keeping the better of two: fields first, then text.
+    static func readingScore(_ analysis: CaptureAnalyzer.Analysis) -> Int {
+        let checked = analysis.fields.filter { $0.tier == .deterministic }.count
+        let letters = analysis.text.joinedOriginal.filter { $0.isLetter || $0.isNumber }.count
+        return checked * 1_000 + analysis.fields.count * 100 + min(letters, 99)
     }
 
     /// Values computed from other fields after all tiers have run.
@@ -268,6 +441,17 @@ public final class CaptureEngine: Sendable {
                 key: .warrantyUntil, value: .day(until),
                 confidence: min(purchase.confidence, months.confidence),
                 sourceText: nil, tier: max(purchase.tier, months.tier)
+            ))
+        }
+        // A contract's minimum period ends its length after it starts.
+        if lookup[.minimumPeriodEnd] == nil,
+           let start = lookup[.startDate], let day = start.value.day,
+           let months = lookup[.minimumMonths], case .number(let count) = months.value,
+           let end = day.addingMonths(NSDecimalNumber(decimal: count).intValue) {
+            result.append(CaptureField(
+                key: .minimumPeriodEnd, value: .day(end),
+                confidence: min(start.confidence, months.confidence),
+                sourceText: nil, tier: max(start.tier, months.tier)
             ))
         }
         if lookup[.purchasePrice] == nil, let total = lookup[.total], case .money = total.value,

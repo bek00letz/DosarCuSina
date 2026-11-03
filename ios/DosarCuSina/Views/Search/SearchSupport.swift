@@ -56,7 +56,9 @@ enum SearchHighlighter {
     }
 }
 
-/// The last few searches, kept on this device only, newest first.
+/// The last few searches, kept on this device only, newest first. A search
+/// that found anything in a locked section, or holds a CNP-shaped number, is
+/// never kept (`SearchPrivacy.mayRemember`).
 @MainActor
 @Observable
 final class RecentSearches {
@@ -69,11 +71,15 @@ final class RecentSearches {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        items = defaults.stringArray(forKey: Self.key) ?? []
+        let stored = defaults.stringArray(forKey: Self.key) ?? []
+        items = stored.filter { !SearchPrivacy.containsCNPShapedNumber($0) }
+        if items != stored { defaults.set(items, forKey: Self.key) }
     }
 
-    /// Remembers a query, moving it to the top if it was there already.
-    func add(_ query: String) {
+    /// Remembers a query, moving it to the top if it was there already, unless
+    /// what it found must not be remembered.
+    func add(_ query: String, results: [SearchResult]) {
+        guard SearchPrivacy.mayRemember(query, results: results) else { return }
         items = Self.adding(query, to: items)
         defaults.set(items, forKey: Self.key)
     }

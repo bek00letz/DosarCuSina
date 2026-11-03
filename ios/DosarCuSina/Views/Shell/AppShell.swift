@@ -2,7 +2,9 @@ import SwiftUI
 import SwiftData
 
 /// The app once the store is open: four labelled tabs, every route through one
-/// router, onboarding once, and the app lock over everything when it is on.
+/// router, onboarding once, and the app lock over everything when it is on, in
+/// a window of its own above every sheet (`LockWindowHost`). Links and opened
+/// files wait until the app is unlocked.
 ///
 /// Each tab is wrapped in a `NavigationStack` here, with every `AppRoute`
 /// registered as a destination, so any screen can push with
@@ -14,6 +16,18 @@ struct AppShell: View {
     @Environment(\.scenePhase) private var scenePhase
 
     @State private var router = ShellRouter()
+    @State private var search = SearchQuery()
+    @Query(filter: #Predicate<CategoryTemplate> { $0.isSensitive }) private var lockedCategories: [CategoryTemplate]
+
+    private var cover: LockCover? {
+        LockCover.decide(
+            appLockEnabled: preferences.appLockEnabled,
+            anySectionLocked: !lockedCategories.isEmpty,
+            isSessionUnlocked: vault.isSessionUnlocked,
+            isActive: scenePhase == .active,
+            isAuthenticating: vault.isAuthenticating
+        )
+    }
 
     var body: some View {
         TabView(selection: Binding(get: { router.tab }, set: { router.select($0) })) {
@@ -43,6 +57,8 @@ struct AppShell: View {
                 NavigationStack(path: $router.searchPath) {
                     SearchScreen().shellDestinations()
                 }
+                // The search field belongs to this tab alone; iOS draws it in the tab bar.
+                .shellSearch(search)
             } label: {
                 Label { Text("Caută", comment: "Tab: search.") } icon: { Image(systemName: "magnifyingglass") }
             }
@@ -59,17 +75,13 @@ struct AppShell: View {
             }
             .environment(router)
         }
-        .overlay {
-            if vault.isAppLocked {
-                AppLockView().transition(.opacity)
-            } else if preferences.appLockEnabled, scenePhase != .active, !vault.isAuthenticating {
-                // Hides the screen in the app switcher, but not behind a Face ID prompt.
-                PrivacyCover().transition(.opacity)
-            }
+        .dataRepairPrompt(isAllowed: router.sheet == nil && preferences.hasCompletedOnboarding && !vault.isAppLocked) {
+            router.open(.settings(.repairs))
         }
-        .dsAnimation(value: vault.isAppLocked)
+        .background(LockWindowHost(cover: cover, scenePhase: scenePhase, vault: vault))
         .task { consumeRoute() }
         .onChange(of: navigator.pendingRoute) { _, _ in consumeRoute() }
+        .onChange(of: vault.isAppLocked) { _, _ in consumeRoute() }
     }
 
     @ViewBuilder
@@ -79,6 +91,11 @@ struct AppShell: View {
             SettingsScreen(initialSection: section)
         case .addVisit(let assetID):
             AddVisitFlow(assetID: assetID)
+        case .addPersonalDocument(let holderID):
+            AddPersonalDocumentFlow(holderID: holderID) { documentID in
+                // Land on the document's own page, over the person it was added for.
+                router.push(.asset(documentID))
+            }
         case .addSection(let request):
             AddSectionFlow(request: request) { asset in
                 // A new top-level section opens right away; a child shows up in its parent's pocket.
@@ -119,6 +136,7 @@ struct RouteScreen: View {
         case .agenda: AgendaScreen()
         case .category(let key): CategoryScreen(templateKey: key)
         case .addVisit(let id): AddVisitFlow(assetID: id)
+        case .readiness(let readiness): ReadinessScreen(route: readiness)
         case .home, .upcoming, .search, .intake, .settings:
             // Tabs and sheets aren't pushed; hand them to the router instead.
             Color.clear.task { router.open(route) }

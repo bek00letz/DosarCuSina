@@ -1,99 +1,66 @@
 import Foundation
 
-/// How what capture read lands in the binder's own vocabulary: capture's
-/// template and blueprint names to the built-in keys, capture fields to
-/// template fields, capture values to field values. One table, used by the
-/// review screen and by the save.
+/// How what capture read lands in the binder's own fields: capture fields to template
+/// fields, capture values to field values, and the words the review shows. What a kind
+/// of document means (its category, its deadline, its title) is the kind's profile
+/// (`CaptureKindProfile`), not this.
 enum CaptureMapping {
-    // MARK: Templates and blueprints
+    // MARK: Kinds
 
-    /// The built-in template a capture suggestion names. Capture uses its own
-    /// plural names for a few categories.
-    static func templateKey(_ captureKey: String) -> String {
-        switch captureKey {
-        case "warranties", "warranty": return BuiltInTemplates.Key.purchase
-        case "subscriptions": return BuiltInTemplates.Key.subscription
-        default: return captureKey
+    /// A name a person recognizes, used as the document title and a new section's name.
+    /// A personal document is called what its variant or type is called, with its holder
+    /// when it names one: "Carte de identitate – Manole Corina Ioana", "Cazier judiciar –
+    /// Manole Corina", "Card de debit".
+    static func defaultTitle(for kind: CaptureDocumentKind, fields: [CaptureFieldKey: CaptureValue]) -> String {
+        if let type = kind.profile.documentType {
+            let document = DocumentType.documentName(type: type, variant: fields[.documentVariant]?.text)
+            return DocumentNaming.name(document: document, holder: holderName(fields))
         }
+        return kind.profile.defaultTitle(fields: fields)
     }
 
-    /// The template blueprint a capture suggestion names, when the binder has one.
-    static func blueprintKey(_ captureKey: String) -> String? {
-        switch captureKey {
-        case "rca": return "vehicle.rca"
-        case "itp": return "vehicle.itp"
-        case "casco": return "vehicle.casco"
-        case "padPolicy": return "home.pad"
-        case "passportRenewal", "identityCardRenewal", "drivingLicenceRenewal": return "document.renew"
-        case "petVaccine": return "pet.vaccine"
-        default: return nil
-        }
-    }
-
-    /// The built-in template a document kind belongs to, for "where it goes".
-    static func templateKey(for kind: CaptureDocumentKind) -> String? {
-        switch kind {
-        case .passport, .identityCard, .drivingLicence: return BuiltInTemplates.Key.documents
-        case .vehicleRegistration, .rcaPolicy, .itpReport, .serviceInvoice: return BuiltInTemplates.Key.vehicle
-        case .utilityInvoice: return BuiltInTemplates.Key.home
-        case .fiscalReceipt, .warrantyCertificate: return BuiltInTemplates.Key.purchase
-        case .veterinaryRecord: return BuiltInTemplates.Key.pet
-        case .medicalResult: return BuiltInTemplates.Key.health
-        case .insurancePolicy, .other: return nil
-        }
-    }
-
-    /// `document.type` for identity documents.
-    static func documentType(for kind: CaptureDocumentKind) -> String? {
-        switch kind {
-        case .passport: return DocumentType.passport
-        case .identityCard: return DocumentType.idCard
-        case .drivingLicence: return DocumentType.drivingLicence
-        default: return nil
-        }
-    }
-
-    /// The field whose date the reminder follows, per document kind (the same rule capture's router uses).
-    static func reminderField(for kind: CaptureDocumentKind) -> CaptureFieldKey? {
-        switch kind {
-        case .passport, .identityCard, .drivingLicence, .rcaPolicy, .insurancePolicy, .itpReport: return .expiryDate
-        case .utilityInvoice: return .dueDate
-        case .veterinaryRecord: return .nextDoseDate
-        case .fiscalReceipt, .warrantyCertificate: return .warrantyUntil
-        default: return nil
-        }
-    }
-
-    /// Invoices with parts and jobs open the visit flow instead of the plain review.
-    static func opensVisitFlow(_ kind: CaptureDocumentKind) -> Bool {
-        kind == .serviceInvoice || kind == .veterinaryRecord
+    /// What the document is, in a few words, for the review header.
+    static func kindTitle(_ kind: CaptureDocumentKind) -> String {
+        kind.profile.title
     }
 
     // MARK: Fields
 
-    /// Template fields a capture field can fill, most specific first.
-    private static let candidates: [CaptureFieldKey: [String]] = [
-        .licensePlate: ["vehicle.plate"],
-        .vin: ["vehicle.vin"],
-        .make: ["vehicle.make"],
-        .model: ["vehicle.model"],
-        .odometer: ["vehicle.odometer"],
-        .policyNumber: ["vehicle.policyNumber", "home.policyNumber"],
-        .claimsPhone: ["vehicle.claimsPhone", "home.claimsPhone"],
-        .documentNumber: ["document.number"],
-        .personalNumber: ["document.personalNumber"],
-        .birthDate: ["document.birthDate"],
-        .sex: ["document.sex"],
-        .nationality: ["document.nationality"],
-        .licenceCategories: ["document.categories"],
-        .issueDate: ["document.issueDate"],
-        .issuer: ["document.issuer"],
-        .podCode: ["home.pod"],
-        .clcCode: ["home.clc"],
-        .microchip: ["pet.microchip"],
-        .serialNumber: ["purchase.serial"],
-        .productName: ["purchase.model"],
-        .warrantyMonths: ["purchase.warrantyMonths"],
+    /// Template fields a capture field can fill, most specific first. A policy's insurer,
+    /// number and claims phone aren't here: they go where its deadline's facts say.
+    static let candidates: [CaptureFieldKey: [String]] = [
+        .licensePlate: [VehicleFields.plate],
+        .vin: [VehicleFields.vin],
+        .make: [VehicleFields.make],
+        .model: [VehicleFields.model],
+        .odometer: [VehicleFields.odometer],
+        .documentNumber: [DocumentFields.number],
+        .personalNumber: [DocumentFields.personalNumber],
+        .birthDate: [DocumentFields.birthDate],
+        .sex: [DocumentFields.sex],
+        .nationality: [DocumentFields.nationality],
+        .licenceCategories: [DocumentFields.categories],
+        .issueDate: [DocumentFields.issueDate],
+        .issuer: [DocumentFields.issuer],
+        .recordResult: [DocumentFields.recordResult],
+        .cardNetwork: [DocumentFields.cardNetwork],
+        .cardLastFour: [DocumentFields.cardLastFour],
+        .podCode: [HomeFields.pod, SubscriptionFields.pod],
+        .clcCode: [HomeFields.clc, SubscriptionFields.clc],
+        .clientCode: [SubscriptionFields.clientCode],
+        .contractNumber: [SubscriptionFields.contractNumber],
+        .phoneNumber: [SubscriptionFields.phoneNumber],
+        .serviceKind: [SubscriptionFields.service],
+        .startDate: [SubscriptionFields.startDate],
+        .minimumMonths: [SubscriptionFields.minimumMonths],
+        .minimumPeriodEnd: [SubscriptionFields.minimumUntil],
+        .monthlyPrice: [SubscriptionFields.price],
+        .supplyAddress: [HomeFields.address],
+        .provider: [SubscriptionFields.provider],
+        .microchip: [PetFields.microchip],
+        .serialNumber: [PurchaseFieldKeys.serial],
+        .productName: [PurchaseFieldKeys.model],
+        .warrantyMonths: [PurchaseFieldKeys.warrantyMonths],
     ]
 
     /// Field roles a capture field can fill when the template has no specific match.
@@ -108,15 +75,36 @@ enum CaptureMapping {
         }
     }
 
-    /// The template field a capture field fills, if any.
-    static func fieldKey(for key: CaptureFieldKey, kind: CaptureDocumentKind, in template: TemplateDefinition) -> String? {
-        // The insurer named on a policy goes into the insurer field.
-        if key == .provider, kind == .rcaPolicy || kind == .insurancePolicy {
-            return template.field(withRole: .issuer)?.key
+    /// The deadline fact a capture field is, on a policy.
+    static func factRole(of key: CaptureFieldKey) -> BlueprintFactRole? {
+        switch key {
+        case .provider: .insurer
+        case .policyNumber: .policyNumber
+        case .claimsPhone: .claimsPhone
+        default: nil
         }
-        // A policy's end date is the obligation's date, not an asset field.
-        if key == .expiryDate, kind == .rcaPolicy || kind == .insurancePolicy || kind == .itpReport {
-            return nil
+    }
+
+    /// The template field a capture field fills, if any. `deadline` is the blueprint the
+    /// document sets in this template (`CaptureFilingPlan`):
+    /// - a policy's insurer, number and claims phone go to the fields its deadline's facts
+    ///   name, so a CASCO policy fills CASCO's and never RCA's; a policy whose deadline the
+    ///   category doesn't keep fills none of a category's policy facts;
+    /// - a deadline whose day is its own (an RCA, an ITP) keeps that day off the section.
+    static func fieldKey(for key: CaptureFieldKey, kind: CaptureDocumentKind, in template: TemplateDefinition, deadline: ObligationBlueprint?) -> String? {
+        let profile = kind.profile
+        if profile.readsCover, let role = factRole(of: key) {
+            if let facts = deadline?.facts {
+                return facts.field(for: role).flatMap { template.field($0) != nil ? $0 : nil }
+            }
+            // No deadline here keeps this policy's facts: a category that keeps other
+            // policies' facts gets none (a CASCO never lands in RCA's fields).
+            guard !template.blueprints.contains(where: { $0.facts != nil }) else { return nil }
+            return role == .insurer ? template.field(withRole: .issuer)?.key : nil
+        }
+        if key == profile.deadlineField {
+            if let deadline, !deadline.isFieldDriven { return nil }
+            if deadline == nil, profile.readsCover { return nil }
         }
         if let match = candidates[key]?.first(where: { template.field($0) != nil }) {
             return match
@@ -160,66 +148,14 @@ enum CaptureMapping {
         text.uppercased().filter { $0.isLetter || $0.isNumber }
     }
 
-    /// The provider trade for a document's issuer, when it is someone worth keeping in Oameni.
-    static func providerTrade(for kind: CaptureDocumentKind) -> ProviderTrade? {
-        switch kind {
-        case .serviceInvoice: return .mechanic
-        case .itpReport: return .inspectionStation
-        case .veterinaryRecord: return .vet
-        case .medicalResult: return .doctor
-        default: return nil
-        }
-    }
-
-    /// How the document is filed.
-    static func documentKind(for kind: CaptureDocumentKind) -> DocumentKind {
-        DocumentKind(capturedKind: kind)
-    }
-
-    /// A name a person recognizes, used as the document title and a new section's name.
-    static func defaultTitle(for kind: CaptureDocumentKind, fields: [CaptureFieldKey: CaptureValue]) -> String {
-        let provider = fields[.provider]?.text
-        // Identity documents carry their holder: "Carte de identitate – Manole Corina Ioana".
-        if kind.isIdentityDocument, let holder = holderName(fields) {
-            return kindTitle(kind) + " – " + holder
-        }
-        switch kind {
-        case .passport: return String(localized: "Pașaport")
-        case .identityCard: return String(localized: "Carte de identitate")
-        case .drivingLicence: return String(localized: "Permis de conducere")
-        case .vehicleRegistration: return String(localized: "Certificat de înmatriculare")
-        case .rcaPolicy:
-            if let year = fields[.startDate]?.day?.year ?? fields[.issueDate]?.day?.year { return String(localized: "Poliță RCA \(String(year))") }
-            return String(localized: "Poliță RCA")
-        case .insurancePolicy: return String(localized: "Poliță de asigurare")
-        case .utilityInvoice, .serviceInvoice:
-            return provider.map { String(localized: "Factură \($0)") } ?? String(localized: "Factură")
-        case .fiscalReceipt: return fields[.productName]?.text ?? String(localized: "Bon fiscal")
-        case .warrantyCertificate: return fields[.productName]?.text ?? String(localized: "Certificat de garanție")
-        case .itpReport: return String(localized: "Raport ITP")
-        case .veterinaryRecord: return String(localized: "Fișă veterinar")
-        case .medicalResult: return String(localized: "Rezultat analize")
-        case .other: return String(localized: "Document")
-        }
-    }
-
-    /// What the document is, in a few words, for the review header.
-    static func kindTitle(_ kind: CaptureDocumentKind) -> String {
-        switch kind {
-        case .passport: return String(localized: "Pașaport")
-        case .identityCard: return String(localized: "Carte de identitate")
-        case .drivingLicence: return String(localized: "Permis de conducere")
-        case .vehicleRegistration: return String(localized: "Talon (certificat de înmatriculare)")
-        case .rcaPolicy: return String(localized: "Poliță RCA")
-        case .insurancePolicy: return String(localized: "Poliță de asigurare")
-        case .utilityInvoice: return String(localized: "Factură de utilități")
-        case .serviceInvoice: return String(localized: "Factură de service")
-        case .fiscalReceipt: return String(localized: "Bon fiscal")
-        case .warrantyCertificate: return String(localized: "Certificat de garanție")
-        case .itpReport: return String(localized: "Raport ITP")
-        case .veterinaryRecord: return String(localized: "Fișă de la veterinar")
-        case .medicalResult: return String(localized: "Rezultat medical")
-        case .other: return String(localized: "Alt document")
+    /// The choices a capture field offers in the review, kept as their stable keys: the
+    /// service a contract is for, the cover of a policy. Nil for a field typed as text.
+    static func choices(for key: CaptureFieldKey, kind: CaptureDocumentKind) -> [ChoiceOption]? {
+        switch key {
+        case .serviceKind: ServiceKind.options
+        case .coverageType: InsuranceCover.options.filter { kind.profile.covers.contains($0.key) }
+        case .cardNetwork: PaymentCardNetwork.options
+        default: nil
         }
     }
 
@@ -242,6 +178,9 @@ enum CaptureMapping {
         case .expiryDate: return String(localized: "Valabil până la")
         case .dueDate: return String(localized: "De plătit până la")
         case .issuer: return String(localized: "Emis de")
+        case .recordResult: return String(localized: "Ce scrie pe cazier")
+        case .cardNetwork: return String(localized: "Tip card")
+        case .cardLastFour: return String(localized: "Ultimele 4 cifre")
         case .provider: return String(localized: "Furnizor")
         case .providerTaxID: return String(localized: "CUI furnizor")
         case .providerPhone: return String(localized: "Telefon furnizor")
@@ -251,7 +190,7 @@ enum CaptureMapping {
         case .paymentCode: return String(localized: "Cod de plată")
         case .policyNumber: return String(localized: "Număr poliță")
         case .claimsPhone: return String(localized: "Telefon pentru daune")
-        case .coverageType: return String(localized: "Tip asigurare")
+        case .coverageType: return String(localized: "Ce acoperă")
         case .bonusMalusClass: return String(localized: "Clasă bonus-malus")
         case .licensePlate: return String(localized: "Număr de înmatriculare")
         case .vin: return String(localized: "Serie de șasiu (VIN)")
@@ -263,6 +202,14 @@ enum CaptureMapping {
         case .podCode: return String(localized: "Cod loc de consum (POD)")
         case .clcCode: return String(localized: "Cod loc de consum gaze (CLC)")
         case .meterIndex: return String(localized: "Index contor")
+        case .serviceKind: return String(localized: "Serviciu")
+        case .contractNumber: return String(localized: "Număr contract")
+        case .phoneNumber: return String(localized: "Număr de telefon")
+        case .minimumMonths: return String(localized: "Perioadă minimă (luni)")
+        case .minimumPeriodEnd: return String(localized: "Perioada minimă se termină")
+        case .monthlyPrice: return String(localized: "Preț pe lună")
+        case .supplyAddress: return String(localized: "Adresa locului de consum")
+        case .directDebit: return String(localized: "Plata prin debit direct")
         case .productName: return String(localized: "Produs")
         case .serialNumber: return String(localized: "Serie")
         case .retailer: return String(localized: "Magazin")
@@ -284,16 +231,35 @@ enum CaptureMapping {
     /// Anything not listed follows in the order it was read.
     static let reviewOrder: [CaptureFieldKey] = [
         .surname, .givenNames, .personalNumber, .birthDate, .sex, .nationality,
-        .documentNumber, .licenceCategories, .issuer, .issueDate, .startDate, .expiryDate,
+        .documentNumber, .licenceCategories, .recordResult, .cardNetwork, .cardLastFour, .issuer, .coverageType, .issueDate, .startDate, .expiryDate,
     ]
 
     /// Whether the review shows a field. Everything read is shown (identity documents
     /// sit behind Face ID), except what has its own place or repeats other fields.
     static func isShownInReview(_ key: CaptureFieldKey, among keys: Set<CaptureFieldKey>) -> Bool {
         switch key {
-        case .lineItems, .documentCode, .issuingCountry: return false
+        // Bookkeeping, not something read off the page: filing uses it, people don't need to check it.
+        // Direct debit is a suggestion the person confirms beside the reminder, not a value to edit.
+        case .lineItems, .documentCode, .issuingCountry, .documentVariant, .directDebit: return false
         case .holderName: return !keys.contains(.surname) && !keys.contains(.givenNames)
         default: return true
+        }
+    }
+
+    /// A value as a person reads it: "SP1236343", "6 aprilie 2035", "CASCO".
+    static func displayText(_ value: CaptureValue) -> String {
+        switch value {
+        case .text(let text):
+            if ServiceKind.all.contains(text) { return ServiceKind.label(for: text) ?? text }
+            if InsuranceCover.all.contains(text) { return InsuranceCover.label(for: text) ?? text }
+            if PaymentCardNetwork.all.contains(text) { return PaymentCardNetwork.label(for: text) ?? text }
+            return text
+        case .day(let day):
+            return DosarFormat.longDay(CalendarDay(year: day.year, month: day.month, day: day.day))
+        case .money(let amount): return Self.money(amount).formattedCompact()
+        case .number(let number): return NSDecimalNumber(decimal: number).stringValue
+        case .metric(let number, let unit): return "\(NSDecimalNumber(decimal: number).stringValue) \(unit.label)"
+        case .lineItems(let items): return items.map(\.description).joined(separator: ", ")
         }
     }
 
@@ -311,7 +277,7 @@ enum CaptureMapping {
 
     /// "ION-ANDREI ȘTEFĂNESCU" → "Ion-Andrei Ștefănescu". Words start after spaces, hyphens and apostrophes.
     static func titleCased(_ text: String) -> String {
-        let romanian = Locale(identifier: "ro_RO")
+        let romanian = Locale.dosarDefault
         var result = ""
         var startsWord = true
         for character in text.trimmingCharacters(in: .whitespacesAndNewlines) {
@@ -329,7 +295,7 @@ enum CaptureMapping {
 
     /// The words of a name for comparing people: folded (no case, no diacritics), in any order.
     static func nameWords(_ name: String) -> [String] {
-        CaptureText.fold(name)
+        RomanianText.fold(name)
             .components(separatedBy: CharacterSet.letters.inverted)
             .filter { !$0.isEmpty }
     }
@@ -350,3 +316,4 @@ enum CaptureMapping {
         return partial.count == 1 ? partial[0].id : nil
     }
 }
+

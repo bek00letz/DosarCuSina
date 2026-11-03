@@ -66,7 +66,7 @@ struct DSChoiceField<Option: Hashable>: View {
                         .foregroundStyle(DS.Palette.secondaryLabel)
                         .accessibilityHidden(true)
                 }
-                .frame(minHeight: 28)
+                .frame(minHeight: DS.Control.minimumHitTarget)
                 .contentShape(.rect)
             }
             .accessibilityLabel(Text(title))

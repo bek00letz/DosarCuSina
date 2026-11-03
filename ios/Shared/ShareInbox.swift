@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 import UniformTypeIdentifiers
 
@@ -17,6 +18,12 @@ public struct InboxItem: Codable, Hashable, Sendable, Identifiable {
         case text
     }
 
+    /// The manifest's format. Items written before it had a version read as 1.
+    /// The app reads every version up to `currentVersion`; a newer one is set aside
+    /// as unreadable rather than guessed at.
+    public static let currentVersion = 2
+
+    public var version: Int
     public var id: UUID
     public var receivedAt: Date
     public var payload: Payload
@@ -24,16 +31,48 @@ public struct InboxItem: Codable, Hashable, Sendable, Identifiable {
     public var files: [String]
     /// The name the file had in the app it came from, for the list row.
     public var originalName: String?
-    /// The sample invoice from the share practice, not a real document.
+    /// The sample invoice from the share practice, not a real document. Set when
+    /// the item arrives, from the file's fingerprint (`expectPractice`), never its name.
     public var isPractice: Bool
 
-    public init(id: UUID = UUID(), receivedAt: Date, payload: Payload, files: [String], originalName: String?, isPractice: Bool) {
+    public init(version: Int = InboxItem.currentVersion, id: UUID = UUID(), receivedAt: Date, payload: Payload, files: [String], originalName: String?, isPractice: Bool) {
+        self.version = version
         self.id = id
         self.receivedAt = receivedAt
         self.payload = payload
         self.files = files
         self.originalName = originalName
         self.isPractice = isPractice
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case version, id, receivedAt, payload, files, originalName, isPractice
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        version = try container.decodeIfPresent(Int.self, forKey: .version) ?? 1
+        id = try container.decode(UUID.self, forKey: .id)
+        receivedAt = try container.decode(Date.self, forKey: .receivedAt)
+        payload = try container.decode(Payload.self, forKey: .payload)
+        files = try container.decode([String].self, forKey: .files)
+        originalName = try container.decodeIfPresent(String.self, forKey: .originalName)
+        isPractice = try container.decodeIfPresent(Bool.self, forKey: .isPractice) ?? false
+    }
+}
+
+/// Something in the inbox the app couldn't open: a damaged manifest, a missing
+/// file, or a format from a newer version. It is moved aside, never retried
+/// forever, and shown calmly so the person can send it again or remove it.
+public struct UnreadableInboxItem: Hashable, Sendable, Identifiable {
+    /// The folder's name in the aside folder.
+    public var id: String
+    /// When it was set aside.
+    public var setAsideAt: Date
+
+    public init(id: String, setAsideAt: Date) {
+        self.id = id
+        self.setAsideAt = setAsideAt
     }
 }
 
@@ -43,13 +82,19 @@ public struct ShareInbox: Sendable {
     public static let folderName = "Inbox"
     static let manifestName = "manifest.json"
     static let stagingPrefix = ".staging-"
+    /// Where items the app couldn't open are moved, inside the inbox.
+    static let asideFolderName = ".unreadable"
+    /// The fingerprint of the practice invoice the app is waiting for.
+    static let practiceMarkerName = ".practice.json"
+    /// How long the app waits for the practice invoice to come back.
+    static let practiceWindow: TimeInterval = 3600
 
-    /// File name of the sample invoice used in the share practice. An item
-    /// arriving with this name is marked as practice.
+    /// The name the practice invoice is sent under, so it reads well in the share sheet.
     public static let practiceFileName = "Factura exemplu - Dosar cu Sina.pdf"
 
-    /// Whether a sender's file name is the practice invoice. Apps pass the name
-    /// with or without its extension.
+    /// Whether a sender's file name is the practice invoice's. No longer what marks
+    /// the practice (its fingerprint does, `expectPractice`); kept as the way back
+    /// until the fingerprint has been seen working on a phone.
     public static func isPracticeName(_ name: String?) -> Bool {
         guard let name else { return false }
         let base = (practiceFileName as NSString).deletingPathExtension
@@ -176,7 +221,7 @@ public struct ShareInbox: Sendable {
 
     /// Makes a staged folder visible as an inbox item, in one rename.
     @discardableResult
-    public func commit(staging: URL, payload: InboxItem.Payload, files: [String], originalName: String?, receivedAt: Date = Date()) throws -> InboxItem {
+    public func commit(staging: URL, payload: InboxItem.Payload, files: [String], originalName: String?, receivedAt: Date = Date(), now: Date = Date()) throws -> InboxItem {
         guard !files.isEmpty else {
             try? FileManager.default.removeItem(at: staging)
             throw InboxError.nothingToSave
@@ -186,7 +231,7 @@ public struct ShareInbox: Sendable {
             payload: payload,
             files: files,
             originalName: originalName,
-            isPractice: Self.isPracticeName(originalName)
+            isPractice: isExpectedPractice(staging: staging, files: files, now: now)
         )
         let manifest = try Self.encoder.encode(item)
         try manifest.write(to: staging.appending(path: Self.manifestName), options: [.atomic, .completeFileProtection])
@@ -201,19 +246,115 @@ public struct ShareInbox: Sendable {
         try? FileManager.default.removeItem(at: staging)
     }
 
+    // MARK: Practice
+
+    private struct PracticeMarker: Codable {
+        var sha256: String
+        var expiresAt: Date
+    }
+
+    /// The app calls this with the practice invoice before it shows the share
+    /// sheet. Whatever the sending app calls the file, the item that brings these
+    /// exact bytes back within the hour is the practice.
+    public func expectPractice(fileAt url: URL, now: Date = Date()) throws {
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true, attributes: Self.protection)
+        let marker = PracticeMarker(sha256: Self.fingerprint(of: try Data(contentsOf: url)), expiresAt: now.addingTimeInterval(Self.practiceWindow))
+        try Self.encoder.encode(marker).write(to: directory.appending(path: Self.practiceMarkerName), options: [.atomic, .completeFileProtection])
+    }
+
+    /// Whether one of the staged files is the practice invoice the app is waiting for.
+    func isExpectedPractice(staging: URL, files: [String], now: Date) -> Bool {
+        guard let data = try? Data(contentsOf: directory.appending(path: Self.practiceMarkerName)),
+              let marker = try? Self.decoder.decode(PracticeMarker.self, from: data),
+              marker.expiresAt > now else { return false }
+        return files.contains { name in
+            (try? Data(contentsOf: staging.appending(path: name))).map(Self.fingerprint) == marker.sha256
+        }
+    }
+
+    static func fingerprint(of data: Data) -> String {
+        let hex = Array("0123456789abcdef")
+        return SHA256.hash(data: data).map { byte in "\(hex[Int(byte >> 4)])\(hex[Int(byte & 0x0f)])" }.joined()
+    }
+
     // MARK: Reading (app)
 
-    /// Every committed item, newest first. Unreadable folders are skipped.
-    public func items() -> [InboxItem] {
-        let names = (try? FileManager.default.contentsOfDirectory(atPath: directory.path())) ?? []
-        return names
-            .filter { !$0.hasPrefix(".") }
-            .compactMap { name -> InboxItem? in
-                let manifest = directory.appending(path: name).appending(path: Self.manifestName)
-                guard let data = try? Data(contentsOf: manifest) else { return nil }
-                return try? Self.decoder.decode(InboxItem.self, from: data)
+    /// What the inbox holds.
+    public struct Contents: Sendable, Equatable {
+        /// Items waiting for review, newest first.
+        public var items: [InboxItem] = []
+        /// Items that couldn't be opened, newest first.
+        public var unreadable: [UnreadableInboxItem] = []
+    }
+
+    /// Every committed item, newest first. A folder that can't be read (a damaged
+    /// manifest, a missing file, a newer format) is moved aside the first time it
+    /// is seen and listed under `unreadable`, so it is never skipped silently.
+    public func contents(now: Date = Date()) -> Contents {
+        let fileManager = FileManager.default
+        let names = (try? fileManager.contentsOfDirectory(atPath: directory.path())) ?? []
+        var items: [InboxItem] = []
+        for name in names where !name.hasPrefix(".") {
+            if let item = readItem(named: name) {
+                items.append(item)
+            } else {
+                setAside(name, now: now)
             }
-            .sorted { $0.receivedAt > $1.receivedAt }
+        }
+        return Contents(items: items.sorted { $0.receivedAt > $1.receivedAt }, unreadable: unreadable())
+    }
+
+    /// Every committed item, newest first (`contents()`).
+    public func items() -> [InboxItem] {
+        contents().items
+    }
+
+    private func readItem(named name: String) -> InboxItem? {
+        let folder = directory.appending(path: name, directoryHint: .isDirectory)
+        guard let data = try? Data(contentsOf: folder.appending(path: Self.manifestName)),
+              let item = try? Self.decoder.decode(InboxItem.self, from: data),
+              item.version <= InboxItem.currentVersion,
+              folder.lastPathComponent == item.id.uuidString.lowercased(),
+              !item.files.isEmpty,
+              item.files.allSatisfy({ FileManager.default.fileExists(atPath: folder.appending(path: $0).path()) })
+        else { return nil }
+        return item
+    }
+
+    private var asideFolder: URL {
+        directory.appending(path: Self.asideFolderName, directoryHint: .isDirectory)
+    }
+
+    private func setAside(_ name: String, now: Date) {
+        let fileManager = FileManager.default
+        try? fileManager.createDirectory(at: asideFolder, withIntermediateDirectories: true, attributes: Self.protection)
+        let target = asideFolder.appending(path: name)
+        if fileManager.fileExists(atPath: target.path()) { try? fileManager.removeItem(at: target) }
+        do {
+            try fileManager.moveItem(at: directory.appending(path: name), to: target)
+            try? fileManager.setAttributes([.modificationDate: now], ofItemAtPath: target.path())
+        } catch {
+            // Can't move it: it stays where it is and is tried again next time.
+        }
+    }
+
+    /// Items set aside because they couldn't be opened, newest first.
+    public func unreadable() -> [UnreadableInboxItem] {
+        let fileManager = FileManager.default
+        let names = (try? fileManager.contentsOfDirectory(atPath: asideFolder.path())) ?? []
+        return names.filter { !$0.hasPrefix(".") }.map { name in
+            let date = (try? fileManager.attributesOfItem(atPath: asideFolder.appending(path: name).path())[.modificationDate]) as? Date
+            return UnreadableInboxItem(id: name, setAsideAt: date ?? .distantPast)
+        }
+        .sorted { $0.setAsideAt > $1.setAsideAt }
+    }
+
+    /// Removes an item that couldn't be opened. Removing a missing one is fine.
+    public func removeUnreadable(_ id: String) throws {
+        guard !id.isEmpty, !id.contains("/"), !id.hasPrefix(".") else { return }
+        let target = asideFolder.appending(path: id)
+        guard FileManager.default.fileExists(atPath: target.path()) else { return }
+        try FileManager.default.removeItem(at: target)
     }
 
     /// The item's files in page order.

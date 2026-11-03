@@ -122,6 +122,9 @@ public enum FieldValue: Hashable, Sendable, Codable {
 /// by a newer app version) instead of losing the whole asset.
 public struct FieldValues: Hashable, Sendable, Codable, Sequence {
     public private(set) var storage: [String: FieldValue]
+    /// Values this build can't read (a value kind from a newer build or archive), kept as
+    /// they were stored and written back unchanged. Gone only when the field gets a new value.
+    private var unreadable: [String: JSONValue] = [:]
 
     public init(_ storage: [String: FieldValue] = [:]) {
         self.storage = storage
@@ -130,6 +133,7 @@ public struct FieldValues: Hashable, Sendable, Codable, Sequence {
     public subscript(key: String) -> FieldValue? {
         get { storage[key] }
         set {
+            unreadable.removeValue(forKey: key)
             if let newValue, !newValue.isEmpty {
                 storage[key] = newValue
             } else {
@@ -143,7 +147,8 @@ public struct FieldValues: Hashable, Sendable, Codable, Sequence {
     /// The values with defaults filled in for empty fields (new assets only) and
     /// derived fields worked out again when one of their inputs changed, or when
     /// they are still empty. A derived value the person typed in themselves stays
-    /// until an input changes.
+    /// until an input changes, and one given in the same change as its inputs (a
+    /// contract's printed end date, beside its start and length) is kept as given.
     public func applyingRules(of template: TemplateDefinition, previous: FieldValues?, calendar: Calendar = .current) -> FieldValues {
         var result = self
         if previous == nil {
@@ -151,10 +156,23 @@ public struct FieldValues: Hashable, Sendable, Codable, Sequence {
                 if let value = field.defaultValue { result[field.key] = value }
             }
         }
+        // Values that no longer belong (a cazier's variant after the type became a
+        // passport) go. Twice, so a value that depended on a dropped one goes too.
+        for _ in 0..<2 {
+            for field in template.allFields {
+                if !field.applies(to: result) {
+                    result[field.key] = nil
+                } else if field.type == .choice, let key = result[field.key]?.textValue,
+                          let option = field.options?.option(for: key), !option.isOffered(for: result) {
+                    result[field.key] = nil
+                }
+            }
+        }
         for field in template.allFields {
             guard let derivation = field.derivation else { continue }
             let inputsChanged = previous.map { old in derivation.inputs.contains { old[$0] != result[$0] } } ?? true
-            if result[field.key] == nil || inputsChanged, let value = derivation.value(from: result, calendar: calendar) {
+            let givenNow = previous.map { $0[field.key] != result[field.key] } ?? (result[field.key] != nil)
+            if result[field.key] == nil || (inputsChanged && !givenNow), let value = derivation.value(from: result, calendar: calendar) {
                 result[field.key] = value
             }
         }
@@ -196,18 +214,25 @@ public struct FieldValues: Hashable, Sendable, Codable, Sequence {
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: AnyKey.self)
         var result: [String: FieldValue] = [:]
+        var kept: [String: JSONValue] = [:]
         for key in c.allKeys {
             if let value = try? c.decode(FieldValue.self, forKey: key) {
                 result[key.stringValue] = value
+            } else if let raw = try? c.decode(JSONValue.self, forKey: key) {
+                kept[key.stringValue] = raw
             }
         }
         storage = result
+        unreadable = kept
     }
 
     public func encode(to encoder: Encoder) throws {
         var c = encoder.container(keyedBy: AnyKey.self)
         for (key, value) in storage {
             try c.encode(value, forKey: AnyKey(stringValue: key))
+        }
+        for (key, raw) in unreadable where storage[key] == nil {
+            try c.encode(raw, forKey: AnyKey(stringValue: key))
         }
     }
 }

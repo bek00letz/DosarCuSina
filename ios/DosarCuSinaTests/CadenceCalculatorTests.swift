@@ -6,7 +6,7 @@ import Testing
 ///
 /// Covers:
 /// 1. Leap year identification (Gregorian 4, 100, 400 rules).
-/// 2. Calendar cadence arithmetic: days, weeks, months, years, annual/biannual heuristics.
+/// 2. Calendar cadence arithmetic: days, weeks, months and years.
 /// 3. Leap year rollover: Feb 29 on leap years (2024, 2028) vs clamping to Feb 28 on non-leap years (2025, 2026, 2027).
 /// 4. End-of-month clamping across all month boundaries (Jan 31 -> Feb 28/29, Mar 31 -> Apr 30, etc.).
 /// 5. Telemetry projection burn-rate estimation: Δmetric / Δdays.
@@ -77,8 +77,8 @@ import Testing
         try assertEqual(comp2027.month, 2, "Month should be February")
         try assertEqual(comp2027.day, 28, "Feb 29 on leap 2024 must clamp to Feb 28 on non-leap 2027")
         
-        // Verify calculateNextDueDate with interval .annual
-        let annualNext = CadenceCalculator.calculateNextDueDate(from: feb29_2024, interval: .annual, calendar: calendar)
+        // A yearly interval from Feb 29 lands on Feb 28 the next year
+        let annualNext = CadenceCalculator.calculateNextDueDate(from: feb29_2024, interval: .years(1), calendar: calendar)
         let compAnnual = calendar.dateComponents([.year, .month, .day], from: annualNext)
         try assertEqual(compAnnual.year, 2025, "Annual interval should roll to 2025")
         try assertEqual(compAnnual.month, 2, "Month should remain February")
@@ -103,54 +103,6 @@ import Testing
         try assertEqual(comp2032.year, 2032, "Year should be 2032")
         try assertEqual(comp2032.month, 2, "Month should be February")
         try assertEqual(comp2032.day, 29, "Feb 29 on leap 2024 must remain Feb 29 on leap 2032")
-    }
-    
-    /// Verifies annual recurrence heuristic via cadenceDays (365 and 366 days).
-    @Test func annualRecurrenceViaCadenceDays_365And366() throws {
-        let calendar = Calendar.gregorianUTC
-        let feb29_2024 = makeDate(year: 2024, month: 2, day: 29, calendar: calendar)
-        
-        // 365 days cadence from Feb 29 2024 -> should trigger annual heuristic and clamp to Feb 28 2025
-        let next365 = CadenceCalculator.calculateNextDueDate(from: feb29_2024, cadenceDays: 365, calendar: calendar)
-        let comp365 = calendar.dateComponents([.year, .month, .day], from: next365)
-        try assertEqual(comp365.year, 2025, "Annual 365-day recurrence should land in 2025")
-        try assertEqual(comp365.month, 2, "Month should be February")
-        try assertEqual(comp365.day, 28, "Annual 365-day recurrence from Feb 29 2024 must clamp to Feb 28 2025")
-        
-        // 366 days cadence from Feb 29 2024 -> also triggers annual heuristic and clamps to Feb 28 2025
-        let next366 = CadenceCalculator.calculateNextDueDate(from: feb29_2024, cadenceDays: 366, calendar: calendar)
-        let comp366 = calendar.dateComponents([.year, .month, .day], from: next366)
-        try assertEqual(comp366.year, 2025, "Annual 366-day recurrence should land in 2025")
-        try assertEqual(comp366.month, 2, "Month should be February")
-        try assertEqual(comp366.day, 28, "Annual 366-day recurrence from Feb 29 2024 must clamp to Feb 28 2025")
-        
-        // Standard non-leap date
-        let regularDate = makeDate(year: 2026, month: 7, day: 15, calendar: calendar)
-        let regularNext = CadenceCalculator.calculateNextDueDate(from: regularDate, cadenceDays: 365, calendar: calendar)
-        let compRegular = calendar.dateComponents([.year, .month, .day], from: regularNext)
-        try assertEqual(compRegular.year, 2027, "Year should be 2027")
-        try assertEqual(compRegular.month, 7, "Month should be July")
-        try assertEqual(compRegular.day, 15, "Day should be 15")
-    }
-    
-    /// Verifies biannual recurrence heuristic via cadenceDays (730 and 731 days, e.g. ITP vehicle inspection).
-    @Test func biannualRecurrenceViaCadenceDays_730And731() throws {
-        let calendar = Calendar.gregorianUTC
-        let feb29_2024 = makeDate(year: 2024, month: 2, day: 29, calendar: calendar)
-        
-        // 730 days from Feb 29 2024 -> lands in 2026 (non-leap year), clamps to Feb 28 2026
-        let next730 = CadenceCalculator.calculateNextDueDate(from: feb29_2024, cadenceDays: 730, calendar: calendar)
-        let comp730 = calendar.dateComponents([.year, .month, .day], from: next730)
-        try assertEqual(comp730.year, 2026, "Biannual 730-day recurrence should land in 2026")
-        try assertEqual(comp730.month, 2, "Month should be February")
-        try assertEqual(comp730.day, 28, "Biannual recurrence from Feb 29 2024 must clamp to Feb 28 2026")
-        
-        // 731 days from Feb 29 2024
-        let next731 = CadenceCalculator.calculateNextDueDate(from: feb29_2024, cadenceDays: 731, calendar: calendar)
-        let comp731 = calendar.dateComponents([.year, .month, .day], from: next731)
-        try assertEqual(comp731.year, 2026, "Biannual 731-day recurrence should land in 2026")
-        try assertEqual(comp731.month, 2, "Month should be February")
-        try assertEqual(comp731.day, 28, "Biannual recurrence from Feb 29 2024 must clamp to Feb 28 2026")
     }
     
     /// Verifies explicit interval calendar arithmetic (.days, .weeks, .months, .years).
@@ -479,84 +431,6 @@ import Testing
         }
         try assertTrue(p.daysRemaining > 0, "Days remaining must be positive")
         try assertTrue(p.daysRemaining <= 36500, "Days remaining must be capped at 36,500 days horizon")
-    }
-    
-    /// Verifies event urgency status classification across all thresholds.
-    @Test func urgencyStatus_AllCategories() throws {
-        let calendar = Calendar.gregorianUTC
-        let today = makeDate(year: 2026, month: 5, day: 15, calendar: calendar)
-        
-        // 1. Completed
-        let statusCompleted = CadenceCalculator.calculateUrgencyStatus(
-            dueDate: makeDate(year: 2026, month: 5, day: 1, calendar: calendar),
-            isCompleted: true,
-            currentDate: today,
-            calendar: calendar
-        )
-        try assertEqual(statusCompleted, .completed, "Completed event must return .completed")
-        
-        // 2. Overdue: 5 days ago
-        let statusOverdue = CadenceCalculator.calculateUrgencyStatus(
-            dueDate: makeDate(year: 2026, month: 5, day: 10, calendar: calendar),
-            isCompleted: false,
-            currentDate: today,
-            calendar: calendar
-        )
-        try assertEqual(statusOverdue, .overdue(days: 5), "Past due date must return .overdue(days: 5)")
-        
-        // 3. Urgent: today (0 days)
-        let statusToday = CadenceCalculator.calculateUrgencyStatus(
-            dueDate: today,
-            isCompleted: false,
-            currentDate: today,
-            calendar: calendar
-        )
-        try assertEqual(statusToday, .urgent(days: 0), "Due today must return .urgent(days: 0)")
-        
-        // 4. Urgent: 3 days remaining
-        let statusUrgent = CadenceCalculator.calculateUrgencyStatus(
-            dueDate: makeDate(year: 2026, month: 5, day: 18, calendar: calendar),
-            isCompleted: false,
-            currentDate: today,
-            calendar: calendar
-        )
-        try assertEqual(statusUrgent, .urgent(days: 3), "Due in 3 days must return .urgent(days: 3)")
-        
-        // 5. Urgent: 7 days remaining (boundary)
-        let statusUrgent7 = CadenceCalculator.calculateUrgencyStatus(
-            dueDate: makeDate(year: 2026, month: 5, day: 22, calendar: calendar),
-            isCompleted: false,
-            currentDate: today,
-            calendar: calendar
-        )
-        try assertEqual(statusUrgent7, .urgent(days: 7), "Due in 7 days must return .urgent(days: 7)")
-        
-        // 6. Upcoming: 14 days remaining
-        let statusUpcoming = CadenceCalculator.calculateUrgencyStatus(
-            dueDate: makeDate(year: 2026, month: 5, day: 29, calendar: calendar),
-            isCompleted: false,
-            currentDate: today,
-            calendar: calendar
-        )
-        try assertEqual(statusUpcoming, .upcoming(days: 14), "Due in 14 days must return .upcoming(days: 14)")
-        
-        // 7. Upcoming: 30 days remaining (boundary)
-        let statusUpcoming30 = CadenceCalculator.calculateUrgencyStatus(
-            dueDate: makeDate(year: 2026, month: 6, day: 14, calendar: calendar),
-            isCompleted: false,
-            currentDate: today,
-            calendar: calendar
-        )
-        try assertEqual(statusUpcoming30, .upcoming(days: 30), "Due in 30 days must return .upcoming(days: 30)")
-        
-        // 8. Planned: 45 days remaining
-        let statusPlanned = CadenceCalculator.calculateUrgencyStatus(
-            dueDate: makeDate(year: 2026, month: 6, day: 29, calendar: calendar),
-            isCompleted: false,
-            currentDate: today,
-            calendar: calendar
-        )
-        try assertEqual(statusPlanned, .planned(days: 45), "Due in 45 days must return .planned(days: 45)")
     }
     
     // MARK: - Runner

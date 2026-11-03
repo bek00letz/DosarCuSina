@@ -19,6 +19,8 @@ struct AddSectionFlow: View {
     @State private var model: AddSectionModel
     @State private var path: [Step] = []
     @State private var error: UserFacingError?
+    /// A section under an example asks "Păstrezi … ca al tău?" first.
+    @State private var exampleQuestion: ExampleSectionQuestion?
     @State private var saveRequest: ReminderSaveRequest?
     @State private var createdCount = 0
 
@@ -44,6 +46,7 @@ struct AddSectionFlow: View {
         }
         .dsDiscardGuard(hasChanges: model.hasChanges)
         .userErrorAlert($error)
+        .examplePrompt($exampleQuestion) { create() }
         .reminderPermissionGate($saveRequest)
         .sensoryFeedback(.success, trigger: createdCount)
         .task { preselect() }
@@ -98,6 +101,8 @@ struct AddSectionFlow: View {
             createdCount += 1
             dismiss()
             onCreated(asset)
+        } catch let question as ExampleSectionQuestion {
+            exampleQuestion = question
         } catch {
             self.error = UserFacingError(error)
         }
@@ -185,10 +190,15 @@ private struct CatalogStep: View {
 
 // MARK: - Altceva…
 
-private struct CustomSectionStep: View {
+struct CustomSectionStep: View {
     @Bindable var model: AddSectionModel
     let next: () -> Void
     @State private var reveals = false
+
+    /// The first version's step chose pockets one by one. Off: a category of one's own
+    /// answers a few plain questions instead (`CategorySwitches`, `CustomCategoryForm`).
+    /// Kept as a way back until the switches are proven; remove it with the owner's OK.
+    nonisolated static let offersPocketList = false
 
     private var draft: Binding<CustomSectionDraft> {
         Binding { model.custom ?? CustomSectionDraft() } set: { model.custom = $0 }
@@ -196,29 +206,41 @@ private struct CustomSectionStep: View {
 
     var body: some View {
         ScrollView {
+            Group {
+                if Self.offersPocketList {
+                    pocketList
+                } else {
+                    CustomCategoryForm(draft: draft)
+                }
+            }
+            .padding(DS.Space.m)
+            .frame(maxWidth: 640)
+            .frame(maxWidth: .infinity)
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .background(DS.Palette.background)
+        .environment(\.dsRevealsValidation, reveals)
+        .navigationTitle(Text("Categorie nouă", comment: "Title of the step that describes a category of one's own."))
+        .navigationBarTitleDisplayMode(.inline)
+        .safeAreaInset(edge: .bottom) {
+            BottomBar {
+                DSPrimaryButton("Continuă") {
+                    guard let custom = model.custom, custom.isComplete else {
+                        reveals = true
+                        return
+                    }
+                    model.chooseCustom(custom)
+                    next()
+                }
+            }
+        }
+    }
+
+    /// The first version's step, not shown (`offersPocketList`).
+    private var pocketList: some View {
             VStack(alignment: .leading, spacing: DS.Space.xl) {
                 DSTextField("Cum se numește", text: draft.name, prompt: "Barca, Rulota, Pianul", isRequired: true)
-
-                VStack(alignment: .leading, spacing: DS.Space.xs) {
-                    DSSectionHeader("Simbol")
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 56), spacing: DS.Space.xs)], spacing: DS.Space.xs) {
-                        ForEach(CustomSectionDraft.symbols, id: \.self) { symbol in
-                            let isSelected = draft.wrappedValue.symbol == symbol
-                            Button {
-                                draft.wrappedValue.symbol = symbol
-                            } label: {
-                                Image(systemName: symbol)
-                                    .font(.title2)
-                                    .frame(maxWidth: .infinity, minHeight: 56)
-                                    .foregroundStyle(isSelected ? Color.white : DS.Palette.accent)
-                                    .background(isSelected ? DS.Palette.accent : DS.Palette.fill, in: .rect(cornerRadius: DS.Radius.control, style: .continuous))
-                            }
-                            .buttonStyle(.dsPressable)
-                            .accessibilityLabel(Text(verbatim: symbol.replacingOccurrences(of: ".fill", with: "").replacingOccurrences(of: ".", with: " ")))
-                            .accessibilityAddTraits(isSelected ? .isSelected : [])
-                        }
-                    }
-                }
+                CustomSymbolPicker(symbol: draft.symbol)
 
                 VStack(alignment: .leading, spacing: DS.Space.xs) {
                     DSSectionHeader("Ce ține minte")
@@ -242,27 +264,6 @@ private struct CustomSectionStep: View {
                     }
                 }
             }
-            .padding(DS.Space.m)
-            .frame(maxWidth: 640)
-            .frame(maxWidth: .infinity)
-        }
-        .scrollDismissesKeyboard(.interactively)
-        .background(DS.Palette.background)
-        .environment(\.dsRevealsValidation, reveals)
-        .navigationTitle(Text("Altceva…", comment: "Creates a section of the person's own."))
-        .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .bottom) {
-            BottomBar {
-                DSPrimaryButton("Continuă") {
-                    guard let custom = model.custom, !custom.name.trimmingCharacters(in: .whitespaces).isEmpty else {
-                        reveals = true
-                        return
-                    }
-                    model.chooseCustom(custom)
-                    next()
-                }
-            }
-        }
     }
 }
 
@@ -291,7 +292,8 @@ private struct EssentialsStep: View {
                     footnote: "Cum îi spui acasă: „Golful”, „Apartamentul”, „PawPaw”."
                 )
                 ForEach(fields) { field in
-                    FieldEditor(field: field, values: $model.values)
+                    FieldEditor(field: field, values: $model.values,
+                                urgencyRule: DateUrgency.rule(forField: field.key, values: model.values, definition: model.definition))
                 }
                 if model.template?.key == BuiltInTemplates.Key.documents, model.request.parentID == nil {
                     holderPicker
@@ -356,7 +358,7 @@ private struct ObligationsStep: View {
                             DSCheckRow(
                                 title: Text(verbatim: plan.blueprint.title),
                                 subtitle: Text(verbatim: [
-                                    ReminderWording.sentence(leadDays: plan.blueprint.reminders(for: model.values).leadDays),
+                                    ReminderWording.sentence(plan.blueprint.reminders(for: model.values)),
                                     plan.blueprint.note,
                                 ].compactMap { $0 }.joined(separator: "\n")),
                                 isOn: $plan.isSelected

@@ -18,6 +18,11 @@ public enum DocumentClassifier {
         .rcaPolicy: [("rca", 3), ("raspundere civila auto", 4), ("asigurare obligatorie", 2), ("bonus-malus", 2), ("bonus malus", 2), ("carte verde", 1)],
         .insurancePolicy: [("polita", 2), ("asigurare", 1), ("casco", 3), ("pad", 1), ("paid", 1), ("asigurator", 1), ("prima de asigurare", 2), ("suma asigurata", 2), ("franciza", 2)],
         .utilityInvoice: [("energie electrica", 3), ("gaze naturale", 3), ("cod client", 2), ("cod loc de consum", 3), ("pod", 1), ("index", 1), ("kwh", 2), ("consum", 1), ("abonament", 1), ("apa rece", 2), ("canalizare", 2)],
+        // A contract names itself; the minimum period and its length are what set it apart from a bill.
+        .contract: [("contract de furnizare", 5), ("contract de abonament", 5), ("contract de prestari servicii", 4),
+                    ("act aditional", 5), ("perioada minima", 4), ("perioada contractuala", 3), ("durata contractului", 3),
+                    ("durata minima", 3), ("perioada initiala", 2), ("perioada determinata", 2), ("conditii generale", 1),
+                    ("abonament lunar", 1), ("se incheie", 1), ("partile", 1)],
         .serviceInvoice: [("manopera", 3), ("deviz", 3), ("service auto", 3), ("km bord", 2), ("kilometraj", 2), ("piese", 1), ("placute", 1), ("filtru", 1), ("schimb ulei", 2), ("nr. inmatriculare", 1), ("factura", 1)],
         // A receipt printed with its warranty terms is still the receipt; "bon fiscal" outweighs warranty wording.
         .fiscalReceipt: [("bon fiscal", 6), ("numerar", 1), ("rest", 1), ("tva a", 1), ("card", 1), ("total", 1)],
@@ -27,6 +32,10 @@ public enum DocumentClassifier {
         .medicalResult: [("buletin de analize", 4), ("rezultat", 1), ("valori de referinta", 3), ("interval biologic", 3), ("hemoglobina", 2), ("glicemie", 2), ("colesterol", 2), ("medic", 1), ("clinica", 1)],
     ]
 
+    /// Words only a bill prints: the amount to pay now. A contract's terms talk about
+    /// due dates and payment too, so those aren't enough.
+    static let billMarkers = ["total de plata", "sold de plata", "suma de plata", "total factura", "factura fiscala", "valoare de plata"]
+
     public static func classify(text: CaptureText, mrz: MRZParser.Result?) -> Classification {
         if let mrz {
             return Classification(kind: mrz.isPassport ? .passport : .identityCard, confidence: mrz.allChecksValid ? 0.98 : 0.8)
@@ -35,13 +44,24 @@ public enum DocumentClassifier {
         var scores: [CaptureDocumentKind: Double] = [:]
         for (kind, words) in signals {
             scores[kind] = words.reduce(0) { total, signal in
-                total + (containsWord(signal.0, in: haystack) ? signal.1 : 0)
+                total + (CaptureText.containsWord(signal.0, inFolded: haystack, as: wholeWords.contains(signal.0) ? .word : nil) ? signal.1 : 0)
             }
         }
         // An RCA policy is also an insurance policy; prefer the specific kind when RCA terms are present.
         if let rca = scores[.rcaPolicy], rca >= 3 { scores[.insurancePolicy] = (scores[.insurancePolicy] ?? 0) * 0.5 }
+        // A contract mentions the gas, the POD and the client code a bill does; a bill
+        // quotes its contract. What decides is whether there is something to pay.
+        let isBill = billMarkers.contains { CaptureText.containsWord($0, inFolded: haystack) }
+        if let contract = scores[.contract], contract >= 4, !isBill {
+            scores[.utilityInvoice] = (scores[.utilityInvoice] ?? 0) * 0.5
+        } else if isBill {
+            scores[.contract] = (scores[.contract] ?? 0) * 0.5
+        }
         // A fiscal receipt beats a generic invoice when "bon fiscal" is printed.
-        if haystack.contains("bon fiscal") { scores[.serviceInvoice] = (scores[.serviceInvoice] ?? 0) * 0.5 }
+        if CaptureText.containsWord("bon fiscal", inFolded: haystack) { scores[.serviceInvoice] = (scores[.serviceInvoice] ?? 0) * 0.5 }
+        // A whole card number printed on the page is the strongest sign of a bank card; a
+        // receipt or a statement shows it masked, so it doesn't count there.
+        if PaymentCardNumbers.containsCardNumber(text.joinedOriginal) { scores[.bankCard, default: 0] += cardNumberWeight }
 
         // Ties go to the kind listed first in `CaptureDocumentKind`, so the result never depends on dictionary order.
         let order = Dictionary(uniqueKeysWithValues: CaptureDocumentKind.allCases.enumerated().map { ($1, $0) })
@@ -57,10 +77,10 @@ public enum DocumentClassifier {
         return Classification(kind: best.key, confidence: 0.4 + 0.5 * margin * strength + 0.1 * strength)
     }
 
-    /// Whole-word match for short keywords (so "rca" doesn't match "marca"), substring match for phrases.
-    static func containsWord(_ word: String, in text: String) -> Bool {
-        guard word.count <= 4, !word.contains(" ") else { return text.contains(word) }
-        let escaped = NSRegularExpression.escapedPattern(for: word)
-        return TextPattern.first(#"(?<![a-z0-9])"# + escaped + #"(?![a-z0-9])"#, in: text) != nil
-    }
+    /// What a whole card number on the page weighs for a bank card.
+    static let cardNumberWeight = 5.0
+
+    /// Signals whose longer forms mean something else, so they only count whole:
+    /// a meter's "index" isn't the "indexare" of a price.
+    static let wholeWords: Set<String> = ["index"]
 }

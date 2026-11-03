@@ -60,7 +60,7 @@ public struct DocumentDraft: Sendable {
 @MainActor
 public final class AttachmentActions {
     public let context: ModelContext
-    private let calendar: Calendar
+    let calendar: Calendar
 
     public init(context: ModelContext, calendar: Calendar = .current) {
         self.context = context
@@ -83,7 +83,8 @@ public final class AttachmentActions {
         historyEntry: HistoryEntry? = nil,
         provider: Provider? = nil
     ) throws -> Attachment {
-        let attachment = Self.insert(draft, asset: asset, obligation: obligation, historyEntry: historyEntry, provider: provider, calendar: calendar, in: context)
+        let isExample = try ExampleOwnership.requireReal(asset ?? obligation?.asset ?? historyEntry?.asset)
+        let attachment = Self.insert(draft, asset: asset, obligation: obligation, historyEntry: historyEntry, provider: provider, isExample: isExample, calendar: calendar, in: context)
         try save()
         if let storeURL = context.container.configurations.first?.url, storeURL.isFileURL, storeURL.path() != "/dev/null" {
             DocumentFileProtection.apply(toStoreAt: storeURL)
@@ -98,18 +99,20 @@ public final class AttachmentActions {
         obligation: Obligation?,
         historyEntry: HistoryEntry?,
         provider: Provider?,
+        isExample: Bool,
         calendar: Calendar,
         in context: ModelContext
     ) -> Attachment {
         let attachment = Attachment(fileName: draft.fileName, contentType: draft.contentType, data: draft.originalData, kind: draft.kind)
         attachment.title = draft.title
         attachment.thumbnailData = draft.thumbnail
-        attachment.extractedText = draft.extractedText
+        // No card number is kept in a document's text, whoever wrote it (`PaymentCardNumbers`).
+        attachment.extractedText = draft.extractedText.map { PaymentCardNumbers.redact($0) }
         attachment.documentDate = draft.documentDate?.noonDate(in: calendar)
         attachment.documentID = draft.documentID
         attachment.sha256 = draft.sha256
         attachment.byteCount = (draft.originalData?.count ?? 0) + draft.pageImages.reduce(0) { $0 + $1.count }
-        attachment.isExample = (asset ?? obligation?.asset ?? historyEntry?.asset)?.isExample ?? false
+        attachment.isExample = isExample
         context.insert(attachment)
         for (index, image) in draft.pageImages.enumerated() {
             let page = AttachmentPage(index: index, imageData: image)
@@ -131,9 +134,12 @@ public final class AttachmentActions {
         try save()
     }
 
-    public func setArchived(_ attachment: Attachment, _ isArchived: Bool) throws {
-        attachment.isArchived = isArchived
-        try save()
+    @discardableResult
+    public func setArchived(_ attachment: Attachment, _ isArchived: Bool) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) {
+            attachment.isArchived = isArchived
+            try save()
+        }.receipt
     }
 
     /// Deletes a document. Only for an explicit request from the person.
@@ -143,11 +149,6 @@ public final class AttachmentActions {
     }
 
     private func save() throws {
-        do {
-            try context.save()
-        } catch {
-            context.rollback()
-            throw error
-        }
+        try UnitOfWork.save(context)
     }
 }

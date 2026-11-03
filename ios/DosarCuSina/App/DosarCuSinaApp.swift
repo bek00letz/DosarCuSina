@@ -1,3 +1,4 @@
+import CoreSpotlight
 import SwiftUI
 import SwiftData
 import UserNotifications
@@ -16,6 +17,7 @@ struct DosarCuSinaApp: App {
 
     init() {
         UNUserNotificationCenter.current().delegate = Self.notificationResponder
+        BackgroundRefresh.register()
     }
 
     var body: some Scene {
@@ -27,8 +29,10 @@ struct DosarCuSinaApp: App {
                         .modelContainer(container)
                         .environment(\.sideEffects, sideEffects)
                         .task { start(with: container) }
-                case .failed(let message):
-                    StoreRecoveryView(message: message, retry: persistence.retry, startFresh: persistence.startFresh)
+                case .waitingForUnlock:
+                    StoreWaitingView()
+                case .failed(let failure):
+                    StoreRecoveryView(failure: failure, retry: persistence.retry, startFresh: persistence.startFresh)
                 }
             }
             .environment(navigator)
@@ -39,19 +43,32 @@ struct DosarCuSinaApp: App {
             .onOpenURL { url in
                 navigator.open(url)
             }
+            // A result tapped in the iPhone's search opens like a link, after unlocking.
+            .onContinueUserActivity(CSSearchableItemActionType) { activity in
+                guard let identifier = activity.userInfo?[CSSearchableItemActivityIdentifier] as? String else { return }
+                navigator.open(spotlightIdentifier: identifier)
+            }
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active {
+            switch phase {
+            case .active:
                 sideEffects?.setNeedsReconcile(allowPermissionPrompt: false)
+            case .background:
+                BackgroundRefresh.schedule()
+            default:
+                break
             }
         }
     }
 
-    /// Installs built-in categories and starts the side-effects pipeline, once per container.
+    /// Installs built-in categories, looks for data to repair and starts the side-effects
+    /// pipeline, once per container.
     private func start(with container: ModelContainer) {
         guard sideEffects == nil else { return }
         _ = try? TemplateStore(context: container.mainContext).installBuiltIns()
-        _ = try? ChoiceMigration.migrateStoredValues(in: container.mainContext)
+        // The repair list: steps that change nothing anyone sees run now; the rest wait for
+        // the owner, and the shell's calm prompt says when there is something new.
+        try? DataRepairCenter.shared.refresh(in: container.mainContext, announce: true)
         if (try? HouseholdRules.reconcile(in: container.mainContext, today: CalendarDay(Date()))) == true {
             try? container.mainContext.save()
         }
@@ -62,7 +79,8 @@ struct DosarCuSinaApp: App {
             }
         }
         DocumentFileProtection.apply(toStoreAt: PersistenceController.defaultStoreURL)
-        let coordinator = SideEffectsCoordinator(container: container)
+        // The same coordinator notification buttons, widgets, Siri and the background refresh use.
+        let coordinator = SideEffectsCoordinator.shared(for: container)
         coordinator.start()
         sideEffects = coordinator
     }

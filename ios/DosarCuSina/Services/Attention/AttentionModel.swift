@@ -1,33 +1,7 @@
 import Foundation
 
-/// How close an obligation is, in words a screen can show.
-public enum AttentionUrgency: String, Sendable, Comparable {
-    /// Past due and past its grace period: show it as a problem.
-    case overdue
-    case today
-    /// Past due but within the grace the person can live with (a cat vaccine a
-    /// couple of days late). Shown calmly, not as an alarm.
-    case withinGrace
-    case soon
-    case upcoming
-    case later
-
-    private var order: Int {
-        switch self {
-        case .overdue: return 0
-        case .today: return 1
-        case .withinGrace: return 2
-        case .soon: return 3
-        case .upcoming: return 4
-        case .later: return 5
-        }
-    }
-
-    /// Whether it should look alarming (red, counted on badges).
-    public var isAlarming: Bool { self == .overdue || self == .today }
-
-    public static func < (lhs: AttentionUrgency, rhs: AttentionUrgency) -> Bool { lhs.order < rhs.order }
-}
+// `AttentionUrgency` and the one rule behind it, `UrgencyRule`, live in ios/Shared/Urgency.swift,
+// so the widget counts the same way.
 
 /// One ranked obligation.
 public struct AttentionEntry: Hashable, Sendable, Identifiable {
@@ -85,12 +59,9 @@ public enum AttentionModel {
     public struct Limits: Hashable, Sendable {
         /// Most items shown as "needs you now".
         public var maxNow: Int
-        /// Days ahead that count as "soon" and get listed per asset.
-        public var soonWindowDays: Int
 
-        public init(maxNow: Int = 5, soonWindowDays: Int = 30) {
+        public init(maxNow: Int = 5) {
             self.maxNow = maxNow
-            self.soonWindowDays = soonWindowDays
         }
 
         public static let standard = Limits()
@@ -123,18 +94,14 @@ public enum AttentionModel {
                 hidden += 1
                 continue
             }
-            let days = today.days(to: obligation.dueDay, calendar: calendar)
-            let entry = AttentionEntry(
-                obligation: obligation,
-                daysRemaining: days,
-                urgency: urgency(daysRemaining: days, profile: obligation.reminders),
-                score: score(daysRemaining: days, obligation: obligation)
-            )
-            if entry.urgency.isAlarming { needsAction += 1 }
-            if days <= obligation.reminders.attentionWindowDays {
-                nowCandidates.append(entry)
-            } else if days <= limits.soonWindowDays {
-                soonEntries.append(entry)
+            let item = Self.entry(for: obligation, today: today, calendar: calendar)
+            if item.urgency.isAlarming { needsAction += 1 }
+            if item.urgency.needsAttentionNow {
+                nowCandidates.append(item)
+            } else if item.urgency == .upcoming {
+                // "Curând" is what the rule calls upcoming: the next month, or the month
+                // before a passport stops being good for travel.
+                soonEntries.append(item)
             } else {
                 later.count += 1
                 later.nextDay = min(later.nextDay ?? obligation.dueDay, obligation.dueDay)
@@ -176,12 +143,17 @@ public enum AttentionModel {
         )
     }
 
-    public static func urgency(daysRemaining days: Int, profile: ReminderProfile) -> AttentionUrgency {
-        if days < 0 { return -days <= profile.graceDays ? .withinGrace : .overdue }
-        if days == 0 { return .today }
-        if days <= profile.attentionWindowDays { return .soon }
-        if days <= 30 { return .upcoming }
-        return .later
+    /// One obligation as every surface sees it: days left, its urgency by the one rule
+    /// (`UrgencyRule`, from its reminder profile) and its rank.
+    public static func entry(for obligation: ObligationSnapshot, today: CalendarDay, calendar: Calendar = .current) -> AttentionEntry {
+        let days = today.days(to: obligation.dueDay, calendar: calendar)
+        let rule = obligation.reminders.urgencyRule
+        return AttentionEntry(
+            obligation: obligation,
+            daysRemaining: days,
+            urgency: rule.urgency(of: obligation.dueDay, today: today, calendar: calendar),
+            score: score(daysRemaining: days, obligation: obligation, window: rule.windowDays(before: obligation.dueDay, calendar: calendar))
+        )
     }
 
     /// Consequence carries the most weight. Closeness can lift an item by up to
@@ -189,7 +161,7 @@ public enum AttentionModel {
     /// not one due in two, and an overdue chore never beats a legal deadline.
     /// Lateness within the grace period counts like "due soon", not like
     /// overdue. Cost breaks ties.
-    static func score(daysRemaining days: Int, obligation: ObligationSnapshot) -> Int {
+    static func score(daysRemaining days: Int, obligation: ObligationSnapshot, window attentionWindow: Int) -> Int {
         let profile = obligation.reminders
         let consequence = profile.consequence.weight * 10
         let closeness: Int
@@ -198,7 +170,7 @@ public enum AttentionModel {
         } else if days < 0 {
             closeness = 200
         } else {
-            let window = max(profile.attentionWindowDays, 1)
+            let window = max(attentionWindow, 1)
             closeness = max(0, (window - min(days, window)) * 280 / window)
         }
         let cost = obligation.estimatedCost.map { NSDecimalNumber(decimal: $0.amount).doubleValue } ?? 0

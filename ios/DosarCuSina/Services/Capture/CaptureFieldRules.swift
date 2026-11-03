@@ -12,20 +12,55 @@ extension CaptureDocumentKind {
     /// Fields printed on identity documents.
     static let identityKeys: Set<CaptureFieldKey> = [
         .documentNumber, .documentCode, .issuingCountry, .nationality, .surname, .givenNames, .holderName,
-        .birthDate, .sex, .personalNumber, .issueDate, .expiryDate, .issuer,
+        .birthDate, .sex, .personalNumber, .issueDate, .expiryDate, .issuer, .documentVariant,
     ]
 
-    /// Whether a field may appear on this kind of document.
+    /// Whether a field may appear on this kind of document. Only kinds whose profile lists
+    /// what was done or bought carry lines: a policy, a utility bill or a report has no
+    /// "Ce s-a făcut", whatever a model reads into it.
     func allows(_ key: CaptureFieldKey) -> Bool {
         switch self {
         case .passport, .identityCard:
             return Self.identityKeys.contains(key)
         case .drivingLicence:
             return Self.identityKeys.contains(key) || key == .licenceCategories
+        case _ where isPersonalDocument:
+            // Another personal document carries what its templates read, its holder and its
+            // variant, and nothing else: a bank card has no CNP, a cazier no total.
+            return IdentityTemplates.fieldKeys(for: self).contains(key) || key == .holderName || key == .documentVariant
         default:
-            return !Self.personalKeys.contains(key)
+            if key == .lineItems { return profile.carriesLineItems }
+            if Self.subscriptionKeys.contains(key) { return profile.filing == .subscription }
+            return !Self.personalKeys.contains(key) && !Self.personalDocumentKeys.contains(key)
         }
     }
+
+    /// Fields only bills and contracts carry: where the service is supplied and whether
+    /// the bank pays it. A policy or a receipt has neither, whatever a model reads into it.
+    static let subscriptionKeys: Set<CaptureFieldKey> = [.supplyAddress, .directDebit]
+
+    /// Fields only personal documents carry: what a cazier says, a bank card's network and
+    /// last four digits.
+    static let personalDocumentKeys: Set<CaptureFieldKey> = [.recordResult, .cardNetwork, .cardLastFour]
+
+    /// The longest description a line item can have; anything longer is prose
+    /// (terms, consent clauses), not something done or bought.
+    static let lineItemMaxLength = 90
+
+    /// Keeps only lines that look like lines: a short description with letters, and
+    /// an amount above zero or a part the catalog knows.
+    static func realLineItems(_ items: [CaptureLineItem]) -> [CaptureLineItem] {
+        items.filter { item in
+            let description = item.description.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard description.count <= lineItemMaxLength, description.contains(where: \.isLetter) else { return false }
+            return (item.amount?.amount ?? 0) > 0 || item.componentKey != nil
+        }
+    }
+
+    /// The fields a document of this kind usually carries, from its profile (identity
+    /// documents' come from their templates in `IdentityTemplates`). A cloud model is
+    /// asked for exactly these (`CloudSchema`).
+    var expectedKeys: [CaptureFieldKey] { profile.expectedKeys }
 
     /// Fields that, found by the pattern tiers with good confidence, make the
     /// on-device model unnecessary. Empty means the model always helps.
@@ -34,6 +69,15 @@ extension CaptureDocumentKind {
         case .passport, .identityCard, .drivingLicence: [.surname, .documentNumber, .expiryDate]
         default: []
         }
+    }
+
+    /// Whether a reading of this kind has none of the fields it should carry: for an
+    /// identity document, not one of its essentials, its personal number or birth date.
+    /// Such a reading is retried with another view of the photo.
+    func lacksExpectedFields(_ fields: [CaptureField]) -> Bool {
+        guard isIdentityDocument else { return false }
+        let expected = Set(essentialKeys + [.personalNumber, .birthDate, .givenNames])
+        return !fields.contains { expected.contains($0.key) }
     }
 
     /// Whether the patterns already read everything that matters on this document.

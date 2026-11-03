@@ -23,9 +23,9 @@ struct UpcomingFullList: View {
         List {
             switch mode {
             case .later:
-                let window = AttentionModel.Limits.standard.soonWindowDays
+                // What Urmează counts under "Mai târziu": the rule calls it later.
                 let later = snapshots
-                    .filter { $0.status == .active && !isSnoozed($0) && today.days(to: $0.dueDay) > window }
+                    .filter { $0.status == .active && !isSnoozed($0) && AttentionModel.entry(for: $0, today: today).urgency == .later }
                     .sorted { $0.dueDay < $1.dueDay }
                 if later.isEmpty {
                     Text("Nimic mai departe de o lună.").dsFont(.body)
@@ -63,13 +63,7 @@ struct UpcomingFullList: View {
     }
 
     private func row(_ item: ObligationSnapshot, today: CalendarDay) -> some View {
-        let days = today.days(to: item.dueDay)
-        let entry = AttentionEntry(
-            obligation: item,
-            daysRemaining: days,
-            urgency: AttentionModel.urgency(daysRemaining: days, profile: item.reminders),
-            score: 0
-        )
+        let entry = AttentionModel.entry(for: item, today: today)
         return NavigationLink(value: AppRoute.obligation(item.id)) {
             UpcomingRow(entry: entry, today: today, isLocked: vault.isLocked(sectionIsSensitive: item.isSensitive))
         }
@@ -83,7 +77,7 @@ struct UpcomingFullList: View {
     private func months(of items: [ObligationSnapshot]) -> [Month] {
         var result: [Month] = []
         for item in items {
-            let title = item.dueDay.startDate().formatted(.dateTime.month(.wide).year().locale(.dosarDefault)).capitalized(with: .dosarDefault)
+            let title = DosarFormat.monthYear(item.dueDay).capitalized(with: .dosarDefault)
             if result.last?.title == title {
                 result[result.count - 1].items.append(item)
             } else {

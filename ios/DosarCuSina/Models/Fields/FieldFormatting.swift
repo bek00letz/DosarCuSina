@@ -96,18 +96,18 @@ public enum FieldFormatter {
                 : .invalid(String(localized: "Numărul de telefon nu e complet.", comment: "Phone field error"))
         case .year:
             let latest = Calendar.current.component(.year, from: Date()) + 1
-            guard let year = parseNumber(text), year == year.rounded(), (1900...Double(latest)).contains(year) else {
+            guard let year = RomanianNumber.value(text, as: .count).map({ NSDecimalNumber(decimal: $0).doubleValue }), (1900...Double(latest)).contains(year) else {
                 return .invalid(String(localized: "Scrie anul cu patru cifre, de exemplu 2018.", comment: "Year field error"))
             }
             return .valid
         case .number, .metric:
-            return parseNumber(text) != nil
-                ? .valid
-                : .invalid(String(localized: "Scrie doar cifre.", comment: "Number field error"))
+            return validation(of: text, as: .meterIndex)
         case .money:
-            return Money.parseAmount(text) != nil
+            return validation(of: text, as: .money)
+        case .secret:
+            return text.allSatisfy(\.isNumber)
                 ? .valid
-                : .invalid(String(localized: "Scrie suma în cifre, de exemplu 350 sau 1.250,50.", comment: "Money field error"))
+                : .warning(String(localized: "Codurile PIN au de obicei doar cifre.", comment: "Secret PIN field hint"))
         case .text, .longText, .address, .choice, .multiChoice, .date, .expiryDate, .toggle:
             return .valid
         }
@@ -117,16 +117,18 @@ public enum FieldFormatter {
 
     /// Turns typed text into a stored value, or nil when the text is empty or unreadable.
     /// Dates, toggles and multi-choice come from their own controls, not from text.
-    public static func value(from raw: String, as type: FieldType, currency: String = Money.defaultCurrency) -> FieldValue? {
+    /// `unit` is the field's unit: kilometres are read as whole numbers.
+    public static func value(from raw: String, as type: FieldType, currency: String = Money.defaultCurrency, unit: MeasurementUnit? = nil) -> FieldValue? {
         let text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return nil }
         switch type.valueKind {
         case .text:
             return .text(normalize(text, as: type))
         case .number:
-            return parseNumber(text).map(FieldValue.number)
+            let kind = type == .year ? NumberKind.count : NumberKind.forField(unit: unit)
+            return RomanianNumber.value(text, as: kind, unit: unit).map { .number(NSDecimalNumber(decimal: $0).doubleValue) }
         case .money:
-            return Money.parseAmount(text).map { .money(Money($0, currency: currency)) }
+            return RomanianNumber.value(text, as: .money).map { .money(Money($0, currency: currency)) }
         case .date:
             return CalendarDay(isoString: text).map(FieldValue.date)
         case .bool, .choices:
@@ -135,28 +137,43 @@ public enum FieldFormatter {
     }
 
     public static func parseNumber(_ raw: String) -> Double? {
-        Money.parseAmount(raw).map { NSDecimalNumber(decimal: $0).doubleValue }
+        RomanianNumber.value(raw, as: .meterIndex).map { NSDecimalNumber(decimal: $0).doubleValue }
+    }
+
+    /// The one reader's answer as a field validation: its message when it refuses.
+    private static func validation(of text: String, as kind: NumberKind) -> FieldValidation {
+        switch RomanianNumber.read(text, as: kind) {
+        case .success: return .valid
+        case .failure(.empty): return .empty
+        case .failure(let problem): return .invalid(problem.message(for: kind))
+        }
     }
 
     // MARK: Display
 
     /// Human-readable text for a value of `field`. Choice keys show their labels.
-    public static func display(_ value: FieldValue, field: FieldDefinition, locale: Locale = .dosarDefault, calendar: Calendar = .current) -> String {
+    public static func display(_ value: FieldValue, field: FieldDefinition, locale: Locale = .dosarDefault) -> String {
+        if SecretFields.isSealed(value) { return SecretFields.mask }
         switch (field.type, value) {
         case (.choice, .text(let key)):
             return field.label(forChoice: key)
         case (.multiChoice, .choices(let keys)):
             return keys.map(field.label(forChoice:)).formatted(.list(type: .and).locale(locale))
         default:
-            return display(value, as: field.type, unit: field.unit, locale: locale, calendar: calendar)
+            return display(value, as: field.type, unit: field.unit, locale: locale)
         }
     }
 
     /// Human-readable text for a stored value, using the field's type and unit.
-    public static func display(_ value: FieldValue, as type: FieldType, unit: String? = nil, locale: Locale = .dosarDefault, calendar: Calendar = .current) -> String {
+    public static func display(_ value: FieldValue, as type: FieldType, unit: MeasurementUnit? = nil, locale: Locale = .dosarDefault) -> String {
         switch value {
+        case _ where SecretFields.isSealed(value):
+            // Sealed text is a secret whatever the field's type says.
+            return SecretFields.mask
         case .text(let text):
             switch type {
+            // A secret never shows through a general path; only `SecretReveal` opens it.
+            case .secret: return SecretFields.mask
             case .iban: return groupIBAN(text)
             case .plate: return formatPlate(text) ?? text
             default: return text
@@ -165,12 +182,12 @@ public enum FieldFormatter {
             return number.formatted(.number.grouping(.never).precision(.fractionLength(0)).locale(locale))
         case .number(let number):
             let formatted = number.formatted(.number.locale(locale).precision(.fractionLength(0...2)))
-            if let unit, !unit.isEmpty { return "\(formatted) \(unit)" }
+            if let unit { return "\(formatted) \(unit.label)" }
             return formatted
         case .money(let money):
             return money.formatted(locale: locale)
         case .date(let day):
-            return day.startDate(in: calendar).formatted(.dateTime.day().month(.abbreviated).year().locale(locale))
+            return DosarFormat.day(day, locale: locale)
         case .bool(let flag):
             return flag ? String(localized: "Da") : String(localized: "Nu")
         case .choices(let items):

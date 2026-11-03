@@ -1,0 +1,420 @@
+#!/usr/bin/env bash
+# Architecture check for Dosar cu Șină.
+#
+# AGENTS.md names one path for each job. This check keeps code on those paths:
+# each rule is a pattern that marks a way around a shared helper, with a plain
+# message saying what to use instead. The pull request workflow and the
+# pre-commit hook both run it, so they always agree.
+#
+#   scripts/architecture-check.sh               # the working tree
+#   scripts/architecture-check.sh --staged      # what is about to be committed (the pre-commit hook)
+#   scripts/architecture-check.sh --base REF    # the working tree, and the exceptions compared with REF (CI)
+#   scripts/architecture-check.sh --self-test   # the rules against their fixtures
+#
+# Code that broke a rule before the rule existed is listed in
+# scripts/architecture-exceptions.txt as "path:rule" or "path:rule:count". That
+# list may only shrink:
+#   - a violation that isn't listed fails;
+#   - a listed one that is gone fails too, so its line is removed and can't be
+#     used again;
+#   - with --base, a line that is new or allows more than before fails unless
+#     ARCHITECTURE_EXCEPTIONS_APPROVED=true (the owner's label on the pull request).
+#
+# It reads app code only: ios/DosarCuSina, ios/DosarCuSinaWidgets,
+# ios/DosarCuSinaShare and ios/Shared. Tests and ios/Legacy are left alone, and
+# comments never count.
+#
+# Written for the bash 3.2 and awk that ship with macOS, and for Linux runners.
+set -euo pipefail
+
+usage() {
+    echo "Usage: scripts/architecture-check.sh [--staged | --base REF | --self-test]" >&2
+    exit 2
+}
+
+mode=tree
+base=""
+case "${1:-}" in
+    "") ;;
+    --staged) mode=staged ;;
+    --base)
+        [[ $# -eq 2 ]] || usage
+        base="$2"
+        ;;
+    --self-test) mode=self-test ;;
+    *) usage ;;
+esac
+
+root="$(git rev-parse --show-toplevel)"
+cd "$root"
+exceptions_path=scripts/architecture-exceptions.txt
+fixtures_dir=scripts/architecture-fixtures
+
+work="$(mktemp -d "${TMPDIR:-/tmp}/architecture-check.XXXXXX")"
+trap 'rm -rf "$work"' EXIT
+
+# --- Rules ------------------------------------------------------------------
+# One line per rule, tab-separated:
+#   id, paths it covers, paths it leaves out ("-" for none), pattern,
+#   lines it leaves out ("-" for none), message.
+# Patterns are POSIX extended regular expressions, read by awk, so they work the
+# same on macOS and Linux: no \b, \s or \d. Awk variable names avoid gawk's own
+# words (include, switch, case…): Linux runners use gawk.
+
+app='^ios/(DosarCuSina|DosarCuSinaWidgets|DosarCuSinaShare|Shared)/'
+views='^ios/DosarCuSina/Views/'
+design_system='^ios/DosarCuSina/Views/DesignSystem/'
+
+rules="$work/rules.tsv"
+rule() {
+    printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$@" >>"$rules"
+}
+
+rule save-outside-unit-of-work "$app" '^ios/DosarCuSina/Services/Persistence/UnitOfWork\.swift$' \
+    '[cC]ontext\??\.save\(\)' - \
+    'Save through UnitOfWork.save(context). When one tap does several things, wrap them in UnitOfWork.perform(in:).'
+
+rule system-error-text "$app" - \
+    '\.localizedDescription([^A-Za-z0-9_]|$)' - \
+    "The system's error text isn't written for people. Show SaveFailure.message(for:formKept:), or give the error a UserFacingError message."
+
+rule format-string "$app" - \
+    'String\(format:' - \
+    'Use Money.formatted, CalendarDay, or .formatted(...) with Locale.dosarDefault. Machine text such as a hash or an ISO day belongs in one shared helper.'
+
+rule hand-written-plural "$app" - \
+    '(==|!=) *1 *\? *("|Text\(|String\(localized|LocalizedStringKey|NSLocalizedString)' - \
+    'Counts use plural variations in the String Catalog (1 zi, 2 zile, 20 de zile), never a choice between two strings.'
+
+# Screens, widgets and Siri draw an urgency; they never work one out from a number of days.
+rule urgency-threshold '^ios/(DosarCuSina/(Views|Intents)|DosarCuSinaWidgets)/' - \
+    '[dD]ays[A-Za-z]* *(<|<=|>|>=) *-?[0-9]|soonWithinDays' - \
+    "How urgent a date is comes from the one rule: UrgencyRule (ReminderProfile.urgencyRule, DateUrgency for a date on a page). Draw its tone and WhenWording; don't compare days yourself."
+
+rule animation-curve "$app" '^ios/Shared/DSMotion\.swift$' \
+    '\.(easeInOut|easeIn|easeOut|linear)([^A-Za-z0-9_]|$)|\.spring\(|\.interpolatingSpring|\.(bouncy|snappy|smooth)([^A-Za-z0-9_]|$)|UIView\.animate|Animation\.default' \
+    'progressViewStyle|gaugeStyle' \
+    'Animate with a DS.Motion spring through dsAnimation, so Reduce Motion turns movement into a short fade.'
+
+rule number-parser "$app" '(^|/)RomanianNumber[^/]*\.swift$' \
+    'Decimal\(string: *[a-z]|replacingOccurrences\(of: *",", *with: *"\."\)|NumberFormatter\(\)|\.number\.parseStrategy|ParseStrategy' - \
+    'Read numbers from text with the one shared reader. Readers that disagree turn 45,724 into 45.724.'
+
+rule bare-progress-view "$app" "$design_system|^ios/Shared/DSMotion\\.swift\$" \
+    'ProgressView\(' - \
+    'Use DSDelayedProgress: it waits before it shows and keeps its space, so fast work never flashes a spinner.'
+
+rule pasteboard-write "$app" "$design_system" \
+    'UIPasteboard\.general\.([A-Za-z]+ *=[^=]|set[A-Z]|add[A-Z])' - \
+    "Copy with the design system's value rows (DSActionValueRow, DSSecretValueRow), which confirm the copy and keep secrets off other devices."
+
+rule tap-gesture-beside-action "$app" "$design_system" \
+    'simultaneousGesture\( *TapGesture' - \
+    "A tap gesture beside a link or a button makes every tap wait to be told apart from a hold. Do the work in the button's action, or read it from the navigation."
+
+rule side-effect-outside-coordinator "$app" \
+    '^ios/DosarCuSina/Services/SideEffects/|^ios/DosarCuSina/Services/Reminders/NotificationReconciler\.swift$|^ios/DosarCuSinaWidgets/' \
+    'WidgetCenter|UNNotificationRequest\(|UNUserNotificationCenter\.current\(\)\.(add|remove|setBadgeCount)|setBadgeCount\(|CSSearchableIndex|ControlCenter\.shared\.reload' - \
+    'Notifications, the badge, widgets and Spotlight change only through SideEffectsCoordinator. Save through an action and let the coordinator react.'
+
+# Built-in category keys, read from BuiltInTemplates so the rule never falls behind.
+keys=$(awk '
+    /enum Key[[:space:]]*\{/ { inside = 1; next }
+    inside && /^[[:space:]]*\}/ { exit }
+    inside && match($0, /"[a-z_]+"/) { printf "%s%s", (n++ ? "|" : ""), substr($0, RSTART + 1, RLENGTH - 2) }
+' ios/DosarCuSina/Services/Templates/BuiltInTemplates.swift)
+[[ -n $keys ]] || { echo "Architecture check: couldn't read the built-in keys from BuiltInTemplates.swift." >&2; exit 2; }
+rule built-in-key-in-views "$views" - \
+    "BuiltInTemplates\\.Key\\.|(^|[^A-Za-z0-9_.])Key\\.($keys)([^A-Za-z0-9_]|\$)|(==|!=|case|,|\\(|\\[|:) *\"($keys)\"" - \
+    "Screens don't branch on a built-in category. Ask the template what it does (its kind, its fields' roles), so a custom category behaves the same."
+
+rule date-format "$app" '(^|/)(DosarFormat|DueWording)\.swift$' \
+    '\.dateTime([^A-Za-z0-9_]|$)|(^|[^A-Za-z0-9_])DateFormatter\(\)|\.formatted\(date:|Text\([^)]*, *style: *\.(date|time|relative|offset|timer)' - \
+    'Write dates with DosarFormat (or DueWording and CalendarDay for due days), so every screen, widget and notification writes them the same way.'
+
+rule romanian-locale "$app" '^ios/Shared/DosarLocale\.swift$' \
+    'Locale\(identifier: *"ro' - \
+    'Use Locale.dosarDefault, the one place that decides which Romanian locale the app writes in.'
+
+# A minimum under 44 anywhere; a fixed height under 44 on a line that is tapped
+# (a button, a tap gesture, a tap shape). The rule reads one line at a time, so a
+# button whose label sets the height on a later line isn't seen.
+small='([0-9]|[1-3][0-9]|4[0-3])([^0-9.]|$)'
+rule small-hit-target "$app" - \
+    "min(Height|Width): *$small|(Button|onTapGesture|contentShape|Toggle|Link).*[^A-Za-z]height: *$small" - \
+    'Tap targets are at least 44 pt (DS.Space and the DS buttons already are). If nothing here is tapped, drop the minimum instead.'
+
+rule silent-action-failure "$app" - \
+    'try\? *(await +)?[A-Za-z_.]*[aA]ctions[.(]|try\? *(await +)?UnitOfWork\.' - \
+    "Don't drop an action's failure with try?. Catch it and show SaveFailure.message(for:formKept:), or let it throw to a caller that does."
+
+# Checked in its own pass below: tab roots are the views AppShell puts inside
+# NavigationStack(path:), and their body must not start another stack.
+rule stack-in-tab-root "$app" - '-' - \
+    'Tab roots live inside the stack AppShell gives each tab. Push with NavigationLink(value: AppRoute…) instead of adding a stack.'
+
+# --- The scan ----------------------------------------------------------------
+
+# Prints "path<TAB>rule<TAB>line" for every match. $1 is a file of
+# "path<TAB>file on disk" lines: the path the rules see, and where to read it.
+scan() {
+    local map="$1" files
+    files=$(cut -f2 "$map")
+    [[ -n $files ]] || return 0
+    # shellcheck disable=SC2086 # one argument per file; paths have no spaces
+    awk -F'\t' -v rules_file="$rules" -v map_file="$map" '
+        function code_of(line) {
+            # Comments never count: whole comment lines, then a trailing // comment.
+            if (line ~ /^[[:space:]]*(\/\/|\/\*|\*)/) return ""
+            sub(/(^|[[:space:]])\/\/.*$/, "", line)
+            return line
+        }
+        FILENAME == rules_file {
+            n++; id[n] = $1; inc[n] = $2; exc[n] = $3; pat[n] = $4; unless[n] = $5
+            next
+        }
+        FILENAME == map_file { path_of[$2] = $1; next }
+        FNR == 1 { path = path_of[FILENAME]; looking = 0; root_struct = 0 }
+        {
+            code = code_of($0)
+            if (code == "") next
+            for (i = 1; i <= n; i++) {
+                if (pat[i] == "-") continue
+                if (path !~ inc[i]) continue
+                if (exc[i] != "-" && path ~ exc[i]) continue
+                if (code !~ pat[i]) continue
+                if (unless[i] != "-" && code ~ unless[i]) continue
+                print path "\t" id[i] "\t" FNR
+            }
+        }
+    ' "$rules" "$map" $files
+
+    # Tab roots: the first view inside each NavigationStack(path:) in the shell.
+    local roots
+    # shellcheck disable=SC2086
+    roots=$(awk '
+        /^[[:space:]]*(\/\/|\/\*|\*)/ { next }
+        /NavigationStack\(path:/ { waiting = 1; next }
+        waiting && /[^[:space:]]/ {
+            waiting = 0
+            if (match($0, /^[[:space:]]*[A-Z][A-Za-z0-9_]*[[:space:]]*\(/)) {
+                name = substr($0, RSTART, RLENGTH); gsub(/[[:space:](]/, "", name)
+                printf "%s%s", (count++ ? " " : ""), name
+            }
+        }
+    ' $files)
+    [[ -n $roots ]] || return 0
+    # shellcheck disable=SC2086
+    awk -F'\t' -v map_file="$map" -v roots="$roots" -v covered="$app" '
+        BEGIN { split(roots, list, " "); for (i in list) is_root[list[i]] = 1 }
+        FILENAME == map_file { path_of[$2] = $1; next }
+        FNR == 1 { path = path_of[FILENAME]; current = ""; in_body = 0 }
+        path !~ covered { next }
+        /^[[:space:]]*(\/\/|\/\*|\*)/ { next }
+        match($0, /^[[:space:]]*((public|private|fileprivate|internal)[[:space:]]+)?struct[[:space:]]+[A-Z][A-Za-z0-9_]*/) {
+            name = substr($0, RSTART, RLENGTH); sub(/.*struct[[:space:]]+/, "", name)
+            current = (name in is_root) ? name : ""; in_body = 0; next
+        }
+        current != "" && /var body: some View[[:space:]]*\{/ { in_body = 1; next }
+        in_body && /[^[:space:]]/ {
+            if ($0 ~ /^[[:space:]]*NavigationStack([[:space:]({]|$)/) print path "\tstack-in-tab-root\t" FNR
+            in_body = 0; current = ""
+        }
+    ' "$map" $files
+}
+
+# Every Swift file the rules cover, as "path<TAB>file on disk".
+app_paths() {
+    git ls-files "$@" -- 'ios/DosarCuSina/*.swift' 'ios/DosarCuSinaWidgets/*.swift' \
+        'ios/DosarCuSinaShare/*.swift' 'ios/Shared/*.swift' | sort -u
+}
+
+# --- Self-test ---------------------------------------------------------------
+# Each rule has scripts/architecture-fixtures/<rule>.fail.swift, which must break
+# it, and <rule>.pass.swift, which must break nothing. A fixture's first line
+# names the path it pretends to live at: "// path: ios/…".
+
+if [[ $mode == self-test ]]; then
+    failures=0
+    ids=$(cut -f1 "$rules")
+    for rule_id in $ids; do
+        for kind in fail pass; do
+            fixture="$fixtures_dir/$rule_id.$kind.swift"
+            if [[ ! -f $fixture ]]; then
+                echo "  missing fixture $fixture" >&2
+                failures=$((failures + 1))
+                continue
+            fi
+            pretend=$(sed -n '1s|^// path: *||p' "$fixture")
+            [[ -n $pretend ]] || { echo "  $fixture: the first line must be \"// path: ios/…\"" >&2; failures=$((failures + 1)); continue; }
+            # The tab-root rule needs the shell that names the roots.
+            map="$work/self-test.map"
+            printf '%s\t%s\n' "$pretend" "$fixture" >"$map"
+            if [[ $rule_id == stack-in-tab-root ]]; then
+                printf '%s\t%s\n' "ios/DosarCuSina/Views/Shell/AppShell.swift" "$fixtures_dir/stack-in-tab-root.shell.swift" >>"$map"
+            fi
+            found=$(scan "$map" | cut -f2 | sort -u)
+            if [[ $kind == fail ]] && ! grep -qx -- "$rule_id" <<<"$found"; then
+                echo "  $fixture should break $rule_id, and doesn't" >&2
+                failures=$((failures + 1))
+            elif [[ $kind == pass && -n $found ]]; then
+                echo "  $fixture should break nothing, and breaks: $(tr '\n' ' ' <<<"$found")" >&2
+                failures=$((failures + 1))
+            fi
+        done
+    done
+    if [[ $failures -gt 0 ]]; then
+        echo "Architecture check self-test failed ($failures)." >&2
+        exit 1
+    fi
+    echo "Architecture check self-test passed ($(wc -l <"$rules" | tr -d ' ') rules)."
+    exit 0
+fi
+
+# --- What to scan --------------------------------------------------------------
+
+map="$work/files.map"
+if [[ $mode == staged ]]; then
+    staged="$work/staged"
+    mkdir -p "$staged"
+    paths=$(app_paths --cached)
+    if [[ -n $paths ]]; then
+        # shellcheck disable=SC2086
+        git checkout-index --prefix="$staged/" -- $paths
+    fi
+    while IFS= read -r path; do
+        [[ -n $path ]] && printf '%s\t%s\n' "$path" "$staged/$path"
+    done <<<"$paths" >"$map"
+    exceptions_file="$work/exceptions.txt"
+    git show ":$exceptions_path" >"$exceptions_file" 2>/dev/null || : >"$exceptions_file"
+else
+    while IFS= read -r path; do
+        [[ -n $path && -f $path ]] && printf '%s\t%s\n' "$path" "$path"
+    done < <(app_paths --cached --others --exclude-standard) >"$map"
+    exceptions_file="$exceptions_path"
+    [[ -f $exceptions_file ]] || { exceptions_file="$work/exceptions.txt"; : >"$exceptions_file"; }
+fi
+
+findings="$work/findings.tsv"
+scan "$map" | sort -t$'\t' -k1,1 -k2,2 -k3,3n >"$findings"
+
+# --- Findings against the exceptions --------------------------------------------
+
+# Exceptions as "path<TAB>rule<TAB>count", without comments or blank lines.
+read_exceptions() {
+    awk '
+        { sub(/#.*/, ""); gsub(/[[:space:]]+/, "") }
+        $0 == "" { next }
+        {
+            n = split($0, part, ":")
+            count = (n >= 3) ? part[3] : 1
+            print part[1] "\t" part[2] "\t" count
+        }
+    ' "$1"
+}
+
+read_exceptions "$exceptions_file" >"$work/exceptions.tsv"
+result=$(awk -F'\t' -v rules_file="$rules" -v exceptions_file="$work/exceptions.tsv" '
+    FILENAME == rules_file { known[$1] = 1; message[$1] = $6; next }
+    FILENAME == exceptions_file {
+        key = $1 "\t" $2
+        if (!($2 in known)) { print "unknown\t" $1 "\t" $2; next }
+        allowed[key] += $3; next
+    }
+    {
+        key = $1 "\t" $2
+        found[key]++; lines[key] = lines[key] (lines[key] == "" ? "" : ",") $3
+    }
+    END {
+        for (key in found) {
+            if (found[key] > allowed[key]) {
+                split(key, part, "\t")
+                print "new\t" part[1] "\t" part[2] "\t" found[key] "\t" (allowed[key] + 0) "\t" lines[key] "\t" message[part[2]]
+            }
+        }
+        for (key in allowed) {
+            if (found[key] < allowed[key]) {
+                split(key, part, "\t")
+                print "stale\t" part[1] "\t" part[2] "\t" (found[key] + 0) "\t" allowed[key]
+            }
+        }
+    }
+' "$rules" "$work/exceptions.tsv" "$findings" | sort)
+
+problems=0
+heading() {
+    if [[ $problems -eq 0 ]]; then
+        echo "Architecture check failed. AGENTS.md names one path for each job:" >&2
+        echo >&2
+    fi
+    problems=$((problems + 1))
+}
+
+while IFS=$'\t' read -r kind path rule_id found allowed lines message; do
+    [[ -z ${kind:-} ]] && continue
+    case "$kind" in
+        new)
+            heading
+            for line in ${lines//,/ }; do
+                printf '  %s:%s  [%s]\n' "$path" "$line" "$rule_id" >&2
+                if [[ -n ${GITHUB_ACTIONS:-} ]]; then
+                    printf '::error file=%s,line=%s,title=%s::%s\n' "$path" "$line" "$rule_id" "$message"
+                fi
+            done
+            printf '    %s\n' "$message" >&2
+            if [[ $allowed -gt 0 ]]; then
+                printf '    (%s found here, %s allowed by %s)\n' "$found" "$allowed" "$exceptions_path" >&2
+            fi
+            ;;
+        stale)
+            heading
+            if [[ $found -eq 0 ]]; then
+                printf '  %s:%s\n    Fixed, thank you. Remove this line from %s so it stays fixed.\n' \
+                    "$path" "$rule_id" "$exceptions_path" >&2
+            else
+                printf '  %s:%s\n    %s allowed, %s left. Change the count in %s to %s.\n' \
+                    "$path" "$rule_id" "$allowed" "$found" "$exceptions_path" "$found" >&2
+            fi
+            ;;
+        unknown)
+            heading
+            printf '  %s:%s\n    No rule has this name. Remove the line from %s.\n' "$path" "$rule_id" "$exceptions_path" >&2
+            ;;
+    esac
+done <<<"$result"
+
+# --- The exceptions only shrink ---------------------------------------------------
+
+if [[ -n $base ]]; then
+    if git cat-file -e "$base:$exceptions_path" 2>/dev/null; then
+        git show "$base:$exceptions_path" >"$work/base-exceptions.txt"
+        read_exceptions "$work/base-exceptions.txt" >"$work/base.tsv"
+        read_exceptions "$exceptions_file" >"$work/head.tsv"
+        grown=$(awk -F'\t' '
+            FILENAME == ARGV[1] { before[$1 "\t" $2] += $3; next }
+            { now[$1 "\t" $2] += $3 }
+            END { for (key in now) if (now[key] > before[key] + 0) { split(key, p, "\t"); print p[1] ":" p[2] "\t" (before[key] + 0) "\t" now[key] } }
+        ' "$work/base.tsv" "$work/head.tsv" | sort)
+        if [[ -n $grown && ${ARCHITECTURE_EXCEPTIONS_APPROVED:-false} != true ]]; then
+            while IFS=$'\t' read -r entry before now; do
+                heading
+                printf '  %s\n    The exceptions list allows %s here, up from %s. Exceptions are only removed, never added:\n    ask the owner, who approves by labelling the pull request "architecture-exception".\n' \
+                    "$entry" "$now" "$before" >&2
+            done <<<"$grown"
+        elif [[ -n $grown ]]; then
+            echo "Exceptions added with the owner's approval:"
+            awk -F'\t' '{ printf "  %s: %s, up from %s\n", $1, $3, $2 }' <<<"$grown"
+        fi
+    fi
+fi
+
+if [[ $problems -gt 0 ]]; then
+    echo >&2
+    echo "Use the path the message names. A rule that seems wrong is a question for the owner: say so in the pull request." >&2
+    exit 1
+fi
+
+if [[ $mode != staged ]]; then
+    listed=$(read_exceptions "$exceptions_file" | awk -F'\t' '{ sum += $3 } END { print sum + 0 }')
+    echo "Architecture check passed ($(wc -l <"$rules" | tr -d ' ') rules, $listed known exceptions left)."
+fi

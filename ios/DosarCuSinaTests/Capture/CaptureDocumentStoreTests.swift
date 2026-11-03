@@ -29,8 +29,9 @@ struct CaptureDocumentStoreTests {
     @Test("Pages are processed with a thumbnail, sized for reading, and nothing is written to disk")
     func processesPagesAndThumbnail() async throws {
         let store = CaptureDocumentStore()
-        let (document, isDuplicate) = try await store.store(.init(pages: [Self.page()], kind: .rcaPolicy))
-        #expect(!isDuplicate)
+        let stored = try await store.store(.init(pages: [Self.page()], kind: .rcaPolicy))
+        #expect(!stored.isDuplicate)
+        let document = try #require(stored.document)
         #expect(document.pages.count == 1)
         let page = try #require(document.pages.first)
         #expect(max(page.pixelWidth ?? 0, page.pixelHeight ?? 0) == CaptureDocumentStore.pageMaxLongEdge)
@@ -48,7 +49,8 @@ struct CaptureDocumentStoreTests {
         let first = try await store.store(.init(pages: [Self.page(width: 400, height: 600, seed: 1)], sourceData: original))
         let second = try await store.store(.init(pages: [Self.page(width: 400, height: 600, seed: 2)], sourceData: original))
         #expect(second.isDuplicate)
-        #expect(second.document.id == first.document.id)
+        #expect(second.ref.pendingID == first.ref.pendingID)
+        #expect(second.ref != first.ref, "Each capture holds its own claim")
         #expect(await store.pendingCount == 1)
 
         let pdf = Data("%PDF-1.7 placeholder".utf8)
@@ -66,19 +68,33 @@ struct CaptureDocumentStoreTests {
         let store = CaptureDocumentStore(duplicateLookup: { $0 == fingerprint ? filedID : nil })
         let result = try await store.store(.init(pages: [], originalPDF: pdf))
         #expect(result.isDuplicate)
-        #expect(result.document.id == filedID)
+        #expect(result.ref == .kept(attachmentID: filedID))
         #expect(await store.pendingCount == 0)
     }
 
-    @Test("Taking or discarding a capture leaves nothing behind")
-    func takeAndDiscard() async throws {
+    @Test("Releasing a capture leaves nothing behind, and releasing twice does nothing more")
+    func releaseLeavesNothing() async throws {
         let store = CaptureDocumentStore()
-        let first = try await store.store(.init(pages: [Self.page(width: 400, height: 600, seed: 3)])).document
-        let second = try await store.store(.init(pages: [Self.page(width: 400, height: 600, seed: 4)])).document
-        #expect(await store.take(id: first.id) != nil)
-        #expect(await store.take(id: first.id) == nil)
-        await store.discard(id: second.id)
+        let first = try await store.store(.init(pages: [Self.page(width: 400, height: 600, seed: 3)]))
+        let second = try await store.store(.init(pages: [Self.page(width: 400, height: 600, seed: 4)]))
+        await store.release(first.ref)
+        await store.release(first.ref)
+        #expect(await store.pendingCount == 1)
+        await store.release(second.ref)
         #expect(await store.pendingCount == 0)
+    }
+
+    @Test("Closing one capture of a photo never takes the pages another capture of it still needs")
+    func claimsAreCountedPerCapture() async throws {
+        let store = CaptureDocumentStore()
+        let bytes = Data("the same bill, shared twice".utf8)
+        let fromMail = try await store.store(.init(pages: [Self.page(width: 400, height: 600, seed: 5)], sourceData: bytes))
+        let fromPhotos = try await store.store(.init(pages: [Self.page(width: 400, height: 600, seed: 5)], sourceData: bytes))
+        let id = try #require(fromMail.ref.pendingID)
+        await store.release(fromMail.ref)
+        #expect(await store.processed(id: id) != nil, "The other capture still has its pages")
+        await store.release(fromPhotos.ref)
+        #expect(await store.processed(id: id) == nil)
     }
 
     @MainActor
@@ -89,10 +105,11 @@ struct CaptureDocumentStoreTests {
         context.insert(car)
         try context.save()
         let store = CaptureDocumentStore()
-        let captured = try await store.store(.init(pages: [Self.page(width: 800, height: 1100, seed: 5)], kind: .rcaPolicy)).document
+        let stored = try await store.store(.init(pages: [Self.page(width: 800, height: 1100, seed: 5)], kind: .rcaPolicy))
+        let captured = try #require(stored.document)
 
         let documents = AttachmentActions(context: context)
-        let attachment = try #require(try await documents.fileCaptured(documentID: captured.id, from: store, title: "Poliță RCA", asset: car))
+        let attachment = try await documents.fileForTest(stored.ref, from: store, title: "Poliță RCA", asset: car)
         #expect(attachment.kind == .policy)
         #expect(attachment.orderedPages.count == 1)
         #expect(attachment.thumbnailData != nil)
@@ -126,8 +143,8 @@ struct CaptureDocumentStoreTests {
     func compaction() async throws {
         let context = try makeContext()
         let store = CaptureDocumentStore()
-        let captured = try await store.store(.init(pages: [Self.page(seed: 7)])).document
-        let attachment = try #require(try await AttachmentActions(context: context).fileCaptured(documentID: captured.id, from: store, title: "Scan vechi"))
+        let captured = try await store.store(.init(pages: [Self.page(seed: 7)]))
+        let attachment = try await AttachmentActions(context: context).fileForTest(captured.ref, from: store, title: "Scan vechi")
         attachment.createdAt = Date(timeIntervalSince1970: 1_600_000_000)
         let policy = CompactionPolicy(olderThanDays: 365, maxLongEdge: 1200, quality: 0.5, minimumPageBytes: 0)
         let storage = DocumentStorage(context: context)

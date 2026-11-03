@@ -101,6 +101,77 @@ struct ShareInboxTests {
         #expect(!ShareInbox.isPracticeName(nil))
     }
 
+    @Test func thePracticeIsKnownByItsBytesWhateverItIsCalled() throws {
+        let folder = try temporaryFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let inbox = ShareInbox(directory: folder.appending(path: ShareInbox.folderName))
+        let sample = folder.appending(path: "practice.pdf")
+        try Data("%PDF-1.4 practice EX-0001".utf8).write(to: sample)
+        let now = Date(timeIntervalSince1970: 1_000_000)
+        try inbox.expectPractice(fileAt: sample, now: now)
+
+        // Renamed on the way: still the practice.
+        var staging = try inbox.makeStagingFolder()
+        var name = try inbox.stage(copyOf: sample, into: staging, index: 0)
+        let practice = try inbox.commit(staging: staging, payload: .pdf, files: [name], originalName: "document (1).pdf", now: now)
+        #expect(practice.isPractice)
+
+        // A real invoice that happens to share the practice's name: not the practice.
+        let real = folder.appending(path: ShareInbox.practiceFileName)
+        try Data("%PDF-1.4 ENGIE Romania S.A.".utf8).write(to: real)
+        staging = try inbox.makeStagingFolder()
+        name = try inbox.stage(copyOf: real, into: staging, index: 0)
+        #expect(try !inbox.commit(staging: staging, payload: .pdf, files: [name], originalName: ShareInbox.practiceFileName, now: now).isPractice)
+
+        // After the hour the app waits, the same bytes are a real document.
+        staging = try inbox.makeStagingFolder()
+        name = try inbox.stage(copyOf: sample, into: staging, index: 0)
+        #expect(try !inbox.commit(staging: staging, payload: .pdf, files: [name], originalName: nil, now: now.addingTimeInterval(7_200)).isPractice)
+    }
+
+    @Test func itemsThatCantBeOpenedAreSetAsideNotSkippedForever() throws {
+        let folder = try temporaryFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let inbox = ShareInbox(directory: folder.appending(path: ShareInbox.folderName))
+        try FileManager.default.createDirectory(at: inbox.directory, withIntermediateDirectories: true)
+        let staging = try inbox.makeStagingFolder()
+        let name = try inbox.stage(data: Data("Plata pana pe 20 noiembrie".utf8), fileExtension: "txt", into: staging, index: 0)
+        let good = try inbox.commit(staging: staging, payload: .text, files: [name], originalName: nil)
+
+        // A damaged manifest, an item whose file is missing, and one from a newer version.
+        let damaged = inbox.directory.appending(path: UUID().uuidString.lowercased())
+        try FileManager.default.createDirectory(at: damaged, withIntermediateDirectories: true)
+        try Data("{ not json".utf8).write(to: damaged.appending(path: "manifest.json"))
+        let missing = InboxItem(receivedAt: Date(), payload: .pdf, files: ["file-1.pdf"], originalName: nil, isPractice: false)
+        let missingFolder = inbox.folder(for: missing.id)
+        try FileManager.default.createDirectory(at: missingFolder, withIntermediateDirectories: true)
+        try ShareInbox.encoder.encode(missing).write(to: missingFolder.appending(path: "manifest.json"))
+        let newer = InboxItem(version: InboxItem.currentVersion + 1, receivedAt: Date(), payload: .text, files: ["file-1.txt"], originalName: nil, isPractice: false)
+        let newerFolder = inbox.folder(for: newer.id)
+        try FileManager.default.createDirectory(at: newerFolder, withIntermediateDirectories: true)
+        try ShareInbox.encoder.encode(newer).write(to: newerFolder.appending(path: "manifest.json"))
+        try Data("x".utf8).write(to: newerFolder.appending(path: "file-1.txt"))
+
+        let contents = inbox.contents()
+        #expect(contents.items.map(\.id) == [good.id])
+        #expect(contents.unreadable.count == 3)
+        #expect(!FileManager.default.fileExists(atPath: damaged.path()), "Moved aside, not left to be skipped again")
+        // Seen again: still listed once, still aside.
+        #expect(inbox.contents().unreadable.count == 3)
+
+        for item in contents.unreadable { try inbox.removeUnreadable(item.id) }
+        #expect(inbox.contents().unreadable.isEmpty)
+        #expect(inbox.items().map(\.id) == [good.id])
+    }
+
+    @Test func manifestsWithoutAVersionReadAsTheFirst() throws {
+        let old = #"{"id":"6F1D2C3B-0000-4000-8000-000000000001","receivedAt":"2026-11-01T10:00:00Z","payload":"pdf","files":["file-1.pdf"],"isPractice":false}"#
+        let item = try ShareInbox.decoder.decode(InboxItem.self, from: Data(old.utf8))
+        #expect(item.version == 1)
+        let written = try ShareInbox.decoder.decode(InboxItem.self, from: ShareInbox.encoder.encode(InboxItem(receivedAt: Date(), payload: .pdf, files: ["file-1.pdf"], originalName: nil, isPractice: false)))
+        #expect(written.version == InboxItem.currentVersion)
+    }
+
     @Test func theAppGroupIsTheOneTheWidgetSnapshotUses() {
         #expect(AppGroup.identifier == WidgetSnapshot.appGroupIdentifier)
         #expect(WidgetFeed.fileName == WidgetSnapshot.fileName)
@@ -212,9 +283,10 @@ struct WidgetEngineTests {
         let context = try makeContext()
         let rent = try ObligationActions(context: context, calendar: .bucharest).create(
             title: "Chirie", kind: .payment, dueDay: CalendarDay("2026-11-05"), for: nil)
-        let outcome = try IntentEngine.complete(obligationID: rent.id, cycle: CalendarDay("2026-12-05"), in: context, calendar: .bucharest)
+        let outcome = try IntentEngine.apply(OutsideRequest(obligationId: rent.id, cycle: CalendarDay("2026-12-05"), action: .complete, surface: .widget),
+                                             in: context, calendar: .bucharest)
         #expect(outcome == .skipped)
         #expect(rent.status == .active)
-        #expect(try IntentEngine.complete(obligationID: UUID(), in: context) == .skipped)
+        #expect(try IntentEngine.apply(OutsideRequest(obligationId: UUID(), cycle: CalendarDay("2026-11-05"), action: .complete, surface: .widget), in: context) == .skipped)
     }
 }

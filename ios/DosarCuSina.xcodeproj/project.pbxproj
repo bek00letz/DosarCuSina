@@ -54,6 +54,9 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				CompleteFromWidgetIntent.swift,
+				DurationWording.swift,
+				Shared.xcstrings,
+				Urgency.swift,
 				WidgetCompletionQueue.swift,
 				WidgetFeed.swift,
 			);
@@ -135,6 +138,7 @@
 				D05A00032C00000000000003 /* Frameworks */,
 				D05A00072C00000000000007 /* Resources */,
 				D05A01242C00000000000124 /* Embed Foundation Extensions */,
+				D05A02012C00000000000201 /* Stamp build info */,
 			);
 			buildRules = (
 			);
@@ -179,6 +183,7 @@
 				D05A01122C00000000000112 /* Sources */,
 				D05A01112C00000000000111 /* Frameworks */,
 				D05A01132C00000000000113 /* Resources */,
+				D05A02022C00000000000202 /* Stamp build info */,
 			);
 			buildRules = (
 			);
@@ -200,6 +205,7 @@
 				D05A01322C00000000000132 /* Sources */,
 				D05A01312C00000000000131 /* Frameworks */,
 				D05A01332C00000000000133 /* Resources */,
+				D05A02032C00000000000203 /* Stamp build info */,
 			);
 			buildRules = (
 			);
@@ -316,6 +322,75 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		D05A02012C00000000000201 /* Stamp build info */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(TARGET_BUILD_DIR)/$(INFOPLIST_PATH)",
+			);
+			name = "Stamp build info";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(WRAPPER_NAME)/BuildStamp",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/../scripts/stamp-build-info.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D05A02022C00000000000202 /* Stamp build info */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(TARGET_BUILD_DIR)/$(INFOPLIST_PATH)",
+			);
+			name = "Stamp build info";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(WRAPPER_NAME)/BuildStamp",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/../scripts/stamp-build-info.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D05A02032C00000000000203 /* Stamp build info */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(TARGET_BUILD_DIR)/$(INFOPLIST_PATH)",
+			);
+			name = "Stamp build info";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(WRAPPER_NAME)/BuildStamp",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/../scripts/stamp-build-info.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		D05A00062C00000000000006 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -403,7 +478,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -466,7 +541,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;

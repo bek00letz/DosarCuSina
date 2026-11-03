@@ -53,6 +53,8 @@ struct SharePracticeView: View {
         .task {
             startedAt = Date()
             sampleURL = try? SampleInvoice.writePDF()
+            // The inbox knows the practice by these exact bytes, whatever the file is called on the way.
+            if let sampleURL { try? ShareInbox.shared()?.expectPractice(fileAt: sampleURL) }
         }
         .task(id: arrived) {
             // The extension also signals the app; this check covers a missed signal.
@@ -81,13 +83,9 @@ struct SharePracticeView: View {
     @ViewBuilder private var shareButton: some View {
         if let sampleURL {
             ShareLink(item: PracticeInvoiceFile(url: sampleURL), preview: SharePreview(Text("Factură de probă"), image: Image(systemName: "doc.text"))) {
-                Label("Trimite factura de probă", systemImage: "square.and.arrow.up")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity, minHeight: 34)
+                DSButtonLabel(title: Text("Trimite factura de probă"), systemImage: "square.and.arrow.up")
             }
-            .buttonStyle(.borderedProminent)
-            .buttonBorderShape(.roundedRectangle(radius: DS.Radius.control + 2))
-            .controlSize(.large)
+            .dsFullWidthButton(prominent: true)
         } else {
             DSPrimaryButton("Trimite factura de probă", systemImage: "square.and.arrow.up") {}
                 .disabled(true)
@@ -238,12 +236,12 @@ enum SampleInvoice {
     ]
     static var total: Decimal { lines.reduce(0) { $0 + $1.amount } }
 
-    /// Writes the PDF the share practice sends, named so the inbox recognizes it.
+    /// Writes the PDF the share practice sends. The inbox recognizes it by its bytes (`ShareInbox.expectPractice`).
     static func writePDF(date: Date = Date()) throws -> URL {
         let url = FileManager.default.temporaryDirectory.appending(path: ShareInbox.practiceFileName)
         let page = CGRect(x: 0, y: 0, width: 595, height: 842)
         let renderer = UIGraphicsPDFRenderer(bounds: page)
-        let day = date.formatted(.dateTime.day().month(.twoDigits).year().locale(Locale(identifier: "ro_RO")))
+        let day = DosarFormat.numericDay(date)
         let data = renderer.pdfData { context in
             context.beginPage()
             var y: CGFloat = 60

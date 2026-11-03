@@ -9,11 +9,28 @@ struct CaptureFlowInput: Identifiable {
     var inboxItem: InboxItem?
     /// The section the person started from ("Scriu eu" › a section › "Un act").
     var preferredAssetID: UUID?
+    /// The person started from a household member's documents: whatever is read
+    /// becomes one of that member's documents, even when it isn't an identity card.
+    var filesAsPersonalDocument = false
+    /// The reading and its pages. It lives as long as this input: when the screen that
+    /// presents the capture lets go of it (the sheet closed or swiped down), any reading
+    /// still running stops and the pages are let go.
+    let session: CaptureSession
+
+    @MainActor
+    init(payload: CaptureRequest.Payload, inboxItem: InboxItem? = nil, preferredAssetID: UUID? = nil, filesAsPersonalDocument: Bool = false) {
+        self.payload = payload
+        self.inboxItem = inboxItem
+        self.preferredAssetID = preferredAssetID
+        self.filesAsPersonalDocument = filesAsPersonalDocument
+        self.session = CaptureSession(payload: payload, ownerID: preferredAssetID)
+    }
 }
 
 /// What happened when the flow closed, for the toast on the screen underneath.
 enum CaptureFlowResult {
-    case filed(message: LocalizedStringResource)
+    /// `assetID` is the section the document was filed in, so the screen underneath can open it.
+    case filed(message: LocalizedStringResource, assetID: UUID?)
     case visitSaved(message: LocalizedStringResource)
     case dismissed
 }
@@ -26,39 +43,21 @@ struct CaptureFlowView: View {
     let onClose: (CaptureFlowResult) -> Void
 
     @Environment(\.modelContext) private var context
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Query(sort: \Asset.name) private var assets: [Asset]
 
-    private enum Phase {
-        case reading
-        case review(CaptureReview)
-        case visit(assetID: UUID, result: CaptureResult)
-        case failed(String)
-    }
-
-    @State private var phase: Phase = .reading
-    @State private var attempt = 0
-    @State private var useCloud = false
-    /// The pages read, once the person added more (the back of a card).
-    @State private var payload: CaptureRequest.Payload?
-    @State private var isReadingAgain = false
-    @State private var readAgainError: String?
+    private var session: CaptureSession { input.session }
 
     var body: some View {
         NavigationStack {
             Group {
-                switch phase {
-                case .reading:
+                switch session.phase {
+                case .idle, .reading:
                     CaptureReadingView()
-                case .review(let review):
-                    reviewView(review)
-                case .visit(let assetID, let result):
-                    AddVisitFlow(assetID: assetID, prefill: result) { saved in
-                        finish(saved ? .visitSaved(message: "Vizita e în istoric.") : .dismissed)
-                    }
-                case .failed(let message):
-                    DSErrorState("Nu am putut citi actul", message: LocalizedStringKey(message)) {
-                        attempt += 1
+                case .read(let result):
+                    content(for: result)
+                case .failed:
+                    DSErrorState("Nu am putut citi actul", message: "Încearcă din nou. Dacă tot nu merge, fă o poză mai clară, cu actul întins și fără umbre.") {
+                        session.read()
                     }
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
@@ -68,79 +67,86 @@ struct CaptureFlowView: View {
                 }
             }
         }
-        .task(id: attempt) { await read() }
-    }
-
-    private func read() async {
-        phase = .reading
-        do {
-            let key = "\(input.id.uuidString)-\(attempt)-\(useCloud)"
-            let result = try await CaptureRunner.result(for: key, payload ?? input.payload, useCloudModel: useCloud, ownerID: input.preferredAssetID)
-            var review = CaptureReview(result: result, assets: assets, context: context)
-            if let preferred = input.preferredAssetID { review.destination = .asset(preferred) }
-            if CaptureMapping.opensVisitFlow(result.kind), review.duplicateAttachmentID == nil, case .asset(let id) = review.destination {
-                phase = .visit(assetID: id, result: result)
-            } else {
-                phase = .review(review)
-            }
-        } catch is CancellationError {
-            // The sheet went away or a new attempt started; that one shows its own result.
-            return
-        } catch {
-            guard !Task.isCancelled else { return }
-            CaptureLog.engine.error("Capture failed: \(String(describing: type(of: error)), privacy: .public) \((error as NSError).domain, privacy: .public) \((error as NSError).code)")
-            phase = .failed(String(localized: "Încearcă din nou. Dacă tot nu merge, fă o poză mai clară, cu actul întins și fără umbre."))
+        // Starts once; a sheet SwiftUI rebuilds finds the reading already running.
+        .task {
+            guard session.phase == .idle else { return }
+            session.destination = CaptureSession.Destination(isProtected: headsForProtectedPlace, staysOnPhone: startsOnPhoneOnlyDocument)
+            session.read()
         }
     }
 
+    /// The capture started from a document read only on the phone (a bank card's own page,
+    /// "Adaugă poza actului"): the AI provider never reads it (`PhoneOnlyReading`).
+    private var startsOnPhoneOnlyDocument: Bool {
+        guard let id = input.preferredAssetID, let asset = assets.first(where: { $0.id == id }) else { return false }
+        return PhoneOnlyReading.holdsOne(asset.values)
+    }
+
+    /// The capture started from a person's documents or a locked section.
+    private var headsForProtectedPlace: Bool {
+        guard !input.filesAsPersonalDocument else { return true }
+        guard let id = input.preferredAssetID, let asset = assets.first(where: { $0.id == id }) else { return false }
+        let templates = (try? TemplateStore(context: context).templatesByKey()) ?? [:]
+        var current: Asset? = asset
+        while let node = current {
+            if templates[node.templateKey]?.isSensitive == true { return true }
+            current = node.parent
+        }
+        return false
+    }
+
+    @ViewBuilder private func content(for result: CaptureResult) -> some View {
+        let review = review(for: result)
+        if result.kind.profile.opensVisitFlow, review.duplicateAttachmentID == nil, case .asset(let id) = review.destination {
+            AddVisitFlow(assetID: id, prefill: result) { saved in
+                finish(saved ? .visitSaved(message: "Vizita e în istoric.") : .dismissed)
+            }
+        } else {
+            reviewView(review)
+        }
+    }
+
+    private func review(for result: CaptureResult) -> CaptureReview {
+        var review = CaptureReview(result: result, assets: assets, context: context)
+        if let preferred = input.preferredAssetID { review.destination = .asset(preferred) }
+        review.filesAsPersonalDocument = input.filesAsPersonalDocument
+        review.staysOnPhone = session.destination.staysOnPhone
+        return review
+    }
+
     private func reviewView(_ review: CaptureReview) -> some View {
-        let addPages: ((CaptureReview, CaptureRequest.Payload) -> Void)? = canAddPages ? { current, added in self.addPages(current, added) } : nil
+        let addPages: ((CaptureRequest.Payload) -> Void)? = canAddPages ? { added in self.addPages(added) } : nil
+        // One review for the whole flow: each new reading is merged into it, keeping
+        // everything the person changed (`CaptureReview.carryingEdits`).
         return CaptureReviewView(
             review: review,
             assets: assets,
-            onReadWithCloud: {
-                useCloud = true
-                attempt += 1
-            },
+            onReadWithCloud: { session.readAgain(.cloud) },
             onAddPages: addPages,
-            isReadingAgain: isReadingAgain,
-            readAgainError: readAgainError,
+            rereading: session.rereading,
+            rereadResult: session.rereadResult,
+            readAgainError: session.readAgainError,
+            asksToSendToProvider: session.asksToSendToProvider,
+            onAnswerSending: { session.answerSending($0) },
             onClose: { finish($0) }
         )
-        // A new read is a new review; the person's edits are carried into it.
-        .id(review.id)
     }
 
     /// Photos and scans can take more pages; a PDF or pasted text can't.
     private var canAddPages: Bool {
-        if case .images = payload ?? input.payload { return true }
+        if case .images = session.payload ?? input.payload { return true }
         return false
     }
 
-    /// Reads the document again with the added pages as one document. The review stays
-    /// on screen while it reads, and the new one keeps everything the person changed.
-    private func addPages(_ current: CaptureReview, _ added: CaptureRequest.Payload) {
-        guard case .images(let existing) = payload ?? input.payload, case .images(let more) = added, !more.isEmpty else { return }
-        let combined = CaptureRequest.Payload.images(existing + more)
-        readAgainError = nil
-        withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { isReadingAgain = true }
-        Task {
-            do {
-                let result = try await CaptureRunner.run(combined, useCloudModel: useCloud, ownerID: input.preferredAssetID)
-                payload = combined
-                let review = CaptureReview(result: result, assets: assets, context: context).carryingEdits(from: current)
-                isReadingAgain = false
-                phase = .review(review)
-            } catch {
-                CaptureLog.engine.error("Reading added pages failed: \((error as NSError).domain, privacy: .public) \((error as NSError).code)")
-                isReadingAgain = false
-                readAgainError = String(localized: "Încearcă o poză mai clară, cu actul întins și fără umbre.")
-            }
-        }
+    /// Reads the document again with the added pages as one document.
+    private func addPages(_ added: CaptureRequest.Payload) {
+        guard case .images(let existing) = session.payload ?? input.payload, case .images(let more) = added, !more.isEmpty else { return }
+        session.readAgain(.pages, payload: .images(existing + more))
     }
 
     private func finish(_ result: CaptureFlowResult) {
-        CaptureRunner.forget(input.id)
+        // Saved or not, this capture is over: nothing keeps reading, its pages are let go.
+        session.close()
         if let item = input.inboxItem {
             switch result {
             case .filed, .visitSaved: IntakeInbox.shared.remove(item)

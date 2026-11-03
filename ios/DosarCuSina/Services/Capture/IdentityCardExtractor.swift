@@ -23,8 +23,10 @@ enum IdentityDocumentReader {
     /// Confidence for a value that failed its format check.
     static let failedFormat = 0.45
 
-    static func read(_ text: CaptureText, template: IdentityTemplate) -> [CaptureField] {
+    /// - Parameter today: Decides the century of two-digit years, through each date's window.
+    static func read(_ text: CaptureText, template: IdentityTemplate, today: CaptureDay) -> [CaptureField] {
         let layout = LabelledLayout(text: text, labels: template.labelTable)
+        func window(_ key: CaptureFieldKey) -> DateWindow { CaptureConsistency.window(for: key, kind: template.kind, today: today) }
         var fields: [CaptureField] = []
         func add(_ key: CaptureFieldKey, _ value: CaptureValue, _ confidence: Double, _ source: String?, tier: CaptureTier = .heuristic) {
             guard !fields.contains(where: { $0.key == key }) else { return }
@@ -34,7 +36,7 @@ enum IdentityDocumentReader {
         for field in template.fields {
             let key = IdentityLabelKey.field(field.key)
             if case .dateRange(let startKey) = field.format {
-                if let range = dateRange(at: layout.found(for: key), in: text) {
+                if let range = dateRange(at: layout.found(for: key), start: window(startKey), end: window(field.key)) {
                     add(field.key, .day(range.end), labelled, range.source)
                     add(startKey, .day(range.start), labelled, range.source)
                 }
@@ -42,20 +44,26 @@ enum IdentityDocumentReader {
             }
             if case .date = field.format {
                 // A date only counts at its own label, so a neighbour's date is never borrowed.
-                if let (day, source) = layout.day(for: key) {
+                if let (day, source) = layout.day(for: key, window: window(field.key)) {
                     add(field.key, .day(day), labelled, source)
                     continue
                 }
-            } else if let found = layout.found(for: key), let parsed = parse(found.value, as: field.format) {
+            } else if case .categories = field.format {
+                // Categories are printed in boxes along the label's row, each its own fragment.
+                if let found = layout.restOfRow(for: key) ?? layout.value(for: key), let parsed = parse(found.value, as: .categories) {
+                    add(field.key, parsed.value, labelled, found.source)
+                    continue
+                }
+            } else if let found = layout.found(for: key), let parsed = parse(found.value, as: field.format, window: window(field.key)) {
                 add(field.key, parsed.value, parsed.passed ? labelled : failedFormat, found.source, tier: parsed.tier)
                 continue
             }
-            if let region = field.region, let found = inRegion(region, of: text, format: field.format) {
+            if let region = field.region, let found = inRegion(region, of: text, format: field.format, window: window(field.key)) {
                 add(field.key, found.value, regional, found.source)
                 continue
             }
-            if field.searchesEverywhere, let found = anywhere(in: text, format: field.format) {
-                add(field.key, found.value, found.tier == .deterministic ? 0.97 : anywhere, found.source, tier: found.tier)
+            if field.searchesEverywhere, let found = anywhere(in: text, format: field.format, window: window(field.key)) {
+                add(field.key, found.value, found.confidence, found.source, tier: found.tier)
             }
         }
 
@@ -70,6 +78,11 @@ enum IdentityDocumentReader {
 
     // MARK: - Formats
 
+    /// The EU driving licence categories, plus the national tractor and tram ones.
+    static let drivingCategories: Set<String> = [
+        "AM", "A1", "A2", "A", "B1", "B", "BE", "C1", "C1E", "C", "CE", "D1", "D1E", "D", "DE", "TR", "TB", "TV",
+    ]
+
     struct Parsed {
         let value: CaptureValue
         let passed: Bool
@@ -77,7 +90,7 @@ enum IdentityDocumentReader {
     }
 
     /// The value in its format, or nil when there is nothing of that shape at all.
-    static func parse(_ raw: String, as format: IdentityFormat) -> Parsed? {
+    static func parse(_ raw: String, as format: IdentityFormat, window: DateWindow = .aroundToday) -> Parsed? {
         let value = raw.trimmingCharacters(in: .whitespaces)
         switch format {
         case .name:
@@ -92,7 +105,7 @@ enum IdentityDocumentReader {
             let joined = match.groups.dropFirst().compactMap { $0 }.joined().uppercased()
             return joined.contains(where: \.isNumber) ? Parsed(value: .text(joined), passed: true) : nil
         case .date, .dateRange:
-            return RomanianFieldExtractor.dates(inLine: CaptureText.fold(value), index: 0).first.map { Parsed(value: .day($0.day), passed: true) }
+            return RomanianFieldExtractor.dates(inLine: RomanianText.fold(value), index: 0, window: window).first.map { Parsed(value: .day($0.day), passed: true) }
         case .sex:
             let letters = value.uppercased().filter(\.isLetter)
             guard let letter = letters.first(where: { $0 == "M" || $0 == "F" }) else { return nil }
@@ -106,25 +119,60 @@ enum IdentityDocumentReader {
         case .text:
             return value.contains(where: \.isLetter) ? Parsed(value: .text(value), passed: true) : nil
         case .categories:
-            guard TextPattern.first(#"^[A-Z0-9 ,/+]{1,40}$"#, in: value, caseInsensitive: false) != nil else { return nil }
-            return Parsed(value: .text(value), passed: true)
+            // "[A] [B] [C]", "A B C" or "A,B,C" → "A, B, C"; only real EU categories count.
+            let tokens = value.uppercased()
+                .components(separatedBy: CharacterSet.alphanumerics.inverted)
+                .filter { !$0.isEmpty }
+            guard !tokens.isEmpty, tokens.allSatisfy(drivingCategories.contains) else { return nil }
+            return Parsed(value: .text(tokens.joined(separator: ", ")), passed: true)
+        case .cardLastFour:
+            // Only the last four digits ever leave this line; the number itself is never a value.
+            return PaymentCardNumbers.lastFour(in: value, strict: true).map { Parsed(value: .text($0), passed: true) }
+        case .cardExpiry:
+            return cardExpiry(in: value, window: window).map { Parsed(value: .day($0), passed: true) }
+        case .cardNetwork:
+            if let network = PaymentCardNetwork.read(in: RomanianText.fold(value)) { return Parsed(value: .text(network), passed: true) }
+            let digits = PaymentCardNumbers.runs(in: value, strict: true).first?.digits
+            return digits.flatMap(PaymentCardNumbers.network(ofNumber:)).map { Parsed(value: .text($0), passed: false) }
+        case .bankName:
+            return RomanianBanks.name(in: RomanianText.fold(value)).map { Parsed(value: .text($0), passed: true) }
+        case .recordResult:
+            let folded = RomanianText.fold(value)
+            guard folded.contains("figureaza"), value.count <= 160 else { return nil }
+            return Parsed(value: .text(value.trimmingCharacters(in: .whitespacesAndNewlines.union(CharacterSet(charactersIn: ".:;")))), passed: true)
         }
     }
 
+    /// A card's expiry printed as month and year ("08/28", "08/2028"): the last day of
+    /// that month, the two-digit year read in the expiry's window. The latest one when a
+    /// card prints two (a "member since" month is earlier).
+    static func cardExpiry(in value: String, window: DateWindow) -> CaptureDay? {
+        let pattern = #"(?<![\d/])(0[1-9]|1[0-2])\s?[/\-.]\s?(\d{4}|\d{2})(?![\d/])"#
+        let days = TextPattern.matches(pattern, in: value).compactMap { match -> CaptureDay? in
+            guard let month = match[1].flatMap(Int.init), let yearText = match[2], let year = Int(yearText) else { return nil }
+            let first = yearText.count == 2 ? window.resolve(twoDigitYear: year, month: month, day: 1) : CaptureDay(year: year, month: month, day: 1)
+            guard let first else { return nil }
+            return (28...31).reversed().lazy.compactMap { CaptureDay(year: first.year, month: first.month, day: $0) }.first
+        }
+        return days.filter(window.contains).max() ?? days.max()
+    }
+
     /// A validity range at its label: two dates, the first before the second, on the
-    /// value or on the line after the label.
-    private static func dateRange(at found: LabelledLayout<IdentityLabelKey>.Found?, in text: CaptureText) -> (start: CaptureDay, end: CaptureDay, source: String)? {
+    /// value or on the line after the label. Each date's two-digit year is read in its
+    /// own window ("12.03.18-31.12.28": issued 2018, valid until 2028).
+    private static func dateRange(at found: LabelledLayout<IdentityLabelKey>.Found?, start: DateWindow, end: DateWindow) -> (start: CaptureDay, end: CaptureDay, source: String)? {
         guard let found else { return nil }
-        let dates = RomanianFieldExtractor.dates(inLine: found.folded, index: found.label.line)
-        guard dates.count == 2, dates[0].day < dates[1].day else { return nil }
-        return (dates[0].day, dates[1].day, found.source)
+        let starts = RomanianFieldExtractor.dates(inLine: found.folded, index: found.label.line, window: start)
+        let ends = RomanianFieldExtractor.dates(inLine: found.folded, index: found.label.line, window: end)
+        guard starts.count == 2, ends.count == 2, starts[0].day < ends[1].day else { return nil }
+        return (starts[0].day, ends[1].day, found.source)
     }
 
     /// A value in the field's usual region that passes its format.
-    private static func inRegion(_ region: TextBox, of text: CaptureText, format: IdentityFormat) -> (value: CaptureValue, source: String)? {
+    private static func inRegion(_ region: TextBox, of text: CaptureText, format: IdentityFormat, window: DateWindow) -> (value: CaptureValue, source: String)? {
         for (index, box) in text.boxes.enumerated() {
             guard let box, box.midX >= region.minX, box.midX <= region.maxX, box.midY >= region.minY, box.midY <= region.maxY,
-                  let parsed = parse(text.original[index], as: format), parsed.passed else { continue }
+                  let parsed = parse(text.original[index], as: format, window: window), parsed.passed else { continue }
             return (parsed.value, text.original[index])
         }
         return nil
@@ -132,14 +180,34 @@ enum IdentityDocumentReader {
 
     /// A line anywhere that is exactly a value of this format (a CNP: anywhere on a line,
     /// but only with a valid control digit).
-    private static func anywhere(in text: CaptureText, format: IdentityFormat) -> (value: CaptureValue, source: String, tier: CaptureTier)? {
-        if case .personalNumber = format {
-            return RomanianFieldExtractor.personalNumber(in: text).map { (.text($0.0), $0.1, .deterministic) }
+    private static func anywhere(in text: CaptureText, format: IdentityFormat, window: DateWindow) -> (value: CaptureValue, source: String?, confidence: Double, tier: CaptureTier)? {
+        switch format {
+        case .personalNumber:
+            return RomanianFieldExtractor.personalNumber(in: text).map { (.text($0.0), $0.1, 0.97, .deterministic) }
+        case .cardNetwork:
+            // The network's printed name wins over what the number's first digits suggest.
+            if let network = PaymentCardNetwork.read(in: text.joinedFolded) { return (.text(network), nil, anywhere, .heuristic) }
+            let digits = text.joiningRows().original.lazy.compactMap { PaymentCardNumbers.runs(in: $0, strict: true).first?.digits }.first
+            return digits.flatMap(PaymentCardNumbers.network(ofNumber:)).map { (.text($0), nil, failedFormat, .heuristic) }
+        case .cardLastFour, .bankName, .recordResult:
+            // Fragments on one row read together, so a number printed in groups is one number.
+            // A card's line is never kept as the source: it would carry the card's number.
+            let rows = text.joiningRows()
+            for line in rows.original + [rows.original.joined(separator: " ")] {
+                guard let parsed = parse(line, as: format) else { continue }
+                return (parsed.value, format == .recordResult ? line : nil, parsed.passed ? anywhere : failedFormat, .heuristic)
+            }
+            return nil
+        case .cardExpiry:
+            let days = text.joiningRows().original.compactMap { cardExpiry(in: $0, window: window) }
+            return (days.filter(window.contains).max() ?? days.max()).map { (.day($0), nil, anywhere, .heuristic) }
+        default:
+            break
         }
         guard case .documentNumber(let pattern) = format else { return nil }
         let whole = "^" + pattern.replacingOccurrences(of: #"\b"#, with: "") + "$"
         for line in text.original {
-            if let parsed = parse(line, as: .documentNumber(pattern: whole)) { return (parsed.value, line, .heuristic) }
+            if let parsed = parse(line, as: .documentNumber(pattern: whole)) { return (parsed.value, line, anywhere, .heuristic) }
         }
         return nil
     }

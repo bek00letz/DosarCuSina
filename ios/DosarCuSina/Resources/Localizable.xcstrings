@@ -30,35 +30,6 @@
         }
       }
     },
-    "%lld ani": {
-      "comment": "A number of years, with Romanian plural forms.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld an"
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld ani"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld de ani"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "%lld contacte": {
       "comment": "Agenda box: how many people and firms are saved.",
       "localizations": {
@@ -68,7 +39,7 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld contact"
+                  "value": "un contact"
                 }
               },
               "few": {
@@ -97,7 +68,7 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld document"
+                  "value": "un document"
                 }
               },
               "few": {
@@ -117,8 +88,8 @@
         }
       }
     },
-    "%lld luni": {
-      "comment": "A number of months, with Romanian plural forms.",
+    "%lld intrări de arătat cumpărătorului.": {
+      "comment": "Readiness: how many history entries a buyer can be shown.",
       "localizations": {
         "ro": {
           "variations": {
@@ -126,19 +97,77 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld lună"
+                  "value": "O intrare de arătat cumpărătorului."
                 }
               },
               "few": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld luni"
+                  "value": "%lld intrări de arătat cumpărătorului."
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld de luni"
+                  "value": "%lld de intrări de arătat cumpărătorului."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld lucruri de rezolvat": {
+      "comment": "Readiness summary: how many checks need the person.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Un lucru de rezolvat"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld lucruri de rezolvat"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de lucruri de rezolvat"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld lucruri nu sunt în dosar": {
+      "comment": "Readiness summary: how many things aren't in the binder.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Un lucru nu e în dosar"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld lucruri nu sunt în dosar"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de lucruri nu sunt în dosar"
                 }
               }
             }
@@ -184,7 +213,7 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld secțiune"
+                  "value": "o secțiune"
                 }
               },
               "few": {
@@ -204,8 +233,8 @@
         }
       }
     },
-    "%lld săptămâni": {
-      "comment": "A number of weeks, with Romanian plural forms.",
+    "%lld secțiuni nu și-au găsit locul din copie și sunt acum direct în dosar.": {
+      "comment": "After importing a backup: sections whose parent couldn't be used, with Romanian plural forms.",
       "localizations": {
         "ro": {
           "variations": {
@@ -213,19 +242,19 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld săptămână"
+                  "value": "O secțiune nu și-a găsit locul din copie și e acum direct în dosar."
                 }
               },
               "few": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld săptămâni"
+                  "value": "%lld secțiuni nu și-au găsit locul din copie și sunt acum direct în dosar."
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld de săptămâni"
+                  "value": "%lld de secțiuni nu și-au găsit locul din copie și sunt acum direct în dosar."
                 }
               }
             }
@@ -242,7 +271,7 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld termen"
+                  "value": "un termen"
                 }
               },
               "few": {
@@ -284,35 +313,6 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld de termene mai departe"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "%lld zile": {
-      "comment": "A number of days, with Romanian plural forms: 1 zi, 2 zile, 20 de zile.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld zi"
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld zile"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld de zile"
                 }
               }
             }
@@ -405,6 +405,35 @@
     "Azi": {
       "comment": "Badge: the obligation is due today."
     },
+    "Categoria are încă %lld active. Mută-le sau șterge-le mai întâi.": {
+      "comment": "Shown when deleting a category that still has assets",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Categoria are încă un activ. Mută-l sau șterge-l mai întâi."
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Categoria are încă %lld active. Mută-le sau șterge-le mai întâi."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Categoria are încă %lld de active. Mută-le sau șterge-le mai întâi."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Ce ai completat până acum nu se va salva.": {
       "comment": "Explains what discarding unsaved changes means."
     },
@@ -425,6 +454,64 @@
     },
     "Expiră azi": {
       "comment": "Badge: a document expires today."
+    },
+    "La %lld km sau o dată pe an, ce vine întâi.": {
+      "comment": "Note of the service deadline of a category of one's own: every so many kilometres.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La un kilometru sau o dată pe an, ce vine întâi."
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La %lld km sau o dată pe an, ce vine întâi."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La %lld de km sau o dată pe an, ce vine întâi."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "La %lld ore de motor sau o dată pe an, ce vine întâi.": {
+      "comment": "Note of the service deadline of a category of one's own: every so many engine hours.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La o oră de motor sau o dată pe an, ce vine întâi."
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La %lld ore de motor sau o dată pe an, ce vine întâi."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La %lld de ore de motor sau o dată pe an, ce vine întâi."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Mai târziu": {
       "comment": "Status of an obligation that is not due soon."
@@ -447,14 +534,101 @@
     "O adresă de e-mail.": {
       "comment": "VoiceOver hint for an email field."
     },
+    "O dată la %lld luni.": {
+      "comment": "Note of the service deadline of a category of one's own: every so many months.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "O dată pe lună."
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "O dată la %lld luni."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "O dată la %lld de luni."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Opțiuni contact": {
       "comment": "VoiceOver label of the menu next to a linked contact."
+    },
+    "Parola are cel puțin %lld caractere.": {
+      "comment": "Backup password: the shortest it may be.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Parola are cel puțin un caracter."
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Parola are cel puțin %lld caractere."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Parola are cel puțin %lld de caractere."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Renunți la modificări?": {
       "comment": "Title of the dialog shown when closing a sheet with unsaved changes."
     },
     "Renunță la modificări": {
       "comment": "Destructive button that closes the sheet and drops unsaved changes."
+    },
+    "Revizie: %lld lucrări": {
+      "comment": "History entry title for a visit with many jobs",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Revizie: o lucrare"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Revizie: %lld lucrări"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Revizie: %lld de lucrări"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Rezolvat": {
       "comment": "Status or badge of an obligation that has been completed."

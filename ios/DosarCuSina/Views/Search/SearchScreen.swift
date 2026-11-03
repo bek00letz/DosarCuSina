@@ -1,15 +1,43 @@
 import SwiftUI
 import SwiftData
 
+/// What is typed in Caută's search field. The field belongs to the search tab's own
+/// navigation stack: there iOS draws it in the tab bar when Caută is chosen, and only
+/// there (on the whole tab view it would reach every tab). The search screen reads it
+/// from here.
+@MainActor
+@Observable
+final class SearchQuery {
+    var text = ""
+    /// Goes up each time the person submits the field.
+    private(set) var submissions = 0
+
+    func submit() { submissions += 1 }
+}
+
+extension View {
+    /// The search tab's field, on the search tab's navigation stack, with the screen's prompt.
+    func shellSearch(_ query: SearchQuery) -> some View {
+        @Bindable var query = query
+        // Always shown under the title: the field is the whole point of Caută, so it never
+        // hides on scroll or waits to be pulled down.
+        return searchable(text: $query.text, placement: .navigationBarDrawer(displayMode: .always),
+                          prompt: Text("Nume, număr, piesă, meseriaș…", comment: "Search field prompt."))
+            .onSubmit(of: .search) { query.submit() }
+            .environment(query)
+    }
+}
+
 /// Caută: one field over the whole binder (sections, deadlines, history, people
 /// and the text of scanned documents), ignoring diacritics. Results are grouped,
 /// matching words are highlighted, and locked sections show only titles.
 struct SearchScreen: View {
     @Environment(\.modelContext) private var context
     @Environment(BiometricVaultManager.self) private var vault
+    @Environment(SearchQuery.self) private var search
+    @Environment(ShellRouter.self) private var router
 
-    @State private var query = ""
-    @State private var index: SearchIndex?
+    @State private var store: SearchIndexStore?
     @State private var results: [SearchResult] = []
     @State private var recent = RecentSearches.shared
     @State private var searchTask: Task<Void, Never>?
@@ -30,7 +58,6 @@ struct SearchScreen: View {
                             NavigationLink(value: result.document.route) {
                                 SearchResultRow(result: result, query: trimmedQuery, isLocked: vault.isLocked(sectionIsSensitive: result.document.isSensitive))
                             }
-                            .simultaneousGesture(TapGesture().onEnded { recent.add(trimmedQuery) })
                         }
                     } header: {
                         Label { Text(verbatim: group.kind.groupTitle) } icon: { Image(systemName: group.kind.systemImage) }
@@ -39,14 +66,26 @@ struct SearchScreen: View {
             }
         }
         .navigationTitle(Text("Caută", comment: "Title of the search tab."))
-        .searchable(text: $query, prompt: Text("Nume, număr, piesă, meseriaș…", comment: "Search field prompt."))
-        .onSubmit(of: .search) { recent.add(trimmedQuery) }
-        .onChange(of: query) { _, _ in scheduleSearch() }
-        .task { rebuild() }
-        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave)) { _ in rebuild() }
+        .onChange(of: search.submissions) { _, _ in recent.add(trimmedQuery, results: index?.search(trimmedQuery) ?? []) }
+        .onChange(of: search.text) { _, _ in scheduleSearch() }
+        // A result opened from here is worth remembering. Read from the navigation, not from
+        // a gesture on each row: a gesture beside the link makes every tap wait to be told
+        // apart from a hold.
+        .onChange(of: router.searchPath.count) { before, after in
+            if after > before, !trimmedQuery.isEmpty { recent.add(trimmedQuery, results: results) }
+        }
+        .task {
+            // One index per database, kept up to date off the main thread after every save.
+            let shared = SearchIndexStore.shared(for: context.container)
+            shared.start()
+            store = shared
+        }
+        .onChange(of: store?.generation) { _, _ in runSearch() }
     }
 
-    private var trimmedQuery: String { query.trimmingCharacters(in: .whitespacesAndNewlines) }
+    private var index: SearchIndex? { store?.index }
+
+    private var trimmedQuery: String { search.text.trimmingCharacters(in: .whitespacesAndNewlines) }
 
     @ViewBuilder
     private var recentSection: some View {
@@ -64,7 +103,7 @@ struct SearchScreen: View {
             Section {
                 ForEach(recent.items, id: \.self) { item in
                     Button {
-                        query = item
+                        search.text = item
                     } label: {
                         Label { Text(verbatim: item).foregroundStyle(DS.Palette.label) } icon: { Image(systemName: "clock.arrow.circlepath") }
                             .frame(minHeight: 44)
@@ -104,11 +143,6 @@ struct SearchScreen: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, DS.Space.xl)
-    }
-
-    private func rebuild() {
-        index = try? SearchIndexBuilder(context: context).build()
-        runSearch()
     }
 
     private func scheduleSearch() {

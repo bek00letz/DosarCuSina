@@ -25,12 +25,15 @@ enum ShellSheet: Identifiable, Hashable, Sendable {
     case settings(SettingsSection?)
     case addVisit(UUID)
     case addSection(AddSectionRequest)
+    /// A new document for a household member: photo first, or typed in.
+    case addPersonalDocument(holderID: UUID)
 
     var id: String {
         switch self {
         case .settings(let section): "settings.\(section?.rawValue ?? "")"
         case .addVisit(let id): "visit.\(id.uuidString)"
         case .addSection(let request): "section.\(request.parentID?.uuidString ?? "")\(request.templateKey ?? "")"
+        case .addPersonalDocument(let holderID): "personalDocument.\(holderID.uuidString)"
         }
     }
 }
@@ -69,6 +72,12 @@ enum ShellRouting {
             return ShellRoutePlan(tab: .dosar, path: [.agenda, route])
         case .settings(let section):
             return ShellRoutePlan(tab: .dosar, path: [], sheet: .settings(section))
+        case .readiness(let readiness):
+            // Over the section it belongs to; a trip for the household opens over Urmează.
+            if let id = readiness.assetID {
+                return ShellRoutePlan(tab: .dosar, path: [.asset(id), route])
+            }
+            return ShellRoutePlan(tab: .upcoming, path: [route])
         }
     }
 }

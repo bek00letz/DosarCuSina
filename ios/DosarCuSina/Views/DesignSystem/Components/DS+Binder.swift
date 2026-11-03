@@ -58,9 +58,10 @@ enum DSBoxTone: Sendable, Equatable {
 }
 
 extension BoxStatus {
+    /// Drawn from the urgency's tone: red only when it is late past its grace.
     var tone: DSBoxTone {
-        if isAlarming { return .alarming }
-        return entry == nil ? .allGood : .pending
+        guard entry != nil else { return .allGood }
+        return urgencyTone == .overdue ? .alarming : .pending
     }
 }
 
@@ -350,26 +351,38 @@ struct DSSecureField: View {
     @Binding var text: String
     var prompt: LocalizedStringKey?
     var footnote: LocalizedStringKey?
+    /// `.newPassword` for a password being made, so the system can suggest a strong one.
+    var contentType: UITextContentType = .password
+    var validation: DSValidation = .valid
 
     @FocusState private var isFocused: Bool
 
-    init(_ title: LocalizedStringKey, text: Binding<String>, prompt: LocalizedStringKey? = nil, footnote: LocalizedStringKey? = nil) {
+    init(
+        _ title: LocalizedStringKey,
+        text: Binding<String>,
+        prompt: LocalizedStringKey? = nil,
+        footnote: LocalizedStringKey? = nil,
+        contentType: UITextContentType = .password,
+        validation: DSValidation = .valid
+    ) {
         self.title = title
         self._text = text
         self.prompt = prompt
         self.footnote = footnote
+        self.contentType = contentType
+        self.validation = validation
     }
 
     var body: some View {
         DSFieldContainer(
             title: Text(title),
             isFocused: isFocused,
-            validation: .valid,
+            validation: validation,
             footnote: footnote.map { Text($0) },
             focus: { isFocused = true }
         ) {
             SecureField(title, text: $text, prompt: prompt.map { Text($0) })
-                .textContentType(.password)
+                .textContentType(contentType)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .font(.body.monospaced())

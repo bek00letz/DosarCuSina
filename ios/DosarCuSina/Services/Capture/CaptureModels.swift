@@ -11,10 +11,21 @@ public enum CaptureDocumentKind: String, Codable, Sendable, CaseIterable {
     case passport
     case identityCard
     case drivingLicence
+    /// A criminal record certificate: judiciar, fiscal or auto (`DocumentType.Variant`).
+    case criminalRecord
+    /// A health insurance card: the European one (the card's printed fields are set by
+    /// the EU and by CNAS), or the national one.
+    case healthInsuranceCard
+    /// A bank card. Only its bank, network, kind, last four digits and expiry are kept;
+    /// its full number never is (`PaymentCardNumbers`).
+    case bankCard
     case vehicleRegistration
     case rcaPolicy
     case insurancePolicy
     case utilityInvoice
+    /// A contract for an ongoing service (gas, electricity, water, internet and TV, a
+    /// mobile plan) or an addendum to one: who provides it, from when, for how long.
+    case contract
     case serviceInvoice
     case fiscalReceipt
     case warrantyCertificate
@@ -24,11 +35,20 @@ public enum CaptureDocumentKind: String, Codable, Sendable, CaseIterable {
     case other
 
     /// Identity documents hold personal data and belong in a sensitive category by default.
+    /// Only these carry a machine-readable zone, a back to add and the essentials a weak
+    /// reading is judged by.
     public var isIdentityDocument: Bool {
         switch self {
         case .passport, .identityCard, .drivingLicence: true
         default: false
         }
+    }
+
+    /// A document of its holder's, filed under them in the personal documents category
+    /// and named after them: an identity document, a cazier, a health card, a bank card.
+    /// Its kind profile names its document type; its fields come from its templates.
+    public var isPersonalDocument: Bool {
+        profile.documentType != nil
     }
 }
 
@@ -130,8 +150,8 @@ public enum CaptureValue: Hashable, Codable, Sendable {
     case day(CaptureDay)
     case money(CaptureMoney)
     case number(Decimal)
-    /// A meter reading such as an odometer: `value` in `unit` (`km`, `h`, `kWh`, `mc`).
-    case metric(value: Decimal, unit: String)
+    /// A meter reading such as an odometer: `value` in `unit` (kilometres, engine hours, m³).
+    case metric(value: Decimal, unit: MeasurementUnit)
     case lineItems([CaptureLineItem])
 
     public var text: String? { if case .text(let value) = self { value } else { nil } }
@@ -150,16 +170,18 @@ public enum CaptureTier: String, Codable, Sendable, CaseIterable, Comparable {
     case heuristic
     /// Apple's on-device language model. Private and offline.
     case onDeviceModel
-    /// The user's own Gemini key, only when they ask for it.
+    /// The AI provider the person set up with their own key: when they ask for it, or
+    /// automatically when they chose so and the phone's reading is weak.
     case cloudModel
 
-    /// Lower rank wins when two tiers disagree about the same field.
+    /// The readers in the order `ReadingArbiter` trusts them when no check decides:
+    /// lower comes first. The full order, checks included, is in `ReadingArbiter`.
     var rank: Int {
         switch self {
         case .deterministic: 0
-        case .onDeviceModel: 1
-        case .cloudModel: 2
-        case .heuristic: 3
+        case .cloudModel: 1
+        case .heuristic: 2
+        case .onDeviceModel: 3
         }
     }
 
@@ -197,6 +219,16 @@ public struct CaptureFieldKey: RawRepresentable, Hashable, Codable, Sendable, Ex
     public static let sex: CaptureFieldKey = "sex"
     public static let personalNumber: CaptureFieldKey = "personalNumber"
     public static let licenceCategories: CaptureFieldKey = "licenceCategories"
+    /// Which variant of its document type this is (a `DocumentType.Variant` key), from the matched layout.
+    public static let documentVariant: CaptureFieldKey = "documentVariant"
+    /// What a criminal record certificate says, as printed: "Nu figurează în cazierul judiciar".
+    public static let recordResult: CaptureFieldKey = "recordResult"
+
+    // Bank cards: never the full number.
+    /// The last four digits of a bank card's number, and nothing more.
+    public static let cardLastFour: CaptureFieldKey = "cardLastFour"
+    /// The card's network, as a `PaymentCardNetwork` key.
+    public static let cardNetwork: CaptureFieldKey = "cardNetwork"
 
     // Validity
     public static let issueDate: CaptureFieldKey = "issueDate"
@@ -234,6 +266,25 @@ public struct CaptureFieldKey: RawRepresentable, Hashable, Codable, Sendable, Ex
     public static let clcCode: CaptureFieldKey = "clcCode"
     public static let meterIndex: CaptureFieldKey = "meterIndex"
 
+    // Ongoing contracts (bills and the contracts themselves)
+    /// What the contract is for, as a `ServiceKind` key ("service.gas").
+    public static let serviceKind: CaptureFieldKey = "serviceKind"
+    public static let contractNumber: CaptureFieldKey = "contractNumber"
+    /// The subscriber's own phone number on a mobile plan.
+    public static let phoneNumber: CaptureFieldKey = "phoneNumber"
+    /// How many months the person committed to ("perioada minimă").
+    public static let minimumMonths: CaptureFieldKey = "minimumMonths"
+    /// The last day of the minimum period.
+    public static let minimumPeriodEnd: CaptureFieldKey = "minimumPeriodEnd"
+    /// The price per month the contract states.
+    public static let monthlyPrice: CaptureFieldKey = "monthlyPrice"
+    /// Where the service is supplied ("Adresa locului de consum"), as printed. Never the
+    /// payer's billing address.
+    public static let supplyAddress: CaptureFieldKey = "supplyAddress"
+    /// The bill says the bank pays it by direct debit: the statement as printed ("Factura
+    /// se achită prin debit direct"). Only a suggestion; the person turns it on.
+    public static let directDebit: CaptureFieldKey = "directDebit"
+
     // Purchases and warranties
     public static let productName: CaptureFieldKey = "productName"
     public static let serialNumber: CaptureFieldKey = "serialNumber"
@@ -253,7 +304,7 @@ public struct CaptureFieldKey: RawRepresentable, Hashable, Codable, Sendable, Ex
     public var role: CaptureFieldRole? {
         switch self {
         case .policyNumber, .claimsPhone, .vin, .licensePlate, .podCode, .clcCode,
-             .clientCode, .microchip, .documentNumber, .serialNumber:
+             .clientCode, .contractNumber, .phoneNumber, .microchip, .documentNumber, .serialNumber:
             .keyFact
         case .purchaseDate: .purchaseDate
         case .purchasePrice: .purchasePrice
@@ -288,9 +339,13 @@ public struct CaptureField: Hashable, Codable, Sendable {
     public static let machineReadableSource = "MRZ"
 
     /// Whether a person should look at this value before it is saved: it failed a
-    /// format or a cross-check (low confidence), or only a language model read it.
+    /// format or a cross-check (low confidence), or only the on-device model read it.
+    /// An AI provider's value has a high confidence only when it passed its own check or
+    /// agrees with what the phone read (`CloudAnswerMapper`), and one that replaced a
+    /// different phone value is marked too (`ReadingArbiter`); otherwise its low
+    /// confidence marks it here.
     public var needsCheck: Bool {
-        confidence < Self.checkThreshold || tier == .onDeviceModel || tier == .cloudModel
+        confidence < Self.checkThreshold || tier == .onDeviceModel
     }
 
     /// Below this, a value is marked for a check.
@@ -313,13 +368,13 @@ public struct CaptureAssetHint: Hashable, Codable, Sendable {
 /// Where the captured information could go. The user confirms; nothing is saved automatically.
 public struct CaptureSuggestion: Hashable, Codable, Sendable {
     public enum Destination: Hashable, Codable, Sendable {
-        /// Create a new asset from a template (`vehicle`, `home`, `pet`, `health`, `documents`, `warranties`, `subscriptions`).
+        /// Create a new asset from a template of the binder's catalog (`vehicle`, `documents`, `purchase`).
         case newAsset(templateKey: String)
-        /// Add or update an obligation from a blueprint (e.g. `rca`, `itp`, `passportRenewal`).
+        /// Add or update an obligation from a blueprint of that template (`vehicle.rca`, `document.renew`).
         case obligation(blueprintKey: String, templateKey: String?)
         /// Log what happened in the asset's history (a service visit, a bill, a vaccine).
         case historyEntry(templateKey: String?)
-        /// Remember who did the work or issued the document.
+        /// Remember who did the work or issued the document; `trade` is a `ProviderTrade` raw value.
         case provider(name: String, trade: String?)
         /// Keep the document on file without creating anything else.
         case attachOnly
@@ -337,19 +392,20 @@ public struct CaptureSuggestion: Hashable, Codable, Sendable {
     }
 }
 
-/// How early to warn about the date this document carries.
+/// The deadline the date on this document sets. How early it reminds is the blueprint's
+/// (`ObligationBlueprint.reminders`), never capture's.
 public struct CaptureReminderHint: Hashable, Codable, Sendable {
     /// The day that matters (expiry, due date, next dose).
     public let day: CaptureDay
-    /// The reminder profile Core should apply, e.g. `passport`, `rca`, `petVaccine`.
-    public let profileKey: String
-    /// Days before ``day`` to warn, longest first. A fallback when Core has no profile for the key.
-    public let leadDays: [Int]
+    /// The deadline, as a blueprint of the binder's catalog: `vehicle.rca`, `document.renew`.
+    public let blueprintKey: String
+    /// The category whose blueprint it is.
+    public let templateKey: String
 
-    public init(day: CaptureDay, profileKey: String, leadDays: [Int]) {
+    public init(day: CaptureDay, blueprintKey: String, templateKey: String) {
         self.day = day
-        self.profileKey = profileKey
-        self.leadDays = leadDays.sorted(by: >)
+        self.blueprintKey = blueprintKey
+        self.templateKey = templateKey
     }
 }
 
@@ -357,7 +413,9 @@ public struct CaptureReminderHint: Hashable, Codable, Sendable {
 public enum CaptureNotice: Hashable, Codable, Sendable {
     /// A machine-readable zone was found, but a check digit didn't match. Fields from it need a look.
     case machineReadableZoneUnverified
-    /// Very little text was recognized. A sharper, flatter photo would help.
+    /// The photo was hard to read, even after a retry with another view of it: very
+    /// little text, or an identity document without its main fields. A new photo,
+    /// straight and without glare, would help.
     case littleTextRecognized
     /// The on-device model isn't available, so only patterns were used.
     case onDeviceModelUnavailable(reason: String)
@@ -365,13 +423,18 @@ public enum CaptureNotice: Hashable, Codable, Sendable {
     case onDeviceModelFailed
     /// The cloud model was asked for but couldn't run.
     case cloudModelFailed(reason: String)
-    /// The same document was captured before.
-    case duplicateDocument(documentID: UUID)
+    /// The cloud model was asked for, but what the phone read may be a document read only
+    /// on the phone (`PhoneOnlyReading`: a bank card), so nothing was sent.
+    case readOnPhoneOnly
     /// Only the first pages of a long PDF were read.
     case pagesTruncated(readPages: Int, totalPages: Int)
     /// An identity card read from one photo without its machine-readable zone: the
     /// back carries the zone that confirms the values.
     case identityBackMissing
+    /// A value was dropped or marked for a look because it fell outside its plausible
+    /// window or disagreed with another (a birth date read as the issue date). Part of
+    /// what makes a reading weak (`ReadingArbiter.weaknesses`); the review marks the values.
+    case valueFailedCheck
 }
 
 /// A barcode or QR code found on the page.
@@ -383,9 +446,112 @@ public struct CaptureBarcode: Hashable, Codable, Sendable {
         self.symbology = symbology
         self.payload = payload
     }
+
+    /// The long digit codes Romanian utilities print as payment barcodes (25 to 50 digits),
+    /// decoded from the page. Evidence that the document is a bill.
+    public var isPaymentCode: Bool {
+        (25...50).contains(payload.count) && payload.allSatisfy(\.isASCIIDigit)
+    }
+}
+
+private extension Character {
+    var isASCIIDigit: Bool { ("0"..."9").contains(self) }
+}
+
+// MARK: - Evidence and alternatives
+
+/// What the document's kind rests on. `ReadingArbiter` lets a second opinion replace the
+/// phone's kind unless it rests on deterministic evidence.
+public enum CaptureKindEvidence: String, Codable, Sendable, CaseIterable {
+    /// A machine-readable zone whose check digits all pass.
+    case machineReadableZone
+    /// A provider's known format (a utility's bill layout) that the classifier agrees with.
+    case providerFormat
+    /// A payment barcode decoded from a bill.
+    case paymentBarcode
+    /// The classifier's weighted keywords (or a zone whose check digits failed).
+    case classifier
+    /// A provider's known format the classifier didn't independently support.
+    case providerFormatAlone
+    /// Apple's on-device model corrected an unsure classifier.
+    case onDeviceModel
+    /// The person's AI provider, reading the page as a second opinion.
+    case secondOpinion
+
+    /// Evidence no reading can argue with: only a check or a decoded code.
+    public var isDeterministic: Bool {
+        switch self {
+        case .machineReadableZone, .providerFormat, .paymentBarcode: true
+        default: false
+        }
+    }
+}
+
+/// Who read a value or a kind that wasn't kept, so the review can offer it beside the
+/// one shown, with "Folosește-l".
+public enum CaptureAlternativeSource: Hashable, Codable, Sendable {
+    /// The phone's own reading: patterns, labels or Apple's on-device model.
+    case phone
+    /// The person's AI provider.
+    case cloudModel
+    /// A value proven by its own check: the machine-readable zone's check digits, or
+    /// another control digit (a CNP's, a VIN's, a CUI's).
+    case checked(machineReadable: Bool)
+}
+
+/// A reading that wasn't kept, offered beside the one shown and never applied by itself.
+public struct CaptureAlternative<Value: Hashable & Codable & Sendable>: Hashable, Codable, Sendable {
+    public let value: Value
+    public let source: CaptureAlternativeSource
+
+    public init(_ value: Value, source: CaptureAlternativeSource) {
+        self.value = value
+        self.source = source
+    }
+}
+
+/// A field's value that another reader read differently.
+public struct CaptureFieldAlternative: Hashable, Codable, Sendable {
+    public let key: CaptureFieldKey
+    public let alternative: CaptureAlternative<CaptureValue>
+
+    public init(key: CaptureFieldKey, alternative: CaptureAlternative<CaptureValue>) {
+        self.key = key
+        self.alternative = alternative
+    }
 }
 
 // MARK: - Result
+
+/// What the readers read from the pages, before deciding the kind's fields: the text
+/// with its layout, the codes, and the models' answers. Reading it again as another
+/// kind needs nothing else.
+public struct CaptureReadingSource: Sendable, Codable, Hashable {
+    /// The recognized text, as read.
+    public let text: String
+    /// Recognized lines with their positions, page by page. Empty for pasted text and a PDF's text layer.
+    public let pages: [[RecognizedLine]]
+    public let barcodes: [CaptureBarcode]
+    /// "Today" when it was read, for the windows dates must fall in.
+    public let referenceDate: Date
+    /// Apple's on-device model's answers.
+    public let modelFields: [CaptureField]
+    /// The person's AI provider's answers, when it read the page.
+    public let aiFields: [CaptureField]?
+    /// One photo of the page: an identity card read from it alone asks for its back.
+    public let isSinglePhoto: Bool
+
+    public init(text: String, pages: [[RecognizedLine]], barcodes: [CaptureBarcode], referenceDate: Date,
+                modelFields: [CaptureField], aiFields: [CaptureField]?, isSinglePhoto: Bool) {
+        self.text = text
+        self.pages = pages
+        self.barcodes = barcodes
+        self.referenceDate = referenceDate
+        self.modelFields = modelFields
+        self.aiFields = aiFields
+        self.isSinglePhoto = isSinglePhoto
+    }
+}
 
 /// Everything one capture produced. A draft for the user to confirm, never saved by itself.
 public struct CaptureResult: Sendable, Codable, Hashable {
@@ -397,9 +563,21 @@ public struct CaptureResult: Sendable, Codable, Hashable {
     public let reminder: CaptureReminderHint?
     public let recognizedText: String
     public let barcodes: [CaptureBarcode]
-    /// The stored document, when the capture was saved to the document store.
-    public let documentID: UUID?
+    /// The document this capture is about: its pages waiting in the document store,
+    /// or the copy the binder already keeps. Nil when nothing was stored (pasted text).
+    public let document: CapturedDocumentRef?
     public let notices: [CaptureNotice]
+    /// What the kind rests on.
+    public let kindEvidence: CaptureKindEvidence
+    /// Kinds another reader saw (the phone's, when the AI's replaced it).
+    public let kindAlternatives: [CaptureAlternative<CaptureDocumentKind>]
+    /// Values another reader read differently from the ones kept.
+    public let fieldAlternatives: [CaptureFieldAlternative]
+    /// Whether the person's AI provider read the page and answered.
+    public let readWithCloudModel: Bool
+    /// What the readers read, kept so the page can be read again as another kind
+    /// (`CaptureEngine.reinterpret`) without new pictures. Nil for a hand-made result.
+    public let source: CaptureReadingSource?
 
     public init(
         id: UUID = UUID(),
@@ -410,8 +588,13 @@ public struct CaptureResult: Sendable, Codable, Hashable {
         reminder: CaptureReminderHint?,
         recognizedText: String,
         barcodes: [CaptureBarcode],
-        documentID: UUID?,
-        notices: [CaptureNotice]
+        document: CapturedDocumentRef?,
+        notices: [CaptureNotice],
+        kindEvidence: CaptureKindEvidence = .classifier,
+        kindAlternatives: [CaptureAlternative<CaptureDocumentKind>] = [],
+        fieldAlternatives: [CaptureFieldAlternative] = [],
+        readWithCloudModel: Bool = false,
+        source: CaptureReadingSource? = nil
     ) {
         self.id = id
         self.kind = kind
@@ -421,13 +604,32 @@ public struct CaptureResult: Sendable, Codable, Hashable {
         self.reminder = reminder
         self.recognizedText = recognizedText
         self.barcodes = barcodes
-        self.documentID = documentID
+        self.document = document
         self.notices = notices
+        self.kindEvidence = kindEvidence
+        self.kindAlternatives = kindAlternatives
+        self.fieldAlternatives = fieldAlternatives
+        self.readWithCloudModel = readWithCloudModel
+        self.source = source
     }
 
     /// The best field for a key.
     public func field(_ key: CaptureFieldKey) -> CaptureField? {
         fields.first { $0.key == key }
+    }
+
+    /// What other readers read for a key, beside the value kept.
+    public func alternatives(for key: CaptureFieldKey) -> [CaptureAlternative<CaptureValue>] {
+        fieldAlternatives.filter { $0.key == key }.map(\.alternative)
+    }
+
+    /// Who decided the kind shown: the AI when its second opinion replaced or confirmed it.
+    public var kindSource: CaptureAlternativeSource {
+        switch kindEvidence {
+        case .secondOpinion: .cloudModel
+        case .machineReadableZone: .checked(machineReadable: true)
+        default: .phone
+        }
     }
 
     /// Which tiers contributed at least one field.

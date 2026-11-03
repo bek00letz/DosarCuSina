@@ -3,11 +3,19 @@ import SwiftData
 
 public enum AssetActionError: LocalizedError, Equatable {
     case wouldCreateLoop
+    /// The place chosen to move something to is gone.
+    case missingDestination
+    /// A new person was asked for without a name.
+    case missingName
 
     public var errorDescription: String? {
         switch self {
         case .wouldCreateLoop:
             return String(localized: "Nu poți pune un element sub unul care e deja sub el.")
+        case .missingDestination:
+            return String(localized: "Locul ales nu mai există. Alege altul.")
+        case .missingName:
+            return String(localized: "Scrie numele persoanei.")
         }
     }
 }
@@ -34,18 +42,26 @@ public final class AssetActions {
     public let context: ModelContext
     private let calendar: Calendar
     private let now: () -> Date
+    /// Seals secret fields (PIN codes) before they are saved.
+    private let sealer: SecretSealer
 
-    public init(context: ModelContext, calendar: Calendar = .current, now: @escaping () -> Date = { Date() }) {
+    public init(context: ModelContext, calendar: Calendar = .current, now: @escaping () -> Date = { Date() }, sealer: SecretSealer = .device) {
         self.context = context
         self.calendar = calendar
         self.now = now
+        self.sealer = sealer
     }
 
     /// The template's blueprints with first dates worked out from `values`, for the add flow.
     public func plannedObligations(for template: CategoryTemplate, values: FieldValues) -> [PlannedObligation] {
+        plannedObligations(for: template.definition, values: values)
+    }
+
+    /// The same for a category not saved yet: one of the person's own, while they describe it.
+    public func plannedObligations(for definition: TemplateDefinition, values: FieldValues) -> [PlannedObligation] {
         let today = CalendarDay(now(), calendar: calendar)
-        let values = values.applyingRules(of: template.definition, previous: nil, calendar: calendar)
-        return template.blueprints.filter { $0.appliesWhen?.isMet(by: values) ?? true }.map { blueprint in
+        let values = values.applyingRules(of: definition, previous: nil, calendar: calendar)
+        return definition.blueprints.filter { $0.appliesWhen?.isMet(by: values) ?? true }.map { blueprint in
             PlannedObligation(
                 blueprint: blueprint,
                 firstDue: RecurrenceEngine.firstDue(for: blueprint, values: values, today: today, calendar: calendar),
@@ -54,7 +70,22 @@ public final class AssetActions {
         }
     }
 
-    /// Creates the asset and the selected obligations in one save.
+    /// A parent made together with the asset: a new household member and their first
+    /// document, or a new home and its first subscription (with the address its bill printed).
+    public struct NewParent {
+        public var name: String
+        public var template: CategoryTemplate
+        public var values: FieldValues
+
+        public init(name: String, template: CategoryTemplate, values: FieldValues = FieldValues()) {
+            self.name = name
+            self.template = template
+            self.values = values
+        }
+    }
+
+    /// Creates the asset and the selected obligations in one save. With `newParent`, the
+    /// parent is created in the same save, so a failure leaves neither behind.
     @discardableResult
     public func create(
         name: String,
@@ -63,83 +94,178 @@ public final class AssetActions {
         notes: String? = nil,
         obligations: [PlannedObligation] = [],
         parent: Asset? = nil,
+        newParent: NewParent? = nil,
         isExample: Bool = false
     ) throws -> Asset {
-        let prepared = values.normalizingChoices(for: template.definition).applyingRules(of: template.definition, previous: nil, calendar: calendar)
-        let asset = Asset(name: name, templateKey: template.key, values: prepared, notes: notes, isExample: isExample)
-        context.insert(asset)
-        asset.parent = parent
+        // Something of the person's never lands inside an example without asking.
+        try ExampleOwnership.requireReal(parent, creatingExample: isExample)
+        // A bank card keeps only its last four digits; no field keeps a card number (`PaymentCardNumbers`).
+        func prepare(_ values: FieldValues, for template: CategoryTemplate) throws -> FieldValues {
+            try SecretFields.sealing(
+                PaymentCardNumbers.sanitizing(values.normalizingChoices(for: template.definition).applyingRules(of: template.definition, previous: nil, calendar: calendar)),
+                definition: template.definition, sealer: sealer
+            )
+        }
+        let prepared = try prepare(values, for: template)
+        let parentValues = try newParent.map { try prepare($0.values, for: $0.template) }
         let today = CalendarDay(now(), calendar: calendar)
-        do {
+        // One step: a failure part-way leaves no section without its deadlines. Inside a
+        // caller's unit this joins it, and only that unit rolls back.
+        return try UnitOfWork.perform(in: context) {
+            let asset = Asset(name: name, templateKey: template.key, values: prepared, notes: notes, isExample: isExample)
+            context.insert(asset)
+            if let newParent {
+                let holder = Asset(name: newParent.name, templateKey: newParent.template.key, values: parentValues ?? FieldValues(), notes: nil, isExample: isExample)
+                context.insert(holder)
+                asset.parent = holder
+            } else {
+                asset.parent = parent
+            }
             for planned in obligations where planned.isSelected {
                 try HouseholdMutations.makeObligation(from: planned.blueprint, for: asset, firstDue: planned.firstDue, today: today, calendar: calendar, in: context)
             }
             if let reading = HouseholdMutations.heroMetricValue(of: asset, template: template.definition) {
-                HouseholdMutations.addMeasurement(reading, unit: HouseholdMutations.heroMetricUnit(template: template.definition), to: asset, at: now(), in: context)
+                try HouseholdMutations.recordReading(reading, on: asset, at: now(), source: .person,
+                                                     unit: HouseholdMutations.heroMetricUnit(template: template.definition), in: context)
             }
             try HouseholdRules.reconcile(in: context, today: today, calendar: calendar)
-            try context.save()
-        } catch {
-            context.rollback()
-            throw error
+            return asset
         }
-        return asset
     }
 
     /// Saves edits. Obligations whose first date comes from a field (a document's
-    /// renewal follows its expiry date) move with that field.
-    public func update(_ asset: Asset, name: String, values: FieldValues, notes: String?) throws {
-        let previous = asset.values
-        let template = try TemplateStore(context: context).template(forKey: asset.templateKey)
-        let values = template.map {
-            values.normalizingChoices(for: $0.definition).applyingRules(of: $0.definition, previous: previous, calendar: calendar)
-        } ?? values
-        asset.name = name
-        asset.values = values
-        asset.notes = notes
-        asset.updatedAt = now()
-        if let template {
-            let blueprints = Dictionary(template.blueprints.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
-            for obligation in asset.activeObligations {
-                guard let key = obligation.blueprintKey, let blueprint = blueprints[key],
-                      case .field(let fieldKey, let offset) = blueprint.firstDue,
-                      !blueprint.recurrence.repeats,
-                      previous[fieldKey] != values[fieldKey],
-                      let day = values[fieldKey]?.dateValue else { continue }
-                obligation.setDueDay(day.adding(days: offset, calendar: calendar), calendar: calendar)
-                obligation.updatedAt = now()
+    /// renewal follows its expiry date) move with that field, and their reminders follow a
+    /// changed value they depend on (`DeadlineReminders.follow`). A changed hero value (the
+    /// kilometres) is a new reading through `recordReading`, dated `readingDate` (a
+    /// document's date) or now; a lower counter throws `LowerReadingQuestion` until
+    /// `lowerReading` answers it, and the hero value is then worked out from the readings.
+    /// A subscription whose direct debit changed pauses or resumes its bill reminder
+    /// (`BillReminders`); the outcome says so, with the receipt that takes back the whole edit.
+    @discardableResult
+    public func update(
+        _ asset: Asset,
+        name: String,
+        values: FieldValues,
+        notes: String?,
+        readingSource: ReadingSource = .person,
+        readingDate: Date? = nil,
+        lowerReading: LowerReadingAnswer? = nil
+    ) throws -> EditOutcome {
+        // One step: a question about a lower reading leaves nothing half-changed.
+        return try UnitOfWork.perform(in: context) {
+            var outcome = EditOutcome()
+            let previous = asset.values
+            let template = try TemplateStore(context: context).template(forKey: asset.templateKey)
+            let values = try template.map {
+                try SecretFields.sealing(
+                    PaymentCardNumbers.sanitizing(values.normalizingChoices(for: $0.definition).applyingRules(of: $0.definition, previous: previous, calendar: calendar)),
+                    definition: $0.definition, sealer: sealer
+                )
+            } ?? PaymentCardNumbers.sanitizing(values)
+            asset.name = name
+            asset.values = values
+            asset.notes = notes
+            asset.updatedAt = now()
+            if let template {
+                // A value the deadlines' reminders depend on changed (the document's type, a
+                // pet's species): they remind as the new value asks, unless the person set them.
+                DeadlineReminders.follow(asset, template: template.definition, from: previous, now: now())
+                let blueprints = Dictionary(template.blueprints.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
+                for obligation in asset.activeObligations {
+                    guard let key = obligation.blueprintKey, let blueprint = blueprints[key],
+                          case .field(let fieldKey, let offset) = blueprint.firstDue,
+                          !blueprint.recurrence.repeats,
+                          previous[fieldKey] != values[fieldKey],
+                          let day = values[fieldKey]?.dateValue else { continue }
+                    obligation.setDueDay(day.adding(days: offset, calendar: calendar), calendar: calendar)
+                    obligation.updatedAt = now()
+                }
+                // A field that drives a deadline gets a value and the section has none from
+                // it: the deadline is made, as adding the section would have (a policy's end
+                // typed in later, a warranty's end read off a receipt).
+                let today = CalendarDay(now(), calendar: calendar)
+                let kept = Set((asset.obligations ?? []).filter { $0.status == .active || $0.status == .paused }.compactMap(\.blueprintKey))
+                for blueprint in template.blueprints where !kept.contains(blueprint.key) {
+                    guard case .field(let fieldKey, _) = blueprint.firstDue,
+                          previous[fieldKey] != values[fieldKey], values[fieldKey]?.dateValue != nil,
+                          blueprint.appliesWhen?.isMet(by: values) ?? true,
+                          let day = RecurrenceEngine.firstDue(for: blueprint, values: values, today: today, calendar: calendar),
+                          blueprint.isWorthScheduling(on: day, today: today, values: values) else { continue }
+                    try HouseholdMutations.makeObligation(from: blueprint, for: asset, firstDue: day, today: today, calendar: calendar, in: context)
+                }
+                if let reading = HouseholdMutations.heroMetricValue(of: asset, template: template.definition),
+                   reading != HouseholdMutations.heroMetricValue(values: previous, template: template.definition) {
+                    try HouseholdMutations.recordReading(reading, on: asset, at: readingDate ?? now(), source: readingSource,
+                                                         unit: HouseholdMutations.heroMetricUnit(template: template.definition),
+                                                         answer: lowerReading, in: context)
+                }
             }
-            if let reading = HouseholdMutations.heroMetricValue(of: asset, template: template.definition),
-               reading != HouseholdMutations.heroMetricValue(values: previous, template: template.definition) {
-                HouseholdMutations.addMeasurement(reading, unit: HouseholdMutations.heroMetricUnit(template: template.definition), to: asset, at: now(), in: context)
-            }
+            // A subscription's direct debit changed: its bill reminder pauses or comes back.
+            outcome.billReminder = try BillReminders.follow(asset, from: previous, actions: ObligationActions(context: context, calendar: calendar, now: now),
+                                                            today: CalendarDay(now(), calendar: calendar), calendar: calendar)
+            try save()
+            return outcome
         }
-        try save()
     }
 
-    /// Replaces the free label–value rows shown under Date importante.
-    public func setCustomFacts(_ asset: Asset, _ facts: [CustomFact]) throws {
-        asset.customFacts = facts.filter { !$0.label.trimmingCharacters(in: .whitespaces).isEmpty || !$0.value.trimmingCharacters(in: .whitespaces).isEmpty }
-        try save()
+    /// What saving an edit changed beyond the values, for the screen to say.
+    public struct EditOutcome {
+        /// The subscription's bill reminder followed its direct debit, with the receipt that
+        /// takes back the whole edit.
+        public var billReminder: Undoable<BillReminders.Change>?
     }
 
-    /// Records a reading. Counter readings (odometer, shots) also update the asset's hero value.
+    /// Records a counter reading on its own (the kilometres read today), through the one
+    /// path: an estimate is never stored, a lower counter asks first, and the hero value
+    /// follows the readings. Returns the reading kept, or nil for an estimate.
+    @discardableResult
+    public func recordReading(
+        _ value: Double,
+        on asset: Asset,
+        at date: Date? = nil,
+        source: ReadingSource,
+        lowerReading: LowerReadingAnswer? = nil
+    ) throws -> MeasurementLog? {
+        let template = try TemplateStore(context: context).template(forKey: asset.templateKey)
+        let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) }
+        let isExample = try ExampleOwnership.requireReal(asset)
+        let log = try HouseholdMutations.recordReading(value, on: asset, at: date ?? now(), source: source, unit: unit,
+                                                       answer: lowerReading, isExample: isExample, in: context)
+        if log != nil { try save() }
+        return log
+    }
+
+    /// Replaces the free label–value rows shown under Date importante. A secret
+    /// row (a code) is sealed before it is saved, like a PIN field.
+    @discardableResult
+    public func setCustomFacts(_ asset: Asset, _ facts: [CustomFact]) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) {
+            let kept = facts.filter { !$0.label.trimmingCharacters(in: .whitespaces).isEmpty || !$0.value.trimmingCharacters(in: .whitespaces).isEmpty }
+            asset.customFacts = try SecretFields.sealingFacts(kept, sealer: sealer)
+            asset.updatedAt = now()
+            try save()
+        }.receipt
+    }
+
+    /// Records a measured value of any kind (a meter index, a weight, a lab value) through the
+    /// one reading path. Counter readings (odometer, shots) also update the hero value.
     @discardableResult
     public func recordMeasurement(
         on asset: Asset,
         kind: MeasurementKind,
         name: String? = nil,
         value: Double,
-        unit: String? = nil,
-        at date: Date? = nil
+        unit: MeasurementUnit? = nil,
+        at date: Date? = nil,
+        asExample: Bool = false,
+        lowerReading: LowerReadingAnswer? = nil
     ) throws -> MeasurementLog {
-        let log = MeasurementLog(kind: kind, name: name ?? "", value: value, unit: unit, recordedAt: date ?? now())
-        log.isExample = asset.isExample
-        context.insert(log)
-        log.asset = asset
-        HouseholdMutations.syncHeroMetric(of: asset, with: log, in: context)
+        let isExample = try ExampleOwnership.requireReal(asset, creatingExample: asExample)
+        let log = try HouseholdMutations.recordReading(value, on: asset, at: date ?? now(), source: .person, unit: unit, kind: kind,
+                                                       name: name ?? "", answer: lowerReading, isExample: isExample, in: context)
         try save()
-        return log
+        // Only an estimate returns nil, and this records what was measured.
+        return log!
     }
 
     /// What happens to the assets filed under one that is deleted. The screen asks,
@@ -163,14 +289,24 @@ public final class AssetActions {
     /// Files `child` under `parent`, or makes it standalone with nil. Refuses to
     /// create a loop (an asset under its own descendant).
     public func setParent(_ child: Asset, _ parent: Asset?) throws {
-        if let parent {
-            guard parent.id != child.id, !Self.descendants(of: child).contains(where: { $0.id == parent.id }) else {
-                throw AssetActionError.wouldCreateLoop
-            }
+        if let parent, !Self.canFile(child, under: parent) {
+            throw AssetActionError.wouldCreateLoop
         }
         child.parent = parent
         child.updatedAt = now()
         try save()
+    }
+
+    /// The one rule for filing something under something else, in the app and
+    /// in a restored backup: never under itself, nor under anything filed under it.
+    nonisolated static func canFile(_ child: Asset, under parent: Asset) -> Bool {
+        var seen: Set<UUID> = []
+        var current: Asset? = parent
+        while let next = current {
+            guard next.id != child.id, seen.insert(next.id).inserted else { return false }
+            current = next.parent
+        }
+        return true
     }
 
     static func descendants(of asset: Asset) -> [Asset] {
@@ -186,12 +322,7 @@ public final class AssetActions {
     }
 
     private func save() throws {
-        do {
-            try context.save()
-        } catch {
-            context.rollback()
-            throw error
-        }
+        try UnitOfWork.save(context)
     }
 }
 
@@ -231,24 +362,32 @@ enum HouseholdMutations {
         return obligation
     }
 
-    static func recurrenceContext(for obligation: Obligation, currentMetric: Double?) -> RecurrenceContext {
-        guard let asset = obligation.asset else { return RecurrenceContext(currentMetric: currentMetric) }
-        let unit = obligation.metricUnit
-        let readings = (asset.measurements ?? [])
-            .filter { $0.kind.isCumulative && (unit == nil || $0.unit == unit) }
-            .sorted { $0.recordedAt < $1.recordedAt }
-            .map { CadenceCalculator.TelemetryReading(date: $0.recordedAt, metric: $0.value) }
+    static func recurrenceContext(for obligation: Obligation, currentMetric: Double?, calendar: Calendar = .current) -> RecurrenceContext {
+        // Only completions that moved the date take part (not the one being recorded now).
+        let steps = obligation.history.filter { $0.nextDueDate != nil }.map {
+            RecurrenceEngine.SeriesStep(
+                cycle: $0.cycleDueDate.map { CalendarDay($0, calendar: calendar) },
+                next: $0.nextDueDate.map { CalendarDay($0, calendar: calendar) }
+            )
+        }
+        let seriesDay = RecurrenceEngine.seriesStart(current: obligation.dueDay(in: calendar), completions: steps).day
+        guard let asset = obligation.asset else { return RecurrenceContext(currentMetric: currentMetric, seriesDayOfMonth: seriesDay) }
+        let series = readingSeries(of: asset, unit: obligation.metricUnit)
+        let readings = series.readings
         return RecurrenceContext(
             assetValues: asset.values,
             readings: readings,
-            currentMetric: currentMetric ?? readings.last?.metric ?? self.currentMetric(of: asset)
+            currentMetric: currentMetric ?? readings.last?.metric ?? self.currentMetric(of: asset),
+            seriesDayOfMonth: seriesDay
         )
     }
 
-    /// The asset's counter: the latest cumulative reading, else its hero metric field.
+    /// The asset's counter: the last reading of the cleaned series, else its hero metric field.
     static func currentMetric(of asset: Asset) -> Double? {
-        if let latest = (asset.measurements ?? []).filter(\.kind.isCumulative).max(by: { $0.recordedAt < $1.recordedAt }) {
-            return latest.value
+        let counters = (asset.measurements ?? []).filter { $0.kind.isCumulative && !$0.isDeleted }
+        if let unit = counters.max(by: { $0.recordedAt < $1.recordedAt })?.measurementUnit,
+           let current = readingSeries(of: asset, unit: unit).current {
+            return current
         }
         let stored: CategoryTemplate? = asset.modelContext.flatMap { try? TemplateStore(context: $0).template(forKey: asset.templateKey) } ?? nil
         guard let definition = stored?.definition ?? BuiltInTemplates.definition(for: asset.templateKey) else {
@@ -270,56 +409,17 @@ enum HouseholdMutations {
         heroMetricField(of: template).flatMap { values[$0.key]?.numberValue }
     }
 
-    static func heroMetricUnit(template: TemplateDefinition) -> String? {
+    static func heroMetricUnit(template: TemplateDefinition) -> MeasurementUnit? {
         heroMetricField(of: template)?.unit
-    }
-
-    static func addMeasurement(_ value: Double, unit: String?, to asset: Asset, at date: Date, in context: ModelContext) {
-        let kind = MeasurementKind.forUnit(unit)
-        let log = MeasurementLog(kind: kind, name: "", value: value, unit: unit ?? kind.defaultUnit, recordedAt: date)
-        log.isExample = asset.isExample
-        context.insert(log)
-        log.asset = asset
-    }
-
-    /// Adds a counter reading taken while completing an obligation.
-    static func recordReading(_ value: Double, on asset: Asset, at date: Date, unit: String?, in context: ModelContext) {
-        let kind = MeasurementKind.forUnit(unit)
-        let log = MeasurementLog(kind: kind, name: "", value: value, unit: unit ?? kind.defaultUnit, recordedAt: date)
-        log.isExample = asset.isExample
-        context.insert(log)
-        log.asset = asset
-        syncHeroMetric(of: asset, with: log, in: context)
-    }
-
-    /// Keeps the hero field equal to the readings: the highest value for counters,
-    /// the newest reading for everything else. Readings are the source of truth.
-    static func syncHeroMetric(of asset: Asset, with log: MeasurementLog, in context: ModelContext) {
-        guard let template = try? TemplateStore(context: context).template(forKey: asset.templateKey),
-              let field = heroMetricField(of: template.definition), field.unit == log.unit else { return }
-        let sameUnit = (asset.measurements ?? []).filter { $0.unit == log.unit && $0.id != log.id }
-        let shouldUpdate: Bool
-        if log.kind.isCumulative {
-            shouldUpdate = log.value >= (sameUnit.map(\.value).max() ?? -.infinity)
-        } else {
-            shouldUpdate = log.recordedAt >= (sameUnit.map(\.recordedAt).max() ?? .distantPast)
-        }
-        guard shouldUpdate else { return }
-        var values = asset.values
-        values[field.key] = .number(log.value)
-        asset.values = values
     }
 }
 
 extension MeasurementKind {
     /// The usual kind for a unit, used when a reading comes from a template field.
-    public static func forUnit(_ unit: String?) -> MeasurementKind {
-        switch unit {
-        case "km": return .odometer
-        case "kg": return .bodyWeight
-        case "h": return .engineHours
-        case "kWh": return .electricity
-        default: return .cycles
-        }
+    public static func forUnit(_ unit: MeasurementUnit?) -> MeasurementKind {
+        let kinds: [MeasurementUnit: MeasurementKind] = [
+            .kilometres: .odometer, .kilograms: .bodyWeight, .engineHours: .engineHours, .kilowattHours: .electricity,
+        ]
+        return unit.flatMap { kinds[$0] } ?? .cycles
     }
 }

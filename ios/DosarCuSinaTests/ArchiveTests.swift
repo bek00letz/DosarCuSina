@@ -88,7 +88,7 @@ struct ArchiveTests {
         let boats = try #require(templates["custom.0b6c6f43-6c1e-4d1a-9c55-7d3b4f1f2a10"])
         #expect(boats.isCustom)
         #expect(boats.sections.first?.fields.count == 2)
-        #expect(boats.blueprints.first?.recurrence == .metric(every: 100, unit: "h", fallback: .years(1)))
+        #expect(boats.blueprints.first?.recurrence == .metric(every: 100, unit: .engineHours, fallback: .years(1)))
         let vehicle = try #require(templates[BuiltInTemplates.Key.vehicle])
         #expect(vehicle.isOnHome == false, "Household preferences travel with the archive")
         #expect(!vehicle.sections.isEmpty, "Built-in definitions come from this app's catalog")
@@ -182,6 +182,55 @@ struct ArchiveTests {
         #expect(result.skipped > 0)
         let names = Set(try ModelContext(container).fetch(FetchDescriptor<Asset>()).map(\.name))
         #expect(names == ["VW Golf editat", "Barca de pe lac", "Doar aici"])
+    }
+
+    /// A backup is written away from the main thread, so a large one never pauses the
+    /// screen; it writes exactly what the same backup writes on the main thread.
+    @MainActor
+    @Test func aBackupIsWrittenAwayFromTheMainThreadTheSameWay() async throws {
+        let package = try DossierArchiveReader.read(try Fixtures.archive("dosar-v3/household"))
+        let here = try makeInMemoryContainer()
+        let away = try makeInMemoryContainer()
+        let expected = try DossierArchiveService(container: here, calendar: calendar).importPackage(package, mode: .replace)
+        let result = try await DossierArchiveService(container: away, calendar: calendar).importPackageAway(package, mode: .replace)
+        #expect(result == expected)
+        let names = { (container: ModelContainer) in Set(try ModelContext(container).fetch(FetchDescriptor<Asset>()).map(\.name)) }
+        #expect(try names(away) == names(here))
+        #expect(try ModelContext(away).fetchCount(FetchDescriptor<DosarSchemaV5.Attachment>()) == ModelContext(here).fetchCount(FetchDescriptor<DosarSchemaV5.Attachment>()))
+
+        // A failure part way leaves nothing behind.
+        var broken = package
+        broken.files = [:]
+        let empty = try makeInMemoryContainer()
+        await #expect(throws: (any Error).self) {
+            try await DossierArchiveService(container: empty, calendar: calendar).importPackageAway(broken, mode: .replace)
+        }
+        #expect(try ModelContext(empty).fetchCount(FetchDescriptor<Asset>()) == 0)
+    }
+
+    @Test("A firm's CUI, a paper's validity and a category's behaviour travel in the archive")
+    func versionThreeFactsTravel() throws {
+        let container = try makeInMemoryContainer()
+        let service = DossierArchiveService(container: container, calendar: calendar)
+        try service.importArchive(try Fixtures.archive("dosar-v3/household"), mode: .replace)
+        let context = ModelContext(container)
+        let firm = try #require(try context.fetch(FetchDescriptor<Provider>()).first { $0.name == "Service auto exemplu" })
+        #expect(firm.taxID == "12345678")
+        let policies = try context.fetch(FetchDescriptor<DosarSchemaV5.Attachment>()).filter { $0.title == "Poliță RCA 2025" }
+        #expect(policies.first?.validUntil.map { CalendarDay($0, calendar: calendar) } == CalendarDay("2026-12-14"),
+                "Last year's policy keeps last year's end, whatever its deadline says now")
+
+        // A category of the person's own that behaves like Garanții keeps doing so.
+        let custom = try TemplateStore(context: context).createCustom(name: "Unelte", symbol: "hammer", pockets: [.keyFacts])
+        custom.behavior = CategoryBehavior(box: .wholeCategory, listing: .byWarranty)
+        try UnitOfWork.save(context)
+        let archive = try service.exportData(exportedAt: noon("2026-11-02"))
+        let other = try makeInMemoryContainer()
+        try DossierArchiveService(container: other, calendar: calendar).importArchive(archive, mode: .replace)
+        let restored = try #require(try ModelContext(other).fetch(FetchDescriptor<CategoryTemplate>()).first { $0.name == "Unelte" })
+        #expect(restored.behavior == CategoryBehavior(box: .wholeCategory, listing: .byWarranty))
+        let restoredFirm = try ModelContext(other).fetch(FetchDescriptor<Provider>()).first { $0.name == "Service auto exemplu" }
+        #expect(restoredFirm?.taxID == "12345678")
     }
 
     @Test func aFailedImportLeavesEverythingAsItWas() throws {
