@@ -6,7 +6,7 @@ import Testing
 ///
 /// Covers:
 /// 1. Leap year identification (Gregorian 4, 100, 400 rules).
-/// 2. Calendar cadence arithmetic: days, weeks, months, years, annual/biannual heuristics.
+/// 2. Calendar cadence arithmetic: days, weeks, months and years.
 /// 3. Leap year rollover: Feb 29 on leap years (2024, 2028) vs clamping to Feb 28 on non-leap years (2025, 2026, 2027).
 /// 4. End-of-month clamping across all month boundaries (Jan 31 -> Feb 28/29, Mar 31 -> Apr 30, etc.).
 /// 5. Telemetry projection burn-rate estimation: Δmetric / Δdays.
@@ -77,8 +77,8 @@ import Testing
         try assertEqual(comp2027.month, 2, "Month should be February")
         try assertEqual(comp2027.day, 28, "Feb 29 on leap 2024 must clamp to Feb 28 on non-leap 2027")
         
-        // Verify calculateNextDueDate with interval .annual
-        let annualNext = CadenceCalculator.calculateNextDueDate(from: feb29_2024, interval: .annual, calendar: calendar)
+        // A yearly interval from Feb 29 lands on Feb 28 the next year
+        let annualNext = CadenceCalculator.calculateNextDueDate(from: feb29_2024, interval: .years(1), calendar: calendar)
         let compAnnual = calendar.dateComponents([.year, .month, .day], from: annualNext)
         try assertEqual(compAnnual.year, 2025, "Annual interval should roll to 2025")
         try assertEqual(compAnnual.month, 2, "Month should remain February")
@@ -103,54 +103,6 @@ import Testing
         try assertEqual(comp2032.year, 2032, "Year should be 2032")
         try assertEqual(comp2032.month, 2, "Month should be February")
         try assertEqual(comp2032.day, 29, "Feb 29 on leap 2024 must remain Feb 29 on leap 2032")
-    }
-    
-    /// Verifies annual recurrence heuristic via cadenceDays (365 and 366 days).
-    @Test func annualRecurrenceViaCadenceDays_365And366() throws {
-        let calendar = Calendar.gregorianUTC
-        let feb29_2024 = makeDate(year: 2024, month: 2, day: 29, calendar: calendar)
-        
-        // 365 days cadence from Feb 29 2024 -> should trigger annual heuristic and clamp to Feb 28 2025
-        let next365 = CadenceCalculator.calculateNextDueDate(from: feb29_2024, cadenceDays: 365, calendar: calendar)
-        let comp365 = calendar.dateComponents([.year, .month, .day], from: next365)
-        try assertEqual(comp365.year, 2025, "Annual 365-day recurrence should land in 2025")
-        try assertEqual(comp365.month, 2, "Month should be February")
-        try assertEqual(comp365.day, 28, "Annual 365-day recurrence from Feb 29 2024 must clamp to Feb 28 2025")
-        
-        // 366 days cadence from Feb 29 2024 -> also triggers annual heuristic and clamps to Feb 28 2025
-        let next366 = CadenceCalculator.calculateNextDueDate(from: feb29_2024, cadenceDays: 366, calendar: calendar)
-        let comp366 = calendar.dateComponents([.year, .month, .day], from: next366)
-        try assertEqual(comp366.year, 2025, "Annual 366-day recurrence should land in 2025")
-        try assertEqual(comp366.month, 2, "Month should be February")
-        try assertEqual(comp366.day, 28, "Annual 366-day recurrence from Feb 29 2024 must clamp to Feb 28 2025")
-        
-        // Standard non-leap date
-        let regularDate = makeDate(year: 2026, month: 7, day: 15, calendar: calendar)
-        let regularNext = CadenceCalculator.calculateNextDueDate(from: regularDate, cadenceDays: 365, calendar: calendar)
-        let compRegular = calendar.dateComponents([.year, .month, .day], from: regularNext)
-        try assertEqual(compRegular.year, 2027, "Year should be 2027")
-        try assertEqual(compRegular.month, 7, "Month should be July")
-        try assertEqual(compRegular.day, 15, "Day should be 15")
-    }
-    
-    /// Verifies biannual recurrence heuristic via cadenceDays (730 and 731 days, e.g. ITP vehicle inspection).
-    @Test func biannualRecurrenceViaCadenceDays_730And731() throws {
-        let calendar = Calendar.gregorianUTC
-        let feb29_2024 = makeDate(year: 2024, month: 2, day: 29, calendar: calendar)
-        
-        // 730 days from Feb 29 2024 -> lands in 2026 (non-leap year), clamps to Feb 28 2026
-        let next730 = CadenceCalculator.calculateNextDueDate(from: feb29_2024, cadenceDays: 730, calendar: calendar)
-        let comp730 = calendar.dateComponents([.year, .month, .day], from: next730)
-        try assertEqual(comp730.year, 2026, "Biannual 730-day recurrence should land in 2026")
-        try assertEqual(comp730.month, 2, "Month should be February")
-        try assertEqual(comp730.day, 28, "Biannual recurrence from Feb 29 2024 must clamp to Feb 28 2026")
-        
-        // 731 days from Feb 29 2024
-        let next731 = CadenceCalculator.calculateNextDueDate(from: feb29_2024, cadenceDays: 731, calendar: calendar)
-        let comp731 = calendar.dateComponents([.year, .month, .day], from: next731)
-        try assertEqual(comp731.year, 2026, "Biannual 731-day recurrence should land in 2026")
-        try assertEqual(comp731.month, 2, "Month should be February")
-        try assertEqual(comp731.day, 28, "Biannual recurrence from Feb 29 2024 must clamp to Feb 28 2026")
     }
     
     /// Verifies explicit interval calendar arithmetic (.days, .weeks, .months, .years).
