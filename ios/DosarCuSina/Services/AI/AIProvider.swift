@@ -175,13 +175,16 @@ public struct AIProviderSettings: Sendable {
     }
 
     /// What happens by itself after a weak phone reading, with "Citește automat când nu
-    /// sunt sigur" on. The page is sent without asking only when the phone is sure it is
+    /// sunt sigur" on. Nothing, ever, for a document read only on the phone (`PhoneOnlyReading`:
+    /// a bank card, a page that may be one, or a capture `staysOnPhone` because the person
+    /// is adding one). The page is sent without asking only when the phone is sure it is
     /// not an identity document (`IdentitySignals`: no machine-readable zone, no
     /// CNP-shaped number, no identity words, no identity kind among the readings) and
     /// the capture isn't headed for a locked section or a person's documents
     /// (`headedForProtectedPlace`). Otherwise the review asks once, naming the provider.
-    public func automaticReading(after result: CaptureResult, headedForProtectedPlace: Bool = false) -> AutomaticReading {
+    public func automaticReading(after result: CaptureResult, headedForProtectedPlace: Bool = false, staysOnPhone: Bool = false) -> AutomaticReading {
         guard readsAutomaticallyWhenUnsure, isReady, !result.readWithCloudModel, ReadingArbiter.isWeak(result) else { return .none }
+        guard !staysOnPhone, !PhoneOnlyReading.mayBeOne(result) else { return .none }
         return headedForProtectedPlace || IdentitySignals.mayBeIdentity(result) ? .askFirst : .read
     }
 

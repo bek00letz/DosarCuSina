@@ -168,6 +168,22 @@ public enum DocumentType {
         travelMarginDays(for: values[typeFieldKey]?.textValue)
     }
 
+    // MARK: Reading
+
+    /// The types read only on the phone: never sent to the person's AI provider, not on
+    /// "Citește mai bine", not by "Citește automat", not when pages are added. Data, read by
+    /// `PhoneOnlyReading`, the one rule for whether a capture may go to the provider.
+    ///
+    /// Only a bank card: its photo shows the whole number, which the binder never keeps
+    /// and never hands on, and the phone reads everything a card carries.
+    public static let readOnPhoneOnly: Set<String> = [bankCard]
+
+    /// Whether a type (its key, or a label stored by an earlier version) is read only on the phone.
+    public static func isReadOnPhoneOnly(_ type: String?) -> Bool {
+        guard let type, let key = options.option(for: type)?.key else { return false }
+        return readOnPhoneOnly.contains(key)
+    }
+
     // MARK: Validity
 
     /// How long a kind of document is valid after it is issued, in months, when that is a

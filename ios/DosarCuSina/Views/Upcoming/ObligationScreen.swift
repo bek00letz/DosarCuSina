@@ -541,6 +541,8 @@ private struct ObligationCompleteSheet: View {
     }
 
     private func read(_ payload: CaptureRequest.Payload) {
+        // A bank card's new card is read only on the phone, like any bank card (`PhoneOnlyReading`).
+        session.destination.staysOnPhone = obligation.asset.map { PhoneOnlyReading.holdsOne($0.values) } ?? false
         session.read(payload)
     }
 
