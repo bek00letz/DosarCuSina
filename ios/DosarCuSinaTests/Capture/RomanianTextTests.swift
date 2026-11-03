@@ -22,7 +22,7 @@ struct RomanianTextTests {
         ("paid", "Asigurare PAID obligatorie", true),
         ("paid", "Invoice unpaid", false),
         ("index", "Index nou: 12.345", true),
-        ("index", "Indexare preț 3%", false),
+        ("pod", "Podea laminată", false),
         ("rca", "Poliță RCA nr. 123", true),
         ("rca", "Marca: VW", false),
         ("achitat", "Achitat integral", true),
