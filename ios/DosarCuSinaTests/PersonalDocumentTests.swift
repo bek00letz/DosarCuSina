@@ -67,6 +67,67 @@ struct PersonalDocumentTests {
                 "The passport's profile, with its travel cut-off, not a separate step")
     }
 
+    @Test func aCazierIsDatedByItsIssueEveryOtherDocumentByItsExpiry() {
+        for option in DocumentType.options {
+            #expect(DocumentType.isDatedByIssue(option.key) == (option.key == DocumentType.criminalRecord), "\(option.key)")
+        }
+        var draft = PersonalDocumentDraft()
+        draft.choose(type: DocumentType.criminalRecord)
+        for variant in DocumentType.variants(of: DocumentType.criminalRecord) {
+            draft.variant = variant.key
+            #expect(draft.isDatedByIssue, "Every cazier asks for its issue date: \(variant.key)")
+        }
+        draft.choose(type: DocumentType.passport)
+        #expect(!draft.isDatedByIssue)
+    }
+
+    @Test func scriuEuForACazierJudiciarAsksTheIssueDateAndWorksOutTheValidity() throws {
+        let (context, corina) = try setup()
+        var draft = PersonalDocumentDraft()
+        draft.choose(type: DocumentType.criminalRecord)
+        draft.variant = DocumentType.Variant.criminalRecordJudicial
+        draft.issued = CalendarDay("2026-10-15")
+        draft.expiry = CalendarDay("2030-01-01") // typed before the type changed: not a cazier's date
+        #expect(draft.values[DocumentFields.issueDate] == .date(CalendarDay("2026-10-15")))
+        #expect(draft.values[DocumentFields.expiry] == nil, "Its expiry isn't typed; the rule gives it")
+
+        let template = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.documents))
+        let actions = AssetActions(context: context, calendar: .bucharest, now: { noon("2026-11-02") })
+        #expect(PersonalDocumentFiling.expiry(draft, template: template, calendar: .bucharest) == CalendarDay("2027-04-15"))
+        let line = try #require(PersonalDocumentFiling.reminderLine(draft, template: template, actions: actions,
+                                                                     today: CalendarDay("2026-11-02"), calendar: .bucharest))
+        #expect(line.hasPrefix("E valabil până pe 15 aprilie 2027, la 6 luni de la eliberare."), "\(line)")
+        #expect(line.contains("Te anunț"))
+
+        let document = try PersonalDocumentFiling.save(draft, holder: corina, context: context, calendar: .bucharest, now: { noon("2026-11-02") })
+        #expect(document.name == "Cazier judiciar – Manole Corina")
+        #expect(document.value(DocumentFields.issueDate) == .date(CalendarDay("2026-10-15")))
+        #expect(document.value(DocumentFields.expiry) == .date(CalendarDay("2027-04-15")), "The category's own rule, as a photo and Editează")
+        let deadline = try #require(document.activeObligations.first)
+        #expect(deadline.dueDay(in: .bucharest) == CalendarDay("2027-04-15"))
+        #expect(deadline.reminders.leadDays == [7, 0])
+        #expect(deadline.reminders.consequence == .comfort, "Doar să nu uit")
+    }
+
+    @Test(arguments: [DocumentType.Variant.criminalRecordFiscal, DocumentType.Variant.criminalRecordDriving])
+    func scriuEuForAnotherCazierKeepsItsIssueDateWithoutAReminder(_ variant: String) throws {
+        let (context, corina) = try setup()
+        var draft = PersonalDocumentDraft()
+        draft.choose(type: DocumentType.criminalRecord)
+        draft.variant = variant
+        draft.issued = CalendarDay("2026-10-15")
+        #expect(draft.validityMonths == nil)
+
+        let template = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.documents))
+        let actions = AssetActions(context: context, calendar: .bucharest, now: { noon("2026-11-02") })
+        #expect(PersonalDocumentFiling.reminderLine(draft, template: template, actions: actions,
+                                                    today: CalendarDay("2026-11-02"), calendar: .bucharest) == nil)
+        let document = try PersonalDocumentFiling.save(draft, holder: corina, context: context, calendar: .bucharest, now: { noon("2026-11-02") })
+        #expect(document.value(DocumentFields.issueDate) == .date(CalendarDay("2026-10-15")))
+        #expect(document.value(DocumentFields.expiry) == nil)
+        #expect(document.activeObligations.isEmpty, "No rule confirmed, so no reminder")
+    }
+
     @Test func aDocumentWithoutAnExpiryHasNoDeadline() throws {
         let (context, corina) = try setup()
         var draft = PersonalDocumentDraft()

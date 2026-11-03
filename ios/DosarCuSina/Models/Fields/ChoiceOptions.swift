@@ -205,6 +205,15 @@ public enum DocumentType {
         return validityMonthsAfterIssue[key]
     }
 
+    /// Whether a type is dated by the day it was issued, not by an expiry printed on it: the
+    /// type, or one of its variants, has a validity from its issue. "Scriu eu" asks for that
+    /// day for every variant (a cazier judiciar, fiscal or auto), and the expiry follows only
+    /// where a rule gives one.
+    public static func isDatedByIssue(_ type: String?) -> Bool {
+        guard let type, let key = options.option(for: type)?.key else { return false }
+        return validityMonthsAfterIssue[key] != nil || variants(of: key).contains { validityMonthsAfterIssue[$0.key] != nil }
+    }
+
     /// The last day a document issued on `issued` is valid by its rule: the same day,
     /// `validityMonths` later (a shorter month ends on its last day). Nil without a rule.
     public static func validUntil(issued: CalendarDay, type: String?, variant: String?, calendar: Calendar = .current) -> CalendarDay? {
