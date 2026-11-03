@@ -222,7 +222,7 @@ struct CaptureFiler {
             guard let asset = try context.fetch(descriptor).first else { throw FilingError.missingSection }
             // What was read never lands in an example without the person keeping it as theirs.
             try ExampleOwnership.requireReal(asset)
-            if let documentsKey = Self.holderDocumentTemplateKey(for: review, destinationTemplateKey: asset.templateKey, templates: templates) {
+            if let documentsKey = try Self.personalDocumentsKey(for: review, destinationTemplateKey: asset.templateKey, templates: templates) {
                 // A person: the document becomes one of their documents, named after them.
                 let name = review.kind.isIdentityDocument ? review.title : DocumentNaming.name(document: review.title, holder: asset.name)
                 outcome.asset = try createSection(review, templateKey: documentsKey, name: name, parent: asset, plan: plan, templates: templates)
@@ -244,7 +244,7 @@ struct CaptureFiler {
         case .newAsset(let templateKey):
             let name = review.newAssetName.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !name.isEmpty else { throw FilingError.missingName }
-            if let documentsKey = Self.holderDocumentTemplateKey(for: review, destinationTemplateKey: templateKey, templates: templates) {
+            if let documentsKey = try Self.personalDocumentsKey(for: review, destinationTemplateKey: templateKey, templates: templates) {
                 // A new person, named after the holder, with the document filed under them,
                 // in one save: a failure leaves neither behind.
                 guard let memberTemplate = templates[templateKey] else { throw FilingError.missingSection }
@@ -503,19 +503,26 @@ struct CaptureFiler {
     }
 
     /// The category a document becomes when it is filed under a person (a category whose
-    /// part is `holder`): an identity document becomes one of their personal documents.
-    /// Nil otherwise.
-    static func holderDocumentTemplateKey(for kind: CaptureDocumentKind, destinationTemplateKey: String, templates: [String: CategoryTemplate]) -> String? {
-        guard kind.isIdentityDocument, templates.plays(.holder, destinationTemplateKey) else { return nil }
+    /// part is `holder`): an identity document, or a capture started from their documents
+    /// (`filesAsPersonalDocument`) whatever its kind, becomes one of their personal
+    /// documents. Nil otherwise.
+    static func holderDocumentTemplateKey(for review: CaptureReview, destinationTemplateKey: String, templates: [String: CategoryTemplate]) -> String? {
+        guard filesAsPersonalDocument(review, destinationTemplateKey: destinationTemplateKey, templates: templates) else { return nil }
         return templates.key(withRole: .personalDocument)
     }
 
-    /// The same for a review: a capture started from a household member's documents
-    /// (`filesAsPersonalDocument`) becomes one of their documents whatever its kind.
-    static func holderDocumentTemplateKey(for review: CaptureReview, destinationTemplateKey: String, templates: [String: CategoryTemplate]) -> String? {
-        if let key = holderDocumentTemplateKey(for: review.kind, destinationTemplateKey: destinationTemplateKey, templates: templates) { return key }
-        guard review.filesAsPersonalDocument, templates.plays(.holder, destinationTemplateKey) else { return nil }
-        return templates.key(withRole: .personalDocument)
+    /// Whether the review files a personal document of the person it goes to: an identity
+    /// document, or anything started from their documents.
+    static func filesAsPersonalDocument(_ review: CaptureReview, destinationTemplateKey: String, templates: [String: CategoryTemplate]) -> Bool {
+        templates.plays(.holder, destinationTemplateKey) && (review.kind.isIdentityDocument || review.filesAsPersonalDocument)
+    }
+
+    /// The category a personal document is filed in, for a review that files one; the
+    /// filing can't go on without it.
+    private static func personalDocumentsKey(for review: CaptureReview, destinationTemplateKey: String, templates: [String: CategoryTemplate]) throws -> String? {
+        guard filesAsPersonalDocument(review, destinationTemplateKey: destinationTemplateKey, templates: templates) else { return nil }
+        guard let key = templates.key(withRole: .personalDocument) else { throw FilingError.missingSection }
+        return key
     }
 
     /// The category the document's values land in, when it is filed under `destinationTemplateKey`.

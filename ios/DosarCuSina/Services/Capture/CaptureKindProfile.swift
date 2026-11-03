@@ -26,6 +26,8 @@ struct CaptureKindProfile: Sendable {
     enum TitleRule: Sendable {
         /// The kind's name.
         case name
+        /// A shorter name than the kind's own, for the paper itself: "Fișă veterinar".
+        case fixed(LocalizedStringResource)
         /// The kind's name and the year it starts: "Poliță RCA 2026".
         case nameAndYear
         /// The kind's short word and the firm: "Factură ENGIE Romania S.A.".
@@ -166,6 +168,8 @@ struct CaptureKindProfile: Sendable {
         switch titleRule {
         case .name:
             return title
+        case .fixed(let name):
+            return String(localized: name)
         case .nameAndYear:
             guard let year = fields[.startDate]?.day?.year ?? fields[.issueDate]?.day?.year else { return title }
             return "\(title) \(String(year))"
@@ -192,7 +196,7 @@ struct CaptureKindProfile: Sendable {
             documentKind: .identity, documentType: nil, trade: nil,
             expectedKeys: [.licensePlate, .vin, .make, .model, .firstRegistrationDate],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: [.licensePlate, .vin],
-            name: "Talon (certificat de înmatriculare)", titleRule: .name, modelDescription: "vehicle registration certificate", sectionName: .vehicle
+            name: "Talon (certificat de înmatriculare)", titleRule: .fixed("Certificat de înmatriculare"), modelDescription: "vehicle registration certificate", sectionName: .vehicle
         ),
         CaptureKindProfile(
             kind: .rcaPolicy, templateKey: BuiltInTemplates.Key.vehicle, filing: .intoSection, blueprintKey: nil,
@@ -241,7 +245,7 @@ struct CaptureKindProfile: Sendable {
             kind: .fiscalReceipt, templateKey: BuiltInTemplates.Key.purchase, filing: .newSection, blueprintKey: BuiltInBlueprints.warrantyEnds,
             readsCover: false, defaultCover: nil, deadlineField: .warrantyUntil, documentDateFields: issuedOn,
             documentKind: .receipt, documentType: nil, trade: nil,
-            expectedKeys: [.retailer, .purchaseDate, .purchasePrice, .productName, .serialNumber, .lineItems],
+            expectedKeys: [.retailer, .purchaseDate, .purchasePrice, .productName, .serialNumber, .warrantyMonths, .warrantyUntil, .lineItems],
             carriesLineItems: true, opensVisitFlow: false, logsHistory: false, identifierKeys: [.serialNumber],
             name: "Bon fiscal", titleRule: .product, modelDescription: "fiscal receipt"
         ),
@@ -267,7 +271,7 @@ struct CaptureKindProfile: Sendable {
             documentKind: .report, documentType: nil, trade: .vet,
             expectedKeys: [.provider, .petName, .microchip, .vaccineName, .issueDate, .nextDoseDate],
             carriesLineItems: true, opensVisitFlow: true, logsHistory: true, identifierKeys: [.microchip, .petName],
-            name: "Fișă de la veterinar", titleRule: .name, modelDescription: "veterinary record", sectionName: .pet
+            name: "Fișă de la veterinar", titleRule: .fixed("Fișă veterinar"), modelDescription: "veterinary record", sectionName: .pet
         ),
         CaptureKindProfile(
             kind: .medicalResult, templateKey: BuiltInTemplates.Key.health, filing: .intoSection, blueprintKey: nil,
@@ -275,7 +279,7 @@ struct CaptureKindProfile: Sendable {
             documentKind: .report, documentType: nil, trade: .doctor,
             expectedKeys: [.provider, .issueDate],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: true, identifierKeys: [],
-            name: "Rezultat medical", titleRule: .name, modelDescription: "medical test result", sectionName: .fixed("Sănătate")
+            name: "Rezultat medical", titleRule: .fixed("Rezultat analize"), modelDescription: "medical test result", sectionName: .fixed("Sănătate")
         ),
         other,
     ]
@@ -286,7 +290,7 @@ struct CaptureKindProfile: Sendable {
         documentKind: .other, documentType: nil, trade: nil,
         expectedKeys: [.provider, .documentNumber, .invoiceNumber, .issueDate, .dueDate, .expiryDate, .total],
         carriesLineItems: true, opensVisitFlow: false, logsHistory: false, identifierKeys: [],
-        name: "Alt document", titleRule: .name, modelDescription: "household document"
+        name: "Alt document", titleRule: .fixed("Document"), modelDescription: "household document"
     )
 
     /// The codes that find a bill's or a contract's subscription, most specific first.
@@ -298,7 +302,7 @@ struct CaptureKindProfile: Sendable {
             kind: kind, templateKey: BuiltInTemplates.Key.documents, filing: .newSection, blueprintKey: BuiltInBlueprints.documentRenew,
             readsCover: false, defaultCover: nil, deadlineField: .expiryDate, documentDateFields: issuedOn,
             documentKind: .identity, documentType: type, trade: nil,
-            expectedKeys: IdentityTemplates.all.filter { $0.kind == kind }.flatMap { $0.fields.map(\.key) },
+            expectedKeys: IdentityTemplates.all.filter { $0.kind == kind }.flatMap { $0.fields.map(\.key) }.reduce(into: []) { keys, key in if !keys.contains(key) { keys.append(key) } },
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: [.documentNumber],
             name: name, titleRule: .name, modelDescription: model, sectionName: .holder
         )

@@ -149,7 +149,7 @@ struct DuplicateProvidersStep: DataRepairStep {
             return DataRepairFinding(
                 id: "\(Self.id.rawValue):\(group.keptID.uuidString):\(group.duplicateIDs.map(\.uuidString).sorted().joined(separator: ","))",
                 step: Self.id,
-                message: String(localized: "„\(name)” apare de mai multe ori în Agendă. Le unesc într-una?", comment: "Repair: the same firm kept twice."),
+                message: String(localized: "„\(name)” apare de mai multe ori în Agendă (același nume sau același CUI). Le unesc într-una?", comment: "Repair: the same firm kept twice."),
                 subject: .duplicateProviders(group)
             )
         }

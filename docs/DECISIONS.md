@@ -8,6 +8,36 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-03
 
+### What a kind of document means, written once
+- **Decided:** every kind of captured document has one entry in `CaptureKindProfile`: its category, its deadline (a real blueprint of the catalog; for a policy, the one its cover names), the field that dates it, how it is kept (`DocumentKind`, `DocumentType`), the issuer's trade, the fields it carries (the AI provider is asked for exactly these), whether it opens the visit form, and its title (a personal document takes its type's name). Routing, the field rules, the review and the filer read it; capture has no names of its own for categories, deadlines or trades any more.
+- **Decided:** how early a deadline reminds comes only from its blueprint (or the kind's default profile). Capture's own lead times are gone, so a passport reminds 6 months and 2 months before, as the catalog says, wherever it is added.
+- **Decided:** saving a review follows one plan (`CaptureFilingPlan`), worked out once: where the values land, the deadline made or moved, how early it reminds and who issued it. The review's "Când te anunț" line reads the plan and the filer carries it out, so the line names a reminder exactly when saving makes one, and otherwise says why not (no place chosen, paid by direct debit, the day passed, the category keeps no such deadline, a later one already there).
+- **Decided:** a deadline whose day has passed is still made only for something that must be renewed by law (an identity card that expired); a warranty, a minimum period, a bill or a policy that ended is only history (`ObligationBlueprint.isWorthScheduling`). *Waiting for the owner:* whether an expired RCA or ITP read from a document should also make an overdue deadline.
+- **Decided:** the cover of a policy is a choice with stable keys (`coverage.rca`, `.casco`, `.pad`, `.home`), read once with whole words, offered as a choice in the review and asked of the AI provider. A policy of the kind "Poliță de asigurare" is CASCO, PAD or a home's optional one; RCA is a kind of its own.
+- **Decided:** a home's optional (facultative) insurance is a deadline of its own, `home.insurance`, renewed yearly. Before, such a policy was kept with no deadline while the review promised a reminder. *Waiting for the owner:* the home keeps one insurer, policy number and claims phone, which its PAD and its optional policy share; a car keeps RCA and CASCO apart. Should a home keep them apart too?
+- **Decided:** an insurer that issued a policy becomes a firm in Agendă (`ProviderTrade.insurer`), like a mechanic or a vet. Utilities and shops still don't.
+- **Decided:** a field that drives a deadline (a contract's end, a warranty's end) makes that deadline when it gets a value and the section has none from it, by the same rule.
+- **Why:** the same facts about a kind were written in six places that disagreed: the router named deadlines and trades that matched nothing in the catalog, a non-PAD home policy was promised a reminder that saving never made, and the preview's lead times weren't the ones the deadline got.
+
+### Facts by role
+- **Decided:** a blueprint names the fields that hold its facts (`BlueprintFacts`: insurer, policy number, claims phone). The deadline page, the claim checklist and capture's filing read them through it. A CASCO deadline shows CASCO's policy number and claims phone, an ITP shows none.
+- **Decided:** field and deadline keys that code reads come from constants (`VehicleFields`, `HomeFields`, `DocumentFields`, `BuiltInBlueprints` and the rest), never typed text.
+- **Why:** the deadline page matched any field whose name ended in "policyNumber", so a CASCO page could show the RCA's number.
+
+### What a category does is data
+- **Decided:** a category says what it does (`CategoryBehavior`): its box on the grid (one per section, one for the category, or none), what its page lists (plainly, by person, by warranty, by monthly cost), its part (a person, personal documents, a subscription, a home) and the pocket of a parent it shows in. It is stored on the category and travels in the archive. The grid, the category page, the pockets, the hero, settings and capture ask it; none of them names a built-in.
+- **Why:** 98 places tested a built-in's key, so a category of the person's own could never behave like Acte or Garanții. The add-section menu's wording, the visit wording and one refresh query still name built-ins (listed in the architecture exceptions).
+
+### What a due day means
+- **Decided for now:** the due day is the last valid day, the way policies and identity cards print it ("valabilă până la 12.08.2027" covers 12 August). It is decided in one place, `DueDayValidity.dueDayIsLastValidDay`, which every validity check uses ("Ce-ți trebuie", the readiness checks).
+- **Waiting for the owner:** whether it should be the first day without cover instead. Flipping the one constant changes every check.
+- **Why:** one check treated a deadline due on the day as still valid and another as expired.
+
+### Firms keep their CUI; database version 3
+- **Decided:** a firm keeps its tax ID (`Provider.taxID`, digits only, without RO). `findOrCreate` finds a firm by its CUI first, then by its name when that firm has no other CUI. Two firms with the same CUI are the same firm; the repair list offers to merge them.
+- **Decided:** the database is at version 3: the CUI, what a category does (`CategoryTemplate.behaviorData`) and the last day a filed paper is valid as read when it was filed (`Attachment.validUntil`), all optional. Version 2 is frozen in `Models/Schema/Versions/`, with a lightweight stage and a test that opens a version 2 store. A filed policy shows the end it was read with; last year's policy no longer shows next year's date.
+- **Decided:** the repair list offers, with the owner's OK: a CASCO policy's facts kept in a car's RCA fields move to CASCO's; a home policy kept without its deadline gets "Adaugă termenul" on the day the policy says it ends.
+
 ### One number reader, the Romanian way
 - **Decided (owner):** every number the app reads, from a document or from a field, goes through one reader, `RomanianNumber`, told what the number is: money, a count, a meter index (or another measured value) or kilometres. A comma is the decimal mark and a dot groups thousands ("1.250,50"); a number with both marks takes the last one as the decimal mark ("1,250.50" too). Kilometres and counts are whole, so "45,724 km" and "45.724 km" are both 45724. Money or a meter index with one mark and exactly three digits after it follows the Romanian rule ("3,750" lei is 3,75; "Index nou: 12.345" is 12345) and, from a document, is marked "Verifică". Anything that can't be read one way only ("-", ".", "12-5", "5²", "12 km" as money) is refused with a message in the field, never read as 0 or cut short.
 - **Decided:** the app writes numbers, money and dates in one locale, Romanian, whatever the phone's region or number format (`Locale.dosarDefault`, injected once at the root). Archives and stored JSON keep the machine form ("1250.5"), read with `RomanianNumber.canonical`.

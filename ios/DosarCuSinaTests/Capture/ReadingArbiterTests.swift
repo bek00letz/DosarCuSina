@@ -102,7 +102,7 @@ struct ReadingArbiterTests {
         review.kindChanged(assets: [car])
         #expect(review.kind == .utilityInvoice)
         #expect(review.kindAlternatives == [CaptureAlternative(.rcaPolicy, source: .cloudModel)])
-        #expect(review.blueprintKey == nil)
+        #expect(review.blueprintKey == SubscriptionFields.billBlueprint, "The bill's own deadline, not the RCA")
     }
 
     @Test("A checked zone keeps its kind against the AI's, which is offered")

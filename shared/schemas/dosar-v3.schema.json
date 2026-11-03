@@ -129,6 +129,10 @@
             "variants": { "type": "object", "additionalProperties": { "$ref": "#/$defs/reminderProfile" } }
           }
         },
+        "facts": {
+          "type": "object",
+          "properties": { "insurer": { "type": "string" }, "policyNumber": { "type": "string" }, "claimsPhone": { "type": "string" } }
+        },
         "appliesWhen": {
           "type": "object",
           "required": ["field", "oneOf"],
@@ -189,6 +193,16 @@
           "pockets": {
             "type": "array",
             "items": { "enum": ["upcoming", "tenants", "products", "subscriptions", "documents", "history", "people", "money", "keyFacts"] }
+          },
+          "behavior": {
+            "type": "object",
+            "properties": {
+              "box": { "type": "string" },
+              "listing": { "type": "string" },
+              "role": { "type": "string" },
+              "parentPocket": { "type": "string" },
+              "addedOnlyUnderParent": { "type": "boolean" }
+            }
           },
           "components": {
             "type": "array",
@@ -290,6 +304,7 @@
           "trades": { "type": "array", "items": { "type": "string" } },
           "manualRating": { "type": "integer", "minimum": 1, "maximum": 5 },
           "wouldCallAgain": { "type": "boolean" },
+          "taxID": { "type": "string", "pattern": "^[1-9][0-9]{1,9}$" },
           "assetIds": { "type": "array", "items": { "$ref": "#/$defs/uuid" } }
         }
       }
@@ -319,6 +334,7 @@
           "pagePaths": { "type": "array", "items": { "$ref": "#/$defs/path" } },
           "thumbnailPath": { "$ref": "#/$defs/path" },
           "documentDate": { "$ref": "#/$defs/day" },
+          "validUntil": { "$ref": "#/$defs/day" },
           "supersededById": { "$ref": "#/$defs/uuid" }
         }
       }

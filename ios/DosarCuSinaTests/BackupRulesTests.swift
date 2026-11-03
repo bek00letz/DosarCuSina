@@ -182,7 +182,9 @@ struct BackupRulesTests {
         let cardIndex = try #require(package.assets.firstIndex { $0.id == DossierV3.id(household.card.id) })
         // Each says it is filed under the other.
         package.assets[personIndex].parentId = DossierV3.id(household.card.id) as String
-        for i in [personIndex, cardIndex] { package.assets[i].updatedAt = noon("2026-11-03") }
+        // Newer than the phone's own copies, whenever the test runs (a record's first
+        // `updatedAt` is the moment it was made).
+        for i in [personIndex, cardIndex] { package.assets[i].updatedAt = Date().addingTimeInterval(3_600) }
 
         let result = try household.service.importPackage(package, mode: mode)
 
