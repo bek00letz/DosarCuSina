@@ -8,6 +8,16 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-03
 
+### A category of one's own answers a few plain questions
+- **Decided (owner):** making a category of one's own (and changing it later) asks a few plain questions instead of a list of pockets: *Are acte* (on by default), *Are facturi și contracte*, *Are revizii* (*O dată pe an*, *După kilometri*, *După orele de motor*) and *Câte o cutie pentru fiecare* or *O cutie pentru toate*. The first version's pocket list is kept switched off (`CustomSectionStep.offersPocketList`) until the questions are proven.
+- **Decided:** each answer is the data a built-in has, written to and read back from the category (`CategorySwitches`): the Acte and Abonamente pockets, the box (`CategoryBehavior.box`), the home part for bills (`CategoryBehavior.Role.home`, so capture files a bill into a subscription under it), a counter field as the hero value (one key per unit) and a service blueprint like the car's. Nothing stores the switches, so there is one source of truth, no second mechanism and no database change; backups already carry all of it.
+- **Decided:** a switch touches only what it owns, and turning one off only hides. A change that touches running service deadlines (or paused ones it turns back on) asks first, and the whole change is one undoable step through `UnitOfWork.performUndoable`. Built-in categories have no switches.
+- **Decided:** "Are facturi și contracte" makes the category play a home's part for capture. With a home and such a category, a first bill whose codes no place keeps yet is offered to the person instead of guessed, since either place can have it. *Alternative:* a part of its own for "place with contracts but no address"; not worth a second role while bills can say their address.
+- **Decided:** no switch for "its items are a person's documents". Acte already files any document under a person (*Alt act* for one without a type), so a second category doing it would be a second path. *Alternative, if the owner wants it:* a fifth switch setting `role: .personalDocument` and `listing: .byHolder`; adding a document from such a category's page would then need to follow the category instead of Acte.
+- **Decided:** the service numbers are the car's rule by another counter: 10.000 km, or 100 engine hours, or a year, whichever comes first. *Open (owner):* whether they should be asked when the switch is turned on.
+- **Changing them later:** Setări › *Categoriile tale*, beside *Pe ecranul Dosar*.
+- **Why:** the behaviour was data since "What a category does is data", but only built-ins could set it; a person's own boat had no engine hours, no service and no place for its berth contract.
+
 ### A reviewed past commit doesn't block the card-number check
 - **Decided (owner):** a past commit that the card-number rule flags, but that holds nobody's real number and was fixed in a later commit, is recorded in `scripts/privacy-reviewed-commits.txt` (commit id and reason, never a value) instead of rewriting the shared history.
 - **Why:** rewriting the integration branch would force every open branch built on it to be rebuilt, and a pushed commit stays in GitHub's caches anyway; a reviewed, recorded exception keeps the rule strict for everything new.
