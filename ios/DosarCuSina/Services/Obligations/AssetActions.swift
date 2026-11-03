@@ -70,14 +70,17 @@ public final class AssetActions {
         }
     }
 
-    /// A parent made together with the asset: a new household member and their first document.
+    /// A parent made together with the asset: a new household member and their first
+    /// document, or a new home and its first subscription (with the address its bill printed).
     public struct NewParent {
         public var name: String
         public var template: CategoryTemplate
+        public var values: FieldValues
 
-        public init(name: String, template: CategoryTemplate) {
+        public init(name: String, template: CategoryTemplate, values: FieldValues = FieldValues()) {
             self.name = name
             self.template = template
+            self.values = values
         }
     }
 
@@ -97,10 +100,14 @@ public final class AssetActions {
         // Something of the person's never lands inside an example without asking.
         try ExampleOwnership.requireReal(parent, creatingExample: isExample)
         // A bank card keeps only its last four digits; no field keeps a card number (`PaymentCardNumbers`).
-        let prepared = try SecretFields.sealing(
-            PaymentCardNumbers.sanitizing(values.normalizingChoices(for: template.definition).applyingRules(of: template.definition, previous: nil, calendar: calendar)),
-            definition: template.definition, sealer: sealer
-        )
+        func prepare(_ values: FieldValues, for template: CategoryTemplate) throws -> FieldValues {
+            try SecretFields.sealing(
+                PaymentCardNumbers.sanitizing(values.normalizingChoices(for: template.definition).applyingRules(of: template.definition, previous: nil, calendar: calendar)),
+                definition: template.definition, sealer: sealer
+            )
+        }
+        let prepared = try prepare(values, for: template)
+        let parentValues = try newParent.map { try prepare($0.values, for: $0.template) }
         let today = CalendarDay(now(), calendar: calendar)
         // One step: a failure part-way leaves no section without its deadlines. Inside a
         // caller's unit this joins it, and only that unit rolls back.
@@ -108,7 +115,7 @@ public final class AssetActions {
             let asset = Asset(name: name, templateKey: template.key, values: prepared, notes: notes, isExample: isExample)
             context.insert(asset)
             if let newParent {
-                let holder = Asset(name: newParent.name, templateKey: newParent.template.key, values: FieldValues(), notes: nil, isExample: isExample)
+                let holder = Asset(name: newParent.name, templateKey: newParent.template.key, values: parentValues ?? FieldValues(), notes: nil, isExample: isExample)
                 context.insert(holder)
                 asset.parent = holder
             } else {
@@ -132,6 +139,9 @@ public final class AssetActions {
     /// kilometres) is a new reading through `recordReading`, dated `readingDate` (a
     /// document's date) or now; a lower counter throws `LowerReadingQuestion` until
     /// `lowerReading` answers it, and the hero value is then worked out from the readings.
+    /// A subscription whose direct debit changed pauses or resumes its bill reminder
+    /// (`BillReminders`); the outcome says so, with the receipt that takes back the whole edit.
+    @discardableResult
     public func update(
         _ asset: Asset,
         name: String,
@@ -140,9 +150,10 @@ public final class AssetActions {
         readingSource: ReadingSource = .person,
         readingDate: Date? = nil,
         lowerReading: LowerReadingAnswer? = nil
-    ) throws {
+    ) throws -> EditOutcome {
         // One step: a question about a lower reading leaves nothing half-changed.
-        try UnitOfWork.perform(in: context) {
+        return try UnitOfWork.perform(in: context) {
+            var outcome = EditOutcome()
             let previous = asset.values
             let template = try TemplateStore(context: context).template(forKey: asset.templateKey)
             let values = try template.map {
@@ -189,8 +200,19 @@ public final class AssetActions {
                                                          answer: lowerReading, in: context)
                 }
             }
+            // A subscription's direct debit changed: its bill reminder pauses or comes back.
+            outcome.billReminder = try BillReminders.follow(asset, from: previous, actions: ObligationActions(context: context, calendar: calendar, now: now),
+                                                            today: CalendarDay(now(), calendar: calendar), calendar: calendar)
             try save()
+            return outcome
         }
+    }
+
+    /// What saving an edit changed beyond the values, for the screen to say.
+    public struct EditOutcome {
+        /// The subscription's bill reminder followed its direct debit, with the receipt that
+        /// takes back the whole edit.
+        public var billReminder: Undoable<BillReminders.Change>?
     }
 
     /// Records a counter reading on its own (the kilometres read today), through the one

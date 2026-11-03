@@ -8,6 +8,9 @@ import PhotosUI
 struct AssetEditSheet: View {
     let asset: Asset
     let definition: TemplateDefinition
+    /// Says what the edit changed that the person didn't see in the form (a bill reminder
+    /// paused by direct debit), as a toast on the page they return to.
+    let announce: (DSToast) -> Void
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -26,9 +29,10 @@ struct AssetEditSheet: View {
 
     private let originalPhoto: Data?
 
-    init(asset: Asset, definition: TemplateDefinition) {
+    init(asset: Asset, definition: TemplateDefinition, announce: @escaping (DSToast) -> Void = { _ in }) {
         self.asset = asset
         self.definition = definition
+        self.announce = announce
         _name = State(initialValue: asset.name)
         _values = State(initialValue: asset.values)
         _notes = State(initialValue: asset.notes ?? "")
@@ -131,16 +135,18 @@ struct AssetEditSheet: View {
         do {
             let actions = AssetActions(context: context)
             // The photo and the fields are one change: both are kept, or neither.
-            try UnitOfWork.perform(in: context) {
+            let outcome = try UnitOfWork.perform(in: context) { () -> AssetActions.EditOutcome? in
                 if photoData != originalPhoto {
                     try actions.setPhoto(asset, photoData)
                 }
-                if trimmedName != asset.name || values != asset.values || notes != (asset.notes ?? "") {
-                    let note = notes.trimmingCharacters(in: .whitespacesAndNewlines)
-                    try actions.update(asset, name: trimmedName, values: values, notes: note.isEmpty ? nil : note, lowerReading: lowerReading)
-                }
+                guard trimmedName != asset.name || values != asset.values || notes != (asset.notes ?? "") else { return nil }
+                let note = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+                return try actions.update(asset, name: trimmedName, values: values, notes: note.isEmpty ? nil : note, lowerReading: lowerReading)
             }
             savedCount += 1
+            if let bill = outcome?.billReminder {
+                announce(.undo(bill.value.toastTitle, receipt: bill.receipt))
+            }
             dismiss()
         } catch let question as LowerReadingQuestion {
             readingQuestion = question

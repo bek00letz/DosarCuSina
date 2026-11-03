@@ -118,10 +118,13 @@ struct LabelledLayout<Key: Hashable> {
 
     /// The value for a label, trying every place the label was printed.
     func found(for key: Key) -> Found? {
-        for position in positions where position.key == key {
-            if let found = value(at: position) { return found }
-        }
-        return nil
+        positions.lazy.filter { $0.key == key }.compactMap { value(at: $0) }.first
+    }
+
+    /// Every value printed for a label, top to bottom, for a reader that checks each one
+    /// (an address, where a column header may come before the real label).
+    func allFound(for key: Key) -> [Found] {
+        positions.filter { $0.key == key }.compactMap { value(at: $0) }
     }
 
     /// The date printed for a label: after it on its line, or in its value.

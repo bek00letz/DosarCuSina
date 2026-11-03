@@ -102,7 +102,7 @@ struct CaptureFilingPlan {
             return plan
         }
         let reminders = blueprint.reminders(for: values)
-        if let existing = section?.activeObligations.first(where: { $0.blueprintKey == blueprint.key }) {
+        if let existing = section.flatMap({ existingDeadline(blueprint, in: $0, takesUpPaused: profile.deadlineIsOptIn) }) {
             let due = existing.dueDay(in: calendar)
             // A deadline that follows a field takes the document's own date; any other never
             // moves back for an older document.
@@ -120,6 +120,16 @@ struct CaptureFilingPlan {
         }
         plan.deadline = Deadline(blueprint: blueprint, day: day, action: .create, reminders: reminders)
         return plan
+    }
+
+    /// The section's deadline from `blueprint` that a document moves: the running one, or,
+    /// for a bill (`takesUpPaused`), the one paused while the bank paid by direct debit,
+    /// which a bill asking to be reminded takes up again instead of making a second.
+    @MainActor
+    static func existingDeadline(_ blueprint: ObligationBlueprint, in section: Asset, takesUpPaused: Bool) -> Obligation? {
+        if let active = section.activeObligations.first(where: { $0.blueprintKey == blueprint.key }) { return active }
+        guard takesUpPaused else { return nil }
+        return (section.obligations ?? []).filter { $0.blueprintKey == blueprint.key && $0.status == .paused }.max { $0.dueDate < $1.dueDate }
     }
 
     /// The category the document's values land in: a bill or a contract filed under a

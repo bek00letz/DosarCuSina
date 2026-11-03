@@ -129,7 +129,7 @@ private struct SectionContent: View {
             }
         }
         .sheet(isPresented: $isEditing) {
-            AssetEditSheet(asset: asset, definition: definition)
+            AssetEditSheet(asset: asset, definition: definition) { toast = $0 }
         }
         .sheet(isPresented: $isMoving) {
             MoveAssetSheet(asset: asset) { moved in

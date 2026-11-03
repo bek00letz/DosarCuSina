@@ -186,7 +186,7 @@ private struct ReadinessActionsModifier: ViewModifier {
                 }
             }
             .sheet(item: $editing) { request in
-                SectionEditSheet(assetID: request.id)
+                SectionEditSheet(assetID: request.id) { toast = $0 }
             }
     }
 
@@ -210,11 +210,13 @@ private struct ReadinessActionsModifier: ViewModifier {
 /// A section's edit sheet, found by its id.
 private struct SectionEditSheet: View {
     let assetID: UUID
+    let announce: (DSToast) -> Void
     @Query private var matches: [Asset]
     @Query private var templates: [CategoryTemplate]
 
-    init(assetID: UUID) {
+    init(assetID: UUID, announce: @escaping (DSToast) -> Void) {
         self.assetID = assetID
+        self.announce = announce
         let id = assetID
         _matches = Query(filter: #Predicate<Asset> { $0.id == id })
     }
@@ -223,7 +225,7 @@ private struct SectionEditSheet: View {
         if let asset = matches.first {
             let definition = templates.first { $0.key == asset.templateKey }?.definition
                 ?? BuiltInTemplates.definition(for: asset.templateKey) ?? BuiltInTemplates.other
-            AssetEditSheet(asset: asset, definition: definition)
+            AssetEditSheet(asset: asset, definition: definition, announce: announce)
         } else {
             NavigationStack { MissingRecordView() }
         }
