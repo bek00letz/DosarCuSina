@@ -72,7 +72,6 @@ ios/DosarCuSinaWidgets/UpcomingWidget.swift:romanian-locale
 
 # save-outside-unit-of-work: One unit of work around every multi-step flow (agreed fix 7); start-up and migrations save through UnitOfWork too.
 ios/DosarCuSina/App/DosarCuSinaApp.swift:save-outside-unit-of-work
-ios/DosarCuSina/Services/Templates/ChoiceMigration.swift:save-outside-unit-of-work
 
 # silent-action-failure: Failures go through the shared error path (agreed fixes 2 and 7).
 ios/DosarCuSina/Views/Section/RecordScreens.swift:silent-action-failure

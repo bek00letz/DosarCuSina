@@ -73,9 +73,10 @@ struct ChoiceStorageTests {
         let car = Asset(name: "Mașina", templateKey: BuiltInTemplates.Key.vehicle, values: values)
         context.insert(car)
         try context.save()
-        #expect(try ChoiceMigration.migrateStoredValues(in: context) == 1)
+        // The registry's first step, run with the rest at launch.
+        #expect(try ChoiceKeysStep().migrate(in: context) == 1)
         #expect(car.value("vehicle.fuel") == .text(FuelType.petrol))
-        #expect(try ChoiceMigration.migrateStoredValues(in: context) == 0)
+        #expect(try ChoiceKeysStep().migrate(in: context) == 0)
     }
 
     @Test func creatingAnAssetStoresKeys() throws {

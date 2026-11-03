@@ -7,6 +7,13 @@ struct SettingsScreen: View {
     let initialSection: SettingsSection?
 
     @Environment(\.dismiss) private var dismiss
+    /// The repair list, open right away when a link or the repair prompt asks for it.
+    @State private var showsRepairs: Bool
+
+    init(initialSection: SettingsSection?) {
+        self.initialSection = initialSection
+        _showsRepairs = State(initialValue: initialSection == .repairs)
+    }
 
     var body: some View {
         NavigationStack {
@@ -17,6 +24,7 @@ struct SettingsScreen: View {
                     SectionVisibilitySettings().id(SettingsSection.categories)
                     ExampleSettings().id(SettingsSection.examples)
                     BackupSettings().id(SettingsSection.backup)
+                    DataRepairSettings(isShowingList: $showsRepairs).id(SettingsSection.repairs)
                     StorageSettings()
                     AISettings()
                     AboutSettings().id(SettingsSection.about)
@@ -27,6 +35,7 @@ struct SettingsScreen: View {
                     withAnimation(DS.Motion.standard) { proxy.scrollTo(initialSection, anchor: .top) }
                 }
             }
+            .navigationDestination(isPresented: $showsRepairs) { DataRepairsScreen() }
             .navigationTitle(Text("Setări", comment: "Toolbar button that opens settings."))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

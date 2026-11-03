@@ -33,6 +33,8 @@ public enum SettingsSection: String, Hashable, Sendable, Codable, CaseIterable {
     case categories
     case backup
     case examples
+    /// The repair list: data an earlier version saved wrongly, waiting for an OK.
+    case repairs
     case about
 }
 

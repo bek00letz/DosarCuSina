@@ -35,6 +35,16 @@ public enum Consequence: String, Codable, CaseIterable, Sendable {
 
     /// Whether the last reminders may break through Focus.
     public var allowsTimeSensitiveReminders: Bool { self != .comfort }
+
+    /// What an unknown stored value (from a newer build or archive) behaves as: the
+    /// loudest, so a deadline never goes quiet because this build can't read its value.
+    public static let loudest = Consequence.legal
+
+    /// A stored value: unknown or missing reads as `loudest`. The stored text is kept as
+    /// it was (see `Obligation.reminders`), never written back downgraded.
+    public init(stored raw: String?) {
+        self = raw.flatMap(Consequence.init(rawValue:)) ?? .loudest
+    }
 }
 
 /// How an obligation reminds: how far ahead (driven by how long renewing takes),
@@ -77,7 +87,7 @@ public struct ReminderProfile: Hashable, Sendable, Codable {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         self.init(
             leadDays: try c.decodeIfPresent([Int].self, forKey: .leadDays) ?? [7, 0],
-            consequence: Consequence(rawValue: try c.decodeIfPresent(String.self, forKey: .consequence) ?? "") ?? .comfort,
+            consequence: Consequence(stored: try c.decodeIfPresent(String.self, forKey: .consequence)),
             graceDays: try c.decodeIfPresent(Int.self, forKey: .graceDays) ?? 0,
             followUpAfterLapse: try c.decodeIfPresent(Bool.self, forKey: .followUpAfterLapse)
         )
@@ -147,6 +157,13 @@ public enum ObligationKind: String, Codable, CaseIterable, Sendable {
     case maintenance
     /// Everyday chores: watering plants, cleaning filters.
     case routine
+
+    /// What an unknown stored kind behaves as: the loudest (see `Consequence.loudest`).
+    public static let loudest = ObligationKind.legal
+
+    public init(stored raw: String?) {
+        self = raw.flatMap(ObligationKind.init(rawValue:)) ?? .loudest
+    }
 
     /// The profile used when a blueprint or the person doesn't give one.
     public var defaultProfile: ReminderProfile {
@@ -406,7 +423,7 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         key = try c.decode(String.self, forKey: .key)
         title = try c.decode(String.self, forKey: .title)
-        kind = ObligationKind(rawValue: try c.decode(String.self, forKey: .kind)) ?? .routine
+        kind = ObligationKind(stored: try c.decode(String.self, forKey: .kind))
         recurrence = try c.decodeIfPresent(RecurrenceRule.self, forKey: .recurrence) ?? .none
         firstDue = try c.decodeIfPresent(FirstDueRule.self, forKey: .firstDue) ?? .ask
         reminders = try c.decodeIfPresent(ReminderProfile.self, forKey: .reminders) ?? kind.defaultProfile
