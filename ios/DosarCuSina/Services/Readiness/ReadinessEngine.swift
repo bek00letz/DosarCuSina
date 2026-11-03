@@ -126,12 +126,12 @@ public enum ReadinessEngine {
     static func documents(of type: String, in assets: [ReadinessAsset]) -> [ReadinessAsset] {
         assets.filter {
             $0.templateKey == BuiltInTemplates.Key.documents
-                && $0.values["document.type"]?.textValue.flatMap({ DocumentType.options.option(for: $0)?.key }) == type
+                && $0.values[DocumentType.typeFieldKey]?.textValue.flatMap({ DocumentType.options.option(for: $0)?.key }) == type
         }
     }
 
     static func expiry(_ asset: ReadinessAsset) -> CalendarDay? {
-        asset.values["document.expiry"]?.dateValue
+        asset.values[DocumentFields.expiry]?.dateValue
     }
 
     static func trip(start: CalendarDay, end: CalendarDay, region: ReadinessScenario.Region, driving: Bool, withPet: Bool, assets: [ReadinessAsset], calendar: Calendar) -> [ReadinessItem] {
@@ -182,7 +182,7 @@ public enum ReadinessEngine {
         // European health card, as a document or as a renewal on the health profile.
         let healthCards = documents(of: DocumentType.euHealthCard, in: assets)
         let cardExpiry = healthCards.compactMap(expiry).max()
-            ?? assets.compactMap { $0.obligations["health.euCard"]?.due }.max()
+            ?? assets.compactMap { $0.obligations[BuiltInBlueprints.healthEUCard]?.due }.max()
         if let cardExpiry {
             items.append(ReadinessItem(
                 id: "trip.ehic", status: cardExpiry >= end ? .ok : .warning, title: String(localized: "Card european de sănătate"),
@@ -222,10 +222,10 @@ public enum ReadinessEngine {
 
     static func carChecks(_ car: ReadinessAsset, start: CalendarDay, end: CalendarDay, region: ReadinessScenario.Region, assets: [ReadinessAsset], calendar: Calendar) -> [ReadinessItem] {
         var items = [
-            validity("vehicle.rca", title: String(localized: "RCA"), on: car, through: end, status: .problem),
-            validity("vehicle.itp", title: String(localized: "ITP"), on: car, through: end, status: .problem),
+            validity(BuiltInBlueprints.vehicleRCA, title: String(localized: "RCA"), on: car, through: end, status: .problem),
+            validity(BuiltInBlueprints.vehicleITP, title: String(localized: "ITP"), on: car, through: end, status: .problem),
             // The vignette is needed on Romanian roads, so it matters at the start and on the way back.
-            validity("vehicle.vignette", title: String(localized: "Rovinietă"), on: car, through: end, status: .warning),
+            validity(BuiltInBlueprints.vehicleVignette, title: String(localized: "Rovinietă"), on: car, through: end, status: .warning),
         ]
         if region == .outsideEU {
             let greenCards = documents(of: DocumentType.greenCard, in: assets)
@@ -241,12 +241,12 @@ public enum ReadinessEngine {
 
     static func petChecks(_ pet: ReadinessAsset, start: CalendarDay, end: CalendarDay, calendar: Calendar) -> [ReadinessItem] {
         var items: [ReadinessItem] = []
-        let hasPassport = pet.values["pet.passport"]?.textValue?.isEmpty == false
+        let hasPassport = pet.values[PetFields.passport]?.textValue?.isEmpty == false
         items.append(ReadinessItem(
             id: "trip.petPassport.\(pet.id)", status: hasPassport ? .ok : .missing, title: String(localized: "Pașaport european · \(pet.name)"),
             detail: hasPassport ? String(localized: "Trecut în dosar.") : String(localized: "Adaugă numărul pașaportului."), route: .asset(pet.id)
         ))
-        guard let rabies = pet.obligations["pet.rabies"] else {
+        guard let rabies = pet.obligations[BuiltInBlueprints.petRabies] else {
             items.append(ReadinessItem(id: "trip.rabies.\(pet.id)", status: .missing, title: String(localized: "Vaccin antirabic · \(pet.name)"),
                                        detail: String(localized: "Nu e în dosar."), route: .asset(pet.id)))
             return items
@@ -277,8 +277,8 @@ public enum ReadinessEngine {
                                  detail: present ? String(localized: "Trecut în dosar.") : String(localized: "Adaugă-l înainte de vânzare."), route: .asset(car.id))
         }
         var items = [
-            fact("vehicle.vin", String(localized: "Serie de șasiu (VIN)")),
-            fact("vehicle.civ", String(localized: "Carte de identitate a vehiculului (CIV)")),
+            fact(VehicleFields.vin, String(localized: "Serie de șasiu (VIN)")),
+            fact(VehicleFields.civ, String(localized: "Carte de identitate a vehiculului (CIV)")),
             ReadinessItem(id: "sale.history", status: car.historyCount > 0 ? .ok : .warning, title: String(localized: "Istoric de service"),
                           detail: car.historyCount > 0 ? String(localized: "\(car.historyCount) intrări de arătat cumpărătorului.") : String(localized: "Un istoric complet crește încrederea și prețul."),
                           route: .asset(car.id)),
@@ -286,7 +286,7 @@ public enum ReadinessEngine {
                           detail: car.documentKinds.contains(.invoice) ? String(localized: "Sunt facturi în dosar.") : String(localized: "Scanează facturile pe care le ai."),
                           route: .asset(car.id)),
         ]
-        if let itp = car.obligations["vehicle.itp"] {
+        if let itp = car.obligations[BuiltInBlueprints.vehicleITP] {
             items.append(ReadinessItem(id: "sale.itp", status: .ok, title: String(localized: "ITP"), detail: String(localized: "Verifică să fie valabil la predare."), route: .obligation(itp.id)))
         }
         return items
