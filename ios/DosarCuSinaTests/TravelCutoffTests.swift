@@ -284,7 +284,7 @@ struct TravelCutoffTests {
     }
 
     /// The same rule both ways: a deadline that still counts from a cut-off its document no
-    /// longer has is offered too, and one whose reminders the person set is left alone.
+    /// longer has is offered too, and one whose reminders the person set gets only the cut-off.
     @Test @MainActor func theRepairChecksTheSameRuleAsEditing() throws {
         let context = try makeContext()
         let fixed = noon("2026-11-03")
@@ -310,11 +310,14 @@ struct TravelCutoffTests {
         let repairs = DataRepairs(context: context, calendar: calendar,
                                   ledger: DataRepairLedger(defaults: try #require(UserDefaults(suiteName: "travel-\(UUID().uuidString)"))))
         let found = try repairs.detect().filter { $0.step == .travelCutoff }
-        #expect(found.count == 1, "Only the card; the person's own reminders stay")
-        #expect(found.first?.message.hasPrefix("La „Carte de identitate” contează doar data de expirare. Schimb când te anunț?") == true)
+        #expect(found.count == 2, "The card, and the passport the person set reminders on")
+        #expect(found.contains { $0.message.hasPrefix("La „Carte de identitate” contează doar data de expirare. Schimb când te anunț?") })
+        #expect(found.contains { $0.message.hasPrefix("„Pașaport” e bun de călătorit doar până pe 12 februarie 2027") })
         try repairs.apply(found)
         #expect(card.reminders == idCardProfile)
-        #expect(own.reminders == ReminderProfile(leadDays: [200], consequence: .legal))
+        #expect(own.reminders == ReminderProfile(leadDays: [200], consequence: .legal, travelMarginDays: 180),
+                "The person's leads stay, now counted from the cut-off")
+        #expect(own.remindersCustomized)
     }
 }
 
