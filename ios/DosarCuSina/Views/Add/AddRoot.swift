@@ -228,10 +228,10 @@ enum InboxWording {
     }
 
     static func received(_ date: Date) -> String {
-        let time = date.formatted(.dateTime.hour().minute().locale(.dosarDefault))
+        let time = DosarFormat.time(date)
         if Calendar.current.isDateInToday(date) { return String(localized: "Primit azi la \(time)") }
         if Calendar.current.isDateInYesterday(date) { return String(localized: "Primit ieri la \(time)") }
-        let day = date.formatted(.dateTime.day().month(.wide).locale(.dosarDefault))
+        let day = DosarFormat.dayMonth(date)
         return String(localized: "Primit pe \(day)")
     }
 }

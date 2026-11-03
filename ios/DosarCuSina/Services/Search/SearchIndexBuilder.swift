@@ -87,7 +87,7 @@ public struct SearchIndexBuilder {
             guard let last = MaintenanceLog.lastOccurrence(of: key, in: items) else { return nil }
             let component = catalog.first { $0.key == key }
             let name = component?.name ?? last.name
-            let when = last.date.formatted(.dateTime.day().month(.abbreviated).year().locale(locale))
+            let when = DosarFormat.day(last.date, locale: locale)
             return SearchDocument(
                 id: "\(SearchResultKind.component.rawValue):\(asset.id.uuidString):\(key)", kind: .component, title: name,
                 subtitle: "\(asset.name) · \(when)", route: .historyEntry(last.entryId),
@@ -103,7 +103,7 @@ public struct SearchIndexBuilder {
     }
 
     private func obligationDocument(_ obligation: Obligation, templates: [String: CategoryTemplate]) -> SearchDocument {
-        let due = obligation.dueDay().startDate().formatted(.dateTime.day().month(.abbreviated).year().locale(locale))
+        let due = DosarFormat.day(obligation.dueDay(), locale: locale)
         return SearchDocument(
             id: id(.obligation, obligation.id), kind: .obligation, title: obligation.title,
             subtitle: [obligation.asset?.name, due].compactMap { $0 }.joined(separator: " · "),
@@ -121,7 +121,7 @@ public struct SearchIndexBuilder {
 
     private func historyDocument(_ entry: HistoryEntry, templates: [String: CategoryTemplate]) -> SearchDocument {
         let items = entry.items ?? []
-        let when = entry.occurredAt.formatted(.dateTime.day().month(.abbreviated).year().locale(locale))
+        let when = DosarFormat.day(entry.occurredAt, locale: locale)
         return SearchDocument(
             id: id(.historyEntry, entry.id), kind: .historyEntry, title: entry.title,
             subtitle: [entry.asset?.name, when].compactMap { $0 }.joined(separator: " · "),

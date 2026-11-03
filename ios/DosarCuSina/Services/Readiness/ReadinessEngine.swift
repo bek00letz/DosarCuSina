@@ -111,10 +111,6 @@ public enum ReadinessEngine {
         asset.values["document.expiry"]?.dateValue
     }
 
-    static func format(_ day: CalendarDay, calendar: Calendar) -> String {
-        day.startDate(in: calendar).formatted(.dateTime.day().month(.wide).year().locale(.dosarDefault))
-    }
-
     static func trip(start: CalendarDay, end: CalendarDay, region: ReadinessScenario.Region, driving: Bool, withPet: Bool, assets: [ReadinessAsset], calendar: Calendar) -> [ReadinessItem] {
         var items: [ReadinessItem] = []
         let passports = documents(of: DocumentType.passport, in: assets)
@@ -138,8 +134,8 @@ public enum ReadinessEngine {
                 items.append(ReadinessItem(
                     id: "trip.passport.\(passport.id)", status: ok ? .ok : .problem, title: passport.name,
                     detail: ok
-                        ? String(localized: "Valabil până pe \(format(expiry, calendar: calendar)), cu 6 luni după întoarcere.")
-                        : String(localized: "Expiră pe \(format(expiry, calendar: calendar)). Multe țări cer valabilitate până pe \(format(needed, calendar: calendar))."),
+                        ? String(localized: "Valabil până pe \(DosarFormat.longDay(expiry)), cu 6 luni după întoarcere.")
+                        : String(localized: "Expiră pe \(DosarFormat.longDay(expiry)). Multe țări cer valabilitate până pe \(DosarFormat.longDay(needed))."),
                     route: .asset(passport.id)
                 ))
             }
@@ -241,7 +237,7 @@ public enum ReadinessEngine {
         if !validOnReturn {
             detail = String(localized: "Expiră înainte de întoarcere. Fă-l cu cel puțin 21 de zile înainte de plecare.")
         } else if !doneInTime {
-            detail = String(localized: "Trebuie făcut cu cel puțin 21 de zile înainte de plecare, adică până pe \(format(latestAllowed, calendar: calendar)).")
+            detail = String(localized: "Trebuie făcut cu cel puțin 21 de zile înainte de plecare, adică până pe \(DosarFormat.longDay(latestAllowed)).")
         } else {
             detail = String(localized: "Valabil.")
         }

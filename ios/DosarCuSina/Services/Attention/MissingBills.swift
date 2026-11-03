@@ -29,7 +29,7 @@ extension AttentionModel {
             .filter { !$0.isExample && ServiceKind.sendsRegularBills($0.service) }
             .compactMap { subscription -> AttentionNote? in
                 guard let missing = BillHistory.missing(subscription.bills, cycleMonths: subscription.cycleMonths, today: today, calendar: calendar) else { return nil }
-                let last = missing.lastDay.startDate(in: calendar).formatted(.dateTime.day().month(.wide).locale(locale))
+                let last = DosarFormat.dayMonth(missing.lastDay, locale: locale)
                 let lastLine = String(localized: "Ultima a venit pe \(last).", comment: "When a subscription's last bill came.")
                 guard !subscription.isSensitive else {
                     return AttentionNote(assetId: subscription.id, title: String(localized: "O factură n-a venit încă", comment: "A missing bill, in a locked section."),

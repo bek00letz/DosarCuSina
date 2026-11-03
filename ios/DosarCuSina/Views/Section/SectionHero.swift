@@ -212,7 +212,7 @@ struct ExpiryLine: View {
         let days = DSDayMath.daysRemaining(until: date, calendar: calendar)
         VStack(alignment: .leading, spacing: DS.Space.xxs) {
             Text(verbatim: label).dsFont(.captionEmphasized)
-            Text(date, format: .dateTime.day().month(.wide).year())
+            Text(verbatim: DosarFormat.longDay(day))
                 .dsFont(.title, numeric: true)
             DSStatusBadge(
                 days < 0 ? .overdue : (days <= 60 ? .soon : .done),

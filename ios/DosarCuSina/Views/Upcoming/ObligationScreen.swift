@@ -212,7 +212,7 @@ private struct ObligationPage: View {
                                 Button { AppNavigator.shared.open(.document(document.id)) } label: {
                                     DSListRow(
                                         title: Text(verbatim: document.title ?? document.fileName),
-                                        subtitle: document.documentDate.map { Text(verbatim: $0.formatted(.dateTime.day().month(.wide).year().locale(.dosarDefault))) },
+                                        subtitle: document.documentDate.map { Text(verbatim: DosarFormat.longDay($0)) },
                                         systemImage: "doc.text",
                                         showsChevron: true,
                                         trailing: { EmptyView() }
@@ -230,7 +230,7 @@ private struct ObligationPage: View {
     @ViewBuilder private func lastCompletion(_ entry: HistoryEntry) -> some View {
         VStack(alignment: .leading, spacing: DS.Space.xs) {
             HStack(alignment: .firstTextBaseline) {
-                Text(verbatim: entry.occurredAt.formatted(.dateTime.day().month(.wide).year().locale(.dosarDefault)))
+                Text(verbatim: DosarFormat.longDay(entry.occurredAt))
                     .dsFont(.headline)
                 Spacer()
                 if !entry.effectiveCost.isEmpty {

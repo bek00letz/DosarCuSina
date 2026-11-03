@@ -145,19 +145,19 @@ public enum FieldFormatter {
     // MARK: Display
 
     /// Human-readable text for a value of `field`. Choice keys show their labels.
-    public static func display(_ value: FieldValue, field: FieldDefinition, locale: Locale = .dosarDefault, calendar: Calendar = .current) -> String {
+    public static func display(_ value: FieldValue, field: FieldDefinition, locale: Locale = .dosarDefault) -> String {
         switch (field.type, value) {
         case (.choice, .text(let key)):
             return field.label(forChoice: key)
         case (.multiChoice, .choices(let keys)):
             return keys.map(field.label(forChoice:)).formatted(.list(type: .and).locale(locale))
         default:
-            return display(value, as: field.type, unit: field.unit, locale: locale, calendar: calendar)
+            return display(value, as: field.type, unit: field.unit, locale: locale)
         }
     }
 
     /// Human-readable text for a stored value, using the field's type and unit.
-    public static func display(_ value: FieldValue, as type: FieldType, unit: String? = nil, locale: Locale = .dosarDefault, calendar: Calendar = .current) -> String {
+    public static func display(_ value: FieldValue, as type: FieldType, unit: String? = nil, locale: Locale = .dosarDefault) -> String {
         switch value {
         case .text(let text):
             switch type {
@@ -176,7 +176,7 @@ public enum FieldFormatter {
         case .money(let money):
             return money.formatted(locale: locale)
         case .date(let day):
-            return day.startDate(in: calendar).formatted(.dateTime.day().month(.abbreviated).year().locale(locale))
+            return DosarFormat.day(day, locale: locale)
         case .bool(let flag):
             return flag ? String(localized: "Da") : String(localized: "Nu")
         case .choices(let items):

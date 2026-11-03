@@ -37,7 +37,7 @@ struct ObligationRow: View {
     var body: some View {
         DSListRow(
             title: Text(verbatim: obligation.title),
-            subtitle: Text(verbatim: DosarFormat.day(obligation.dueDate)),
+            subtitle: Text(verbatim: DosarFormat.day(obligation.dueDay())),
             showsChevron: true
         ) {
             DSStatusBadge(daysRemaining: obligation.daysRemaining())
@@ -155,7 +155,7 @@ enum ChildSummary {
         var endDay: CalendarDay?
     }
 
-    static func make(_ values: FieldValues, definition: TemplateDefinition, locale: Locale = .dosarDefault, calendar: Calendar = .current) -> Result {
+    static func make(_ values: FieldValues, definition: TemplateDefinition, locale: Locale = .dosarDefault) -> Result {
         var parts: [String] = []
         if let subtitle = HeroFacts.subtitle(values, definition: definition, locale: locale) { parts.append(subtitle) }
         if let field = definition.fields(withRole: .heroMetric).first, let value = values[field.key] {
@@ -164,9 +164,9 @@ enum ChildSummary {
         let expiry = AssetFacts.expiry(values, template: definition)
         let warranty = AssetFacts.purchase(values, template: definition).warrantyUntil
         if let expiry {
-            parts.append(String(localized: "până la \(DosarFormat.day(expiry, locale: locale, calendar: calendar))", comment: "Child summary: valid or contracted until a date."))
+            parts.append(String(localized: "până la \(DosarFormat.day(expiry, locale: locale))", comment: "Child summary: valid or contracted until a date."))
         } else if let warranty {
-            parts.append(String(localized: "garanție până la \(DosarFormat.day(warranty, locale: locale, calendar: calendar))", comment: "Child summary: warranty until a date."))
+            parts.append(String(localized: "garanție până la \(DosarFormat.day(warranty, locale: locale))", comment: "Child summary: warranty until a date."))
         }
         return Result(line: parts.isEmpty ? nil : parts.joined(separator: " · "), endDay: expiry ?? warranty)
     }
@@ -275,7 +275,7 @@ extension Attachment {
     /// the renewal), else the date printed on it.
     var validityLine: String? {
         if let obligation {
-            return String(localized: "Valabil până la \(DosarFormat.day(obligation.dueDate))", comment: "Document row: valid until.")
+            return String(localized: "Valabil până la \(DosarFormat.day(obligation.dueDay()))", comment: "Document row: valid until.")
         }
         if let documentDate {
             return String(localized: "Din \(DosarFormat.day(documentDate))", comment: "Document row: the date on the document.")
@@ -470,24 +470,5 @@ struct MoneyPocket: View {
                 DSReadOnlyValueRow(label: Text("Preț de cumpărare", comment: "Money row: purchase price."), value: Text(verbatim: price.formattedCompact()))
             }
         }
-    }
-}
-
-// MARK: - Formatting
-
-/// Dates the way the binder writes them, in Romanian whatever the phone's language.
-enum DosarFormat {
-    /// "14 mar. 2025"
-    static func day(_ date: Date, locale: Locale = .dosarDefault) -> String {
-        date.formatted(.dateTime.day().month(.abbreviated).year().locale(locale))
-    }
-
-    static func day(_ day: CalendarDay, locale: Locale = .dosarDefault, calendar: Calendar = .current) -> String {
-        self.day(day.startDate(in: calendar), locale: locale)
-    }
-
-    /// "14 martie 2025"
-    static func longDay(_ date: Date, locale: Locale = .dosarDefault) -> String {
-        date.formatted(.dateTime.day().month(.wide).year().locale(locale))
     }
 }

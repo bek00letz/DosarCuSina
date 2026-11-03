@@ -71,14 +71,14 @@ struct BinderWordingTests {
         var values = FieldValues()
         values["tenancy.rent"] = .money(Money(2000))
         values["tenancy.end"] = .date(CalendarDay("2027-08-31"))
-        let summary = ChildSummary.make(values, definition: BuiltInTemplates.tenancy, locale: ro, calendar: calendar)
+        let summary = ChildSummary.make(values, definition: BuiltInTemplates.tenancy, locale: ro)
         #expect(summary.endDay == CalendarDay("2027-08-31"))
         #expect(summary.line?.contains("până la 31 aug. 2027") == true)
         #expect(summary.line?.contains("2.000") == true)
 
         var product = FieldValues()
         product["purchase.warrantyUntil"] = .date(CalendarDay("2028-01-15"))
-        let warranty = ChildSummary.make(product, definition: BuiltInTemplates.purchase, locale: ro, calendar: calendar)
+        let warranty = ChildSummary.make(product, definition: BuiltInTemplates.purchase, locale: ro)
         #expect(warranty.line?.contains("garanție până la 15 ian. 2028") == true || warranty.line?.contains("până la 15 ian. 2028") == true)
     }
 

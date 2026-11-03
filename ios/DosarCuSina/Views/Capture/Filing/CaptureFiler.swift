@@ -393,7 +393,7 @@ enum CaptureReminderPreview {
     static func text(for review: CaptureReview, templates: [String: CategoryTemplate], assets: [Asset], calendar: Calendar = .current, today: CalendarDay) -> String? {
         guard let day = review.reminderDay else { return nil }
         if review.kind == .utilityInvoice && !review.remindsToPay { return nil }
-        let date = DueWording.date(day, today: today, calendar: calendar)
+        let date = DueWording.date(day, today: today)
         if review.kind == .utilityInvoice, review.paysByDirectDebit(assets: assets) {
             return String(localized: "De plătit până pe \(date). Se plătește prin debit direct, așa că nu îți amintesc.")
         }
