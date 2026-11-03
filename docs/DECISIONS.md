@@ -8,6 +8,10 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-03
 
+### A reviewed past commit doesn't block the card-number check
+- **Decided (owner):** a past commit that the card-number rule flags, but that holds nobody's real number and was fixed in a later commit, is recorded in `scripts/privacy-reviewed-commits.txt` (commit id and reason, never a value) instead of rewriting the shared history.
+- **Why:** rewriting the integration branch would force every open branch built on it to be rebuilt, and a pushed commit stays in GitHub's caches anyway; a reviewed, recorded exception keeps the rule strict for everything new.
+
 ### Bank cards stay on the phone; a cazier is typed in by its issue date
 - **Decided (owner):** a bank card is never sent to the AI provider: not on "Citește mai bine", not by "Citește automat", not by a reading again after pages are added. This replaces "never sent to the AI provider without asking" for bank cards in "Cazier, the European health card and bank cards, from a photo" (below). Which documents stay on the phone is data on their type (`DocumentType.readOnPhoneOnly`, only the bank card), and one rule, `PhoneOnlyReading`, decides whether a capture may be one.
 - **Decided (owner):** when the phone can't be sure a page isn't a bank card, it is treated as one: the kind read, or a kind another reader saw, is a bank card; the page shows a card number, whole or already masked; it carries the words only a card prints ("VALID THRU", "GOOD THRU": the heaviest signals of the card's own templates, so there is no second list); or the person is adding one (the capture started from a bank card's page, including "Am rezolvat" on its deadline).

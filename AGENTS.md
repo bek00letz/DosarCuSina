@@ -253,6 +253,7 @@ The standing rule above is the bar. These are the SwiftUI specifics.
 ## 4.2 What protects the repository
 - The versioned pre-commit hook [.githooks/pre-commit](.githooks/pre-commit) and the pull request workflow [.github/workflows/privacy-check.yml](.github/workflows/privacy-check.yml) run the same script, [scripts/privacy-check.sh](scripts/privacy-check.sh). It blocks private and credential paths, keys and tokens, home-folder paths, real-looking CNPs and card numbers other than the published test numbers it lists.
 - The script lists patterns only. Never add a finding, a trace or a real value to it.
+- A past commit the card-number rule flags, once the owner has checked that it holds nobody's real number and a later commit fixed it, can be listed in [scripts/privacy-reviewed-commits.txt](scripts/privacy-reviewed-commits.txt): its commit id and a reason only. Only the owner adds to that list.
 - Links in documents are relative to the repository. Never write an absolute path from your machine.
 
 # 5. Security findings and the private vault

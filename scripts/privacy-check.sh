@@ -122,6 +122,29 @@ added=$(awk '
     /^\+/ { print path "\t" line "\t" substr($0, 2); line++ }
 ' <<<"$diff_text")
 
+# The card rule skips past commits the owner reviewed and recorded in
+# scripts/privacy-reviewed-commits.txt (commit ids and a reason only, never a value):
+# lines that look like card numbers but aren't anyone's, already fixed in a later commit.
+card_added=$added
+reviewed_file=scripts/privacy-reviewed-commits.txt
+if [[ $mode == range && -f $reviewed_file ]]; then
+    reviewed=$(grep -Eo '^[0-9a-f]{40}[[:space:]]+card-number' "$reviewed_file" | cut -c1-40 | tr '\n' ' ' || true)
+    if [[ -n $reviewed ]]; then
+        card_diff=$(git log -p -U0 --format='@@@commit %H' --no-color --no-ext-diff --diff-filter=ACMR "$base..$head")
+        card_added=$(awk -v reviewed="$reviewed" '
+            BEGIN { n = split(reviewed, list, " "); for (i = 1; i <= n; i++) skip[list[i]] = 1 }
+            /^@@@commit / { commit = $2; next }
+            skip[commit] { next }
+            /^\+\+\+ / { path = substr($0, 5); sub(/^b\//, "", path); next }
+            /^@@ / {
+                split($0, parts, " "); start = parts[3]; sub(/^\+/, "", start)
+                split(start, numbers, ","); line = numbers[1] + 0; next
+            }
+            /^\+/ { print path "\t" line "\t" substr($0, 2); line++ }
+        ' <<<"$card_diff")
+    fi
+fi
+
 check_lines() {
     # $1 pattern, $2 message
     local matches
@@ -173,7 +196,7 @@ if [[ -n $added ]]; then
     # or in groups of three digits or more with a space or a dash between them, as cards
     # print them. Digits inside a longer word or code (a hash, an IBAN, an identifier)
     # aren't a card. A made-up CNP (county code 99, as the rule above asks) isn't either.
-    card_lines=$(cut -f3- <<<"$added" | grep -nE -- "$card_candidate" || true)
+    card_lines=$(cut -f3- <<<"$card_added" | grep -nE -- "$card_candidate" || true)
     if [[ -n $card_lines ]]; then
         flagged=$(awk -F: -v allowed_list="$allowed_card_numbers" '
             function luhn(s,   i, sum, d, doubled) {
@@ -224,7 +247,7 @@ if [[ -n $added ]]; then
         ' <<<"$card_lines")
         while IFS= read -r index; do
             [[ -z $index ]] && continue
-            report "$(sed -n "${index}p" <<<"$added" | cut -f1,2 | tr '\t' ':')" \
+            report "$(sed -n "${index}p" <<<"$card_added" | cut -f1,2 | tr '\t' ':')" \
                 "This looks like a bank card number. Use a published test number, such as 4111 1111 1111 1111."
         done <<<"$flagged"
     fi
