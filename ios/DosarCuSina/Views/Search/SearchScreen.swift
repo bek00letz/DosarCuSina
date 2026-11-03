@@ -1,9 +1,10 @@
 import SwiftUI
 import SwiftData
 
-/// What is typed in Caută's search field. The field belongs to the tab view, which is
-/// where the system draws a search tab's field (in the tab bar); the search screen
-/// reads it from here.
+/// What is typed in Caută's search field. The field belongs to the search tab's own
+/// navigation stack: there iOS draws it in the tab bar when Caută is chosen, and only
+/// there (on the whole tab view it would reach every tab). The search screen reads it
+/// from here.
 @MainActor
 @Observable
 final class SearchQuery {
@@ -15,7 +16,7 @@ final class SearchQuery {
 }
 
 extension View {
-    /// The search tab's field, on the tab view, with the screen's prompt.
+    /// The search tab's field, on the search tab's navigation stack, with the screen's prompt.
     func shellSearch(_ query: SearchQuery) -> some View {
         @Bindable var query = query
         return searchable(text: $query.text, prompt: Text("Nume, număr, piesă, meseriaș…", comment: "Search field prompt."))
@@ -31,6 +32,7 @@ struct SearchScreen: View {
     @Environment(\.modelContext) private var context
     @Environment(BiometricVaultManager.self) private var vault
     @Environment(SearchQuery.self) private var search
+    @Environment(ShellRouter.self) private var router
 
     @State private var store: SearchIndexStore?
     @State private var results: [SearchResult] = []
@@ -53,7 +55,6 @@ struct SearchScreen: View {
                             NavigationLink(value: result.document.route) {
                                 SearchResultRow(result: result, query: trimmedQuery, isLocked: vault.isLocked(sectionIsSensitive: result.document.isSensitive))
                             }
-                            .simultaneousGesture(TapGesture().onEnded { recent.add(trimmedQuery, results: results) })
                         }
                     } header: {
                         Label { Text(verbatim: group.kind.groupTitle) } icon: { Image(systemName: group.kind.systemImage) }
@@ -64,6 +65,12 @@ struct SearchScreen: View {
         .navigationTitle(Text("Caută", comment: "Title of the search tab."))
         .onChange(of: search.submissions) { _, _ in recent.add(trimmedQuery, results: index?.search(trimmedQuery) ?? []) }
         .onChange(of: search.text) { _, _ in scheduleSearch() }
+        // A result opened from here is worth remembering. Read from the navigation, not from
+        // a gesture on each row: a gesture beside the link makes every tap wait to be told
+        // apart from a hold.
+        .onChange(of: router.searchPath.count) { before, after in
+            if after > before, !trimmedQuery.isEmpty { recent.add(trimmedQuery, results: results) }
+        }
         .task {
             // One index per database, kept up to date off the main thread after every save.
             let shared = SearchIndexStore.shared(for: context.container)

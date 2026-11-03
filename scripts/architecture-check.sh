@@ -108,6 +108,10 @@ rule pasteboard-write "$app" "$design_system" \
     'UIPasteboard\.general\.([A-Za-z]+ *=[^=]|set[A-Z]|add[A-Z])' - \
     "Copy with the design system's value rows (DSActionValueRow, DSSecretValueRow), which confirm the copy and keep secrets off other devices."
 
+rule tap-gesture-beside-action "$app" "$design_system" \
+    'simultaneousGesture\( *TapGesture' - \
+    "A tap gesture beside a link or a button makes every tap wait to be told apart from a hold. Do the work in the button's action, or read it from the navigation."
+
 rule side-effect-outside-coordinator "$app" \
     '^ios/DosarCuSina/Services/SideEffects/|^ios/DosarCuSina/Services/Reminders/NotificationReconciler\.swift$|^ios/DosarCuSinaWidgets/' \
     'WidgetCenter|UNNotificationRequest\(|UNUserNotificationCenter\.current\(\)\.(add|remove|setBadgeCount)|setBadgeCount\(|CSSearchableIndex|ControlCenter\.shared\.reload' - \

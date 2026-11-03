@@ -57,12 +57,12 @@ struct AppShell: View {
                 NavigationStack(path: $router.searchPath) {
                     SearchScreen().shellDestinations()
                 }
+                // The search field belongs to this tab alone; iOS draws it in the tab bar.
+                .shellSearch(search)
             } label: {
                 Label { Text("Caută", comment: "Tab: search.") } icon: { Image(systemName: "magnifyingglass") }
             }
         }
-        // A search tab's field lives on the tab view; iOS draws it in the tab bar.
-        .shellSearch(search)
         .environment(router)
         .intakeHandoff()
         .sheet(item: $router.sheet) { sheet in
