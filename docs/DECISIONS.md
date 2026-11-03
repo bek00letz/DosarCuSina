@@ -8,6 +8,41 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-03
 
+### One form for a new deadline, one flow for a new section
+- **Decided:** a section's *Alt termen* and *Adaugă › Scriu eu* open the same `DeadlineForm`. A deadline of the person's own asks what it is, how important it is and whether it repeats; its kind comes from the importance (legal, payment, health, routine) and its reminders from that kind's default profile (`DeadlineChoice`). The fixed "a week before and on the day, financial" profile the section's sheet gave every deadline is gone. *Scriu eu*'s *Secțiune nouă* opens the binder's *Adaugă o secțiune* flow (category, essentials, deadlines) instead of a name-only form.
+- **Open for the owner:** the importance starts on *Doar să nu uit*, as *Scriu eu* already did. Starting with nothing chosen would make the person pick every time.
+- **Why:** the same "Plata asigurării" reminded differently depending on where it was typed, and read "Expiră în…" because every deadline from a section was a renewal.
+
+### Rows give way by measuring, not by text size
+- **Decided:** one layout, `DSAdaptiveStack`, puts a row's pieces side by side when they fit at their natural width and stacks them otherwise, at any text size and screen width. It replaces the `ViewThatFits` copies and the "accessibility size, so stack" checks in rows, value rows and button rows. Value buttons stack under each other when even they don't fit side by side. Status badges and chips wrap onto a second line instead of being cut off. The binder's grid still drops to one column at the accessibility sizes; that is a grid, not a row.
+- **Decided:** tap sizes are tokens (`DS.Control`): 44 pt for anything tapped, and a test measures the DS buttons at every text size. A small action beside a row is `DSCompactButton`.
+- **Why:** a size check stacked short rows that fitted and left long ones to clip at the sizes just below it.
+
+### One way to fold text and find a keyword
+- **Decided:** `RomanianText.fold` is the one fold (case, diacritics with both ş and ș, wide forms, no-break spaces, the typographic minus) for search, choices, component matching and capture. `CaptureText.containsWord` is the one keyword match for every capture reader and the classifier: folded, phrase-aware, never the middle of a word. Words of four letters or fewer match whole; longer ones may take a Romanian ending. A word whose longer forms mean something else is listed to match only whole (today "index", not "indexare").
+- **Why:** three folds gave three answers, and substring matching read "neachitat" as "achitat", skipped "Control frâne" as a "cont" line and counted "indexare" as a meter index.
+
+### Search keeps its own index, away from the main thread
+- **Decided:** `SearchIndexer` holds the index, one per database, on a context of its own. It reads everything once; after each save it reads again only the records that save changed and those that show them. A category change, or a save that can't say what it changed, reads everything.
+- **Why:** the screen rebuilt the whole index on the main thread after every save, so typing stuttered in a large binder.
+
+### A restored backup is written away from the main thread
+- **Decided:** the importer runs on a context made for it in a background task. `UnitOfWork.performPrivate` is the unit for such a context: one save at the end, everything rolled back on failure. It needs no bookkeeping because no one else has the context. Actions that save through `UnitOfWork.save` stay on the main actor's units. The main-thread import and the background one share one write path.
+- **Why:** writing a large backup paused the screen.
+
+### The share inbox has a version, and nothing in it is skipped silently
+- **Decided:** each inbox manifest carries a version; one without reads as the first, a newer one is set aside. An item that can't be opened is moved aside once and shown as *Nu am putut deschide* with *Șterge*, never skipped on every look. The practice invoice is known by the fingerprint the app leaves before showing the share sheet (valid one hour), not by its file name; the name check is kept, unused, as the way back.
+- **Why:** an item the app couldn't read stayed invisible in the inbox forever, and a practice file renamed on the way became a real document.
+
+### Motion and the delayed spinner are shared with the extensions
+- **Decided:** `DS.Motion`, `dsAnimation` and `DSDelayedProgress` live in `ios/Shared`, so the share sheet uses the app's springs and waits the same time before a spinner. A steady sweep (the skeleton's shimmer) and the short confirmation dwell are tokens too.
+- **Why:** the share sheet had its own spring, ease-out curve, spinner delay and auto-close.
+
+### First-version code nothing uses is deleted, not moved
+- **Decided:** the day-count cadence heuristic, the `.annual` interval, the calculator's own day difference, the cover, bonus-malus and component catalogs, and the PDF parse and thumbnail helpers are deleted. Nothing referenced them, so nothing is being replaced; the history keeps them. `ios/Legacy/` is unchanged.
+- **Open for the owner:** the agreed fix list said "move to Legacy, ask before deleting". If you want them kept there, they come back from the commit in one step.
+- **Why:** a second copy nobody uses is the one a later change picks by mistake.
+
 ### A passport is good for travel until six months before it expires
 - **Decided (owner):** only passports have a travel cut-off: six months before the printed expiry. Many countries refuse entry with less left, and 6 months covers every country's rule, including those that ask for 3. It is fixed: no per-country option, no setting. ID cards are valid for travel until they expire; driving licences, certificates and every other document keep their plain expiry, with no "bun de călătorit" line, no earlier reminders and no earlier urgency.
 - **Decided:** it is data on the document type, not a passport case in code: `DocumentType.travelMargins` gives the passport type (and so every variant of it) 180 days, as whole calendar months; no other type has one and there is no default. The catalog's passport profile takes it from there (`ReminderProfile.travelMarginDays`), the deadline keeps it (database version 4, `Obligation.travelMarginDays`) and the one urgency rule carries it (`UrgencyRule.travelMarginDays`, in the widget snapshot too).
