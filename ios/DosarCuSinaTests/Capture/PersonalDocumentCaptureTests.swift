@@ -283,9 +283,9 @@ struct PersonalDocumentCaptureTests {
         let answer = try JSONDecoder().decode(JSONValue.self, from: Data("""
         {"documentKind":"bankCard","cardLastFour":"4111111111111111","holderName":"ION EXEMPLU 4111 1111 1111 1111","expiryDate":"2028-08-31","cardNetwork":"cardNetwork.visa"}
         """.utf8))
-        let fields = CloudAnswerMapper.fields(from: answer, schema: schema, recognizedText: "", today: CaptureDay(year: 2026, month: 11, day: 3),
+        let fields = CloudAnswerMapper.fields(from: answer, schema: schema, recognizedText: "", today: try #require(CaptureDay(year: 2026, month: 11, day: 3)),
                                               resolver: CatalogComponentResolver())
-        #expect(fields.first { $0.key == .cardLastFour }?.value.text == "1111")
+        #expect(fields.first { $0.key == CaptureFieldKey.cardLastFour }?.value.text == "1111")
         let reading = CaptureResult(kind: .bankCard, kindConfidence: 0.9, fields: fields, suggestions: [], reminder: nil,
                                     recognizedText: "", barcodes: [], document: nil, notices: []).withoutCardNumbers()
         try expectNoCardNumber(in: reading)
