@@ -194,7 +194,7 @@ private struct SpotlightSettings: View {
             }
             .frame(minHeight: 44)
         } footer: {
-            Text("Numele secțiunilor, termenele și titlurile actelor apar când cauți pe iPhone. Ce e protejat cu \(vault.biometryName), codurile, numerele de pe acte și exemplele nu apar niciodată.", comment: "Footer of the Spotlight setting: what appears and what never does.")
+            Text("Numele secțiunilor, termenele și titlurile actelor apar când cauți pe iPhone. Ce e protejat cu \(vault.biometryName), codurile, numerele de pe acte și exemplele nu apar niciodată. Cât timp toată aplicația e blocată, nu apare nimic.", comment: "Footer of the Spotlight setting: what appears, what never does, and that nothing appears while the whole app is locked.")
         }
     }
 }

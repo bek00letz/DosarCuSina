@@ -8,6 +8,10 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-03
 
+### The iPhone's search and the app lock; people's names
+- **Decided (owner):** while the whole app is locked, nothing of it appears in the iPhone's search: the app's index is deleted and written again when the lock is turned off. Household members' names and their documents' titles appear whenever their category isn't locked, like everything else.
+- **Why:** someone who locks the whole app expects nothing of it to show outside, as Siri already behaves; a category lock is the finer control for people and their papers.
+
 ### The iPhone's search
 - **Decided:** section names, deadlines ("RCA – VW Golf", with its due day under it) and document titles appear in the iPhone's search (Spotlight). Nothing else: no field values, notes, history, firms, or text read off a document.
 - **Decided:** a category behind Face ID shows nothing there at all, titles included, whether or not it is open now. Turning a lock on removes what was shown. This is stricter than Caută, where a locked section still shows its title.

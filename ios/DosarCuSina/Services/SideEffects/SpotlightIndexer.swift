@@ -15,8 +15,8 @@ import UniformTypeIdentifiers
 /// match the ledger (a phone restored from a backup, an index the system cleared), the
 /// app's whole index is deleted and written again, so the two never drift apart.
 ///
-/// With "Arată în căutarea iPhone-ului" off, the app's whole index is deleted once and
-/// nothing is written until it is turned on again.
+/// With "Arată în căutarea iPhone-ului" off, or with the whole app locked, the app's whole
+/// index is deleted once and nothing is written until that changes (`showsAnything`).
 @MainActor
 public final class SpotlightIndexer: SideEffectIndexer {
     /// What the last pass did, for Settings and tests.
@@ -36,13 +36,19 @@ public final class SpotlightIndexer: SideEffectIndexer {
     public init(
         index: any SpotlightIndexClient = SystemSpotlightIndex(),
         ledger: SpotlightLedgerStore = .standard,
-        isEnabled: @escaping @MainActor () -> Bool = { AppPreferences.shared.showsInSpotlight },
+        isEnabled: @escaping @MainActor () -> Bool = { SpotlightIndexer.showsAnything(AppPreferences.shared) },
         locale: Locale = .dosarDefault
     ) {
         self.index = index
         self.ledger = ledger
         self.isEnabled = isEnabled
         self.locale = locale
+    }
+
+    /// Whether anything of the app may be in the iPhone's search: the setting is on and the
+    /// whole app isn't locked. Someone who locks the whole app finds nothing of it outside.
+    public static func showsAnything(_ preferences: AppPreferences) -> Bool {
+        preferences.showsInSpotlight && !preferences.appLockEnabled
     }
 
     public func reconcile(obligations: [ObligationSnapshot], context: ModelContext) async {

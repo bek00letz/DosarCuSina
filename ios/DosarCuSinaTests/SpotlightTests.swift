@@ -91,6 +91,18 @@ struct SpotlightTests {
 
     // MARK: What is shown
 
+    @Test("Nothing of the app is in the iPhone's search while the whole app is locked, or with the setting off")
+    func appLockHidesEverything() {
+        let defaults = UserDefaults(suiteName: "SpotlightTests.\(UUID().uuidString)")!
+        let preferences = AppPreferences(defaults: defaults)
+        #expect(SpotlightIndexer.showsAnything(preferences))
+        preferences.appLockEnabled = true
+        #expect(!SpotlightIndexer.showsAnything(preferences))
+        preferences.appLockEnabled = false
+        preferences.showsInSpotlight = false
+        #expect(!SpotlightIndexer.showsAnything(preferences))
+    }
+
     @Test func showsSectionNamesDeadlinesAndDocumentTitles() throws {
         let h = try household()
         let all = try entries(h.context)
