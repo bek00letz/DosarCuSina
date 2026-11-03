@@ -164,6 +164,15 @@ public final class AppNavigator {
         return true
     }
 
+    /// Opens a result tapped in the iPhone's search, by the identifier it was indexed
+    /// with (`SpotlightEntry.identifier`). Like any link, it waits while the app is locked.
+    @discardableResult
+    public func open(spotlightIdentifier identifier: String) -> Bool {
+        guard let route = SpotlightEntry.route(forIdentifier: identifier) else { return false }
+        open(route)
+        return true
+    }
+
     /// Returns the pending archive once and clears it. While the app is locked
     /// it stays pending and nothing is returned.
     public func consumeArchiveURL() -> URL? {

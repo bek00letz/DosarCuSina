@@ -21,6 +21,7 @@ struct SettingsScreen: View {
                 List {
                     NotificationSettings().id(SettingsSection.notifications)
                     LockSettings().id(SettingsSection.privacy)
+                    SpotlightSettings()
                     SectionVisibilitySettings().id(SettingsSection.categories)
                     ExampleSettings().id(SettingsSection.examples)
                     BackupSettings().id(SettingsSection.backup)
@@ -152,7 +153,7 @@ private struct LockSettings: View {
         } header: {
             Text("Secțiuni protejate", comment: "Settings section: per-section locks.")
         } footer: {
-            Text("O secțiune protejată se deschide doar cu \(vault.biometryName), chiar dacă aplicația nu e blocată. Restul aplicației merge normal.", comment: "Footer of the section locks.")
+            Text("O secțiune protejată se deschide doar cu \(vault.biometryName), chiar dacă aplicația nu e blocată, și nu apare în căutarea iPhone-ului. Restul aplicației merge normal.", comment: "Footer of the section locks.")
         }
         .userErrorAlert($error)
     }
@@ -173,6 +174,27 @@ private struct LockSettings: View {
             } catch {
                 self.error = UserFacingError(error)
             }
+        }
+    }
+}
+
+// MARK: - Căutarea iPhone-ului
+
+/// Whether sections, deadlines and documents appear in Spotlight. Off deletes the app's
+/// whole index; the coordinator does it after the preference changes (`SpotlightIndexer`).
+private struct SpotlightSettings: View {
+    @Environment(AppPreferences.self) private var preferences
+    @Environment(BiometricVaultManager.self) private var vault
+
+    var body: some View {
+        @Bindable var preferences = preferences
+        Section {
+            Toggle(isOn: $preferences.showsInSpotlight) {
+                Text("Arată în căutarea iPhone-ului", comment: "Setting: show sections, deadlines and documents in Spotlight.")
+            }
+            .frame(minHeight: 44)
+        } footer: {
+            Text("Numele secțiunilor, termenele și titlurile actelor apar când cauți pe iPhone. Ce e protejat cu \(vault.biometryName), codurile, numerele de pe acte și exemplele nu apar niciodată.", comment: "Footer of the Spotlight setting: what appears and what never does.")
         }
     }
 }
