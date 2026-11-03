@@ -89,7 +89,7 @@ struct MoveTests {
 
     @Test func aFailedMoveLeavesEverythingAsItWas() throws {
         let h = try household()
-        UnitOfWork.failNextCommitForTesting = CocoaError(.fileWriteOutOfSpace)
+        UnitOfWork.failNextCommitForTesting(CocoaError(.fileWriteOutOfSpace), in: h.context)
         #expect(throws: (any Error).self) {
             try h.actions.move(h.card, to: .newMember(name: "Manole Ana"), renamingTo: "Carte de identitate – Manole Ana")
         }

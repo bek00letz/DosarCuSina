@@ -30,9 +30,15 @@ public enum UnitOfWork {
 
     private static var open: [ObjectIdentifier: Scope] = [:]
 
-    /// Makes the next commit of a unit fail, so tests can check that a failed
-    /// save leaves nothing behind. Cleared after one use.
-    static var failNextCommitForTesting: (any Error)?
+    /// Commits that tests have asked to fail, by context.
+    private static var failingCommits: [ObjectIdentifier: any Error] = [:]
+
+    /// Makes the next commit of a unit on `context` fail, so tests can check that a
+    /// failed save leaves nothing behind. Cleared after one use. Kept per context, so
+    /// tests running side by side never fail each other's saves.
+    static func failNextCommitForTesting(_ error: any Error, in context: ModelContext) {
+        failingCommits[ObjectIdentifier(context)] = error
+    }
 
     /// Whether a unit of work is open on this context.
     public static func isOpen(in context: ModelContext) -> Bool {
@@ -86,8 +92,7 @@ public enum UnitOfWork {
     /// Saves everything the unit recorded and closes it; on failure, rolls all of it back.
     private static func commit(_ context: ModelContext) throws {
         do {
-            if let failure = failNextCommitForTesting {
-                failNextCommitForTesting = nil
+            if let failure = failingCommits.removeValue(forKey: ObjectIdentifier(context)) {
                 throw failure
             }
             try context.save()

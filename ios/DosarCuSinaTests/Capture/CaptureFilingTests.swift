@@ -309,7 +309,7 @@ struct ExampleOwnershipTests {
     @Test("Examples load in one step and are marked only by the loader")
     func loadingIsOneStep() throws {
         let context = try makeContext()
-        UnitOfWork.failNextCommitForTesting = ForcedLoadFailure()
+        UnitOfWork.failNextCommitForTesting(ForcedLoadFailure(), in: context)
         #expect(throws: ForcedLoadFailure.self) { try ExampleDataService(context: context).loadExamples() }
         #expect(try context.fetchCount(FetchDescriptor<Asset>()) == 0, "No half household")
         try ExampleDataService(context: context).loadExamples()
