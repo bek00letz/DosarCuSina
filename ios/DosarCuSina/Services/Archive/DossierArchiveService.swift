@@ -217,7 +217,7 @@ public struct DossierArchiveService {
                 version: template.builtInVersion, homeOrder: template.homeOrder, isOnHome: template.isOnHome,
                 isSensitive: template.isSensitive, sections: template.sections, blueprints: template.blueprints,
                 components: template.components, pockets: template.pockets.map(\.rawValue),
-                createdAt: template.createdAt, updatedAt: template.updatedAt
+                createdAt: template.createdAt, updatedAt: template.updatedAt, behavior: template.behavior == .standard ? nil : template.behavior
             )
         }
         // Secrets (PIN codes, secret rows, anything sealed) never leave the phone: an archive carries none.
@@ -276,7 +276,7 @@ public struct DossierArchiveService {
                 id: DossierV3.id(provider.id), name: provider.name, trades: provider.trades, phone: provider.phone,
                 email: provider.email, address: provider.address, notes: provider.notes, manualRating: provider.manualRating,
                 wouldCallAgain: provider.wouldCallAgain, assetIds: (provider.assets ?? []).map { DossierV3.id($0.id) }.sorted(),
-                isExample: provider.isExample, createdAt: provider.createdAt, updatedAt: provider.updatedAt
+                isExample: provider.isExample, createdAt: provider.createdAt, updatedAt: provider.updatedAt, taxID: provider.taxID
             )
         }
         let measurementDTOs = measurements.map { log in
@@ -315,7 +315,7 @@ public struct DossierArchiveService {
                 isExample: attachment.isExample, assetId: DossierV3.id(attachment.asset?.id),
                 obligationId: DossierV3.id(attachment.obligation?.id), historyEntryId: DossierV3.id(attachment.historyEntry?.id),
                 serviceItemId: DossierV3.id(attachment.serviceItem?.id), measurementId: DossierV3.id(attachment.measurement?.id),
-                providerId: DossierV3.id(attachment.provider?.id)
+                providerId: DossierV3.id(attachment.provider?.id), validUntil: attachment.validUntil.map { CalendarDay($0, calendar: calendar) }
             )
         }
 

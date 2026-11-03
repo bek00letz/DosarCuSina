@@ -136,8 +136,11 @@ private struct PersonalDocumentForm: View {
         self.holder = holder
         self._draft = draft
         self.onSaved = onSaved
-        let key = BuiltInTemplates.Key.documents
-        _templates = Query(filter: #Predicate<CategoryTemplate> { $0.key == key })
+    }
+
+    /// The category of personal documents.
+    private var documentsTemplate: CategoryTemplate? {
+        templates.filter { $0.behavior.role == .personalDocument }.sorted { $0.isBuiltIn && !$1.isBuiltIn }.first
     }
 
     var body: some View {
@@ -282,7 +285,7 @@ private struct PersonalDocumentForm: View {
     }
 
     private var reminderLine: String? {
-        guard let template = templates.first else { return nil }
+        guard let template = documentsTemplate else { return nil }
         return PersonalDocumentFiling.reminderLine(draft, template: template, actions: AssetActions(context: context, calendar: calendar),
                                                    today: CalendarDay(Date(), calendar: calendar))
     }

@@ -10,7 +10,9 @@ public enum ReadinessScenario: Hashable, Sendable {
 
     case tripAbroad(start: CalendarDay, end: CalendarDay, region: Region, driving: Bool, withPet: Bool)
     case sellingVehicle(assetId: UUID)
-    case insuranceClaim(assetId: UUID)
+    /// A claim on one of the asset's policies: the deadline `blueprintKey` names (CASCO),
+    /// or, when nil, the first of its policies the binder follows.
+    case insuranceClaim(assetId: UUID, blueprintKey: String? = nil)
 }
 
 /// How one check came out. Problems sort first.
@@ -63,6 +65,9 @@ public struct ReadinessAsset: Hashable, Sendable {
     public var historyCount: Int
     /// Kinds of current (not archived) documents filed on it.
     public var documentKinds: [DocumentKind]
+    /// The facts each of its category's deadlines keeps (a policy's number and claims
+    /// phone), in the category's order.
+    public var facts: [ReadinessFacts]
 
     public init(
         id: UUID = UUID(),
@@ -71,7 +76,8 @@ public struct ReadinessAsset: Hashable, Sendable {
         values: FieldValues = FieldValues(),
         obligations: [String: ReadinessObligation] = [:],
         historyCount: Int = 0,
-        documentKinds: [DocumentKind] = []
+        documentKinds: [DocumentKind] = [],
+        facts: [ReadinessFacts] = []
     ) {
         self.id = id
         self.name = name
@@ -80,6 +86,23 @@ public struct ReadinessAsset: Hashable, Sendable {
         self.obligations = obligations
         self.historyCount = historyCount
         self.documentKinds = documentKinds
+        self.facts = facts
+    }
+}
+
+/// One deadline's fact roles, as the readiness checks read them.
+public struct ReadinessFacts: Hashable, Sendable {
+    public var blueprintKey: String
+    public var facts: BlueprintFacts
+
+    public init(blueprintKey: String, facts: BlueprintFacts) {
+        self.blueprintKey = blueprintKey
+        self.facts = facts
+    }
+
+    /// Every deadline of `template` that keeps facts, in the template's order.
+    public static func of(_ template: TemplateDefinition) -> [ReadinessFacts] {
+        template.blueprints.compactMap { blueprint in blueprint.facts.map { ReadinessFacts(blueprintKey: blueprint.key, facts: $0) } }
     }
 }
 
@@ -92,8 +115,8 @@ public enum ReadinessEngine {
             items = trip(start: start, end: end, region: region, driving: driving, withPet: withPet, assets: assets, calendar: calendar)
         case .sellingVehicle(let id):
             items = assets.first { $0.id == id }.map { sale(of: $0) } ?? []
-        case .insuranceClaim(let id):
-            items = assets.first { $0.id == id }.map { claim(on: $0) } ?? []
+        case .insuranceClaim(let id, let blueprintKey):
+            items = assets.first { $0.id == id }.map { claim(on: $0, blueprintKey: blueprintKey) } ?? []
         }
         return items.sorted { $0.status != $1.status ? $0.status < $1.status : $0.title < $1.title }
     }
@@ -103,12 +126,12 @@ public enum ReadinessEngine {
     static func documents(of type: String, in assets: [ReadinessAsset]) -> [ReadinessAsset] {
         assets.filter {
             $0.templateKey == BuiltInTemplates.Key.documents
-                && $0.values["document.type"]?.textValue.flatMap({ DocumentType.options.option(for: $0)?.key }) == type
+                && $0.values[DocumentType.typeFieldKey]?.textValue.flatMap({ DocumentType.options.option(for: $0)?.key }) == type
         }
     }
 
     static func expiry(_ asset: ReadinessAsset) -> CalendarDay? {
-        asset.values["document.expiry"]?.dateValue
+        asset.values[DocumentFields.expiry]?.dateValue
     }
 
     static func trip(start: CalendarDay, end: CalendarDay, region: ReadinessScenario.Region, driving: Bool, withPet: Bool, assets: [ReadinessAsset], calendar: Calendar) -> [ReadinessItem] {
@@ -159,7 +182,7 @@ public enum ReadinessEngine {
         // European health card, as a document or as a renewal on the health profile.
         let healthCards = documents(of: DocumentType.euHealthCard, in: assets)
         let cardExpiry = healthCards.compactMap(expiry).max()
-            ?? assets.compactMap { $0.obligations["health.euCard"]?.due }.max()
+            ?? assets.compactMap { $0.obligations[BuiltInBlueprints.healthEUCard]?.due }.max()
         if let cardExpiry {
             items.append(ReadinessItem(
                 id: "trip.ehic", status: cardExpiry >= end ? .ok : .warning, title: String(localized: "Card european de sănătate"),
@@ -189,7 +212,7 @@ public enum ReadinessEngine {
             return ReadinessItem(id: "\(key).\(asset.id)", status: .missing, title: "\(title) · \(asset.name)",
                                  detail: String(localized: "Nu e în dosar."), route: .asset(asset.id))
         }
-        let ok = obligation.due > day
+        let ok = DueDayValidity.covers(through: day, due: obligation.due)
         return ReadinessItem(
             id: "\(key).\(asset.id)", status: ok ? .ok : failing, title: "\(title) · \(asset.name)",
             detail: ok ? String(localized: "Valabil.") : String(localized: "Expiră înainte de întoarcere."),
@@ -199,10 +222,10 @@ public enum ReadinessEngine {
 
     static func carChecks(_ car: ReadinessAsset, start: CalendarDay, end: CalendarDay, region: ReadinessScenario.Region, assets: [ReadinessAsset], calendar: Calendar) -> [ReadinessItem] {
         var items = [
-            validity("vehicle.rca", title: String(localized: "RCA"), on: car, through: end, status: .problem),
-            validity("vehicle.itp", title: String(localized: "ITP"), on: car, through: end, status: .problem),
+            validity(BuiltInBlueprints.vehicleRCA, title: String(localized: "RCA"), on: car, through: end, status: .problem),
+            validity(BuiltInBlueprints.vehicleITP, title: String(localized: "ITP"), on: car, through: end, status: .problem),
             // The vignette is needed on Romanian roads, so it matters at the start and on the way back.
-            validity("vehicle.vignette", title: String(localized: "Rovinietă"), on: car, through: end, status: .warning),
+            validity(BuiltInBlueprints.vehicleVignette, title: String(localized: "Rovinietă"), on: car, through: end, status: .warning),
         ]
         if region == .outsideEU {
             let greenCards = documents(of: DocumentType.greenCard, in: assets)
@@ -218,12 +241,12 @@ public enum ReadinessEngine {
 
     static func petChecks(_ pet: ReadinessAsset, start: CalendarDay, end: CalendarDay, calendar: Calendar) -> [ReadinessItem] {
         var items: [ReadinessItem] = []
-        let hasPassport = pet.values["pet.passport"]?.textValue?.isEmpty == false
+        let hasPassport = pet.values[PetFields.passport]?.textValue?.isEmpty == false
         items.append(ReadinessItem(
             id: "trip.petPassport.\(pet.id)", status: hasPassport ? .ok : .missing, title: String(localized: "Pașaport european · \(pet.name)"),
             detail: hasPassport ? String(localized: "Trecut în dosar.") : String(localized: "Adaugă numărul pașaportului."), route: .asset(pet.id)
         ))
-        guard let rabies = pet.obligations["pet.rabies"] else {
+        guard let rabies = pet.obligations[BuiltInBlueprints.petRabies] else {
             items.append(ReadinessItem(id: "trip.rabies.\(pet.id)", status: .missing, title: String(localized: "Vaccin antirabic · \(pet.name)"),
                                        detail: String(localized: "Nu e în dosar."), route: .asset(pet.id)))
             return items
@@ -231,7 +254,7 @@ public enum ReadinessEngine {
         // The rabies vaccine must be at least 21 days old at the border and still valid on return.
         let latestAllowed = start.adding(days: -21, calendar: calendar)
         let doneInTime = rabies.lastDone.map { $0 <= latestAllowed } ?? false
-        let validOnReturn = rabies.due > end
+        let validOnReturn = DueDayValidity.covers(through: end, due: rabies.due)
         let status: ReadinessStatus = doneInTime && validOnReturn ? .ok : .problem
         let detail: String
         if !validOnReturn {
@@ -254,8 +277,8 @@ public enum ReadinessEngine {
                                  detail: present ? String(localized: "Trecut în dosar.") : String(localized: "Adaugă-l înainte de vânzare."), route: .asset(car.id))
         }
         var items = [
-            fact("vehicle.vin", String(localized: "Serie de șasiu (VIN)")),
-            fact("vehicle.civ", String(localized: "Carte de identitate a vehiculului (CIV)")),
+            fact(VehicleFields.vin, String(localized: "Serie de șasiu (VIN)")),
+            fact(VehicleFields.civ, String(localized: "Carte de identitate a vehiculului (CIV)")),
             ReadinessItem(id: "sale.history", status: car.historyCount > 0 ? .ok : .warning, title: String(localized: "Istoric de service"),
                           detail: car.historyCount > 0 ? String(localized: "\(car.historyCount) intrări de arătat cumpărătorului.") : String(localized: "Un istoric complet crește încrederea și prețul."),
                           route: .asset(car.id)),
@@ -263,7 +286,7 @@ public enum ReadinessEngine {
                           detail: car.documentKinds.contains(.invoice) ? String(localized: "Sunt facturi în dosar.") : String(localized: "Scanează facturile pe care le ai."),
                           route: .asset(car.id)),
         ]
-        if let itp = car.obligations["vehicle.itp"] {
+        if let itp = car.obligations[BuiltInBlueprints.vehicleITP] {
             items.append(ReadinessItem(id: "sale.itp", status: .ok, title: String(localized: "ITP"), detail: String(localized: "Verifică să fie valabil la predare."), route: .obligation(itp.id)))
         }
         return items
@@ -271,11 +294,21 @@ public enum ReadinessEngine {
 
     // MARK: Insurance claim
 
-    static func claim(on asset: ReadinessAsset) -> [ReadinessItem] {
-        let prefix = asset.templateKey == BuiltInTemplates.Key.home ? "home" : "vehicle"
-        let policyNumber = asset.values["\(prefix).policyNumber"]?.textValue
-            ?? asset.obligations["\(prefix == "home" ? "home.pad" : "vehicle.rca")"]?.reference
-        let claimsPhone = asset.values["\(prefix).claimsPhone"]?.textValue
+    /// The policy a claim is about: the one asked for, else the first the binder follows
+    /// (an active deadline), else the category's first policy.
+    static func claimPolicy(on asset: ReadinessAsset, blueprintKey: String?) -> ReadinessFacts? {
+        if let blueprintKey { return asset.facts.first { $0.blueprintKey == blueprintKey } }
+        return asset.facts.first { asset.obligations[$0.blueprintKey] != nil } ?? asset.facts.first
+    }
+
+    static func claim(on asset: ReadinessAsset, blueprintKey: String? = nil) -> [ReadinessItem] {
+        // Each policy keeps its own facts: a CASCO claim never shows the RCA's number.
+        let policy = claimPolicy(on: asset, blueprintKey: blueprintKey)
+        func fact(_ role: BlueprintFactRole) -> String? {
+            policy?.facts.field(for: role).flatMap { asset.values[$0]?.textValue }
+        }
+        let policyNumber = fact(.policyNumber) ?? policy.flatMap { asset.obligations[$0.blueprintKey]?.reference }
+        let claimsPhone = fact(.claimsPhone)
         return [
             ReadinessItem(id: "claim.policyNumber", status: policyNumber == nil ? .missing : .ok, title: String(localized: "Număr poliță"),
                           detail: policyNumber ?? String(localized: "Adaugă-l: îl cere asigurătorul la primul telefon."), route: .asset(asset.id)),
@@ -292,7 +325,8 @@ extension ReadinessAsset {
     /// Readiness view of every asset in the binder.
     @MainActor
     public static func fetchAll(in context: ModelContext, calendar: Calendar = .current) throws -> [ReadinessAsset] {
-        try context.fetch(FetchDescriptor<Asset>()).map { asset in
+        let templates = try TemplateStore(context: context).templatesByKey()
+        return try context.fetch(FetchDescriptor<Asset>()).map { asset in
             var obligations: [String: ReadinessObligation] = [:]
             for obligation in asset.activeObligations {
                 guard let key = obligation.blueprintKey else { continue }
@@ -302,7 +336,8 @@ extension ReadinessAsset {
             return ReadinessAsset(
                 id: asset.id, name: asset.name, templateKey: asset.templateKey, values: asset.values, obligations: obligations,
                 historyCount: (asset.history ?? []).count,
-                documentKinds: (asset.attachments ?? []).filter { !$0.isArchived }.map(\.kind)
+                documentKinds: (asset.attachments ?? []).filter { !$0.isArchived }.map(\.kind),
+                facts: templates[asset.templateKey].map { ReadinessFacts.of($0.definition) } ?? []
             )
         }
     }

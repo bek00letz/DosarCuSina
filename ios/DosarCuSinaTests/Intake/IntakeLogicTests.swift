@@ -187,17 +187,17 @@ struct CaptureFilingTests {
         let context = try makeContext()
         let car = try makeCar(context)
         let itp = capture(.itpReport, [field(.expiryDate, day("2028-11-01"))])
-        #expect(CaptureReview.suggestDestination(result: itp, assets: [car]) == .asset(car.id))
+        #expect(CaptureReview.suggestDestination(kind: itp.kind, suggestions: itp.suggestions, fields: itp.fields, assets: [car], behaviors: try TemplateStore(context: context).behaviorsByKey()) == .asset(car.id))
         car.isExample = true
-        #expect(CaptureReview.suggestDestination(result: itp, assets: [car]) == .newAsset(templateKey: BuiltInTemplates.Key.vehicle))
+        #expect(CaptureReview.suggestDestination(kind: itp.kind, suggestions: itp.suggestions, fields: itp.fields, assets: [car], behaviors: try TemplateStore(context: context).behaviorsByKey()) == .newAsset(templateKey: BuiltInTemplates.Key.vehicle))
     }
 
     @Test func invoicesWithPartsOpenTheVisitFlow() {
-        #expect(CaptureMapping.opensVisitFlow(.serviceInvoice))
-        #expect(CaptureMapping.opensVisitFlow(.veterinaryRecord))
-        #expect(!CaptureMapping.opensVisitFlow(.rcaPolicy))
-        #expect(CaptureMapping.blueprintKey("passportRenewal") == "document.renew")
-        #expect(CaptureMapping.templateKey("warranties") == BuiltInTemplates.Key.purchase)
+        #expect(CaptureDocumentKind.serviceInvoice.profile.opensVisitFlow)
+        #expect(CaptureDocumentKind.veterinaryRecord.profile.opensVisitFlow)
+        #expect(!CaptureDocumentKind.rcaPolicy.profile.opensVisitFlow)
+        #expect(CaptureDocumentKind.passport.profile.blueprintKey == BuiltInBlueprints.documentRenew)
+        #expect(CaptureDocumentKind.warrantyCertificate.profile.templateKey == BuiltInTemplates.Key.purchase)
     }
 
     @Test func completingWithANewDocumentTakesItsDate() async throws {

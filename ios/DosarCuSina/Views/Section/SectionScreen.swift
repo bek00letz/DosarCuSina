@@ -83,7 +83,7 @@ private struct SectionContent: View {
         return ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.xl) {
                 SectionHero(asset: asset, definition: definition)
-                if asset.templateKey == BuiltInTemplates.Key.documents, (asset.attachments ?? []).isEmpty {
+                if definition.behavior.role == .personalDocument, (asset.attachments ?? []).isEmpty {
                     DocumentPhotoPrompt(asset: asset, toast: $toast)
                 }
                 SecretFieldsCard(asset: asset, definition: definition)
@@ -207,11 +207,11 @@ private struct PocketView: View {
         case .upcoming:
             UpcomingPocket(asset: asset)
         case .tenants:
-            ChildrenPocket(asset: asset, pocket: pocket, childKey: BuiltInTemplates.Key.tenancy)
+            ChildrenPocket(asset: asset, pocket: pocket)
         case .products:
-            ChildrenPocket(asset: asset, pocket: pocket, childKey: BuiltInTemplates.Key.purchase)
+            ChildrenPocket(asset: asset, pocket: pocket)
         case .subscriptions:
-            ChildrenPocket(asset: asset, pocket: pocket, childKey: BuiltInTemplates.Key.subscription)
+            ChildrenPocket(asset: asset, pocket: pocket)
         case .documents:
             DocumentsPocket(asset: asset)
         case .history:

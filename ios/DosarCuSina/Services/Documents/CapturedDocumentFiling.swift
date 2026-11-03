@@ -101,20 +101,28 @@ extension AttachmentActions {
         kind: DocumentKind? = nil,
         extractedText: String? = nil,
         documentDate: CalendarDay? = nil,
+        validUntil: CalendarDay? = nil,
         asset: Asset? = nil,
         obligation: Obligation? = nil,
         historyEntry: HistoryEntry? = nil,
         provider: Provider? = nil
     ) throws -> (attachment: Attachment, moved: RefileReceipt?) {
+        let filed: (attachment: Attachment, moved: RefileReceipt?)
         switch document {
         case .new(let processed, _):
             let draft = processed.draft(title: title, kind: kind, extractedText: extractedText, documentDate: documentDate)
-            return (try file(draft, asset: asset, obligation: obligation, historyEntry: historyEntry, provider: provider), nil)
+            filed = (try file(draft, asset: asset, obligation: obligation, historyEntry: historyEntry, provider: provider), nil)
         case .kept(let attachment):
             let receipt = try refile(attachment, title: title, kind: kind, extractedText: extractedText, documentDate: documentDate,
                                      asset: asset, obligation: obligation, historyEntry: historyEntry, provider: provider)
-            return (attachment, receipt)
+            filed = (attachment, receipt)
         }
+        // How long the paper itself is valid, as read now: its deadline moving on later never changes it.
+        if let validUntil {
+            filed.attachment.validUntil = validUntil.noonDate(in: calendar)
+            try UnitOfWork.save(context)
+        }
+        return filed
     }
 
     /// Moves a kept document to where it's being filed now, keeping its pages.

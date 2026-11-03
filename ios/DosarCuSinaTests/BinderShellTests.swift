@@ -73,13 +73,13 @@ struct BinderLayoutTests {
         [
             .init(key: "vehicle", homeOrder: 0, isOnHome: true),
             .init(key: "home", homeOrder: 1, isOnHome: true),
-            .init(key: "documents", homeOrder: 2, isOnHome: true),
+            .init(key: "documents", homeOrder: 2, isOnHome: true, box: BuiltInTemplates.documents.behavior.box),
             .init(key: "pet", homeOrder: 3, isOnHome: true),
-            .init(key: "purchase", homeOrder: 4, isOnHome: true),
-            .init(key: "subscription", homeOrder: 5, isOnHome: true),
+            .init(key: "purchase", homeOrder: 4, isOnHome: true, box: BuiltInTemplates.purchase.behavior.box),
+            .init(key: "subscription", homeOrder: 5, isOnHome: true, box: BuiltInTemplates.subscription.behavior.box),
             .init(key: "bike", homeOrder: 6, isOnHome: false),
-            .init(key: "tenancy", homeOrder: 7, isOnHome: false),
-            .init(key: "member", homeOrder: 8, isOnHome: false),
+            .init(key: "tenancy", homeOrder: 7, isOnHome: false, box: BuiltInTemplates.tenancy.behavior.box),
+            .init(key: "member", homeOrder: 8, isOnHome: false, box: BuiltInTemplates.member.behavior.box),
         ]
     }
 

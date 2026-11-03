@@ -97,6 +97,9 @@ struct CaptureReview: Identifiable {
     private var chosenKind: CaptureAlternative<CaptureDocumentKind>?
     /// The person chose the kind shown. No later reading changes it.
     private(set) var kindEdited = false
+    /// What each category does, read when the review was made, so where a document can
+    /// go is decided by the categories' parts (a home, a subscription, a person), never their keys.
+    let behaviors: [String: CategoryBehavior]
 
     /// The document this review files: pages waiting in capture's store, or the copy
     /// the binder already keeps (it moves to where this review files it).
@@ -140,7 +143,7 @@ struct CaptureReview: Identifiable {
 
     /// Whether the review offers "Ce s-a făcut": the kind lists lines, or some were read.
     var showsLineItems: Bool {
-        !lineItems.isEmpty || [.serviceInvoice, .fiscalReceipt, .veterinaryRecord].contains(kind)
+        !lineItems.isEmpty || (kind.profile.carriesLineItems && kind.profile.filing != .keepOnly)
     }
 
     func value(_ key: CaptureFieldKey) -> CaptureValue? {
@@ -151,10 +154,12 @@ struct CaptureReview: Identifiable {
         Dictionary(fields.compactMap { field in field.value.map { (field.key, $0) } }, uniquingKeysWith: { first, _ in first })
     }
 
-    /// The day the reminder follows (expiry, due date, next dose), from the current values.
+    /// The day the reminder follows (expiry, due date, next dose), from the current values:
+    /// the kind's deadline field, and for a minimum period the end its terms give.
     var reminderDay: CalendarDay? {
-        if kind == .contract { return minimumPeriodEnd }
-        return CaptureMapping.reminderField(for: kind).flatMap { value($0)?.day }.map(CaptureMapping.calendarDay)
+        let field = kind.profile.deadlineField
+        if field == .minimumPeriodEnd { return minimumPeriodEnd }
+        return field.flatMap { value($0)?.day }.map(CaptureMapping.calendarDay)
     }
 
     /// When a contract's minimum period ends: as printed, or its length after its start.
@@ -178,7 +183,15 @@ struct CaptureReview: Identifiable {
 
     /// The date printed on the document.
     var documentDay: CalendarDay? {
-        [CaptureFieldKey.issueDate, .startDate, .purchaseDate].lazy.compactMap { value($0)?.day }.first.map(CaptureMapping.calendarDay)
+        kind.profile.documentDateFields.lazy.compactMap { value($0)?.day }.first.map(CaptureMapping.calendarDay)
+    }
+
+    /// The last day the document itself is valid, as read (a policy's end, an identity
+    /// card's expiry), kept on the filed document. Nil for a bill's due date or a next dose.
+    var validUntil: CalendarDay? {
+        let field = kind.profile.deadlineField
+        guard field == .expiryDate || field == .warrantyUntil else { return nil }
+        return reminderDay
     }
 
     /// The fields as they stand now, corrections included, for routing.
@@ -194,12 +207,40 @@ struct CaptureReview: Identifiable {
         kind == result.kind ? result.suggestions : CaptureRouter.route(kind: kind, kindConfidence: 1, fields: currentFields).suggestions
     }
 
-    /// The template blueprint this document renews or schedules, if any.
+    /// What a policy covers: as read or chosen, else the kind's own, else from what it names.
+    var cover: String? {
+        kind.profile.cover(read: value(.coverageType)?.text, hasVehicle: value(.licensePlate) != nil || value(.vin) != nil)
+    }
+
+    /// The blueprint this document renews or schedules, if any, from the kind's profile.
     var blueprintKey: String? {
-        for suggestion in suggestions {
-            if case .obligation(let key, _) = suggestion.destination, let mapped = CaptureMapping.blueprintKey(key) { return mapped }
+        kind.profile.deadline(cover: cover)?.blueprintKey
+    }
+
+    /// The deadline this document sets in `template`: the profile's blueprint when the
+    /// category keeps it, else (a category of the person's own) the deadline that follows
+    /// the field the document's date fills.
+    @MainActor
+    func deadlineBlueprint(in template: TemplateDefinition) -> ObligationBlueprint? {
+        if let key = blueprintKey, let blueprint = template.blueprints.first(where: { $0.key == key }) { return blueprint }
+        guard kind.profile.deadlineField != nil else { return nil }
+        let values = CaptureFiler.values(from: self, for: template, deadline: nil)
+        return template.blueprints.first { blueprint in
+            blueprint.drivingField.map { values[$0] != nil } ?? false
         }
-        return nil
+    }
+
+    /// The section that already exists and that saving writes the values into: the one
+    /// chosen, or the subscription a chosen home holds for this bill. Nil when saving makes
+    /// a new one (a new section, a person's new document, a home's new subscription).
+    @MainActor
+    func existingSection(assets: [Asset], templates: [String: CategoryTemplate]) -> Asset? {
+        guard case .asset(let id) = destination, let asset = assets.first(where: { $0.id == id }) else { return nil }
+        if CaptureFiler.holderDocumentTemplateKey(for: self, destinationTemplateKey: asset.templateKey, templates: templates) != nil { return nil }
+        if kind.profile.filing == .subscription, templates.plays(.home, asset.templateKey) {
+            return existingSubscription(assets: assets)
+        }
+        return asset
     }
 
     /// Expected fields of this kind that weren't read, so the person can add them: an RCA
@@ -271,12 +312,12 @@ struct CaptureReview: Identifiable {
     mutating func kindChanged(assets: [Asset]) {
         kindAlternatives.removeAll { $0.value == kind }
         if remindsToPay == suggested.remindsToPay {
-            remindsToPay = kind == .utilityInvoice
+            remindsToPay = kind.profile.deadlineIsOptIn
             suggested.remindsToPay = remindsToPay
         }
         let values = Dictionary(currentFields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
         if destination == suggested.destination {
-            destination = Self.suggestDestination(kind: kind, suggestions: suggestions, fields: currentFields, assets: assets)
+            destination = Self.suggestDestination(kind: kind, suggestions: suggestions, fields: currentFields, assets: assets, behaviors: behaviors)
             suggested.destination = destination
         }
         if title == suggested.title {
@@ -312,11 +353,11 @@ struct CaptureReview: Identifiable {
     /// chosen, or the one a chosen home holds for this contract. Nil for a new one.
     @MainActor
     func existingSubscription(assets: [Asset]) -> Asset? {
-        guard CaptureMapping.filesUnderSubscription(kind), case .asset(let id) = destination,
+        guard kind.profile.filing == .subscription, case .asset(let id) = destination,
               let asset = assets.first(where: { $0.id == id }) else { return nil }
-        if asset.templateKey == BuiltInTemplates.Key.subscription { return asset }
-        guard asset.templateKey == BuiltInTemplates.Key.home else { return nil }
-        let children = (asset.children ?? []).filter { $0.templateKey == BuiltInTemplates.Key.subscription }
+        if behaviors.plays(.subscription, asset.templateKey) { return asset }
+        guard behaviors.plays(.home, asset.templateKey) else { return nil }
+        let children = (asset.children ?? []).filter { behaviors.plays(.subscription, $0.templateKey) }
         let decision = SubscriptionMatcher.match(
             subscriptionReading,
             subscriptions: children.map { SubscriptionMatcher.Subscription(id: $0.id, parentID: asset.id, values: $0.values) },
@@ -358,37 +399,35 @@ struct CaptureReview: Identifiable {
                          alternatives: settled ? [] : result.alternatives(for: field.key).filter { $0.value != field.value })
         }
         self.kindAlternatives = result.kindAlternatives.filter { $0.value != result.kind }
+        let behaviors = (try? TemplateStore(context: context).behaviorsByKey()) ?? [:]
+        self.behaviors = behaviors
         let values = Dictionary(result.fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
         self.title = CaptureMapping.defaultTitle(for: result.kind, fields: values)
-        self.remindsToPay = result.kind == .utilityInvoice
-        self.destination = Self.suggestDestination(result: result, assets: assets)
+        self.remindsToPay = result.kind.profile.deadlineIsOptIn
+        self.destination = Self.suggestDestination(kind: result.kind, suggestions: result.suggestions, fields: result.fields, assets: assets, behaviors: behaviors)
         self.newAssetName = Self.defaultAssetName(kind: result.kind, values: values)
         self.suggested = Suggested(kind: kind, title: title, destination: destination, newAssetName: newAssetName, remindsToPay: remindsToPay, fields: values)
     }
 
-    @MainActor
-    static func suggestDestination(result: CaptureResult, assets: [Asset]) -> Destination {
-        suggestDestination(kind: result.kind, suggestions: result.suggestions, fields: result.fields, assets: assets)
-    }
-
     /// Where a document of `kind` goes, from what routing suggests for it.
     @MainActor
-    static func suggestDestination(kind: CaptureDocumentKind, suggestions: [CaptureSuggestion], fields: [CaptureField], assets: [Asset]) -> Destination {
+    static func suggestDestination(kind: CaptureDocumentKind, suggestions: [CaptureSuggestion], fields: [CaptureField], assets: [Asset],
+                                   behaviors: [String: CategoryBehavior]) -> Destination {
         let candidates = assets.filter { !$0.isExample }
         // A bill or a contract: its ongoing contract, or where a new one goes.
-        if CaptureMapping.filesUnderSubscription(kind) {
+        if kind.profile.filing == .subscription {
             let values = Dictionary(fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
             let decision = SubscriptionMatcher.match(
                 subscriptionReading(kind: kind, values: values),
-                subscriptions: candidates.filter { $0.templateKey == BuiltInTemplates.Key.subscription }
+                subscriptions: candidates.filter { behaviors.plays(.subscription, $0.templateKey) }
                     .map { SubscriptionMatcher.Subscription(id: $0.id, parentID: $0.parent?.id, values: $0.values) },
-                homes: candidates.filter { $0.templateKey == BuiltInTemplates.Key.home }.map { SubscriptionMatcher.Home(id: $0.id, values: $0.values) }
+                homes: candidates.filter { behaviors.plays(.home, $0.templateKey) }.map { SubscriptionMatcher.Home(id: $0.id, values: $0.values) }
             )
             switch decision {
             case .existing(let id): return .asset(id)
             // A home: filed into a new subscription under it (`CaptureFiler`).
             case .newUnder(let home): return .asset(home)
-            case .newStandalone: return .newAsset(templateKey: BuiltInTemplates.Key.subscription)
+            case .newStandalone: return behaviors.key(withRole: .subscription).map { .newAsset(templateKey: $0) } ?? .none
             case .undecided: return .none
             }
         }
@@ -408,23 +447,23 @@ struct CaptureReview: Identifiable {
         // 2. An identity document goes to its holder: the matching member, or a new one.
         if kind.isIdentityDocument {
             let values = Dictionary(fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
-            if let holder = CaptureMapping.holderName(values) {
-                let members = candidates.filter { $0.templateKey == BuiltInTemplates.Key.member }.map { (id: $0.id, name: $0.name) }
+            if let holder = CaptureMapping.holderName(values), let holders = behaviors.key(withRole: .holder) {
+                let members = candidates.filter { behaviors.plays(.holder, $0.templateKey) }.map { (id: $0.id, name: $0.name) }
                 if let member = CaptureMapping.matchingMember(holderSurname: values[.surname]?.text, holderName: holder, among: members) {
                     return .asset(member)
                 }
-                return .newAsset(templateKey: BuiltInTemplates.Key.member)
+                return .newAsset(templateKey: holders)
             }
         }
         // 3. The category the document belongs to.
         let templateKey = suggestions.lazy.compactMap { suggestion -> String? in
             switch suggestion.destination {
-            case .newAsset(let key): return CaptureMapping.templateKey(key)
-            case .obligation(_, let key?): return CaptureMapping.templateKey(key)
-            case .historyEntry(let key?): return CaptureMapping.templateKey(key)
+            case .newAsset(let key): return key
+            case .obligation(_, let key?): return key
+            case .historyEntry(let key?): return key
             default: return nil
             }
-        }.first ?? CaptureMapping.templateKey(for: kind)
+        }.first ?? kind.profile.templateKey
         guard let templateKey else { return .none }
         // New documents, products and cars get their own section; bills and
         // policies go to the only section of their kind when there is one.
@@ -438,22 +477,11 @@ struct CaptureReview: Identifiable {
         return .none
     }
 
+    /// What a new section made from the document is called, by the kind's profile: a new
+    /// person after the holder, a car after its make and model, a subscription after its firm.
     static func defaultAssetName(kind: CaptureDocumentKind, values: [CaptureFieldKey: CaptureValue]) -> String {
-        switch kind {
-        case .passport, .identityCard, .drivingLicence:
-            // A new member is named after the holder.
-            return CaptureMapping.holderName(values) ?? CaptureMapping.defaultTitle(for: kind, fields: values)
-        case .vehicleRegistration, .rcaPolicy, .itpReport, .serviceInvoice:
-            let makeModel = [values[.make]?.text, values[.model]?.text].compactMap { $0 }.joined(separator: " ")
-            if !makeModel.isEmpty { return makeModel }
-            return values[.licensePlate]?.text ?? String(localized: "Mașina")
-        case .utilityInvoice, .contract:
-            // The ongoing contract the bill or the contract belongs to.
-            return SubscriptionNaming.name(provider: values[.provider]?.text, service: values[.serviceKind]?.text)
-        case .veterinaryRecord: return values[.petName]?.text ?? String(localized: "Animalul")
-        case .medicalResult: return String(localized: "Sănătate")
-        default: return CaptureMapping.defaultTitle(for: kind, fields: values)
-        }
+        kind.profile.newSectionName(fields: values, holder: CaptureMapping.holderName(values),
+                                    title: CaptureMapping.defaultTitle(for: kind, fields: values))
     }
 
     // MARK: Reading again

@@ -136,6 +136,7 @@ struct DossierImporter {
                 isOnHomeByDefault: dto.isOnHome, isSensitiveByDefault: dto.isSensitive,
                 sections: dto.sections, blueprints: dto.blueprints, components: dto.components ?? [],
                 pockets: dto.pockets.map { $0.compactMap(SectionPocket.init(rawValue:)) } ?? SectionPocket.standard,
+                behavior: dto.behavior ?? .standard,
                 version: 0
             ))
             let isLocked = phone.lock(dto.key, archive: dto.isSensitive, default: catalog?.isSensitiveByDefault ?? false)
@@ -281,6 +282,7 @@ struct DossierImporter {
             provider.notes = dto.notes
             provider.manualRating = dto.manualRating
             provider.wouldCallAgain = dto.wouldCallAgain
+            provider.taxID = ProviderTaxID.normalized(dto.taxID) ?? provider.taxID
             provider.isExample = dto.isExample
             provider.createdAt = stamp(dto.createdAt)
             provider.updatedAt = stamp(dto.updatedAt)
@@ -395,6 +397,7 @@ struct DossierImporter {
             attachment.thumbnailData = dto.thumbnailPath.flatMap { package.files[$0] }
             attachment.extractedText = dto.extractedText
             attachment.documentDate = dto.documentDate?.noonDate(in: calendar)
+            attachment.validUntil = dto.validUntil?.noonDate(in: calendar)
             attachment.isArchived = dto.isArchived
             attachment.createdAt = dto.createdAt
             attachment.isExample = dto.isExample

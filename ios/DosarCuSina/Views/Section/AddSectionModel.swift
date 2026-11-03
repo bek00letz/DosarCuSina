@@ -138,7 +138,7 @@ final class AddSectionModel {
             parent: parent
         )
         // A top-level section of a category hidden from home brings the category back.
-        if parent == nil, !category.isOnHome, BinderLayout.hasAssetBoxes(category.key) {
+        if parent == nil, !category.isOnHome, category.behavior.hasSectionBoxes {
             try store.setOnHome(category, true)
         }
         return asset

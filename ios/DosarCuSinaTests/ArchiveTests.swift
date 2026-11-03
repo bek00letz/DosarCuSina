@@ -184,6 +184,31 @@ struct ArchiveTests {
         #expect(names == ["VW Golf editat", "Barca de pe lac", "Doar aici"])
     }
 
+    @Test("A firm's CUI, a paper's validity and a category's behaviour travel in the archive")
+    func versionThreeFactsTravel() throws {
+        let container = try makeInMemoryContainer()
+        let service = DossierArchiveService(container: container, calendar: calendar)
+        try service.importArchive(try Fixtures.archive("dosar-v3/household"), mode: .replace)
+        let context = ModelContext(container)
+        let firm = try #require(try context.fetch(FetchDescriptor<Provider>()).first { $0.name == "Service auto exemplu" })
+        #expect(firm.taxID == "12345678")
+        let policies = try context.fetch(FetchDescriptor<DosarSchemaV3.Attachment>()).filter { $0.title == "Poliță RCA 2025" }
+        #expect(policies.first?.validUntil.map { CalendarDay($0, calendar: calendar) } == CalendarDay("2026-12-14"),
+                "Last year's policy keeps last year's end, whatever its deadline says now")
+
+        // A category of the person's own that behaves like Garanții keeps doing so.
+        let custom = try TemplateStore(context: context).createCustom(name: "Unelte", symbol: "hammer", pockets: [.keyFacts])
+        custom.behavior = CategoryBehavior(box: .wholeCategory, listing: .byWarranty)
+        try UnitOfWork.save(context)
+        let archive = try service.exportData(exportedAt: noon("2026-11-02"))
+        let other = try makeInMemoryContainer()
+        try DossierArchiveService(container: other, calendar: calendar).importArchive(archive, mode: .replace)
+        let restored = try #require(try ModelContext(other).fetch(FetchDescriptor<CategoryTemplate>()).first { $0.name == "Unelte" })
+        #expect(restored.behavior == CategoryBehavior(box: .wholeCategory, listing: .byWarranty))
+        let restoredFirm = try ModelContext(other).fetch(FetchDescriptor<Provider>()).first { $0.name == "Service auto exemplu" }
+        #expect(restoredFirm?.taxID == "12345678")
+    }
+
     @Test func aFailedImportLeavesEverythingAsItWas() throws {
         let container = try makeInMemoryContainer()
         let context = ModelContext(container)

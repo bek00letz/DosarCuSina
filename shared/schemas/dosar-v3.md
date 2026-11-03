@@ -91,12 +91,23 @@ to update the app, and imports version 2 through a converter.
 (`blue|orange|pink|brown|indigo|teal|purple|green|red|yellow|mint|cyan|gray`),
 `heroStyle` (`vehicle|home|document|pet|standard`), `isBuiltIn`, `version`,
 `homeOrder`, `isOnHome`, `isSensitive`, `sections`, `blueprints`,
-`components`?, `pockets`?, `createdAt`, `updatedAt`.
+`components`?, `pockets`?, `behavior`?, `createdAt`, `updatedAt`.
 
 `pockets` lists the parts a section page shows. The values are
 `upcoming|tenants|products|subscriptions|documents|history|people|money|keyFacts`,
 always shown in that order. When the key is missing, readers use
 `upcoming, documents, history, people, money, keyFacts`.
+
+`behavior` says what the category does in the binder, so a custom category can
+behave like a built-in one: `{"box": "wholeCategory", "listing": "byHolder", "role":
+"personalDocument"}`. All keys are optional; a missing key, or a value a reader
+doesn't know, reads as the default.
+
+- **`box`:** `perSection` (one box per top-level section, the default), `wholeCategory` (one box for the category: Acte, Garanții, Abonamente) or `insideOther` (no box: its sections live inside another).
+- **`listing`:** what the category's page lists: `plain` (the default), `byHolder`, `byWarranty` or `byMonthlyCost`.
+- **`role`:** the part it plays for other categories: `holder` (people documents are filed under), `personalDocument`, `subscription` (ongoing contracts bills file into) or `home` (where contracts tied to an address live).
+- **`parentPocket`:** the pocket of a parent's page its sections show in (`tenants`, `products`, `subscriptions`).
+- **`addedOnlyUnderParent`:** its sections are only added under another section (a tenancy).
 
 Built-in keys: `vehicle`, `home`, `documents`, `pet`, `health`, `purchase`,
 `subscription`, `other`, `bike`, `plants`, `tenancy`, `member`, `espresso`.
@@ -124,8 +135,9 @@ sides, a field that is `secret` or `isSensitive` on the device stays so.
   - **`secret`:** a code kept hidden, such as an identity card's PIN. Its values are never written to an archive: writers leave them out, and readers ignore any they find and keep the ones already on the device for the same asset, in both import modes. A value sealed on the device (text starting with `sealed:v1:`) is a secret wherever it sits, so writers never write one under any field.
   - **Roles:** `identifier`, `subtitle`, `heroMetric`, `keyFact`, `documentNumber`, `holder`, `issuer`, `expiryDate`, `startDate`, `purchaseDate`, `purchasePrice`, `retailer`, `warrantyUntil`, `location`.
 - **Component:** `key`, `name`, `group`, `synonyms`.
-- **Blueprint:** `key`, `title`, `kind`, `recurrence`, `firstDue`, `reminders`, `reminderVariants`?, `appliesWhen`?, `estimatedCost`?, `isSuggested`, `note`?.
+- **Blueprint:** `key`, `title`, `kind`, `recurrence`, `firstDue`, `reminders`, `reminderVariants`?, `appliesWhen`?, `estimatedCost`?, `isSuggested`, `note`?, `facts`?.
   - **`appliesWhen`:** `{"field": "subscription.cycle", "oneOf": ["billing.yearly"]}`. The blueprint is offered only when the asset's value is one of these keys.
+  - **`facts`:** which of the section's fields hold this deadline's facts, by role: `{"insurer": "vehicle.cascoInsurer", "policyNumber": "vehicle.cascoPolicyNumber", "claimsPhone": "vehicle.cascoClaimsPhone"}`. A deadline's page and a claim checklist show these, so a car's CASCO never shows its RCA's policy. All keys are optional.
 
 ### Recurrence
 
@@ -252,10 +264,11 @@ diacritics, and words joined by `-`.
 
 `id`, `name`, `trades`, `phone`?, `email`?, `address`?, `notes`?,
 `manualRating`? (1–5), `wouldCallAgain`?, `assetIds`, `isExample`,
-`createdAt`, `updatedAt`.
+`createdAt`, `updatedAt`, `taxID`?.
 
-- **Trades:** `mechanic`, `tyreShop`, `inspectionStation`, `bodyShop`, `plumber`, `electrician`, `gasTechnician`, `boilerTechnician`, `hvacTechnician`, `handyman`, `vet`, `doctor`, `dentist`, `insuranceAgent`, `accountant`, `tenant`, `emergencyContact`, `other`. Any other string is kept as written.
+- **Trades:** `mechanic`, `tyreShop`, `inspectionStation`, `bodyShop`, `plumber`, `electrician`, `gasTechnician`, `boilerTechnician`, `hvacTechnician`, `handyman`, `vet`, `doctor`, `dentist`, `insuranceAgent`, `insurer`, `accountant`, `tenant`, `emergencyContact`, `other`. Any other string is kept as written.
 - **Rating:** the shown rating is the average of the job ratings in `history.json`, or `manualRating` when no job is rated.
+- **`taxID`:** the firm's tax ID (CUI), digits only, without `RO`. Two firms with the same `taxID` are the same firm.
 
 ### Measurement (`data/measurements.json`)
 
@@ -272,10 +285,11 @@ diacritics, and words joined by `-`.
 `contentType`, `byteCount`, `sha256`?, `path`?, `pagePaths`, `thumbnailPath`?,
 `extractedText`?, `documentDate`?, `isArchived`, `supersededById`?,
 `createdAt`, `isExample`, `assetId`?, `obligationId`?, `historyEntryId`?,
-`serviceItemId`?, `measurementId`?, `providerId`?.
+`serviceItemId`?, `measurementId`?, `providerId`?, `validUntil`?.
 
 - **Fingerprint:** `sha256` is the hash of the original file, or of the page images joined in order when there is no original.
 - **Replaced documents:** a replaced document is kept with `isArchived: true` and `supersededById` pointing to its replacement.
+- **`validUntil`:** a calendar day, the last day the document itself is valid, as read when it was filed (a policy's end). Its deadline moving on later doesn't change it.
 
 ## Import modes
 

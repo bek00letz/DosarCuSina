@@ -60,17 +60,25 @@ struct PocketEmptyLine: View {
 // MARK: - Chiriași, Produse, Abonamente
 
 /// Assets filed under this one (tenants, products, subscriptions), with a button that adds one.
+/// Which categories a pocket gathers is their own data (`CategoryBehavior.parentPocket`).
 struct ChildrenPocket: View {
     let asset: Asset
     let pocket: SectionPocket
-    let childKey: String
 
     @Environment(ShellRouter.self) private var router
-    @Query private var templates: [CategoryTemplate]
+    @Query(sort: \CategoryTemplate.homeOrder) private var templates: [CategoryTemplate]
+
+    /// The categories this pocket gathers, the built-in one first.
+    private var childTemplates: [CategoryTemplate] {
+        templates.filter { $0.behavior.parentPocket == pocket }.sorted { $0.isBuiltIn && !$1.isBuiltIn }
+    }
 
     var body: some View {
-        let children = (asset.children ?? []).filter { $0.templateKey == childKey }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
-        let definition = templates.first { $0.key == childKey }?.definition ?? BuiltInTemplates.definition(for: childKey)
+        let kinds = childTemplates
+        let keys = Set(kinds.map(\.key))
+        let childKey = kinds.first?.key ?? ""
+        let children = (asset.children ?? []).filter { keys.contains($0.templateKey) }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        let definition = kinds.first?.definition
         DSPocketCard(pocket.title, count: children.isEmpty ? nil : children.count) {
             if children.isEmpty {
                 PocketEmptyLine(text: emptyText)
@@ -182,10 +190,21 @@ enum ChildSummary {
 struct DocumentsPocket: View {
     let asset: Asset
     @Environment(ShellRouter.self) private var router
+    @Query private var templates: [CategoryTemplate]
+
+    /// What a category does, by key.
+    private func behavior(_ key: String) -> CategoryBehavior {
+        templates.first { $0.key == key }?.behavior ?? .standard
+    }
+
+    /// When a personal document stops being valid, by its category's expiry field.
+    private func expiry(_ document: Asset) -> CalendarDay {
+        templates.first { $0.key == document.templateKey }.flatMap { AssetFacts.expiry(document.values, template: $0.definition) } ?? .distantDay
+    }
 
     var body: some View {
-        let personal = (asset.children ?? []).filter { $0.templateKey == BuiltInTemplates.Key.documents }
-            .sorted { ($0.value("document.expiry")?.dateValue ?? .distantDay) < ($1.value("document.expiry")?.dateValue ?? .distantDay) }
+        let personal = (asset.children ?? []).filter { behavior($0.templateKey).role == .personalDocument }
+            .sorted { expiry($0) < expiry($1) }
         let papers = (asset.attachments ?? []).filter { !$0.isArchived }.sorted { $0.createdAt > $1.createdAt }
         let rows: [DocumentRowItem] = personal.map { .personal($0) } + papers.map { .paper($0) }
         DSPocketCard(SectionPocket.documents.title, count: rows.isEmpty ? nil : rows.count) {
@@ -205,7 +224,7 @@ struct DocumentsPocket: View {
             }
         } footer: {
             VStack(spacing: DS.Space.s) {
-                if asset.templateKey == BuiltInTemplates.Key.member {
+                if behavior(asset.templateKey).role == .holder {
                     DSSecondaryButton("Adaugă un act", systemImage: "plus") {
                         router.present(.addPersonalDocument(holderID: asset.id))
                     }
@@ -241,13 +260,13 @@ struct DocumentRowLink: View {
             NavigationLink(value: AppRoute.asset(document.id)) {
                 DSListRow(
                     title: Text(verbatim: document.name),
-                    subtitle: document.value("document.expiry")?.dateValue.map {
+                    subtitle: document.value(DocumentFields.expiry)?.dateValue.map {
                         Text(verbatim: String(localized: "Valabil până la \(DosarFormat.day($0))", comment: "Document row: valid until."))
                     },
                     systemImage: "person.text.rectangle",
                     showsChevron: true
                 ) {
-                    if let day = document.value("document.expiry")?.dateValue { ExpiryBadge(day: day, rule: DateUrgency.rule(for: day, on: document)) }
+                    if let day = document.value(DocumentFields.expiry)?.dateValue { ExpiryBadge(day: day, rule: DateUrgency.rule(for: day, on: document)) }
                 }
             }
             .buttonStyle(.dsPressable)
@@ -259,7 +278,9 @@ struct DocumentRowLink: View {
                     systemImage: attachment.kind.systemImage,
                     showsChevron: true
                 ) {
-                    if let obligation = attachment.obligation { ExpiryBadge(day: obligation.dueDay(), rule: obligation.reminders.urgencyRule) }
+                    if let day = attachment.validUntilDay {
+                        ExpiryBadge(day: day, rule: attachment.obligation?.reminders.urgencyRule ?? DateUrgency.rule(for: day, on: attachment.asset))
+                    }
                 }
             }
             .buttonStyle(.dsPressable)
@@ -274,11 +295,18 @@ extension Attachment {
         return fileName.isEmpty ? kind.title : fileName
     }
 
-    /// "Valabil până la …" when it belongs to an obligation (a policy valid until
-    /// the renewal), else the date printed on it.
+    /// The last day the paper itself is valid: as read when it was filed. A paper filed
+    /// before that was kept (version 3) falls back to its deadline's day.
+    var validUntilDay: CalendarDay? {
+        if let validUntil { return CalendarDay(validUntil) }
+        return obligation?.dueDay()
+    }
+
+    /// "Valabil până la …" for a paper that is valid until a day (a policy, as read when
+    /// it was filed: last year's policy keeps last year's end), else the date printed on it.
     var validityLine: String? {
-        if let obligation {
-            return String(localized: "Valabil până la \(DosarFormat.day(obligation.dueDay()))", comment: "Document row: valid until.")
+        if let day = validUntilDay {
+            return String(localized: "Valabil până la \(DosarFormat.day(day))", comment: "Document row: valid until.")
         }
         if let documentDate {
             return String(localized: "Din \(DosarFormat.day(documentDate))", comment: "Document row: the date on the document.")
@@ -439,7 +467,7 @@ struct MoneyPocket: View {
     var body: some View {
         let summary = MoneySummary.make(entries: (asset.history ?? []).map { ($0.occurredAt, $0.effectiveCost) }, now: Date())
         let purchase = AssetFacts.purchase(asset.values, template: definition)
-        let isSubscription = asset.templateKey == BuiltInTemplates.Key.subscription
+        let isSubscription = definition.behavior.role == .subscription
         // A fixed price per month; a contract billed by use shows its bills instead.
         let monthly = isSubscription ? SubscriptionMath.monthlyEquivalent(asset.values, usingLastBill: false) : nil
         let trend = isSubscription ? BillHistory.trend(BillHistory.bills(of: asset), today: CalendarDay(Date())) : nil

@@ -28,26 +28,26 @@ public enum ObligationRequirements {
             ObligationRequirement(id: id, title: title, check: check)
         }
         let registration = item("registration", String(localized: "Certificatul de înmatriculare (talonul)"))
-        let civ = item("civ", String(localized: "Cartea de identitate a vehiculului (CIV)"), .field("vehicle.civ"))
+        let civ = item("civ", String(localized: "Cartea de identitate a vehiculului (CIV)"), .field(VehicleFields.civ))
         let ownerID = item("ownerID", String(localized: "Actul de identitate al proprietarului"))
         switch key {
-        case "vehicle.itp":
-            return [registration, civ, item("rca", String(localized: "Polița RCA valabilă"), .validObligation("vehicle.rca"))]
-        case "vehicle.rca", "vehicle.casco":
+        case BuiltInBlueprints.vehicleITP:
+            return [registration, civ, item("rca", String(localized: "Polița RCA valabilă"), .validObligation(BuiltInBlueprints.vehicleRCA))]
+        case BuiltInBlueprints.vehicleRCA, BuiltInBlueprints.vehicleCASCO:
             return [registration, ownerID]
-        case "vehicle.vignette":
-            return [item("plate", String(localized: "Numărul de înmatriculare"), .field("vehicle.plate")),
-                    item("vin", String(localized: "Seria de șasiu (VIN)"), .field("vehicle.vin"))]
-        case "home.pad":
+        case BuiltInBlueprints.vehicleVignette:
+            return [item("plate", String(localized: "Numărul de înmatriculare"), .field(VehicleFields.plate)),
+                    item("vin", String(localized: "Seria de șasiu (VIN)"), .field(VehicleFields.vin))]
+        case BuiltInBlueprints.homePAD:
             return [item("deed", String(localized: "Actul de proprietate")), ownerID]
-        case "home.boilerCheck":
+        case BuiltInBlueprints.homeBoilerCheck:
             return [item("boilerBook", String(localized: "Cartea tehnică a centralei")),
                     item("lastReport", String(localized: "Raportul de la verificarea trecută"), .document(.report))]
-        case "home.gasCheck", "home.gasRevision":
+        case BuiltInBlueprints.homeGasCheck, BuiltInBlueprints.homeGasRevision:
             return [item("gasContract", String(localized: "Contractul de furnizare a gazelor"), .document(.contract)),
                     item("lastReport", String(localized: "Procesul-verbal de la verificarea trecută"), .document(.report))]
-        case "document.renew":
-            switch values["document.type"]?.textValue {
+        case BuiltInBlueprints.documentRenew:
+            switch values[DocumentType.typeFieldKey]?.textValue {
             case DocumentType.passport?:
                 return [item("idCard", String(localized: "Cartea de identitate")),
                         item("oldPassport", String(localized: "Pașaportul vechi")),
@@ -63,12 +63,12 @@ public enum ObligationRequirements {
             default:
                 return []
             }
-        case "pet.rabies", "pet.vaccine":
-            return [item("petBook", String(localized: "Carnetul de sănătate sau pașaportul animalului"), .field("pet.passport"))]
+        case BuiltInBlueprints.petRabies, BuiltInBlueprints.petVaccine:
+            return [item("petBook", String(localized: "Carnetul de sănătate sau pașaportul animalului"), .field(PetFields.passport))]
         case HouseholdRules.rentalDeclarationKey:
             return [item("leases", String(localized: "Contractele de închiriere"), .document(.contract)),
                     item("income", String(localized: "Cât ai încasat din chirii anul trecut"))]
-        case "health.euCard":
+        case BuiltInBlueprints.healthEUCard:
             return [item("idCard", String(localized: "Cartea de identitate"))]
         default:
             return []
@@ -88,7 +88,7 @@ public enum ObligationRequirements {
             return (asset.attachments ?? []).contains { $0.kind == kind && !$0.isArchived }
         case .validObligation(let key):
             guard let other = asset.activeObligations.first(where: { $0.blueprintKey == key }) else { return false }
-            return other.dueDay(in: calendar) >= day
+            return other.isValid(on: day, calendar: calendar)
         }
     }
 }

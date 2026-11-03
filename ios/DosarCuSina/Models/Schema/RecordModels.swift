@@ -43,7 +43,7 @@ public enum MeasurementKind: String, Codable, CaseIterable, Sendable {
     }
 }
 
-extension DosarSchemaV2 {
+extension DosarSchemaV3 {
     /// A line in a history entry: a part replaced, a job done, a vaccine given.
     /// `componentKey` ties it to the template's component catalog so "when did I
     /// last change the brake pads" has one answer across entries.
@@ -176,6 +176,9 @@ extension DosarSchemaV2 {
         public var extractedText: String?
         /// The date printed on the document (issue or invoice date), noon of that day.
         public var documentDate: Date?
+        /// The last day the document itself is valid, as read when it was filed (a policy's
+        /// end), noon of that day. Its deadline moving on later never changes it.
+        public var validUntil: Date?
         /// Identifier of the source document in Capture's document store on this
         /// device. Local only: archives don't carry it.
         public var documentID: String?

@@ -63,7 +63,7 @@ struct CaptureEngineTests {
 
         #expect(result.kind == .passport)
         #expect(result.field(.expiryDate)?.value.day == CaptureDay(year: 2031, month: 4, day: 15))
-        #expect(result.reminder?.leadDays.first == 270)
+        #expect(result.reminder?.blueprintKey == BuiltInBlueprints.documentRenew)
         let documentID = try #require(result.document?.pendingID)
         #expect(await store.processed(id: documentID)?.document.kind == .passport)
     }

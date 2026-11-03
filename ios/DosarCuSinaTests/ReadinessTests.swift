@@ -71,10 +71,62 @@ struct ReadinessTests {
         values["vehicle.claimsPhone"] = .text("+40210000000")
         let car = ReadinessAsset(name: "VW Golf", templateKey: BuiltInTemplates.Key.vehicle, values: values, obligations: [
             "vehicle.rca": ReadinessObligation(due: CalendarDay("2027-01-01"), reference: "POL-000001"),
-        ], documentKinds: [.policy])
+        ], documentKinds: [.policy], facts: ReadinessFacts.of(BuiltInTemplates.vehicle))
         let items = ReadinessEngine.check(.insuranceClaim(assetId: car.id), assets: [car], calendar: calendar)
         #expect(items.allSatisfy { $0.status == .ok })
         #expect(items.first { $0.id == "claim.policyNumber" }?.detail == "POL-000001", "The RCA reference stands in for a missing policy field")
+    }
+
+    @Test("A claim on each policy shows that policy's own facts", arguments: BuiltInTemplates.all.flatMap { template in
+        template.blueprints.filter { $0.facts != nil }.map { (template.key, $0.key) }
+    })
+    func eachPolicysClaimShowsItsOwnFacts(templateKey: String, blueprintKey: String) throws {
+        let template = try #require(BuiltInTemplates.definition(for: templateKey))
+        let facts = try #require(template.blueprints.first { $0.key == blueprintKey }?.facts)
+        // Every policy of the category has its own made-up values; only this one's may show.
+        var values = FieldValues()
+        for blueprint in template.blueprints {
+            for (role, field) in blueprint.facts?.fields ?? [] where values[field] == nil {
+                values[field] = .text("\(blueprint.key) \(role.rawValue)")
+            }
+        }
+        let asset = ReadinessAsset(name: "Exemplu", templateKey: templateKey, values: values, facts: ReadinessFacts.of(template))
+        let items = ReadinessEngine.check(.insuranceClaim(assetId: asset.id, blueprintKey: blueprintKey), assets: [asset], calendar: calendar)
+        let expectedNumber = facts.policyNumber.flatMap { values[$0]?.textValue }
+        let expectedPhone = facts.claimsPhone.flatMap { values[$0]?.textValue }
+        #expect(items.first { $0.id == "claim.policyNumber" }?.detail == expectedNumber)
+        #expect(items.first { $0.id == "claim.phone" }?.detail == expectedPhone)
+
+        // The deadline page reads the same facts.
+        let page = DeadlineFacts.of(blueprintKey: blueprintKey, in: template, values: values, reference: nil)
+        #expect(page.policyNumber == expectedNumber)
+        #expect(page.claimsPhone == expectedPhone)
+        #expect(page.insurer == facts.insurer.flatMap { values[$0]?.textValue })
+    }
+
+    @Test func aCASCODeadlineNeverShowsTheRCAPolicy() {
+        var values = FieldValues()
+        values[VehicleFields.policyNumber] = .text("RCA-000001")
+        values[VehicleFields.claimsPhone] = .text("0210000001")
+        let casco = DeadlineFacts.of(blueprintKey: BuiltInBlueprints.vehicleCASCO, in: BuiltInTemplates.vehicle, values: values, reference: nil)
+        #expect(casco.policyNumber == nil)
+        #expect(casco.claimsPhone == nil)
+        let itp = DeadlineFacts.of(blueprintKey: BuiltInBlueprints.vehicleITP, in: BuiltInTemplates.vehicle, values: values, reference: nil)
+        #expect(itp == DeadlineFacts(), "A deadline with no facts shows none")
+    }
+
+    @Test("The due day is the last valid day")
+    func theDueDayIsTheLastValidDay() {
+        #expect(DueDayValidity.isValid(due: CalendarDay("2027-01-05"), on: CalendarDay("2027-01-05")))
+        #expect(!DueDayValidity.isValid(due: CalendarDay("2027-01-05"), on: CalendarDay("2027-01-06")))
+        let car = ReadinessAsset(name: "VW Golf", templateKey: BuiltInTemplates.Key.vehicle, obligations: [
+            "vehicle.rca": ReadinessObligation(due: CalendarDay("2027-01-05")),
+        ])
+        let items = ReadinessEngine.check(
+            .tripAbroad(start: CalendarDay("2026-12-20"), end: CalendarDay("2027-01-05"), region: .europeanUnion, driving: true, withPet: false),
+            assets: [car], calendar: calendar
+        )
+        #expect(items.first { $0.id == "vehicle.rca.\(car.id)" }?.status == .ok, "An RCA valid until the day of return covers the trip")
     }
 
     @Test func sellingACarAsksForTheIdentityAndTheHistory() {

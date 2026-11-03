@@ -18,11 +18,26 @@ struct PolicyFilingTests {
     @Test func aCascoPolicyFillsTheCascoFieldsNotRCAs() throws {
         let context = try makeContext()
         let (_, vehicle) = try car(context)
-        #expect(CaptureMapping.fieldKey(for: .policyNumber, kind: .insurancePolicy, in: vehicle, coverage: "CASCO") == "vehicle.cascoPolicyNumber")
-        #expect(CaptureMapping.fieldKey(for: .claimsPhone, kind: .insurancePolicy, in: vehicle, coverage: "CASCO") == "vehicle.cascoClaimsPhone")
-        #expect(CaptureMapping.fieldKey(for: .provider, kind: .insurancePolicy, in: vehicle, coverage: "CASCO") == "vehicle.cascoInsurer")
-        #expect(CaptureMapping.fieldKey(for: .policyNumber, kind: .rcaPolicy, in: vehicle) == "vehicle.policyNumber")
-        #expect(CaptureMapping.fieldKey(for: .policyNumber, kind: .insurancePolicy, in: vehicle, coverage: "Facultativă") == nil, "An unknown cover never fills RCA's fields")
+        let casco = vehicle.blueprints.first { $0.key == BuiltInBlueprints.vehicleCASCO }
+        let rca = vehicle.blueprints.first { $0.key == BuiltInBlueprints.vehicleRCA }
+        #expect(CaptureMapping.fieldKey(for: .policyNumber, kind: .insurancePolicy, in: vehicle, deadline: casco) == VehicleFields.cascoPolicyNumber)
+        #expect(CaptureMapping.fieldKey(for: .claimsPhone, kind: .insurancePolicy, in: vehicle, deadline: casco) == VehicleFields.cascoClaimsPhone)
+        #expect(CaptureMapping.fieldKey(for: .provider, kind: .insurancePolicy, in: vehicle, deadline: casco) == VehicleFields.cascoInsurer)
+        #expect(CaptureMapping.fieldKey(for: .policyNumber, kind: .rcaPolicy, in: vehicle, deadline: rca) == VehicleFields.policyNumber)
+        #expect(CaptureMapping.fieldKey(for: .policyNumber, kind: .insurancePolicy, in: vehicle, deadline: nil) == nil, "A policy without its deadline here never fills RCA's fields")
+        #expect(CaptureMapping.fieldKey(for: .expiryDate, kind: .rcaPolicy, in: vehicle, deadline: rca) == nil, "The policy's end is the deadline's own day")
+    }
+
+    @Test("The cover is read once, as whole words")
+    func theCoverIsReadAsWholeWords() {
+        #expect(InsuranceCover.read(in: "Poliță CASCO nr. 123") == InsuranceCover.casco)
+        #expect(InsuranceCover.read(in: "Asigurare PAD pentru locuință") == InsuranceCover.pad)
+        #expect(InsuranceCover.read(in: "Padding și Padina", among: [InsuranceCover.pad]) == nil, "Part of a word is not a cover")
+        #expect(InsuranceCover.read(in: "Răspundere civilă auto") == InsuranceCover.rca)
+        #expect(InsuranceCover.read(in: "Răspundere civilă auto", among: CaptureDocumentKind.insurancePolicy.profile.covers) == nil,
+                "Another policy is never an RCA: that is a kind of its own")
+        #expect(InsuranceCover.key(for: "CASCO") == InsuranceCover.casco)
+        #expect(InsuranceCover.key(for: "Facultativă") == InsuranceCover.home)
     }
 
     @Test func aPolicyMentioningDigitalIsNotADigiBill() {
@@ -67,7 +82,7 @@ struct PolicyFilingTests {
         let context = try makeContext()
         let (car, _) = try car(context)
         let review = CaptureReview(result: readAsABill(), assets: [car], context: context)
-        #expect(review.blueprintKey == nil)
+        #expect(review.blueprintKey == SubscriptionFields.billBlueprint, "A bill sets its own deadline")
 
         let corrected = review.choosingKind(.rcaPolicy, assets: [car], context: context)
         #expect(corrected.kind == .rcaPolicy)

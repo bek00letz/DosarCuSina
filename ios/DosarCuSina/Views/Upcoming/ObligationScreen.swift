@@ -184,9 +184,10 @@ private struct ObligationPage: View {
 
     @ViewBuilder private var lastTime: some View {
         let last = obligation.history.first
-        let asset = obligation.asset
-        let policyNumber = obligation.reference ?? asset.flatMap { fact(in: $0, suffix: "policyNumber") }
-        let claimsPhone = asset.flatMap { fact(in: $0, suffix: "claimsPhone") }
+        // This deadline's own facts, by its blueprint's roles: CASCO's page shows CASCO's policy.
+        let facts = DeadlineFacts.of(obligation, template: template?.definition)
+        let policyNumber = facts.policyNumber
+        let claimsPhone = facts.claimsPhone
         let documents = documentsOnFile
         if last != nil || policyNumber != nil || claimsPhone != nil || !documents.isEmpty {
             VStack(alignment: .leading, spacing: DS.Space.s) {
@@ -248,10 +249,6 @@ private struct ObligationPage: View {
                 }
             }
         }
-    }
-
-    private func fact(in asset: Asset, suffix: String) -> String? {
-        asset.values.first { key, value in key.hasSuffix(".\(suffix)") && value.textValue != nil }?.value.textValue
     }
 
     private var documentsOnFile: [Attachment] {

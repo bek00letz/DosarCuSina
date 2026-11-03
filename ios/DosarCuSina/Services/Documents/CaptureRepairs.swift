@@ -110,9 +110,31 @@ public struct CaptureRepairs {
         public var id: UUID { keptID }
     }
 
-    /// Every group of firms whose names read the same (`ProviderActions.findOrCreate`'s rule).
+    /// Every group of firms that are the same by `ProviderActions.findOrCreate`'s rule: the
+    /// same CUI, or names that read the same. A chain counts as one group (A and B share a
+    /// CUI, B and C a name).
     public func duplicateProviderCandidates() throws -> [DuplicateProviders] {
-        let groups = Dictionary(grouping: try context.fetch(FetchDescriptor<Provider>()).filter { !$0.isExample }) { SearchText.normalize($0.name) }
+        let providers = try context.fetch(FetchDescriptor<Provider>()).filter { !$0.isExample }
+        // Each firm starts in a group of its own; a shared name or CUI joins two groups.
+        var group = Dictionary(uniqueKeysWithValues: providers.map { ($0.id, $0.id) })
+        func root(_ id: UUID) -> UUID {
+            var current = id
+            while let parent = group[current], parent != current { current = parent }
+            return current
+        }
+        var firstByKey: [String: UUID] = [:]
+        for provider in providers {
+            let keys = ["name:" + SearchText.normalize(provider.name)] + (ProviderTaxID.normalized(provider.taxID).map { ["cui:" + $0] } ?? [])
+            for key in keys {
+                if let other = firstByKey[key] {
+                    let (a, b) = (root(other), root(provider.id))
+                    if a != b { group[b] = a }
+                } else {
+                    firstByKey[key] = provider.id
+                }
+            }
+        }
+        let groups = Dictionary(grouping: providers) { root($0.id) }
         return groups.values.filter { $0.count > 1 }.compactMap { group in
             let ordered = group.sorted { ($0.createdAt, $0.id.uuidString) < ($1.createdAt, $1.id.uuidString) }
             guard let kept = ordered.first else { return nil }
@@ -148,6 +170,7 @@ public struct CaptureRepairs {
                     kept.manualRating = kept.manualRating ?? copy.manualRating
                     kept.wouldCallAgain = kept.wouldCallAgain ?? copy.wouldCallAgain
                     kept.contactIdentifier = kept.contactIdentifier ?? copy.contactIdentifier
+                    kept.taxID = kept.taxID ?? copy.taxID
                     kept.updatedAt = Date()
                     context.delete(copy)
                 }

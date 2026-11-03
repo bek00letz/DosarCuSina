@@ -101,7 +101,7 @@ struct PersonalDocumentTests {
         )
         review.destination = .asset(corina.id)
         review.filesAsPersonalDocument = true
-        #expect(CaptureFiler.filedTemplateKey(for: review, destinationTemplateKey: BuiltInTemplates.Key.member) == BuiltInTemplates.Key.documents)
+        #expect(CaptureFiler.filedTemplateKey(for: review, destinationTemplateKey: BuiltInTemplates.Key.member, templates: try TemplateStore(context: context).templatesByKey()) == BuiltInTemplates.Key.documents)
 
         let outcome = try await CaptureFiler(context: context).save(review)
         let document = try #require(outcome.asset)
@@ -145,12 +145,13 @@ struct PersonalDocumentTests {
     }
 
     @Test func withoutTheFlagALoosePaperStaysOnThePerson() throws {
+        let context = try makeContext()
         var review = CaptureReview(
             result: CaptureResult(kind: .other, kindConfidence: 0.6, fields: [], suggestions: [], reminder: nil,
                                   recognizedText: "", barcodes: [], document: nil, notices: []),
-            assets: [], context: try makeContext()
+            assets: [], context: context
         )
         review.destination = .none
-        #expect(CaptureFiler.filedTemplateKey(for: review, destinationTemplateKey: BuiltInTemplates.Key.member) == BuiltInTemplates.Key.member)
+        #expect(CaptureFiler.filedTemplateKey(for: review, destinationTemplateKey: BuiltInTemplates.Key.member, templates: try TemplateStore(context: context).templatesByKey()) == BuiltInTemplates.Key.member)
     }
 }

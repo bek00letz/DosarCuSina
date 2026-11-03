@@ -25,12 +25,12 @@ public enum BuiltInTemplates {
     /// Field keys renamed along with a replaced template.
     public static let replacedFieldKeys: [String: String] = [
         "warranty.brand": "purchase.brand",
-        "warranty.model": "purchase.model",
-        "warranty.serial": "purchase.serial",
+        "warranty.model": PurchaseFieldKeys.model,
+        "warranty.serial": PurchaseFieldKeys.serial,
         "warranty.retailer": "purchase.retailer",
         "warranty.price": "purchase.price",
         "warranty.purchaseDate": "purchase.date",
-        "warranty.expiry": "purchase.warrantyUntil",
+        "warranty.expiry": PurchaseFieldKeys.warrantyUntil,
         "warranty.manualUrl": "purchase.manualUrl",
     ]
 
@@ -70,38 +70,39 @@ public enum BuiltInTemplates {
             heroStyle: .vehicle,
             sections: [
                 FieldSection(key: "vehicle.identity", title: String(localized: "Identificare"), fields: [
-                    FieldDefinition(key: "vehicle.plate", label: String(localized: "Număr de înmatriculare"), type: .plate, role: .identifier, isEssential: true, placeholder: "B-123-ABC"),
-                    FieldDefinition(key: "vehicle.make", label: String(localized: "Marcă"), type: .text, role: .subtitle, isEssential: true, placeholder: "Volkswagen"),
-                    FieldDefinition(key: "vehicle.model", label: String(localized: "Model"), type: .text, role: .subtitle, isEssential: true, placeholder: "Golf"),
-                    FieldDefinition(key: "vehicle.year", label: String(localized: "An de fabricație"), type: .year, role: .subtitle, isEssential: true, placeholder: "2018"),
-                    FieldDefinition(key: "vehicle.vin", label: String(localized: "Serie de șasiu (VIN)"), type: .vin, role: .keyFact),
-                    FieldDefinition(key: "vehicle.civ", label: String(localized: "Serie CIV"), type: .text),
+                    FieldDefinition(key: VehicleFields.plate, label: String(localized: "Număr de înmatriculare"), type: .plate, role: .identifier, isEssential: true, placeholder: "B-123-ABC"),
+                    FieldDefinition(key: VehicleFields.make, label: String(localized: "Marcă"), type: .text, role: .subtitle, isEssential: true, placeholder: "Volkswagen"),
+                    FieldDefinition(key: VehicleFields.model, label: String(localized: "Model"), type: .text, role: .subtitle, isEssential: true, placeholder: "Golf"),
+                    FieldDefinition(key: VehicleFields.year, label: String(localized: "An de fabricație"), type: .year, role: .subtitle, isEssential: true, placeholder: "2018"),
+                    FieldDefinition(key: VehicleFields.vin, label: String(localized: "Serie de șasiu (VIN)"), type: .vin, role: .keyFact),
+                    FieldDefinition(key: VehicleFields.civ, label: String(localized: "Serie CIV"), type: .text),
                 ]),
                 FieldSection(key: "vehicle.technical", title: String(localized: "Date tehnice"), fields: [
-                    FieldDefinition(key: "vehicle.odometer", label: String(localized: "Kilometraj"), type: .metric, role: .heroMetric, isEssential: true, unit: "km"),
+                    FieldDefinition(key: VehicleFields.odometer, label: String(localized: "Kilometraj"), type: .metric, role: .heroMetric, isEssential: true, unit: "km"),
                     FieldDefinition(key: "vehicle.fuel", label: String(localized: "Combustibil"), type: .choice, options: FuelType.options),
                     FieldDefinition(key: "vehicle.engineCc", label: String(localized: "Capacitate cilindrică"), type: .number, unit: "cm³"),
                     FieldDefinition(key: "vehicle.powerHp", label: String(localized: "Putere"), type: .number, unit: "CP"),
-                    FieldDefinition(key: "vehicle.usage", label: String(localized: "Folosire"), type: .choice, options: VehicleUse.options),
+                    FieldDefinition(key: VehicleFields.usage, label: String(localized: "Folosire"), type: .choice, options: VehicleUse.options),
                 ]),
                 FieldSection(key: "vehicle.insurance", title: String(localized: "Asigurare"), fields: [
-                    FieldDefinition(key: "vehicle.insurer", label: String(localized: "Asigurător RCA"), type: .text, role: .issuer),
-                    FieldDefinition(key: "vehicle.policyNumber", label: String(localized: "Număr poliță RCA"), type: .text, role: .keyFact),
-                    FieldDefinition(key: "vehicle.claimsPhone", label: String(localized: "Telefon daune RCA"), type: .phone, role: .keyFact),
+                    FieldDefinition(key: VehicleFields.insurer, label: String(localized: "Asigurător RCA"), type: .text, role: .issuer),
+                    FieldDefinition(key: VehicleFields.policyNumber, label: String(localized: "Număr poliță RCA"), type: .text, role: .keyFact),
+                    FieldDefinition(key: VehicleFields.claimsPhone, label: String(localized: "Telefon daune RCA"), type: .phone, role: .keyFact),
                     // CASCO is optional and separate from RCA: its own insurer, policy and claims line.
-                    FieldDefinition(key: "vehicle.cascoInsurer", label: String(localized: "Asigurător CASCO"), type: .text),
-                    FieldDefinition(key: "vehicle.cascoPolicyNumber", label: String(localized: "Număr poliță CASCO"), type: .text, role: .keyFact),
-                    FieldDefinition(key: "vehicle.cascoClaimsPhone", label: String(localized: "Telefon daune CASCO"), type: .phone, role: .keyFact),
+                    FieldDefinition(key: VehicleFields.cascoInsurer, label: String(localized: "Asigurător CASCO"), type: .text),
+                    FieldDefinition(key: VehicleFields.cascoPolicyNumber, label: String(localized: "Număr poliță CASCO"), type: .text, role: .keyFact),
+                    FieldDefinition(key: VehicleFields.cascoClaimsPhone, label: String(localized: "Telefon daune CASCO"), type: .phone, role: .keyFact),
                 ]),
                 PurchaseFields.section(prefix: "vehicle"),
             ],
             blueprints: [
-                ObligationBlueprint(key: "vehicle.itp", title: String(localized: "ITP"), kind: .legal, recurrence: .legal(.vehicleITP), firstDue: .ask,
+                ObligationBlueprint(key: BuiltInBlueprints.vehicleITP, title: String(localized: "ITP"), kind: .legal, recurrence: .legal(.vehicleITP), firstDue: .ask,
                                     reminders: profile([30, 7], .legal),
                                     estimatedCost: ron(180), note: String(localized: "Fără ITP valabil, înmatricularea se suspendă.")),
-                ObligationBlueprint(key: "vehicle.rca", title: String(localized: "RCA"), kind: .insurance, recurrence: .interval(.years(1), anchor: .dueDate), firstDue: .ask,
-                                    reminders: profile([30, 7, 0], .legal), note: String(localized: "Cere oferte cu o lună înainte, prețurile diferă mult.")),
-                ObligationBlueprint(key: "vehicle.vignette", title: String(localized: "Rovinietă"), kind: .legal, recurrence: .interval(.months(12), anchor: .completion), firstDue: .ask,
+                ObligationBlueprint(key: BuiltInBlueprints.vehicleRCA, title: String(localized: "RCA"), kind: .insurance, recurrence: .interval(.years(1), anchor: .dueDate), firstDue: .ask,
+                                    reminders: profile([30, 7, 0], .legal), note: String(localized: "Cere oferte cu o lună înainte, prețurile diferă mult."),
+                                    facts: BlueprintFacts(insurer: VehicleFields.insurer, policyNumber: VehicleFields.policyNumber, claimsPhone: VehicleFields.claimsPhone)),
+                ObligationBlueprint(key: BuiltInBlueprints.vehicleVignette, title: String(localized: "Rovinietă"), kind: .legal, recurrence: .interval(.months(12), anchor: .completion), firstDue: .ask,
                                     reminders: profile([7, 0], .legal)),
                 ObligationBlueprint(key: "vehicle.service", title: String(localized: "Revizie periodică"), kind: .maintenance,
                                     recurrence: .metric(every: 15_000, unit: "km", fallback: .years(1)), firstDue: .afterInterval(.years(1)),
@@ -109,8 +110,10 @@ public enum BuiltInTemplates {
                 ObligationBlueprint(key: "vehicle.tyres", title: String(localized: "Schimb de anvelope"), kind: .maintenance,
                                     recurrence: .fixedDates([MonthDay(month: 4, day: 15), MonthDay(month: 11, day: 1)]), firstDue: .nextFixedDate,
                                     reminders: profile([14], .comfort, grace: 14)),
-                ObligationBlueprint(key: "vehicle.casco", title: String(localized: "CASCO"), kind: .insurance, recurrence: .interval(.years(1), anchor: .dueDate), firstDue: .ask,
-                                    reminders: profile([30, 7, 0], .financial), isSuggested: false),
+                ObligationBlueprint(key: BuiltInBlueprints.vehicleCASCO, title: String(localized: "CASCO"), kind: .insurance, recurrence: .interval(.years(1), anchor: .dueDate), firstDue: .ask,
+                                    reminders: profile([30, 7, 0], .financial), isSuggested: false,
+                                    facts: BlueprintFacts(insurer: VehicleFields.cascoInsurer, policyNumber: VehicleFields.cascoPolicyNumber,
+                                                          claimsPhone: VehicleFields.cascoClaimsPhone)),
                 ObligationBlueprint(key: "vehicle.kit", title: String(localized: "Trusă medicală și stingător"), kind: .legal, recurrence: .none, firstDue: .ask,
                                     reminders: profile([14, 0], .legal), isSuggested: false, note: String(localized: "Data expirării e pe ambalaj.")),
             ],
@@ -135,16 +138,16 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: "home.cadastral", label: String(localized: "Număr cadastral"), type: .text),
                 ]),
                 FieldSection(key: "home.utilities", title: String(localized: "Utilități"), fields: [
-                    FieldDefinition(key: "home.pod", label: String(localized: "Cod loc de consum energie (POD)"), type: .text, role: .keyFact),
-                    FieldDefinition(key: "home.clc", label: String(localized: "Cod loc de consum gaze (CLC)"), type: .text, role: .keyFact),
+                    FieldDefinition(key: HomeFields.pod, label: String(localized: "Cod loc de consum energie (POD)"), type: .text, role: .keyFact),
+                    FieldDefinition(key: HomeFields.clc, label: String(localized: "Cod loc de consum gaze (CLC)"), type: .text, role: .keyFact),
                     FieldDefinition(key: "home.waterCode", label: String(localized: "Cod client apă"), type: .text),
                     FieldDefinition(key: "home.meterReadFrom", label: String(localized: "Autocitire de la ziua"), type: .number),
                     FieldDefinition(key: "home.meterReadTo", label: String(localized: "Autocitire până la ziua"), type: .number),
                 ]),
                 FieldSection(key: "home.insurance", title: String(localized: "Asigurare"), fields: [
-                    FieldDefinition(key: "home.insurer", label: String(localized: "Asigurător"), type: .text, role: .issuer),
-                    FieldDefinition(key: "home.policyNumber", label: String(localized: "Număr poliță"), type: .text, role: .keyFact),
-                    FieldDefinition(key: "home.claimsPhone", label: String(localized: "Telefon pentru daune"), type: .phone, role: .keyFact),
+                    FieldDefinition(key: HomeFields.insurer, label: String(localized: "Asigurător"), type: .text, role: .issuer),
+                    FieldDefinition(key: HomeFields.policyNumber, label: String(localized: "Număr poliță"), type: .text, role: .keyFact),
+                    FieldDefinition(key: HomeFields.claimsPhone, label: String(localized: "Telefon pentru daune"), type: .phone, role: .keyFact),
                 ]),
                 FieldSection(key: "home.heating", title: String(localized: "Centrală termică"), fields: [
                     FieldDefinition(key: "home.boilerModel", label: String(localized: "Model"), type: .text),
@@ -152,17 +155,21 @@ public enum BuiltInTemplates {
                 ]),
             ],
             blueprints: [
-                ObligationBlueprint(key: "home.boilerCheck", title: String(localized: "Verificare centrală (VTP)"), kind: .legal, recurrence: .interval(.years(2), anchor: .completion), firstDue: .ask,
+                ObligationBlueprint(key: BuiltInBlueprints.homeBoilerCheck, title: String(localized: "Verificare centrală (VTP)"), kind: .legal, recurrence: .interval(.years(2), anchor: .completion), firstDue: .ask,
                                     reminders: profile([30, 7], .legal),
                                     note: String(localized: "Obligatorie la cel mult 2 ani, făcută de o firmă autorizată ISCIR.")),
-                ObligationBlueprint(key: "home.gasCheck", title: String(localized: "Verificare instalație de gaze"), kind: .legal, recurrence: .interval(.years(2), anchor: .completion), firstDue: .ask,
+                ObligationBlueprint(key: BuiltInBlueprints.homeGasCheck, title: String(localized: "Verificare instalație de gaze"), kind: .legal, recurrence: .interval(.years(2), anchor: .completion), firstDue: .ask,
                                     reminders: profile([30, 7], .legal)),
-                ObligationBlueprint(key: "home.gasRevision", title: String(localized: "Revizie instalație de gaze"), kind: .legal, recurrence: .interval(.years(10), anchor: .completion), firstDue: .ask,
+                ObligationBlueprint(key: BuiltInBlueprints.homeGasRevision, title: String(localized: "Revizie instalație de gaze"), kind: .legal, recurrence: .interval(.years(10), anchor: .completion), firstDue: .ask,
                                     reminders: profile([60, 30], .legal),
                                     isSuggested: false),
-                ObligationBlueprint(key: "home.pad", title: String(localized: "Asigurare obligatorie (PAD)"), kind: .insurance, recurrence: .interval(.years(1), anchor: .dueDate), firstDue: .ask,
+                ObligationBlueprint(key: BuiltInBlueprints.homePAD, title: String(localized: "Asigurare obligatorie (PAD)"), kind: .insurance, recurrence: .interval(.years(1), anchor: .dueDate), firstDue: .ask,
                                     reminders: profile([30, 7, 0], .legal),
-                                    estimatedCost: ron(130)),
+                                    estimatedCost: ron(130), facts: homeInsuranceFacts),
+                // An optional policy on top of PAD: renewed yearly, like CASCO for a car.
+                ObligationBlueprint(key: BuiltInBlueprints.homeInsurance, title: String(localized: "Asigurare facultativă"), kind: .insurance,
+                                    recurrence: .interval(.years(1), anchor: .dueDate), firstDue: .ask,
+                                    reminders: profile([30, 7, 0], .financial), isSuggested: false, facts: homeInsuranceFacts),
                 ObligationBlueprint(key: "home.buildingTax", title: String(localized: "Impozit pe clădire"), kind: .tax,
                                     recurrence: .fixedDates([MonthDay(month: 3, day: 31), MonthDay(month: 9, day: 30)]), firstDue: .nextFixedDate,
                                     reminders: profile([14, 1], .financial), note: String(localized: "Plata integrală până la 31 martie poate aduce o reducere.")),
@@ -170,8 +177,15 @@ public enum BuiltInTemplates {
                                     reminders: profile([14, 0], .comfort, grace: 30), isSuggested: false),
             ],
             components: BuiltInComponents.home,
-            pockets: [.upcoming, .tenants, .products, .subscriptions, .documents, .history, .people, .money, .keyFacts]
+            pockets: [.upcoming, .tenants, .products, .subscriptions, .documents, .history, .people, .money, .keyFacts],
+            behavior: CategoryBehavior(role: .home)
         )
+    }
+
+    /// A home keeps one insurer, policy number and claims phone, which its PAD and its
+    /// optional policy share.
+    private static var homeInsuranceFacts: BlueprintFacts {
+        BlueprintFacts(insurer: HomeFields.insurer, policyNumber: HomeFields.policyNumber, claimsPhone: HomeFields.claimsPhone)
     }
 
     public static var documents: TemplateDefinition {
@@ -189,17 +203,17 @@ public enum BuiltInTemplates {
                     // Only for types with real variants (cazier judiciar, fiscal or auto); the options follow the type.
                     FieldDefinition(key: DocumentType.variantFieldKey, label: String(localized: "Varianta"), type: .choice, options: DocumentType.variantOptions,
                                     appliesWhen: BlueprintCondition(field: DocumentType.typeFieldKey, oneOf: DocumentType.typesWithVariants)),
-                    FieldDefinition(key: "document.number", label: String(localized: "Serie și număr"), type: .text, role: .documentNumber, isSensitive: true),
+                    FieldDefinition(key: DocumentFields.number, label: String(localized: "Serie și număr"), type: .text, role: .documentNumber, isSensitive: true),
                     // The personal numeric code lives only here, in a category that asks for Face ID by default.
-                    FieldDefinition(key: "document.personalNumber", label: String(localized: "CNP"), type: .text, isSensitive: true),
+                    FieldDefinition(key: DocumentFields.personalNumber, label: String(localized: "CNP"), type: .text, isSensitive: true),
                     // What forms ask for, read off the document. Sensitive, so never indexed for search.
-                    FieldDefinition(key: "document.birthDate", label: String(localized: "Data nașterii"), type: .date, isSensitive: true),
-                    FieldDefinition(key: "document.sex", label: String(localized: "Sex"), type: .text, isSensitive: true),
-                    FieldDefinition(key: "document.nationality", label: String(localized: "Cetățenie"), type: .text, isSensitive: true),
-                    FieldDefinition(key: "document.categories", label: String(localized: "Categorii"), type: .text),
-                    FieldDefinition(key: "document.issuer", label: String(localized: "Emis de"), type: .text, role: .issuer),
-                    FieldDefinition(key: "document.issueDate", label: String(localized: "Data emiterii"), type: .date, role: .startDate),
-                    FieldDefinition(key: "document.expiry", label: String(localized: "Valabil până la"), type: .expiryDate, role: .expiryDate, isEssential: true),
+                    FieldDefinition(key: DocumentFields.birthDate, label: String(localized: "Data nașterii"), type: .date, isSensitive: true),
+                    FieldDefinition(key: DocumentFields.sex, label: String(localized: "Sex"), type: .text, isSensitive: true),
+                    FieldDefinition(key: DocumentFields.nationality, label: String(localized: "Cetățenie"), type: .text, isSensitive: true),
+                    FieldDefinition(key: DocumentFields.categories, label: String(localized: "Categorii"), type: .text),
+                    FieldDefinition(key: DocumentFields.issuer, label: String(localized: "Emis de"), type: .text, role: .issuer),
+                    FieldDefinition(key: DocumentFields.issueDate, label: String(localized: "Data emiterii"), type: .date, role: .startDate),
+                    FieldDefinition(key: DocumentFields.expiry, label: String(localized: "Valabil până la"), type: .expiryDate, role: .expiryDate, isEssential: true),
                 ]),
                 // The two codes that come with the electronic identity card, named as on
                 // carteadeidentitate.gov.ro. Secret: sealed, shown only after a fresh Face ID,
@@ -214,8 +228,8 @@ public enum BuiltInTemplates {
                 ]),
             ],
             blueprints: [
-                ObligationBlueprint(key: "document.renew", title: String(localized: "Reînnoire"), kind: .renewal, recurrence: .none,
-                                    firstDue: .field(key: "document.expiry", offsetDays: 0),
+                ObligationBlueprint(key: BuiltInBlueprints.documentRenew, title: String(localized: "Reînnoire"), kind: .renewal, recurrence: .none,
+                                    firstDue: .field(key: DocumentFields.expiry, offsetDays: 0),
                                     reminders: profile([90, 30], .legal),
                                     reminderVariants: ReminderProfileVariants(field: "document.type", variants: [
                                         DocumentType.passport: profile([180, 60], .legal),
@@ -229,7 +243,8 @@ public enum BuiltInTemplates {
                                     ]),
                                     note: String(localized: "Programările durează. Pentru pașaport, multe țări cer 6 luni de valabilitate.")),
             ],
-            pockets: [.upcoming, .documents, .keyFacts]
+            pockets: [.upcoming, .documents, .keyFacts],
+            behavior: CategoryBehavior(box: .wholeCategory, listing: .byHolder, role: .personalDocument)
         )
     }
 
@@ -251,8 +266,8 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: "pet.species", label: String(localized: "Specie"), type: .choice, role: .subtitle, isEssential: true, options: PetSpecies.options),
                     FieldDefinition(key: "pet.breed", label: String(localized: "Rasă"), type: .text, role: .subtitle),
                     FieldDefinition(key: "pet.birthDate", label: String(localized: "Data nașterii"), type: .date, role: .startDate, isEssential: true),
-                    FieldDefinition(key: "pet.microchip", label: String(localized: "Microcip"), type: .microchip, role: .keyFact),
-                    FieldDefinition(key: "pet.passport", label: String(localized: "Pașaport european"), type: .text, role: .keyFact),
+                    FieldDefinition(key: PetFields.microchip, label: String(localized: "Microcip"), type: .microchip, role: .keyFact),
+                    FieldDefinition(key: PetFields.passport, label: String(localized: "Pașaport european"), type: .text, role: .keyFact),
                     FieldDefinition(key: "pet.weight", label: String(localized: "Greutate"), type: .number, role: .heroMetric, unit: "kg"),
                 ]),
                 FieldSection(key: "pet.care", title: String(localized: "Îngrijire"), fields: [
@@ -260,7 +275,7 @@ public enum BuiltInTemplates {
                 ]),
             ],
             blueprints: [
-                ObligationBlueprint(key: "pet.rabies", title: String(localized: "Vaccin antirabic"), kind: .legal, recurrence: .interval(.years(1), anchor: .completion), firstDue: .ask,
+                ObligationBlueprint(key: BuiltInBlueprints.petRabies, title: String(localized: "Vaccin antirabic"), kind: .legal, recurrence: .interval(.years(1), anchor: .completion), firstDue: .ask,
                                     reminders: profile([1], .health, grace: 7),
                                     // A cat can be a few days late; a dog's rabies vaccine is a legal requirement.
                                     reminderVariants: ReminderProfileVariants(field: "pet.species", variants: [
@@ -268,7 +283,7 @@ public enum BuiltInTemplates {
                                         PetSpecies.dog: profile([10, 4], .legal),
                                     ]),
                                     note: String(localized: "Obligatoriu și cerut la trecerea graniței.")),
-                ObligationBlueprint(key: "pet.vaccine", title: String(localized: "Vaccin anual"), kind: .health, recurrence: .interval(.years(1), anchor: .completion), firstDue: .ask,
+                ObligationBlueprint(key: BuiltInBlueprints.petVaccine, title: String(localized: "Vaccin anual"), kind: .health, recurrence: .interval(.years(1), anchor: .completion), firstDue: .ask,
                                     reminders: profile([1], .health, grace: 7)),
                 ObligationBlueprint(key: "pet.dewormInternal", title: String(localized: "Deparazitare internă"), kind: .health, recurrence: .interval(.months(3), anchor: .completion),
                                     firstDue: .afterInterval(.months(3)),
@@ -315,7 +330,7 @@ public enum BuiltInTemplates {
                 ObligationBlueprint(key: "health.flu", title: String(localized: "Vaccin antigripal"), kind: .health, recurrence: .fixedDates([MonthDay(month: 10, day: 15)]),
                                     firstDue: .nextFixedDate,
                                     reminders: profile([7, 0], .health, grace: 30), isSuggested: false),
-                ObligationBlueprint(key: "health.euCard", title: String(localized: "Card european de sănătate"), kind: .renewal, recurrence: .interval(.years(2), anchor: .completion),
+                ObligationBlueprint(key: BuiltInBlueprints.healthEUCard, title: String(localized: "Card european de sănătate"), kind: .renewal, recurrence: .interval(.years(2), anchor: .completion),
                                     firstDue: .ask,
                                     reminders: profile([30, 7], .financial), isSuggested: false),
             ],
@@ -337,8 +352,8 @@ public enum BuiltInTemplates {
             sections: [
                 FieldSection(key: "purchase.product", title: String(localized: "Produs"), fields: [
                     FieldDefinition(key: "purchase.brand", label: String(localized: "Marcă"), type: .text, role: .subtitle),
-                    FieldDefinition(key: "purchase.model", label: String(localized: "Model"), type: .text, role: .subtitle),
-                    FieldDefinition(key: "purchase.serial", label: String(localized: "Serie sau IMEI"), type: .text, role: .identifier),
+                    FieldDefinition(key: PurchaseFieldKeys.model, label: String(localized: "Model"), type: .text, role: .subtitle),
+                    FieldDefinition(key: PurchaseFieldKeys.serial, label: String(localized: "Serie sau IMEI"), type: .text, role: .identifier),
                 ]),
                 FieldSection(key: "purchase.bought", title: String(localized: "Cumpărare"), fields: [
                     FieldDefinition(key: "purchase.retailer", label: String(localized: "Magazin"), type: .text, role: .retailer, isEssential: true),
@@ -346,20 +361,21 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: "purchase.price", label: String(localized: "Preț"), type: .money, role: .purchasePrice, isEssential: true),
                 ]),
                 FieldSection(key: "purchase.coverage", title: String(localized: "Garanție"), fields: [
-                    FieldDefinition(key: "purchase.warrantyMonths", label: String(localized: "Garanție (luni)"), type: .number, unit: String(localized: "luni"),
+                    FieldDefinition(key: PurchaseFieldKeys.warrantyMonths, label: String(localized: "Garanție (luni)"), type: .number, unit: String(localized: "luni"),
                                     defaultValue: .number(24)),
-                    FieldDefinition(key: "purchase.warrantyUntil", label: String(localized: "Garanția expiră"), type: .expiryDate, role: .warrantyUntil,
-                                    derivation: .addMonths(dateField: "purchase.date", monthsField: "purchase.warrantyMonths")),
+                    FieldDefinition(key: PurchaseFieldKeys.warrantyUntil, label: String(localized: "Garanția expiră"), type: .expiryDate, role: .warrantyUntil,
+                                    derivation: .addMonths(dateField: "purchase.date", monthsField: PurchaseFieldKeys.warrantyMonths)),
                     FieldDefinition(key: "purchase.manualUrl", label: String(localized: "Manual de utilizare"), type: .url),
                 ]),
             ],
             blueprints: [
-                ObligationBlueprint(key: "purchase.warrantyEnds", title: String(localized: "Garanția se termină"), kind: .renewal, recurrence: .none,
-                                    firstDue: .field(key: "purchase.warrantyUntil", offsetDays: 0),
+                ObligationBlueprint(key: BuiltInBlueprints.warrantyEnds, title: String(localized: "Garanția se termină"), kind: .renewal, recurrence: .none,
+                                    firstDue: .field(key: PurchaseFieldKeys.warrantyUntil, offsetDays: 0),
                                     reminders: profile([30], .financial, followUp: false),
                                     note: String(localized: "Funcționează totul bine? Acum mai poți reclama gratuit un defect.")),
             ],
-            pockets: [.upcoming, .documents, .history, .money, .keyFacts]
+            pockets: [.upcoming, .documents, .history, .money, .keyFacts],
+            behavior: CategoryBehavior(box: .wholeCategory, listing: .byWarranty, parentPocket: .products)
         )
     }
 
@@ -442,7 +458,8 @@ public enum BuiltInTemplates {
                                     firstDue: .ask, isSuggested: false,
                                     note: String(localized: "Data vine de pe ultima factură citită.")),
             ],
-            pockets: [.upcoming, .documents, .history, .money, .keyFacts]
+            pockets: [.upcoming, .documents, .history, .money, .keyFacts],
+            behavior: CategoryBehavior(box: .wholeCategory, listing: .byMonthlyCost, role: .subscription, parentPocket: .subscriptions)
         )
     }
 
@@ -560,7 +577,8 @@ public enum BuiltInTemplates {
                                     reminders: profile([60], .financial, followUp: false),
                                     note: String(localized: "Timp să vorbiți despre prelungire sau să cauți alt chiriaș.")),
             ],
-            pockets: [.upcoming, .documents, .people, .money, .keyFacts]
+            pockets: [.upcoming, .documents, .people, .money, .keyFacts],
+            behavior: CategoryBehavior(box: .insideOther, parentPocket: .tenants, addedOnlyUnderParent: true)
         )
     }
 
@@ -575,7 +593,8 @@ public enum BuiltInTemplates {
             tint: .indigo,
             isOnHomeByDefault: false,
             sections: [],
-            pockets: [.upcoming, .documents, .keyFacts]
+            pockets: [.upcoming, .documents, .keyFacts],
+            behavior: CategoryBehavior(box: .insideOther, role: .holder)
         )
     }
 

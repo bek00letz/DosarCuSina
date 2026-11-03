@@ -8,6 +8,7 @@
     "isExample" : false,
     "name" : "Service auto exemplu",
     "phone" : "+40700000001",
+    "taxID" : "12345678",
     "trades" : [
       "mechanic",
       "inspectionStation"

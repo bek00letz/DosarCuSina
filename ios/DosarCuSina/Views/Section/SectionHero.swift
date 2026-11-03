@@ -9,6 +9,7 @@ struct SectionHero: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.calendar) private var calendar
+    @Query private var templates: [CategoryTemplate]
 
     var body: some View {
         DSCard(padding: DS.Space.l) {
@@ -76,7 +77,7 @@ struct SectionHero: View {
         case .document:
             documentDetails
         case .standard:
-            if asset.templateKey == BuiltInTemplates.Key.member {
+            if definition.behavior.role == .holder {
                 memberDetails
             } else {
                 standardDetails
@@ -147,11 +148,13 @@ struct SectionHero: View {
 
     @ViewBuilder
     private var documentDetails: some View {
-        if let expiry = AssetFacts.expiry(asset.values, template: definition) ?? AssetFacts.purchase(asset.values, template: definition).warrantyUntil {
-            ExpiryLine(label: definition.key == BuiltInTemplates.Key.purchase
-                       ? String(localized: "Garanție până la", comment: "Hero: warranty end date.")
-                       : String(localized: "Valabil până la", comment: "Hero: document valid until."),
-                       day: expiry, rule: DateUrgency.rule(for: expiry, on: asset))
+        // A document's own expiry, else (a product) the end of its warranty, named for what it is.
+        if let expiry = AssetFacts.expiry(asset.values, template: definition) {
+            ExpiryLine(label: String(localized: "Valabil până la", comment: "Hero: document valid until."), day: expiry,
+                       rule: DateUrgency.rule(for: expiry, on: asset))
+        } else if let warranty = AssetFacts.purchase(asset.values, template: definition).warrantyUntil {
+            ExpiryLine(label: String(localized: "Garanție până la", comment: "Hero: warranty end date."), day: warranty,
+                       rule: DateUrgency.rule(for: warranty, on: asset))
         }
         if let holder = asset.parent {
             Label {
@@ -165,9 +168,11 @@ struct SectionHero: View {
 
     @ViewBuilder
     private var memberDetails: some View {
-        let documents = (asset.children ?? []).filter { $0.templateKey == BuiltInTemplates.Key.documents }
-        let next = documents
-            .compactMap { child in child.value("document.expiry")?.dateValue.map { (child, $0) } }
+        // The person's personal documents, each by its own category's expiry field.
+        let documentTemplates = Dictionary(templates.filter { $0.behavior.role == .personalDocument }.map { ($0.key, $0.definition) },
+                                           uniquingKeysWith: { first, _ in first })
+        let next = (asset.children ?? [])
+            .compactMap { child in documentTemplates[child.templateKey].flatMap { AssetFacts.expiry(child.values, template: $0) }.map { (child, $0) } }
             .min { $0.1 < $1.1 }
         if let next {
             ExpiryLine(label: String(localized: "Următorul act care expiră: \(next.0.name)", comment: "Hero of a person: the next document to expire."), day: next.1, rule: DateUrgency.rule(for: next.1, on: next.0))

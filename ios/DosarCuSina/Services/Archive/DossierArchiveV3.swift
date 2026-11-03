@@ -66,6 +66,8 @@ public enum DossierV3 {
         public var pockets: [String]?
         public var createdAt: Date
         public var updatedAt: Date
+        /// What the category does (its box, its list, its part); missing means the standard behaviour.
+        public var behavior: CategoryBehavior?
     }
 
     public struct Asset: Codable, Hashable, Sendable {
@@ -163,6 +165,8 @@ public enum DossierV3 {
         public var isExample: Bool
         public var createdAt: Date
         public var updatedAt: Date
+        /// The firm's tax ID (CUI), digits only.
+        public var taxID: String?
     }
 
     public struct Measurement: Codable, Hashable, Sendable {
@@ -210,6 +214,8 @@ public enum DossierV3 {
         public var serviceItemId: String?
         public var measurementId: String?
         public var providerId: String?
+        /// The last day the document itself is valid, as read when it was filed.
+        public var validUntil: CalendarDay?
 
         /// Every file this record points to.
         public var allPaths: [String] { [path, thumbnailPath].compactMap { $0 } + pagePaths }

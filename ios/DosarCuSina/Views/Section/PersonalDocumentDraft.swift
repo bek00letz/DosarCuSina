@@ -91,7 +91,7 @@ enum PersonalDocumentFiling {
     static func save(_ draft: PersonalDocumentDraft, holder: Asset, context: ModelContext,
                      calendar: Calendar = .current, now: @escaping () -> Date = { Date() }) throws -> Asset {
         guard draft.type != nil else { throw PersonalDocumentError.missingType }
-        guard let template = try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.documents) else {
+        guard let template = try TemplateStore(context: context).template(withRole: .personalDocument) else {
             throw PersonalDocumentError.missingTemplate
         }
         let actions = AssetActions(context: context, calendar: calendar, now: now)

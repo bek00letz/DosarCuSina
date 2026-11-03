@@ -129,7 +129,7 @@ private struct LockSettings: View {
 
     var body: some View {
         let used = Set(assets.map(\.templateKey))
-        let shown = templates.filter { used.contains($0.key) || BinderLayout.categoryBoxKeys.contains($0.key) || $0.isSensitive }
+        let shown = templates.filter { used.contains($0.key) || $0.behavior.box == .wholeCategory || $0.isSensitive }
         Section {
             Toggle(isOn: Binding(get: { preferences.appLockEnabled }, set: setAppLock)) {
                 VStack(alignment: .leading, spacing: 2) {
@@ -187,7 +187,7 @@ private struct SectionVisibilitySettings: View {
 
     var body: some View {
         Section {
-            ForEach(templates.filter { !BinderLayout.nestedKeys.contains($0.key) }) { template in
+            ForEach(templates.filter { $0.behavior.box != .insideOther }) { template in
                 Toggle(isOn: Binding(get: { template.isOnHome }, set: { setOnHome(template, $0) })) {
                     Label { Text(verbatim: template.name) } icon: { Image(systemName: template.symbol).foregroundStyle(template.tintColor) }
                 }

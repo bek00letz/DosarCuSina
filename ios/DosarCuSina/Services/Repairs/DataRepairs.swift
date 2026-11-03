@@ -28,6 +28,8 @@ struct DataRepairs {
         CounterOutliersStep(),
         EstimatedVisitReadingsStep(),
         HeroFromReadingsStep(),
+        CascoInRCAFieldsStep(),
+        HomePolicyWithoutDeadlineStep(),
     ]
 
     static func step(_ id: DataRepairStepID) -> any DataRepairStep {
@@ -79,6 +81,8 @@ enum DataRepairStepID: String, CaseIterable, Sendable, Hashable {
     case counterOutliers = "counter-outliers"
     case estimatedVisitReadings = "estimated-visit-readings"
     case heroFromReadings = "hero-from-readings"
+    case cascoInRCAFields = "casco-in-rca-fields"
+    case homePolicyWithoutDeadline = "home-policy-without-deadline"
 }
 
 /// One thing a repair would change, in plain words, with what applying it needs.
@@ -103,6 +107,10 @@ struct DataRepairFinding: Identifiable, Hashable, Sendable {
         case estimatedVisitReading(entryID: UUID, value: Double)
         /// The hero value worked out from the readings again.
         case hero(assetID: UUID, from: Double?, to: Double)
+        /// A car's RCA fields hold the facts of a CASCO policy filed on it: they move to CASCO's.
+        case cascoInRCA(assetID: UUID, policyNumber: String)
+        /// A home policy filed without its deadline: the deadline is made on the policy's end.
+        case homePolicyDeadline(assetID: UUID, attachmentID: UUID, blueprintKey: String, day: CalendarDay)
     }
 }
 

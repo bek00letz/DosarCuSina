@@ -314,7 +314,7 @@ private struct NewSectionForm: View {
                         DSSectionHeader("Ce fel de secțiune")
                         DSCard {
                             VStack(alignment: .leading, spacing: DS.Space.xs) {
-                                let choices = templates.filter { $0.key != BuiltInTemplates.Key.member }
+                                let choices = templates.filter { $0.behavior.role != .holder }
                                 ForEach(Array(choices.enumerated()), id: \.element.key) { index, template in
                                     if index > 0 { DS.Hairline() }
                                     DSCheckRow(title: Text(verbatim: template.name), subtitle: template.summary.map { Text(verbatim: $0) },
