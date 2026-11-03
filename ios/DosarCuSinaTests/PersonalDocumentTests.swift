@@ -52,7 +52,7 @@ struct PersonalDocumentTests {
         let template = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.documents))
         let actions = AssetActions(context: context, calendar: .bucharest, now: { noon("2026-11-02") })
         let line = try #require(PersonalDocumentFiling.reminderLine(draft, template: template, actions: actions,
-                                                                     today: CalendarDay(year: 2026, month: 11, day: 2), calendar: .bucharest))
+                                                                     today: CalendarDay(year: 2026, month: 11, day: 2)))
         #expect(line.hasPrefix("Expiră pe 30 iunie 2027."))
         #expect(line.contains("Te anunț"))
 

@@ -105,13 +105,6 @@ public struct MoneyTotals: Hashable, Sendable {
     }
 }
 
-extension Locale {
-    /// The one locale the app writes numbers, dates and money in, whatever the phone's
-    /// region or number format, so what it writes `RomanianNumber` reads back the same.
-    /// Injected once at the app's root as the environment's locale.
-    public static let dosarDefault = Locale(identifier: "ro_RO")
-}
-
 extension Decimal {
     func rounded(scale: Int) -> Decimal {
         var value = self

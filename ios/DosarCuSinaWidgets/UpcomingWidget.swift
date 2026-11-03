@@ -94,7 +94,7 @@ enum WidgetWording {
     }
 
     static func date(_ date: Date) -> String {
-        date.formatted(.dateTime.day().month(.wide).locale(Locale(identifier: "ro_RO")))
+        DosarFormat.dayMonth(date)
     }
 
     static func color(_ days: Int) -> Color {

@@ -33,7 +33,7 @@ struct UpcomingActions {
         let entry = try actions.complete(obligation, on: date, cost: cost)
         let message: LocalizedStringResource
         if obligation.status == .active {
-            let next = obligation.dueDay(in: calendar).startDate(in: calendar).formatted(.dateTime.day().month(.wide).year().locale(.dosarDefault))
+            let next = DosarFormat.longDay(obligation.dueDay(in: calendar))
             message = "\(title): gata. Următorul termen e pe \(next)."
         } else {
             message = "\(title): gata."

@@ -120,7 +120,7 @@ struct VisitsWithoutInvoiceStep: DataRepairStep {
         let entries = Dictionary(try scan.context.fetch(FetchDescriptor<HistoryEntry>()).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         return try CaptureRepairs(context: scan.context).visitsWithoutInvoiceCandidates(calendar: scan.calendar).map { candidate in
             let entry = entries[candidate.visitID]
-            let day = entry.map { DosarFormat.day($0.occurredAt) } ?? ""
+            let day = entry.map { DosarFormat.day($0.occurredAt, calendar: scan.calendar) } ?? ""
             let place = entry?.asset?.name ?? ""
             return DataRepairFinding(
                 id: "\(Self.id.rawValue):\(candidate.visitID.uuidString):\(candidate.invoiceID.uuidString)",
@@ -270,7 +270,7 @@ struct CounterOutliersStep: DataRepairStep {
                         message = String(localized: "\(subject) pare greșit: \(shown). Corectez la \(corrected)?", comment: "Repair: a reading that lost its last digits, with the corrected value.")
                     case .remove:
                         target = nil
-                        let day = DosarFormat.day(log.recordedAt)
+                        let day = DosarFormat.day(log.recordedAt, calendar: scan.calendar)
                         message = String(localized: "\(subject) pare greșit: \(shown), pe \(day). Îl scot din citiri?", comment: "Repair: a reading ten times off its neighbours.")
                     }
                     scan.flaggedReadings.insert(log.id)
@@ -333,7 +333,7 @@ struct EstimatedVisitReadingsStep: DataRepairStep {
             scan.flaggedAssets.insert(asset.id)
             let subject = CounterWording.subject(unit: log.unit, asset: asset.name)
             let shown = CounterWording.amount(log.value, unit: log.unit)
-            let day = DosarFormat.day(entry.occurredAt)
+            let day = DosarFormat.day(entry.occurredAt, calendar: scan.calendar)
             found.append(DataRepairFinding(
                 id: "\(Self.id.rawValue):\(entry.id.uuidString):\(log.value)",
                 step: Self.id,

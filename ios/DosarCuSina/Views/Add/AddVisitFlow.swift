@@ -220,7 +220,7 @@ private struct VisitForm: View {
 
     private func lastDone(_ key: String) -> String? {
         guard let last = MaintenanceLog.lastOccurrence(of: key, in: HistoryItemSnapshot.items(of: asset)) else { return nil }
-        let date = last.date.formatted(.dateTime.month(.wide).year().locale(.dosarDefault))
+        let date = DosarFormat.monthYear(last.date)
         return String(localized: "Ultima dată: \(date)")
     }
 
@@ -493,11 +493,11 @@ private struct VisitSavedView: View {
     }
 
     private func detail(_ change: VisitChange) -> String {
-        let day = entry.occurredAt.formatted(.dateTime.day().month(.wide).locale(.dosarDefault))
+        let day = DosarFormat.dayMonth(entry.occurredAt)
         guard let previous = change.previous else {
             return String(localized: "Pe \(day). Prima dată în dosar.")
         }
-        let before = previous.formatted(.dateTime.month(.wide).year().locale(.dosarDefault))
+        let before = DosarFormat.monthYear(previous)
         return String(localized: "Pe \(day). Înainte: \(before).")
     }
 }

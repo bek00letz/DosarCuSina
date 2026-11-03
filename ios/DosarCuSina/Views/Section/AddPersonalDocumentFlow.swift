@@ -279,7 +279,7 @@ private struct PersonalDocumentForm: View {
     private var reminderLine: String? {
         guard let template = templates.first else { return nil }
         return PersonalDocumentFiling.reminderLine(draft, template: template, actions: AssetActions(context: context, calendar: calendar),
-                                                   today: CalendarDay(Date(), calendar: calendar), calendar: calendar)
+                                                   today: CalendarDay(Date(), calendar: calendar))
     }
 
     // MARK: Save

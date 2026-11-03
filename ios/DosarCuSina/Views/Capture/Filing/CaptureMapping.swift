@@ -346,7 +346,7 @@ enum CaptureMapping {
         switch value {
         case .text(let text): return ServiceKind.all.contains(text) ? ServiceKind.label(for: text) ?? text : text
         case .day(let day):
-            return day.date().map { $0.formatted(.dateTime.day().month(.wide).year().locale(.dosarDefault)) } ?? day.description
+            return DosarFormat.longDay(CalendarDay(year: day.year, month: day.month, day: day.day))
         case .money(let amount): return Self.money(amount).formattedCompact()
         case .number(let number): return NSDecimalNumber(decimal: number).stringValue
         case .metric(let number, let unit): return "\(NSDecimalNumber(decimal: number).stringValue) \(unit)"

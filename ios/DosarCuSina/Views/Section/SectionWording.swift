@@ -27,7 +27,7 @@ enum ComponentLine {
             let distance = since.formatted(.number.locale(locale).precision(.fractionLength(0)))
             parts.append(String(localized: "acum \(distance) \(unit)", comment: "How far the counter has moved since a job, e.g. 'acum 18.200 km'."))
         }
-        parts.append(occurrence.date.formatted(.dateTime.day().month(.abbreviated).year().locale(locale)))
+        parts.append(DosarFormat.day(occurrence.date, locale: locale, calendar: calendar))
         if let cost = occurrence.cost {
             parts.append(cost.formattedCompact(locale: locale))
         }

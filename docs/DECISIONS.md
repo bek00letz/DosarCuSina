@@ -30,6 +30,14 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 - **Decided:** one rule for stored values this build can't read: keep them raw, behave as the loudest case, never write back a downgraded value. An unknown field value is kept as stored and written back unchanged; an unknown consequence or kind of deadline reads as legal (the loudest) and stays stored as it was until the person changes it.
 - **Why:** an unreadable value was dropped on the next save, and an unknown consequence read as "comfort", so a legal deadline from a newer build would have lost its urgent reminders.
 
+### Only the system's encryption
+- **Decided:** the app uses only the encryption Apple's frameworks provide (CryptoKit for backup passwords and sealed codes, the Keychain, file protection, HTTPS). The app's Info.plist says so (`ITSAppUsesNonExemptEncryption` is `NO`), so App Store Connect doesn't ask about export compliance on every upload.
+- **Why:** this kind of encryption is exempt from export documentation, and the owner has no plans for any other kind. Adding a custom or non-standard algorithm would change the answer and need the owner's OK first.
+
+### A due day is written as the day it is
+- **Decided:** every date the app writes goes through `DosarFormat`, which lives in `ios/Shared` with `CalendarDay` and `Locale.dosarDefault` so the widget writes dates the same way. A `CalendarDay` (a due day, an expiry) is written straight from its year, month and day, never turned into a `Date` first. A `Date` (when a visit happened) is written in the time zone of the calendar the days are counted in. Both use the Gregorian calendar, whatever the phone is set to.
+- **Why:** due days were turned into midnight in the calendar the days are counted in, then written in the phone's own time zone. Whenever the two differed (the tests' Bucharest calendar on GitHub's UTC Mac, a calendar kept from before the phone changed time zone) the date read a day early. Tests run in UTC on GitHub, and the runner's time zone is never set to Bucharest to hide it.
+
 ## 2026-11-02
 
 ### Rules are checked, not remembered

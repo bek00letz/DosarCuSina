@@ -243,7 +243,7 @@ enum SampleInvoice {
         let url = FileManager.default.temporaryDirectory.appending(path: ShareInbox.practiceFileName)
         let page = CGRect(x: 0, y: 0, width: 595, height: 842)
         let renderer = UIGraphicsPDFRenderer(bounds: page)
-        let day = date.formatted(.dateTime.day().month(.twoDigits).year().locale(Locale(identifier: "ro_RO")))
+        let day = DosarFormat.numericDay(date)
         let data = renderer.pdfData { context in
             context.beginPage()
             var y: CGFloat = 60
