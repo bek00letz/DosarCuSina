@@ -10,7 +10,7 @@ UI terms are the app's real Romanian labels, with an English gloss the first tim
 - **Capture first.** The phone already has the photos, PDFs, mail and messages. The main way in is a photo or a document shared from another app; typing is the fallback.
 - **Offline and private.** Everything works on the device, with no account and no network. Data stays on the phone. The only thing that ever leaves it is a page the person explicitly chooses to read with their own AI key.
 - **Short and calm.** The list of what comes next stays short however much is tracked. Reminders arrive as early as the renewal needs, not earlier, and never nag.
-- **Built for people who aren't tech-savvy** (aged 50–60 is the reference). Four labelled tabs, big targets, no horizontal scrolling, no hidden gestures needed, obvious buttons with verbs on them.
+- **For everyone, and usable by people who aren't tech-savvy** (someone in their 50s or 60s who isn't at ease with phones is the test case, not the only audience). Four labelled tabs, big targets, no horizontal scrolling, no hidden gestures needed, obvious buttons with verbs on them.
 - **Free and complete without a key.** Nothing is behind a paywall, and nothing needs an AI key to work.
 - **Sensible first run.** The app starts empty, with *Încarcă exemple* (load examples) for exploring. Examples are tagged, never notify, never reach widgets, and go away with one tap.
 
