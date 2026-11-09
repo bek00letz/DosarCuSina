@@ -283,6 +283,8 @@ public struct ReadinessPolicy: Hashable, Sendable, Identifiable {
     /// The policy's deadline, when the binder follows it.
     public var deadlineID: UUID?
     public var validUntil: CalendarDay?
+    /// The bonus-malus class of the person it insures, read from them ("B6").
+    public var policyholderClass: String? = nil
 
     public var id: String { blueprintKey }
 }

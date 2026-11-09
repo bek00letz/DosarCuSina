@@ -251,6 +251,11 @@ public struct CaptureFieldKey: RawRepresentable, Hashable, Codable, Sendable, Ex
     public static let claimsPhone: CaptureFieldKey = "claimsPhone"
     public static let coverageType: CaptureFieldKey = "coverageType"
     public static let bonusMalusClass: CaptureFieldKey = "bonusMalusClass"
+    /// Who the policy insures (the owner on an RCA), as printed.
+    public static let policyholder: CaptureFieldKey = "policyholder"
+    /// The policyholder's CNP, read only on the phone to find them among the household's
+    /// people (`Policyholders`): never shown, filed or asked of the AI provider.
+    public static let policyholderPersonalNumber: CaptureFieldKey = "policyholderPersonalNumber"
 
     // Vehicles
     public static let licensePlate: CaptureFieldKey = "licensePlate"

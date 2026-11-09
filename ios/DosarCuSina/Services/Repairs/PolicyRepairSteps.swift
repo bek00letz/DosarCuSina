@@ -60,9 +60,10 @@ struct CascoInRCAFieldsStep: DataRepairStep {
         })
         for candidate in try Self.candidates(in: context) where approved.contains("\(candidate.asset.id.uuidString):\(candidate.number)") {
             var values = candidate.asset.values
+            // Only the facts CASCO keeps move; one it doesn't keep (who RCA insures) stays.
             for role in BlueprintFactRole.allCases {
-                guard let from = candidate.rca.field(for: role), let value = values[from] else { continue }
-                if let to = candidate.casco.field(for: role), values[to] == nil { values[to] = value }
+                guard let from = candidate.rca.field(for: role), let value = values[from], let to = candidate.casco.field(for: role) else { continue }
+                if values[to] == nil { values[to] = value }
                 values[from] = nil
             }
             candidate.asset.values = values

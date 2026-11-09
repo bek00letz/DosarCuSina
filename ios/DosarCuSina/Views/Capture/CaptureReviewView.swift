@@ -344,6 +344,13 @@ struct CaptureReviewView: View {
                     if review.showsLineItems {
                         CaptureLineItemsEditor(lines: $review.lineItems, currency: review.value(.total)?.money?.currencyCode ?? Money.defaultCurrency)
                     }
+                    // A policy's class is the person's, never the car's: say where it goes, or why it doesn't.
+                    if let bonusMalus = CaptureFilingPlan.bonusMalus(for: review, people: Policyholders.people(in: assets, templates: templatesByKey)) {
+                        Text(bonusMalusText(bonusMalus))
+                            .dsFont(.footnote)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .transition(.opacity)
+                    }
                 }
             }
         }
@@ -391,6 +398,15 @@ struct CaptureReviewView: View {
         let cut = text.prefix(limit)
         let atWord = cut.lastIndex(of: " ").map { cut[..<$0] } ?? cut
         return atWord.trimmingCharacters(in: .whitespacesAndNewlines.union(.punctuationCharacters)) + "…"
+    }
+
+    /// Where a policy's bonus-malus class goes, in a line under what was read.
+    private func bonusMalusText(_ choice: CaptureFilingPlan.BonusMalus) -> LocalizedStringKey {
+        switch choice {
+        case .keep(_, _, let name): "Clasa bonus-malus o păstrez la \(name): e a celui asigurat, nu a mașinii."
+        case .noPolicyholder: "Clasa bonus-malus n-o păstrez: pe poliță nu scrie cine e asiguratul."
+        case .notInHousehold(let name): "Clasa bonus-malus n-o păstrez: \(name) nu e printre persoanele din dosar. Adaugă persoana și citește polița din nou."
+        }
     }
 
     /// Why the home was chosen without being sure: the supply address only partly agrees.

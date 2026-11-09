@@ -62,6 +62,31 @@ struct CaptureFilingPlan {
     /// photo shows the card's whole number.
     var keepsPhoto = true
 
+    /// Where a policy's bonus-malus class goes: to the person it insures, never to a car.
+    enum BonusMalus: Equatable {
+        /// The class is kept on this household member.
+        case keep(classKey: String, memberID: UUID, memberName: String)
+        /// The policy doesn't say who it insures, so the class isn't kept.
+        case noPolicyholder
+        /// Nobody in the household is the person it insures, so the class isn't kept.
+        case notInHousehold(name: String)
+    }
+    /// What happens to the class the policy prints; nil when it prints none.
+    var bonusMalus: BonusMalus?
+
+    /// Where `review`'s bonus-malus class goes, from the person the policy insures
+    /// (`Policyholders`): by the CNP read on it, else by name. Nil when there is no class.
+    @MainActor
+    static func bonusMalus(for review: CaptureReview, people: [Policyholders.Person]) -> BonusMalus? {
+        guard review.kind.profile.readsCover, let classKey = BonusMalusClass.key(for: review.value(.bonusMalusClass)?.text) else { return nil }
+        let name = review.value(.policyholder)?.text
+        if let person = Policyholders.person(named: name, personalNumber: review.value(.policyholderPersonalNumber)?.text, among: people) {
+            return .keep(classKey: classKey, memberID: person.id, memberName: person.name)
+        }
+        guard let name, !name.trimmingCharacters(in: .whitespaces).isEmpty else { return .noPolicyholder }
+        return .notInHousehold(name: name)
+    }
+
     /// Saving makes or moves a deadline, so asking for the reminder permission first is worth it.
     var schedulesReminder: Bool { deadline != nil }
 
@@ -80,6 +105,7 @@ struct CaptureFilingPlan {
         plan.day = review.reminderDay
         plan.provider = CaptureFiler.provider(of: review)
         plan.keepsPhoto = review.keepsPhoto
+        plan.bonusMalus = bonusMalus(for: review, people: Policyholders.people(in: assets, templates: templates))
 
         guard let day = plan.day else { return plan }
         guard review.destination != .none, let template else {

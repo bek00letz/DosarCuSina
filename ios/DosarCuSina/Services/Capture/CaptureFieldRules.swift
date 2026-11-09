@@ -30,6 +30,8 @@ extension CaptureDocumentKind {
             return IdentityTemplates.fieldKeys(for: self).contains(key) || key == .holderName || key == .documentVariant
         default:
             if key == .lineItems { return profile.carriesLineItems }
+            // Who a policy insures, and their class, only on a policy.
+            if Self.policyholderKeys.contains(key) { return profile.readsCover }
             // A document carries one number of its own: a policy's is its policy number, never
             // a second "Serie și număr" beside it (`CompositeValue.reconcile` folds one in).
             if key == .documentNumber { return profile.numberKey == .documentNumber }
@@ -41,6 +43,9 @@ extension CaptureDocumentKind {
     /// Fields only bills and contracts carry: where the service is supplied and whether
     /// the bank pays it. A policy or a receipt has neither, whatever a model reads into it.
     static let subscriptionKeys: Set<CaptureFieldKey> = [.supplyAddress, .directDebit]
+
+    /// Fields only a policy carries: who it insures and their bonus-malus class.
+    static let policyholderKeys: Set<CaptureFieldKey> = [.policyholder, .policyholderPersonalNumber, .bonusMalusClass]
 
     /// Fields only personal documents carry: what a cazier says, a bank card's network and
     /// last four digits.

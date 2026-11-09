@@ -388,6 +388,39 @@ public enum ServiceKind {
 /// (`InsuranceCover.read(in:)`), the review offers it as a choice, and the AI provider
 /// answers with one of these keys. Which deadline and which fields a cover fills is
 /// the kind profile's job (`CaptureKindProfile`).
+/// The RCA bonus-malus classes, from the worst to the best: eight malus classes (M8 to
+/// M1), the base class B0 a new policyholder starts in, and eight bonus classes (B1 to
+/// B8). Source: Norma ASF nr. 20/2017 privind asigurările auto din România, the
+/// bonus-malus system (a base class, eight bonus and eight malus classes). The class
+/// follows the person's own history: a year without a paid claim moves them up, a paid
+/// claim moves them down. Stored by stable key, written as printed.
+public enum BonusMalusClass {
+    /// Every class, worst first, as printed on a policy.
+    public static let printed: [String] = (1...8).reversed().map { "M\($0)" } + (0...8).map { "B\($0)" }
+
+    public static func storedKey(_ printed: String) -> String { "bonusMalus." + printed.lowercased() }
+
+    public static var all: [String] { printed.map(storedKey) }
+
+    public static var options: [ChoiceOption] {
+        printed.map { ChoiceOption(key: storedKey($0), label: $0) }
+    }
+
+    /// The stored key for a class read or typed ("B6", "b6", or a key as it is), or nil
+    /// for anything that isn't a class.
+    public static func key(for text: String?) -> String? {
+        guard let text = text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else { return nil }
+        if all.contains(text) { return text }
+        let upper = text.uppercased()
+        return printed.contains(upper) ? storedKey(upper) : nil
+    }
+
+    /// The class as printed: "B6".
+    public static func label(for key: String?) -> String? {
+        key.flatMap { options.option(for: $0)?.label }
+    }
+}
+
 public enum InsuranceCover {
     public static let rca = "coverage.rca"
     public static let casco = "coverage.casco"

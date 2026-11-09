@@ -197,8 +197,10 @@ private struct ObligationPage: View {
         let facts = DeadlineFacts.of(obligation, template: template?.definition)
         let policyNumber = facts.policyNumber
         let claimsPhone = facts.claimsPhone
+        // The class of the person the policy insures, read from them: it is theirs, not the car's.
+        let ownerClass = facts.policyholder.flatMap { Policyholders.bonusMalus(ofPolicyholder: $0, among: Policyholders.people(in: context)) }
         let documents = documentsOnFile
-        if last != nil || policyNumber != nil || claimsPhone != nil || !documents.isEmpty {
+        if last != nil || policyNumber != nil || claimsPhone != nil || ownerClass != nil || !documents.isEmpty {
             VStack(alignment: .leading, spacing: DS.Space.s) {
                 DSSectionHeader("Data trecută")
                 DSCard {
@@ -213,6 +215,11 @@ private struct ObligationPage: View {
                         if let claimsPhone {
                             DS.Hairline()
                             DSActionValueRow(title: Text("Telefon pentru daune"), value: claimsPhone, action: .call)
+                        }
+                        if let ownerClass {
+                            if last != nil || policyNumber != nil || claimsPhone != nil { DS.Hairline() }
+                            DSReadOnlyValueRow(label: Text("Clasa proprietarului", comment: "Policy page: the bonus-malus class of the person the RCA insures."),
+                                               value: Text(verbatim: ownerClass))
                         }
                         if !documents.isEmpty {
                             DS.Hairline()
