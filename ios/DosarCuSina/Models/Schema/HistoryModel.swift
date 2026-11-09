@@ -31,7 +31,7 @@ public enum HistoryKind: String, Codable, CaseIterable, Sendable {
     }
 }
 
-extension DosarSchemaV7 {
+extension DosarSchemaV8 {
     /// One thing that happened to an asset: a visit, a repair, a purchase, an
     /// inspection. It is the asset's single history: completing an obligation
     /// writes one of these, and so does logging a repair by hand.
@@ -53,6 +53,9 @@ extension DosarSchemaV7 {
         /// The person's 1–5 rating of this job; providers' ratings average these.
         public var rating: Int?
         public var isExample: Bool = false
+        /// When it last changed, set by the unit of work that saved the change (`ChangeTimes`).
+        /// Records from before version 8 have `ChangeTime.unknown`, older than any change. Version 8.
+        public var updatedAt: Date = Date.distantPast
 
         // Set when the entry records the completion of an obligation, for undo.
         /// Noon on the due day of the cycle it closed.
@@ -79,6 +82,7 @@ extension DosarSchemaV7 {
             self.kindRaw = kind.rawValue
             self.title = title
             self.occurredAt = occurredAt
+            self.updatedAt = Date()
         }
 
         public var kind: HistoryKind {

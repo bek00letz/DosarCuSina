@@ -215,8 +215,8 @@ public struct DossierArchiveService {
                 key: template.key, name: template.name, summary: template.summary, symbol: template.symbol,
                 tint: template.tintRaw, heroStyle: template.heroStyleRaw, isBuiltIn: template.isBuiltIn,
                 version: template.builtInVersion, homeOrder: template.homeOrder, isOnHome: template.isOnHome,
-                isSensitive: template.isSensitive, sections: template.sections, blueprints: template.blueprints,
-                components: template.components, pockets: template.pockets.map(\.rawValue),
+                isSensitive: template.isSensitive, sections: template.keptSections, blueprints: template.keptBlueprints,
+                components: template.keptComponents, pockets: template.pockets.map(\.rawValue),
                 createdAt: template.createdAt, updatedAt: template.updatedAt, behavior: template.behavior == .standard ? nil : template.behavior
             )
         }
@@ -233,7 +233,7 @@ public struct DossierArchiveService {
                 id: DossierV3.id(asset.id), templateKey: asset.templateKey, name: asset.name,
                 parentId: DossierV3.id(asset.parent?.id), symbolOverride: asset.symbolOverride, tintOverride: asset.tintOverrideRaw, notes: asset.notes,
                 values: SecretFields.stripping(asset.values, definition: definitions[asset.templateKey] ?? BuiltInTemplates.definition(for: asset.templateKey)),
-                customFacts: SecretFields.strippingFacts(asset.customFacts).nilIfEmpty,
+                customFacts: SecretFields.strippingFacts(asset.keptFacts).nilIfEmpty,
                 photoPath: photoPath, isExample: asset.isExample,
                 createdAt: asset.createdAt, updatedAt: asset.updatedAt
             )
@@ -259,7 +259,7 @@ public struct DossierArchiveService {
                 nextDueDate: entry.nextDueDate.map { CalendarDay($0, calendar: calendar) },
                 previousStatus: entry.previousStatusRaw, previousDueMetric: entry.previousDueMetric,
                 providerIds: entry.providerIds.map(DossierV3.id).sorted(), isExample: entry.isExample,
-                reference: entry.reference
+                reference: entry.reference, updatedAt: DossierV3.changeTime(entry.updatedAt)
             )
         }
         let serviceDTOs = serviceItems.map { item in
@@ -270,7 +270,8 @@ public struct DossierArchiveService {
                 laborCost: item.laborCostAmount.map { Money($0, currency: item.currency) },
                 partsCost: item.partsCostAmount.map { Money($0, currency: item.currency) },
                 supplierId: DossierV3.id(item.supplier?.id), batchOrTicket: item.batchOrTicket, locationDetail: item.locationDetail,
-                daysInService: item.daysInService, warrantyMonths: item.warrantyMonths, notes: item.notes, isExample: item.isExample
+                daysInService: item.daysInService, warrantyMonths: item.warrantyMonths, notes: item.notes, isExample: item.isExample,
+                updatedAt: DossierV3.changeTime(item.updatedAt)
             )
         }
         let providerDTOs = providers.map { provider in
@@ -286,7 +287,8 @@ public struct DossierArchiveService {
                 id: DossierV3.id(log.id), assetId: DossierV3.id(log.asset?.id), kind: log.kindRaw, name: log.name,
                 value: log.value, secondaryValue: log.secondaryValue, unit: MeasurementUnit.storedKey(for: log.unit), recordedAt: log.recordedAt,
                 unitPrice: log.unitPrice, isSelfRead: log.isSelfRead, referenceMin: log.referenceMin,
-                referenceMax: log.referenceMax, source: log.source, notes: log.notes, isExample: log.isExample
+                referenceMax: log.referenceMax, source: log.source, notes: log.notes, isExample: log.isExample,
+                updatedAt: DossierV3.changeTime(log.updatedAt)
             )
         }
         let attachmentDTOs = attachments.map { attachment -> DossierV3.Attachment in
@@ -318,7 +320,8 @@ public struct DossierArchiveService {
                 obligationId: DossierV3.id(attachment.obligation?.id), historyEntryId: DossierV3.id(attachment.historyEntry?.id),
                 serviceItemId: DossierV3.id(attachment.serviceItem?.id), measurementId: DossierV3.id(attachment.measurement?.id),
                 providerId: DossierV3.id(attachment.provider?.id), validUntil: attachment.validUntil.map { CalendarDay($0, calendar: calendar) },
-                framing: attachment.framing.isPlain ? nil : attachment.framing
+                framing: attachment.framing.isPlain ? nil : attachment.framing,
+                updatedAt: DossierV3.changeTime(attachment.updatedAt)
             )
         }
 
@@ -414,8 +417,9 @@ public struct DossierArchiveService {
     }
 }
 
-private extension Array {
-    var nilIfEmpty: Self? { isEmpty ? nil : self }
+private extension KeptList {
+    /// Nothing at all: no row this build reads, and none it can't.
+    var nilIfEmpty: Self? { isEmpty && isFullyRead ? nil : self }
 }
 
 extension Bundle {

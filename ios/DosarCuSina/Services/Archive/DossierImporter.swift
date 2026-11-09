@@ -12,7 +12,11 @@ import SwiftData
 /// - secrets (PIN codes, secret rows) never come from an archive, and the ones
 ///   this phone keeps for the same records stay, in both modes;
 /// - parents follow the same rule as "Mută la…", so nothing ends up filed under itself;
-/// - no record's last change is later than now.
+/// - no record's last change is later than now;
+/// - a record that is both here and in the archive is merged by one rule, whatever its
+///   type (`ArchiveMerge`): the archive's copy only when it changed later;
+/// - what a newer build wrote that this one can't read (a recurrence, a template's
+///   section, a row under Date importante, a field value) comes in raw and is kept.
 ///
 /// It touches only the context it is given, so a backup is written away from the
 /// main thread (`DossierArchiveService.importPackageAway`).
@@ -26,7 +30,11 @@ struct DossierImporter {
     private func uuid(_ raw: String?) -> UUID? { raw.flatMap(UUID.init(uuidString:)) }
 
     /// An archive's timestamp, never later than now.
-    private func stamp(_ date: Date) -> Date { min(date, now) }
+    private func clamped(_ date: Date) -> Date { min(date, now) }
+
+    /// An archive's change time for a record: never later than now, and `ChangeTime.unknown`
+    /// when it carries none (history, line items, readings and documents before version 8).
+    private func changeTime(_ date: Date?) -> Date { clamped(date ?? ChangeTime.unknown) }
 
     func run() throws -> ArchiveImportResult {
         var result = ArchiveImportResult()
@@ -119,6 +127,34 @@ struct DossierImporter {
         return map
     }
 
+    // MARK: The merge rule
+
+    /// The record an archive's record is written onto, by the one merge rule (`ArchiveMerge`),
+    /// or nil when the phone's own copy stays. A new record is made with `make` and inserted.
+    /// Every type of record comes through here, in both modes.
+    private func place<Key: Hashable, Record: ChangeTimed>(
+        _ key: Key,
+        changedAt: Date?,
+        in map: inout [Key: Record],
+        _ result: inout ArchiveImportResult,
+        make: () -> Record
+    ) -> Record? {
+        switch ArchiveMerge.outcome(archive: changeTime(changedAt), here: map[key]?.updatedAt) {
+        case .keepHere:
+            result.skipped += 1
+            return nil
+        case .update:
+            result.updated += 1
+            return map[key]
+        case .insert:
+            let record = make()
+            context.insert(record)
+            map[key] = record
+            result.inserted += 1
+            return record
+        }
+    }
+
     // MARK: Templates
 
     /// Imports templates and returns every definition in effect after the import, by key.
@@ -136,30 +172,29 @@ struct DossierImporter {
                 key: dto.key, name: dto.name, summary: dto.summary, symbol: dto.symbol,
                 tint: TemplateTint(rawValue: dto.tint) ?? .gray, heroStyle: HeroStyle(rawValue: dto.heroStyle) ?? .standard,
                 isOnHomeByDefault: dto.isOnHome, isSensitiveByDefault: dto.isSensitive,
-                sections: dto.sections, blueprints: dto.blueprints, components: dto.components ?? [],
+                sections: dto.sections.items, blueprints: dto.blueprints.items, components: dto.components?.items ?? [],
                 pockets: dto.pockets.map { $0.compactMap(SectionPocket.init(rawValue:)) } ?? SectionPocket.standard,
                 behavior: dto.behavior ?? .standard,
                 version: 0
             ))
             let isLocked = phone.lock(dto.key, archive: dto.isSensitive, default: catalog?.isSensitiveByDefault ?? false)
-            let template: CategoryTemplate
-            if let current = byKey[dto.key] {
-                guard dto.updatedAt > current.updatedAt else { result.skipped += 1; continue }
-                template = current
-                result.updated += 1
-            } else {
-                template = CategoryTemplate(definition: definition, isBuiltIn: catalog != nil, homeOrder: dto.homeOrder)
-                template.createdAt = stamp(dto.createdAt)
-                context.insert(template)
-                byKey[dto.key] = template
-                result.inserted += 1
-            }
+            guard let template = place(dto.key, changedAt: dto.updatedAt, in: &byKey, &result, make: {
+                let template = CategoryTemplate(definition: definition, isBuiltIn: catalog != nil, homeOrder: dto.homeOrder)
+                template.createdAt = clamped(dto.createdAt)
+                return template
+            }) else { continue }
             template.isBuiltIn = catalog != nil
             template.apply(definition)
+            if catalog == nil {
+                // The archive's own sections, deadlines and parts, with any this build can't read.
+                template.keptSections = dto.sections.replacingItems(definition.sections)
+                template.keptBlueprints = dto.blueprints.replacingItems(definition.blueprints)
+                template.keptComponents = (dto.components ?? KeptList()).replacingItems(definition.components)
+            }
             template.homeOrder = dto.homeOrder
             template.isOnHome = dto.isOnHome
             template.isSensitive = isLocked
-            template.updatedAt = stamp(dto.updatedAt)
+            template.updatedAt = changeTime(dto.updatedAt)
         }
         // Built-ins the archive didn't mention.
         var order = (byKey.values.map(\.homeOrder).max() ?? -1) + 1
@@ -180,17 +215,9 @@ struct DossierImporter {
         var written: [(Asset, DossierV3.Asset)] = []
         for dto in package.assets {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.assets) }
-            let asset: Asset
-            if let current = map[id] {
-                guard dto.updatedAt > current.updatedAt else { result.skipped += 1; continue }
-                asset = current
-                result.updated += 1
-            } else {
-                asset = Asset(id: id, name: dto.name, templateKey: dto.templateKey)
-                context.insert(asset)
-                map[id] = asset
-                result.inserted += 1
-            }
+            guard let asset = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
+                Asset(id: id, name: dto.name, templateKey: dto.templateKey)
+            }) else { continue }
             asset.name = dto.name
             asset.templateKey = dto.templateKey
             asset.symbolOverride = dto.symbolOverride
@@ -202,11 +229,11 @@ struct DossierImporter {
             let values = PaymentCardNumbers.sanitizing(definition.map { dto.values.normalizingChoices(for: $0) } ?? dto.values)
             // Secrets this phone keeps for the record stay; an archive never brings any.
             asset.valuesData = StoredJSON.encode(SecretFields.keepingLocalSecrets(values, from: phone.secrets[id] ?? FieldValues(), definition: definition))
-            asset.customFacts = SecretFields.keepingLocalSecretFacts(dto.customFacts ?? [], from: phone.secretFacts[id] ?? [])
+            asset.keptFacts = SecretFields.keepingLocalSecretFacts(Self.withoutCardNumbers(dto.customFacts ?? KeptList()), from: phone.secretFacts[id] ?? [])
             asset.photoData = dto.photoPath.flatMap { package.files[$0] }
             asset.isExample = dto.isExample
-            asset.createdAt = stamp(dto.createdAt)
-            asset.updatedAt = stamp(dto.updatedAt)
+            asset.createdAt = clamped(dto.createdAt)
+            asset.updatedAt = changeTime(dto.updatedAt)
             written.append((asset, dto))
         }
         // Parents are linked once every asset exists, so order in the file doesn't
@@ -224,21 +251,24 @@ struct DossierImporter {
         return map
     }
 
+    /// Rows under Date importante with any card number masked, in the rows this build can't
+    /// read too. A sealed code is left as it is (and never comes in: see `keepingLocalSecretFacts`).
+    private static func withoutCardNumbers(_ facts: KeptList<CustomFact>) -> KeptList<CustomFact> {
+        let masked = facts.items.map { fact in
+            var fact = fact
+            if !SecretSealer.isSealed(fact.value) { fact.value = PaymentCardNumbers.redact(fact.value) }
+            return fact
+        }
+        return facts.replacingItems(masked).mappingUnreadable { PaymentCardNumbers.redacting($0) }
+    }
+
     private func importObligations(_ result: inout ArchiveImportResult, assets: [UUID: Asset]) throws -> [UUID: Obligation] {
         var map = try existing(Obligation.self, id: \.id)
         for dto in package.obligations {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.obligations) }
-            let obligation: Obligation
-            if let current = map[id] {
-                guard dto.updatedAt > current.updatedAt else { result.skipped += 1; continue }
-                obligation = current
-                result.updated += 1
-            } else {
-                obligation = Obligation(id: id, title: dto.title, kind: .routine, dueDay: dto.dueDate, calendar: calendar)
-                context.insert(obligation)
-                map[id] = obligation
-                result.inserted += 1
-            }
+            guard let obligation = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
+                Obligation(id: id, title: dto.title, kind: .routine, dueDay: dto.dueDate, calendar: calendar)
+            }) else { continue }
             obligation.title = dto.title
             obligation.notes = dto.notes
             obligation.blueprintKey = dto.blueprintKey
@@ -249,6 +279,7 @@ struct DossierImporter {
             obligation.reminders = dto.reminders
             obligation.remindersCustomized = dto.remindersCustomized ?? false
             obligation.reminderMinuteOfDay = dto.reminderMinuteOfDay
+            // A rule from a newer build is kept as it was written (`RecurrenceRule.unreadable`).
             obligation.recurrence = dto.recurrence
             obligation.estimatedCost = dto.estimatedCost
             obligation.provider = dto.provider
@@ -256,8 +287,8 @@ struct DossierImporter {
             obligation.statusRaw = ObligationStatus(rawValue: dto.status)?.rawValue ?? ObligationStatus.active.rawValue
             obligation.snoozedUntil = dto.snoozedUntil
             obligation.isExample = dto.isExample
-            obligation.createdAt = stamp(dto.createdAt)
-            obligation.updatedAt = stamp(dto.updatedAt)
+            obligation.createdAt = clamped(dto.createdAt)
+            obligation.updatedAt = changeTime(dto.updatedAt)
             obligation.asset = uuid(dto.assetId).flatMap { assets[$0] }
         }
         return map
@@ -267,17 +298,9 @@ struct DossierImporter {
         var map = try existing(Provider.self, id: \.id)
         for dto in package.providers {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.providers) }
-            let provider: Provider
-            if let current = map[id] {
-                guard dto.updatedAt > current.updatedAt else { result.skipped += 1; continue }
-                provider = current
-                result.updated += 1
-            } else {
-                provider = Provider(id: id, name: dto.name)
-                context.insert(provider)
-                map[id] = provider
-                result.inserted += 1
-            }
+            guard let provider = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
+                Provider(id: id, name: dto.name)
+            }) else { continue }
             provider.name = dto.name
             provider.trades = dto.trades
             provider.phone = dto.phone
@@ -288,8 +311,8 @@ struct DossierImporter {
             provider.wouldCallAgain = dto.wouldCallAgain
             provider.taxID = ProviderTaxID.normalized(dto.taxID) ?? provider.taxID
             provider.isExample = dto.isExample
-            provider.createdAt = stamp(dto.createdAt)
-            provider.updatedAt = stamp(dto.updatedAt)
+            provider.createdAt = clamped(dto.createdAt)
+            provider.updatedAt = changeTime(dto.updatedAt)
             provider.assets = dto.assetIds.compactMap { uuid($0).flatMap { assets[$0] } }
         }
         return map
@@ -304,8 +327,13 @@ struct DossierImporter {
         var map = try existing(HistoryEntry.self, id: \.id)
         for dto in package.historyEntries {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.history) }
-            guard map[id] == nil else { result.skipped += 1; continue }
-            let entry = HistoryEntry(id: id, kind: HistoryKind(rawValue: dto.kind) ?? .note, title: dto.title, occurredAt: dto.occurredAt)
+            guard let entry = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
+                HistoryEntry(id: id, kind: .note, title: dto.title, occurredAt: dto.occurredAt)
+            }) else { continue }
+            // Kept as the archive has it: a kind from a newer build reads as a note.
+            entry.kindRaw = dto.kind
+            entry.title = dto.title
+            entry.occurredAt = dto.occurredAt
             entry.metricReading = dto.metricReading
             entry.totalCost = dto.totalCost
             entry.note = dto.note
@@ -316,12 +344,10 @@ struct DossierImporter {
             entry.previousStatusRaw = dto.previousStatus
             entry.previousDueMetric = dto.previousDueMetric
             entry.isExample = dto.isExample
-            context.insert(entry)
+            entry.updatedAt = changeTime(dto.updatedAt)
             entry.asset = uuid(dto.assetId).flatMap { assets[$0] }
             entry.obligation = uuid(dto.obligationId).flatMap { obligations[$0] }
             entry.providers = dto.providerIds.compactMap { uuid($0).flatMap { providers[$0] } }
-            map[id] = entry
-            result.inserted += 1
         }
         return map
     }
@@ -330,8 +356,11 @@ struct DossierImporter {
         var map = try existing(ServiceItem.self, id: \.id)
         for dto in package.serviceItems {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.serviceItems) }
-            guard map[id] == nil else { result.skipped += 1; continue }
-            let item = ServiceItem(id: id, name: dto.name, componentKey: dto.componentKey)
+            guard let item = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
+                ServiceItem(id: id, name: dto.name, componentKey: dto.componentKey)
+            }) else { continue }
+            item.name = dto.name
+            item.componentKey = dto.componentKey
             item.group = dto.group
             item.partBrandOrCode = dto.partBrandOrCode
             item.partSerialNumber = dto.partSerialNumber
@@ -345,11 +374,9 @@ struct DossierImporter {
             item.warrantyMonths = dto.warrantyMonths
             item.notes = dto.notes
             item.isExample = dto.isExample
-            context.insert(item)
+            item.updatedAt = changeTime(dto.updatedAt)
             item.entry = uuid(dto.entryId).flatMap { entries[$0] }
             item.supplier = uuid(dto.supplierId).flatMap { providers[$0] }
-            map[id] = item
-            result.inserted += 1
         }
         return map
     }
@@ -358,8 +385,14 @@ struct DossierImporter {
         var map = try existing(MeasurementLog.self, id: \.id)
         for dto in package.measurements {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.measurements) }
-            guard map[id] == nil else { result.skipped += 1; continue }
-            let log = MeasurementLog(id: id, kind: MeasurementKind(rawValue: dto.kind) ?? .custom, name: dto.name, value: dto.value, recordedAt: dto.recordedAt)
+            guard let log = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
+                MeasurementLog(id: id, kind: .custom, name: dto.name, value: dto.value, recordedAt: dto.recordedAt)
+            }) else { continue }
+            // Kept as the archive has it: a kind from a newer build reads as custom.
+            log.kindRaw = dto.kind
+            log.name = dto.name
+            log.value = dto.value
+            log.recordedAt = dto.recordedAt
             // Any label an earlier version wrote ("m³", "mc", "kWh") is kept as its key; no unit stays none.
             log.unit = MeasurementUnit.storedKey(for: dto.unit)
             log.secondaryValue = dto.secondaryValue
@@ -371,10 +404,8 @@ struct DossierImporter {
             log.source = dto.source
             log.notes = dto.notes
             log.isExample = dto.isExample
-            context.insert(log)
+            log.updatedAt = changeTime(dto.updatedAt)
             log.asset = uuid(dto.assetId).flatMap { assets[$0] }
-            map[id] = log
-            result.inserted += 1
         }
         return map
     }
@@ -389,18 +420,24 @@ struct DossierImporter {
         providers: [UUID: Provider]
     ) throws {
         var map = try existing(Attachment.self, id: \.id)
-        var inserted: [(Attachment, DossierV3.Attachment)] = []
+        var written: [(Attachment, DossierV3.Attachment)] = []
         for dto in package.attachments {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.attachments) }
-            guard map[id] == nil else { result.skipped += 1; continue }
             let original = try dto.path.map { path -> Data in
                 guard let data = package.files[path] else { throw ArchiveError.missingFile(path) }
                 return data
             }
-            let attachment = Attachment(id: id, fileName: dto.fileName, contentType: dto.contentType, data: original, kind: DocumentKind(rawValue: dto.kind) ?? .other)
+            guard let attachment = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
+                Attachment(id: id, fileName: dto.fileName, contentType: dto.contentType, data: original)
+            }) else { continue }
             attachment.title = dto.title
+            attachment.fileName = dto.fileName
+            attachment.contentType = dto.contentType
+            attachment.fileData = original
+            // Kept as the archive has it: a kind from a newer build reads as other.
+            attachment.kindRaw = dto.kind
             attachment.byteCount = dto.byteCount
-            attachment.sha256 = dto.sha256 ?? attachment.sha256
+            attachment.sha256 = dto.sha256 ?? original.map(Hashing.sha256)
             attachment.thumbnailData = dto.thumbnailPath.flatMap { package.files[$0] }
             // A backup from anywhere brings no card number into a document's text.
             attachment.extractedText = dto.extractedText.map { PaymentCardNumbers.redact($0) }
@@ -410,24 +447,55 @@ struct DossierImporter {
             attachment.isArchived = dto.isArchived
             attachment.createdAt = dto.createdAt
             attachment.isExample = dto.isExample
-            context.insert(attachment)
-            for (index, path) in dto.pagePaths.enumerated() {
-                let page = AttachmentPage(index: index, imageData: package.files[path])
-                context.insert(page)
-                page.attachment = attachment
-            }
+            attachment.updatedAt = changeTime(dto.updatedAt)
+            replacePages(of: attachment, with: dto.pagePaths.map { package.files[$0] })
             attachment.asset = uuid(dto.assetId).flatMap { assets[$0] }
             attachment.obligation = uuid(dto.obligationId).flatMap { obligations[$0] }
             attachment.historyEntry = uuid(dto.historyEntryId).flatMap { entries[$0] }
             attachment.serviceItem = uuid(dto.serviceItemId).flatMap { serviceItems[$0] }
             attachment.measurement = uuid(dto.measurementId).flatMap { measurements[$0] }
             attachment.provider = uuid(dto.providerId).flatMap { providers[$0] }
-            map[id] = attachment
-            inserted.append((attachment, dto))
-            result.inserted += 1
+            written.append((attachment, dto))
         }
-        for (attachment, dto) in inserted {
+        // Once every document exists, so order in the file doesn't matter.
+        for (attachment, dto) in written {
             attachment.supersededBy = uuid(dto.supersededById).flatMap { map[$0] }
         }
+    }
+
+    /// The archive's pages in place of the ones here, when they differ. Pages this phone made
+    /// smaller that the archive replaces aren't the ones it made smaller any more.
+    private func replacePages(of attachment: Attachment, with images: [Data?]) {
+        let current = attachment.orderedPages
+        guard current.map(\.imageData) != images else { return }
+        for page in current { context.delete(page) }
+        for (index, data) in images.enumerated() {
+            let page = AttachmentPage(index: index, imageData: data)
+            context.insert(page)
+            page.attachment = attachment
+        }
+        if !current.isEmpty { attachment.compactedAt = nil }
+    }
+}
+
+/// The one rule an import follows for a record that is both on the phone and in the archive,
+/// whatever its type: the archive's copy replaces the phone's only when it changed later.
+/// A change time a record doesn't carry (an archive from before version 8 of the database,
+/// for history, line items, readings and documents) is `ChangeTime.unknown`, older than any
+/// change; on a tie the phone's own copy stays. "Înlocuiește tot" empties the phone first,
+/// so every record comes from the archive by the same rule.
+enum ArchiveMerge {
+    enum Outcome: Equatable {
+        /// Not on the phone: the archive's copy is added.
+        case insert
+        /// The archive's copy changed later: it replaces the phone's.
+        case update
+        /// The phone's copy is as new or newer: it stays.
+        case keepHere
+    }
+
+    static func outcome(archive: Date, here: Date?) -> Outcome {
+        guard let here else { return .insert }
+        return archive > here ? .update : .keepHere
     }
 }

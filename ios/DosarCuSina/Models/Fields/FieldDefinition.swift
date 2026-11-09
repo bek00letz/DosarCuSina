@@ -89,8 +89,10 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
     /// Stable key, unique within the template, such as `vehicle.plate`.
     public var key: String
     public var label: String
-    public var type: FieldType
-    public var role: FieldRole?
+    /// A type a newer build wrote that this one doesn't know reads as `text`, and is written
+    /// back as stored until the type is set here.
+    public var type: FieldType { didSet { unreadable["type"] = nil } }
+    public var role: FieldRole? { didSet { unreadable["role"] = nil } }
     /// Shown in the quick add flow; everything else is optional detail.
     public var isEssential: Bool
     /// Hidden behind Face ID when the category is locked (document numbers, medical data).
@@ -103,14 +105,18 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
     public var placeholder: String?
     /// Filled in when the asset is created and the person left it empty,
     /// such as 24 months of legal guarantee. Always editable.
-    public var defaultValue: FieldValue?
+    public var defaultValue: FieldValue? { didSet { unreadable["defaultValue"] = nil } }
     /// Worked out from other fields while the person hasn't set it themselves.
-    public var derivation: FieldDerivation?
+    public var derivation: FieldDerivation? { didSet { unreadable["derivation"] = nil } }
     /// Shown and kept only while another value matches (a variant only for its
     /// document type). A value left behind when it stops applying is dropped on save.
-    public var appliesWhen: BlueprintCondition?
+    public var appliesWhen: BlueprintCondition? { didSet { unreadable["appliesWhen"] = nil } }
     /// One short line under the field: what it is and where to find it.
     public var footnote: String?
+    /// What a newer build wrote that this one can't read (a type, a role, a default, a
+    /// derivation, a condition), raw by its key: written back unchanged until that part is set
+    /// here, the rule `FieldValues` follows for values.
+    private var unreadable: [String: JSONValue] = [:]
 
     public var id: String { key }
 
@@ -173,9 +179,12 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         key = try c.decode(String.self, forKey: .key)
         label = try c.decode(String.self, forKey: .label)
-        // Unknown types from a newer app version fall back to text instead of failing the import.
-        type = FieldType(rawValue: try c.decode(String.self, forKey: .type)) ?? .text
-        role = (try c.decodeIfPresent(String.self, forKey: .role)).flatMap(FieldRole.init(rawValue:))
+        // Unknown types from a newer app version read as text instead of failing the import,
+        // and are kept as written.
+        let storedType = try c.decode(String.self, forKey: .type)
+        type = FieldType(rawValue: storedType) ?? .text
+        let storedRole = try c.decodeIfPresent(String.self, forKey: .role)
+        role = storedRole.flatMap(FieldRole.init(rawValue:))
         isEssential = try c.decodeIfPresent(Bool.self, forKey: .isEssential) ?? false
         isSensitive = try c.decodeIfPresent(Bool.self, forKey: .isSensitive) ?? false
         options = try c.decodeIfPresent([ChoiceOption].self, forKey: .options)
@@ -186,6 +195,38 @@ public struct FieldDefinition: Hashable, Sendable, Codable, Identifiable {
         derivation = try? c.decodeIfPresent(FieldDerivation.self, forKey: .derivation)
         appliesWhen = try? c.decodeIfPresent(BlueprintCondition.self, forKey: .appliesWhen)
         footnote = try c.decodeIfPresent(String.self, forKey: .footnote)
+        var kept: [String: JSONValue] = [:]
+        if FieldType(rawValue: storedType) == nil { kept["type"] = .string(storedType) }
+        if let storedRole, role == nil { kept["role"] = .string(storedRole) }
+        for (key, read) in [(CodingKeys.defaultValue, defaultValue != nil), (.derivation, derivation != nil), (.appliesWhen, appliesWhen != nil)]
+        where !read && c.contains(key) {
+            if let raw = try? c.decode(JSONValue.self, forKey: key), raw != .null { kept[key.rawValue] = raw }
+        }
+        unreadable = kept
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(key, forKey: .key)
+        try c.encode(label, forKey: .label)
+        try c.encode(isEssential, forKey: .isEssential)
+        try c.encode(isSensitive, forKey: .isSensitive)
+        try c.encodeIfPresent(options, forKey: .options)
+        try c.encodeIfPresent(unit, forKey: .unit)
+        try c.encodeIfPresent(placeholder, forKey: .placeholder)
+        try c.encodeIfPresent(footnote, forKey: .footnote)
+        func write<Value: Encodable>(_ value: Value?, _ key: CodingKeys) throws {
+            if let raw = unreadable[key.rawValue] {
+                try c.encode(raw, forKey: key)
+            } else {
+                try c.encodeIfPresent(value, forKey: key)
+            }
+        }
+        try write(type, .type)
+        try write(role, .role)
+        try write(defaultValue, .defaultValue)
+        try write(derivation, .derivation)
+        try write(appliesWhen, .appliesWhen)
     }
 }
 

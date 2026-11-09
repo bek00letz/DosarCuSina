@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV7 {
+extension DosarSchemaV8 {
     /// A category of assets (Car, Home, a user's own "Bikes") and its field and
     /// obligation definitions, plus this household's preferences for it.
     ///
@@ -51,15 +51,23 @@ extension DosarSchemaV7 {
         }
 
         /// Replaces the definition (name, look, fields, blueprints) and keeps household preferences.
+        /// A category of one's own keeps the sections, deadlines and parts a newer build wrote that
+        /// this one can't read (`KeptList`); a built-in is always the app's own definition, whole.
         public func apply(_ definition: TemplateDefinition) {
             name = definition.name
             summary = definition.summary
             symbol = definition.symbol
             tintRaw = definition.tint.rawValue
             heroStyleRaw = definition.heroStyle.rawValue
-            sectionsData = StoredJSON.encode(definition.sections)
-            blueprintsData = StoredJSON.encode(definition.blueprints)
-            componentsData = StoredJSON.encode(definition.components)
+            if isBuiltIn {
+                sectionsData = StoredJSON.encode(KeptList(definition.sections))
+                blueprintsData = StoredJSON.encode(KeptList(definition.blueprints))
+                componentsData = StoredJSON.encode(KeptList(definition.components))
+            } else {
+                sectionsData = KeptList.writing(definition.sections, over: sectionsData)
+                blueprintsData = KeptList.writing(definition.blueprints, over: blueprintsData)
+                componentsData = KeptList.writing(definition.components, over: componentsData)
+            }
             pocketsRaw = definition.pockets.map(\.rawValue)
             behaviorData = definition.behavior == .standard ? nil : StoredJSON.encode(definition.behavior)
             builtInVersion = isBuiltIn ? definition.version : 0
@@ -82,19 +90,37 @@ extension DosarSchemaV7 {
             set { heroStyleRaw = newValue.rawValue }
         }
 
+        /// The sections this build can read. Writing them keeps the ones it can't (`KeptList`).
         public var sections: [FieldSection] {
-            get { StoredJSON.decode([FieldSection].self, from: sectionsData) ?? [] }
-            set { sectionsData = StoredJSON.encode(newValue); updatedAt = Date() }
+            get { keptSections.items }
+            set { sectionsData = KeptList.writing(newValue, over: sectionsData); updatedAt = Date() }
         }
 
         public var blueprints: [ObligationBlueprint] {
-            get { StoredJSON.decode([ObligationBlueprint].self, from: blueprintsData) ?? [] }
-            set { blueprintsData = StoredJSON.encode(newValue); updatedAt = Date() }
+            get { keptBlueprints.items }
+            set { blueprintsData = KeptList.writing(newValue, over: blueprintsData); updatedAt = Date() }
         }
 
         public var components: [ComponentDefinition] {
-            get { StoredJSON.decode([ComponentDefinition].self, from: componentsData) ?? [] }
-            set { componentsData = StoredJSON.encode(newValue); updatedAt = Date() }
+            get { keptComponents.items }
+            set { componentsData = KeptList.writing(newValue, over: componentsData); updatedAt = Date() }
+        }
+
+        /// The sections as stored, with any a newer build wrote that this one can't read:
+        /// what a backup carries.
+        public var keptSections: KeptList<FieldSection> {
+            get { KeptList.stored(in: sectionsData) }
+            set { sectionsData = StoredJSON.encode(newValue) }
+        }
+
+        public var keptBlueprints: KeptList<ObligationBlueprint> {
+            get { KeptList.stored(in: blueprintsData) }
+            set { blueprintsData = StoredJSON.encode(newValue) }
+        }
+
+        public var keptComponents: KeptList<ComponentDefinition> {
+            get { KeptList.stored(in: componentsData) }
+            set { componentsData = StoredJSON.encode(newValue) }
         }
 
         /// The pockets a section page shows, in the global order.

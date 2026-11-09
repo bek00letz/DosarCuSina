@@ -144,6 +144,14 @@ public struct FieldValues: Hashable, Sendable, Codable, Sequence {
 
     public var isEmpty: Bool { storage.isEmpty }
 
+    /// The same values with every value this build can't read changed by `transform`, or left
+    /// out when it returns nil: the rules every exit applies (secrets, card numbers) reach them too.
+    public func mappingUnreadable(_ transform: (JSONValue) -> JSONValue?) -> FieldValues {
+        var result = self
+        result.unreadable = unreadable.compactMapValues(transform)
+        return result
+    }
+
     /// The values with defaults filled in for empty fields (new assets only) and
     /// derived fields worked out again when one of their inputs changed, or when
     /// they are still empty. A derived value the person typed in themselves stays
