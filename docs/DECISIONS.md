@@ -19,8 +19,8 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 - **Decided:** the RCA names who it insures in its facts (a new fact role, `policyholder`, the car's *Asigurat RCA*), as the household knows them; its deadline page and the claim screen show "Clasa proprietarului: B6" read from that person, so it is never stored twice. CASCO and home policies name no policyholder.
 - **Decided:** the policyholder's CNP is read only on the phone and only to find the person: never shown in the review, kept, filed or asked of the AI provider.
 - **Decided:** the catalog moves to version 14; installed copies upgrade at launch, keeping their people and preferences.
-- **Open for the owner:** the class is shown on the car's pages even when the person's category is locked with Face ID; it isn't a secret, but it is read from a locked section. *Recommendation:* keep it shown.
-- **Open for the owner:** a car owned by a company (a CUI on the policy) has no person to keep the class on, so it isn't kept. *Recommendation:* leave it so until someone asks for company cars.
+- **Decided (owner):** "Clasa proprietarului" is shown on the car's pages even when the person's category is locked with Face ID: the class isn't a secret, though it is read from a locked section.
+- **Decided (owner):** a car owned by a company (a CUI on the policy) has no person to keep the class on, so the class isn't kept.
 - **Why:** the class moves with the driver, so on a car it would be wrong after a sale or for a second driver.
 
 ### A series and a number are one value
