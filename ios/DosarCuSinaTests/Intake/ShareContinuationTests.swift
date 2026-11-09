@@ -160,6 +160,30 @@ struct InboxNoticeTests {
     }
 }
 
+@Suite("After a share: the share sheet's confirmation")
+struct ShareConfirmationTests {
+    @Test func itStaysUntilGata() {
+        #expect(!ShareConfirmation.closesByItself, "Nobody misses what happens next: it closes only on „Gata”")
+        let saved: [ShareConfirmation.Phase] = [.saved(count: 1, next: .tapNotice), .saved(count: 2, next: .openApp), .saved(count: 1, next: .practice)]
+        for phase in saved + [.unsupported, .failed, .tooLarge] {
+            #expect(ShareConfirmation(phase).action == .done, "Every outcome waits for „Gata”")
+        }
+        #expect(ShareConfirmation(.working).action == .cancel)
+    }
+
+    @Test func itSaysWhatHappensNext() {
+        let notice = ShareConfirmation(.saved(count: 2, next: .tapNotice))
+        #expect(notice.title == "Am primit 2 acte")
+        #expect(notice.message == "Atinge notificarea ca să continui. Te așteaptă în aplicație, la De verificat.")
+        let open = ShareConfirmation(.saved(count: 1, next: .openApp))
+        #expect(open.title == "Am primit un act")
+        #expect(open.message == "Deschide Dosar cu Șină ca să continui. Te așteaptă la De verificat.")
+        #expect(ShareConfirmation(.saved(count: 1, next: .practice)).message == "Te întorci în aplicație și vezi unde a ajuns.")
+        #expect(ShareConfirmation(.working).message == nil)
+        #expect(ShareConfirmation(.tooLarge).message == "Trimite actele câte unul, sau ca poze în loc de un PDF mare.")
+    }
+}
+
 @Suite("After a share: opening at De verificat")
 @MainActor
 struct InboxLandingTests {
