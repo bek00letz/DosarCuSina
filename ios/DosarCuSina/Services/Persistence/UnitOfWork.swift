@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import SwiftData
 
 /// The one way the engine commits changes, and the way several actions become
@@ -23,7 +24,7 @@ import SwiftData
 ///
 /// - **It asks first.** A step's questions for the person (`StepQuestion`: a lower counter,
 ///   something of theirs in an example) are asked before its unit opens, never from inside
-///   it once it has written: a debug build stops where one comes too late.
+///   it once it has written: a test run stops where one comes too late.
 /// - **What it took back can be read again.** After a rollback, the records the unit touched
 ///   are fetched again, so a screen drawing them next reads them as they were.
 ///
@@ -178,15 +179,24 @@ public enum UnitOfWork {
         for ref in touched { _ = UndoableRecords.find(ref, in: context) }
     }
 
-    /// A question thrown after the unit wrote is a step that didn't ask first: a debug build
-    /// stops here, so the test that takes that path fails where it happens. Ask it before the
-    /// unit opens (`StepQuestion`).
+    /// A question thrown after the unit wrote is a step that didn't ask first. While tests run
+    /// it stops here, so the test that takes that path fails where it happens; in the app it is
+    /// only logged, since the rollback leaves everything readable and a person must never lose
+    /// their work to a development check. Ask it before the unit opens (`StepQuestion`).
     private static func noteQuestionAskedLate(_ error: any Error, in context: ModelContext) {
+        guard error is any StepQuestion, context.hasChanges else { return }
+        let message = "\(type(of: error)) was thrown after the unit of work wrote. Ask it before the unit opens."
+        log.fault("\(message, privacy: .public)")
         #if DEBUG
-        if error is any StepQuestion, context.hasChanges {
-            assertionFailure("\(type(of: error)) was thrown after the unit of work wrote. Ask it before the unit opens.")
-        }
+        if isRunningTests { assertionFailure(message) }
         #endif
+    }
+
+    private static let log = Logger(subsystem: "com.ar.dosarcusina.app", category: "persistence")
+
+    /// Whether the app is hosting a test run (xcodebuild test sets this).
+    private static var isRunningTests: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     }
 
     /// Runs `action` once the open unit of work has saved, or right away when
