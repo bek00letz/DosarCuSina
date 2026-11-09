@@ -31,6 +31,7 @@ enum CaptureMapping {
     static let candidates: [CaptureFieldKey: [String]] = [
         .licensePlate: [VehicleFields.plate],
         .vin: [VehicleFields.vin],
+        .civNumber: [VehicleFields.civ],
         .make: [VehicleFields.make],
         .model: [VehicleFields.model],
         .odometer: [VehicleFields.odometer],
@@ -194,6 +195,7 @@ enum CaptureMapping {
         case .bonusMalusClass: return String(localized: "Clasă bonus-malus")
         case .licensePlate: return String(localized: "Număr de înmatriculare")
         case .vin: return String(localized: "Serie de șasiu (VIN)")
+        case .civNumber: return String(localized: "Serie CIV")
         case .make: return String(localized: "Marcă")
         case .model: return String(localized: "Model")
         case .firstRegistrationDate: return String(localized: "Prima înmatriculare")

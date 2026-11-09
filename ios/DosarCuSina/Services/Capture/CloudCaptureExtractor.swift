@@ -103,7 +103,7 @@ struct CloudSchema: Sendable {
                 switch field.format {
                 case .name: add(field.key, .name, labels: field.labels)
                 case .personalNumber: add(field.key, .personalNumber, labels: field.labels)
-                case .documentNumber: add(field.key, .documentNumber, labels: field.labels)
+                case .documentNumber, .composite: add(field.key, .documentNumber, labels: field.labels)
                 case .date: add(field.key, .date, labels: field.labels)
                 case .dateRange(let start):
                     add(start, .date, labels: field.labels)
@@ -161,9 +161,12 @@ struct CloudSchema: Sendable {
         let what: String = switch key {
         case .provider: "The company, clinic or authority that issued the document, as printed (not the customer)."
         case .retailer: "The shop that sold the product, as printed."
-        case .policyNumber: "The insurance policy series and number."
-        case .invoiceNumber: "The invoice series and number."
-        case .documentNumber: "The document number."
+        case .policyNumber: "The insurance policy's own series and number (\"Seria … nr. …\", \"Seria și numărul\", or under "
+            + "\"Codul țării / Codul asigurătorului / Numărul\"), never a registration, contract or identification number."
+        case .invoiceNumber: "The invoice's series and number."
+        case .documentNumber: "The document's own series and number (an identity card's \"SERIA XT NR 123456\" is XT123456). "
+            + "Null on an insurance policy, an invoice or a contract: their numbers are policyNumber, invoiceNumber and contractNumber."
+        case .civNumber: "The series and number of the vehicle's identity card (CIV)."
         case .issueDate: "The date of issue."
         case .startDate: "The first day of validity, coverage or of the contract."
         case .expiryDate: "The last day of validity."
@@ -228,7 +231,9 @@ struct CloudSchema: Sendable {
         case .money: " Amount with a dot for decimals; currency as RON, EUR or USD."
         default: ""
         }
-        return what + how
+        // A value printed in parts is asked for whole, written one way (`CompositeValue`).
+        let parts = CompositeValue.byKey[key].flatMap { $0.series == nil ? nil : " The series and the number together as one value, e.g. \($0.example)." } ?? ""
+        return what + parts + how
     }
 
     /// The fields as a JSON Schema: strict, so every provider answers in one shape.

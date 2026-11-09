@@ -127,7 +127,7 @@ struct ReadingArbiterTests {
 
         let read = try await Self.read(Self.policyText, answer: Self.policyAnswer)
         let policy = try #require(read.field(.policyNumber))
-        #expect(policy.value.text == "RO/25/X25/AB NR 000123456")
+        #expect(policy.value.text == "RO/25/X25/AB 000123456", "Written the one way, whoever read it")
         #expect(policy.tier == .cloudModel)
         #expect(policy.needsCheck, "Two readers disagree: Verifică")
         #expect(read.alternatives(for: .policyNumber) == [CaptureAlternative(.text(misread), source: .phone)])
@@ -188,7 +188,7 @@ struct ReadingArbiterTests {
         let after = CaptureReview(result: read, assets: [], context: context).carryingEdits(from: before, assets: [])
         let field = try #require(after.fields.first { $0.key == .policyNumber })
         #expect(field.value == .text("RO/25/X25/AB NR 000123457"), "The person's value stays")
-        #expect(field.alternatives == [CaptureAlternative(.text("RO/25/X25/AB NR 000123456"), source: .cloudModel)], "The AI's is offered beside it")
+        #expect(field.alternatives == [CaptureAlternative(.text("RO/25/X25/AB 000123456"), source: .cloudModel)], "The AI's is offered beside it")
         #expect(after.usedCloudModel)
     }
 

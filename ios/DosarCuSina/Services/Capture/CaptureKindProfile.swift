@@ -202,7 +202,7 @@ struct CaptureKindProfile: Sendable {
             kind: .vehicleRegistration, templateKey: BuiltInTemplates.Key.vehicle, filing: .newSection, blueprintKey: nil,
             readsCover: false, defaultCover: nil, deadlineField: nil, documentDateFields: issuedOn,
             documentKind: .identity, documentType: nil, trade: nil,
-            expectedKeys: [.licensePlate, .vin, .make, .model, .firstRegistrationDate],
+            expectedKeys: [.licensePlate, .vin, .civNumber, .make, .model, .firstRegistrationDate],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: [.licensePlate, .vin],
             name: "Talon (certificat de înmatriculare)", titleRule: .fixed("Certificat de înmatriculare"), modelDescription: "vehicle registration certificate", sectionName: .vehicle
         ),
