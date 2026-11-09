@@ -351,7 +351,7 @@ struct CaptureFiler {
             // Another photo or PDF of a bill already in the binder: it is the bill's newer
             // copy, and the one kept before is archived beside it, never thrown away.
             if let bill = outcome.bill, let match = plan.filedBill?.match, match != .sameDocument {
-                try Self.keepAsNewerCopy(filed, of: bill, with: AttachmentActions(context: context, calendar: calendar))
+                try AttachmentActions(context: context, calendar: calendar).keepAsNewerCopy(filed, of: bill)
             }
         }
 
@@ -361,14 +361,6 @@ struct CaptureFiler {
         outcome.reading = try recordMeterReading(subscription == nil ? nil : plan.meter?.reading, on: subscription,
                                                  document: outcome.attachment, earlier: readingFiledBefore, templates: templates)
         return outcome
-    }
-
-    /// `document` becomes the current copy of `bill`: every other copy still current there is
-    /// archived and points to it (`AttachmentActions.supersede`), so the bill shows one paper.
-    static func keepAsNewerCopy(_ document: Attachment, of bill: HistoryEntry, with documents: AttachmentActions) throws {
-        for older in bill.attachments ?? [] where older.id != document.id && !older.isDeleted && !older.isArchived {
-            try documents.supersede(older, with: document)
-        }
     }
 
     private func entry(id: UUID) throws -> HistoryEntry? {
