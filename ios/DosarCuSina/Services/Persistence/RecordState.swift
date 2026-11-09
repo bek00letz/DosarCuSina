@@ -41,6 +41,22 @@ public struct RecordState: Hashable {
     static func capture<M: UndoableRecord>(_ record: M) -> RecordState {
         RecordState(ref: RecordRef(record), values: Dictionary(uniqueKeysWithValues: M.storedProperties.map { ($0.name, $0.read(record)) }))
     }
+
+    /// Every record this one points to, through any relationship.
+    var linked: Set<RecordRef> {
+        values.values.reduce(into: []) { refs, value in refs.formUnion(value.refs) }
+    }
+}
+
+extension StoredValue {
+    /// The records a relationship points to; none for an attribute.
+    var refs: Set<RecordRef> {
+        switch self {
+        case .attribute: []
+        case .one(let ref): ref.map { [$0] } ?? []
+        case .many(let refs): refs
+        }
+    }
 }
 
 /// One stored property of `Model`: how to read it into a `StoredValue` and write it back.
@@ -108,6 +124,21 @@ extension UndoableRecord {
 enum UndoableRecords {
     static var types: [String: any UndoableRecord.Type] {
         Dictionary(uniqueKeysWithValues: DosarSchemaV6.models.compactMap { $0 as? any UndoableRecord.Type }.map { ($0.recordType, $0) })
+    }
+
+    /// The relationships whose records go with their owner when it is deleted, by type:
+    /// read from the schema's own delete rules, so they're written once, on the models.
+    static let ownedRelationships: [String: Set<String>] = {
+        let schema = Schema(versionedSchema: DosarSchemaV6.self)
+        return Dictionary(uniqueKeysWithValues: schema.entities.map { entity in
+            (entity.name, Set(entity.relationships.filter { if case .cascade = $0.deleteRule { true } else { false } }.map(\.name)))
+        })
+    }()
+
+    /// The records `state`'s record owns: deleting it deletes them too.
+    static func owned(by state: RecordState) -> Set<RecordRef> {
+        let names = ownedRelationships[state.ref.type] ?? []
+        return names.reduce(into: []) { refs, name in refs.formUnion(state.values[name]?.refs ?? []) }
     }
 
     /// The record `ref` names, if it exists in `context`.

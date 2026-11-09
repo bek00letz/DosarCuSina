@@ -145,10 +145,14 @@ public final class AttachmentActions {
         }.receipt
     }
 
-    /// Deletes a document. Only for an explicit request from the person.
-    public func delete(_ attachment: Attachment) throws {
-        context.delete(attachment)
-        try save()
+    /// Deletes a document with its pages. Only for an explicit request from the person.
+    /// Undoable: the receipt brings it back where it was, pages and links included.
+    @discardableResult
+    public func delete(_ attachment: Attachment) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) {
+            context.delete(attachment)
+            try save()
+        }.receipt
     }
 
     private func save() throws {

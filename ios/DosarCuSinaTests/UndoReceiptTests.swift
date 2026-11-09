@@ -76,8 +76,54 @@ struct UndoReceiptTests {
         case fileAVisitWithAKeptInvoice
         case fileACompletionWithAKeptPolicy
         case fileAReviewOfAKeptPolicy
+        case fileAReviewOfANewPhoto
+        case pauseADeadline
+        case resumeADeadline
+        case archiveADeadline
+        case bringBackASnoozedDeadline
+        case deleteADeadline
+        case deleteADocumentWithItsPages
+        case deleteAPersonalDocument
+        case deleteASectionWithItsHistoryAndDocuments
+        case deleteACarWithItsDeadlinesVisitsAndReadings
+        case deleteAPersonKeepingTheirDocuments
+        case deleteAPersonWithTheirDocuments
+        case deleteTheLastTenancy
 
         var testDescription: String { rawValue }
+
+        /// What the household has before the step, beyond `Household.make`.
+        @MainActor
+        func setUp(in house: Household) throws {
+            let context = house.context
+            let obligations = ObligationActions(context: context, calendar: .bucharest, now: { noon("2026-11-02") })
+            switch self {
+            case .resumeADeadline:
+                try obligations.pause(house.kit)
+            case .deleteADeadline:
+                // Its completion stays in the car's history and its policy in the binder, without the link.
+                let done = try obligations.complete(house.rca, cost: Money(1_150), providers: [house.mechanic]).value
+                _ = try AttachmentActions(context: context, calendar: .bucharest).file(
+                    DocumentDraft(title: "Poliță RCA", fileName: "polita.heic", kind: .policy, pageImages: [Data([1, 2]), Data([3, 4])]),
+                    asset: house.car, obligation: house.rca, historyEntry: done
+                )
+            case .deleteACarWithItsDeadlinesVisitsAndReadings:
+                _ = try HistoryActions(context: context, now: { noon("2026-11-02") }).recordVisit(
+                    on: house.car, checklist: [.init(componentKey: "engine.oil", cost: Money(420))], extraItems: [LineItemDraft(name: "Odorizant")],
+                    totalCost: Money(690), odometer: 101_000, provider: house.mechanic,
+                    documents: [DocumentDraft(fileName: "factura.heic", kind: .invoice, pageImages: [Data([8, 9])])],
+                    rating: 5, calendar: .bucharest
+                )
+            case .deleteTheLastTenancy:
+                let tenancy = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.tenancy))
+                var lease = FieldValues()
+                lease["tenancy.end"] = .date(CalendarDay("2027-06-30"))
+                _ = try AssetActions(context: context, calendar: .bucharest, now: { noon("2026-11-02") })
+                    .create(name: "Chiriaș", template: tenancy, values: lease, parent: house.home)
+            default:
+                break
+            }
+        }
 
         @MainActor
         func run(in house: Household) async throws -> UndoReceipt {
@@ -129,6 +175,39 @@ struct UndoReceiptTests {
                 var review = CaptureReview(result: policy(.kept(attachmentID: house.keptInvoice.id)), assets: [house.car, house.home], context: context)
                 review.destination = .asset(house.car.id)
                 return try #require(try await filer.save(review).receipt)
+            case .fileAReviewOfANewPhoto:
+                // The review's "Salvează" with a new photo: its pages, the policy's facts, the deadline it moves.
+                let store = CaptureDocumentStore()
+                let captured = try await store.store(.init(pages: [CaptureDocumentStoreTests.page(width: 900, height: 640, seed: 31)], kind: .rcaPolicy))
+                let filer = CaptureFiler(context: context, store: store, calendar: .bucharest)
+                var review = CaptureReview(result: policy(captured.ref), assets: [house.car, house.home], context: context)
+                review.destination = .asset(house.car.id)
+                return try #require(try await filer.save(review).receipt)
+            case .pauseADeadline:
+                return try obligations.pause(house.oil)
+            case .resumeADeadline:
+                return try obligations.resume(house.kit)
+            case .archiveADeadline:
+                return try obligations.archive(house.kit)
+            case .bringBackASnoozedDeadline:
+                return try obligations.clearSnooze(house.rca)
+            case .deleteADeadline:
+                return try obligations.delete(house.rca)
+            case .deleteADocumentWithItsPages:
+                return try AttachmentActions(context: context).delete(house.keptInvoice)
+            case .deleteAPersonalDocument:
+                return try assets.delete(house.card)
+            case .deleteASectionWithItsHistoryAndDocuments:
+                return try assets.delete(house.home)
+            case .deleteACarWithItsDeadlinesVisitsAndReadings:
+                return try assets.delete(house.car)
+            case .deleteAPersonKeepingTheirDocuments:
+                return try assets.delete(house.corina, children: .keep)
+            case .deleteAPersonWithTheirDocuments:
+                return try assets.delete(house.corina, children: .delete)
+            case .deleteTheLastTenancy:
+                let tenancy = try #require(house.home.children?.first { $0.templateKey == BuiltInTemplates.Key.tenancy })
+                return try assets.delete(tenancy)
             }
         }
 
@@ -145,6 +224,7 @@ struct UndoReceiptTests {
     @Test("Undo puts back exactly the state before", arguments: Step.allCases)
     func undoRestoresExactlyTheStateBefore(_ step: Step) async throws {
         let house = try Household.make()
+        try step.setUp(in: house)
         let before = try Self.database(house.context)
 
         let receipt = try await step.run(in: house)
