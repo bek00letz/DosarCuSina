@@ -12,6 +12,7 @@ struct ManualAddFlow: View {
 
     @State private var path: [ManualStep] = []
     @State private var isCreatingSection = false
+    @Environment(\.announce) private var announce
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -56,8 +57,10 @@ struct ManualAddFlow: View {
                 case .deadline(let id):
                     DeadlineForm(assetID: id) { message in onClose(message) }
                 case .visit(let id):
-                    AddVisitFlow(assetID: id, prefill: nil) { saved in
-                        onClose(saved ? "Vizita e în istoric." : nil)
+                    AddVisitFlow(assetID: id, prefill: nil) { receipt in
+                        // This sheet closes: the shell shows the toast, with its "Anulează".
+                        if let receipt, let toast = CaptureFlowResult.visit(receipt: receipt).toast { announce(toast) }
+                        onClose(nil)
                     }
                 }
             }
