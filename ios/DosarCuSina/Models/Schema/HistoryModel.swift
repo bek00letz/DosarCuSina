@@ -31,7 +31,7 @@ public enum HistoryKind: String, Codable, CaseIterable, Sendable {
     }
 }
 
-extension DosarSchemaV6 {
+extension DosarSchemaV7 {
     /// One thing that happened to an asset: a visit, a repair, a purchase, an
     /// inspection. It is the asset's single history: completing an obligation
     /// writes one of these, and so does logging a repair by hand.
@@ -47,6 +47,9 @@ extension DosarSchemaV6 {
         public var totalCostAmount: Decimal?
         public var totalCostCurrency: String?
         public var note: String?
+        /// The number of the paper this entry records, as printed: a bill's invoice number.
+        /// A bill is known by it when it is filed again (`BillIdentity`). Version 7.
+        public var reference: String?
         /// The person's 1–5 rating of this job; providers' ratings average these.
         public var rating: Int?
         public var isExample: Bool = false

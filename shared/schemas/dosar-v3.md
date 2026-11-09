@@ -277,10 +277,15 @@ Built-in option keys:
 (`visit|repair|maintenance|inspection|purchase|payment|vaccination|treatment|note`),
 `title`, `occurredAt`, `metricReading`?, `totalCost`?, `note`?, `rating`?
 (1–5), `cycleDueDate`?, `nextDueDate`?, `previousStatus`?,
-`previousDueMetric`?, `providerIds`, `isExample`.
+`previousDueMetric`?, `providerIds`, `isExample`, `reference`?.
 
 An entry with `cycleDueDate` records the completion of `obligationId`. Its
 `previous*` values let the latest completion be undone.
+
+- **`reference`** (optional): the number of the paper the entry records, as
+  printed: a bill's invoice number. Within one subscription, a bill with the
+  same `reference` is the same bill; without one on both, the same day and
+  total are. Readers that don't know it keep the entry as it is.
 
 ### Line item (`data/service_items.json`)
 

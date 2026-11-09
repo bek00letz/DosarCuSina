@@ -98,6 +98,10 @@ struct CaptureReview: Identifiable {
     /// The person confirmed that the bank pays this subscription by direct debit, as the
     /// bill says ("Plătesc prin debit direct"). Never on until they turn it on.
     var turnsOnDirectDebit = false
+    /// The person said this bill isn't the one the binder already has with the same day and
+    /// total ("E altă factură"): it is filed as a new bill. A bill known by its number, or the
+    /// same document filed again, is always the same one.
+    var isAnotherBill = false
     /// What the person chose for the pages here, by page: a turn, the whole photo or the
     /// cut-out. It wins over how the reading framed them, and over any later reading.
     var pageChoices: [Int: PageChoice] = [:]
@@ -644,6 +648,7 @@ struct CaptureReview: Identifiable {
         merged.filesAsPersonalDocument = previous.filesAsPersonalDocument
         merged.keepsPhotoOnRequest = previous.keepsPhotoOnRequest
         merged.turnsOnDirectDebit = previous.turnsOnDirectDebit
+        merged.isAnotherBill = previous.isAnotherBill
         merged.pageChoices = previous.pageChoices
         if previous.placeConfirmed { merged.placeConfirmed = true }
         merged.staysOnPhone = previous.staysOnPhone

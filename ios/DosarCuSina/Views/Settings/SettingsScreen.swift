@@ -33,7 +33,8 @@ struct SettingsScreen: View {
     @State private var landing: SettingsLanding
     /// The repair list, open right away when a link or the repair prompt asks for it.
     @State private var showsRepairs: Bool
-    /// Confirms a saved change to a category of one's own, with its undo.
+    /// Confirms a step taken here (a category of one's own changed or deleted, the examples
+    /// removed), with its undo.
     @State private var toast: DSToast?
 
     init(initialSection: SettingsSection?) {
@@ -51,7 +52,7 @@ struct SettingsScreen: View {
                     SpotlightSettings()
                     SectionVisibilitySettings().id(SettingsSection.categories)
                     CustomCategorySettings(toast: $toast)
-                    ExampleSettings().id(SettingsSection.examples)
+                    ExampleSettings(toast: $toast).id(SettingsSection.examples)
                     BackupSettings().id(SettingsSection.backup)
                     DataRepairSettings(isShowingList: $showsRepairs).id(SettingsSection.repairs)
                     StorageSettings()
@@ -316,9 +317,7 @@ private struct CustomCategorySettings: View {
                 Text("Alege ce ține minte fiecare. Categoriile incluse în aplicație rămân cum sunt.", comment: "Footer of the person's own categories in Settings.")
             }
             .sheet(item: $editing) { template in
-                CategoryEditSheet(template: template) { receipt in
-                    toast = .undo("Am schimbat „\(template.name)”.", receipt: receipt)
-                }
+                CategoryEditSheet(template: template) { done in toast = done }
             }
         }
     }
@@ -327,6 +326,8 @@ private struct CustomCategorySettings: View {
 // MARK: - Exemple
 
 private struct ExampleSettings: View {
+    /// Settings' toast: removing the examples can be taken back from it.
+    @Binding var toast: DSToast?
     @Environment(\.modelContext) private var context
     @Query(filter: #Predicate<Asset> { $0.isExample }) private var examples: [Asset]
     @State private var isConfirmingRemoval = false
@@ -374,8 +375,13 @@ private struct ExampleSettings: View {
 
     private func remove() {
         do {
-            try ExampleDataService(context: context).removeExamples()
-            doneCount += 1
+            let removed = try ExampleDataService(context: context).removeExamples()
+            // The toast brings its own haptic, and "Anulează" brings every example back.
+            toast = .undoDeletion(removed.value.isEmpty
+                ? LocalizedStringResource("Am șters exemplele.", comment: "Toast after removing the examples.")
+                : LocalizedStringResource("Am șters exemplele. Ce ai pus tu în ele a rămas al tău.",
+                                          comment: "Toast after removing the examples, some kept because the person added to them."),
+                receipt: removed.receipt)
         } catch {
             self.error = UserFacingError(error)
         }

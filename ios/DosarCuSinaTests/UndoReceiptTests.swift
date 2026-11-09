@@ -89,12 +89,18 @@ struct UndoReceiptTests {
         case deleteAPersonKeepingTheirDocuments
         case deleteAPersonWithTheirDocuments
         case deleteTheLastTenancy
+        case deleteAFirm
+        case deleteACategoryOfOnesOwn
+        case removeTheExamples
+        case removeTheExamplesKeepingOneThatHoldsSomethingOfThePersons
+        case fileAVisitWithANewPhoto
+        case fileAnotherPhotoOfABillAlreadyFiled
 
         var testDescription: String { rawValue }
 
         /// What the household has before the step, beyond `Household.make`.
         @MainActor
-        func setUp(in house: Household) throws {
+        func setUp(in house: Household) async throws {
             let context = house.context
             let obligations = ObligationActions(context: context, calendar: .bucharest, now: { noon("2026-11-02") })
             switch self {
@@ -120,6 +126,37 @@ struct UndoReceiptTests {
                 lease["tenancy.end"] = .date(CalendarDay("2027-06-30"))
                 _ = try AssetActions(context: context, calendar: .bucharest, now: { noon("2026-11-02") })
                     .create(name: "Chiriaș", template: tenancy, values: lease, parent: house.home)
+            case .deleteAFirm:
+                // The firm worked on the car, did a visit with a part it supplied and issued its invoice.
+                let visit = try HistoryActions(context: context, now: { noon("2026-11-02") }).recordVisit(
+                    on: house.car, checklist: [.init(componentKey: "engine.oil", cost: Money(420))], totalCost: Money(420), provider: house.mechanic,
+                    documents: [DocumentDraft(fileName: "factura.heic", kind: .invoice, pageImages: [Data([4, 2])])], calendar: .bucharest
+                ).value
+                try ProviderActions(context: context).link(house.mechanic, to: house.car)
+                for item in visit.items ?? [] { item.supplier = house.mechanic }
+                for paper in visit.attachments ?? [] { paper.provider = house.mechanic }
+                try UnitOfWork.save(context)
+            case .deleteACategoryOfOnesOwn:
+                _ = try TemplateStore(context: context).createCustom(name: "Scule", symbol: "wrench.and.screwdriver.fill", tint: .orange, sections: [
+                    FieldSection(key: "tools", title: "Unealtă", fields: [FieldDefinition(key: "tools.serial", label: "Serie", type: .text, role: .identifier)]),
+                ])
+            case .removeTheExamples:
+                try ExampleDataService(context: context).loadExamples()
+            case .removeTheExamplesKeepingOneThatHoldsSomethingOfThePersons:
+                try ExampleDataService(context: context).loadExamples()
+                // Something of the person's in an example, from before the app asked: the example stays, as theirs.
+                let example = try #require(try context.fetch(FetchDescriptor<Asset>()).first { $0.isExample && $0.parent == nil })
+                let note = HistoryEntry(kind: .note, title: "Notă a mea", occurredAt: noon("2026-11-02"))
+                context.insert(note)
+                note.asset = example
+                try UnitOfWork.save(context)
+            case .fileAnotherPhotoOfABillAlreadyFiled:
+                let store = CaptureDocumentStore()
+                let first = try await store.store(.init(pages: [CaptureDocumentStoreTests.page(width: 900, height: 640, seed: 33)], kind: .utilityInvoice))
+                let filer = CaptureFiler(context: context, store: store, calendar: .bucharest, now: { noon("2026-11-02") })
+                var review = CaptureReview(result: bill(first.ref), assets: try context.fetch(FetchDescriptor<Asset>()), context: context)
+                review.destination = .asset(house.home.id)
+                _ = try await filer.save(review)
             default:
                 break
             }
@@ -208,7 +245,47 @@ struct UndoReceiptTests {
             case .deleteTheLastTenancy:
                 let tenancy = try #require(house.home.children?.first { $0.templateKey == BuiltInTemplates.Key.tenancy })
                 return try assets.delete(tenancy)
+            case .deleteAFirm:
+                return try ProviderActions(context: context).delete(house.mechanic)
+            case .deleteACategoryOfOnesOwn:
+                let custom = try #require(try TemplateStore(context: context).all().first(where: \.isCustom))
+                return try TemplateStore(context: context).delete(custom)
+            case .removeTheExamples, .removeTheExamplesKeepingOneThatHoldsSomethingOfThePersons:
+                return try ExampleDataService(context: context).removeExamples().receipt
+            case .fileAVisitWithANewPhoto:
+                // A visit saved through capture: its new invoice, a new firm, the parts and the kilometres.
+                let store = CaptureDocumentStore()
+                let captured = try await store.store(.init(pages: [CaptureDocumentStoreTests.page(width: 900, height: 640, seed: 32)], kind: .serviceInvoice))
+                let filer = CaptureFiler(context: context, store: store, calendar: .bucharest, now: { noon("2026-11-03") })
+                return try #require(try await filer.file(.visit(.init(
+                    asset: house.car, kind: .maintenance, occurredAt: noon("2026-11-03"), checklist: [.init(componentKey: "engine.oil", cost: Money(420))],
+                    totalCost: Money(690), odometer: 102_000, provider: .named("Service Nou Exemplu SRL", trade: .mechanic),
+                    document: captured.ref, documentTitle: "Factură service"
+                ))).receipt)
+            case .fileAnotherPhotoOfABillAlreadyFiled:
+                // The same bill, from another photo: its entry is updated and the new photo becomes its copy.
+                let store = CaptureDocumentStore()
+                let second = try await store.store(.init(pages: [CaptureDocumentStoreTests.page(width: 900, height: 640, seed: 34)], kind: .utilityInvoice))
+                let filer = CaptureFiler(context: context, store: store, calendar: .bucharest, now: { noon("2026-11-03") })
+                let review = CaptureReview(result: bill(second.ref, total: 254), assets: try context.fetch(FetchDescriptor<Asset>()), context: context)
+                return try #require(try await filer.save(review).receipt)
             }
+        }
+
+        /// A gas bill for the home. Placeholder provider, codes and number.
+        private func bill(_ document: CapturedDocumentRef, total: Decimal = 245) -> CaptureResult {
+            let fields = [
+                CaptureField(key: .provider, value: .text("ENGIE Romania S.A."), confidence: 0.9, tier: .heuristic),
+                CaptureField(key: .serviceKind, value: .text(ServiceKind.gas), confidence: 0.9, tier: .heuristic),
+                CaptureField(key: .clcCode, value: .text("DEG0000000000001"), confidence: 0.9, tier: .heuristic),
+                CaptureField(key: .invoiceNumber, value: .text("EXM 0000001"), confidence: 0.9, tier: .heuristic),
+                CaptureField(key: .issueDate, value: .day(CaptureDay(year: 2026, month: 10, day: 5)!), confidence: 0.9, tier: .heuristic),
+                CaptureField(key: .dueDate, value: .day(CaptureDay(year: 2026, month: 11, day: 20)!), confidence: 0.9, tier: .heuristic),
+                CaptureField(key: .total, value: .money(CaptureMoney(amount: total, currencyCode: "RON")), confidence: 0.9, tier: .heuristic),
+            ]
+            let routing = CaptureRouter.route(kind: .utilityInvoice, kindConfidence: 0.9, fields: fields)
+            return CaptureResult(kind: .utilityInvoice, kindConfidence: 0.9, fields: fields, suggestions: routing.suggestions, reminder: routing.reminder,
+                                 recognizedText: "", barcodes: [], document: document, notices: [])
         }
 
         private func policy(_ document: CapturedDocumentRef) -> CaptureResult {
@@ -224,7 +301,7 @@ struct UndoReceiptTests {
     @Test("Undo puts back exactly the state before", arguments: Step.allCases)
     func undoRestoresExactlyTheStateBefore(_ step: Step) async throws {
         let house = try Household.make()
-        try step.setUp(in: house)
+        try await step.setUp(in: house)
         let before = try Self.database(house.context)
 
         let receipt = try await step.run(in: house)
@@ -276,8 +353,8 @@ struct UndoReceiptTests {
     // MARK: Every stored property is recorded
 
     @Test func everyStoredPropertyOfEveryModelIsRecorded() throws {
-        let schema = Schema(versionedSchema: DosarSchemaV6.self)
-        #expect(UndoableRecords.types.count == DosarSchemaV6.models.count, "Every model of the schema can be undone")
+        let schema = Schema(versionedSchema: DosarSchemaV7.self)
+        #expect(UndoableRecords.types.count == DosarSchemaV7.models.count, "Every model of the schema can be undone")
         for entity in schema.entities {
             let type = try #require(UndoableRecords.types[entity.name], "\(entity.name) is recorded")
             #expect(Set(Self.propertyNames(type)) == Set(entity.properties.map(\.name)), "\(entity.name) lists every stored property")

@@ -21,6 +21,9 @@ struct OnboardingFlow: View {
     @State private var photoMessage: LocalizedStringResource?
     @State private var errorMessage: String?
     @State private var isLoadingExamples = false
+    /// The first photo's toast, with its "Anulează". Onboarding covers the whole screen, the
+    /// shell's toast host with it, so it shows its own.
+    @State private var toast: DSToast?
 
     var body: some View {
         NavigationStack {
@@ -47,6 +50,7 @@ struct OnboardingFlow: View {
             }
             .navigationBarTitleDisplayMode(.inline)
         }
+        .dsToast($toast)
         .captureSourcePicker($source) { payload in
             flow = CaptureFlowInput(payload: payload)
         } onError: { error in
@@ -55,17 +59,25 @@ struct OnboardingFlow: View {
         .sheet(item: $flow) { input in
             CaptureFlowView(input: input) { result in
                 flow = nil
-                switch result {
-                case .filed(let toast, _), .visitSaved(let toast):
-                    photoMessage = toast.title
-                case .dismissed:
-                    break
-                }
+                guard let filed = Self.photoFiled(result, takenBack: { withAnimation(motion) { photoMessage = nil } }) else { return }
+                photoMessage = filed.message
+                toast = filed.toast
             }
         }
     }
 
     private var motion: Animation { DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion) }
+
+    /// What the photo step shows once its capture closes: the message under "Gata" and the
+    /// toast that can take the filing back. Taken back, `takenBack` runs, so the step offers
+    /// the photo again. Nil when nothing was saved.
+    @MainActor
+    static func photoFiled(_ result: CaptureFlowResult, takenBack: @escaping @MainActor () -> Void) -> (message: LocalizedStringResource, toast: DSToast)? {
+        guard var toast = result.toast else { return nil }
+        let afterUndo = toast.afterUndo
+        toast.afterUndo = { takenBack(); afterUndo?() }
+        return (toast.title, toast)
+    }
 
     private func advance() {
         guard let next = Step(rawValue: step.rawValue + 1) else { return onFinish() }

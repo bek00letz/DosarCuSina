@@ -209,10 +209,11 @@ public struct ExampleDataService {
     /// Deletes everything created by `loadExamples()` in one save. Only examples go:
     /// anything of the person's is never touched. Returns the example sections kept
     /// because something of the person's sits in them (from before the app asked);
-    /// they become the person's, so the screen can say so.
+    /// they become the person's, so the screen can say so. Undoable: the receipt brings
+    /// every example back with its links, and the kept ones become examples again.
     @discardableResult
-    public func removeExamples() throws -> [String] {
-        try UnitOfWork.perform(in: context) {
+    public func removeExamples() throws -> Undoable<[String]> {
+        try UnitOfWork.performUndoable(in: context) {
             var kept: [String] = []
             // Each example from its top: one that holds something of the person's becomes
             // theirs with everything under it; every other example goes.

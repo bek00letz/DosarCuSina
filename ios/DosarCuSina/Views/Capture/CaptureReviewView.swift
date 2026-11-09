@@ -76,6 +76,27 @@ struct CaptureReviewView: View {
         Dictionary(templates.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
     }
 
+    /// What saving will do, as the review stands now: what it shows is what happens.
+    private var plan: CaptureFilingPlan {
+        CaptureFilingPlan.make(for: review, templates: templatesByKey, assets: assets, today: CalendarDay(Date()))
+    }
+
+    /// What the review says about a bill already in the binder, and what saving does with it.
+    static func filedBillText(_ filed: CaptureFilingPlan.FiledBill, today: CalendarDay) -> String {
+        let date = DueWording.date(filed.day, today: today)
+        return switch filed.match {
+        case .sameDocument:
+            String(localized: "E în „\(filed.subscription)”, cea din \(date). Dacă salvezi, o actualizez cu ce am citit acum.",
+                   comment: "Capture review: the same bill's photo filed again.")
+        case .number:
+            String(localized: "E în „\(filed.subscription)”, cea din \(date), cu același număr. Dacă salvezi, o actualizez cu ce am citit acum, iar poza asta devine copia ei nouă.",
+                   comment: "Capture review: another photo of a bill already filed, known by its invoice number.")
+        case .dayAndTotal:
+            String(localized: "În „\(filed.subscription)” e una cu aceeași dată și același total, cea din \(date). Dacă e aceeași, o actualizez, iar poza asta devine copia ei nouă.",
+                   comment: "Capture review: another photo of what looks like a bill already filed, by its day and total.")
+        }
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.xl) {
@@ -233,7 +254,22 @@ struct CaptureReviewView: View {
 
     @ViewBuilder private var notices: some View {
         backPageNotice
-        if let duplicate = review.duplicateAttachmentID {
+        if let filed = plan.filedBill {
+            // A bill already in the binder: the same photo, or another photo of the same bill.
+            VStack(alignment: .leading, spacing: DS.Space.s) {
+                DSNotice(.info, title: "Factura e deja în dosar",
+                         message: LocalizedStringKey(Self.filedBillText(filed, today: CalendarDay(Date()))), actionTitle: "Vezi factura") {
+                    onClose(.dismissed)
+                    AppNavigator.shared.open(.historyEntry(filed.entryID))
+                }
+                if filed.match == .dayAndTotal {
+                    DSCompactButton("E altă factură", systemImage: "doc.badge.plus") {
+                        withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { review.isAnotherBill = true }
+                    }
+                }
+            }
+            .transition(.opacity)
+        } else if let duplicate = review.duplicateAttachmentID {
             DSNotice(.info, title: "Ai mai adăugat poza asta", message: "Dacă salvezi, o pun la locul ales mai jos, împreună cu ce am citit.", actionTitle: "Vezi unde e acum") {
                 onClose(.dismissed)
                 AppNavigator.shared.open(.document(duplicate))
@@ -355,7 +391,7 @@ struct CaptureReviewView: View {
                             .transition(.opacity)
                     }
                     // A bill's index goes to its subscription's meter: say where, as saving will do it.
-                    if let meter = CaptureFilingPlan.make(for: review, templates: templatesByKey, assets: assets, today: CalendarDay(Date())).meter {
+                    if let meter = plan.meter {
                         Label { Text(verbatim: Self.meterText(meter)).dsFont(.footnote) } icon: {
                             Image(systemName: "gauge.with.dots.needle.33percent").foregroundStyle(DS.Palette.secondaryLabel)
                         }

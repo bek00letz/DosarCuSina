@@ -94,9 +94,10 @@ struct PolicyNumberPartsRepairTests {
         #expect(try repairs(context).detect().filter { $0.step == .policyNumberParts }.isEmpty)
     }
 
-    @Test("The step is the last in the list, with its own stored id")
+    @Test("The step comes after the ones before it, with its own stored id")
     func registered() {
-        #expect(type(of: DataRepairs.steps.last!).id == .policyNumberParts)
+        let ids = DataRepairs.steps.map { type(of: $0).id }
+        #expect(ids.firstIndex(of: .policyNumberParts) == ids.firstIndex(of: .unitKeys).map { $0 + 1 })
         #expect(DataRepairStepID.policyNumberParts.rawValue == "policy-number-parts")
     }
 }

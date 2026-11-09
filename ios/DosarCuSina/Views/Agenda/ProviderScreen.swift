@@ -28,6 +28,7 @@ private struct ProviderContent: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
+    @Environment(\.announce) private var announce
     @Environment(BiometricVaultManager.self) private var vault
 
     @State private var notes: String
@@ -225,6 +226,8 @@ private struct ProviderContent: View {
 
     private func flushNotes() {
         saveTask?.cancel()
+        // Deleted (the page closes after "Șterge din agendă"): nothing left to keep.
+        guard provider.modelContext != nil, !provider.isDeleted else { return }
         let trimmed = notes.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed != (provider.notes ?? "") else { return }
         var details = provider.details
@@ -233,8 +236,13 @@ private struct ProviderContent: View {
     }
 
     private func delete() {
+        // What was typed in the notes is kept first, so "Anulează" brings it back too.
+        flushNotes()
+        let name = provider.name
         do {
-            try ProviderActions(context: context).delete(provider)
+            let receipt = try ProviderActions(context: context).delete(provider)
+            // The page closes; the shell keeps the toast, and "Anulează" brings them back with every link.
+            announce(.undoDeletion(LocalizedStringResource("Am șters „\(name)” din agendă.", comment: "Toast after deleting a provider."), receipt: receipt))
             dismiss()
         } catch {
             self.error = UserFacingError(error)

@@ -42,6 +42,49 @@ enum CaptureFlowResult {
         let toast = receipt.map { DSToast.undo(message, receipt: $0) } ?? DSToast(title: message, actionTitle: nil)
         return .filed(toast: toast, assetID: assetID)
     }
+
+    /// The toast for a visit saved with its invoice, with "Anulează", which takes the visit,
+    /// its invoice and its firm back, as the visit's own "Anulează vizita" does.
+    @MainActor
+    static func visit(receipt: UndoReceipt) -> CaptureFlowResult {
+        .visitSaved(toast: .undo("Vizita e în istoric.", receipt: receipt))
+    }
+
+    /// The toast the flow closes with; nil when nothing was saved.
+    var toast: DSToast? {
+        switch self {
+        case .filed(let toast, _), .visitSaved(let toast): toast
+        case .dismissed: nil
+        }
+    }
+
+    /// The same result, closing with `toast` instead.
+    func showing(_ toast: DSToast) -> CaptureFlowResult {
+        switch self {
+        case .filed(_, let assetID): .filed(toast: toast, assetID: assetID)
+        case .visitSaved: .visitSaved(toast: toast)
+        case .dismissed: .dismissed
+        }
+    }
+
+    /// What the share-inbox item the capture was read from does when the flow closes with this
+    /// result. Saved, and "Anulează" can still take it back (a filing or a visit): the item
+    /// waits, hidden, until the toast is gone, and comes back to De verificat with the undo.
+    /// Saved with nothing to take back: it leaves at once. Not saved: it stays.
+    @MainActor
+    func leaving(_ item: InboxItem, inbox: IntakeInbox) -> CaptureFlowResult {
+        guard var toast = self.toast else { return self }
+        guard toast.offersAction else {
+            inbox.remove(item)
+            return self
+        }
+        inbox.setAside(item)
+        let afterUndo = toast.afterUndo
+        toast.afterUndo = { inbox.keep(item); afterUndo?() }
+        let whenGone = toast.whenGone
+        toast.whenGone = { inbox.remove(item); whenGone?() }
+        return showing(toast)
+    }
 }
 
 /// Reads a document and walks the person through confirming it: a skeleton
@@ -107,8 +150,8 @@ struct CaptureFlowView: View {
     @ViewBuilder private func content(for result: CaptureResult) -> some View {
         let review = review(for: result)
         if result.kind.profile.opensVisitFlow, review.duplicateAttachmentID == nil, case .asset(let id) = review.destination {
-            AddVisitFlow(assetID: id, prefill: result) { saved in
-                finish(saved ? .visitSaved(toast: DSToast(title: "Vizita e în istoric.", actionTitle: nil)) : .dismissed)
+            AddVisitFlow(assetID: id, prefill: result) { receipt in
+                finish(receipt.map(CaptureFlowResult.visit(receipt:)) ?? .dismissed)
             }
         } else {
             reviewView(review)
@@ -156,24 +199,8 @@ struct CaptureFlowView: View {
     private func finish(_ result: CaptureFlowResult) {
         // Saved or not, this capture is over: nothing keeps reading, its pages are let go.
         session.close()
-        var result = result
-        if let item = input.inboxItem {
-            switch result {
-            case .filed(var toast, let assetID) where toast.offersAction:
-                // Filed, and "Anulează" can still take it back: the item waits, hidden, until
-                // the toast is gone, and comes back to De verificat with the undo.
-                let inbox = IntakeInbox.shared
-                inbox.setAside(item)
-                let afterUndo = toast.afterUndo
-                toast.afterUndo = { inbox.keep(item); afterUndo?() }
-                let whenGone = toast.whenGone
-                toast.whenGone = { inbox.remove(item); whenGone?() }
-                result = .filed(toast: toast, assetID: assetID)
-            case .filed, .visitSaved: IntakeInbox.shared.remove(item)
-            case .dismissed: break
-            }
-        }
-        onClose(result)
+        // Something shared from another app waits in De verificat while "Anulează" can bring it back.
+        onClose(input.inboxItem.map { result.leaving($0, inbox: .shared) } ?? result)
     }
 }
 

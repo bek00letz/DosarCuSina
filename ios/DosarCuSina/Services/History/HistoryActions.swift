@@ -69,9 +69,11 @@ public final class HistoryActions {
     /// items and the counter reading it read, in one save. A lower counter asks before
     /// anything is written (`LowerReadingQuestion`, answered with `lowerReading`).
     ///
-    /// `replacing` is the entry the same document logged when it was filed before (a bill
-    /// filed again): that entry takes these values instead of a second one being added, and
-    /// moves to `asset` if the document did. Never a completion, which belongs to its deadline.
+    /// `replacing` is the entry the same bill logged when it was filed before (the same
+    /// document, or another photo of it: `BillIdentity`): that entry takes these values
+    /// instead of a second one being added, and moves to `asset` if the bill did. Never a
+    /// completion, which belongs to its deadline. `reference` is the number of the paper the
+    /// entry records (a bill's invoice number).
     @discardableResult
     public func record(
         on asset: Asset,
@@ -81,6 +83,7 @@ public final class HistoryActions {
         metricReading: Double? = nil,
         totalCost: Money? = nil,
         note: String? = nil,
+        reference: String? = nil,
         items: [LineItemDraft] = [],
         providers: [Provider] = [],
         rating: Int? = nil,
@@ -99,6 +102,7 @@ public final class HistoryActions {
             entry.metricReading = metricReading
             entry.totalCost = totalCost
             entry.note = note
+            entry.reference = reference
             entry.rating = rating.map { min(max($0, 1), 5) }
             entry.isExample = isExample
             entry.providers = providers

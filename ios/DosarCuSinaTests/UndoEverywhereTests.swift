@@ -98,7 +98,7 @@ struct UndoEverywhereTests {
                       .deleteADocumentWithItsPages, .pauseADeadline, .archiveADeadline, .fileAReviewOfANewPhoto])
     func sideEffectsFollowTheUndo(_ step: Step) async throws {
         let world = try World()
-        try step.setUp(in: world.house)
+        try await step.setUp(in: world.house)
         let before = try await world.outside()
         #expect(!before.reminders.isEmpty && !before.spotlight.isEmpty, "The household reminds and is searchable")
 
@@ -176,5 +176,81 @@ struct UndoEverywhereTests {
         #expect(intake.waiting.isEmpty)
         #expect(inbox.contents().items.isEmpty, "Once the toast is gone, it leaves for good")
         #expect(intake.leaving.isEmpty)
+    }
+
+    /// One shared PDF waiting in De verificat, and the inbox that shows it.
+    private func sharedItem() throws -> (inbox: ShareInbox, intake: IntakeInbox, item: InboxItem) {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "undo-visit-\(UUID().uuidString)", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let inbox = ShareInbox(directory: folder)
+        let staging = try inbox.makeStagingFolder()
+        let file = try inbox.stage(data: Data("placeholder".utf8), fileExtension: "pdf", into: staging, index: 0)
+        let item = try inbox.commit(staging: staging, payload: .pdf, files: [file], originalName: "factura-service.pdf", receivedAt: noon("2026-11-09"))
+        return (inbox, IntakeInbox(inbox: inbox, reader: nil), item)
+    }
+
+    @Test("A visit saved through capture closes with Anulează, and the item it came from waits for it")
+    func aVisitThroughCaptureCanBeTakenBack() async throws {
+        let house = try UndoReceiptTests.Household.make()
+        let before = try UndoReceiptTests.database(house.context)
+        let receipt = try await Step.fileAVisitWithANewPhoto.run(in: house)
+        let shared = try sharedItem()
+
+        let result = CaptureFlowResult.visit(receipt: receipt).leaving(shared.item, inbox: shared.intake)
+        guard case .visitSaved(let toast) = result else { Issue.record("A visit"); return }
+        #expect(String(localized: toast.title) == "Vizita e în istoric.")
+        #expect(toast.offersAction, "Anulează is there once the capture has closed")
+        #expect(shared.intake.waiting.isEmpty, "The shared invoice is hidden from De verificat")
+        #expect(shared.inbox.contents().items.map(\.id) == [shared.item.id], "But kept while Anulează can bring it back")
+
+        try #require(toast.receipt).undo()
+        toast.afterUndo?()
+        #expect(UndoReceiptTests.differences(before, try UndoReceiptTests.database(house.context)).isEmpty,
+                "The visit, its invoice, its firm and its reading are gone")
+        #expect(shared.intake.waiting.map(\.id) == [shared.item.id], "And the invoice waits in De verificat again")
+    }
+
+    @Test("A visit kept: its item leaves once the toast is gone; nothing saved leaves it there")
+    func aVisitKeptLetsItsItemGo() async throws {
+        let house = try UndoReceiptTests.Household.make()
+        let receipt = try await Step.fileAVisitWithANewPhoto.run(in: house)
+        let shared = try sharedItem()
+        let result = CaptureFlowResult.visit(receipt: receipt).leaving(shared.item, inbox: shared.intake)
+        result.toast?.whenGone?()
+        #expect(shared.inbox.contents().items.isEmpty, "Gone for good once the undo can't come")
+
+        let other = try sharedItem()
+        _ = CaptureFlowResult.dismissed.leaving(other.item, inbox: other.intake)
+        #expect(other.intake.waiting.map(\.id) == [other.item.id], "Closed without saving: still waiting")
+    }
+
+    @Test("Onboarding's own capture offers Anulează, and taking it back offers the photo again")
+    func onboardingsCaptureCanBeTakenBack() async throws {
+        let house = try UndoReceiptTests.Household.make()
+        let before = try UndoReceiptTests.database(house.context)
+        let receipt = try await Step.fileAReviewOfANewPhoto.run(in: house)
+        final class Flag { var isOn = false }
+        let takenBack = Flag()
+        let filed = try #require(OnboardingFlow.photoFiled(.filing(in: house.car.name, assetID: house.car.id, receipt: receipt)) { takenBack.isOn = true })
+        #expect(String(localized: filed.message) == "Salvat în VW Golf 2018.")
+        #expect(filed.toast.offersAction)
+
+        try #require(filed.toast.receipt).undo()
+        filed.toast.afterUndo?()
+        #expect(takenBack.isOn, "The photo step offers the photo again")
+        #expect(UndoReceiptTests.differences(before, try UndoReceiptTests.database(house.context)).isEmpty)
+        #expect(OnboardingFlow.photoFiled(.dismissed) {} == nil, "Nothing saved, nothing to say")
+    }
+
+    @Test("Deleting a firm, a category of one's own and the examples each offer Anulează")
+    func theLastDeletionsOfferAnuleaza() async throws {
+        for step in [Step.deleteAFirm, .deleteACategoryOfOnesOwn, .removeTheExamples] {
+            let house = try UndoReceiptTests.Household.make()
+            try await step.setUp(in: house)
+            let receipt = try await step.run(in: house)
+            let toast = DSToast.undoDeletion("Am șters.", receipt: receipt)
+            #expect(toast.offersAction, "\(step.rawValue)")
+            #expect(toast.duration == DSToast.deletionDuration)
+        }
     }
 }

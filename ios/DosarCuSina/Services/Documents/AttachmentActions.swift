@@ -137,6 +137,15 @@ public final class AttachmentActions {
         try save()
     }
 
+    /// `document` becomes the current copy of what `entry` records (another photo or PDF of the
+    /// same bill): every other copy still current there is archived and points to it, so the
+    /// record shows one paper and the older ones stay for reference.
+    public func keepAsNewerCopy(_ document: Attachment, of entry: HistoryEntry) throws {
+        for older in entry.attachments ?? [] where older.id != document.id && !older.isDeleted && !older.isArchived {
+            try supersede(older, with: document)
+        }
+    }
+
     @discardableResult
     public func setArchived(_ attachment: Attachment, _ isArchived: Bool) throws -> UndoReceipt {
         try UnitOfWork.performUndoable(in: context) {

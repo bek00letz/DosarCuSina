@@ -34,6 +34,8 @@ struct DataRepairs {
         HomePolicySetsStep(),
         UnitKeysStep(),
         PolicyNumberPartsStep(),
+        BillNumbersStep(),
+        SameBillTwiceStep(),
     ]
 
     static func step(_ id: DataRepairStepID) -> any DataRepairStep {
@@ -93,6 +95,8 @@ enum DataRepairStepID: String, CaseIterable, Sendable, Hashable {
     case homePolicySets = "home-policy-sets"
     case unitKeys = "unit-keys"
     case policyNumberParts = "policy-number-parts"
+    case billNumbers = "bill-numbers"
+    case sameBillTwice = "same-bill-twice"
 }
 
 /// One thing a repair would change, in plain words, with what applying it needs.
@@ -130,6 +134,8 @@ struct DataRepairFinding: Identifiable, Hashable, Sendable {
         case homePolicySet(assetID: UUID, policyNumber: String)
         /// A policy number kept with only its series: completed to `to`, when the filed policy gives it.
         case policyNumberParts(assetID: UUID, field: String, to: String?)
+        /// The same bill logged more than once in a subscription's history: `merge` join `keep`.
+        case sameBill(keep: UUID, merge: [UUID])
     }
 }
 
