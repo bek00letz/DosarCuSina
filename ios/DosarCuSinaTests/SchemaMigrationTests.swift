@@ -98,6 +98,73 @@ struct SchemaMigrationTests {
         #expect(six["Attachment"] != Self.versionFive["Attachment"], "A document keeps how its pages are shown")
     }
 
+    /// Version 6 as it shipped: version 5 with how a document's pages are shown. Its frozen
+    /// copy is pinned against the shapes version 7 kept: every entity but history entries.
+    @Test func theFrozenVersionSixKeepsTheShapeItShippedWith() {
+        let six = Self.fingerprint(DosarSchemaV6.models)
+        let seven = Self.fingerprint(DosarSchemaV7.models)
+        for (entity, hash) in Self.versionFive where entity != "Attachment" {
+            #expect(six[entity] == hash, "\(entity) is as version 5 shipped it")
+        }
+        #expect(six["Attachment"] == seven["Attachment"], "Documents are as version 6 shipped them, which version 7 doesn't change")
+        #expect(six["Attachment"] != Self.versionFive["Attachment"])
+    }
+
+    @Test func versionSevenChangesOnlyHistoryEntries() {
+        let six = Self.fingerprint(DosarSchemaV6.models)
+        let seven = Self.fingerprint(DosarSchemaV7.models)
+        for (entity, hash) in six where entity != "HistoryEntry" {
+            #expect(seven[entity] == hash, "\(entity) is as version 6 shipped it")
+        }
+        #expect(seven["HistoryEntry"] != six["HistoryEntry"], "A history entry keeps the number of the paper it records")
+    }
+
+    @Test func aStoreFromVersionSixOpensWithItsBills() throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Dosar-v6.store")
+
+        // Written by version 6: a gas bill in its subscription's history, its number in the note.
+        do {
+            let schema = Schema(versionedSchema: DosarSchemaV6.self)
+            let container = try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)])
+            let context = ModelContext(container)
+            let gas = DosarSchemaV6.Asset(name: "Gaz – ENGIE Romania S.A.", templateKey: "subscription")
+            let bill = DosarSchemaV6.HistoryEntry(title: "Factură ENGIE Romania S.A.")
+            bill.kindRaw = HistoryKind.payment.rawValue
+            bill.note = "Factura nr. EXM 0000001"
+            bill.totalCostAmount = 245
+            bill.totalCostCurrency = "RON"
+            let photo = DosarSchemaV6.Attachment(fileName: "Factură.heic")
+            photo.framingData = Data("{}".utf8)
+            context.insert(gas)
+            context.insert(bill)
+            context.insert(photo)
+            bill.asset = gas
+            photo.historyEntry = bill
+            photo.asset = gas
+            try context.save()
+        }
+
+        // Opened by this version: the bill is there as it was, with no number of its own yet.
+        let container = try PersistenceController.makeContainer(storeURL: url)
+        let context = ModelContext(container)
+        let bill = try #require(try context.fetch(FetchDescriptor<HistoryEntry>()).first)
+        #expect(bill.title == "Factură ENGIE Romania S.A.")
+        #expect(bill.note == "Factura nr. EXM 0000001")
+        #expect(bill.totalCost == Money(245))
+        #expect(bill.reference == nil)
+        #expect(bill.attachments?.first?.framingData == Data("{}".utf8))
+        #expect(bill.asset?.name == "Gaz – ENGIE Romania S.A.")
+
+        // The new attribute is kept.
+        bill.reference = "EXM 0000001"
+        try UnitOfWork.save(context)
+        let reopened = ModelContext(try PersistenceController.makeContainer(storeURL: url))
+        #expect(try reopened.fetch(FetchDescriptor<HistoryEntry>()).first?.reference == "EXM 0000001")
+    }
+
     @Test func aStoreFromVersionFiveOpensWithItsDocuments() throws {
         let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
@@ -270,7 +337,7 @@ struct SchemaMigrationTests {
         #expect(firm.assets?.map(\.id) == [car.id])
         let template = try #require(try context.fetch(FetchDescriptor<CategoryTemplate>()).first)
         #expect(template.behavior == .standard, "A category from before version 3 behaves as standard until the built-ins are upgraded")
-        let policy = try #require(try context.fetch(FetchDescriptor<DosarSchemaV6.Attachment>()).first)
+        let policy = try #require(try context.fetch(FetchDescriptor<DosarCuSina.Attachment>()).first)
         #expect(policy.validUntil == nil)
         #expect(policy.asset?.id == car.id)
 

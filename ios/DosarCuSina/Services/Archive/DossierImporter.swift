@@ -309,6 +309,7 @@ struct DossierImporter {
             entry.metricReading = dto.metricReading
             entry.totalCost = dto.totalCost
             entry.note = dto.note
+            entry.reference = dto.reference
             entry.rating = dto.rating
             entry.cycleDueDate = dto.cycleDueDate?.noonDate(in: calendar)
             entry.nextDueDate = dto.nextDueDate?.noonDate(in: calendar)

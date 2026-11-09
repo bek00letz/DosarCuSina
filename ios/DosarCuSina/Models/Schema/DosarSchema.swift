@@ -4,7 +4,7 @@ import SwiftData
 /// The current schema of the household database.
 ///
 /// Every model lives inside this namespace so that the next version can freeze a
-/// copy of these definitions and migrate from them (as `DosarSchemaV2` to `DosarSchemaV5`
+/// copy of these definitions and migrate from them (as `DosarSchemaV2` to `DosarSchemaV6`
 /// are frozen in `Versions/`). App code uses the top-level type aliases below and never names the
 /// version directly.
 ///
@@ -21,9 +21,11 @@ import SwiftData
 /// Version 5 adds whether the person set a deadline's reminders themselves
 /// (`Obligation.remindersCustomized`, false by default). Version 6 adds how a document's
 /// pages are shown: the document found in each photo and which way up it goes
-/// (`Attachment.framingData`, none by default).
-public enum DosarSchemaV6: VersionedSchema {
-    public static let versionIdentifier = Schema.Version(6, 0, 0)
+/// (`Attachment.framingData`, none by default). Version 7 adds the number of the paper a
+/// history entry records (`HistoryEntry.reference`: a bill's invoice number), so a bill is
+/// known by it when it is filed again from another photo (`BillIdentity`).
+public enum DosarSchemaV7: VersionedSchema {
+    public static let versionIdentifier = Schema.Version(7, 0, 0)
 
     public static var models: [any PersistentModel.Type] {
         [
@@ -44,8 +46,8 @@ public enum DosarSchemaV6: VersionedSchema {
 /// version freezes the one before it in `Versions/`, adds a stage here, and gets a
 /// test that opens a store written by the version before (`SchemaMigrationTests`).
 public enum DosarMigrationPlan: SchemaMigrationPlan {
-    public static var schemas: [any VersionedSchema.Type] { [DosarSchemaV2.self, DosarSchemaV3.self, DosarSchemaV4.self, DosarSchemaV5.self, DosarSchemaV6.self] }
-    public static var stages: [MigrationStage] { [v2ToV3, v3ToV4, v4ToV5, v5ToV6] }
+    public static var schemas: [any VersionedSchema.Type] { [DosarSchemaV2.self, DosarSchemaV3.self, DosarSchemaV4.self, DosarSchemaV5.self, DosarSchemaV6.self, DosarSchemaV7.self] }
+    public static var stages: [MigrationStage] { [v2ToV3, v3ToV4, v4ToV5, v5ToV6, v6ToV7] }
 
     /// Version 3 only adds optional attributes; existing records keep every value. What
     /// the new attributes should hold for old records is filled in later: the categories'
@@ -67,17 +69,23 @@ public enum DosarMigrationPlan: SchemaMigrationPlan {
     /// documents keep every value and show their pages as before, whole and as taken. Only
     /// documents captured from then on are cut out of their photo and turned upright.
     static var v5ToV6: MigrationStage { .lightweight(fromVersion: DosarSchemaV5.self, toVersion: DosarSchemaV6.self) }
+
+    /// Version 7 only adds an optional value (the number of the paper a history entry
+    /// records); existing entries keep every value. A bill filed before kept its number only
+    /// in its note ("Factura nr. …"); the repair list moves it to its place
+    /// (`BillNumbersStep`), and asks before joining a bill logged twice (`SameBillTwiceStep`).
+    static var v6ToV7: MigrationStage { .lightweight(fromVersion: DosarSchemaV6.self, toVersion: DosarSchemaV7.self) }
 }
 
-public typealias CategoryTemplate = DosarSchemaV6.CategoryTemplate
-public typealias Asset = DosarSchemaV6.Asset
-public typealias Obligation = DosarSchemaV6.Obligation
-public typealias HistoryEntry = DosarSchemaV6.HistoryEntry
-public typealias ServiceItem = DosarSchemaV6.ServiceItem
-public typealias MeasurementLog = DosarSchemaV6.MeasurementLog
-public typealias Attachment = DosarSchemaV6.Attachment
-public typealias Provider = DosarSchemaV6.Provider
-public typealias AttachmentPage = DosarSchemaV6.AttachmentPage
+public typealias CategoryTemplate = DosarSchemaV7.CategoryTemplate
+public typealias Asset = DosarSchemaV7.Asset
+public typealias Obligation = DosarSchemaV7.Obligation
+public typealias HistoryEntry = DosarSchemaV7.HistoryEntry
+public typealias ServiceItem = DosarSchemaV7.ServiceItem
+public typealias MeasurementLog = DosarSchemaV7.MeasurementLog
+public typealias Attachment = DosarSchemaV7.Attachment
+public typealias Provider = DosarSchemaV7.Provider
+public typealias AttachmentPage = DosarSchemaV7.AttachmentPage
 
 /// Shared JSON coding for values stored as `Data` on models and written to archives.
 /// Keys are sorted so the same value always produces the same bytes.

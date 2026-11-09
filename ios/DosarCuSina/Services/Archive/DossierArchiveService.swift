@@ -258,7 +258,8 @@ public struct DossierArchiveService {
                 cycleDueDate: entry.cycleDueDate.map { CalendarDay($0, calendar: calendar) },
                 nextDueDate: entry.nextDueDate.map { CalendarDay($0, calendar: calendar) },
                 previousStatus: entry.previousStatusRaw, previousDueMetric: entry.previousDueMetric,
-                providerIds: entry.providerIds.map(DossierV3.id).sorted(), isExample: entry.isExample
+                providerIds: entry.providerIds.map(DossierV3.id).sorted(), isExample: entry.isExample,
+                reference: entry.reference
             )
         }
         let serviceDTOs = serviceItems.map { item in

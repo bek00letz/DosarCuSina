@@ -131,6 +131,8 @@ public enum DossierV3 {
         public var previousDueMetric: Double?
         public var providerIds: [String]
         public var isExample: Bool
+        /// The number of the paper the entry records (a bill's invoice number); missing when none.
+        public var reference: String? = nil
     }
 
     public struct ServiceItem: Codable, Hashable, Sendable {
