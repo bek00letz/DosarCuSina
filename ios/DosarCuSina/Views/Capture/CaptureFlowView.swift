@@ -27,12 +27,21 @@ struct CaptureFlowInput: Identifiable {
     }
 }
 
-/// What happened when the flow closed, for the toast on the screen underneath.
+/// What happened when the flow closed, with the toast that says so for the screen
+/// underneath. A filing's toast offers "Anulează", which takes the whole filing back.
 enum CaptureFlowResult {
     /// `assetID` is the section the document was filed in, so the screen underneath can open it.
-    case filed(message: LocalizedStringResource, assetID: UUID?)
-    case visitSaved(message: LocalizedStringResource)
+    case filed(toast: DSToast, assetID: UUID?)
+    case visitSaved(toast: DSToast)
     case dismissed
+
+    /// The toast for a filing: where it went, and "Anulează" when the receipt can take it back.
+    @MainActor
+    static func filing(in place: String?, assetID: UUID?, receipt: UndoReceipt?) -> CaptureFlowResult {
+        let message: LocalizedStringResource = place.map { "Salvat în \($0)." } ?? "Actul e salvat."
+        let toast = receipt.map { DSToast.undo(message, receipt: $0) } ?? DSToast(title: message, actionTitle: nil)
+        return .filed(toast: toast, assetID: assetID)
+    }
 }
 
 /// Reads a document and walks the person through confirming it: a skeleton
@@ -99,7 +108,7 @@ struct CaptureFlowView: View {
         let review = review(for: result)
         if result.kind.profile.opensVisitFlow, review.duplicateAttachmentID == nil, case .asset(let id) = review.destination {
             AddVisitFlow(assetID: id, prefill: result) { saved in
-                finish(saved ? .visitSaved(message: "Vizita e în istoric.") : .dismissed)
+                finish(saved ? .visitSaved(toast: DSToast(title: "Vizita e în istoric.", actionTitle: nil)) : .dismissed)
             }
         } else {
             reviewView(review)
@@ -147,8 +156,19 @@ struct CaptureFlowView: View {
     private func finish(_ result: CaptureFlowResult) {
         // Saved or not, this capture is over: nothing keeps reading, its pages are let go.
         session.close()
+        var result = result
         if let item = input.inboxItem {
             switch result {
+            case .filed(var toast, let assetID) where toast.offersAction:
+                // Filed, and "Anulează" can still take it back: the item waits, hidden, until
+                // the toast is gone, and comes back to De verificat with the undo.
+                let inbox = IntakeInbox.shared
+                inbox.setAside(item)
+                let afterUndo = toast.afterUndo
+                toast.afterUndo = { inbox.keep(item); afterUndo?() }
+                let whenGone = toast.whenGone
+                toast.whenGone = { inbox.remove(item); whenGone?() }
+                result = .filed(toast: toast, assetID: assetID)
             case .filed, .visitSaved: IntakeInbox.shared.remove(item)
             case .dismissed: break
             }

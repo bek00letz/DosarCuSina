@@ -538,8 +538,7 @@ struct CaptureReviewView: View {
                 var filer = CaptureFiler(context: context)
                 filer.lowerReading = lowerReading
                 let outcome = try await filer.save(review)
-                let place = outcome.asset?.name
-                onClose(.filed(message: place.map { "Salvat în \($0)." } ?? "Actul e salvat.", assetID: outcome.asset?.id))
+                onClose(.filing(in: outcome.asset?.name, assetID: outcome.asset?.id, receipt: outcome.receipt))
             } catch let question as ExampleSectionQuestion {
                 isSaving = false
                 exampleQuestion = question

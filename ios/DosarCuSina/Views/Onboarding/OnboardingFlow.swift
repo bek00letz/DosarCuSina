@@ -56,8 +56,8 @@ struct OnboardingFlow: View {
             CaptureFlowView(input: input) { result in
                 flow = nil
                 switch result {
-                case .filed(let message, _), .visitSaved(let message):
-                    photoMessage = message
+                case .filed(let toast, _), .visitSaved(let toast):
+                    photoMessage = toast.title
                 case .dismissed:
                     break
                 }

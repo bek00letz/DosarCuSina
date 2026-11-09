@@ -49,6 +49,7 @@ private struct SectionContent: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.announce) private var announce
     @Environment(BiometricVaultManager.self) private var vault
     @Query private var templates: [CategoryTemplate]
 
@@ -194,8 +195,14 @@ private struct SectionContent: View {
     }
 
     private func delete(children: AssetActions.ChildrenOnDelete) {
+        let name = asset.name
+        let withEverything = children == .delete && asset.childCount > 0
         do {
-            try AssetActions(context: context).delete(asset, children: children)
+            let receipt = try AssetActions(context: context).delete(asset, children: children)
+            // The page closes; the shell keeps the toast, and "Anulează" brings it all back.
+            announce(.undoDeletion(withEverything
+                ? LocalizedStringResource("Am șters „\(name)”, cu tot ce era în el.", comment: "Toast after deleting a section and everything filed under it.")
+                : LocalizedStringResource("Am șters „\(name)”.", comment: "Toast after deleting a section."), receipt: receipt))
             dismiss()
         } catch {
             self.error = UserFacingError(error)
@@ -270,8 +277,8 @@ struct DocumentPhotoPrompt: View {
             isPresented: $isChoosingSource,
             title: Text("Adaugă poza actului", comment: "Title of the photo source choice for a document."),
             assetID: asset.id
-        ) { message in
-            toast = DSToast(title: message, actionTitle: nil, action: nil)
+        ) { filed in
+            toast = filed
         } onError: { message in
             errorMessage = message
         }

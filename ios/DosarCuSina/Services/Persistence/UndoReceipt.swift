@@ -69,15 +69,18 @@ public final class UndoReceipt {
 
     /// What the unit is about to save, read before the save while deleted records can still be read.
     struct Pending {
-        var inserted: [any PersistentModel]
-        var changed: [any PersistentModel]
         var insertedRefs: [RecordRef]
-        var deletedRefs: Set<RecordRef>
         var before: [RecordRef: RecordState]
     }
 
     /// Reads what the open unit changed, just before it saves. Nil when a record can't be
     /// recorded; the receipt then stays unsealed and offers no undo.
+    ///
+    /// A delete reaches further than the records it names: what they own goes with them
+    /// (a section's deadlines, history and documents, a document's pages, a visit's line
+    /// items: the schema's cascade rules), and whatever pointed at them loses the link (a
+    /// firm's jobs, what was filed under a section). All of it is read as it was, so undo
+    /// brings back exactly what the delete took, whenever the store applies its rules.
     func prepare() -> Pending? {
         context.processPendingChanges()
         let inserted = context.insertedModelsArray
@@ -86,29 +89,59 @@ public final class UndoReceipt {
         // The store still holds every record as it was when the unit opened.
         let store = ModelContext(context.container)
         var before: [RecordRef: RecordState] = [:]
-        var deletedRefs = Set<RecordRef>()
-        for model in changed + deleted {
+        func read(_ ref: RecordRef) -> RecordState? {
+            if let known = before[ref] { return known }
+            guard let stored = UndoableRecords.find(ref, in: store) else { return nil }
+            let state = RecordState.capture(stored)
+            before[ref] = state
+            return state
+        }
+        for model in changed {
             guard let state = RecordState.capture(any: model) else { return nil }
-            guard let stored = UndoableRecords.find(state.ref, in: store) else { continue }
-            before[state.ref] = RecordState.capture(stored)
-            if deleted.contains(where: { $0 === model }) { deletedRefs.insert(state.ref) }
+            _ = read(state.ref)
+        }
+        // Everything a delete takes: the records named, and what they own, all the way down.
+        var removed: [RecordRef: RecordState] = [:]
+        var queue: [RecordState] = []
+        for model in deleted {
+            guard let current = RecordState.capture(any: model) else { return nil }
+            queue.append(current)
+            if let stored = read(current.ref) { queue.append(stored) }
+        }
+        while let state = queue.popLast() {
+            if removed[state.ref] == nil, let stored = before[state.ref] { removed[state.ref] = stored }
+            for ref in UndoableRecords.owned(by: state) where removed[ref] == nil {
+                if let owned = read(ref) { queue.append(owned) }
+            }
+        }
+        // And whatever pointed at them, as it was before it lost the link.
+        for state in removed.values {
+            for ref in state.linked where removed[ref] == nil { _ = read(ref) }
         }
         var insertedRefs: [RecordRef] = []
         for model in inserted {
             guard let state = RecordState.capture(any: model) else { return nil }
             insertedRefs.append(state.ref)
         }
-        return Pending(inserted: inserted, changed: changed, insertedRefs: insertedRefs, deletedRefs: deletedRefs, before: before)
+        return Pending(insertedRefs: insertedRefs, before: before)
     }
 
-    /// Completes the receipt once the unit has saved.
+    /// Completes the receipt once the unit has saved: how the step left every record it
+    /// touched, read back from the context, and which of them are gone.
     func seal(_ pending: Pending) {
         inserted = pending.insertedRefs
         before = pending.before
-        deleted = pending.deletedRefs
-        after = Dictionary((pending.inserted + pending.changed).compactMap { RecordState.capture(any: $0) }.map { ($0.ref, $0) }) { first, _ in first }
-        for ref in deleted { after[ref] = nil }
-        // A record written with the value it already had wasn't changed.
+        after = [:]
+        deleted = []
+        for ref in Set(pending.insertedRefs).union(pending.before.keys) {
+            if let record = UndoableRecords.find(ref, in: context) {
+                after[ref] = RecordState.capture(record)
+            } else if pending.before[ref] != nil {
+                deleted.insert(ref)
+            }
+        }
+        // A record written with the value it already had, or only read in case a delete
+        // reached it, wasn't changed.
         for (ref, state) in before where after[ref] == state {
             before[ref] = nil
             after[ref] = nil

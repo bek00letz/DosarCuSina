@@ -6,13 +6,13 @@ extension View {
     /// `assetID`. The one way a page asks for "a photo of this paper" (a document's own
     /// picture, the policy a claim needs, a car's invoices).
     ///
-    /// `onFiled` gets capture's confirmation for a toast; `onError` a message to show
-    /// when the photo couldn't be opened.
+    /// `onFiled` gets capture's toast (with "Anulează" for the filing) for the page to show;
+    /// `onError` a message to show when the photo couldn't be opened.
     func photoFirstCapture(
         isPresented: Binding<Bool>,
         title: Text,
         assetID: UUID?,
-        onFiled: @escaping @MainActor (LocalizedStringResource) -> Void,
+        onFiled: @escaping @MainActor (DSToast) -> Void,
         onError: @escaping @MainActor (String) -> Void
     ) -> some View {
         modifier(PhotoFirstCapture(isPresented: isPresented, title: title, assetID: assetID, onFiled: onFiled, onError: onError))
@@ -23,7 +23,7 @@ private struct PhotoFirstCapture: ViewModifier {
     @Binding var isPresented: Bool
     let title: Text
     let assetID: UUID?
-    let onFiled: @MainActor (LocalizedStringResource) -> Void
+    let onFiled: @MainActor (DSToast) -> Void
     let onError: @MainActor (String) -> Void
 
     @State private var source: CaptureSource?
@@ -48,8 +48,8 @@ private struct PhotoFirstCapture: ViewModifier {
                 CaptureFlowView(input: input) { result in
                     flow = nil
                     switch result {
-                    case .filed(let message, _), .visitSaved(let message):
-                        onFiled(message)
+                    case .filed(let toast, _), .visitSaved(let toast):
+                        onFiled(toast)
                     case .dismissed:
                         break
                     }

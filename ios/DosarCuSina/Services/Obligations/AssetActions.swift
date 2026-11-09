@@ -277,13 +277,21 @@ public final class AssetActions {
         case delete
     }
 
-    public func delete(_ asset: Asset, children: ChildrenOnDelete = .keep) throws {
-        if children == .delete {
-            for child in Self.descendants(of: asset) { context.delete(child) }
-        }
-        context.delete(asset)
-        try HouseholdRules.reconcile(in: context, today: CalendarDay(now(), calendar: calendar), calendar: calendar)
-        try save()
+    /// Deletes the section with its deadlines, history, readings and documents (their
+    /// pages too), and, when asked, everything filed under it; what stays (`.keep`) goes to
+    /// the top. A household deadline that only it needed (the rental income declaration)
+    /// goes too. One undoable step: the receipt brings all of it back with every link,
+    /// and the side effects follow the save as always.
+    @discardableResult
+    public func delete(_ asset: Asset, children: ChildrenOnDelete = .keep) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) {
+            if children == .delete {
+                for child in Self.descendants(of: asset) { context.delete(child) }
+            }
+            context.delete(asset)
+            try HouseholdRules.reconcile(in: context, today: CalendarDay(now(), calendar: calendar), calendar: calendar)
+            try save()
+        }.receipt
     }
 
     /// Files `child` under `parent`, or makes it standalone with nil. Refuses to

@@ -84,6 +84,7 @@ private struct ManualWhatView: View {
     @Binding var path: [ManualStep]
     let onClose: (LocalizedStringResource?) -> Void
 
+    @Environment(\.announce) private var announce
     @Query private var assets: [Asset]
     @State private var source: CaptureSource?
     @State private var isChoosingSource = false
@@ -130,7 +131,10 @@ private struct ManualWhatView: View {
             CaptureFlowView(input: input) { result in
                 flow = nil
                 switch result {
-                case .filed(let message, _), .visitSaved(let message): onClose(message)
+                case .filed(let toast, _), .visitSaved(let toast):
+                    // This sheet closes: the shell shows the toast, with its "Anulează".
+                    announce(toast)
+                    onClose(nil)
                 case .dismissed: break
                 }
             }

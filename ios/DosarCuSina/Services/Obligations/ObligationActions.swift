@@ -131,10 +131,14 @@ public final class ObligationActions {
         }.receipt
     }
 
-    public func clearSnooze(_ obligation: Obligation) throws {
-        obligation.snoozedUntil = nil
-        obligation.updatedAt = now()
-        try save()
+    /// Brings a snoozed obligation back now ("Anulează amânarea"). Undoable.
+    @discardableResult
+    public func clearSnooze(_ obligation: Obligation) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) {
+            obligation.snoozedUntil = nil
+            obligation.updatedAt = now()
+            try save()
+        }.receipt
     }
 
     /// Changes how the obligation reminds (lead days, grace, follow-up after lapsing), as the
@@ -215,13 +219,21 @@ public final class ObligationActions {
         }.receipt
     }
 
-    public func archive(_ obligation: Obligation) throws {
-        try setStatus(.archived, of: obligation)
+    /// Puts the obligation away for good, keeping it and its history. Undoable, like `pause`.
+    @discardableResult
+    public func archive(_ obligation: Obligation) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) { try setStatus(.archived, of: obligation) }.receipt
     }
 
-    public func delete(_ obligation: Obligation) throws {
-        context.delete(obligation)
-        try save()
+    /// Deletes the obligation and its reminders. What it closed stays in the section's
+    /// history and its documents stay in the binder, without the link. Undoable: the
+    /// receipt brings it back with every link (`UndoReceipt` reads what a delete takes).
+    @discardableResult
+    public func delete(_ obligation: Obligation) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) {
+            context.delete(obligation)
+            try save()
+        }.receipt
     }
 
     // MARK: Create

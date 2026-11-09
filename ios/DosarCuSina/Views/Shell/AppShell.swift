@@ -5,7 +5,9 @@ import SwiftData
 /// router, onboarding once, and the app lock over everything when it is on, in
 /// a window of its own above every sheet (`LockWindowHost`). Links and opened
 /// files wait until the app is unlocked. Coming back with something new shared from
-/// another app opens De verificat once (`InboxLanding`).
+/// another app opens De verificat once (`InboxLanding`). A toast that must outlive its
+/// screen (a deleted section's, the review's after "Salvează") is shown here, above the
+/// tab bar of whichever tab is open (`DSToastCenter`, reached with `\.announce`).
 ///
 /// Each tab is wrapped in a `NavigationStack` here, with every `AppRoute`
 /// registered as a destination, so any screen can push with
@@ -18,6 +20,10 @@ struct AppShell: View {
 
     @State private var router = ShellRouter()
     @State private var search = SearchQuery()
+    @State private var toasts = DSToastCenter()
+    /// How far each tab's content keeps from the bottom edge (the tab bar), and the shell's own.
+    @State private var tabInsets: [AppTab: CGFloat] = [:]
+    @State private var shellInset: CGFloat = 0
     @Query(filter: #Predicate<CategoryTemplate> { $0.isSensitive }) private var lockedCategories: [CategoryTemplate]
 
     private var cover: LockCover? {
@@ -36,6 +42,7 @@ struct AppShell: View {
                 NavigationStack(path: $router.dosarPath) {
                     DosarHomeView().shellDestinations()
                 }
+                .measuringToastInset { tabInsets[.dosar] = $0 }
             } label: {
                 Label { Text("Dosar", comment: "Tab: the binder.") } icon: { Image(systemName: "square.grid.2x2.fill") }
             }
@@ -43,6 +50,7 @@ struct AppShell: View {
                 NavigationStack(path: $router.upcomingPath) {
                     UpcomingRoot().shellDestinations()
                 }
+                .measuringToastInset { tabInsets[.upcoming] = $0 }
             } label: {
                 Label { Text("Urmează", comment: "Tab: what comes up next.") } icon: { Image(systemName: "clock.fill") }
             }
@@ -50,6 +58,7 @@ struct AppShell: View {
                 NavigationStack(path: $router.addPath) {
                     AddRoot().shellDestinations()
                 }
+                .measuringToastInset { tabInsets[.add] = $0 }
             } label: {
                 Label { Text("Adaugă", comment: "Tab: scan or add something.") } icon: { Image(systemName: "plus.circle.fill") }
             }
@@ -58,12 +67,16 @@ struct AppShell: View {
                 NavigationStack(path: $router.searchPath) {
                     SearchScreen().shellDestinations()
                 }
+                .measuringToastInset { tabInsets[.search] = $0 }
                 // The search field belongs to this tab alone; iOS draws it in the tab bar.
                 .shellSearch(search)
             } label: {
                 Label { Text("Caută", comment: "Tab: search.") } icon: { Image(systemName: "magnifyingglass") }
             }
         }
+        .measuringToastInset { shellInset = $0 }
+        // Above the tab bar, wherever the person is; under the sheets, which have their own.
+        .dsToastHost(toasts, bottomInset: max(0, (tabInsets[router.tab] ?? shellInset) - shellInset))
         .environment(router)
         .intakeHandoff()
         .sheet(item: $router.sheet) { sheet in
@@ -76,6 +89,8 @@ struct AppShell: View {
             }
             .environment(router)
         }
+        // The shell's sheets announce through it too, once they close.
+        .environment(\.dsToastCenter, toasts)
         .dataRepairPrompt(isAllowed: router.sheet == nil && preferences.hasCompletedOnboarding && !vault.isAppLocked) {
             router.open(.settings(.repairs))
         }
@@ -89,7 +104,7 @@ struct AppShell: View {
             await InboxLanding.shared.didBecomeActive(
                 waiting: {
                     IntakeInbox.shared.refresh()
-                    return IntakeInbox.shared.items
+                    return IntakeInbox.shared.waiting
                 },
                 navigator: navigator,
                 isBusy: { !preferences.hasCompletedOnboarding || router.sheet != nil || InboxLanding.isShowingSomethingOverTheTabs() }
@@ -126,6 +141,14 @@ struct AppShell: View {
     private func consumeRoute() {
         guard let route = navigator.consume() else { return }
         router.open(route)
+    }
+}
+
+private extension View {
+    /// Reports how far this view's content keeps from its bottom edge (the tab bar, the home
+    /// indicator), so the shell's toast sits where a screen's own would.
+    func measuringToastInset(_ report: @escaping (CGFloat) -> Void) -> some View {
+        onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.bottom } action: { report($0) }
     }
 }
 

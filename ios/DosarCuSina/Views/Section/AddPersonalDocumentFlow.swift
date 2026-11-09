@@ -11,6 +11,7 @@ struct AddPersonalDocumentFlow: View {
     let onCreated: (UUID) -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.announce) private var announce
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Query private var matches: [Asset]
 
@@ -98,11 +99,13 @@ struct AddPersonalDocumentFlow: View {
 
     private func finishCapture(_ result: CaptureFlowResult, holder: Asset) {
         switch result {
-        case .filed(_, let assetID):
+        case .filed(let toast, let assetID):
             dismiss()
+            announce(toast)
             if let assetID { onCreated(assetID) }
-        case .visitSaved:
+        case .visitSaved(let toast):
             dismiss()
+            announce(toast)
         case .dismissed:
             capture = nil
         }

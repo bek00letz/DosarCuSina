@@ -92,12 +92,8 @@ struct UpcomingFullList: View {
         guard let obligation = actions.obligation(item.id) else { return }
         do {
             let engine = ObligationActions(context: context)
-            if obligation.status == .paused {
-                try engine.resume(obligation)
-            } else {
-                try engine.clearSnooze(obligation)
-            }
-            toast = DSToast(title: "Am readus \(obligation.title) în Urmează.", actionTitle: nil, action: nil)
+            let receipt = obligation.status == .paused ? try engine.resume(obligation) : try engine.clearSnooze(obligation)
+            toast = .undo("Am readus \(obligation.title) în Urmează.", receipt: receipt)
         } catch {
             toast = UpcomingActions.failureToast(error)
         }
