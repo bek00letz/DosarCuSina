@@ -146,6 +146,51 @@ struct LabelledLayout<Key: Hashable> {
         return nil
     }
 
+    // MARK: - Values printed in parts
+
+    /// A value printed in parts (`CompositeValue`), at any of `key`'s labels: the parts
+    /// in the label's value; a series alone there takes its number from what follows it
+    /// (the fragments beside it on its row, else the next line, in its column when lines
+    /// have positions), only when that starts with the number or its own "Nr.", so another
+    /// field's number ("Nr. înmatriculare …") is never taken. The readings of every place
+    /// the label is printed are then weighed together (`CompositeValue.choose`): a whole
+    /// value first; else a series and a number read apart, joined.
+    func composite(_ shape: CompositeValue, for key: Key) -> CompositeValue.Found? {
+        var readings: [(parts: CompositeValue.Parts, source: String)] = []
+        for position in positions where position.key == key {
+            guard let found = value(at: position), var parts = shape.parts(in: found.value) else { continue }
+            var source = found.source
+            if parts.series != nil, parts.number == nil, let next = continuation(after: found.lines.last ?? position.line),
+               let number = shape.numberAlone(in: next, anchored: true) {
+                parts.number = number
+                source += " " + next
+            }
+            readings.append((parts, source))
+        }
+        return shape.choose(readings)
+    }
+
+    /// What follows a value's line: the fragments to its right on its row, else the next
+    /// line that isn't a label (the nearest in its column, when lines have positions).
+    private func continuation(after line: Int) -> String? {
+        guard let box = text.boxes[line] else {
+            return nextLine(after: line).map { text.original[$0] }
+        }
+        let page = text.pages[line]
+        let right = text.boxes.indices
+            .filter { index in
+                guard index != line, text.pages[index] == page, let other = text.boxes[index] else { return false }
+                return other.isOnSameRow(as: box) && other.minX >= box.maxX - 0.25 * box.height
+                    && other.minX - box.maxX <= Self.maximumBesideGap * box.height
+            }
+            .sorted { (text.boxes[$0]?.minX ?? 0) < (text.boxes[$1]?.minX ?? 0) }
+        let beside = right.prefix { !isLabelLine($0) }
+        if !beside.isEmpty { return beside.map { text.original[$0] }.joined(separator: " ") }
+        guard let below = nextInColumn(below: line, span: box, limit: box.maxY + Self.maximumDrop * box.height),
+              !isLabelLine(below) else { return nil }
+        return text.original[below]
+    }
+
     /// Lines in reading order, each label followed by its translations and its value,
     /// so text shown to a person keeps a card's columns together.
     func readableLines() -> [String] {

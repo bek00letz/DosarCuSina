@@ -309,8 +309,15 @@ public enum RomanianFieldExtractor {
         return nil
     }
 
-    /// Invoice series and number ("Factura seria ABC nr. 12345", "Nr. factură: XYZ-2026-0001").
-    static func invoiceNumber(in text: CaptureText) -> (value: String, source: String)? {
+    /// Invoice series and number ("Factura seria ABC nr. 12345", "Nr. factură: XYZ-2026-0001"),
+    /// read by the one rule for values printed in parts.
+    static func invoiceNumber(in text: CaptureText) -> CompositeValue.Found? {
+        CompositeLabels.read(.invoice, labels: CompositeLabels.invoice, in: text)
+    }
+
+    /// The reading before values printed in parts had one rule, kept switched off until
+    /// that rule is proven on real documents (`invoiceNumber(in:)` replaces it).
+    static func legacyInvoiceNumber(in text: CaptureText) -> (value: String, source: String)? {
         let patterns = [
             #"(?:factura|factura fiscala|invoice)[^\n]*?seri[ae]\s*[:.]?\s*([a-z]{1,6})\s*(?:nr\.?|numar|no\.?)\s*[:.]?\s*([a-z0-9-]{2,20})"#,
             #"seri[ae]\s*[:.]?\s*([a-z]{1,6})\s*(?:nr\.?|numar)\s*[:.]?\s*(\d{2,12})"#,
@@ -411,8 +418,20 @@ public enum RomanianFieldExtractor {
         return nil
     }
 
-    /// The insurance policy's series and number, after a policy label.
-    static func policyNumber(in text: CaptureText) -> (value: String, source: String)? {
+    /// The insurance policy's series and number, as one value, wherever and however they
+    /// are printed (`CompositeValue`, `CompositeLabels.policy`).
+    static func policyNumber(in text: CaptureText) -> CompositeValue.Found? {
+        CompositeLabels.read(.policy, labels: CompositeLabels.policy, in: text)
+    }
+
+    /// The vehicle identity card's (CIV) series and number, as one value.
+    static func civNumber(in text: CaptureText) -> CompositeValue.Found? {
+        CompositeLabels.read(.vehicleCard, labels: CompositeLabels.vehicleCard, in: text)
+    }
+
+    /// The reading before values printed in parts had one rule, kept switched off until
+    /// that rule is proven on real documents (`policyNumber(in:)` replaces it).
+    static func legacyPolicyNumber(in text: CaptureText) -> (value: String, source: String)? {
         let labels = ["seria si numarul", "seria si nr", "nr. polita", "nr polita", "numar polita", "numarul politei", "polita nr", "polita seria", "polita rca seria", "serie polita"]
         for index in text.lines(containing: labels) {
             let original = text.original[index]

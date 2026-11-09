@@ -42,7 +42,13 @@ enum IdentityDocumentReader {
                 }
                 continue
             }
-            if case .date = field.format {
+            if case .composite(let shape) = field.format {
+                // A series and a number, wherever the label puts them, joined into one value.
+                if let found = layout.composite(shape, for: key) {
+                    add(field.key, .text(found.value), found.quality >= .joinedFromTwoPlaces ? labelled : failedFormat, found.source)
+                    continue
+                }
+            } else if case .date = field.format {
                 // A date only counts at its own label, so a neighbour's date is never borrowed.
                 if let (day, source) = layout.day(for: key, window: window(field.key)) {
                     add(field.key, .day(day), labelled, source)
@@ -104,6 +110,9 @@ enum IdentityDocumentReader {
             guard let match = TextPattern.first(pattern, in: value.uppercased()) else { return nil }
             let joined = match.groups.dropFirst().compactMap { $0 }.joined().uppercased()
             return joined.contains(where: \.isNumber) ? Parsed(value: .text(joined), passed: true) : nil
+        case .composite(let shape):
+            guard let parts = shape.parts(in: value), parts.number != nil else { return nil }
+            return Parsed(value: .text(shape.joined(parts)), passed: !shape.isPartial(parts))
         case .date, .dateRange:
             return RomanianFieldExtractor.dates(inLine: RomanianText.fold(value), index: 0, window: window).first.map { Parsed(value: .day($0.day), passed: true) }
         case .sex:
@@ -201,6 +210,12 @@ enum IdentityDocumentReader {
         case .cardExpiry:
             let days = text.joiningRows().original.compactMap { cardExpiry(in: $0, window: window) }
             return (days.filter(window.contains).max() ?? days.max()).map { (.day($0), nil, anywhere, .heuristic) }
+        case .composite(let shape):
+            // A line that is the whole value and nothing else.
+            for line in text.original {
+                if let parts = shape.wholeLine(line) { return (.text(shape.joined(parts)), line, anywhere, .heuristic) }
+            }
+            return nil
         default:
             break
         }

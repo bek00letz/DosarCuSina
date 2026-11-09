@@ -25,7 +25,10 @@ import Foundation
 /// - Among the phone's own unprovable readings the more confident value wins (a model's
 ///   clear answer beats a weak first-date guess); a provider's known format is never
 ///   replaced by a pattern or a model; on a tie the order above decides.
-/// - Two readers that agree reinforce each other.
+/// - Two readers that agree reinforce each other. A value printed in parts (a policy's
+///   series and number) agrees when it is the same value written differently, or when one
+///   reader read only a part of it: the whole is kept, so a part never beats it, and two
+///   parts read by different readers are joined (`agreedValue`).
 /// - Being missing from the text recognised on the phone is never a reason to drop or
 ///   demote an AI value: it is kept, marked "Verifică" unless it passes its own check or
 ///   agrees with the phone (`CloudAnswerMapper`). A value outside its plausibility window
@@ -118,12 +121,29 @@ enum ReadingArbiter {
         return candidate.tier < existing.tier
     }
 
+    /// The value two readers agree on, or nil when they disagree. Beyond the same text, a
+    /// value printed in parts (`CompositeValue`) agrees when it is the same value written
+    /// differently ("XT 123456" and "XT123456"), when one reader read only a part of the
+    /// other's whole (the whole is kept, whoever read it: a part never beats it), or when
+    /// each read the part the other missed (they are joined).
+    static func agreedValue(_ existing: CaptureField, _ candidate: CaptureField) -> CaptureValue? {
+        if existing.value == candidate.value { return existing.value }
+        guard let first = existing.value.text, let second = candidate.value.text else { return nil }
+        if let shape = CompositeValue.byKey[existing.key] {
+            return shape.agreement(first, second).map(CaptureValue.text)
+        }
+        // A document number's shape is its document's; written differently, it is still the same.
+        if existing.key == .documentNumber, CompositeValue.compact(first) == CompositeValue.compact(second) { return existing.value }
+        return nil
+    }
+
     /// Two readers that read the same value: more confident together, counted as the more
-    /// trusted reader's, with the first source text.
-    static func agreeing(_ existing: CaptureField, _ candidate: CaptureField) -> CaptureField {
+    /// trusted reader's, with the first source text. `value` is what they agree on
+    /// (`agreedValue`), the existing value when not given.
+    static func agreeing(_ existing: CaptureField, _ candidate: CaptureField, value: CaptureValue? = nil) -> CaptureField {
         CaptureField(
             key: existing.key,
-            value: existing.value,
+            value: value ?? existing.value,
             confidence: max(existing.confidence, candidate.confidence) + 0.1,
             sourceText: existing.sourceText ?? candidate.sourceText,
             tier: standing(existing) >= standing(candidate) ? existing.tier : candidate.tier
@@ -141,8 +161,8 @@ enum ReadingArbiter {
                 continue
             }
             let existing = result[index]
-            if existing.value == candidate.value {
-                result[index] = agreeing(existing, candidate)
+            if let agreed = agreedValue(existing, candidate) {
+                result[index] = agreeing(existing, candidate, value: agreed)
                 continue
             }
             let winner = prefers(candidate, over: existing) ? candidate : existing

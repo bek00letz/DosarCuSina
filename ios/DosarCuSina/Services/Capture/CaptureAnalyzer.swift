@@ -139,6 +139,9 @@ public struct CaptureAnalyzer: Sendable {
             }
         case .vehicleRegistration:
             addVehicleIdentity(text, into: &fields)
+            if let civ = RomanianFieldExtractor.civNumber(in: text) {
+                fields.add(.civNumber, .text(civ.value), civ.quality.confidence, civ.source)
+            }
             for (key, entry) in RomanianFieldExtractor.registrationFields(in: text).sorted(by: { $0.key.rawValue < $1.key.rawValue }) {
                 fields.add(key, entry.0, 0.65, entry.1)
             }
@@ -247,7 +250,7 @@ public struct CaptureAnalyzer: Sendable {
     private func addInvoiceBasics(_ text: CaptureText, years: DateWindow, into fields: inout FieldSet) {
         addIssuer(text, into: &fields)
         if let invoice = RomanianFieldExtractor.invoiceNumber(in: text) {
-            fields.add(.invoiceNumber, .text(invoice.value), 0.7, invoice.source)
+            fields.add(.invoiceNumber, .text(invoice.value), invoice.quality.confidence, invoice.source)
         }
         if let total = RomanianFieldExtractor.total(in: text) {
             fields.add(.total, .money(total.money), Self.confidence(total.strong ? 0.8 : 0.6, ambiguous: total.ambiguous), total.source)
@@ -315,7 +318,7 @@ public struct CaptureAnalyzer: Sendable {
             fields.add(.providerTaxID, .text(taxID.value), 0.97, text.original[taxID.line], tier: .deterministic)
         }
         if let policy = RomanianFieldExtractor.policyNumber(in: text) {
-            fields.add(.policyNumber, .text(policy.value), 0.65, policy.source)
+            fields.add(.policyNumber, .text(policy.value), policy.quality.confidence, policy.source)
         }
         if let phone = RomanianFieldExtractor.claimsPhone(in: text) {
             fields.add(.claimsPhone, .text(phone.value), 0.75, phone.source)
@@ -421,8 +424,8 @@ public enum FieldMerger {
                 continue
             }
             let existing = result[index]
-            if existing.value == candidate.value {
-                result[index] = ReadingArbiter.agreeing(existing, candidate)
+            if let agreed = ReadingArbiter.agreedValue(existing, candidate) {
+                result[index] = ReadingArbiter.agreeing(existing, candidate, value: agreed)
             } else if prefers(candidate, over: existing) {
                 result[index] = candidate
             }
