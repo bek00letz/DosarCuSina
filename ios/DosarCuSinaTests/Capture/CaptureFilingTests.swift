@@ -298,7 +298,7 @@ struct ExampleOwnershipTests {
         context.insert(real)
         real.asset = car
         try context.save()
-        let kept = try ExampleDataService(context: context).removeExamples()
+        let kept = try ExampleDataService(context: context).removeExamples().value
         #expect(kept == [car.name])
         #expect(!car.isExample)
         #expect(real.asset?.id == car.id)

@@ -10,7 +10,9 @@ struct AddVisitFlow: View {
     let assetID: UUID
     private let prefill: CaptureResult?
     private let embedsNavigation: Bool
-    private let onFinish: ((Bool) -> Void)?
+    /// Called when the flow ends: with the saved visit's receipt, for the toast's "Anulează",
+    /// or nil when nothing was saved.
+    private let onFinish: ((UndoReceipt?) -> Void)?
 
     /// Presented on its own (from a section's Istoric): it brings its own navigation bar.
     init(assetID: UUID) {
@@ -21,7 +23,7 @@ struct AddVisitFlow: View {
     }
 
     /// Opened from capture with an invoice already read, inside capture's navigation.
-    init(assetID: UUID, prefill: CaptureResult?, onFinish: @escaping (Bool) -> Void) {
+    init(assetID: UUID, prefill: CaptureResult?, onFinish: @escaping (UndoReceipt?) -> Void) {
         self.assetID = assetID
         self.prefill = prefill
         self.embedsNavigation = false
@@ -53,7 +55,7 @@ struct AddVisitFlow: View {
 private struct VisitForm: View {
     let asset: Asset
     let prefill: CaptureResult?
-    let onFinish: ((Bool) -> Void)?
+    let onFinish: ((UndoReceipt?) -> Void)?
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -434,8 +436,10 @@ private struct VisitForm: View {
         }
     }
 
+    /// Ends the flow. Saved and not taken back, the receipt goes with it, so the screen
+    /// underneath can still offer "Anulează" once this one closes.
     private func finish(_ didSave: Bool) {
-        if let onFinish { onFinish(didSave) } else { dismiss() }
+        if let onFinish { onFinish(didSave ? receipt : nil) } else { dismiss() }
     }
 }
 

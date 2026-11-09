@@ -93,9 +93,15 @@ public final class ProviderActions {
         try save()
     }
 
-    public func delete(_ provider: Provider) throws {
-        context.delete(provider)
-        try save()
+    /// Deletes a firm or a person from Agendă. Undoable: the receipt brings them back with
+    /// every link (the sections they worked on, their jobs, the parts they supplied, the
+    /// documents they issued), which the delete only cleared.
+    @discardableResult
+    public func delete(_ provider: Provider) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context) {
+            context.delete(provider)
+            try save()
+        }.receipt
     }
 
     private func save() throws {

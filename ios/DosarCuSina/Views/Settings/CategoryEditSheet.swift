@@ -4,11 +4,13 @@ import SwiftData
 /// Changing a category of the person's own later: its name, symbol and what it keeps, with
 /// the same questions as when it was made (`CustomCategoryForm`). Saving goes through
 /// `TemplateStore.editCustom` as one step the toast can take back; when a switch touches
-/// deadlines already running (a service turned off, or back on), it asks first.
+/// deadlines already running (a service turned off, or back on), it asks first. Deleting
+/// the category (one with no sections) can be taken back from its toast too.
 struct CategoryEditSheet: View {
     let template: CategoryTemplate
-    /// Called with the receipt of the saved change, for the toast's "Anulează".
-    let onSaved: (UndoReceipt) -> Void
+    /// Called with the toast for what was done (saved or deleted), with its "Anulează", for
+    /// the screen underneath: this sheet closes.
+    let onDone: (DSToast) -> Void
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -19,9 +21,9 @@ struct CategoryEditSheet: View {
     @State private var isConfirmingDelete = false
     @State private var error: UserFacingError?
 
-    init(template: CategoryTemplate, onSaved: @escaping (UndoReceipt) -> Void) {
+    init(template: CategoryTemplate, onDone: @escaping (DSToast) -> Void) {
         self.template = template
-        self.onSaved = onSaved
+        self.onDone = onDone
         var draft = CustomSectionDraft()
         draft.name = template.name
         draft.symbol = template.symbol
@@ -96,16 +98,19 @@ struct CategoryEditSheet: View {
             let receipt = try TemplateStore(context: context).editCustom(template, name: trimmedName, symbol: draft.symbol,
                                                                           switches: draft.switches, changingDeadlines: changingDeadlines)
             dismiss()
-            onSaved(receipt)
+            onDone(.undo("Am schimbat „\(trimmedName)”.", receipt: receipt))
         } catch {
             self.error = UserFacingError(error)
         }
     }
 
     private func delete() {
+        let name = template.name
         do {
-            try TemplateStore(context: context).delete(template)
+            let receipt = try TemplateStore(context: context).delete(template)
             dismiss()
+            onDone(.undoDeletion(LocalizedStringResource("Am șters categoria „\(name)”.", comment: "Toast after deleting a category of one's own."),
+                                 receipt: receipt))
         } catch {
             self.error = UserFacingError(error)
         }

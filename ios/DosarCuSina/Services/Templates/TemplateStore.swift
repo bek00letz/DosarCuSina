@@ -265,13 +265,18 @@ public struct TemplateStore {
         try save()
     }
 
-    public func delete(_ template: CategoryTemplate) throws {
+    /// Deletes a category of the person's own that holds no section. Undoable: the receipt
+    /// brings it back as it was, its place on the binder included.
+    @discardableResult
+    public func delete(_ template: CategoryTemplate) throws -> UndoReceipt {
         guard !template.isBuiltIn else { throw TemplateStoreError.builtInCannotBeDeleted }
         let key = template.key
         let count = try context.fetchCount(FetchDescriptor<Asset>(predicate: #Predicate { $0.templateKey == key }))
         guard count == 0 else { throw TemplateStoreError.inUse(assetCount: count) }
-        context.delete(template)
-        try save()
+        return try UnitOfWork.performUndoable(in: context) {
+            context.delete(template)
+            try save()
+        }.receipt
     }
 
     /// Reorders templates the way `List.onMove` reports it.

@@ -50,10 +50,10 @@ struct TemplateStoreTests {
         let drill = Asset(name: "Bormașină", templateKey: bikes.key)
         context.insert(drill)
         try context.save()
-        #expect(throws: TemplateStoreError.inUse(assetCount: 1)) { try store.delete(bikes) }
+        #expect(throws: TemplateStoreError.inUse(assetCount: 1)) { _ = try store.delete(bikes) }
 
         let vehicle = try #require(try store.template(forKey: BuiltInTemplates.Key.vehicle))
-        #expect(throws: TemplateStoreError.builtInCannotBeDeleted) { try store.delete(vehicle) }
+        #expect(throws: TemplateStoreError.builtInCannotBeDeleted) { _ = try store.delete(vehicle) }
     }
 
     @Test func reorderingFollowsListMoves() throws {
