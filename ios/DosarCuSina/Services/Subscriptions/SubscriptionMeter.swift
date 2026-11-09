@@ -67,6 +67,7 @@ enum SubscriptionMeter {
 
     /// The last index of the subscription's meter: the last reading of the one cleaned series
     /// (`ReadingSeries`) in its service's unit. Nil without a meter or without readings.
+    @MainActor
     static func last(on asset: Asset, calendar: Calendar = .current) -> Last? {
         guard let unit = ServiceKind.meterKind(for: SubscriptionFields.service(of: asset.values))?.defaultUnit,
               let latest = HouseholdMutations.readingSeries(of: asset, unit: unit).latest else { return nil }
