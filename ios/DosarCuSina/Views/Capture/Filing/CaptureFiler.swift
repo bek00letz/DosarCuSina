@@ -193,6 +193,8 @@ struct CaptureFiler {
         if case .review(let review) = intent, let document {
             pictures = await documents.pictureChange(for: document, choices: review.pageChoices)
         }
+        // A question the person must answer is asked before anything is written.
+        if case .review(let review) = intent { try askAboutAMeterReading(for: review) }
         // From here nothing waits: one step, everything or nothing.
         let filing = try UnitOfWork.performUndoable(in: context) {
             switch intent {
@@ -466,6 +468,28 @@ struct CaptureFiler {
         )
         document?.measurement = log
         return log
+    }
+
+    /// A bill's index lower than its subscription's last one asks before the filing's unit
+    /// opens (`HouseholdMutations.lowerReadingQuestion`), never from inside it: a unit taken
+    /// back after it wrote the bill leaves the subscription's readings unreadable. The
+    /// reading this bill's document recorded before doesn't count: filing replaces it.
+    private func askAboutAMeterReading(for review: CaptureReview) throws {
+        guard lowerReading == nil else { return }
+        let templates = try TemplateStore(context: context).templatesByKey()
+        let assets = try context.fetch(FetchDescriptor<Asset>())
+        let plan = CaptureFilingPlan.make(for: review, templates: templates, assets: assets,
+                                          today: CalendarDay(now(), calendar: calendar), calendar: calendar)
+        guard case .record(let reading, _)? = plan.meter,
+              let section = review.existingSection(assets: assets, templates: templates),
+              templates.plays(.subscription, section.templateKey) else { return }
+        let kept = review.duplicateAttachmentID
+        if let question = HouseholdMutations.lowerReadingQuestion(
+            for: reading.value, on: section, at: reading.day.noonDate(in: calendar), unit: reading.unit, kind: reading.kind,
+            ignoring: { log in kept != nil && (log.attachments ?? []).contains { $0.id == kept } }
+        ) {
+            throw question
+        }
     }
 
     /// Where a policy's bonus-malus class goes, worked out from the household as it is now.
