@@ -44,15 +44,6 @@ public enum UnitOfWork {
     /// Commits that tests have asked to fail, by context.
     private static var failingCommits: [ObjectIdentifier: any Error] = [:]
 
-    /// Contexts whose rollbacks tests have asked not to fetch again, to show what fetching again fixes.
-    private static var leftUnfetched: Set<ObjectIdentifier> = []
-
-    /// Leaves the records a rollback on `context` took back as SwiftData leaves them, without
-    /// fetching them again. Only for the test that shows why they are fetched again.
-    static func skipFetchingAgainForTesting(in context: ModelContext) {
-        leftUnfetched.insert(ObjectIdentifier(context))
-    }
-
     /// Makes the next commit of a unit on `context` fail, so tests can check that a
     /// failed save leaves nothing behind. Cleared after one use. Kept per context, so
     /// tests running side by side never fail each other's saves.
@@ -171,8 +162,9 @@ public enum UnitOfWork {
 
     /// Takes back what the context holds unsaved, then fetches again every record it touched
     /// and every record those pointed at. SwiftData leaves a rolled-back record's
-    /// relationships unreadable (reading a section's readings stops the app) until it is
-    /// fetched again. Nothing unsaved: nothing to take back, and nothing is touched.
+    /// relationships unreadable until it is fetched again: on the iOS 27 simulator, reading a
+    /// section's deadlines after a failed visit stopped the test run. Nothing unsaved: nothing
+    /// to take back, and nothing is touched.
     private static func rollBack(_ context: ModelContext) {
         guard context.hasChanges else { return }
         context.processPendingChanges()
@@ -183,7 +175,6 @@ public enum UnitOfWork {
             touched.formUnion(state.linked)
         }
         context.rollback()
-        guard leftUnfetched.remove(ObjectIdentifier(context)) == nil else { return }
         for ref in touched { _ = UndoableRecords.find(ref, in: context) }
     }
 
