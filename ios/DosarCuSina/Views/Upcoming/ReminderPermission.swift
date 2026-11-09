@@ -97,10 +97,10 @@ private struct ReminderPermissionExplainer: View {
                     .dsFont(.body)
                 Text("Poți schimba oricând din Setări.")
                     .dsFont(.footnote)
-                DSPrimaryButton("Continuă", action: onContinue)
             }
             .padding(DS.Space.xl)
         }
+        .dsPinnedAction { DSPrimaryButton("Continuă", action: onContinue) }
     }
 }
 

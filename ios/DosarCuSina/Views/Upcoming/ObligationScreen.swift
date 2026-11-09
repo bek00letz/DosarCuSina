@@ -98,7 +98,8 @@ private struct ObligationPage: View {
                 isRescheduling = false
                 if let day { reschedule(to: day) }
             }
-            .presentationDetents([.medium, .large])
+            // A whole month and its button, without dragging the sheet up.
+            .presentationDetents([.large])
         }
         .confirmationDialog(Text("Amâni până când?"), isPresented: $isSnoozing, titleVisibility: .visible) {
             ForEach(UpcomingActions.snoozeChoices, id: \.self) { days in
@@ -635,13 +636,15 @@ private struct RescheduleSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: DS.Space.l) {
+            ScrollView {
                 DatePicker("Data nouă", selection: $date, displayedComponents: .date)
                     .datePickerStyle(.graphical)
                     .environment(\.locale, .dosarDefault)
+                    .padding(DS.Space.m)
+            }
+            .dsPinnedAction {
                 DSPrimaryButton("Mută termenul", systemImage: "checkmark") { onClose(CalendarDay(date)) }
             }
-            .padding(DS.Space.m)
             .navigationTitle("Schimbă data")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
