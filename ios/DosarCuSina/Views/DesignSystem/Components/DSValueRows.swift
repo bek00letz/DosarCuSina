@@ -41,6 +41,10 @@ struct DSActionValueRow: View {
     let value: String
     let action: Action
     var copies: Clipboard.Kind = .ordinary
+    /// A line under the value ("Bun de călătorit până pe …").
+    var note: Text?
+    /// How urgent the value is, for a date something stops being valid on: drawn, never decided here.
+    var status: DSStatusBadge?
 
     @State private var copied = 0
     @Environment(\.openURL) private var openURL
@@ -52,6 +56,12 @@ struct DSActionValueRow: View {
                 Text(verbatim: value)
                     .dsFont(.headline, numeric: true)
                     .textSelection(.enabled)
+                if let note {
+                    note.dsFont(.subheadline, numeric: true)
+                }
+                if let status {
+                    status.padding(.top, DS.Space.xxs)
+                }
             }
         } actions: {
             Button(action: perform) {

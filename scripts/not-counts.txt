@@ -8,3 +8,4 @@ Nota %lld din 5	A rating, one to five stars.
 Autocitire între %lld și %lld ale lunii	Days of the month.
 Seria de șasiu are 17 caractere. Ai scris %lld.	The number stands alone, with no noun to agree with.
 Copia e pusă înapoi. Noi: %lld. Actualizate: %lld.	Numbers after a label, with no noun to agree with.
+Rotește pagina %lld	A page's number, for VoiceOver.

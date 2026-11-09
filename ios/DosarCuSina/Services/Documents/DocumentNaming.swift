@@ -28,4 +28,21 @@ public enum DocumentNaming {
               ChoiceOption.fold(holder) != ChoiceOption.fold(newHolder) else { return nil }
         return self.name(document: document, holder: newHolder)
     }
+
+    /// The name with the document swapped, when the person corrects its type ("Alt document –
+    /// Manole Corina" becomes "Pașaport – Manole Corina"): only when the name starts with
+    /// the old type's own name (ignoring case and diacritics), alone or before the holder,
+    /// whose name stays as it is. Nil otherwise, so a name the person chose ("Buletinul
+    /// vechi") is never rewritten.
+    public static func retyped(_ name: String, from oldDocument: String?, to newDocument: String) -> String? {
+        let newDocument = newDocument.trimmingCharacters(in: .whitespacesAndNewlines)
+        let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let oldDocument = oldDocument?.trimmingCharacters(in: .whitespacesAndNewlines), !oldDocument.isEmpty, !newDocument.isEmpty,
+              ChoiceOption.fold(oldDocument) != ChoiceOption.fold(newDocument) else { return nil }
+        if ChoiceOption.fold(name) == ChoiceOption.fold(oldDocument) { return newDocument }
+        guard let range = name.range(of: separator),
+              ChoiceOption.fold(String(name[..<range.lowerBound])) == ChoiceOption.fold(oldDocument) else { return nil }
+        let holder = String(name[range.upperBound...])
+        return self.name(document: newDocument, holder: holder)
+    }
 }

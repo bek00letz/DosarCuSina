@@ -381,6 +381,11 @@ private struct GalleryCards: View {
                         DSRowSeparator()
                         DSActionValueRow(title: Text(verbatim: "Telefon pentru daune"), value: "0700 000 001", action: .call)
                         DSRowSeparator()
+                        // A document's expiry: a line under it, and the urgency its rule gives it.
+                        DSActionValueRow(title: Text(verbatim: "Valabil până la"), value: "14.03.2031", action: .copy, copies: .personal,
+                                         note: Text(verbatim: "Bun de călătorit până pe 14 septembrie 2030"),
+                                         status: DSStatusBadge(.later, text: Text(verbatim: "Peste 4 ani")))
+                        DSRowSeparator()
                         // A secret: in the app, "Arată" and "Copiază" ask for Face ID first, every time.
                         DSSecretValueRow(title: Text(verbatim: "PIN pentru autentificare"), isSet: true) { .revealed("0000") }
                     }

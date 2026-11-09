@@ -182,9 +182,12 @@ private struct HistoryEntryContent: View {
 // MARK: - Document
 
 /// A document in the binder: the pages or the PDF, what it is, and where it is filed.
+/// The picture of a personal document opens that document's page (`PersonalDocumentPage`);
+/// any other paper opens its own page, picture first (`PaperPage`).
 struct DocumentScreen: View {
     let attachmentID: UUID
     @Query private var matches: [Attachment]
+    @Query private var templates: [CategoryTemplate]
 
     init(attachmentID: UUID) {
         self.attachmentID = attachmentID
@@ -194,7 +197,16 @@ struct DocumentScreen: View {
 
     var body: some View {
         if let attachment = matches.first {
-            if let asset = attachment.asset {
+            if DocumentPageLayout.isOn {
+                if let asset = attachment.asset, isPersonalDocument(asset),
+                   DocumentPageFacts.isCurrentPicture(attachment, ofPersonalDocument: asset) {
+                    PersonalDocumentPage(document: asset)
+                } else if let asset = attachment.asset {
+                    LockGate(asset: asset) { PaperPage(attachment: attachment) }
+                } else {
+                    PaperPage(attachment: attachment)
+                }
+            } else if let asset = attachment.asset {
                 LockGate(asset: asset) { DocumentContent(attachment: attachment) }
             } else {
                 DocumentContent(attachment: attachment)
@@ -203,8 +215,15 @@ struct DocumentScreen: View {
             MissingRecordView()
         }
     }
+
+    private func isPersonalDocument(_ asset: Asset) -> Bool {
+        let definition = templates.first { $0.key == asset.templateKey }?.definition ?? BuiltInTemplates.definition(for: asset.templateKey)
+        return DocumentPageLayout.opensAsDocumentPage(role: definition?.behavior.role)
+    }
 }
 
+/// The document screen as it was before the document page: kept switched off
+/// (`DocumentPageLayout.isOn`) as the way back until the owner has used the new one.
 private struct DocumentContent: View {
     let attachment: Attachment
     @Environment(\.modelContext) private var context
