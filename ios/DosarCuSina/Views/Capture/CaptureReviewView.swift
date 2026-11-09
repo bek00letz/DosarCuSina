@@ -718,6 +718,7 @@ private struct CaptureFieldEditor: View {
             case .date: .date
             case .money: .money(currencyCode: Money.defaultCurrency)
             case .integer: .number(unit: field.key == .odometer ? .kilometres : nil)
+            case .meterIndex: .number(unit: nil)
             default: .text
             }
         default: .text

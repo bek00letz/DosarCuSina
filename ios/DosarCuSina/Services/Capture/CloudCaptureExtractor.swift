@@ -23,6 +23,9 @@ enum CloudFieldFormat: Hashable, Sendable {
     case categories
     case money
     case integer
+    /// A meter's index, as printed, decimals and all: read by the one number reader as a
+    /// meter index (`RomanianNumber`), so it is read the way the phone reads a bill.
+    case meterIndex
     case lineItems
     case vin
     case plate
@@ -140,12 +143,26 @@ struct CloudSchema: Sendable {
         }
     }
 
+    /// A meter's index from a provider's answer, read the way the phone reads one on a bill:
+    /// text through the one number reader as a meter index (decimals kept, a number that
+    /// could read two ways marked), a JSON number as the plain machine form it is.
+    static func meterIndex(_ raw: JSONValue) -> RomanianNumber.Reading? {
+        switch raw {
+        case .string(let text): return try? RomanianNumber.read(text, as: .meterIndex, from: .document).get()
+        case .int(let value): return RomanianNumber.Reading(value: Decimal(value), isAmbiguous: false, needsCheck: false)
+        case .number(let value):
+            return RomanianNumber.canonical(String(value)).map { RomanianNumber.Reading(value: $0, isAmbiguous: false, needsCheck: false) }
+        default: return nil
+        }
+    }
+
     static func format(of key: CaptureFieldKey) -> CloudFieldFormat {
         switch key {
         case .issueDate, .startDate, .expiryDate, .dueDate, .purchaseDate, .warrantyUntil, .nextDoseDate, .firstRegistrationDate, .birthDate,
              .minimumPeriodEnd: .date
         case .total, .purchasePrice, .monthlyPrice: .money
-        case .warrantyMonths, .odometer, .meterIndex, .minimumMonths: .integer
+        case .warrantyMonths, .odometer, .minimumMonths: .integer
+        case .meterIndex: .meterIndex
         case .serviceKind: .serviceKind
         case .coverageType: .coverage
         case .lineItems: .lineItems
@@ -200,7 +217,8 @@ struct CloudSchema: Sendable {
             + "that statement copied as printed. Null when it isn't, and for an offer or invitation to set up direct debit."
         case .podCode: "The POD code of the consumption point."
         case .clcCode: "The CLC code of the consumption point."
-        case .meterIndex: "The meter reading."
+        case .meterIndex: "The meter's new index (the current reading, not the previous one), exactly as printed, "
+            + "with its decimals, e.g. \"12.345,678\"."
         case .productName: "The product bought."
         case .serialNumber: "The product's serial number or IMEI."
         case .warrantyMonths: "The warranty length in months."
@@ -404,6 +422,11 @@ enum CloudAnswerMapper {
                 if key == .minimumMonths, !ContractReader.plausibleMonths.contains(value) { continue }
                 let typed: CaptureValue = key == .odometer ? .metric(value: Decimal(value), unit: .kilometres) : .number(Decimal(value))
                 add(key, typed, compactText.contains(String(value)) ? grounded : candidate)
+            case .meterIndex:
+                guard let reading = CloudSchema.meterIndex(raw), reading.value >= 0, reading.value < 100_000_000 else { continue }
+                // The digits as answered, compared with the page's: "12.345,678" is printed 12345678.
+                let digits = raw.string ?? NSDecimalNumber(decimal: reading.value).stringValue
+                add(key, .number(reading.value), reading.needsCheck ? candidate : groundedText(digits))
             case .lineItems:
                 let currency = ModelAnswerMapper.normalizedCurrency(nil)
                 let items = (raw.array ?? []).compactMap { item -> CaptureLineItem? in
