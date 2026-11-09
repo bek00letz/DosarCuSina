@@ -5,7 +5,7 @@ import SwiftData
 /// a reading, a section) to an example section. Nothing is saved: the screen asks
 /// `question`, and on yes calls `ExampleDataService.adopt(sectionID:)` and saves again.
 /// On no, nothing changes: the example stays as it was.
-public struct ExampleSectionQuestion: LocalizedError, Equatable, Sendable {
+public struct ExampleSectionQuestion: StepQuestion, Equatable, Sendable {
     /// The topmost example the new thing would sit in: the one that becomes the person's.
     public let sectionID: UUID
     public let name: String
@@ -73,7 +73,8 @@ public enum ExampleOwnership {
 
     /// Whether the record about to be made under `asset` is an example: only when the
     /// example loader says so. Throws the question when it would be the person's own
-    /// inside an example.
+    /// inside an example. It changes nothing, and every action asks it before its unit of
+    /// work writes anything (`StepQuestion`).
     @discardableResult
     public static func requireReal(_ asset: Asset?, creatingExample: Bool = false) throws -> Bool {
         if creatingExample { return true }

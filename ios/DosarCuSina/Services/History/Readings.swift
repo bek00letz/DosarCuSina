@@ -20,10 +20,10 @@ public enum LowerReadingAnswer: Sendable, Hashable {
     case keepAside
 }
 
-/// Thrown by `HouseholdMutations.recordReading` when a counter reading is lower than one
-/// recorded before it and nobody has answered yet. Screens ask with `.readingPrompt`
-/// and save again with the answer; nothing was saved.
-public struct LowerReadingQuestion: LocalizedError, Equatable, Sendable {
+/// Thrown by `HouseholdMutations.askAboutReading` when a counter reading is lower than one
+/// recorded before it and nobody has answered yet, before the step writes anything.
+/// Screens ask with `.readingPrompt` and save again with the answer; nothing was saved.
+public struct LowerReadingQuestion: StepQuestion, Equatable, Sendable {
     public let previous: Double
     public let previousDate: Date
     public let value: Double
@@ -45,6 +45,41 @@ public struct LowerReadingQuestion: LocalizedError, Equatable, Sendable {
     }
 
     public var errorDescription: String? { question }
+}
+
+/// A reading a step will record, worked out before the step writes anything: the step asks
+/// about it first (`HouseholdMutations.askAboutReading`) and then records exactly what it
+/// asked about (`HouseholdMutations.recordReading`). Each action that records a reading
+/// says how it plans it (`AssetActions.plannedReading`, `HistoryActions.plannedReading`,
+/// `ObligationActions.plannedReading`), so a flow that wraps it asks the same question.
+@MainActor
+struct PlannedReading {
+    let value: Double
+    let asset: Asset
+    let date: Date
+    let source: ReadingSource
+    let unit: MeasurementUnit?
+    let kind: MeasurementKind
+    let name: String
+    /// Readings the step takes away before it records this one (the one a document recorded
+    /// when it was filed before): they never make it ask.
+    let replaces: @MainActor (MeasurementLog) -> Bool
+
+    init(_ value: Double, on asset: Asset, at date: Date, source: ReadingSource, unit: MeasurementUnit?,
+         kind: MeasurementKind? = nil, name: String = "", replacing replaces: @escaping @MainActor (MeasurementLog) -> Bool = { _ in false }) {
+        let kind = kind ?? MeasurementKind.forUnit(unit)
+        self.value = value
+        self.asset = asset
+        self.date = date
+        self.source = source
+        self.unit = unit ?? kind.defaultUnit
+        self.kind = kind
+        self.name = name
+        self.replaces = replaces
+    }
+
+    /// An estimate is never stored, and neither is a number that isn't one.
+    var isStored: Bool { source != .estimate && value.isFinite }
 }
 
 /// One cleaned series of counter readings, the only input to every rate and projection
@@ -108,7 +143,9 @@ extension HouseholdMutations {
     /// - A counter reading lower than one recorded before its date asks first: without
     ///   `answer` it throws `LowerReadingQuestion`; `.correctOld` removes the higher earlier
     ///   readings (and the visit readings that logged them); `.keepAside` keeps the new one,
-    ///   which the series then leaves aside.
+    ///   which the series then leaves aside. An action asks before its unit of work writes
+    ///   anything (`askAboutReading`, with the same `PlannedReading`), so inside a unit this
+    ///   only ever finds the question already answered.
     /// - The hero value is then worked out from the readings.
     @discardableResult
     static func recordReading(
@@ -123,21 +160,21 @@ extension HouseholdMutations {
         isExample: Bool? = nil,
         in context: ModelContext
     ) throws -> MeasurementLog? {
-        guard source != .estimate, value.isFinite else { return nil }
-        let kind = kind ?? MeasurementKind.forUnit(unit)
-        let unit = unit ?? kind.defaultUnit
-        let higher = higherReadings(than: value, on: asset, at: date, unit: unit, kind: kind)
-        if let highest = higher.max(by: { $0.value < $1.value }) {
-            switch answer {
-            case nil:
-                throw LowerReadingQuestion(previous: highest.value, previousDate: highest.recordedAt, value: value, unit: unit)
-            case .correctOld?:
-                for log in higher { removeReading(log, from: asset, in: context) }
-            case .keepAside?:
-                break
-            }
+        try recordReading(PlannedReading(value, on: asset, at: date, source: source, unit: unit, kind: kind, name: name),
+                          answer: answer, isExample: isExample, in: context)
+    }
+
+    /// Records `reading` as planned: the same reading the step asked about before its unit opened.
+    @discardableResult
+    static func recordReading(_ reading: PlannedReading, answer: LowerReadingAnswer?, isExample: Bool? = nil,
+                              in context: ModelContext) throws -> MeasurementLog? {
+        guard reading.isStored else { return nil }
+        try askAboutReading(reading, answer: answer)
+        let asset = reading.asset
+        if answer == .correctOld {
+            for log in higherReadings(than: reading) { removeReading(log, from: asset, in: context) }
         }
-        let log = MeasurementLog(kind: kind, name: name, value: value, unit: unit, recordedAt: date)
+        let log = MeasurementLog(kind: reading.kind, name: reading.name, value: reading.value, unit: reading.unit, recordedAt: reading.date)
         log.isExample = isExample ?? asset.isExample
         context.insert(log)
         log.asset = asset
@@ -145,25 +182,22 @@ extension HouseholdMutations {
         return log
     }
 
-    /// The question `recordReading` would ask for `value` without an answer, worked out
-    /// without changing anything, so a flow that writes several things asks it before its
-    /// unit of work opens: a unit taken back after it wrote leaves its records' relationships
-    /// unreadable until they are fetched again. `ignoring` leaves out readings that saving
-    /// replaces first (the one a document recorded before). Nil: nothing to ask.
-    static func lowerReadingQuestion(
-        for value: Double,
-        on asset: Asset,
-        at date: Date,
-        unit: MeasurementUnit?,
-        kind: MeasurementKind? = nil,
-        ignoring: (MeasurementLog) -> Bool = { _ in false }
-    ) -> LowerReadingQuestion? {
-        guard value.isFinite else { return nil }
-        let kind = kind ?? MeasurementKind.forUnit(unit)
-        let unit = unit ?? kind.defaultUnit
-        let higher = higherReadings(than: value, on: asset, at: date, unit: unit, kind: kind).filter { !ignoring($0) }
-        guard let highest = higher.max(by: { $0.value < $1.value }) else { return nil }
-        return LowerReadingQuestion(previous: highest.value, previousDate: highest.recordedAt, value: value, unit: unit)
+    /// Asks the question recording `reading` raises, without changing anything: the one rule
+    /// for a lower counter, which every action calls before its unit of work writes anything
+    /// (`StepQuestion`). Throws `LowerReadingQuestion` when a counter reading is lower than one
+    /// recorded on or before its day and `answer` is nil; returns otherwise. Nil `reading`: the
+    /// step records none.
+    static func askAboutReading(_ reading: PlannedReading?, answer: LowerReadingAnswer?) throws {
+        guard let reading, reading.isStored, answer == nil,
+              let highest = higherReadings(than: reading).max(by: { $0.value < $1.value }) else { return }
+        throw LowerReadingQuestion(previous: highest.value, previousDate: highest.recordedAt, value: reading.value, unit: reading.unit)
+    }
+
+    /// The readings recording `reading` would find higher than it: what makes it ask first,
+    /// and what `.correctOld` removes. Readings the step replaces first don't count.
+    private static func higherReadings(than reading: PlannedReading) -> [MeasurementLog] {
+        higherReadings(than: reading.value, on: reading.asset, at: reading.date, unit: reading.unit, kind: reading.kind)
+            .filter { !reading.replaces($0) }
     }
 
     /// The counter readings recorded on or before `date` that are higher than `value`: what
@@ -179,11 +213,17 @@ extension HouseholdMutations {
     /// Takes back the reading a history entry recorded (a visit, "Gata"): the logs with the
     /// entry's date and reading, then works the hero value out again.
     static func removeReading(recordedBy entry: HistoryEntry, in context: ModelContext) {
-        guard let asset = entry.asset, let reading = entry.metricReading else { return }
-        for log in (asset.measurements ?? []) where !log.isDeleted && log.recordedAt == entry.occurredAt && log.value == reading {
+        guard let asset = entry.asset, entry.metricReading != nil else { return }
+        for log in (asset.measurements ?? []) where !log.isDeleted && isReading(log, recordedBy: entry) {
             context.delete(log)
         }
         syncHeroMetric(of: asset, in: context)
+    }
+
+    /// Whether `log` is the reading `entry` recorded: its day and its number.
+    static func isReading(_ log: MeasurementLog, recordedBy entry: HistoryEntry) -> Bool {
+        guard let reading = entry.metricReading else { return false }
+        return log.recordedAt == entry.occurredAt && log.value == reading && log.asset?.id == entry.asset?.id
     }
 
     /// Removes a wrong reading, and the same number on the visit that logged it.

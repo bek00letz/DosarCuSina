@@ -141,4 +141,33 @@ struct RomanianNumberTests {
         #expect(CloudSchema.wholeNumber(.number(45.7), kind: .kilometres) == nil)
         #expect(CloudSchema.wholeNumber(.int(45724), kind: .kilometres) == 45724)
     }
+
+    /// A water meter's decimals read by the AI provider are kept: the index is asked for as
+    /// printed and read as a meter index, like the phone's own reading of the bill.
+    @Test func providerMeterIndexesKeepTheirDecimals() throws {
+        let schema = CloudSchema(kind: .utilityInvoice)
+        let field = try #require(schema.fields.first { $0.key == .meterIndex })
+        #expect(field.format == .meterIndex)
+        #expect(field.description.contains("decimals"))
+        guard case .object(let properties)? = schema.json["properties"], case .object(let meter)? = properties[field.name] else {
+            Issue.record("The schema lists the meter index")
+            return
+        }
+        #expect(meter["type"] == ["string", "null"], "Asked as printed, not as a whole number")
+
+        func mapped(_ value: String, printed: String) throws -> CaptureField? {
+            let answer = try JSONDecoder().decode(JSONValue.self, from: Data(#"{"documentKind":"utilityInvoice","meterIndex":\#(value)}"#.utf8))
+            return CloudAnswerMapper.fields(from: answer, schema: schema, recognizedText: printed, today: ContractCaptureTests.today,
+                                            resolver: CatalogComponentResolver()).first { $0.key == .meterIndex }
+        }
+        let water = try #require(try mapped(#""1.234,567""#, printed: "Index nou: 1.234,567 m³"))
+        #expect(water.value == .number(Decimal(string: "1234.567")!))
+        #expect(water.confidence >= CaptureField.checkThreshold, "Printed on the page as read")
+        let plain = try #require(try mapped("1234.567", printed: "Index nou: 1.234,567 m³"))
+        #expect(plain.value == .number(Decimal(string: "1234.567")!), "A JSON number is the machine form")
+        let gas = try #require(try mapped(#""12.345""#, printed: "Index nou: 12.345"))
+        #expect(gas.value == .number(12_345), "The Romanian rule decides")
+        #expect(gas.confidence < CaptureField.checkThreshold, "And says so: Verifică, as for the phone's reading")
+        #expect(try mapped(#""citit""#, printed: "") == nil, "Not a number")
+    }
 }

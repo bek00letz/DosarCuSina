@@ -193,8 +193,8 @@ struct CaptureFiler {
         if case .review(let review) = intent, let document {
             pictures = await documents.pictureChange(for: document, choices: review.pageChoices)
         }
-        // A question the person must answer is asked before anything is written.
-        if case .review(let review) = intent { try askAboutAMeterReading(for: review) }
+        // Every question the person must answer is asked before anything is written.
+        try askFirst(for: intent, document: document)
         // From here nothing waits: one step, everything or nothing.
         let filing = try UnitOfWork.performUndoable(in: context) {
             switch intent {
@@ -238,31 +238,27 @@ struct CaptureFiler {
             var descriptor = FetchDescriptor<Asset>(predicate: #Predicate { $0.id == id })
             descriptor.fetchLimit = 1
             guard let asset = try context.fetch(descriptor).first else { throw FilingError.missingSection }
-            // What was read never lands in an example without the person keeping it as theirs.
-            try ExampleOwnership.requireReal(asset)
-            if let documentsKey = try Self.personalDocumentsKey(for: review, destinationTemplateKey: asset.templateKey, templates: templates) {
+            // What was read never lands in an example without the person keeping it as theirs
+            // (asked before the unit opened, `askFirst`).
+            switch try Self.route(for: review, into: asset, templates: templates) {
+            case .personalDocument(let documentsKey):
                 // A person: the document becomes one of their documents, named after them.
                 // Named after its holder as printed, else after the person it goes to.
                 let namesHolder = review.kind.isPersonalDocument && CaptureMapping.holderName(review.valuesByKey) != nil
                 let name = namesHolder ? review.title : DocumentNaming.name(document: review.title, holder: asset.name)
                 outcome.asset = try createSection(review, templateKey: documentsKey, name: name, parent: asset, plan: plan, templates: templates)
-                break
-            }
-            if Self.filesUnderSubscription(review, destinationTemplateKey: asset.templateKey, templates: templates) {
+            case .subscriptionUnderHome:
                 // A home: the bill or contract goes to its subscription there, or a new one.
                 try fillHomeAddress(asset, from: review, templates: templates)
                 outcome.asset = try subscription(for: review, under: asset, plan: plan, templates: templates)
-                break
-            }
-            if templates.plays(.subscription, asset.templateKey), review.kind.profile.filing == .subscription,
-               let template = templates[asset.templateKey] {
+            case .subscription(let template):
                 try fillHomeAddress(asset.parent, from: review, templates: templates)
                 try updateSubscription(asset, from: review, template: template)
                 outcome.asset = asset
-                break
+            case .values:
+                try writeValues(of: review, to: asset, templates: templates)
+                outcome.asset = asset
             }
-            try writeValues(of: review, to: asset, templates: templates)
-            outcome.asset = asset
         case .newAsset(let templateKey):
             let name = review.newAssetName.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !name.isEmpty else { throw FilingError.missingName }
@@ -307,7 +303,12 @@ struct CaptureFiler {
         outcome.nextDue = outcome.obligation?.dueDay(in: calendar)
 
         // A bill, in its subscription's history: what it came to and when, for the trend
-        // and for knowing when the next one is due.
+        // and for knowing when the next one is due. A bill logs one entry: filed again, the
+        // entry it logged before takes what was read now (and moves with the bill), and it
+        // goes when the bill no longer goes to a subscription, as its meter reading does.
+        let billFiledBefore = Self.entryFiledBefore(by: document) { entry in
+            entry.kind == .payment && entry.asset.map { templates.plays(.subscription, $0.templateKey) } == true
+        }
         if review.kind.profile.deadlineIsOptIn, let asset = outcome.asset, templates.plays(.subscription, asset.templateKey) {
             outcome.bill = try HistoryActions(context: context, now: now).record(
                 on: asset,
@@ -315,8 +316,11 @@ struct CaptureFiler {
                 title: review.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? CaptureMapping.defaultTitle(for: review.kind, fields: review.valuesByKey) : review.title,
                 occurredAt: Self.billDay(review, today: today).noonDate(in: calendar),
                 totalCost: review.total,
-                note: review.value(.invoiceNumber)?.text.map { String(localized: "Factura nr. \($0)") }
+                note: review.value(.invoiceNumber)?.text.map { String(localized: "Factura nr. \($0)") },
+                replacing: billFiledBefore
             )
+        } else if review.kind.profile.deadlineIsOptIn, let billFiledBefore {
+            try HistoryActions(context: context, now: now).delete(billFiledBefore)
         }
 
         // 3. Who issued it.
@@ -337,7 +341,8 @@ struct CaptureFiler {
                 validUntil: review.validUntil,
                 asset: outcome.asset,
                 obligation: outcome.obligation,
-                historyEntry: outcome.completion ?? outcome.bill,
+                // A bill's document is the bill's own entry, not the cycle its reminder closed.
+                historyEntry: outcome.bill ?? outcome.completion,
                 provider: provider
             )
             outcome.attachment = filed
@@ -356,19 +361,14 @@ struct CaptureFiler {
         let obligation = completion.obligation
         let today = CalendarDay(now(), calendar: calendar)
         var outcome = Outcome(asset: obligation.asset, obligation: obligation)
-        let review = try completion.document.map { result -> CaptureReview in
-            if obligation.asset != nil { try ExampleOwnership.requireReal(obligation.asset) }
-            var review = CaptureReview(result: result, assets: [], context: context)
-            review.destination = obligation.asset.map { .asset($0.id) } ?? .none
-            review.keepsPhotoOnRequest = completion.keepsPhotoOnRequest
-            return review
-        }
+        // Whether it may go into an example was asked before the unit opened (`askFirst`).
+        let review = completionReview(completion)
 
         // 1. The values read, onto the section: a new RCA policy brings its number, insurer and
         // claims phone, into the fields of the deadline being closed (a CASCO's into CASCO's).
         if let review, let asset = obligation.asset {
             let templates = try TemplateStore(context: context).templatesByKey()
-            let closing = obligation.blueprintKey.flatMap { key in templates[asset.templateKey]?.blueprints.first { $0.key == key } }
+            let closing = closingBlueprint(of: obligation, templates: templates)
             try writeValues(of: review, to: asset, templates: templates, deadline: closing)
             try keepBonusMalus(bonusMalusChoice(for: review), on: asset, deadline: closing)
         }
@@ -407,6 +407,7 @@ struct CaptureFiler {
             try ProviderActions(context: context, now: now).findOrCreate(name: name, taxID: taxID, trade: trade, linkedTo: visit.asset)
         }
         if let provider, case .existing = visit.provider { try ProviderActions(context: context, now: now).link(provider, to: visit.asset) }
+        // The same invoice filed again: the visit it was filed with takes these values.
         let entry = try HistoryActions(context: context, now: now).recordVisit(
             on: visit.asset,
             kind: visit.kind,
@@ -419,7 +420,8 @@ struct CaptureFiler {
             rating: visit.rating,
             calendar: calendar,
             odometerSource: visit.odometerSource,
-            lowerReading: lowerReading
+            lowerReading: lowerReading,
+            replacing: Self.visitFiledBefore(by: document, on: visit.asset)
         ).value
         var outcome = Outcome(asset: visit.asset, visit: entry)
         if let document {
@@ -470,26 +472,104 @@ struct CaptureFiler {
         return log
     }
 
-    /// A bill's index lower than its subscription's last one asks before the filing's unit
-    /// opens (`HouseholdMutations.lowerReadingQuestion`), never from inside it: a unit taken
-    /// back after it wrote the bill leaves the subscription's readings unreadable. The
-    /// reading this bill's document recorded before doesn't count: filing replaces it.
-    private func askAboutAMeterReading(for review: CaptureReview) throws {
-        guard lowerReading == nil else { return }
+    // MARK: Asking first
+
+    /// Every question the filing raises, asked before its unit of work opens, never from
+    /// inside it (`StepQuestion`): a unit taken back after it wrote leaves the records it
+    /// touched unreadable until they are fetched again. First whether what was read may go
+    /// into an example, then a counter lower than before: the kilometres an invoice or a
+    /// report prints, a visit's odometer, a bill's meter index. Each reading is planned by
+    /// the action that records it, so the answer the person gives is the one it finds.
+    private func askFirst(for intent: Intent, document: CapturedDocument?) throws {
+        switch intent {
+        case .review(let review):
+            try askFirst(for: review)
+        case .completion(let completion):
+            guard let review = completionReview(completion), let asset = completion.obligation.asset else { return }
+            try ExampleOwnership.requireReal(asset)
+            let templates = try TemplateStore(context: context).templatesByKey()
+            let closing = closingBlueprint(of: completion.obligation, templates: templates)
+            try HouseholdMutations.askAboutReading(try valuesReading(of: review, onto: asset, templates: templates, deadline: closing),
+                                                   answer: lowerReading)
+        case .visit(let visit):
+            try ExampleOwnership.requireReal(visit.asset)
+            let reading = HistoryActions(context: context, now: now).plannedReading(
+                visit.odometer, on: visit.asset, at: visit.occurredAt, source: visit.odometerSource,
+                replacing: Self.visitFiledBefore(by: document, on: visit.asset)
+            )
+            try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
+        }
+    }
+
+    /// The review's questions: an existing section it writes into may be an example, its
+    /// values may bring a lower counter, and a bill's index may be lower than its
+    /// subscription's last one. The reading this bill's document recorded before doesn't
+    /// count: filing replaces it. A new section holds nothing yet, so it asks nothing.
+    private func askFirst(for review: CaptureReview) throws {
         let templates = try TemplateStore(context: context).templatesByKey()
         let assets = try context.fetch(FetchDescriptor<Asset>())
+        if case .asset(let id) = review.destination, let asset = assets.first(where: { $0.id == id }) {
+            try ExampleOwnership.requireReal(asset)
+            if case .values = try Self.route(for: review, into: asset, templates: templates) {
+                try HouseholdMutations.askAboutReading(try valuesReading(of: review, onto: asset, templates: templates), answer: lowerReading)
+            }
+        }
         let plan = CaptureFilingPlan.make(for: review, templates: templates, assets: assets,
                                           today: CalendarDay(now(), calendar: calendar), calendar: calendar)
         guard case .record(let reading, _)? = plan.meter,
               let section = review.existingSection(assets: assets, templates: templates),
               templates.plays(.subscription, section.templateKey) else { return }
         let kept = review.duplicateAttachmentID
-        if let question = HouseholdMutations.lowerReadingQuestion(
-            for: reading.value, on: section, at: reading.day.noonDate(in: calendar), unit: reading.unit, kind: reading.kind,
-            ignoring: { log in kept != nil && (log.attachments ?? []).contains { $0.id == kept } }
-        ) {
-            throw question
+        let planned = PlannedReading(
+            reading.value, on: section, at: reading.day.noonDate(in: calendar), source: .document, unit: reading.unit, kind: reading.kind,
+            replacing: { log in kept != nil && (log.attachments ?? []).contains { $0.id == kept } }
+        )
+        try HouseholdMutations.askAboutReading(planned, answer: lowerReading)
+    }
+
+    /// The reading writing a review's values onto `asset` records (the kilometres an invoice
+    /// prints, dated by the document), as `writeValues` will ask `AssetActions` to save them.
+    private func valuesReading(of review: CaptureReview, onto asset: Asset, templates: [String: CategoryTemplate],
+                               deadline: ObligationBlueprint? = nil) throws -> PlannedReading? {
+        guard let merged = mergedValues(of: review, onto: asset, templates: templates, deadline: deadline) else { return nil }
+        return try AssetActions(context: context, calendar: calendar, now: now).plannedReading(
+            updating: asset, to: merged, source: .document, date: review.documentDay?.noonDate(in: calendar)
+        )
+    }
+
+    /// "Am rezolvat"'s new document as a review of the section it renews; nil without one.
+    private func completionReview(_ completion: Completion) -> CaptureReview? {
+        completion.document.map { result in
+            var review = CaptureReview(result: result, assets: [], context: context)
+            review.destination = completion.obligation.asset.map { .asset($0.id) } ?? .none
+            review.keepsPhotoOnRequest = completion.keepsPhotoOnRequest
+            return review
         }
+    }
+
+    /// The blueprint of the deadline "Am rezolvat" closes, whose fields its document fills.
+    private func closingBlueprint(of obligation: Obligation, templates: [String: CategoryTemplate]) -> ObligationBlueprint? {
+        guard let asset = obligation.asset else { return nil }
+        return obligation.blueprintKey.flatMap { key in templates[asset.templateKey]?.blueprints.first { $0.key == key } }
+    }
+
+    // MARK: Filed again
+
+    /// The history entry a kept document logged when it was filed before, when `isOwn` says
+    /// it is the document's own record (a bill's payment, a visit): filing the document again
+    /// updates that entry instead of adding a second one. Never a completion, which belongs
+    /// to the deadline whose cycle it closed.
+    static func entryFiledBefore(by document: CapturedDocument?, _ isOwn: (HistoryEntry) -> Bool) -> HistoryEntry? {
+        guard case .kept(let attachment)? = document, let entry = attachment.historyEntry,
+              !entry.isDeleted, !entry.isCompletion, isOwn(entry) else { return nil }
+        return entry
+    }
+
+    /// The visit an invoice was filed with before on this section: an entry of its there that
+    /// isn't a bill. A photo kept on another section moves here with none of its old links
+    /// (`AttachmentActions.fileCaptured`), so it makes a visit of its own.
+    static func visitFiledBefore(by document: CapturedDocument?, on asset: Asset) -> HistoryEntry? {
+        entryFiledBefore(by: document) { $0.kind != .payment && $0.asset?.id == asset.id }
     }
 
     /// Where a policy's bonus-malus class goes, worked out from the household as it is now.
@@ -523,9 +603,7 @@ struct CaptureFiler {
     /// `deadline` is the deadline the values belong to, when the caller knows it better than
     /// the document does ("Am rezolvat" on a CASCO).
     private func writeValues(of review: CaptureReview, to asset: Asset, templates: [String: CategoryTemplate], deadline: ObligationBlueprint? = nil) throws {
-        guard let template = templates[asset.templateKey] else { return }
-        let read = Self.values(from: review, for: template.definition, deadline: deadline ?? review.deadlineBlueprint(in: template.definition))
-        let merged = Self.merging(read, into: asset.values)
+        guard let merged = mergedValues(of: review, onto: asset, templates: templates, deadline: deadline) else { return }
         if merged != asset.values {
             // A reading on the document (the kilometres on an invoice) is dated by the document.
             try AssetActions(context: context, calendar: calendar, now: now).update(
@@ -533,6 +611,15 @@ struct CaptureFiler {
                 readingSource: .document, readingDate: review.documentDay?.noonDate(in: calendar), lowerReading: lowerReading
             )
         }
+    }
+
+    /// The section's values once a review's are written onto them (`merging`); nil when its
+    /// category isn't known.
+    private func mergedValues(of review: CaptureReview, onto asset: Asset, templates: [String: CategoryTemplate],
+                              deadline: ObligationBlueprint?) -> FieldValues? {
+        guard let template = templates[asset.templateKey] else { return nil }
+        let read = Self.values(from: review, for: template.definition, deadline: deadline ?? review.deadlineBlueprint(in: template.definition))
+        return Self.merging(read, into: asset.values)
     }
 
     /// What a reading brings to values already kept: what was read replaces what was there,
@@ -628,6 +715,30 @@ struct CaptureFiler {
         guard keys.contains(where: { templates[$0]?.isSensitive == true }), !vault.isSessionUnlocked else { return }
         let result = await vault.unlock(reason: String(localized: "Deschide secțiunea protejată ca să salvez actul."))
         guard result == .success else { throw FilingError.locked }
+    }
+
+    /// Where a review filed into a section that exists writes: decided once, for filing and
+    /// for asking first.
+    enum ExistingRoute {
+        /// A person: a new document of theirs, in this category.
+        case personalDocument(templateKey: String)
+        /// A home: its subscription for the bill or contract, or a new one.
+        case subscriptionUnderHome
+        /// The subscription itself.
+        case subscription(CategoryTemplate)
+        /// The values onto the section itself.
+        case values
+    }
+
+    static func route(for review: CaptureReview, into asset: Asset, templates: [String: CategoryTemplate]) throws -> ExistingRoute {
+        if let key = try personalDocumentsKey(for: review, destinationTemplateKey: asset.templateKey, templates: templates) {
+            return .personalDocument(templateKey: key)
+        }
+        if filesUnderSubscription(review, destinationTemplateKey: asset.templateKey, templates: templates) { return .subscriptionUnderHome }
+        if templates.plays(.subscription, asset.templateKey), review.kind.profile.filing == .subscription, let template = templates[asset.templateKey] {
+            return .subscription(template)
+        }
+        return .values
     }
 
     /// The category a document becomes when it is filed under a person (a category whose

@@ -124,6 +124,7 @@ public final class AssetActions {
             for planned in obligations where planned.isSelected {
                 try HouseholdMutations.makeObligation(from: planned.blueprint, for: asset, firstDue: planned.firstDue, today: today, calendar: calendar, in: context)
             }
+            // A new section has no readings before its first, so this never asks.
             if let reading = HouseholdMutations.heroMetricValue(of: asset, template: template.definition) {
                 try HouseholdMutations.recordReading(reading, on: asset, at: now(), source: .person,
                                                      unit: HouseholdMutations.heroMetricUnit(template: template.definition), in: context)
@@ -151,17 +152,19 @@ public final class AssetActions {
         readingDate: Date? = nil,
         lowerReading: LowerReadingAnswer? = nil
     ) throws -> EditOutcome {
-        // One step: a question about a lower reading leaves nothing half-changed.
+        let previous = asset.values
+        let template = try TemplateStore(context: context).template(forKey: asset.templateKey)
+        let values = try template.map {
+            try SecretFields.sealing(
+                PaymentCardNumbers.sanitizing(values.normalizingChoices(for: $0.definition).applyingRules(of: $0.definition, previous: previous, calendar: calendar)),
+                definition: $0.definition, sealer: sealer
+            )
+        } ?? PaymentCardNumbers.sanitizing(values)
+        // Every question first, before anything is written (`StepQuestion`).
+        let reading = template.flatMap { plannedReading(asset, values: values, template: $0.definition, source: readingSource, date: readingDate) }
+        try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
         return try UnitOfWork.perform(in: context) {
             var outcome = EditOutcome()
-            let previous = asset.values
-            let template = try TemplateStore(context: context).template(forKey: asset.templateKey)
-            let values = try template.map {
-                try SecretFields.sealing(
-                    PaymentCardNumbers.sanitizing(values.normalizingChoices(for: $0.definition).applyingRules(of: $0.definition, previous: previous, calendar: calendar)),
-                    definition: $0.definition, sealer: sealer
-                )
-            } ?? PaymentCardNumbers.sanitizing(values)
             asset.name = name
             asset.values = values
             asset.notes = notes
@@ -193,11 +196,8 @@ public final class AssetActions {
                           blueprint.isWorthScheduling(on: day, today: today, values: values) else { continue }
                     try HouseholdMutations.makeObligation(from: blueprint, for: asset, firstDue: day, today: today, calendar: calendar, in: context)
                 }
-                if let reading = HouseholdMutations.heroMetricValue(of: asset, template: template.definition),
-                   reading != HouseholdMutations.heroMetricValue(values: previous, template: template.definition) {
-                    try HouseholdMutations.recordReading(reading, on: asset, at: readingDate ?? now(), source: readingSource,
-                                                         unit: HouseholdMutations.heroMetricUnit(template: template.definition),
-                                                         answer: lowerReading, in: context)
+                if let reading {
+                    try HouseholdMutations.recordReading(reading, answer: lowerReading, in: context)
                 }
             }
             // A subscription's direct debit changed: its bill reminder pauses or comes back.
@@ -206,6 +206,29 @@ public final class AssetActions {
             try save()
             return outcome
         }
+    }
+
+    /// The reading saving `values` on `asset` records: its hero value (the kilometres), when
+    /// it changed, dated `date` (a document's) or now. Asked about before the step's unit
+    /// opens, by `update` and by a flow that writes values inside a larger step (`CaptureFiler`).
+    func plannedReading(updating asset: Asset, to values: FieldValues, source: ReadingSource = .person, date: Date? = nil) throws -> PlannedReading? {
+        guard let template = try TemplateStore(context: context).template(forKey: asset.templateKey) else { return nil }
+        let prepared = values.normalizingChoices(for: template.definition).applyingRules(of: template.definition, previous: asset.values, calendar: calendar)
+        return plannedReading(asset, values: prepared, template: template.definition, source: source, date: date)
+    }
+
+    /// Asks what saving `values` on `asset` with `update` would ask (a lower counter), without
+    /// changing anything: for a screen that saves the edit with other changes in one unit of
+    /// work (a section's photo and its fields), so it asks before the unit writes the photo.
+    public func askFirst(updating asset: Asset, to values: FieldValues, lowerReading: LowerReadingAnswer?) throws {
+        try HouseholdMutations.askAboutReading(try plannedReading(updating: asset, to: values), answer: lowerReading)
+    }
+
+    /// The one rule: the hero value of `values` (as saving writes them), when it isn't the one kept now.
+    private func plannedReading(_ asset: Asset, values: FieldValues, template: TemplateDefinition, source: ReadingSource, date: Date?) -> PlannedReading? {
+        guard let reading = HouseholdMutations.heroMetricValue(values: values, template: template),
+              reading != HouseholdMutations.heroMetricValue(of: asset, template: template) else { return nil }
+        return PlannedReading(reading, on: asset, at: date ?? now(), source: source, unit: HouseholdMutations.heroMetricUnit(template: template))
     }
 
     /// What saving an edit changed beyond the values, for the screen to say.
@@ -228,9 +251,11 @@ public final class AssetActions {
     ) throws -> MeasurementLog? {
         let template = try TemplateStore(context: context).template(forKey: asset.templateKey)
         let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) }
+        // Every question first, before anything is written (`StepQuestion`).
         let isExample = try ExampleOwnership.requireReal(asset)
-        let log = try HouseholdMutations.recordReading(value, on: asset, at: date ?? now(), source: source, unit: unit,
-                                                       answer: lowerReading, isExample: isExample, in: context)
+        let reading = PlannedReading(value, on: asset, at: date ?? now(), source: source, unit: unit)
+        try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
+        let log = try HouseholdMutations.recordReading(reading, answer: lowerReading, isExample: isExample, in: context)
         if log != nil { try save() }
         return log
     }
@@ -260,9 +285,11 @@ public final class AssetActions {
         asExample: Bool = false,
         lowerReading: LowerReadingAnswer? = nil
     ) throws -> MeasurementLog {
+        // Every question first, before anything is written (`StepQuestion`).
         let isExample = try ExampleOwnership.requireReal(asset, creatingExample: asExample)
-        let log = try HouseholdMutations.recordReading(value, on: asset, at: date ?? now(), source: .person, unit: unit, kind: kind,
-                                                       name: name ?? "", answer: lowerReading, isExample: isExample, in: context)
+        let reading = PlannedReading(value, on: asset, at: date ?? now(), source: .person, unit: unit, kind: kind, name: name ?? "")
+        try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
+        let log = try HouseholdMutations.recordReading(reading, answer: lowerReading, isExample: isExample, in: context)
         try save()
         // Only an estimate returns nil, and this records what was measured.
         return log!

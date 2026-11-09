@@ -123,6 +123,8 @@ struct AssetEditSheet: View {
         }
         do {
             let actions = AssetActions(context: context)
+            // A lower counter is asked before the photo is written (`StepQuestion`).
+            try actions.askFirst(updating: asset, to: values, lowerReading: lowerReading)
             // The photo and the fields are one change: both are kept, or neither.
             let outcome = try UnitOfWork.perform(in: context) { () -> AssetActions.EditOutcome? in
                 if photoData != originalPhoto {

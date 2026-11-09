@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import SwiftData
 
 /// The one way the engine commits changes, and the way several actions become
@@ -20,6 +21,12 @@ import SwiftData
 ///   back with it: that save happens before or after, on its own.
 /// - **A rollback takes back only the unit's own changes.** Changes someone else
 ///   left unsaved on the context are saved before the unit opens.
+///
+/// - **It asks first.** A step's questions for the person (`StepQuestion`: a lower counter,
+///   something of theirs in an example) are asked before its unit opens, never from inside
+///   it once it has written: a test run stops where one comes too late.
+/// - **What it took back can be read again.** After a rollback, the records the unit touched
+///   are fetched again, so a screen drawing them next reads them as they were.
 ///
 /// Work that must only happen once the changes are kept goes in `afterCommit(in:_:)`.
 ///
@@ -57,7 +64,7 @@ public enum UnitOfWork {
         do {
             try context.save()
         } catch {
-            context.rollback()
+            rollBack(context)
             throw error
         }
     }
@@ -72,6 +79,7 @@ public enum UnitOfWork {
         do {
             result = try work()
         } catch {
+            noteQuestionAskedLate(error, in: context)
             abort(context)
             throw error
         }
@@ -150,7 +158,45 @@ public enum UnitOfWork {
     /// Discards everything the unit recorded and closes it.
     private static func abort(_ context: ModelContext) {
         open[ObjectIdentifier(context)] = nil
+        rollBack(context)
+    }
+
+    /// Takes back what the context holds unsaved, then fetches again every record it touched
+    /// and every record those pointed at. SwiftData leaves a rolled-back record's
+    /// relationships unreadable until it is fetched again: on the iOS 27 simulator, reading a
+    /// section's deadlines after a failed visit stopped the test run. Nothing unsaved: nothing
+    /// to take back, and nothing is touched.
+    private static func rollBack(_ context: ModelContext) {
+        guard context.hasChanges else { return }
+        context.processPendingChanges()
+        var touched = Set<RecordRef>()
+        for model in context.insertedModelsArray + context.changedModelsArray + context.deletedModelsArray {
+            guard let state = RecordState.capture(any: model) else { continue }
+            touched.insert(state.ref)
+            touched.formUnion(state.linked)
+        }
         context.rollback()
+        for ref in touched { _ = UndoableRecords.find(ref, in: context) }
+    }
+
+    /// A question thrown after the unit wrote is a step that didn't ask first. While tests run
+    /// it stops here, so the test that takes that path fails where it happens; in the app it is
+    /// only logged, since the rollback leaves everything readable and a person must never lose
+    /// their work to a development check. Ask it before the unit opens (`StepQuestion`).
+    private static func noteQuestionAskedLate(_ error: any Error, in context: ModelContext) {
+        guard error is any StepQuestion, context.hasChanges else { return }
+        let message = "\(type(of: error)) was thrown after the unit of work wrote. Ask it before the unit opens."
+        log.fault("\(message, privacy: .public)")
+        #if DEBUG
+        if isRunningTests { assertionFailure(message) }
+        #endif
+    }
+
+    private static let log = Logger(subsystem: "com.ar.dosarcusina.app", category: "persistence")
+
+    /// Whether the app is hosting a test run (xcodebuild test sets this).
+    private static var isRunningTests: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     }
 
     /// Runs `action` once the open unit of work has saved, or right away when

@@ -131,7 +131,19 @@ final class AddSectionModel {
     /// Creates the section (and its category, for "Altceva…") with the chosen obligations,
     /// in one step: a failure leaves no empty category behind.
     func create(context: ModelContext) throws -> Asset {
-        try UnitOfWork.perform(in: context) { try createSection(context: context) }
+        // Whether it may go into an example is asked before a category of one's own is
+        // written (`StepQuestion`).
+        try ExampleOwnership.requireReal(try parentSection(in: context))
+        return try UnitOfWork.perform(in: context) { try createSection(context: context) }
+    }
+
+    /// The section the new one is filed under, if any.
+    private func parentSection(in context: ModelContext) throws -> Asset? {
+        try parentID.flatMap { id in
+            var descriptor = FetchDescriptor<Asset>(predicate: #Predicate { $0.id == id })
+            descriptor.fetchLimit = 1
+            return try context.fetch(descriptor).first
+        }
     }
 
     private func createSection(context: ModelContext) throws -> Asset {
@@ -149,11 +161,7 @@ final class AddSectionModel {
         } else {
             throw AddSectionError.noCategory
         }
-        let parent: Asset? = try parentID.flatMap { id in
-            var descriptor = FetchDescriptor<Asset>(predicate: #Predicate { $0.id == id })
-            descriptor.fetchLimit = 1
-            return try context.fetch(descriptor).first
-        }
+        let parent = try parentSection(in: context)
         let asset = try AssetActions(context: context).create(
             name: effectiveName.isEmpty ? category.name : effectiveName,
             template: category,
