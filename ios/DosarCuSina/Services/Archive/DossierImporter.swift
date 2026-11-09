@@ -12,7 +12,9 @@ import SwiftData
 /// - secrets (PIN codes, secret rows) never come from an archive, and the ones
 ///   this phone keeps for the same records stay, in both modes;
 /// - parents follow the same rule as "Mută la…", so nothing ends up filed under itself;
-/// - no record's last change is later than now.
+/// - no record's last change is later than now;
+/// - what a newer build wrote that this one can't read (a recurrence, a template's
+///   section, a row under Date importante, a field value) comes in raw and is kept.
 ///
 /// It touches only the context it is given, so a backup is written away from the
 /// main thread (`DossierArchiveService.importPackageAway`).
@@ -136,7 +138,7 @@ struct DossierImporter {
                 key: dto.key, name: dto.name, summary: dto.summary, symbol: dto.symbol,
                 tint: TemplateTint(rawValue: dto.tint) ?? .gray, heroStyle: HeroStyle(rawValue: dto.heroStyle) ?? .standard,
                 isOnHomeByDefault: dto.isOnHome, isSensitiveByDefault: dto.isSensitive,
-                sections: dto.sections, blueprints: dto.blueprints, components: dto.components ?? [],
+                sections: dto.sections.items, blueprints: dto.blueprints.items, components: dto.components?.items ?? [],
                 pockets: dto.pockets.map { $0.compactMap(SectionPocket.init(rawValue:)) } ?? SectionPocket.standard,
                 behavior: dto.behavior ?? .standard,
                 version: 0
@@ -156,6 +158,12 @@ struct DossierImporter {
             }
             template.isBuiltIn = catalog != nil
             template.apply(definition)
+            if catalog == nil {
+                // The archive's own sections, deadlines and parts, with any this build can't read.
+                template.keptSections = dto.sections.replacingItems(definition.sections)
+                template.keptBlueprints = dto.blueprints.replacingItems(definition.blueprints)
+                template.keptComponents = (dto.components ?? KeptList()).replacingItems(definition.components)
+            }
             template.homeOrder = dto.homeOrder
             template.isOnHome = dto.isOnHome
             template.isSensitive = isLocked
@@ -202,7 +210,7 @@ struct DossierImporter {
             let values = PaymentCardNumbers.sanitizing(definition.map { dto.values.normalizingChoices(for: $0) } ?? dto.values)
             // Secrets this phone keeps for the record stay; an archive never brings any.
             asset.valuesData = StoredJSON.encode(SecretFields.keepingLocalSecrets(values, from: phone.secrets[id] ?? FieldValues(), definition: definition))
-            asset.customFacts = SecretFields.keepingLocalSecretFacts(dto.customFacts ?? [], from: phone.secretFacts[id] ?? [])
+            asset.keptFacts = SecretFields.keepingLocalSecretFacts(Self.withoutCardNumbers(dto.customFacts ?? KeptList()), from: phone.secretFacts[id] ?? [])
             asset.photoData = dto.photoPath.flatMap { package.files[$0] }
             asset.isExample = dto.isExample
             asset.createdAt = stamp(dto.createdAt)
@@ -222,6 +230,17 @@ struct DossierImporter {
             }
         }
         return map
+    }
+
+    /// Rows under Date importante with any card number masked, in the rows this build can't
+    /// read too. A sealed code is left as it is (and never comes in: see `keepingLocalSecretFacts`).
+    private static func withoutCardNumbers(_ facts: KeptList<CustomFact>) -> KeptList<CustomFact> {
+        let masked = facts.items.map { fact in
+            var fact = fact
+            if !SecretSealer.isSealed(fact.value) { fact.value = PaymentCardNumbers.redact(fact.value) }
+            return fact
+        }
+        return facts.replacingItems(masked).mappingUnreadable { PaymentCardNumbers.redacting($0) }
     }
 
     private func importObligations(_ result: inout ArchiveImportResult, assets: [UUID: Asset]) throws -> [UUID: Obligation] {
@@ -249,6 +268,7 @@ struct DossierImporter {
             obligation.reminders = dto.reminders
             obligation.remindersCustomized = dto.remindersCustomized ?? false
             obligation.reminderMinuteOfDay = dto.reminderMinuteOfDay
+            // A rule from a newer build is kept as it was written (`RecurrenceRule.unreadable`).
             obligation.recurrence = dto.recurrence
             obligation.estimatedCost = dto.estimatedCost
             obligation.provider = dto.provider
@@ -305,7 +325,9 @@ struct DossierImporter {
         for dto in package.historyEntries {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.history) }
             guard map[id] == nil else { result.skipped += 1; continue }
-            let entry = HistoryEntry(id: id, kind: HistoryKind(rawValue: dto.kind) ?? .note, title: dto.title, occurredAt: dto.occurredAt)
+            let entry = HistoryEntry(id: id, kind: .note, title: dto.title, occurredAt: dto.occurredAt)
+            // Kept as the archive has it: a kind from a newer build reads as a note.
+            entry.kindRaw = dto.kind
             entry.metricReading = dto.metricReading
             entry.totalCost = dto.totalCost
             entry.note = dto.note
@@ -359,7 +381,9 @@ struct DossierImporter {
         for dto in package.measurements {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.measurements) }
             guard map[id] == nil else { result.skipped += 1; continue }
-            let log = MeasurementLog(id: id, kind: MeasurementKind(rawValue: dto.kind) ?? .custom, name: dto.name, value: dto.value, recordedAt: dto.recordedAt)
+            let log = MeasurementLog(id: id, kind: .custom, name: dto.name, value: dto.value, recordedAt: dto.recordedAt)
+            // Kept as the archive has it: a kind from a newer build reads as custom.
+            log.kindRaw = dto.kind
             // Any label an earlier version wrote ("m³", "mc", "kWh") is kept as its key; no unit stays none.
             log.unit = MeasurementUnit.storedKey(for: dto.unit)
             log.secondaryValue = dto.secondaryValue
@@ -397,7 +421,9 @@ struct DossierImporter {
                 guard let data = package.files[path] else { throw ArchiveError.missingFile(path) }
                 return data
             }
-            let attachment = Attachment(id: id, fileName: dto.fileName, contentType: dto.contentType, data: original, kind: DocumentKind(rawValue: dto.kind) ?? .other)
+            let attachment = Attachment(id: id, fileName: dto.fileName, contentType: dto.contentType, data: original)
+            // Kept as the archive has it: a kind from a newer build reads as other.
+            attachment.kindRaw = dto.kind
             attachment.title = dto.title
             attachment.byteCount = dto.byteCount
             attachment.sha256 = dto.sha256 ?? attachment.sha256

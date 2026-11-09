@@ -59,9 +59,10 @@ public enum DossierV3 {
         public var homeOrder: Int
         public var isOnHome: Bool
         public var isSensitive: Bool
-        public var sections: [FieldSection]
-        public var blueprints: [ObligationBlueprint]
-        public var components: [ComponentDefinition]?
+        /// Entries this build can't read (from a newer one) are kept raw, in their places.
+        public var sections: KeptList<FieldSection>
+        public var blueprints: KeptList<ObligationBlueprint>
+        public var components: KeptList<ComponentDefinition>?
         /// `SectionPocket` raw values; missing means the standard set.
         public var pockets: [String]?
         public var createdAt: Date
@@ -80,8 +81,8 @@ public enum DossierV3 {
         public var tintOverride: String?
         public var notes: String?
         public var values: FieldValues
-        /// Free label–value rows under Date importante.
-        public var customFacts: [CustomFact]?
+        /// Free label–value rows under Date importante; rows this build can't read are kept raw.
+        public var customFacts: KeptList<CustomFact>?
         /// `vault/photos/<id>.jpg` when the asset has a photo.
         public var photoPath: String?
         public var isExample: Bool

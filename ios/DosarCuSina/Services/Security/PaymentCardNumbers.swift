@@ -67,7 +67,8 @@ public enum PaymentCardNumbers {
     /// The same values with every text masked by the "anywhere" rule, and the fields that
     /// keep only the last digits (`DocumentFields.cardLastFour`) cut to them.
     public static func sanitizing(_ values: FieldValues) -> FieldValues {
-        var result = values
+        // A value this build can't read is masked the same way, wherever text sits in it.
+        var result = values.mappingUnreadable { redacting($0) }
         for (key, value) in values.storage {
             // A sealed code is the secret's own business, never rewritten.
             guard case .text(let text) = value, !SecretSealer.isSealed(text) else { continue }
@@ -79,6 +80,11 @@ public enum PaymentCardNumbers {
             }
         }
         return result
+    }
+
+    /// Raw JSON a newer build wrote, with any card number in its text masked; sealed codes stay.
+    public static func redacting(_ raw: JSONValue) -> JSONValue {
+        raw.mappingStrings { SecretSealer.isSealed($0) ? $0 : redact($0) }
     }
 
     // MARK: - Runs of digits

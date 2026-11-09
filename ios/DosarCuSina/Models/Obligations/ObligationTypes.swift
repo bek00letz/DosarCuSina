@@ -257,6 +257,10 @@ public enum LegalRule: String, Codable, Sendable, CaseIterable {
 /// - `{"type": "fixedDates", "dates": ["03-31", "09-30"]}`
 /// - `{"type": "metric", "every": 10000, "unit": "km", "fallbackEvery": 1, "fallbackUnit": "year"}` (the unit by its key, `MeasurementUnit`)
 /// - `{"type": "legal", "rule": "vehicleITP"}`
+///
+/// A rule a newer build wrote that this one can't read (a type, a legal rule, a unit or an
+/// anchor it doesn't know) is `unreadable`: kept as stored and written back unchanged, read
+/// as one-off until the person picks a rule here.
 public enum RecurrenceRule: Hashable, Sendable, Codable {
     case none
     case interval(RecurrenceInterval, anchor: RecurrenceAnchor)
@@ -265,10 +269,14 @@ public enum RecurrenceRule: Hashable, Sendable, Codable {
     /// Due every `every` units of an asset counter, with a calendar fallback when there are no readings.
     case metric(every: Double, unit: MeasurementUnit, fallback: RecurrenceInterval?)
     case legal(LegalRule)
+    /// What a newer build wrote, as it wrote it. It behaves as one-off.
+    case unreadable(JSONValue)
 
     public var repeats: Bool {
-        if case .none = self { return false }
-        return true
+        switch self {
+        case .none, .unreadable: false
+        case .interval, .fixedDates, .metric, .legal: true
+        }
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -276,33 +284,48 @@ public enum RecurrenceRule: Hashable, Sendable, Codable {
     }
 
     public init(from decoder: Decoder) throws {
+        if let rule = (try? Self.read(from: decoder)) ?? nil {
+            self = rule
+        } else {
+            self = .unreadable(try JSONValue(from: decoder))
+        }
+    }
+
+    /// The rule as this build reads it, or nil when a newer build wrote something it doesn't know.
+    private static func read(from decoder: Decoder) throws -> RecurrenceRule? {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         switch try c.decode(String.self, forKey: .type) {
+        case "none":
+            return RecurrenceRule.none
         case "interval":
-            let unit = RecurrenceInterval.Unit(rawValue: try c.decode(String.self, forKey: .unit)) ?? .day
-            let anchor = RecurrenceAnchor(rawValue: try c.decodeIfPresent(String.self, forKey: .anchor) ?? "") ?? .dueDate
-            self = .interval(RecurrenceInterval(every: try c.decode(Int.self, forKey: .every), unit: unit), anchor: anchor)
+            guard let unit = RecurrenceInterval.Unit(rawValue: try c.decode(String.self, forKey: .unit)) else { return nil }
+            var anchor = RecurrenceAnchor.dueDate
+            if let stored = try c.decodeIfPresent(String.self, forKey: .anchor) {
+                guard let known = RecurrenceAnchor(rawValue: stored) else { return nil }
+                anchor = known
+            }
+            return .interval(RecurrenceInterval(every: try c.decode(Int.self, forKey: .every), unit: unit), anchor: anchor)
         case "fixedDates":
-            self = .fixedDates(try c.decode([MonthDay].self, forKey: .dates))
+            return .fixedDates(try c.decode([MonthDay].self, forKey: .dates))
         case "metric":
             var fallback: RecurrenceInterval?
-            if let every = try c.decodeIfPresent(Int.self, forKey: .fallbackEvery),
-               let unit = RecurrenceInterval.Unit(rawValue: try c.decodeIfPresent(String.self, forKey: .fallbackUnit) ?? "") {
+            if let every = try c.decodeIfPresent(Int.self, forKey: .fallbackEvery) {
+                guard let unit = RecurrenceInterval.Unit(rawValue: try c.decodeIfPresent(String.self, forKey: .fallbackUnit) ?? "") else { return nil }
                 fallback = RecurrenceInterval(every: every, unit: unit)
             }
-            self = .metric(every: try c.decode(Double.self, forKey: .every), unit: try c.decode(MeasurementUnit.self, forKey: .unit), fallback: fallback)
+            return .metric(every: try c.decode(Double.self, forKey: .every), unit: try c.decode(MeasurementUnit.self, forKey: .unit), fallback: fallback)
         case "legal":
-            if let rule = LegalRule(rawValue: try c.decode(String.self, forKey: .rule)) {
-                self = .legal(rule)
-            } else {
-                self = .none
-            }
+            return LegalRule(rawValue: try c.decode(String.self, forKey: .rule)).map(RecurrenceRule.legal)
         default:
-            self = .none
+            return nil
         }
     }
 
     public func encode(to encoder: Encoder) throws {
+        if case .unreadable(let raw) = self {
+            try raw.encode(to: encoder)
+            return
+        }
         var c = encoder.container(keyedBy: CodingKeys.self)
         switch self {
         case .none:
@@ -326,6 +349,8 @@ public enum RecurrenceRule: Hashable, Sendable, Codable {
         case .legal(let rule):
             try c.encode("legal", forKey: .type)
             try c.encode(rule.rawValue, forKey: .rule)
+        case .unreadable:
+            break
         }
     }
 }

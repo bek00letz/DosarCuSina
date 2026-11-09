@@ -36,7 +36,8 @@ public enum SecretFields {
     /// The values without any secret, for anything that leaves the binder: every
     /// sealed value, and every value of a field the template marks secret.
     public static func stripping(_ values: FieldValues, definition: TemplateDefinition?) -> FieldValues {
-        var result = values
+        // A value this build can't read is left out too when anything in it is sealed.
+        var result = values.mappingUnreadable { $0.containsString(where: SecretSealer.isSealed) ? nil : $0 }
         for (key, value) in values where isSealed(value) { result[key] = nil }
         for field in definition.map(fields(in:)) ?? [] { result[field.key] = nil }
         return result
@@ -52,6 +53,14 @@ public enum SecretFields {
     /// The person's own rows without the secret ones, for anything that leaves the binder.
     public static func strippingFacts(_ facts: [CustomFact]) -> [CustomFact] {
         facts.filter { !$0.isSecret }
+    }
+
+    /// The same for rows as stored: a row this build can't read is left out too when it says
+    /// it is secret or anything in it is sealed.
+    public static func strippingFacts(_ facts: KeptList<CustomFact>) -> KeptList<CustomFact> {
+        facts.replacingItems(strippingFacts(facts.items)).keepingUnreadable { raw in
+            raw["isSecret"]?.bool != true && !raw.containsString(where: SecretSealer.isSealed)
+        }
     }
 
     /// The values with every secret typed in plain sealed. Values already sealed
@@ -98,6 +107,12 @@ public enum SecretFields {
         let kept = existing.filter(\.isSecret)
         let keptIDs = Set(kept.map(\.id))
         return strippingFacts(incoming).filter { !keptIDs.contains($0.id) } + kept
+    }
+
+    /// The same for rows as an archive carries them, with the rows it can't read (none secret).
+    public static func keepingLocalSecretFacts(_ incoming: KeptList<CustomFact>, from existing: [CustomFact]) -> KeptList<CustomFact> {
+        let stripped = strippingFacts(incoming)
+        return stripped.replacingItems(keepingLocalSecretFacts(stripped.items, from: existing))
     }
 }
 

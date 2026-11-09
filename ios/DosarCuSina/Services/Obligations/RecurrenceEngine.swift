@@ -54,7 +54,7 @@ public enum RecurrenceEngine {
         calendar: Calendar = .current
     ) -> NextDue? {
         switch rule {
-        case .none:
+        case .none, .unreadable:
             return nil
 
         case .interval(let interval, .dueDate):

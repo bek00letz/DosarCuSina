@@ -66,9 +66,17 @@ extension DosarSchemaV8 {
             values[key]
         }
 
+        /// The rows this build can read. Writing them keeps any a newer build wrote that this one
+        /// can't (`KeptList`).
         public var customFacts: [CustomFact] {
-            get { StoredJSON.decode([CustomFact].self, from: customFactsData) ?? [] }
-            set { customFactsData = newValue.isEmpty ? nil : StoredJSON.encode(newValue); updatedAt = Date() }
+            get { keptFacts.items }
+            set { keptFacts = keptFacts.replacingItems(newValue); updatedAt = Date() }
+        }
+
+        /// The rows as stored, with any this build can't read: what a backup carries.
+        public var keptFacts: KeptList<CustomFact> {
+            get { KeptList.stored(in: customFactsData) }
+            set { customFactsData = newValue.isEmpty && newValue.isFullyRead ? nil : StoredJSON.encode(newValue) }
         }
 
         public var tintOverride: TemplateTint? {

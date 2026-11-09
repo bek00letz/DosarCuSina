@@ -215,8 +215,8 @@ public struct DossierArchiveService {
                 key: template.key, name: template.name, summary: template.summary, symbol: template.symbol,
                 tint: template.tintRaw, heroStyle: template.heroStyleRaw, isBuiltIn: template.isBuiltIn,
                 version: template.builtInVersion, homeOrder: template.homeOrder, isOnHome: template.isOnHome,
-                isSensitive: template.isSensitive, sections: template.sections, blueprints: template.blueprints,
-                components: template.components, pockets: template.pockets.map(\.rawValue),
+                isSensitive: template.isSensitive, sections: template.keptSections, blueprints: template.keptBlueprints,
+                components: template.keptComponents, pockets: template.pockets.map(\.rawValue),
                 createdAt: template.createdAt, updatedAt: template.updatedAt, behavior: template.behavior == .standard ? nil : template.behavior
             )
         }
@@ -233,7 +233,7 @@ public struct DossierArchiveService {
                 id: DossierV3.id(asset.id), templateKey: asset.templateKey, name: asset.name,
                 parentId: DossierV3.id(asset.parent?.id), symbolOverride: asset.symbolOverride, tintOverride: asset.tintOverrideRaw, notes: asset.notes,
                 values: SecretFields.stripping(asset.values, definition: definitions[asset.templateKey] ?? BuiltInTemplates.definition(for: asset.templateKey)),
-                customFacts: SecretFields.strippingFacts(asset.customFacts).nilIfEmpty,
+                customFacts: SecretFields.strippingFacts(asset.keptFacts).nilIfEmpty,
                 photoPath: photoPath, isExample: asset.isExample,
                 createdAt: asset.createdAt, updatedAt: asset.updatedAt
             )
@@ -414,8 +414,9 @@ public struct DossierArchiveService {
     }
 }
 
-private extension Array {
-    var nilIfEmpty: Self? { isEmpty ? nil : self }
+private extension KeptList {
+    /// Nothing at all: no row this build reads, and none it can't.
+    var nilIfEmpty: Self? { isEmpty && isFullyRead ? nil : self }
 }
 
 extension Bundle {
