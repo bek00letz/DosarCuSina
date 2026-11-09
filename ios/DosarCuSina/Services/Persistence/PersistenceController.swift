@@ -126,7 +126,7 @@ public final class PersistenceController {
         return base.appending(path: "Dosar-v2.store")
     }
 
-    public nonisolated static let schema = Schema(versionedSchema: DosarSchemaV5.self)
+    public nonisolated static let schema = Schema(versionedSchema: DosarSchemaV6.self)
 
     /// A container for the on-disk store, or an in-memory one for tests and previews.
     public nonisolated static func makeContainer(storeURL: URL? = nil, inMemory: Bool = false) throws -> ModelContainer {

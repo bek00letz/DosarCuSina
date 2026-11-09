@@ -316,7 +316,8 @@ public struct DossierArchiveService {
                 isExample: attachment.isExample, assetId: DossierV3.id(attachment.asset?.id),
                 obligationId: DossierV3.id(attachment.obligation?.id), historyEntryId: DossierV3.id(attachment.historyEntry?.id),
                 serviceItemId: DossierV3.id(attachment.serviceItem?.id), measurementId: DossierV3.id(attachment.measurement?.id),
-                providerId: DossierV3.id(attachment.provider?.id), validUntil: attachment.validUntil.map { CalendarDay($0, calendar: calendar) }
+                providerId: DossierV3.id(attachment.provider?.id), validUntil: attachment.validUntil.map { CalendarDay($0, calendar: calendar) },
+                framing: attachment.framing.isPlain ? nil : attachment.framing
             )
         }
 

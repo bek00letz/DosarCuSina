@@ -337,7 +337,37 @@
           "thumbnailPath": { "$ref": "#/$defs/path" },
           "documentDate": { "$ref": "#/$defs/day" },
           "validUntil": { "$ref": "#/$defs/day" },
-          "supersededById": { "$ref": "#/$defs/uuid" }
+          "supersededById": { "$ref": "#/$defs/uuid" },
+          "framing": {
+            "type": "object",
+            "properties": {
+              "version": { "type": "integer", "minimum": 1 },
+              "pages": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "crop": {
+                      "type": "array", "minItems": 4, "maxItems": 4,
+                      "items": {
+                        "type": "object", "required": ["x", "y"],
+                        "properties": { "x": { "type": "number", "minimum": 0, "maximum": 1 }, "y": { "type": "number", "minimum": 0, "maximum": 1 } }
+                      }
+                    },
+                    "prefersWholePhoto": { "type": "boolean" },
+                    "quarterTurns": { "type": "integer", "minimum": 0, "maximum": 3 },
+                    "choice": {
+                      "type": "object",
+                      "properties": {
+                        "quarterTurns": { "type": "integer", "minimum": 0, "maximum": 3 },
+                        "showsWholePhoto": { "type": "boolean" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }

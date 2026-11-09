@@ -196,8 +196,8 @@ struct UndoReceiptTests {
     // MARK: Every stored property is recorded
 
     @Test func everyStoredPropertyOfEveryModelIsRecorded() throws {
-        let schema = Schema(versionedSchema: DosarSchemaV5.self)
-        #expect(UndoableRecords.types.count == DosarSchemaV5.models.count, "Every model of the schema can be undone")
+        let schema = Schema(versionedSchema: DosarSchemaV6.self)
+        #expect(UndoableRecords.types.count == DosarSchemaV6.models.count, "Every model of the schema can be undone")
         for entity in schema.entities {
             let type = try #require(UndoableRecords.types[entity.name], "\(entity.name) is recorded")
             #expect(Set(Self.propertyNames(type)) == Set(entity.properties.map(\.name)), "\(entity.name) lists every stored property")

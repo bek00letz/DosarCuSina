@@ -405,6 +405,7 @@ struct DossierImporter {
             attachment.extractedText = dto.extractedText.map { PaymentCardNumbers.redact($0) }
             attachment.documentDate = dto.documentDate?.noonDate(in: calendar)
             attachment.validUntil = dto.validUntil?.noonDate(in: calendar)
+            attachment.framing = dto.framing ?? DocumentFraming()
             attachment.isArchived = dto.isArchived
             attachment.createdAt = dto.createdAt
             attachment.isExample = dto.isExample

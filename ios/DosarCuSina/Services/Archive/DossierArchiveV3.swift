@@ -218,6 +218,9 @@ public enum DossierV3 {
         public var providerId: String?
         /// The last day the document itself is valid, as read when it was filed.
         public var validUntil: CalendarDay?
+        /// How the pages are shown: the document found in each photo and which way up it
+        /// goes. Absent when every page is shown as it is.
+        public var framing: DocumentFraming? = nil
 
         /// Every file this record points to.
         public var allPaths: [String] { [path, thumbnailPath].compactMap { $0 } + pagePaths }
