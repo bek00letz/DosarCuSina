@@ -79,6 +79,8 @@ struct DosarCuSinaApp: App {
             }
         }
         DocumentFileProtection.apply(toStoreAt: PersistenceController.defaultStoreURL)
+        // Copies of documents a share left behind when the app was closed with the share sheet open.
+        DocumentShareFiles.removeLeftovers()
         // The same coordinator notification buttons, widgets, Siri and the background refresh use.
         let coordinator = SideEffectsCoordinator.shared(for: container)
         coordinator.start()

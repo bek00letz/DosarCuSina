@@ -64,7 +64,7 @@ public struct DocumentShareChoice: Hashable, Sendable {
 /// one PDF, with a neutral name. Never what was read off the document, its values, or
 /// anything written on it; pictures carry no location or camera details. Written into a
 /// folder of their own under `root`, removed once the share sheet closes (`remove`), and any
-/// a closed app left behind go the next time (`removeLeftovers`).
+/// a closed app left behind go when the app next starts or shares (`removeLeftovers`).
 public enum DocumentShareFiles {
     /// Where shares are written for the moment they take.
     public static var root: URL {
