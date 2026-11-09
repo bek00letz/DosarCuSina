@@ -41,7 +41,7 @@ public final class PersistenceController {
 
     private let storeURL: URL
     @ObservationIgnored private let isProtectedDataAvailable: @MainActor () -> Bool
-    @ObservationIgnored private let makeContainer: (URL) throws -> ModelContainer
+    @ObservationIgnored private let makeContainer: @MainActor (URL) throws -> ModelContainer
     @ObservationIgnored private var unlockObserver: (any NSObjectProtocol)?
 
     public convenience init(storeURL: URL = PersistenceController.defaultStoreURL) {
@@ -51,7 +51,7 @@ public final class PersistenceController {
     init(
         storeURL: URL,
         isProtectedDataAvailable: @escaping @MainActor () -> Bool,
-        makeContainer: @escaping (URL) throws -> ModelContainer
+        makeContainer: @escaping @MainActor (URL) throws -> ModelContainer
     ) {
         self.storeURL = storeURL
         self.isProtectedDataAvailable = isProtectedDataAvailable
@@ -128,15 +128,31 @@ public final class PersistenceController {
 
     public nonisolated static let schema = Schema(versionedSchema: DosarSchemaV8.self)
 
-    /// A container for the on-disk store, or an in-memory one for tests and previews.
-    public nonisolated static func makeContainer(storeURL: URL? = nil, inMemory: Bool = false) throws -> ModelContainer {
+    /// A container for the on-disk store, or an in-memory one for tests and previews. The one
+    /// place a container is made: its main context saves only through the unit of work.
+    public static func makeContainer(storeURL: URL? = nil, inMemory: Bool = false) throws -> ModelContainer {
         let configuration: ModelConfiguration
         if inMemory {
             configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         } else {
             configuration = ModelConfiguration(schema: schema, url: storeURL ?? defaultStoreURL, cloudKitDatabase: .none)
         }
-        return try ModelContainer(for: schema, migrationPlan: DosarMigrationPlan.self, configurations: [configuration])
+        let container = try ModelContainer(for: schema, migrationPlan: DosarMigrationPlan.self, configurations: [configuration])
+        container.mainContext.autosaveEnabled = false
+        return container
+    }
+
+    // MARK: Contexts
+
+    /// A context of its own on `container` (a backup written away from the main thread, a
+    /// reader for search or the widgets): the one way the app makes a context. Like the main
+    /// context, it saves only when the unit of work saves it, never by itself, so every save
+    /// keeps change times, masks card numbers and can be rolled back (`UnitOfWork`). SwiftData
+    /// saves a context by itself otherwise, around all of that.
+    public nonisolated static func context(in container: ModelContainer) -> ModelContext {
+        let context = ModelContext(container)
+        context.autosaveEnabled = false
+        return context
     }
 
     private static func moveStoreAside(at url: URL) {

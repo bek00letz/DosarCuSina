@@ -176,6 +176,35 @@ struct UnitOfWorkTests {
         #expect(try count(Attachment.self, in: context) == attachmentsBefore + 1)
         #expect(await store.processed(id: id) == nil, "The pages left capture once kept")
     }
+
+    // MARK: Saved only through the unit
+
+    @Test("Every context the app makes saves only through the unit of work, never by itself")
+    func contextsNeverSaveByThemselves() throws {
+        let container = try makeInMemoryContainer()
+        #expect(!container.mainContext.autosaveEnabled, "The main context, which every screen and action uses")
+        #expect(!PersistenceController.context(in: container).autosaveEnabled, "A context of its own: a backup, a reader")
+        #expect(!(try makeContext()).autosaveEnabled, "Tests make theirs the same way")
+    }
+
+    @Test("A change left on the context is never written until the unit of work saves it, with its card numbers masked")
+    func aChangeLeftUnsavedIsNotWritten() async throws {
+        let container = try makeInMemoryContainer()
+        let context = container.mainContext
+        try TemplateStore(context: context).installBuiltIns()
+        let boat = Asset(name: "Barca de pe lac", templateKey: BuiltInTemplates.Key.other)
+        boat.notes = "Card 4111 1111 1111 1111"
+        context.insert(boat)
+
+        // The main run loop turns, as it would between two taps; nothing saves by itself.
+        try await Task.sleep(for: .milliseconds(100))
+        let store = PersistenceController.context(in: container)
+        #expect(try store.fetchCount(FetchDescriptor<Asset>()) == 0, "Nothing written yet")
+
+        try UnitOfWork.save(context)
+        let kept = try #require(Asset.find(boat.recordKey, in: PersistenceController.context(in: container)))
+        #expect(kept.notes == "Card \(PaymentCardNumbers.mask) 1111", "Saved through the unit, so only the last four digits stay")
+    }
 }
 
 /// A Face ID prompt that waits until the test answers it.

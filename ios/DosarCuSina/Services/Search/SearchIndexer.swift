@@ -55,7 +55,7 @@ public actor SearchIndexer {
     /// Reads every record again.
     @discardableResult
     public func rebuild() throws -> SearchIndex {
-        let byRecord = try SearchIndexBuilder(context: ModelContext(container)).buildByRecord()
+        let byRecord = try SearchIndexBuilder(context: PersistenceController.context(in: container)).buildByRecord()
         documentIDs = byRecord.mapValues { $0.map(\.id) }
         let fresh = SearchIndex(byRecord.values.flatMap { $0 })
         index = fresh
@@ -67,7 +67,7 @@ public actor SearchIndexer {
     public func apply(_ changes: SearchChanges) throws -> SearchIndex {
         guard let index, !changes.everything else { return try rebuild() }
         guard !changes.isEmpty else { return index }
-        let builder = SearchIndexBuilder(context: ModelContext(container))
+        let builder = SearchIndexBuilder(context: PersistenceController.context(in: container))
         var records: Set<PersistentIdentifier> = []
         for id in changes.changed.subtracting(changes.deleted) {
             guard let showing = try builder.recordsShowing(id) else { return try rebuild() }

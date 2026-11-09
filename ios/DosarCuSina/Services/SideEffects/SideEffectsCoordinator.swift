@@ -155,7 +155,7 @@ public final class SideEffectsCoordinator {
         if let waiting = waitingInboxItems() {
             await InboxNotice.follow(waiting: waiting, center: inboxNotices)
         }
-        let context = ModelContext(container)
+        let context = PersistenceController.context(in: container)
         let outside: [ObligationSnapshot]
         do {
             // Example records are for exploring the app; they never notify, badge or reach widgets.

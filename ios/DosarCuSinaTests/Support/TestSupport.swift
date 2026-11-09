@@ -71,11 +71,12 @@ func makeInMemoryContainer() throws -> ModelContainer {
     try PersistenceController.makeContainer(inMemory: true)
 }
 
-/// A context with the built-in categories installed.
+/// A context with the built-in categories installed, made as the app makes them: it saves
+/// only through the unit of work.
 @MainActor
 func makeContext() throws -> ModelContext {
     let container = try makeInMemoryContainer()
-    let context = ModelContext(container)
+    let context = PersistenceController.context(in: container)
     try TemplateStore(context: context).installBuiltIns()
     return context
 }

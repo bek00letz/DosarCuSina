@@ -43,7 +43,7 @@ enum ChangeTimes {
         let parts = changed + context.insertedModelsArray + context.deletedModelsArray
         guard !changed.isEmpty || !parts.isEmpty else { return }
         // The store still holds every record as it was before these changes.
-        let store = ModelContext(context.container)
+        let store = PersistenceController.context(in: context.container)
         for model in changed {
             guard let record = model as? any ChangeTimed else { continue }
             stampIfChanged(record, store: store, now: now)
