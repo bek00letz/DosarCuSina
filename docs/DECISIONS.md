@@ -6,6 +6,25 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ---
 
+## 2026-11-09
+
+### After sharing: a notice, and the app opens at De verificat
+- **Decided (owner):** iOS doesn't let a share extension open its app (the workarounds risk rejection), so continuing after a share is a quiet notification plus the app opening at De verificat.
+- **Decided:** the extension posts the notice itself, and that is the one exception to "the coordinator is the only path to notifications". A flag left for the coordinator would become a notification only once the app was open, which is when it is no longer needed. The exception is one named file, `ios/Shared/InboxNotice.swift`, the only path the architecture check lets reach the notification center outside the coordinator. It posts only when notifications are already allowed (never asks), never for the practice, without sound; one notice at a time, replaced by the next share. The coordinator withdraws it on every pass once none of the items it announced still waits; the inbox tells it when what waits changes (`ShareInbox.didChangeNotification`). It isn't withdrawn when only some of its items are filed: replacing a shown notification would show it again.
+- **Decided:** the confirmation says what happens next: "Am primit 2 acte" and "Atinge notificarea ca să continui. Te așteaptă în aplicație, la De verificat." (or "Deschide Dosar cu Șină ca să continui…" without a notice). It counts documents, not files. The notice counts every document waiting, not only this share's: they all wait for the same step. *Alternative:* only this share's, which would need the app's "seen" to live in the App Group.
+- **Decided:** a tap opens Adaugă › De verificat (`AppRoute.intake`) through the navigator, so after unlocking. While the app is open, the notice goes to Notification Center without a banner.
+- **Decided:** opening the app from the background with something De verificat hasn't shown lands there once (`InboxLanding`), after 400 ms so a tapped reminder or link reaches the navigator first. A route the person is opening wins, and the landing waits for the next plain return; nothing moves while something is open over the tabs (a sheet, a form, an alert, onboarding) or for the practice. "Seen" is De verificat on screen, remembered on the phone as the newest arrival shown. *Alternative:* land on every return while something waits; rejected as nagging.
+- **Why:** someone who shares a bill from Mail and is left in Mail, with nothing that says where it went, often never finds it again.
+
+### Waiting items can be told apart
+- **Decided:** each waiting item is read once on the phone when it arrives (`InboxPreviewer`), with the same engine as every capture, but only its first page and the quick tiers: no on-device model (battery, for a title) and never the person's AI provider. Nothing goes into the document store. What it learned (kind, title, category, pages, whether a picture was kept) is a versioned file beside the manifest (`InboxPreview`), written by the app only; the manifest itself didn't change. A preview it can't use is made again, never set aside.
+- **Decided:** a row's title is what it is once read, else the file's cleaned name, else the app its name says it came from (only WhatsApp names files unmistakably), else what it is made of. Under it: the file's name when the title is the reading, "N pagini" from two pages, and when it arrived. One place decides the words (`InboxWording`).
+- **Decided:** names follow the outside rules (`SearchPrivacy.outsideText`: no CNP, card number or sealed value). While a section lock is closed, an item whose reading belongs to a locked category is *Act protejat*, with no name, picture or file name, and opening it asks for Face ID first; an item not read yet names nothing while a lock is closed.
+- **Decided:** a first-page picture is kept only when the reading is sure the page can't be a bank card (`PhoneOnlyReading`, the rule the AI provider follows); a page that couldn't be read gets none. A bank card's photo shows its whole number.
+- **Why:** two PDFs shared one after the other both read "PDF importat" with a time, and the person couldn't tell which was which.
+
+---
+
 ## 2026-11-03
 
 ### The last open questions, answered
