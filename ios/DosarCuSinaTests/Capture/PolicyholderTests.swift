@@ -159,7 +159,7 @@ struct PolicyholderTests {
         let templates = try TemplateStore(context: house.context).templatesByKey()
         let facts = DeadlineFacts.of(house.rca, template: templates[BuiltInTemplates.Key.vehicle]?.definition)
         #expect(Policyholders.bonusMalus(ofPolicyholder: facts.policyholder, among: Policyholders.people(in: house.context)) == "B6")
-        let snapshot = ReadinessEngine.make(from: try house.context.fetch(FetchDescriptor<Asset>()), templates: templates)
+        let snapshot = ReadinessAsset.make(from: try house.context.fetch(FetchDescriptor<Asset>()), templates: templates)
         let claim = ReadinessEngine.checklist(.insuranceClaim(assetId: house.car.id, blueprintKey: BuiltInBlueprints.vehicleRCA), assets: snapshot)
         #expect(claim.policy?.policyholderClass == "B6")
 
