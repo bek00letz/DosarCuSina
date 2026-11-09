@@ -130,7 +130,7 @@ struct SchemaMigrationTests {
         // Opened by this version: the photo is kept as taken and shown whole, as before.
         let container = try PersistenceController.makeContainer(storeURL: url)
         let context = ModelContext(container)
-        let photo = try #require(try context.fetch(FetchDescriptor<Attachment>()).first)
+        let photo = try #require(try context.fetch(FetchDescriptor<DosarCuSina.Attachment>()).first)
         #expect(photo.title == "Carte de identitate")
         #expect(photo.orderedPages.first?.imageData == page)
         #expect(photo.framingData == nil)
@@ -141,7 +141,7 @@ struct SchemaMigrationTests {
         photo.framing = DocumentFraming(pages: [PageFraming(quarterTurns: 1)])
         try UnitOfWork.save(context)
         let reopened = ModelContext(try PersistenceController.makeContainer(storeURL: url))
-        #expect(try reopened.fetch(FetchDescriptor<Attachment>()).first?.framing[page: 0].shownQuarterTurns == 1)
+        #expect(try reopened.fetch(FetchDescriptor<DosarCuSina.Attachment>()).first?.framing[page: 0].shownQuarterTurns == 1)
     }
 
     @Test func aStoreFromVersionFourOpensWithItsDeadlines() throws {

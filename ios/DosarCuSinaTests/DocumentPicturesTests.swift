@@ -68,7 +68,7 @@ struct DocumentPicturesTests {
     }
 
     /// An identity card filed under the documents category, its pages as given.
-    static func identityCard(pages: [Data], framing: DocumentFraming = DocumentFraming(), in context: ModelContext) throws -> Attachment {
+    static func identityCard(pages: [Data], framing: DocumentFraming = DocumentFraming(), in context: ModelContext) throws -> DosarCuSina.Attachment {
         let card = Asset(name: "Carte de identitate – Exemplu Ana", templateKey: BuiltInTemplates.Key.documents,
                          values: FieldValues([DocumentType.typeFieldKey: .text(DocumentType.idCard)]))
         context.insert(card)
@@ -292,7 +292,7 @@ struct DocumentPicturesTests {
         // Kept: another context reads it back.
         let id = attachment.id
         let other = ModelContext(context.container)
-        let reread = try #require(try other.fetch(FetchDescriptor<Attachment>(predicate: #Predicate { $0.id == id })).first)
+        let reread = try #require(try other.fetch(FetchDescriptor<DosarCuSina.Attachment>(predicate: #Predicate { $0.id == id })).first)
         #expect(reread.framing[page: 0].shownQuarterTurns == 1)
 
         // What is shared is the page as shown.
@@ -449,7 +449,7 @@ struct DocumentPicturesTests {
 
         let target = try makeInMemoryContainer()
         try DossierArchiveService(container: target).importArchive(data, mode: .replace)
-        let restored = try #require(try ModelContext(target).fetch(FetchDescriptor<Attachment>(predicate: #Predicate { $0.id == id })).first)
+        let restored = try #require(try ModelContext(target).fetch(FetchDescriptor<DosarCuSina.Attachment>(predicate: #Predicate { $0.id == id })).first)
         #expect(restored.framing == framing)
     }
 }
