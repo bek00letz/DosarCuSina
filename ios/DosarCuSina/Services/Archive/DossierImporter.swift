@@ -225,11 +225,11 @@ struct DossierImporter {
             asset.notes = dto.notes
             // Choice values written as display text (v2 backups, older builds) become option keys.
             let definition = definitions[dto.templateKey]
-            // No card number comes in with a backup: a card keeps only its last four digits.
-            let values = PaymentCardNumbers.sanitizing(definition.map { dto.values.normalizingChoices(for: $0) } ?? dto.values)
+            // No card number comes in with a backup: the unit that writes it masks every one (`FreeText`).
+            let values = definition.map { dto.values.normalizingChoices(for: $0) } ?? dto.values
             // Secrets this phone keeps for the record stay; an archive never brings any.
             asset.valuesData = StoredJSON.encode(SecretFields.keepingLocalSecrets(values, from: phone.secrets[id] ?? FieldValues(), definition: definition))
-            asset.keptFacts = SecretFields.keepingLocalSecretFacts(Self.withoutCardNumbers(dto.customFacts ?? KeptList()), from: phone.secretFacts[id] ?? [])
+            asset.keptFacts = SecretFields.keepingLocalSecretFacts(dto.customFacts ?? KeptList(), from: phone.secretFacts[id] ?? [])
             asset.photoData = dto.photoPath.flatMap { package.files[$0] }
             asset.isExample = dto.isExample
             asset.createdAt = clamped(dto.createdAt)
@@ -249,17 +249,6 @@ struct DossierImporter {
             }
         }
         return map
-    }
-
-    /// Rows under Date importante with any card number masked, in the rows this build can't
-    /// read too. A sealed code is left as it is (and never comes in: see `keepingLocalSecretFacts`).
-    private static func withoutCardNumbers(_ facts: KeptList<CustomFact>) -> KeptList<CustomFact> {
-        let masked = facts.items.map { fact in
-            var fact = fact
-            if !SecretSealer.isSealed(fact.value) { fact.value = PaymentCardNumbers.redact(fact.value) }
-            return fact
-        }
-        return facts.replacingItems(masked).mappingUnreadable { PaymentCardNumbers.redacting($0) }
     }
 
     private func importObligations(_ result: inout ArchiveImportResult, assets: [UUID: Asset]) throws -> [UUID: Obligation] {
@@ -439,8 +428,8 @@ struct DossierImporter {
             attachment.byteCount = dto.byteCount
             attachment.sha256 = dto.sha256 ?? original.map(Hashing.sha256)
             attachment.thumbnailData = dto.thumbnailPath.flatMap { package.files[$0] }
-            // A backup from anywhere brings no card number into a document's text.
-            attachment.extractedText = dto.extractedText.map { PaymentCardNumbers.redact($0) }
+            // A backup from anywhere brings no card number into a document’s text: the unit that writes it masks it (`FreeText`).
+            attachment.extractedText = dto.extractedText
             attachment.documentDate = dto.documentDate?.noonDate(in: calendar)
             attachment.validUntil = dto.validUntil?.noonDate(in: calendar)
             attachment.framing = dto.framing ?? DocumentFraming()

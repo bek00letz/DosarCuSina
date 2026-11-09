@@ -126,9 +126,12 @@ struct BillRepairTests {
         #expect(bills(on: gas).count == 1, "The finding no longer holds, so it changes nothing")
     }
 
-    @Test func theStepsComeLastWithTheirOwnStoredIDs() {
-        let ids = DataRepairs.steps.suffix(2).map { type(of: $0).id }
-        #expect(ids == [.billNumbers, .sameBillTwice], "The number moves first, so the join can read it")
+    @Test func theNumberMovesBeforeTheJoinWithTheirOwnStoredIDs() throws {
+        let ids = DataRepairs.steps.map { type(of: $0).id }
+        let numbers = try #require(ids.firstIndex(of: .billNumbers))
+        let join = try #require(ids.firstIndex(of: .sameBillTwice))
+        #expect(join == numbers + 1, "The number moves first, so the join can read it")
+        #expect(ids.firstIndex(of: .policyNumberParts).map { $0 < numbers } == true, "Added after the steps before them")
         #expect(DataRepairStepID.billNumbers.rawValue == "bill-numbers")
         #expect(DataRepairStepID.sameBillTwice.rawValue == "same-bill-twice")
     }

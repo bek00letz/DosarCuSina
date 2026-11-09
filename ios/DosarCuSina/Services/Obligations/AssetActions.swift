@@ -99,10 +99,11 @@ public final class AssetActions {
     ) throws -> Asset {
         // Something of the person's never lands inside an example without asking.
         try ExampleOwnership.requireReal(parent, creatingExample: isExample)
-        // A bank card keeps only its last four digits; no field keeps a card number (`PaymentCardNumbers`).
+        // No field keeps a card number: the unit of work masks it as it saves (`FreeText`), and a
+        // secret before it is sealed.
         func prepare(_ values: FieldValues, for template: CategoryTemplate) throws -> FieldValues {
             try SecretFields.sealing(
-                PaymentCardNumbers.sanitizing(values.normalizingChoices(for: template.definition).applyingRules(of: template.definition, previous: nil, calendar: calendar)),
+                values.normalizingChoices(for: template.definition).applyingRules(of: template.definition, previous: nil, calendar: calendar),
                 definition: template.definition, sealer: sealer
             )
         }
@@ -156,10 +157,10 @@ public final class AssetActions {
         let template = try TemplateStore(context: context).template(forKey: asset.templateKey)
         let values = try template.map {
             try SecretFields.sealing(
-                PaymentCardNumbers.sanitizing(values.normalizingChoices(for: $0.definition).applyingRules(of: $0.definition, previous: previous, calendar: calendar)),
+                values.normalizingChoices(for: $0.definition).applyingRules(of: $0.definition, previous: previous, calendar: calendar),
                 definition: $0.definition, sealer: sealer
             )
-        } ?? PaymentCardNumbers.sanitizing(values)
+        } ?? values
         // Every question first, before anything is written (`StepQuestion`).
         let reading = template.flatMap { plannedReading(asset, values: values, template: $0.definition, source: readingSource, date: readingDate) }
         try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
@@ -261,7 +262,8 @@ public final class AssetActions {
     }
 
     /// Replaces the free label–value rows shown under Date importante. A secret
-    /// row (a code) is sealed before it is saved, like a PIN field.
+    /// row (a code) is sealed before it is saved, like a PIN field; a card number in any row is
+    /// kept as its last four digits (`FreeText`).
     @discardableResult
     public func setCustomFacts(_ asset: Asset, _ facts: [CustomFact]) throws -> UndoReceipt {
         try UnitOfWork.performUndoable(in: context) {

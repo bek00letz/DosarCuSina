@@ -33,6 +33,10 @@ import SwiftData
 ///   backup brought in later knows which copy is newer. A backup's own writer
 ///   (`performPrivate`) keeps the times the backup carries.
 ///
+/// - **It keeps card numbers out.** Every card number in the words of every record a save
+///   writes (a row under Date importante, a note, a title, a document's text) is masked just
+///   before it saves, whoever wrote it, a backup's own writer included (`FreeText`).
+///
 /// Work that must only happen once the changes are kept goes in `afterCommit(in:_:)`.
 ///
 /// An action the person can take back opens its unit with `performUndoable(in:_:)`,
@@ -104,6 +108,7 @@ public enum UnitOfWork {
     nonisolated public static func performPrivate<T>(in context: ModelContext, _ work: () throws -> T) throws -> T {
         do {
             let result = try work()
+            FreeText.mask(context)
             try context.save()
             return result
         } catch {
@@ -148,8 +153,10 @@ public enum UnitOfWork {
             if let failure = failingCommits.removeValue(forKey: ObjectIdentifier(context)) {
                 throw failure
             }
-            // Change times first, so an undoable step's receipt records them; what it changed
-            // is read before the save, while the store still holds the state the unit started from.
+            // Card numbers out and change times first, so an undoable step's receipt records them;
+            // what it changed is read before the save, while the store still holds the state the
+            // unit started from.
+            FreeText.mask(context)
             ChangeTimes.stamp(context)
             let pending = scope.receipt?.prepare()
             try context.save()
@@ -161,8 +168,9 @@ public enum UnitOfWork {
         }
     }
 
-    /// Saves the context with the change times its changes call for.
+    /// Saves the context with no card number in it and the change times its changes call for.
     private static func write(_ context: ModelContext) throws {
+        FreeText.mask(context)
         ChangeTimes.stamp(context)
         try context.save()
     }

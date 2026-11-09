@@ -29,7 +29,10 @@ struct DSSecretField: View {
     private var isKept: Bool { SecretSealer.isSealed(value) && !isReplacing }
 
     private var validation: DSValidation {
-        guard isPIN, !isKept, !value.isEmpty else { return .valid }
+        guard !isKept, !value.isEmpty else { return .valid }
+        // A code is sealed with any card number in it masked first (`SecretFields.sealing`).
+        if let note = DSValidation.keepingCardNumberOut(of: value) { return note }
+        guard isPIN else { return .valid }
         return value.allSatisfy(\.isNumber)
             ? .valid
             : .warning(LocalizedStringResource("Codurile PIN au de obicei doar cifre.", comment: "Secret PIN field hint"))
