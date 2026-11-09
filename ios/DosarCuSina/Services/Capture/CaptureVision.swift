@@ -193,14 +193,30 @@ extension TextBox {
 
 // MARK: - Preparing pages
 
+/// A page made ready for reading, and how the same page is shown and shared: the
+/// document found in the photo and which way up it goes, as its `PageFraming`. What is
+/// read and what is shown are the same cut-out, turned the same way.
+public struct PreparedPage: Sendable {
+    /// The image to read: the document found, flattened, turned upright and enlarged.
+    public let image: CGImage
+    /// The page as it is kept: the corners found in the photo as taken, and the turn.
+    public let framing: PageFraming
+
+    public init(image: CGImage, framing: PageFraming = .plain) {
+        self.image = image
+        self.framing = framing
+    }
+}
+
 /// Gets a photographed page ready for reading. A protocol so the engine's retry can be
 /// tested without Vision.
 public protocol CapturePagePreparing: Sendable {
-    /// The image to read: the document found, flattened, turned upright and enlarged.
-    func prepare(_ image: CGImage) async -> CGImage
+    /// The page to read, with how it is shown: the document found, flattened, turned upright and enlarged.
+    func prepare(_ image: CGImage) async -> PreparedPage
     /// Another way to read the same page, when the first read found little: a quarter
-    /// turn of the prepared image, or the photo as taken. Nil when none reads better.
-    func retryVariant(of prepared: CGImage, original: CGImage) async -> CGImage?
+    /// turn of the prepared page, or the photo as taken. Nil when none reads better.
+    /// Its framing says how the page is shown when this reading is kept.
+    func retryVariant(of prepared: PreparedPage, original: CGImage) async -> PreparedPage?
 }
 
 /// Finds the document in a photo and flattens it, so a card photographed at an angle
@@ -214,7 +230,8 @@ public protocol CapturePagePreparing: Sendable {
 ///    out portrait is turned the way more text reads.
 /// 4. **Enlarge it** when the card was small in the photo, so small print is legible.
 ///
-/// The original photo is what's kept; only the reading uses the prepared image.
+/// The photo as taken is what is kept. The corners found and the turn are kept with it as the
+/// page's `PageFraming`, so the page is shown and shared as it was read (`DocumentPicture`).
 public struct DocumentImageNormalizer: CapturePagePreparing {
 
     public init() {}
@@ -248,24 +265,40 @@ public struct DocumentImageNormalizer: CapturePagePreparing {
             corners = nil
             isCard = false
         }
-        var prepared = corners.flatMap { ImageScaling.flattened(image, corners: $0) } ?? image
-        if isCard, prepared.height > prepared.width {
-            prepared = await Self.mostReadable([.left, .right].compactMap { ImageScaling.rotated(prepared, $0) }) ?? prepared
+        let flattened = corners.flatMap { ImageScaling.flattened(image, corners: $0) }
+        // The corners are kept only when the document was cut out: what is read is what is shown.
+        let crop = flattened == nil ? nil : corners.flatMap { DocumentPicture.pagePoints($0, width: image.width, height: image.height) }
+        var page = PreparedPage(image: flattened ?? image, framing: PageFraming(crop: crop))
+        if isCard, page.image.height > page.image.width {
+            // A quarter turn either way; the one where more text reads is upright.
+            page = await Self.mostReadable([3, 1].compactMap { Self.turning(page, by: $0) }) ?? page
         }
-        CaptureLog.engine.info("Prepared page: card \(isCard), corrected \(corners != nil), \(Int(size.width))×\(Int(size.height)) → \(prepared.width)×\(prepared.height)")
-        return ImageScaling.upscaled(prepared, toLongEdge: Self.readableLongEdge) ?? prepared
+        CaptureLog.engine.info("Prepared page: card \(isCard), corrected \(crop != nil), turned \(page.framing.quarterTurns), \(Int(size.width))×\(Int(size.height)) → \(page.image.width)×\(page.image.height)")
+        return PreparedPage(image: ImageScaling.upscaled(page.image, toLongEdge: Self.readableLongEdge) ?? page.image, framing: page.framing)
     }
 
-    public func retryVariant(of prepared: CGImage, original: CGImage) async -> CGImage? {
-        var candidates = [CGImagePropertyOrientation.right, .down, .left].compactMap { ImageScaling.rotated(prepared, $0) }
-        if original.width != prepared.width || original.height != prepared.height {
-            candidates.append(ImageScaling.upscaled(original, toLongEdge: Self.readableLongEdge) ?? original)
+    public func retryVariant(of prepared: PreparedPage, original: CGImage) async -> PreparedPage? {
+        var candidates = [1, 2, 3].compactMap { Self.turning(prepared, by: $0) }
+        if original.width != prepared.image.width || original.height != prepared.image.height {
+            // The photo as taken: the cut-out may have missed the document, so the whole photo is shown.
+            var whole = prepared.framing
+            whole.prefersWholePhoto = true
+            whole.quarterTurns = 0
+            candidates.append(PreparedPage(image: ImageScaling.upscaled(original, toLongEdge: Self.readableLongEdge) ?? original, framing: whole))
         }
-        let baseline = await Self.readability(of: prepared)
+        let baseline = await Self.readability(of: prepared.image)
         guard let best = await Self.mostReadable(candidates) else { return nil }
-        let score = await Self.readability(of: best)
+        let score = await Self.readability(of: best.image)
         CaptureLog.engine.info("Retry variant reads \(score) characters against \(baseline)")
         return score > baseline + max(10, baseline / 5) ? best : nil
+    }
+
+    /// The page turned `turns` more quarter turns clockwise, read and shown alike (a guess, never the person's turn).
+    static func turning(_ page: PreparedPage, by turns: Int) -> PreparedPage? {
+        guard let image = DocumentPicture.turned(page.image, quarterTurns: turns) else { return nil }
+        var framing = page.framing
+        framing.quarterTurns = PageFraming.normalized(framing.quarterTurns + turns)
+        return PreparedPage(image: image, framing: framing)
     }
 
     // MARK: Finding the document
@@ -341,13 +374,13 @@ public struct DocumentImageNormalizer: CapturePagePreparing {
     // MARK: Which way up
 
     /// The candidate where a quick read finds the most characters.
-    static func mostReadable(_ candidates: [CGImage]) async -> CGImage? {
-        var best: (image: CGImage, score: Int)?
+    static func mostReadable(_ candidates: [PreparedPage]) async -> PreparedPage? {
+        var best: (page: PreparedPage, score: Int)?
         for candidate in candidates {
-            let score = await readability(of: candidate)
+            let score = await readability(of: candidate.image)
             if score > (best?.score ?? -1) { best = (candidate, score) }
         }
-        return best?.image
+        return best?.page
     }
 
     /// Letters and digits a fast, literal read finds: a cheap measure of which way is up.
@@ -366,7 +399,7 @@ public struct DocumentImageNormalizer: CapturePagePreparing {
 
 // MARK: - Image operations
 
-/// Flattening, turning and enlarging, with one shared Core Image context.
+/// Flattening and enlarging, with one shared Core Image context. Turning is `DocumentPicture.turned`.
 enum ImageScaling {
     private static let context = CIContext(options: [.useSoftwareRenderer: false])
 
@@ -380,11 +413,6 @@ enum ImageScaling {
         filter.bottomRight = corners[2]
         filter.bottomLeft = corners[3]
         return filter.outputImage.flatMap(render)
-    }
-
-    /// The image turned by a quarter or half turn.
-    static func rotated(_ image: CGImage, _ orientation: CGImagePropertyOrientation) -> CGImage? {
-        render(CIImage(cgImage: image).oriented(orientation))
     }
 
     /// The image enlarged so its long edge reaches `longEdge`, at most three times; nil when it is large enough.

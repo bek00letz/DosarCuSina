@@ -98,6 +98,9 @@ struct CaptureReview: Identifiable {
     /// The person confirmed that the bank pays this subscription by direct debit, as the
     /// bill says ("Plătesc prin debit direct"). Never on until they turn it on.
     var turnsOnDirectDebit = false
+    /// What the person chose for the pages here, by page: a turn, the whole photo or the
+    /// cut-out. It wins over how the reading framed them, and over any later reading.
+    var pageChoices: [Int: PageChoice] = [:]
     /// The person chose the place themselves, even the one suggested: nothing to check.
     private(set) var placeConfirmed = false
     /// The person is adding a document read only on the phone (the capture started from a
@@ -641,6 +644,7 @@ struct CaptureReview: Identifiable {
         merged.filesAsPersonalDocument = previous.filesAsPersonalDocument
         merged.keepsPhotoOnRequest = previous.keepsPhotoOnRequest
         merged.turnsOnDirectDebit = previous.turnsOnDirectDebit
+        merged.pageChoices = previous.pageChoices
         if previous.placeConfirmed { merged.placeConfirmed = true }
         merged.staysOnPhone = previous.staysOnPhone
         return merged

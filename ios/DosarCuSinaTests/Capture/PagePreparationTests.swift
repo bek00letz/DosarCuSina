@@ -37,7 +37,7 @@ struct PagePreparationTests {
         #expect(enlarged.width == 1200)
         #expect(ImageScaling.upscaled(CaptureDocumentStoreTests.page(width: 2400, height: 1500), toLongEdge: 2000) == nil)
 
-        let turned = try #require(ImageScaling.rotated(small, .right))
+        let turned = try #require(DocumentPicture.turned(small, quarterTurns: 1))
         #expect(turned.width == 250)
         #expect(turned.height == 400)
     }
@@ -72,12 +72,12 @@ struct PagePreparationTests {
 
     // MARK: Retry
 
-    /// Prepares pages to a fixed landscape image and offers a portrait one as the retry.
+    /// Prepares pages to a fixed landscape image and offers a portrait one, a quarter turn, as the retry.
     struct TurningPreparer: CapturePagePreparing {
         var offersVariant = true
-        func prepare(_ image: CGImage) async -> CGImage { CaptureDocumentStoreTests.page(width: 856, height: 540) }
-        func retryVariant(of prepared: CGImage, original: CGImage) async -> CGImage? {
-            offersVariant ? CaptureDocumentStoreTests.page(width: 540, height: 856) : nil
+        func prepare(_ image: CGImage) async -> PreparedPage { PreparedPage(image: CaptureDocumentStoreTests.page(width: 856, height: 540)) }
+        func retryVariant(of prepared: PreparedPage, original: CGImage) async -> PreparedPage? {
+            offersVariant ? PreparedPage(image: CaptureDocumentStoreTests.page(width: 540, height: 856), framing: PageFraming(quarterTurns: 1)) : nil
         }
     }
 
@@ -122,6 +122,8 @@ struct PagePreparationTests {
         let width = properties?[kCGImagePropertyPixelWidth] as? Int ?? 0
         let height = properties?[kCGImagePropertyPixelHeight] as? Int ?? 0
         #expect(height > width)
+        // The way up that read better is the way the page is shown and shared.
+        #expect(await store.processed(id: id)?.framing[page: 0].shownQuarterTurns == 1)
     }
 
     @Test("When the retry can't help, a calm notice says the photo is hard to read")

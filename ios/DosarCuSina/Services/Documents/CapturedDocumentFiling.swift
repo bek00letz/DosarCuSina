@@ -11,7 +11,10 @@ extension DocumentKind {
 extension ProcessedDocument {
     /// The confirmed document to file. Title and kind come from what the person
     /// confirmed; the fingerprint is capture's, so a re-capture is recognized.
-    public func draft(title: String?, kind: DocumentKind? = nil, extractedText: String? = nil, documentDate: CalendarDay? = nil) -> DocumentDraft {
+    /// `pictures`, when the person turned a page or chose the whole photo in the review,
+    /// replaces how the pages are shown and the thumbnail.
+    public func draft(title: String?, kind: DocumentKind? = nil, extractedText: String? = nil, documentDate: CalendarDay? = nil,
+                      pictures: PictureChange? = nil) -> DocumentDraft {
         var draft = DocumentDraft(
             title: title ?? document.title,
             fileName: (title ?? document.title ?? String(localized: "Document")) + (originalPDF == nil ? ".heic" : ".pdf"),
@@ -19,12 +22,13 @@ extension ProcessedDocument {
             contentType: originalPDF == nil ? "public.heic" : "com.adobe.pdf",
             originalData: originalPDF,
             pageImages: pageData,
-            thumbnail: thumbnailData,
+            thumbnail: pictures?.thumbnail ?? thumbnailData,
             extractedText: extractedText,
             documentDate: documentDate,
             documentID: document.id.uuidString
         )
         draft.contentHash = document.contentHash
+        draft.framing = pictures?.framing ?? framing
         return draft
     }
 }
@@ -72,10 +76,13 @@ extension AttachmentActions {
     /// its archived state stays as it was, and it takes what was read now (kind, text,
     /// date, title). The pages leave capture's memory once the filing is kept (see
     /// `CaptureFiler`), so a failed save can be retried with everything still there.
-    /// The filing's undo receipt puts a moved copy back where it was.
+    /// The filing's undo receipt puts a moved copy back where it was. `pictures` is what the
+    /// person chose for the pages in the review (`pictureChange(for:choices:)`); without it,
+    /// new pages are shown as they were read and a kept copy as it already was.
     @discardableResult
     public func fileCaptured(
         _ document: CapturedDocument,
+        pictures: PictureChange? = nil,
         title: String?,
         kind: DocumentKind? = nil,
         extractedText: String? = nil,
@@ -89,9 +96,10 @@ extension AttachmentActions {
         let filed: Attachment
         switch document {
         case .new(let processed, _):
-            let draft = processed.draft(title: title, kind: kind, extractedText: extractedText, documentDate: documentDate)
+            let draft = processed.draft(title: title, kind: kind, extractedText: extractedText, documentDate: documentDate, pictures: pictures)
             filed = try file(draft, asset: asset, obligation: obligation, historyEntry: historyEntry, provider: provider)
         case .kept(let attachment):
+            if let pictures { apply(pictures, to: attachment) }
             try refile(attachment, title: title, kind: kind, extractedText: extractedText, documentDate: documentDate,
                        asset: asset, obligation: obligation, historyEntry: historyEntry, provider: provider)
             filed = attachment

@@ -112,10 +112,12 @@ public final class CaptureEngine: Sendable {
         let options = request.options
 
         // 1. Pages and text.
-        /// The pages as taken: what is kept and shown.
+        /// The pages as taken: what is kept. Each is shown as its framing says.
         var pages: [CGImage] = []
         /// The pages as read: found, flattened, turned upright and enlarged.
         var readImages: [CGImage] = []
+        /// How each page is shown and shared: the same cut-out and turn it was read with.
+        var framings: [PageFraming] = []
         /// Recognized lines with their positions, page by page. Empty for pasted text and a PDF's text layer.
         var recognized: [[RecognizedLine]] = []
         var text = ""
@@ -127,13 +129,15 @@ public final class CaptureEngine: Sendable {
         switch request.payload {
         case .images(let images):
             for item in images {
-                var page = item.image
+                // The document scanner's pages are flat already: read and shown as they come.
+                var prepared = PreparedPage(image: item.image)
                 if let normalizer, !item.isPerspectiveCorrected {
-                    page = await normalizer.prepare(item.image)
+                    prepared = await normalizer.prepare(item.image)
                 }
                 pages.append(item.image)
-                readImages.append(page)
-                let read = try await recognizer.recognize(page)
+                readImages.append(prepared.image)
+                framings.append(prepared.framing)
+                let read = try await recognizer.recognize(prepared.image)
                 recognized.append(read.items)
                 text += (text.isEmpty ? "" : "\n") + read.text
                 barcodes += read.barcodes
@@ -147,7 +151,7 @@ public final class CaptureEngine: Sendable {
             if extracted.pageCount > Self.maxPDFPages {
                 notices.append(.pagesTruncated(readPages: Self.maxPDFPages, totalPages: extracted.pageCount))
             }
-            let rendered = PDFRasterizer.render(data, maxPages: text.count < 40 ? Self.maxPDFPages : 1)
+            let rendered = PDFPageRendering.render(data, maxPages: text.count < 40 ? Self.maxPDFPages : 1, longEdge: 2000)
             pdfThumbnail = rendered.first
             // A scanned PDF has no text layer; read its pages like photos.
             if text.count < 40 {
@@ -179,13 +183,16 @@ public final class CaptureEngine: Sendable {
         if !readImages.isEmpty, let normalizer, Self.readsPoorly(analysis) {
             var retried = recognized
             var retriedImages = readImages
+            var retriedFramings = framings
             var retriedBarcodes: [CaptureBarcode] = []
             var changed = false
             for index in readImages.indices {
-                guard let variant = await normalizer.retryVariant(of: readImages[index], original: pages[index]),
-                      let read = try? await recognizer.recognize(variant) else { continue }
+                let prepared = PreparedPage(image: readImages[index], framing: framings[index])
+                guard let variant = await normalizer.retryVariant(of: prepared, original: pages[index]),
+                      let read = try? await recognizer.recognize(variant.image) else { continue }
                 retried[index] = read.items
-                retriedImages[index] = variant
+                retriedImages[index] = variant.image
+                retriedFramings[index] = variant.framing
                 retriedBarcodes += read.barcodes
                 changed = true
             }
@@ -196,6 +203,8 @@ public final class CaptureEngine: Sendable {
                     analysis = second
                     recognized = retried
                     readImages = retriedImages
+                    // The way up that read better is the way the page is shown.
+                    framings = retriedFramings
                     barcodes += retriedBarcodes
                     text = retried.map { $0.map(\.text).joined(separator: "\n") }.joined(separator: "\n")
                 }
@@ -291,6 +300,7 @@ public final class CaptureEngine: Sendable {
         if options.storeDocument, let store, !pages.isEmpty || pdfData != nil {
             let stored = try await store.store(CaptureDocumentStore.StoreRequest(
                 pages: pages,
+                framing: DocumentFraming(pages: framings),
                 originalPDF: pdfData,
                 thumbnailSource: pdfThumbnail,
                 sourceData: sourceData,
@@ -459,34 +469,5 @@ public final class CaptureEngine: Sendable {
             result.append(CaptureField(key: .purchasePrice, value: total.value, confidence: total.confidence, sourceText: total.sourceText, tier: total.tier))
         }
         return result
-    }
-}
-
-// MARK: - PDF pages
-
-/// Renders PDF pages to images for recognition and thumbnails, without UIKit.
-enum PDFRasterizer {
-    static func render(_ data: Data, maxPages: Int, longEdge: CGFloat = 2000) -> [CGImage] {
-        guard let provider = CGDataProvider(data: data as CFData),
-              let document = CGPDFDocument(provider) else { return [] }
-        let count = min(document.numberOfPages, maxPages)
-        guard count > 0 else { return [] }
-        return (1...count).compactMap { number in
-            guard let page = document.page(at: number) else { return nil }
-            let box = page.getBoxRect(.cropBox)
-            guard box.width > 0, box.height > 0 else { return nil }
-            let scale = longEdge / max(box.width, box.height)
-            let width = Int(box.width * scale)
-            let height = Int(box.height * scale)
-            guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
-                  let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
-                                          space: colorSpace, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else { return nil }
-            context.setFillColor(CGColor(gray: 1, alpha: 1))
-            context.fill(CGRect(x: 0, y: 0, width: width, height: height))
-            context.scaleBy(x: scale, y: scale)
-            context.translateBy(x: -box.minX, y: -box.minY)
-            context.drawPDFPage(page)
-            return context.makeImage()
-        }
     }
 }
