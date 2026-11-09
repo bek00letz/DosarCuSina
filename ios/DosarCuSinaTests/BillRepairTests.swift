@@ -109,7 +109,7 @@ struct BillRepairTests {
         try oldBill(on: gas, note: nil, day: "2026-11-05", total: 245, in: context)
         let found = try repairs(context).detect().filter { $0.step == .sameBillTwice }
         #expect(found.count == 1)
-        guard case .sameBill(_, let merge)? = found.first?.subject else { return Issue.record("A bill logged twice") }
+        guard case .sameBill(_, let merge)? = found.first?.subject else { Issue.record("A bill logged twice"); return }
         #expect(merge.count == 1)
     }
 
