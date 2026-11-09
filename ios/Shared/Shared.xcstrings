@@ -116,6 +116,35 @@
           }
         }
       }
+    },
+    "Am primit %lld acte": {
+      "comment": "After a share: how many documents arrived. One is a word: „Am primit un act”.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Am primit un act"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Am primit %lld acte"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Am primit %lld de acte"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -116,6 +116,12 @@ private struct PolicyCallCard: View {
                     DSRowSeparator()
                     DSActionValueRow(title: Text("Număr poliță"), value: number, action: .copy, copies: isSensitive ? .personal : .ordinary)
                 }
+                // The insured person's class, read from them: the insurer may ask for it.
+                if let ownerClass = policy.policyholderClass {
+                    DSRowSeparator()
+                    DSReadOnlyValueRow(label: Text("Clasa proprietarului", comment: "Policy page: the bonus-malus class of the person the RCA insures."),
+                                       value: Text(verbatim: ownerClass))
+                }
                 Text("Sună cât mai repede, înainte să repari ceva.", comment: "Claim: call the insurer before any repair.")
                     .dsFont(.footnote)
                     .fixedSize(horizontal: false, vertical: true)

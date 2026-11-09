@@ -335,6 +335,8 @@ public struct CaptureAnalyzer: Sendable {
         if let classValue = RomanianFieldExtractor.bonusMalus(in: text) {
             fields.add(.bonusMalusClass, .text(classValue), 0.7, nil)
         }
+        // Who it insures: the person whose class it is (`Policyholders`).
+        fields.add(PolicyholderReader.fields(in: text))
         // The cover: an RCA policy is RCA; any other policy's is read once, as whole words.
         // When the page names none, the review asks the person to pick it.
         if let cover = kind.profile.defaultCover ?? InsuranceCover.read(in: haystack, among: kind.profile.covers) {

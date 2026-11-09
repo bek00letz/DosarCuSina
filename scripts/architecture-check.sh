@@ -112,8 +112,11 @@ rule tap-gesture-beside-action "$app" "$design_system" \
     'simultaneousGesture\( *TapGesture' - \
     "A tap gesture beside a link or a button makes every tap wait to be told apart from a hold. Do the work in the button's action, or read it from the navigation."
 
+# One named exception: ios/Shared/InboxNotice.swift, the share's own notice. The share
+# extension runs while the app doesn't, so it posts that one notice itself (only when
+# notifications are already allowed); the coordinator withdraws it. See AGENTS.md.
 rule side-effect-outside-coordinator "$app" \
-    '^ios/DosarCuSina/Services/SideEffects/|^ios/DosarCuSina/Services/Reminders/NotificationReconciler\.swift$|^ios/DosarCuSinaWidgets/' \
+    '^ios/DosarCuSina/Services/SideEffects/|^ios/DosarCuSina/Services/Reminders/NotificationReconciler\.swift$|^ios/DosarCuSinaWidgets/|^ios/Shared/InboxNotice\.swift$' \
     'WidgetCenter|UNNotificationRequest\(|UNUserNotificationCenter\.current\(\)\.(add|remove|setBadgeCount)|setBadgeCount\(|CSSearchableIndex|ControlCenter\.shared\.reload' - \
     'Notifications, the badge, widgets and Spotlight change only through SideEffectsCoordinator. Save through an action and let the coordinator react.'
 

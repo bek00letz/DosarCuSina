@@ -334,6 +334,25 @@ private struct GalleryCards: View {
                     }
                 }
             }
+            GallerySection(title: "Rânduri cu prima pagină", note: "DSThumbnailWell: poza primei pagini, sau simbolul în același loc până apare (sau când nu are voie să apară).") {
+                DSCard {
+                    VStack(alignment: .leading, spacing: DS.Space.xs) {
+                        DSListRow(
+                            title: Text(verbatim: "Factură ENGIE Romania S.A."),
+                            subtitle: Text(verbatim: "factura octombrie · 3 pagini · Primit azi la 10:15"),
+                            thumbnail: DSThumbnailWell(image: Image(systemName: "doc.text.image"), systemImage: "doc.richtext"),
+                            showsChevron: true
+                        ) { EmptyView() }
+                        DS.Hairline()
+                        DSListRow(
+                            title: Text(verbatim: "Act protejat"),
+                            subtitle: Text(verbatim: "Primit ieri la 18:40"),
+                            thumbnail: DSThumbnailWell(image: nil, systemImage: "lock.fill"),
+                            showsChevron: true
+                        ) { EmptyView() }
+                    }
+                }
+            }
             GallerySection(title: "Rânduri cu bifă", note: "Tot rândul se apasă. Ce e dedesubt apare doar când e bifat și poate conține câmpuri.") {
                 DSCard {
                     VStack(alignment: .leading, spacing: DS.Space.xs) {

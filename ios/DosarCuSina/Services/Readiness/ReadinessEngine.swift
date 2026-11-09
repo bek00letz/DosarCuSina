@@ -21,7 +21,7 @@ public enum ReadinessEngine {
             return ReadinessChecklist(groups: sale(of: car, today: today))
         case .insuranceClaim(let id, let blueprintKey):
             guard let asset = assets.first(where: { $0.id == id }) else { return ReadinessChecklist(groups: []) }
-            return claim(on: asset, blueprintKey: blueprintKey, today: today)
+            return claim(on: asset, blueprintKey: blueprintKey, today: today, people: Policyholders.people(in: assets))
         }
     }
 
@@ -549,7 +549,8 @@ extension ReadinessEngine {
 
     /// The policies a claim on `asset` can go to: those the binder follows or knows a fact
     /// of, or every policy of its category when it knows none. Each reads its own facts.
-    public static func claimPolicies(on asset: ReadinessAsset) -> [ReadinessPolicy] {
+    /// `people` are the household's, for the class of the person a policy insures.
+    static func claimPolicies(on asset: ReadinessAsset, people: [Policyholders.Person] = []) -> [ReadinessPolicy] {
         let all = asset.facts.map { entry -> ReadinessPolicy in
             func value(_ role: BlueprintFactRole) -> String? {
                 entry.facts.field(for: role).flatMap { asset.values[$0]?.textValue }.flatMap { $0.trimmingCharacters(in: .whitespaces).isEmpty ? nil : $0 }
@@ -559,7 +560,8 @@ extension ReadinessEngine {
             return ReadinessPolicy(
                 blueprintKey: entry.blueprintKey, title: entry.title, whenToUse: whenToUse(entry.blueprintKey),
                 insurer: value(.insurer), policyNumber: reference ?? value(.policyNumber), claimsPhone: value(.claimsPhone),
-                deadlineID: deadline?.id, validUntil: deadline?.due
+                deadlineID: deadline?.id, validUntil: deadline?.due,
+                policyholderClass: Policyholders.bonusMalus(ofPolicyholder: value(.policyholder), among: people)
             )
         }
         let known = all.filter { $0.deadlineID != nil || $0.insurer != nil || $0.policyNumber != nil || $0.claimsPhone != nil }
@@ -573,8 +575,8 @@ extension ReadinessEngine {
         return options.first { $0.deadlineID != nil } ?? options.first
     }
 
-    static func claim(on asset: ReadinessAsset, blueprintKey: String?, today: CalendarDay) -> ReadinessChecklist {
-        let options = claimPolicies(on: asset)
+    static func claim(on asset: ReadinessAsset, blueprintKey: String?, today: CalendarDay, people: [Policyholders.Person] = []) -> ReadinessChecklist {
+        let options = claimPolicies(on: asset, people: people)
         let policy = claimPolicy(among: options, blueprintKey: blueprintKey)
         let isCar = isVehicle(asset)
 

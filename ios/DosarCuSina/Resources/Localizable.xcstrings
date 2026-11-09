@@ -175,6 +175,35 @@
         }
       }
     },
+    "%lld pagini": {
+      "comment": "How many pages a document shared from another app has: „3 pagini”. Only shown for two or more.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "o pagină"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld pagini"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de pagini"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld poze": {
       "comment": "Photos received from another app",
       "localizations": {

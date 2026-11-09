@@ -24,8 +24,10 @@ struct DataRepairsScreen: View {
                         Spacer()
                         if group.findings.count > 1 {
                             Menu {
-                                Button { apply(group.findings) } label: {
-                                    Text("Corectează toate", comment: "Applies every repair of one kind.")
+                                if group.findings.contains(where: \.isFixable) {
+                                    Button { apply(group.findings.filter(\.isFixable)) } label: {
+                                        Text("Corectează toate", comment: "Applies every repair of one kind.")
+                                    }
                                 }
                                 Button { dismiss(group.findings) } label: {
                                     Text("Lasă-le pe toate așa", comment: "Dismisses every repair of one kind.")
@@ -101,18 +103,28 @@ private struct DataRepairRow: View {
     }
 
     @ViewBuilder private var buttons: some View {
-        Button(action: apply) {
-            Text("Corectează", comment: "Applies one repair from the repair list.")
-                .lineLimit(1)
-                .frame(minHeight: 44)
+        if finding.isFixable {
+            Button(action: apply) {
+                Text("Corectează", comment: "Applies one repair from the repair list.")
+                    .lineLimit(1)
+                    .frame(minHeight: 44)
+            }
+            .buttonStyle(.borderedProminent)
+            Button(action: dismiss) {
+                Text("Lasă așa", comment: "Dismisses one repair; it isn't offered again.")
+                    .lineLimit(1)
+                    .frame(minHeight: 44)
+            }
+            .buttonStyle(.bordered)
+        } else {
+            // Nothing to change here: the finding says what to do, and this puts it away.
+            Button(action: dismiss) {
+                Text("Am înțeles", comment: "Puts away a repair finding that only says what to do.")
+                    .lineLimit(1)
+                    .frame(minHeight: 44)
+            }
+            .buttonStyle(.bordered)
         }
-        .buttonStyle(.borderedProminent)
-        Button(action: dismiss) {
-            Text("Lasă așa", comment: "Dismisses one repair; it isn't offered again.")
-                .lineLimit(1)
-                .frame(minHeight: 44)
-        }
-        .buttonStyle(.bordered)
     }
 }
 

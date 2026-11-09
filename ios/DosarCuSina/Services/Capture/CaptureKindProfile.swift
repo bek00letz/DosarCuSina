@@ -210,7 +210,8 @@ struct CaptureKindProfile: Sendable {
             kind: .rcaPolicy, templateKey: BuiltInTemplates.Key.vehicle, filing: .intoSection, blueprintKey: nil,
             readsCover: true, defaultCover: InsuranceCover.rca, deadlineField: .expiryDate, documentDateFields: issuedOn,
             documentKind: .policy, documentType: nil, trade: .insurer,
-            expectedKeys: [.provider, .providerTaxID, .policyNumber, .coverageType, .startDate, .expiryDate, .total, .claimsPhone, .licensePlate, .vin, .bonusMalusClass],
+            expectedKeys: [.provider, .providerTaxID, .policyNumber, .coverageType, .startDate, .expiryDate, .total, .claimsPhone, .licensePlate, .vin, .bonusMalusClass,
+                           .policyholder],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: true, identifierKeys: [.licensePlate, .vin],
             name: "Poliță RCA", titleRule: .nameAndYear, modelDescription: "compulsory motor insurance (RCA) policy", sectionName: .vehicle
         ),
@@ -218,7 +219,8 @@ struct CaptureKindProfile: Sendable {
             kind: .insurancePolicy, templateKey: nil, filing: .intoSection, blueprintKey: nil,
             readsCover: true, defaultCover: nil, deadlineField: .expiryDate, documentDateFields: issuedOn,
             documentKind: .policy, documentType: nil, trade: .insurer,
-            expectedKeys: [.provider, .providerTaxID, .policyNumber, .coverageType, .startDate, .expiryDate, .total, .claimsPhone, .licensePlate],
+            expectedKeys: [.provider, .providerTaxID, .policyNumber, .coverageType, .startDate, .expiryDate, .total, .claimsPhone, .licensePlate,
+                           .policyholder],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: [.licensePlate, .vin],
             name: "Poliță de asigurare", titleRule: .name, modelDescription: "insurance policy (CASCO, home or other)"
         ),

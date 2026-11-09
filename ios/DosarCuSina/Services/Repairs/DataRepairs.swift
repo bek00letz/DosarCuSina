@@ -33,6 +33,7 @@ struct DataRepairs {
         TravelCutoffStep(),
         HomePolicySetsStep(),
         UnitKeysStep(),
+        PolicyNumberPartsStep(),
     ]
 
     static func step(_ id: DataRepairStepID) -> any DataRepairStep {
@@ -56,6 +57,8 @@ struct DataRepairs {
 
     /// Makes the approved changes, in one step: all of them, or none.
     func apply(_ findings: [DataRepairFinding]) throws {
+        // A finding that only says what to do changes nothing.
+        let findings = findings.filter(\.isFixable)
         guard !findings.isEmpty else { return }
         let byStep = Dictionary(grouping: findings, by: \.step)
         try UnitOfWork.perform(in: context) {
@@ -89,6 +92,7 @@ enum DataRepairStepID: String, CaseIterable, Sendable, Hashable {
     case travelCutoff = "travel-cutoff"
     case homePolicySets = "home-policy-sets"
     case unitKeys = "unit-keys"
+    case policyNumberParts = "policy-number-parts"
 }
 
 /// One thing a repair would change, in plain words, with what applying it needs.
@@ -100,6 +104,9 @@ struct DataRepairFinding: Identifiable, Hashable, Sendable {
     /// pare greșit: 457 km. Corectez la 45.724?"
     let message: String
     let subject: Subject
+    /// The repair can make the change. When false the finding only says what the person
+    /// can do (read a policy again), and "Am înțeles" puts it away.
+    var isFixable = true
 
     enum Subject: Hashable, Sendable {
         case blueprint(obligationID: UUID, blueprintKey: String)
@@ -121,6 +128,8 @@ struct DataRepairFinding: Identifiable, Hashable, Sendable {
         case travelCutoff(obligationID: UUID, marginDays: Int)
         /// A home's policy facts, kept where PAD's are, move to its optional policy's.
         case homePolicySet(assetID: UUID, policyNumber: String)
+        /// A policy number kept with only its series: completed to `to`, when the filed policy gives it.
+        case policyNumberParts(assetID: UUID, field: String, to: String?)
     }
 }
 

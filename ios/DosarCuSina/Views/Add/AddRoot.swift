@@ -5,10 +5,17 @@ import SwiftUI
 /// typing it in), the card that teaches sharing from Mail or WhatsApp, and
 /// "De verificat" with what arrived from other apps.
 ///
-/// It lives in the shell's navigation stack for this tab.
+/// It lives in the shell's navigation stack for this tab. What it shows of De verificat
+/// counts as seen (`InboxLanding.markSeen`), so opening the app lands here only for
+/// what arrived since.
 struct AddRoot: View {
     @Environment(\.modelContext) private var context
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(BiometricVaultManager.self) private var vault
+
+    @Query(filter: #Predicate<CategoryTemplate> { $0.isSensitive }) private var lockedTemplates: [CategoryTemplate]
+    @State private var isOnScreen = false
 
     @State private var source: CaptureSource?
     @State private var flow: CaptureFlowInput?
@@ -34,6 +41,14 @@ struct AddRoot: View {
         .navigationTitle("Adaugă")
         .dsAnimation(value: pending.map(\.id))
         .dsAnimation(value: inbox.unreadable.map(\.id))
+        .dsAnimation(value: inbox.previews)
+        .onAppear {
+            isOnScreen = true
+            markSeen()
+        }
+        .onDisappear { isOnScreen = false }
+        .onChange(of: inbox.items) { _, _ in markSeen() }
+        .onChange(of: scenePhase) { _, _ in markSeen() }
         .dsToast($toast)
         .captureSourcePicker($source) { payload in
             flow = CaptureFlowInput(payload: payload)
@@ -157,12 +172,23 @@ struct AddRoot: View {
         .transition(DS.Motion.transition(from: .top, reduceMotion: reduceMotion))
     }
 
+    /// The categories behind Face ID, by key.
+    private var lockedCategories: Set<String> {
+        Set(lockedTemplates.map(\.key))
+    }
+
+    private func row(_ item: InboxItem) -> InboxWording.Row {
+        inbox.row(for: item, lockedCategories: lockedCategories, isSessionUnlocked: vault.isSessionUnlocked)
+    }
+
     private func inboxRow(_ item: InboxItem) -> some View {
-        Button { open(item) } label: {
+        let row = row(item)
+        let picture = row.showsThumbnail ? inbox.thumbnails[item.id].map { Image(uiImage: $0) } : nil
+        return Button { open(item) } label: {
             DSListRow(
-                title: Text(verbatim: InboxWording.title(item)),
-                subtitle: Text(verbatim: InboxWording.received(item.receivedAt)),
-                systemImage: InboxWording.symbol(item),
+                title: Text(verbatim: row.title),
+                subtitle: Text(verbatim: row.detail),
+                thumbnail: DSThumbnailWell(image: picture, systemImage: row.symbol),
                 showsChevron: true,
                 trailing: {
                     if item.isPractice { Text("Exercițiu") }
@@ -175,7 +201,7 @@ struct AddRoot: View {
             Button("Șterge", systemImage: "trash", role: .destructive) { dismiss(item) }
         }
         .accessibilityAction(named: Text("Șterge")) { dismiss(item) }
-        .accessibilityHint(Text("Deschide ca să verifici și să salvezi."))
+        .accessibilityHint(row.isProtected ? Text("Deschide după deblocare, ca să verifici și să salvezi.") : Text("Deschide ca să verifici și să salvezi."))
     }
 
     /// Something that arrived but couldn't be opened: said calmly, with a way to remove it.
@@ -184,7 +210,7 @@ struct AddRoot: View {
             DSListRow(
                 title: Text("Nu am putut deschide"),
                 subtitle: Text(verbatim: InboxWording.received(item.setAsideAt)),
-                systemImage: "questionmark.folder",
+                thumbnail: DSThumbnailWell(image: nil, systemImage: "questionmark.folder"),
                 showsChevron: true,
                 trailing: { EmptyView() }
             )
@@ -199,9 +225,21 @@ struct AddRoot: View {
     private func open(_ item: InboxItem) {
         if item.isPractice {
             practiceItem = item
+        } else if row(item).isProtected {
+            // It belongs to a locked category: what it is shows only after unlocking.
+            Task {
+                guard await vault.unlock(reason: String(localized: "Deschide ce ai trimis", comment: "Face ID reason: open something shared that belongs to a locked section.")) == .success else { return }
+                read(item)
+            }
         } else {
             read(item)
         }
+    }
+
+    /// What De verificat shows now counts as seen, while it is on screen.
+    private func markSeen() {
+        guard isOnScreen, scenePhase == .active else { return }
+        InboxLanding.shared.markSeen(pending)
     }
 
     private func read(_ item: InboxItem) {
@@ -217,7 +255,8 @@ struct AddRoot: View {
     private func dismiss(_ item: InboxItem) {
         hiddenItems.insert(item.id)
         // Outside the database: the item only leaves the inbox once the toast has passed.
-        toast = DSToast(title: "Am scos „\(InboxWording.title(item))” din De verificat.", action: {
+        let title = row(item).title
+        toast = DSToast(title: "Am scos „\(title)” din De verificat.", action: {
             hiddenItems.remove(item.id)
         })
         Task {
@@ -236,36 +275,5 @@ struct AddRoot: View {
         case .dismissed:
             break
         }
-    }
-}
-
-/// How an item from another app reads in the list.
-enum InboxWording {
-    static func title(_ item: InboxItem) -> String {
-        if item.isPractice { return String(localized: "Factură de probă") }
-        if let name = item.originalName?.trimmingCharacters(in: .whitespacesAndNewlines), !name.isEmpty {
-            return (name as NSString).deletingPathExtension
-        }
-        switch item.payload {
-        case .images: return String(localized: "\(item.files.count) poze", comment: "Photos received from another app")
-        case .pdf: return String(localized: "Un PDF")
-        case .text: return String(localized: "Un text")
-        }
-    }
-
-    static func symbol(_ item: InboxItem) -> String {
-        switch item.payload {
-        case .images: return "photo"
-        case .pdf: return "doc.richtext"
-        case .text: return "text.alignleft"
-        }
-    }
-
-    static func received(_ date: Date) -> String {
-        let time = DosarFormat.time(date)
-        if Calendar.current.isDateInToday(date) { return String(localized: "Primit azi la \(time)") }
-        if Calendar.current.isDateInYesterday(date) { return String(localized: "Primit ieri la \(time)") }
-        let day = DosarFormat.dayMonth(date)
-        return String(localized: "Primit pe \(day)")
     }
 }

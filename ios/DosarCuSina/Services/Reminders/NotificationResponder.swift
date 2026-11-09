@@ -6,6 +6,10 @@ import SwiftData
 /// through `IntentEngine`, the one way in for actions from outside the app: they
 /// act only on the cycle the reminder was about, and reminders are planned again
 /// afterwards. A tap opens the obligation through `AppNavigator`.
+///
+/// A tap on the share's notice (`InboxNotice`) opens De verificat the same way, after
+/// unlocking when the app is locked; while the app is open the notice isn't shown,
+/// since the list is right there.
 @MainActor
 public final class NotificationResponder: NSObject, UNUserNotificationCenterDelegate {
     private let containerProvider: @MainActor () -> ModelContainer?
@@ -29,7 +33,7 @@ public final class NotificationResponder: NSObject, UNUserNotificationCenterDele
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
-        [.banner, .list, .sound]
+        InboxNotice.isNotice(notification.request.identifier) ? [.list] : [.banner, .list, .sound]
     }
 
     public nonisolated func userNotificationCenter(
@@ -38,8 +42,18 @@ public final class NotificationResponder: NSObject, UNUserNotificationCenterDele
     ) async {
         let action = response.actionIdentifier
         let request = response.notification.request
+        if InboxNotice.isNotice(request.identifier) {
+            await openInbox()
+            return
+        }
         let payload = ReminderPayload(identifier: request.identifier, userInfo: request.content.userInfo, deliveredAt: response.notification.date)
         await handle(action: action, payload: payload)
+    }
+
+    /// A tap on the share's notice: De verificat, through the navigator (which waits while
+    /// the app is locked). Internal so tests can drive it without a notification.
+    func openInbox() {
+        navigator.open(InboxLanding.route)
     }
 
     /// Applies a reminder action. Internal so tests can drive it without a notification.

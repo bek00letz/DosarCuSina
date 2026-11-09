@@ -88,6 +88,8 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: VehicleFields.insurer, label: String(localized: "Asigurător RCA"), type: .text, role: .issuer),
                     FieldDefinition(key: VehicleFields.policyNumber, label: String(localized: "Număr poliță RCA"), type: .text, role: .keyFact),
                     FieldDefinition(key: VehicleFields.claimsPhone, label: String(localized: "Telefon daune RCA"), type: .phone, role: .keyFact),
+                    // Who the RCA insures: their bonus-malus class is theirs, kept on them (`Policyholders`).
+                    FieldDefinition(key: VehicleFields.policyholder, label: String(localized: "Asigurat RCA"), type: .text),
                     // CASCO is optional and separate from RCA: its own insurer, policy and claims line.
                     FieldDefinition(key: VehicleFields.cascoInsurer, label: String(localized: "Asigurător CASCO"), type: .text),
                     FieldDefinition(key: VehicleFields.cascoPolicyNumber, label: String(localized: "Număr poliță CASCO"), type: .text, role: .keyFact),
@@ -101,7 +103,8 @@ public enum BuiltInTemplates {
                                     estimatedCost: ron(180), note: String(localized: "Fără ITP valabil, înmatricularea se suspendă.")),
                 ObligationBlueprint(key: BuiltInBlueprints.vehicleRCA, title: String(localized: "RCA"), kind: .insurance, recurrence: .interval(.years(1), anchor: .dueDate), firstDue: .ask,
                                     reminders: profile([30, 7, 0], .legal), note: String(localized: "Cere oferte cu o lună înainte, prețurile diferă mult."),
-                                    facts: BlueprintFacts(insurer: VehicleFields.insurer, policyNumber: VehicleFields.policyNumber, claimsPhone: VehicleFields.claimsPhone)),
+                                    facts: BlueprintFacts(insurer: VehicleFields.insurer, policyNumber: VehicleFields.policyNumber, claimsPhone: VehicleFields.claimsPhone,
+                                                          policyholder: VehicleFields.policyholder)),
                 ObligationBlueprint(key: BuiltInBlueprints.vehicleVignette, title: String(localized: "Rovinietă"), kind: .legal, recurrence: .interval(.months(12), anchor: .completion), firstDue: .ask,
                                     reminders: profile([7, 0], .legal)),
                 ObligationBlueprint(key: "vehicle.service", title: String(localized: "Revizie periodică"), kind: .maintenance,
@@ -617,7 +620,13 @@ public enum BuiltInTemplates {
             symbol: "person.crop.circle",
             tint: .indigo,
             isOnHomeByDefault: false,
-            sections: [],
+            sections: [
+                // The RCA class follows the driver's history, not a car's: it is the person's.
+                FieldSection(key: "member.driving", title: String(localized: "Asigurare auto"), fields: [
+                    FieldDefinition(key: MemberFields.bonusMalus, label: String(localized: "Clasă bonus-malus"), type: .choice, role: .keyFact,
+                                    options: BonusMalusClass.options),
+                ]),
+            ],
             pockets: [.upcoming, .documents, .keyFacts],
             behavior: CategoryBehavior(box: .insideOther, role: .holder)
         )

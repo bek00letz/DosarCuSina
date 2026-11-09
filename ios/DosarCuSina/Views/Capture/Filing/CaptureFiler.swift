@@ -279,6 +279,9 @@ struct CaptureFiler {
             }
         }
 
+        // The policy's bonus-malus class, on the person it insures (never on the car).
+        try keepBonusMalus(plan.bonusMalus, on: outcome.asset, deadline: plan.blueprint)
+
         // 2. The deadline, as the plan says: the section's own moves (or its cycle closes),
         // or a new one is made. A new section already made it with its other deadlines.
         if let asset = outcome.asset, let blueprint = plan.blueprint {
@@ -357,6 +360,7 @@ struct CaptureFiler {
             let templates = try TemplateStore(context: context).templatesByKey()
             let closing = obligation.blueprintKey.flatMap { key in templates[asset.templateKey]?.blueprints.first { $0.key == key } }
             try writeValues(of: review, to: asset, templates: templates, deadline: closing)
+            try keepBonusMalus(bonusMalusChoice(for: review), on: asset, deadline: closing)
         }
 
         // 2. The deadline: the cycle closes, and the new document's date sets the next one.
@@ -425,6 +429,32 @@ struct CaptureFiler {
     }
 
     // MARK: Shared steps
+
+    /// Where a policy's bonus-malus class goes, worked out from the household as it is now.
+    private func bonusMalusChoice(for review: CaptureReview?) -> CaptureFilingPlan.BonusMalus? {
+        review.flatMap { CaptureFilingPlan.bonusMalus(for: $0, people: Policyholders.people(in: context)) }
+    }
+
+    /// A policy's bonus-malus class, kept on the person it insures, and that person named
+    /// in the policy's facts on the section (`BlueprintFactRole.policyholder`), so the
+    /// policy's page reads the class from them and it is never kept twice. Nothing is kept
+    /// when the household doesn't know who the policy insures.
+    private func keepBonusMalus(_ choice: CaptureFilingPlan.BonusMalus?, on asset: Asset?, deadline: ObligationBlueprint?) throws {
+        guard case .keep(let classKey, let memberID, let memberName) = choice else { return }
+        let actions = AssetActions(context: context, calendar: calendar, now: now)
+        var descriptor = FetchDescriptor<Asset>(predicate: #Predicate { $0.id == memberID })
+        descriptor.fetchLimit = 1
+        if let member = try context.fetch(descriptor).first, member.values[MemberFields.bonusMalus]?.textValue != classKey {
+            var values = member.values
+            values[MemberFields.bonusMalus] = .text(classKey)
+            try actions.update(member, name: member.name, values: values, notes: member.notes)
+        }
+        if let asset, let field = deadline?.facts?.policyholder, asset.values[field]?.textValue != memberName {
+            var values = asset.values
+            values[field] = .text(memberName)
+            try actions.update(asset, name: asset.name, values: values, notes: asset.notes)
+        }
+    }
 
     /// What a captured document's values change on a section that already exists: what
     /// was read replaces what was there, except a value that only differs in how it's written.
@@ -518,6 +548,15 @@ struct CaptureFiler {
             add(visit.asset)
         }
         add(keptDocument?.asset)
+        // The person whose bonus-malus class the policy brings.
+        let review: CaptureReview? = switch intent {
+        case .review(let review): review
+        case .completion(let completion): completion.document.map { CaptureReview(result: $0, assets: [], context: context) }
+        case .visit: nil
+        }
+        if case .keep(_, let memberID, _) = bonusMalusChoice(for: review) {
+            add(try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.id == memberID })).first)
+        }
         guard keys.contains(where: { templates[$0]?.isSensitive == true }), !vault.isSessionUnlocked else { return }
         let result = await vault.unlock(reason: String(localized: "Deschide secțiunea protejată ca să salvez actul."))
         guard result == .success else { throw FilingError.locked }
