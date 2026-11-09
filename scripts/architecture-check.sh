@@ -74,6 +74,12 @@ rule save-outside-unit-of-work "$app" '^ios/DosarCuSina/Services/Persistence/Uni
     '[cC]ontext\??\.save\(\)' - \
     'Save through UnitOfWork.save(context). When one tap does several things, wrap them in UnitOfWork.perform(in:).'
 
+# SwiftData saves a context by itself unless told not to, around the unit of work. Every
+# container and context is made in one file, which turns that off.
+rule context-outside-persistence "$app" '^ios/DosarCuSina/Services/Persistence/PersistenceController\.swift$' \
+    '(^|[^A-Za-z0-9_.])Model(Context|Container)\(|autosaveEnabled *= *true' - \
+    'Make a container with PersistenceController.makeContainer and a context of its own with PersistenceController.context(in:). They save only through UnitOfWork, never by themselves.'
+
 rule system-error-text "$app" - \
     '\.localizedDescription([^A-Za-z0-9_]|$)' - \
     "The system's error text isn't written for people. Show SaveFailure.message(for:formKept:), or give the error a UserFacingError message."

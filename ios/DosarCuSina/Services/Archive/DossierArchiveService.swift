@@ -197,7 +197,7 @@ public struct DossierArchiveService {
 
     /// Every file of the archive, read from the database.
     func exportEntries(appVersion: String = Bundle.main.shortVersion, exportedAt: Date = Date()) throws -> [DosarZipEngine.Entry] {
-        let context = ModelContext(container)
+        let context = PersistenceController.context(in: container)
         let templates = try context.fetch(FetchDescriptor<CategoryTemplate>(sortBy: [SortDescriptor(\.homeOrder)]))
         let assets = try context.fetch(FetchDescriptor<Asset>(sortBy: [SortDescriptor(\.createdAt)]))
         let obligations = try context.fetch(FetchDescriptor<Obligation>(sortBy: [SortDescriptor(\.createdAt)]))
@@ -403,8 +403,7 @@ public struct DossierArchiveService {
     /// The one way a package is written: on a context of its own, saved once,
     /// everything or nothing.
     nonisolated private static func write(_ package: DossierV3.Package, mode: ArchiveImportMode, container: ModelContainer, calendar: Calendar) throws -> ArchiveImportResult {
-        let context = ModelContext(container)
-        context.autosaveEnabled = false
+        let context = PersistenceController.context(in: container)
         return try UnitOfWork.performPrivate(in: context) {
             try DossierImporter(context: context, package: package, mode: mode, calendar: calendar).run()
         }

@@ -15,7 +15,12 @@ import Foundation
 ///   starts like a card number (Visa, Mastercard, Maestro, American Express and the rest)
 ///   and passes the Luhn check, or is printed in groups of four. Thirteen digits are never
 ///   taken, so a CNP stays as it is; an IMEI (15 digits, starting otherwise) or a 20-digit
-///   health card number isn't a card number either.
+///   health card number isn't a card number either. A card number printed next to other
+///   digits, with only a space or a dash between them ("12 4111 1111 1111 1111"), is found
+///   inside the longer run: a part of it that begins and ends where its groups do, is
+///   printed like a card (one piece, groups of four, 4-6-5) and passes the Luhn check. Digits
+///   with nothing between them are one number and are only ever taken whole, so a long code
+///   with no spaces (a meter's, a contract's) stays as it is.
 /// - **On a bank card** (`strict`): any run of eight digits or more, whatever it starts
 ///   with or whether its check digit passes, since a misread digit must not let the rest
 ///   through.
@@ -31,7 +36,7 @@ public enum PaymentCardNumbers {
     public static func redact(_ text: String, strict: Bool = false) -> String {
         guard text.contains(where: \.isNumber) else { return text }
         var result = text
-        for run in runs(in: text, strict: strict).reversed() where run.isCardNumber || strict {
+        for run in (strict ? runs(in: text, strict: true) : cardNumbers(in: text)).reversed() {
             result.replaceSubrange(run.range, with: run.masked)
         }
         return result
@@ -40,16 +45,15 @@ public enum PaymentCardNumbers {
     /// Whether the text holds something shaped like a card number (the "anywhere" rule).
     public static func containsCardNumber(_ text: String) -> Bool {
         guard text.contains(where: \.isNumber) else { return false }
-        return runs(in: text, strict: false).contains(where: \.isCardNumber)
+        return !cardNumbers(in: text).isEmpty
     }
 
     /// The last four digits of the card number in the text: a full number by the
     /// "anywhere" rule (or, `strict`, any run of twelve digits or more), else one already
     /// masked ("•••• 4821").
     public static func lastFour(in text: String, strict: Bool = false) -> String? {
-        if let run = runs(in: text, strict: strict).first(where: { $0.isCardNumber || (strict && $0.digits.count >= 12) }) {
-            return String(run.digits.suffix(4))
-        }
+        let run = cardNumbers(in: text).first ?? (strict ? runs(in: text, strict: true).first { $0.digits.count >= 12 } : nil)
+        if let run { return String(run.digits.suffix(4)) }
         let masked = #"[•*xX]{4}[ -]?(?:[•*xX]{4}[ -]?){0,3}(\d{4})(?!\d)"#
         return TextPattern.first(masked, in: text, caseInsensitive: false)?[1]
     }
@@ -107,12 +111,41 @@ public enum PaymentCardNumbers {
     struct Run {
         let range: Range<String.Index>
         let digits: String
-        /// Printed in groups of four ("4111 1111 1111 1111").
-        let groupedInFours: Bool
+        /// Where each group of digits sits, in order: the pieces between single spaces or dashes.
+        let groups: [Range<String.Index>]
+        /// How many digits each group has.
+        let groupSizes: [Int]
+        /// The whole run of digits found in the text, not a part of a longer one.
+        let isWhole: Bool
 
-        /// A card number by the "anywhere" rule.
+        init(groups: ArraySlice<Range<String.Index>>, in text: String, isWhole: Bool) {
+            self.groups = Array(groups)
+            self.range = (groups.first?.lowerBound ?? text.startIndex)..<(groups.last?.upperBound ?? text.startIndex)
+            let pieces = groups.map { text[$0].filter { $0.isASCII && $0.isNumber } }
+            self.digits = pieces.joined()
+            self.groupSizes = pieces.map(\.count)
+            self.isWhole = isWhole
+        }
+
+        /// Printed in groups of four ("4111 1111 1111 1111").
+        var groupedInFours: Bool {
+            groupSizes.count >= 3 && groupSizes.allSatisfy { $0 == 4 }
+        }
+
+        /// Printed the way cards print their number: in one piece, in groups of four (19 digits
+        /// end with three), or in American Express's and Diners Club's 4-6-5 and 4-6-4.
+        var printedLikeACard: Bool {
+            guard let last = groupSizes.last else { return false }
+            if groupSizes.count == 1 || groupSizes == [4, 6, 5] || groupSizes == [4, 6, 4] { return true }
+            return groupSizes.dropLast().allSatisfy { $0 == 4 } && (3...4).contains(last)
+        }
+
+        /// A card number by the "anywhere" rule. A whole run printed in groups of four counts
+        /// even when its check digit was misread; a part of a longer run must pass the check and
+        /// be printed like a card, since inside a long number printed in fours every part is.
         var isCardNumber: Bool {
             guard (14...19).contains(digits.count), let brand = PaymentCardNumbers.brand(of: digits), brand.lengths.contains(digits.count) else { return false }
+            if !isWhole { return printedLikeACard && PaymentCardNumbers.passesLuhn(digits) }
             return PaymentCardNumbers.passesLuhn(digits) || (groupedInFours && digits.count == 16)
         }
 
@@ -126,14 +159,68 @@ public enum PaymentCardNumbers {
     static func runs(in text: String, strict: Bool) -> [Run] {
         let least = strict ? 8 : 12
         let pattern = #"(?<!\d[ -]?)\d(?:[ -]?\d){"# + String(least - 1) + #",}(?![ -]?\d)"#
-        return TextPattern.matches(pattern, in: text, caseInsensitive: false).compactMap { match in
-            let raw = String(text[match.range])
-            let digits = raw.filter { $0.isASCII && $0.isNumber }
-            guard digits.count <= 19 || strict else { return nil }
-            let groups = raw.split(whereSeparator: { $0 == " " || $0 == "-" })
-            let grouped = groups.count >= 3 && groups.allSatisfy { $0.count == 4 }
-            return Run(range: match.range, digits: digits, groupedInFours: grouped)
+        return TextPattern.matches(pattern, in: text, caseInsensitive: false).map { match in
+            Run(groups: groups(in: text, range: match.range)[...], in: text, isWhole: true)
         }
+    }
+
+    /// The card numbers in the text by the "anywhere" rule, in order: a whole run of digits
+    /// that is one, else the parts of a longer run that are (`parts(of:in:)`).
+    static func cardNumbers(in text: String) -> [Run] {
+        runs(in: text, strict: false).flatMap { run in run.isCardNumber ? [run] : parts(of: run, in: text) }
+    }
+
+    /// The card numbers inside a run that isn't one as a whole: a card number printed next to
+    /// other digits ("12 4111 1111 1111 1111", "4111-1111-1111-1111-27"). Only parts that
+    /// begin and end where the run's groups do are tried, from the left and the longest first
+    /// at each place; a part is taken when it is a card number (`isCardNumber`: printed like a
+    /// card and passing the Luhn check). Digits with nothing between them stay one number.
+    static func parts(of run: Run, in text: String) -> [Run] {
+        let sizes = run.groupSizes
+        guard sizes.count >= 2 else { return [] }
+        let cardLengths = 14...19
+        var found: [Run] = []
+        var start = 0
+        while start < sizes.count {
+            // The ends that give a card's length, longest first; nothing longer is ever built.
+            var length = 0
+            var ends: [Int] = []
+            for end in start..<sizes.count {
+                length += sizes[end]
+                if length > cardLengths.upperBound { break }
+                let isWhole = start == 0 && end == sizes.count - 1
+                if cardLengths.contains(length), !isWhole { ends.append(end) }
+            }
+            let part = ends.reversed().lazy
+                .map { Run(groups: run.groups[start...$0], in: text, isWhole: false) }
+                .first(where: \.isCardNumber)
+            if let part {
+                found.append(part)
+                start += part.groups.count
+            } else {
+                start += 1
+            }
+        }
+        return found
+    }
+
+    /// The groups of digits in `range`: the pieces between its spaces and dashes.
+    private static func groups(in text: String, range: Range<String.Index>) -> [Range<String.Index>] {
+        var groups: [Range<String.Index>] = []
+        var groupStart: String.Index?
+        var index = range.lowerBound
+        while index < range.upperBound {
+            let next = text.index(after: index)
+            if text[index] == " " || text[index] == "-" {
+                if let groupStart { groups.append(groupStart..<index) }
+                groupStart = nil
+            } else if groupStart == nil {
+                groupStart = index
+            }
+            index = next
+        }
+        if let groupStart { groups.append(groupStart..<range.upperBound) }
+        return groups
     }
 
     // MARK: - Brands

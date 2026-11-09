@@ -87,7 +87,7 @@ public final class UndoReceipt {
         let changed = context.changedModelsArray
         let deleted = context.deletedModelsArray
         // The store still holds every record as it was when the unit opened.
-        let store = ModelContext(context.container)
+        let store = PersistenceController.context(in: context.container)
         var before: [RecordRef: RecordState] = [:]
         func read(_ ref: RecordRef) -> RecordState? {
             if let known = before[ref] { return known }

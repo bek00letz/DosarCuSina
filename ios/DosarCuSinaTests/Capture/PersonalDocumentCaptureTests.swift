@@ -325,6 +325,52 @@ struct PersonalDocumentCaptureTests {
         #expect(PaymentCardNumbers.network(ofNumber: "4111111111111111") == PaymentCardNetwork.visa)
     }
 
+    @Test("A card number printed next to other digits is found inside the longer run")
+    func cardNumberNextToOtherDigits() {
+        let found = [
+            "Nr. 12 4111 1111 1111 1111": "Nr. 12 •••• 1111",
+            "Ref 3-5555555555554444": "Ref 3-•••• 4444",
+            "4111-1111-1111-1111-27 lei": "•••• 1111-27 lei",
+            "Rând 2 150 4111 1111 1111 1111": "Rând 2 150 •••• 1111",
+            "4111 1111 1111 1111 0828": "•••• 1111 0828",
+            // American Express prints 4-6-5.
+            "Plată 7 3782 822463 10005": "Plată 7 •••• 0005",
+            // Two cards side by side, and a CNP or a health card's 20 digits before one: only the cards go.
+            "4111 1111 1111 1111-5555555555554444": "•••• 1111-•••• 4444",
+            "CNP 1800101990006 4111111111111111": "CNP 1800101990006 •••• 1111",
+            "80642000000000000001 4111111111111111": "80642000000000000001 •••• 1111",
+        ]
+        for (text, masked) in found {
+            #expect(PaymentCardNumbers.redact(text) == masked, "\(text)")
+            #expect(PaymentCardNumbers.containsCardNumber(text), "\(text)")
+            #expect(PaymentCardNumbers.redact(text, strict: true).contains(PaymentCardNumbers.mask), "\(text)")
+        }
+        #expect(PaymentCardNumbers.lastFour(in: "Nr. 12 4111 1111 1111 1111") == "1111")
+        // On a bank card, the card's own last four, not the digits printed after it.
+        #expect(PaymentCardNumbers.lastFour(in: "4111 1111 1111 1111 0828", strict: true) == "1111")
+        #expect(PaymentCardNumbers.lastFour(in: "Ref 3-5555555555554444", strict: true) == "4444")
+    }
+
+    @Test("A long number stays as written: no part of it is taken unless it is printed apart like a card")
+    func longNumbersStayWhole() {
+        let kept = [
+            // Digits with nothing between them are one number, even when a part of it would pass as a card.
+            "Index 41111111111111110000",
+            "Contract 124111111111111111",
+            // A long number printed in fours: a part grouped like a card, with a check digit that fails.
+            "Cod 4111 1111 1111 1112 0000",
+            // Small numbers side by side, an IBAN, a phone, a CNP.
+            "2 4 6 8 10 12 14 16 18 20",
+            "RO49 AAAA 1B31 0075 9384 0000",
+            "0700 000 000",
+            "1800101990006",
+        ]
+        for text in kept {
+            #expect(PaymentCardNumbers.redact(text) == text, "\(text)")
+            #expect(!PaymentCardNumbers.containsCardNumber(text), "\(text)")
+        }
+    }
+
     @Test("Every kind of personal document is filed under its holder and asked for its own fields")
     func personalKinds() {
         for kind in [CaptureDocumentKind.criminalRecord, .healthInsuranceCard, .bankCard] {

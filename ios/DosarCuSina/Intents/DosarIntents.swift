@@ -67,7 +67,7 @@ enum IntentStore {
     }
 
     static func snapshots() throws -> [ObligationSnapshot] {
-        try ObligationSnapshot.fetchForOutside(in: ModelContext(container()))
+        try ObligationSnapshot.fetchForOutside(in: PersistenceController.context(in: container()))
     }
 
     /// With the app lock on, intents that read or change deadlines open the app,
