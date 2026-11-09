@@ -54,7 +54,7 @@ private struct PersonalDocumentContent: View {
     }
 
     var body: some View {
-        let definition = definition
+        let definition = self.definition
         let picture = DocumentPageFacts.currentPicture(of: document)
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.xl) {
