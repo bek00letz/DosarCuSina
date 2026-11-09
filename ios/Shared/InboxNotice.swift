@@ -45,8 +45,12 @@ public enum InboxNotice {
         String(localized: "Am primit \(count) acte", table: "Shared", comment: "After a share: how many documents arrived. One is a word: „Am primit un act”.")
     }
 
+    /// Not a count (no number in it), so one document and several are two strings of their
+    /// own, as the String Catalog asks for words that change without naming the number.
     static func body(_ count: Int) -> String {
-        String(localized: "Deschide aplicația ca să pui \(count) acte la locul lor.", table: "Shared", comment: "Body of the notice after a share. The count only picks the form: „ca să-l pui la locul lui” for one, „ca să le pui la locul lor” for more.")
+        count > 1
+            ? String(localized: "Deschide aplicația ca să le pui la locul lor.", table: "Shared", comment: "Body of the notice after a share of several documents.")
+            : String(localized: "Deschide aplicația ca să-l pui la locul lui.", table: "Shared", comment: "Body of the notice after a share of one document.")
     }
 
     /// What the share sheet tells the person to do next.

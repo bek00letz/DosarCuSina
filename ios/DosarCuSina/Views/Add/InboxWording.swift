@@ -139,8 +139,10 @@ enum InboxWording {
     /// or with the app it came from: "Un PDF din WhatsApp".
     static func madeOf(_ item: InboxItem, sender: String?) -> String {
         let what = switch item.payload {
-        // The count only picks the form: "O poză", "Poze" (the pages say how many).
-        case .images: String(localized: "\(item.files.count) poze primite", comment: "De verificat: photos shared together, read as the pages of one document. One is „O poză”, more are „Poze”, without the number: the line under it says „3 pagini”.")
+        // Not a count: no number is shown (the line under it says "3 pagini"), so one photo
+        // and several are two strings of their own, as the String Catalog asks.
+        case .images where item.files.count > 1: String(localized: "Poze", comment: "De verificat: several photos shared together, read as the pages of one document.")
+        case .images: String(localized: "O poză", comment: "De verificat: one photo shared from another app.")
         case .pdf: String(localized: "Un PDF")
         case .text: String(localized: "Un text")
         }

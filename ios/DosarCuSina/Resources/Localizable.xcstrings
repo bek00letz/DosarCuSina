@@ -233,35 +233,6 @@
         }
       }
     },
-    "%lld poze primite": {
-      "comment": "De verificat: photos shared together, read as the pages of one document. One is „O poză”, more are „Poze”, without the number: the line under it says „3 pagini”.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "O poză"
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Poze"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Poze"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "%lld secțiuni": {
       "comment": "A number of sections, with Romanian plural forms.",
       "localizations": {

@@ -145,35 +145,6 @@
           }
         }
       }
-    },
-    "Deschide aplicația ca să pui %lld acte la locul lor.": {
-      "comment": "Body of the notice after a share. The count only picks the form: „ca să-l pui la locul lui” for one, „ca să le pui la locul lor” for more.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Deschide aplicația ca să-l pui la locul lui."
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Deschide aplicația ca să le pui la locul lor."
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Deschide aplicația ca să le pui la locul lor."
-                }
-              }
-            }
-          }
-        }
-      }
     }
   },
   "version": "1.0"
