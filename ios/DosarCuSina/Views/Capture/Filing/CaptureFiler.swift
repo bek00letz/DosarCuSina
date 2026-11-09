@@ -303,7 +303,10 @@ struct CaptureFiler {
         outcome.nextDue = outcome.obligation?.dueDay(in: calendar)
 
         // A bill, in its subscription's history: what it came to and when, for the trend
-        // and for knowing when the next one is due.
+        // and for knowing when the next one is due. A bill logs one entry: filed again, the
+        // entry it logged before takes what was read now (and moves with the bill), and it
+        // goes when the bill no longer goes to a subscription, as its meter reading does.
+        let billFiledBefore = Self.entryFiledBefore(by: document) { $0.kind == .payment }
         if review.kind.profile.deadlineIsOptIn, let asset = outcome.asset, templates.plays(.subscription, asset.templateKey) {
             outcome.bill = try HistoryActions(context: context, now: now).record(
                 on: asset,
@@ -311,8 +314,11 @@ struct CaptureFiler {
                 title: review.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? CaptureMapping.defaultTitle(for: review.kind, fields: review.valuesByKey) : review.title,
                 occurredAt: Self.billDay(review, today: today).noonDate(in: calendar),
                 totalCost: review.total,
-                note: review.value(.invoiceNumber)?.text.map { String(localized: "Factura nr. \($0)") }
+                note: review.value(.invoiceNumber)?.text.map { String(localized: "Factura nr. \($0)") },
+                replacing: billFiledBefore
             )
+        } else if review.kind.profile.deadlineIsOptIn, let billFiledBefore {
+            try HistoryActions(context: context, now: now).delete(billFiledBefore)
         }
 
         // 3. Who issued it.
@@ -333,7 +339,8 @@ struct CaptureFiler {
                 validUntil: review.validUntil,
                 asset: outcome.asset,
                 obligation: outcome.obligation,
-                historyEntry: outcome.completion ?? outcome.bill,
+                // A bill's document is the bill's own entry, not the cycle its reminder closed.
+                historyEntry: outcome.bill ?? outcome.completion,
                 provider: provider
             )
             outcome.attachment = filed
@@ -398,6 +405,7 @@ struct CaptureFiler {
             try ProviderActions(context: context, now: now).findOrCreate(name: name, taxID: taxID, trade: trade, linkedTo: visit.asset)
         }
         if let provider, case .existing = visit.provider { try ProviderActions(context: context, now: now).link(provider, to: visit.asset) }
+        // The same invoice filed again: the visit it was filed with takes these values.
         let entry = try HistoryActions(context: context, now: now).recordVisit(
             on: visit.asset,
             kind: visit.kind,
@@ -410,7 +418,8 @@ struct CaptureFiler {
             rating: visit.rating,
             calendar: calendar,
             odometerSource: visit.odometerSource,
-            lowerReading: lowerReading
+            lowerReading: lowerReading,
+            replacing: Self.visitFiledBefore(by: document)
         ).value
         var outcome = Outcome(asset: visit.asset, visit: entry)
         if let document {
@@ -483,7 +492,8 @@ struct CaptureFiler {
         case .visit(let visit):
             try ExampleOwnership.requireReal(visit.asset)
             let reading = HistoryActions(context: context, now: now).plannedReading(
-                visit.odometer, on: visit.asset, at: visit.occurredAt, source: visit.odometerSource
+                visit.odometer, on: visit.asset, at: visit.occurredAt, source: visit.odometerSource,
+                replacing: Self.visitFiledBefore(by: document)
             )
             try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
         }
@@ -539,6 +549,23 @@ struct CaptureFiler {
     private func closingBlueprint(of obligation: Obligation, templates: [String: CategoryTemplate]) -> ObligationBlueprint? {
         guard let asset = obligation.asset else { return nil }
         return obligation.blueprintKey.flatMap { key in templates[asset.templateKey]?.blueprints.first { $0.key == key } }
+    }
+
+    // MARK: Filed again
+
+    /// The history entry a kept document logged when it was filed before, when `isOwn` says
+    /// it is the document's own record (a bill's payment, a visit): filing the document again
+    /// updates that entry instead of adding a second one. Never a completion, which belongs
+    /// to the deadline whose cycle it closed.
+    static func entryFiledBefore(by document: CapturedDocument?, _ isOwn: (HistoryEntry) -> Bool) -> HistoryEntry? {
+        guard case .kept(let attachment)? = document, let entry = attachment.historyEntry,
+              !entry.isDeleted, !entry.isCompletion, isOwn(entry) else { return nil }
+        return entry
+    }
+
+    /// The visit an invoice was filed with before: any entry of its that isn't a bill.
+    static func visitFiledBefore(by document: CapturedDocument?) -> HistoryEntry? {
+        entryFiledBefore(by: document) { $0.kind != .payment }
     }
 
     /// Where a policy's bonus-malus class goes, worked out from the household as it is now.

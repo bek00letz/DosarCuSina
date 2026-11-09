@@ -314,6 +314,94 @@ struct BillReadingTests {
         #expect(document.measurement == nil)
     }
 
+    // MARK: One entry per bill
+
+    private func bills(on asset: Asset) -> [HistoryEntry] {
+        (asset.history ?? []).filter { $0.kind == .payment && !$0.isCompletion && !$0.isDeleted }
+    }
+
+    private func total(_ amount: Decimal) -> (inout CaptureReview) -> Void {
+        { review in
+            let at = review.fields.firstIndex { $0.key == .total }!
+            review.fields[at].confirm(.money(CaptureMoney(amount: amount, currencyCode: "RON")))
+        }
+    }
+
+    @Test func refilingTheSameBillLogsItOnce() async throws {
+        let context = try makeContext()
+        _ = try home(context)
+        let store = CaptureDocumentStore()
+        let photo = try await newPhoto(store, seed: 46)
+        let first = try await save(bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", document: photo), context, store: store)
+        let gas = try #require(first.asset)
+        let document = try #require(first.attachment)
+        let entry = try #require(first.bill)
+        #expect(document.historyEntry?.id == entry.id)
+
+        let again = try await save(bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", document: .kept(attachmentID: document.id)), context)
+        #expect(bills(on: gas).map(\.id) == [entry.id], "The same bill, the same entry")
+        #expect(again.bill?.id == entry.id)
+        #expect(document.historyEntry?.id == entry.id)
+
+        // Filed again with the amount corrected: still one entry, with the corrected amount.
+        let corrected = try await save(bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", document: .kept(attachmentID: document.id)),
+                                       context, edit: total(254))
+        #expect(bills(on: gas).count == 1)
+        #expect(entry.totalCost == Money(254))
+        try #require(corrected.receipt).undo()
+        #expect(entry.totalCost == Money(245), "Anulează brings the entry back as it was")
+        #expect(bills(on: gas).count == 1)
+    }
+
+    /// The second month's bill closes the first one's reminder: its document is still the
+    /// bill's own, so filing it again finds its entry.
+    @Test func aBillThatClosedTheLastCycleIsLoggedOnceToo() async throws {
+        let context = try makeContext()
+        _ = try home(context)
+        let store = CaptureDocumentStore()
+        let gas = try #require(try await save(bill(meter: 12_345, issued: "2026-10-05", due: "2026-10-25"), context, on: "2026-10-06").asset)
+        let photo = try await newPhoto(store, seed: 47)
+        let november = try await save(bill(meter: 12_500, issued: "2026-11-05", due: "2026-11-25", document: photo), context, store: store)
+        let document = try #require(november.attachment)
+        #expect(document.historyEntry?.id == november.bill?.id, "The bill's entry, not the closed cycle")
+        #expect(bills(on: gas).count == 2)
+        let completions = (gas.history ?? []).filter(\.isCompletion).count
+
+        _ = try await save(bill(meter: 12_500, issued: "2026-11-05", due: "2026-11-25", document: .kept(attachmentID: document.id)), context)
+        #expect(bills(on: gas).count == 2, "No third entry")
+        #expect((gas.history ?? []).filter(\.isCompletion).count == completions, "No second completion")
+    }
+
+    @Test func aBillMovedAwayTakesItsEntryWithIt() async throws {
+        let context = try makeContext()
+        let house = try home(context)
+        let store = CaptureDocumentStore()
+        let photo = try await newPhoto(store, seed: 48)
+        let first = try await save(bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", document: photo), context, store: store)
+        let gas = try #require(first.asset)
+        let entry = try #require(first.bill)
+        let document = try #require(first.attachment)
+
+        // To another subscription: the entry moves with it.
+        let template = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.subscription))
+        var values = FieldValues()
+        values[SubscriptionFields.service] = .text(ServiceKind.gas)
+        let other = try AssetActions(context: context).create(name: "Gaz – Furnizor Exemplu", template: template, values: values, parent: house)
+        _ = try await save(bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", document: .kept(attachmentID: document.id)), context) {
+            $0.destination = .asset(other.id)
+        }
+        #expect(bills(on: gas).isEmpty)
+        #expect(bills(on: other).map(\.id) == [entry.id], "The same entry, moved")
+
+        // To no subscription: the entry goes, as the reading does.
+        _ = try await save(bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", document: .kept(attachmentID: document.id)), context) {
+            $0.destination = .none
+        }
+        #expect(bills(on: other).isEmpty)
+        #expect(document.historyEntry == nil)
+        #expect(try context.fetchCount(FetchDescriptor<Attachment>()) == 1, "The document stays in the binder")
+    }
+
     // MARK: The page
 
     @Test func thePageShowsTheLastIndexInTheServicesUnit() throws {

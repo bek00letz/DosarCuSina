@@ -222,6 +222,32 @@ struct QuestionsBeforeSavingTests {
         #expect(outcome.visit?.isExample == false)
     }
 
+    // MARK: The same invoice filed again
+
+    @Test func theSameInvoiceFiledAgainUpdatesItsVisit() async throws {
+        let context = try makeContext()
+        let golf = try car(context)
+        let store = CaptureDocumentStore()
+        let invoice = try await photo(store, seed: 63)
+        let first = try await filer(context, store: store).file(.visit(visit(on: golf, odometer: 48_000, document: invoice)))
+        let entry = try #require(first.visit)
+        let document = try #require(first.attachment)
+
+        let again = try await filer(context, store: store)
+            .file(.visit(visit(on: golf, odometer: 48_100, cost: 520, document: .kept(attachmentID: document.id))))
+        #expect(again.visit?.id == entry.id, "The visit it was filed with, not a second one")
+        #expect(golf.history?.filter { $0.kind == .maintenance }.count == 1)
+        #expect(entry.totalCost == Money(520))
+        #expect(entry.metricReading == 48_100)
+        #expect(entry.items?.map(\.name) == ["Ulei și filtru"], "Its lines, once")
+        #expect(golf.measurements?.map(\.value).sorted() == [45_724, 48_100], "Its reading, replaced")
+        #expect(document.historyEntry?.id == entry.id)
+
+        try #require(again.receipt).undo()
+        #expect(entry.totalCost == Money(480), "Anulează brings the visit back as it was")
+        #expect(golf.measurements?.map(\.value).sorted() == [45_724, 48_000])
+    }
+
     // MARK: Any other failure
 
     /// A unit that read a section's readings, logged a visit and then failed: SwiftData leaves

@@ -68,6 +68,10 @@ public final class HistoryActions {
     /// Logs one record (a repair, a purchase, a bill) in the section's history, with its line
     /// items and the counter reading it read, in one save. A lower counter asks before
     /// anything is written (`LowerReadingQuestion`, answered with `lowerReading`).
+    ///
+    /// `replacing` is the entry the same document logged when it was filed before (a bill
+    /// filed again): that entry takes these values instead of a second one being added, and
+    /// moves to `asset` if the document did. Never a completion, which belongs to its deadline.
     @discardableResult
     public func record(
         on asset: Asset,
@@ -81,17 +85,17 @@ public final class HistoryActions {
         providers: [Provider] = [],
         rating: Int? = nil,
         asExample: Bool = false,
-        lowerReading: LowerReadingAnswer? = nil
+        lowerReading: LowerReadingAnswer? = nil,
+        replacing earlier: HistoryEntry? = nil
     ) throws -> HistoryEntry {
         // Every question first, before anything is written (`StepQuestion`).
         let isExample = try ExampleOwnership.requireReal(asset, creatingExample: asExample)
         let date = occurredAt ?? now()
-        let reading = plannedReading(metricReading, on: asset, at: date)
+        let earlier = Self.replaceable(earlier)
+        let reading = plannedReading(metricReading, on: asset, at: date, replacing: earlier)
         try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
         return try UnitOfWork.perform(in: context) {
-            let entry = HistoryEntry(kind: kind, title: title, occurredAt: date)
-            context.insert(entry)
-            entry.asset = asset
+            let entry = entryToWrite(replacing: earlier, kind: kind, title: title, on: date, in: asset)
             entry.metricReading = metricReading
             entry.totalCost = totalCost
             entry.note = note
@@ -110,11 +114,40 @@ public final class HistoryActions {
     /// The reading a record or a visit logs with its counter (`metricReading`, the odometer):
     /// in the section's hero unit, on its day. Asked about before the step's unit opens, by
     /// the action and by a flow that files a visit inside a larger step (`CaptureFiler`).
-    func plannedReading(_ value: Double?, on asset: Asset, at date: Date, source: ReadingSource = .person) -> PlannedReading? {
+    /// `replacing`'s own reading doesn't count against it: the step takes it away first.
+    func plannedReading(_ value: Double?, on asset: Asset, at date: Date, source: ReadingSource = .person,
+                        replacing earlier: HistoryEntry? = nil) -> PlannedReading? {
         guard let value else { return nil }
         let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
         let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) }
-        return PlannedReading(value, on: asset, at: date, source: source, unit: unit)
+        let earlier = Self.replaceable(earlier)
+        return PlannedReading(value, on: asset, at: date, source: source, unit: unit) { log in
+            earlier.map { HouseholdMutations.isReading(log, recordedBy: $0) } ?? false
+        }
+    }
+
+    /// An entry a document logged that filing it again may take over: never a completion.
+    private static func replaceable(_ entry: HistoryEntry?) -> HistoryEntry? {
+        entry.flatMap { $0.isDeleted || $0.isCompletion ? nil : $0 }
+    }
+
+    /// A new entry in `asset`'s history, or `earlier` cleared to be written again: its line
+    /// items and the reading it recorded go, and it moves to `asset` and `date`.
+    private func entryToWrite(replacing earlier: HistoryEntry?, kind: HistoryKind, title: String, on date: Date, in asset: Asset) -> HistoryEntry {
+        guard let entry = earlier else {
+            let entry = HistoryEntry(kind: kind, title: title, occurredAt: date)
+            context.insert(entry)
+            entry.asset = asset
+            return entry
+        }
+        HouseholdMutations.removeReading(recordedBy: entry, in: context)
+        for item in entry.items ?? [] { context.delete(item) }
+        entry.items = []
+        entry.kind = kind
+        entry.title = title
+        entry.occurredAt = date
+        entry.asset = asset
+        return entry
     }
 
     /// One ticked component on the visit checklist, with what it cost if known.
@@ -135,6 +168,9 @@ public final class HistoryActions {
     /// reading (also logged as a measurement), the provider and the documents.
     /// The receipt takes it all back ("Anulează vizita"). A lower odometer asks before
     /// anything is written (`LowerReadingQuestion`, answered with `lowerReading`).
+    ///
+    /// `replacing` is the visit the same invoice was filed with before: it takes these
+    /// values, line items and reading instead of a second visit being added.
     @discardableResult
     public func recordVisit(
         on asset: Asset,
@@ -150,12 +186,14 @@ public final class HistoryActions {
         rating: Int? = nil,
         calendar: Calendar = .current,
         odometerSource: ReadingSource = .person,
-        lowerReading: LowerReadingAnswer? = nil
+        lowerReading: LowerReadingAnswer? = nil,
+        replacing earlier: HistoryEntry? = nil
     ) throws -> Undoable<HistoryEntry> {
         // Every question first, before anything is written (`StepQuestion`).
         let isExample = try ExampleOwnership.requireReal(asset)
         let date = occurredAt ?? now()
-        let reading = plannedReading(odometer, on: asset, at: date, source: odometerSource)
+        let earlier = Self.replaceable(earlier)
+        let reading = plannedReading(odometer, on: asset, at: date, source: odometerSource, replacing: earlier)
         try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
         return try UnitOfWork.performUndoable(in: context) {
             let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
@@ -169,9 +207,7 @@ public final class HistoryActions {
                 )
             }
             let items = ticked + extraItems
-            let entry = HistoryEntry(kind: kind, title: title ?? Self.visitTitle(for: items), occurredAt: date)
-            context.insert(entry)
-            entry.asset = asset
+            let entry = entryToWrite(replacing: earlier, kind: kind, title: title ?? Self.visitTitle(for: items), on: date, in: asset)
             entry.metricReading = odometer
             entry.totalCost = totalCost
             entry.rating = rating.map { min(max($0, 1), 5) }
