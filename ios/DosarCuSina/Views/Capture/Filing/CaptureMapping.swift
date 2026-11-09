@@ -82,6 +82,7 @@ enum CaptureMapping {
         case .provider: .insurer
         case .policyNumber: .policyNumber
         case .claimsPhone: .claimsPhone
+        case .policyholder: .policyholder
         default: nil
         }
     }
@@ -193,6 +194,7 @@ enum CaptureMapping {
         case .claimsPhone: return String(localized: "Telefon pentru daune")
         case .coverageType: return String(localized: "Ce acoperă")
         case .bonusMalusClass: return String(localized: "Clasă bonus-malus")
+        case .policyholder: return String(localized: "Asigurat")
         case .licensePlate: return String(localized: "Număr de înmatriculare")
         case .vin: return String(localized: "Serie de șasiu (VIN)")
         case .civNumber: return String(localized: "Serie CIV")
@@ -242,7 +244,8 @@ enum CaptureMapping {
         switch key {
         // Bookkeeping, not something read off the page: filing uses it, people don't need to check it.
         // Direct debit is a suggestion the person confirms beside the reminder, not a value to edit.
-        case .lineItems, .documentCode, .issuingCountry, .documentVariant, .directDebit: return false
+        // The policyholder's CNP is only for finding them among the household's people.
+        case .lineItems, .documentCode, .issuingCountry, .documentVariant, .directDebit, .policyholderPersonalNumber: return false
         case .holderName: return !keys.contains(.surname) && !keys.contains(.givenNames)
         default: return true
         }

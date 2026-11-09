@@ -17,7 +17,9 @@ struct HomePoliciesTests {
         let pad = try facts(BuiltInBlueprints.homePAD)
         let optional = try facts(BuiltInBlueprints.homeInsurance)
         let fields = Set(BuiltInTemplates.home.allFields.map(\.key))
-        for role in BlueprintFactRole.allCases {
+        // Who a policy insures is named only on a car's RCA, whose class it shows.
+        #expect(pad.policyholder == nil && optional.policyholder == nil, "A home policy names no policyholder")
+        for role in BlueprintFactRole.allCases where role != .policyholder {
             let padField = try #require(pad.field(for: role))
             let optionalField = try #require(optional.field(for: role))
             #expect(padField != optionalField, "\(role): never shared")

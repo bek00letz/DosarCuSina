@@ -18,6 +18,8 @@ public enum VehicleFields {
     public static let insurer = "vehicle.insurer"
     public static let policyNumber = "vehicle.policyNumber"
     public static let claimsPhone = "vehicle.claimsPhone"
+    /// Who the RCA insures, as a household member's name, so its page shows their bonus-malus class.
+    public static let policyholder = "vehicle.policyholder"
     public static let cascoInsurer = "vehicle.cascoInsurer"
     public static let cascoPolicyNumber = "vehicle.cascoPolicyNumber"
     public static let cascoClaimsPhone = "vehicle.cascoClaimsPhone"
@@ -54,6 +56,12 @@ public enum DocumentFields {
     public static let cardNetwork = "document.cardNetwork"
     /// A bank card's last four digits, and never more (`PaymentCardNumbers.sanitizing`).
     public static let cardLastFour = "document.cardLastFour"
+}
+
+public enum MemberFields {
+    /// The person's RCA bonus-malus class (`BonusMalusClass`): it follows the driver's
+    /// history, so it is kept on the person, never on a car.
+    public static let bonusMalus = "member.bonusMalus"
 }
 
 public enum PetFields {

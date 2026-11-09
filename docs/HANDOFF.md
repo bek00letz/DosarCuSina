@@ -93,6 +93,13 @@ Newest first. Copy this template:
 
 Never write security findings, crash traces or local paths here. See [SECURITY.md](../SECURITY.md).
 
+### 2026-11-09 — owner (with Claude) — `claude/policy-repair-bonus-malus`
+- **Did:** the owner's answers on #34. A repair step (`PolicyNumberPartsStep`, last in the list) completes a policy number kept with only its series from the filed policy's read text, or only lists it ("Am înțeles") when the text can't give it. The bonus-malus class is the person's: *Clasă bonus-malus* on the household member (M8 … B8, Norma ASF nr. 20/2017), kept from each RCA on the person it insures (CNP on their documents, else name; `Policyholders`), never on a car; the RCA names who it insures (*Asigurat RCA*, fact role `policyholder`), and its page and the claim screen show "Clasa proprietarului" read from the person. The review says where the class goes or why it doesn't. Catalog version 14.
+- **Tests:** `PolicyNumberPartsRepairTests` (fixture with both pages of the owner's policy, run twice, listed-only findings, other series, whole numbers left alone) and `PolicyholderTests` (the scale, the catalog and its upgrade, reading, matching, filing by name and by CNP, through Am rezolvat, no match, the page and the claim). The whole suite on GitHub; nothing run on this Mac.
+- **Left open:** not seen by eye: the review's line about the class, "Clasa proprietarului" on the RCA page and the claim card, and *Am înțeles* in the repair list. A policy's own reference typed on its deadline isn't checked by the repair. The owner settled both questions (a locked person's class is shown on the car; company cars keep no class).
+- **Next:** the owner opens *Date de verificat* to complete their RCA number, then reads their RCA again and checks the class lands on them.
+- **Decisions:** added "Policy numbers kept without their number are repaired" and "The bonus-malus class belongs to the person".
+
 ### 2026-11-09 — owner (with Claude) — `claude/share-confirmation-stays`
 - **Did:** the share sheet's confirmation stays until "Gata" (a `DSPrimaryButton` pinned with `.dsPinnedAction`; "Anulează" while copying), its words scrolling above at any text size. What it says is `ShareConfirmation` in `ios/Shared`; the old auto-close is kept switched off (`ShareConfirmation.closesByItself`). `DS.Space`, `DS.Control`, `DS.Radius`, the full-width buttons and `dsPinnedAction` moved to `ios/Shared` so the extension uses them. The owner's five choices from #35 recorded as kept, and the notice's exception as approved.
 - **Tests:** `ShareConfirmationTests` in `ShareContinuationTests` (it never closes by itself, every outcome waits for "Gata", its words). The whole suite on GitHub; nothing run on this Mac.

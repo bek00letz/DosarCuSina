@@ -8,11 +8,14 @@ public struct DeadlineFacts: Hashable, Sendable {
     public var insurer: String?
     public var policyNumber: String?
     public var claimsPhone: String?
+    /// Who the policy insures, as a household member's name (`Policyholders`).
+    public var policyholder: String?
 
-    public init(insurer: String? = nil, policyNumber: String? = nil, claimsPhone: String? = nil) {
+    public init(insurer: String? = nil, policyNumber: String? = nil, claimsPhone: String? = nil, policyholder: String? = nil) {
         self.insurer = insurer
         self.policyNumber = policyNumber
         self.claimsPhone = claimsPhone
+        self.policyholder = policyholder
     }
 
     /// The facts of the deadline made from `blueprintKey`, read from the section's
@@ -24,7 +27,8 @@ public struct DeadlineFacts: Hashable, Sendable {
             facts?.field(for: role).flatMap { values[$0]?.textValue }.flatMap { $0.isEmpty ? nil : $0 }
         }
         let reference = reference.flatMap { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0 }
-        return DeadlineFacts(insurer: value(.insurer), policyNumber: reference ?? value(.policyNumber), claimsPhone: value(.claimsPhone))
+        return DeadlineFacts(insurer: value(.insurer), policyNumber: reference ?? value(.policyNumber), claimsPhone: value(.claimsPhone),
+                             policyholder: value(.policyholder))
     }
 
     /// The facts of `obligation`, from its section.

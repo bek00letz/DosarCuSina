@@ -8,6 +8,21 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-09
 
+### Policy numbers kept without their number are repaired
+- **Decided (owner):** this replaces "policy numbers already kept are left as they are" (below). A repair step, last in the list and asking first (`PolicyNumberPartsStep`), finds a policy number kept with only its series, on any deadline whose facts name a policy number (a car's RCA and CASCO, and a home's policies, since the rule is the same). When the policy filed on the section still has its read text and the rule for values printed in parts reads the whole value there with the same series, it offers that value. Otherwise it only says to read the policy again or type the number, with *Am înțeles* instead of *Corectează*: nothing is guessed. A number with no series is never flagged, since some policies print none.
+- **Why:** the owner chose a repair over asking people to re-read each policy; the policy's own text usually still holds the number.
+
+### The bonus-malus class belongs to the person
+- **Decided (owner):** the bonus-malus class follows the person's history, not the car's ("a person in an accident would see their class decrease, while a user with no accidents grows their class up to the max"). This replaces the recommendation of a car field in "A digit glued to letters is never an amount" (below).
+- **Decided:** it is *Clasă bonus-malus* on the household member, a choice with stable keys over the official scale, worst to best: M8 … M1, B0 (where a new policyholder starts), B1 … B8. Source: Norma ASF nr. 20/2017 privind asigurările auto din România, whose bonus-malus system has a base class B0, eight bonus classes and eight malus classes.
+- **Decided:** each RCA keeps its class on the person it insures: the one person whose documents carry the CNP read on the policy, else the member its name matches by the rule that files a holder's documents. It is never kept on a car. With no match, or no name on the policy, it isn't kept and the review says why ("… nu e printre persoanele din dosar. Adaugă persoana și citește polița din nou.").
+- **Decided:** the RCA names who it insures in its facts (a new fact role, `policyholder`, the car's *Asigurat RCA*), as the household knows them; its deadline page and the claim screen show "Clasa proprietarului: B6" read from that person, so it is never stored twice. CASCO and home policies name no policyholder.
+- **Decided:** the policyholder's CNP is read only on the phone and only to find the person: never shown in the review, kept, filed or asked of the AI provider.
+- **Decided:** the catalog moves to version 14; installed copies upgrade at launch, keeping their people and preferences.
+- **Decided (owner):** "Clasa proprietarului" is shown on the car's pages even when the person's category is locked with Face ID: the class isn't a secret, though it is read from a locked section.
+- **Decided (owner):** a car owned by a company (a CUI on the policy) has no person to keep the class on, so the class isn't kept.
+- **Why:** the class moves with the driver, so on a car it would be wrong after a sale or for a second driver.
+
 ### The share sheet's confirmation stays until "Gata"
 - **Decided (owner):** the confirmation after a share no longer closes by itself after 2.5 seconds. It stays until the person taps "Gata", a `DSPrimaryButton` pinned to the bottom with `.dsPinnedAction`, so nobody misses what happens next ("Atinge notificarea ca să continui…"). While copying, the same place holds "Anulează". The words scroll above the button at any text size.
 - **Decided:** the old auto-close is kept switched off (`ShareConfirmation.closesByItself`, with `DS.Motion.confirmationDwell`) as the way back until the owner has seen the new one on a phone. What the confirmation says, phase by phase, is `ShareConfirmation` in `ios/Shared`, so the app's tests pin it.

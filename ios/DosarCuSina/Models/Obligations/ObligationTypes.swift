@@ -389,6 +389,9 @@ public enum BlueprintFactRole: String, Codable, CaseIterable, Sendable {
     case policyNumber
     /// The line to call for a claim or assistance.
     case claimsPhone
+    /// Who the policy insures (the owner on an RCA), as a household member's name: the
+    /// person whose bonus-malus class the policy's page shows (`Policyholders`).
+    case policyholder
 }
 
 /// Which of the section's fields hold the facts one deadline needs: a car's CASCO keeps
@@ -399,11 +402,14 @@ public struct BlueprintFacts: Hashable, Sendable, Codable {
     public var insurer: String?
     public var policyNumber: String?
     public var claimsPhone: String?
+    /// Optional, so templates saved before it existed still read.
+    public var policyholder: String?
 
-    public init(insurer: String? = nil, policyNumber: String? = nil, claimsPhone: String? = nil) {
+    public init(insurer: String? = nil, policyNumber: String? = nil, claimsPhone: String? = nil, policyholder: String? = nil) {
         self.insurer = insurer
         self.policyNumber = policyNumber
         self.claimsPhone = claimsPhone
+        self.policyholder = policyholder
     }
 
     /// The field that holds `role`, if the deadline names one.
@@ -412,6 +418,7 @@ public struct BlueprintFacts: Hashable, Sendable, Codable {
         case .insurer: insurer
         case .policyNumber: policyNumber
         case .claimsPhone: claimsPhone
+        case .policyholder: policyholder
         }
     }
 
