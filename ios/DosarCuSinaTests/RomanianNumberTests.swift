@@ -123,8 +123,8 @@ struct RomanianNumberTests {
         #expect(RomanianNumber.value("45,724", as: .money) == RomanianFieldExtractor.amount("45,724")?.value)
         #expect(FieldFormatter.value(from: "45.724", as: .metric, unit: .kilometres) == .number(45724))
         #expect(FieldFormatter.value(from: "45,724", as: .metric, unit: .kilometres) == .number(45724))
-        let bill = RomanianUtilityParser.shared.parseUtilityBill(text: "ENGIE Romania\nCod client: 1234567890\nIndex nou: 12.345 mc")
-        #expect(bill.indexReading == 12345)
+        let bill = BillReader.fields(in: CaptureText("ENGIE Romania\nCod client: 1234567890\nIndex nou: 12.345 mc"))
+        #expect(bill.first { $0.key == .meterIndex }?.value == .number(12345))
         #expect(RomanianFieldExtractor.odometer(in: CaptureText("Total 86,420 km"))?.km == 86420)
         #expect(RomanianFieldExtractor.odometer(in: CaptureText("Km bord: 86420,5"))?.km == nil)
     }

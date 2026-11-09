@@ -1,3 +1,8 @@
+// Switched off: replaced by the bill kind's label table (`BillReader`), `ContractReader`
+// and `UtilityProviders` in ios/DosarCuSina/Services/Capture. Kept as a way back until the
+// new reader is proven on real bills; docs/HANDOFF.md ("The legacy utility parser") says
+// how to switch back, and when to remove it.
+//
 import Foundation
 
 /// Romanian utility providers recognized by the intelligent parser.
@@ -607,5 +612,49 @@ public final class RomanianUtilityParser: Sendable {
     
     private func normalizeRomanianAmount(_ raw: String) -> Double? {
         Self.normalizeRomanianAmount(raw)
+    }
+}
+
+// MARK: - The capture adapter it had
+
+/// The capture adapter this parser had, as it was, so switching back is one step: move this
+/// file back into ios/DosarCuSina/Services/OCR/ and register `LegacyUtilityInvoiceParser()`
+/// in `CaptureEngine.standard` in place of `UtilityInvoiceParser()`.
+public struct LegacyUtilityInvoiceParser: CaptureSpecializedParser {
+
+    public init() {}
+
+    public func parse(_ text: CaptureText) -> CaptureAnalyzer.SpecializedParse? {
+        let bill = RomanianUtilityParser.shared.parseUtilityBill(text: text.joinedOriginal)
+        guard bill.provider != .general else { return nil }
+
+        var fields: [CaptureField] = [
+            CaptureField(key: .provider, value: .text(bill.provider.displayName), confidence: 0.95, sourceText: nil, tier: .deterministic),
+        ]
+        func add(_ key: CaptureFieldKey, _ value: CaptureValue?, _ confidence: Double = 0.85) {
+            guard let value else { return }
+            fields.append(CaptureField(key: key, value: value, confidence: confidence, sourceText: nil, tier: .deterministic))
+        }
+        add(.clientCode, bill.clientCode.map(CaptureValue.text))
+        add(.invoiceNumber, bill.invoiceNumber.map(CaptureValue.text))
+        add(.podCode, bill.podCode.map(CaptureValue.text))
+        add(.clcCode, bill.clcCode.map(CaptureValue.text))
+        add(.paymentCode, bill.barcodeRaw.map(CaptureValue.text))
+        add(.issueDate, bill.issueDate.map { .day(Self.utcDay($0)) })
+        add(.dueDate, bill.dueDate.map { .day(Self.utcDay($0)) })
+        if let index = bill.indexReading {
+            add(.meterIndex, .number(Decimal(string: String(index)) ?? Decimal(index)))
+        }
+        if let total = bill.totalAmount, let amount = Decimal(string: String(total)) {
+            add(.total, .money(CaptureMoney(amount: amount, currencyCode: bill.currency)))
+        }
+        return CaptureAnalyzer.SpecializedParse(kind: .utilityInvoice, fields: fields)
+    }
+
+    /// The utility parser returns dates at midnight UTC; read them back as calendar days.
+    static func utcDay(_ date: Date) -> CaptureDay {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC") ?? .gmt
+        return CaptureDay(date: date, calendar: calendar)
     }
 }

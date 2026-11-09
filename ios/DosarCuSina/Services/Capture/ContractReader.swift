@@ -26,7 +26,13 @@ enum ContractReader {
                              "perioada minima expira", "finalul perioadei minime"]),
         (.monthlyPrice, ["abonament lunar", "abonamentul lunar", "pret lunar", "pretul lunar", "tarif lunar", "cost lunar",
                          "valoare lunara", "pretul abonamentului", "tarif abonament", "pret abonament"]),
-        (.clientCode, ["cod client", "cod abonat", "cont client"]),
+        (.clientCode, ["cod client", "cod abonat", "cont client", "numar client", "nr. client", "client nr", "client id",
+                       "cod incasare", "cod de incasare", "cont facturare", "cont de facturare", "cod partener", "numar partener",
+                       "cod client apa", "cod apa", "apa canal cod client", "apa canal cod", "apa nova cod client", "apa nova cod"]),
+        (.podCode, ["pod", "cod pod", "codul pod", "punct de delimitare", "punct de delimitare pod", "cod punct de delimitare",
+                    "punctul de delimitare", "loc consum"]),
+        (.clcCode, ["clc", "cod clc", "cod loc consum", "cod loc de consum", "cod loc consum (clc)", "cod loc de consum (clc)",
+                    "loc consum gaze"]),
         (.phoneNumber, ["numar de telefon", "nr. de telefon", "numar telefon", "nr. telefon", "nr telefon", "msisdn", "numarul de telefon"]),
     ]
 
@@ -68,7 +74,6 @@ enum ContractReader {
     static func identifierFields(in text: CaptureText) -> [CaptureField] {
         var fields: [CaptureField] = []
         let layout = LabelledLayout(text: text, words: labels)
-        let raw = text.joinedOriginal
         // The contract's number, by the one rule for values printed in parts (`CompositeValue`).
         if let found = layout.composite(.contract, for: .contractNumber) {
             fields.append(field(.contractNumber, .text(found.value), found.quality == .conflicting ? found.quality.confidence : 0.7, found.source))
@@ -76,11 +81,11 @@ enum ContractReader {
         if let found = layout.found(for: .clientCode), let number = code(in: found.value) {
             fields.append(field(.clientCode, .text(number), 0.7, found.source))
         }
-        if let pod = RomanianUtilityParser.shared.extractPodCode(in: RomanianUtilityParser.normalizeDiacritics(raw)) {
-            fields.append(field(.podCode, .text(pod), 0.75, nil))
+        if let pod = podCode(in: text, layout: layout) {
+            fields.append(field(.podCode, .text(pod.value), 0.75, pod.source))
         }
-        if let clc = RomanianUtilityParser.shared.extractClcCode(in: RomanianUtilityParser.normalizeDiacritics(raw)), clc.contains(where: \.isNumber) {
-            fields.append(field(.clcCode, .text(clc), 0.75, nil))
+        if let clc = clcCode(in: text, layout: layout) {
+            fields.append(field(.clcCode, .text(clc.value), 0.75, clc.source))
         }
         if let found = layout.found(for: .phoneNumber), let phone = RomanianFieldExtractor.phones(inLine: found.folded).first(where: isMobileNumber) {
             fields.append(field(.phoneNumber, .text(displayPhone(phone)), 0.75, found.source))
@@ -97,6 +102,44 @@ enum ContractReader {
 
     private static func field(_ key: CaptureFieldKey, _ value: CaptureValue, _ confidence: Double, _ source: String?) -> CaptureField {
         CaptureField(key: key, value: value, confidence: confidence, sourceText: source, tier: .heuristic)
+    }
+
+    // MARK: - Consumption points
+
+    /// How a POD is written: "RO", then the operator's digits and the point's own code.
+    static let podShape = #"^RO[A-Z0-9]{10,25}$"#
+    /// A POD printed without its label: "RO" and three digits, then at least eight more.
+    static let podAlone = #"(?<![A-Z0-9])(RO\d{3}[A-Z0-9]{8,20})(?![A-Z0-9])"#
+    /// How a CLC is written after its label: six to twenty letters and digits, with a digit.
+    static let clcShape = #"^(?=[A-Z0-9]*\d)[A-Z0-9]{6,20}$"#
+    /// A gas CLC printed without its label: "DEG" and its digits.
+    static let clcAlone = #"(?<![A-Z0-9])(DEG\d{6,16})(?![A-Z0-9])"#
+
+    /// The electricity consumption point (POD): the first value of a POD label written like
+    /// one, else one printed alone on the page.
+    static func podCode(in text: CaptureText, layout: LabelledLayout<CaptureFieldKey>) -> (value: String, source: String)? {
+        consumptionPoint(.podCode, shape: podShape, alone: podAlone, in: text, layout: layout)
+    }
+
+    /// The gas consumption point (CLC): the first value of a CLC label written like one,
+    /// else a "DEG…" code printed alone on the page.
+    static func clcCode(in text: CaptureText, layout: LabelledLayout<CaptureFieldKey>) -> (value: String, source: String)? {
+        consumptionPoint(.clcCode, shape: clcShape, alone: clcAlone, in: text, layout: layout)
+    }
+
+    private static func consumptionPoint(_ key: CaptureFieldKey, shape: String, alone: String, in text: CaptureText,
+                                         layout: LabelledLayout<CaptureFieldKey>) -> (value: String, source: String)? {
+        for found in layout.allFound(for: key) {
+            if let value = code(in: found.value), TextPattern.first(shape, in: value, caseInsensitive: false) != nil {
+                return (value, found.source)
+            }
+        }
+        for line in text.original {
+            if let match = TextPattern.first(alone, in: line.uppercased(), caseInsensitive: false), let value = match[1] {
+                return (value, line)
+            }
+        }
+        return nil
     }
 
     // MARK: - Values

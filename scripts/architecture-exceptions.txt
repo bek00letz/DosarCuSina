@@ -12,16 +12,9 @@ ios/DosarCuSina/Views/Add/Visit/VisitDraft.swift:built-in-key-in-views:2
 ios/DosarCuSina/Views/Section/AddSectionFlow.swift:built-in-key-in-views:12
 ios/DosarCuSina/Views/Upcoming/UpcomingRoot.swift:built-in-key-in-views
 
-# date-format: Dates are written by DosarFormat (ios/Shared) and DueWording. What's left reads dates; it goes with the shared number and date reader.
-ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:date-format:2
-
 # format-string: Machine text (ISO days, hashes): one shared helper, then these go.
 ios/DosarCuSina/Models/Schema/RecordModels.swift:format-string
 ios/DosarCuSina/Services/Capture/CaptureModels.swift:format-string
-ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:format-string
-
-# romanian-locale: Locale.dosarDefault everywhere, folding included.
-ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:romanian-locale:2
 
 # save-outside-unit-of-work: One unit of work around every multi-step flow (agreed fix 7); start-up and migrations save through UnitOfWork too.
 ios/DosarCuSina/App/DosarCuSinaApp.swift:save-outside-unit-of-work

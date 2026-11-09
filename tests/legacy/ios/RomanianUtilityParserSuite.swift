@@ -4,6 +4,9 @@ import Testing
 
 /// Comprehensive unit test suite for `RomanianUtilityParser`.
 ///
+/// Kept with the parser as a way back (it is switched off in ios/Legacy). Its fixtures run
+/// against the reader that replaced it in `ios/DosarCuSinaTests/Capture/BillReaderTests.swift`.
+///
 /// Verifies:
 /// 1. Extraction across all 7 supported Romanian utility providers:
 ///    - Digi (RCS & RDS)
