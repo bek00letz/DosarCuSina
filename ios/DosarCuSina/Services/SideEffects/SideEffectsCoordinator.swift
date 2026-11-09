@@ -15,8 +15,13 @@ public protocol SideEffectIndexer: AnyObject {
 /// reminders, the app badge, the widget snapshot and Spotlight. Views and actions never
 /// schedule anything themselves; they save, and this runs after the save.
 ///
+/// It also follows the notice the share extension leaves (`InboxNotice`, the one
+/// notification posted outside it): each pass withdraws it once none of the items it
+/// announced still waits in the share inbox.
+///
 /// Triggers: every `ModelContext.didSave` (debounced), preference changes, the
-/// day changing, `reconcileNow()` when the app becomes active, every action from
+/// day changing, the share inbox changing (`ShareInbox.didChangeNotification`),
+/// `reconcileNow()` when the app becomes active, every action from
 /// outside the app (`IntentEngine`) and the background refresh.
 ///
 /// There is one per database (`shared(for:)`), and its passes run one after
@@ -34,6 +39,8 @@ public final class SideEffectsCoordinator {
     @ObservationIgnored private let container: ModelContainer
     @ObservationIgnored private let reconciler: NotificationReconciler
     @ObservationIgnored private let widgetWriter: WidgetSnapshotWriter
+    @ObservationIgnored private let inboxNotices: any InboxNoticeCenter
+    @ObservationIgnored private let waitingInboxItems: @MainActor () -> Set<UUID>?
     @ObservationIgnored private let preferences: AppPreferences
     @ObservationIgnored private let calendar: Calendar
     @ObservationIgnored private let now: () -> Date
@@ -68,6 +75,8 @@ public final class SideEffectsCoordinator {
         container: ModelContainer,
         notificationClient: any NotificationCenterClient = SystemNotificationCenterClient(),
         widgetWriter: WidgetSnapshotWriter = WidgetSnapshotWriter(),
+        inboxNotices: any InboxNoticeCenter = SystemInboxNoticeCenter(),
+        waitingInboxItems: @escaping @MainActor () -> Set<UUID>? = { ShareInbox.shared().map { Set($0.waitingItems().map(\.id)) } },
         preferences: AppPreferences = .shared,
         calendar: Calendar = .current,
         now: @escaping () -> Date = { Date() }
@@ -75,6 +84,8 @@ public final class SideEffectsCoordinator {
         self.container = container
         self.reconciler = NotificationReconciler(client: notificationClient)
         self.widgetWriter = widgetWriter
+        self.inboxNotices = inboxNotices
+        self.waitingInboxItems = waitingInboxItems
         self.preferences = preferences
         self.calendar = calendar
         self.now = now
@@ -89,6 +100,7 @@ public final class SideEffectsCoordinator {
         observers.append(listen(to: ModelContext.didSave, allowPrompt: false))
         observers.append(listen(to: AppPreferences.didChangeNotification, allowPrompt: false))
         observers.append(listen(to: .NSCalendarDayChanged, allowPrompt: false))
+        observers.append(listen(to: ShareInbox.didChangeNotification, allowPrompt: false))
         let client = reconciler.client
         Task { await client.registerCategories() }
         setNeedsReconcile(allowPermissionPrompt: false)
@@ -125,6 +137,11 @@ public final class SideEffectsCoordinator {
     }
 
     private func runPass(allowPermissionPrompt: Bool) async {
+        // The share's notice has done its job once nothing it announced still waits.
+        // Outside the database, so a store that can't be read doesn't keep it up.
+        if let waiting = waitingInboxItems() {
+            await InboxNotice.follow(waiting: waiting, center: inboxNotices)
+        }
         let context = ModelContext(container)
         let outside: [ObligationSnapshot]
         do {

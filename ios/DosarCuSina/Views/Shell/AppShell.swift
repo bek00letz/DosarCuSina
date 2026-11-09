@@ -4,7 +4,8 @@ import SwiftData
 /// The app once the store is open: four labelled tabs, every route through one
 /// router, onboarding once, and the app lock over everything when it is on, in
 /// a window of its own above every sheet (`LockWindowHost`). Links and opened
-/// files wait until the app is unlocked.
+/// files wait until the app is unlocked. Coming back with something new shared from
+/// another app opens De verificat once (`InboxLanding`).
 ///
 /// Each tab is wrapped in a `NavigationStack` here, with every `AppRoute`
 /// registered as a destination, so any screen can push with
@@ -82,6 +83,21 @@ struct AppShell: View {
         .task { consumeRoute() }
         .onChange(of: navigator.pendingRoute) { _, _ in consumeRoute() }
         .onChange(of: vault.isAppLocked) { _, _ in consumeRoute() }
+        // Opening the app with something new from another app lands on De verificat, once.
+        .task(id: scenePhase) {
+            guard scenePhase == .active else { return }
+            await InboxLanding.shared.didBecomeActive(
+                waiting: {
+                    IntakeInbox.shared.refresh()
+                    return IntakeInbox.shared.items
+                },
+                navigator: navigator,
+                isBusy: { !preferences.hasCompletedOnboarding || router.sheet != nil || InboxLanding.isShowingSomethingOverTheTabs() }
+            )
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background { InboxLanding.shared.didEnterBackground(navigator: navigator) }
+        }
     }
 
     @ViewBuilder

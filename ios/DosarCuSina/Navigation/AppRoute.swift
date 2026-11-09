@@ -141,6 +141,10 @@ public final class AppNavigator {
     /// A `.dosar` file opened from Files, Mail or AirDrop, waiting for the import screen.
     public private(set) var pendingArchiveURL: URL?
 
+    /// How many routes were asked for so far, so the app knows the person is opening
+    /// something (a reminder, a link, a widget) and doesn't steer them elsewhere (`InboxLanding`).
+    @ObservationIgnored public private(set) var openCount = 0
+
     @ObservationIgnored private let isAppLocked: @MainActor () -> Bool
 
     public init(isAppLocked: @escaping @MainActor () -> Bool = { BiometricVaultManager.shared.isAppLocked }) {
@@ -148,6 +152,7 @@ public final class AppNavigator {
     }
 
     public func open(_ route: AppRoute) {
+        openCount += 1
         pendingRoute = route
     }
 

@@ -61,6 +61,40 @@ public struct InboxItem: Codable, Hashable, Sendable, Identifiable {
     }
 }
 
+/// What the app learned about a waiting item by reading its first page on the phone,
+/// so the list can tell items apart: what it is, how many pages, a small picture.
+///
+/// Kept beside the manifest (`preview.json`, and `thumbnail.jpg` when there is a
+/// picture), written by the app only, never by the extension. It is a cache: one
+/// that is missing, damaged or from a newer version is made again, never set aside.
+public struct InboxPreview: Codable, Hashable, Sendable {
+    /// The preview's own format, separate from the manifest's.
+    public static let currentVersion = 1
+
+    public var version: Int
+    /// What the reading found (`CaptureDocumentKind`'s raw value). Nil when the page
+    /// couldn't be read, or reads as nothing the binder knows.
+    public var kind: String?
+    /// What it is, in a few words ("Factură ENGIE Romania S.A.", "Carte de identitate"),
+    /// already without anything that may not be shown (`SearchPrivacy.outsideText`).
+    public var title: String?
+    /// The category it would be filed in, so an item of a locked one names nothing.
+    public var categoryKey: String?
+    /// Pages in the document: a PDF's own, or the photos shared together.
+    public var pageCount: Int
+    /// A first-page picture was kept beside it.
+    public var hasThumbnail: Bool
+
+    public init(version: Int = InboxPreview.currentVersion, kind: String?, title: String?, categoryKey: String?, pageCount: Int, hasThumbnail: Bool = false) {
+        self.version = version
+        self.kind = kind
+        self.title = title
+        self.categoryKey = categoryKey
+        self.pageCount = pageCount
+        self.hasThumbnail = hasThumbnail
+    }
+}
+
 /// Something in the inbox the app couldn't open: a damaged manifest, a missing
 /// file, or a format from a newer version. It is moved aside, never retried
 /// forever, and shown calmly so the person can send it again or remove it.
@@ -309,6 +343,18 @@ public struct ShareInbox: Sendable {
         contents().items
     }
 
+    /// The items waiting now, newest first, read without changing anything: an item that
+    /// can't be opened is left where it is for the app to set aside. For the share
+    /// extension's notice and the app's coordinator, which only look.
+    public func waitingItems() -> [InboxItem] {
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: directory.path())) ?? []
+        return names.filter { !$0.hasPrefix(".") }.compactMap(readItem(named:)).sorted { $0.receivedAt > $1.receivedAt }
+    }
+
+    /// Posted in the app's own process whenever what waits in the inbox changes (an item
+    /// arrived, was filed or dismissed), so the coordinator can follow the inbox notice.
+    public static let didChangeNotification = Notification.Name("ShareInbox.didChange")
+
     private func readItem(named name: String) -> InboxItem? {
         let folder = directory.appending(path: name, directoryHint: .isDirectory)
         guard let data = try? Data(contentsOf: folder.appending(path: Self.manifestName)),
@@ -360,6 +406,39 @@ public struct ShareInbox: Sendable {
     /// The item's files in page order.
     public func fileURLs(of item: InboxItem) -> [URL] {
         item.files.map { folder(for: item.id).appending(path: $0) }
+    }
+
+    // MARK: Previews (app)
+
+    static let previewName = "preview.json"
+    static let thumbnailName = "thumbnail.jpg"
+
+    /// What the app learned about an item, or nil when it hasn't read it yet (or the
+    /// preview can't be used and should be made again).
+    public func preview(of item: InboxItem) -> InboxPreview? {
+        guard let data = try? Data(contentsOf: folder(for: item.id).appending(path: Self.previewName)),
+              let preview = try? Self.decoder.decode(InboxPreview.self, from: data),
+              preview.version <= InboxPreview.currentVersion else { return nil }
+        return preview
+    }
+
+    /// Keeps what the app learned about an item beside it, with its first-page picture.
+    /// Does nothing for an item that has already left.
+    public func savePreview(_ preview: InboxPreview, thumbnail: Data?, for item: InboxItem) throws {
+        let folder = folder(for: item.id)
+        guard FileManager.default.fileExists(atPath: folder.path()) else { return }
+        var preview = preview
+        if let thumbnail {
+            try thumbnail.write(to: folder.appending(path: Self.thumbnailName), options: [.atomic, .completeFileProtection])
+        }
+        preview.hasThumbnail = thumbnail != nil
+        try Self.encoder.encode(preview).write(to: folder.appending(path: Self.previewName), options: [.atomic, .completeFileProtection])
+    }
+
+    /// The item's first-page picture, when the app kept one.
+    public func thumbnailURL(of item: InboxItem) -> URL? {
+        let url = folder(for: item.id).appending(path: Self.thumbnailName)
+        return FileManager.default.fileExists(atPath: url.path()) ? url : nil
     }
 
     /// Removes an item once it was filed or dismissed. Removing a missing item is fine.
