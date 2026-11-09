@@ -21,6 +21,12 @@ import SwiftData
 /// - **A rollback takes back only the unit's own changes.** Changes someone else
 ///   left unsaved on the context are saved before the unit opens.
 ///
+/// - **It asks first.** A step's questions for the person (`StepQuestion`: a lower counter,
+///   something of theirs in an example) are asked before its unit opens, never from inside
+///   it once it has written: a debug build stops where one comes too late.
+/// - **What it took back can be read again.** After a rollback, the records the unit touched
+///   are fetched again, so a screen drawing them next reads them as they were.
+///
 /// Work that must only happen once the changes are kept goes in `afterCommit(in:_:)`.
 ///
 /// An action the person can take back opens its unit with `performUndoable(in:_:)`,
@@ -37,6 +43,15 @@ public enum UnitOfWork {
 
     /// Commits that tests have asked to fail, by context.
     private static var failingCommits: [ObjectIdentifier: any Error] = [:]
+
+    /// Contexts whose rollbacks tests have asked not to fetch again, to show what fetching again fixes.
+    private static var leftUnfetched: Set<ObjectIdentifier> = []
+
+    /// Leaves the records a rollback on `context` took back as SwiftData leaves them, without
+    /// fetching them again. Only for the test that shows why they are fetched again.
+    static func skipFetchingAgainForTesting(in context: ModelContext) {
+        leftUnfetched.insert(ObjectIdentifier(context))
+    }
 
     /// Makes the next commit of a unit on `context` fail, so tests can check that a
     /// failed save leaves nothing behind. Cleared after one use. Kept per context, so
@@ -57,7 +72,7 @@ public enum UnitOfWork {
         do {
             try context.save()
         } catch {
-            context.rollback()
+            rollBack(context)
             throw error
         }
     }
@@ -72,6 +87,7 @@ public enum UnitOfWork {
         do {
             result = try work()
         } catch {
+            noteQuestionAskedLate(error, in: context)
             abort(context)
             throw error
         }
@@ -150,7 +166,36 @@ public enum UnitOfWork {
     /// Discards everything the unit recorded and closes it.
     private static func abort(_ context: ModelContext) {
         open[ObjectIdentifier(context)] = nil
+        rollBack(context)
+    }
+
+    /// Takes back what the context holds unsaved, then fetches again every record it touched
+    /// and every record those pointed at. SwiftData leaves a rolled-back record's
+    /// relationships unreadable (reading a section's readings stops the app) until it is
+    /// fetched again. Nothing unsaved: nothing to take back, and nothing is touched.
+    private static func rollBack(_ context: ModelContext) {
+        guard context.hasChanges else { return }
+        context.processPendingChanges()
+        var touched = Set<RecordRef>()
+        for model in context.insertedModelsArray + context.changedModelsArray + context.deletedModelsArray {
+            guard let state = RecordState.capture(any: model) else { continue }
+            touched.insert(state.ref)
+            touched.formUnion(state.linked)
+        }
         context.rollback()
+        guard leftUnfetched.remove(ObjectIdentifier(context)) == nil else { return }
+        for ref in touched { _ = UndoableRecords.find(ref, in: context) }
+    }
+
+    /// A question thrown after the unit wrote is a step that didn't ask first: a debug build
+    /// stops here, so the test that takes that path fails where it happens. Ask it before the
+    /// unit opens (`StepQuestion`).
+    private static func noteQuestionAskedLate(_ error: any Error, in context: ModelContext) {
+        #if DEBUG
+        if error is any StepQuestion, context.hasChanges {
+            assertionFailure("\(type(of: error)) was thrown after the unit of work wrote. Ask it before the unit opens.")
+        }
+        #endif
     }
 
     /// Runs `action` once the open unit of work has saved, or right away when

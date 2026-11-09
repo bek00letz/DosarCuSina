@@ -51,10 +51,12 @@ public final class ObligationActions {
         rating: Int? = nil,
         lowerReading: LowerReadingAnswer? = nil
     ) throws -> Undoable<HistoryEntry> {
-        // One step: a question about a lower reading leaves nothing half-changed.
+        guard obligation.status == .active else { throw ObligationActionError.notActive }
+        let completedAt = date ?? now()
+        // Every question first, before anything is written (`StepQuestion`).
+        let reading = plannedReading(metricReading, completing: obligation, on: completedAt)
+        try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
         return try UnitOfWork.performUndoable(in: context) {
-            guard obligation.status == .active else { throw ObligationActionError.notActive }
-            let completedAt = date ?? now()
             let completedDay = CalendarDay(completedAt, calendar: calendar)
 
             let entry = HistoryEntry(kind: .forCompleting(obligation.kind), title: obligation.title, occurredAt: completedAt)
@@ -72,9 +74,8 @@ public final class ObligationActions {
             entry.providers = providers
             HouseholdMutations.addItems(items, to: entry, in: context)
 
-            if let metricReading, let asset = obligation.asset {
-                try HouseholdMutations.recordReading(metricReading, on: asset, at: completedAt, source: .person, unit: obligation.metricUnit,
-                                                     answer: lowerReading, isExample: obligation.isExample, in: context)
+            if let reading {
+                try HouseholdMutations.recordReading(reading, answer: lowerReading, isExample: obligation.isExample, in: context)
             }
 
             let recurrenceContext = HouseholdMutations.recurrenceContext(for: obligation, currentMetric: metricReading, calendar: calendar)
@@ -96,6 +97,14 @@ public final class ObligationActions {
             try save()
             return entry
         }
+    }
+
+    /// The reading "Gata" records with the counter the person read (`metricReading`): on the
+    /// deadline's section, in the deadline's unit, on the day it was done. Asked about before
+    /// the step's unit opens, by `complete` and by any flow that completes inside a larger step.
+    func plannedReading(_ metricReading: Double?, completing obligation: Obligation, on date: Date) -> PlannedReading? {
+        guard let metricReading, let asset = obligation.asset else { return nil }
+        return PlannedReading(metricReading, on: asset, at: date, source: .person, unit: obligation.metricUnit)
     }
 
     /// A completion from before the binder knew the obligation (last year's ITP): logged

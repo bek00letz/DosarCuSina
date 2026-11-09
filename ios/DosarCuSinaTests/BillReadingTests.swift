@@ -197,6 +197,9 @@ struct BillReadingTests {
         let lower = bill(meter: 12_000, issued: "2026-11-05", due: "2026-11-25")
 
         await #expect(throws: LowerReadingQuestion.self) { _ = try await save(lower, context) }
+        if let home = gas.parent { readEveryRelationship(of: home) }
+        readEveryRelationship(of: gas)
+        #expect(context.hasChanges == false)
         #expect(readings(of: gas).map(\.value) == [12_345], "Nothing saved before an answer")
         #expect((gas.history ?? []).filter { $0.kind == .payment }.count == 1, "Not even the bill")
         do {

@@ -151,6 +151,13 @@ rule silent-action-failure "$app" - \
     'try\? *(await +)?[A-Za-z_.]*[aA]ctions[.(]|try\? *(await +)?UnitOfWork\.' - \
     "Don't drop an action's failure with try?. Catch it and show SaveFailure.message(for:formKept:), or let it throw to a caller that does."
 
+# A question for the person is made by its one rule, which changes nothing, so every action
+# asks it before its unit of work writes (StepQuestion). The design system's gallery shows them.
+rule question-outside-its-rule "$app" \
+    "^ios/DosarCuSina/Services/History/Readings\\.swift\$|^ios/DosarCuSina/Services/Examples/ExampleOwnership\\.swift\$|$design_system" \
+    '(LowerReadingQuestion|ExampleSectionQuestion)\(' - \
+    "Ask with the question's one rule, before the step's unit of work writes anything: HouseholdMutations.askAboutReading with the step's PlannedReading, or ExampleOwnership.requireReal."
+
 # Checked in its own pass below: tab roots are the views AppShell puts inside
 # NavigationStack(path:), and their body must not start another stack.
 rule stack-in-tab-root "$app" - '-' - \

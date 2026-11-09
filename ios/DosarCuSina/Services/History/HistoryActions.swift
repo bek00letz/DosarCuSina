@@ -65,6 +65,9 @@ public final class HistoryActions {
         self.now = now
     }
 
+    /// Logs one record (a repair, a purchase, a bill) in the section's history, with its line
+    /// items and the counter reading it read, in one save. A lower counter asks before
+    /// anything is written (`LowerReadingQuestion`, answered with `lowerReading`).
     @discardableResult
     public func record(
         on asset: Asset,
@@ -80,29 +83,38 @@ public final class HistoryActions {
         asExample: Bool = false,
         lowerReading: LowerReadingAnswer? = nil
     ) throws -> HistoryEntry {
-        // One step: a question about a lower reading leaves nothing half-changed.
+        // Every question first, before anything is written (`StepQuestion`).
+        let isExample = try ExampleOwnership.requireReal(asset, creatingExample: asExample)
+        let date = occurredAt ?? now()
+        let reading = plannedReading(metricReading, on: asset, at: date)
+        try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
         return try UnitOfWork.perform(in: context) {
-            let isExample = try ExampleOwnership.requireReal(asset, creatingExample: asExample)
-            let date = occurredAt ?? now()
             let entry = HistoryEntry(kind: kind, title: title, occurredAt: date)
+            context.insert(entry)
+            entry.asset = asset
             entry.metricReading = metricReading
             entry.totalCost = totalCost
             entry.note = note
             entry.rating = rating.map { min(max($0, 1), 5) }
             entry.isExample = isExample
-            context.insert(entry)
-            entry.asset = asset
             entry.providers = providers
             HouseholdMutations.addItems(items, to: entry, in: context)
-            if let metricReading {
-                let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
-                let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) }
-                try HouseholdMutations.recordReading(metricReading, on: asset, at: date, source: .person, unit: unit,
-                                                     answer: lowerReading, isExample: isExample, in: context)
+            if let reading {
+                try HouseholdMutations.recordReading(reading, answer: lowerReading, isExample: isExample, in: context)
             }
             try save()
             return entry
         }
+    }
+
+    /// The reading a record or a visit logs with its counter (`metricReading`, the odometer):
+    /// in the section's hero unit, on its day. Asked about before the step's unit opens, by
+    /// the action and by a flow that files a visit inside a larger step (`CaptureFiler`).
+    func plannedReading(_ value: Double?, on asset: Asset, at date: Date, source: ReadingSource = .person) -> PlannedReading? {
+        guard let value else { return nil }
+        let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
+        let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) }
+        return PlannedReading(value, on: asset, at: date, source: source, unit: unit)
     }
 
     /// One ticked component on the visit checklist, with what it cost if known.
@@ -121,7 +133,8 @@ public final class HistoryActions {
     /// Records one visit (a service, a repair, a check-up) with every part ticked on
     /// the checklist, all in one save: the entry, its line items, the odometer
     /// reading (also logged as a measurement), the provider and the documents.
-    /// The receipt takes it all back ("Anulează vizita").
+    /// The receipt takes it all back ("Anulează vizita"). A lower odometer asks before
+    /// anything is written (`LowerReadingQuestion`, answered with `lowerReading`).
     @discardableResult
     public func recordVisit(
         on asset: Asset,
@@ -139,9 +152,12 @@ public final class HistoryActions {
         odometerSource: ReadingSource = .person,
         lowerReading: LowerReadingAnswer? = nil
     ) throws -> Undoable<HistoryEntry> {
-        // One step: a question about a lower reading leaves nothing half-changed.
+        // Every question first, before anything is written (`StepQuestion`).
+        let isExample = try ExampleOwnership.requireReal(asset)
+        let date = occurredAt ?? now()
+        let reading = plannedReading(odometer, on: asset, at: date, source: odometerSource)
+        try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
         return try UnitOfWork.performUndoable(in: context) {
-            let isExample = try ExampleOwnership.requireReal(asset)
             let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
             let catalog = template?.components ?? []
             let ticked = checklist.map { item in
@@ -153,20 +169,17 @@ public final class HistoryActions {
                 )
             }
             let items = ticked + extraItems
-            let date = occurredAt ?? now()
             let entry = HistoryEntry(kind: kind, title: title ?? Self.visitTitle(for: items), occurredAt: date)
+            context.insert(entry)
+            entry.asset = asset
             entry.metricReading = odometer
             entry.totalCost = totalCost
             entry.rating = rating.map { min(max($0, 1), 5) }
             entry.isExample = isExample
-            context.insert(entry)
-            entry.asset = asset
             entry.providers = provider.map { [$0] } ?? []
             HouseholdMutations.addItems(items, to: entry, in: context)
-            if let odometer {
-                let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) }
-                try HouseholdMutations.recordReading(odometer, on: asset, at: date, source: odometerSource, unit: unit,
-                                                     answer: lowerReading, isExample: isExample, in: context)
+            if let reading {
+                try HouseholdMutations.recordReading(reading, answer: lowerReading, isExample: isExample, in: context)
             }
             for draft in documents {
                 _ = AttachmentActions.insert(draft, asset: asset, obligation: nil, historyEntry: entry, provider: nil, isExample: isExample, calendar: calendar, in: context)
