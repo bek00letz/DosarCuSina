@@ -44,6 +44,7 @@ Nothing at the moment.
 - **iCloud sync** to the person's private iCloud. The schema is ready; the store is local only.
 - **Android port.** Paused; `android/` is the first version. The `.dosar` format is the contract.
 - **One merge rule for every record type.** History entries, line items, readings and documents are added only when new; they have no `updatedAt` to compare. A round-trip test over every stored property is still to write.
+- **The share sheet's auto-close** is switched off, not removed (`ShareConfirmation.closesByItself`, `DS.Motion.confirmationDwell`), since the confirmation now stays until "Gata". Remove it once the owner has seen the new one on a phone and agrees.
 - **The deadline page's inline reminder settings** are switched off, not removed (`ObligationPage.editsRemindersInline`), since the settings moved to `ReminderSettingsSheet`. Remove them once the owner has used the sheet and agrees.
 - **Removing `ios/Legacy/`** (and `tests/legacy/`). Kept as a way back; remove only once the new app has been used for a while and the owner agrees.
 - **The visit wording as a template field.** The visit flow's title and wording should come from the template, not from code.
@@ -98,6 +99,13 @@ Never write security findings, crash traces or local paths here. See [SECURITY.m
 - **Left open:** not seen by eye: the review's line about the class, "Clasa proprietarului" on the RCA page and the claim card, and *Am înțeles* in the repair list. A policy's own reference typed on its deadline isn't checked by the repair. The owner settled both questions (a locked person's class is shown on the car; company cars keep no class).
 - **Next:** the owner opens *Date de verificat* to complete their RCA number, then reads their RCA again and checks the class lands on them.
 - **Decisions:** added "Policy numbers kept without their number are repaired" and "The bonus-malus class belongs to the person".
+
+### 2026-11-09 — owner (with Claude) — `claude/share-confirmation-stays`
+- **Did:** the share sheet's confirmation stays until "Gata" (a `DSPrimaryButton` pinned with `.dsPinnedAction`; "Anulează" while copying), its words scrolling above at any text size. What it says is `ShareConfirmation` in `ios/Shared`; the old auto-close is kept switched off (`ShareConfirmation.closesByItself`). `DS.Space`, `DS.Control`, `DS.Radius`, the full-width buttons and `dsPinnedAction` moved to `ios/Shared` so the extension uses them. The owner's five choices from #35 recorded as kept, and the notice's exception as approved.
+- **Tests:** `ShareConfirmationTests` in `ShareContinuationTests` (it never closes by itself, every outcome waits for "Gata", its words). The whole suite on GitHub; nothing run on this Mac.
+- **Left open:** not seen on a phone. Remove the switched-off auto-close and `DS.Motion.confirmationDwell` once the owner agrees.
+- **Next:** share from Mail on the owner's phone with large text and VoiceOver, and read the confirmation.
+- **Decisions:** added "The share sheet's confirmation stays until „Gata”".
 
 ### 2026-11-09 — owner (with Claude) — `claude/share-continue-inbox`
 - **Did:** continuing after a share and waiting items you can tell apart. The share sheet says what happens next; when notifications are already allowed it leaves one quiet notice whose tap opens De verificat after unlocking (`InboxNotice` in `ios/Shared`, the one named exception to "only the coordinator notifies", allowed by name in the architecture check; the coordinator withdraws it once nothing it announced still waits). Opening the app from the background with something new lands on De verificat once (`InboxLanding`), never over a route being opened or something open over the tabs. Each item is read once on the phone (`InboxPreviewer`: first page, quick tiers, no AI provider) and kept beside its manifest (`InboxPreview`, a versioned cache; the manifest didn't change); rows show what it is, the cleaned file name or WhatsApp, "N pagini", the time and a first-page picture (`InboxWording`, new `DSThumbnailWell` in `DSListRow`), never a CNP or card number, *Act protejat* for a locked category, no picture for anything that may be a bank card. The share extension now compiles `Shared.xcstrings` for its plurals. No database change.

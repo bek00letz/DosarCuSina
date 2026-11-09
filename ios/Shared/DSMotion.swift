@@ -8,8 +8,9 @@ import SwiftUI
 ///
 /// Every screen builds on these tokens and components instead of hand-tuned values,
 /// so spacing, corners, color, type and motion stay consistent across the app.
-/// Motion and the delayed spinner live here, in `ios/Shared`; the rest of the
-/// design system is in the app's `Views/DesignSystem`.
+/// Motion and the delayed spinner live here, in `ios/Shared`, with spacing, controls
+/// and corners (`DSLayout.swift`), the full-width buttons and the pinned action; the
+/// rest of the design system is in the app's `Views/DesignSystem`.
 enum DS {}
 
 extension DS {
@@ -36,7 +37,8 @@ extension DS {
         static let progressDelay: Duration = .milliseconds(400)
 
         /// How long a short confirmation stays before it goes by itself, when
-        /// nothing else is waiting on it (the share sheet's "Trimis").
+        /// nothing else is waiting on it. Unused while the share sheet's confirmation
+        /// stays until "Gata" (`ShareConfirmation.closesByItself`); kept as its way back.
         static let confirmationDwell: Duration = .seconds(2.5)
 
         /// The animation to use given the person's Reduce Motion setting.
