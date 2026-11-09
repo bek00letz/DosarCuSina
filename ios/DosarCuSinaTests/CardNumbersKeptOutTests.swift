@@ -226,6 +226,18 @@ struct CardNumbersKeptOutTests {
         #expect(try #require(HistoryEntry.find(visit.recordKey, in: context)).title == "Plată \(Self.visaMasked)")
     }
 
+    // MARK: What the field says while typing
+
+    @Test func aFieldSaysOnlyTheLastFourDigitsAreKept() {
+        let note = DSValidation.keepingCardNumberOut(of: "Card \(Self.visa)")
+        #expect(note?.isWarning == true, "A note, never a block")
+        for text in ["1800101990006", "RO49 AAAA 1B31 0075 9384 0000", "0700 000 000", "Cod alarmă", ""] {
+            #expect(DSValidation.keepingCardNumberOut(of: text) == nil, "\(text)")
+        }
+        #expect(DSValidation.requiredMissing.notingCardNumber(in: Self.visa).isInvalid, "A field's own problem comes first")
+        #expect(DSValidation.valid.notingCardNumber(in: Self.mastercard).isWarning)
+    }
+
     // MARK: Helpers
 
     /// Every record of `type` in `context` whose words hold a card number, with where.

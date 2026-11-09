@@ -38,6 +38,20 @@ extension DSValidation {
     static let requiredMissing = DSValidation.invalid(
         LocalizedStringResource("Completează acest câmp.", comment: "Validation message under a required field that was left empty.")
     )
+
+    /// What a field says when its text holds a card number: saving keeps only the last four
+    /// digits (`FreeText`), so the person knows before they see "•••• 1111". It never blocks saving.
+    static func keepingCardNumberOut(of text: String) -> DSValidation? {
+        guard PaymentCardNumbers.containsCardNumber(text) else { return nil }
+        return .warning(LocalizedStringResource("Din numărul cardului păstrez doar ultimele patru cifre.",
+                                                comment: "Note under a field whose text holds a whole bank card number: only its last four digits are kept on save."))
+    }
+
+    /// This validation, or the card number note when this one has nothing to say.
+    func notingCardNumber(in text: String) -> DSValidation {
+        guard case .valid = self else { return self }
+        return Self.keepingCardNumberOut(of: text) ?? self
+    }
 }
 
 /// Decides when a field's problem becomes visible: not while the person is still typing

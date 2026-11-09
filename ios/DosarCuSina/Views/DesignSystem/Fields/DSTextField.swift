@@ -141,7 +141,7 @@ struct DSTextField: View {
         if trimmed.isEmpty {
             return isRequired ? .requiredMissing : .valid
         }
-        return validator?(trimmed) ?? .valid
+        return (validator?(trimmed) ?? .valid).notingCardNumber(in: trimmed)
     }
 
     private var shownValidation: DSValidation {
