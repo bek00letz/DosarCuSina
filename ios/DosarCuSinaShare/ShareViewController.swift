@@ -46,17 +46,8 @@ final class ShareViewController: UIViewController {
 @MainActor
 @Observable
 final class ShareModel {
-    enum Phase: Equatable {
-        case working
-        /// `count` documents (photos shared together are one), and what the person does next.
-        case saved(count: Int, next: InboxNotice.NextStep)
-        /// Nothing we can read: not a photo, a PDF or text.
-        case unsupported
-        /// The phone couldn't hand the file over, or there's no room.
-        case failed
-        /// A file, or the whole share, is bigger than the inbox accepts.
-        case tooLarge
-    }
+    /// What the confirmation shows and says (`ShareConfirmation`).
+    typealias Phase = ShareConfirmation.Phase
 
     private(set) var phase: Phase = .working
 
@@ -199,44 +190,33 @@ final class ShareModel {
     }
 }
 
-/// The calm confirmation the person sees in the share sheet.
+/// The calm confirmation the person sees in the share sheet. It stays until they tap
+/// "Gata" (`ShareConfirmation.closesByItself`), so nobody misses what happens next;
+/// the button is pinned to the bottom, and the words scroll above it at any text size.
 struct ShareConfirmationView: View {
     let model: ShareModel
     let onDone: () -> Void
 
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
 
+    private var confirmation: ShareConfirmation { ShareConfirmation(model.phase) }
+
     var body: some View {
-        VStack(spacing: 16) {
-            Spacer(minLength: 0)
-            symbol
-                .font(.system(size: 44, weight: .semibold))
-                .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(tint)
-                .frame(height: 56)
-                .accessibilityHidden(true)
-            VStack(spacing: 6) {
-                title
-                    .font(.title3.weight(.semibold))
-                    .multilineTextAlignment(.center)
-                message
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+        GeometryReader { proxy in
+            ScrollView {
+                content
+                    .padding(DS.Space.xl)
+                    .frame(maxWidth: 480)
+                    .frame(maxWidth: .infinity, minHeight: proxy.size.height)
             }
-            .accessibilityElement(children: .combine)
-            Spacer(minLength: 0)
-            Button(action: onDone) {
-                Text(model.phase == .working ? "Anulează" : "Gata")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity, minHeight: 50)
-            }
-            .buttonStyle(.borderedProminent)
-            .buttonBorderShape(.roundedRectangle(radius: 14))
+            .scrollBounceBehavior(.basedOnSize)
         }
-        .padding(24)
-        .frame(maxWidth: 480)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .dsPinnedAction {
+            switch confirmation.action {
+            case .cancel: DSSecondaryButton("Anulează", action: onDone)
+            case .done: DSPrimaryButton("Gata", action: onDone)
+            }
+        }
         .background(Color(uiColor: .systemGroupedBackground))
         .dsAnimation(value: model.phase)
         .sensoryFeedback(trigger: model.phase) { _, phase in
@@ -247,11 +227,34 @@ struct ShareConfirmationView: View {
             }
         }
         .task(id: model.phase) {
-            // With VoiceOver on, the person closes it when they've heard it.
-            guard case .saved = model.phase, !voiceOverEnabled else { return }
+            // The way back, switched off: it used to close by itself after a short dwell.
+            guard ShareConfirmation.closesByItself, case .saved = model.phase, !voiceOverEnabled else { return }
             try? await Task.sleep(for: DS.Motion.confirmationDwell)
             guard !Task.isCancelled else { return }
             onDone()
+        }
+    }
+
+    private var content: some View {
+        VStack(spacing: DS.Space.m) {
+            symbol
+                .font(.system(size: 44, weight: .semibold))
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(tint)
+                .frame(height: 56)
+                .accessibilityHidden(true)
+            VStack(spacing: DS.Space.xs) {
+                Text(verbatim: confirmation.title)
+                    .font(.title3.weight(.semibold))
+                    .multilineTextAlignment(.center)
+                    .accessibilityAddTraits(.isHeader)
+                // While copying there is nothing to say yet; the line keeps its place.
+                Text(verbatim: confirmation.message ?? " ")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .accessibilityElement(children: .combine)
         }
     }
 
@@ -272,30 +275,6 @@ struct ShareConfirmationView: View {
         case .saved: .green
         case .unsupported, .failed, .tooLarge: .orange
         case .working: .secondary
-        }
-    }
-
-    private var title: Text {
-        switch model.phase {
-        case .working: Text("Se trimite…")
-        // "Am primit un act", "Am primit 2 acte": the same words as the notice.
-        case .saved(let count, _): Text(verbatim: InboxNotice.receivedTitle(count))
-        case .unsupported: Text("Nu pot primi asta")
-        case .failed: Text("Nu s-a trimis")
-        case .tooLarge: Text("Fișierul e prea mare")
-        }
-    }
-
-    /// What happens next, said plainly: the app can't open itself from here.
-    private var message: Text {
-        switch model.phase {
-        case .working: Text(verbatim: " ")
-        case .saved(_, .tapNotice): Text("Atinge notificarea ca să continui. Te așteaptă în aplicație, la De verificat.")
-        case .saved(_, .openApp): Text("Deschide Dosar cu Șină ca să continui. Te așteaptă la De verificat.")
-        case .saved(_, .practice): Text("Te întorci în aplicație și vezi unde a ajuns.")
-        case .unsupported: Text("Pot primi poze, PDF-uri și text. Trimite factura sau actul ca poză sau PDF.")
-        case .failed: Text("Telefonul nu mi-a dat fișierul. Încearcă din nou din aplicația din care l-ai trimis.")
-        case .tooLarge: Text("Trimite actele câte unul, sau ca poze în loc de un PDF mare.")
         }
     }
 }
