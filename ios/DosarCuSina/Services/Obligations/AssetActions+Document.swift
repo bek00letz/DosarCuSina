@@ -32,7 +32,14 @@ extension AssetActions {
     @discardableResult
     public func editDocument(_ document: Asset, _ edit: DocumentEdit, picture: Attachment?) throws -> Undoable<EditOutcome> {
         // A photo of the person's own (the back) never lands in an example without asking.
-        if edit.addedPages != nil { _ = try ExampleOwnership.requireReal(document) }
+        if edit.addedPages != nil {
+            // The type the edit leaves must keep a back too (a document turned into a bank card
+            // in the same edit takes none).
+            guard DocumentType.keepsBackSide(edit.values[DocumentType.typeFieldKey]?.textValue) else {
+                throw AddedPages.Refusal.noBackSide
+            }
+            _ = try ExampleOwnership.requireReal(document)
+        }
         return try UnitOfWork.performUndoable(in: context) { () throws -> EditOutcome in
             if let picture {
                 let attachments = AttachmentActions(context: context)

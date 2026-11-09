@@ -32,10 +32,19 @@ public struct AddedPages: Sendable, Equatable {
     public enum Refusal: LocalizedError, Equatable {
         /// The document is kept as one PDF, with its own pages.
         case keptWhole
+        /// The document's type keeps no back (`DocumentType.keepsBackSide`): a bank card's
+        /// back shows its security code, which the binder never keeps.
+        case noBackSide
 
         public var errorDescription: String? {
-            String(localized: "Actul e păstrat ca PDF, cu paginile lui. Adaugă spatele ca act separat.",
-                   comment: "Adding the back to a document kept as a PDF was refused.")
+            switch self {
+            case .keptWhole:
+                String(localized: "Actul e păstrat ca PDF, cu paginile lui. Adaugă spatele ca act separat.",
+                       comment: "Adding the back to a document kept as a PDF was refused.")
+            case .noBackSide:
+                String(localized: "Pentru acest tip de act nu se păstrează spatele.",
+                       comment: "Adding the back to a document whose type keeps no back (a bank card) was refused.")
+            }
         }
     }
 }
@@ -101,6 +110,12 @@ extension AttachmentActions {
     public func addPages(_ pages: AddedPages, to attachment: Attachment) throws {
         guard !pages.images.isEmpty else { return }
         guard attachment.takesMorePages else { throw AddedPages.Refusal.keptWhole }
+        // A personal document takes a back only when its type keeps one; the rule holds here,
+        // whatever screen asks.
+        if let type = attachment.asset?.values[DocumentType.typeFieldKey]?.textValue,
+           !DocumentType.keepsBackSide(type) {
+            throw AddedPages.Refusal.noBackSide
+        }
         let position = attachment.orderedPages.count
         let nextIndex = (attachment.orderedPages.last?.index ?? -1) + 1
         var framing = attachment.framing

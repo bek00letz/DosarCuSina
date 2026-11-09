@@ -211,6 +211,28 @@ struct DocumentPageTests {
         }
     }
 
+    @Test("A bank card's picture takes no back, from any screen, nor does a document made a bank card in the same edit")
+    func noBackForABankCard() async throws {
+        let household = try household()
+        let card = try document(DocumentType.bankCard, named: "Card bancar", in: household)
+        let front = try await picture(on: card, in: household.context)
+        #expect(throws: AddedPages.Refusal.noBackSide) {
+            try AttachmentActions(context: household.context).addPages(AddedPages(images: [Data([1])], framing: [.plain]), to: front)
+        }
+        #expect(front.orderedPages.count == 1)
+
+        let other = try document(DocumentType.other, named: "Alt document", in: household)
+        let otherFront = try await picture(on: other, in: household.context)
+        var values = other.values
+        values[DocumentType.typeFieldKey] = .text(DocumentType.bankCard)
+        let edit = AssetActions.DocumentEdit(name: other.name, values: values, notes: nil,
+                                             addedPages: AddedPages(images: [Data([1])], framing: [.plain]))
+        #expect(throws: AddedPages.Refusal.noBackSide) {
+            try AssetActions(context: household.context).editDocument(other, edit, picture: otherFront)
+        }
+        #expect(otherFront.orderedPages.count == 1)
+    }
+
     @Test("Editează saves the values, the back and the text read as one step, and Anulează takes all of it back")
     func editingIsOneUndoableStep() async throws {
         let household = try household()
