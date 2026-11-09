@@ -27,7 +27,7 @@ private func counts(_ context: ModelContext) throws -> [Int] {
         try context.fetchCount(FetchDescriptor<HistoryEntry>()),
         try context.fetchCount(FetchDescriptor<ServiceItem>()),
         try context.fetchCount(FetchDescriptor<MeasurementLog>()),
-        try context.fetchCount(FetchDescriptor<Attachment>()),
+        try context.fetchCount(FetchDescriptor<DosarCuSina.Attachment>()),
         try context.fetchCount(FetchDescriptor<Provider>()),
     ]
 }
@@ -220,6 +220,34 @@ struct QuestionsBeforeSavingTests {
         try ExampleDataService(context: context).adopt(sectionID: example.id)
         let outcome = try await filer(context, store: store).file(.visit(visit(on: example, odometer: 46_000, document: invoice)))
         #expect(outcome.visit?.isExample == false)
+    }
+
+    /// A category of one's own was written before the section asked whether it may go into an example.
+    @Test func aSectionOfANewCategoryUnderAnExampleAsksFirst() async throws {
+        let context = try makeContext()
+        let example = try car(context, isExample: true)
+        let model = AddSectionModel(request: AddSectionRequest(parentID: example.id))
+        model.chooseCustom(CustomSectionDraft(name: "Remorcă", symbol: "shippingbox.fill", switches: CategorySwitches(hasDocuments: true, hasBills: false)))
+        let categories = try context.fetchCount(FetchDescriptor<CategoryTemplate>())
+        try await expectAsksFirst(ExampleSectionQuestion.self, on: example, in: context) { _ in _ = try model.create(context: context) }
+        #expect(try context.fetchCount(FetchDescriptor<CategoryTemplate>()) == categories, "No category of its own left behind")
+    }
+
+    /// The edit sheet keeps the photo and the fields in one unit: the counter is asked before the photo is written.
+    @Test func thePhotoAndALowerCounterAskBeforeThePhotoIsKept() async throws {
+        let context = try makeContext()
+        let golf = try car(context)
+        let actions = AssetActions(context: context, calendar: .bucharest, now: { noon(today) })
+        var values = golf.values
+        values[VehicleFields.odometer] = .number(4_572)
+        try await expectAsksFirst(LowerReadingQuestion.self, on: golf, in: context) { answer in
+            try actions.askFirst(updating: golf, to: values, lowerReading: answer)
+            try UnitOfWork.perform(in: context) {
+                try actions.setPhoto(golf, Data([1, 2, 3]))
+                _ = try actions.update(golf, name: golf.name, values: values, notes: nil, lowerReading: answer)
+            }
+        }
+        #expect(golf.photoData == nil, "Not even the photo")
     }
 
     // MARK: The same invoice filed again

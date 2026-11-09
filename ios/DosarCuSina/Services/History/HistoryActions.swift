@@ -121,9 +121,9 @@ public final class HistoryActions {
         let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
         let unit = template.flatMap { HouseholdMutations.heroMetricUnit(template: $0.definition) }
         let earlier = Self.replaceable(earlier)
-        return PlannedReading(value, on: asset, at: date, source: source, unit: unit) { log in
+        return PlannedReading(value, on: asset, at: date, source: source, unit: unit, replacing: { log in
             earlier.map { HouseholdMutations.isReading(log, recordedBy: $0) } ?? false
-        }
+        })
     }
 
     /// An entry a document logged that filing it again may take over: never a completion.

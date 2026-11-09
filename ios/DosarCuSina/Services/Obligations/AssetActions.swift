@@ -217,6 +217,13 @@ public final class AssetActions {
         return plannedReading(asset, values: prepared, template: template.definition, source: source, date: date)
     }
 
+    /// Asks what saving `values` on `asset` with `update` would ask (a lower counter), without
+    /// changing anything: for a screen that saves the edit with other changes in one unit of
+    /// work (a section's photo and its fields), so it asks before the unit writes the photo.
+    public func askFirst(updating asset: Asset, to values: FieldValues, lowerReading: LowerReadingAnswer?) throws {
+        try HouseholdMutations.askAboutReading(try plannedReading(updating: asset, to: values), answer: lowerReading)
+    }
+
     /// The one rule: the hero value of `values` (as saving writes them), when it isn't the one kept now.
     private func plannedReading(_ asset: Asset, values: FieldValues, template: TemplateDefinition, source: ReadingSource, date: Date?) -> PlannedReading? {
         guard let reading = HouseholdMutations.heroMetricValue(values: values, template: template),

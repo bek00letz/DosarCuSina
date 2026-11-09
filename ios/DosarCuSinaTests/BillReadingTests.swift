@@ -399,7 +399,7 @@ struct BillReadingTests {
         }
         #expect(bills(on: other).isEmpty)
         #expect(document.historyEntry == nil)
-        #expect(try context.fetchCount(FetchDescriptor<Attachment>()) == 1, "The document stays in the binder")
+        #expect(try context.fetchCount(FetchDescriptor<DosarCuSina.Attachment>()) == 1, "The document stays in the binder")
     }
 
     // MARK: The page
