@@ -7,14 +7,5 @@
 #
 # Format: path:rule, or path:rule:count when a file breaks the rule more than once.
 # The note above each group says which piece of work removes it.
-# built-in-key-in-views: Ask the category's behaviour (CategoryBehavior) instead. Left: the add-section menu's own wording and shortlist (AddSectionFlow), the visit wording (VisitDraft, the "visit wording as a template field" gap) and a refresh query (UpcomingRoot).
-ios/DosarCuSina/Views/Add/Visit/VisitDraft.swift:built-in-key-in-views:2
-ios/DosarCuSina/Views/Section/AddSectionFlow.swift:built-in-key-in-views:12
-ios/DosarCuSina/Views/Upcoming/UpcomingRoot.swift:built-in-key-in-views
-
-# format-string: Machine text (ISO days, hashes): one shared helper, then these go.
-ios/DosarCuSina/Models/Schema/RecordModels.swift:format-string
-ios/DosarCuSina/Services/Capture/CaptureModels.swift:format-string
-
-# save-outside-unit-of-work: One unit of work around every multi-step flow (agreed fix 7); start-up and migrations save through UnitOfWork too.
-ios/DosarCuSina/App/DosarCuSinaApp.swift:save-outside-unit-of-work
+#
+# Nothing is listed now: every rule holds everywhere. Keep it that way.

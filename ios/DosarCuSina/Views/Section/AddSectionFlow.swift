@@ -117,27 +117,20 @@ private struct CatalogStep: View {
 
     @Query(sort: [SortDescriptor(\CategoryTemplate.homeOrder)]) private var templates: [CategoryTemplate]
 
-    /// The ready-made sections most households start with, in this order.
-    private static let mainKeys = [
-        BuiltInTemplates.Key.vehicle, BuiltInTemplates.Key.home, BuiltInTemplates.Key.pet,
-        BuiltInTemplates.Key.member, BuiltInTemplates.Key.purchase, BuiltInTemplates.Key.subscription,
-    ]
-    /// Categories that only make sense under another section.
-    private static let childOnlyKeys: Set<String> = [BuiltInTemplates.Key.tenancy]
-
     var body: some View {
-        let byKey = Dictionary(templates.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
-        let main = Self.mainKeys.compactMap { byKey[$0] }
-        let others = templates.filter { !Self.mainKeys.contains($0.key) && !Self.childOnlyKeys.contains($0.key) }
+        // What each category says about itself: its place in the shortlist, its option's title.
+        let offers = SectionOffers(templates)
         List {
-            Section {
-                ForEach(main) { template in row(template) }
-            } header: {
-                Text("Cele mai des folosite", comment: "Header of the main ready-made sections.")
-            }
-            if !others.isEmpty {
+            if !offers.shortlist.isEmpty {
                 Section {
-                    ForEach(others) { template in row(template) }
+                    ForEach(offers.shortlist) { template in row(template) }
+                } header: {
+                    Text("Cele mai des folosite", comment: "Header of the main ready-made sections.")
+                }
+            }
+            if !offers.others.isEmpty {
+                Section {
+                    ForEach(offers.others) { template in row(template) }
                 } header: {
                     Text("Alte secțiuni gata făcute", comment: "Header of the other ready-made sections.")
                 }
@@ -163,7 +156,7 @@ private struct CatalogStep: View {
             choose(template)
         } label: {
             DSListRow(
-                title: Text(verbatim: Self.title(for: template)),
+                title: Text(verbatim: SectionOffers.title(for: template)),
                 subtitle: template.summary.map { Text(verbatim: $0) },
                 systemImage: template.symbol,
                 tint: template.tintColor,
@@ -171,20 +164,6 @@ private struct CatalogStep: View {
             ) { EmptyView() }
         }
         .buttonStyle(.plain)
-    }
-
-    /// One thing, not the category: "Mașină", not "Mașini".
-    static func title(for template: CategoryTemplate) -> String {
-        switch template.key {
-        case BuiltInTemplates.Key.vehicle: String(localized: "Mașină", comment: "Add-section option.")
-        case BuiltInTemplates.Key.home: String(localized: "Casă sau apartament", comment: "Add-section option.")
-        case BuiltInTemplates.Key.pet: String(localized: "Animal de companie", comment: "Add-section option.")
-        case BuiltInTemplates.Key.member: String(localized: "Actele unei persoane", comment: "Add-section option.")
-        case BuiltInTemplates.Key.purchase: String(localized: "Produs cu garanție", comment: "Add-section option.")
-        case BuiltInTemplates.Key.subscription: String(localized: "Abonament", comment: "Add-section option.")
-        case BuiltInTemplates.Key.documents: String(localized: "Un act (buletin, pașaport, permis)", comment: "Add-section option.")
-        default: template.name
-        }
     }
 }
 
@@ -274,6 +253,7 @@ private struct EssentialsStep: View {
     let next: () -> Void
     @State private var reveals = false
     @Query(sort: \Asset.name) private var assets: [Asset]
+    @Query private var templates: [CategoryTemplate]
 
     var body: some View {
         let fields = model.essentialFields
@@ -295,7 +275,7 @@ private struct EssentialsStep: View {
                     FieldEditor(field: field, values: $model.values,
                                 urgencyRule: DateUrgency.rule(forField: field.key, values: model.values, definition: model.definition))
                 }
-                if model.template?.key == BuiltInTemplates.Key.documents, model.request.parentID == nil {
+                if model.template?.behavior.role == .personalDocument, model.request.parentID == nil {
                     holderPicker
                 }
                 if fields.isEmpty {
@@ -322,10 +302,11 @@ private struct EssentialsStep: View {
         }
     }
 
-    /// Whose document it is, from the household members.
+    /// Whose document it is, from the people documents are filed under (`CategoryBehavior.Role.holder`).
     @ViewBuilder
     private var holderPicker: some View {
-        let members = assets.filter { $0.templateKey == BuiltInTemplates.Key.member }
+        let holderKeys = templates.keys(playing: .holder)
+        let members = assets.filter { holderKeys.contains($0.templateKey) }
         if !members.isEmpty {
             DSChoiceField(
                 "Al cui este",

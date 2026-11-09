@@ -25,12 +25,13 @@ struct BinderWordingTests {
     }
 
     @Test func visitButtonFollowsTheCategory() {
-        #expect(VisitWording.forTemplate(key: "vehicle", heroStyle: .vehicle).title == "Am fost la service")
-        #expect(VisitWording.forTemplate(key: "bike", heroStyle: .standard).title == "Am fost la service")
-        #expect(VisitWording.forTemplate(key: "pet", heroStyle: .pet).title == "Am fost la veterinar")
-        #expect(VisitWording.forTemplate(key: "home", heroStyle: .home).title == "Am chemat un meseriaș")
-        #expect(VisitWording.forTemplate(key: "health", heroStyle: .standard).title == "Am fost la medic")
-        #expect(VisitWording.forTemplate(key: "custom.x", heroStyle: .standard).title == "Am făcut o lucrare")
+        // Every category's own wording is pinned in CategoryOffersAndVisitsTests.
+        #expect(BuiltInTemplates.vehicle.behavior.visitWording.title == "Am fost la service")
+        #expect(BuiltInTemplates.bike.behavior.visitWording.title == "Am fost la service")
+        #expect(BuiltInTemplates.pet.behavior.visitWording.title == "Am fost la veterinar")
+        #expect(BuiltInTemplates.home.behavior.visitWording.title == "Am chemat un meseriaș")
+        #expect(BuiltInTemplates.health.behavior.visitWording.title == "Am fost la medic")
+        #expect(CategoryBehavior.standard.visitWording.title == "Am făcut o lucrare")
     }
 
     @Test func componentLineShowsDistanceDateAndPrice() {

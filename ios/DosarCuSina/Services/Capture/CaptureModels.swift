@@ -109,7 +109,7 @@ public struct CaptureDay: Hashable, Codable, Sendable, Comparable, CustomStringC
 
     /// ISO 8601 calendar date, e.g. `2031-03-12`.
     public var description: String {
-        String(format: "%04d-%02d-%02d", year, month, day)
+        MachineText.isoDay(year: year, month: month, day: day)
     }
 }
 

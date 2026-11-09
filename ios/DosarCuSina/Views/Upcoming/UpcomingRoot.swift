@@ -13,9 +13,11 @@ struct UpcomingRoot: View {
     @Environment(\.modelContext) private var context
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Query private var obligations: [Obligation]
-    /// Subscriptions, so a bill filed or a subscription changed refreshes the missing-bill notes.
-    /// (`BuiltInTemplates.Key.subscription`; a macro predicate takes the key as written.)
-    @Query(filter: #Predicate<Asset> { $0.templateKey == "subscription" }) private var subscriptions: [Asset]
+    /// The sections, so a bill filed or a subscription changed refreshes the missing-bill notes.
+    /// Which of them are subscriptions is the categories' to say (`keys(playing: .subscription)`),
+    /// the same set `BillWatchSnapshot.fetchAll` reads; a query's predicate can't ask a behaviour.
+    @Query private var sections: [Asset]
+    @Query private var templates: [CategoryTemplate]
 
     @State private var snapshots: [ObligationSnapshot] = []
     @State private var digest: AttentionDigest?
@@ -69,7 +71,8 @@ struct UpcomingRoot: View {
             hasher.combine(obligation.snoozedUntil)
             hasher.combine(obligation.asset?.name)
         }
-        for subscription in subscriptions {
+        let subscriptionKeys = templates.keys(playing: .subscription)
+        for subscription in sections where subscriptionKeys.contains(subscription.templateKey) {
             hasher.combine(subscription.id)
             hasher.combine(subscription.updatedAt)
             hasher.combine(subscription.history?.count)

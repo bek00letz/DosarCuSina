@@ -65,13 +65,9 @@ struct DosarCuSinaApp: App {
     /// pipeline, once per container.
     private func start(with container: ModelContainer) {
         guard sideEffects == nil else { return }
-        _ = try? TemplateStore(context: container.mainContext).installBuiltIns()
-        // The repair list: steps that change nothing anyone sees run now; the rest wait for
-        // the owner, and the shell's calm prompt says when there is something new.
-        try? DataRepairCenter.shared.refresh(in: container.mainContext, announce: true)
-        if (try? HouseholdRules.reconcile(in: container.mainContext, today: CalendarDay(Date()))) == true {
-            try? container.mainContext.save()
-        }
+        // Built-in categories, the repair list and the household's own deadlines, each saved
+        // through UnitOfWork.
+        LaunchData.prepare(in: container.mainContext, today: CalendarDay(Date()))
         // Capture recognizes documents already in the binder by their fingerprint.
         Task {
             await CaptureDocumentStore.shared().setDuplicateLookup { fingerprint in

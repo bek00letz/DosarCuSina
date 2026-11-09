@@ -222,13 +222,13 @@ struct ArchiveTests {
 
         // A category of the person's own that behaves like Garanții keeps doing so.
         let custom = try TemplateStore(context: context).createCustom(name: "Unelte", symbol: "hammer", pockets: [.keyFacts])
-        custom.behavior = CategoryBehavior(box: .wholeCategory, listing: .byWarranty)
+        custom.behavior = CategoryBehavior(box: .wholeCategory, listing: .byWarranty, visit: BuiltInTemplates.Visits.tradesperson, offerTitle: "Unealtă")
         try UnitOfWork.save(context)
         let archive = try service.exportData(exportedAt: noon("2026-11-02"))
         let other = try makeInMemoryContainer()
         try DossierArchiveService(container: other, calendar: calendar).importArchive(archive, mode: .replace)
         let restored = try #require(try ModelContext(other).fetch(FetchDescriptor<CategoryTemplate>()).first { $0.name == "Unelte" })
-        #expect(restored.behavior == CategoryBehavior(box: .wholeCategory, listing: .byWarranty))
+        #expect(restored.behavior == CategoryBehavior(box: .wholeCategory, listing: .byWarranty, visit: BuiltInTemplates.Visits.tradesperson, offerTitle: "Unealtă"))
         let restoredFirm = try ModelContext(other).fetch(FetchDescriptor<Provider>()).first { $0.name == "Service auto exemplu" }
         #expect(restoredFirm?.taxID == "12345678")
     }
