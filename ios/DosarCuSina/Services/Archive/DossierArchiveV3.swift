@@ -134,6 +134,8 @@ public enum DossierV3 {
         public var isExample: Bool
         /// The number of the paper the entry records (a bill's invoice number); missing when none.
         public var reference: String? = nil
+        /// When it last changed; missing in archives from before version 8 of the database, which reads as `ChangeTime.unknown`.
+        public var updatedAt: Date? = nil
     }
 
     public struct ServiceItem: Codable, Hashable, Sendable {
@@ -154,6 +156,8 @@ public enum DossierV3 {
         public var warrantyMonths: Int?
         public var notes: String?
         public var isExample: Bool
+        /// When it last changed; missing in archives from before version 8 of the database, which reads as `ChangeTime.unknown`.
+        public var updatedAt: Date? = nil
     }
 
     public struct Provider: Codable, Hashable, Sendable {
@@ -190,6 +194,8 @@ public enum DossierV3 {
         public var source: String?
         public var notes: String?
         public var isExample: Bool
+        /// When it last changed; missing in archives from before version 8 of the database, which reads as `ChangeTime.unknown`.
+        public var updatedAt: Date? = nil
     }
 
     public struct Attachment: Codable, Hashable, Sendable {
@@ -224,6 +230,8 @@ public enum DossierV3 {
         /// How the pages are shown: the document found in each photo and which way up it
         /// goes. Absent when every page is shown as it is.
         public var framing: DocumentFraming? = nil
+        /// When it last changed; missing in archives from before version 8 of the database, which reads as `ChangeTime.unknown`.
+        public var updatedAt: Date? = nil
 
         /// Every file this record points to.
         public var allPaths: [String] { [path, thumbnailPath].compactMap { $0 } + pagePaths }
@@ -280,5 +288,21 @@ public enum DossierV3 {
     }
 
     static func id(_ uuid: UUID) -> String { uuid.uuidString.lowercased() }
+
+    /// A record's change time as written: none when it isn't known (`ChangeTime.unknown`),
+    /// which is how a reader takes a missing one.
+    static func changeTime(_ date: Date) -> Date? { date == ChangeTime.unknown ? nil : date }
+
+    /// Stored properties a backup never carries, by record type, each for a reason; every
+    /// other stored property travels (`ArchiveRoundTripTests` checks it against the models).
+    /// - `Attachment.documentID`: the document's place in capture's store on this phone.
+    /// - `Attachment.compactedAt`: when this phone made its pages smaller.
+    /// - `Provider.contactIdentifier`: the card in this phone's Contacts.
+    /// - `AttachmentPage.id`: a page is known by its document and its place in it.
+    static let stayOnThePhone: [String: Set<String>] = [
+        "Attachment": ["documentID", "compactedAt"],
+        "Provider": ["contactIdentifier"],
+        "AttachmentPage": ["id"],
+    ]
     static func id(_ uuid: UUID?) -> String? { uuid.map(id) }
 }

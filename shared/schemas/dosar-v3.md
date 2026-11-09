@@ -36,12 +36,12 @@ files, even when empty. Readers treat a missing data file as an empty array.
 ## Value conventions
 
 - **Identifiers:** UUID strings, written lowercase; compare case-insensitively.
-- **Timestamps** (`createdAt`, `occurredAt`, `recordedAt`, `exportedAt`, `snoozedUntil`): ISO 8601 in UTC, such as `2026-03-01T07:30:00Z`. Readers accept fractional seconds and offsets.
+- **Timestamps** (`createdAt`, `updatedAt`, `occurredAt`, `recordedAt`, `exportedAt`, `snoozedUntil`): ISO 8601 in UTC, such as `2026-03-01T07:30:00Z`. Writers write whole seconds; readers accept fractional seconds and offsets.
 - **Calendar days** (`dueDate`, `cycleDueDate`, `documentDate`, date field values): `yyyy-MM-dd`, with no time zone. A day is the same day everywhere.
 - **Month-days** (fixed yearly dates): `MM-dd`.
 - **Money:** `{"amount": "175.50", "currency": "RON"}`. The amount is a decimal string with a dot; the currency is ISO 4217. Amounts in different currencies are never added together.
 - **Optional values** are omitted rather than written as `null`. Readers accept either.
-- **Enumerations** are lowercase-camel strings. A reader that meets an unknown value keeps the record and falls back: unknown field types become `text`, unknown kinds become the generic one (`routine`, `note`, `other`), unknown trades are kept as text.
+- **Enumerations** are lowercase-camel strings. A reader that meets an unknown value keeps the record and falls back: unknown field types read as `text`, unknown kinds read as the generic one (`note`, `other`, `custom`; an obligation's as `legal`, the loudest), unknown trades are kept as text. The value itself is kept as written and written back unchanged (see [Values from a newer version](#values-from-a-newer-version)).
 - **Units** (a field's `unit`, a metric recurrence's `unit`, a measurement's `unit`) are keys, never display text. A reader shows its own label for each.
 
   | Key | Unit | Label in Romanian |
@@ -277,7 +277,7 @@ Built-in option keys:
 (`visit|repair|maintenance|inspection|purchase|payment|vaccination|treatment|note`),
 `title`, `occurredAt`, `metricReading`?, `totalCost`?, `note`?, `rating`?
 (1–5), `cycleDueDate`?, `nextDueDate`?, `previousStatus`?,
-`previousDueMetric`?, `providerIds`, `isExample`, `reference`?.
+`previousDueMetric`?, `providerIds`, `isExample`, `reference`?, `updatedAt`?.
 
 An entry with `cycleDueDate` records the completion of `obligationId`. Its
 `previous*` values let the latest completion be undone.
@@ -292,7 +292,7 @@ An entry with `cycleDueDate` records the completion of `obligationId`. Its
 `id`, `entryId`?, `componentKey`?, `name`, `group`?, `partBrandOrCode`?,
 `partSerialNumber`?, `cost`?, `laborCost`?, `partsCost`?, `supplierId`?,
 `batchOrTicket`?, `locationDetail`?, `daysInService`?, `warrantyMonths`?,
-`notes`?, `isExample`.
+`notes`?, `isExample`, `updatedAt`?.
 
 `componentKey` is a key from the asset's template components, or
 `custom.<slug>` for free text. The slug is the text, lowercased, with no
@@ -314,7 +314,7 @@ diacritics, and words joined by `-`.
 (`electricity|gas|coldWater|hotWater|thermalEnergy|biomarker|bloodPressure|bodyWeight|diopters|odometer|engineHours|cycles|custom`),
 `name`, `value`, `secondaryValue`?, `unit`, `recordedAt`, `unitPrice`?,
 `isSelfRead`, `referenceMin`?, `referenceMax`?, `source`?, `notes`?,
-`isExample`.
+`isExample`, `updatedAt`?.
 
 - **`unit`:** a unit key (see Units above), or `""` when the reading has none. Readings in the same unit form one series: a counter's readings are matched to its field and its metric deadlines by this key.
 
@@ -325,7 +325,8 @@ diacritics, and words joined by `-`.
 `contentType`, `byteCount`, `sha256`?, `path`?, `pagePaths`, `thumbnailPath`?,
 `extractedText`?, `documentDate`?, `isArchived`, `supersededById`?,
 `createdAt`, `isExample`, `assetId`?, `obligationId`?, `historyEntryId`?,
-`serviceItemId`?, `measurementId`?, `providerId`?, `validUntil`?, `framing`?.
+`serviceItemId`?, `measurementId`?, `providerId`?, `validUntil`?, `framing`?,
+`updatedAt`?.
 
 - **Fingerprint:** `sha256` is the hash of the original file, or of the page images joined in order when there is no original.
 - **Replaced documents:** a replaced document is kept with `isArchived: true` and `supersededById` pointing to its replacement.
@@ -333,12 +334,51 @@ diacritics, and words joined by `-`.
 - **`framing`:** how the pages are shown; the page files stay as taken. `{ "version": 1, "pages": [ … ] }`, one entry per page in order (a page image, or a PDF's page), each optional: `crop`, the document's four corners in the photo (top-left, top-right, bottom-right, bottom-left) as fractions of its width and height from the top-left corner; `prefersWholePhoto`, the app's choice of the whole photo over the cut-out; `quarterTurns`, the app's guess of quarter turns clockwise (0–3) that put the page upright; and `choice`, what the person chose (`quarterTurns`, `showsWholePhoto`), which wins over both. A page is drawn cut out (with a perspective correction) when it has a `crop` and neither choice is the whole photo, then turned. A missing entry, or a missing `framing`, is the page as it is, whole and as taken. Keys a reader doesn't know are ignored.
 - **`extractedText`:** what was read off the document, with any card number masked ("•••• 1111"); a reader masks any it finds the same way.
 
+## Change times
+
+Every record carries `updatedAt`, when it last changed: templates, assets,
+obligations and providers always; history entries, line items, measurements
+and attachments optionally. It moves when one of the record's own values or
+links changes: its fields, the record it points to (`assetId`, `entryId`, …)
+and the lists it keeps itself (a provider's `assetIds`, an entry's
+`providerIds`). A record pointed at doesn't change when another record is
+linked to it: an asset doesn't change when it gets a new history entry.
+An attachment changes when one of its pages does.
+
+A missing `updatedAt` (archives written before it was carried for history
+entries, line items, measurements and attachments) is **unknown**: older
+than any change, and the same for every reader. Writers leave it out for a
+record whose change time they don't know.
+
 ## Import modes
 
-- **Replace:** removes everything, then writes the archive. It is all or nothing: a failure leaves the existing data untouched. Secrets the device keeps (PIN codes, secret rows) stay with their records, and locks stay on.
-- **Merge:** keeps local data. Templates, assets, obligations and providers update when the archive's `updatedAt` is newer. History entries, line items, measurements and attachments are added when their `id` is new.
+Both modes write every record by one rule, whatever its type: a record whose
+`id` (a template's `key`) isn't on the device is added; a record that is
+there is replaced by the archive's copy only when the archive's `updatedAt` is
+later. An unknown change time is older than any other; on a tie the device's
+own copy stays. In both modes a timestamp later than the moment of import is
+taken as now.
 
-In both modes a timestamp later than the moment of import is taken as now.
+- **Replace:** removes everything, then writes the archive. It is all or nothing: a failure leaves the existing data untouched. Secrets the device keeps (PIN codes, secret rows) stay with their records, and locks stay on.
+- **Merge:** keeps local data and takes the archive's newer copies. A replaced attachment takes the archive's pages and files too.
+
+Records deleted on one side aren't deleted on the other: an archive carries
+no deletions, so a merge brings back a record the device deleted.
+
+## Values from a newer version
+
+A newer writer can write values an older reader doesn't know. A reader keeps
+what it can't read, raw, and writes it back unchanged; it never writes back a
+smaller value in its place. It drops such a value only when the person sets a
+new one for the same thing.
+
+- **Field values:** a value of an unknown `type` is kept under its key.
+- **Recurrence:** an unknown `type`, legal `rule`, `unit`, `anchor` or `fallbackUnit` is kept as written; the obligation behaves as one-off until the person picks a rule the reader knows.
+- **Template sections, blueprints, components and custom facts:** each entry is read on its own. An entry the reader can't read is kept in its place and written back; one it can read with the same `key` (an `id` for a custom fact) replaces it. A secret custom fact (`"isSecret": true`, or any sealed text) is left out by writers and readers, read or not.
+- **Fields:** an unknown `type`, `role`, `defaultValue`, `derivation` or `appliesWhen` is kept as written; the field reads as `text`, without the part it can't read.
+- **Kinds** (`kind` of an obligation, a history entry, a measurement or an attachment) are kept as written.
+
+Keys a reader doesn't know inside a record it reads are ignored.
 
 ## Password-protected archives
 

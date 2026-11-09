@@ -290,7 +290,8 @@
           "cycleDueDate": { "$ref": "#/$defs/day" },
           "nextDueDate": { "$ref": "#/$defs/day" },
           "providerIds": { "type": "array", "items": { "$ref": "#/$defs/uuid" } },
-          "reference": { "type": "string" }
+          "reference": { "type": "string" },
+          "updatedAt": { "$ref": "#/$defs/timestamp", "description": "When the record last changed. Missing in archives from before it was written: a reader takes it as older than any change." }
         }
       }
     },
@@ -305,7 +306,8 @@
           "supplierId": { "$ref": "#/$defs/uuid" },
           "cost": { "$ref": "#/$defs/money" },
           "laborCost": { "$ref": "#/$defs/money" },
-          "partsCost": { "$ref": "#/$defs/money" }
+          "partsCost": { "$ref": "#/$defs/money" },
+          "updatedAt": { "$ref": "#/$defs/timestamp", "description": "When the record last changed. Missing in archives from before it was written: a reader takes it as older than any change." }
         }
       }
     },
@@ -333,7 +335,8 @@
           "id": { "$ref": "#/$defs/uuid" },
           "assetId": { "$ref": "#/$defs/uuid" },
           "recordedAt": { "$ref": "#/$defs/timestamp" },
-          "unitPrice": { "$ref": "#/$defs/money" }
+          "unitPrice": { "$ref": "#/$defs/money" },
+          "updatedAt": { "$ref": "#/$defs/timestamp", "description": "When the record last changed. Missing in archives from before it was written: a reader takes it as older than any change." }
         }
       }
     },
@@ -351,6 +354,7 @@
           "documentDate": { "$ref": "#/$defs/day" },
           "validUntil": { "$ref": "#/$defs/day" },
           "supersededById": { "$ref": "#/$defs/uuid" },
+          "updatedAt": { "$ref": "#/$defs/timestamp", "description": "When the record last changed. Missing in archives from before it was written: a reader takes it as older than any change." },
           "framing": {
             "type": "object",
             "properties": {
