@@ -57,18 +57,7 @@ struct AssetEditSheet: View {
                             moveRow
                         }
                     }
-                    ForEach(definition.sections) { section in
-                        let fields = section.fields.filter { $0.applies(to: values) }
-                        if !fields.isEmpty {
-                            VStack(alignment: .leading, spacing: DS.Space.m) {
-                                DSSectionHeader(verbatim: section.title)
-                                ForEach(fields) { field in
-                                    FieldEditor(field: field, values: $values,
-                                                urgencyRule: DateUrgency.rule(forField: field.key, values: values, definition: definition, asset: asset))
-                                }
-                            }
-                        }
-                    }
+                    SectionFieldsForm(asset: asset, definition: definition, values: $values)
                     VStack(alignment: .leading, spacing: DS.Space.m) {
                         DSSectionHeader("Note")
                         DSTextField("Note", text: $notes, kind: .longText, prompt: "Orice vrei să ții minte")
@@ -152,6 +141,30 @@ struct AssetEditSheet: View {
             readingQuestion = question
         } catch {
             self.error = UserFacingError(error)
+        }
+    }
+}
+
+/// A category's fields, group by group, with the design system's field editors: what every
+/// edit sheet (a section's, a document's) shows. Only the fields that apply to the values
+/// typed so far appear (a document's variant on its type).
+struct SectionFieldsForm: View {
+    let asset: Asset
+    let definition: TemplateDefinition
+    @Binding var values: FieldValues
+
+    var body: some View {
+        ForEach(definition.sections) { section in
+            let fields = section.fields.filter { $0.applies(to: values) }
+            if !fields.isEmpty {
+                VStack(alignment: .leading, spacing: DS.Space.m) {
+                    DSSectionHeader(verbatim: section.title)
+                    ForEach(fields) { field in
+                        FieldEditor(field: field, values: $values,
+                                    urgencyRule: DateUrgency.rule(forField: field.key, values: values, definition: definition, asset: asset))
+                    }
+                }
+            }
         }
     }
 }
