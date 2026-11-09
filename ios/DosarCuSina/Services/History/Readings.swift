@@ -126,20 +126,15 @@ extension HouseholdMutations {
         guard source != .estimate, value.isFinite else { return nil }
         let kind = kind ?? MeasurementKind.forUnit(unit)
         let unit = unit ?? kind.defaultUnit
-        if kind.isCumulative {
-            let earlier = (asset.measurements ?? []).filter {
-                !$0.isDeleted && $0.measurementUnit == unit && $0.kind.isCumulative && $0.recordedAt <= date
-            }
-            let higher = earlier.filter { $0.value > value }
-            if let highest = higher.max(by: { $0.value < $1.value }) {
-                switch answer {
-                case nil:
-                    throw LowerReadingQuestion(previous: highest.value, previousDate: highest.recordedAt, value: value, unit: unit)
-                case .correctOld?:
-                    for log in higher { removeReading(log, from: asset, in: context) }
-                case .keepAside?:
-                    break
-                }
+        let higher = higherReadings(than: value, on: asset, at: date, unit: unit, kind: kind)
+        if let highest = higher.max(by: { $0.value < $1.value }) {
+            switch answer {
+            case nil:
+                throw LowerReadingQuestion(previous: highest.value, previousDate: highest.recordedAt, value: value, unit: unit)
+            case .correctOld?:
+                for log in higher { removeReading(log, from: asset, in: context) }
+            case .keepAside?:
+                break
             }
         }
         let log = MeasurementLog(kind: kind, name: name, value: value, unit: unit, recordedAt: date)
@@ -148,6 +143,37 @@ extension HouseholdMutations {
         log.asset = asset
         syncHeroMetric(of: asset, in: context)
         return log
+    }
+
+    /// The question `recordReading` would ask for `value` without an answer, worked out
+    /// without changing anything, so a flow that writes several things asks it before its
+    /// unit of work opens: a unit taken back after it wrote leaves its records' relationships
+    /// unreadable until they are fetched again. `ignoring` leaves out readings that saving
+    /// replaces first (the one a document recorded before). Nil: nothing to ask.
+    static func lowerReadingQuestion(
+        for value: Double,
+        on asset: Asset,
+        at date: Date,
+        unit: MeasurementUnit?,
+        kind: MeasurementKind? = nil,
+        ignoring: (MeasurementLog) -> Bool = { _ in false }
+    ) -> LowerReadingQuestion? {
+        guard value.isFinite else { return nil }
+        let kind = kind ?? MeasurementKind.forUnit(unit)
+        let unit = unit ?? kind.defaultUnit
+        let higher = higherReadings(than: value, on: asset, at: date, unit: unit, kind: kind).filter { !ignoring($0) }
+        guard let highest = higher.max(by: { $0.value < $1.value }) else { return nil }
+        return LowerReadingQuestion(previous: highest.value, previousDate: highest.recordedAt, value: value, unit: unit)
+    }
+
+    /// The counter readings recorded on or before `date` that are higher than `value`: what
+    /// makes a new reading ask first. The one rule `recordReading` and the question share.
+    private static func higherReadings(than value: Double, on asset: Asset, at date: Date, unit: MeasurementUnit?,
+                                       kind: MeasurementKind) -> [MeasurementLog] {
+        guard kind.isCumulative else { return [] }
+        return (asset.measurements ?? []).filter {
+            !$0.isDeleted && $0.measurementUnit == unit && $0.kind.isCumulative && $0.recordedAt <= date && $0.value > value
+        }
     }
 
     /// Takes back the reading a history entry recorded (a visit, "Gata"): the logs with the
