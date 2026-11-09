@@ -226,6 +226,54 @@ struct CardNumbersKeptOutTests {
         #expect(try #require(HistoryEntry.find(visit.recordKey, in: context)).title == "Plată \(Self.visaMasked)")
     }
 
+    // MARK: Kept by an earlier version: the repair list
+
+    private func repairs(_ context: ModelContext) -> DataRepairs {
+        DataRepairs(context: context, calendar: .bucharest,
+                    ledger: DataRepairLedger(defaults: UserDefaults(suiteName: "card-numbers-\(UUID().uuidString)")!))
+    }
+
+    @Test func numbersAnEarlierVersionKeptAreOfferedAndMaskedOnlyWithTheOwnersOK() throws {
+        let context = try makeContext()
+        let boat = Asset(name: "Barca de pe lac", templateKey: BuiltInTemplates.Key.other)
+        boat.customFacts = [CustomFact(label: "Card", value: Self.visa)]
+        context.insert(boat)
+        let visit = HistoryEntry(kind: .note, title: "Plată", occurredAt: noon("2026-11-01"))
+        visit.note = "Card \(Self.mastercard)"
+        context.insert(visit)
+        visit.asset = boat
+        let clean = Asset(name: "VW Golf 2018", templateKey: BuiltInTemplates.Key.other, notes: "B-123-ABC")
+        context.insert(clean)
+        // Saved as an earlier version did, around the unit of work.
+        try context.save()
+
+        let found = try repairs(context).detect().filter { $0.step == .cardNumbers }
+        #expect(found.count == 2, "The section with the row and the visit, nothing else")
+        #expect(found.map(\.message).sorted() == [
+            "La Barca de pe lac, „Plată” păstrează un număr de card întreg. Păstrez doar ultimele patru cifre?",
+            "„Barca de pe lac” păstrează un număr de card întreg. Păstrez doar ultimele patru cifre?",
+        ].sorted())
+        for finding in found {
+            #expect(!Self.holdsNumber(finding.message) && !Self.holdsNumber(finding.id), "The list never shows or stores the number")
+        }
+        #expect(boat.customFacts.first?.value == Self.visa, "Nothing changes before the owner says so")
+
+        try repairs(context).apply(found)
+        let saved = ModelContext(context.container)
+        #expect(try #require(Asset.find(boat.recordKey, in: saved)).customFacts.first?.value == Self.visaMasked)
+        #expect(try #require(HistoryEntry.find(visit.recordKey, in: saved)).note == "Card \(Self.mastercardMasked)")
+        #expect(try repairs(context).detect().filter { $0.step == .cardNumbers }.isEmpty, "A second pass finds nothing")
+    }
+
+    @Test func aNameThatHoldsTheNumberIsShownMasked() throws {
+        let context = try makeContext()
+        let card = Asset(name: "Card \(Self.visa)", templateKey: BuiltInTemplates.Key.other)
+        context.insert(card)
+        try context.save()
+        let finding = try #require(try repairs(context).detect().first { $0.step == .cardNumbers })
+        #expect(finding.message == "„Card \(Self.visaMasked)” păstrează un număr de card întreg. Păstrez doar ultimele patru cifre?")
+    }
+
     // MARK: What the field says while typing
 
     @Test func aFieldSaysOnlyTheLastFourDigitsAreKept() {
