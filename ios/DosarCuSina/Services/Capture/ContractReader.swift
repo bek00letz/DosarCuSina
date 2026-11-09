@@ -31,7 +31,7 @@ enum ContractReader {
                        "cod client apa", "cod apa", "apa canal cod client", "apa canal cod", "apa nova cod client", "apa nova cod"]),
         (.podCode, ["pod", "cod pod", "codul pod", "punct de delimitare", "punct de delimitare pod", "cod punct de delimitare",
                     "punctul de delimitare", "loc consum"]),
-        (.clcCode, ["clc", "cod clc", "cod loc consum", "cod loc de consum", "cod loc consum (clc)", "cod loc de consum (clc)",
+        (.clcCode, ["clc", "cod clc", "cod loc consum", "cod loc consum (clc)", "cod loc de consum (clc)",
                     "loc consum gaze"]),
         (.phoneNumber, ["numar de telefon", "nr. de telefon", "numar telefon", "nr. telefon", "nr telefon", "msisdn", "numarul de telefon"]),
     ]
