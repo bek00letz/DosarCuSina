@@ -246,6 +246,7 @@ public struct SearchIndexBuilder {
                 SearchField(entry.asset?.name, weight: SearchField.Weight.label),
                 SearchField(items.compactMap { [$0.partBrandOrCode, $0.supplier?.name].compactMap { $0 }.joined(separator: " ") }.joined(separator: " "), weight: SearchField.Weight.value),
                 SearchField(entry.note, weight: SearchField.Weight.note),
+                SearchField(entry.reference, weight: SearchField.Weight.value),
             ],
             date: entry.occurredAt, isSensitive: isSensitive(entry.asset, templates)
         )

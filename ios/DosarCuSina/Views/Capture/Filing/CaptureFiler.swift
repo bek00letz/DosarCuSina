@@ -303,20 +303,22 @@ struct CaptureFiler {
         outcome.nextDue = outcome.obligation?.dueDay(in: calendar)
 
         // A bill, in its subscription's history: what it came to and when, for the trend
-        // and for knowing when the next one is due. A bill logs one entry: filed again, the
-        // entry it logged before takes what was read now (and moves with the bill), and it
-        // goes when the bill no longer goes to a subscription, as its meter reading does.
-        let billFiledBefore = Self.entryFiledBefore(by: document) { entry in
-            entry.kind == .payment && entry.asset.map { templates.plays(.subscription, $0.templateKey) } == true
-        }
+        // and for knowing when the next one is due. A bill logs one entry (`BillIdentity`, as
+        // the plan found it): filed again, from the same document or another photo of it, the
+        // entry it logged before takes what was read now (what wasn't read stays) and moves
+        // with the bill, and it goes when the bill no longer goes to a subscription, as its
+        // meter reading does.
+        let billFiledBefore = plan.filedBill.flatMap { try? entry(id: $0.entryID) }
+        let readingFiledBefore = plan.readingFiledBefore.flatMap { try? reading(id: $0) }
         if review.kind.profile.deadlineIsOptIn, let asset = outcome.asset, templates.plays(.subscription, asset.templateKey) {
             outcome.bill = try HistoryActions(context: context, now: now).record(
                 on: asset,
                 kind: .payment,
                 title: review.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? CaptureMapping.defaultTitle(for: review.kind, fields: review.valuesByKey) : review.title,
-                occurredAt: Self.billDay(review, today: today).noonDate(in: calendar),
-                totalCost: review.total,
-                note: review.value(.invoiceNumber)?.text.map { String(localized: "Factura nr. \($0)") },
+                occurredAt: review.value(.issueDate) == nil && billFiledBefore != nil
+                    ? billFiledBefore?.occurredAt : Self.billDay(review, today: today).noonDate(in: calendar),
+                totalCost: review.total ?? billFiledBefore?.totalCost,
+                reference: review.value(.invoiceNumber)?.text ?? billFiledBefore?.reference,
                 replacing: billFiledBefore
             )
         } else if review.kind.profile.deadlineIsOptIn, let billFiledBefore {
@@ -346,14 +348,39 @@ struct CaptureFiler {
                 provider: provider
             )
             outcome.attachment = filed
+            // Another photo or PDF of a bill already in the binder: it is the bill's newer
+            // copy, and the one kept before is archived beside it, never thrown away.
+            if let bill = outcome.bill, let match = plan.filedBill?.match, match != .sameDocument {
+                try Self.keepAsNewerCopy(filed, of: bill, with: AttachmentActions(context: context, calendar: calendar))
+            }
         }
 
         // 5. A bill's meter index, as the plan says: a reading on its subscription, from the
         // document, linked to it.
         let subscription = outcome.asset.flatMap { templates.plays(.subscription, $0.templateKey) ? $0 : nil }
         outcome.reading = try recordMeterReading(subscription == nil ? nil : plan.meter?.reading, on: subscription,
-                                                 document: outcome.attachment, templates: templates)
+                                                 document: outcome.attachment, earlier: readingFiledBefore, templates: templates)
         return outcome
+    }
+
+    /// `document` becomes the current copy of `bill`: every other copy still current there is
+    /// archived and points to it (`AttachmentActions.supersede`), so the bill shows one paper.
+    static func keepAsNewerCopy(_ document: Attachment, of bill: HistoryEntry, with documents: AttachmentActions) throws {
+        for older in bill.attachments ?? [] where older.id != document.id && !older.isDeleted && !older.isArchived {
+            try documents.supersede(older, with: document)
+        }
+    }
+
+    private func entry(id: UUID) throws -> HistoryEntry? {
+        var descriptor = FetchDescriptor<HistoryEntry>(predicate: #Predicate { $0.id == id })
+        descriptor.fetchLimit = 1
+        return try context.fetch(descriptor).first
+    }
+
+    private func reading(id: UUID) throws -> MeasurementLog? {
+        var descriptor = FetchDescriptor<MeasurementLog>(predicate: #Predicate { $0.id == id })
+        descriptor.fetchLimit = 1
+        return try context.fetch(descriptor).first
     }
 
     /// "Am rezolvat": the same steps as the review, for the deadline the person closed.
@@ -447,14 +474,18 @@ struct CaptureFiler {
     /// links it to the document. A bill records one index, and it follows the bill as filed
     /// now: filed again, it keeps the reading it recorded when nothing changed, and replaces
     /// it when the person corrected the index or moved the bill (to no subscription, or with
-    /// the index cleared, it goes). The same index on the same day is the same reading too
-    /// (the bill read again from another photo), so it is never kept twice. Nil `reading`:
-    /// the filing keeps no index.
+    /// the index cleared, it goes). The same index on the same day is the same reading too,
+    /// so it is never kept twice. `earlier` is the reading the bill recorded before, by this
+    /// document or by another photo of the same bill (`CaptureFilingPlan.readingFiledBefore`).
+    /// Nil `reading`: the filing keeps no index.
     private func recordMeterReading(_ reading: SubscriptionMeter.Reading?, on subscription: Asset?, document: Attachment?,
-                                    templates: [String: CategoryTemplate]) throws -> MeasurementLog? {
-        // Only a reading a bill recorded on a subscription is the document's to replace.
-        if let earlier = document?.measurement, !earlier.isDeleted, let owner = earlier.asset, templates.plays(.subscription, owner.templateKey) {
-            if let reading, owner.id == subscription?.id, reading.isRecorded(by: earlier, calendar: calendar) { return earlier }
+                                    earlier: MeasurementLog?, templates: [String: CategoryTemplate]) throws -> MeasurementLog? {
+        // Only a reading a bill recorded on a subscription is the bill's to replace.
+        if let earlier, !earlier.isDeleted, let owner = earlier.asset, templates.plays(.subscription, owner.templateKey) {
+            if let reading, owner.id == subscription?.id, reading.isRecorded(by: earlier, calendar: calendar) {
+                document?.measurement = earlier
+                return earlier
+            }
             document?.measurement = nil
             HouseholdMutations.removeReading(earlier, from: owner, in: context)
             HouseholdMutations.syncHeroMetric(of: owner, in: context)
@@ -503,8 +534,9 @@ struct CaptureFiler {
 
     /// The review's questions: an existing section it writes into may be an example, its
     /// values may bring a lower counter, and a bill's index may be lower than its
-    /// subscription's last one. The reading this bill's document recorded before doesn't
-    /// count: filing replaces it. A new section holds nothing yet, so it asks nothing.
+    /// subscription's last one. The reading this bill recorded before (by this document or
+    /// another photo of it) doesn't count: filing replaces it. A new section holds nothing
+    /// yet, so it asks nothing.
     private func askFirst(for review: CaptureReview) throws {
         let templates = try TemplateStore(context: context).templatesByKey()
         let assets = try context.fetch(FetchDescriptor<Asset>())
@@ -519,10 +551,10 @@ struct CaptureFiler {
         guard case .record(let reading, _)? = plan.meter,
               let section = review.existingSection(assets: assets, templates: templates),
               templates.plays(.subscription, section.templateKey) else { return }
-        let kept = review.duplicateAttachmentID
+        let earlier = plan.readingFiledBefore
         let planned = PlannedReading(
             reading.value, on: section, at: reading.day.noonDate(in: calendar), source: .document, unit: reading.unit, kind: reading.kind,
-            replacing: { log in kept != nil && (log.attachments ?? []).contains { $0.id == kept } }
+            replacing: { log in earlier != nil && log.id == earlier }
         )
         try HouseholdMutations.askAboutReading(planned, answer: lowerReading)
     }
@@ -556,9 +588,10 @@ struct CaptureFiler {
     // MARK: Filed again
 
     /// The history entry a kept document logged when it was filed before, when `isOwn` says
-    /// it is the document's own record (a bill's payment, a visit): filing the document again
-    /// updates that entry instead of adding a second one. Never a completion, which belongs
-    /// to the deadline whose cycle it closed.
+    /// it is the document's own record (a visit): filing the document again updates that entry
+    /// instead of adding a second one. Never a completion, which belongs to the deadline whose
+    /// cycle it closed. A bill is found by the filing plan instead (`CaptureFilingPlan.filedBill`),
+    /// which also knows another photo of it.
     static func entryFiledBefore(by document: CapturedDocument?, _ isOwn: (HistoryEntry) -> Bool) -> HistoryEntry? {
         guard case .kept(let attachment)? = document, let entry = attachment.historyEntry,
               !entry.isDeleted, !entry.isCompletion, isOwn(entry) else { return nil }
@@ -967,6 +1000,9 @@ enum CaptureReminderPreview {
             return opening + " " + String(localized: "Termenul de aici e deja pe \(DueWording.date(later, today: today)), așa că rămâne așa.")
         case .noSuchDeadline?:
             return opening + " " + String(localized: "Categoria aleasă nu are acest termen, așa că nu îți amintesc.")
+        case .billFiledBefore?:
+            return opening + " " + String(localized: "Factura e deja în dosar, așa că nu îți amintesc încă o dată de ea.",
+                                          comment: "Capture review: another photo of a bill already filed, whose reminder was dealt with.")
         case nil:
             return nil
         }

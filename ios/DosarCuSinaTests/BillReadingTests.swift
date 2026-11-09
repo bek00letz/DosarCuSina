@@ -23,15 +23,17 @@ private func capture(_ kind: CaptureDocumentKind, _ fields: [CaptureField], docu
 
 /// A utility bill with its meter index. Placeholder provider and codes.
 private func bill(service: String = ServiceKind.gas, provider: String = "ENGIE Romania S.A.", meter: Decimal?,
-                  meterConfidence: Double = 0.9, issued: String, due: String, document: CapturedDocumentRef? = nil) -> CaptureResult {
+                  meterConfidence: Double = 0.9, issued: String?, due: String, total: Decimal = 245, number: String? = nil,
+                  document: CapturedDocumentRef? = nil) -> CaptureResult {
     var fields = [
         field(.provider, .text(provider)),
         field(.serviceKind, .text(service)),
         field(.clientCode, .text("1000000000")),
-        field(.issueDate, day(issued)),
         field(.dueDate, day(due)),
-        field(.total, .money(CaptureMoney(amount: 245, currencyCode: "RON"))),
+        field(.total, .money(CaptureMoney(amount: total, currencyCode: "RON"))),
     ]
+    if let issued { fields.append(field(.issueDate, day(issued))) }
+    if let number { fields.append(field(.invoiceNumber, .text(number))) }
     if service == ServiceKind.gas { fields.append(field(.clcCode, .text("DEG0000000000001"))) }
     if let meter { fields.append(field(.meterIndex, index(meter), confidence: meterConfidence)) }
     return capture(.utilityInvoice, fields, document: document)
@@ -400,6 +402,136 @@ struct BillReadingTests {
         #expect(bills(on: other).isEmpty)
         #expect(document.historyEntry == nil)
         #expect(try context.fetchCount(FetchDescriptor<DosarCuSina.Attachment>()) == 1, "The document stays in the binder")
+    }
+
+    // MARK: Another photo of the same bill
+
+    private func billReminders(on asset: Asset) -> [Obligation] {
+        (asset.obligations ?? []).filter { $0.blueprintKey == SubscriptionFields.billBlueprint && !$0.isDeleted }
+    }
+
+    @Test func anotherPhotoOfTheSameBillFilesOnce() async throws {
+        let context = try makeContext()
+        _ = try home(context)
+        let store = CaptureDocumentStore()
+        let photo = try await newPhoto(store, seed: 60)
+        let pdf = try await newPhoto(store, seed: 61)
+        let first = try await save(bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", number: "EXM 0000001", document: photo),
+                                   context, store: store)
+        let gas = try #require(first.asset)
+        let entry = try #require(first.bill)
+        let older = try #require(first.attachment)
+        #expect(entry.reference == "EXM 0000001", "The number is the entry's own, not a note")
+        #expect(entry.note == nil)
+
+        // The same bill, from another photo (the PDF that came by email), its number written another way.
+        let again = bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", total: 245, number: "exm-0000001", document: pdf)
+        let planned = try plan(again, context)
+        let filed = try #require(planned.filedBill)
+        #expect(filed.entryID == entry.id)
+        #expect(filed.match == .number)
+        #expect(filed.subscription == gas.name)
+        #expect(CaptureReviewView.filedBillText(filed, today: CalendarDay(today))
+            == "E în „\(gas.name)”, cea din 5 octombrie, cu același număr. Dacă salvezi, o actualizez cu ce am citit acum, iar poza asta devine copia ei nouă.")
+        #expect(planned.meter == .alreadyKept(try #require(planned.meter?.reading), subscription: gas.name))
+
+        let second = try await save(again, context, store: store)
+        #expect(bills(on: gas).map(\.id) == [entry.id], "One bill in Istoric")
+        #expect(second.bill?.id == entry.id)
+        #expect(billReminders(on: gas).count == 1, "One reminder to pay it")
+        #expect(readings(of: gas).count == 1, "One index")
+        let newer = try #require(second.attachment)
+        #expect(newer.id != older.id, "The new pages are kept")
+        #expect(newer.historyEntry?.id == entry.id)
+        #expect(newer.measurement?.id == readings(of: gas).first?.id)
+        #expect(older.isArchived && older.supersededBy?.id == newer.id, "The first copy is archived beside it, not lost")
+        #expect(!newer.isArchived)
+    }
+
+    @Test func aDifferentBillFromTheSameProviderFilesAsNew() async throws {
+        let context = try makeContext()
+        _ = try home(context)
+        let gas = try #require(try await save(bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", number: "EXM 0000001"), context).asset)
+        // The same day and amount, but another number: another bill.
+        let other = bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", number: "EXM 0000002")
+        #expect(try plan(other, context).filedBill == nil)
+        _ = try await save(other, context)
+        #expect(bills(on: gas).count == 2)
+        #expect(Set(bills(on: gas).compactMap(\.reference)) == ["EXM 0000001", "EXM 0000002"])
+
+        // Next month's, with no number read: another day, another bill.
+        _ = try await save(bill(meter: 12_500, issued: "2026-11-05", due: "2026-12-20"), context)
+        #expect(bills(on: gas).count == 3)
+    }
+
+    @Test func aBillWithNoNumberGoesByItsDayAndTotal() async throws {
+        let context = try makeContext()
+        _ = try home(context)
+        let first = try await save(bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20"), context)
+        let gas = try #require(first.asset)
+        let entry = try #require(first.bill)
+
+        // The same day and total: the same bill, though the person can say it isn't.
+        let same = bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", number: "EXM 0000001")
+        let filed = try #require(try plan(same, context).filedBill)
+        #expect(filed.match == .dayAndTotal, "One of them has no number to compare")
+        #expect(try plan(same, context) { $0.isAnotherBill = true }.filedBill == nil, "„E altă factură”")
+        _ = try await save(same, context)
+        #expect(bills(on: gas).map(\.id) == [entry.id])
+        #expect(entry.reference == "EXM 0000001", "It takes the number read now")
+
+        // Another total on the same day: another bill.
+        _ = try await save(bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", total: 99), context)
+        #expect(bills(on: gas).count == 2)
+        // The same day and total, said to be another bill: filed as new.
+        _ = try await save(bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", total: 99), context) { $0.isAnotherBill = true }
+        #expect(bills(on: gas).count == 3)
+    }
+
+    @Test func undoingAnotherPhotoOfTheSameBillPutsEverythingBack() async throws {
+        let context = try makeContext()
+        _ = try home(context)
+        let store = CaptureDocumentStore()
+        let photo = try await newPhoto(store, seed: 62)
+        let pdf = try await newPhoto(store, seed: 63)
+        _ = try await save(bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", number: "EXM 0000001", document: photo), context, store: store)
+        let before = try UndoReceiptTests.database(context)
+
+        // Read again from another photo, with the amount and the index corrected.
+        let corrected = bill(meter: 12_354, issued: "2026-10-05", due: "2026-11-20", total: 254, number: "EXM 0000001", document: pdf)
+        let second = try await save(corrected, context, store: store)
+        let gas = try #require(second.asset)
+        #expect(bills(on: gas).first?.totalCost == Money(254))
+        #expect(readings(of: gas).map(\.value) == [12_354], "The corrected index replaces the old one")
+
+        try #require(second.receipt).undo()
+        let left = UndoReceiptTests.differences(before, try UndoReceiptTests.database(context))
+        #expect(left.isEmpty, "Still different after undo: \(left.map(\.description))")
+    }
+
+    @Test func aBillAlreadyPaidAsksToBePaidOnce() async throws {
+        let context = try makeContext()
+        _ = try home(context)
+        let store = CaptureDocumentStore()
+        let photo = try await newPhoto(store, seed: 64)
+        let first = try await save(bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", number: "EXM 0000001", document: photo), context, store: store)
+        let gas = try #require(first.asset)
+        let reminder = try #require(first.obligation)
+        _ = try ObligationActions(context: context, calendar: .bucharest, now: { noon("2026-11-10") }).complete(reminder)
+        #expect(reminder.status == .done)
+
+        // Another photo of it, and the same photo again: no second reminder to pay it.
+        let other = bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", number: "EXM 0000001", document: try await newPhoto(store, seed: 65))
+        let planned = try plan(other, context)
+        #expect(planned.quiet == .billFiledBefore)
+        #expect(planned.deadline == nil)
+        #expect(CaptureReminderPreview.text(for: try review(other, context), plan: planned, today: CalendarDay(today))?
+            .contains("Factura e deja în dosar") == true)
+        _ = try await save(other, context, store: store)
+        _ = try await save(bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", number: "EXM 0000001",
+                                document: .kept(attachmentID: try #require(first.attachment).id)), context)
+        #expect(billReminders(on: gas).map(\.id) == [reminder.id], "Still the one, paid")
+        #expect(bills(on: gas).count == 1)
     }
 
     // MARK: The page

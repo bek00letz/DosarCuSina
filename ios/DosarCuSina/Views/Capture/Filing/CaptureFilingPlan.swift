@@ -37,6 +37,32 @@ struct CaptureFilingPlan {
         case noSuchDeadline
         /// The section already has this deadline on a later day; an older document never moves it back.
         case alreadyLater(CalendarDay)
+        /// The bill is already in the binder and its reminder has been dealt with (paid, or
+        /// taken away): another photo of it never makes a second one.
+        case billFiledBefore
+    }
+
+    /// The bill a review files when it is already in the binder: the same document filed
+    /// again, or another photo or PDF of the same bill (`BillIdentity`). Saving updates its
+    /// entry instead of logging a second one, and a new photo becomes its newer copy.
+    struct FiledBill: Equatable {
+        enum Match: Equatable {
+            /// The same document (the same photo or file) filed again.
+            case sameDocument
+            /// The same invoice number on the same subscription.
+            case number
+            /// No number to compare, the same issue day and total on the same subscription.
+            case dayAndTotal
+        }
+
+        /// The bill's entry in its subscription's history.
+        var entryID: UUID
+        var match: Match
+        /// The subscription the entry is in now, and its name.
+        var subscriptionID: UUID?
+        var subscription: String
+        /// The day the entry is logged on.
+        var day: CalendarDay
     }
 
     /// Who issued the document, kept in Agendă.
@@ -94,6 +120,13 @@ struct CaptureFilingPlan {
     /// What happens to the meter index the bill prints; nil when it prints none, or when it
     /// goes nowhere a meter is kept (no place chosen yet, not a subscription, a service without a meter).
     var meter: Meter?
+    /// The bill already in the binder that this review files again; nil for a new bill or
+    /// any other document.
+    var filedBill: FiledBill?
+    /// The meter reading this bill recorded when it was filed before (by the same document,
+    /// or by another photo of the same bill): filing it again keeps, replaces or removes it,
+    /// and it never counts against the new index.
+    var readingFiledBefore: UUID?
 
     /// Where `review`'s bonus-malus class goes, from the person the policy insures
     /// (`Policyholders`): by the CNP read on it, else by name. Nil when there is no class.
@@ -127,8 +160,10 @@ struct CaptureFilingPlan {
         plan.provider = CaptureFiler.provider(of: review)
         plan.keepsPhoto = review.keepsPhoto
         plan.bonusMalus = bonusMalus(for: review, people: Policyholders.people(in: assets, templates: templates))
+        plan.filedBill = filedBill(for: review, section: section, templates: templates, assets: assets, today: today, calendar: calendar)
+        plan.readingFiledBefore = readingFiledBefore(review: review, filedBill: plan.filedBill, templates: templates, assets: assets)
         plan.meter = meter(for: review, section: section, templateKey: plan.templateKey, templates: templates, assets: assets,
-                           today: today, calendar: calendar)
+                           readingFiledBefore: plan.readingFiledBefore, today: today, calendar: calendar)
 
         guard let day = plan.day else { return plan }
         guard review.destination != .none, let template else {
@@ -163,6 +198,12 @@ struct CaptureFilingPlan {
             plan.deadline = Deadline(blueprint: blueprint, day: day, action: .renew(obligationID: existing.id), reminders: existing.reminders)
             return plan
         }
+        // A bill already logged here whose reminder is no longer running (paid, or taken
+        // away): another photo of it never asks to be paid a second time.
+        if profile.deadlineIsOptIn, let filed = plan.filedBill, let section, filed.subscriptionID == section.id {
+            plan.quiet = .billFiledBefore
+            return plan
+        }
         guard blueprint.isWorthScheduling(on: day, today: today, values: values) else {
             plan.quiet = .dayPassed
             return plan
@@ -178,7 +219,7 @@ struct CaptureFilingPlan {
     /// new one saving makes, named as it will be.
     @MainActor
     static func meter(for review: CaptureReview, section: Asset?, templateKey: String?, templates: [String: CategoryTemplate],
-                      assets: [Asset], today: CalendarDay, calendar: Calendar) -> Meter? {
+                      assets: [Asset], readingFiledBefore: UUID?, today: CalendarDay, calendar: Calendar) -> Meter? {
         guard let index = review.value(.meterIndex), SubscriptionMeter.number(index) != nil, review.destination != .none,
               let templateKey, templates.plays(.subscription, templateKey), let template = templates[templateKey] else { return nil }
         // The subscription's values as saving leaves them: a bill only fills what is still empty.
@@ -187,13 +228,50 @@ struct CaptureFilingPlan {
         guard let service = SubscriptionFields.service(of: values) else { return .unknownService }
         guard let reading = SubscriptionMeter.reading(index, service: service, day: CaptureFiler.billDay(review, today: today)) else { return nil }
         let name = section?.name ?? CaptureFiler.subscriptionName(review)
-        // The same bill filed again: the reading its document recorded is already there.
-        if let section, let kept = review.duplicateAttachmentID,
-           let log = assets.lazy.flatMap({ $0.measurements ?? [] }).first(where: { ($0.attachments ?? []).contains { $0.id == kept } }),
-           log.asset?.id == section.id, reading.isRecorded(by: log, calendar: calendar) {
+        // The same bill filed again: the reading it recorded is already there.
+        if let section, let earlier = readingFiledBefore,
+           let log = section.measurements?.first(where: { $0.id == earlier && !$0.isDeleted }),
+           reading.isRecorded(by: log, calendar: calendar) {
             return .alreadyKept(reading, subscription: name)
         }
         return .record(reading, subscription: name)
+    }
+
+    /// The bill already in the binder that `review` files, by the one rule (`BillIdentity`):
+    /// the same document's own entry wherever it is now (it moves with the bill), else, in
+    /// the subscription saving files into, the entry of the same bill read from another photo,
+    /// unless the person said it is another bill. Nil for anything that isn't a bill.
+    @MainActor
+    static func filedBill(for review: CaptureReview, section: Asset?, templates: [String: CategoryTemplate], assets: [Asset],
+                          today: CalendarDay, calendar: Calendar) -> FiledBill? {
+        guard review.kind.profile.deadlineIsOptIn else { return nil }
+        func filed(_ entry: HistoryEntry, _ match: FiledBill.Match) -> FiledBill {
+            FiledBill(entryID: entry.id, match: match, subscriptionID: entry.asset?.id, subscription: entry.asset?.name ?? "",
+                      day: CalendarDay(entry.occurredAt, calendar: calendar))
+        }
+        if let kept = review.duplicateAttachmentID,
+           let document = assets.lazy.flatMap({ $0.attachments ?? [] }).first(where: { $0.id == kept }),
+           let entry = document.historyEntry, !entry.isDeleted, !entry.isCompletion, entry.kind == .payment,
+           let owner = entry.asset, templates.plays(.subscription, owner.templateKey) {
+            return filed(entry, .sameDocument)
+        }
+        guard !review.isAnotherBill, let section, templates.plays(.subscription, section.templateKey) else { return nil }
+        let bill = BillIdentity(number: review.value(.invoiceNumber)?.text, day: CaptureFiler.billDay(review, today: today), total: review.total)
+        guard let found = bill.filed(among: BillIdentity.bills(of: section), identity: { BillIdentity(entry: $0, calendar: calendar) }) else { return nil }
+        return filed(found.bill, found.match == .number ? .number : .dayAndTotal)
+    }
+
+    /// The meter reading the bill recorded before: the same document's, else one a document of
+    /// the bill's entry recorded on a subscription.
+    @MainActor
+    static func readingFiledBefore(review: CaptureReview, filedBill: FiledBill?, templates: [String: CategoryTemplate], assets: [Asset]) -> UUID? {
+        let documents = assets.lazy.flatMap { $0.attachments ?? [] }
+        let entry = filedBill.flatMap { filed in assets.lazy.flatMap { $0.history ?? [] }.first { $0.id == filed.entryID } }
+        let candidates = (review.duplicateAttachmentID.flatMap { kept in documents.first { $0.id == kept } }.map { [$0] } ?? [])
+            + (entry?.attachments ?? [])
+        return candidates.lazy.compactMap(\.measurement).first { log in
+            !log.isDeleted && log.asset.map { templates.plays(.subscription, $0.templateKey) } == true
+        }?.id
     }
 
     /// The section's deadline from `blueprint` that a document moves: the running one, or,

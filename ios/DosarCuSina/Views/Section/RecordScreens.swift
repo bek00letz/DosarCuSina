@@ -46,6 +46,14 @@ private struct HistoryEntryContent: View {
                             .accessibilityAddTraits(.isHeader)
                         Text(verbatim: details)
                             .dsFont(.subheadline, numeric: true)
+                        if let reference = entry.reference?.trimmingCharacters(in: .whitespacesAndNewlines), !reference.isEmpty {
+                            // The number printed on the paper this records (a bill's invoice number).
+                            Text(entry.kind == .payment
+                                 ? String(localized: "Factura nr. \(reference)", comment: "A bill's invoice number on its history page.")
+                                 : String(localized: "Nr. \(reference)", comment: "The number of the paper a history entry records."))
+                                .dsFont(.subheadline, numeric: true)
+                                .textSelection(.enabled)
+                        }
                         if !entry.effectiveCost.isEmpty {
                             Text(verbatim: entry.effectiveCost.formatted())
                                 .dsFont(.display, numeric: true)

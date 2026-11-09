@@ -212,7 +212,7 @@ struct SubscriptionFilingTests {
         #expect(gas.parent?.id == pipera.id)
         #expect(gas.templateKey == BuiltInTemplates.Key.subscription)
 
-        let next = try await save(gasBill(issued: "2026-11-05", due: "2026-11-28", total: "130.00"), context, on: "2026-11-06")
+        let next = try await save(gasBill(issued: "2026-11-05", due: "2026-11-28", total: "130.00", number: "EX 000000002"), context, on: "2026-11-06")
         #expect(next.asset?.id == gas.id, "Now the CLC finds it by itself")
     }
 
