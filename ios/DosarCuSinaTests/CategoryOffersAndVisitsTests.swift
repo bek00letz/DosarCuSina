@@ -70,6 +70,27 @@ struct CategoryOffersAndVisitsTests {
         #expect(try store.template(forKey: BuiltInTemplates.Key.documents)?.behavior.role == .personalDocument)
     }
 
+    // MARK: Urmează
+
+    @Test("The missing-bill notes read the sections of every category that plays a subscription's part")
+    func subscriptionsAreFoundByRole() throws {
+        let context = try makeContext()
+        let store = TemplateStore(context: context)
+        let actions = AssetActions(context: context)
+        let subscription = try #require(try store.template(withRole: .subscription))
+        let vehicle = try #require(try store.template(forKey: BuiltInTemplates.Key.vehicle))
+        let plan = try actions.create(name: "Abonament telefon", template: subscription, values: FieldValues())
+        _ = try actions.create(name: "VW Golf 2018", template: vehicle, values: FieldValues())
+        #expect(try BillWatchSnapshot.fetchAll(in: context).map(\.id) == [plan.id])
+
+        let lines = try store.createCustom(name: "Linii", symbol: "antenna.radiowaves.left.and.right", switches: .defaults)
+        lines.behavior.role = .subscription
+        try UnitOfWork.save(context)
+        let line = try actions.create(name: "Linie fixă", template: lines, values: FieldValues())
+        #expect(Set(try BillWatchSnapshot.fetchAll(in: context).map(\.id)) == [plan.id, line.id])
+        #expect(try store.keys(playing: .subscription) == [BuiltInTemplates.Key.subscription, lines.key])
+    }
+
     // MARK: Visit wording
 
     @Test("Each built-in words its visits as it did when code chose the wording")

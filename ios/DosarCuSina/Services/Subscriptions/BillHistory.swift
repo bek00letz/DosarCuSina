@@ -140,12 +140,13 @@ public struct BillWatchSnapshot: Hashable, Sendable, Identifiable {
         self.isExample = isExample
     }
 
-    /// Every subscription in the binder, as snapshots.
+    /// Every subscription in the binder (the sections of a category that plays
+    /// `.subscription`), as snapshots.
     @MainActor
     public static func fetchAll(in context: ModelContext, calendar: Calendar = .current) throws -> [BillWatchSnapshot] {
-        let key = BuiltInTemplates.Key.subscription
-        let subscriptions = try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.templateKey == key }))
         let templates = try TemplateStore(context: context).templatesByKey()
+        let keys = Array(templates.values.keys(playing: .subscription))
+        let subscriptions = try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { keys.contains($0.templateKey) }))
         return subscriptions.map { asset in
             let values = asset.values
             return BillWatchSnapshot(
