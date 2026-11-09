@@ -137,13 +137,20 @@ public enum RomanianFieldExtractor {
     }
 
     /// An amount: `1.234,56`, `1 234,56` (space groups only with decimals), `1,234.56`, `350`, `350,00`.
-    static let amountPattern = #"(?<![\d.,])(\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?|\d{1,3}(?: \d{3})+,\d{1,2}|\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?|\d+(?:[.,]\d{1,2})?)(?!\d|[.,]\d)"#
+    /// Digits glued to letters are never an amount: a bonus-malus class ("B6"), an instalment
+    /// ("R1"), a product code ("5W30"). Only a currency may touch it ("350lei", "RON350").
+    static let amountPattern = #"(?<![\d.,])(?:(?<=lei|ron|eur)|(?<!\p{L}))(\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?|\d{1,3}(?: \d{3})+,\d{1,2}|\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?|\d+(?:[.,]\d{1,2})?)(?!\d|[.,]\d)(?:(?=(?:lei|ron|eur|euro)(?!\p{L}))|(?!\p{L}))"#
+
+    /// A currency written right after an amount.
+    private static let currencyAfter = #"^\s*(?:lei|ron|eur|euro|usd|€|\$)(?!\p{L})"#
 
     struct AmountMatch {
         let amount: Decimal
         /// Read by the Romanian rule where another reading was possible ("3,750"): "Verifică".
         let isAmbiguous: Bool
         let range: Range<String.Index>
+        /// Its currency is written right after it ("1234.56 LEI"): an amount the line states.
+        var hasCurrency = false
     }
 
     /// Amounts on a line, skipping anything that is part of a date.
@@ -152,8 +159,24 @@ public enum RomanianFieldExtractor {
         return TextPattern.matches(amountPattern, in: line).compactMap { match in
             guard !dateRanges.contains(where: { $0.overlaps(match.range) }),
                   let raw = match[1], let reading = amount(raw) else { return nil }
-            return AmountMatch(amount: reading.value, isAmbiguous: reading.needsCheck, range: match.range)
+            let currency = TextPattern.first(currencyAfter, in: String(line[match.range.upperBound...])) != nil
+            return AmountMatch(amount: reading.value, isAmbiguous: reading.needsCheck, range: match.range, hasCurrency: currency)
         }
+    }
+
+    /// The amount a label states, from the text after it: the first amount followed by its
+    /// currency ("Prima de asigurare 1234.56 LEI, Clasă Bonus-Malus: B6"), else the last.
+    static func statedAmount(in matches: [AmountMatch]) -> AmountMatch? {
+        matches.first(where: \.hasCurrency) ?? matches.last
+    }
+
+    /// Whether an amount on the line under a label is that label's value: nothing but a
+    /// currency comes before it on its line. "Nr. rate 1 Valoare rate R1: 1234.56 Lei" is
+    /// another label's value, never the one above it.
+    static func standsAlone(_ match: AmountMatch, inLine line: String) -> Bool {
+        let before = String(line[..<match.range.lowerBound])
+            .replacingOccurrences(of: #"(?<!\p{L})(?:lei|ron|eur|euro|usd)(?!\p{L})"#, with: "", options: [.regularExpression, .caseInsensitive])
+        return !before.contains(where: \.isLetter)
     }
 
     /// The currency named on a line, if any.
@@ -189,11 +212,15 @@ public enum RomanianFieldExtractor {
             let line = text.folded[index]
             let labelEnd = labels.compactMap { line.range(of: $0)?.upperBound }.min() ?? line.startIndex
             let onLine = amounts(inLine: line).filter { $0.range.lowerBound >= labelEnd }
-            if let last = onLine.last {
-                return (CaptureMoney(amount: last.amount, currencyCode: currency(inLine: line) ?? fallbackCurrency), last.isAmbiguous)
+            if let stated = statedAmount(in: onLine) {
+                return (CaptureMoney(amount: stated.amount, currencyCode: currency(inLine: line) ?? fallbackCurrency), stated.isAmbiguous)
             }
-            if index + 1 < text.folded.count, let next = amounts(inLine: text.folded[index + 1]).last {
-                return (CaptureMoney(amount: next.amount, currencyCode: currency(inLine: text.folded[index + 1]) ?? fallbackCurrency), next.isAmbiguous)
+            // The value under its label, never another label's on the next line.
+            if index + 1 < text.folded.count {
+                let nextLine = text.folded[index + 1]
+                if let next = amounts(inLine: nextLine).first, standsAlone(next, inLine: nextLine) {
+                    return (CaptureMoney(amount: next.amount, currencyCode: currency(inLine: nextLine) ?? fallbackCurrency), next.isAmbiguous)
+                }
             }
             return nil
         }
@@ -309,8 +336,15 @@ public enum RomanianFieldExtractor {
         return nil
     }
 
-    /// Invoice series and number ("Factura seria ABC nr. 12345", "Nr. factură: XYZ-2026-0001").
-    static func invoiceNumber(in text: CaptureText) -> (value: String, source: String)? {
+    /// Invoice series and number ("Factura seria ABC nr. 12345", "Nr. factură: XYZ-2026-0001"),
+    /// read by the one rule for values printed in parts.
+    static func invoiceNumber(in text: CaptureText) -> CompositeValue.Found? {
+        CompositeLabels.read(.invoice, labels: CompositeLabels.invoice, in: text)
+    }
+
+    /// The reading before values printed in parts had one rule, kept switched off until
+    /// that rule is proven on real documents (`invoiceNumber(in:)` replaces it).
+    static func legacyInvoiceNumber(in text: CaptureText) -> (value: String, source: String)? {
         let patterns = [
             #"(?:factura|factura fiscala|invoice)[^\n]*?seri[ae]\s*[:.]?\s*([a-z]{1,6})\s*(?:nr\.?|numar|no\.?)\s*[:.]?\s*([a-z0-9-]{2,20})"#,
             #"seri[ae]\s*[:.]?\s*([a-z]{1,6})\s*(?:nr\.?|numar)\s*[:.]?\s*(\d{2,12})"#,
@@ -411,8 +445,20 @@ public enum RomanianFieldExtractor {
         return nil
     }
 
-    /// The insurance policy's series and number, after a policy label.
-    static func policyNumber(in text: CaptureText) -> (value: String, source: String)? {
+    /// The insurance policy's series and number, as one value, wherever and however they
+    /// are printed (`CompositeValue`, `CompositeLabels.policy`).
+    static func policyNumber(in text: CaptureText) -> CompositeValue.Found? {
+        CompositeLabels.read(.policy, labels: CompositeLabels.policy, in: text)
+    }
+
+    /// The vehicle identity card's (CIV) series and number, as one value.
+    static func civNumber(in text: CaptureText) -> CompositeValue.Found? {
+        CompositeLabels.read(.vehicleCard, labels: CompositeLabels.vehicleCard, in: text)
+    }
+
+    /// The reading before values printed in parts had one rule, kept switched off until
+    /// that rule is proven on real documents (`policyNumber(in:)` replaces it).
+    static func legacyPolicyNumber(in text: CaptureText) -> (value: String, source: String)? {
         let labels = ["seria si numarul", "seria si nr", "nr. polita", "nr polita", "numar polita", "numarul politei", "polita nr", "polita seria", "polita rca seria", "serie polita"]
         for index in text.lines(containing: labels) {
             let original = text.original[index]

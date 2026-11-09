@@ -348,7 +348,7 @@ public final class CaptureEngine: Sendable {
             settled = settle(source, as: kind, analysis: nil)
         } else {
             // A result made by hand has no text to read again: what it has, as this kind allows.
-            settled = Settled(fields: result.fields.filter { kind.allows($0.key) },
+            settled = Settled(fields: CompositeValue.reconcile(result.fields, kind: kind).filter { kind.allows($0.key) },
                               alternatives: result.fieldAlternatives.filter { kind.allows($0.key) }, notices: [])
         }
         let structural = result.notices.filter { $0 != .valueFailedCheck && $0 != .identityBackMissing }
@@ -391,8 +391,10 @@ public final class CaptureEngine: Sendable {
         /// Set when a value falls outside its window or breaks a rule with another.
         var failedCheck = false
         func plausible(_ fields: [CaptureField]) -> [CaptureField] {
-            let kept = CaptureConsistency.plausible(fields, kind: kind, today: today)
-            if kept != fields { failedCheck = true }
+            // Each reader's own number written the one way, its stray "document number" folded in.
+            let reconciled = CompositeValue.reconcile(fields, kind: kind)
+            let kept = CaptureConsistency.plausible(reconciled, kind: kind, today: today)
+            if kept != reconciled { failedCheck = true }
             return kept
         }
         var fields = FieldMerger.merge(plausible(analysis.fields), with: plausible(source.modelFields))

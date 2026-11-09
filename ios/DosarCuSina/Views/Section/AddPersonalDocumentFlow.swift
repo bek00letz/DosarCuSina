@@ -165,7 +165,7 @@ private struct PersonalDocumentForm: View {
         .navigationTitle(Text("Scriu eu", comment: "Title of the screen where a document is typed in by hand."))
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {
-            BottomBar {
+            DSBottomBar {
                 DSPrimaryButton("Salvează", systemImage: "checkmark") { requestSave() }
             }
         }

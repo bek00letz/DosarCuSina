@@ -69,8 +69,9 @@ enum ContractReader {
         var fields: [CaptureField] = []
         let layout = LabelledLayout(text: text, words: labels)
         let raw = text.joinedOriginal
-        if let found = layout.found(for: .contractNumber), let number = code(in: found.value) {
-            fields.append(field(.contractNumber, .text(number), 0.7, found.source))
+        // The contract's number, by the one rule for values printed in parts (`CompositeValue`).
+        if let found = layout.composite(.contract, for: .contractNumber) {
+            fields.append(field(.contractNumber, .text(found.value), found.quality == .conflicting ? found.quality.confidence : 0.7, found.source))
         }
         if let found = layout.found(for: .clientCode), let number = code(in: found.value) {
             fields.append(field(.clientCode, .text(number), 0.7, found.source))
