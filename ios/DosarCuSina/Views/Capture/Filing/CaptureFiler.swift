@@ -462,23 +462,29 @@ struct CaptureFiler {
     /// the document does ("Am rezolvat" on a CASCO).
     private func writeValues(of review: CaptureReview, to asset: Asset, templates: [String: CategoryTemplate], deadline: ObligationBlueprint? = nil) throws {
         guard let template = templates[asset.templateKey] else { return }
-        var merged = asset.values
-        var changed = false
         let read = Self.values(from: review, for: template.definition, deadline: deadline ?? review.deadlineBlueprint(in: template.definition))
-        for (key, value) in read where merged[key] != value {
-            // "B 123 ABC" read off a policy doesn't rewrite the "B-123-ABC" the person typed.
-            if let old = merged[key]?.textValue, let new = value.textValue,
-               CaptureMapping.normalizedIdentifier(old) == CaptureMapping.normalizedIdentifier(new) { continue }
-            merged[key] = value
-            changed = true
-        }
-        if changed {
+        let merged = Self.merging(read, into: asset.values)
+        if merged != asset.values {
             // A reading on the document (the kilometres on an invoice) is dated by the document.
             try AssetActions(context: context, calendar: calendar, now: now).update(
                 asset, name: asset.name, values: merged, notes: asset.notes,
                 readingSource: .document, readingDate: review.documentDay?.noonDate(in: calendar), lowerReading: lowerReading
             )
         }
+    }
+
+    /// What a reading brings to values already kept: what was read replaces what was there,
+    /// except a value that only differs in how it's written ("B 123 ABC" read off a policy
+    /// doesn't rewrite the "B-123-ABC" the person typed). The one rule for filing onto a
+    /// section and for reading a filed document again (`DocumentReading`).
+    static func merging(_ read: FieldValues, into current: FieldValues) -> FieldValues {
+        var merged = current
+        for (key, value) in read where merged[key] != value {
+            if let old = merged[key]?.textValue, let new = value.textValue,
+               CaptureMapping.normalizedIdentifier(old) == CaptureMapping.normalizedIdentifier(new) { continue }
+            merged[key] = value
+        }
+        return merged
     }
 
     /// The one rule for what a new document's date does to the deadline it renews,

@@ -17,6 +17,38 @@ public struct PictureChange: Sendable {
     }
 }
 
+/// Pages to go after a filed document's own (the back of a card), as capture prepared
+/// them: each as taken, with how it is shown. Made before a unit of work opens.
+public struct AddedPages: Sendable, Equatable {
+    public let images: [Data]
+    public let framing: [PageFraming]
+
+    public init(images: [Data], framing: [PageFraming]) {
+        self.images = images
+        self.framing = framing
+    }
+
+    /// Why pages can't be added.
+    public enum Refusal: LocalizedError, Equatable {
+        /// The document is kept as one PDF, with its own pages.
+        case keptWhole
+        /// The document's type keeps no back (`DocumentType.keepsBackSide`): a bank card's
+        /// back shows its security code, which the binder never keeps.
+        case noBackSide
+
+        public var errorDescription: String? {
+            switch self {
+            case .keptWhole:
+                String(localized: "Actul e păstrat ca PDF, cu paginile lui. Adaugă spatele ca act separat.",
+                       comment: "Adding the back to a document kept as a PDF was refused.")
+            case .noBackSide:
+                String(localized: "Pentru acest tip de act nu se păstrează spatele.",
+                       comment: "Adding the back to a document whose type keeps no back (a bank card) was refused.")
+            }
+        }
+    }
+}
+
 extension DocumentPages {
     /// A filed document's pages as `framing` would show them.
     @MainActor
@@ -68,6 +100,42 @@ extension AttachmentActions {
     func apply(_ change: PictureChange, to attachment: Attachment) {
         attachment.framing = change.framing
         if let thumbnail = change.thumbnail { attachment.thumbnailData = thumbnail }
+    }
+
+    /// Adds `pages` after the document's own (the back of a card), as capture prepared
+    /// them, with the text read off the whole document now. Its pages as taken never
+    /// change, and its fingerprint stays the one capture gave it, so the same front photo
+    /// shared again is still known as this document. Saves through the unit it runs in:
+    /// the document page saves it with the values in one step (`AssetActions.editDocument`).
+    public func addPages(_ pages: AddedPages, to attachment: Attachment) throws {
+        guard !pages.images.isEmpty else { return }
+        guard attachment.takesMorePages else { throw AddedPages.Refusal.keptWhole }
+        // A personal document takes a back only when its type keeps one; the rule holds here,
+        // whatever screen asks.
+        if let type = attachment.asset?.values[DocumentType.typeFieldKey]?.textValue,
+           !DocumentType.keepsBackSide(type) {
+            throw AddedPages.Refusal.noBackSide
+        }
+        let position = attachment.orderedPages.count
+        let nextIndex = (attachment.orderedPages.last?.index ?? -1) + 1
+        var framing = attachment.framing
+        for (offset, image) in pages.images.enumerated() {
+            let page = AttachmentPage(index: nextIndex + offset, imageData: image)
+            context.insert(page)
+            page.attachment = attachment
+            framing[page: position + offset] = pages.framing.indices.contains(offset) ? pages.framing[offset] : .plain
+        }
+        attachment.framing = framing
+        attachment.byteCount += pages.images.reduce(0) { $0 + $1.count }
+        try UnitOfWork.save(context)
+    }
+
+    /// Keeps the text read off a document again (no card number, whoever read it).
+    public func setReadText(_ text: String, of attachment: Attachment) throws {
+        let text = PaymentCardNumbers.redact(text)
+        guard attachment.extractedText != text else { return }
+        attachment.extractedText = text
+        try UnitOfWork.save(context)
     }
 
     private func setFraming(_ attachment: Attachment, _ framing: DocumentFraming) async throws -> UndoReceipt {

@@ -190,6 +190,7 @@ enum ChildSummary {
 struct DocumentsPocket: View {
     let asset: Asset
     @Environment(ShellRouter.self) private var router
+    @Environment(BiometricVaultManager.self) private var vault
     @Query private var templates: [CategoryTemplate]
 
     /// What a category does, by key.
@@ -207,15 +208,18 @@ struct DocumentsPocket: View {
             .sorted { expiry($0) < expiry($1) }
         let papers = (asset.attachments ?? []).filter { !$0.isArchived }.sorted { $0.createdAt > $1.createdAt }
         let rows: [DocumentRowItem] = personal.map { .personal($0) } + papers.map { .paper($0) }
+        // A person's own documents are all listed, each one tap from its page; papers
+        // follow, a few at a time like any pocket's.
+        let shown = DocumentsPocket.shownCount(personal: personal.count, papers: papers.count, isHolder: behavior(asset.templateKey).role == .holder)
         DSPocketCard(SectionPocket.documents.title, count: rows.isEmpty ? nil : rows.count) {
             if rows.isEmpty {
                 PocketEmptyLine(text: String(localized: "Niciun document. Scanează polița, factura sau certificatul și le găsești aici.", comment: "Empty Acte pocket."))
             }
-            ForEach(Array(rows.prefix(3).enumerated()), id: \.element.id) { index, row in
+            ForEach(Array(rows.prefix(shown).enumerated()), id: \.element.id) { index, row in
                 if index > 0 { DSRowSeparator() }
-                DocumentRowLink(item: row)
+                DocumentRowLink(item: row, showsPicture: showsPicture(row))
             }
-            if rows.count > 3 {
+            if rows.count > shown {
                 DSRowSeparator()
                 NavigationLink(value: SectionListRoute.documents(asset.id)) {
                     DSSeeAllRow(count: rows.count)
@@ -238,6 +242,22 @@ struct DocumentsPocket: View {
     }
 }
 
+extension DocumentsPocket {
+    /// How many rows the pocket lists before "Vezi tot": every one of a person's own
+    /// documents, then at most three papers; three in all on any other page.
+    static func shownCount(personal: Int, papers: Int, isHolder: Bool) -> Int {
+        isHolder ? personal + min(papers, 3) : min(personal + papers, 3)
+    }
+
+    /// A personal document's row shows its own picture while its category is open, and
+    /// never a bank card's (its picture shows the whole number).
+    private func showsPicture(_ row: DocumentRowItem) -> Bool {
+        guard case .personal(let document) = row else { return false }
+        let template = templates.first { $0.key == document.templateKey }
+        return !(template.map { vault.isLocked($0) } ?? false) && DocumentPageFacts.showsPicture(in: document.values)
+    }
+}
+
 /// A personal document (an asset) or a scanned paper (an attachment).
 enum DocumentRowItem: Identifiable {
     case personal(Asset)
@@ -253,15 +273,20 @@ enum DocumentRowItem: Identifiable {
 
 struct DocumentRowLink: View {
     let item: DocumentRowItem
+    /// A personal document's row shows its own picture in place of the symbol (only where
+    /// its category is open, and never for a bank card: `DocumentsPocket.showsPicture`).
+    var showsPicture = false
 
     var body: some View {
         switch item {
         case .personal(let document):
+            // One tap: the document's own page, picture first.
             NavigationLink(value: AppRoute.asset(document.id)) {
                 DSListRow(
                     title: Text(verbatim: document.name),
                     subtitle: DocumentSummary.line(document.values).map { Text(verbatim: $0) },
                     systemImage: "person.text.rectangle",
+                    thumbnail: showsPicture ? DSThumbnailWell(image: picture(of: document), systemImage: "person.text.rectangle") : nil,
                     showsChevron: true
                 ) {
                     if let day = document.value(DocumentFields.expiry)?.dateValue { ExpiryBadge(day: day, rule: DateUrgency.rule(for: day, on: document)) }
@@ -283,6 +308,13 @@ struct DocumentRowLink: View {
             }
             .buttonStyle(.dsPressable)
         }
+    }
+
+    /// The small picture of the document's own first page, as it is shown.
+    private func picture(of document: Asset) -> Image? {
+        DocumentPageFacts.currentPicture(of: document)?.thumbnailData
+            .flatMap(UIImage.init(data:))
+            .map { Image(uiImage: $0) }
     }
 }
 

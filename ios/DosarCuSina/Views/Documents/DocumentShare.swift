@@ -64,18 +64,30 @@ extension View {
     }
 }
 
-/// "Trimite" as a full-width button, for a document's page.
+/// "Trimite" as a full-width button, for a document's page: filled when it is the page's
+/// main action (the picture's own, beside it), bordered otherwise.
 struct DocumentShareButton: View {
     let attachment: Attachment
+    var prominent = false
     @Environment(\.modelContext) private var context
     @State private var request: DocumentShareRequest?
 
     var body: some View {
-        DSSecondaryButton(Text("Trimite", comment: "Sends a copy of a document's pictures to someone."), systemImage: "square.and.arrow.up") {
-            request = DocumentShareRequest(attachment: attachment, context: context)
+        Group {
+            if prominent {
+                DSPrimaryButton(title, systemImage: "square.and.arrow.up", action: share)
+            } else {
+                DSSecondaryButton(title, systemImage: "square.and.arrow.up", action: share)
+            }
         }
         .accessibilityHint(Text("Alegi ce pagini trimiți, ca poze sau ca PDF.", comment: "VoiceOver hint of the share button."))
         .documentShare($request)
+    }
+
+    private var title: Text { Text("Trimite", comment: "Sends a copy of a document's pictures to someone.") }
+
+    private func share() {
+        request = DocumentShareRequest(attachment: attachment, context: context)
     }
 }
 

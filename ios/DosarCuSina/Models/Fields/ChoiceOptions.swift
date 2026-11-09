@@ -196,6 +196,25 @@ public enum DocumentType {
         return sharedWithCare.contains(key)
     }
 
+    // MARK: Sides
+
+    /// The types printed on both sides, whose back is worth keeping beside the front: an
+    /// identity card (the code that confirms its data), a driving licence (its categories),
+    /// the health cards; and "Alt document", which the person knows. Data, read by the document
+    /// page's "Adaugă spatele".
+    ///
+    /// Never a bank card: its back shows the security code, which the binder never keeps.
+    /// A passport's and a cazier's pages are pages, not a back.
+    public static let keepsBackSide: Set<String> = [idCard, drivingLicence, euHealthCard, nationalHealthCard, other]
+
+    /// Whether a document of this type (its key, or a label stored by an earlier version)
+    /// has a back worth adding. A document with no type yet counts as "Alt document".
+    public static func keepsBackSide(_ type: String?) -> Bool {
+        guard let type, !type.isEmpty else { return keepsBackSide.contains(other) }
+        guard let key = options.option(for: type)?.key else { return false }
+        return keepsBackSide.contains(key)
+    }
+
     // MARK: Validity
 
     /// How long a kind of document is valid after it is issued, in months, when that is a

@@ -67,6 +67,16 @@ private struct SectionContent: View {
     private var template: CategoryTemplate? { templates.first }
 
     var body: some View {
+        // A personal document opens as its document's page: the picture first, its values,
+        // "Editează". The section page below is kept for it, switched off, as the way back.
+        if DocumentPageLayout.opensAsDocumentPage(role: (template?.definition ?? BuiltInTemplates.definition(for: asset.templateKey))?.behavior.role) {
+            PersonalDocumentPage(document: asset)
+        } else {
+            sectionPage
+        }
+    }
+
+    private var sectionPage: some View {
         Group {
             if let template, vault.isLocked(template) {
                 LockedSectionView(title: asset.name)
@@ -194,7 +204,7 @@ private struct SectionContent: View {
 }
 
 /// One pocket of a section page.
-private struct PocketView: View {
+struct PocketView: View {
     let pocket: SectionPocket
     let asset: Asset
     let definition: TemplateDefinition
@@ -227,7 +237,7 @@ private struct PocketView: View {
 
 /// On a document that has no picture yet: "Adaugă poza actului", front and
 /// centre. The photo goes through capture, which fills in what it reads.
-private struct DocumentPhotoPrompt: View {
+struct DocumentPhotoPrompt: View {
     let asset: Asset
     @Binding var toast: DSToast?
 
@@ -270,7 +280,7 @@ private struct DocumentPhotoPrompt: View {
 
 /// The asset's secret fields (an electronic identity card's PIN codes), masked.
 /// Showing or copying one asks for Face ID every time, even with the section open.
-private struct SecretFieldsCard: View {
+struct SecretFieldsCard: View {
     let asset: Asset
     let definition: TemplateDefinition
 
