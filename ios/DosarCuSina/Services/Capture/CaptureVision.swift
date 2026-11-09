@@ -243,7 +243,7 @@ public struct DocumentImageNormalizer: CapturePagePreparing {
     /// The long edge a prepared page is enlarged to, at most three times its size.
     static let readableLongEdge = 2000
 
-    public func prepare(_ image: CGImage) async -> CGImage {
+    public func prepare(_ image: CGImage) async -> PreparedPage {
         let size = CGSize(width: image.width, height: image.height)
         let card = await Self.cardRectangle(in: image)
         let document = await Self.documentQuad(in: image)
@@ -271,7 +271,8 @@ public struct DocumentImageNormalizer: CapturePagePreparing {
         var page = PreparedPage(image: flattened ?? image, framing: PageFraming(crop: crop))
         if isCard, page.image.height > page.image.width {
             // A quarter turn either way; the one where more text reads is upright.
-            page = await Self.mostReadable([3, 1].compactMap { Self.turning(page, by: $0) }) ?? page
+            let flat = page
+            page = await Self.mostReadable([3, 1].compactMap { Self.turning(flat, by: $0) }) ?? flat
         }
         CaptureLog.engine.info("Prepared page: card \(isCard), corrected \(crop != nil), turned \(page.framing.quarterTurns), \(Int(size.width))×\(Int(size.height)) → \(page.image.width)×\(page.image.height)")
         return PreparedPage(image: ImageScaling.upscaled(page.image, toLongEdge: Self.readableLongEdge) ?? page.image, framing: page.framing)

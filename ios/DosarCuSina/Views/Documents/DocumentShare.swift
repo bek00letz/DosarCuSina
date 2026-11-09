@@ -195,16 +195,16 @@ struct DocumentShareSheet: View {
 
     /// Face ID first for a locked category, then the files, then the share sheet.
     private func send() {
+        guard !isPreparing else { return }
         failure = nil
+        isPreparing = true
         let request = request
         let choice = choice
         Task {
-            if request.isFromLockedCategory {
-                let reason = String(localized: "Confirmă că vrei să trimiți actul.", comment: "Face ID reason before a document from a locked category is shared.")
-                guard await vault.confirmSharing(fromLockedCategory: true, reason: reason) == .success else { return }
-            }
-            isPreparing = true
             defer { isPreparing = false }
+            let reason = String(localized: "Confirmă că vrei să trimiți actul.", comment: "Face ID reason before a document from a locked category is shared.")
+            // A cancelled or failed Face ID leaves the choice as it was, to try again.
+            guard await vault.confirmSharing(fromLockedCategory: request.isFromLockedCategory, reason: reason) == .success else { return }
             do {
                 let urls = try await Task.detached(priority: .userInitiated) {
                     DocumentShareFiles.removeLeftovers()

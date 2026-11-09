@@ -105,8 +105,8 @@ public enum DocumentPicture {
         case .image(let data):
             // A cut-out is a part of the photo: decode the photo whole so the part stays sharp.
             guard let photo = PageImageDecoding.decode(data, maxLongEdge: source.framing.showsCrop ? nil : maxLongEdge) else { return nil }
-            let shown = shown(photo, framing: source.framing)
-            return maxLongEdge.flatMap { ImageEncoding.scaled(shown, maxLongEdge: $0) } ?? shown
+            let picture = shown(photo, framing: source.framing)
+            return maxLongEdge.flatMap { ImageEncoding.scaled(picture, maxLongEdge: $0) } ?? picture
         case .pdf(let data, let index):
             guard let document = PDFPageRendering.document(data), let page = document.page(at: index + 1) else { return nil }
             let turns = source.framing.shownQuarterTurns
@@ -281,8 +281,8 @@ public enum PDFPageRendering {
     public static func render(_ page: CGPDFPage, quarterTurns: Int, rect: CGRect? = nil, pixelsPerPoint: CGFloat) -> CGImage? {
         let box = page.getBoxRect(.cropBox)
         guard box.width > 0, box.height > 0, pixelsPerPoint > 0 else { return nil }
-        let turns = turns(of: page, quarterTurns: quarterTurns)
-        let shown = PageTurn.size(box.size, quarterTurns: turns)
+        let pageTurns = turns(of: page, quarterTurns: quarterTurns)
+        let shown = PageTurn.size(box.size, quarterTurns: pageTurns)
         let area = (rect ?? CGRect(origin: .zero, size: shown)).intersection(CGRect(origin: .zero, size: shown))
         guard !area.isNull, area.width > 0, area.height > 0 else { return nil }
         var scale = pixelsPerPoint
@@ -294,7 +294,7 @@ public enum PDFPageRendering {
         context.interpolationQuality = .high
         context.scaleBy(x: CGFloat(width) / area.width, y: CGFloat(height) / area.height)
         context.translateBy(x: -area.minX, y: -(shown.height - area.maxY))
-        context.concatenate(PageTurn.transform(box: box, quarterTurns: turns))
+        context.concatenate(PageTurn.transform(box: box, quarterTurns: pageTurns))
         context.clip(to: box)
         context.drawPDFPage(page)
         return context.makeImage()

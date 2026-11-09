@@ -6,6 +6,9 @@ import SwiftData
 import Testing
 @testable import DosarCuSina
 
+/// The document's corners in a 1000 × 800 photo: an 800 × 400 card.
+private let cardCornersInPhoto = [PagePoint(x: 0.1, y: 0.1), PagePoint(x: 0.9, y: 0.1), PagePoint(x: 0.9, y: 0.6), PagePoint(x: 0.1, y: 0.6)]
+
 /// A document's picture: the cut-out of a library photo with the photo kept, the whole
 /// photo back, turning, PDF pages drawn sharp, and "Trimite". Placeholder data only.
 @MainActor
@@ -58,8 +61,7 @@ struct DocumentPicturesTests {
         return data as Data
     }
 
-    /// The document's corners in a 1000 × 800 photo: an 800 × 400 card.
-    static let cardCorners = [PagePoint(x: 0.1, y: 0.1), PagePoint(x: 0.9, y: 0.1), PagePoint(x: 0.9, y: 0.6), PagePoint(x: 0.1, y: 0.6)]
+    static var cardCorners: [PagePoint] { cardCornersInPhoto }
 
     static func folder() -> URL {
         FileManager.default.temporaryDirectory.appending(path: "share-tests-\(UUID().uuidString)", directoryHint: .isDirectory)
@@ -170,7 +172,7 @@ struct DocumentPicturesTests {
     /// Finds an 800 × 400 card in any photo, as `DocumentImageNormalizer` would.
     struct CroppingPreparer: CapturePagePreparing {
         func prepare(_ image: CGImage) async -> PreparedPage {
-            PreparedPage(image: CaptureDocumentStoreTests.page(width: 800, height: 400), framing: PageFraming(crop: DocumentPicturesTests.cardCorners))
+            PreparedPage(image: CaptureDocumentStoreTests.page(width: 800, height: 400), framing: PageFraming(crop: cardCornersInPhoto))
         }
         func retryVariant(of prepared: PreparedPage, original: CGImage) async -> PreparedPage? { nil }
     }
