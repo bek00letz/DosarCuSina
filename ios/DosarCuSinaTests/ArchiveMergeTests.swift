@@ -334,7 +334,10 @@ struct ArchiveMergeTests {
         let fresh = ModelContext(context.container)
         var all: [String: [String: RecordState]] = [:]
         for (name, type) in UndoableRecords.types {
-            all[name] = Dictionary(try states(of: type, in: fresh).map { (key(of: $0), $0) }, uniquingKeysWith: { first, _ in first })
+            let found: [RecordState] = try states(of: type, in: fresh)
+            var byKey: [String: RecordState] = [:]
+            for state in found where byKey[key(of: state)] == nil { byKey[key(of: state)] = state }
+            all[name] = byKey
         }
         return all
     }
@@ -351,7 +354,12 @@ struct ArchiveMergeTests {
 
     /// A new, empty record of every type, as it would be made.
     static var blankStates: [String: RecordState] {
-        Dictionary(uniqueKeysWithValues: UndoableRecords.types.map { ($0.key, blank($0.value)) })
+        var states: [String: RecordState] = [:]
+        for (name, type) in UndoableRecords.types {
+            let state: RecordState = blank(type)
+            states[name] = state
+        }
+        return states
     }
 
     private static func blank<M: UndoableRecord>(_ type: M.Type) -> RecordState {
