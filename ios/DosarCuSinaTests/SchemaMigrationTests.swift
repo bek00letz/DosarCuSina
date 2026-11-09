@@ -83,6 +83,67 @@ struct SchemaMigrationTests {
         #expect(five["Obligation"] != Self.versionFour["Obligation"], "A deadline knows whether the person set its reminders")
     }
 
+    /// Version 5 as it shipped: version 4 with whether the person set a deadline's reminders.
+    static let versionFive: [String: String] = versionFour.merging(["Obligation": "g6w9CXVyhDkfgNfidSWvzsICUSR70fTqF3h1Z55p2Y8="]) { $1 }
+
+    @Test func theFrozenVersionFiveKeepsTheShapeItShippedWith() {
+        #expect(Self.fingerprint(DosarSchemaV5.models) == Self.versionFive)
+    }
+
+    @Test func versionSixChangesOnlyDocuments() {
+        let six = Self.fingerprint(DosarSchemaV6.models)
+        for (entity, hash) in Self.versionFive where entity != "Attachment" {
+            #expect(six[entity] == hash, "\(entity) is as version 5 shipped it")
+        }
+        #expect(six["Attachment"] != Self.versionFive["Attachment"], "A document keeps how its pages are shown")
+    }
+
+    @Test func aStoreFromVersionFiveOpensWithItsDocuments() throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Dosar-v5.store")
+        let page = Data([0xFF, 0xD8, 0xFF, 0xD9])
+
+        // Written by version 5: an identity card's photo, as a phone has it today.
+        do {
+            let schema = Schema(versionedSchema: DosarSchemaV5.self)
+            let container = try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)])
+            let context = ModelContext(container)
+            let card = DosarSchemaV5.Asset(name: "Carte de identitate", templateKey: "documents")
+            let photo = DosarSchemaV5.Attachment(fileName: "Carte de identitate.heic")
+            photo.title = "Carte de identitate"
+            let front = DosarSchemaV5.AttachmentPage(index: 0)
+            front.imageData = page
+            let reminder = DosarSchemaV5.Obligation(title: "Reînnoire")
+            reminder.remindersCustomized = true
+            context.insert(card)
+            context.insert(photo)
+            context.insert(front)
+            context.insert(reminder)
+            photo.asset = card
+            front.attachment = photo
+            reminder.asset = card
+            try context.save()
+        }
+
+        // Opened by this version: the photo is kept as taken and shown whole, as before.
+        let container = try PersistenceController.makeContainer(storeURL: url)
+        let context = ModelContext(container)
+        let photo = try #require(try context.fetch(FetchDescriptor<DosarCuSina.Attachment>()).first)
+        #expect(photo.title == "Carte de identitate")
+        #expect(photo.orderedPages.first?.imageData == page)
+        #expect(photo.framingData == nil)
+        #expect(photo.framing.isPlain)
+        #expect(try context.fetch(FetchDescriptor<Obligation>()).first?.remindersCustomized == true)
+
+        // The new attribute is kept.
+        photo.framing = DocumentFraming(pages: [PageFraming(quarterTurns: 1)])
+        try UnitOfWork.save(context)
+        let reopened = ModelContext(try PersistenceController.makeContainer(storeURL: url))
+        #expect(try reopened.fetch(FetchDescriptor<DosarCuSina.Attachment>()).first?.framing[page: 0].shownQuarterTurns == 1)
+    }
+
     @Test func aStoreFromVersionFourOpensWithItsDeadlines() throws {
         let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
@@ -209,7 +270,7 @@ struct SchemaMigrationTests {
         #expect(firm.assets?.map(\.id) == [car.id])
         let template = try #require(try context.fetch(FetchDescriptor<CategoryTemplate>()).first)
         #expect(template.behavior == .standard, "A category from before version 3 behaves as standard until the built-ins are upgraded")
-        let policy = try #require(try context.fetch(FetchDescriptor<DosarSchemaV5.Attachment>()).first)
+        let policy = try #require(try context.fetch(FetchDescriptor<DosarSchemaV6.Attachment>()).first)
         #expect(policy.validUntil == nil)
         #expect(policy.asset?.id == car.id)
 

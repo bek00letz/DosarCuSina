@@ -186,10 +186,15 @@ struct CaptureFiler {
         try await openLockedSections(for: intent, keptDocument: ref?.keptAttachmentID.flatMap(documents.attachment(id:)))
         var document: CapturedDocument?
         if let ref { document = try await documents.resolve(ref, from: store) }
+        // A page the person turned, or the whole photo they chose, is drawn now too.
+        var pictures: PictureChange?
+        if case .review(let review) = intent, let document {
+            pictures = await documents.pictureChange(for: document, choices: review.pageChoices)
+        }
         // From here nothing waits: one step, everything or nothing.
         let filing = try UnitOfWork.performUndoable(in: context) {
             switch intent {
-            case .review(let review): try fileReview(review, document: document)
+            case .review(let review): try fileReview(review, document: document, pictures: pictures)
             case .completion(let completion): try fileCompletion(completion, document: document)
             case .visit(let visit): try fileVisit(visit, document: document)
             }
@@ -212,7 +217,7 @@ struct CaptureFiler {
 
     // MARK: Intents
 
-    private func fileReview(_ review: CaptureReview, document: CapturedDocument?) throws -> Outcome {
+    private func fileReview(_ review: CaptureReview, document: CapturedDocument?, pictures: PictureChange?) throws -> Outcome {
         let templates = try TemplateStore(context: context).templatesByKey()
         var outcome = Outcome()
         let today = CalendarDay(now(), calendar: calendar)
@@ -320,6 +325,7 @@ struct CaptureFiler {
             let title = review.title.trimmingCharacters(in: .whitespacesAndNewlines)
             let filed = try AttachmentActions(context: context, calendar: calendar).fileCaptured(
                 document,
+                pictures: pictures,
                 title: title.isEmpty ? nil : title,
                 kind: review.kind.profile.documentKind,
                 extractedText: review.result.recognizedText.isEmpty ? nil : review.result.recognizedText,

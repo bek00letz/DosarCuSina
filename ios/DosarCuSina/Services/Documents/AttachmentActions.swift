@@ -17,6 +17,8 @@ public struct DocumentDraft: Sendable {
     public var documentDate: CalendarDay?
     /// Capture's document store identifier for the source, when it came from there.
     public var documentID: String?
+    /// How the pages are shown: the document found in each photo, which way up it goes.
+    public var framing = DocumentFraming()
 
     public init(
         title: String? = nil,
@@ -110,6 +112,7 @@ public final class AttachmentActions {
         attachment.extractedText = draft.extractedText.map { PaymentCardNumbers.redact($0) }
         attachment.documentDate = draft.documentDate?.noonDate(in: calendar)
         attachment.documentID = draft.documentID
+        attachment.framing = draft.framing
         attachment.sha256 = draft.sha256
         attachment.byteCount = (draft.originalData?.count ?? 0) + draft.pageImages.reduce(0) { $0 + $1.count }
         attachment.isExample = isExample

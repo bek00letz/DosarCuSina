@@ -317,11 +317,12 @@ diacritics, and words joined by `-`.
 `contentType`, `byteCount`, `sha256`?, `path`?, `pagePaths`, `thumbnailPath`?,
 `extractedText`?, `documentDate`?, `isArchived`, `supersededById`?,
 `createdAt`, `isExample`, `assetId`?, `obligationId`?, `historyEntryId`?,
-`serviceItemId`?, `measurementId`?, `providerId`?, `validUntil`?.
+`serviceItemId`?, `measurementId`?, `providerId`?, `validUntil`?, `framing`?.
 
 - **Fingerprint:** `sha256` is the hash of the original file, or of the page images joined in order when there is no original.
 - **Replaced documents:** a replaced document is kept with `isArchived: true` and `supersededById` pointing to its replacement.
 - **`validUntil`:** a calendar day, the last day the document itself is valid, as read when it was filed (a policy's end). Its deadline moving on later doesn't change it.
+- **`framing`:** how the pages are shown; the page files stay as taken. `{ "version": 1, "pages": [ … ] }`, one entry per page in order (a page image, or a PDF's page), each optional: `crop`, the document's four corners in the photo (top-left, top-right, bottom-right, bottom-left) as fractions of its width and height from the top-left corner; `prefersWholePhoto`, the app's choice of the whole photo over the cut-out; `quarterTurns`, the app's guess of quarter turns clockwise (0–3) that put the page upright; and `choice`, what the person chose (`quarterTurns`, `showsWholePhoto`), which wins over both. A page is drawn cut out (with a perspective correction) when it has a `crop` and neither choice is the whole photo, then turned. A missing entry, or a missing `framing`, is the page as it is, whole and as taken. Keys a reader doesn't know are ignored.
 - **`extractedText`:** what was read off the document, with any card number masked ("•••• 1111"); a reader masks any it finds the same way.
 
 ## Import modes

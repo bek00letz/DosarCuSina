@@ -44,7 +44,7 @@ public enum MeasurementKind: String, Codable, CaseIterable, Sendable {
     }
 }
 
-extension DosarSchemaV5 {
+extension DosarSchemaV6 {
     /// A line in a history entry: a part replaced, a job done, a vaccine given.
     /// `componentKey` ties it to the template's component catalog so "when did I
     /// last change the brake pads" has one answer across entries.
@@ -195,6 +195,10 @@ extension DosarSchemaV5 {
         public var isArchived: Bool = false
         /// When old page images were re-encoded smaller to save space.
         public var compactedAt: Date?
+        /// How the pages are shown, as JSON (`DocumentFraming`, read through `framing`): the
+        /// document found in each photo and which way up it goes. The pages themselves stay
+        /// as taken. Nil: every page as it is. Version 6.
+        public var framingData: Data?
         public var createdAt: Date = Date()
         public var isExample: Bool = false
 

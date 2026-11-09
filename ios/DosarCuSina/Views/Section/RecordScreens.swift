@@ -230,6 +230,10 @@ private struct DocumentContent: View {
 
                 DocumentPreview(attachment: attachment)
 
+                if !DocumentPages.sources(of: attachment).isEmpty {
+                    DocumentShareButton(attachment: attachment)
+                }
+
                 if attachment.kind == .identity, let asset = attachment.asset {
                     DocumentFacts(asset: asset)
                 }
@@ -298,12 +302,15 @@ private struct DocumentContent: View {
     }
 }
 
-/// The document itself: a PDF, scanned pages, or the original image.
+/// The document itself, as its pages are shown (cut out, turned): a PDF, scanned pages,
+/// or the original image. A page opens full screen, where it can be turned, shown whole
+/// or cut out, and sent.
 private struct DocumentPreview: View {
     let attachment: Attachment
 
     /// The page opened full screen, with pinch and double-tap to zoom.
     @State private var openPage: OpenPage?
+    @Environment(\.modelContext) private var context
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private struct OpenPage: Identifiable {
@@ -312,19 +319,24 @@ private struct DocumentPreview: View {
     }
 
     var body: some View {
-        let pages = attachment.orderedPages.compactMap { $0.imageData.flatMap(UIImage.init(data:)) }
-        let images = pages.isEmpty ? [(attachment.fileData ?? attachment.thumbnailData).flatMap(UIImage.init(data:))].compactMap { $0 } : pages
+        let pages = DocumentPages.sources(of: attachment)
         Group {
-            if attachment.contentType == "com.adobe.pdf", let data = attachment.fileData {
-                PDFPreview(data: data)
-                    .frame(height: 520)
-                    .clipShape(.rect(cornerRadius: DS.Radius.card, style: .continuous))
-                    .dsHairlineBorder(RoundedRectangle(cornerRadius: DS.Radius.card, style: .continuous))
-                    .accessibilityLabel(Text("Documentul PDF", comment: "VoiceOver label of a PDF preview."))
-            } else if !images.isEmpty {
+            if case .pdf(let data, _)? = pages.first?.content {
                 VStack(spacing: DS.Space.s) {
-                    ForEach(Array(images.enumerated()), id: \.offset) { index, page in
-                        pageImage(page, index: index)
+                    PDFPreview(data: data, turns: pages.map(\.framing.shownQuarterTurns))
+                        .frame(height: 520)
+                        .clipShape(.rect(cornerRadius: DS.Radius.card, style: .continuous))
+                        .dsHairlineBorder(RoundedRectangle(cornerRadius: DS.Radius.card, style: .continuous))
+                        .accessibilityLabel(Text("Documentul PDF", comment: "VoiceOver label of a PDF preview."))
+                    DSSecondaryButton(Text("Deschide pe tot ecranul", comment: "Opens a PDF's pages full screen, to zoom, turn or send them."),
+                                      systemImage: "arrow.up.left.and.arrow.down.right") {
+                        DocumentPagesViewer.present(reduceMotion: reduceMotion) { openPage = OpenPage(index: 0) }
+                    }
+                }
+            } else if !pages.isEmpty {
+                VStack(spacing: DS.Space.s) {
+                    ForEach(pages) { page in
+                        pageImage(page)
                     }
                 }
             } else {
@@ -332,21 +344,24 @@ private struct DocumentPreview: View {
             }
         }
         .fullScreenCover(item: $openPage) { page in
-            DocumentPagesViewer(pages: images, startAt: page.index)
+            DocumentPagesViewer(
+                pages: DocumentPages.sources(of: attachment),
+                startAt: page.index,
+                editing: .document(attachment, actions: AttachmentActions(context: context)),
+                share: DocumentShareRequest(attachment: attachment, context: context)
+            )
         }
     }
 
-    private func pageImage(_ image: UIImage, index: Int) -> some View {
-        Button { DocumentPagesViewer.present(reduceMotion: reduceMotion) { openPage = OpenPage(index: index) } } label: {
-            Image(uiImage: image)
-                .resizable()
-                .scaledToFit()
+    private func pageImage(_ page: DocumentPageSource) -> some View {
+        Button { DocumentPagesViewer.present(reduceMotion: reduceMotion) { openPage = OpenPage(index: page.index) } } label: {
+            DocumentPageImage(source: page)
                 .clipShape(.rect(cornerRadius: DS.Radius.control, style: .continuous))
                 .dsHairlineBorder(RoundedRectangle(cornerRadius: DS.Radius.control, style: .continuous))
         }
         .buttonStyle(.dsPressable)
-        .accessibilityLabel(Text("Pagina \(index + 1)", comment: "VoiceOver label of a scanned page."))
-        .accessibilityHint(Text("Se deschide pe tot ecranul. Poți mări cu două degete.", comment: "VoiceOver hint of a page that opens full screen."))
+        .accessibilityLabel(Text("Pagina \(page.index + 1)", comment: "VoiceOver label of a scanned page."))
+        .accessibilityHint(Text("Se deschide pe tot ecranul. Poți mări, roti sau trimite pagina.", comment: "VoiceOver hint of a page that opens full screen."))
     }
 }
 
@@ -390,15 +405,41 @@ private struct DocumentFacts: View {
     }
 }
 
+/// A PDF kept whole, drawn by PDFKit (sharp at any zoom), each page turned as it is shown.
+/// The turn is applied to the copy on screen only; the kept PDF never changes.
 private struct PDFPreview: UIViewRepresentable {
     let data: Data
+    let turns: [Int]
 
     func makeUIView(context: Context) -> PDFView {
         let view = PDFView()
         view.autoScales = true
         view.document = PDFDocument(data: data)
+        context.coordinator.applied = Array(repeating: 0, count: view.document?.pageCount ?? 0)
+        apply(to: view, context: context)
         return view
     }
 
-    func updateUIView(_ view: PDFView, context: Context) {}
+    func updateUIView(_ view: PDFView, context: Context) {
+        apply(to: view, context: context)
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    final class Coordinator {
+        /// The turns already applied to each page of the copy on screen.
+        var applied: [Int] = []
+    }
+
+    private func apply(to view: PDFView, context: Context) {
+        guard let document = view.document else { return }
+        for index in 0..<document.pageCount where index < context.coordinator.applied.count {
+            let wanted = index < turns.count ? turns[index] : 0
+            let change = PageFraming.normalized(wanted - context.coordinator.applied[index])
+            guard change != 0, let page = document.page(at: index) else { continue }
+            page.rotation = (page.rotation + 90 * change) % 360
+            context.coordinator.applied[index] = wanted
+        }
+        view.layoutDocumentView()
+    }
 }

@@ -4,4 +4,6 @@ import OSLog
 /// codes are logged, never recognized text, field values or file names.
 enum CaptureLog {
     static let engine = Logger(subsystem: "com.ar.dosarcusina.app", category: "capture")
+    /// Drawing and sharing a document's pages.
+    static let documents = Logger(subsystem: "com.ar.dosarcusina.app", category: "documents")
 }

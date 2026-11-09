@@ -4,7 +4,7 @@ import SwiftData
 /// The current schema of the household database.
 ///
 /// Every model lives inside this namespace so that the next version can freeze a
-/// copy of these definitions and migrate from them (as `DosarSchemaV2` to `DosarSchemaV4`
+/// copy of these definitions and migrate from them (as `DosarSchemaV2` to `DosarSchemaV5`
 /// are frozen in `Versions/`). App code uses the top-level type aliases below and never names the
 /// version directly.
 ///
@@ -19,9 +19,11 @@ import SwiftData
 /// (`Attachment.validUntil`). Version 4 adds how long before its due day a deadline's
 /// document stops being good for travel (`Obligation.travelMarginDays`, 0 by default).
 /// Version 5 adds whether the person set a deadline's reminders themselves
-/// (`Obligation.remindersCustomized`, false by default).
-public enum DosarSchemaV5: VersionedSchema {
-    public static let versionIdentifier = Schema.Version(5, 0, 0)
+/// (`Obligation.remindersCustomized`, false by default). Version 6 adds how a document's
+/// pages are shown: the document found in each photo and which way up it goes
+/// (`Attachment.framingData`, none by default).
+public enum DosarSchemaV6: VersionedSchema {
+    public static let versionIdentifier = Schema.Version(6, 0, 0)
 
     public static var models: [any PersistentModel.Type] {
         [
@@ -42,8 +44,8 @@ public enum DosarSchemaV5: VersionedSchema {
 /// version freezes the one before it in `Versions/`, adds a stage here, and gets a
 /// test that opens a store written by the version before (`SchemaMigrationTests`).
 public enum DosarMigrationPlan: SchemaMigrationPlan {
-    public static var schemas: [any VersionedSchema.Type] { [DosarSchemaV2.self, DosarSchemaV3.self, DosarSchemaV4.self, DosarSchemaV5.self] }
-    public static var stages: [MigrationStage] { [v2ToV3, v3ToV4, v4ToV5] }
+    public static var schemas: [any VersionedSchema.Type] { [DosarSchemaV2.self, DosarSchemaV3.self, DosarSchemaV4.self, DosarSchemaV5.self, DosarSchemaV6.self] }
+    public static var stages: [MigrationStage] { [v2ToV3, v3ToV4, v4ToV5, v5ToV6] }
 
     /// Version 3 only adds optional attributes; existing records keep every value. What
     /// the new attributes should hold for old records is filled in later: the categories'
@@ -60,17 +62,22 @@ public enum DosarMigrationPlan: SchemaMigrationPlan {
     /// before version 5 isn't known as changed: its reminders still follow its document
     /// when the document's type changes, which is what the type change asks for.
     static var v4ToV5: MigrationStage { .lightweight(fromVersion: DosarSchemaV4.self, toVersion: DosarSchemaV5.self) }
+
+    /// Version 6 only adds an optional value (how a document's pages are shown); existing
+    /// documents keep every value and show their pages as before, whole and as taken. Only
+    /// documents captured from then on are cut out of their photo and turned upright.
+    static var v5ToV6: MigrationStage { .lightweight(fromVersion: DosarSchemaV5.self, toVersion: DosarSchemaV6.self) }
 }
 
-public typealias CategoryTemplate = DosarSchemaV5.CategoryTemplate
-public typealias Asset = DosarSchemaV5.Asset
-public typealias Obligation = DosarSchemaV5.Obligation
-public typealias HistoryEntry = DosarSchemaV5.HistoryEntry
-public typealias ServiceItem = DosarSchemaV5.ServiceItem
-public typealias MeasurementLog = DosarSchemaV5.MeasurementLog
-public typealias Attachment = DosarSchemaV5.Attachment
-public typealias Provider = DosarSchemaV5.Provider
-public typealias AttachmentPage = DosarSchemaV5.AttachmentPage
+public typealias CategoryTemplate = DosarSchemaV6.CategoryTemplate
+public typealias Asset = DosarSchemaV6.Asset
+public typealias Obligation = DosarSchemaV6.Obligation
+public typealias HistoryEntry = DosarSchemaV6.HistoryEntry
+public typealias ServiceItem = DosarSchemaV6.ServiceItem
+public typealias MeasurementLog = DosarSchemaV6.MeasurementLog
+public typealias Attachment = DosarSchemaV6.Attachment
+public typealias Provider = DosarSchemaV6.Provider
+public typealias AttachmentPage = DosarSchemaV6.AttachmentPage
 
 /// Shared JSON coding for values stored as `Data` on models and written to archives.
 /// Keys are sorted so the same value always produces the same bytes.

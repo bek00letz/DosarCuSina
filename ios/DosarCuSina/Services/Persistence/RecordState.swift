@@ -107,7 +107,7 @@ extension UndoableRecord {
 /// Every recorded type of the schema, by name.
 enum UndoableRecords {
     static var types: [String: any UndoableRecord.Type] {
-        Dictionary(uniqueKeysWithValues: DosarSchemaV5.models.compactMap { $0 as? any UndoableRecord.Type }.map { ($0.recordType, $0) })
+        Dictionary(uniqueKeysWithValues: DosarSchemaV6.models.compactMap { $0 as? any UndoableRecord.Type }.map { ($0.recordType, $0) })
     }
 
     /// The record `ref` names, if it exists in `context`.
@@ -150,8 +150,8 @@ private extension ModelContext {
 
 // MARK: - The schema's records
 
-extension DosarSchemaV5.Asset: UndoableRecord {
-    public static var storedProperties: [StoredProperty<DosarSchemaV5.Asset>] {
+extension DosarSchemaV6.Asset: UndoableRecord {
+    public static var storedProperties: [StoredProperty<DosarSchemaV6.Asset>] {
         [
             .attribute("id", \.id), .attribute("name", \.name), .attribute("templateKey", \.templateKey),
             .attribute("symbolOverride", \.symbolOverride), .attribute("tintOverrideRaw", \.tintOverrideRaw),
@@ -167,12 +167,12 @@ extension DosarSchemaV5.Asset: UndoableRecord {
     public static func blank() -> Self { Self(name: "", templateKey: "") }
     public static func find(_ key: String, in context: ModelContext) -> Self? {
         guard let id = UUID(uuidString: key) else { return nil }
-        return context.first(#Predicate<DosarSchemaV5.Asset> { $0.id == id }) as? Self
+        return context.first(#Predicate<DosarSchemaV6.Asset> { $0.id == id }) as? Self
     }
 }
 
-extension DosarSchemaV5.Obligation: UndoableRecord {
-    public static var storedProperties: [StoredProperty<DosarSchemaV5.Obligation>] {
+extension DosarSchemaV6.Obligation: UndoableRecord {
+    public static var storedProperties: [StoredProperty<DosarSchemaV6.Obligation>] {
         [
             .attribute("id", \.id), .attribute("title", \.title), .attribute("notes", \.notes),
             .attribute("blueprintKey", \.blueprintKey), .attribute("kindRaw", \.kindRaw), .attribute("dueDate", \.dueDate),
@@ -192,12 +192,12 @@ extension DosarSchemaV5.Obligation: UndoableRecord {
     public static func blank() -> Self { Self(title: "", kind: .routine, dueDay: CalendarDay(Date())) }
     public static func find(_ key: String, in context: ModelContext) -> Self? {
         guard let id = UUID(uuidString: key) else { return nil }
-        return context.first(#Predicate<DosarSchemaV5.Obligation> { $0.id == id }) as? Self
+        return context.first(#Predicate<DosarSchemaV6.Obligation> { $0.id == id }) as? Self
     }
 }
 
-extension DosarSchemaV5.HistoryEntry: UndoableRecord {
-    public static var storedProperties: [StoredProperty<DosarSchemaV5.HistoryEntry>] {
+extension DosarSchemaV6.HistoryEntry: UndoableRecord {
+    public static var storedProperties: [StoredProperty<DosarSchemaV6.HistoryEntry>] {
         [
             .attribute("id", \.id), .attribute("kindRaw", \.kindRaw), .attribute("title", \.title),
             .attribute("occurredAt", \.occurredAt), .attribute("metricReading", \.metricReading),
@@ -213,12 +213,12 @@ extension DosarSchemaV5.HistoryEntry: UndoableRecord {
     public static func blank() -> Self { Self(kind: .note, title: "", occurredAt: Date()) }
     public static func find(_ key: String, in context: ModelContext) -> Self? {
         guard let id = UUID(uuidString: key) else { return nil }
-        return context.first(#Predicate<DosarSchemaV5.HistoryEntry> { $0.id == id }) as? Self
+        return context.first(#Predicate<DosarSchemaV6.HistoryEntry> { $0.id == id }) as? Self
     }
 }
 
-extension DosarSchemaV5.ServiceItem: UndoableRecord {
-    public static var storedProperties: [StoredProperty<DosarSchemaV5.ServiceItem>] {
+extension DosarSchemaV6.ServiceItem: UndoableRecord {
+    public static var storedProperties: [StoredProperty<DosarSchemaV6.ServiceItem>] {
         [
             .attribute("id", \.id), .attribute("name", \.name), .attribute("componentKey", \.componentKey),
             .attribute("group", \.group), .attribute("partBrandOrCode", \.partBrandOrCode),
@@ -234,12 +234,12 @@ extension DosarSchemaV5.ServiceItem: UndoableRecord {
     public static func blank() -> Self { Self(name: "") }
     public static func find(_ key: String, in context: ModelContext) -> Self? {
         guard let id = UUID(uuidString: key) else { return nil }
-        return context.first(#Predicate<DosarSchemaV5.ServiceItem> { $0.id == id }) as? Self
+        return context.first(#Predicate<DosarSchemaV6.ServiceItem> { $0.id == id }) as? Self
     }
 }
 
-extension DosarSchemaV5.MeasurementLog: UndoableRecord {
-    public static var storedProperties: [StoredProperty<DosarSchemaV5.MeasurementLog>] {
+extension DosarSchemaV6.MeasurementLog: UndoableRecord {
+    public static var storedProperties: [StoredProperty<DosarSchemaV6.MeasurementLog>] {
         [
             .attribute("id", \.id), .attribute("kindRaw", \.kindRaw), .attribute("name", \.name), .attribute("value", \.value),
             .attribute("secondaryValue", \.secondaryValue), .attribute("unit", \.unit), .attribute("recordedAt", \.recordedAt),
@@ -253,19 +253,20 @@ extension DosarSchemaV5.MeasurementLog: UndoableRecord {
     public static func blank() -> Self { Self(kind: .custom, name: "", value: 0) }
     public static func find(_ key: String, in context: ModelContext) -> Self? {
         guard let id = UUID(uuidString: key) else { return nil }
-        return context.first(#Predicate<DosarSchemaV5.MeasurementLog> { $0.id == id }) as? Self
+        return context.first(#Predicate<DosarSchemaV6.MeasurementLog> { $0.id == id }) as? Self
     }
 }
 
-extension DosarSchemaV5.Attachment: UndoableRecord {
-    public static var storedProperties: [StoredProperty<DosarSchemaV5.Attachment>] {
+extension DosarSchemaV6.Attachment: UndoableRecord {
+    public static var storedProperties: [StoredProperty<DosarSchemaV6.Attachment>] {
         [
             .attribute("id", \.id), .attribute("title", \.title), .attribute("fileName", \.fileName),
             .attribute("kindRaw", \.kindRaw), .attribute("contentType", \.contentType), .attribute("fileData", \.fileData),
             .attribute("thumbnailData", \.thumbnailData), .attribute("byteCount", \.byteCount), .attribute("sha256", \.sha256),
             .attribute("extractedText", \.extractedText), .attribute("documentDate", \.documentDate),
             .attribute("validUntil", \.validUntil), .attribute("documentID", \.documentID), .attribute("isArchived", \.isArchived),
-            .attribute("compactedAt", \.compactedAt), .attribute("createdAt", \.createdAt), .attribute("isExample", \.isExample),
+            .attribute("compactedAt", \.compactedAt), .attribute("framingData", \.framingData),
+            .attribute("createdAt", \.createdAt), .attribute("isExample", \.isExample),
             .toMany("pages", \.pages), .toOne("supersededBy", \.supersededBy), .toMany("supersedes", \.supersedes),
             .toOne("asset", \.asset), .toOne("obligation", \.obligation), .toOne("historyEntry", \.historyEntry),
             .toOne("serviceItem", \.serviceItem), .toOne("measurement", \.measurement), .toOne("provider", \.provider),
@@ -275,24 +276,24 @@ extension DosarSchemaV5.Attachment: UndoableRecord {
     public static func blank() -> Self { Self(fileName: "", contentType: "public.data", data: nil) }
     public static func find(_ key: String, in context: ModelContext) -> Self? {
         guard let id = UUID(uuidString: key) else { return nil }
-        return context.first(#Predicate<DosarSchemaV5.Attachment> { $0.id == id }) as? Self
+        return context.first(#Predicate<DosarSchemaV6.Attachment> { $0.id == id }) as? Self
     }
 }
 
-extension DosarSchemaV5.AttachmentPage: UndoableRecord {
-    public static var storedProperties: [StoredProperty<DosarSchemaV5.AttachmentPage>] {
+extension DosarSchemaV6.AttachmentPage: UndoableRecord {
+    public static var storedProperties: [StoredProperty<DosarSchemaV6.AttachmentPage>] {
         [.attribute("id", \.id), .attribute("index", \.index), .attribute("imageData", \.imageData), .toOne("attachment", \.attachment)]
     }
     public var recordKey: String { id.uuidString }
     public static func blank() -> Self { Self(index: 0, imageData: nil) }
     public static func find(_ key: String, in context: ModelContext) -> Self? {
         guard let id = UUID(uuidString: key) else { return nil }
-        return context.first(#Predicate<DosarSchemaV5.AttachmentPage> { $0.id == id }) as? Self
+        return context.first(#Predicate<DosarSchemaV6.AttachmentPage> { $0.id == id }) as? Self
     }
 }
 
-extension DosarSchemaV5.Provider: UndoableRecord {
-    public static var storedProperties: [StoredProperty<DosarSchemaV5.Provider>] {
+extension DosarSchemaV6.Provider: UndoableRecord {
+    public static var storedProperties: [StoredProperty<DosarSchemaV6.Provider>] {
         [
             .attribute("id", \.id), .attribute("name", \.name), .attribute("trades", \.trades), .attribute("phone", \.phone),
             .attribute("email", \.email), .attribute("address", \.address), .attribute("notes", \.notes),
@@ -307,12 +308,12 @@ extension DosarSchemaV5.Provider: UndoableRecord {
     public static func blank() -> Self { Self(name: "") }
     public static func find(_ key: String, in context: ModelContext) -> Self? {
         guard let id = UUID(uuidString: key) else { return nil }
-        return context.first(#Predicate<DosarSchemaV5.Provider> { $0.id == id }) as? Self
+        return context.first(#Predicate<DosarSchemaV6.Provider> { $0.id == id }) as? Self
     }
 }
 
-extension DosarSchemaV5.CategoryTemplate: UndoableRecord {
-    public static var storedProperties: [StoredProperty<DosarSchemaV5.CategoryTemplate>] {
+extension DosarSchemaV6.CategoryTemplate: UndoableRecord {
+    public static var storedProperties: [StoredProperty<DosarSchemaV6.CategoryTemplate>] {
         [
             .attribute("key", \.key), .attribute("name", \.name), .attribute("summary", \.summary), .attribute("symbol", \.symbol),
             .attribute("tintRaw", \.tintRaw), .attribute("heroStyleRaw", \.heroStyleRaw), .attribute("isBuiltIn", \.isBuiltIn),
@@ -328,6 +329,6 @@ extension DosarSchemaV5.CategoryTemplate: UndoableRecord {
         Self(definition: TemplateDefinition(key: "", name: "", symbol: "square.grid.2x2", tint: .gray, sections: []), isBuiltIn: false, homeOrder: 0)
     }
     public static func find(_ key: String, in context: ModelContext) -> Self? {
-        context.first(#Predicate<DosarSchemaV5.CategoryTemplate> { $0.key == key }) as? Self
+        context.first(#Predicate<DosarSchemaV6.CategoryTemplate> { $0.key == key }) as? Self
     }
 }

@@ -38,10 +38,21 @@ public struct StoredDocument: Codable, Hashable, Sendable, Identifiable {
 /// A processed document with its bytes, waiting to be filed.
 public struct ProcessedDocument: Sendable {
     public let document: StoredDocument
-    /// HEIC (or JPEG where HEIC isn't available) page images, in order.
+    /// HEIC (or JPEG where HEIC isn't available) page images, in order, as taken.
     public let pageData: [Data]
+    /// A small picture of the first page as it is shown.
     public let thumbnailData: Data?
     public let originalPDF: Data?
+    /// How the pages are shown: the document found in each photo and which way up it goes.
+    public let framing: DocumentFraming
+
+    public init(document: StoredDocument, pageData: [Data], thumbnailData: Data?, originalPDF: Data?, framing: DocumentFraming = DocumentFraming()) {
+        self.document = document
+        self.pageData = pageData
+        self.thumbnailData = thumbnailData
+        self.originalPDF = originalPDF
+        self.framing = framing
+    }
 }
 
 /// Which document a capture is about: pages it just read, or a document the binder
@@ -111,8 +122,10 @@ public actor CaptureDocumentStore {
     }
 
     public struct StoreRequest: Sendable {
-        /// Perspective-corrected page images, in order. Empty for a PDF, which is kept whole.
+        /// Page images as taken (a scan's already flat), in order. Empty for a PDF, which is kept whole.
         public var pages: [CGImage]
+        /// How each page is shown: the document found in the photo and the turn it was read with.
+        public var framing: DocumentFraming
         /// The original PDF, kept as is.
         public var originalPDF: Data?
         /// The image the thumbnail is made from, when it isn't the first page (e.g. a rendered PDF page).
@@ -124,8 +137,9 @@ public actor CaptureDocumentStore {
         public var title: String?
         public var capturedAt: Date
 
-        public init(pages: [CGImage], originalPDF: Data? = nil, thumbnailSource: CGImage? = nil, sourceData: Data? = nil, kind: CaptureDocumentKind = .other, ownerID: String? = nil, title: String? = nil, capturedAt: Date = Date()) {
+        public init(pages: [CGImage], framing: DocumentFraming = DocumentFraming(), originalPDF: Data? = nil, thumbnailSource: CGImage? = nil, sourceData: Data? = nil, kind: CaptureDocumentKind = .other, ownerID: String? = nil, title: String? = nil, capturedAt: Date = Date()) {
             self.pages = pages
+            self.framing = framing
             self.originalPDF = originalPDF
             self.thumbnailSource = thumbnailSource
             self.sourceData = sourceData
@@ -173,7 +187,8 @@ public actor CaptureDocumentStore {
         }
         var thumbnailData: Data?
         var thumbnail: StoredFile?
-        if let first = request.thumbnailSource ?? request.pages.first {
+        // The thumbnail is the first page as it is shown: cut out and turned.
+        if let first = request.thumbnailSource ?? request.pages.first.map({ DocumentPicture.shown($0, framing: request.framing[page: 0]) }) {
             let encoded = try ImageEncoding.encode(first, maxLongEdge: Self.thumbnailMaxLongEdge, quality: Self.thumbnailQuality)
             thumbnailData = encoded.data
             thumbnail = StoredFile(name: "thumbnail.\(encoded.fileExtension)", byteSize: encoded.data.count, pixelWidth: encoded.width, pixelHeight: encoded.height)
@@ -186,7 +201,8 @@ public actor CaptureDocumentStore {
         )
         let claim = UUID()
         pending[document.id] = Waiting(
-            processed: ProcessedDocument(document: document, pageData: encodedPages.map(\.data), thumbnailData: thumbnailData, originalPDF: request.originalPDF),
+            processed: ProcessedDocument(document: document, pageData: encodedPages.map(\.data), thumbnailData: thumbnailData,
+                                         originalPDF: request.originalPDF, framing: request.framing),
             claims: [claim]
         )
         return Stored(ref: .pending(id: document.id, claim: claim), document: document, isDuplicate: false)
