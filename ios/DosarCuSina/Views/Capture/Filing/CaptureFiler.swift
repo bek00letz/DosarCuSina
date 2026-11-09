@@ -306,7 +306,9 @@ struct CaptureFiler {
         // and for knowing when the next one is due. A bill logs one entry: filed again, the
         // entry it logged before takes what was read now (and moves with the bill), and it
         // goes when the bill no longer goes to a subscription, as its meter reading does.
-        let billFiledBefore = Self.entryFiledBefore(by: document) { $0.kind == .payment }
+        let billFiledBefore = Self.entryFiledBefore(by: document) { entry in
+            entry.kind == .payment && entry.asset.map { templates.plays(.subscription, $0.templateKey) } == true
+        }
         if review.kind.profile.deadlineIsOptIn, let asset = outcome.asset, templates.plays(.subscription, asset.templateKey) {
             outcome.bill = try HistoryActions(context: context, now: now).record(
                 on: asset,
@@ -419,7 +421,7 @@ struct CaptureFiler {
             calendar: calendar,
             odometerSource: visit.odometerSource,
             lowerReading: lowerReading,
-            replacing: Self.visitFiledBefore(by: document)
+            replacing: Self.visitFiledBefore(by: document, on: visit.asset)
         ).value
         var outcome = Outcome(asset: visit.asset, visit: entry)
         if let document {
@@ -493,7 +495,7 @@ struct CaptureFiler {
             try ExampleOwnership.requireReal(visit.asset)
             let reading = HistoryActions(context: context, now: now).plannedReading(
                 visit.odometer, on: visit.asset, at: visit.occurredAt, source: visit.odometerSource,
-                replacing: Self.visitFiledBefore(by: document)
+                replacing: Self.visitFiledBefore(by: document, on: visit.asset)
             )
             try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
         }
@@ -563,9 +565,11 @@ struct CaptureFiler {
         return entry
     }
 
-    /// The visit an invoice was filed with before: any entry of its that isn't a bill.
-    static func visitFiledBefore(by document: CapturedDocument?) -> HistoryEntry? {
-        entryFiledBefore(by: document) { $0.kind != .payment }
+    /// The visit an invoice was filed with before on this section: an entry of its there that
+    /// isn't a bill. A photo kept on another section moves here with none of its old links
+    /// (`AttachmentActions.fileCaptured`), so it makes a visit of its own.
+    static func visitFiledBefore(by document: CapturedDocument?, on asset: Asset) -> HistoryEntry? {
+        entryFiledBefore(by: document) { $0.kind != .payment && $0.asset?.id == asset.id }
     }
 
     /// Where a policy's bonus-malus class goes, worked out from the household as it is now.
