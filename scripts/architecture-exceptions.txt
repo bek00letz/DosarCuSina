@@ -15,9 +15,7 @@ ios/DosarCuSina/Views/Upcoming/UpcomingRoot.swift:built-in-key-in-views
 # date-format: Dates are written by DosarFormat (ios/Shared) and DueWording. What's left reads dates; it goes with the shared number and date reader.
 ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:date-format:2
 
-# format-string: Machine text (ISO days, hashes): one shared helper, then these go.
-ios/DosarCuSina/Models/Schema/RecordModels.swift:format-string
-ios/DosarCuSina/Services/Capture/CaptureModels.swift:format-string
+# format-string: Machine text (ISO days, hashes) goes through MachineText (ios/Shared). What's left goes with the legacy utility parser.
 ios/DosarCuSina/Services/OCR/RomanianUtilityParser.swift:format-string
 
 # romanian-locale: Locale.dosarDefault everywhere, folding included.

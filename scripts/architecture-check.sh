@@ -80,7 +80,7 @@ rule system-error-text "$app" - \
 
 rule format-string "$app" - \
     'String\(format:' - \
-    'Use Money.formatted, CalendarDay, or .formatted(...) with Locale.dosarDefault. Machine text such as a hash or an ISO day belongs in one shared helper.'
+    'Use Money.formatted, CalendarDay, or .formatted(...) with Locale.dosarDefault. Machine text such as a hash or an ISO day goes through MachineText.'
 
 rule hand-written-plural "$app" - \
     '(==|!=) *1 *\? *("|Text\(|String\(localized|LocalizedStringKey|NSLocalizedString)' - \
