@@ -93,7 +93,7 @@ struct DocumentReading {
             return .pdf(original)
         }
         let kept = (pages.isEmpty ? [original].compactMap { $0 } : pages)
-            .compactMap { PageImageDecoding.decode($0, maxLongEdge: nil) }
+            .compactMap { ImageScaling.decoded($0, maxLongEdge: nil) }
             .map { CaptureImage(image: $0) }
         guard !kept.isEmpty else { throw Failure.nothingToRead }
         return .images(kept + adding)

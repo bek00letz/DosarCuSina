@@ -86,13 +86,7 @@ enum InboxPreviewer {
     }
 
     static func imageThumbnail(_ data: Data) -> CGImage? {
-        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
-        let options: [CFString: Any] = [
-            kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceCreateThumbnailWithTransform: true,
-            kCGImageSourceThumbnailMaxPixelSize: thumbnailPixels,
-        ]
-        return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
+        ImageScaling.decoded(data, maxLongEdge: thumbnailPixels)
     }
 
     static func jpeg(_ image: CGImage) -> Data? {

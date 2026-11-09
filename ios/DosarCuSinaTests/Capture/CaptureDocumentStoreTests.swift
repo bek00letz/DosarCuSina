@@ -155,7 +155,7 @@ struct CaptureDocumentStoreTests {
         #expect(saved > 0)
         #expect(attachment.byteCount == before - saved)
         #expect(attachment.compactedAt != nil)
-        let image = try #require(attachment.orderedPages.first?.imageData.flatMap(ImageEncoding.decode))
+        let image = try #require(attachment.orderedPages.first?.imageData.flatMap { ImageScaling.decoded($0, maxLongEdge: nil) })
         #expect(max(image.width, image.height) == 1200)
         #expect(try storage.report(policy: policy).compactionCandidates.isEmpty)
     }

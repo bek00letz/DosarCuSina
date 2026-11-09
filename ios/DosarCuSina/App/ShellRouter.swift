@@ -82,6 +82,52 @@ enum ShellRouting {
     }
 }
 
+/// The shell's one sheet, and the one waiting for it to finish closing, so sheets never
+/// stack and the next opens as soon as the last is gone: when its dismissal completes,
+/// not after a guessed pause. Pure, so it is tested.
+struct ShellSheetQueue: Equatable, Sendable {
+    /// What the shell asks to show; nil while nothing should be up (or the last is closing).
+    private(set) var shown: ShellSheet?
+    /// Opens once the sheet on screen has finished closing.
+    private(set) var waiting: ShellSheet?
+    /// A sheet is on screen, or still on its way off it.
+    private(set) var isOnScreen = false
+
+    /// Something is up, closing, or about to open.
+    var isBusy: Bool { shown != nil || waiting != nil || isOnScreen }
+
+    /// Shows `next` (nil closes). Over a sheet on screen it closes that one first and waits.
+    mutating func present(_ next: ShellSheet?) {
+        guard isOnScreen else {
+            // Nothing to wait for: it opens (or closes) right away.
+            shown = next
+            waiting = nil
+            return
+        }
+        if next == shown {
+            // Already up (or nothing asked while one closes): forget anything waiting.
+            waiting = nil
+            return
+        }
+        waiting = next
+        shown = nil
+    }
+
+    /// The sheet came on screen.
+    mutating func didAppear() {
+        isOnScreen = true
+    }
+
+    /// The sheet finished closing, however it closed: the waiting one opens now.
+    mutating func didDismiss() {
+        isOnScreen = false
+        if let waiting {
+            shown = waiting
+            self.waiting = nil
+        }
+    }
+}
+
 /// Owns the selected tab, each tab's navigation path and the shell's sheet.
 /// Every route, from inside or outside the app, goes through `open(_:)`.
 @MainActor
@@ -92,9 +138,16 @@ final class ShellRouter {
     var upcomingPath = NavigationPath()
     var addPath = NavigationPath()
     var searchPath = NavigationPath()
-    var sheet: ShellSheet?
+    private var sheets = ShellSheetQueue()
 
-    @ObservationIgnored private var pendingSheet: Task<Void, Never>?
+    /// The sheet over the tabs. Closing it by hand (a swipe) writes nil here.
+    var sheet: ShellSheet? {
+        get { sheets.shown }
+        set { present(newValue) }
+    }
+
+    /// A sheet is up, closing or about to open: nothing else should pop up over the tabs.
+    var hasSheet: Bool { sheets.isBusy }
 
     /// Opens a route: switches tab, replaces that tab's path and presents a sheet if needed.
     func open(_ route: AppRoute) {
@@ -107,19 +160,19 @@ final class ShellRouter {
     }
 
     /// Presents a sheet (or closes the current one with nil), closing the one on
-    /// screen first so sheets never stack.
+    /// screen first so sheets never stack; the new one opens once that has closed.
     func present(_ newSheet: ShellSheet?) {
-        pendingSheet?.cancel()
-        if sheet == nil || newSheet == nil {
-            sheet = newSheet
-            return
-        }
-        sheet = nil
-        pendingSheet = Task { [weak self] in
-            try? await Task.sleep(for: .milliseconds(450))
-            guard !Task.isCancelled else { return }
-            self?.sheet = newSheet
-        }
+        sheets.present(newSheet)
+    }
+
+    /// The shell's sheet came on screen.
+    func sheetDidAppear() {
+        sheets.didAppear()
+    }
+
+    /// The shell's sheet finished closing (its `onDismiss`).
+    func sheetDidDismiss() {
+        sheets.didDismiss()
     }
 
     /// Pushes a screen on the current tab.

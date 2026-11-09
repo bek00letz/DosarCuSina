@@ -13,9 +13,18 @@ final class ReminderPermission {
 
     private(set) var status: ReminderAuthorization = .notDetermined
     @ObservationIgnored private let client: any NotificationCenterClient
+    @ObservationIgnored private var activation: Task<Void, Never>?
 
-    init(client: any NotificationCenterClient = SystemNotificationCenterClient()) {
+    /// Reads the permission again each time the app becomes active: after the system's
+    /// question closes, and after the person comes back from the phone's Settings.
+    init(client: any NotificationCenterClient = SystemNotificationCenterClient(),
+         becomesActive: Notification.Name = UIApplication.didBecomeActiveNotification) {
         self.client = client
+        activation = Task { [weak self] in
+            for await _ in NotificationCenter.default.notifications(named: becomesActive).map({ _ in () }) {
+                await self?.refresh()
+            }
+        }
     }
 
     func refresh() async {
@@ -65,10 +74,9 @@ private struct ReminderPermissionGate: ViewModifier {
                 ReminderPermissionExplainer {
                     pending = nil
                     request.save()
-                    sideEffects?.setNeedsReconcile(allowPermissionPrompt: true)
                     Task {
-                        // The system question follows the save; read the answer once it's given.
-                        try? await Task.sleep(for: .seconds(2))
+                        // The system asks during this pass, which returns with the answer.
+                        await sideEffects?.askForPermission()
                         await ReminderPermission.shared.refresh()
                     }
                 }

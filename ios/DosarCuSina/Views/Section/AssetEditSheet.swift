@@ -174,6 +174,14 @@ struct PhotoPickerRow: View {
     @Binding var photoData: Data?
     @Binding var item: PhotosPickerItem?
 
+    /// The long edge a section's photo is kept at: it shows as a box and a hero, never full screen.
+    nonisolated static let photoLongEdge = 1200
+
+    /// A picked photo as it is kept: upright, at most `photoLongEdge`, as a JPEG.
+    nonisolated static func keptPhoto(from data: Data) -> Data? {
+        ImageScaling.decoded(data, maxLongEdge: photoLongEdge).flatMap { UIImage(cgImage: $0).jpegData(compressionQuality: 0.8) }
+    }
+
     var body: some View {
         HStack(spacing: DS.Space.m) {
             if let photoData, let image = UIImage(data: photoData) {
@@ -213,13 +221,9 @@ struct PhotoPickerRow: View {
             guard let newItem else { return }
             Task { @MainActor in
                 guard let data = try? await newItem.loadTransferable(type: Data.self),
-                      let image = UIImage(data: data) else { return }
-                // Keep photos small: they show as boxes and heroes, never full screen.
-                let side: CGFloat = 1200
-                let scale = min(1, side / max(image.size.width, image.size.height))
-                let size = CGSize(width: image.size.width * scale, height: image.size.height * scale)
-                let resized = await image.byPreparingThumbnail(ofSize: size) ?? image
-                photoData = resized.jpegData(compressionQuality: 0.8)
+                      let small = await Task.detached(priority: .userInitiated, operation: { PhotoPickerRow.keptPhoto(from: data) }).value
+                else { return }
+                photoData = small
             }
         }
     }
