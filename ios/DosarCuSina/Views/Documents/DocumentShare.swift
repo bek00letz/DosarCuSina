@@ -153,20 +153,21 @@ struct DocumentShareSheet: View {
                         DSNotice(.error, title: "Nu s-a putut pregăti", message: LocalizedStringKey(failure))
                             .transition(DS.Motion.transition(reduceMotion: reduceMotion))
                     }
-                    VStack(spacing: DS.Space.s) {
-                        DSPrimaryButton(Text("Trimite", comment: "Opens the share sheet with the chosen pages."), systemImage: "square.and.arrow.up") {
-                            send()
-                        }
-                        .disabled(isPreparing || request.pages.isEmpty)
-                        // Its space is kept, so nothing moves when it shows.
-                        DSDelayedProgress(label: "Pregătesc actul…")
-                            .opacity(isPreparing ? 1 : 0)
-                            .accessibilityHidden(!isPreparing)
-                            .id(isPreparing)
-                    }
+                    // Its space is kept, so nothing moves when it shows.
+                    DSDelayedProgress(label: "Pregătesc actul…")
+                        .frame(maxWidth: .infinity)
+                        .opacity(isPreparing ? 1 : 0)
+                        .accessibilityHidden(!isPreparing)
+                        .id(isPreparing)
                 }
                 .padding(DS.Space.m)
                 .animation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion), value: failure)
+            }
+            .dsPinnedAction {
+                DSPrimaryButton(Text("Trimite", comment: "Opens the share sheet with the chosen pages."), systemImage: "square.and.arrow.up") {
+                    send()
+                }
+                .disabled(isPreparing || request.pages.isEmpty)
             }
             .background(DS.Palette.background)
             .navigationTitle(Text("Trimite actul", comment: "Title of the sheet that shares a document."))
