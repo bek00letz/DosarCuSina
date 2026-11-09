@@ -96,7 +96,7 @@ public final class SideEffectsCoordinator {
     public func start() {
         guard observers.isEmpty else { return }
         // Saves never ask by themselves: the question comes only after the
-        // in-app explanation or from Settings, via `setNeedsReconcile(allowPermissionPrompt: true)`.
+        // in-app explanation or from Settings, via `askForPermission()`.
         observers.append(listen(to: ModelContext.didSave, allowPrompt: false))
         observers.append(listen(to: AppPreferences.didChangeNotification, allowPrompt: false))
         observers.append(listen(to: .NSCalendarDayChanged, allowPrompt: false))
@@ -122,6 +122,19 @@ public final class SideEffectsCoordinator {
             self.pendingAllowsPrompt = false
             await self.reconcileNow(allowPermissionPrompt: allowPrompt)
         }
+    }
+
+    /// After the in-app explanation, or from Settings: a pass now that may ask for notification
+    /// permission. It returns once the pass has run, so with the person's answer when the
+    /// system asked; screens read the permission again then, never after a guessed pause.
+    /// A pass already waiting folds into this one.
+    @discardableResult
+    public func askForPermission() async -> ReminderAuthorization {
+        pending?.cancel()
+        pending = nil
+        pendingAllowsPrompt = false
+        await reconcileNow(allowPermissionPrompt: true)
+        return reminderAuthorization
     }
 
     /// Rebuilds reminders, badge, widget snapshot and indexes from the database now.
