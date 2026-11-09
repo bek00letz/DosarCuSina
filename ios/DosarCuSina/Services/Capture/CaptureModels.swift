@@ -259,6 +259,8 @@ public struct CaptureFieldKey: RawRepresentable, Hashable, Codable, Sendable, Ex
     public static let model: CaptureFieldKey = "model"
     public static let firstRegistrationDate: CaptureFieldKey = "firstRegistrationDate"
     public static let odometer: CaptureFieldKey = "odometer"
+    /// The series and number of the vehicle's identity card (CIV), as one value: "J123456".
+    public static let civNumber: CaptureFieldKey = "civNumber"
 
     // Utilities
     public static let clientCode: CaptureFieldKey = "clientCode"

@@ -6,8 +6,11 @@ enum IdentityFormat: Hashable, Sendable {
     case name
     /// A Romanian CNP: 13 digits with a valid control digit.
     case personalNumber
-    /// A document number; the pattern's capture groups, joined, are the number.
+    /// A document number printed as one code; the pattern's capture groups, joined, are the number.
     case documentNumber(pattern: String)
+    /// A document number printed in parts, a series and a number ("SERIA XT NR 123456"),
+    /// read by the one rule for such values (`CompositeValue`, `LabelledLayout.composite`).
+    case composite(CompositeValue)
     case date
     /// A validity printed as one range ("12.03.18-31.12.2028"); the first date fills `start`.
     case dateRange(start: CaptureFieldKey)
@@ -154,7 +157,7 @@ enum IdentityTemplates {
             .init(.birthDate, ["data nasterii / date of birth", "data nasterii", "date of birth"], .date),
             personalNumberLabel,
             .init(.documentNumber, ["nr. document / document no", "nr. document/document no", "nr. document", "document no"],
-                  .documentNumber(pattern: #"\b([A-Z]{2})\s?(\d{6,7})\b"#), searchesEverywhere: true),
+                  .composite(.identityCard), searchesEverywhere: true),
             .init(.expiryDate, ["data expirarii / date of expiry", "data expirarii", "date of expiry"], .date),
             .init(.issueDate, ["data emiterii / date of issue", "data emiterii", "date of issue", "data eliberarii"], .date),
             .init(.issuer, ["emisa de / issued by", "emisa de", "issued by", "autoritatea emitenta", "issuing authority"], .text),
@@ -181,7 +184,7 @@ enum IdentityTemplates {
             .init(.sex, ["sex/sexe/sex", "sex"], .sex),
             .init(.nationality, ["cetatenie/nationalite/nationality", "cetatenie", "nationality"], .country),
             personalNumberLabel,
-            .init(.documentNumber, ["seria"], .documentNumber(pattern: #"\b([A-Z]{2})\s*,?\s*(?:NR\.?)?\s*(\d{6,7})\b"#)),
+            .init(.documentNumber, ["seria"], .composite(.identityCard)),
             .init(.expiryDate, ["valabilitate/validite/validity", "valabilitate", "validity"], .dateRange(start: .issueDate)),
             .init(.issuer, ["emisa de/delivree par/issued by", "emisa de", "issued by"], .text),
         ],

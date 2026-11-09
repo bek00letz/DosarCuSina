@@ -6,6 +6,24 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ---
 
+## 2026-11-09
+
+### A series and a number are one value
+- **Decided:** a value printed in parts (a policy's series and number, an identity card's, an invoice's, a contract's, a talon's CIV) is read by one rule: its shape is data (`CompositeValue`), its labels a table, read by `LabelledLayout.composite`. It reads one line, inline "Seria … nr. …", separate lines, side by side, columns, and one header over both parts on lines of their own (an RCA's green card). The value is written one way: the parts joined, "Nr." dropped ("RO/00/X00/XX 123456789", "XT123456").
+- **Decided:** a number is never another field's: it follows its own label or its series, and the labels of other fields that start the same way ("Nr. înmatriculare", "Nr. contract", "Nr. identificare", "Serie șasiu", "Serie CIV", "Serie contor") are labels of their own.
+- **Decided:** a document keeps one number of its own (`CaptureKindProfile.numberKey`). A "document number" a reader gives a policy, an invoice or a contract is folded into that one and never shown as a second "Serie și număr"; a series in one and a number in the other become one value. This is the owner's RCA report.
+- **Decided:** readers agree on a value written differently, or read in part; a part never beats the whole, whoever read it, and two parts read by different readers are joined (`ReadingArbiter.agreedValue`). Two different whole values on one page are marked "Verifică".
+- **Decided (cautious):** a contract's number stays one code, without joining a series to it, so it still matches the codes subscriptions already keep. *Alternative:* join a printed series too, with a repair step for the codes kept.
+- **Decided (cautious):** a number alone under a policy's own label ("Nr. poliță: 123456789") is kept as the value, since some policies print no series; it isn't marked. *Alternative:* mark it "Verifică" on an RCA, whose series is always printed.
+- **Decided:** a talon's CIV series and number fill the car's "Serie CIV".
+- **Decided:** policy numbers already kept are left as they are: no repair step guesses a missing number. *Alternative:* a repair that lists RCA numbers kept without their number, for the person to fix.
+- **Why:** an RCA prints its series and number apart; one reader took the series and another the number, into two fields, and each patch for one layout missed the next.
+
+### A digit glued to letters is never an amount
+- **Decided:** in the one amount rule, a digit touching letters (B6, R1, M2, 5W30) is never an amount, unless the letters are its currency ("350lei"). A label's amount is the first one after it followed by its currency, else the last; an amount on the next line counts only when it stands there alone.
+- **Why:** an RCA's "Prima de asigurare 1234.56 LEI, Clasă Bonus-Malus: B6" gave a price of 6.
+- **Open for the owner:** the bonus-malus class is read and shown in the review but kept nowhere. *Recommendation:* a "Clasă bonus-malus" field on the car, filled from each RCA, with a catalog upgrade; not added without the owner's yes, since it changes the car's category.
+
 ## 2026-11-03
 
 ### The last open questions, answered

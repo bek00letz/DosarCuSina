@@ -219,7 +219,7 @@ struct GeneratedDocumentFacts {
     @Guide(description: "Company, clinic or authority that issued the document, as printed")
     var issuer: String?
 
-    @Guide(description: "Document, invoice or certificate number, as printed")
+    @Guide(description: "The document's own series and number together, as printed; empty on a policy, whose number is policyNumber")
     var documentNumber: String?
 
     @Guide(description: "Issue or invoice date, YYYY-MM-DD")
@@ -240,7 +240,7 @@ struct GeneratedDocumentFacts {
     @Guide(description: "Currency code: RON, EUR or USD")
     var currency: String?
 
-    @Guide(description: "Insurance policy series and number")
+    @Guide(description: "Insurance policy series and number together, e.g. RO/00/X00/XX 123456789; never a registration or contract number")
     var policyNumber: String?
 
     @Guide(description: "Phone number for claims or assistance")

@@ -30,6 +30,9 @@ extension CaptureDocumentKind {
             return IdentityTemplates.fieldKeys(for: self).contains(key) || key == .holderName || key == .documentVariant
         default:
             if key == .lineItems { return profile.carriesLineItems }
+            // A document carries one number of its own: a policy's is its policy number, never
+            // a second "Serie și număr" beside it (`CompositeValue.reconcile` folds one in).
+            if key == .documentNumber { return profile.numberKey == .documentNumber }
             if Self.subscriptionKeys.contains(key) { return profile.filing == .subscription }
             return !Self.personalKeys.contains(key) && !Self.personalDocumentKeys.contains(key)
         }
