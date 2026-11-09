@@ -8,6 +8,10 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-09
 
+### Deleting a section or a document still asks first
+- **Decided (owner):** deleting a section or a document keeps asking first, even though both can now be taken back with "Anulează". Deleting a deadline keeps not asking, as "„Anulează” for every step, deletions included" built it. This answers that entry's "Kept" note; nothing in the code changes.
+- **Why:** a section or a document can hold far more than one deadline, and the question is the person's last look at what goes.
+
 ### A category says how its visits read and how it is offered
 - **Decided:** the visit flow's wording (its title and the button's, the checklist's and the provider's headings, the history entry's kind and the trade of whoever did it) and how *Adaugă o secțiune* offers a category (its option's title, *Mașină* for *Mașini*, and its place among the six offered first) are data on the category, declared once in `BuiltInTemplates` (`CategoryBehavior.visit`, `offerTitle`, `shortlistOrder`). Screens read them through `visitWording` and `SectionOffers`; none names a built-in. Built-in catalog version 15 brings them to installed copies.
 - **Decided:** they are kept in the category's behaviour, the JSON every category already stores and archives carry, not in new columns, so there is no database change. *Alternative:* fields of their own on `TemplateDefinition` and `CategoryTemplate`, which needs a new schema version for text that only built-ins set.
