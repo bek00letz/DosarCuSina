@@ -11,13 +11,17 @@ struct DSListRow<Trailing: View>: View {
     var subtitle: Text?
     var systemImage: String?
     var tint: Color = DS.Palette.accent
+    /// A document row: its first page's picture (or its symbol) in place of the icon well.
+    var thumbnail: DSThumbnailWell?
     var showsChevron: Bool = false
     @ViewBuilder var trailing: Trailing
 
 
     var body: some View {
         HStack(spacing: DS.Space.s) {
-            if let systemImage {
+            if let thumbnail {
+                thumbnail
+            } else if let systemImage {
                 DSIconWell(systemImage: systemImage, tint: tint)
             }
 

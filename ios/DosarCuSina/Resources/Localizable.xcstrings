@@ -175,6 +175,35 @@
         }
       }
     },
+    "%lld pagini": {
+      "comment": "How many pages a document shared from another app has: „3 pagini”. Only shown for two or more.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "o pagină"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld pagini"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de pagini"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld poze": {
       "comment": "Photos received from another app",
       "localizations": {
@@ -197,6 +226,35 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld de poze"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld poze primite": {
+      "comment": "De verificat: photos shared together, read as the pages of one document. One is „O poză”, more are „Poze”, without the number: the line under it says „3 pagini”.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "O poză"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Poze"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Poze"
                 }
               }
             }
