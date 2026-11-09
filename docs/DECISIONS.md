@@ -8,6 +8,21 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-09
 
+### Policy numbers kept without their number are repaired
+- **Decided (owner):** this replaces "policy numbers already kept are left as they are" (below). A repair step, last in the list and asking first (`PolicyNumberPartsStep`), finds a policy number kept with only its series, on any deadline whose facts name a policy number (a car's RCA and CASCO, and a home's policies, since the rule is the same). When the policy filed on the section still has its read text and the rule for values printed in parts reads the whole value there with the same series, it offers that value. Otherwise it only says to read the policy again or type the number, with *Am înțeles* instead of *Corectează*: nothing is guessed. A number with no series is never flagged, since some policies print none.
+- **Why:** the owner chose a repair over asking people to re-read each policy; the policy's own text usually still holds the number.
+
+### The bonus-malus class belongs to the person
+- **Decided (owner):** the bonus-malus class follows the person's history, not the car's ("a person in an accident would see their class decrease, while a user with no accidents grows their class up to the max"). This replaces the recommendation of a car field in "A digit glued to letters is never an amount" (below).
+- **Decided:** it is *Clasă bonus-malus* on the household member, a choice with stable keys over the official scale, worst to best: M8 … M1, B0 (where a new policyholder starts), B1 … B8. Source: Norma ASF nr. 20/2017 privind asigurările auto din România, whose bonus-malus system has a base class B0, eight bonus classes and eight malus classes.
+- **Decided:** each RCA keeps its class on the person it insures: the one person whose documents carry the CNP read on the policy, else the member its name matches by the rule that files a holder's documents. It is never kept on a car. With no match, or no name on the policy, it isn't kept and the review says why ("… nu e printre persoanele din dosar. Adaugă persoana și citește polița din nou.").
+- **Decided:** the RCA names who it insures in its facts (a new fact role, `policyholder`, the car's *Asigurat RCA*), as the household knows them; its deadline page and the claim screen show "Clasa proprietarului: B6" read from that person, so it is never stored twice. CASCO and home policies name no policyholder.
+- **Decided:** the policyholder's CNP is read only on the phone and only to find the person: never shown in the review, kept, filed or asked of the AI provider.
+- **Decided:** the catalog moves to version 14; installed copies upgrade at launch, keeping their people and preferences.
+- **Open for the owner:** the class is shown on the car's pages even when the person's category is locked with Face ID; it isn't a secret, but it is read from a locked section. *Recommendation:* keep it shown.
+- **Open for the owner:** a car owned by a company (a CUI on the policy) has no person to keep the class on, so it isn't kept. *Recommendation:* leave it so until someone asks for company cars.
+- **Why:** the class moves with the driver, so on a car it would be wrong after a sale or for a second driver.
+
 ### A series and a number are one value
 - **Decided:** a value printed in parts (a policy's series and number, an identity card's, an invoice's, a contract's, a talon's CIV) is read by one rule: its shape is data (`CompositeValue`), its labels a table, read by `LabelledLayout.composite`. It reads one line, inline "Seria … nr. …", separate lines, side by side, columns, and one header over both parts on lines of their own (an RCA's green card). The value is written one way: the parts joined, "Nr." dropped ("RO/00/X00/XX 123456789", "XT123456").
 - **Decided:** a number is never another field's: it follows its own label or its series, and the labels of other fields that start the same way ("Nr. înmatriculare", "Nr. contract", "Nr. identificare", "Serie șasiu", "Serie CIV", "Serie contor") are labels of their own.
