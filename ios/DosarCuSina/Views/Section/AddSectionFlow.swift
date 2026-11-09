@@ -223,7 +223,7 @@ struct CustomSectionStep: View {
         .navigationTitle(Text("Categorie nouă", comment: "Title of the step that describes a category of one's own."))
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {
-            BottomBar {
+            DSBottomBar {
                 DSPrimaryButton("Continuă") {
                     guard let custom = model.custom, custom.isComplete else {
                         reveals = true
@@ -313,7 +313,7 @@ private struct EssentialsStep: View {
         .navigationTitle(Text("Ce trebuie știut", comment: "Title of the essentials step."))
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {
-            BottomBar {
+            DSBottomBar {
                 DSPrimaryButton("Continuă") {
                     guard FieldValuesCheck.canSave(model.values, fields: fields) else { reveals = true; return }
                     next()
@@ -390,7 +390,7 @@ private struct ObligationsStep: View {
         .navigationTitle(Text("Termene", comment: "Header of the obligations list."))
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {
-            BottomBar {
+            DSBottomBar {
                 DSPrimaryButton("Adaugă în dosar") {
                     guard model.missingDates.isEmpty else { reveals = true; return }
                     finish()
@@ -400,16 +400,3 @@ private struct ObligationsStep: View {
     }
 }
 
-/// A full-width action pinned above the home indicator on a soft material.
-struct BottomBar<Content: View>: View {
-    @ViewBuilder var content: Content
-
-    var body: some View {
-        content
-            .padding(.horizontal, DS.Space.m)
-            .padding(.vertical, DS.Space.s)
-            .frame(maxWidth: 640)
-            .frame(maxWidth: .infinity)
-            .background(.bar)
-    }
-}

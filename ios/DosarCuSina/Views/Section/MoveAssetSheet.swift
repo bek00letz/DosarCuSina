@@ -137,7 +137,7 @@ struct MoveAssetSheet: View {
         }
         .scrollDismissesKeyboard(.interactively)
         .safeAreaInset(edge: .bottom) {
-            BottomBar {
+            DSBottomBar {
                 DSPrimaryButton("Mută aici", systemImage: "arrow.turn.up.right") { move() }
                     .disabled(choice == nil)
             }
