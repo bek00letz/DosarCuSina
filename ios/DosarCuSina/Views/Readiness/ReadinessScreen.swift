@@ -169,8 +169,8 @@ private struct ReadinessActionsModifier: ViewModifier {
                 isPresented: $isChoosingPhoto,
                 title: Text("Adaugă o poză a actului", comment: "Title of the photo source choice for a paper a checklist asks for."),
                 assetID: photoAssetID
-            ) { message in
-                toast = DSToast(title: message, actionTitle: nil, action: nil)
+            ) { filed in
+                toast = filed
             } onError: { message in
                 toast = DSToast(title: LocalizedStringResource(stringLiteral: message), systemImage: "exclamationmark.triangle.fill", tint: DSStatus.overdue.color, actionTitle: nil, feedback: .error)
             }

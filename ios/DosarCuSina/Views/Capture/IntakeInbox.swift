@@ -46,7 +46,24 @@ final class IntakeInbox {
         loadPreviews()
     }
 
-    var count: Int { items.count }
+    /// Items leaving (dismissed, or filed) while their toast can still take that back: hidden
+    /// from De verificat, removed for good once the toast is gone (`DSToast.whenGone`).
+    private(set) var leaving: Set<UUID> = []
+
+    /// What still waits in De verificat: everything but what is leaving.
+    var waiting: [InboxItem] { items.filter { !leaving.contains($0.id) } }
+
+    var count: Int { waiting.count }
+
+    /// Hides an item that is leaving, until `remove` takes it for good or `keep` brings it back.
+    func setAside(_ item: InboxItem) {
+        leaving.insert(item.id)
+    }
+
+    /// Brings back an item that was leaving ("Anulează").
+    func keep(_ item: InboxItem) {
+        leaving.remove(item.id)
+    }
 
     /// Re-reads the inbox folder.
     func refresh() {
@@ -55,6 +72,7 @@ final class IntakeInbox {
         if Set(fresh.map(\.id)).subtracting(items.map(\.id)).isEmpty == false { arrivals += 1 }
         let changed = fresh != items
         if changed { items = fresh }
+        leaving.formIntersection(fresh.map(\.id))
         if contents.unreadable != unreadable { unreadable = contents.unreadable }
         loadPreviews()
         if changed { announceChange() }
@@ -70,6 +88,7 @@ final class IntakeInbox {
     func remove(_ item: InboxItem) {
         try? inbox?.remove(item.id)
         items.removeAll { $0.id == item.id }
+        leaving.remove(item.id)
         previews[item.id] = nil
         thumbnails[item.id] = nil
         announceChange()

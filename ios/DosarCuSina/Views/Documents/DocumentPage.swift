@@ -35,6 +35,7 @@ private struct PersonalDocumentContent: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.announce) private var announce
     @Query private var templates: [CategoryTemplate]
 
     @State private var isEditing = false
@@ -122,8 +123,10 @@ private struct PersonalDocumentContent: View {
     }
 
     private func delete() {
+        let name = document.name
         do {
-            try AssetActions(context: context).delete(document)
+            let receipt = try AssetActions(context: context).delete(document)
+            announce(.undoDeletion(LocalizedStringResource("Am șters „\(name)”.", comment: "Toast after deleting a personal document."), receipt: receipt))
             dismiss()
         } catch {
             self.error = UserFacingError(error)
@@ -363,6 +366,7 @@ struct PaperPage: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.announce) private var announce
     @State private var isConfirmingDelete = false
     @State private var isShowingText = false
     @State private var error: UserFacingError?
@@ -469,8 +473,10 @@ struct PaperPage: View {
     }
 
     private func delete() {
+        let title = attachment.displayTitle
         do {
-            try AttachmentActions(context: context).delete(attachment)
+            let receipt = try AttachmentActions(context: context).delete(attachment)
+            announce(.undoDeletion(LocalizedStringResource("Am șters „\(title)”.", comment: "Toast after deleting a document."), receipt: receipt))
             dismiss()
         } catch {
             self.error = UserFacingError(error)

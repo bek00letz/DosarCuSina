@@ -30,6 +30,8 @@ private struct ObligationPage: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.announce) private var announce
 
     @State private var toast: DSToast?
     @State private var isCompleting = false
@@ -185,7 +187,7 @@ private struct ObligationPage: View {
                 }
             }
         } else if obligation.status == .paused {
-            DSPrimaryButton("Pornește din nou", systemImage: "play.fill") { run { try ObligationActions(context: context).resume(obligation) } }
+            DSPrimaryButton("Pornește din nou", systemImage: "play.fill") { resume() }
         }
     }
 
@@ -393,13 +395,25 @@ private struct ObligationPage: View {
     // MARK: More
 
     @ViewBuilder private var moreActions: some View {
-        if obligation.status == .active {
-            DSCard {
-                Button { isRescheduling = true } label: {
-                    DSListRow("Schimbă data", subtitle: "Dacă termenul de pe act e altul.", systemImage: "calendar", showsChevron: true)
+        VStack(spacing: DS.Space.s) {
+            if obligation.status == .active {
+                DSCard {
+                    VStack(spacing: 0) {
+                        Button { isRescheduling = true } label: {
+                            DSListRow("Schimbă data", subtitle: "Dacă termenul de pe act e altul.", systemImage: "calendar", showsChevron: true)
+                        }
+                        .buttonStyle(.plain)
+                        DSRowSeparator()
+                        Button(action: pause) {
+                            DSListRow("Pune pe pauză", subtitle: "Nu-ți mai amintesc de el până îl pornești din nou.", systemImage: "pause.circle")
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
-                .buttonStyle(.plain)
             }
+            // Taken back from the toast, so it doesn't ask first (docs/COPY_GUIDE.md).
+            DSSecondaryButton("Șterge termenul", systemImage: "trash", role: .destructive, action: delete)
+                .padding(.top, DS.Space.l)
         }
     }
 
@@ -427,6 +441,36 @@ private struct ObligationPage: View {
         do {
             let receipt = try ObligationActions(context: context).reschedule(obligation, to: day)
             toast = .undo("Termenul e acum pe \(DueWording.date(day, today: today)).", receipt: receipt)
+        } catch {
+            toast = UpcomingActions.failureToast(error)
+        }
+    }
+
+    private func pause() {
+        do {
+            let receipt = try ObligationActions(context: context).pause(obligation)
+            toast = .undo("Am pus „\(obligation.title)” pe pauză.", receipt: receipt)
+        } catch {
+            toast = UpcomingActions.failureToast(error)
+        }
+    }
+
+    private func resume() {
+        do {
+            let receipt = try ObligationActions(context: context).resume(obligation)
+            toast = .undo("Am pornit din nou „\(obligation.title)”.", receipt: receipt)
+        } catch {
+            toast = UpcomingActions.failureToast(error)
+        }
+    }
+
+    /// Deletes the deadline and closes its page; the shell keeps the toast's "Anulează".
+    private func delete() {
+        let title = obligation.title
+        do {
+            let receipt = try ObligationActions(context: context).delete(obligation)
+            announce(.undoDeletion(LocalizedStringResource("Am șters termenul „\(title)”.", comment: "Toast after deleting a deadline."), receipt: receipt))
+            dismiss()
         } catch {
             toast = UpcomingActions.failureToast(error)
         }

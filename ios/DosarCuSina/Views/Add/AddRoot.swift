@@ -22,7 +22,6 @@ struct AddRoot: View {
     @State private var isAddingManually = false
     @State private var isPracticingShare = false
     @State private var toast: DSToast?
-    @State private var hiddenItems: Set<UUID> = []
     @State private var practiceItem: InboxItem?
     @State private var unreadableItem: UnreadableInboxItem?
 
@@ -103,7 +102,7 @@ struct AddRoot: View {
     }
 
     private var pending: [InboxItem] {
-        inbox.items.filter { !hiddenItems.contains($0.id) }
+        inbox.waiting
     }
 
     // MARK: Ways in
@@ -251,27 +250,20 @@ struct AddRoot: View {
         }
     }
 
-    /// Hides the item at once and removes it for good once the undo has passed.
+    /// Hides the item at once and removes it for good once its toast is gone.
     private func dismiss(_ item: InboxItem) {
-        hiddenItems.insert(item.id)
-        // Outside the database: the item only leaves the inbox once the toast has passed.
+        inbox.setAside(item)
+        // Outside the database: the item only leaves the inbox once the undo can't come any more.
         let title = row(item).title
-        toast = DSToast(title: "Am scos „\(title)” din De verificat.", action: {
-            hiddenItems.remove(item.id)
-        })
-        Task {
-            try? await Task.sleep(for: .seconds(11))
-            if hiddenItems.contains(item.id) {
-                inbox.remove(item)
-                hiddenItems.remove(item.id)
-            }
-        }
+        var leaving = DSToast(title: "Am scos „\(title)” din De verificat.", action: { inbox.keep(item) })
+        leaving.whenGone = { inbox.remove(item) }
+        toast = leaving
     }
 
     private func show(_ result: CaptureFlowResult) {
         switch result {
-        case .filed(let message, _), .visitSaved(let message):
-            toast = DSToast(title: message, actionTitle: nil, action: nil)
+        case .filed(let toast, _), .visitSaved(let toast):
+            self.toast = toast
         case .dismissed:
             break
         }

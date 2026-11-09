@@ -558,14 +558,23 @@ private struct GalleryFeedback: View {
 
     var body: some View {
         GalleryPage {
-            GallerySection(title: "Confirmare cu anulare", note: "Dispare după 5 secunde (10 cu VoiceOver), la glisare în jos sau la anulare.") {
+            GallerySection(title: "Confirmare cu anulare", note: "Dispare după 5 secunde (10 cu VoiceOver), la glisare în jos, la anulare, când se închide ecranul sau când aplicația trece în fundal. Una ștearsă stă 8 secunde.") {
                 DSCard {
-                    Button {
-                        toast = DSToast(title: "ITP marcat ca rezolvat", action: {})
-                    } label: {
-                        Text(verbatim: "Marchează ITP ca rezolvat").frame(maxWidth: .infinity)
+                    VStack(spacing: DS.Space.s) {
+                        Button {
+                            toast = DSToast(title: "ITP marcat ca rezolvat", action: {})
+                        } label: {
+                            Text(verbatim: "Marchează ITP ca rezolvat").frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent).buttonBorderShape(.capsule).controlSize(.large)
+                        Button {
+                            toast = DSToast(title: "Am șters „VW Golf 2018”.", systemImage: "trash.fill", tint: DS.Palette.secondaryLabel,
+                                            action: {}, duration: DSToast.deletionDuration)
+                        } label: {
+                            Text(verbatim: "Șterge „VW Golf 2018”").frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
                     }
-                    .buttonStyle(.borderedProminent).buttonBorderShape(.capsule).controlSize(.large)
                 }
             }
             GallerySection(title: "Schelet", note: "Păstrează forma conținutului, ca nimic să nu sară la încărcare.") {
