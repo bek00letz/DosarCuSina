@@ -125,7 +125,7 @@ extension AttachmentActions {
         attachment.isExample = isExample
         if let title, !title.isEmpty { attachment.title = title }
         if let kind { attachment.kind = kind }
-        if let extractedText { attachment.extractedText = PaymentCardNumbers.redact(extractedText) }
+        if let extractedText { attachment.extractedText = extractedText }
         if let documentDate { attachment.documentDate = documentDate.noonDate(in: calendar) }
         try UnitOfWork.save(context)
     }

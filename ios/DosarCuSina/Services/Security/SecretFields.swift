@@ -64,25 +64,27 @@ public enum SecretFields {
     }
 
     /// The values with every secret typed in plain sealed. Values already sealed
-    /// pass through unchanged.
+    /// pass through unchanged. A card number is masked before sealing (`PaymentCardNumbers`):
+    /// a sealed value is never rewritten once kept, so this is where it is kept out.
     public static func sealing(_ values: FieldValues, definition: TemplateDefinition, sealer: SecretSealer) throws -> FieldValues {
         var result = values
         for field in fields(in: definition) {
             guard let text = values[field.key]?.textValue, !SecretSealer.isSealed(text) else { continue }
-            let plain = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            let plain = PaymentCardNumbers.redact(text.trimmingCharacters(in: .whitespacesAndNewlines))
             result[field.key] = plain.isEmpty ? nil : .text(try sealer.seal(plain))
         }
         return result
     }
 
     /// The person's rows with every secret row typed in plain sealed. Rows
-    /// already sealed pass through unchanged; a secret row left empty keeps no value.
+    /// already sealed pass through unchanged; a secret row left empty keeps no value. A card
+    /// number is masked before sealing, as for a secret field.
     public static func sealingFacts(_ facts: [CustomFact], sealer: SecretSealer) throws -> [CustomFact] {
         try facts.map { fact in
             guard fact.isSecret, !SecretSealer.isSealed(fact.value) else { return fact }
             var sealed = fact
             sealed.isSensitive = true
-            let plain = fact.value.trimmingCharacters(in: .whitespacesAndNewlines)
+            let plain = PaymentCardNumbers.redact(fact.value.trimmingCharacters(in: .whitespacesAndNewlines))
             sealed.value = plain.isEmpty ? "" : try sealer.seal(plain)
             return sealed
         }

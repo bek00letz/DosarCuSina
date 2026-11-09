@@ -130,9 +130,8 @@ extension AttachmentActions {
         try UnitOfWork.save(context)
     }
 
-    /// Keeps the text read off a document again (no card number, whoever read it).
+    /// Keeps the text read off a document again (no card number, whoever read it: `FreeText`).
     public func setReadText(_ text: String, of attachment: Attachment) throws {
-        let text = PaymentCardNumbers.redact(text)
         guard attachment.extractedText != text else { return }
         attachment.extractedText = text
         try UnitOfWork.save(context)

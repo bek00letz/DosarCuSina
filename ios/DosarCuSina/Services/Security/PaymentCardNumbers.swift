@@ -1,11 +1,13 @@
 import Foundation
 
 /// A bank card's full number never stays in the binder: not in what a document's text
-/// keeps, not in a field, not in search, the iPhone's search, backups or logs. Only the
-/// last four digits are kept. One set of rules, here, used wherever text enters or leaves:
+/// keeps, not in a field, a row under Date importante, a note or any other words a record
+/// keeps, not in search, the iPhone's search, backups or logs. Only the last four digits are
+/// kept. One set of rules, here, used wherever text enters or leaves:
 /// - every capture result, before the review or anything else sees it (`CaptureResult.withoutCardNumbers`);
-/// - what a filed document keeps of its text (`AttachmentActions`) and what an import brings;
-/// - every field a section saves (`AssetActions`, through `sanitizing`);
+/// - everything kept: the unit of work masks the words of every record it saves, whoever
+///   wrote them, an import included (`FreeText`), fields through `sanitizing`;
+/// - a secret, before it is sealed (`SecretFields.sealing`);
 /// - search and the iPhone's search (`SearchPrivacy.redacting`).
 ///
 /// Two rules, by how sure the app is that the text is a card:
@@ -37,7 +39,8 @@ public enum PaymentCardNumbers {
 
     /// Whether the text holds something shaped like a card number (the "anywhere" rule).
     public static func containsCardNumber(_ text: String) -> Bool {
-        runs(in: text, strict: false).contains(where: \.isCardNumber)
+        guard text.contains(where: \.isNumber) else { return false }
+        return runs(in: text, strict: false).contains(where: \.isCardNumber)
     }
 
     /// The last four digits of the card number in the text: a full number by the
@@ -80,6 +83,18 @@ public enum PaymentCardNumbers {
             }
         }
         return result
+    }
+
+    /// Rows under Date importante with every card number masked, in their labels and values and
+    /// in the rows this build can't read. A secret row's sealed code is the secret's own business.
+    public static func sanitizing(_ facts: KeptList<CustomFact>) -> KeptList<CustomFact> {
+        let masked = facts.items.map { fact in
+            var fact = fact
+            fact.label = redact(fact.label)
+            if !SecretSealer.isSealed(fact.value) { fact.value = redact(fact.value) }
+            return fact
+        }
+        return facts.replacingItems(masked).mappingUnreadable { redacting($0) }
     }
 
     /// Raw JSON a newer build wrote, with any card number in its text masked; sealed codes stay.
