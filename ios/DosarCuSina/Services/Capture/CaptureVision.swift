@@ -1,6 +1,4 @@
 import CoreGraphics
-import CoreImage
-import CoreImage.CIFilterBuiltins
 import Foundation
 import ImageIO
 import OSLog
@@ -98,7 +96,7 @@ public struct VisionCaptureRecognizer: CaptureRecognizing {
         let height = Double(image.height), width = Double(image.width)
         let rect = CGRect(x: 0, y: band.minY * height, width: width, height: band.height * height).integral
         guard rect.height >= 8, let crop = image.cropping(to: rect) else { return nil }
-        let enlarged = ImageScaling.upscaled(crop, toLongEdge: MachineReadableBand.readingWidth) ?? crop
+        let enlarged = ImageScaling.scaled(crop, toLongEdge: MachineReadableBand.readingWidth, .up) ?? crop
         var request = RecognizeTextRequest()
         request.recognitionLevel = .accurate
         request.usesLanguageCorrection = false
@@ -275,7 +273,7 @@ public struct DocumentImageNormalizer: CapturePagePreparing {
             page = await Self.mostReadable([3, 1].compactMap { Self.turning(flat, by: $0) }) ?? flat
         }
         CaptureLog.engine.info("Prepared page: card \(isCard), corrected \(crop != nil), turned \(page.framing.quarterTurns), \(Int(size.width))×\(Int(size.height)) → \(page.image.width)×\(page.image.height)")
-        return PreparedPage(image: ImageScaling.upscaled(page.image, toLongEdge: Self.readableLongEdge) ?? page.image, framing: page.framing)
+        return PreparedPage(image: ImageScaling.scaled(page.image, toLongEdge: Self.readableLongEdge, .up) ?? page.image, framing: page.framing)
     }
 
     public func retryVariant(of prepared: PreparedPage, original: CGImage) async -> PreparedPage? {
@@ -285,7 +283,7 @@ public struct DocumentImageNormalizer: CapturePagePreparing {
             var whole = prepared.framing
             whole.prefersWholePhoto = true
             whole.quarterTurns = 0
-            candidates.append(PreparedPage(image: ImageScaling.upscaled(original, toLongEdge: Self.readableLongEdge) ?? original, framing: whole))
+            candidates.append(PreparedPage(image: ImageScaling.scaled(original, toLongEdge: Self.readableLongEdge, .up) ?? original, framing: whole))
         }
         let baseline = await Self.readability(of: prepared.image)
         guard let best = await Self.mostReadable(candidates) else { return nil }
@@ -395,42 +393,5 @@ public struct DocumentImageNormalizer: CapturePagePreparing {
             guard let candidate = observation.topCandidates(1).first, candidate.confidence >= 0.3 else { return total }
             return total + candidate.string.filter { $0.isLetter || $0.isNumber }.count
         }
-    }
-}
-
-// MARK: - Image operations
-
-/// Flattening and enlarging, with one shared Core Image context. Turning is `DocumentPicture.turned`.
-enum ImageScaling {
-    private static let context = CIContext(options: [.useSoftwareRenderer: false])
-
-    /// The quadrilateral (top-left, top-right, bottom-right, bottom-left, image space) made rectangular.
-    static func flattened(_ image: CGImage, corners: [CGPoint]) -> CGImage? {
-        guard corners.count == 4 else { return nil }
-        let filter = CIFilter.perspectiveCorrection()
-        filter.inputImage = CIImage(cgImage: image)
-        filter.topLeft = corners[0]
-        filter.topRight = corners[1]
-        filter.bottomRight = corners[2]
-        filter.bottomLeft = corners[3]
-        return filter.outputImage.flatMap(render)
-    }
-
-    /// The image enlarged so its long edge reaches `longEdge`, at most three times; nil when it is large enough.
-    static func upscaled(_ image: CGImage, toLongEdge longEdge: Int) -> CGImage? {
-        let current = max(image.width, image.height)
-        guard current > 0, current < longEdge else { return nil }
-        let scale = min(Double(longEdge) / Double(current), 3)
-        let filter = CIFilter.lanczosScaleTransform()
-        filter.inputImage = CIImage(cgImage: image)
-        filter.scale = Float(scale)
-        filter.aspectRatio = 1
-        return filter.outputImage.flatMap(render)
-    }
-
-    private static func render(_ image: CIImage) -> CGImage? {
-        let extent = image.extent.integral
-        guard extent.width > 0, extent.height > 0 else { return nil }
-        return context.createCGImage(image, from: extent)
     }
 }

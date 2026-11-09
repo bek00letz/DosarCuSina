@@ -33,9 +33,10 @@ struct PagePreparationTests {
     @Test("Small pages are enlarged up to three times; large ones are left alone; quarter turns swap the sides")
     func scaling() throws {
         let small = CaptureDocumentStoreTests.page(width: 400, height: 250)
-        let enlarged = try #require(ImageScaling.upscaled(small, toLongEdge: 2000))
+        let enlarged = try #require(ImageScaling.scaled(small, toLongEdge: 2000, .up))
         #expect(enlarged.width == 1200)
-        #expect(ImageScaling.upscaled(CaptureDocumentStoreTests.page(width: 2400, height: 1500), toLongEdge: 2000) == nil)
+        let large = CaptureDocumentStoreTests.page(width: 2400, height: 1500)
+        #expect(ImageScaling.scaled(large, toLongEdge: 2000, .up) === large)
 
         let turned = try #require(DocumentPicture.turned(small, quarterTurns: 1))
         #expect(turned.width == 250)

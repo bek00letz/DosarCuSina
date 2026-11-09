@@ -93,10 +93,9 @@ enum PhotoThumbnails {
         guard let data else { return nil }
         let cacheKey = "\(key)-\(Int(side))" as NSString
         if let cached = cache.object(forKey: cacheKey) { return Image(uiImage: cached) }
-        guard let image = UIImage(data: data) else { return nil }
-        let scale = side * 3 / max(image.size.width, image.size.height, 1)
-        let size = scale < 1 ? CGSize(width: image.size.width * scale, height: image.size.height * scale) : image.size
-        let thumbnail = image.preparingThumbnail(of: size) ?? image
+        // Read at the size shown (three pixels a point), never decoded whole first.
+        guard let decoded = ImageScaling.decoded(data, maxLongEdge: Int((side * 3).rounded())) else { return nil }
+        let thumbnail = UIImage(cgImage: decoded)
         cache.setObject(thumbnail, forKey: cacheKey)
         return Image(uiImage: thumbnail)
     }

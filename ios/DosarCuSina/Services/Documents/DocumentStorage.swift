@@ -76,7 +76,7 @@ public struct DocumentStorage {
         for attachment in try context.fetch(FetchDescriptor<Attachment>()) where isCandidate(attachment, policy: policy, now: now) {
             for page in attachment.orderedPages {
                 guard let data = page.imageData, data.count >= policy.minimumPageBytes,
-                      let image = ImageEncoding.decode(data),
+                      let image = ImageScaling.decoded(data, maxLongEdge: nil),
                       let encoded = try? ImageEncoding.encode(image, maxLongEdge: policy.maxLongEdge, quality: policy.quality),
                       encoded.data.count < data.count else { continue }
                 saved += data.count - encoded.data.count
