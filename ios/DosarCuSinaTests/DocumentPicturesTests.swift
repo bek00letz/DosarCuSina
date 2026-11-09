@@ -191,7 +191,8 @@ struct DocumentPicturesTests {
         let photo = CaptureDocumentStoreTests.page(width: 1000, height: 800)
         let result = try await engine.capture(CaptureRequest(.images([CaptureImage(image: photo)])))
         let ref = try #require(result.document)
-        let processed = try #require(await store.processed(id: try #require(ref.pendingID)))
+        let pendingID = try #require(ref.pendingID)
+        let processed = try #require(await store.processed(id: pendingID))
 
         // The photo as taken is what is kept; the cut-out is how it is shown.
         #expect(Self.pixelSize(processed.pageData[0]).width == 1000 && Self.pixelSize(processed.pageData[0]).height == 800)
@@ -204,12 +205,14 @@ struct DocumentPicturesTests {
         let actions = AttachmentActions(context: context)
         let attachment = try actions.fileCaptured(.new(processed, ref: ref), title: "Carte de identitate")
         #expect(attachment.orderedPages.first?.imageData == processed.pageData[0])
-        let shown = try #require(DocumentPicture.image(of: try #require(DocumentPages.sources(of: attachment).first)))
+        let firstPage = try #require(DocumentPages.sources(of: attachment).first)
+        let shown = try #require(DocumentPicture.image(of: firstPage))
         #expect(abs(shown.width - 800) <= 2)
 
         // "Folosește poza întreagă", and back with "Anulează".
         let receipt = try await actions.showWholePhoto(true, of: attachment)
-        let whole = try #require(DocumentPicture.image(of: try #require(DocumentPages.sources(of: attachment).first)))
+        let wholePage = try #require(DocumentPages.sources(of: attachment).first)
+        let whole = try #require(DocumentPicture.image(of: wholePage))
         #expect(whole.width == 1000 && whole.height == 800)
         let wholeThumbnail = Self.pixelSize(try #require(attachment.thumbnailData))
         #expect(wholeThumbnail.width * 800 == wholeThumbnail.height * 1000, "The thumbnail follows")
@@ -224,7 +227,8 @@ struct DocumentPicturesTests {
         let photo = CaptureDocumentStoreTests.page(width: 1000, height: 800)
         let stored = try await store.store(CaptureDocumentStore.StoreRequest(
             pages: [photo], framing: DocumentFraming(pages: [PageFraming(crop: Self.cardCorners)])))
-        let processed = try #require(await store.processed(id: try #require(stored.ref.pendingID)))
+        let pendingID = try #require(stored.ref.pendingID)
+        let processed = try #require(await store.processed(id: pendingID))
         let context = try makeContext()
         let actions = AttachmentActions(context: context)
         let document = CapturedDocument.new(processed, ref: stored.ref)
@@ -247,7 +251,7 @@ struct DocumentPicturesTests {
         let thumbnail = try Self.encoded(CaptureDocumentStoreTests.page(width: 254, height: 360))
         let pages = DocumentPages.sources(pageImages: [], original: data, thumbnail: thumbnail, framing: DocumentFraming())
         #expect(pages.count == 2)
-        #expect(pages.allSatisfy(\.isPDF))
+        #expect(pages.allSatisfy { $0.isPDF })
 
         // Shared or printed: 300 pixels per inch.
         let printed = try #require(DocumentPicture.image(of: pages[0]))
