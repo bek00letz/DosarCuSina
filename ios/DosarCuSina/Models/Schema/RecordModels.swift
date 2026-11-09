@@ -44,7 +44,7 @@ public enum MeasurementKind: String, Codable, CaseIterable, Sendable {
     }
 }
 
-extension DosarSchemaV7 {
+extension DosarSchemaV8 {
     /// A line in a history entry: a part replaced, a job done, a vaccine given.
     /// `componentKey` ties it to the template's component catalog so "when did I
     /// last change the brake pads" has one answer across entries.
@@ -73,6 +73,9 @@ extension DosarSchemaV7 {
         public var warrantyMonths: Int?
         public var notes: String?
         public var isExample: Bool = false
+        /// When it last changed, set by the unit of work that saved the change (`ChangeTimes`).
+        /// Records from before version 8 have `ChangeTime.unknown`, older than any change. Version 8.
+        public var updatedAt: Date = Date(timeIntervalSinceReferenceDate: 0)
 
         public var entry: HistoryEntry?
 
@@ -83,6 +86,7 @@ extension DosarSchemaV7 {
             self.id = id
             self.name = name
             self.componentKey = componentKey
+            self.updatedAt = Date()
         }
 
         /// The total paid: the explicit cost, or labor plus parts.
@@ -118,6 +122,9 @@ extension DosarSchemaV7 {
         public var source: String?
         public var notes: String?
         public var isExample: Bool = false
+        /// When it last changed, set by the unit of work that saved the change (`ChangeTimes`).
+        /// Records from before version 8 have `ChangeTime.unknown`, older than any change. Version 8.
+        public var updatedAt: Date = Date(timeIntervalSinceReferenceDate: 0)
 
         public var asset: Asset?
 
@@ -131,6 +138,7 @@ extension DosarSchemaV7 {
             self.value = value
             self.unit = (unit ?? kind.defaultUnit)?.key ?? ""
             self.recordedAt = recordedAt
+            self.updatedAt = Date()
         }
 
         /// The unit, read from any form it was stored in; nil when it has none.
@@ -201,6 +209,10 @@ extension DosarSchemaV7 {
         public var framingData: Data?
         public var createdAt: Date = Date()
         public var isExample: Bool = false
+        /// When it last changed, set by the unit of work that saved the change (`ChangeTimes`); a
+        /// change to one of its pages counts as a change to it. Records from before version 8
+        /// have `ChangeTime.unknown`, older than any change. Version 8.
+        public var updatedAt: Date = Date(timeIntervalSinceReferenceDate: 0)
 
         @Relationship(deleteRule: .cascade, inverse: \AttachmentPage.attachment)
         public var pages: [AttachmentPage]? = []
@@ -225,6 +237,7 @@ extension DosarSchemaV7 {
             self.fileData = data
             self.byteCount = data?.count ?? 0
             self.sha256 = data.map(Hashing.sha256)
+            self.updatedAt = Date()
         }
 
         public var kind: DocumentKind {

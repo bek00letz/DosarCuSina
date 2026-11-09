@@ -119,6 +119,87 @@ struct SchemaMigrationTests {
         #expect(seven["HistoryEntry"] != six["HistoryEntry"], "A history entry keeps the number of the paper it records")
     }
 
+    /// Version 7 as it shipped: version 6 with the number of the paper a history entry records.
+    /// Its frozen copy is pinned against the shapes version 8 kept, and against version 6.
+    @Test func theFrozenVersionSevenKeepsTheShapeItShippedWith() {
+        let six = Self.fingerprint(DosarSchemaV6.models)
+        let seven = Self.fingerprint(DosarSchemaV7.models)
+        let eight = Self.fingerprint(DosarSchemaV8.models)
+        for (entity, hash) in six where entity != "HistoryEntry" {
+            #expect(seven[entity] == hash, "\(entity) is as version 6 shipped it")
+        }
+        for entity in ["Asset", "Obligation", "Provider", "CategoryTemplate", "AttachmentPage"] {
+            #expect(seven[entity] == eight[entity], "\(entity) is as version 7 shipped it, which version 8 doesn't change")
+        }
+    }
+
+    @Test func versionEightChangesOnlyTheRecordsThatHadNoChangeTime() {
+        let seven = Self.fingerprint(DosarSchemaV7.models)
+        let eight = Self.fingerprint(DosarSchemaV8.models)
+        let timed = ["HistoryEntry", "ServiceItem", "MeasurementLog", "Attachment"]
+        for (entity, hash) in seven where !timed.contains(entity) {
+            #expect(eight[entity] == hash, "\(entity) is as version 7 shipped it")
+        }
+        for entity in timed {
+            #expect(eight[entity] != seven[entity], "\(entity) keeps when it last changed")
+        }
+    }
+
+    @Test func aStoreFromVersionSevenOpensWithItsRecordsAndNoKnownChangeTime() throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Dosar-v7.store")
+        let edited = noon("2026-10-01")
+
+        // Written by version 7: a visit with a line item and its invoice, and a reading.
+        do {
+            let schema = Schema(versionedSchema: DosarSchemaV7.self)
+            let container = try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)])
+            let context = ModelContext(container)
+            let car = DosarSchemaV7.Asset(name: "VW Golf 2018", templateKey: "vehicle")
+            car.updatedAt = edited
+            let visit = DosarSchemaV7.HistoryEntry(title: "Revizie")
+            visit.reference = "EXM 0000001"
+            let filter = DosarSchemaV7.ServiceItem(name: "Filtru ulei")
+            let reading = DosarSchemaV7.MeasurementLog(name: "", value: 142_500)
+            let invoice = DosarSchemaV7.Attachment(fileName: "factura.pdf")
+            let page = DosarSchemaV7.AttachmentPage(index: 0)
+            page.imageData = Data([1, 2, 3])
+            for model in [car, visit, filter, reading, invoice, page] as [any PersistentModel] { context.insert(model) }
+            visit.asset = car
+            filter.entry = visit
+            reading.asset = car
+            invoice.historyEntry = visit
+            page.attachment = invoice
+            try context.save()
+        }
+
+        // Opened by this version: everything as it was, with a change time older than any change.
+        let container = try PersistenceController.makeContainer(storeURL: url)
+        let context = ModelContext(container)
+        let visit = try #require(try context.fetch(FetchDescriptor<HistoryEntry>()).first)
+        #expect(visit.reference == "EXM 0000001")
+        #expect(visit.updatedAt == ChangeTime.unknown)
+        let filter = try #require(visit.items?.first)
+        #expect(filter.name == "Filtru ulei")
+        #expect(filter.updatedAt == ChangeTime.unknown)
+        let reading = try #require(try context.fetch(FetchDescriptor<MeasurementLog>()).first)
+        #expect(reading.value == 142_500)
+        #expect(reading.updatedAt == ChangeTime.unknown)
+        let invoice = try #require(visit.attachments?.first)
+        #expect(invoice.orderedPages.first?.imageData == Data([1, 2, 3]))
+        #expect(invoice.updatedAt == ChangeTime.unknown)
+        #expect(try context.fetch(FetchDescriptor<Asset>()).first?.updatedAt == edited, "A section keeps the time it had")
+
+        // A change from now on is newer, and kept.
+        visit.note = "Cu filtrul de aer."
+        try UnitOfWork.save(context)
+        #expect(visit.updatedAt > ChangeTime.unknown)
+        let reopened = ModelContext(try PersistenceController.makeContainer(storeURL: url))
+        #expect(try reopened.fetch(FetchDescriptor<HistoryEntry>()).first?.updatedAt == visit.updatedAt)
+    }
+
     @Test func aStoreFromVersionSixOpensWithItsBills() throws {
         let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)

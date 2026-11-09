@@ -28,6 +28,11 @@ import SwiftData
 /// - **What it took back can be read again.** After a rollback, the records the unit touched
 ///   are fetched again, so a screen drawing them next reads them as they were.
 ///
+/// - **It keeps change times.** Every record whose own values or links a save changes gets
+///   a new change time as it saves, unless the step set one itself (`ChangeTimes`), so a
+///   backup brought in later knows which copy is newer. A backup's own writer
+///   (`performPrivate`) keeps the times the backup carries.
+///
 /// Work that must only happen once the changes are kept goes in `afterCommit(in:_:)`.
 ///
 /// An action the person can take back opens its unit with `performUndoable(in:_:)`,
@@ -62,7 +67,7 @@ public enum UnitOfWork {
     public static func save(_ context: ModelContext) throws {
         guard !isOpen(in: context) else { return }
         do {
-            try context.save()
+            try write(context)
         } catch {
             rollBack(context)
             throw error
@@ -131,7 +136,7 @@ public enum UnitOfWork {
     private static func begin(_ context: ModelContext) throws -> Scope? {
         let key = ObjectIdentifier(context)
         guard open[key] == nil else { return nil }
-        if context.hasChanges { try context.save() }
+        if context.hasChanges { try write(context) }
         let scope = Scope()
         open[key] = scope
         return scope
@@ -143,8 +148,9 @@ public enum UnitOfWork {
             if let failure = failingCommits.removeValue(forKey: ObjectIdentifier(context)) {
                 throw failure
             }
-            // What an undoable step changed is read before the save, while the store still
-            // holds the state the unit started from.
+            // Change times first, so an undoable step's receipt records them; what it changed
+            // is read before the save, while the store still holds the state the unit started from.
+            ChangeTimes.stamp(context)
             let pending = scope.receipt?.prepare()
             try context.save()
             open[ObjectIdentifier(context)] = nil
@@ -153,6 +159,12 @@ public enum UnitOfWork {
             abort(context)
             throw error
         }
+    }
+
+    /// Saves the context with the change times its changes call for.
+    private static func write(_ context: ModelContext) throws {
+        ChangeTimes.stamp(context)
+        try context.save()
     }
 
     /// Discards everything the unit recorded and closes it.
