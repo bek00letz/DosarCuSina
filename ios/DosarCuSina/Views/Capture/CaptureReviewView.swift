@@ -63,8 +63,8 @@ struct CaptureReviewView: View {
     @State private var errorMessage: String?
     @State private var cloudMessage: String?
     @State private var saveRequest: ReminderSaveRequest?
-    @State private var thumbnail: UIImage?
-    @State private var pages: [UIImage] = []
+    /// The pages waiting to be filed, as read; shown with the person's choices on top.
+    @State private var processed: ProcessedDocument?
     @State private var isShowingPages = false
     @State private var backSource: CaptureSource?
     @State private var backError: String?
@@ -114,7 +114,7 @@ struct CaptureReviewView: View {
             )
         }
         .fullScreenCover(isPresented: $isShowingPages) {
-            DocumentPagesViewer(pages: pages.isEmpty ? [thumbnail].compactMap { $0 } : pages)
+            DocumentPagesViewer(pages: pageSources, editing: .review($review.pageChoices))
         }
         .captureSourcePicker($backSource, onPicked: { payload in
             backError = nil
@@ -122,7 +122,7 @@ struct CaptureReviewView: View {
         }, onError: { _ in
             backError = String(localized: "Poza nu s-a putut deschide. Încearcă din nou.")
         })
-        .task(id: review.documentID) { await loadThumbnail() }
+        .task(id: review.documentID) { await loadPages() }
         .task(id: review.result.id) { await explainCloudFailure() }
         .onChange(of: rereadResult?.id) { _, _ in mergeReread() }
         .examplePrompt($exampleQuestion) { save() }
@@ -134,48 +134,51 @@ struct CaptureReviewView: View {
 
     private var documentCard: some View {
         DSCard {
-            HStack(alignment: .top, spacing: DS.Space.s) {
-                Button { DocumentPagesViewer.present(reduceMotion: reduceMotion) { isShowingPages = true } } label: {
-                    Group {
-                        if let thumbnail {
-                            Image(uiImage: thumbnail).resizable().scaledToFill()
-                        } else {
-                            Image(systemName: "doc.text").font(.title).foregroundStyle(DS.Palette.secondaryLabel)
-                        }
-                    }
-                    .frame(width: 64, height: 84)
-                    .background(DS.Palette.fill)
-                    .clipShape(ConcentricRectangle(corners: .concentric(minimum: 8), isUniform: true))
-                    .contentShape(.rect)
-                }
-                .buttonStyle(.dsPressable)
-                .disabled(thumbnail == nil && pages.isEmpty)
-                .accessibilityLabel(Text("Vezi actul mare", comment: "VoiceOver label of the document thumbnail in the review."))
-                .accessibilityHint(Text("Se deschide pe tot ecranul. Poți mări cu două degete.", comment: "VoiceOver hint of the document thumbnail."))
-
-                VStack(alignment: .leading, spacing: DS.Space.xs) {
-                    Text(verbatim: CaptureMapping.kindTitle(review.kind))
-                        .dsFont(.title)
-                    Menu {
-                        Picker(selection: Binding(get: { review.kind }, set: { chooseKind($0) })) {
-                            ForEach(CaptureDocumentKind.allCases, id: \.self) { kind in
-                                Text(verbatim: CaptureMapping.kindTitle(kind)).tag(kind)
+            VStack(alignment: .leading, spacing: DS.Space.s) {
+                HStack(alignment: .top, spacing: DS.Space.s) {
+                    Button { DocumentPagesViewer.present(reduceMotion: reduceMotion) { isShowingPages = true } } label: {
+                        Group {
+                            if let first = pageSources.first {
+                                DocumentPageImage(source: first, maxLongEdge: 360, contentMode: .fill)
+                            } else {
+                                Image(systemName: "doc.text").font(.title).foregroundStyle(DS.Palette.secondaryLabel)
                             }
-                        } label: { Text("Ce act e") }
-                    } label: {
-                        Text("Nu e asta? Schimbă")
-                            .font(.subheadline.weight(.medium))
-                            .frame(minHeight: 44)
-                    }
-                    ForEach(review.kindAlternatives, id: \.self) { alternative in
-                        CaptureAlternativeNote(text: kindAlternativeText(alternative)) {
-                            chooseKind(alternative.value, from: alternative)
                         }
-                        .transition(.opacity)
+                        .frame(width: 64, height: 84)
+                        .background(DS.Palette.fill)
+                        .clipShape(ConcentricRectangle(corners: .concentric(minimum: 8), isUniform: true))
+                        .contentShape(.rect)
                     }
-                    Text(verbatim: tierNote)
-                        .dsFont(.footnote)
+                    .buttonStyle(.dsPressable)
+                    .disabled(pageSources.isEmpty)
+                    .accessibilityLabel(Text("Vezi actul mare", comment: "VoiceOver label of the document thumbnail in the review."))
+                    .accessibilityHint(Text("Se deschide pe tot ecranul. Poți mări sau roti pagina.", comment: "VoiceOver hint of the document thumbnail."))
+
+                    VStack(alignment: .leading, spacing: DS.Space.xs) {
+                        Text(verbatim: CaptureMapping.kindTitle(review.kind))
+                            .dsFont(.title)
+                        Menu {
+                            Picker(selection: Binding(get: { review.kind }, set: { chooseKind($0) })) {
+                                ForEach(CaptureDocumentKind.allCases, id: \.self) { kind in
+                                    Text(verbatim: CaptureMapping.kindTitle(kind)).tag(kind)
+                                }
+                            } label: { Text("Ce act e") }
+                        } label: {
+                            Text("Nu e asta? Schimbă")
+                                .font(.subheadline.weight(.medium))
+                                .frame(minHeight: 44)
+                        }
+                        ForEach(review.kindAlternatives, id: \.self) { alternative in
+                            CaptureAlternativeNote(text: kindAlternativeText(alternative)) {
+                                chooseKind(alternative.value, from: alternative)
+                            }
+                            .transition(.opacity)
+                        }
+                        Text(verbatim: tierNote)
+                            .dsFont(.footnote)
+                    }
                 }
+                cropChoice
             }
         }
     }
@@ -534,10 +537,48 @@ struct CaptureReviewView: View {
         }
     }
 
-    private func loadThumbnail() async {
-        guard let id = review.documentID, let processed = await CaptureDocumentStore.shared().processed(id: id) else { return }
-        thumbnail = processed.thumbnailData.flatMap(UIImage.init(data:))
-        pages = processed.pageData.compactMap(UIImage.init(data:))
+    private func loadPages() async {
+        guard let id = review.documentID else { return processed = nil }
+        processed = await CaptureDocumentStore.shared().processed(id: id)
+    }
+
+    /// The document's pages as they will be kept: as read, with the person's turns and
+    /// crop choices on top; for a photo already in the binder, its kept pages.
+    private var pageSources: [DocumentPageSource] {
+        if let processed { return DocumentPages.sources(of: processed, choices: review.pageChoices) }
+        if let id = review.duplicateAttachmentID, let kept = AttachmentActions(context: context).attachment(id: id) {
+            return DocumentPages.sources(of: kept, framing: kept.framing.applying(review.pageChoices))
+        }
+        return []
+    }
+
+    /// "Folosește poza întreagă" for every page cut out of its photo, or the cut-out again.
+    private var cropChoice: some View {
+        let croppable = pageSources.filter(\.framing.hasCrop)
+        let showsCrop = croppable.contains(where: \.framing.showsCrop)
+        return Group {
+            if !croppable.isEmpty {
+                DSAdaptiveStack(spacing: DS.Space.s) {
+                    Text(showsCrop
+                         ? String(localized: "Am păstrat doar actul, fără ce e în jur.", comment: "The review: the document was cut out of its photo.")
+                         : String(localized: "Se păstrează poza întreagă.", comment: "The review: the whole photo is kept, not the cut-out."))
+                        .dsFont(.footnote)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    if showsCrop {
+                        DSCompactButton("Folosește poza întreagă", systemImage: "photo") { chooseWholePhoto(true, on: croppable) }
+                    } else {
+                        DSCompactButton("Doar actul", systemImage: "crop") { chooseWholePhoto(false, on: croppable) }
+                    }
+                }
+                .transition(.opacity)
+            }
+        }
+    }
+
+    private func chooseWholePhoto(_ whole: Bool, on pages: [DocumentPageSource]) {
+        withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) {
+            for page in pages { review.pageChoices[page.index] = page.framing.showingWholePhoto(whole).choice }
+        }
     }
 
     /// Merges the newest reading into the review, keeping everything the person changed.

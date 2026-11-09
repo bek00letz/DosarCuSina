@@ -184,6 +184,18 @@ public enum DocumentType {
         return readOnPhoneOnly.contains(key)
     }
 
+    // MARK: Sharing
+
+    /// The types whose picture shows what must not be handed to just anyone: a bank card's
+    /// whole number. Sending one ("Trimite") says so first. Data, read by the share sheet.
+    public static let sharedWithCare: Set<String> = [bankCard]
+
+    /// Whether sending a type's picture says to send it only to someone the person trusts.
+    public static func isSharedWithCare(_ type: String?) -> Bool {
+        guard let type, let key = options.option(for: type)?.key else { return false }
+        return sharedWithCare.contains(key)
+    }
+
     // MARK: Validity
 
     /// How long a kind of document is valid after it is issued, in months, when that is a

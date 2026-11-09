@@ -84,7 +84,7 @@ private struct BackupSection: View {
             }
         }
         .sheet(item: Binding(get: { flow.exportURL.map(ShareItem.init) }, set: { if $0 == nil { flow.finishSharing() } })) { item in
-            ShareSheet(url: item.url) { flow.finishSharing() }
+            SystemShareSheet(urls: [item.url]) { _ in flow.finishSharing() }
                 .ignoresSafeArea()
         }
         .fileImporter(isPresented: $isPickingFile, allowedContentTypes: [BackupSettings.dossierType, .zip, .data]) { result in
@@ -263,22 +263,6 @@ enum BackupFiles {
         let parent = folder.standardizedFileURL.resolvingSymlinksInPath().pathComponents
         return file.count > parent.count && Array(file.prefix(parent.count)) == parent
     }
-}
-
-/// The system share sheet for one file, reporting when it closes.
-private struct ShareSheet: UIViewControllerRepresentable {
-    let url: URL
-    let onFinish: @MainActor () -> Void
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        let controller = UIActivityViewController(activityItems: [url], applicationActivities: nil)
-        controller.completionWithItemsHandler = { _, _, _, _ in
-            Task { @MainActor in onFinish() }
-        }
-        return controller
-    }
-
-    func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
 }
 
 // MARK: - Inteligență artificială

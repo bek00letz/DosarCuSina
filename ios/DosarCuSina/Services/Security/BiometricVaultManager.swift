@@ -163,6 +163,15 @@ public final class BiometricVaultManager {
         return await authenticateForReveal(reason: reason)
     }
 
+    /// Asks for Face ID or the passcode before a document from a locked category leaves
+    /// the phone ("Trimite"). It asks every time, even with the session open, and never
+    /// opens or closes the session. A document from a category that isn't locked goes
+    /// without asking.
+    public func confirmSharing(fromLockedCategory isLocked: Bool, reason: String) async -> UnlockResult {
+        guard isLocked else { return .success }
+        return await authenticateForReveal(reason: reason)
+    }
+
     /// Closes the session now.
     public func lock() {
         isSessionUnlocked = false
