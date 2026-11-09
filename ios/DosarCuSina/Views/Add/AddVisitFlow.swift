@@ -81,9 +81,8 @@ private struct VisitForm: View {
 
     private var template: CategoryTemplate? { try? TemplateStore(context: context).template(forKey: asset.templateKey) }
 
-    private var wording: VisitWording {
-        VisitWording.forTemplate(key: asset.templateKey, heroStyle: template?.heroStyle ?? .standard)
-    }
+    /// The category's own wording for its visits (`CategoryBehavior.visit`).
+    private var wording: VisitWording { template?.behavior.visitWording ?? .standard }
 
     private var components: [ComponentDefinition] { template?.components ?? [] }
 

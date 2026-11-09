@@ -1,38 +1,6 @@
 import Foundation
 import SwiftData
 
-/// How a visit is worded for each kind of section: a car goes to the service,
-/// a pet to the vet, a home gets a tradesperson. Driven by the template's
-/// look (`HeroStyle`), so a custom category gets the neutral wording. The one
-/// source for the section's "log a visit" button and the visit flow.
-struct VisitWording: Equatable {
-    var title: String
-    var checklistTitle: String
-    var providerTitle: String
-    var kind: HistoryKind
-    var trade: ProviderTrade
-
-    static func forTemplate(key: String, heroStyle: HeroStyle) -> VisitWording {
-        switch (key, heroStyle) {
-        case (_, .vehicle), (BuiltInTemplates.Key.bike, _):
-            return VisitWording(title: String(localized: "Am fost la service"), checklistTitle: String(localized: "Ce s-a făcut"),
-                                providerTitle: String(localized: "Service-ul"), kind: .maintenance, trade: .mechanic)
-        case (_, .pet):
-            return VisitWording(title: String(localized: "Am fost la veterinar"), checklistTitle: String(localized: "Ce i s-a făcut"),
-                                providerTitle: String(localized: "Veterinarul"), kind: .visit, trade: .vet)
-        case (_, .home):
-            return VisitWording(title: String(localized: "Am chemat un meseriaș"), checklistTitle: String(localized: "Ce a lucrat"),
-                                providerTitle: String(localized: "Meseriașul"), kind: .repair, trade: .handyman)
-        case (BuiltInTemplates.Key.health, _):
-            return VisitWording(title: String(localized: "Am fost la medic"), checklistTitle: String(localized: "Ce s-a făcut"),
-                                providerTitle: String(localized: "Medicul"), kind: .visit, trade: .doctor)
-        default:
-            return VisitWording(title: String(localized: "Am făcut o lucrare"), checklistTitle: String(localized: "Ce s-a făcut"),
-                                providerTitle: String(localized: "Cine a lucrat"), kind: .repair, trade: .other)
-        }
-    }
-}
-
 /// A visit being filled in: the ticked checklist rows, anything else done,
 /// the date, the counter, the total and who did it. Turns into exactly one
 /// `HistoryActions.recordVisit` call.

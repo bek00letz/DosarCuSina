@@ -131,6 +131,9 @@ doesn't know, reads as the default.
 - **`role`:** the part it plays for other categories: `holder` (people documents are filed under), `personalDocument`, `subscription` (ongoing contracts bills file into) or `home` (where contracts tied to an address live).
 - **`parentPocket`:** the pocket of a parent's page its sections show in (`tenants`, `products`, `subscriptions`).
 - **`addedOnlyUnderParent`:** its sections are only added under another section (a tenancy).
+- **`visit`:** how its visits read and what they are: `{"title": "Am fost la service", "checklistTitle": "Ce s-a făcut", "providerTitle": "Service-ul", "kind": "maintenance", "trade": "mechanic"}`. `kind` is a history entry's kind, `trade` a provider's. Missing, it reads as a job done: "Am făcut o lucrare", "Ce s-a făcut", "Cine a lucrat", `repair`, `other`; a missing or unknown key inside reads as that one's.
+- **`offerTitle`:** its option when adding a section, one thing rather than the category ("Mașină" for "Mașini"). Missing or empty, the category's `name`.
+- **`shortlistOrder`:** its place, from 1, among the categories offered first when adding a section ("Cele mai des folosite"). Missing, it is offered with the others, in the binder's order.
 
 Built-in keys: `vehicle`, `home`, `documents`, `pet`, `health`, `purchase`,
 `subscription`, `other`, `bike`, `plants`, `tenancy`, `member`, `espresso`.

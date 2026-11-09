@@ -69,13 +69,26 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
     public var parentPocket: SectionPocket?
     /// Its sections are only added under another section, never on their own (a tenancy).
     public var addedOnlyUnderParent: Bool
+    /// How its visits read and what they are ("Am fost la service"); nil reads as
+    /// `VisitWording.standard`. Read it through `visitWording`.
+    public var visit: VisitWording?
+    /// Its option in "Adaugă o secțiune", one thing rather than the category ("Mașină",
+    /// not "Mașini"); nil shows the category's name. Read it through `offerTitle(name:)`.
+    public var offerTitle: String?
+    /// Its place among the ones most households start with ("Cele mai des folosite"),
+    /// from 1; nil lists it with the other ready-made ones.
+    public var shortlistOrder: Int?
 
-    public init(box: Box = .perSection, listing: Listing = .plain, role: Role? = nil, parentPocket: SectionPocket? = nil, addedOnlyUnderParent: Bool = false) {
+    public init(box: Box = .perSection, listing: Listing = .plain, role: Role? = nil, parentPocket: SectionPocket? = nil, addedOnlyUnderParent: Bool = false,
+                visit: VisitWording? = nil, offerTitle: String? = nil, shortlistOrder: Int? = nil) {
         self.box = box
         self.listing = listing
         self.role = role
         self.parentPocket = parentPocket
         self.addedOnlyUnderParent = addedOnlyUnderParent
+        self.visit = visit
+        self.offerTitle = offerTitle
+        self.shortlistOrder = shortlistOrder
     }
 
     /// Any category the person makes: a box per section, a plain list.
@@ -84,7 +97,16 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
     /// Whether its sections get boxes of their own on the Dosar grid.
     public var hasSectionBoxes: Bool { box == .perSection }
 
-    private enum CodingKeys: String, CodingKey { case box, listing, role, parentPocket, addedOnlyUnderParent }
+    /// How its visits read: its own wording, else the standard one.
+    public var visitWording: VisitWording { visit ?? .standard }
+
+    /// Its option's title in "Adaugă o secțiune": its own, else the category's `name`.
+    public func offerTitle(name: String) -> String {
+        guard let offerTitle, !offerTitle.isEmpty else { return name }
+        return offerTitle
+    }
+
+    private enum CodingKeys: String, CodingKey { case box, listing, role, parentPocket, addedOnlyUnderParent, visit, offerTitle, shortlistOrder }
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -93,6 +115,9 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
         role = (try? c.decodeIfPresent(String.self, forKey: .role)).flatMap { $0.flatMap(Role.init(rawValue:)) }
         parentPocket = (try? c.decodeIfPresent(String.self, forKey: .parentPocket)).flatMap { $0.flatMap(SectionPocket.init(rawValue:)) }
         addedOnlyUnderParent = (try? c.decodeIfPresent(Bool.self, forKey: .addedOnlyUnderParent)).flatMap { $0 } ?? false
+        visit = (try? c.decodeIfPresent(VisitWording.self, forKey: .visit)).flatMap { $0 }
+        offerTitle = (try? c.decodeIfPresent(String.self, forKey: .offerTitle)).flatMap { $0 }
+        shortlistOrder = (try? c.decodeIfPresent(Int.self, forKey: .shortlistOrder)).flatMap { $0 }
     }
 }
 
@@ -178,7 +203,7 @@ public struct TemplateDefinition: Hashable, Sendable, Codable, Identifiable {
 
     /// Revision of the built-in catalog. Bump it whenever a built-in definition
     /// changes so installed copies are upgraded (preferences are kept).
-    public static let builtInCatalogVersion = 14
+    public static let builtInCatalogVersion = 15
 
     public static let customKeyPrefix = "custom."
 

@@ -202,7 +202,19 @@
               "listing": { "type": "string" },
               "role": { "type": "string" },
               "parentPocket": { "type": "string" },
-              "addedOnlyUnderParent": { "type": "boolean" }
+              "addedOnlyUnderParent": { "type": "boolean" },
+              "visit": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "checklistTitle": { "type": "string" },
+                  "providerTitle": { "type": "string" },
+                  "kind": { "type": "string" },
+                  "trade": { "type": "string" }
+                }
+              },
+              "offerTitle": { "type": "string" },
+              "shortlistOrder": { "type": "integer", "minimum": 1 }
             }
           },
           "components": {

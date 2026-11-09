@@ -286,10 +286,10 @@ struct VisitDraftTests {
     }
 
     @Test func wordingFollowsTheKindOfSection() {
-        #expect(VisitWording.forTemplate(key: "vehicle", heroStyle: .vehicle).trade == .mechanic)
-        #expect(VisitWording.forTemplate(key: "pet", heroStyle: .pet).title == "Am fost la veterinar")
-        #expect(VisitWording.forTemplate(key: "home", heroStyle: .home).kind == .repair)
-        #expect(VisitWording.forTemplate(key: "custom.x", heroStyle: .standard).trade == .other)
+        #expect(BuiltInTemplates.vehicle.behavior.visitWording.trade == .mechanic)
+        #expect(BuiltInTemplates.pet.behavior.visitWording.title == "Am fost la veterinar")
+        #expect(BuiltInTemplates.home.behavior.visitWording.kind == .repair)
+        #expect(CategoryBehavior.standard.visitWording.trade == .other)
     }
 }
 

@@ -7,9 +7,7 @@
 #
 # Format: path:rule, or path:rule:count when a file breaks the rule more than once.
 # The note above each group says which piece of work removes it.
-# built-in-key-in-views: Ask the category's behaviour (CategoryBehavior) instead. Left: the add-section menu's own wording and shortlist (AddSectionFlow), the visit wording (VisitDraft, the "visit wording as a template field" gap) and a refresh query (UpcomingRoot).
-ios/DosarCuSina/Views/Add/Visit/VisitDraft.swift:built-in-key-in-views:2
-ios/DosarCuSina/Views/Section/AddSectionFlow.swift:built-in-key-in-views:12
+# built-in-key-in-views: Ask the category's behaviour (CategoryBehavior) instead. Left: a refresh query (UpcomingRoot).
 ios/DosarCuSina/Views/Upcoming/UpcomingRoot.swift:built-in-key-in-views
 
 # date-format: Dates are written by DosarFormat (ios/Shared) and DueWording. What's left reads dates; it goes with the shared number and date reader.

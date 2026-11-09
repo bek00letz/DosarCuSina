@@ -14,6 +14,19 @@ extension TemplateStore {
     public func behaviorsByKey() throws -> [String: CategoryBehavior] {
         try templatesByKey().mapValues(\.behavior)
     }
+
+    /// The keys of every category that plays `role`, built-in or the person's own.
+    public func keys(playing role: CategoryBehavior.Role) throws -> Set<String> {
+        try all().keys(playing: role)
+    }
+}
+
+extension Sequence where Element == CategoryTemplate {
+    /// The keys of the categories that play `role`: the subscriptions, the people documents
+    /// are filed under. What a screen's query asks instead of naming a built-in.
+    public func keys(playing role: CategoryBehavior.Role) -> Set<String> {
+        Set(filter { $0.behavior.role == role }.map(\.key))
+    }
 }
 
 extension Dictionary where Key == String, Value == CategoryTemplate {
