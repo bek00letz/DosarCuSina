@@ -81,6 +81,11 @@ struct CaptureKindProfile: Sendable {
     /// Its photo is kept only when the person asks ("Păstrează și poza cardului"): a bank
     /// card's photo shows its whole number, which the binder never keeps otherwise.
     var photoIsOptIn = false
+    /// The printed labels of this kind's own values, as data, read with `LabelledLayout`:
+    /// a bill's dates, meter index and payment code (`BillReader`). Longer wordings win,
+    /// and a value is never another label, so a new wording is a new row. Empty for kinds
+    /// whose labels are still listed in the analyzer.
+    var labels: [(CaptureFieldKey, [String])] = []
 
     /// How a new section made from a document is named.
     enum SectionNameRule: Sendable {
@@ -231,7 +236,8 @@ struct CaptureKindProfile: Sendable {
             expectedKeys: [.provider, .serviceKind, .invoiceNumber, .issueDate, .dueDate, .total, .clientCode, .contractNumber, .podCode, .clcCode,
                            .phoneNumber, .meterIndex, .supplyAddress, .directDebit],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: true, identifierKeys: subscriptionCodes,
-            name: "Factură de utilități", titleRule: .wordAndProvider("Factură"), modelDescription: "utility, internet, TV or phone bill", deadlineIsOptIn: true, sectionName: .subscription
+            name: "Factură de utilități", titleRule: .wordAndProvider("Factură"), modelDescription: "utility, internet, TV or phone bill", deadlineIsOptIn: true, sectionName: .subscription,
+            labels: billLabels
         ),
         CaptureKindProfile(
             kind: .contract, templateKey: BuiltInTemplates.Key.subscription, filing: .subscription, blueprintKey: SubscriptionFields.minimumEndsBlueprint,
@@ -302,6 +308,23 @@ struct CaptureKindProfile: Sendable {
         carriesLineItems: true, opensVisitFlow: false, logsHistory: false, identifierKeys: [],
         name: "Alt document", titleRule: .fixed("Document"), modelDescription: "household document"
     )
+
+    /// A bill's own labels, folded: when it was issued, when to pay it, the meter's index and
+    /// how to pay it. The codes it shares with its contract (client code, POD, CLC, contract
+    /// number) are `ContractReader`'s. The previous index is a label too, so it is never
+    /// read as the new one.
+    static let billLabels: [(CaptureFieldKey, [String])] = [
+        (.issueDate, ["data emiterii", "data emitere", "data facturii", "data factura", "data facturarii", "data facturare",
+                      "emisa la", "emisa pe", "emisa in data de", "data:"]),
+        (.dueDate, ["data scadentei", "data scadenta", "scadenta", "scadentei", "scadent la", "scadent pe", "scadent",
+                    "data limita de plata", "data limita plata", "termen limita de plata", "termen limita plata", "termen de plata",
+                    "termen plata", "de platit pana la", "de achitat pana la", "plateste pana la", "platiti pana la", "achitati pana la"]),
+        (.meterIndex, ["index nou autocitit", "index autocitit nou", "index nou citit", "index nou", "index curent", "index actual",
+                       "index citit", "index autocitit", "1.8.0"]),
+        (.previousMeterIndex, ["index vechi", "index anterior", "index precedent"]),
+        (.paymentCode, ["cod de plata", "codul de plata", "cod plata", "cod pentru plata", "cod bare client", "cod de bare", "cod bare",
+                        "cod de inregistrare", "cod inregistrare", "cod de incasare", "cod incasare"]),
+    ]
 
     /// The codes that find a bill's or a contract's subscription, most specific first.
     static let subscriptionCodes: [CaptureFieldKey] = [.podCode, .clcCode, .phoneNumber, .contractNumber, .clientCode]

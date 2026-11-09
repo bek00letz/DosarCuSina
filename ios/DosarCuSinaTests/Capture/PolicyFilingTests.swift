@@ -50,8 +50,8 @@ struct PolicyFilingTests {
         Valabilă de la 01.11.2026 până la 31.10.2027
         """, referenceDate: Date(timeIntervalSince1970: 1_793_577_600))
         #expect(analysis.kind == .rcaPolicy)
-        #expect(RomanianUtilityParser.shared.detectProvider(in: "SEMNATURA DIGITALA ROMANIA") == .general)
-        #expect(RomanianUtilityParser.shared.detectProvider(in: "DIGI ROMANIA S.A. FACTURA") == .digi)
+        #expect(UtilityProviders.named(inFolded: RomanianText.fold("SEMNATURA DIGITALA ROMANIA")) == nil)
+        #expect(UtilityProviders.named(inFolded: RomanianText.fold("DIGI ROMANIA S.A. FACTURA"))?.name == "Digi (RCS & RDS)")
     }
 
     /// The text of an RCA policy, as the phone read it.

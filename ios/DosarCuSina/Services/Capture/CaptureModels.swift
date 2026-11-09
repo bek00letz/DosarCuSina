@@ -457,8 +457,11 @@ public struct CaptureBarcode: Hashable, Codable, Sendable {
     /// The long digit codes Romanian utilities print as payment barcodes (25 to 50 digits),
     /// decoded from the page. Evidence that the document is a bill.
     public var isPaymentCode: Bool {
-        (25...50).contains(payload.count) && payload.allSatisfy(\.isASCIIDigit)
+        Self.paymentCodeDigits.contains(payload.count) && payload.allSatisfy(\.isASCIIDigit)
     }
+
+    /// How many digits a bill's payment barcode holds, decoded or printed under it.
+    public static let paymentCodeDigits = 25...50
 }
 
 private extension Character {

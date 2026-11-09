@@ -148,10 +148,12 @@ public struct CaptureAnalyzer: Sendable {
         case .rcaPolicy, .insurancePolicy:
             addInsurance(text, kind: kind, years: years, into: &fields)
         case .utilityInvoice:
-            addInvoiceBasics(text, years: years, into: &fields)
-            if let due = RomanianFieldExtractor.labelledDate(["scadent", "termen de plata", "data scadentei", "de platit pana la"], in: text, window: years) {
-                fields.add(.dueDate, .day(due.day), 0.75, due.source)
-            }
+            // The bill's own labels (its dates, the meter's index, how to pay it), for every
+            // provider the same way; the issuer, the number and the total as on any invoice.
+            addIssuer(text, into: &fields)
+            addInvoiceNumberAndTotal(text, into: &fields)
+            fields.add(BillReader.fields(in: text, window: years))
+            if fields.day(.issueDate) == nil { addIssueDate(text, years: years, into: &fields) }
             // What ties the bill to its contract: the codes and the service.
             fields.add(ContractReader.identifierFields(in: text))
         case .contract:
@@ -249,13 +251,17 @@ public struct CaptureAnalyzer: Sendable {
 
     private func addInvoiceBasics(_ text: CaptureText, years: DateWindow, into fields: inout FieldSet) {
         addIssuer(text, into: &fields)
+        addInvoiceNumberAndTotal(text, into: &fields)
+        addIssueDate(text, years: years, into: &fields)
+    }
+
+    private func addInvoiceNumberAndTotal(_ text: CaptureText, into fields: inout FieldSet) {
         if let invoice = RomanianFieldExtractor.invoiceNumber(in: text) {
             fields.add(.invoiceNumber, .text(invoice.value), invoice.quality.confidence, invoice.source)
         }
         if let total = RomanianFieldExtractor.total(in: text) {
             fields.add(.total, .money(total.money), Self.confidence(total.strong ? 0.8 : 0.6, ambiguous: total.ambiguous), total.source)
         }
-        addIssueDate(text, years: years, into: &fields)
     }
 
     /// A confidence that marks the field "Verifică" when its amount could be read two ways ("3,750").
@@ -272,12 +278,11 @@ public struct CaptureAnalyzer: Sendable {
         }
     }
 
-    /// Who provides the service: a provider whose documents the utility reader knows by
-    /// name, else the company printed as the issuer.
+    /// Who provides the service: a provider the phone knows by name (`UtilityProviders`),
+    /// else the company printed as the issuer.
     private func addContractProvider(_ text: CaptureText, into fields: inout FieldSet) {
-        let known = RomanianUtilityParser.shared.detectProvider(in: RomanianUtilityParser.normalizeDiacritics(text.joinedOriginal))
-        if known != .general {
-            fields.add(.provider, .text(known.displayName), 0.85, nil)
+        if let known = UtilityProviders.named(in: text) {
+            fields.add(.provider, .text(known.name), 0.85, nil)
         }
         addIssuer(text, into: &fields)
     }
