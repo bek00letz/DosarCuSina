@@ -221,7 +221,7 @@ struct PhotoPickerRow: View {
             guard let newItem else { return }
             Task { @MainActor in
                 guard let data = try? await newItem.loadTransferable(type: Data.self),
-                      let small = await Task.detached(priority: .userInitiated, operation: { Self.keptPhoto(from: data) }).value
+                      let small = await Task.detached(priority: .userInitiated, operation: { PhotoPickerRow.keptPhoto(from: data) }).value
                 else { return }
                 photoData = small
             }

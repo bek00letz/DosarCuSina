@@ -124,10 +124,12 @@ struct ImageScalingTests {
     /// Whether the pixel `x` from the left and `y` from the top is the red mark.
     static func isMarked(_ image: CGImage, x: Int, y: Int) -> Bool {
         var pixel = [UInt8](repeating: 0, count: 4)
-        let context = CGContext(data: &pixel, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
-                                space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)!
-        // Move the image so the asked pixel lands on the one-pixel canvas.
-        context.draw(image, in: CGRect(x: -x, y: y - image.height + 1, width: image.width, height: image.height))
+        pixel.withUnsafeMutableBytes { buffer in
+            let context = CGContext(data: buffer.baseAddress, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
+                                    space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)!
+            // Move the image so the asked pixel lands on the one-pixel canvas.
+            context.draw(image, in: CGRect(x: -x, y: y - image.height + 1, width: image.width, height: image.height))
+        }
         return pixel[0] > 180 && pixel[1] < 90 && pixel[2] < 90
     }
 
