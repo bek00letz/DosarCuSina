@@ -282,4 +282,38 @@ struct QuestionsBeforeSavingTests {
         #expect(golf.measurements?.map(\.value) == [45_724])
         #expect(golf.history?.count == 1)
     }
+
+    // MARK: Experiment, removed before review: the same failures without fetching again.
+
+    @Test func experimentAFailedUnitWithoutFetchingAgain() throws {
+        let context = try makeContext()
+        let golf = try car(context)
+        UnitOfWork.skipFetchingAgainForTesting(in: context)
+        #expect(throws: Failure.self) {
+            try UnitOfWork.perform(in: context) {
+                _ = golf.measurements?.count
+                golf.name = "VW Golf 2018 TDI"
+                let entry = HistoryEntry(kind: .visit, title: "Vizită", occurredAt: noon(today))
+                context.insert(entry)
+                entry.asset = golf
+                throw Failure()
+            }
+        }
+        print("EXPERIMENT unit: reading after rollback without fetching again")
+        readEveryRelationship(of: golf)
+        print("EXPERIMENT unit: read fine without fetching again")
+    }
+
+    @Test func experimentAFailedSaveWithoutFetchingAgain() throws {
+        let context = try makeContext()
+        let golf = try car(context)
+        UnitOfWork.skipFetchingAgainForTesting(in: context)
+        UnitOfWork.failNextCommitForTesting(Failure(), in: context)
+        #expect(throws: Failure.self) {
+            _ = try HistoryActions(context: context, now: { noon(today) }).recordVisit(on: golf, checklist: [], odometer: 48_000, calendar: .bucharest)
+        }
+        print("EXPERIMENT save: reading after rollback without fetching again")
+        readEveryRelationship(of: golf)
+        print("EXPERIMENT save: read fine without fetching again")
+    }
 }
