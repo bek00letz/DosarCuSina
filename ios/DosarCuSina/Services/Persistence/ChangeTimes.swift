@@ -9,7 +9,7 @@ public enum ChangeTime {
     /// older than any change, and the same on every phone, so two copies of a record nobody
     /// has changed since are never taken for a newer one. Equal to the default the schema
     /// gives those records (`DosarSchemaV8`).
-    public static let unknown = Date(timeIntervalSinceReferenceDate: 0)
+    public static let unknown = Date.distantPast
 }
 
 /// A record that keeps when it last changed (`updatedAt`): sections, deadlines, firms,
@@ -27,7 +27,8 @@ protocol PartOfChangeTimed: UndoableRecord {
 
 /// The one rule for change times, kept by `UnitOfWork` as it saves: a record whose own
 /// values or links changed gets a new change time, unless the step gave it one itself
-/// (`AssetActions` passing its own clock). A record only linked to (a section that got a
+/// (`AssetActions` passing its own clock). A step that leaves the time as it was, even by
+/// writing the same time again, is taken as giving none. A record only linked to (a section that got a
 /// new visit) hasn't changed: the visit keeps the link. Records a step creates have the
 /// time they were made. Undo puts change times back with everything else, so a step taken
 /// back is as if it never happened.

@@ -82,7 +82,9 @@ struct DeadlineRemindersTests {
         let (passport, renewal) = try document(DocumentType.passport, in: context)
         #expect(renewal.travelMarginDays == 180)
         let mine = renewal.reminders.withLeadDays([200, 30])
-        try ObligationActions(context: context, calendar: calendar, now: { today }).setReminders(renewal, mine)
+        // Set an hour before the edit: a step that leaves a record's change time as it was is
+        // given one by the unit of work (`ChangeTimes`), so the two steps need clocks of their own.
+        try ObligationActions(context: context, calendar: calendar, now: { today.addingTimeInterval(-3600) }).setReminders(renewal, mine)
         #expect(renewal.remindersCustomized)
 
         try edit(passport, in: context) { $0[DocumentType.typeFieldKey] = .text(DocumentType.idCard) }

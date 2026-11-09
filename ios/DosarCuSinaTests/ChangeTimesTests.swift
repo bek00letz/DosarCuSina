@@ -145,7 +145,7 @@ struct ChangeTimesTests {
 
     @Test("A record from before change times were kept is older than any change")
     func unknownIsOlderThanAnyChange() {
-        #expect(ChangeTime.unknown < noon("1990-01-01"))
+        #expect(ChangeTime.unknown == .distantPast)
         #expect(HistoryEntry(kind: .note, title: "", occurredAt: Date()).updatedAt > ChangeTime.unknown, "A new record has the time it was made")
     }
 }

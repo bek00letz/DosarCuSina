@@ -55,7 +55,7 @@ extension DosarSchemaV8 {
         public var isExample: Bool = false
         /// When it last changed, set by the unit of work that saved the change (`ChangeTimes`).
         /// Records from before version 8 have `ChangeTime.unknown`, older than any change. Version 8.
-        public var updatedAt: Date = Date(timeIntervalSinceReferenceDate: 0)
+        public var updatedAt: Date = Date.distantPast
 
         // Set when the entry records the completion of an obligation, for undo.
         /// Noon on the due day of the cycle it closed.

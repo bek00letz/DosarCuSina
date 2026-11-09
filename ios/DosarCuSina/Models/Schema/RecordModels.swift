@@ -75,7 +75,7 @@ extension DosarSchemaV8 {
         public var isExample: Bool = false
         /// When it last changed, set by the unit of work that saved the change (`ChangeTimes`).
         /// Records from before version 8 have `ChangeTime.unknown`, older than any change. Version 8.
-        public var updatedAt: Date = Date(timeIntervalSinceReferenceDate: 0)
+        public var updatedAt: Date = Date.distantPast
 
         public var entry: HistoryEntry?
 
@@ -124,7 +124,7 @@ extension DosarSchemaV8 {
         public var isExample: Bool = false
         /// When it last changed, set by the unit of work that saved the change (`ChangeTimes`).
         /// Records from before version 8 have `ChangeTime.unknown`, older than any change. Version 8.
-        public var updatedAt: Date = Date(timeIntervalSinceReferenceDate: 0)
+        public var updatedAt: Date = Date.distantPast
 
         public var asset: Asset?
 
@@ -212,7 +212,7 @@ extension DosarSchemaV8 {
         /// When it last changed, set by the unit of work that saved the change (`ChangeTimes`); a
         /// change to one of its pages counts as a change to it. Records from before version 8
         /// have `ChangeTime.unknown`, older than any change. Version 8.
-        public var updatedAt: Date = Date(timeIntervalSinceReferenceDate: 0)
+        public var updatedAt: Date = Date.distantPast
 
         @Relationship(deleteRule: .cascade, inverse: \AttachmentPage.attachment)
         public var pages: [AttachmentPage]? = []
