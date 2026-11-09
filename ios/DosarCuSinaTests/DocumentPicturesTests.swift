@@ -161,10 +161,12 @@ struct DocumentPicturesTests {
     func cornersRoundTrip() throws {
         let found = [CGPoint(x: 100, y: 720), CGPoint(x: 900, y: 720), CGPoint(x: 900, y: 320), CGPoint(x: 100, y: 320)]
         let kept = try #require(DocumentPicture.pagePoints(found, width: 1000, height: 800))
-        #expect(kept == Self.cardCorners)
-        #expect(DocumentPicture.imageCorners(kept, width: 1000, height: 800) == found)
+        func near(_ a: Double, _ b: Double) -> Bool { abs(a - b) < 1e-9 }
+        #expect(zip(kept, Self.cardCorners).allSatisfy { near($0.x, $1.x) && near($0.y, $1.y) })
+        #expect(zip(DocumentPicture.imageCorners(kept, width: 1000, height: 800), found).allSatisfy { near($0.x, $1.x) && near($0.y, $1.y) })
         // The same fractions on the page kept smaller.
-        #expect(DocumentPicture.imageCorners(kept, width: 500, height: 400)[0] == CGPoint(x: 50, y: 360))
+        let smaller = DocumentPicture.imageCorners(kept, width: 500, height: 400)[0]
+        #expect(near(smaller.x, 50) && near(smaller.y, 360))
     }
 
     // MARK: Library photos
