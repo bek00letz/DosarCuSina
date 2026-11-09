@@ -74,6 +74,27 @@ struct CaptureFilingPlan {
     /// What happens to the class the policy prints; nil when it prints none.
     var bonusMalus: BonusMalus?
 
+    /// What saving does with a bill's meter index: a reading on the subscription it goes to.
+    enum Meter: Equatable {
+        /// Recorded on the subscription named `subscription`, through the one reading path.
+        case record(SubscriptionMeter.Reading, subscription: String)
+        /// The same bill was filed there before, with this index: nothing new is kept.
+        case alreadyKept(SubscriptionMeter.Reading, subscription: String)
+        /// The subscription doesn't say what it supplies, so the index has no meter to go on.
+        case unknownService
+
+        /// The reading saving keeps (or already keeps) on the subscription.
+        var reading: SubscriptionMeter.Reading? {
+            switch self {
+            case .record(let reading, _), .alreadyKept(let reading, _): reading
+            case .unknownService: nil
+            }
+        }
+    }
+    /// What happens to the meter index the bill prints; nil when it prints none, or when it
+    /// goes nowhere a meter is kept (no place chosen yet, not a subscription, a service without a meter).
+    var meter: Meter?
+
     /// Where `review`'s bonus-malus class goes, from the person the policy insures
     /// (`Policyholders`): by the CNP read on it, else by name. Nil when there is no class.
     @MainActor
@@ -106,6 +127,8 @@ struct CaptureFilingPlan {
         plan.provider = CaptureFiler.provider(of: review)
         plan.keepsPhoto = review.keepsPhoto
         plan.bonusMalus = bonusMalus(for: review, people: Policyholders.people(in: assets, templates: templates))
+        plan.meter = meter(for: review, section: section, templateKey: plan.templateKey, templates: templates, assets: assets,
+                           today: today, calendar: calendar)
 
         guard let day = plan.day else { return plan }
         guard review.destination != .none, let template else {
@@ -146,6 +169,31 @@ struct CaptureFilingPlan {
         }
         plan.deadline = Deadline(blueprint: blueprint, day: day, action: .create, reminders: reminders)
         return plan
+    }
+
+    /// What saving does with the meter index `review` shows (the value as it stands in the
+    /// review, so one marked "Verifică" is kept only as the person left it): a reading on the
+    /// subscription the bill goes to, in the unit its service gives, dated by the bill. The
+    /// subscription is `section` (the one found by `SubscriptionMatcher`, or chosen), else the
+    /// new one saving makes, named as it will be.
+    @MainActor
+    static func meter(for review: CaptureReview, section: Asset?, templateKey: String?, templates: [String: CategoryTemplate],
+                      assets: [Asset], today: CalendarDay, calendar: Calendar) -> Meter? {
+        guard let index = review.value(.meterIndex), SubscriptionMeter.number(index) != nil, review.destination != .none,
+              let templateKey, templates.plays(.subscription, templateKey), let template = templates[templateKey] else { return nil }
+        // The subscription's values as saving leaves them: a bill only fills what is still empty.
+        var values = section?.values ?? FieldValues()
+        for (key, value) in CaptureFiler.values(from: review, for: template.definition) where values[key] == nil { values[key] = value }
+        guard let service = SubscriptionFields.service(of: values) else { return .unknownService }
+        guard let reading = SubscriptionMeter.reading(index, service: service, day: CaptureFiler.billDay(review, today: today)) else { return nil }
+        let name = section?.name ?? CaptureFiler.subscriptionName(review)
+        // The same bill filed again: the reading its document recorded is already there.
+        if let section, let kept = review.duplicateAttachmentID,
+           let log = assets.lazy.flatMap({ $0.measurements ?? [] }).first(where: { ($0.attachments ?? []).contains { $0.id == kept } }),
+           log.asset?.id == section.id, reading.isRecorded(by: log, calendar: calendar) {
+            return .alreadyKept(reading, subscription: name)
+        }
+        return .record(reading, subscription: name)
     }
 
     /// The section's deadline from `blueprint` that a document moves: the running one, or,

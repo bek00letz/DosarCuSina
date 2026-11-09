@@ -413,6 +413,16 @@ public enum ServiceKind {
     public static func label(for key: String?) -> String? {
         key.flatMap { options.option(for: $0)?.label }
     }
+
+    /// What the meter of a service measures, for the index its bills print: gas, electricity
+    /// or (cold) water. Its unit is the kind's own (`MeasurementKind.defaultUnit`): m³ for gas
+    /// and water, kWh for electricity. Nil for a service without a meter, or none known.
+    public static func meterKind(for key: String?) -> MeasurementKind? {
+        guard let key else { return nil }
+        return meters[key]
+    }
+
+    private static let meters: [String: MeasurementKind] = [gas: .gas, electricity: .electricity, water: .coldWater]
 }
 
 /// What an insurance policy covers. Capture reads it once from the page

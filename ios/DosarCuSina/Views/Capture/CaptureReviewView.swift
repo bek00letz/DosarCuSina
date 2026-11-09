@@ -354,8 +354,29 @@ struct CaptureReviewView: View {
                             .fixedSize(horizontal: false, vertical: true)
                             .transition(.opacity)
                     }
+                    // A bill's index goes to its subscription's meter: say where, as saving will do it.
+                    if let meter = CaptureFilingPlan.make(for: review, templates: templatesByKey, assets: assets, today: CalendarDay(Date())).meter {
+                        Label { Text(verbatim: Self.meterText(meter)).dsFont(.footnote) } icon: {
+                            Image(systemName: "gauge.with.dots.needle.33percent").foregroundStyle(DS.Palette.secondaryLabel)
+                        }
+                        .labelStyle(DSLeadingIconLabelStyle())
+                        .fixedSize(horizontal: false, vertical: true)
+                        .transition(.opacity)
+                    }
                 }
             }
+        }
+    }
+
+    /// What saving does with a bill's meter index, in a line under what was read.
+    static func meterText(_ meter: CaptureFilingPlan.Meter) -> String {
+        switch meter {
+        case .record(let reading, let subscription):
+            String(localized: "Indexul \(reading.written) se trece la „\(subscription)”.", comment: "Capture review: the bill's meter index is recorded on its subscription.")
+        case .alreadyKept(let reading, let subscription):
+            String(localized: "Indexul \(reading.written) e deja trecut la „\(subscription)”.", comment: "Capture review: the same bill was filed before, its index is already there.")
+        case .unknownService:
+            String(localized: "Indexul nu-l trec: nu știu dacă e de gaz, de curent sau de apă.", comment: "Capture review: the subscription's service isn't known, so the index isn't recorded.")
         }
     }
 

@@ -97,14 +97,23 @@ struct SectionHero: View {
     @ViewBuilder
     private var metricTile: some View {
         if let field = definition.fields(withRole: .heroMetric).first, let value = asset.value(field.key) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(verbatim: field.label)
-                    .dsFont(.captionEmphasized)
-                Text(verbatim: FieldFormatter.display(value, field: field))
-                    .dsFont(.title, numeric: true)
-                    .contentTransition(.numericText())
-            }
-            .accessibilityElement(children: .combine)
+            HeroValueTile(label: field.label, value: FieldFormatter.display(value, field: field))
+        }
+    }
+
+    /// A subscription's meter: the last index its bills gave, with the bill's day. Readings are
+    /// the source of truth, as for a car's kilometres; nothing shows before the first one.
+    @ViewBuilder
+    private var meterTile: some View {
+        if definition.behavior.role == .subscription, let last = SubscriptionMeter.last(on: asset, calendar: calendar) {
+            let day = DosarFormat.longDay(last.day)
+            HeroValueTile(
+                label: String(localized: "Ultimul index", comment: "Hero of a gas, electricity or water subscription: the meter's last index."),
+                value: last.written,
+                note: last.isFromDocument
+                    ? String(localized: "De pe factura din \(day)", comment: "Under the last meter index: the bill it was read from.")
+                    : String(localized: "Notat pe \(day)", comment: "Under the last meter index: the day it was recorded.")
+            )
         }
     }
 
@@ -191,6 +200,7 @@ struct SectionHero: View {
                     .foregroundStyle(DS.Palette.secondaryLabel)
             }
             metricTile
+            meterTile
         }
     }
 
@@ -203,6 +213,30 @@ struct SectionHero: View {
         let status = BoxStatus.make(forAsset: asset.id, descendants: descendants, in: snapshots)
         DS.Hairline()
         DSStatusLine(text: status.line(isSensitive: false), tone: status.tone)
+    }
+}
+
+/// A hero's number: its label, the value large, and an optional line under it
+/// ("Kilometraj 45.724 km"; "Ultimul index 12.345 m³ De pe factura din 5 octombrie 2026").
+private struct HeroValueTile: View {
+    let label: String
+    let value: String
+    var note: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(verbatim: label)
+                .dsFont(.captionEmphasized)
+            Text(verbatim: value)
+                .dsFont(.title, numeric: true)
+                .contentTransition(.numericText())
+            if let note {
+                Text(verbatim: note)
+                    .dsFont(.subheadline, numeric: true)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 

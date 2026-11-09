@@ -87,6 +87,8 @@ struct CaptureFiler {
         var bill: HistoryEntry?
         /// The visit logged.
         var visit: HistoryEntry?
+        /// A bill's meter index, as a reading on its subscription.
+        var reading: MeasurementLog?
         /// The deadline's next date, when the filing moved one.
         var nextDue: CalendarDay?
         /// Takes the whole filing back: what it made goes, what it changed or moved
@@ -338,6 +340,12 @@ struct CaptureFiler {
             )
             outcome.attachment = filed
         }
+
+        // 5. A bill's meter index, as the plan says: a reading on its subscription, from the
+        // document, linked to it.
+        let subscription = outcome.asset.flatMap { templates.plays(.subscription, $0.templateKey) ? $0 : nil }
+        outcome.reading = try recordMeterReading(subscription == nil ? nil : plan.meter?.reading, on: subscription,
+                                                 document: outcome.attachment, templates: templates)
         return outcome
     }
 
@@ -429,6 +437,36 @@ struct CaptureFiler {
     }
 
     // MARK: Shared steps
+
+    /// Records a bill's meter index on its subscription through the one reading path
+    /// (`HouseholdMutations.recordReading`: from a document, a lower index asks first), and
+    /// links it to the document. A bill records one index, and it follows the bill as filed
+    /// now: filed again, it keeps the reading it recorded when nothing changed, and replaces
+    /// it when the person corrected the index or moved the bill (to no subscription, or with
+    /// the index cleared, it goes). The same index on the same day is the same reading too
+    /// (the bill read again from another photo), so it is never kept twice. Nil `reading`:
+    /// the filing keeps no index.
+    private func recordMeterReading(_ reading: SubscriptionMeter.Reading?, on subscription: Asset?, document: Attachment?,
+                                    templates: [String: CategoryTemplate]) throws -> MeasurementLog? {
+        // Only a reading a bill recorded on a subscription is the document's to replace.
+        if let earlier = document?.measurement, !earlier.isDeleted, let owner = earlier.asset, templates.plays(.subscription, owner.templateKey) {
+            if let reading, owner.id == subscription?.id, reading.isRecorded(by: earlier, calendar: calendar) { return earlier }
+            document?.measurement = nil
+            HouseholdMutations.removeReading(earlier, from: owner, in: context)
+            HouseholdMutations.syncHeroMetric(of: owner, in: context)
+        }
+        guard let reading, let subscription else { return nil }
+        if let same = (subscription.measurements ?? []).first(where: { reading.isRecorded(by: $0, calendar: calendar) }) {
+            document?.measurement = same
+            return same
+        }
+        let log = try HouseholdMutations.recordReading(
+            reading.value, on: subscription, at: reading.day.noonDate(in: calendar), source: .document,
+            unit: reading.unit, kind: reading.kind, answer: lowerReading, in: context
+        )
+        document?.measurement = log
+        return log
+    }
 
     /// Where a policy's bonus-malus class goes, worked out from the household as it is now.
     private func bonusMalusChoice(for review: CaptureReview?) -> CaptureFilingPlan.BonusMalus? {
