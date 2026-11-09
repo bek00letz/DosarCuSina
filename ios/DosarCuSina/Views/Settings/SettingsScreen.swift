@@ -2,11 +2,35 @@ import SwiftUI
 import SwiftData
 import UserNotifications
 
-/// Settings, in plain words. Opens scrolled to a section when a link asks for one.
+/// Where Settings opens: the section a link asks for, kept at the top while the list lays
+/// itself out (rows measuring themselves, a status read late), until the person scrolls.
+/// Waits for the list, never for a guessed pause. Pure, so it is tested.
+struct SettingsLanding: Equatable {
+    /// The section to keep at the top; nil once the person has scrolled, or with no link.
+    private(set) var section: SettingsSection?
+
+    init(_ section: SettingsSection?) {
+        self.section = section
+    }
+
+    /// The section to scroll to now that the list measures `height`; nil before it has any rows.
+    func section(whenLaidOut height: CGFloat) -> SettingsSection? {
+        height > 0 ? section : nil
+    }
+
+    /// The person moved the list: it stays where they put it.
+    mutating func personScrolled() {
+        section = nil
+    }
+}
+
+/// Settings, in plain words. Opens at a section when a link asks for one.
 struct SettingsScreen: View {
     let initialSection: SettingsSection?
 
     @Environment(\.dismiss) private var dismiss
+    /// The section a link asked for, shown from the start.
+    @State private var landing: SettingsLanding
     /// The repair list, open right away when a link or the repair prompt asks for it.
     @State private var showsRepairs: Bool
     /// Confirms a saved change to a category of one's own, with its undo.
@@ -15,6 +39,7 @@ struct SettingsScreen: View {
     init(initialSection: SettingsSection?) {
         self.initialSection = initialSection
         _showsRepairs = State(initialValue: initialSection == .repairs)
+        _landing = State(initialValue: SettingsLanding(initialSection))
     }
 
     var body: some View {
@@ -33,10 +58,16 @@ struct SettingsScreen: View {
                     AISettings()
                     AboutSettings().id(SettingsSection.about)
                 }
-                .task {
-                    guard let initialSection else { return }
-                    try? await Task.sleep(for: .milliseconds(250))
-                    withAnimation(DS.Motion.standard) { proxy.scrollTo(initialSection, anchor: .top) }
+                // The sheet opens already at the section, with no visible scroll: as soon as the list
+                // has rows, and again whenever they change height, until the person scrolls.
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
+                    land(proxy, height: height)
+                }
+                .onScrollGeometryChange(for: CGFloat.self) { $0.contentSize.height } action: { _, height in
+                    land(proxy, height: height)
+                }
+                .onScrollPhaseChange { _, phase in
+                    if phase == .tracking || phase == .interacting { landing.personScrolled() }
                 }
             }
             .navigationDestination(isPresented: $showsRepairs) { DataRepairsScreen() }
@@ -49,6 +80,11 @@ struct SettingsScreen: View {
                 }
             }
         }
+    }
+
+    private func land(_ proxy: ScrollViewProxy, height: CGFloat) {
+        guard let section = landing.section(whenLaidOut: height) else { return }
+        proxy.scrollTo(section, anchor: .top)
     }
 }
 
@@ -89,7 +125,10 @@ private struct NotificationSettings: View {
             case .notDetermined:
                 Text("Nu ai ales încă dacă primești amintiri.", comment: "Notification status.")
                 Button {
-                    sideEffects?.setNeedsReconcile(allowPermissionPrompt: true)
+                    Task {
+                        await sideEffects?.askForPermission()
+                        await ReminderPermission.shared.refresh()
+                    }
                 } label: {
                     Text("Pornește notificările", comment: "Asks for notification permission.")
                         .frame(minHeight: 44)

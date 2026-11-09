@@ -242,7 +242,7 @@ public actor CaptureDocumentStore {
 
 // MARK: - Image encoding
 
-/// Scales and encodes page images. HEIC first, JPEG when HEIC isn't available.
+/// Encodes page images, made smaller by `ImageScaling` first. HEIC first, JPEG when HEIC isn't available.
 enum ImageEncoding {
     struct Encoded {
         let data: Data
@@ -252,7 +252,7 @@ enum ImageEncoding {
     }
 
     static func encode(_ image: CGImage, maxLongEdge: Int, quality: Double) throws -> Encoded {
-        let scaled = scaled(image, maxLongEdge: maxLongEdge) ?? image
+        let scaled = ImageScaling.scaled(image, toLongEdge: maxLongEdge, .down) ?? image
         for (type, fileExtension) in [(UTType.heic, "heic"), (UTType.jpeg, "jpg")] {
             let data = NSMutableData()
             guard let destination = CGImageDestinationCreateWithData(data, type.identifier as CFString, 1, nil) else { continue }
@@ -263,26 +263,5 @@ enum ImageEncoding {
             }
         }
         throw CaptureDocumentStore.StoreError.encodingFailed
-    }
-
-    /// Decodes encoded image data back to an image, for re-encoding.
-    static func decode(_ data: Data) -> CGImage? {
-        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
-        return CGImageSourceCreateImageAtIndex(source, 0, nil)
-    }
-
-    /// Downscales so the long edge fits, keeping the aspect ratio. Returns `nil` when no scaling is needed.
-    static func scaled(_ image: CGImage, maxLongEdge: Int) -> CGImage? {
-        let longEdge = max(image.width, image.height)
-        guard longEdge > maxLongEdge else { return nil }
-        let scale = Double(maxLongEdge) / Double(longEdge)
-        let width = max(1, Int((Double(image.width) * scale).rounded()))
-        let height = max(1, Int((Double(image.height) * scale).rounded()))
-        guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
-              let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
-                                      space: colorSpace, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else { return nil }
-        context.interpolationQuality = .high
-        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-        return context.makeImage()
     }
 }

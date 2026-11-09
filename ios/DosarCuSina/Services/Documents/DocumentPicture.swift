@@ -104,9 +104,9 @@ public enum DocumentPicture {
         switch source.content {
         case .image(let data):
             // A cut-out is a part of the photo: decode the photo whole so the part stays sharp.
-            guard let photo = PageImageDecoding.decode(data, maxLongEdge: source.framing.showsCrop ? nil : maxLongEdge) else { return nil }
+            guard let photo = ImageScaling.decoded(data, maxLongEdge: source.framing.showsCrop ? nil : maxLongEdge) else { return nil }
             let picture = shown(photo, framing: source.framing)
-            return maxLongEdge.flatMap { ImageEncoding.scaled(picture, maxLongEdge: $0) } ?? picture
+            return maxLongEdge.flatMap { ImageScaling.scaled(picture, toLongEdge: $0, .down) } ?? picture
         case .pdf(let data, let index):
             guard let document = PDFPageRendering.document(data), let page = document.page(at: index + 1) else { return nil }
             let turns = source.framing.shownQuarterTurns
@@ -316,7 +316,7 @@ public enum PDFPageRendering {
 
 // MARK: - Page images
 
-/// Reading kept page images: their size, and the image itself, upright, as large as asked.
+/// A kept page image's size, upright, without decoding it. The image itself is `ImageScaling.decoded`.
 enum PageImageDecoding {
     static func size(of data: Data) -> CGSize? {
         guard let source = CGImageSourceCreateWithData(data as CFData, nil),
@@ -326,17 +326,5 @@ enum PageImageDecoding {
         let orientation = (properties[kCGImagePropertyOrientation] as? UInt32).flatMap(CGImagePropertyOrientation.init(rawValue:)) ?? .up
         let sideways: Set<CGImagePropertyOrientation> = [.left, .leftMirrored, .right, .rightMirrored]
         return sideways.contains(orientation) ? CGSize(width: height, height: width) : CGSize(width: width, height: height)
-    }
-
-    /// The image upright, its long edge at most `maxLongEdge` (as stored when nil).
-    static func decode(_ data: Data, maxLongEdge: Int?) -> CGImage? {
-        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
-        var options: [CFString: Any] = [
-            kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceCreateThumbnailWithTransform: true,
-            kCGImageSourceShouldCacheImmediately: true,
-        ]
-        if let maxLongEdge { options[kCGImageSourceThumbnailMaxPixelSize] = maxLongEdge }
-        return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
     }
 }

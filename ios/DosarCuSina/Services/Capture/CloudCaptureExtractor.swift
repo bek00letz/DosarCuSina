@@ -495,19 +495,7 @@ public struct CloudCaptureExtractor: CaptureSemanticExtracting {
 
     /// The page as a JPEG, no larger than `sentLongEdge`.
     static func jpeg(_ image: CGImage) -> Data? {
-        let long = max(image.width, image.height)
-        var source = image
-        if long > sentLongEdge {
-            let scale = Double(sentLongEdge) / Double(long)
-            let width = Int(Double(image.width) * scale), height = Int(Double(image.height) * scale)
-            guard let space = CGColorSpace(name: CGColorSpace.sRGB),
-                  let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
-                                          space: space, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else { return nil }
-            context.interpolationQuality = .high
-            context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-            guard let scaled = context.makeImage() else { return nil }
-            source = scaled
-        }
+        guard let source = ImageScaling.scaled(image, toLongEdge: sentLongEdge, .down) else { return nil }
         let data = NSMutableData()
         guard let destination = CGImageDestinationCreateWithData(data, UTType.jpeg.identifier as CFString, 1, nil) else { return nil }
         CGImageDestinationAddImage(destination, source, [kCGImageDestinationLossyCompressionQuality: 0.85] as CFDictionary)

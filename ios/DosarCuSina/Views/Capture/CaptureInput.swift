@@ -23,13 +23,7 @@ enum CaptureInput {
 
     /// An image from encoded bytes (JPEG, HEIC, PNG), upright.
     static func image(from data: Data) -> CGImage? {
-        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
-        let options: [CFString: Any] = [
-            kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceCreateThumbnailWithTransform: true,
-            kCGImageSourceThumbnailMaxPixelSize: maxPixelSize,
-        ]
-        return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
+        ImageScaling.decoded(data, maxLongEdge: maxPixelSize)
     }
 
     /// Photos (from Photos or a share), read together as the pages of one document.

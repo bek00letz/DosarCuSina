@@ -79,9 +79,11 @@ struct AppShell: View {
         .dsToastHost(toasts, bottomInset: max(0, (tabInsets[router.tab] ?? shellInset) - shellInset))
         .environment(router)
         .intakeHandoff()
-        .sheet(item: $router.sheet) { sheet in
+        // The next sheet waits for this one's dismissal to complete, never for a guessed pause.
+        .sheet(item: $router.sheet, onDismiss: { router.sheetDidDismiss() }) { sheet in
             sheetContent(sheet)
                 .environment(router)
+                .onAppear { router.sheetDidAppear() }
         }
         .fullScreenCover(isPresented: Binding(get: { !preferences.hasCompletedOnboarding && !vault.isAppLocked }, set: { _ in })) {
             OnboardingFlow {
@@ -91,7 +93,7 @@ struct AppShell: View {
         }
         // The shell's sheets announce through it too, once they close.
         .environment(\.dsToastCenter, toasts)
-        .dataRepairPrompt(isAllowed: router.sheet == nil && preferences.hasCompletedOnboarding && !vault.isAppLocked) {
+        .dataRepairPrompt(isAllowed: !router.hasSheet && preferences.hasCompletedOnboarding && !vault.isAppLocked) {
             router.open(.settings(.repairs))
         }
         .background(LockWindowHost(cover: cover, scenePhase: scenePhase, vault: vault))
@@ -107,7 +109,7 @@ struct AppShell: View {
                     return IntakeInbox.shared.waiting
                 },
                 navigator: navigator,
-                isBusy: { !preferences.hasCompletedOnboarding || router.sheet != nil || InboxLanding.isShowingSomethingOverTheTabs() }
+                isBusy: { !preferences.hasCompletedOnboarding || router.hasSheet || InboxLanding.isShowingSomethingOverTheTabs() }
             )
         }
         .onChange(of: scenePhase) { _, phase in
