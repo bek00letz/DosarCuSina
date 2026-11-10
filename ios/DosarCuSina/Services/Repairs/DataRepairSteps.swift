@@ -23,7 +23,7 @@ struct ChoiceKeysStep: DataRepairStep {
             let values = asset.values
             let normalized = values.normalizingChoices(for: definition)
             if normalized != values {
-                asset.valuesData = StoredJSON.encode(normalized)
+                asset.values = normalized
                 changed += 1
             }
         }

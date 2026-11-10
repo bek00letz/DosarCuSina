@@ -265,7 +265,7 @@ struct SealedValueTests {
         let data = try household.service.exportData(exportedAt: noon("2026-11-02"))
         let package = try DossierArchiveReader.read(data)
         let card = try #require(package.assets.first { $0.id == DossierV3.id(household.card.id) })
-        #expect(card.values["document.number"] == nil)
+        #expect(card.values.value["document.number"] == nil)
 
         let index = try SearchIndexBuilder(context: household.context).build()
         #expect(index.search(String(sealed.dropFirst(SecretSealer.prefix.count).prefix(12))).isEmpty)

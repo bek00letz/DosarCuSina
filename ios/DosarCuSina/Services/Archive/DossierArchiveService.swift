@@ -219,7 +219,7 @@ public struct DossierArchiveService {
                 version: template.builtInVersion, homeOrder: template.homeOrder, isOnHome: template.isOnHome,
                 isSensitive: template.isSensitive, sections: template.keptSections, blueprints: template.keptBlueprints,
                 components: template.keptComponents, pockets: template.pockets.map(\.rawValue),
-                createdAt: template.createdAt, updatedAt: template.updatedAt, behavior: template.behavior == .standard ? nil : template.behavior
+                createdAt: template.createdAt, updatedAt: template.updatedAt, behavior: template.keptBehavior?.omitted { $0 == .standard }
             )
         }
         // Secrets (PIN codes, secret rows, anything sealed) never leave the phone: an archive carries none.
@@ -234,7 +234,7 @@ public struct DossierArchiveService {
             return DossierV3.Asset(
                 id: DossierV3.id(asset.id), templateKey: asset.templateKey, name: asset.name,
                 parentId: DossierV3.id(asset.parent?.id), symbolOverride: asset.symbolOverride, tintOverride: asset.tintOverrideRaw, notes: asset.notes,
-                values: SecretFields.stripping(asset.values, definition: definitions[asset.templateKey] ?? BuiltInTemplates.definition(for: asset.templateKey)),
+                values: SecretFields.stripping(asset.keptValues, definition: definitions[asset.templateKey] ?? BuiltInTemplates.definition(for: asset.templateKey)),
                 customFacts: SecretFields.strippingFacts(asset.keptFacts).nilIfEmpty,
                 photoPath: photoPath, isExample: asset.isExample,
                 createdAt: asset.createdAt, updatedAt: asset.updatedAt
@@ -246,7 +246,7 @@ public struct DossierArchiveService {
                 notes: obligation.notes, blueprintKey: obligation.blueprintKey, kind: obligation.kindRaw,
                 dueDate: obligation.dueDay, dueMetric: obligation.dueMetric,
                 reminders: obligation.reminders, reminderMinuteOfDay: obligation.reminderMinuteOfDay,
-                recurrence: obligation.recurrence, estimatedCost: obligation.estimatedCost, provider: obligation.provider,
+                recurrence: obligation.keptRecurrence, estimatedCost: obligation.estimatedCost, provider: obligation.provider,
                 reference: obligation.reference, status: obligation.statusRaw, snoozedUntil: obligation.snoozeEnds(in: calendar),
                 isExample: obligation.isExample, createdAt: obligation.createdAt, updatedAt: obligation.updatedAt,
                 remindersCustomized: obligation.remindersCustomized ? true : nil
@@ -322,7 +322,7 @@ public struct DossierArchiveService {
                 obligationId: DossierV3.id(attachment.obligation?.id), historyEntryId: DossierV3.id(attachment.historyEntry?.id),
                 serviceItemId: DossierV3.id(attachment.serviceItem?.id), measurementId: DossierV3.id(attachment.measurement?.id),
                 providerId: DossierV3.id(attachment.provider?.id), validUntil: attachment.validUntil,
-                framing: attachment.framing.isPlain ? nil : attachment.framing,
+                framing: attachment.keptFraming?.omitted(when: \.isPlain),
                 updatedAt: DossierV3.changeTime(attachment.updatedAt)
             )
         }

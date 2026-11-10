@@ -90,7 +90,7 @@ public struct TemplateStore {
                 var values = FieldValues()
                 for (key, value) in asset.values { values[BuiltInTemplates.replacedFieldKeys[key] ?? key] = value }
                 asset.templateKey = newKey
-                asset.valuesData = StoredJSON.encode(values)
+                asset.values = values
                 changed = true
             }
             if let old = byKey.removeValue(forKey: oldKey), old.isBuiltIn {

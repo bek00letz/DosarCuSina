@@ -117,7 +117,7 @@ enum DossierV2Converter {
             if let existing = members[key] { return existing.id }
             let member = DossierV3.Asset(
                 id: DossierV3.id(UUID()), templateKey: BuiltInTemplates.Key.member, name: clean, parentId: nil,
-                symbolOverride: nil, tintOverride: nil, notes: nil, values: FieldValues(), customFacts: nil, photoPath: nil,
+                symbolOverride: nil, tintOverride: nil, notes: nil, values: KeptObject(FieldValues()), customFacts: nil, photoPath: nil,
                 isExample: false, createdAt: date, updatedAt: date
             )
             members[key] = member
@@ -262,7 +262,7 @@ enum DossierV2Converter {
 
             return DossierV3.Asset(
                 id: DossierV3.id(dto.id), templateKey: key, name: dto.name, parentId: parentId, symbolOverride: nil, tintOverride: nil,
-                notes: notes.isEmpty ? nil : notes, values: values, customFacts: nil, photoPath: nil, isExample: false,
+                notes: notes.isEmpty ? nil : notes, values: KeptObject(values), customFacts: nil, photoPath: nil, isExample: false,
                 createdAt: dto.createdAt, updatedAt: dto.updatedAt
             )
         }
@@ -280,7 +280,7 @@ enum DossierV2Converter {
                 id: DossierV3.id(dto.id), assetId: DossierV3.id(dto.assetId), title: dto.title, notes: dto.eventDescription,
                 blueprintKey: nil, kind: kind.rawValue, dueDate: due,
                 dueMetric: dto.metricTriggerValue, reminders: reminders,
-                reminderMinuteOfDay: nil, recurrence: DossierV2Converter.recurrence(cadenceDays: dto.cadenceDays),
+                reminderMinuteOfDay: nil, recurrence: KeptObject(DossierV2Converter.recurrence(cadenceDays: dto.cadenceDays)),
                 estimatedCost: dto.isCompleted ? nil : cost, provider: dto.provider, reference: dto.policyOrContractNumber,
                 status: (dto.isCompleted ? ObligationStatus.done : .active).rawValue, snoozedUntil: nil, isExample: false,
                 createdAt: dto.createdAt, updatedAt: dto.completedDate ?? dto.createdAt

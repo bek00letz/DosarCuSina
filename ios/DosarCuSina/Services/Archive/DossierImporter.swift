@@ -177,7 +177,7 @@ struct DossierImporter {
                 isOnHomeByDefault: dto.isOnHome, isSensitiveByDefault: dto.isSensitive,
                 sections: dto.sections.items, blueprints: dto.blueprints.items, components: dto.components?.items ?? [],
                 pockets: dto.pockets.map { $0.compactMap(SectionPocket.init(rawValue:)) } ?? SectionPocket.standard,
-                behavior: dto.behavior ?? .standard,
+                behavior: dto.behavior?.value ?? .standard,
                 version: 0
             ))
             let isLocked = phone.lock(dto.key, archive: dto.isSensitive, default: catalog?.isSensitiveByDefault ?? false)
@@ -193,6 +193,7 @@ struct DossierImporter {
                 template.keptSections = dto.sections.replacingItems(definition.sections)
                 template.keptBlueprints = dto.blueprints.replacingItems(definition.blueprints)
                 template.keptComponents = (dto.components ?? KeptList()).replacingItems(definition.components)
+                template.keptBehavior = dto.behavior
             }
             template.homeOrder = dto.homeOrder
             template.isOnHome = dto.isOnHome
@@ -231,9 +232,9 @@ struct DossierImporter {
             // Choice values written as display text (v2 backups, older builds) become option keys.
             let definition = definitions[dto.templateKey]
             // No card number comes in with a backup: the unit that writes it masks every one (`FreeText`).
-            let values = definition.map { dto.values.normalizingChoices(for: $0) } ?? dto.values
+            let values = definition.map { dto.values.replacingValue(dto.values.value.normalizingChoices(for: $0)) } ?? dto.values
             // Secrets this phone keeps for the record stay; an archive never brings any.
-            asset.valuesData = StoredJSON.encode(SecretFields.keepingLocalSecrets(values, from: phone.secrets[id] ?? FieldValues(), definition: definition))
+            asset.keptValues = SecretFields.keepingLocalSecrets(values, from: phone.secrets[id] ?? FieldValues(), definition: definition)
             asset.keptFacts = SecretFields.keepingLocalSecretFacts(dto.customFacts ?? KeptList(), from: phone.secretFacts[id] ?? [])
             asset.photoData = dto.photoPath.flatMap { package.files[$0] }
             asset.isExample = dto.isExample
@@ -273,8 +274,9 @@ struct DossierImporter {
             obligation.reminders = dto.reminders
             obligation.remindersCustomized = dto.remindersCustomized ?? false
             obligation.reminderMinuteOfDay = dto.reminderMinuteOfDay
-            // A rule from a newer build is kept as it was written (`RecurrenceRule.unreadable`).
-            obligation.recurrence = dto.recurrence
+            // A rule from a newer build is kept as it was written (`RecurrenceRule.unreadable`), and
+            // so is what it wrote inside a rule this build reads (`KeptObject`).
+            obligation.keptRecurrence = dto.recurrence
             obligation.estimatedCost = dto.estimatedCost
             obligation.provider = dto.provider
             obligation.reference = dto.reference
@@ -437,7 +439,7 @@ struct DossierImporter {
             attachment.extractedText = dto.extractedText
             attachment.documentDay = dto.documentDate
             attachment.validUntil = dto.validUntil
-            attachment.framing = dto.framing ?? DocumentFraming()
+            attachment.keptFraming = dto.framing
             attachment.isArchived = dto.isArchived
             attachment.createdAt = dto.createdAt
             attachment.isExample = dto.isExample

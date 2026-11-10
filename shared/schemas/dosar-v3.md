@@ -377,8 +377,9 @@ new one for the same thing.
 - **Template sections, blueprints, components and custom facts:** each entry is read on its own. An entry the reader can't read is kept in its place and written back; one it can read with the same `key` (an `id` for a custom fact) replaces it. A secret custom fact (`"isSecret": true`, or any sealed text) is left out by writers and readers, read or not.
 - **Fields:** an unknown `type`, `role`, `defaultValue`, `derivation` or `appliesWhen` is kept as written; the field reads as `text`, without the part it can't read.
 - **Kinds** (`kind` of an obligation, a history entry, a measurement or an attachment) are kept as written.
+- **Inside the objects a record carries** (an asset's `values` and `customFacts`, a template's `sections` with their fields and options, `blueprints` with their `reminders`, `reminderVariants`, `firstDue` and `facts`, `components` and `behavior`, an obligation's `recurrence`, an attachment's `framing`): a key the reader doesn't know, at any depth, and a value it reads as something else (an unknown `consequence` read as `legal`, a `firstDue` interval in an unknown `unit` read as `ask`) are kept as written while the person leaves that part as it is. An object whose `type` changes keeps nothing of the old one; an entry of a list is known by its `key` or `id`.
 
-Keys a reader doesn't know inside a record it reads are ignored.
+Keys a reader doesn't know at the top of a record (beside `id`, `title`, …) are ignored.
 
 ## Password-protected archives
 

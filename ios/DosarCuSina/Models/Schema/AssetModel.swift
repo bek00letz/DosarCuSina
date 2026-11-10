@@ -57,9 +57,17 @@ extension DosarSchemaV9 {
             self.isExample = isExample
         }
 
+        /// The values this build reads. Writing them keeps what a newer build wrote inside them
+        /// that this one doesn't read (`KeptObject`).
         public var values: FieldValues {
-            get { StoredJSON.decode(FieldValues.self, from: valuesData) ?? FieldValues() }
-            set { valuesData = StoredJSON.encode(newValue) }
+            get { KeptObject<FieldValues>.value(in: valuesData) ?? FieldValues() }
+            set { keptValues = keptValues.replacingValue(newValue) }
+        }
+
+        /// The values as stored, with what this build doesn't read: what a backup carries.
+        public var keptValues: KeptObject<FieldValues> {
+            get { KeptObject.stored(in: valuesData, fallback: FieldValues()) ?? KeptObject(FieldValues()) }
+            set { valuesData = KeptObject.data(newValue) }
         }
 
         public func value(_ key: String) -> FieldValue? {
@@ -67,9 +75,9 @@ extension DosarSchemaV9 {
         }
 
         /// The rows this build can read. Writing them keeps any a newer build wrote that this one
-        /// can't (`KeptList`).
+        /// can't, and inside the ones it reads what it doesn't read there (`KeptList`).
         public var customFacts: [CustomFact] {
-            get { keptFacts.items }
+            get { KeptList.items(in: customFactsData) }
             set { keptFacts = keptFacts.replacingItems(newValue) }
         }
 

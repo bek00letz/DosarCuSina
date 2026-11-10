@@ -136,9 +136,9 @@ struct SecretFieldTests {
         let data = try DossierArchiveService(container: s.container, calendar: .bucharest).exportData()
         let package = try DossierArchiveReader.read(data)
         let exported = try #require(package.assets.first { $0.name == s.card.name })
-        #expect(exported.values["document.pinAuthentication"] == nil)
-        #expect(exported.values["document.pinSigning"] == nil)
-        #expect(exported.values["document.expiry"] != nil, "Everything else travels")
+        #expect(exported.values.value["document.pinAuthentication"] == nil)
+        #expect(exported.values.value["document.pinSigning"] == nil)
+        #expect(exported.values.value["document.expiry"] != nil, "Everything else travels")
         for file in package.files.values {
             #expect(file.range(of: Data(SecretSealer.prefix.utf8)) == nil)
         }

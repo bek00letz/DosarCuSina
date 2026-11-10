@@ -84,6 +84,15 @@ rule change-time-outside-change-times "$app" \
     '^[[:space:]]*self\.updatedAt = (Date\(\)|updatedAt)[[:space:]]*$' \
     "Change times are written only by the unit of work (ChangeTimes). Pass the step's clock to it (UnitOfWork.perform(in:now:), save(_:now:)), and open an app-made step with origin: .app."
 
+# A stored JSON object is written through its model's accessor, which lays the new value over
+# what was stored and so keeps what a newer build wrote (KeptObject, KeptList). The models write
+# their own data; a repair that rewrites stored JSON in place, never reading it into this
+# build's types, is the one other writer.
+rule stored-json-outside-model "$app" \
+    '^ios/DosarCuSina/Models/|^ios/DosarCuSina/Services/Repairs/UnitKeysRepairStep\.swift$' \
+    '(^|[^A-Za-z0-9_])(valuesData|customFactsData|sectionsData|blueprintsData|componentsData|behaviorData|recurrenceData|framingData) *=([^=]|$)' - \
+    "Write a stored JSON object through its model's accessor (values, customFacts, sections, behavior, recurrence, framing), or its kept form for what a backup carries (keptValues, keptFacts, keptSections, keptBehavior, keptRecurrence, keptFraming), so what a newer build wrote is kept."
+
 # SwiftData saves a context by itself unless told not to, around the unit of work. Every
 # container and context is made in one file, which turns that off.
 rule context-outside-persistence "$app" '^ios/DosarCuSina/Services/Persistence/PersistenceController\.swift$' \
