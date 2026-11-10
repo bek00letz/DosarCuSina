@@ -144,7 +144,8 @@ struct OnboardingFlow: View {
     }
 }
 
-/// One onboarding screen: a few symbols, a headline, one paragraph and its buttons.
+/// One onboarding screen: a few symbols, a headline, one paragraph and its buttons, pinned
+/// to the bottom edge (with the notice that goes with them) so they show at any text size.
 private struct OnboardingPage<Actions: View>: View {
     let symbols: [String]
     let title: LocalizedStringKey
@@ -171,11 +172,7 @@ private struct OnboardingPage<Actions: View>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .scrollBounceBehavior(.basedOnSize)
-        .safeAreaInset(edge: .bottom) {
-            VStack(spacing: DS.Space.s) { actions }
-                .padding(DS.Space.m)
-                .background(DS.Palette.background)
-        }
+        .dsPinnedAction { actions }
         .background(DS.Palette.background)
     }
 }

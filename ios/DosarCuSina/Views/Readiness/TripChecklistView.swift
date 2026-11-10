@@ -18,21 +18,37 @@ struct TripChecklistView: View {
     @State private var ticked: Set<String> = []
     @State private var request: ReadinessAction?
     @State private var toast: DSToast?
+    /// "Vezi ce-ți trebuie" was pressed with a question left: the fields say what is missing.
+    @State private var revealsQuestions = false
 
     private let store = TripPlanStore()
 
     var body: some View {
-        ReadinessPage {
-            if !hasLoaded {
-                // The first frame only reserves the space; the plan loads at once.
-                Color.clear.frame(height: 1)
-            } else if isEditing || plan == nil {
-                TripForm(draft: $draft, candidates: ReadinessEngine.tripCandidates(in: assets), holderTemplateKey: holderTemplateKey,
-                         canCancel: plan != nil, onCancel: { isEditing = false }, onDone: finish)
-                    .transition(.opacity)
-            } else if let plan {
-                checklist(plan)
-                    .transition(.opacity)
+        Group {
+            if hasLoaded, isEditing || plan == nil {
+                // The questions, with "Vezi ce-ți trebuie" pinned to the bottom edge.
+                ReadinessPage {
+                    TripForm(draft: $draft, candidates: ReadinessEngine.tripCandidates(in: assets), holderTemplateKey: holderTemplateKey)
+                }
+                .environment(\.dsRevealsValidation, revealsQuestions)
+                .dsPinnedAction {
+                    DSPrimaryButton("Vezi ce-ți trebuie", systemImage: "checklist") { showChecklist() }
+                } secondary: {
+                    if plan != nil {
+                        DSSecondaryButton("Renunță la schimbări") { isEditing = false }
+                    }
+                }
+                .transition(.opacity)
+            } else {
+                ReadinessPage {
+                    if let plan {
+                        checklist(plan)
+                    } else {
+                        // The first frame only reserves the space; the plan loads at once.
+                        Color.clear.frame(height: 1)
+                    }
+                }
+                .transition(.opacity)
             }
         }
         .dsAnimation(value: isEditing)
@@ -66,15 +82,22 @@ struct TripChecklistView: View {
         hasLoaded = true
     }
 
-    private func finish(_ newPlan: TripPlan) {
+    /// "Vezi ce-ți trebuie": the trip as answered, kept, and its checklist; or what is missing.
+    private func showChecklist() {
+        guard let newPlan = draft.plan(calendar: calendar) else {
+            revealsQuestions = true
+            return
+        }
         store.save(newPlan)
         ticked = []
         plan = newPlan
         isEditing = false
+        revealsQuestions = false
     }
 
     private func edit() {
         if let plan { draft = TripDraft(plan, calendar: calendar) }
+        revealsQuestions = false
         isEditing = true
     }
 
@@ -167,13 +190,9 @@ private struct TripForm: View {
     @Binding var draft: TripDraft
     let candidates: TripCandidates
     let holderTemplateKey: String?
-    let canCancel: Bool
-    let onCancel: () -> Void
-    let onDone: (TripPlan) -> Void
 
     @Environment(\.calendar) private var calendar
     @Environment(ShellRouter.self) private var router
-    @State private var reveals = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Space.xl) {
@@ -228,20 +247,7 @@ private struct TripForm: View {
                     }
                 }
             }
-            VStack(spacing: DS.Space.s) {
-                DSPrimaryButton("Vezi ce-ți trebuie", systemImage: "checklist") {
-                    guard let plan = draft.plan(calendar: calendar) else {
-                        reveals = true
-                        return
-                    }
-                    onDone(plan)
-                }
-                if canCancel {
-                    DSSecondaryButton("Renunță la schimbări") { onCancel() }
-                }
-            }
         }
-        .environment(\.dsRevealsValidation, reveals)
     }
 
     private func question<Content: View>(_ title: LocalizedStringKey, @ViewBuilder content: () -> Content) -> some View {
