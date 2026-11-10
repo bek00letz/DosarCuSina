@@ -10,8 +10,12 @@ import SwiftData
 /// A tap on the share's notice (`InboxNotice`) opens De verificat the same way, after
 /// unlocking when the app is locked; while the app is open the notice isn't shown,
 /// since the list is right there.
+///
+/// Its delegate methods run on the main actor. iOS calls them on the main thread and expects
+/// the completion it hands over to come back there; a method that finished elsewhere made
+/// iOS stop the app when a reminder was tapped.
 @MainActor
-public final class NotificationResponder: NSObject, UNUserNotificationCenterDelegate {
+public final class NotificationResponder: NSObject, @preconcurrency UNUserNotificationCenterDelegate {
     private let containerProvider: @MainActor () -> ModelContainer?
     private let navigator: AppNavigator
     private let sideEffects: @MainActor (ModelContainer) -> SideEffectsCoordinator
@@ -29,14 +33,14 @@ public final class NotificationResponder: NSObject, UNUserNotificationCenterDele
         self.failures = failures
     }
 
-    public nonisolated func userNotificationCenter(
+    public func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
         InboxNotice.isNotice(notification.request.identifier) ? [.list] : [.banner, .list, .sound]
     }
 
-    public nonisolated func userNotificationCenter(
+    public func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {
