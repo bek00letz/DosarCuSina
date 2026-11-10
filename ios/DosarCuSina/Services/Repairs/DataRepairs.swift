@@ -11,6 +11,9 @@ import SwiftData
 ///   (`runsByItself`), run then; every other step only lists what it would change.
 /// - `apply` changes what the owner approved, one finding, or all of one kind, in one
 ///   `UnitOfWork`, and works hero values out from the readings again.
+/// - Both are the app's own steps (`ChangeOrigin.app`), the owner's OK included: what a repair
+///   changes keeps its change time, so a copy changed by the person on another phone still
+///   comes in with "Adaugă", and the list finds the repair again after that import.
 @MainActor
 struct DataRepairs {
     let context: ModelContext
@@ -46,7 +49,7 @@ struct DataRepairs {
     /// Runs the steps that change nothing anyone sees, then lists what waits for the owner,
     /// leaving out what they chose to leave as it is.
     func detect() throws -> [DataRepairFinding] {
-        try UnitOfWork.perform(in: context) {
+        try UnitOfWork.perform(in: context, origin: .app) {
             for step in Self.steps where step.runsByItself { try step.runByItself(in: context) }
         }
         var scan = DataRepairScan(context: context, calendar: calendar)
@@ -64,7 +67,7 @@ struct DataRepairs {
         let findings = findings.filter(\.isFixable)
         guard !findings.isEmpty else { return }
         let byStep = Dictionary(grouping: findings, by: \.step)
-        try UnitOfWork.perform(in: context) {
+        try UnitOfWork.perform(in: context, origin: .app) {
             for step in Self.steps {
                 guard let mine = byStep[type(of: step).id], !mine.isEmpty else { continue }
                 try step.apply(mine, in: context, calendar: calendar)

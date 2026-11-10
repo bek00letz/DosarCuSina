@@ -49,6 +49,9 @@ struct DossierImporter {
         let serviceItems = try importServiceItems(&result, entries: entries, providers: providers)
         let measurements = try importMeasurements(&result, assets: assets)
         try importAttachments(&result, assets: assets, obligations: obligations, entries: entries, serviceItems: serviceItems, measurements: measurements, providers: providers)
+        // The app's own step inside the import's writer, which gives no change times: what it
+        // changes keeps the time it had (the archive's, or the phone's), and the deadline it
+        // makes has the time it was made, as at launch (`ChangeOrigin.app`).
         try HouseholdRules.reconcile(in: context, today: CalendarDay(now, calendar: calendar), calendar: calendar)
         return result
     }
@@ -201,6 +204,8 @@ struct DossierImporter {
         for definition in BuiltInTemplates.all where byKey[definition.key] == nil {
             let template = CategoryTemplate(definition: definition, isBuiltIn: true, homeOrder: order)
             template.isSensitive = phone.lock(definition.key, archive: false, default: definition.isSensitiveByDefault)
+            // Installed from the catalog, not changed by anyone (`ChangeTimes`).
+            template.updatedAt = ChangeTime.unknown
             context.insert(template)
             byKey[definition.key] = template
             order += 1

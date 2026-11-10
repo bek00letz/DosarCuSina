@@ -59,7 +59,7 @@ extension DosarSchemaV8 {
 
         public var values: FieldValues {
             get { StoredJSON.decode(FieldValues.self, from: valuesData) ?? FieldValues() }
-            set { valuesData = StoredJSON.encode(newValue); updatedAt = Date() }
+            set { valuesData = StoredJSON.encode(newValue) }
         }
 
         public func value(_ key: String) -> FieldValue? {
@@ -70,7 +70,7 @@ extension DosarSchemaV8 {
         /// can't (`KeptList`).
         public var customFacts: [CustomFact] {
             get { keptFacts.items }
-            set { keptFacts = keptFacts.replacingItems(newValue); updatedAt = Date() }
+            set { keptFacts = keptFacts.replacingItems(newValue) }
         }
 
         /// The rows as stored, with any this build can't read: what a backup carries.

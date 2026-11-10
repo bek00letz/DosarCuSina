@@ -40,7 +40,7 @@ extension AssetActions {
             }
             _ = try ExampleOwnership.requireReal(document)
         }
-        return try UnitOfWork.performUndoable(in: context) { () throws -> EditOutcome in
+        return try UnitOfWork.performUndoable(in: context, now: now()) { () throws -> EditOutcome in
             if let picture {
                 let attachments = AttachmentActions(context: context)
                 if let pages = edit.addedPages { try attachments.addPages(pages, to: picture) }

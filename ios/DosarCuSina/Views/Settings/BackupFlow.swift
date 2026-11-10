@@ -143,13 +143,12 @@ final class BackupFlow {
         }
         do {
             let package = try await Self.readPackage(at: pending.url, password: pending.password)
-            // Written away from the main thread: a large backup never pauses the screen.
+            // Written away from the main thread: a large backup never pauses the screen. The
+            // import has the repair list look again itself, and the prompt says so once
+            // Settings closes.
             let result = try await DossierArchiveService(container: container).importPackageAway(package, mode: mode)
             resultText = BackupWording.result(result)
             doneCount += 1
-            // What the copy brought may need repairs (deadlines from a first-version copy):
-            // the repair list looks again, and the prompt says so once Settings closes.
-            try? DataRepairCenter.shared.refresh(in: container.mainContext, announce: true)
         } catch {
             self.error = UserFacingError(error, doing: String(localized: "Copia nu s-a pus înapoi", comment: "Title of an import error."))
         }

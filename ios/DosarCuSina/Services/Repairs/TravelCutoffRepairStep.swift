@@ -67,7 +67,7 @@ struct TravelCutoffStep: DataRepairStep {
         })
         for candidate in try Self.candidates(in: context)
         where approved.contains("\(candidate.obligation.id.uuidString):\(candidate.expected.travelMarginDays)") {
-            DeadlineReminders.refresh(candidate.obligation, template: candidate.template, now: Date())
+            DeadlineReminders.refresh(candidate.obligation, template: candidate.template)
         }
     }
 }

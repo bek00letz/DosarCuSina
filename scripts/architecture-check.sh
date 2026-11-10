@@ -74,6 +74,16 @@ rule save-outside-unit-of-work "$app" '^ios/DosarCuSina/Services/Persistence/Uni
     '[cC]ontext\??\.save\(\)' - \
     'Save through UnitOfWork.save(context). When one tap does several things, wrap them in UnitOfWork.perform(in:).'
 
+# When a record last changed is written by the unit of work as it saves (ChangeTimes), with the
+# step's clock and whose change it is, and by a backup's importer, which writes the archive's
+# times. A model's initializer gives the moment it is made, and a value type's own initializer
+# copies the value it is given; the unit replaces the first when it saves.
+rule change-time-outside-change-times "$app" \
+    '^ios/DosarCuSina/Services/Persistence/ChangeTimes\.swift$|^ios/DosarCuSina/Services/Archive/DossierImporter\.swift$' \
+    '(^|[^A-Za-z0-9_])updatedAt *=([^=]|$)' \
+    '^[[:space:]]*self\.updatedAt = (Date\(\)|updatedAt)[[:space:]]*$' \
+    "Change times are written only by the unit of work (ChangeTimes). Pass the step's clock to it (UnitOfWork.perform(in:now:), save(_:now:)), and open an app-made step with origin: .app."
+
 # SwiftData saves a context by itself unless told not to, around the unit of work. Every
 # container and context is made in one file, which turns that off.
 rule context-outside-persistence "$app" '^ios/DosarCuSina/Services/Persistence/PersistenceController\.swift$' \
@@ -174,9 +184,12 @@ rule small-hit-target "$app" - \
     "min(Height|Width): *$small|(Button|onTapGesture|contentShape|Toggle|Link).*[^A-Za-z]height: *$small" - \
     'Tap targets are at least 44 pt (DS.Space and the DS buttons already are). If nothing here is tapped, drop the minimum instead.'
 
+# Actions, the unit of work, and the steps that change data with no one to tell: the category
+# store's changes, the repair list, the household's own deadlines. Reading a category is not
+# a change and may fall back.
 rule silent-action-failure "$app" - \
-    'try\? *(await +)?[A-Za-z_.]*[aA]ctions[.(]|try\? *(await +)?UnitOfWork\.' - \
-    "Don't drop an action's failure with try?. Catch it and show SaveFailure.message(for:formKept:), or let it throw to a caller that does."
+    'try\? *(await +)?[A-Za-z_.]*[aA]ctions[.(]|try\? *(await +)?UnitOfWork\.|try\? *(await +)?(TemplateStore\([^)]*\)|[A-Za-z_]*[sS]tore)\.(installBuiltIns|createCustom|editCustom|setPockets|update|delete|move|setOnHome|setSensitive)\(|try\? *(await +)?[A-Za-z_.]*(DataRepair[A-Za-z]*|[rR]epairs)[.(]|try\? *(await +)?[A-Za-z_.]*(HouseholdRules\.|reconcileHouseholdRules\()' - \
+    "Don't drop a change's failure with try?. Catch it and show SaveFailure.message(for:formKept:), let it throw to a caller that does, or, for a step no one sees (launch, the repair list), log it with PersistenceLog.attempt."
 
 # A question for the person is made by its one rule, which changes nothing, so every action
 # asks it before its unit of work writes (StepQuestion). The design system's gallery shows them.

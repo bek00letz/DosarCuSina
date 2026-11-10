@@ -41,7 +41,8 @@ public struct PlannedObligation: Hashable, Sendable, Identifiable {
 public final class AssetActions {
     public let context: ModelContext
     private let calendar: Calendar
-    private let now: () -> Date
+    /// The clock its steps give their change times by (`UnitOfWork`).
+    let now: () -> Date
     /// Seals secret fields (PIN codes) before they are saved.
     private let sealer: SecretSealer
 
@@ -112,7 +113,7 @@ public final class AssetActions {
         let today = CalendarDay(now(), calendar: calendar)
         // One step: a failure part-way leaves no section without its deadlines. Inside a
         // caller's unit this joins it, and only that unit rolls back.
-        return try UnitOfWork.perform(in: context) {
+        return try UnitOfWork.perform(in: context, now: now()) {
             let asset = Asset(name: name, templateKey: template.key, values: prepared, notes: notes, isExample: isExample)
             context.insert(asset)
             if let newParent {
@@ -164,16 +165,15 @@ public final class AssetActions {
         // Every question first, before anything is written (`StepQuestion`).
         let reading = template.flatMap { plannedReading(asset, values: values, template: $0.definition, source: readingSource, date: readingDate) }
         try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
-        return try UnitOfWork.perform(in: context) {
+        return try UnitOfWork.perform(in: context, now: now()) {
             var outcome = EditOutcome()
             asset.name = name
             asset.values = values
             asset.notes = notes
-            asset.updatedAt = now()
             if let template {
                 // A value the deadlines' reminders depend on changed (the document's type, a
                 // pet's species): they remind as the new value asks, unless the person set them.
-                DeadlineReminders.follow(asset, template: template.definition, from: previous, now: now())
+                DeadlineReminders.follow(asset, template: template.definition, from: previous)
                 let blueprints = Dictionary(template.blueprints.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
                 for obligation in asset.activeObligations {
                     guard let key = obligation.blueprintKey, let blueprint = blueprints[key],
@@ -182,7 +182,6 @@ public final class AssetActions {
                           previous[fieldKey] != values[fieldKey],
                           let day = values[fieldKey]?.dateValue else { continue }
                     obligation.setDueDay(day.adding(days: offset, calendar: calendar), calendar: calendar)
-                    obligation.updatedAt = now()
                 }
                 // A field that drives a deadline gets a value and the section has none from
                 // it: the deadline is made, as adding the section would have (a policy's end
@@ -266,10 +265,9 @@ public final class AssetActions {
     /// kept as its last four digits (`FreeText`).
     @discardableResult
     public func setCustomFacts(_ asset: Asset, _ facts: [CustomFact]) throws -> UndoReceipt {
-        try UnitOfWork.performUndoable(in: context) {
+        try UnitOfWork.performUndoable(in: context, now: now()) {
             let kept = facts.filter { !$0.label.trimmingCharacters(in: .whitespaces).isEmpty || !$0.value.trimmingCharacters(in: .whitespaces).isEmpty }
             asset.customFacts = try SecretFields.sealingFacts(kept, sealer: sealer)
-            asset.updatedAt = now()
             try save()
         }.receipt
     }
@@ -313,7 +311,7 @@ public final class AssetActions {
     /// and the side effects follow the save as always.
     @discardableResult
     public func delete(_ asset: Asset, children: ChildrenOnDelete = .keep) throws -> UndoReceipt {
-        try UnitOfWork.performUndoable(in: context) {
+        try UnitOfWork.performUndoable(in: context, now: now()) {
             if children == .delete {
                 for child in Self.descendants(of: asset) { context.delete(child) }
             }
@@ -330,7 +328,6 @@ public final class AssetActions {
             throw AssetActionError.wouldCreateLoop
         }
         child.parent = parent
-        child.updatedAt = now()
         try save()
     }
 
@@ -359,7 +356,7 @@ public final class AssetActions {
     }
 
     private func save() throws {
-        try UnitOfWork.save(context)
+        try UnitOfWork.save(context, now: now())
     }
 }
 

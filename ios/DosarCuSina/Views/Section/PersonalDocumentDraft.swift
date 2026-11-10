@@ -122,7 +122,7 @@ enum PersonalDocumentFiling {
             throw PersonalDocumentError.missingTemplate
         }
         let actions = AssetActions(context: context, calendar: calendar, now: now)
-        return try UnitOfWork.perform(in: context) {
+        return try UnitOfWork.perform(in: context, now: now()) {
             try actions.create(
                 name: draft.name(holder: holder.name),
                 template: template,

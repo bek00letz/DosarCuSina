@@ -78,7 +78,6 @@ struct FirstVersionDeadlinesStep: DataRepairStep {
                   let blueprint = Self.blueprint(for: obligation, templates: templates), blueprint.key == key else { continue }
             obligation.blueprintKey = blueprint.key
             obligation.recurrence = blueprint.recurrence
-            obligation.updatedAt = Date()
         }
     }
 }

@@ -29,7 +29,7 @@ public struct ExampleDataService {
         guard try !hasExamples() else { return }
         let store = TemplateStore(context: context)
         try store.installBuiltIns()
-        try UnitOfWork.perform(in: context) { try addExampleHousehold(store: store) }
+        try UnitOfWork.perform(in: context, now: now()) { try addExampleHousehold(store: store) }
     }
 
     private func addExampleHousehold(store: TemplateStore) throws {
@@ -213,7 +213,7 @@ public struct ExampleDataService {
     /// every example back with its links, and the kept ones become examples again.
     @discardableResult
     public func removeExamples() throws -> Undoable<[String]> {
-        try UnitOfWork.performUndoable(in: context) {
+        try UnitOfWork.performUndoable(in: context, now: now()) {
             var kept: [String] = []
             // Each example from its top: one that holds something of the person's becomes
             // theirs with everything under it; every other example goes.
@@ -232,7 +232,7 @@ public struct ExampleDataService {
                 context.delete(obligation)
             }
             try HouseholdRules.reconcile(in: context, today: CalendarDay(now(), calendar: calendar), calendar: calendar)
-            try UnitOfWork.save(context)
+            try UnitOfWork.save(context, now: now())
             return kept
         }
     }
@@ -245,9 +245,9 @@ public struct ExampleDataService {
         guard let section = try context.fetch(descriptor).first else { return }
         // The whole example it sits in, so nothing of it is left to be removed with the examples.
         let root = ExampleOwnership.exampleSection(containing: section) ?? section
-        try UnitOfWork.perform(in: context) {
+        try UnitOfWork.perform(in: context, now: now()) {
             Self.makeReal(root)
-            try UnitOfWork.save(context)
+            try UnitOfWork.save(context, now: now())
         }
     }
 
