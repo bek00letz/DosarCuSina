@@ -143,6 +143,7 @@ struct ArchiveMergeTests {
             hours.source = "Ceasul de bord"
             hours.notes = "Citit la ponton."
             hours.isExample = true
+            hours.startsCounter = true
             context.insert(hours)
             hours.asset = boat
 

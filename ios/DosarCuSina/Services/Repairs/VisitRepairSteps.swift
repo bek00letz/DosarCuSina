@@ -134,7 +134,7 @@ struct SameVisitTwiceStep: DataRepairStep {
             logs.first { HouseholdMutations.isReading($0, recordedBy: donor) }?.recordedAt = kept.occurredAt
         }
         let stays = logs.first { HouseholdMutations.isReading($0, recordedBy: kept) }
-        for log in logs where log.id != stays?.id { context.delete(log) }
+        for log in logs where log.id != stays?.id { HouseholdMutations.deleteReading(log, in: context) }
         HouseholdMutations.syncHeroMetric(of: section, in: context)
     }
 }

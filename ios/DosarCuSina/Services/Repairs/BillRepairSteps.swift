@@ -100,7 +100,7 @@ struct SameBillTwiceStep: DataRepairStep {
             self.readings = readings
             self.reading = readings.first { log in
                 HouseholdMutations.readingSeries(of: subscription, unit: log.measurementUnit).readings
-                    .contains(.init(date: log.recordedAt, metric: log.value))
+                    .contains { $0.isSameReading(as: .init(date: log.recordedAt, metric: log.value)) }
             } ?? readings.first
             self.deadlines = deadlines
             let mine = Set(papers.map(\.id))
