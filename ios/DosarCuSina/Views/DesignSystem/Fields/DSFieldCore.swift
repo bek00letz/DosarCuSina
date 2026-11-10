@@ -41,16 +41,18 @@ extension DSValidation {
 
     /// What a field says when its text holds a card number: saving keeps only the last four
     /// digits (`FreeText`), so the person knows before they see "•••• 1111". It never blocks saving.
-    static func keepingCardNumberOut(of text: String) -> DSValidation? {
-        guard PaymentCardNumbers.containsCardNumber(text) else { return nil }
+    /// Nothing for a value its field's type keeps whole (`PaymentCardNumbers.keepsWhole`: a
+    /// microchip that passes its check), which the save keeps as typed.
+    static func keepingCardNumberOut(of text: String, as type: FieldType? = nil) -> DSValidation? {
+        guard PaymentCardNumbers.containsCardNumber(text), !PaymentCardNumbers.keepsWhole(text, as: type) else { return nil }
         return .warning(LocalizedStringResource("Din numărul cardului păstrez doar ultimele patru cifre.",
                                                 comment: "Note under a field whose text holds a whole bank card number: only its last four digits are kept on save."))
     }
 
     /// This validation, or the card number note when this one has nothing to say.
-    func notingCardNumber(in text: String) -> DSValidation {
+    func notingCardNumber(in text: String, as type: FieldType? = nil) -> DSValidation {
         guard case .valid = self else { return self }
-        return Self.keepingCardNumberOut(of: text) ?? self
+        return Self.keepingCardNumberOut(of: text, as: type) ?? self
     }
 }
 

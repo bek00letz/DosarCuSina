@@ -388,17 +388,17 @@ struct PersonalDocumentCaptureTests {
                 #expect(!PaymentCardNumbers.containsCardNumber(text), "\(text)")
             }
             let labelled = "IBAN: \(grouped)."
-            #expect(FieldFormatter.ibanRanges(in: labelled).map { labelled[$0] } == [Substring(grouped)], "\(iban)")
-            #expect(FieldFormatter.ibanRanges(in: mistyped).isEmpty, "A mistyped IBAN doesn't pass its check")
+            #expect(IBAN.ranges(in: labelled).map { labelled[$0] } == [Substring(grouped)], "\(iban)")
+            #expect(IBAN.ranges(in: mistyped).isEmpty, "A mistyped IBAN doesn't pass its check")
         }
         // An IBAN whose account is the test card number: it passes its own check, so it is kept.
         let cardShaped = Self.iban(country: "RO", account: "AAAA" + Self.testNumber.filter(\.isNumber))
         for text in [cardShaped, FieldFormatter.groupIBAN(cardShaped)] {
-            #expect(FieldFormatter.isValidIBAN(text))
+            #expect(IBAN.isValid(text))
             #expect(PaymentCardNumbers.redact(text) == text, "\(text)")
         }
         // A country's own length: a German IBAN with a digit too many is not one.
-        #expect(!FieldFormatter.isValidIBAN(Self.iban(country: "DE", account: "370400440532013000" + "0")))
+        #expect(!IBAN.isValid(Self.iban(country: "DE", account: "370400440532013000" + "0")))
     }
 
     @Test("IBANs and codes made at random stay whole; only a 16-digit code alone can still look like a card")
@@ -463,7 +463,10 @@ struct PersonalDocumentCaptureTests {
         let kept = PaymentCardNumbers.sanitizing(values, fields: { [iban, microchip, note] })
         #expect(kept[microchip.key]?.textValue == chip)
         #expect(kept[iban.key]?.textValue == Self.exampleIBANs[3])
-        #expect(kept[note.key]?.textValue == "\(PaymentCardNumbers.mask) \(chip.suffix(4))", "A plain text field is masked")
+        #expect(kept[note.key]?.textValue == chip, "A plain text field that repeats the section's microchip keeps it")
+        // Without a microchip field holding those digits, nothing says what they are.
+        let alone = PaymentCardNumbers.sanitizing(FieldValues([note.key: .text(chip)]), fields: { [microchip, note] })
+        #expect(alone[note.key]?.textValue == "\(PaymentCardNumbers.mask) \(chip.suffix(4))", "A plain text field is masked")
         // A card number typed into a microchip field fails its check (sixteen digits) and goes.
         let wrong = PaymentCardNumbers.sanitizing(FieldValues([microchip.key: .text(Self.testNumber)]), fields: { [microchip] })
         #expect(wrong[microchip.key]?.textValue == "\(PaymentCardNumbers.mask) 1111")

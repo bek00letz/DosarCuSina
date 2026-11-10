@@ -3,7 +3,9 @@ import Foundation
 /// What search may keep, decided once for the index and for recent searches:
 /// - a number shaped like a CNP (thirteen digits on their own) is never indexed
 ///   or remembered, wherever it was typed or read, valid or misread;
-/// - a card number (`PaymentCardNumbers`) is never indexed or remembered, even masked;
+/// - a card number (`PaymentCardNumbers`) is never indexed or remembered, even masked; what a
+///   section's own typed values keep whole (a pet's microchip) is searched as it is stored
+///   (`PaymentCardNumbers.KeptWhole`), by the same rule the save uses;
 /// - sealed text (a secret) is never indexed or remembered;
 /// - words kept on this phone outside the binder (recent searches, a trip's plan) are
 ///   kept only when `mayRemember` allows them, checked again when they are read back;
@@ -13,14 +15,15 @@ import Foundation
 ///   out of search (`mayShowOutside`, `outsideText`).
 public enum SearchPrivacy {
     /// The text with every CNP-shaped number, every card number and every sealed value
-    /// taken out. A card number is never searched, even by its last four digits.
-    public static func redacting(_ text: String) -> String {
+    /// taken out. A card number is never searched, even by its last four digits. What the
+    /// record's section keeps whole (`kept`) stays, as it stays where it is stored.
+    public static func redacting(_ text: String, keeping kept: PaymentCardNumbers.KeptWhole = .nothing) -> String {
         guard text.contains(where: \.isNumber) || text.contains(SecretSealer.prefix) || text.contains(PaymentCardNumbers.mask) else { return text }
         var result = text
         for range in cnpShapedRanges(in: result).reversed() {
             result.replaceSubrange(range, with: "")
         }
-        result = PaymentCardNumbers.redact(result).replacingOccurrences(of: PaymentCardNumbers.maskedPattern, with: "", options: .regularExpression)
+        result = PaymentCardNumbers.redact(result, keeping: kept).replacingOccurrences(of: PaymentCardNumbers.maskedPattern, with: "", options: .regularExpression)
         if result.contains(SecretSealer.prefix) {
             result = result.split(separator: " ", omittingEmptySubsequences: false)
                 .filter { !SecretSealer.isSealed(String($0)) }
@@ -57,10 +60,11 @@ public enum SearchPrivacy {
     /// A title or a short line as it may be shown outside the app: without any
     /// CNP-shaped number, any sealed value, or any of `withheld` (the values its
     /// category keeps out of search, such as a document number), written with or
-    /// without separators. Nil when nothing worth showing is left.
-    public static func outsideText(_ text: String?, withholding withheld: [String] = []) -> String? {
+    /// without separators; what its section keeps whole (`kept`) stays, as in the app. Nil
+    /// when nothing worth showing is left.
+    public static func outsideText(_ text: String?, withholding withheld: [String] = [], keeping kept: PaymentCardNumbers.KeptWhole = .nothing) -> String? {
         guard let text else { return nil }
-        var result = redacting(text)
+        var result = redacting(text, keeping: kept)
         for value in withheld {
             guard let pattern = withheldPattern(value) else { continue }
             result = result.replacingOccurrences(of: pattern, with: " ", options: [.regularExpression, .caseInsensitive])
