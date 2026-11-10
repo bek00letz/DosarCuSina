@@ -31,7 +31,7 @@ struct AppShell: View {
             appLockEnabled: preferences.appLockEnabled,
             anySectionLocked: !lockedCategories.isEmpty,
             isSessionUnlocked: vault.isSessionUnlocked,
-            isActive: scenePhase == .active,
+            phase: LockCover.Phase(scenePhase),
             isAuthenticating: vault.isAuthenticating
         )
     }
