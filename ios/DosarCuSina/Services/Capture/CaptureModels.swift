@@ -15,12 +15,20 @@ public enum CaptureDocumentKind: String, Codable, Sendable, CaseIterable {
     case drivingLicence
     /// A criminal record certificate: judiciar, fiscal or auto (`DocumentType.Variant`).
     case criminalRecord
-    /// A health insurance card: the European one (the card's printed fields are set by
-    /// the EU and by CNAS), or the national one.
+    /// The European health insurance card (its printed fields are set by the EU and by CNAS).
     case healthInsuranceCard
     /// A bank card. Only its bank, network, kind, last four digits and expiry are kept;
     /// its full number never is (`PaymentCardNumbers`).
     case bankCard
+    /// The national health insurance card (cardul național de asigurări sociale de
+    /// sănătate), never the European one.
+    case nationalHealthCard
+    /// The international motor insurance card (carte verde), filed on its own beside the
+    /// RCA it comes with.
+    case greenCard
+    /// A qualified electronic signature certificate (certificat calificat de semnătură
+    /// electronică) from a trust service provider.
+    case electronicSignature
     case vehicleRegistration
     case rcaPolicy
     case insurancePolicy
@@ -47,7 +55,8 @@ public enum CaptureDocumentKind: String, Codable, Sendable, CaseIterable {
     }
 
     /// A document of its holder's, filed under them in the personal documents category
-    /// and named after them: an identity document, a cazier, a health card, a bank card.
+    /// and named after them: an identity document, a cazier, a health card, a bank card,
+    /// a green card, an electronic signature.
     /// Its kind profile names its document type; its fields come from its templates.
     public var isPersonalDocument: Bool {
         profile.documentType != nil

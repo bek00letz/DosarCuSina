@@ -149,7 +149,25 @@ enum IdentityDocumentReader {
             let folded = RomanianText.fold(value)
             guard folded.contains("figureaza"), value.count <= 160 else { return nil }
             return Parsed(value: .text(value.trimmingCharacters(in: .whitespacesAndNewlines.union(CharacterSet(charactersIn: ".:;")))), passed: true)
+        case .nameBeforeAddress:
+            return nameBeforeAddress(value).map { Parsed(value: .text($0), passed: true) }
+        case .licensePlate:
+            return RomanianFieldExtractor.licensePlate(in: CaptureText(value)).map { Parsed(value: .text($0.value), passed: true) }
         }
+    }
+
+    /// The name at the start of a caption's value that carries a name and then an address
+    /// ("EXEMPLU ION, Str. Exemplului nr. 1, București", or the name over the address): the
+    /// words before the first comma, digit or address word. Nil for a firm, or when no name
+    /// of at least two words comes first.
+    static func nameBeforeAddress(_ value: String) -> String? {
+        let firstPart = value.prefix { !",;\n".contains($0) }
+        guard !RomanianFieldExtractor.namesACompany(String(firstPart)) else { return nil }
+        let words = firstPart.split(separator: " ").prefix { word in
+            !word.contains(where: \.isNumber) && !PostalAddress.isMarker(String(word))
+        }
+        guard words.count >= 2 else { return nil }
+        return RomanianFieldExtractor.personName(words.joined(separator: " "))
     }
 
     /// A card's expiry printed as month and year ("08/28", "08/2028"): the last day of
@@ -207,6 +225,8 @@ enum IdentityDocumentReader {
                 return (parsed.value, format == .recordResult ? line : nil, parsed.passed ? anywhere : failedFormat, .heuristic)
             }
             return nil
+        case .licensePlate:
+            return RomanianFieldExtractor.licensePlate(in: text).map { (.text($0.value), $0.source, anywhere, .heuristic) }
         case .cardExpiry:
             let days = text.joiningRows().original.compactMap { cardExpiry(in: $0, window: window) }
             return (days.filter(window.contains).max() ?? days.max()).map { (.day($0), nil, anywhere, .heuristic) }

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Whether a page may be an identity or other personal document (a cazier, a health card,
-/// a bank card), whatever kind the reading settled on.
+/// a bank card, a green card, an electronic signature), whatever kind the reading settled on.
 /// A weak reading is often a glared ID card the classifier didn't recognise, so
 /// sending a page to the AI provider without asking needs the phone to be sure it is
 /// NOT one (`AIProviderSettings.automaticReading`).
@@ -12,7 +12,8 @@ enum IdentitySignals {
         "pasaport", "passport", "passeport", "permis de conducere", "driving licence", "permis de conduire",
         "cod numeric personal", "data nasterii", "date of birth", "locul nasterii", "place of birth", "cetatenie",
         "cazier", "card european de asigurari", "european health insurance card", "asigurari sociale de sanatate",
-        "valid thru", "good thru",
+        "card national de sanatate", "international motor insurance card", "carte internationala de asigurare",
+        "certificat calificat", "semnatura electronica calificata", "valid thru", "good thru",
     ]
 
     static func mayBeIdentity(_ result: CaptureResult) -> Bool {

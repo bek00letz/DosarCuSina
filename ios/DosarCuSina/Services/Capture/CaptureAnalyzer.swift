@@ -146,7 +146,8 @@ public struct CaptureAnalyzer: Sendable {
         // what every document prints the same way where the kind has no row of its own.
         let profile = self.profile(of: kind)
         switch kind {
-        case .passport, .identityCard, .drivingLicence, .criminalRecord, .healthInsuranceCard, .bankCard:
+        case .passport, .identityCard, .drivingLicence, .criminalRecord, .healthInsuranceCard, .bankCard, .nationalHealthCard, .greenCard,
+             .electronicSignature:
             // Printed labels, read with the document's template. The MRZ (when on the
             // photo) already added checked values, which win; agreeing values reinforce.
             // A personal document is read the same way, whatever it is: a new one is a template.

@@ -32,6 +32,12 @@ enum IdentityFormat: Hashable, Sendable {
     case bankName
     /// What a cazier says: the line with "figurează", as printed.
     case recordResult
+    /// A person's name printed with their address under one caption ("Numele și adresa
+    /// asiguratului"): the name is what comes before the address starts (a comma, a digit
+    /// or an address word, `PostalAddress.isMarker`). A firm is no one's name.
+    case nameBeforeAddress
+    /// A Romanian registration plate, written "B 123 ABC" (`RomanianFieldExtractor.licensePlate`).
+    case licensePlate
 }
 
 /// What a known identity document looks like, as data: how to recognize it, the
@@ -98,18 +104,16 @@ enum IdentityLabelKey: Hashable, Sendable {
 
 /// The identity and other personal documents a Romanian household keeps, as templates:
 /// the identity card (both layouts), the passport, the EU driving licence, the cazier
-/// (judiciar, fiscal or auto), the European health insurance card and the bank card.
-///
-/// The national health insurance card isn't here: its printed fields couldn't be
-/// confirmed against an official specimen, and it is being phased out. It is a document
-/// type (`DocumentType.nationalHealthCard`) the person adds with its holder and expiry.
+/// (judiciar, fiscal or auto), the European and the national health insurance cards, the
+/// bank card, the green card and the qualified electronic signature certificate.
 enum IdentityTemplates {
 
     static let all: [IdentityTemplate] = [
         electronicIdentityCard, identityCard, passport, drivingLicence,
         criminalRecordJudicial, criminalRecordFiscal, criminalRecordDriving,
-        europeanHealthCard,
+        europeanHealthCard, nationalHealthCard,
         bankCard, debitCard, creditCard,
+        greenCard, electronicSignature,
     ]
 
     /// Every field key a kind's templates read.
@@ -354,6 +358,41 @@ enum IdentityTemplates {
         ]
     )
 
+    /// The national health insurance card (cardul național de asigurări sociale de
+    /// sănătate), issued by CNAS and valid seven years since 1 August 2018. Its face carries
+    /// the holder's surname, given names and CNP, the card's own number and its expiry,
+    /// which CNAS points to as field 5. The full specimen (Ordinul CNAS nr. 520/2011)
+    /// couldn't be read, so the captions are read by their words, with or without a
+    /// number, and only the expiry by its number too. The European card is never this
+    /// one: the two are told apart by their names.
+    static let nationalHealthCard = IdentityTemplate(
+        id: "ro.cnas.card",
+        kind: .nationalHealthCard,
+        signals: [("card national de asigurari sociale de sanatate", 6), ("cardul national de asigurari sociale de sanatate", 6),
+                  ("card national de asigurari de sanatate", 6), ("card national de sanatate", 5), ("cardul national de sanatate", 5)],
+        distinctive: [],
+        machineReadableFormats: [],
+        fields: [
+            .init(.surname, ["nume / name", "nume/name", "nume", "name", "surname"], .name),
+            .init(.givenNames, ["prenume / given names", "prenume/given names", "prenume", "given names"], .name),
+            .init(.birthDate, ["data nasterii", "date of birth"], .date),
+            .init(.personalNumber, ["cod numeric personal", "codul numeric personal", "cnp", "personal identification number"],
+                  .personalNumber, searchesEverywhere: true),
+            .init(.documentNumber, ["numarul de identificare al cardului", "numar de identificare al cardului", "numarul cardului", "numar card",
+                                    "nr. card", "card no", "identification number of the card"],
+                  .documentNumber(pattern: #"\b(\d{10,20})\b"#)),
+            .init(.expiryDate, numberedCaption(5, ["data expirarii", "data de expirare", "expiry date"]) + ["valabil pana la"], .date),
+        ],
+        otherLabels: [
+            "card national de asigurari sociale de sanatate", "card national de sanatate", "casa nationala de asigurari de sanatate",
+            "romania", "www.cnas.ro", "cnas.ro", "semnatura", "signature",
+        ].map(LabelWording.words),
+        agreements: [
+            // CNAS has issued it since 2014 (the first ones counted from 2013); seven years at most.
+            .within(.expiryDate, DateWindow.Rule(earliest: .day(year: 2013, month: 1, day: 1), latest: .yearsFromToday(8)), outside: .drop),
+        ]
+    )
+
     // MARK: Bank cards
 
     /// A bank card: its network, the last four digits of its number, the month it expires
@@ -388,6 +427,93 @@ enum IdentityTemplates {
     static let bankCard = paymentCard("card.bank", variant: nil, distinctive: [])
     static let debitCard = paymentCard("card.debit", variant: DocumentType.Variant.bankCardDebit, distinctive: ["debit"])
     static let creditCard = paymentCard("card.credit", variant: DocumentType.Variant.bankCardCredit, distinctive: ["credit"])
+
+    // MARK: Green card
+
+    /// The international motor insurance card (carte verde), as the Council of Bureaux
+    /// model prints it, each caption in the issuing country's language beside its English
+    /// one, the values under them: 3 the validity, from and to (both days included); 4 the
+    /// country's code, the insurer's code and the number; 5 the registration number; 6 the
+    /// category and 7 the make; 8 the countries it covers; 9 the policyholder's name and
+    /// address; 10 the insurer who issued it. The Romanian captions are BAAR's wordings for
+    /// the same fields on its own models; they weren't checked on a Romanian green card
+    /// itself, so the English ones, which every card prints, are read too.
+    static let greenCard = IdentityTemplate(
+        id: "cobx.greenCard",
+        kind: .greenCard,
+        signals: [("carte verde", 5), ("cartea verde", 4), ("green card", 4), ("international motor insurance card", 6),
+                  ("carte internationale d'assurance automobile", 5), ("carte internationala de asigurare", 5), ("territorial validity", 2)],
+        distinctive: [],
+        machineReadableFormats: [],
+        fields: [
+            .init(.holderName, ["numele si adresa asiguratului (sau a utilizatorului)", "numele si adresa asiguratului",
+                                "numele si adresa titularului", "name and address of the policyholder (or user of the vehicle)",
+                                "name and address of the policyholder"], .nameBeforeAddress),
+            .init(.documentNumber, labels: CompositeLabels.greenCardNumber, .composite(.policy)),
+            .init(.licensePlate, ["nr. de inmatriculare/inregistrare, (daca nu are) seria de sasiu sau de motor",
+                                  "registration no. (or if none) chassis or engine no.", "registration no. (and or if not) chassis or engine no.",
+                                  "nr. de inmatriculare/inregistrare", "nr. de inmatriculare", "numar de inmatriculare", "nr. inmatriculare",
+                                  "registration no", "registration number"], .licensePlate, searchesEverywhere: true),
+            .init(.expiryDate, labels: [.numbered("3")] + ["valabilitate / valid", "valabilitate/valid", "perioada de valabilitate", "valabilitate",
+                                                           "period of validity", "valabila de la", "valid from"].map(LabelWording.words),
+                  .dateRange(start: .startDate)),
+            .init(.issuer, ["aceasta carte a fost emisa de", "aceasta asigurare a fost emisa de", "this card has been issued by",
+                            "numele si adresa asiguratorului", "name and address of the insurer"], .text),
+        ],
+        otherLabels: [
+            "carte verde", "green card", "international motor insurance card", "carte internationale d'assurance automobile",
+            "categoria si marca vehiculului", "categoria vehiculului", "marca vehiculului", "category and make of vehicle", "category of vehicle",
+            "category of vehicles", "make of vehicle", "valabilitate teritoriala", "territorial validity", "semnatura asiguratorului",
+            "signature of insurer", "signature of the insurer", "cele doua date sunt incluse", "both dates inclusive",
+        ].map(LabelWording.words),
+        agreements: [
+            // A green card covers a year at most, often a month or two; one that ended long
+            // ago or ends years on is a misread.
+            .within(.expiryDate, DateWindow.Rule(earliest: .yearsFromToday(-5), latest: .yearsFromToday(2)), outside: .drop),
+            .within(.startDate, DateWindow.Rule(earliest: .yearsFromToday(-6), latest: .yearsFromToday(1)), outside: .verify),
+        ]
+    )
+
+    // MARK: Electronic signature
+
+    /// A qualified electronic signature certificate, as a trust service provider hands it
+    /// over (the paper or PDF with the certificate's details, or the certificate as a
+    /// computer shows it): the holder, their CNP when it is printed, the provider that
+    /// issued it, the certificate's serial number and the days it is valid between. No
+    /// official layout exists: each provider prints its own, so these are the wordings
+    /// certificates are shown with, in Romanian and in English.
+    static let electronicSignature = IdentityTemplate(
+        id: "eidas.qualifiedCertificate",
+        kind: .electronicSignature,
+        signals: [("semnatura electronica calificata", 6), ("certificat calificat", 5), ("certificat digital calificat", 6),
+                  ("semnatura electronica", 3), ("qualified certificate", 5), ("furnizor de servicii de incredere", 3),
+                  ("qualified electronic signature", 5), ("certificat digital", 2)],
+        distinctive: [],
+        machineReadableFormats: [],
+        fields: [
+            .init(.holderName, ["titularul certificatului", "titular certificat", "nume titular", "titular", "emis pentru", "emis catre",
+                                "issued to", "nume si prenume", "numele si prenumele"], .name),
+            .init(.personalNumber, ["cod numeric personal", "cnp"], .personalNumber, searchesEverywhere: true),
+            .init(.documentNumber, ["numar serial", "numarul serial", "numar de serie", "numarul de serie", "serie certificat",
+                                    "seria certificatului", "serial number", "serial no", "nr. serie"],
+                  .documentNumber(pattern: #"\b([0-9A-F]{2}(?:[ :]?[0-9A-F]{2}){3,24})\b"#)),
+            .init(.issueDate, ["valabil de la", "valabilitate de la", "valid from", "not before", "data emiterii", "emis la"], .date),
+            .init(.expiryDate, ["valabil pana la", "valabilitate pana la", "valid to", "valid until", "not after", "data expirarii", "expira la",
+                                "pana la"], .date),
+            .init(.issuer, ["furnizor de servicii de incredere calificat", "furnizor de servicii de incredere", "emitent", "emis de", "issued by",
+                            "furnizor", "autoritatea de certificare", "certification authority"], .text),
+        ],
+        otherLabels: [
+            "certificat calificat", "certificat digital calificat", "qualified certificate", "e-mail", "email", "adresa de e-mail",
+            "telefon", "algoritm", "algorithm", "cheie publica", "public key", "amprenta", "thumbprint", "fingerprint", "versiune", "version",
+            "dispozitiv", "token", "semnatura", "signature",
+        ].map(LabelWording.words),
+        agreements: [
+            // A qualified certificate is issued for one to three years.
+            .within(.expiryDate, DateWindow.Rule(earliest: .yearsFromToday(-5), latest: .yearsFromToday(5)), outside: .drop),
+            .within(.issueDate, DateWindow.Rule(earliest: .yearsFromToday(-8), latest: .today), outside: .verify),
+        ]
+    )
 
     /// The template for a document of `kind`: the one whose machine-readable zone and
     /// distinctive words match best. Nil for kinds that aren't identity documents.
