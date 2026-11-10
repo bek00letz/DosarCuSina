@@ -350,12 +350,44 @@ struct ZipEngineTests {
             .init(path: "a.bin", data: Data(count: 10_000)),
             .init(path: "b.bin", data: Data(count: 10_000)),
         ])
-        let tight = DosarZipEngine.Limits(maxEntries: 10, maxEntryBytes: 5_000, maxTotalBytes: 100_000)
+        let tight = DosarZipEngine.Limits(maxEntries: 10, maxEntryBytes: 5_000)
         #expect(throws: DosarZipEngine.ZipError.sizeLimitExceeded) { try DosarZipEngine.unpackArchive(archive, limits: tight) }
-        let total = DosarZipEngine.Limits(maxEntries: 10, maxEntryBytes: 20_000, maxTotalBytes: 15_000)
-        #expect(throws: DosarZipEngine.ZipError.sizeLimitExceeded) { try DosarZipEngine.unpackArchive(archive, limits: total) }
-        let few = DosarZipEngine.Limits(maxEntries: 1, maxEntryBytes: 20_000, maxTotalBytes: 100_000)
+        let few = DosarZipEngine.Limits(maxEntries: 1, maxEntryBytes: 20_000)
         #expect(throws: DosarZipEngine.ZipError.sizeLimitExceeded) { try DosarZipEngine.unpackArchive(archive, limits: few) }
+        // Ten thousand zeros compress to a few bytes: past the allowance, that is too much growth.
+        let wary = DosarZipEngine.Limits(maxEntries: 10, maxEntryBytes: 20_000, maxExpansion: 10, expansionAllowance: 1_000)
+        #expect(throws: DosarZipEngine.ZipError.sizeLimitExceeded) { try DosarZipEngine.unpackArchive(archive, limits: wary) }
+        // The writer reads the same limits: it stores such a file as it is, and the reader takes it.
+        let stored = try DosarZipEngine.createArchive(entries: [.init(path: "a.bin", data: Data(count: 10_000))], limits: wary)
+        #expect(try DosarZipEngine.unpackArchive(stored, limits: wary).first?.data == Data(count: 10_000))
+    }
+
+    @Test func noTotalCapButTheFormatsOwn() throws {
+        // What used to stop a large binder from coming back (512 MB in all) is gone: past
+        // 600 MB of pages in 5 000 files is within every limit, both ways.
+        let limits = DosarZipEngine.Limits.standard
+        #expect(limits.maxEntries == 65_534, "As many files as a plain zip counts")
+        #expect(5_000 * (120 << 10) > 512 << 20)
+        #expect(limits.maxEntries >= 5_000 && limits.maxEntryBytes >= 120 << 10)
+        #expect(limits.admitsExpansion(stored: 120 << 10, size: 120 << 10), "A photo stored as it is")
+        #expect(limits.admitsExpansion(stored: 1, size: 1 << 20), "A small file may grow any amount")
+        #expect(limits.admitsExpansion(stored: 1 << 20, size: 200 << 20), "Up to two hundred times past the first megabyte")
+        #expect(!limits.admitsExpansion(stored: 1 << 20, size: (200 << 20) + 200))
+        #expect(limits.maxArchiveBytes == Int(UInt32.max) - 1, "A plain zip's 4 GB")
+    }
+
+    @Test func aWriterRefusesWhatItsReaderWouldRefuse() throws {
+        // One stored file of 100 bytes takes 135 bytes, its directory record 51, the end 22.
+        let limits = DosarZipEngine.Limits(maxEntries: 2, maxEntryBytes: 100, maxArchiveBytes: 300)
+        let writer = DosarZipEngine.Writer(sink: MemoryByteSink(), limits: limits)
+        #expect(throws: DosarZipEngine.ZipError.fileTooLargeToWrite(path: "big.bin")) {
+            try writer.add(path: "big.bin", data: Data(repeating: 1, count: 101), modifiedDate: Date())
+        }
+        try writer.add(path: "a.bin", data: Data((0..<100).map { UInt8($0) }), modifiedDate: Date())
+        #expect(throws: DosarZipEngine.ZipError.tooLargeToWrite) {
+            try writer.add(path: "b.bin", data: Data((0..<100).map { UInt8($0 + 100) }), modifiedDate: Date())
+        }
+        #expect(writer.count == 1, "Nothing of a refused file is written")
     }
 
     @Test func detectsDamagedData() throws {

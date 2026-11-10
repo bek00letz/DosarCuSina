@@ -253,8 +253,52 @@ public enum DossierV3 {
         public var providers: [Provider]
         public var measurements: [Measurement]
         public var attachments: [Attachment]
-        /// File contents by archive path (`vault/…`).
-        public var files: [String: Data]
+        /// The documents' and photos' files by archive path (`vault/…`), each read only when
+        /// it is written into the database.
+        public var files: ArchiveFiles
+    }
+
+    /// An archive's files by path, kept where the reader put them (a folder of their own on
+    /// disk), so a package holds none of them in memory. The importer reads each one as it
+    /// writes the record it belongs to.
+    public struct ArchiveFiles: Sendable, ExpressibleByDictionaryLiteral {
+        enum Content: Sendable {
+            /// Read already: a small package made by hand (tests).
+            case data(Data)
+            /// Taken out of the archive into a file of its own.
+            case file(URL)
+            /// Checked against its checksum, not kept: what a summary read leaves.
+            case checked
+        }
+
+        private var contents: [String: Content]
+
+        init(_ contents: [String: Content] = [:]) {
+            self.contents = contents
+        }
+
+        public init(dictionaryLiteral elements: (String, Data)...) {
+            contents = Dictionary(elements.map { ($0.0, Content.data($0.1)) }, uniquingKeysWith: { _, last in last })
+        }
+
+        /// Every path, sorted.
+        public var paths: [String] { contents.keys.sorted() }
+
+        public var isEmpty: Bool { contents.isEmpty }
+
+        public func contains(_ path: String) -> Bool { contents[path] != nil }
+
+        /// The file's bytes, or nil when the archive has no such file. A file taken out to
+        /// disk is mapped rather than copied where the system allows, so a context holding it
+        /// until it saves holds no copy of it.
+        public func data(at path: String) throws -> Data? {
+            switch contents[path] {
+            case .data(let data): return data
+            case .file(let url): return try Data(contentsOf: url, options: .mappedIfSafe)
+            case .checked: throw ArchiveError.missingFile(path)
+            case nil: return nil
+            }
+        }
     }
 
     // MARK: Coding

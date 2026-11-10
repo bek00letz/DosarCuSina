@@ -212,6 +212,16 @@ public enum ObligationStatus: String, Codable, CaseIterable, Sendable {
     case done
     /// Kept for history only.
     case archived
+
+    /// What an unknown stored status (from a newer build or archive) behaves as: the
+    /// loudest, so a deadline never goes quiet because this build can't read its status.
+    public static let loudest = ObligationStatus.active
+
+    /// A stored value: unknown or missing reads as `loudest`. The stored text is kept as
+    /// it was (`Obligation.statusRaw`), never written back downgraded.
+    public init(stored raw: String?) {
+        self = raw.flatMap(ObligationStatus.init(rawValue:)) ?? .loudest
+    }
 }
 
 /// A calendar step: `every` units of time.

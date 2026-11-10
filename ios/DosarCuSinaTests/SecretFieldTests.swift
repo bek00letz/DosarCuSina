@@ -139,7 +139,8 @@ struct SecretFieldTests {
         #expect(exported.values.value["document.pinAuthentication"] == nil)
         #expect(exported.values.value["document.pinSigning"] == nil)
         #expect(exported.values.value["document.expiry"] != nil, "Everything else travels")
-        for file in package.files.values {
+        for path in package.files.paths {
+            let file = try #require(try package.files.data(at: path))
             #expect(file.range(of: Data(SecretSealer.prefix.utf8)) == nil)
         }
 

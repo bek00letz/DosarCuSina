@@ -36,6 +36,10 @@ public struct CalendarDay: Hashable, Comparable, Sendable, Codable, CustomString
     }
 
     /// Parses `"yyyy-MM-dd"`. Also accepts a full ISO 8601 timestamp and keeps its date part.
+    /// The numbers are kept as written, even for a day the Gregorian calendar doesn't have:
+    /// a day an older build kept with another calendar's year ("2567-02-29") is read as it
+    /// is, so the repair list can put it right (`DayYearsStep`). Numbers from outside that
+    /// must be a real day go through ``init(validYear:month:day:)``.
     public init?(isoString: String) {
         let datePart = isoString.prefix(10)
         let parts = datePart.split(separator: "-")

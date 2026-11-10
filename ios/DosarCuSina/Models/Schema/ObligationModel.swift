@@ -133,7 +133,7 @@ extension DosarSchemaV11 {
         }
 
         public var status: ObligationStatus {
-            get { ObligationStatus(rawValue: statusRaw) ?? .active }
+            get { ObligationStatus(stored: statusRaw) }
             set { statusRaw = newValue.rawValue }
         }
 
