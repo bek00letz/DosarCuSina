@@ -101,7 +101,9 @@ public enum DossierV3 {
         public var kind: String
         public var dueDate: CalendarDay
         public var dueMetric: Double?
-        public var reminders: ReminderProfile
+        /// As stored: what a newer build wrote in it that this one doesn't read comes in and goes out
+        /// as written (`Obligation.keptReminders`).
+        public var reminders: KeptObject<ReminderProfile>
         public var reminderMinuteOfDay: Int?
         public var recurrence: KeptObject<RecurrenceRule>
         public var estimatedCost: Money?

@@ -216,7 +216,7 @@ struct DossierArchiveWriter: Sendable {
             id: DossierV3.id(obligation.id), assetId: DossierV3.id(obligation.asset?.id), title: obligation.title,
             notes: obligation.notes, blueprintKey: obligation.blueprintKey, kind: obligation.kindRaw,
             dueDate: obligation.dueDay, dueMetric: obligation.dueMetric,
-            reminders: obligation.reminders, reminderMinuteOfDay: obligation.reminderMinuteOfDay,
+            reminders: obligation.keptReminders, reminderMinuteOfDay: obligation.reminderMinuteOfDay,
             recurrence: obligation.keptRecurrence, estimatedCost: obligation.estimatedCost, provider: obligation.provider,
             reference: obligation.reference, status: obligation.statusRaw, snoozedUntil: obligation.snoozeEnds(in: calendar),
             isExample: obligation.isExample, createdAt: obligation.createdAt, updatedAt: obligation.updatedAt,

@@ -277,7 +277,7 @@ struct DossierImporter {
             obligation.kindRaw = dto.kind
             obligation.dueDay = dto.dueDate
             obligation.dueMetric = dto.dueMetric
-            obligation.reminders = dto.reminders
+            obligation.keptReminders = dto.reminders
             obligation.remindersCustomized = dto.remindersCustomized ?? false
             obligation.reminderMinuteOfDay = dto.reminderMinuteOfDay
             // A rule from a newer build is kept as it was written (`RecurrenceRule.unreadable`), and

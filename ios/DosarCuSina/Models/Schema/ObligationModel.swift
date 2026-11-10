@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV11 {
+extension DosarSchemaV12 {
     /// Something that has to be done by a date, once or on a schedule: ITP, RCA,
     /// local taxes, a vaccine, a subscription renewal.
     ///
@@ -61,6 +61,11 @@ extension DosarSchemaV11 {
         /// deadline from before version 11 or brought in from a backup: it reads as its change
         /// time (`cycleKnownSince`). Version 11.
         public var cycleKnownAt: Date?
+        /// The reminder profile's JSON as a newer build wrote it, kept only while it holds
+        /// something this build doesn't read (a key it doesn't know, a value it reads as another);
+        /// the columns above stay what this build reads, and this follows them. Read and write it
+        /// through `reminders` and `keptReminders`. Version 12.
+        public var remindersData: Data?
 
         public var asset: Asset?
 
@@ -120,16 +125,43 @@ extension DosarSchemaV11 {
                 )
             }
             set {
-                reminderLeadDays = newValue.leadDays
-                // An unknown consequence read as the loudest is kept as stored, never
-                // written back as what this build understood.
-                if Consequence(rawValue: consequenceRaw) != nil || newValue.consequence != Consequence(stored: consequenceRaw) {
-                    consequenceRaw = newValue.consequence.rawValue
-                }
-                graceDays = newValue.graceDays
-                followUpAfterLapse = newValue.followUpAfterLapse
-                travelMarginDays = newValue.travelMarginDays
+                let kept = remindersData == nil ? nil : keptReminders
+                writeReminderColumns(newValue)
+                if let kept { keepReminders(kept) }
             }
+        }
+
+        /// The profile as stored, with what a newer build wrote in it that this build doesn't read:
+        /// what a backup carries. Writing it keeps that part while the profile is edited here
+        /// (`KeptObject`), and lets it go once nothing of it is left.
+        public var keptReminders: KeptObject<ReminderProfile> {
+            get {
+                guard let stored = KeptObject.stored(in: remindersData, fallback: reminders) else { return KeptObject(reminders) }
+                return stored.replacingValue(reminders)
+            }
+            set {
+                writeReminderColumns(newValue.value)
+                keepReminders(newValue)
+            }
+        }
+
+        private func writeReminderColumns(_ newValue: ReminderProfile) {
+            reminderLeadDays = newValue.leadDays
+            // An unknown consequence read as the loudest is kept as stored, never
+            // written back as what this build understood.
+            if Consequence(rawValue: consequenceRaw) != nil || newValue.consequence != Consequence(stored: consequenceRaw) {
+                consequenceRaw = newValue.consequence.rawValue
+            }
+            graceDays = newValue.graceDays
+            followUpAfterLapse = newValue.followUpAfterLapse
+            travelMarginDays = newValue.travelMarginDays
+        }
+
+        /// What `kept` held beside the columns as they now are, or nothing when that is all it held.
+        private func keepReminders(_ kept: KeptObject<ReminderProfile>) {
+            let current = kept.replacingValue(reminders)
+            let data = current.keepsMore ? StoredJSON.encode(current) : nil
+            if data != remindersData { remindersData = data }
         }
 
         public var status: ObligationStatus {

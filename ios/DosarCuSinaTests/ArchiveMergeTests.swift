@@ -83,6 +83,10 @@ struct ArchiveMergeTests {
             service.statusRaw = ObligationStatus.paused.rawValue
             service.snoozedUntil = CalendarDay("2025-08-20")
             service.isExample = true
+            // What a newer build wrote in its reminders, beside what this one reads.
+            service.keptReminders = try JSONDecoder().decode(KeptObject<ReminderProfile>.self, from: Data(
+                #"{"consequence":"financial","followUpAfterLapse":true,"graceDays":5,"leadDays":[60,14,0],"quietHours":{"from":22,"to":7},"travelMarginDays":30}"#.utf8
+            ))
             context.insert(service)
             service.asset = boat
 

@@ -18,7 +18,7 @@ struct StoredObjectsTests {
     /// A new JSON property fails this until it has its case below, and its case fails until the
     /// property is read and written through `KeptObject` or `KeptList`.
     @Test func everyStoredJSONPropertyIsKept() {
-        let stored = Set(Schema(versionedSchema: DosarSchemaV11.self).entities.flatMap { entity in
+        let stored = Set(Schema(versionedSchema: DosarSchemaV12.self).entities.flatMap { entity in
             entity.attributes.filter { $0.valueType == Data.self || $0.valueType == Data?.self }.map { "\(entity.name).\($0.name)" }
         })
         #expect(stored == Self.files.union(StoredObject.allCases.map(\.property)))
@@ -27,7 +27,7 @@ struct StoredObjectsTests {
     /// One stored JSON property: what a newer build wrote there, an edit through the model's own
     /// accessor, and what the edit must leave exactly as stored.
     enum StoredObject: String, CaseIterable, CustomTestStringConvertible, Sendable {
-        case values, customFacts, sections, blueprints, components, behavior, recurrence, framing
+        case values, customFacts, sections, blueprints, components, behavior, recurrence, framing, reminders
 
         var testDescription: String { property }
 
@@ -41,6 +41,7 @@ struct StoredObjectsTests {
             case .behavior: "CategoryTemplate.behaviorData"
             case .recurrence: "Obligation.recurrenceData"
             case .framing: "Attachment.framingData"
+            case .reminders: "Obligation.remindersData"
             }
         }
 
@@ -64,6 +65,8 @@ struct StoredObjectsTests {
                 #"{"anchor":"completion","every":1,"skipWeekends":true,"type":"interval","unit":"year","until":{"day":"2030-01-01"}}"#
             case .framing:
                 #"{"pages":[{"choice":{"by":"person","quarterTurns":1},"crop":[{"x":0.1,"y":0.1,"z":0.5},{"x":0.9,"y":0.1},{"x":0.9,"y":0.9},{"x":0.1,"y":0.9}],"filter":"mono","prefersWholePhoto":false,"quarterTurns":0}],"source":"scanner","version":1}"#
+            case .reminders:
+                #"{"consequence":"existential","followUpAfterLapse":true,"graceDays":0,"leadDays":[30,7,0],"quietHours":{"from":22,"to":7}}"#
             }
         }
 
@@ -80,6 +83,7 @@ struct StoredObjectsTests {
             case .behavior: ["box", "shelf", "visit"]
             case .recurrence: ["until", "skipWeekends"]
             case .framing: ["source", "pages/0/filter", "pages/0/crop", "pages/0/choice/by"]
+            case .reminders: ["quietHours", "consequence"]
             }
         }
 
@@ -125,6 +129,9 @@ struct StoredObjectsTests {
                 framing[page: 0] = framing[page: 0].turned()
                 records.paper.framing = framing
                 return ("pages/0/choice/quarterTurns", .int(2))
+            case .reminders:
+                records.check.reminders = records.check.reminders.withLeadDays([45, 7])
+                return ("leadDays", [.int(45), .int(7)])
             }
         }
 
@@ -138,6 +145,7 @@ struct StoredObjectsTests {
             case .behavior: records.boats.behaviorData
             case .recurrence: records.check.recurrenceData
             case .framing: records.paper.framingData
+            case .reminders: records.check.remindersData
             }
         }
 
@@ -151,6 +159,8 @@ struct StoredObjectsTests {
             case .behavior: records.boats.behaviorData = data
             case .recurrence: records.check.recurrenceData = data
             case .framing: records.paper.framingData = data
+            // The profile's columns are what this build reads of it: set through its kept form.
+            case .reminders: records.check.keptReminders = StoredJSON.decode(KeptObject<ReminderProfile>.self, from: data) ?? KeptObject(records.check.reminders)
             }
         }
     }
@@ -215,6 +225,7 @@ struct StoredObjectsTests {
         case .behavior: records.boats.behavior = records.boats.behavior
         case .recurrence: records.check.recurrence = records.check.recurrence
         case .framing: records.paper.framing = records.paper.framing
+        case .reminders: records.check.reminders = records.check.reminders
         }
         #expect(try Self.json(object.data(records)) == before)
     }

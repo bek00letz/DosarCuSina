@@ -294,7 +294,7 @@ enum DossierV2Converter {
             let obligation = DossierV3.Obligation(
                 id: DossierV3.id(dto.id), assetId: DossierV3.id(dto.assetId), title: dto.title, notes: dto.eventDescription,
                 blueprintKey: nil, kind: kind.rawValue, dueDate: due,
-                dueMetric: dto.metricTriggerValue, reminders: reminders,
+                dueMetric: dto.metricTriggerValue, reminders: KeptObject(reminders),
                 reminderMinuteOfDay: nil, recurrence: KeptObject(DossierV2Converter.recurrence(cadenceDays: dto.cadenceDays)),
                 estimatedCost: dto.isCompleted ? nil : cost, provider: dto.provider, reference: dto.policyOrContractNumber,
                 status: (dto.isCompleted ? ObligationStatus.done : .active).rawValue, snoozedUntil: nil, isExample: false,

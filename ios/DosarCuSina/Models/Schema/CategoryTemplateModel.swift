@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV11 {
+extension DosarSchemaV12 {
     /// A category of assets (Car, Home, a user's own "Bikes") and its field and
     /// obligation definitions, plus this household's preferences for it.
     ///
