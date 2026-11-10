@@ -58,12 +58,44 @@ public struct CalendarDay: Hashable, Comparable, Sendable, Codable, CustomString
     /// Before every day a record can hold: what a missing day sorts as.
     public static let earliest = CalendarDay(year: 0, month: 1, day: 1)
 
+    /// Whether the calendar has this day: false for one kept as written that it doesn't have
+    /// ("2026-02-30", "2026-04-31"), which an older build or a backup may have kept.
+    public var isOnCalendar: Bool {
+        CalendarDay(validYear: year, month: month, day: day) != nil
+    }
+
+    /// The day the calendar has for these numbers: this one, or, for a day its month doesn't
+    /// have, that month's last day ("2026-02-30" is 28 February). Never the next month's.
+    public var onCalendar: CalendarDay {
+        // Every month has its first 28 days; only a later one needs its month's length.
+        guard (1...12).contains(month), !(1...28).contains(day) else { return self }
+        return CalendarDay(year: year, month: month, day: min(max(day, 1), daysInMonth(calendar: Self.isoCalendar)))
+    }
+
     /// Midnight at the start of this day in `calendar`'s time zone.
     public func startDate(in calendar: Calendar = .dosar) -> Date {
+        moment(atMinute: 0, in: calendar)
+    }
+
+    /// The moment `minuteOfDay` minutes after midnight on this day, in `calendar`'s time zone,
+    /// by the clock on the wall (a daylight-saving change keeps the time of day).
+    ///
+    /// The one place a day becomes a moment. A day the calendar doesn't have becomes its
+    /// month's last day (`onCalendar`), never rolled over into the next month: "2026-02-30" is
+    /// never 2 March, wherever it is shown, counted or reminded of.
+    public func moment(atMinute minuteOfDay: Int, in calendar: Calendar = .dosar) -> Date {
+        onCalendar.moment(asWrittenAtMinute: minuteOfDay, in: calendar)
+    }
+
+    /// The moment for these numbers as they are, which the calendar may roll over: only for a
+    /// day known to be on it (`onCalendar`, a month's first day).
+    private func moment(asWrittenAtMinute minuteOfDay: Int, in calendar: Calendar) -> Date {
         var parts = DateComponents()
         parts.year = year
         parts.month = month
         parts.day = day
+        parts.hour = minuteOfDay / 60
+        parts.minute = minuteOfDay % 60
         return calendar.date(from: parts) ?? Date(timeIntervalSince1970: 0)
     }
 
@@ -100,7 +132,7 @@ public struct CalendarDay: Hashable, Comparable, Sendable, Codable, CustomString
     /// How many days this day's month has in `calendar`: 28 or 29 for February (29 in a
     /// leap year), 30 or 31 for the others. The one place a month's length is known.
     public func daysInMonth(calendar: Calendar = .dosar) -> Int {
-        calendar.range(of: .day, in: .month, for: firstOfMonth.startDate(in: calendar))?.count ?? 28
+        calendar.range(of: .day, in: .month, for: firstOfMonth.moment(asWrittenAtMinute: 0, in: calendar))?.count ?? 28
     }
 
     private var firstOfMonth: CalendarDay { CalendarDay(year: year, month: month, day: 1) }

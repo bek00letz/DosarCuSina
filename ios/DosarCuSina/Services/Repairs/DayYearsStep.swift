@@ -1,22 +1,27 @@
 import Foundation
 import SwiftData
 
-// MARK: - Days kept with another calendar's year
+// MARK: Days that can't be
 
-/// Before the app counted every day in one Gregorian calendar (`Calendar.dosar`), a phone set
-/// to another calendar wrote the days it worked out itself in that calendar's years: on a phone
-/// set to the Buddhist calendar, today was 2569, and a section's date field kept "2569-03-31".
-/// Such a day reads as a year that can't be (more than 200 years ahead, or before 1800), in a
-/// section's values or in a day kept on a deadline, a completion or a document.
+/// The one rule for a kept day that can't be, wherever it is kept: in a section's values or in a
+/// day kept on a deadline, a completion or a document.
 ///
-/// A year 543 ahead of a likely one is the Buddhist calendar's (its months and days are the
-/// Gregorian ones), so it is offered back 543 years, asking first. Any other year that can't
-/// be (a Japanese era's, an Islamic or Hebrew year, whose months differ too) can't be worked
-/// back safely: the finding only says where it is and what to check
-/// (`DataRepairFinding.isFixable` false).
+/// - **Another calendar's year.** Before the app counted every day in one Gregorian calendar
+///   (`Calendar.dosar`), a phone set to another calendar wrote the days it worked out itself in
+///   that calendar's years: on a phone set to the Buddhist calendar, today was 2569, and a
+///   section's date field kept "2569-03-31". Such a day reads as a year that can't be (more than
+///   200 years ahead, or before 1800). A year 543 ahead of a likely one is the Buddhist
+///   calendar's (its months and days are the Gregorian ones), so it is offered back 543 years,
+///   asking first. Any other year that can't be (a Japanese era's, an Islamic or Hebrew year,
+///   whose months differ too) can't be worked back safely: the finding only says where it is
+///   and what to check (`DataRepairFinding.isFixable` false).
+/// - **A day its month doesn't have.** A backup may bring a day as it was written, such as
+///   "2026-02-30" (kept as written since days are stored as days, never rolled over). It shows
+///   with its own numbers and counts as the month's last day (`CalendarDay.onCalendar`); the
+///   list offers that day, asking first.
 struct DayYearsStep: DataRepairStep {
     static let id = DataRepairStepID.dayYears
-    var title: String { String(localized: "Date cu anul greșit", comment: "Repair group: days kept with another calendar's year by older builds.") }
+    var title: String { String(localized: "Date care nu pot fi", comment: "Repair group: kept days that can't be: another calendar's year, or a day its month doesn't have.") }
 
     /// Where a day is kept.
     enum Place: Hashable, Sendable {
@@ -43,11 +48,12 @@ struct DayYearsStep: DataRepairStep {
         }
     }
 
-    /// A day whose year can't be, and the day it means when that can be known.
+    /// A day that can't be, what it says, and the day offered in its place when there is one.
     struct Candidate {
         let place: Place
         let day: CalendarDay
-        let fixed: CalendarDay?
+        let verdict: Verdict
+        var fixed: CalendarDay? { verdict.offered }
         /// What the list calls it: the field, deadline or document, and its section.
         let name: String
         let section: String?
@@ -58,23 +64,36 @@ struct DayYearsStep: DataRepairStep {
     /// How far a year read from another calendar is from the Gregorian one: the Buddhist era.
     static let buddhistOffset = 543
 
-    /// What a day's year says.
+    /// What a kept day says.
     enum Verdict: Equatable, Sendable {
-        /// A year that can be.
+        /// A day that can be.
         case possible
         /// A year that can't be, and the day it means.
         case means(CalendarDay)
+        /// A day its month doesn't have, in a year that can be, and that month's last day.
+        case missing(lastOfMonth: CalendarDay)
         /// A year that can't be, and no safe way to the day it means.
         case unknown
+
+        /// The day offered in its place, when there is one.
+        var offered: CalendarDay? {
+            switch self {
+            case .means(let day), .missing(let day): day
+            case .possible, .unknown: nil
+            }
+        }
     }
 
     /// A year more than 200 years ahead or before 1800 can't be. It means the day 543 years
-    /// before when that lands between 1900 and a hundred years ahead.
+    /// before when that lands between 1900 and a hundred years ahead. In a year that can be, a
+    /// day its month doesn't have is offered as that month's last day.
     static func verdict(_ day: CalendarDay, thisYear: Int) -> Verdict {
-        guard day.year > thisYear + 200 || day.year < 1800 else { return .possible }
-        let year = day.year - buddhistOffset
-        guard (1900...(thisYear + 100)).contains(year), let meant = CalendarDay(validYear: year, month: day.month, day: day.day) else { return .unknown }
-        return .means(meant)
+        if day.year > thisYear + 200 || day.year < 1800 {
+            let year = day.year - buddhistOffset
+            guard (1900...(thisYear + 100)).contains(year), let meant = CalendarDay(validYear: year, month: day.month, day: day.day) else { return .unknown }
+            return .means(meant)
+        }
+        return day.isOnCalendar ? .possible : .missing(lastOfMonth: day.onCalendar)
     }
 
     static func candidates(in context: ModelContext, calendar: Calendar, now: Date = Date()) throws -> [Candidate] {
@@ -82,13 +101,9 @@ struct DayYearsStep: DataRepairStep {
         var found: [Candidate] = []
         func check(_ day: CalendarDay?, _ place: Place, _ name: String, _ section: String?, write: @escaping (CalendarDay) -> Void) {
             guard let day else { return }
-            let fixed: CalendarDay?
-            switch verdict(day, thisYear: thisYear) {
-            case .possible: return
-            case .means(let meant): fixed = meant
-            case .unknown: fixed = nil
-            }
-            found.append(Candidate(place: place, day: day, fixed: fixed, name: name, section: section, write: write))
+            let verdict = verdict(day, thisYear: thisYear)
+            guard verdict != .possible else { return }
+            found.append(Candidate(place: place, day: day, verdict: verdict, name: name, section: section, write: write))
         }
         let templates = try TemplateStore.templatesByKey(in: context)
         for asset in try context.fetch(FetchDescriptor<Asset>()) {
@@ -124,13 +139,17 @@ struct DayYearsStep: DataRepairStep {
             let place = candidate.section.map { PaymentCardNumbers.redact($0) }.map { section in
                 String(localized: "La \(section), „\(name)”", comment: "Repair: where a day is kept, a field, deadline or document under a section.")
             } ?? String(localized: "„\(name)”", comment: "Repair: where a day is kept, with no section.")
-            let message: String
-            if let fixed = candidate.fixed {
-                message = String(localized: "\(place) e pe \(shown), un an care nu poate fi. Pare scris în calendarul budist, cu 543 de ani înainte. Îl corectez la \(DosarFormat.longDay(fixed))?",
-                                 comment: "Repair: a day kept with the Buddhist calendar's year, offered back in the Gregorian year.")
-            } else {
-                message = String(localized: "\(place) e pe \(shown), un an care nu poate fi. Verifică data pe act și scrie-o din nou.",
-                                 comment: "Repair: a day kept with a year that can't be, which the app can't work back safely.")
+            // A day its month doesn't have is shown with its own numbers (`DosarFormat`).
+            let message: String = switch candidate.verdict {
+            case .means(let fixed):
+                String(localized: "\(place) e pe \(shown), un an care nu poate fi. Pare scris în calendarul budist, cu 543 de ani înainte. Îl corectez la \(DosarFormat.longDay(fixed))?",
+                       comment: "Repair: a day kept with the Buddhist calendar's year, offered back in the Gregorian year.")
+            case .missing(let last):
+                String(localized: "\(place) e pe \(shown), o zi care nu e în calendar. O mut pe \(DosarFormat.longDay(last)), ultima zi a lunii?",
+                       comment: "Repair: a kept day its month doesn't have (30 February), offered as the month's last day.")
+            case .possible, .unknown:
+                String(localized: "\(place) e pe \(shown), un an care nu poate fi. Verifică data pe act și scrie-o din nou.",
+                       comment: "Repair: a day kept with a year that can't be, which the app can't work back safely.")
             }
             return DataRepairFinding(
                 id: "\(Self.id.rawValue):\(candidate.place.key):\(candidate.day.isoString)",

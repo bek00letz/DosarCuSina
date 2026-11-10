@@ -196,13 +196,7 @@ public enum ReminderPlanner {
     /// The moment `minuteOfDay` minutes after midnight on `day`, in local time.
     /// Uses calendar components, so daylight-saving changes keep the wall-clock time.
     public static func fireDate(day: CalendarDay, minuteOfDay: Int, calendar: Calendar = .dosar) -> Date {
-        var parts = DateComponents()
-        parts.year = day.year
-        parts.month = day.month
-        parts.day = day.day
-        parts.hour = minuteOfDay / 60
-        parts.minute = minuteOfDay % 60
-        return calendar.date(from: parts) ?? day.startDate(in: calendar)
+        day.moment(atMinute: minuteOfDay, in: calendar)
     }
 
     public static func identifier(obligationId: UUID, suffix: String) -> String {
