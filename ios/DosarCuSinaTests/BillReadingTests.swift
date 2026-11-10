@@ -430,7 +430,7 @@ struct BillReadingTests {
         let filed = try #require(planned.filedBill)
         #expect(filed.entryID == entry.id)
         #expect(filed.match == .number)
-        #expect(filed.subscription == gas.name)
+        #expect(filed.section == gas.name)
         #expect(CaptureReviewView.filedBillText(filed, today: CalendarDay(today))
             == "E în „\(gas.name)”, cea din 5 octombrie, cu același număr. Dacă salvezi, o actualizez cu ce am citit acum, iar poza asta devine copia ei nouă.")
         #expect(planned.meter == .alreadyKept(try #require(planned.meter?.reading), subscription: gas.name))
@@ -532,6 +532,135 @@ struct BillReadingTests {
                                 document: .kept(attachmentID: try #require(first.attachment).id)), context)
         #expect(billReminders(on: gas).map(\.id) == [reminder.id], "Still the one, paid")
         #expect(bills(on: gas).count == 1)
+    }
+
+    // MARK: "Am rezolvat" with a photo of the bill
+
+    /// A gas subscription under the home with its "Factura de plătit", made by hand, and no bill yet.
+    private func gasWithReminder(_ context: ModelContext) throws -> (gas: Asset, reminder: Obligation) {
+        let house = try home(context)
+        let templates = try TemplateStore(context: context)
+        let template = try #require(try templates.template(forKey: BuiltInTemplates.Key.subscription))
+        var values = FieldValues()
+        values[SubscriptionFields.provider] = .text("ENGIE Romania S.A.")
+        values[SubscriptionFields.service] = .text(ServiceKind.gas)
+        let gas = try AssetActions(context: context).create(name: "Gaz – ENGIE Romania S.A.", template: template, values: values, parent: house)
+        let blueprint = try #require(template.blueprints.first { $0.key == SubscriptionFields.billBlueprint })
+        let reminder = try ObligationActions(context: context, calendar: .bucharest, now: { noon(self.today) })
+            .create(from: blueprint, for: gas, firstDue: CalendarDay("2026-11-20"))
+        return (gas, reminder)
+    }
+
+    private func complete(_ reminder: Obligation, with result: CaptureResult?, _ context: ModelContext, store: CaptureDocumentStore,
+                          lowerReading: LowerReadingAnswer? = nil,
+                          edit: (inout CaptureFiler.Completion) -> Void = { _ in }) async throws -> CaptureFiler.Outcome {
+        var completion = CaptureFiler.Completion(obligation: reminder, date: noon(today), cost: Money(245), document: result)
+        edit(&completion)
+        return try await filer(context, store: store, lowerReading: lowerReading).file(.completion(completion))
+    }
+
+    @Test func amRezolvatWithAPhotoOfTheBillLogsItAsABill() async throws {
+        let context = try makeContext()
+        let (gas, reminder) = try gasWithReminder(context)
+        let store = CaptureDocumentStore()
+        let photo = try await newPhoto(store, seed: 70)
+        let result = bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", number: "EXM 0000001", document: photo)
+        let before = try UndoReceiptTests.database(context)
+
+        let planned = try #require(try filer(context).billPlan(for: CaptureFiler.Completion(obligation: reminder, date: noon(today), document: result)))
+        #expect(planned.filedBill == nil, "Not in the binder yet")
+        #expect(planned.meter == .record(try #require(planned.meter?.reading), subscription: gas.name), "The sheet says where the index goes")
+
+        let outcome = try await complete(reminder, with: result, context, store: store)
+        let entry = try #require(outcome.bill)
+        #expect(bills(on: gas).map(\.id) == [entry.id], "Logged once in Istoric, as the review logs a bill")
+        #expect(entry.reference == "EXM 0000001")
+        #expect(entry.totalCost == Money(245))
+        #expect(CalendarDay(entry.occurredAt, calendar: .bucharest) == CalendarDay("2026-10-05"), "On the bill's day")
+        #expect(readings(of: gas).map(\.value) == [12_345], "Its index, on the subscription")
+        let document = try #require(outcome.attachment)
+        #expect(document.historyEntry?.id == entry.id, "The bill's own entry, not the payment record")
+        #expect(document.obligation?.id == reminder.id)
+        #expect(document.measurement?.id == readings(of: gas).first?.id)
+        #expect(reminder.status == .done, "Paid")
+        #expect(outcome.completion?.isCompletion == true, "The payment is recorded, as for any deadline")
+        #expect(billReminders(on: gas).map(\.id) == [reminder.id], "No second reminder")
+
+        try #require(outcome.receipt).undo()
+        let left = UndoReceiptTests.differences(before, try UndoReceiptTests.database(context))
+        #expect(left.isEmpty, "Still different after undo: \(left.map(\.description))")
+    }
+
+    @Test func amRezolvatWithAnotherPhotoOfABillAlreadyFiledLogsItOnce() async throws {
+        let context = try makeContext()
+        _ = try home(context)
+        let store = CaptureDocumentStore()
+        let first = try await save(bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", number: "EXM 0000001",
+                                        document: try await newPhoto(store, seed: 71)), context, store: store)
+        let gas = try #require(first.asset)
+        let entry = try #require(first.bill)
+        let older = try #require(first.attachment)
+        let reminder = try #require(first.obligation)
+
+        // The PDF that came by email, paid from "Am rezolvat".
+        let pdf = bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", number: "EXM-0000001", document: try await newPhoto(store, seed: 72))
+        let planned = try #require(try filer(context).billPlan(for: CaptureFiler.Completion(obligation: reminder, date: noon(today), document: pdf)))
+        #expect(planned.filedBill?.entryID == entry.id)
+        #expect(planned.filedBill?.match == .number)
+
+        let outcome = try await complete(reminder, with: pdf, context, store: store)
+        #expect(bills(on: gas).map(\.id) == [entry.id], "Still one bill")
+        #expect(outcome.bill?.id == entry.id)
+        #expect(readings(of: gas).count == 1, "Still one index")
+        let newer = try #require(outcome.attachment)
+        #expect(newer.historyEntry?.id == entry.id && !newer.isArchived, "The new copy")
+        #expect(older.isArchived && older.supersededBy?.id == newer.id, "The first copy, archived beside it")
+        #expect(reminder.status == .done)
+        #expect(billReminders(on: gas).map(\.id) == [reminder.id])
+    }
+
+    @Test func amRezolvatWithABillThatOnlyLooksFiledCanBeAnotherBill() async throws {
+        let context = try makeContext()
+        _ = try home(context)
+        let store = CaptureDocumentStore()
+        let first = try await save(bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20"), context, store: store)
+        let gas = try #require(first.asset)
+        let reminder = try #require(first.obligation)
+        let same = bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", document: try await newPhoto(store, seed: 73))
+        let completion = CaptureFiler.Completion(obligation: reminder, date: noon(today), document: same)
+        #expect(try filer(context).billPlan(for: completion)?.filedBill?.mayBeAnother == true, "By its day and total only")
+        _ = try await complete(reminder, with: same, context, store: store) { $0.isAnotherBill = true }
+        #expect(bills(on: gas).count == 2, "„E altă factură”")
+    }
+
+    @Test func amRezolvatAsksAboutALowerIndexBeforeAnythingIsWritten() async throws {
+        let context = try makeContext()
+        let (gas, reminder) = try gasWithReminder(context)
+        try AssetActions(context: context).recordMeasurement(on: gas, kind: .gas, value: 12_500, unit: .cubicMetres, at: noon("2026-09-05"))
+        let store = CaptureDocumentStore()
+        let result = bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", number: "EXM 0000001", document: try await newPhoto(store, seed: 74))
+        let history = try context.fetchCount(FetchDescriptor<HistoryEntry>())
+
+        await #expect(throws: LowerReadingQuestion.self) { _ = try await complete(reminder, with: result, context, store: store) }
+        #expect(context.hasChanges == false)
+        #expect(try context.fetchCount(FetchDescriptor<HistoryEntry>()) == history, "Nothing was written")
+        #expect(reminder.status == .active, "Not even the payment")
+
+        _ = try await complete(reminder, with: result, context, store: store, lowerReading: .keepAside)
+        #expect(readings(of: gas).map(\.value) == [12_500, 12_345])
+        #expect(bills(on: gas).count == 1)
+    }
+
+    @Test func amRezolvatWithAnyOtherDocumentFilesNoBill() async throws {
+        let context = try makeContext()
+        let (gas, reminder) = try gasWithReminder(context)
+        let store = CaptureDocumentStore()
+        let other = capture(.other, [field(.issueDate, day("2026-10-05"))], document: try await newPhoto(store, seed: 75))
+        #expect(try filer(context).billPlan(for: CaptureFiler.Completion(obligation: reminder, date: noon(today), document: other)) == nil)
+        let outcome = try await complete(reminder, with: other, context, store: store)
+        #expect(outcome.bill == nil)
+        #expect(bills(on: gas).isEmpty)
+        #expect(outcome.attachment?.historyEntry?.id == outcome.completion?.id, "Kept with the payment record, as before")
     }
 
     // MARK: The page

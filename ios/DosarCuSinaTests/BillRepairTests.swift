@@ -44,7 +44,7 @@ struct BillRepairTests {
     }
 
     private func bills(on gas: Asset) -> [HistoryEntry] {
-        BillIdentity.bills(of: gas)
+        PaperIdentity.bills(of: gas)
     }
 
     // MARK: The number in the note

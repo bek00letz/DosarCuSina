@@ -173,9 +173,51 @@ private struct VisitForm: View {
             }
         } else {
             DSNotice(.success, title: "Factura e atașată", message: readNote.map { LocalizedStringKey($0) })
+            filedNotice
         }
         if draft.document == nil, let readNote {
             DSNotice(.warning, title: "Factura nu s-a citit", message: LocalizedStringKey(readNote))
+        }
+    }
+
+    /// The invoice is already in the binder: the same photo, or another photo of the same
+    /// invoice (`PaperIdentity`). Saving updates the visit it was filed with.
+    @ViewBuilder private var filedNotice: some View {
+        if let filed {
+            VStack(alignment: .leading, spacing: DS.Space.s) {
+                DSNotice(.info, title: "Factura e deja în dosar",
+                         message: LocalizedStringKey(Self.filedText(filed, today: CalendarDay(Date()))), actionTitle: "Vezi factura") {
+                    finish(false)
+                    AppNavigator.shared.open(.historyEntry(filed.entryID))
+                }
+                if filed.mayBeAnother {
+                    DSCompactButton("E altă factură", systemImage: "doc.badge.plus") {
+                        withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { draft.isAnotherInvoice = true }
+                    }
+                }
+            }
+            .transition(.opacity)
+        }
+    }
+
+    /// The visit this invoice was filed with before, as saving will find it.
+    private var filed: FiledPaper? {
+        visit.filedBefore(keptDocumentID: draft.document?.keptAttachmentID, calendar: .current)?.paper
+    }
+
+    /// What the visit form says about an invoice already in the binder, and what saving does with it.
+    static func filedText(_ filed: FiledPaper, today: CalendarDay) -> String {
+        let date = DueWording.date(filed.day, today: today)
+        return switch filed.match {
+        case .sameDocument:
+            String(localized: "E în istoricul „\(filed.section)”, din \(date). Dacă salvezi, actualizez ce s-a trecut atunci cu ce e aici.",
+                   comment: "Visit form: the same invoice photo filed again.")
+        case .number:
+            String(localized: "E în istoricul „\(filed.section)”, din \(date), cu același număr. Dacă salvezi, actualizez ce s-a trecut atunci cu ce e aici, iar poza asta devine copia ei nouă.",
+                   comment: "Visit form: another photo of an invoice already filed, known by its number.")
+        case .dayAndTotal:
+            String(localized: "În istoricul „\(filed.section)” e una cu aceeași dată și același total, din \(date). Dacă e aceeași factură, o actualizez, iar poza asta devine copia ei nouă.",
+                   comment: "Visit form: another photo of what looks like an invoice already filed, by its day and total.")
         }
     }
 
@@ -389,21 +431,7 @@ private struct VisitForm: View {
                 // none; an invoice already in the binder moves to the visit, never left out.
                 var filer = CaptureFiler(context: context)
                 filer.lowerReading = lowerReading
-                let outcome = try await filer.file(.visit(.init(
-                    asset: asset,
-                    kind: wording.kind,
-                    occurredAt: draft.date,
-                    checklist: draft.checklistItems,
-                    extraItems: draft.extraItems,
-                    totalCost: draft.totalMoney,
-                    odometer: draft.odometer,
-                    odometerSource: draft.odometerSource,
-                    provider: providerChoice,
-                    rating: draft.rating,
-                    document: draft.document,
-                    documentTitle: draft.documentTitle,
-                    documentText: draft.documentText
-                )))
+                let outcome = try await filer.file(.visit(visit))
                 receipt = outcome.receipt
                 withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { saved = outcome.visit }
             } catch let question as ExampleSectionQuestion {
@@ -414,6 +442,27 @@ private struct VisitForm: View {
                 errorMessage = SaveFailure.message(for: error, formKept: true)
             }
         }
+    }
+
+    /// The visit as saving files it, from the form as it stands.
+    private var visit: CaptureFiler.Visit {
+        CaptureFiler.Visit(
+            asset: asset,
+            kind: wording.kind,
+            occurredAt: draft.date,
+            checklist: draft.checklistItems,
+            extraItems: draft.extraItems,
+            totalCost: draft.totalMoney,
+            odometer: draft.odometer,
+            odometerSource: draft.odometerSource,
+            provider: providerChoice,
+            rating: draft.rating,
+            document: draft.document,
+            documentTitle: draft.documentTitle,
+            documentText: draft.documentText,
+            reference: draft.reference,
+            isAnotherInvoice: draft.isAnotherInvoice
+        )
     }
 
     private var providerChoice: CaptureFiler.Visit.ProviderChoice {

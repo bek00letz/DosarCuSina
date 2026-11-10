@@ -5,7 +5,7 @@ import SwiftData
 
 /// Before version 7, a bill filed from capture kept its invoice number only in its entry's
 /// note, written by the app as "Factura nr. EXM 0000001". The number moves to its own place
-/// (`HistoryEntry.reference`), where a bill is known by it (`BillIdentity`), and the note the
+/// (`HistoryEntry.reference`), where a bill is known by it (`PaperIdentity`), and the note the
 /// app wrote goes. The bill's page says the same as before ("Factura nr. EXM 0000001"), so it
 /// runs without asking. A note the person changed is left alone.
 struct BillNumbersStep: DataRepairStep {
@@ -47,7 +47,7 @@ struct BillNumbersStep: DataRepairStep {
 
 /// Before another photo of a bill was known as the same bill, filing it again logged it a
 /// second time in its subscription's history. Bills of one subscription that the one rule
-/// (`BillIdentity`) says are the same are offered to be joined: one entry stays (the one
+/// (`PaperIdentity`) says are the same are offered to be joined: one entry stays (the one
 /// whose paper came last, with what was read then), the others' papers move to it, the
 /// newest as the current copy and the rest archived beside it, and the extra entries go. It
 /// asks, because it changes what Istoric and the bill trend show. A reading or a reminder an
@@ -67,12 +67,12 @@ struct SameBillTwiceStep: DataRepairStep {
         let templates = try TemplateStore(context: context).templatesByKey()
         var groups: [Group] = []
         for subscription in try context.fetch(FetchDescriptor<Asset>()) where templates.plays(.subscription, subscription.templateKey) {
-            let bills = BillIdentity.bills(of: subscription).sorted { ($0.occurredAt, $0.id.uuidString) < ($1.occurredAt, $1.id.uuidString) }
+            let bills = PaperIdentity.bills(of: subscription).sorted { ($0.occurredAt, $0.id.uuidString) < ($1.occurredAt, $1.id.uuidString) }
             var placed = Set<UUID>()
             for (index, bill) in bills.enumerated() where !placed.contains(bill.id) {
-                let identity = BillIdentity(entry: bill, calendar: calendar)
+                let identity = PaperIdentity(entry: bill, calendar: calendar)
                 let same = [bill] + bills.dropFirst(index + 1).filter { other in
-                    !placed.contains(other.id) && identity.match(BillIdentity(entry: other, calendar: calendar)) != nil
+                    !placed.contains(other.id) && identity.match(PaperIdentity(entry: other, calendar: calendar)) != nil
                 }
                 guard same.count > 1 else { continue }
                 placed.formUnion(same.map(\.id))

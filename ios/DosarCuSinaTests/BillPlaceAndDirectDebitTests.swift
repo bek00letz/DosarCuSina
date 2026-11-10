@@ -27,7 +27,7 @@ private func gasBill(clc: String = "DEG0000000000001", issued: String = "2026-10
         field(.serviceKind, .text(ServiceKind.gas)),
         field(.clientCode, .text("1000000000")),
         field(.clcCode, .text(clc)),
-        // Each month's bill has its own number: the same number is the same bill (`BillIdentity`).
+        // Each month's bill has its own number: the same number is the same bill (`PaperIdentity`).
         field(.invoiceNumber, .text("EX \(issued.filter(\.isNumber))")),
         field(.issueDate, day(issued)),
         field(.dueDate, day(due)),

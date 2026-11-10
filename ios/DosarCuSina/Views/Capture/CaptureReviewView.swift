@@ -82,17 +82,17 @@ struct CaptureReviewView: View {
     }
 
     /// What the review says about a bill already in the binder, and what saving does with it.
-    static func filedBillText(_ filed: CaptureFilingPlan.FiledBill, today: CalendarDay) -> String {
+    static func filedBillText(_ filed: FiledPaper, today: CalendarDay) -> String {
         let date = DueWording.date(filed.day, today: today)
         return switch filed.match {
         case .sameDocument:
-            String(localized: "E în „\(filed.subscription)”, cea din \(date). Dacă salvezi, o actualizez cu ce am citit acum.",
+            String(localized: "E în „\(filed.section)”, cea din \(date). Dacă salvezi, o actualizez cu ce am citit acum.",
                    comment: "Capture review: the same bill's photo filed again.")
         case .number:
-            String(localized: "E în „\(filed.subscription)”, cea din \(date), cu același număr. Dacă salvezi, o actualizez cu ce am citit acum, iar poza asta devine copia ei nouă.",
+            String(localized: "E în „\(filed.section)”, cea din \(date), cu același număr. Dacă salvezi, o actualizez cu ce am citit acum, iar poza asta devine copia ei nouă.",
                    comment: "Capture review: another photo of a bill already filed, known by its invoice number.")
         case .dayAndTotal:
-            String(localized: "În „\(filed.subscription)” e una cu aceeași dată și același total, cea din \(date). Dacă e aceeași, o actualizez, iar poza asta devine copia ei nouă.",
+            String(localized: "În „\(filed.section)” e una cu aceeași dată și același total, cea din \(date). Dacă e aceeași, o actualizez, iar poza asta devine copia ei nouă.",
                    comment: "Capture review: another photo of what looks like a bill already filed, by its day and total.")
         }
     }
@@ -262,7 +262,7 @@ struct CaptureReviewView: View {
                     onClose(.dismissed)
                     AppNavigator.shared.open(.historyEntry(filed.entryID))
                 }
-                if filed.match == .dayAndTotal {
+                if filed.mayBeAnother {
                     DSCompactButton("E altă factură", systemImage: "doc.badge.plus") {
                         withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { review.isAnotherBill = true }
                     }

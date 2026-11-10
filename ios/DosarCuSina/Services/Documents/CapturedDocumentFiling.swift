@@ -38,6 +38,12 @@ extension ProcessedDocument {
 public enum CapturedDocument {
     case new(ProcessedDocument, ref: CapturedDocumentRef)
     case kept(Attachment)
+
+    /// The copy the binder already keeps, when it is one.
+    public var keptAttachment: Attachment? {
+        if case .kept(let attachment) = self { return attachment }
+        return nil
+    }
 }
 
 /// Why a captured document can't be filed.

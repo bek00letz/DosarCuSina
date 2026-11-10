@@ -50,6 +50,9 @@ struct CaptureFiler {
         var document: CaptureResult?
         /// The person asked to keep the photo of a document kept only on request (a bank card).
         var keepsPhotoOnRequest = false
+        /// A photo of a bill that only looked like one already filed, by its day and total:
+        /// the person said it is another bill ("E altă factură").
+        var isAnotherBill = false
     }
 
     /// A visit from the visit form, with the invoice it was read from.
@@ -75,6 +78,57 @@ struct CaptureFiler {
         var document: CapturedDocumentRef?
         var documentTitle: String?
         var documentText: String?
+        /// The invoice's number as read, by which another photo of it is known (`PaperIdentity`).
+        var reference: String?
+        /// The person said it is another invoice, when it only looked like one already filed
+        /// by its day and total ("E altă factură").
+        var isAnotherInvoice = false
+
+        /// Who issued the invoice, as named here.
+        @MainActor var issuer: String? {
+            switch provider {
+            case .none: nil
+            case .existing(let provider): provider.name
+            case .named(let name, _, _): name
+            }
+        }
+
+        /// The visit this invoice was filed with before, on this section, by the one rule
+        /// (`PaperIdentity`): the same document's own visit (`keptDocumentID`), else, with an
+        /// invoice, the visit, repair or purchase another photo of it logged (its number, else
+        /// its day, total and firm), unless the person said it is another invoice. A visit
+        /// typed without an invoice is never taken for one already filed. A photo kept on
+        /// another section moves here with none of its old links (`AttachmentActions.fileCaptured`).
+        @MainActor
+        func filedBefore(keptDocumentID: UUID?, calendar: Calendar) -> (entry: HistoryEntry, paper: FiledPaper)? {
+            let visits = PaperIdentity.visits(of: asset)
+            if let kept = keptDocumentID,
+               let entry = visits.first(where: { ($0.attachments ?? []).contains { $0.id == kept && !$0.isDeleted } }) {
+                return (entry, FiledPaper(entry, match: .sameDocument, calendar: calendar))
+            }
+            guard document != nil, !isAnotherInvoice else { return nil }
+            let invoice = PaperIdentity(number: reference, day: CalendarDay(occurredAt, calendar: calendar), total: totalCost, issuer: issuer)
+            guard let found = invoice.filed(among: visits, identity: { PaperIdentity(entry: $0, calendar: calendar) }) else { return nil }
+            return (found.paper, FiledPaper(found.paper, match: FiledPaper.Match(found.match), calendar: calendar))
+        }
+
+        /// This visit as it updates `earlier`, the visit its invoice was filed with: what the
+        /// form leaves empty (the number, the total, the kilometres, the firm, the rating) stays
+        /// as it was, as for a bill filed again.
+        @MainActor
+        func updating(_ earlier: HistoryEntry?) -> Visit {
+            guard let earlier else { return self }
+            var visit = self
+            if (visit.reference ?? "").trimmingCharacters(in: .whitespaces).isEmpty { visit.reference = earlier.reference }
+            if visit.totalCost == nil { visit.totalCost = earlier.totalCost }
+            if visit.odometer == nil, let kept = earlier.metricReading {
+                visit.odometer = kept
+                visit.odometerSource = .document
+            }
+            if case .none = visit.provider, let firm = earlier.providers?.first(where: { !$0.isDeleted }) { visit.provider = .existing(firm) }
+            if visit.rating == nil { visit.rating = earlier.rating }
+            return visit
+        }
     }
 
     struct Outcome {
@@ -302,28 +356,10 @@ struct CaptureFiler {
         }
         outcome.nextDue = outcome.obligation?.dueDay(in: calendar)
 
-        // A bill, in its subscription's history: what it came to and when, for the trend
-        // and for knowing when the next one is due. A bill logs one entry (`BillIdentity`, as
-        // the plan found it): filed again, from the same document or another photo of it, the
-        // entry it logged before takes what was read now (what wasn't read stays) and moves
-        // with the bill, and it goes when the bill no longer goes to a subscription, as its
-        // meter reading does.
-        let billFiledBefore = plan.filedBill.flatMap { try? entry(id: $0.entryID) }
+        // A bill, in its subscription's history (`logBill`): one entry, the one it logged
+        // before when it is filed again.
         let readingFiledBefore = plan.readingFiledBefore.flatMap { try? reading(id: $0) }
-        if review.kind.profile.deadlineIsOptIn, let asset = outcome.asset, templates.plays(.subscription, asset.templateKey) {
-            outcome.bill = try HistoryActions(context: context, now: now).record(
-                on: asset,
-                kind: .payment,
-                title: review.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? CaptureMapping.defaultTitle(for: review.kind, fields: review.valuesByKey) : review.title,
-                occurredAt: review.value(.issueDate) == nil && billFiledBefore != nil
-                    ? billFiledBefore?.occurredAt : Self.billDay(review, today: today).noonDate(in: calendar),
-                totalCost: review.total ?? billFiledBefore?.totalCost,
-                reference: review.value(.invoiceNumber)?.text ?? billFiledBefore?.reference,
-                replacing: billFiledBefore
-            )
-        } else if review.kind.profile.deadlineIsOptIn, let billFiledBefore {
-            try HistoryActions(context: context, now: now).delete(billFiledBefore)
-        }
+        outcome.bill = try logBill(review, in: outcome.asset, plan: plan, templates: templates, today: today)
 
         // 3. Who issued it.
         let provider = try self.provider(plan.provider, asset: outcome.asset)
@@ -348,19 +384,55 @@ struct CaptureFiler {
                 provider: provider
             )
             outcome.attachment = filed
-            // Another photo or PDF of a bill already in the binder: it is the bill's newer
-            // copy, and the one kept before is archived beside it, never thrown away.
-            if let bill = outcome.bill, let match = plan.filedBill?.match, match != .sameDocument {
-                try AttachmentActions(context: context, calendar: calendar).keepAsNewerCopy(filed, of: bill)
-            }
         }
 
-        // 5. A bill's meter index, as the plan says: a reading on its subscription, from the
-        // document, linked to it.
+        // 5. A bill's newer copy and its meter index, as the plan says.
+        try finishBill(plan: plan, outcome: &outcome, readingFiledBefore: readingFiledBefore, templates: templates)
+        return outcome
+    }
+
+    // MARK: A bill
+
+    /// A bill, in its subscription's history: what it came to and when, for the trend and for
+    /// knowing when the next one is due. The one step for the review and for "Am rezolvat"
+    /// with a photo of the bill. A bill logs one entry (`PaperIdentity`, as the plan found
+    /// it): filed again, from the same document or another photo of it, the entry it logged
+    /// before takes what was read now (what wasn't read stays) and moves with the bill, and it
+    /// goes when the bill no longer goes to a subscription, as its meter reading does. Nil
+    /// for anything that isn't a bill.
+    private func logBill(_ review: CaptureReview, in asset: Asset?, plan: CaptureFilingPlan, templates: [String: CategoryTemplate],
+                         today: CalendarDay) throws -> HistoryEntry? {
+        guard review.kind.profile.deadlineIsOptIn else { return nil }
+        let billFiledBefore = plan.filedBill.flatMap { try? entry(id: $0.entryID) }
+        guard let asset, templates.plays(.subscription, asset.templateKey) else {
+            if let billFiledBefore { try HistoryActions(context: context, now: now).delete(billFiledBefore) }
+            return nil
+        }
+        return try HistoryActions(context: context, now: now).record(
+            on: asset,
+            kind: .payment,
+            title: review.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? CaptureMapping.defaultTitle(for: review.kind, fields: review.valuesByKey) : review.title,
+            occurredAt: review.value(.issueDate) == nil && billFiledBefore != nil
+                ? billFiledBefore?.occurredAt : Self.billDay(review, today: today).noonDate(in: calendar),
+            totalCost: review.total ?? billFiledBefore?.totalCost,
+            reference: review.value(.invoiceNumber)?.text ?? billFiledBefore?.reference,
+            replacing: billFiledBefore
+        )
+    }
+
+    /// What a bill's filing does once its document is kept: another photo or PDF of a bill
+    /// already in the binder is the bill's newer copy, with the one kept before archived
+    /// beside it, never thrown away; and its meter index is a reading on its subscription,
+    /// from the document, linked to it (`recordMeterReading`). `readingFiledBefore` is fetched
+    /// before the bill's entry is written.
+    private func finishBill(plan: CaptureFilingPlan, outcome: inout Outcome, readingFiledBefore: MeasurementLog?,
+                            templates: [String: CategoryTemplate]) throws {
+        if let bill = outcome.bill, let filed = outcome.attachment, let match = plan.filedBill?.match, match != .sameDocument {
+            try AttachmentActions(context: context, calendar: calendar).keepAsNewerCopy(filed, of: bill)
+        }
         let subscription = outcome.asset.flatMap { templates.plays(.subscription, $0.templateKey) ? $0 : nil }
         outcome.reading = try recordMeterReading(subscription == nil ? nil : plan.meter?.reading, on: subscription,
                                                  document: outcome.attachment, earlier: readingFiledBefore, templates: templates)
-        return outcome
     }
 
     private func entry(id: UUID) throws -> HistoryEntry? {
@@ -375,27 +447,43 @@ struct CaptureFiler {
         return try context.fetch(descriptor).first
     }
 
-    /// "Am rezolvat": the same steps as the review, for the deadline the person closed.
+    /// "Am rezolvat": the same steps as the review, for the deadline the person closed. A
+    /// photo of a bill on its subscription (the bill being paid) files as a bill, as the
+    /// review files one (`billPlan`): its values fill what the subscription still lacks, it is
+    /// logged in Istoric once (`PaperIdentity`: the bill already there takes what was read,
+    /// and a new photo becomes its newer copy), and its meter index is a reading. The
+    /// deadline's cycle closes as for any document; the bill never makes a second reminder.
     private func fileCompletion(_ completion: Completion, document: CapturedDocument?) throws -> Outcome {
         let obligation = completion.obligation
         let today = CalendarDay(now(), calendar: calendar)
         var outcome = Outcome(asset: obligation.asset, obligation: obligation)
         // Whether it may go into an example was asked before the unit opened (`askFirst`).
         let review = completionReview(completion)
+        let templates = try TemplateStore(context: context).templatesByKey()
+        // One plan, worked out before anything changes, as the sheet showed it.
+        let bill = try review.flatMap { try billPlan(for: $0, templates: templates) }
+        let readingFiledBefore = bill?.readingFiledBefore.flatMap { try? reading(id: $0) }
 
         // 1. The values read, onto the section: a new RCA policy brings its number, insurer and
-        // claims phone, into the fields of the deadline being closed (a CASCO's into CASCO's).
+        // claims phone, into the fields of the deadline being closed (a CASCO's into CASCO's);
+        // a bill fills what its subscription still lacks.
         if let review, let asset = obligation.asset {
-            let templates = try TemplateStore(context: context).templatesByKey()
-            let closing = closingBlueprint(of: obligation, templates: templates)
-            try writeValues(of: review, to: asset, templates: templates, deadline: closing)
-            try keepBonusMalus(bonusMalusChoice(for: review), on: asset, deadline: closing)
+            if bill != nil, case .subscription(let template) = try Self.route(for: review, into: asset, templates: templates) {
+                try updateSubscription(asset, from: review, template: template)
+            } else {
+                let closing = closingBlueprint(of: obligation, templates: templates)
+                try writeValues(of: review, to: asset, templates: templates, deadline: closing)
+                try keepBonusMalus(bonusMalusChoice(for: review), on: asset, deadline: closing)
+            }
         }
 
         // 2. The deadline: the cycle closes, and the new document's date sets the next one.
         let newDay = completion.document.flatMap(Self.nextDay(in:)).flatMap { $0 > today ? $0 : nil }
         outcome.completion = try renew(obligation, to: newDay, done: true, on: completion.date, cost: completion.cost)
         if obligation.status == .active { outcome.nextDue = obligation.dueDay(in: calendar) }
+
+        // A bill, in its subscription's history, once.
+        if let review, let bill { outcome.bill = try logBill(review, in: obligation.asset, plan: bill, templates: templates, today: today) }
 
         // 3. Who issued it, and 4. the document (a bank card's photo only on request).
         if let review, let document, review.keepsPhoto {
@@ -409,16 +497,42 @@ struct CaptureFiler {
                 validUntil: review.validUntil,
                 asset: obligation.asset,
                 obligation: obligation,
-                historyEntry: outcome.completion,
+                // A bill's document is the bill's own entry, as from the review.
+                historyEntry: outcome.bill ?? outcome.completion,
                 provider: provider
             )
             outcome.attachment = filed
         }
+
+        // 5. A bill's newer copy and its meter index.
+        if let bill { try finishBill(plan: bill, outcome: &outcome, readingFiledBefore: readingFiledBefore, templates: templates) }
         return outcome
     }
 
-    /// A visit with its invoice: the provider, the entry and the document, together.
+    /// What filing "Am rezolvat"'s photo as a bill does (its entry in Istoric, its meter
+    /// index), as the sheet shows it before saving: the review's own plan, for the bill on the
+    /// subscription whose deadline is closed. Nil when the photo isn't a bill, or the deadline
+    /// isn't a subscription's.
+    func billPlan(for completion: Completion) throws -> CaptureFilingPlan? {
+        guard let review = completionReview(completion) else { return nil }
+        return try billPlan(for: review, templates: try TemplateStore(context: context).templatesByKey())
+    }
+
+    /// The plan for a completion's review, which files into the deadline's own section: only
+    /// a bill, and only when that section is its subscription.
+    private func billPlan(for review: CaptureReview, templates: [String: CategoryTemplate]) throws -> CaptureFilingPlan? {
+        let assets = try context.fetch(FetchDescriptor<Asset>())
+        guard review.kind.profile.deadlineIsOptIn, case .asset(let id) = review.destination, let section = assets.first(where: { $0.id == id }),
+              case .subscription = try Self.route(for: review, into: section, templates: templates) else { return nil }
+        return CaptureFilingPlan.make(for: review, templates: templates, assets: assets, today: CalendarDay(now(), calendar: calendar), calendar: calendar)
+    }
+
+    /// A visit with its invoice: the provider, the entry and the document, together. The
+    /// same invoice filed again (the same document, or another photo of it: `PaperIdentity`)
+    /// updates the visit it was filed with, and a new photo becomes its newer copy.
     private func fileVisit(_ visit: Visit, document: CapturedDocument?) throws -> Outcome {
+        let filed = visit.filedBefore(keptDocumentID: document?.keptAttachment?.id, calendar: calendar)
+        let visit = visit.updating(filed?.entry)
         let provider: Provider? = switch visit.provider {
         case .none: nil
         case .existing(let provider): provider
@@ -426,7 +540,6 @@ struct CaptureFiler {
             try ProviderActions(context: context, now: now).findOrCreate(name: name, taxID: taxID, trade: trade, linkedTo: visit.asset)
         }
         if let provider, case .existing = visit.provider { try ProviderActions(context: context, now: now).link(provider, to: visit.asset) }
-        // The same invoice filed again: the visit it was filed with takes these values.
         let entry = try HistoryActions(context: context, now: now).recordVisit(
             on: visit.asset,
             kind: visit.kind,
@@ -436,15 +549,17 @@ struct CaptureFiler {
             totalCost: visit.totalCost,
             odometer: visit.odometer,
             provider: provider,
+            reference: visit.reference,
             rating: visit.rating,
             calendar: calendar,
             odometerSource: visit.odometerSource,
             lowerReading: lowerReading,
-            replacing: Self.visitFiledBefore(by: document, on: visit.asset)
+            replacing: filed?.entry
         ).value
         var outcome = Outcome(asset: visit.asset, visit: entry)
         if let document {
-            let filed = try AttachmentActions(context: context, calendar: calendar).fileCaptured(
+            let documents = AttachmentActions(context: context, calendar: calendar)
+            let kept = try documents.fileCaptured(
                 document,
                 title: visit.documentTitle,
                 kind: .invoice,
@@ -454,7 +569,10 @@ struct CaptureFiler {
                 historyEntry: entry,
                 provider: provider
             )
-            outcome.attachment = filed
+            outcome.attachment = kept
+            // Another photo or PDF of an invoice already filed: the visit's newer copy, with
+            // the one kept before archived beside it, never thrown away.
+            if let match = filed?.paper.match, match != .sameDocument { try documents.keepAsNewerCopy(kept, of: entry) }
         }
         return outcome
     }
@@ -511,14 +629,20 @@ struct CaptureFiler {
             guard let review = completionReview(completion), let asset = completion.obligation.asset else { return }
             try ExampleOwnership.requireReal(asset)
             let templates = try TemplateStore(context: context).templatesByKey()
+            if let bill = try billPlan(for: review, templates: templates) {
+                // A photo of the bill: its index, as the review asks about it.
+                try askAboutMeter(bill, review: review, assets: try context.fetch(FetchDescriptor<Asset>()), templates: templates)
+                return
+            }
             let closing = closingBlueprint(of: completion.obligation, templates: templates)
             try HouseholdMutations.askAboutReading(try valuesReading(of: review, onto: asset, templates: templates, deadline: closing),
                                                    answer: lowerReading)
         case .visit(let visit):
             try ExampleOwnership.requireReal(visit.asset)
+            let earlier = visit.filedBefore(keptDocumentID: document?.keptAttachment?.id, calendar: calendar)?.entry
+            let visit = visit.updating(earlier)
             let reading = HistoryActions(context: context, now: now).plannedReading(
-                visit.odometer, on: visit.asset, at: visit.occurredAt, source: visit.odometerSource,
-                replacing: Self.visitFiledBefore(by: document, on: visit.asset)
+                visit.odometer, on: visit.asset, at: visit.occurredAt, source: visit.odometerSource, replacing: earlier
             )
             try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
         }
@@ -540,6 +664,14 @@ struct CaptureFiler {
         }
         let plan = CaptureFilingPlan.make(for: review, templates: templates, assets: assets,
                                           today: CalendarDay(now(), calendar: calendar), calendar: calendar)
+        try askAboutMeter(plan, review: review, assets: assets, templates: templates)
+    }
+
+    /// A bill's index lower than its subscription's last one, asked as the reading the plan
+    /// records (`CaptureFilingPlan.meter`). The reading this bill recorded before (by this
+    /// document or another photo of it) doesn't count: filing replaces it.
+    private func askAboutMeter(_ plan: CaptureFilingPlan, review: CaptureReview, assets: [Asset],
+                               templates: [String: CategoryTemplate]) throws {
         guard case .record(let reading, _)? = plan.meter,
               let section = review.existingSection(assets: assets, templates: templates),
               templates.plays(.subscription, section.templateKey) else { return }
@@ -567,6 +699,7 @@ struct CaptureFiler {
             var review = CaptureReview(result: result, assets: [], context: context)
             review.destination = completion.obligation.asset.map { .asset($0.id) } ?? .none
             review.keepsPhotoOnRequest = completion.keepsPhotoOnRequest
+            review.isAnotherBill = completion.isAnotherBill
             return review
         }
     }
@@ -575,26 +708,6 @@ struct CaptureFiler {
     private func closingBlueprint(of obligation: Obligation, templates: [String: CategoryTemplate]) -> ObligationBlueprint? {
         guard let asset = obligation.asset else { return nil }
         return obligation.blueprintKey.flatMap { key in templates[asset.templateKey]?.blueprints.first { $0.key == key } }
-    }
-
-    // MARK: Filed again
-
-    /// The history entry a kept document logged when it was filed before, when `isOwn` says
-    /// it is the document's own record (a visit): filing the document again updates that entry
-    /// instead of adding a second one. Never a completion, which belongs to the deadline whose
-    /// cycle it closed. A bill is found by the filing plan instead (`CaptureFilingPlan.filedBill`),
-    /// which also knows another photo of it.
-    static func entryFiledBefore(by document: CapturedDocument?, _ isOwn: (HistoryEntry) -> Bool) -> HistoryEntry? {
-        guard case .kept(let attachment)? = document, let entry = attachment.historyEntry,
-              !entry.isDeleted, !entry.isCompletion, isOwn(entry) else { return nil }
-        return entry
-    }
-
-    /// The visit an invoice was filed with before on this section: an entry of its there that
-    /// isn't a bill. A photo kept on another section moves here with none of its old links
-    /// (`AttachmentActions.fileCaptured`), so it makes a visit of its own.
-    static func visitFiledBefore(by document: CapturedDocument?, on asset: Asset) -> HistoryEntry? {
-        entryFiledBefore(by: document) { $0.kind != .payment && $0.asset?.id == asset.id }
     }
 
     /// Where a policy's bonus-malus class goes, worked out from the household as it is now.

@@ -70,7 +70,7 @@ public final class HistoryActions {
     /// anything is written (`LowerReadingQuestion`, answered with `lowerReading`).
     ///
     /// `replacing` is the entry the same bill logged when it was filed before (the same
-    /// document, or another photo of it: `BillIdentity`): that entry takes these values
+    /// document, or another photo of it: `PaperIdentity`): that entry takes these values
     /// instead of a second one being added, and moves to `asset` if the bill did. Never a
     /// completion, which belongs to its deadline. `reference` is the number of the paper the
     /// entry records (a bill's invoice number).
@@ -173,8 +173,10 @@ public final class HistoryActions {
     /// The receipt takes it all back ("Anulează vizita"). A lower odometer asks before
     /// anything is written (`LowerReadingQuestion`, answered with `lowerReading`).
     ///
-    /// `replacing` is the visit the same invoice was filed with before: it takes these
-    /// values, line items and reading instead of a second visit being added.
+    /// `replacing` is the visit the same invoice was filed with before (the same document, or
+    /// another photo of it: `PaperIdentity`): it takes these values, line items and reading
+    /// instead of a second visit being added. `reference` is the invoice's number, by which
+    /// another photo of it is known.
     @discardableResult
     public func recordVisit(
         on asset: Asset,
@@ -186,6 +188,7 @@ public final class HistoryActions {
         totalCost: Money? = nil,
         odometer: Double? = nil,
         provider: Provider? = nil,
+        reference: String? = nil,
         documents: [DocumentDraft] = [],
         rating: Int? = nil,
         calendar: Calendar = .current,
@@ -214,6 +217,7 @@ public final class HistoryActions {
             let entry = entryToWrite(replacing: earlier, kind: kind, title: title ?? Self.visitTitle(for: items), on: date, in: asset)
             entry.metricReading = odometer
             entry.totalCost = totalCost
+            entry.reference = reference
             entry.rating = rating.map { min(max($0, 1), 5) }
             entry.isExample = isExample
             entry.providers = provider.map { [$0] } ?? []
