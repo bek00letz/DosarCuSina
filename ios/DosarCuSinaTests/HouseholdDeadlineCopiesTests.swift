@@ -17,7 +17,7 @@ struct HouseholdDeadlineCopiesTests {
     private func declaration(id: UUID, in context: ModelContext) -> Obligation {
         let blueprint = HouseholdRules.rentalDeclaration
         let obligation = Obligation(id: id, title: blueprint.title, kind: blueprint.kind, dueDay: CalendarDay("2027-05-25"),
-                                    recurrence: blueprint.recurrence, reminders: blueprint.reminders, calendar: calendar)
+                                    recurrence: blueprint.recurrence, reminders: blueprint.reminders)
         obligation.blueprintKey = blueprint.key
         context.insert(obligation)
         return obligation
@@ -66,7 +66,7 @@ struct HouseholdDeadlineCopiesTests {
         #expect(left.count == 1)
         let kept = try #require(left.first)
         #expect(kept.id == filedID, "The declaration already filed is kept, so no reminder comes back for it")
-        #expect(kept.dueDay(in: calendar) == CalendarDay("2028-05-25"))
+        #expect(kept.dueDay == CalendarDay("2028-05-25"))
         #expect(kept.history.count == 1, "Its completion stays")
         #expect(document.obligation?.id == filedID)
         #expect(kept.updatedAt == then, "Keeping one copy is the app's own step: no new change time")

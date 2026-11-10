@@ -82,7 +82,7 @@ private struct ObligationPage: View {
             }
         }
         .sheet(isPresented: $isAddingToCalendar) {
-            CalendarEventEditor(title: obligation.title, day: obligation.dueDay(), notes: obligation.asset?.name)
+            CalendarEventEditor(title: obligation.title, day: obligation.dueDay, notes: obligation.asset?.name)
                 .ignoresSafeArea()
         }
         .sheet(isPresented: $isAddingCustomLead) {
@@ -96,7 +96,7 @@ private struct ObligationPage: View {
             ReminderSettingsSheet(obligation: obligation) { isEditingReminders = false }
         }
         .sheet(isPresented: $isRescheduling) {
-            RescheduleSheet(current: obligation.dueDay()) { day in
+            RescheduleSheet(current: obligation.dueDay) { day in
                 isRescheduling = false
                 if let day { reschedule(to: day) }
             }
@@ -127,15 +127,15 @@ private struct ObligationPage: View {
                 .dsFont(.display)
                 .accessibilityAddTraits(.isHeader)
             if obligation.status == .active {
-                let lines = DueWording.travelLines(due: obligation.dueDay(), rule: obligation.reminders.urgencyRule, today: today)
-                    ?? [DueWording.line(kind: obligation.kind, due: obligation.dueDay(), today: today)]
+                let lines = DueWording.travelLines(due: obligation.dueDay, rule: obligation.reminders.urgencyRule, today: today)
+                    ?? [DueWording.line(kind: obligation.kind, due: obligation.dueDay, today: today)]
                 ForEach(lines, id: \.self) { line in
                     Text(verbatim: line)
                         .dsFont(.headline, numeric: true)
                         .foregroundStyle(DSStatus.urgent(obligation.urgency().tone)?.textColor ?? DS.Palette.label)
                 }
                 if obligation.isSnoozed() {
-                    Label("Amânat. Îți amintesc din nou pe \(DueWording.date(CalendarDay(obligation.snoozedUntil ?? Date()), today: today)).", systemImage: "clock.arrow.circlepath")
+                    Label("Amânat. Îți amintesc din nou pe \(DueWording.date(obligation.snoozedUntil ?? today, today: today)).", systemImage: "clock.arrow.circlepath")
                         .dsFont(.subheadline)
                 }
             } else {
@@ -230,7 +230,7 @@ private struct ObligationPage: View {
                                 Button { AppNavigator.shared.open(.document(document.id)) } label: {
                                     DSListRow(
                                         title: Text(verbatim: document.title ?? document.fileName),
-                                        subtitle: document.documentDate.map { Text(verbatim: DosarFormat.longDay($0)) },
+                                        subtitle: document.documentDay.map { Text(verbatim: DosarFormat.longDay($0)) },
                                         systemImage: "doc.text",
                                         showsChevron: true,
                                         trailing: { EmptyView() }
@@ -274,7 +274,7 @@ private struct ObligationPage: View {
         let linked = (obligation.attachments ?? []) + (obligation.history.first?.attachments ?? [])
         return linked
             .filter { !$0.isArchived && seen.insert($0.id).inserted }
-            .sorted { ($0.documentDate ?? $0.createdAt) > ($1.documentDate ?? $1.createdAt) }
+            .sorted { ($0.documentDay ?? CalendarDay($0.createdAt), $0.createdAt) > ($1.documentDay ?? CalendarDay($1.createdAt), $1.createdAt) }
     }
 
     // MARK: Requirements
@@ -287,7 +287,7 @@ private struct ObligationPage: View {
                 DSCard {
                     VStack(alignment: .leading, spacing: DS.Space.xs) {
                         ForEach(items) { item in
-                            let inDosar = ObligationRequirements.isInDosar(item, asset: obligation.asset, on: obligation.dueDay())
+                            let inDosar = ObligationRequirements.isInDosar(item, asset: obligation.asset, on: obligation.dueDay)
                             HStack(alignment: .firstTextBaseline, spacing: DS.Space.s) {
                                 Image(systemName: inDosar == true ? "checkmark.circle.fill" : "circle.dashed")
                                     .foregroundStyle(inDosar == true ? DSStatus.done.color : DS.Palette.tertiaryLabel)

@@ -261,14 +261,14 @@ struct DossierImporter {
         for dto in package.obligations {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.obligations) }
             guard let obligation = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
-                Obligation(id: id, title: dto.title, kind: .routine, dueDay: dto.dueDate, calendar: calendar)
+                Obligation(id: id, title: dto.title, kind: .routine, dueDay: dto.dueDate)
             }) else { continue }
             obligation.title = dto.title
             obligation.notes = dto.notes
             obligation.blueprintKey = dto.blueprintKey
             // Kept as the archive has it: a kind from a newer build reads as the loudest.
             obligation.kindRaw = dto.kind
-            obligation.setDueDay(dto.dueDate, calendar: calendar)
+            obligation.dueDay = dto.dueDate
             obligation.dueMetric = dto.dueMetric
             obligation.reminders = dto.reminders
             obligation.remindersCustomized = dto.remindersCustomized ?? false
@@ -279,7 +279,7 @@ struct DossierImporter {
             obligation.provider = dto.provider
             obligation.reference = dto.reference
             obligation.statusRaw = ObligationStatus(rawValue: dto.status)?.rawValue ?? ObligationStatus.active.rawValue
-            obligation.snoozedUntil = dto.snoozedUntil
+            obligation.snoozedUntil = dto.snoozedUntil.map { StoredDay.day(of: $0, storedAs: .startOfDay, calendar: calendar) }
             obligation.isExample = dto.isExample
             obligation.createdAt = clamped(dto.createdAt)
             obligation.updatedAt = changeTime(dto.updatedAt)
@@ -333,8 +333,8 @@ struct DossierImporter {
             entry.note = dto.note
             entry.reference = dto.reference
             entry.rating = dto.rating
-            entry.cycleDueDate = dto.cycleDueDate?.noonDate(in: calendar)
-            entry.nextDueDate = dto.nextDueDate?.noonDate(in: calendar)
+            entry.cycleDueDay = dto.cycleDueDate
+            entry.nextDueDay = dto.nextDueDate
             entry.previousStatusRaw = dto.previousStatus
             entry.previousDueMetric = dto.previousDueMetric
             entry.isExample = dto.isExample
@@ -435,8 +435,8 @@ struct DossierImporter {
             attachment.thumbnailData = dto.thumbnailPath.flatMap { package.files[$0] }
             // A backup from anywhere brings no card number into a document’s text: the unit that writes it masks it (`FreeText`).
             attachment.extractedText = dto.extractedText
-            attachment.documentDate = dto.documentDate?.noonDate(in: calendar)
-            attachment.validUntil = dto.validUntil?.noonDate(in: calendar)
+            attachment.documentDay = dto.documentDate
+            attachment.validUntil = dto.validUntil
             attachment.framing = dto.framing ?? DocumentFraming()
             attachment.isArchived = dto.isArchived
             attachment.createdAt = dto.createdAt

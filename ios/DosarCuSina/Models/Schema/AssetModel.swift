@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV8 {
+extension DosarSchemaV9 {
     /// Something the household looks after: a car, a home, a pet, a passport.
     /// Its details live in `values`, described by the template named in `templateKey`.
     @Model
@@ -85,7 +85,7 @@ extension DosarSchemaV8 {
         }
 
         public var activeObligations: [Obligation] {
-            (obligations ?? []).filter { $0.status == .active }.sorted { $0.dueDate < $1.dueDate }
+            (obligations ?? []).filter { $0.status == .active }.sorted { $0.dueDay < $1.dueDay }
         }
 
         public var nextObligation: Obligation? {

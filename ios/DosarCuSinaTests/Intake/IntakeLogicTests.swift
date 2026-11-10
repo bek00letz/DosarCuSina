@@ -126,7 +126,7 @@ struct CaptureFilingTests {
         let outcome = try await filer.save(review)
         let rca = try #require(outcome.obligation)
         #expect(rca.blueprintKey == "vehicle.rca")
-        #expect(rca.dueDay(in: .bucharest) == CalendarDay("2027-11-09"))
+        #expect(rca.dueDay == CalendarDay("2027-11-09"))
         #expect(outcome.completion?.totalCost == Money(1_200), "The premium goes into the history")
         #expect(car.value("vehicle.policyNumber") == .text("RO/00/EX0002"))
         #expect(car.value("vehicle.plate") == .text("B-123-ABC"), "The plate as the person wrote it stays")
@@ -152,7 +152,7 @@ struct CaptureFilingTests {
         #expect(passport.value("document.type") == .text(DocumentType.passport))
         #expect(passport.value("document.number") == .text("050000000"))
         let renewal = try #require(passport.activeObligations.first { $0.blueprintKey == "document.renew" })
-        #expect(renewal.dueDay(in: .bucharest) == CalendarDay("2031-08-12"))
+        #expect(renewal.dueDay == CalendarDay("2031-08-12"))
         #expect(renewal.reminders == ReminderProfile(leadDays: [90, 0], consequence: .legal, travelMarginDays: 180), "The passport's own profile")
     }
 
@@ -172,7 +172,7 @@ struct CaptureFilingTests {
         #expect(bill.title == "Factura de plătit")
         #expect(bill.asset?.templateKey == BuiltInTemplates.Key.subscription)
         #expect(bill.kind == .payment)
-        #expect(bill.dueDay(in: .bucharest) == CalendarDay("2026-11-20"))
+        #expect(bill.dueDay == CalendarDay("2026-11-20"))
         #expect(bill.estimatedCost == Money(250))
         #expect(bill.reference == "EX-123")
 
@@ -209,7 +209,7 @@ struct CaptureFilingTests {
             .file(.completion(.init(obligation: rca, date: noon("2026-11-02"), cost: Money(1_150), document: document)))
         #expect(outcome.completion?.totalCost == Money(1_150))
         #expect(outcome.nextDue == CalendarDay("2027-11-12"))
-        #expect(rca.dueDay(in: .bucharest) == CalendarDay("2027-11-12"))
+        #expect(rca.dueDay == CalendarDay("2027-11-12"))
     }
 }
 

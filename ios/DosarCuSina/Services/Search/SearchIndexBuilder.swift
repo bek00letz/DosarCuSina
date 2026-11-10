@@ -216,7 +216,7 @@ public struct SearchIndexBuilder {
     }
 
     private func obligationDocument(_ obligation: Obligation, templates: [String: CategoryTemplate]) -> SearchDocument {
-        let due = DosarFormat.day(obligation.dueDay(), locale: locale)
+        let due = DosarFormat.day(obligation.dueDay, locale: locale)
         return SearchDocument(
             id: id(.obligation, obligation.id), kind: .obligation, title: obligation.title,
             subtitle: [obligation.asset?.name, due].compactMap { $0 }.joined(separator: " · "),
@@ -228,7 +228,7 @@ public struct SearchIndexBuilder {
                 SearchField(obligation.asset?.name, weight: SearchField.Weight.label),
                 SearchField(obligation.notes, weight: SearchField.Weight.note),
             ],
-            date: obligation.dueDate, isSensitive: isSensitive(obligation.asset, templates)
+            date: obligation.dueDay.noonDate(), isSensitive: isSensitive(obligation.asset, templates)
         )
     }
 
@@ -296,7 +296,7 @@ public struct SearchIndexBuilder {
                 SearchField(section?.name, weight: SearchField.Weight.label),
                 SearchField(readText, weight: SearchField.Weight.extracted),
             ],
-            date: attachment.documentDate ?? attachment.createdAt,
+            date: attachment.documentDay?.noonDate() ?? attachment.createdAt,
             isSensitive: isLocked
         )
     }

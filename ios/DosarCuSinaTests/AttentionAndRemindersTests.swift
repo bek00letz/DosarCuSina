@@ -34,7 +34,7 @@ struct AttentionModelTests {
 
     @Test func snoozedPausedAndFinishedItemsAreHidden() {
         let digest = AttentionModel.digest([
-            snapshot("Amânat", due: "2026-11-02", snoozedUntil: noon("2026-11-05")),
+            snapshot("Amânat", due: "2026-11-02", snoozedUntil: CalendarDay("2026-11-05")),
             snapshot("Pauză", due: "2026-11-02", status: .paused),
             snapshot("Gata", due: "2026-11-02", status: .done),
             snapshot("Arhivă", due: "2026-11-02", status: .archived),
@@ -243,7 +243,7 @@ struct ReminderPlannerTests {
     }
 
     @Test func snoozeReplacesEarlierRemindersWithOne() {
-        let item = snapshot("RCA", kind: .insurance, due: "2026-11-10", offsets: [7, 1, 0], snoozedUntil: CalendarDay("2026-11-08").startDate(in: calendar))
+        let item = snapshot("RCA", kind: .insurance, due: "2026-11-10", offsets: [7, 1, 0], snoozedUntil: CalendarDay("2026-11-08"))
         let plan = ReminderPlanner.plan([item], now: noon("2026-11-03"), calendar: calendar)
         #expect(plan.map(\.identifier).contains { $0.hasSuffix(".snooze") })
         #expect(plan.allSatisfy { $0.fireDate >= CalendarDay("2026-11-08").startDate(in: calendar) })

@@ -348,12 +348,12 @@ struct CaptureFiler {
                 }
             }
             outcome.obligation = asset.activeObligations.first { $0.blueprintKey == blueprint.key }
-            if let deadline = plan.deadline, review.kind.profile.isBill, let bill = outcome.obligation, bill.dueDay(in: calendar) == deadline.day {
+            if let deadline = plan.deadline, review.kind.profile.isBill, let bill = outcome.obligation, bill.dueDay == deadline.day {
                 // This bill's amount and number on its reminder.
                 try obligations.setDetails(bill, estimatedCost: review.total, reference: review.value(.invoiceNumber)?.text)
             }
         }
-        outcome.nextDue = outcome.obligation?.dueDay(in: calendar)
+        outcome.nextDue = outcome.obligation?.dueDay
 
         // A bill, in its subscription's history (`logBill`): one entry, the one it logged
         // before when it is filed again.
@@ -479,7 +479,7 @@ struct CaptureFiler {
         // 2. The deadline: the cycle closes, and the new document's date sets the next one.
         let newDay = completion.document.flatMap(Self.nextDay(in:)).flatMap { $0 > today ? $0 : nil }
         outcome.completion = try renew(obligation, to: newDay, done: true, on: completion.date, cost: completion.cost)
-        if obligation.status == .active { outcome.nextDue = obligation.dueDay(in: calendar) }
+        if obligation.status == .active { outcome.nextDue = obligation.dueDay }
 
         // A bill, in its subscription's history, once.
         if let review, let bill { outcome.bill = try logBill(review, in: obligation.asset, plan: bill, templates: templates, today: today) }
@@ -784,7 +784,7 @@ struct CaptureFiler {
     /// cycle closes even when the document has no later date. Returns the completion written.
     private func renew(_ obligation: Obligation, to day: CalendarDay?, done: Bool, on date: Date?, cost: Money?) throws -> HistoryEntry? {
         let actions = ObligationActions(context: context, calendar: calendar, now: now)
-        let due = obligation.dueDay(in: calendar)
+        let due = obligation.dueDay
         guard done || (day.map { $0 > due } ?? false) else { return nil }
         if let day, let asset = obligation.asset, let field = fieldDrivingDueDate(of: obligation) {
             if asset.values[field] != .date(day) {
@@ -796,7 +796,7 @@ struct CaptureFiler {
         }
         if done || obligation.recurrence.repeats {
             let entry = try actions.complete(obligation, on: date, cost: cost).value
-            if obligation.status == .active, let day, obligation.dueDay(in: calendar) != day {
+            if obligation.status == .active, let day, obligation.dueDay != day {
                 try actions.reschedule(obligation, to: day)
             }
             return entry

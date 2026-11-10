@@ -139,7 +139,7 @@ struct BillRepairTests {
     }
 
     private func reminder(on gas: Asset, made: String, paid: Bool, papers: [DosarCuSina.Attachment], in context: ModelContext) throws -> Obligation {
-        let bill = Obligation(title: "Factura de plătit", kind: .payment, dueDay: CalendarDay("2026-11-20"), calendar: .bucharest)
+        let bill = Obligation(title: "Factura de plătit", kind: .payment, dueDay: CalendarDay("2026-11-20"))
         bill.blueprintKey = SubscriptionFields.billBlueprint
         bill.createdAt = noon(made)
         if paid { bill.status = .done }

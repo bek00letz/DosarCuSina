@@ -69,10 +69,10 @@ struct UpcomingRoot: View {
             hasher.combine(obligation.id)
             hasher.combine(obligation.title)
             hasher.combine(obligation.kindRaw)
-            hasher.combine(obligation.dueDate)
+            hasher.combine(obligation.dueDayISO)
             hasher.combine(obligation.dueMetric)
             hasher.combine(obligation.statusRaw)
-            hasher.combine(obligation.snoozedUntil)
+            hasher.combine(obligation.snoozedUntilISO)
             hasher.combine(obligation.reminderLeadDays)
             hasher.combine(obligation.consequenceRaw)
             hasher.combine(obligation.graceDays)
@@ -318,7 +318,7 @@ struct UpcomingRoot: View {
 
     @ViewBuilder private func allClear(_ digest: AttentionDigest) -> some View {
         let next = snapshots
-            .filter { $0.status == .active && !($0.snoozedUntil.map { $0 > Date() } ?? false) }
+            .filter { $0.status == .active && !$0.isSnoozed() }
             .min { $0.dueDay < $1.dueDay }
         VStack(spacing: DS.Space.s) {
             Image(systemName: "checkmark.circle")

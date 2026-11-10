@@ -59,7 +59,7 @@ struct QuestionsBeforeSavingTests {
 
     private func oilChange(on car: Asset, _ context: ModelContext) throws -> Obligation {
         let oil = Obligation(title: "Schimb ulei", kind: .maintenance, dueDay: CalendarDay("2026-06-01"),
-                             recurrence: .metric(every: 10_000, unit: .kilometres, fallback: .years(1)), calendar: .bucharest)
+                             recurrence: .metric(every: 10_000, unit: .kilometres, fallback: .years(1)))
         context.insert(oil)
         oil.asset = car
         try UnitOfWork.save(context)
@@ -148,9 +148,9 @@ struct QuestionsBeforeSavingTests {
         try await expectAsksFirst(LowerReadingQuestion.self, on: golf, in: context) {
             _ = try actions.complete(oil, cost: Money(250), metricReading: 4_572, items: [LineItemDraft(name: "Ulei")], lowerReading: $0)
         }
-        #expect(oil.dueDay(in: .bucharest) == CalendarDay("2026-06-01"), "The deadline didn't move")
+        #expect(oil.dueDay == CalendarDay("2026-06-01"), "The deadline didn't move")
         _ = try actions.complete(oil, metricReading: 4_572, lowerReading: .keepAside)
-        #expect(oil.dueDay(in: .bucharest) != CalendarDay("2026-06-01"))
+        #expect(oil.dueDay != CalendarDay("2026-06-01"))
     }
 
     // MARK: Capture

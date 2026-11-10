@@ -91,7 +91,7 @@ func snapshot(
     offsets: [Int]? = nil,
     consequence: Consequence? = nil,
     grace: Int? = nil,
-    snoozedUntil: Date? = nil,
+    snoozedUntil: CalendarDay? = nil,
     cost: Money? = nil,
     isSensitive: Bool = false,
     isExample: Bool = false

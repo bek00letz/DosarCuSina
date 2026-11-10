@@ -123,7 +123,7 @@ struct MeasurementUnitTests {
         let boiler = Asset(name: "Centrală Apartament", templateKey: custom.key)
         context.insert(boiler)
         let deadline = Obligation(title: "Verificare", kind: .maintenance, dueDay: CalendarDay("2027-01-10"),
-                                  recurrence: .metric(every: 500, unit: gas, fallback: .years(1)), calendar: .bucharest)
+                                  recurrence: .metric(every: 500, unit: gas, fallback: .years(1)))
         deadline.recurrenceData = Data(#"{"every":500,"fallbackEvery":1,"fallbackUnit":"year","type":"metric","unit":"mc"}"#.utf8)
         context.insert(deadline)
         deadline.asset = boiler
@@ -154,7 +154,7 @@ struct MeasurementUnitTests {
 
     @Test func theRepairRunsByItselfAndLeavesAnUnknownRecurrenceAsItWas() throws {
         let context = try makeContext()
-        let deadline = Obligation(title: "Altceva", kind: .routine, dueDay: CalendarDay("2027-01-10"), calendar: .bucharest)
+        let deadline = Obligation(title: "Altceva", kind: .routine, dueDay: CalendarDay("2027-01-10"))
         let newer = Data(#"{"type":"weekdays","unit":"mc","days":[1,3]}"#.utf8)
         deadline.recurrenceData = newer
         context.insert(deadline)

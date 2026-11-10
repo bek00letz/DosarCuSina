@@ -4,7 +4,7 @@ import SwiftData
 /// The current schema of the household database.
 ///
 /// Every model lives inside this namespace so that the next version can freeze a
-/// copy of these definitions and migrate from them (as `DosarSchemaV2` to `DosarSchemaV7`
+/// copy of these definitions and migrate from them (as `DosarSchemaV2` to `DosarSchemaV8`
 /// are frozen in `Versions/`). App code uses the top-level type aliases below and never names the
 /// version directly.
 ///
@@ -26,9 +26,13 @@ import SwiftData
 /// known by it when it is filed again from another photo (`PaperIdentity`). Version 8 adds
 /// when a history entry, a line item, a reading and a document last changed (`updatedAt`,
 /// as sections, deadlines, firms and categories already had), so a backup brought in with
-/// "Adaugă" keeps the newer copy of every record by one rule (`ArchiveMerge`).
-public enum DosarSchemaV8: VersionedSchema {
-    public static let versionIdentifier = Schema.Version(8, 0, 0)
+/// "Adaugă" keeps the newer copy of every record by one rule (`ArchiveMerge`). Version 9
+/// keeps every day as a day (`StoredDay`): a deadline's due day and the day its snooze ends, the
+/// due days a completion closed and moved to, a document's date and its last valid day were
+/// moments before (noon, or the start of the day, in the phone's time zone), which read as
+/// another day on a phone ten or more hours away.
+public enum DosarSchemaV9: VersionedSchema {
+    public static let versionIdentifier = Schema.Version(9, 0, 0)
 
     public static var models: [any PersistentModel.Type] {
         [
@@ -49,8 +53,8 @@ public enum DosarSchemaV8: VersionedSchema {
 /// version freezes the one before it in `Versions/`, adds a stage here, and gets a
 /// test that opens a store written by the version before (`SchemaMigrationTests`).
 public enum DosarMigrationPlan: SchemaMigrationPlan {
-    public static var schemas: [any VersionedSchema.Type] { [DosarSchemaV2.self, DosarSchemaV3.self, DosarSchemaV4.self, DosarSchemaV5.self, DosarSchemaV6.self, DosarSchemaV7.self, DosarSchemaV8.self] }
-    public static var stages: [MigrationStage] { [v2ToV3, v3ToV4, v4ToV5, v5ToV6, v6ToV7, v7ToV8] }
+    public static var schemas: [any VersionedSchema.Type] { [DosarSchemaV2.self, DosarSchemaV3.self, DosarSchemaV4.self, DosarSchemaV5.self, DosarSchemaV6.self, DosarSchemaV7.self, DosarSchemaV8.self, DosarSchemaV9.self] }
+    public static var stages: [MigrationStage] { [v2ToV3, v3ToV4, v4ToV5, v5ToV6, v6ToV7, v7ToV8, v8ToV9] }
 
     /// Version 3 only adds optional attributes; existing records keep every value. What
     /// the new attributes should hold for old records is filled in later: the categories'
@@ -85,17 +89,23 @@ public enum DosarMigrationPlan: SchemaMigrationPlan {
     /// phone, so the same record from two phones is never taken for a newer one, and any
     /// change made from now on is newer than it.
     static var v7ToV8: MigrationStage { .lightweight(fromVersion: DosarSchemaV7.self, toVersion: DosarSchemaV8.self) }
+
+    /// Version 9 keeps every day as a day (`StoredDay`) instead of a moment. Before the store
+    /// changes shape, each moment is read as the day it meant in the phone's time zone at that
+    /// moment (`DayMigration`); after, the days are written into their new places and saved once.
+    /// Nothing else changes, change times included.
+    static var v8ToV9: MigrationStage { DayMigration.stage }
 }
 
-public typealias CategoryTemplate = DosarSchemaV8.CategoryTemplate
-public typealias Asset = DosarSchemaV8.Asset
-public typealias Obligation = DosarSchemaV8.Obligation
-public typealias HistoryEntry = DosarSchemaV8.HistoryEntry
-public typealias ServiceItem = DosarSchemaV8.ServiceItem
-public typealias MeasurementLog = DosarSchemaV8.MeasurementLog
-public typealias Attachment = DosarSchemaV8.Attachment
-public typealias Provider = DosarSchemaV8.Provider
-public typealias AttachmentPage = DosarSchemaV8.AttachmentPage
+public typealias CategoryTemplate = DosarSchemaV9.CategoryTemplate
+public typealias Asset = DosarSchemaV9.Asset
+public typealias Obligation = DosarSchemaV9.Obligation
+public typealias HistoryEntry = DosarSchemaV9.HistoryEntry
+public typealias ServiceItem = DosarSchemaV9.ServiceItem
+public typealias MeasurementLog = DosarSchemaV9.MeasurementLog
+public typealias Attachment = DosarSchemaV9.Attachment
+public typealias Provider = DosarSchemaV9.Provider
+public typealias AttachmentPage = DosarSchemaV9.AttachmentPage
 
 /// Shared JSON coding for values stored as `Data` on models and written to archives.
 /// Keys are sorted so the same value always produces the same bytes.

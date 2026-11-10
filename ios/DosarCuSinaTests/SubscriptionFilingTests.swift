@@ -155,7 +155,7 @@ struct SubscriptionFilingTests {
         let bill = try #require(first.obligation)
         #expect(bill.blueprintKey == SubscriptionFields.billBlueprint)
         #expect(bill.asset?.id == gas.id, "Attached to the subscription, not loose")
-        #expect(bill.dueDay(in: .bucharest) == CalendarDay("2026-11-20"))
+        #expect(bill.dueDay == CalendarDay("2026-11-20"))
         #expect(bill.estimatedCost == Money(Decimal(string: "245.30")!))
         #expect(bill.reference == "EX 000000001")
         #expect(first.bill?.totalCost == Money(Decimal(string: "245.30")!))
@@ -165,7 +165,7 @@ struct SubscriptionFilingTests {
         #expect(second.asset?.id == gas.id, "The same contract, found by its CLC")
         #expect(try context.fetchCount(FetchDescriptor<Asset>()) == 2, "No second subscription")
         #expect(gas.activeObligations.filter { $0.blueprintKey == SubscriptionFields.billBlueprint }.count == 1, "One bill to pay at a time")
-        #expect(gas.activeObligations.first?.dueDay(in: .bucharest) == CalendarDay("2026-11-28"), "This bill's own due date")
+        #expect(gas.activeObligations.first?.dueDay == CalendarDay("2026-11-28"), "This bill's own due date")
         #expect(gas.activeObligations.first?.estimatedCost == Money(Decimal(string: "310.10")!))
         #expect(gas.value(SubscriptionFields.lastBill) == .money(Money(Decimal(string: "310.10")!)))
         #expect((gas.history ?? []).filter { $0.kind == .payment }.count == 2)
@@ -173,7 +173,7 @@ struct SubscriptionFilingTests {
         // An older bill filed late moves nothing back.
         _ = try await save(gasBill(issued: "2026-09-05", due: "2026-09-25", total: "199.00", number: "EX 000000000"), context, on: "2026-11-07")
         #expect(gas.value(SubscriptionFields.lastBill) == .money(Money(Decimal(string: "310.10")!)), "The newest stays the last")
-        #expect(gas.activeObligations.first?.dueDay(in: .bucharest) == CalendarDay("2026-11-28"))
+        #expect(gas.activeObligations.first?.dueDay == CalendarDay("2026-11-28"))
     }
 
     @Test func twoHomesBillsGoToTheirOwnSubscriptions() async throws {
@@ -293,7 +293,7 @@ struct SubscriptionFilingTests {
         #expect(gas.value(SubscriptionFields.minimumMonths) == .number(24))
         #expect(gas.value(SubscriptionFields.minimumUntil) == .date(CalendarDay("2028-03-15")))
         let minimum = try #require(gas.activeObligations.first { $0.blueprintKey == SubscriptionFields.minimumEndsBlueprint })
-        #expect(minimum.dueDay(in: .bucharest) == CalendarDay("2028-03-15"))
+        #expect(minimum.dueDay == CalendarDay("2028-03-15"))
         #expect(minimum.reminderLeadDays == [30, 0], "A month before and on the day")
         #expect(minimum.title == "Se termină perioada minimă")
         #expect(minimum.notes?.contains("fără penalități") == true)
@@ -321,7 +321,7 @@ struct SubscriptionFilingTests {
         let outcome = try await save(addendum, context)
         #expect(outcome.asset?.id == gas.id)
         #expect(gas.value(SubscriptionFields.minimumUntil) == .date(CalendarDay("2028-10-01")))
-        #expect(gas.activeObligations.filter { $0.blueprintKey == SubscriptionFields.minimumEndsBlueprint }.map { $0.dueDay(in: .bucharest) } == [CalendarDay("2028-10-01")])
+        #expect(gas.activeObligations.filter { $0.blueprintKey == SubscriptionFields.minimumEndsBlueprint }.map { $0.dueDay } == [CalendarDay("2028-10-01")])
     }
 
     @Test func aMinimumPeriodThatEndedSetsNoDeadline() async throws {
@@ -389,6 +389,6 @@ struct SubscriptionFilingTests {
         let plan = try #require(outcome.asset)
         #expect(plan.value(SubscriptionFields.minimumMonths) == .number(12))
         #expect(plan.value(SubscriptionFields.minimumUntil) == .date(CalendarDay("2027-02-01")))
-        #expect(plan.activeObligations.first?.dueDay(in: .bucharest) == CalendarDay("2027-02-01"))
+        #expect(plan.activeObligations.first?.dueDay == CalendarDay("2027-02-01"))
     }
 }

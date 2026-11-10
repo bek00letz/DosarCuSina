@@ -59,7 +59,7 @@ public enum HouseholdRules {
         let blueprint = rentalDeclaration
         guard let due = RecurrenceEngine.firstDue(for: blueprint, values: FieldValues(), today: today, calendar: calendar) else { return false }
         let obligation = Obligation(title: blueprint.title, kind: blueprint.kind, dueDay: due, recurrence: blueprint.recurrence,
-                                    reminders: blueprint.reminders, calendar: calendar)
+                                    reminders: blueprint.reminders)
         obligation.blueprintKey = blueprint.key
         obligation.notes = blueprint.note
         obligation.isExample = isExample
@@ -73,7 +73,7 @@ public enum HouseholdRules {
     /// its history, then the one with the smallest id, so every phone keeps the same one.
     static func kept(among copies: [Obligation]) -> Obligation? {
         copies.max { lhs, rhs in
-            if lhs.dueDate != rhs.dueDate { return lhs.dueDate < rhs.dueDate }
+            if lhs.dueDay != rhs.dueDay { return lhs.dueDay < rhs.dueDay }
             let lhsHistory = lhs.historyEntries?.count ?? 0, rhsHistory = rhs.historyEntries?.count ?? 0
             if lhsHistory != rhsHistory { return lhsHistory < rhsHistory }
             // The smaller id is the "larger" here, so `max` keeps it.

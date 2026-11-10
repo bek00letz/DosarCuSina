@@ -294,7 +294,7 @@ struct ExampleOwnershipTests {
     func removingKeepsWhatIsReal() throws {
         let (context, car) = try examples()
         // From before the app asked: a real deadline on the example car.
-        let real = Obligation(title: "Rovinietă", kind: .payment, dueDay: CalendarDay(Date()).adding(days: 30, calendar: .current), recurrence: .none, reminders: nil, estimatedCost: nil, calendar: .current)
+        let real = Obligation(title: "Rovinietă", kind: .payment, dueDay: CalendarDay(Date()).adding(days: 30, calendar: .current), recurrence: .none, reminders: nil, estimatedCost: nil)
         context.insert(real)
         real.asset = car
         try context.save()

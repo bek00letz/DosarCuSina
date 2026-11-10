@@ -100,7 +100,7 @@ public enum ReminderPlanner {
     ) -> [PlannedReminder] {
         var result: [PlannedReminder] = []
         let minute = obligation.reminderMinuteOfDay ?? defaultMinuteOfDay
-        let snoozedUntil = obligation.snoozedUntil.flatMap { $0 > now ? $0 : nil }
+        let snoozedUntil = obligation.snoozeEnds(after: now, calendar: calendar)
         let profile = obligation.reminders
         let cutoff = profile.urgencyRule.travelCutoff(before: obligation.dueDay, calendar: calendar)
         func make(_ day: CalendarDay, _ fire: Date, _ suffix: String) -> PlannedReminder {
@@ -129,8 +129,7 @@ public enum ReminderPlanner {
             }
         }
 
-        if let snoozedUntil {
-            let day = CalendarDay(snoozedUntil, calendar: calendar)
+        if snoozedUntil != nil, let day = obligation.snoozedUntil {
             let fire = fireDate(day: day, minuteOfDay: minute, calendar: calendar)
             if fire > now {
                 result.append(make(day, fire, "snooze"))

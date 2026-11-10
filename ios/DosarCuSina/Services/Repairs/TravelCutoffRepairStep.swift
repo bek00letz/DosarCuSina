@@ -42,7 +42,7 @@ struct TravelCutoffStep: DataRepairStep {
             let sentence = ReminderWording.sentence(candidate.expected)
             let message: String
             if candidate.expected.hasTravelCutoff {
-                let due = candidate.obligation.dueDay(in: scan.calendar)
+                let due = candidate.obligation.dueDay
                 guard let cutoff = candidate.expected.urgencyRule.travelCutoff(before: due, calendar: scan.calendar) else { return nil }
                 let margin = DurationWording.lead(days: candidate.expected.travelMarginDays)
                 message = String(localized: "„\(candidate.asset.name)” e bun de călătorit doar până pe \(DosarFormat.longDay(cutoff)), cu \(margin) înainte să expire. Schimb când te anunț? \(sentence)",

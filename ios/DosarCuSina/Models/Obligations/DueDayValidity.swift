@@ -49,6 +49,6 @@ extension ObligationBlueprint {
 extension Obligation {
     /// Whether this deadline is still valid on `day` (an RCA on the day of a trip). See `DueDayValidity`.
     public func isValid(on day: CalendarDay, calendar: Calendar = .dosar) -> Bool {
-        DueDayValidity.isValid(due: dueDay(in: calendar), on: day)
+        DueDayValidity.isValid(due: dueDay, on: day)
     }
 }

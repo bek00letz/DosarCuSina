@@ -101,7 +101,7 @@ struct ReadingTests {
         let context = try makeContext()
         let golf = try car(context)
         let oilChange = Obligation(title: "Schimb ulei", kind: .maintenance, dueDay: CalendarDay("2026-06-01"),
-                                   recurrence: .metric(every: 10_000, unit: .kilometres, fallback: .years(1)), calendar: .bucharest)
+                                   recurrence: .metric(every: 10_000, unit: .kilometres, fallback: .years(1)))
         context.insert(oilChange)
         oilChange.asset = golf
         try context.save()

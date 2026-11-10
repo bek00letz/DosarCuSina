@@ -110,7 +110,7 @@ public final class AttachmentActions {
         attachment.thumbnailData = draft.thumbnail
         // No card number is kept in a document's text, whoever wrote it: the unit of work masks it (`FreeText`).
         attachment.extractedText = draft.extractedText
-        attachment.documentDate = draft.documentDate?.noonDate(in: calendar)
+        attachment.documentDay = draft.documentDate
         attachment.documentID = draft.documentID
         attachment.framing = draft.framing
         attachment.sha256 = draft.sha256

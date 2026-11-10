@@ -51,6 +51,9 @@ public struct CalendarDay: Hashable, Comparable, Sendable, Codable, CustomString
 
     public var description: String { isoString }
 
+    /// Before every day a record can hold: what a missing day sorts as.
+    public static let earliest = CalendarDay(year: 0, month: 1, day: 1)
+
     /// Midnight at the start of this day in `calendar`'s time zone.
     public func startDate(in calendar: Calendar = .dosar) -> Date {
         var parts = DateComponents()

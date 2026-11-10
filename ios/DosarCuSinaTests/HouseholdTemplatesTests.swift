@@ -21,7 +21,7 @@ struct HouseholdTemplatesTests {
         #expect(cooker.value("purchase.warrantyMonths") == .number(24))
         #expect(cooker.value("purchase.warrantyUntil") == .date(CalendarDay("2028-03-10")))
         let ends = try #require(cooker.activeObligations.first)
-        #expect(ends.dueDay(in: .bucharest) == CalendarDay("2028-03-10"))
+        #expect(ends.dueDay == CalendarDay("2028-03-10"))
         #expect(ends.reminders.leadDays == [30])
         #expect(!ends.followUpAfterLapse)
 
@@ -85,7 +85,7 @@ struct HouseholdTemplatesTests {
         let declaration = try #require(try declarations().first)
         #expect(try declarations().count == 1)
         #expect(declaration.asset == nil, "It belongs to the household, not to one property")
-        #expect(declaration.dueDay(in: .bucharest) == CalendarDay("2027-05-25"))
+        #expect(declaration.dueDay == CalendarDay("2027-05-25"))
         #expect(declaration.reminders == ReminderProfile(leadDays: [30, 7], consequence: .legal, followUpAfterLapse: true))
 
         try actions.delete(first)

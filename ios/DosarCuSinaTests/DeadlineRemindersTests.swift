@@ -190,7 +190,7 @@ struct DeadlineRemindersTests {
         try edit(card, in: context) { $0[DocumentFields.expiry] = .date(CalendarDay("2032-01-10")) }
         try AssetActions(context: context, calendar: calendar, now: { today }).update(card, name: "Buletin", values: card.values, notes: "Nou")
         #expect(renewal.reminders == earlier)
-        #expect(renewal.dueDay(in: calendar) == CalendarDay("2032-01-10"), "The due day still follows the expiry")
+        #expect(renewal.dueDay == CalendarDay("2032-01-10"), "The due day still follows the expiry")
     }
 
     @Test func aDoneDeadlineIsNotTouchedButAPausedOneIs() throws {

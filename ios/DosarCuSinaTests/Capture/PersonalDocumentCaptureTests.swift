@@ -103,7 +103,7 @@ struct PersonalDocumentCaptureTests {
         #expect(document.value(DocumentFields.expiry) == .date(CalendarDay("2027-04-15")), "The category's own rule wrote the same day")
         #expect(document.value(DocumentFields.recordResult) == .text("NU FIGUREAZĂ ÎN CAZIERUL JUDICIAR"))
         let renewal = try #require(document.activeObligations.first)
-        #expect(renewal.dueDay(in: .bucharest) == CalendarDay("2027-04-15"))
+        #expect(renewal.dueDay == CalendarDay("2027-04-15"))
         #expect(renewal.reminders.consequence == .comfort, "A cazier is asked for a purpose, never crowds Acum")
     }
 
@@ -127,7 +127,7 @@ struct PersonalDocumentCaptureTests {
         values[DocumentFields.issueDate] = .date(CalendarDay("2026-10-15"))
         try actions.update(cazier, name: cazier.name, values: values, notes: nil)
         #expect(cazier.value(DocumentFields.expiry) == .date(CalendarDay("2027-04-15")))
-        #expect(cazier.activeObligations.first?.dueDay(in: .bucharest) == CalendarDay("2027-04-15"))
+        #expect(cazier.activeObligations.first?.dueDay == CalendarDay("2027-04-15"))
     }
 
     @Test("An expired cazier read from a photo is only history")
@@ -169,7 +169,7 @@ struct PersonalDocumentCaptureTests {
         let seen = ReadinessAsset(id: card.id, name: card.name, templateKey: card.templateKey, role: .personalDocument, values: card.values)
         #expect(ReadinessEngine.documents(of: DocumentType.euHealthCard, in: [seen]).count == 1, "The trip check finds it by its type")
         #expect(ReadinessEngine.expiry(seen) == CalendarDay("2029-12-31"), "and reads this very field")
-        #expect(card.activeObligations.first?.dueDay(in: .bucharest) == CalendarDay("2029-12-31"))
+        #expect(card.activeObligations.first?.dueDay == CalendarDay("2029-12-31"))
     }
 
     // MARK: Bank cards
@@ -210,7 +210,7 @@ struct PersonalDocumentCaptureTests {
         #expect(card.value(DocumentFields.issuer) == .text("Banca Transilvania"))
         #expect(DocumentSummary.line(card.values, today: Self.today) == "Visa •••• 1111, expiră 08/28")
         let renewal = try #require(card.activeObligations.first)
-        #expect(renewal.dueDay(in: .bucharest) == CalendarDay("2028-08-31"))
+        #expect(renewal.dueDay == CalendarDay("2028-08-31"))
         #expect(renewal.reminders.leadDays == [30, 0], "A month before, and on the day")
         #expect(SecretFields.fields(in: BuiltInTemplates.documents).allSatisfy { !$0.applies(to: card.values) }, "No PIN, ever")
     }

@@ -75,7 +75,7 @@ public struct CaptureRepairs {
             let weekBefore = visitDay.adding(days: -7, calendar: calendar)
             let loose = (asset.attachments ?? []).filter { invoice in
                 guard invoice.kind == .invoice, invoice.historyEntry == nil, !used.contains(invoice.id) else { return false }
-                let filed = CalendarDay(invoice.documentDate ?? invoice.createdAt, calendar: calendar)
+                let filed = invoice.documentDay ?? CalendarDay(invoice.createdAt, calendar: calendar)
                 return filed >= weekBefore && filed <= visitDay
             }
             guard loose.count == 1, let invoice = loose.first else { continue }
