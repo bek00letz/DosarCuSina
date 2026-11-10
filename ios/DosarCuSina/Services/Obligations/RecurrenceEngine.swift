@@ -121,13 +121,16 @@ public enum RecurrenceEngine {
     /// `day` moved on by `interval`. Months and years land on `dayOfMonth` (the
     /// series' day), or the month's last day when it is shorter; without it, on
     /// `day`'s own day.
-    /// An interval of no days or weeks leaves the day where it is.
+    /// An interval of none, in any unit, leaves the day where it is.
     public static func add(_ interval: RecurrenceInterval, to day: CalendarDay, dayOfMonth: Int? = nil, calendar: Calendar = .dosar) -> CalendarDay {
+        // One guard for every unit: an interval of none (or fewer) never moves a day, back or
+        // within its month.
+        guard interval.every > 0 else { return day }
         switch interval.unit {
-        case .day: interval.every > 0 ? day.adding(days: interval.every, calendar: calendar) : day
-        case .week: interval.every > 0 ? day.adding(days: interval.every * 7, calendar: calendar) : day
-        case .month: day.adding(months: interval.every, dayOfMonth: dayOfMonth, calendar: calendar)
-        case .year: day.adding(months: interval.every * 12, dayOfMonth: dayOfMonth, calendar: calendar)
+        case .day: return day.adding(days: interval.every, calendar: calendar)
+        case .week: return day.adding(days: interval.every * 7, calendar: calendar)
+        case .month: return day.adding(months: interval.every, dayOfMonth: dayOfMonth, calendar: calendar)
+        case .year: return day.adding(months: interval.every * 12, dayOfMonth: dayOfMonth, calendar: calendar)
         }
     }
 
