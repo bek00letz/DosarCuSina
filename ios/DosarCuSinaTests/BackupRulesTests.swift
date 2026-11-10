@@ -385,7 +385,7 @@ struct BackupFlowTests {
         let vault = BiometricVaultManager(authenticator: authenticator, appLockEnabled: { appLock }, observesAppLifecycle: false)
         let directory = URL.temporaryDirectory.appending(path: UUID().uuidString)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        return (BackupFlow(container: household.container, vault: vault, workDirectory: directory, inbox: directory.appending(path: "Inbox")), authenticator, directory)
+        return (BackupFlow(container: household.container, vault: vault, workDirectory: directory, inbox: directory.appending(path: "Inbox"), keeper: RecordingBackupKeeper()), authenticator, directory)
     }
 
     @Test func exportingNeedsFaceIDWhileASectionIsLocked() async throws {
@@ -477,7 +477,7 @@ struct BackupFlowTests {
         let directory = URL.temporaryDirectory.appending(path: UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
-        let flow = BackupFlow(container: household.container, vault: vault, workDirectory: directory, inbox: directory.appending(path: "Inbox"))
+        let flow = BackupFlow(container: household.container, vault: vault, workDirectory: directory, inbox: directory.appending(path: "Inbox"), keeper: RecordingBackupKeeper())
 
         // Export: the second tap comes while the first waits for Face ID.
         let first = Task { await flow.export(password: nil) }

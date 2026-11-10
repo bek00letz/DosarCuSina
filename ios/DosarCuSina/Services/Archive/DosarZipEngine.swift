@@ -43,14 +43,16 @@ public final class ArchiveFileSource: ArchiveByteSource {
     }
 }
 
-/// A new file, written a piece after another, protected while the phone is locked.
+/// A new file, written a piece after another, protected while the phone is locked: closed to it
+/// (`complete`), or, for a file a running backup works on, open to it only while it is open
+/// (`BackupFileProtection.working`).
 public final class ArchiveFileSink: ArchiveByteSink {
     private let handle: FileHandle
 
     /// Makes the file (it must not exist yet) and opens it for writing.
-    public init(creating url: URL) throws {
+    public init(creating url: URL, protection: FileProtectionType = .complete) throws {
         let path = url.path(percentEncoded: false)
-        guard FileManager.default.createFile(atPath: path, contents: nil, attributes: [.protectionKey: FileProtectionType.complete]) else {
+        guard FileManager.default.createFile(atPath: path, contents: nil, attributes: [.protectionKey: protection]) else {
             throw CocoaError(.fileWriteUnknown, userInfo: [NSFilePathErrorKey: path])
         }
         handle = try FileHandle(forWritingTo: url)

@@ -7,10 +7,12 @@
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>com.ar.dosarcusina.app.refresh-reminders</string>
+		<string>com.ar.dosarcusina.app.backup.*</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
+		<string>processing</string>
 	</array>
 	<key>CFBundleURLTypes</key>
 	<array>

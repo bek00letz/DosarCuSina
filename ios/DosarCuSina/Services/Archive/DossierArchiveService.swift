@@ -95,23 +95,23 @@ public enum DossierArchiveReader {
     }
 
     /// What an archive holds, once every file in it is checked. Its documents' files aren't kept.
-    public static func summary(contentsOf url: URL, password: String? = nil, limits: DosarZipEngine.Limits = .standard) throws -> ArchiveSummary {
-        ArchiveSummary(try read(try ArchiveFileSource(url: url), password: password, limits: limits, keeping: .checkOnly))
+    static func summary(contentsOf url: URL, password: String? = nil, limits: DosarZipEngine.Limits = .standard, run: BackupRun = BackupRun()) throws -> ArchiveSummary {
+        ArchiveSummary(try read(try ArchiveFileSource(url: url), password: password, limits: limits, keeping: .checkOnly, run: run))
     }
 
     /// The archive, checked and decoded, its documents' files written to `directory` for the
     /// importer to read one at a time. The caller removes `directory` once the package is written.
-    public static func read(contentsOf url: URL, password: String? = nil, extractingTo directory: URL, limits: DosarZipEngine.Limits = .standard) throws -> DossierV3.Package {
-        try read(try ArchiveFileSource(url: url), password: password, limits: limits, keeping: .extract(into: directory))
+    static func read(contentsOf url: URL, password: String? = nil, extractingTo directory: URL, limits: DosarZipEngine.Limits = .standard, run: BackupRun = BackupRun()) throws -> DossierV3.Package {
+        try read(try ArchiveFileSource(url: url), password: password, limits: limits, keeping: .extract(into: directory), run: run)
     }
 
-    static func read(_ source: ArchiveByteSource, password: String?, limits: DosarZipEngine.Limits, keeping: Keeping) throws -> DossierV3.Package {
+    static func read(_ source: ArchiveByteSource, password: String?, limits: DosarZipEngine.Limits, keeping: Keeping, run: BackupRun = BackupRun()) throws -> DossierV3.Package {
         var plain = source
         if ArchiveEncryption.isEncrypted(source) {
             guard let password else { throw ArchiveError.needsPassword }
             plain = try inArchiveWords { try ArchiveEncryption.DecryptingSource(source, password: password) }
         }
-        return try inArchiveWords { try readPlain(plain, limits: limits, keeping: keeping) }
+        return try inArchiveWords { try readPlain(plain, limits: limits, keeping: keeping, run: run) }
     }
 
     /// A protected archive's failures, anywhere in it, as the archive's own.
@@ -125,7 +125,7 @@ public enum DossierArchiveReader {
         }
     }
 
-    private static func readPlain(_ source: ArchiveByteSource, limits: DosarZipEngine.Limits, keeping: Keeping) throws -> DossierV3.Package {
+    private static func readPlain(_ source: ArchiveByteSource, limits: DosarZipEngine.Limits, keeping: Keeping, run: BackupRun) throws -> DossierV3.Package {
         let zip = try DosarZipEngine.Reader(source: source, limits: limits)
         guard let manifestItem = zip.item(at: DossierV3.Path.manifest) else { throw ArchiveError.notADossier }
         let manifestData = try zip.data(of: manifestItem)
@@ -137,7 +137,7 @@ public enum DossierArchiveReader {
         case 2:
             var checked = try check(
                 zip, checksums: try DossierV2Converter.checksums(fromManifest: manifestData),
-                dataFiles: DossierV2Converter.dataFiles, refusingUnlisted: false, keeping: keeping
+                dataFiles: DossierV2Converter.dataFiles, refusingUnlisted: false, keeping: keeping, run: run
             )
             checked.data[DossierV3.Path.manifest] = manifestData
             return try DossierV2Converter.package(from: checked.data, vault: checked.vault)
@@ -151,7 +151,7 @@ public enum DossierArchiveReader {
         guard let manifest = try? decoder.decode(DossierV3.Manifest.self, from: manifestData) else {
             throw ArchiveError.unreadableFile(DossierV3.Path.manifest)
         }
-        let checked = try check(zip, checksums: manifest.checksums, dataFiles: Set(DossierV3.Path.dataFiles), refusingUnlisted: true, keeping: keeping)
+        let checked = try check(zip, checksums: manifest.checksums, dataFiles: Set(DossierV3.Path.dataFiles), refusingUnlisted: true, keeping: keeping, run: run)
 
         func decode<T: Decodable>(_ type: [T].Type, _ path: String) throws -> [T] {
             guard let data = checked.data[path] else { return [] }
@@ -182,7 +182,8 @@ public enum DossierArchiveReader {
         checksums: [String: String],
         dataFiles: Set<String>,
         refusingUnlisted: Bool,
-        keeping: Keeping
+        keeping: Keeping,
+        run: BackupRun = BackupRun()
     ) throws -> (data: [String: Data], vault: DossierV3.ArchiveFiles) {
         for path in checksums.keys.sorted() where zip.item(at: path) == nil {
             throw ArchiveError.missingFile(path)
@@ -199,7 +200,12 @@ public enum DossierArchiveReader {
         }
         var data: [String: Data] = [:]
         var vault: [String: DossierV3.ArchiveFiles.Content] = [:]
-        for item in zip.items where item.path != DossierV3.Path.manifest {
+        let items = zip.items.filter { $0.path != DossierV3.Path.manifest }
+        run.expect(items.count)
+        for item in items {
+            // Only the backup's own files are read here: it goes on while the phone is locked.
+            try run.checkpoint(needsProtectedData: false)
+            defer { run.did() }
             var hasher = SHA256()
             if dataFiles.contains(item.path) {
                 let bytes = try zip.data(of: item)
@@ -208,7 +214,8 @@ public enum DossierArchiveReader {
             } else if item.path.hasPrefix(DossierV3.Path.vaultPrefix), let folder {
                 // Named by its place, never by the archive's own path.
                 let url = folder.appending(path: "\(vault.count)")
-                let file = try ArchiveFileSink(creating: url)
+                // On its way into the binder: open to a locked phone while the import holds it.
+                let file = try ArchiveFileSink(creating: url, protection: BackupFileProtection.working)
                 try zip.stream(item) { piece in
                     hasher.update(data: piece)
                     try file.write(piece)
@@ -268,12 +275,13 @@ public struct DossierArchiveService {
     /// Writes an archive to a file ready to share, protected while the device is locked.
     /// With a password, the whole archive is encrypted with it. Everything runs away from
     /// the main thread.
-    public func export(to directory: URL = .temporaryDirectory, password: String? = nil, exportedAt: Date = Date()) async throws -> URL {
+    /// `run` keeps its progress and can stop it (`BackupRun`).
+    func export(to directory: URL = .temporaryDirectory, password: String? = nil, exportedAt: Date = Date(), run: BackupRun = BackupRun()) async throws -> URL {
         let url = exportURL(in: directory, exportedAt: exportedAt)
         let writer = self.writer(exportedAt: exportedAt)
-        try await Task.detached(priority: .userInitiated) {
-            try writer.write(to: url, password: password)
-        }.value
+        try await run.perform {
+            try writer.write(to: url, password: password, run: run)
+        }
         return url
     }
 
@@ -314,13 +322,20 @@ public struct DossierArchiveService {
 
     /// The same, away from the main thread, so a large backup never pauses the
     /// screen while it is written. The app's screens see the records once it saves.
+    ///
+    /// Its documents' files are written into the binder, which can't be done while the phone is
+    /// locked: the unit opens once it is unlocked, and runs again when the phone locked while it
+    /// ran, since the unit took everything back (`BackupRun.writing`). `run` can stop it until the
+    /// unit opens; the unit itself runs to its end, everything or nothing.
     @discardableResult
-    public func importPackageAway(_ package: DossierV3.Package, mode: ArchiveImportMode) async throws -> ArchiveImportResult {
+    func importPackageAway(_ package: DossierV3.Package, mode: ArchiveImportMode, run: BackupRun = BackupRun()) async throws -> ArchiveImportResult {
         let container = container
         let calendar = calendar
-        let result = try await Task.detached(priority: .userInitiated) {
-            try Self.write(package, mode: mode, container: container, calendar: calendar)
-        }.value
+        run.expect(1)
+        let result = try await run.perform {
+            try run.writing { try Self.write(package, mode: mode, container: container, calendar: calendar) }
+        }
+        run.did()
         lookForRepairs()
         return result
     }
