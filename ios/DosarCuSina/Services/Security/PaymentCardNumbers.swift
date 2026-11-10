@@ -20,7 +20,17 @@ import Foundation
 ///   inside the longer run: a part of it that begins and ends where its groups do, is
 ///   printed like a card (one piece, groups of four, 4-6-5) and passes the Luhn check. Digits
 ///   with nothing between them are one number and are only ever taken whole, so a long code
-///   with no spaces (a meter's, a contract's) stays as it is.
+///   with no spaces (a meter's, a contract's) stays as it is. Inside a long number printed
+///   all in groups of four, only a card at its start counts ("4111 1111 1111 1111 0828"),
+///   or one right after it, since every part of such a number is grouped like a card.
+///
+///   What is never a card, whatever its digits: digits glued to a letter, before or after
+///   them ("AB4111…", an IBAN's account in one piece, its first group after the country's
+///   letters), since a card number is never printed glued to letters; groups that carry on an
+///   IBAN printed in groups ("RO49 AAAA 1234 5678 9012 3456", even mistyped); any part of an
+///   IBAN that passes its own check (`FieldFormatter.ibanRanges`), in any spacing; and a
+///   field's value whose type names what it is and whose own check it passes
+///   (`keepsWhole(_:as:)`: an IBAN, a pet's microchip).
 /// - **On a bank card** (`strict`): any run of eight digits or more, whatever it starts
 ///   with or whether its check digit passes, since a misread digit must not let the rest
 ///   through.
@@ -71,20 +81,37 @@ public enum PaymentCardNumbers {
         brand(of: digits)?.network
     }
 
+    /// The field types whose own check tells their value apart from a card number: an IBAN
+    /// (country letters and its mod-97 check digits) and a pet's microchip (ISO 11784, 15 digits).
+    /// A phone, a VIN or a plain number is not among them: their checks also let a card number through.
+    static let typesKeptWhole: Set<FieldType> = [.iban, .microchip]
+
+    /// Whether a field's value is kept whole, never masked: its type names what it is
+    /// (`typesKeptWhole`) and it passes that type's own check (`FieldFormatter.validate`).
+    public static func keepsWhole(_ text: String, as type: FieldType?) -> Bool {
+        guard let type, typesKeptWhole.contains(type) else { return false }
+        return FieldFormatter.validate(text, as: type) == .valid
+    }
+
     /// The same values with every text masked by the "anywhere" rule, and the fields that
-    /// keep only the last digits (`DocumentFields.cardLastFour`) cut to them.
-    public static func sanitizing(_ values: FieldValues) -> FieldValues {
+    /// keep only the last digits (`DocumentFields.cardLastFour`) cut to them. A value whose
+    /// field (from `fields`, read only when something would be masked) has a type that tells
+    /// it apart (`keepsWhole`) stays as typed.
+    public static func sanitizing(_ values: FieldValues, fields: () -> [FieldDefinition]) -> FieldValues {
         // A value this build can't read is masked the same way, wherever text sits in it.
         var result = values.mappingUnreadable { redacting($0) }
+        var types: [String: FieldType]?
         for (key, value) in values.storage {
             // A sealed code is the secret's own business, never rewritten.
             guard case .text(let text) = value, !SecretSealer.isSealed(text) else { continue }
             if key == DocumentFields.cardLastFour {
                 result[key] = lastFour(of: text).map(FieldValue.text)
-            } else {
-                let masked = redact(text)
-                if masked != text { result[key] = .text(masked) }
+                continue
             }
+            let masked = redact(text)
+            guard masked != text else { continue }
+            if types == nil { types = Dictionary(fields().map { ($0.key, $0.type) }, uniquingKeysWith: { first, _ in first }) }
+            if !keepsWhole(text, as: types?[key]) { result[key] = .text(masked) }
         }
         return result
     }
@@ -165,20 +192,78 @@ public enum PaymentCardNumbers {
     }
 
     /// The card numbers in the text by the "anywhere" rule, in order: a whole run of digits
-    /// that is one, else the parts of a longer run that are (`parts(of:in:)`).
+    /// that is one, else the parts of a longer run that are (`parts(of:in:)`), looked for only
+    /// in what of the run isn't a code (`pieces(of:in:outside:)`).
     static func cardNumbers(in text: String) -> [Run] {
-        runs(in: text, strict: false).flatMap { run in run.isCardNumber ? [run] : parts(of: run, in: text) }
+        let ibans = text.contains(where: \.isLetter) ? FieldFormatter.ibanRanges(in: text) : []
+        return runs(in: text, strict: false).flatMap { run in
+            pieces(of: run, in: text, outside: ibans).flatMap { piece in
+                piece.isCardNumber ? [piece] : parts(of: piece, in: text)
+            }
+        }
+    }
+
+    /// What of a run can be a card number, once the digits that belong to a code are left
+    /// out: the groups inside an IBAN that passes its check (`ibans`); a group glued to a letter
+    /// before or after it, with nothing between (an IBAN's account after its bank's letters, its
+    /// first group after the country's, a code such as "AB4111…"), since a card number is never
+    /// printed that way; and, with no IBAN that passes its check there, groups that carry on an
+    /// IBAN printed in groups (`continuesAnIBAN`). Anything left out of a run makes what remains
+    /// a part of it, which must pass the Luhn check and be printed like a card.
+    static func pieces(of run: Run, in text: String, outside ibans: [Range<String.Index>]) -> [Run] {
+        let overlapsIBAN = { (group: Range<String.Index>) in ibans.contains { $0.overlaps(group) } }
+        let hasIBAN = run.groups.contains(where: overlapsIBAN)
+        var stretches: [ArraySlice<Range<String.Index>>] = []
+        var current: [Range<String.Index>] = []
+        for group in run.groups {
+            if overlapsIBAN(group) {
+                if !current.isEmpty { stretches.append(current[...]) }
+                current = []
+            } else {
+                current.append(group)
+            }
+        }
+        if !current.isEmpty { stretches.append(current[...]) }
+        return stretches.compactMap { stretch -> Run? in
+            var groups = stretch
+            if let first = groups.first, first.lowerBound > text.startIndex, text[text.index(before: first.lowerBound)].isLetter {
+                groups = groups.dropFirst()
+            }
+            if let last = groups.last, last.upperBound < text.endIndex, text[last.upperBound].isLetter {
+                groups = groups.dropLast()
+            }
+            guard !groups.isEmpty else { return nil }
+            let piece = groups.count == run.groups.count ? run : Run(groups: groups, in: text, isWhole: false)
+            return !hasIBAN && continuesAnIBAN(piece, in: text) ? nil : piece
+        }
+    }
+
+    /// Whether the run carries on an IBAN printed in groups, its check passing or not: a
+    /// country that issues IBANs (`FieldFormatter.ibanLengths`) in capitals and two check
+    /// digits, maybe groups of four letters or digits, then the run, one space or dash apart
+    /// ("RO49 AAAA 1234 5678 9012 3456").
+    static func continuesAnIBAN(_ run: Run, in text: String) -> Bool {
+        let before = text[..<run.range.lowerBound].suffix(48)
+        guard before.last == " " || before.last == "-" else { return false }
+        let head = #"(?<![\p{L}\p{N}])([A-Z]{2})\d{2}(?:[ -][A-Z0-9]{4})*[ -]$"#
+        guard let country = TextPattern.first(head, in: String(before), caseInsensitive: false)?[1] else { return false }
+        return FieldFormatter.ibanLengths[country] != nil
     }
 
     /// The card numbers inside a run that isn't one as a whole: a card number printed next to
     /// other digits ("12 4111 1111 1111 1111", "4111-1111-1111-1111-27"). Only parts that
     /// begin and end where the run's groups do are tried, from the left and the longest first
     /// at each place; a part is taken when it is a card number (`isCardNumber`: printed like a
-    /// card and passing the Luhn check). Digits with nothing between them stay one number.
+    /// card and passing the Luhn check). Digits with nothing between them stay
+    /// one number. In a run printed all in groups of four, every part is grouped like a card,
+    /// so a part is tried only at its start or right after a card found there: a card printed
+    /// before other digits, never the middle or the end of a long number (a 20-digit health
+    /// card number in five groups).
     static func parts(of run: Run, in text: String) -> [Run] {
         let sizes = run.groupSizes
         guard sizes.count >= 2 else { return [] }
         let cardLengths = 14...19
+        let startOnly = sizes.allSatisfy { $0 == 4 }
         var found: [Run] = []
         var start = 0
         while start < sizes.count {
@@ -197,6 +282,9 @@ public enum PaymentCardNumbers {
             if let part {
                 found.append(part)
                 start += part.groups.count
+            } else if startOnly {
+                // Printed all in fours: a card starts the run or follows one found before it.
+                break
             } else {
                 start += 1
             }
