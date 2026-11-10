@@ -305,13 +305,13 @@ struct BillPlaceAndDirectDebitTests {
     @Test func theAIProvidersAnswersFollowTheSameRules() throws {
         let json = #"{"documentKind":"utilityInvoice","supplyAddress":"Str. Exemplului nr. 5, bl. A1, ap. 12","directDebit":"Activează debitul direct"}"#
         let answer = try JSONDecoder().decode(JSONValue.self, from: Data(json.utf8))
-        let fields = CloudAnswerMapper.fields(from: answer, schema: CloudSchema(kind: .utilityInvoice), recognizedText: "",
+        let fields = ModelAnswerMapper.fields(from: answer, asked: CloudSchema(kind: .utilityInvoice).questions, recognizedText: "",
                                               today: ContractCaptureTests.today, resolver: CatalogComponentResolver())
         #expect(fields.first { $0.key == .supplyAddress }?.value == .text("Str. Exemplului nr. 5, bl. A1, ap. 12"))
         #expect(!fields.contains { $0.key == .directDebit }, "An offer is never read as paid by direct debit")
 
         let stated = try JSONDecoder().decode(JSONValue.self, from: Data(#"{"documentKind":"utilityInvoice","directDebit":"Factura se achită prin debit direct","supplyAddress":"Cod client 1000000000"}"#.utf8))
-        let kept = CloudAnswerMapper.fields(from: stated, schema: CloudSchema(kind: .utilityInvoice), recognizedText: "",
+        let kept = ModelAnswerMapper.fields(from: stated, asked: CloudSchema(kind: .utilityInvoice).questions, recognizedText: "",
                                             today: ContractCaptureTests.today, resolver: CatalogComponentResolver())
         #expect(kept.contains { $0.key == .directDebit })
         #expect(!kept.contains { $0.key == .supplyAddress }, "A code is not an address")

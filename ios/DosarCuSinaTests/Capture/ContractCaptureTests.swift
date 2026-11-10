@@ -137,7 +137,7 @@ struct ContractCaptureTests {
         let schema = CloudSchema(kind: .contract)
         let names = Set(schema.fields.map(\.name))
         #expect(names.isSuperset(of: ["serviceKind", "contractNumber", "minimumMonths", "minimumPeriodEnd", "monthlyPrice", "phoneNumber"]))
-        #expect(schema.json["properties"]?[CloudSchema.kindName]?["enum"]?.array?.contains(.string("contract")) == true)
+        #expect(schema.json["properties"]?[ModelQuestions.kindName]?["enum"]?.array?.contains(.string("contract")) == true)
         #expect(schema.fields.first { $0.key == .serviceKind }?.format == .serviceKind)
         #expect(schema.fields.first { $0.key == .minimumPeriodEnd }?.format == .date)
     }
@@ -145,15 +145,15 @@ struct ContractCaptureTests {
     @Test func theProvidersAnswerIsCheckedLikeAnyOther() throws {
         let json = #"{"documentKind":"contract","serviceKind":"service.mobile","phoneNumber":"+40 700 000 000","minimumMonths":24,"minimumPeriodEnd":"2028-01-31","contractNumber":"MOB-000123","provider":"Orange Romania S.A."}"#
         let answer = try JSONDecoder().decode(JSONValue.self, from: Data(json.utf8))
-        let fields = CloudAnswerMapper.fields(from: answer, schema: CloudSchema(kind: .contract), recognizedText: Self.mobileContract,
+        let fields = ModelAnswerMapper.fields(from: answer, asked: CloudSchema(kind: .contract).questions, recognizedText: Self.mobileContract,
                                               today: Self.today, resolver: CatalogComponentResolver())
-        #expect(CloudAnswerMapper.kind(from: answer) == .contract)
+        #expect(ModelAnswerMapper.kind(from: answer) == .contract)
         #expect(value(.serviceKind, in: fields) == .text(ServiceKind.mobile))
         #expect(value(.phoneNumber, in: fields) == .text("0700 000 000"))
         #expect(value(.minimumMonths, in: fields) == .number(24))
 
         let odd = try JSONDecoder().decode(JSONValue.self, from: Data(#"{"documentKind":"contract","serviceKind":"satellite","minimumMonths":900}"#.utf8))
-        let kept = CloudAnswerMapper.fields(from: odd, schema: CloudSchema(kind: .contract), recognizedText: "", today: Self.today, resolver: CatalogComponentResolver())
+        let kept = ModelAnswerMapper.fields(from: odd, asked: CloudSchema(kind: .contract).questions, recognizedText: "", today: Self.today, resolver: CatalogComponentResolver())
         #expect(kept.isEmpty, "An unknown service and an impossible length are never kept")
     }
 }

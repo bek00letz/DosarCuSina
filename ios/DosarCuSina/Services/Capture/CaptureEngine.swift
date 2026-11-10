@@ -234,7 +234,8 @@ public final class CaptureEngine: Sendable {
             switch model.availability() {
             case .available:
                 do {
-                    let extraction = try await model.extract(SemanticInput(text: text, firstPage: firstPage, kind: reading.kind, knownFields: known, today: today))
+                    let extraction = try await model.extract(SemanticInput(text: text, firstPage: firstPage, kind: reading.kind, knownFields: known, today: today,
+                                                                           kindIsOpen: ReadingArbiter.kindIsOpen(reading)))
                     modelFields = extraction.fields
                     reading = ReadingArbiter.kind(reading, onDeviceModel: extraction.kind)
                 } catch is CancellationError {

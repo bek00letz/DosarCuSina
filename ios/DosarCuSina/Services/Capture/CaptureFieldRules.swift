@@ -66,8 +66,8 @@ extension CaptureDocumentKind {
     }
 
     /// The fields a document of this kind usually carries, from its profile (identity
-    /// documents' come from their templates in `IdentityTemplates`). A cloud model is
-    /// asked for exactly these (`CloudSchema`).
+    /// documents' come from their templates in `IdentityTemplates`). Both language models
+    /// are asked for these (`ModelQuestions`).
     var expectedKeys: [CaptureFieldKey] { profile.expectedKeys }
 
     /// Fields that, found by the pattern tiers with good confidence, make the

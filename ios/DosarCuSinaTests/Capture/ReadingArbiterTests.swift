@@ -143,10 +143,10 @@ struct ReadingArbiterTests {
     @Test("An AI value nobody else read is kept for a look; a checked one is certain")
     func aiValuesAloneAreKept() throws {
         let answer = try JSONDecoder().decode(JSONValue.self, from: Data(#"{"documentKind":"rcaPolicy","claimsPhone":"0800 000 000","vin":"1M8GDM9AXKP042788"}"#.utf8))
-        let fields = CloudAnswerMapper.fields(from: answer, schema: CloudSchema(kind: .utilityInvoice), recognizedText: "", today: Self.today, resolver: CatalogComponentResolver())
+        let fields = ModelAnswerMapper.fields(from: answer, asked: CloudSchema(kind: .utilityInvoice).questions, recognizedText: "", today: Self.today, resolver: CatalogComponentResolver())
         #expect(fields.first { $0.key == .claimsPhone }?.needsCheck == true)
         #expect(fields.first { $0.key == .vin }?.needsCheck == false)
-        #expect(CloudAnswerMapper.kind(from: answer) == .rcaPolicy)
+        #expect(ModelAnswerMapper.kind(from: answer) == .rcaPolicy)
     }
 
     @Test("A document number checked by the zone beats a differing AI value")

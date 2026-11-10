@@ -348,7 +348,7 @@ public struct CaptureField: Hashable, Codable, Sendable {
     /// Whether a person should look at this value before it is saved: it failed a
     /// format or a cross-check (low confidence), or only the on-device model read it.
     /// An AI provider's value has a high confidence only when it passed its own check or
-    /// agrees with what the phone read (`CloudAnswerMapper`), and one that replaced a
+    /// agrees with what the phone read (`ModelAnswerMapper`), and one that replaced a
     /// different phone value is marked too (`ReadingArbiter`); otherwise its low
     /// confidence marks it here.
     public var needsCheck: Bool {
