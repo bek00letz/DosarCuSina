@@ -162,15 +162,8 @@ public struct CaptureRepairs {
                     }
                     for item in copy.suppliedItems ?? [] { item.supplier = kept }
                     for attachment in copy.attachments ?? [] { attachment.provider = kept }
-                    kept.trades = Array(Set(kept.trades + copy.trades)).sorted()
-                    kept.phone = kept.phone ?? copy.phone
-                    kept.email = kept.email ?? copy.email
-                    kept.address = kept.address ?? copy.address
-                    kept.notes = kept.notes ?? copy.notes
-                    kept.manualRating = kept.manualRating ?? copy.manualRating
-                    kept.wouldCallAgain = kept.wouldCallAgain ?? copy.wouldCallAgain
-                    kept.contactIdentifier = kept.contactIdentifier ?? copy.contactIdentifier
-                    kept.taxID = kept.taxID ?? copy.taxID
+                    // The one rule for two copies of a firm, which a backup's merge follows too.
+                    FirmCopies.gather(FirmCopies.details(of: copy), into: kept)
                     context.delete(copy)
                 }
             }

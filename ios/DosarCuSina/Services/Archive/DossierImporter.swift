@@ -304,9 +304,26 @@ struct DossierImporter {
         var map = try existing(Provider.self, id: \.id)
         for dto in package.providers {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.providers) }
+            let archivedSections = dto.assetIds.compactMap { uuid($0).flatMap { assets[$0] } }
+            // Both copies of a firm meet by one rule (`FirmCopies`): the newer one's details stand,
+            // and what only the other knows (a detail, a trade, a section) comes along.
+            let here = map[id].map { (details: FirmCopies.details(of: $0), sections: $0.assets ?? []) }
             guard let provider = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
                 Provider(id: id, name: dto.name)
-            }) else { continue }
+            }) else {
+                if let phone = map[id] {
+                    FirmCopies.gather(FirmCopies.details(of: dto), into: phone)
+                    let sections = FirmCopies.sections(phone.assets ?? [], archivedSections)
+                    if sections.count != (phone.assets ?? []).count { phone.assets = sections }
+                }
+                continue
+            }
+            defer {
+                if let here {
+                    FirmCopies.gather(here.details, into: provider)
+                    provider.assets = FirmCopies.sections(provider.assets ?? [], here.sections)
+                }
+            }
             provider.name = dto.name
             provider.trades = dto.trades
             provider.phone = dto.phone
@@ -315,11 +332,11 @@ struct DossierImporter {
             provider.notes = dto.notes
             provider.manualRating = dto.manualRating
             provider.wouldCallAgain = dto.wouldCallAgain
-            provider.taxID = ProviderTaxID.normalized(dto.taxID) ?? provider.taxID
+            provider.taxID = ProviderTaxID.normalized(dto.taxID)
             provider.isExample = dto.isExample
             provider.createdAt = clamped(dto.createdAt)
             provider.updatedAt = changeTime(dto.updatedAt)
-            provider.assets = dto.assetIds.compactMap { uuid($0).flatMap { assets[$0] } }
+            provider.assets = archivedSections
         }
         return map
     }
