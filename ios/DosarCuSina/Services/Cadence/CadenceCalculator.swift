@@ -13,10 +13,19 @@ public final class CadenceCalculator: Sendable {
     public struct TelemetryReading: Sendable, Equatable {
         public let date: Date
         public let metric: Double
-        
-        public init(date: Date, metric: Double) {
+        /// The first reading of a new counter (`MeasurementLog.startsCounter`): the readings
+        /// from it on count on their own (`ReadingSeries.counters`).
+        public let startsCounter: Bool
+
+        public init(date: Date, metric: Double, startsCounter: Bool = false) {
             self.date = date
             self.metric = metric
+            self.startsCounter = startsCounter
+        }
+
+        /// The same reading, at the same moment and value, whether or not it starts a counter.
+        public func isSameReading(as other: TelemetryReading) -> Bool {
+            date == other.date && metric == other.metric
         }
     }
     
@@ -108,33 +117,27 @@ public final class CadenceCalculator: Sendable {
         }
         
         // The one cleaned series: a reading that breaks the order (a typo, one kept aside)
-        // is skipped and flagged, never a reason to stop projecting.
+        // is skipped and flagged, never a reason to stop projecting. Each counter counts on
+        // its own, so a new meter or dashboard is never a jump (`ReadingSeries.progress`).
         let series = ReadingSeries(readings)
-        let sorted = series.readings
         let hasRollback = !series.setAside.isEmpty
         
         var calculatedRate: Double? = nil
         
-        // Compute burn rate if we have >= 2 points
-        if sorted.count >= 2 {
-            let first = sorted.first!
-            let last = sorted.last!
-            let deltaMetric = last.metric - first.metric
-            
-            let startOfFirst = calendar.startOfDay(for: first.date)
-            let startOfLast = calendar.startOfDay(for: last.date)
-            let deltaDays: Double
+        // Compute burn rate if a counter has >= 2 points
+        if let progress = series.progress(days: { first, last in
+            let startOfFirst = calendar.startOfDay(for: first)
+            let startOfLast = calendar.startOfDay(for: last)
             if let compDays = calendar.dateComponents([.day], from: startOfFirst, to: startOfLast).day, compDays > 0 {
-                let timeDiffFirst = first.date.timeIntervalSince(startOfFirst)
-                let timeDiffLast = last.date.timeIntervalSince(startOfLast)
-                deltaDays = Double(compDays) + ((timeDiffLast - timeDiffFirst) / 86400.0)
-            } else {
-                deltaDays = last.date.timeIntervalSince(first.date) / 86400.0
+                let timeDiffFirst = first.timeIntervalSince(startOfFirst)
+                let timeDiffLast = last.timeIntervalSince(startOfLast)
+                return Double(compDays) + ((timeDiffLast - timeDiffFirst) / 86400.0)
             }
-            
+            return last.timeIntervalSince(first) / 86400.0
+        }) {
             // Guard against zero time delta or zero metric progression
-            if deltaDays > 0.001 && deltaMetric > 0 {
-                calculatedRate = deltaMetric / deltaDays
+            if progress.days > 0.001 && progress.distance > 0 {
+                calculatedRate = progress.distance / progress.days
             }
         }
         

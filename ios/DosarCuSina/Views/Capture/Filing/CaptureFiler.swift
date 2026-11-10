@@ -589,6 +589,15 @@ struct CaptureFiler {
     /// Nil `reading`: the filing keeps no index.
     private func recordMeterReading(_ reading: SubscriptionMeter.Reading?, on subscription: Asset?, document: Attachment?,
                                     earlier: MeasurementLog?, templates: [String: CategoryTemplate]) throws -> MeasurementLog? {
+        // Planned before the earlier reading goes, as the filing asked about it (`askAboutMeter`):
+        // the new one takes its place, and a new counter it started.
+        let replaced = earlier?.id
+        let planned = reading.flatMap { reading in
+            subscription.map { subscription in
+                PlannedReading(reading.value, on: subscription, at: reading.day.noonDate(in: calendar), source: .document,
+                               unit: reading.unit, kind: reading.kind, replacing: { log in log.id == replaced })
+            }
+        }
         // Only a reading a bill recorded on a subscription is the bill's to replace.
         if let earlier, !earlier.isDeleted, let owner = earlier.asset, templates.plays(.subscription, owner.templateKey) {
             if let reading, owner.id == subscription?.id, reading.isRecorded(by: earlier, calendar: calendar) {
@@ -599,15 +608,12 @@ struct CaptureFiler {
             HouseholdMutations.removeReading(earlier, from: owner, in: context)
             HouseholdMutations.syncHeroMetric(of: owner, in: context)
         }
-        guard let reading, let subscription else { return nil }
-        if let same = (subscription.measurements ?? []).first(where: { reading.isRecorded(by: $0, calendar: calendar) }) {
+        guard let reading, let subscription, let planned else { return nil }
+        if let same = (subscription.measurements ?? []).first(where: { !$0.isDeleted && reading.isRecorded(by: $0, calendar: calendar) }) {
             document?.measurement = same
             return same
         }
-        let log = try HouseholdMutations.recordReading(
-            reading.value, on: subscription, at: reading.day.noonDate(in: calendar), source: .document,
-            unit: reading.unit, kind: reading.kind, answer: lowerReading, in: context
-        )
+        let log = try HouseholdMutations.recordReading(planned, answer: lowerReading, in: context)
         document?.measurement = log
         return log
     }

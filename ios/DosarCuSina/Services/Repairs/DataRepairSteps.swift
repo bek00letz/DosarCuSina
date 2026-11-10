@@ -252,32 +252,34 @@ struct CounterOutliersStep: DataRepairStep {
     func findings(_ scan: inout DataRepairScan) throws -> [DataRepairFinding] {
         var found: [DataRepairFinding] = []
         for asset in try scan.context.fetch(FetchDescriptor<Asset>()) where !asset.isExample {
-            let counters = (asset.measurements ?? []).filter { $0.kind.isCumulative }
-            for (unit, logs) in Dictionary(grouping: counters, by: \.measurementUnit) {
-                let ordered = logs.sorted { ($0.recordedAt, $0.value) < ($1.recordedAt, $1.value) }
-                for (index, verdict) in Self.verdicts(ordered.map(\.value)).sorted(by: { $0.key < $1.key }) {
-                    let log = ordered[index]
-                    let subject = CounterWording.subject(unit: unit, asset: asset.name)
-                    let shown = CounterWording.amount(log.value, unit: unit)
-                    let message: String
-                    let target: Double?
-                    switch verdict {
-                    case .correct(let to):
-                        target = to
-                        let corrected = RomanianNumber.format(Decimal(to), fractionDigits: 0...1)
-                        message = String(localized: "\(subject) pare greșit: \(shown). Corectez la \(corrected)?", comment: "Repair: a reading that lost its last digits, with the corrected value.")
-                    case .remove:
-                        target = nil
-                        let day = DosarFormat.day(log.recordedAt, calendar: scan.calendar)
-                        message = String(localized: "\(subject) pare greșit: \(shown), pe \(day). Îl scot din citiri?", comment: "Repair: a reading ten times off its neighbours.")
+            let units = Set((asset.measurements ?? []).filter { !$0.isDeleted && $0.kind.isCumulative }.map(\.measurementUnit))
+            // Counter by counter: the first reading of a new meter or dashboard is never a lost digit.
+            for unit in units {
+                for ordered in HouseholdMutations.counters(of: asset, unit: unit) {
+                    for (index, verdict) in Self.verdicts(ordered.map(\.value)).sorted(by: { $0.key < $1.key }) {
+                        let log = ordered[index]
+                        let subject = CounterWording.subject(unit: unit, asset: asset.name)
+                        let shown = CounterWording.amount(log.value, unit: unit)
+                        let message: String
+                        let target: Double?
+                        switch verdict {
+                        case .correct(let to):
+                            target = to
+                            let corrected = RomanianNumber.format(Decimal(to), fractionDigits: 0...1)
+                            message = String(localized: "\(subject) pare greșit: \(shown). Corectez la \(corrected)?", comment: "Repair: a reading that lost its last digits, with the corrected value.")
+                        case .remove:
+                            target = nil
+                            let day = DosarFormat.day(log.recordedAt, calendar: scan.calendar)
+                            message = String(localized: "\(subject) pare greșit: \(shown), pe \(day). Îl scot din citiri?", comment: "Repair: a reading ten times off its neighbours.")
+                        }
+                        scan.flaggedReadings.insert(log.id)
+                        scan.flaggedAssets.insert(asset.id)
+                        found.append(DataRepairFinding(
+                            id: "\(Self.id.rawValue):\(log.id.uuidString):\(log.value)",
+                            step: Self.id, message: message,
+                            subject: .reading(logID: log.id, value: log.value, to: target)
+                        ))
                     }
-                    scan.flaggedReadings.insert(log.id)
-                    scan.flaggedAssets.insert(asset.id)
-                    found.append(DataRepairFinding(
-                        id: "\(Self.id.rawValue):\(log.id.uuidString):\(log.value)",
-                        step: Self.id, message: message,
-                        subject: .reading(logID: log.id, value: log.value, to: target)
-                    ))
                 }
             }
         }
@@ -318,7 +320,9 @@ struct EstimatedVisitReadingsStep: DataRepairStep {
               reading.truncatingRemainder(dividingBy: 100) == 0, let asset = entry.asset else { return nil }
         let logs = (asset.measurements ?? []).filter { !$0.isDeleted && $0.kind.isCumulative }
         guard let log = logs.first(where: { $0.recordedAt == entry.occurredAt && $0.value == reading }) else { return nil }
-        let next = logs.filter { $0.measurementUnit == log.measurementUnit && $0.recordedAt > log.recordedAt }.min { $0.recordedAt < $1.recordedAt }
+        // The next reading on the same counter: a new meter or dashboard after it is no sign.
+        let counter = HouseholdMutations.counters(of: asset, unit: log.measurementUnit).first { $0.contains { $0.id == log.id } } ?? []
+        let next = counter.filter { $0.recordedAt > log.recordedAt }.min { $0.recordedAt < $1.recordedAt }
         guard let next, next.value < reading else { return nil }
         return log
     }

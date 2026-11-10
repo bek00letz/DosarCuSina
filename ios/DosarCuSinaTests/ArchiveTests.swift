@@ -196,7 +196,7 @@ struct ArchiveTests {
         #expect(result == expected)
         let names = { (container: ModelContainer) in Set(try ModelContext(container).fetch(FetchDescriptor<Asset>()).map(\.name)) }
         #expect(try names(away) == names(here))
-        #expect(try ModelContext(away).fetchCount(FetchDescriptor<DosarSchemaV9.Attachment>()) == ModelContext(here).fetchCount(FetchDescriptor<DosarSchemaV9.Attachment>()))
+        #expect(try ModelContext(away).fetchCount(FetchDescriptor<DosarSchemaV10.Attachment>()) == ModelContext(here).fetchCount(FetchDescriptor<DosarSchemaV10.Attachment>()))
 
         // A failure part way leaves nothing behind.
         var broken = package
@@ -216,7 +216,7 @@ struct ArchiveTests {
         let context = ModelContext(container)
         let firm = try #require(try context.fetch(FetchDescriptor<Provider>()).first { $0.name == "Service auto exemplu" })
         #expect(firm.taxID == "12345678")
-        let policies = try context.fetch(FetchDescriptor<DosarSchemaV9.Attachment>()).filter { $0.title == "Poliță RCA 2025" }
+        let policies = try context.fetch(FetchDescriptor<DosarSchemaV10.Attachment>()).filter { $0.title == "Poliță RCA 2025" }
         #expect(policies.first?.validUntil == CalendarDay("2026-12-14"),
                 "Last year's policy keeps last year's end, whatever its deadline says now")
 
