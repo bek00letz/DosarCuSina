@@ -8,6 +8,9 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-10
 
+### A shared file's name from before masking is written again once
+- **Decided:** a waiting item an earlier version wrote keeps the shared file's name whole on disk. The first time the app reads the inbox (`ShareInbox.contents`, what De verificat reads), each manifest whose stored name differs from the name the shared rule masks (`InboxItem.originalName`) is written again with the masked name, its version and the rest unchanged, with complete protection; the next read finds them the same, so it happens once. Only looking (`waitingItems`, for the share extension's notice and the coordinator) changes nothing, and the extension never needs to, since it masks as it writes. *Alternatives:* a one-off launch step that walks the inbox (a second reader of the manifests beside the one the app already runs); bump the manifest's version for the rewrite, which would tell nothing the app reads differently.
+
 ### A restore keeps the phone's own secrets, read or not
 - **Decided:** what the phone keeps only for itself through "Înlocuiește tot" and "Adaugă" is taken as stored, not as this build reads it: every secret row of a section (`SecretFields.secretFacts`: those this build reads, with any key a newer build wrote inside them, and those it can't read that say they are secret or hold anything sealed) and every sealed value, read or not (`sealedValues`, `FieldValues.addingUnreadable`). They go back in place of an archive's row with the same id (`KeptList.replacingEntries`). None of them is ever exported, so the phone's copy is the only one. *Alternative:* keep only what this build reads, as before, which lost a newer build's secret rows for good on the first restore.
 

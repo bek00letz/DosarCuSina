@@ -326,12 +326,16 @@ public struct ShareInbox: Sendable {
     /// Every committed item, newest first. A folder that can't be read (a damaged
     /// manifest, a missing file, a newer format) is moved aside the first time it
     /// is seen and listed under `unreadable`, so it is never skipped silently.
+    ///
+    /// The app reads the inbox here, so this is where a manifest an earlier version wrote is
+    /// tidied, once: a name it kept whole is written again masked (`maskStoredName`).
     public func contents(now: Date = Date()) -> Contents {
         let fileManager = FileManager.default
         let names = (try? fileManager.contentsOfDirectory(atPath: directory.path())) ?? []
         var items: [InboxItem] = []
         for name in names where !name.hasPrefix(".") {
             if let item = readItem(named: name) {
+                maskStoredName(of: item)
                 items.append(item)
             } else {
                 setAside(name, now: now)
@@ -367,6 +371,26 @@ public struct ShareInbox: Sendable {
               item.files.allSatisfy({ FileManager.default.fileExists(atPath: folder.appending(path: $0).path()) })
         else { return nil }
         return item
+    }
+
+    /// The name a manifest keeps on disk, as written.
+    private struct StoredName: Decodable {
+        let originalName: String?
+    }
+
+    /// A manifest written before the share extension masked names may keep a card number in the
+    /// shared file's name until the item is filed or dismissed. Read, the item is masked by the
+    /// shared rule (`InboxItem.originalName`); when the name on disk differs, the manifest is
+    /// written again with it, once: the next read finds them the same. Its version and everything
+    /// else stay as they were. Only the app does this; the share extension never needs to.
+    func maskStoredName(of item: InboxItem) {
+        let url = folder(for: item.id).appending(path: Self.manifestName)
+        guard let data = try? Data(contentsOf: url),
+              let stored = try? Self.decoder.decode(StoredName.self, from: data),
+              stored.originalName != item.originalName,
+              let rewritten = try? Self.encoder.encode(item) else { return }
+        // Can't write it now (the phone is locked): the next read tries again.
+        try? rewritten.write(to: url, options: [.atomic, .completeFileProtection])
     }
 
     private var asideFolder: URL {
