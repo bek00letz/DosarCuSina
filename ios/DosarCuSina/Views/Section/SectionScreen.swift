@@ -93,7 +93,7 @@ private struct SectionContent: View {
         let definition = template?.definition ?? BuiltInTemplates.definition(for: asset.templateKey) ?? BuiltInTemplates.other
         return ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.xl) {
-                SectionHero(asset: asset, definition: definition)
+                SectionHero(asset: asset, definition: definition, toast: $toast)
                 if definition.behavior.role == .personalDocument, (asset.attachments ?? []).isEmpty {
                     DocumentPhotoPrompt(asset: asset, toast: $toast)
                 }

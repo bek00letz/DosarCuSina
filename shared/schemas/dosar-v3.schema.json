@@ -336,7 +336,8 @@
           "assetId": { "$ref": "#/$defs/uuid" },
           "recordedAt": { "$ref": "#/$defs/timestamp" },
           "unitPrice": { "$ref": "#/$defs/money" },
-          "updatedAt": { "$ref": "#/$defs/timestamp", "description": "When the record last changed. Missing in archives from before it was written: a reader takes it as older than any change." }
+          "updatedAt": { "$ref": "#/$defs/timestamp", "description": "When the record last changed. Missing in archives from before it was written: a reader takes it as older than any change." },
+          "startsCounter": { "type": "boolean", "description": "True on the first reading of a new counter (a replaced meter or dashboard, or one that went round): from it on, the readings in its unit on its asset count on their own. Written only when true; missing reads as false, one counter." }
         }
       }
     },

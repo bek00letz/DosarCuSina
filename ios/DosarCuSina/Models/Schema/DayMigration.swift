@@ -9,8 +9,8 @@ import Synchronization
 ///    is read as the day it meant (`StoredDay.day(of:storedAs:calendar:)`) and kept in memory,
 ///    by record.
 /// 2. The store changes shape: the moments go, the day texts come, empty.
-/// 3. After (`didMigrate`, version 9's models), each record gets its days back as text, and the
-///    store is saved once (`UnitOfWork.performPrivate`). Change times stay as they were: the
+/// 3. After (`didMigrate`, version 9's frozen models), each record gets its days back as text
+///    (`StoredDay.text`), and the store is saved once (`UnitOfWork.performPrivate`). Change times stay as they were: the
 ///    days mean what they meant.
 ///
 /// The time zone a moment was written in wasn't kept, so the moments are read in the phone's
@@ -85,18 +85,18 @@ enum DayMigration {
             try UnitOfWork.performPrivate(in: context) {
                 for deadline in try context.fetch(FetchDescriptor<DosarSchemaV9.Obligation>()) {
                     guard let days = carried[key("Obligation", deadline.id, deadline.createdAt)] else { continue }
-                    if let due = days.first { deadline.dueDay = due }
-                    deadline.snoozedUntil = days.second
+                    if let due = days.first { deadline.dueDayISO = StoredDay.text(due) }
+                    deadline.snoozedUntilISO = days.second.map(StoredDay.text)
                 }
                 for entry in try context.fetch(FetchDescriptor<DosarSchemaV9.HistoryEntry>()) {
                     guard let days = carried[key("HistoryEntry", entry.id, entry.occurredAt)] else { continue }
-                    entry.cycleDueDay = days.first
-                    entry.nextDueDay = days.second
+                    entry.cycleDueDayISO = days.first.map(StoredDay.text)
+                    entry.nextDueDayISO = days.second.map(StoredDay.text)
                 }
                 for document in try context.fetch(FetchDescriptor<DosarSchemaV9.Attachment>()) {
                     guard let days = carried[key("Attachment", document.id, document.createdAt)] else { continue }
-                    document.documentDay = days.first
-                    document.validUntil = days.second
+                    document.documentDayISO = days.first.map(StoredDay.text)
+                    document.validUntilISO = days.second.map(StoredDay.text)
                 }
             }
         }

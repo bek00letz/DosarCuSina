@@ -6,6 +6,8 @@ import SwiftData
 struct SectionHero: View {
     let asset: Asset
     let definition: TemplateDefinition
+    /// The section page's toast: "Anulează" after "Nu e contor nou".
+    @Binding var toast: DSToast?
 
     @Environment(\.modelContext) private var context
     @Environment(\.calendar) private var calendar
@@ -98,6 +100,7 @@ struct SectionHero: View {
     private var metricTile: some View {
         if let field = definition.fields(withRole: .heroMetric).first, let value = asset.value(field.key) {
             HeroValueTile(label: field.label, value: FieldFormatter.display(value, field: field))
+            counterChange(unit: field.unit)
         }
     }
 
@@ -114,6 +117,33 @@ struct SectionHero: View {
                     ? String(localized: "De pe factura din \(day)", comment: "Under the last meter index: the bill it was read from.")
                     : String(localized: "Notat pe \(day)", comment: "Under the last meter index: the day it was recorded.")
             )
+            counterChange(unit: last.unit)
+        }
+    }
+
+    /// Under a counter that the person said started again ("Contor nou": a replaced meter or
+    /// dashboard): since when, and "Nu e contor nou" to take it back, undoable. Nothing shows
+    /// while the section has had one counter.
+    @ViewBuilder
+    private func counterChange(unit: MeasurementUnit?) -> some View {
+        if let start = HouseholdMutations.counterStart(of: asset, unit: unit) {
+            let day = DosarFormat.longDay(CalendarDay(start.recordedAt, calendar: calendar))
+            DSAdaptiveStack(verticalAlignment: .firstTextBaseline, spacing: DS.Space.s, stackedSpacing: DS.Space.xs) {
+                Text("Contor nou din \(day). Citirile de dinainte rămân în istoric.", comment: "Hero, under a counter that started again: since when, and that the old readings are kept.")
+                    .dsFont(.subheadline, numeric: true)
+                    .fixedSize(horizontal: false, vertical: true)
+                DSCompactButton("Nu e contor nou") { notANewCounter(start) }
+                    .accessibilityHint(Text("Citirile se socotesc din nou împreună.", comment: "VoiceOver hint of the button that takes back a new counter."))
+            }
+        }
+    }
+
+    private func notANewCounter(_ start: MeasurementLog) {
+        do {
+            let receipt = try AssetActions(context: context, calendar: calendar).notANewCounter(start)
+            toast = .undo("Citirile se socotesc din nou împreună.", receipt: receipt)
+        } catch {
+            toast = .failure(error)
         }
     }
 
