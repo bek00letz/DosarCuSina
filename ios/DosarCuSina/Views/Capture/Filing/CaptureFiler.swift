@@ -195,7 +195,7 @@ struct CaptureFiler {
             values[SubscriptionFields.minimumUntil] = .date(end)
         }
         // A bill's amount is the subscription's last bill (`updateSubscription` keeps the newest).
-        if review.kind.profile.deadlineIsOptIn, let total = review.total, template.field(SubscriptionFields.lastBill) != nil {
+        if review.kind.profile.isBill, let total = review.total, template.field(SubscriptionFields.lastBill) != nil {
             values[SubscriptionFields.lastBill] = .money(total)
         }
         // Direct debit only when the person confirmed what the bill says; never from the reading alone.
@@ -339,7 +339,7 @@ struct CaptureFiler {
         // or a new one is made. A new section already made it with its other deadlines.
         if let asset = outcome.asset, let blueprint = plan.blueprint {
             if let deadline = plan.deadline {
-                if let existing = CaptureFilingPlan.existingDeadline(blueprint, in: asset, takesUpPaused: review.kind.profile.deadlineIsOptIn) {
+                if let existing = CaptureFilingPlan.existingDeadline(blueprint, in: asset, takesUpPaused: review.kind.profile.isBill) {
                     // A bill reminder paused while the bank paid: this bill asks for one again.
                     if existing.status == .paused { try obligations.resume(existing) }
                     outcome.completion = try renew(existing, to: deadline.day, done: false, on: nil, cost: review.total)
@@ -348,7 +348,7 @@ struct CaptureFiler {
                 }
             }
             outcome.obligation = asset.activeObligations.first { $0.blueprintKey == blueprint.key }
-            if let deadline = plan.deadline, review.kind.profile.deadlineIsOptIn, let bill = outcome.obligation, bill.dueDay(in: calendar) == deadline.day {
+            if let deadline = plan.deadline, review.kind.profile.isBill, let bill = outcome.obligation, bill.dueDay(in: calendar) == deadline.day {
                 // This bill's amount and number on its reminder.
                 try obligations.setDetails(bill, estimatedCost: review.total, reference: review.value(.invoiceNumber)?.text)
             }
@@ -401,7 +401,7 @@ struct CaptureFiler {
     /// for anything that isn't a bill.
     private func logBill(_ review: CaptureReview, in asset: Asset?, plan: CaptureFilingPlan, templates: [String: CategoryTemplate],
                          today: CalendarDay) throws -> HistoryEntry? {
-        guard review.kind.profile.deadlineIsOptIn else { return nil }
+        guard review.kind.profile.isBill else { return nil }
         let billFiledBefore = plan.filedBill.flatMap { try? entry(id: $0.entryID) }
         guard let asset, templates.plays(.subscription, asset.templateKey) else {
             if let billFiledBefore { try HistoryActions(context: context, now: now).delete(billFiledBefore) }
@@ -521,7 +521,7 @@ struct CaptureFiler {
     /// a bill, and only when that section is its subscription.
     private func billPlan(for review: CaptureReview, templates: [String: CategoryTemplate]) throws -> CaptureFilingPlan? {
         let assets = try context.fetch(FetchDescriptor<Asset>())
-        guard review.kind.profile.deadlineIsOptIn, case .asset(let id) = review.destination, let section = assets.first(where: { $0.id == id }),
+        guard review.kind.profile.isBill, case .asset(let id) = review.destination, let section = assets.first(where: { $0.id == id }),
               case .subscription = try Self.route(for: review, into: section, templates: templates) else { return nil }
         return CaptureFilingPlan.make(for: review, templates: templates, assets: assets, today: CalendarDay(now(), calendar: calendar), calendar: calendar)
     }
@@ -767,7 +767,7 @@ struct CaptureFiler {
         var merged = current
         for (key, value) in read where merged[key] != value {
             if let old = merged[key]?.textValue, let new = value.textValue,
-               CaptureMapping.normalizedIdentifier(old) == CaptureMapping.normalizedIdentifier(new) { continue }
+               RomanianText.compact(old) == RomanianText.compact(new) { continue }
             merged[key] = value
         }
         return merged
@@ -1003,7 +1003,7 @@ struct CaptureFiler {
     /// subscription is proven; obligations it made before stay as they are.
     @available(*, deprecated, message: "Bills remind through their subscription's \"subscription.bill\" deadline.")
     private func looseBillReminder(_ review: CaptureReview, asset: Asset?, today: CalendarDay) throws -> Obligation? {
-        guard review.kind == .utilityInvoice, review.remindsToPay, let day = review.reminderDay, day >= today else { return nil }
+        guard review.kind.profile.isBill, review.remindsToPay, let day = review.reminderDay, day >= today else { return nil }
         let provider = review.value(.provider)?.text
         return try ObligationActions(context: context, calendar: calendar, now: now).create(
             title: provider.map { String(localized: "Factură \($0)") } ?? String(localized: "Factură de plătit"),
@@ -1090,7 +1090,7 @@ enum CaptureReminderPreview {
         case .paidByDirectDebit?:
             return String(localized: "De plătit până pe \(date). Se plătește prin debit direct, așa că nu îți amintesc.")
         case .needsPlace?:
-            if review.kind.profile.deadlineIsOptIn {
+            if review.kind.profile.isBill {
                 return opening + " " + String(localized: "Alege abonamentul ei ca să îți amintesc s-o plătești.")
             }
             return opening + " " + String(localized: "Alege unde îl pui ca să te anunț din timp.")

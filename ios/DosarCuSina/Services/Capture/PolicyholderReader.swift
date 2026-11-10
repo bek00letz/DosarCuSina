@@ -1,8 +1,8 @@
 import Foundation
 
 /// Reads who a policy insures: the owner or insured's name, and their CNP when printed
-/// ("C.U.I. / C.N.P. Proprietar: …"). The labels are one table read with `LabelledLayout`,
-/// so a new wording is a new row. The CNP is read only on the phone, only to find the
+/// ("C.U.I. / C.N.P. Proprietar: …"). The labels are rows of the policy's table, read with
+/// `LabelledLayout`, so a new wording is a new row. The CNP is read only on the phone, only to find the
 /// person among the household (`Policyholders`), and is never shown, kept or asked of the
 /// AI provider.
 enum PolicyholderReader {
@@ -12,19 +12,16 @@ enum PolicyholderReader {
         case other
     }
 
-    static let labels: [(Label, [LabelWording])] = [
-        (.name, [
-            "nume/denumire proprietar", "nume / denumire proprietar", "denumire proprietar", "nume proprietar", "proprietar/utilizator",
-            "proprietar / utilizator", "proprietarul vehiculului", "proprietar", "nume asigurat", "asiguratul", "asigurat", "contractant",
-        ].map(LabelWording.words)),
-        (.personalNumber, [
-            "c.u.i. / c.n.p. proprietar", "c.u.i./c.n.p. proprietar", "cui / cnp proprietar", "cui/cnp proprietar", "c.n.p. proprietar",
-            "cnp proprietar", "c.n.p./c.u.i.", "cnp/cui", "cui/cnp", "cnp asigurat", "c.n.p. asigurat",
-        ].map(LabelWording.words)),
-        (.other, CompositeLabels.otherFields + [
-            "adresa", "adresa proprietar", "domiciliu", "telefon", "email", "e-mail", "seria", "serie", "nr. polita", "asigurator",
-        ].map(LabelWording.words)),
-    ]
+    /// The policy table's rows for the holder and their CNP (`CaptureKindProfile.policyLabels`),
+    /// with what is printed beside them as labels too, so the name never runs into it.
+    static var labels: [(Label, [LabelWording])] {
+        let policy = CaptureKindProfile.policyLabels
+        return [
+            (.name, CaptureKindProfile.labels(for: .policyholder, in: policy).map(LabelWording.words)),
+            (.personalNumber, CaptureKindProfile.labels(for: .policyholderPersonalNumber, in: policy).map(LabelWording.words)),
+            (.other, CompositeLabels.otherFields + CaptureLexicon.policyholderNeighbourLabels.map(LabelWording.words)),
+        ]
+    }
 
     /// The policyholder's name and CNP, as printed, when the page names them.
     static func fields(in text: CaptureText) -> [CaptureField] {

@@ -50,7 +50,7 @@ enum ModelAnswerMapper {
         // Dates and the holder follow the kind the reader saw.
         let kind = Self.kind(from: answer) ?? questions.kind
         let reader = questions.reader
-        let compactText = compact(recognizedText)
+        let compactText = RomanianText.compact(recognizedText)
         let printed = CaptureText(recognizedText)
         var fields: [CaptureField] = []
 
@@ -70,11 +70,11 @@ enum ModelAnswerMapper {
         /// Whether the text prints the value: whole, or, for a value printed in parts, each
         /// part ("Seria RO/00/X00/XX nr. 012345678" prints "RO/00/X00/XX 012345678").
         func isPrinted(_ value: String, as key: CaptureFieldKey? = nil) -> Bool {
-            let whole = compact(value)
+            let whole = RomanianText.compact(value)
             guard !whole.isEmpty else { return false }
             if compactText.contains(whole) { return true }
             guard let key, let shape = CompositeValue.shape(of: key, kind: kind), let parts = shape.parts(in: value) else { return false }
-            let pieces = [parts.series, parts.number].compactMap { $0 }.map(compact)
+            let pieces = [parts.series, parts.number].compactMap { $0 }.map(RomanianText.compact)
             return pieces.count == 2 && pieces.allSatisfy { compactText.contains($0) }
         }
         func printedEvidence(_ value: String, as key: CaptureFieldKey? = nil) -> Evidence { isPrinted(value, as: key) ? .grounded : .candidate }
@@ -109,7 +109,7 @@ enum ModelAnswerMapper {
                 guard let digits = raw.string?.filter(\.isNumber), digits.count == 13 else { continue }
                 add(key, .text(digits), RomanianFieldExtractor.isValidCNP(digits) ? .checked : .candidate, inText: isPrinted(digits))
             case .vin:
-                guard let vin = raw.string?.uppercased().filter({ $0.isLetter || $0.isNumber }), vin.count == 17 else { continue }
+                guard let vin = raw.string.map(RomanianText.compact), vin.count == 17 else { continue }
                 add(key, .text(vin), RomanianFieldExtractor.vinChecksumValid(vin) ? .checked : printedEvidence(vin), inText: isPrinted(vin))
             case .sex:
                 // A judgement about the page, not text copied from it.
@@ -122,11 +122,12 @@ enum ModelAnswerMapper {
                 guard let text = raw.string, let parsed = IdentityDocumentReader.parse(text, as: .categories) else { continue }
                 add(key, parsed.value, printedEvidence(text), inText: isPrinted(text))
             case .money:
-                guard let amount = raw["amount"]?.double, amount > 0, let decimal = Decimal(string: String(amount)) else { continue }
+                // A number, or text as printed ("1.234,56"): one reader either way.
+                guard let reading = ModelQuestions.number(raw["amount"], as: .money), reading.value > 0 else { continue }
                 let currency = normalizedCurrency(raw["currency"]?.string)
                 let amounts = Set(printed.folded.flatMap { RomanianFieldExtractor.amounts(inLine: $0).map(\.amount) })
-                let inText = amounts.contains(decimal)
-                add(key, .money(Money(decimal, currency: currency)), inText ? .grounded : .candidate, inText: inText)
+                let inText = amounts.contains(reading.value)
+                add(key, .money(Money(reading.value, currency: currency)), inText && !reading.needsCheck ? .grounded : .candidate, inText: inText)
             case .integer:
                 guard let value = ModelQuestions.wholeNumber(raw, kind: key == .odometer ? .kilometres : .count), value >= 0, value < 10_000_000 else { continue }
                 if key == .minimumMonths, !ContractReader.plausibleMonths.contains(value) { continue }
@@ -135,7 +136,7 @@ enum ModelAnswerMapper {
                 let inText = compactText.contains(String(value))
                 add(key, typed, inText ? .grounded : .candidate, inText: inText)
             case .meterIndex:
-                guard let reading = ModelQuestions.meterIndex(raw), reading.value >= 0, reading.value < 100_000_000 else { continue }
+                guard let reading = ModelQuestions.number(raw, as: .meterIndex), reading.value >= 0, reading.value < 100_000_000 else { continue }
                 // The digits as answered, compared with the page's: "12.345,678" is printed 12345678.
                 let digits = raw.string ?? NSDecimalNumber(decimal: reading.value).stringValue
                 add(key, .number(reading.value), reading.needsCheck ? .candidate : printedEvidence(digits), inText: isPrinted(digits))
@@ -143,7 +144,7 @@ enum ModelAnswerMapper {
                 let currency = normalizedCurrency(nil)
                 let items = (raw.array ?? []).compactMap { item -> CaptureLineItem? in
                     guard let description = item["description"]?.string?.trimmingCharacters(in: .whitespaces), !description.isEmpty else { return nil }
-                    let money = item["amount"]?.double.flatMap { Decimal(string: String($0)) }.map { Money($0, currency: currency) }
+                    let money = ModelQuestions.number(item["amount"], as: .money).map { Money($0.value, currency: currency) }
                     return CaptureLineItem(description: description, amount: money, componentKey: resolver.componentKey(for: description))
                 }
                 // From the phone's text, only the lines printed in it.
@@ -197,11 +198,6 @@ enum ModelAnswerMapper {
     static let warrantyMonths = 1...240
 
     // MARK: Text
-
-    /// Letters and digits only, uppercased, so "B-123 ABC" and "B 123 ABC" compare equal.
-    static func compact(_ text: String) -> String {
-        RomanianText.fold(text).uppercased().filter { $0.isLetter || $0.isNumber }
-    }
 
     static func isoDay(_ value: String) -> CalendarDay? {
         let parts = value.prefix(10).split(separator: "-").compactMap { Int($0) }

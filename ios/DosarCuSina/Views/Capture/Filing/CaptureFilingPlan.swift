@@ -164,7 +164,7 @@ struct CaptureFilingPlan {
             plan.quiet = .noSuchDeadline
             return plan
         }
-        if profile.deadlineIsOptIn {
+        if profile.isBill {
             guard review.remindsToPay else { plan.quiet = .notWanted; return plan }
             if review.paysByDirectDebit(assets: assets) { plan.quiet = .paidByDirectDebit; return plan }
         }
@@ -176,7 +176,7 @@ struct CaptureFilingPlan {
             return plan
         }
         let reminders = blueprint.reminders(for: values)
-        if let existing = section.flatMap({ existingDeadline(blueprint, in: $0, takesUpPaused: profile.deadlineIsOptIn) }) {
+        if let existing = section.flatMap({ existingDeadline(blueprint, in: $0, takesUpPaused: profile.isBill) }) {
             let due = existing.dueDay(in: calendar)
             // A deadline that follows a field takes the document's own date; any other never
             // moves back for an older document.
@@ -190,7 +190,7 @@ struct CaptureFilingPlan {
         }
         // A bill already logged here whose reminder is no longer running (paid, or taken
         // away): another photo of it never asks to be paid a second time.
-        if profile.deadlineIsOptIn, let filed = plan.filedBill, let section, filed.sectionID == section.id {
+        if profile.isBill, let filed = plan.filedBill, let section, filed.sectionID == section.id {
             plan.quiet = .billFiledBefore
             return plan
         }
@@ -234,7 +234,7 @@ struct CaptureFilingPlan {
     @MainActor
     static func filedBill(for review: CaptureReview, section: Asset?, templates: [String: CategoryTemplate], assets: [Asset],
                           today: CalendarDay, calendar: Calendar) -> FiledPaper? {
-        guard review.kind.profile.deadlineIsOptIn else { return nil }
+        guard review.kind.profile.isBill else { return nil }
         // The same document's bill, in whichever subscription it is now.
         let keptEntry = review.duplicateAttachmentID.flatMap { kept in
             assets.lazy.flatMap { $0.attachments ?? [] }.first { $0.id == kept }?.historyEntry

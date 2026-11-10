@@ -273,10 +273,11 @@ public enum SubscriptionMatcher {
         return named.count == 1 ? named[0].id : nil
     }
 
-    /// A code compared without spaces, dashes or case; a phone number in its national form.
+    /// A code compared without spaces, dashes, case or diacritics (`RomanianText.compact`);
+    /// a phone number in its national form.
     static func normalized(_ text: String, as code: Code) -> String {
         if code == .phoneNumber { return ContractReader.national(text) }
-        return text.uppercased().filter { $0.isLetter || $0.isNumber }
+        return RomanianText.compact(text)
     }
 
     /// The provider as people say it: "ENGIE Romania S.A." is "ENGIE".

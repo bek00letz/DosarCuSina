@@ -42,14 +42,11 @@ public enum CaptureDocumentKind: String, Codable, Sendable, CaseIterable {
     case medicalResult
     case other
 
-    /// Identity documents hold personal data and belong in a sensitive category by default.
-    /// Only these carry a machine-readable zone, a back to add and the essentials a weak
-    /// reading is judged by.
+    /// Identity documents hold personal data and belong in a sensitive category by default;
+    /// a weak reading of one is judged by its essentials. Declared by its profile
+    /// (`CaptureKindProfile.isIdentityDocument`).
     public var isIdentityDocument: Bool {
-        switch self {
-        case .passport, .identityCard, .drivingLicence: true
-        default: false
-        }
+        profile.isIdentityDocument
     }
 
     /// A document of its holder's, filed under them in the personal documents category

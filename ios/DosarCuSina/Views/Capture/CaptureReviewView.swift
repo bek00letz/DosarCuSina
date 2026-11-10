@@ -511,7 +511,7 @@ struct CaptureReviewView: View {
     @ViewBuilder private var reminderSection: some View {
         let text = CaptureReminderPreview.text(for: review, templates: templatesByKey, assets: assets, today: CalendarDay(Date()))
         let directDebit = review.directDebitStatement(assets: assets)
-        if text != nil || review.kind.profile.deadlineIsOptIn || directDebit != nil {
+        if text != nil || review.kind.profile.isBill || directDebit != nil {
             VStack(alignment: .leading, spacing: DS.Space.s) {
                 DSSectionHeader("Când te anunț")
                 DSCard {
@@ -524,7 +524,7 @@ struct CaptureReviewView: View {
                                 withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { review.turnsOnDirectDebit.toggle() }
                             }
                         }
-                        if review.kind.profile.deadlineIsOptIn, review.reminderDay != nil, !review.paysByDirectDebit(assets: assets) {
+                        if review.kind.profile.isBill, review.reminderDay != nil, !review.paysByDirectDebit(assets: assets) {
                             DSCheckRow(title: Text("Amintește-mi să o plătesc"), isOn: review.remindsToPay) {
                                 review.remindsToPay.toggle()
                             }
@@ -679,7 +679,7 @@ private struct CaptureFieldEditor: View {
             String(localized: "Pe telefon am citit: \(value)", comment: "The phone's value, beside the AI provider's.")
         case .cloudModel:
             CaptureAlternativeNote.readBy(AIProviderSettings.standard.provider, value: value)
-        case .checked(machineReadable: true) where kind == .identityCard:
+        case .checked(machineReadable: true) where kind.profile.hasMachineReadableBack:
             String(localized: "Pe spatele actului scrie: \(value)", comment: "What the machine-readable zone on the back of the card says.")
         case .checked(machineReadable: true):
             String(localized: "În codul de jos al actului scrie: \(value)", comment: "What the machine-readable zone says.")

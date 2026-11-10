@@ -422,7 +422,7 @@ public final class CaptureEngine: Sendable {
         }
         var notices: [CaptureNotice] = failedCheck ? [.valueFailedCheck] : []
         // A card read from its front alone: the back carries the zone that confirms it.
-        if kind == .identityCard, !analysis.hasMachineReadableZone, source.isSinglePhoto {
+        if kind.profile.hasMachineReadableBack, !analysis.hasMachineReadableZone, source.isSinglePhoto {
             notices.append(.identityBackMissing)
         }
         return Settled(fields: fields, alternatives: alternatives, notices: notices)

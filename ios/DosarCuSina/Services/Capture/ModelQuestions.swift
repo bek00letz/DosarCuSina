@@ -232,27 +232,32 @@ struct ModelQuestions: Sendable {
 
     // MARK: Reading an answer's values
 
-    /// A whole number from an answer: a JSON number that is whole, or text read by the one
-    /// number reader ("45.724" km is 45724). Never cut short: 45,7 is refused.
-    static func wholeNumber(_ raw: JSONValue, kind: NumberKind) -> Int? {
+    /// A number from an answer, of `kind`, read one way whoever answered and however it is
+    /// written: a JSON number in its plain machine form (`RomanianNumber.canonical`, never
+    /// through floating point arithmetic), text through the one number reader as printed on
+    /// a document ("1.234,56", "45.724 km", "350 lei"), so a number that could read two ways
+    /// is marked (`needsCheck`). Nil when it isn't clearly a number of that kind: a whole
+    /// kind (kilometres, counts) is never cut short, so 45,7 is refused.
+    static func number(_ raw: JSONValue?, as kind: NumberKind) -> RomanianNumber.Reading? {
+        let reading: RomanianNumber.Reading?
         switch raw {
-        case .int(let value): return value
-        case .number(let value): return value == value.rounded() ? Int(exactly: value) : nil
-        case .string(let text): return RomanianNumber.value(text, as: kind, from: .document).flatMap { Int(exactly: NSDecimalNumber(decimal: $0).doubleValue) }
-        default: return nil
+        case .int(let value)?:
+            reading = RomanianNumber.Reading(value: Decimal(value), isAmbiguous: false, needsCheck: false)
+        case .number(let value)?:
+            // The shortest text that reads back as the same double: 1234.56 is "1234.56".
+            reading = RomanianNumber.canonical(value.description).map { RomanianNumber.Reading(value: $0, isAmbiguous: false, needsCheck: false) }
+        case .string(let text)?:
+            reading = try? RomanianNumber.read(text, as: kind, from: .document).get()
+        default:
+            reading = nil
         }
+        guard let reading else { return nil }
+        if kind.isWhole, reading.value != reading.value.rounded(scale: 0) { return nil }
+        return reading
     }
 
-    /// A meter's index from an answer, read the way the phone reads one on a bill: text
-    /// through the one number reader as a meter index (decimals kept, a number that could
-    /// read two ways marked), a JSON number as the plain machine form it is.
-    static func meterIndex(_ raw: JSONValue) -> RomanianNumber.Reading? {
-        switch raw {
-        case .string(let text): return try? RomanianNumber.read(text, as: .meterIndex, from: .document).get()
-        case .int(let value): return RomanianNumber.Reading(value: Decimal(value), isAmbiguous: false, needsCheck: false)
-        case .number(let value):
-            return RomanianNumber.canonical(String(value)).map { RomanianNumber.Reading(value: $0, isAmbiguous: false, needsCheck: false) }
-        default: return nil
-        }
+    /// A whole number from an answer (`number(_:as:)`): "45.724" km is 45724.
+    static func wholeNumber(_ raw: JSONValue?, kind: NumberKind) -> Int? {
+        number(raw, as: kind).flatMap { Int(exactly: NSDecimalNumber(decimal: $0.value).int64Value) }
     }
 }

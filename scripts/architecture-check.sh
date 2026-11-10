@@ -112,17 +112,31 @@ rule animation-curve "$app" '^ios/Shared/DSMotion\.swift$' \
     'progressViewStyle|gaugeStyle' \
     'Animate with a DS.Motion spring through dsAnimation, so Reduce Motion turns movement into a short fade.'
 
+# Numbers in text, a model's answers included, are read by one reader: RomanianNumber.read for
+# what is printed or typed, RomanianNumber.canonical for the machine form, and, for a model's
+# answer, ModelQuestions.number(_:as:) over both. Never a number made from text another way,
+# and never through floating point ("Decimal(string: String(double))").
 rule number-parser "$app" '(^|/)RomanianNumber[^/]*\.swift$' \
-    'Decimal\(string: *[a-z]|replacingOccurrences\(of: *",", *with: *"\."\)|NumberFormatter\(\)|\.number\.parseStrategy|ParseStrategy' - \
-    'Read numbers from text with the one shared reader. Readers that disagree turn 45,724 into 45.724.'
+    'Decimal\(string: *([a-z]|String\()|(^|[^A-Za-z0-9_.])(Double|Float)\( *("|[A-Za-z_.]*([tT]ext|[sS]tring|[rR]aw)\))|replacingOccurrences\(of: *",", *with: *"\."\)|NumberFormatter\(\)|\.number\.parseStrategy|ParseStrategy' - \
+    "Read numbers from text with the one shared reader: RomanianNumber.read (or .value) for what is printed or typed, RomanianNumber.canonical for the machine form, ModelQuestions.number(_:as:) for a model's answer. Readers that disagree turn 45,724 into 45.724, and a detour through Double changes amounts."
 
 # A kind's printed labels are data: its profile's table (CaptureKindProfile.labels), or the one
-# every document shares (CaptureKindProfile.commonLabels). Capture's readers are told the
-# table, so a wording added there is read with no new code; a list written where it is read
-# is a second table.
-rule labels-outside-their-table '^ios/DosarCuSina/Services/Capture/' - \
-    '(labelledDate\(|lines\(containing: *|contains\(any: *|labels: *)\[ *"|let +labels *= *\[ *"' - \
-    "A kind's labels are data in its profile (CaptureKindProfile.labels, or commonLabels for what every document prints). Tell the reader the table, as profile.labels(for:); never list labels where they are read."
+# every document shares (CaptureKindProfile.commonLabels). Words the shared readers look for that
+# are no one kind's (stop words, the buyer's block, an issuer's prefixes, address labels) are the
+# capture lexicon's (CaptureLexicon); a value printed in parts, CompositeLabels'; a personal
+# document's layout, its template (IdentityTemplates). Capture's readers are told the table, so a
+# wording added there is read with no new code; a list written where it is read, or a list named
+# ...Labels, ...Words or ...Prefixes in any other file, is a second table.
+label_tables='^ios/DosarCuSina/Services/Capture/(CaptureKindProfile|CaptureLexicon|CompositeLabels|IdentityTemplates)\.swift$'
+rule labels-outside-their-table '^ios/DosarCuSina/Services/Capture/' "$label_tables" \
+    '(labelledDate\(|lines\(containing: *|contains\(any: *|labels: *)\[ *"|let +labels *= *\[ *"|(let|var) +[A-Za-z_]*([lL]abels|[wW]ords|[pP]refixes)([^A-Za-z0-9_=][^=]*)?= *\[' - \
+    "Labels and words are data in their table: a kind's in its profile (CaptureKindProfile.labels, commonLabels for what every document prints), the shared readers' in CaptureLexicon, a value in parts' in CompositeLabels, a personal document's in its template. Tell the reader the table, as profile.labels(for:); never list labels or words where they are read."
+
+# Codes, numbers, plates and names are compared one way: folded, in capitals, letters and digits
+# only (RomanianText.compact), so a value with a diacritic, a space or a dash still matches.
+rule compact-outside-romanian-text "$app" '^ios/DosarCuSina/Models/Values/RomanianText\.swift$' \
+    'uppercased\(\)\.filter *(\(\{|\{) *\$0\.is(Letter|Number) *\|\| *\$0\.is(Letter|Number)' - \
+    'Compare and check codes, numbers, plates and names with RomanianText.compact: folded, in capitals, letters and digits only, the one way.'
 
 rule bare-progress-view "$app" "$design_system|^ios/Shared/DSMotion\\.swift\$" \
     'ProgressView\(' - \

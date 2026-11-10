@@ -141,9 +141,9 @@ struct CaptureReview: Identifiable {
             .map(\.element)
     }
 
-    /// An identity card read without the zone on its back: the review offers to add it.
+    /// A card read without the zone on its back: the review offers to add it.
     var asksForBackPage: Bool {
-        kind == .identityCard && result.notices.contains(.identityBackMissing)
+        kind.profile.hasMachineReadableBack && result.notices.contains(.identityBackMissing)
     }
 
     /// The bill's lines as the person left them: corrected, added or removed. An
@@ -355,7 +355,7 @@ struct CaptureReview: Identifiable {
     mutating func kindChanged(assets: [Asset]) {
         kindAlternatives.removeAll { $0.value == kind }
         if remindsToPay == suggested.remindsToPay {
-            remindsToPay = kind.profile.deadlineIsOptIn
+            remindsToPay = kind.profile.isBill
             suggested.remindsToPay = remindsToPay
         }
         let values = Dictionary(currentFields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
@@ -390,7 +390,7 @@ struct CaptureReview: Identifiable {
             provider: values[.provider]?.text,
             service: values[.serviceKind]?.text,
             codes: codes.compactMapValues { values[$0]?.text },
-            isBill: kind == .utilityInvoice,
+            isBill: kind.profile.isBill,
             supplyAddress: values[.supplyAddress]?.text
         )
     }
@@ -487,7 +487,7 @@ struct CaptureReview: Identifiable {
         self.behaviors = behaviors
         let values = Dictionary(result.fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
         self.title = CaptureMapping.defaultTitle(for: result.kind, fields: values)
-        self.remindsToPay = result.kind.profile.deadlineIsOptIn
+        self.remindsToPay = result.kind.profile.isBill
         let place = Self.suggestPlace(kind: result.kind, suggestions: result.suggestions, fields: result.fields, assets: assets, behaviors: behaviors)
         self.destination = place.destination
         self.newAssetName = Self.defaultAssetName(kind: result.kind, values: values)
@@ -538,11 +538,11 @@ struct CaptureReview: Identifiable {
         let hints = suggestions.flatMap(\.assetHints)
         let searched = candidates.filter { behaviors.plays(.personalDocument, $0.templateKey) == kind.isPersonalDocument }
         for hint in hints {
-            let wanted = CaptureMapping.normalizedIdentifier(hint.value)
+            let wanted = RomanianText.compact(hint.value)
             guard !wanted.isEmpty else { continue }
             if let match = searched.first(where: { asset in
                 asset.values.contains { _, value in
-                    value.textValue.map(CaptureMapping.normalizedIdentifier) == wanted
+                    value.textValue.map(RomanianText.compact) == wanted
                 }
             }) {
                 return .asset(match.id)

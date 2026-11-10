@@ -6,42 +6,16 @@ import Foundation
 /// debit, and, on a contract, its terms (the start, the minimum period and its end, the
 /// monthly price).
 ///
-/// The labels are data, one table read with `LabelledLayout`, so a new wording is a
+/// The labels are data, the contract's table (`CaptureKindProfile.contractLabels`) read with `LabelledLayout`, so a new wording is a
 /// new row, not new reading code. Pure: plain text in, fields out.
 enum ContractReader {
-
-    // MARK: - Labels
-
-    /// Printed labels for a contract's values, matched as whole words in folded text.
-    /// Longer wordings win, so "contract de abonament nr" is a number, never a price.
-    static let labels: [(CaptureFieldKey, [String])] = [
-        (.contractNumber, ["numar contract", "nr. contract", "nr contract", "contract nr", "contractul nr", "numarul contractului",
-                           "contract de furnizare nr", "contract de abonament nr", "contract de prestari servicii nr",
-                           "act aditional nr", "nr. contractului", "contract numarul"]),
-        (.startDate, ["data intrarii in vigoare", "intra in vigoare la", "intra in vigoare", "data inceperii", "data incheierii",
-                      "incheiat la data de", "incheiat astazi", "data semnarii", "data activarii", "incepand cu data de", "data de inceput"]),
-        (.minimumMonths, ["perioada minima", "perioada contractuala", "durata minima", "durata contractului", "perioada initiala",
-                          "perioada determinata", "durata minima a contractului"]),
-        (.minimumPeriodEnd, ["perioada minima se incheie", "sfarsitul perioadei minime", "data de sfarsit a perioadei minime",
-                             "perioada minima expira", "finalul perioadei minime"]),
-        (.monthlyPrice, ["abonament lunar", "abonamentul lunar", "pret lunar", "pretul lunar", "tarif lunar", "cost lunar",
-                         "valoare lunara", "pretul abonamentului", "tarif abonament", "pret abonament"]),
-        (.clientCode, ["cod client", "cod abonat", "cont client", "numar client", "nr. client", "client nr", "client id",
-                       "cod incasare", "cod de incasare", "cont facturare", "cont de facturare", "cod partener", "numar partener",
-                       "cod client apa", "cod apa", "apa canal cod client", "apa canal cod", "apa nova cod client", "apa nova cod"]),
-        (.podCode, ["pod", "cod pod", "codul pod", "punct de delimitare", "punct de delimitare pod", "cod punct de delimitare",
-                    "punctul de delimitare", "loc consum"]),
-        (.clcCode, ["clc", "cod clc", "cod loc consum", "cod loc consum (clc)", "cod loc de consum (clc)",
-                    "loc consum gaze"]),
-        (.phoneNumber, ["numar de telefon", "nr. de telefon", "numar telefon", "nr. telefon", "nr telefon", "msisdn", "numarul de telefon"]),
-    ]
 
     // MARK: - Reading
 
     /// A contract's values: its codes, its service and its terms.
     static func contractFields(in text: CaptureText, window: DateWindow) -> [CaptureField] {
         var fields = identifierFields(in: text)
-        let layout = LabelledLayout(text: text, words: labels)
+        let layout = LabelledLayout(text: text, words: CaptureKindProfile.contractLabels)
 
         if let (day, source) = layout.day(for: .startDate, window: window) {
             fields.append(field(.startDate, .day(day), 0.7, source))
@@ -73,7 +47,7 @@ enum ContractReader {
     /// The codes a bill or a contract quotes, and what the service is.
     static func identifierFields(in text: CaptureText) -> [CaptureField] {
         var fields: [CaptureField] = []
-        let layout = LabelledLayout(text: text, words: labels)
+        let layout = LabelledLayout(text: text, words: CaptureKindProfile.contractLabels)
         // The contract's number, by the one rule for values printed in parts (`CompositeValue`).
         if let found = layout.composite(.contract, for: .contractNumber) {
             fields.append(field(.contractNumber, .text(found.value), found.quality == .conflicting ? found.quality.confidence : 0.7, found.source))

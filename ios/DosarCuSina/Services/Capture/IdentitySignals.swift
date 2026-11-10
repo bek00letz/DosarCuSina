@@ -6,16 +6,6 @@ import Foundation
 /// sending a page to the AI provider without asking needs the phone to be sure it is
 /// NOT one (`AIProviderSettings.automaticReading`).
 enum IdentitySignals {
-    /// Words printed only on identity documents, folded (`RomanianText.fold`).
-    static let identityWords = [
-        "carte de identitate", "carte electronica de identitate", "identity card", "carte d'identite",
-        "pasaport", "passport", "passeport", "permis de conducere", "driving licence", "permis de conduire",
-        "cod numeric personal", "data nasterii", "date of birth", "locul nasterii", "place of birth", "cetatenie",
-        "cazier", "card european de asigurari", "european health insurance card", "asigurari sociale de sanatate",
-        "international motor insurance card", "carte internationala de asigurare",
-        "certificat calificat", "semnatura electronica calificata", "valid thru", "good thru",
-    ]
-
     static func mayBeIdentity(_ result: CaptureResult) -> Bool {
         if result.kind.isPersonalDocument || result.kindAlternatives.contains(where: { $0.value.isPersonalDocument }) { return true }
         let text = result.source?.text ?? result.recognizedText
@@ -44,6 +34,6 @@ enum IdentitySignals {
 
     static func hasIdentityWords(_ text: String) -> Bool {
         let folded = RomanianText.fold(text)
-        return identityWords.contains { folded.contains($0) }
+        return CaptureLexicon.identityWords.contains { folded.contains($0) }
     }
 }

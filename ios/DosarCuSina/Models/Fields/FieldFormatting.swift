@@ -40,7 +40,7 @@ public enum FieldFormatter {
         case .microchip:
             return trimmed.filter(\.isNumber)
         case .iban:
-            return trimmed.uppercased().filter { $0.isLetter || $0.isNumber }
+            return RomanianText.compact(trimmed)
         case .phone:
             return normalizePhone(trimmed)
         case .email:
@@ -206,7 +206,7 @@ public enum FieldFormatter {
 
     /// Formats a Romanian plate as `B-123-ABC` / `CJ-12-XYZ`, or nil if it isn't one.
     public static func formatPlate(_ raw: String) -> String? {
-        let compact = raw.uppercased().filter { $0.isLetter || $0.isNumber }
+        let compact = RomanianText.compact(raw)
         guard compact.allSatisfy(\.isASCII) else { return nil }
         let letters = compact.prefix { $0.isLetter }
         let rest = compact.dropFirst(letters.count)
@@ -238,7 +238,7 @@ public enum FieldFormatter {
     /// ISO 13616 check: two letters for the country, two check digits, the country's length
     /// (`ibanLengths`), then the first four characters moved to the end and checked mod 97.
     public static func isValidIBAN(_ raw: String) -> Bool {
-        let iban = raw.uppercased().filter { $0.isLetter || $0.isNumber }
+        let iban = RomanianText.compact(raw)
         guard (15...34).contains(iban.count), iban.allSatisfy(\.isASCII) else { return false }
         let head = Array(iban.prefix(4))
         guard head[0].isLetter, head[1].isLetter, head[2].isNumber, head[3].isNumber else { return false }
@@ -316,7 +316,7 @@ public enum FieldFormatter {
     }
 
     public static func groupIBAN(_ raw: String) -> String {
-        let compact = raw.uppercased().filter { $0.isLetter || $0.isNumber }
+        let compact = RomanianText.compact(raw)
         return stride(from: 0, to: compact.count, by: 4).map { offset -> String in
             let start = compact.index(compact.startIndex, offsetBy: offset)
             let end = compact.index(start, offsetBy: 4, limitedBy: compact.endIndex) ?? compact.endIndex
