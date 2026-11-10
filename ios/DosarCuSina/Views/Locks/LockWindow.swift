@@ -67,8 +67,24 @@ struct LockWindowHost: UIViewRepresentable {
 }
 
 /// Owns the window the lock and the cover are drawn in.
+///
+/// Covering is never animated: the cover is whole from its first frame, so nothing of the
+/// app shows through it on its way in, and switching between the lock and the app-switcher
+/// cover is just as immediate. Uncovering gives taps back to the app at once and fades the
+/// cover out; the window goes when that fade has ended, not after a set time. Covering again
+/// during the fade stops it where it is: the fade's end then hides nothing.
 @MainActor
 final class LockWindowController {
+    /// Makes `change` with the cover's fade and calls `completion` once the fade has ended
+    /// (its last frame drawn, the cover gone from the screen). Tests end it when they choose.
+    typealias Fade = @MainActor (_ change: () -> Void, _ completion: @escaping @MainActor () -> Void) -> Void
+
+    /// The design system's fade, a short one with Reduce Motion, which completes either way.
+    static let systemFade: Fade = { change, completion in
+        let animation = DS.Motion.animation(DS.Motion.standard, reduceMotion: UIAccessibility.isReduceMotionEnabled)
+        withAnimation(animation, completionCriteria: .removed, change) { completion() }
+    }
+
     var vault: BiometricVaultManager?
     var scenePhase: ScenePhase {
         get { state.scenePhase }
@@ -77,7 +93,13 @@ final class LockWindowController {
     private weak var appWindow: UIWindow?
     private var window: UIWindow?
     private let state = LockLayerState()
-    private var hideTask: Task<Void, Never>?
+    private let fade: Fade
+    /// Changes whenever the cover does, so only the fade of the latest uncovering hides the window.
+    private var generation = 0
+
+    init(fade: @escaping Fade = LockWindowController.systemFade) {
+        self.fade = fade
+    }
 
     func attach(to appWindow: UIWindow) {
         guard appWindow !== window else { return }
@@ -88,23 +110,20 @@ final class LockWindowController {
     /// The window the lock and the cover are drawn in, once it exists.
     var coverWindow: UIWindow? { window }
 
-    /// The hide waiting for the fade to end, if one is; tests wait on it.
-    var pendingHide: Task<Void, Never>? { hideTask }
-
-    /// Called on every update of the app's view, so showing the same thing again
-    /// changes nothing: in particular, a pending hide is never cancelled by an
-    /// update that still says "no cover".
+    /// Called on every update of the app's view, so showing the same thing again changes
+    /// nothing: in particular, an update that still says "no cover" never starts the fade again.
     func show(_ cover: LockCover?) {
         guard let scene = appWindow?.windowScene else {
             state.cover = cover
             return
         }
         if let cover {
-            hideTask?.cancel()
-            hideTask = nil
+            generation += 1
             let window = self.window ?? makeWindow(in: scene)
             let wasHidden = window.isHidden
-            state.cover = cover
+            var whole = Transaction()
+            whole.disablesAnimations = true
+            withTransaction(whole) { state.cover = cover }
             window.isUserInteractionEnabled = true
             window.isHidden = false
             if cover == .lock {
@@ -112,16 +131,20 @@ final class LockWindowController {
                 if wasHidden { UIAccessibility.post(notification: .screenChanged, argument: window.rootViewController?.view) }
             }
         } else if state.cover != nil {
-            state.cover = nil
-            // Taps reach the app at once; the layer fades out, then the window goes.
+            generation += 1
+            let uncovering = generation
+            // Taps reach the app at once; the cover fades out, then the window goes.
             window?.isUserInteractionEnabled = false
             appWindow?.makeKey()
-            hideTask = Task { [weak self] in
-                try? await Task.sleep(for: .milliseconds(400))
-                guard !Task.isCancelled, let self, self.state.cover == nil else { return }
-                self.window?.isHidden = true
-            }
+            fade({ state.cover = nil }) { [weak self] in self?.fadeDidEnd(uncovering) }
         }
+    }
+
+    /// The fade of an uncovering has ended: the window goes, unless the app was covered
+    /// again since.
+    private func fadeDidEnd(_ uncovering: Int) {
+        guard uncovering == generation, state.cover == nil else { return }
+        window?.isHidden = true
     }
 
     private func makeWindow(in scene: UIWindowScene) -> UIWindow {
@@ -156,11 +179,11 @@ private struct LockLayer: View {
         ZStack {
             switch state.cover {
             case .lock?: AppLockView().transition(.opacity)
-            case .privacy?: PrivacyCover()
+            case .privacy?: PrivacyCover().transition(.opacity)
             case nil: Color.clear
             }
         }
-        .dsAnimation(value: state.cover == .lock)
+        // No animation of its own: the controller covers at once and fades out (`LockWindowController`).
         .environment(\.scenePhase, state.scenePhase)
     }
 }
