@@ -29,7 +29,7 @@ struct BackupsThatRestoreTests {
         let context = ModelContext(container)
         try TemplateStore(context: context).installBuiltIns()
         for index in 0..<documents {
-            let attachment = Attachment(fileName: "pagina-\(index).heic", contentType: "public.heic", data: nil)
+            let attachment = DosarSchemaV8.Attachment(fileName: "pagina-\(index).heic", contentType: "public.heic", data: nil)
             attachment.title = "Act \(index)"
             attachment.thumbnailData = Self.bytes(seed: index, count: 256)
             context.insert(attachment)
@@ -73,7 +73,7 @@ struct BackupsThatRestoreTests {
         try DossierArchiveService(container: target, calendar: calendar).importArchive(archive, mode: .replace)
 
         let context = ModelContext(target)
-        let documents = try context.fetch(FetchDescriptor<Attachment>())
+        let documents = try context.fetch(FetchDescriptor<DosarSchemaV8.Attachment>())
         #expect(documents.count == 300)
         #expect(try context.fetchCount(FetchDescriptor<AttachmentPage>()) == 900)
         let sample = try #require(documents.first { $0.title == "Act 217" })
@@ -118,7 +118,7 @@ struct BackupsThatRestoreTests {
     @Test func aDocumentTooBigForABackupIsNamedAndNoFileIsLeft() throws {
         let container = try makeInMemoryContainer()
         let context = ModelContext(container)
-        let attachment = Attachment(fileName: "factura.pdf", contentType: "com.adobe.pdf", data: Data(repeating: 7, count: 2_000))
+        let attachment = DosarSchemaV8.Attachment(fileName: "factura.pdf", contentType: "com.adobe.pdf", data: Data(repeating: 7, count: 2_000))
         attachment.title = "Factura mare"
         context.insert(attachment)
         try context.save()
@@ -232,7 +232,7 @@ struct BackupsThatRestoreTests {
         let container = try makeInMemoryContainer()
         try DossierArchiveService(container: container, calendar: calendar).importArchive(archive, mode: .replace)
         let uuid = try #require(UUID(uuidString: id))
-        let document = try #require(try ModelContext(container).fetch(FetchDescriptor<Attachment>(predicate: #Predicate { $0.id == uuid })).first)
+        let document = try #require(try ModelContext(container).fetch(FetchDescriptor<DosarSchemaV8.Attachment>(predicate: #Predicate { $0.id == uuid })).first)
         #expect(document.createdAt <= Date())
     }
 
