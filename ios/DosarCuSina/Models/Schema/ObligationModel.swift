@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV10 {
+extension DosarSchemaV11 {
     /// Something that has to be done by a date, once or on a schedule: ITP, RCA,
     /// local taxes, a vaccine, a subscription renewal.
     ///
@@ -58,8 +58,8 @@ extension DosarSchemaV10 {
         /// leads (or its travel margin) or whether it is active changed, by the person or by
         /// the app, set by the unit of work as it saves (`CycleTimes`). Not its change time,
         /// which only the person's own steps move and which a note's edit moves too. Nil for a
-        /// deadline from before version 10 or brought in from a backup: it reads as its change
-        /// time (`cycleKnownSince`). Version 10.
+        /// deadline from before version 11 or brought in from a backup: it reads as its change
+        /// time (`cycleKnownSince`). Version 11.
         public var cycleKnownAt: Date?
 
         public var asset: Asset?

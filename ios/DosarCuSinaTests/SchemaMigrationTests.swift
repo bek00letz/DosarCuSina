@@ -174,55 +174,135 @@ struct SchemaMigrationTests {
         }
     }
 
-    /// Version 9 as it shipped: version 8 with its days kept as days. Its frozen copy is pinned
-    /// against version 8 for what keeps no day, and against version 10 for everything but the
-    /// deadline, which version 10 changes.
+    /// Version 9 as it shipped: version 8 with every day kept as a day. Read from the frozen
+    /// copy, made attribute for attribute from the shipped models before version 10 existed.
+    static let versionNine: [String: String] = [
+        "Asset": "58a6RIU1oRUxD3p2eFaJmRdPZEPsiXxOu/r0Cdbm4z0=",
+        "Attachment": "89VNT6c3kLZ2ln2eDDvEWTbUdyQoFFMW4MhlJ2BWJ/0=",
+        "AttachmentPage": "JuCkdlh81AVcycaJFrC8aBf8R7nkEg6kKyfUIOP9QdI=",
+        "CategoryTemplate": "6ISuox65O5PR9u6cYpQ9MKBEqdCrUMgGOFTuEMpsZhg=",
+        "HistoryEntry": "+Wd2vBQ9N6+tlE+Wrs12/HrGTSYy2WDlakIuecNsemc=",
+        "MeasurementLog": "c3fbetMFbEImm5eJIAPCuPBb5ry9+3bxFEh7tukqqaI=",
+        "Obligation": "ph3/Wvtsy9PkxKjnORg2H6dF4B7jl8Regw8b2alJBQg=",
+        "Provider": "q0DxoXrt4EWS6yXxmvgMH5Z2iOyuc8aZ5QoFphvUZw4=",
+        "ServiceItem": "/BS5EFz6yHYk8QrzcDMNIkzvKNBhcNj0uS85aNIkTYQ=",
+    ]
+
     @Test func theFrozenVersionNineKeepsTheShapeItShippedWith() {
-        let nine = Self.fingerprint(DosarSchemaV9.models)
-        let ten = Self.fingerprint(DosarSchemaV10.models)
-        for entity in ["Asset", "CategoryTemplate", "ServiceItem", "MeasurementLog", "AttachmentPage", "Provider"] {
-            #expect(nine[entity] == Self.versionEight[entity], "\(entity) is as version 8 shipped it, which version 9 doesn't change")
-        }
-        for entity in ["HistoryEntry", "Attachment"] {
-            #expect(nine[entity] == ten[entity], "\(entity) is as version 9 shipped it, which version 10 doesn't change")
-        }
-        #expect(nine.count == ten.count)
+        #expect(Self.fingerprint(DosarSchemaV9.models) == Self.versionNine)
     }
 
-    @Test func versionTenChangesOnlyDeadlines() {
-        let nine = Self.fingerprint(DosarSchemaV9.models)
+    @Test func versionTenChangesOnlyReadings() {
         let ten = Self.fingerprint(DosarSchemaV10.models)
-        for (entity, hash) in nine where entity != "Obligation" {
+        for (entity, hash) in Self.versionNine where entity != "MeasurementLog" {
             #expect(ten[entity] == hash, "\(entity) is as version 9 shipped it")
         }
-        #expect(ten["Obligation"] != nine["Obligation"], "A deadline keeps since when its cycle is known")
+        #expect(ten["MeasurementLog"] != Self.versionNine["MeasurementLog"], "A reading says whether it starts a new counter")
     }
 
-    @Test func aStoreFromVersionNineOpensWithItsDeadlinesKnownSinceTheirChangeTime() throws {
+    @Test func aStoreFromVersionNineOpensWithItsReadingsAsOneCounter() throws {
         let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: folder) }
         let url = folder.appending(path: "Dosar-v9.store")
         let edited = noon("2026-10-01")
 
-        // Written by version 9: a car's RCA, due and snoozed, with its completion.
+        // Written by version 9: a car with two readings, the second lower (an old meter), and a deadline.
         do {
             let schema = Schema(versionedSchema: DosarSchemaV9.self)
             let container = try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)])
             let context = ModelContext(container)
             let car = DosarSchemaV9.Asset(name: "VW Golf 2018", templateKey: "vehicle")
-            let rca = DosarSchemaV9.Obligation(title: "RCA")
+            let before = DosarSchemaV9.MeasurementLog(name: "", value: 145_000)
+            before.kindRaw = MeasurementKind.odometer.rawValue
+            before.unit = MeasurementUnit.kilometres.key
+            before.recordedAt = noon("2026-03-01")
+            before.updatedAt = edited
+            let after = DosarSchemaV9.MeasurementLog(name: "", value: 1_200)
+            after.kindRaw = MeasurementKind.odometer.rawValue
+            after.unit = MeasurementUnit.kilometres.key
+            after.recordedAt = noon("2026-06-01")
+            after.updatedAt = edited
+            let itp = DosarSchemaV9.Obligation(title: "ITP")
+            itp.dueDayISO = "2027-03-01"
+            for model in [car, before, after, itp] as [any PersistentModel] { context.insert(model) }
+            before.asset = car
+            after.asset = car
+            itp.asset = car
+            try context.save()
+        }
+
+        // Opened by this version: every reading as it was, one counter, nothing guessed.
+        let container = try PersistenceController.makeContainer(storeURL: url)
+        let context = ModelContext(container)
+        let car = try #require(try context.fetch(FetchDescriptor<Asset>()).first)
+        let readings = (car.measurements ?? []).sorted { $0.recordedAt < $1.recordedAt }
+        #expect(readings.map(\.value) == [145_000, 1_200])
+        #expect(readings.allSatisfy { !$0.startsCounter }, "An old store has one counter")
+        #expect(readings.allSatisfy { $0.updatedAt == edited }, "An upgrade isn't a change")
+        #expect(HouseholdMutations.readingSeries(of: car, unit: .kilometres).counters.count == 1)
+        #expect(try context.fetch(FetchDescriptor<Obligation>()).first?.dueDay == CalendarDay("2027-03-01"))
+
+        // A new counter from now on is kept.
+        readings[1].startsCounter = true
+        try UnitOfWork.save(context)
+        let reopened = ModelContext(try PersistenceController.makeContainer(storeURL: url))
+        let kept = try reopened.fetch(FetchDescriptor<MeasurementLog>()).sorted { $0.recordedAt < $1.recordedAt }
+        #expect(kept.map(\.startsCounter) == [false, true])
+    }
+
+    /// Version 10 as it shipped: version 9 with whether a reading starts a new counter. Its frozen
+    /// copy is pinned against version 9 for everything but readings, and against version 11 for
+    /// everything but the deadline, which version 11 changes.
+    @Test func theFrozenVersionTenKeepsTheShapeItShippedWith() {
+        let ten = Self.fingerprint(DosarSchemaV10.models)
+        let eleven = Self.fingerprint(DosarSchemaV11.models)
+        for (entity, hash) in Self.versionNine where entity != "MeasurementLog" && entity != "Obligation" {
+            #expect(ten[entity] == hash, "\(entity) is as version 9 shipped it, which version 10 doesn't change")
+        }
+        #expect(ten["Obligation"] == Self.versionNine["Obligation"], "Version 10 doesn't change deadlines")
+        #expect(ten["MeasurementLog"] == eleven["MeasurementLog"], "A reading is as version 10 shipped it, which version 11 doesn't change")
+        #expect(ten.count == eleven.count)
+    }
+
+    @Test func versionElevenChangesOnlyDeadlines() {
+        let ten = Self.fingerprint(DosarSchemaV10.models)
+        let eleven = Self.fingerprint(DosarSchemaV11.models)
+        for (entity, hash) in ten where entity != "Obligation" {
+            #expect(eleven[entity] == hash, "\(entity) is as version 10 shipped it")
+        }
+        #expect(eleven["Obligation"] != ten["Obligation"], "A deadline keeps since when its cycle is known")
+    }
+
+    @Test func aStoreFromVersionTenOpensWithItsDeadlinesKnownSinceTheirChangeTime() throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Dosar-v10.store")
+        let edited = noon("2026-10-01")
+
+        // Written by version 10: a car's RCA, due and snoozed, with its completion, and a reading
+        // that starts a new counter.
+        do {
+            let schema = Schema(versionedSchema: DosarSchemaV10.self)
+            let container = try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)])
+            let context = ModelContext(container)
+            let car = DosarSchemaV10.Asset(name: "VW Golf 2018", templateKey: "vehicle")
+            let rca = DosarSchemaV10.Obligation(title: "RCA")
             rca.dueDayISO = "2027-07-15"
             rca.snoozedUntilISO = "2027-07-01"
             rca.reminderLeadDays = [30, 7]
             rca.updatedAt = edited
-            let paid = DosarSchemaV9.HistoryEntry(title: "RCA")
+            let paid = DosarSchemaV10.HistoryEntry(title: "RCA")
             paid.cycleDueDayISO = "2026-07-15"
             paid.nextDueDayISO = "2027-07-15"
-            for model in [car, rca, paid] as [any PersistentModel] { context.insert(model) }
+            let reading = DosarSchemaV10.MeasurementLog(name: "", value: 1_200)
+            reading.startsCounter = true
+            for model in [car, rca, paid, reading] as [any PersistentModel] { context.insert(model) }
             rca.asset = car
             paid.asset = car
             paid.obligation = rca
+            reading.asset = car
             try context.save()
         }
 
@@ -238,6 +318,7 @@ struct SchemaMigrationTests {
         #expect(rca.cycleKnownAt == nil)
         #expect(rca.cycleKnownSince == edited)
         #expect(rca.historyEntries?.first?.cycleDueDay == CalendarDay("2026-07-15"))
+        #expect(try context.fetch(FetchDescriptor<MeasurementLog>()).first?.startsCounter == true)
         #expect(try ObligationSnapshot.fetchAll(in: context).first?.cycleKnownSince == edited)
 
         // A new due day from now on gives it its own, kept.

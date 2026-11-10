@@ -44,7 +44,7 @@ public enum MeasurementKind: String, Codable, CaseIterable, Sendable {
     }
 }
 
-extension DosarSchemaV10 {
+extension DosarSchemaV11 {
     /// A line in a history entry: a part replaced, a job done, a vaccine given.
     /// `componentKey` ties it to the template's component catalog so "when did I
     /// last change the brake pads" has one answer across entries.
@@ -125,6 +125,12 @@ extension DosarSchemaV10 {
         /// When it last changed, set by the unit of work that saved the change (`ChangeTimes`).
         /// Records from before version 8 have `ChangeTime.unknown`, older than any change. Version 8.
         public var updatedAt: Date = Date.distantPast
+        /// The first reading of a new counter ("Contor nou": a replaced meter or dashboard, or
+        /// one that went round): from it on, the section's readings in its unit count on their
+        /// own, and the ones before stay as the old counter's history (`ReadingSeries`). Set
+        /// only by `HouseholdMutations.recordReading`, handed on when it goes
+        /// (`HouseholdMutations.deleteReading`). Version 10; false before.
+        public var startsCounter: Bool = false
 
         public var asset: Asset?
 

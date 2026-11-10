@@ -4,9 +4,10 @@ import SwiftData
 /// The household database as version 9 shipped, frozen so a store written by it can be
 /// opened and migrated (`DosarMigrationPlan`). Only what is stored is kept here: the
 /// attributes and relationships exactly as they were, with no behaviour. Version 9 is
-/// version 8 with every day kept as a day (`StoredDay`): a deadline's due day and the day its
-/// snooze ends, a completion's due days, a document's date and its last valid day. A
-/// deadline doesn't keep since when its cycle is known, which version 10 adds.
+/// version 8 with every day kept as a day, its ISO text (`StoredDay`): a deadline's due day
+/// and the end of its snooze, the due days a completion closed and moved to, a document's
+/// date and its last valid day. Its readings don't say where a new counter starts, which
+/// version 10 adds (`MeasurementLog.startsCounter`).
 ///
 /// Never change this file. `SchemaMigrationTests` compares it with the shape version 9
 /// stores have on people's phones.

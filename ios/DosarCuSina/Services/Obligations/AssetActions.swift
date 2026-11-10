@@ -260,6 +260,19 @@ public final class AssetActions {
         return log
     }
 
+    /// "Nu e contor nou": the reading the person once said started a new counter doesn't. The
+    /// readings in its unit count as one counter again (the lower ones then set aside, as
+    /// `ReadingSeries` sets aside any reading that breaks the order), and the hero value follows
+    /// them. One undoable step; nothing is deleted.
+    @discardableResult
+    public func notANewCounter(_ start: MeasurementLog) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context, now: now()) {
+            start.startsCounter = false
+            if let asset = start.asset { HouseholdMutations.syncHeroMetric(of: asset, in: context) }
+            try save()
+        }.receipt
+    }
+
     /// Replaces the free label–value rows shown under Date importante. A secret
     /// row (a code) is sealed before it is saved, like a PIN field; a card number in any row is
     /// kept as its last four digits (`FreeText`).

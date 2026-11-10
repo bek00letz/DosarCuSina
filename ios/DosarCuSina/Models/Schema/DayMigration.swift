@@ -9,8 +9,8 @@ import Synchronization
 ///    is read as the day it meant (`StoredDay.day(of:storedAs:calendar:)`) and kept in memory,
 ///    by record.
 /// 2. The store changes shape: the moments go, the day texts come, empty.
-/// 3. After (`didMigrate`, version 9's frozen models), each record gets its days back as text, and the
-///    store is saved once (`UnitOfWork.performPrivate`). Change times stay as they were: the
+/// 3. After (`didMigrate`, version 9's frozen models), each record gets its days back as text
+///    (`StoredDay.text`), and the store is saved once (`UnitOfWork.performPrivate`). Change times stay as they were: the
 ///    days mean what they meant.
 ///
 /// The time zone a moment was written in wasn't kept, so the moments are read in the phone's

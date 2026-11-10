@@ -286,7 +286,7 @@ struct DossierImporter {
             obligation.createdAt = clamped(dto.createdAt)
             obligation.updatedAt = changeTime(dto.updatedAt)
             // A backup doesn't carry since when its cycle is known: the copy it brings reads as
-            // known since its change time (`Obligation.cycleKnownSince`), as before version 10.
+            // known since its change time (`Obligation.cycleKnownSince`), as before version 11.
             obligation.cycleKnownAt = nil
             obligation.asset = uuid(dto.assetId).flatMap { assets[$0] }
         }
@@ -404,6 +404,8 @@ struct DossierImporter {
             log.notes = dto.notes
             log.isExample = dto.isExample
             log.updatedAt = changeTime(dto.updatedAt)
+            // An archive from before version 10 says nothing: one counter, as it was.
+            log.startsCounter = dto.startsCounter ?? false
             log.asset = uuid(dto.assetId).flatMap { assets[$0] }
         }
         return map

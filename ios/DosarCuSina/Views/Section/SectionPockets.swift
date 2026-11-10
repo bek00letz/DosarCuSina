@@ -436,9 +436,11 @@ struct HistoryLines {
         let items = HistoryItemSnapshot.items(of: asset)
         let current = HouseholdMutations.currentMetric(of: asset)
         let unit = HouseholdMutations.heroMetricUnit(template: definition)
+        // "Acum … km" since the job, counted over every counter (a new dashboard since too).
+        let readings = unit.map { HouseholdMutations.readingSeries(of: asset, unit: $0).readings } ?? []
         let names = Dictionary(definition.components.map { ($0.key, $0.name) }, uniquingKeysWith: { first, _ in first })
         let components = MaintenanceLog.trackedComponents(in: items).compactMap { key -> Line? in
-            guard let last = MaintenanceLog.lastOccurrence(of: key, in: items, currentMetric: current, now: now) else { return nil }
+            guard let last = MaintenanceLog.lastOccurrence(of: key, in: items, currentMetric: current, readings: readings, now: now) else { return nil }
             return Line(id: key, entryID: last.entryId, title: names[key] ?? last.name, detail: ComponentLine.detail(last, unit: unit))
         }
         if !components.isEmpty { return components }

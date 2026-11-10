@@ -198,6 +198,9 @@ public enum DossierV3 {
         public var isExample: Bool
         /// When it last changed; missing in archives from before version 8 of the database, which reads as `ChangeTime.unknown`.
         public var updatedAt: Date? = nil
+        /// True on the first reading of a new counter ("Contor nou"); written only then, and
+        /// missing in archives from before version 10 of the database, which read as one counter.
+        public var startsCounter: Bool? = nil
     }
 
     public struct Attachment: Codable, Hashable, Sendable {

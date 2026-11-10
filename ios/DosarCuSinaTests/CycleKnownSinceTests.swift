@@ -170,7 +170,7 @@ struct CycleKnownSinceTests {
         #expect(try catchUps(in: context, at: afterIt).isEmpty, "The catch-up that came doesn't come again")
     }
 
-    @Test("A deadline from before version 10, or brought in from a backup, reads as known since its change time")
+    @Test("A deadline from before version 11, or brought in from a backup, reads as known since its change time")
     func withoutOneItReadsItsChangeTime() throws {
         let context = try makeContext()
         let renewal = try passport(in: context)
