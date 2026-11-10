@@ -89,7 +89,8 @@ struct OnDeviceModelTests {
     func templateFormatsAgree() {
         func format(_ printed: IdentityFormat) -> ModelFieldFormat {
             switch printed {
-            case .name: .name
+            case .name, .nameBeforeAddress: .name
+            case .licensePlate: .plate
             case .personalNumber: .personalNumber
             case .documentNumber, .composite: .documentNumber
             case .date, .dateRange, .cardExpiry: .date

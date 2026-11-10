@@ -222,6 +222,10 @@ struct CaptureKindProfile: Sendable {
         identity(.healthInsuranceCard, type: DocumentType.euHealthCard, name: "Card european de sănătate", model: "European health insurance card"),
         identity(.bankCard, type: DocumentType.bankCard, name: "Card bancar",
                  model: "bank card (debit or credit); never copy its full number, only its last four digits", photoIsOptIn: true),
+        identity(.greenCard, type: DocumentType.greenCard, name: "Carte verde",
+                 model: "green card (international motor insurance card, carte verde), not the RCA policy itself"),
+        identity(.electronicSignature, type: DocumentType.eSignature, name: "Semnătură electronică",
+                 model: "qualified electronic signature certificate (certificat calificat de semnătură electronică)"),
         CaptureKindProfile(
             kind: .vehicleRegistration, templateKey: BuiltInTemplates.Key.vehicle, filing: .newSection, blueprintKey: nil,
             readsCover: false, defaultCover: nil, deadlineField: nil, documentDateFields: issuedOn,
@@ -396,7 +400,8 @@ struct CaptureKindProfile: Sendable {
     static let subscriptionCodes: [CaptureFieldKey] = [.podCode, .clcCode, .phoneNumber, .contractNumber, .clientCode]
 
     /// A personal document of its holder (an identity document, a cazier, a health card, a
-    /// bank card), read with its templates and renewed by its expiry. Its read text is
+    /// bank card, a green card, an electronic signature), read with its templates and
+    /// renewed by its expiry. Its read text is
     /// kept like an identity document's: never searched.
     private static func identity(_ kind: CaptureDocumentKind, type: String, name: LocalizedStringResource, model: String,
                                  photoIsOptIn: Bool = false) -> CaptureKindProfile {

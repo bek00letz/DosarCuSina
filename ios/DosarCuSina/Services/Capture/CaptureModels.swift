@@ -21,6 +21,12 @@ public enum CaptureDocumentKind: String, Codable, Sendable, CaseIterable {
     /// A bank card. Only its bank, network, kind, last four digits and expiry are kept;
     /// its full number never is (`PaymentCardNumbers`).
     case bankCard
+    /// The international motor insurance card (carte verde), filed on its own beside the
+    /// RCA it comes with.
+    case greenCard
+    /// A qualified electronic signature certificate (certificat calificat de semnătură
+    /// electronică) from a trust service provider.
+    case electronicSignature
     case vehicleRegistration
     case rcaPolicy
     case insurancePolicy
@@ -47,7 +53,8 @@ public enum CaptureDocumentKind: String, Codable, Sendable, CaseIterable {
     }
 
     /// A document of its holder's, filed under them in the personal documents category
-    /// and named after them: an identity document, a cazier, a health card, a bank card.
+    /// and named after them: an identity document, a cazier, a health card, a bank card,
+    /// a green card, an electronic signature.
     /// Its kind profile names its document type; its fields come from its templates.
     public var isPersonalDocument: Bool {
         profile.documentType != nil

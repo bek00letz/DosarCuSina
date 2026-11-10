@@ -56,6 +56,8 @@ public enum DocumentFields {
     public static let cardNetwork = "document.cardNetwork"
     /// A bank card's last four digits, and never more (`PaymentCardNumbers.sanitizing`).
     public static let cardLastFour = "document.cardLastFour"
+    /// The registration plate a green card covers: the trip check pairs it with its car.
+    public static let vehiclePlate = "document.vehiclePlate"
 }
 
 public enum MemberFields {

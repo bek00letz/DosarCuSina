@@ -322,11 +322,20 @@ enum CompositeLabels {
         (.value, [
             "seria si numarul politei", "seria si numarul", "seria si nr", "serie si numar", "seria/numarul", "serie/numar", "seria / numarul", "serie / numar",
             "nr. polita", "nr polita", "numar polita", "numarul politei", "polita nr", "polita seria", "polita rca seria", "serie polita",
-            "codul tarii / codul asiguratorului / numarul", "codul tarii", "country code / insurer's code / number", "country code",
-            "seria", "serie",
-        ].map(LabelWording.words)),
+        ].map(LabelWording.words) + greenCardNumber + ["seria", "serie"].map(LabelWording.words)),
         (.other, otherFields),
     ]
+
+    /// The header a green card prints over its number, the country's code, the insurer's
+    /// and the number (field 4 of the Council of Bureaux model, in English beside the
+    /// country's own language), as BAAR's Romanian models word it; an RCA printed with its
+    /// green card shows it too. Read by the policy table and the green card's template.
+    static let greenCardNumber: [LabelWording] = words([
+        "codul tarii / codul asiguratorului / seria si numarul politei", "codul tarii/codul asiguratorului/seria si numarul politei",
+        "codul tarii / codul asiguratorului / numarul", "codul tarii/codul asiguratorului/numarul",
+        "country code / insurer's code / serial and policy numbers", "country code / insurer's code / number",
+        "country code/insurer's code/number", "codul tarii", "country code",
+    ])
 
     static let invoice: [(Key, [LabelWording])] = [
         (.value, [

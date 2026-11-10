@@ -260,6 +260,9 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: DocumentFields.cardLastFour, label: String(localized: "Ultimele 4 cifre"), type: .text, isSensitive: true,
                                     appliesWhen: bankCard,
                                     footnote: String(localized: "Doar ultimele 4 cifre. Numărul întreg al cardului nu se păstrează.")),
+                    // The car a green card covers, as printed on it: the trip check pairs the card with that car.
+                    FieldDefinition(key: DocumentFields.vehiclePlate, label: String(localized: "Număr de înmatriculare"), type: .plate,
+                                    placeholder: "B-123-ABC", appliesWhen: greenCard),
                 ]),
                 // The two codes that come with the electronic identity card, named as on
                 // carteadeidentitate.gov.ro. Secret: sealed, shown only after a fresh Face ID,
@@ -304,6 +307,11 @@ public enum BuiltInTemplates {
     /// Only a bank card has a network and last four digits.
     private static var bankCard: BlueprintCondition {
         BlueprintCondition(field: DocumentType.typeFieldKey, oneOf: [DocumentType.bankCard])
+    }
+
+    /// Only a green card names the car it covers.
+    private static var greenCard: BlueprintCondition {
+        BlueprintCondition(field: DocumentType.typeFieldKey, oneOf: [DocumentType.greenCard])
     }
 
     /// Only the electronic identity card carries PIN codes.

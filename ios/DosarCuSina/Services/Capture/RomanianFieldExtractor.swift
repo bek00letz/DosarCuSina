@@ -317,6 +317,12 @@ public enum RomanianFieldExtractor {
         return nil
     }
 
+    /// Whether a line names a company by its legal form ("S.R.L.", "S.A.", "PFA"): a firm,
+    /// never a person.
+    static func namesACompany(_ line: String) -> Bool {
+        TextPattern.first(companyPattern, in: RomanianText.fold(line)) != nil
+    }
+
     private static let companyPattern = #"\b(s\.?\s?r\.?\s?l\.?|s\.?\s?a\.?|s\.?\s?c\.?\s?s\.?|p\.?\s?f\.?\s?a\.?|i\.?\s?i\.?)(?=\s|$|,)"#
     private static let buyerLabels = ["client", "cumparator", "beneficiar", "asigurat", "contractant"]
     /// What comes before an issuer's name on its line and isn't part of it.
