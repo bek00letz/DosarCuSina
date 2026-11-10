@@ -104,14 +104,18 @@ enum IdentityLabelKey: Hashable, Sendable {
 
 /// The identity and other personal documents a Romanian household keeps, as templates:
 /// the identity card (both layouts), the passport, the EU driving licence, the cazier
-/// (judiciar, fiscal or auto), the European and the national health insurance cards, the
-/// bank card, the green card and the qualified electronic signature certificate.
+/// (judiciar, fiscal or auto), the European health insurance card, the bank card, the
+/// green card and the qualified electronic signature certificate.
+///
+/// The national health insurance card isn't here: its printed fields couldn't be
+/// confirmed against an official specimen, and it is being phased out. It is a document
+/// type (`DocumentType.nationalHealthCard`) the person adds with its holder and expiry.
 enum IdentityTemplates {
 
     static let all: [IdentityTemplate] = [
         electronicIdentityCard, identityCard, passport, drivingLicence,
         criminalRecordJudicial, criminalRecordFiscal, criminalRecordDriving,
-        europeanHealthCard, nationalHealthCard,
+        europeanHealthCard,
         bankCard, debitCard, creditCard,
         greenCard, electronicSignature,
     ]
@@ -355,41 +359,6 @@ enum IdentityTemplates {
         agreements: [
             // Romania has issued the card since 1 January 2007 (Ordinul CNAS nr. 559/2006).
             .within(.expiryDate, DateWindow.Rule(earliest: .day(year: 2007, month: 1, day: 1), latest: .yearsFromToday(10)), outside: .drop),
-        ]
-    )
-
-    /// The national health insurance card (cardul național de asigurări sociale de
-    /// sănătate), issued by CNAS and valid seven years since 1 August 2018. Its face carries
-    /// the holder's surname, given names and CNP, the card's own number and its expiry,
-    /// which CNAS points to as field 5. The full specimen (Ordinul CNAS nr. 520/2011)
-    /// couldn't be read, so the captions are read by their words, with or without a
-    /// number, and only the expiry by its number too. The European card is never this
-    /// one: the two are told apart by their names.
-    static let nationalHealthCard = IdentityTemplate(
-        id: "ro.cnas.card",
-        kind: .nationalHealthCard,
-        signals: [("card national de asigurari sociale de sanatate", 6), ("cardul national de asigurari sociale de sanatate", 6),
-                  ("card national de asigurari de sanatate", 6), ("card national de sanatate", 5), ("cardul national de sanatate", 5)],
-        distinctive: [],
-        machineReadableFormats: [],
-        fields: [
-            .init(.surname, ["nume / name", "nume/name", "nume", "name", "surname"], .name),
-            .init(.givenNames, ["prenume / given names", "prenume/given names", "prenume", "given names"], .name),
-            .init(.birthDate, ["data nasterii", "date of birth"], .date),
-            .init(.personalNumber, ["cod numeric personal", "codul numeric personal", "cnp", "personal identification number"],
-                  .personalNumber, searchesEverywhere: true),
-            .init(.documentNumber, ["numarul de identificare al cardului", "numar de identificare al cardului", "numarul cardului", "numar card",
-                                    "nr. card", "card no", "identification number of the card"],
-                  .documentNumber(pattern: #"\b(\d{10,20})\b"#)),
-            .init(.expiryDate, numberedCaption(5, ["data expirarii", "data de expirare", "expiry date"]) + ["valabil pana la"], .date),
-        ],
-        otherLabels: [
-            "card national de asigurari sociale de sanatate", "card national de sanatate", "casa nationala de asigurari de sanatate",
-            "romania", "www.cnas.ro", "cnas.ro", "semnatura", "signature",
-        ].map(LabelWording.words),
-        agreements: [
-            // CNAS has issued it since 2014 (the first ones counted from 2013); seven years at most.
-            .within(.expiryDate, DateWindow.Rule(earliest: .day(year: 2013, month: 1, day: 1), latest: .yearsFromToday(8)), outside: .drop),
         ]
     )
 

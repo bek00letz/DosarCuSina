@@ -3,11 +3,10 @@ import SwiftData
 import Testing
 @testable import DosarCuSina
 
-/// The green card, the national health card and the qualified electronic signature, from a
-/// photo's text to the binder: each a template read by the shared reader, a kind profile and
-/// a document type. Placeholder data only: the CNPs use county code 99 with a valid control
+/// The green card and the qualified electronic signature, from a photo's text to the
+/// binder: each a template read by the shared reader, a kind profile and a document type. Placeholder data only: the CNPs use county code 99 with a valid control
 /// digit, plates and firms are made up.
-@Suite("Green card, national health card and electronic signature")
+@Suite("Green card and electronic signature")
 @MainActor
 struct MorePersonalDocumentsTests {
     static let referenceDate = noon("2026-11-10")
@@ -29,20 +28,6 @@ struct MorePersonalDocumentsTests {
     EXEMPLU ION, Str. Exemplului nr. 1, București
     10. Această carte a fost emisă de
     EXEMPLU ASIGURĂRI SRL
-    """
-
-    static let nationalHealthCard = """
-    CARD NAȚIONAL DE ASIGURĂRI SOCIALE DE SĂNĂTATE
-    Nume
-    EXEMPLU
-    Prenume
-    ION
-    CNP
-    1800101990006
-    Număr card
-    80642000000000000002
-    5. Data expirării
-    31/12/2031
     """
 
     static let electronicSignature = """
@@ -175,49 +160,6 @@ struct MorePersonalDocumentsTests {
         #expect(kind(of: Self.rcaPolicy + "\n" + Self.greenCard) == .rcaPolicy, "One PDF, the green card as its last page")
     }
 
-    // MARK: National health card
-
-    @Test("The national health card: its holder, CNP, number and expiry")
-    func nationalHealthCardIsRead() async throws {
-        let result = try await read(Self.nationalHealthCard)
-        #expect(result.kind == .nationalHealthCard)
-        #expect(result.field(.surname)?.value.text == "EXEMPLU")
-        #expect(result.field(.givenNames)?.value.text == "ION")
-        #expect(result.field(.personalNumber)?.value.text == "1800101990006")
-        #expect(result.field(.documentNumber)?.value.text == "80642000000000000002")
-        #expect(result.field(.expiryDate)?.value.day == CalendarDay(printedYear: 2031, month: 12, day: 31))
-        #expect(result.recognizedText.contains("80642000000000000002"), "A health card's number isn't a bank card's")
-    }
-
-    @Test("Filed as the national card, reminded a month and a week before it ends")
-    func nationalHealthCardIsFiled() async throws {
-        let context = try makeContext()
-        let review = CaptureReview(result: try await read(Self.nationalHealthCard), assets: [], context: context)
-        #expect(review.title == "Card național de sănătate – Exemplu Ion")
-        let outcome = try await filer(context).save(review)
-        let card = try #require(outcome.asset)
-        #expect(card.parent?.name == "Exemplu Ion")
-        #expect(card.value(DocumentType.typeFieldKey) == .text(DocumentType.nationalHealthCard))
-        #expect(card.value(DocumentFields.personalNumber) == .text("1800101990006"))
-        #expect(card.value(DocumentFields.expiry) == .date(CalendarDay("2031-12-31")))
-        let renewal = try #require(card.activeObligations.first)
-        #expect(renewal.dueDay(in: .bucharest) == CalendarDay("2031-12-31"))
-        #expect(renewal.reminders.leadDays == [30, 7])
-        #expect(renewal.reminders.consequence == .health)
-        #expect(DocumentType.keepsBackSide(DocumentType.nationalHealthCard))
-    }
-
-    @Test("The two health cards are never taken for each other")
-    func healthCardsApart() async throws {
-        #expect(kind(of: Self.nationalHealthCard) == .nationalHealthCard)
-        #expect(kind(of: PersonalDocumentCaptureTests.europeanHealthCard) == .healthInsuranceCard)
-        let european = try await read(PersonalDocumentCaptureTests.europeanHealthCard)
-        let context = try makeContext()
-        let review = CaptureReview(result: european, assets: [], context: context)
-        let outcome = try await filer(context).save(review)
-        #expect(outcome.asset?.value(DocumentType.typeFieldKey) == .text(DocumentType.euHealthCard))
-    }
-
     // MARK: Electronic signature
 
     @Test("A qualified signature certificate: its holder, CNP, serial number, provider and days")
@@ -250,7 +192,7 @@ struct MorePersonalDocumentsTests {
 
     // MARK: Nothing else is taken for them
 
-    @Test("An identity card, a bill and a policy are none of these")
+    @Test("An identity card, a bill, a policy, a cazier and the cards are none of these")
     func unrelatedDocuments() {
         let identityCard = """
         ROMÂNIA
@@ -264,8 +206,9 @@ struct MorePersonalDocumentsTests {
         Semnătura titularului / Holder's signature
         """
         let bill = "ENGIE Romania S.A.\nFactură fiscală\nTotal de plată 245,30 lei\nCod client 1234567890"
-        let newKinds: Set<CaptureDocumentKind> = [.greenCard, .nationalHealthCard, .electronicSignature]
-        for text in [identityCard, bill, Self.rcaPolicy, PersonalDocumentCaptureTests.cazier, PersonalDocumentCaptureTests.bankCard] {
+        let newKinds: Set<CaptureDocumentKind> = [.greenCard, .electronicSignature]
+        for text in [identityCard, bill, Self.rcaPolicy, PersonalDocumentCaptureTests.cazier, PersonalDocumentCaptureTests.bankCard,
+                     PersonalDocumentCaptureTests.europeanHealthCard] {
             #expect(!newKinds.contains(kind(of: text)), "\(text.prefix(40))")
         }
     }
@@ -279,14 +222,12 @@ struct MorePersonalDocumentsTests {
         let holder = ModelQuestions.fields(of: .greenCard, reader: .page).first { $0.key == .holderName }
         #expect(holder?.description.contains("numele si adresa asiguratului") == true, "\(holder?.description ?? "")")
         #expect(ModelQuestions.fields(of: .greenCard, reader: .page).first { $0.key == .licensePlate }?.format == .plate)
-        #expect(Set(CaptureDocumentKind.nationalHealthCard.expectedKeys).isSuperset(of: [.surname, .givenNames, .personalNumber, .documentNumber, .expiryDate]))
         #expect(Set(CaptureDocumentKind.electronicSignature.expectedKeys).isSuperset(of: [.holderName, .personalNumber, .documentNumber, .issueDate, .expiryDate, .issuer]))
     }
 
     @Test("Each kind is its type's, and the plate is the green card's alone")
     func catalog() throws {
         #expect(CaptureDocumentKind.greenCard.profile.documentType == DocumentType.greenCard)
-        #expect(CaptureDocumentKind.nationalHealthCard.profile.documentType == DocumentType.nationalHealthCard)
         #expect(CaptureDocumentKind.electronicSignature.profile.documentType == DocumentType.eSignature)
         #expect(TemplateDefinition.builtInCatalogVersion >= 16)
         let plate = try #require(BuiltInTemplates.documents.field(DocumentFields.vehiclePlate))

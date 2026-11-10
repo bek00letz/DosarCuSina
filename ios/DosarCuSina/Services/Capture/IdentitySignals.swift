@@ -12,7 +12,7 @@ enum IdentitySignals {
         "pasaport", "passport", "passeport", "permis de conducere", "driving licence", "permis de conduire",
         "cod numeric personal", "data nasterii", "date of birth", "locul nasterii", "place of birth", "cetatenie",
         "cazier", "card european de asigurari", "european health insurance card", "asigurari sociale de sanatate",
-        "card national de sanatate", "international motor insurance card", "carte internationala de asigurare",
+        "international motor insurance card", "carte internationala de asigurare",
         "certificat calificat", "semnatura electronica calificata", "valid thru", "good thru",
     ]
 

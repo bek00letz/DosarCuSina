@@ -222,8 +222,6 @@ struct CaptureKindProfile: Sendable {
         identity(.healthInsuranceCard, type: DocumentType.euHealthCard, name: "Card european de sănătate", model: "European health insurance card"),
         identity(.bankCard, type: DocumentType.bankCard, name: "Card bancar",
                  model: "bank card (debit or credit); never copy its full number, only its last four digits", photoIsOptIn: true),
-        identity(.nationalHealthCard, type: DocumentType.nationalHealthCard, name: "Card național de sănătate",
-                 model: "Romanian national health insurance card (card național de asigurări sociale de sănătate), not the European one"),
         identity(.greenCard, type: DocumentType.greenCard, name: "Carte verde",
                  model: "green card (international motor insurance card, carte verde), not the RCA policy itself"),
         identity(.electronicSignature, type: DocumentType.eSignature, name: "Semnătură electronică",

@@ -55,10 +55,8 @@ struct SettledDecisionsTests {
         let cazier = renew.reminders(for: FieldValues([DocumentType.typeFieldKey: .text(DocumentType.criminalRecord)]))
         #expect(cazier.leadDays == [7, 0])
         #expect(cazier.consequence == .comfort)
-        // The national health card is read from a photo now ("More personal documents from a
-        // photo", 2026-11-10, replaces "typed in only"): by its own kind, never as the European card.
-        #expect(CaptureDocumentKind.allCases.filter { $0.profile.documentType == DocumentType.nationalHealthCard } == [.nationalHealthCard])
-        #expect(CaptureDocumentKind.healthInsuranceCard.profile.documentType == DocumentType.euHealthCard)
+        // The national health card stays typed in: no kind of capture files it.
+        #expect(!CaptureDocumentKind.allCases.contains { $0.profile.documentType == DocumentType.nationalHealthCard })
         // A bank card is read only on the phone.
         #expect(DocumentType.readOnPhoneOnly == [DocumentType.bankCard])
     }

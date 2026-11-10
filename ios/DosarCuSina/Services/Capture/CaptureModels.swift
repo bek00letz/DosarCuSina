@@ -15,14 +15,12 @@ public enum CaptureDocumentKind: String, Codable, Sendable, CaseIterable {
     case drivingLicence
     /// A criminal record certificate: judiciar, fiscal or auto (`DocumentType.Variant`).
     case criminalRecord
-    /// The European health insurance card (its printed fields are set by the EU and by CNAS).
+    /// A health insurance card: the European one (the card's printed fields are set by
+    /// the EU and by CNAS), or the national one.
     case healthInsuranceCard
     /// A bank card. Only its bank, network, kind, last four digits and expiry are kept;
     /// its full number never is (`PaymentCardNumbers`).
     case bankCard
-    /// The national health insurance card (cardul național de asigurări sociale de
-    /// sănătate), never the European one.
-    case nationalHealthCard
     /// The international motor insurance card (carte verde), filed on its own beside the
     /// RCA it comes with.
     case greenCard
