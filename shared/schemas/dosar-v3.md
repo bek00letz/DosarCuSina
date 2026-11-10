@@ -37,7 +37,7 @@ files, even when empty. Readers treat a missing data file as an empty array.
 
 - **Identifiers:** UUID strings, written lowercase; compare case-insensitively.
 - **Timestamps** (`createdAt`, `updatedAt`, `occurredAt`, `recordedAt`, `exportedAt`, `snoozedUntil`): ISO 8601 in UTC, such as `2026-03-01T07:30:00Z`. Writers write whole seconds; readers accept fractional seconds and offsets.
-- **Calendar days** (`dueDate`, `cycleDueDate`, `documentDate`, date field values): `yyyy-MM-dd`, with no time zone. A day is the same day everywhere.
+- **Calendar days** (`dueDate`, `cycleDueDate`, `documentDate`, date field values): `yyyy-MM-dd`, with no time zone. A day is the same day everywhere. It must be a day the calendar has: a record with "2026-02-30" makes its data file unreadable (the archive is refused, as a damaged one is); a date field value with one is kept as written, like any value a reader can't read.
 - **Month-days** (fixed yearly dates): `MM-dd`.
 - **Money:** `{"amount": "175.50", "currency": "RON"}`. The amount is a decimal string with a dot; the currency is ISO 4217. Amounts in different currencies are never added together.
 - **Optional values** are omitted rather than written as `null`. Readers accept either.
@@ -79,12 +79,24 @@ This detects damaged or incomplete archives. It is not a signature: anyone
 can rewrite the manifest, so it says nothing about who made the archive.
 
 Entry paths must be relative, use `/`, and contain no empty, `.` or `..`
-components, no `\`, and no `:`. Readers enforce size limits; the iOS reader
-accepts at most 20 000 entries, 128 MB per entry and 512 MB in total.
+components, no `\`, and no `:`.
 
-Archives are plain ZIP, never ZIP64: at most 65 535 entries and 4 GB. A
+Writers and readers keep to the same limits, so whatever a writer makes, a
+reader on the same platform takes. The iOS app writes and reads at most
+65 534 entries, 128 MB per entry once read back, entry names of up to 1 024
+bytes, and a compressed (DEFLATE) entry at most 200 times its stored size
+once it is past 1 MiB; there is no other limit on the whole archive. Its
+writer stores an entry as it is rather than compress it beyond that, and
+refuses a household that would break a limit before handing out any file.
+
+Archives are plain ZIP, never ZIP64: fewer than 65 535 entries and 4 GB
+(65 535 entries, or a size or offset of all ones, marks a ZIP64 archive). A
 writer refuses a household larger than that rather than write a damaged
-file; a reader refuses an archive marked as ZIP64. Entry dates run from 1980
+file; a reader refuses an archive marked as ZIP64.
+
+`manifest.json` can be anywhere in the ZIP, which readers find through its
+central directory; the iOS writer writes it last, after every file it lists,
+so it can work out the checksums as it writes. Entry dates run from 1980
 to 2107; a writer puts an earlier or later date at the nearest end (the real
 export time is `manifest.exportedAt`).
 
@@ -376,7 +388,7 @@ new one for the same thing.
 - **Recurrence:** an unknown `type`, legal `rule`, `unit`, `anchor` or `fallbackUnit` is kept as written; the obligation behaves as one-off until the person picks a rule the reader knows.
 - **Template sections, blueprints, components and custom facts:** each entry is read on its own. An entry the reader can't read is kept in its place and written back; one it can read with the same `key` (an `id` for a custom fact) replaces it. A secret custom fact (`"isSecret": true`, or any sealed text) is left out by writers and readers, read or not.
 - **Fields:** an unknown `type`, `role`, `defaultValue`, `derivation` or `appliesWhen` is kept as written; the field reads as `text`, without the part it can't read.
-- **Kinds** (`kind` of an obligation, a history entry, a measurement or an attachment) are kept as written.
+- **Kinds** (`kind` of an obligation, a history entry, a measurement or an attachment), an obligation's `status`, and a custom template's `tint`, `heroStyle` and `pockets` are kept as written. An unknown status behaves as `active` (it still reminds).
 
 Keys a reader doesn't know inside a record it reads are ignored.
 
@@ -391,9 +403,9 @@ integers are big-endian.
 | 8 | `DOSARENC` (ASCII), which tells it from a ZIP |
 | 1 | Version: `1` |
 | 1 | Key derivation: `1` = PBKDF2-HMAC-SHA256 |
-| 4 | Iterations (the iOS writer uses 600 000; readers accept 1 to 10 000 000) |
+| 4 | Iterations (the iOS writer uses 600 000, as it always has; readers accept 1 to 1 000 000) |
 | 16 | Salt, random |
-| 4 | Chunk size in bytes (the iOS writer uses 1 MiB) |
+| 4 | Chunk size in bytes (the iOS writer uses 1 MiB; readers accept 1 byte to 16 MiB) |
 | 8 | Nonce prefix, random |
 | rest | The ZIP in chunks of the chunk size (the last may be shorter, and is the only one when the ZIP fits in one), each encrypted with AES-256-GCM and followed by its 16-byte tag |
 
@@ -403,6 +415,9 @@ uses the 12-byte nonce `prefix ‖ i` (4 bytes) and authenticates, as
 additional data, the whole 42-byte header followed by one byte: `1` for the
 last chunk and `0` for the others. A reader that fails to open any chunk
 stops: the password is wrong or the file was changed, cut or reordered.
+Chunks can be sealed as they are written (a chunk is known not to be the last
+once a byte after it arrives) and opened where they are read, the last one
+first to check the password, so neither side needs the whole archive at once.
 The password is never stored in the archive or on the device.
 
 ## Changes from version 2
