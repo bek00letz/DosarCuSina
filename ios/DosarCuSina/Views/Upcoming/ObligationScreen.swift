@@ -490,6 +490,7 @@ private struct ObligationCompleteSheet: View {
     let onClose: (DSToast?) -> Void
 
     @Environment(\.modelContext) private var context
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var date: Date? = Date()
     @State private var amount: Decimal?
     @State private var currency = Money.defaultCurrency
@@ -503,6 +504,9 @@ private struct ObligationCompleteSheet: View {
     @State private var readingQuestion: LowerReadingQuestion?
     /// A bank card's photo is kept only when the person asks.
     @State private var keepsPhotoOnRequest = false
+    /// A bill that only looked like one already filed, by its day and total: the person
+    /// said it is another bill ("E altă factură"). A new photo asks again.
+    @State private var isAnotherBill = false
 
     private var isReading: Bool { session.phase == .reading }
     private var document: CaptureResult? { session.result }
@@ -539,6 +543,7 @@ private struct ObligationCompleteSheet: View {
             .examplePrompt($exampleQuestion) { save() }
             .readingPrompt($readingQuestion) { save(lowerReading: $0) }
             .onChange(of: document?.id) { _, _ in
+                isAnotherBill = false
                 if amount == nil, let total = document?.field(.total)?.value.money {
                     amount = total.amount
                     currency = total.currencyCode
@@ -566,7 +571,12 @@ private struct ObligationCompleteSheet: View {
     @ViewBuilder private var documentSection: some View {
         VStack(alignment: .leading, spacing: DS.Space.s) {
             DSSectionHeader("Actul nou", subtitle: "Opțional. Din el iau data următoare.")
-            if let document {
+            if document != nil, let bill = billPlan {
+                // A photo of the bill: filed as a bill, as the review says it.
+                billNotices(bill)
+                Button("Alege alt act") { isChoosingSource = true }
+                    .frame(minHeight: 44)
+            } else if let document {
                 let next = CaptureFiler.nextDay(in: document)
                 // A bank card's photo is kept only on request, so it isn't promised here.
                 let message: LocalizedStringKey = if let next {
@@ -592,6 +602,47 @@ private struct ObligationCompleteSheet: View {
         }
     }
 
+    /// What saving does with a photo of the bill on its subscription (`CaptureFiler.billPlan`):
+    /// the bill in Istoric, once, and its meter index. Nil for any other document.
+    private var billPlan: CaptureFilingPlan? {
+        guard document != nil else { return nil }
+        return try? CaptureFiler(context: context).billPlan(for: completion(date: date ?? Date()))
+    }
+
+    /// The bill already in the binder, or where it goes, and its index: the review's own words.
+    @ViewBuilder private func billNotices(_ bill: CaptureFilingPlan) -> some View {
+        if let filed = bill.filedBill {
+            VStack(alignment: .leading, spacing: DS.Space.s) {
+                DSNotice(.info, title: "Factura e deja în dosar",
+                         message: LocalizedStringKey(CaptureReviewView.filedBillText(filed, today: CalendarDay(Date()))))
+                if filed.mayBeAnother {
+                    DSCompactButton("E altă factură", systemImage: "doc.badge.plus") {
+                        withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { isAnotherBill = true }
+                    }
+                }
+            }
+            .transition(.opacity)
+        } else {
+            let name = obligation.asset?.name ?? ""
+            DSNotice(.success, title: "Am citit factura",
+                     message: LocalizedStringKey(String(localized: "O trec în istoricul „\(name)”.", comment: "Am rezolvat: a photo of the bill being paid is logged in its subscription's history.")))
+        }
+        if let meter = bill.meter {
+            Label { Text(verbatim: CaptureReviewView.meterText(meter)).dsFont(.footnote) } icon: {
+                Image(systemName: "gauge.with.dots.needle.33percent").foregroundStyle(DS.Palette.secondaryLabel)
+            }
+            .labelStyle(DSLeadingIconLabelStyle())
+            .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    /// What saving files, from the sheet as it stands.
+    private func completion(date: Date) -> CaptureFiler.Completion {
+        let cost = amount.map { Money($0, currency: currency) }
+        return CaptureFiler.Completion(obligation: obligation, date: date, cost: cost, document: document,
+                                       keepsPhotoOnRequest: keepsPhotoOnRequest, isAnotherBill: isAnotherBill)
+    }
+
     private func read(_ payload: CaptureRequest.Payload) {
         // A bank card's new card is read only on the phone, like any bank card (`PhoneOnlyReading`).
         session.destination.staysOnPhone = obligation.asset.map { PhoneOnlyReading.holdsOne($0.values) } ?? false
@@ -605,12 +656,9 @@ private struct ObligationCompleteSheet: View {
         let title = obligation.title
         Task {
             do {
-                let cost = amount.map { Money($0, currency: currency) }
                 var filer = CaptureFiler(context: context)
                 filer.lowerReading = lowerReading
-                let outcome = try await filer.file(.completion(.init(
-                    obligation: obligation, date: date, cost: cost, document: document, keepsPhotoOnRequest: keepsPhotoOnRequest
-                )))
+                let outcome = try await filer.file(.completion(completion(date: date)))
                 let message: LocalizedStringResource = outcome.nextDue.map {
                     "\(title): gata. Următorul termen e pe \(DueWording.date($0, today: CalendarDay(Date())))."
                 } ?? "\(title): gata."

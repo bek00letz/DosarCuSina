@@ -23,7 +23,7 @@ import SwiftData
 /// pages are shown: the document found in each photo and which way up it goes
 /// (`Attachment.framingData`, none by default). Version 7 adds the number of the paper a
 /// history entry records (`HistoryEntry.reference`: a bill's invoice number), so a bill is
-/// known by it when it is filed again from another photo (`BillIdentity`). Version 8 adds
+/// known by it when it is filed again from another photo (`PaperIdentity`). Version 8 adds
 /// when a history entry, a line item, a reading and a document last changed (`updatedAt`,
 /// as sections, deadlines, firms and categories already had), so a backup brought in with
 /// "Adaugă" keeps the newer copy of every record by one rule (`ArchiveMerge`).

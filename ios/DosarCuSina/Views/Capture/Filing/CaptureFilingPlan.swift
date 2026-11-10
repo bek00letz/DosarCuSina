@@ -42,29 +42,6 @@ struct CaptureFilingPlan {
         case billFiledBefore
     }
 
-    /// The bill a review files when it is already in the binder: the same document filed
-    /// again, or another photo or PDF of the same bill (`BillIdentity`). Saving updates its
-    /// entry instead of logging a second one, and a new photo becomes its newer copy.
-    struct FiledBill: Equatable {
-        enum Match: Equatable {
-            /// The same document (the same photo or file) filed again.
-            case sameDocument
-            /// The same invoice number on the same subscription.
-            case number
-            /// No number to compare, the same issue day and total on the same subscription.
-            case dayAndTotal
-        }
-
-        /// The bill's entry in its subscription's history.
-        var entryID: UUID
-        var match: Match
-        /// The subscription the entry is in now, and its name.
-        var subscriptionID: UUID?
-        var subscription: String
-        /// The day the entry is logged on.
-        var day: CalendarDay
-    }
-
     /// Who issued the document, kept in Agendă.
     struct Provider: Equatable {
         var name: String
@@ -120,9 +97,9 @@ struct CaptureFilingPlan {
     /// What happens to the meter index the bill prints; nil when it prints none, or when it
     /// goes nowhere a meter is kept (no place chosen yet, not a subscription, a service without a meter).
     var meter: Meter?
-    /// The bill already in the binder that this review files again; nil for a new bill or
-    /// any other document.
-    var filedBill: FiledBill?
+    /// The bill already in the binder that this review files again (`FiledPaper`); nil for a
+    /// new bill or any other document.
+    var filedBill: FiledPaper?
     /// The meter reading this bill recorded when it was filed before (by the same document,
     /// or by another photo of the same bill): filing it again keeps, replaces or removes it,
     /// and it never counts against the new index.
@@ -200,7 +177,7 @@ struct CaptureFilingPlan {
         }
         // A bill already logged here whose reminder is no longer running (paid, or taken
         // away): another photo of it never asks to be paid a second time.
-        if profile.deadlineIsOptIn, let filed = plan.filedBill, let section, filed.subscriptionID == section.id {
+        if profile.deadlineIsOptIn, let filed = plan.filedBill, let section, filed.sectionID == section.id {
             plan.quiet = .billFiledBefore
             return plan
         }
@@ -237,34 +214,30 @@ struct CaptureFilingPlan {
         return .record(reading, subscription: name)
     }
 
-    /// The bill already in the binder that `review` files, by the one rule (`BillIdentity`):
+    /// The bill already in the binder that `review` files, by the one rule (`PaperIdentity`):
     /// the same document's own entry wherever it is now (it moves with the bill), else, in
     /// the subscription saving files into, the entry of the same bill read from another photo,
     /// unless the person said it is another bill. Nil for anything that isn't a bill.
     @MainActor
     static func filedBill(for review: CaptureReview, section: Asset?, templates: [String: CategoryTemplate], assets: [Asset],
-                          today: CalendarDay, calendar: Calendar) -> FiledBill? {
+                          today: CalendarDay, calendar: Calendar) -> FiledPaper? {
         guard review.kind.profile.deadlineIsOptIn else { return nil }
-        func filed(_ entry: HistoryEntry, _ match: FiledBill.Match) -> FiledBill {
-            FiledBill(entryID: entry.id, match: match, subscriptionID: entry.asset?.id, subscription: entry.asset?.name ?? "",
-                      day: CalendarDay(entry.occurredAt, calendar: calendar))
-        }
         if let kept = review.duplicateAttachmentID,
            let document = assets.lazy.flatMap({ $0.attachments ?? [] }).first(where: { $0.id == kept }),
            let entry = document.historyEntry, !entry.isDeleted, !entry.isCompletion, entry.kind == .payment,
            let owner = entry.asset, templates.plays(.subscription, owner.templateKey) {
-            return filed(entry, .sameDocument)
+            return FiledPaper(entry, match: .sameDocument, calendar: calendar)
         }
         guard !review.isAnotherBill, let section, templates.plays(.subscription, section.templateKey) else { return nil }
-        let bill = BillIdentity(number: review.value(.invoiceNumber)?.text, day: CaptureFiler.billDay(review, today: today), total: review.total)
-        guard let found = bill.filed(among: BillIdentity.bills(of: section), identity: { BillIdentity(entry: $0, calendar: calendar) }) else { return nil }
-        return filed(found.bill, found.match == .number ? .number : .dayAndTotal)
+        let bill = PaperIdentity(number: review.value(.invoiceNumber)?.text, day: CaptureFiler.billDay(review, today: today), total: review.total)
+        guard let found = bill.filed(among: PaperIdentity.bills(of: section), identity: { PaperIdentity(entry: $0, calendar: calendar) }) else { return nil }
+        return FiledPaper(found.paper, match: FiledPaper.Match(found.match), calendar: calendar)
     }
 
     /// The meter reading the bill recorded before: the same document's, else one a document of
     /// the bill's entry recorded on a subscription.
     @MainActor
-    static func readingFiledBefore(review: CaptureReview, filedBill: FiledBill?, templates: [String: CategoryTemplate], assets: [Asset]) -> UUID? {
+    static func readingFiledBefore(review: CaptureReview, filedBill: FiledPaper?, templates: [String: CategoryTemplate], assets: [Asset]) -> UUID? {
         let documents = assets.lazy.flatMap { $0.attachments ?? [] }
         let entry = filedBill.flatMap { filed in assets.lazy.flatMap { $0.history ?? [] }.first { $0.id == filed.entryID } }
         let candidates = (review.duplicateAttachmentID.flatMap { kept in documents.first { $0.id == kept } }.map { [$0] } ?? [])

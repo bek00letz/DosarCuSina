@@ -44,6 +44,11 @@ struct VisitDraft: Equatable {
     var documentText: String?
     /// The CUI read off the invoice, for finding who did the job.
     var providerTaxID: String?
+    /// The invoice's number as read, by which another photo of it is known (`PaperIdentity`).
+    var reference: String?
+    /// The person said this invoice is another one, when it only looked like one already in
+    /// the binder by its day and total ("E altă factură"). A new invoice asks again.
+    var isAnotherInvoice = false
 
     init(date: Date) {
         self.date = date
@@ -131,8 +136,12 @@ struct VisitDraft: Equatable {
         if provider == .none, let name = fields[.provider]?.text, !name.isEmpty {
             provider = .new(name)
         }
-        if let document = result.document { self.document = document }
+        if let document = result.document {
+            if document != self.document { isAnotherInvoice = false }
+            self.document = document
+        }
         if let taxID = fields[.providerTaxID]?.text { providerTaxID = taxID }
+        if let number = fields[.invoiceNumber]?.text, !number.trimmingCharacters(in: .whitespaces).isEmpty { reference = number }
         documentText = result.recognizedText.isEmpty ? nil : result.recognizedText
     }
 }

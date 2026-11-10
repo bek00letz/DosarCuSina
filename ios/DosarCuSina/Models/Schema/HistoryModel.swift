@@ -47,8 +47,8 @@ extension DosarSchemaV8 {
         public var totalCostAmount: Decimal?
         public var totalCostCurrency: String?
         public var note: String?
-        /// The number of the paper this entry records, as printed: a bill's invoice number.
-        /// A bill is known by it when it is filed again (`BillIdentity`). Version 7.
+        /// The number of the paper this entry records, as printed: a bill's or a visit's
+        /// invoice number. The paper is known by it when it is filed again (`PaperIdentity`). Version 7.
         public var reference: String?
         /// The person's 1–5 rating of this job; providers' ratings average these.
         public var rating: Int?
