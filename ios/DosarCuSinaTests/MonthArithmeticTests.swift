@@ -87,9 +87,14 @@ struct MonthArithmeticTests {
         #expect(RecurrenceEngine.add(.weeks(2), to: start, calendar: Self.utc) == CalendarDay("2026-05-15"))
         #expect(RecurrenceEngine.add(.months(3), to: start, calendar: Self.utc) == CalendarDay("2026-08-01"))
         #expect(RecurrenceEngine.add(.years(2), to: start, calendar: Self.utc) == CalendarDay("2028-05-01"))
-        // No days or weeks leaves the day where it is.
-        #expect(RecurrenceEngine.add(.days(0), to: start) == start)
-        #expect(RecurrenceEngine.add(.weeks(0), to: start) == start)
+        // An interval of no days or weeks (one read from stored data, which the initializer
+        // doesn't see) leaves the day where it is.
+        var noDays = RecurrenceInterval.days(1)
+        noDays.every = 0
+        var noWeeks = RecurrenceInterval.weeks(1)
+        noWeeks.every = 0
+        #expect(RecurrenceEngine.add(noDays, to: start) == start)
+        #expect(RecurrenceEngine.add(noWeeks, to: start) == start)
     }
 
     // MARK: The day a series keeps
