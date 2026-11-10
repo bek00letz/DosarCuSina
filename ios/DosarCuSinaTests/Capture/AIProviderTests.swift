@@ -9,7 +9,7 @@ import Testing
 @Suite("AI providers")
 struct AIProviderTests {
 
-    let today = CaptureDay(year: 2026, month: 11, day: 2)!
+    let today = CalendarDay(printedYear: 2026, month: 11, day: 2)!
     static let placeholderKey = "placeholder-not-a-key"
 
     private func config(_ provider: AIProvider, base: String? = nil) -> AIProviderConfig {
@@ -252,7 +252,7 @@ struct AIProviderTests {
     func zoneFromAnswer() throws {
         let lines = MRZFixtures.passport().components(separatedBy: "\n").map { "\"\($0)\"" }.joined(separator: ",")
         let fields = try map(#"{"surname":"EXEMPLU","expiryDate":"2031-04-13","machineReadableZone":["# + lines + "]}")
-        #expect(fields[.expiryDate]?.value.day == CaptureDay(year: 2031, month: 4, day: 12))
+        #expect(fields[.expiryDate]?.value.day == CalendarDay(printedYear: 2031, month: 4, day: 12))
         #expect(fields[.expiryDate]?.tier == .cloudModel)
         #expect(fields[.expiryDate]?.needsCheck == false)
         #expect(fields[.documentNumber]?.value.text == "X04512378")
@@ -308,7 +308,7 @@ struct AIProviderTests {
                                                              options: CaptureOptions(useCloudModel: true, referenceDate: Date(timeIntervalSince1970: 1_793_577_600))))
         // The zone read on the phone, checked by its digits, stays.
         #expect(result.field(.documentNumber)?.value.text == "X04512378")
-        #expect(result.field(.expiryDate)?.value.day == CaptureDay(year: 2031, month: 4, day: 12))
+        #expect(result.field(.expiryDate)?.value.day == CalendarDay(printedYear: 2031, month: 4, day: 12))
         #expect(result.field(.givenNames)?.value.text == "ANA")
         #expect(!result.notices.contains { if case .cloudModelFailed = $0 { true } else { false } })
     }

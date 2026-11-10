@@ -11,11 +11,11 @@ private func field(_ key: CaptureFieldKey, _ value: CaptureValue, confidence: Do
 
 private func day(_ iso: String) -> CaptureValue {
     let parts = iso.split(separator: "-").compactMap { Int($0) }
-    return .day(CaptureDay(year: parts[0], month: parts[1], day: parts[2])!)
+    return .day(CalendarDay(printedYear: parts[0], month: parts[1], day: parts[2])!)
 }
 
 private func ron(_ amount: Decimal) -> CaptureValue {
-    .money(CaptureMoney(amount: amount, currencyCode: "RON"))
+    .money(Money(amount, currency: "RON"))
 }
 
 /// A capture result routed the way the engine routes it.
@@ -223,10 +223,10 @@ struct VisitDraftTests {
     @Test func anInvoiceTicksRowsAndKeepsTheRest() throws {
         var draft = VisitDraft(date: noon("2026-11-02"))
         let lines: [CaptureLineItem] = [
-            CaptureLineItem(description: "Placute frana fata Bosch", amount: CaptureMoney(amount: 380, currencyCode: "RON")),
-            CaptureLineItem(description: "Schimb ulei 5W-30", amount: CaptureMoney(amount: 300, currencyCode: "RON")),
-            CaptureLineItem(description: "Filtru ulei", amount: CaptureMoney(amount: 120, currencyCode: "RON")),
-            CaptureLineItem(description: "Manopera", amount: CaptureMoney(amount: 200, currencyCode: "RON")),
+            CaptureLineItem(description: "Placute frana fata Bosch", amount: Money(380, currency: "RON")),
+            CaptureLineItem(description: "Schimb ulei 5W-30", amount: Money(300, currency: "RON")),
+            CaptureLineItem(description: "Filtru ulei", amount: Money(120, currency: "RON")),
+            CaptureLineItem(description: "Manopera", amount: Money(200, currency: "RON")),
         ]
         draft.apply(capture(.serviceInvoice, [
             field(.lineItems, .lineItems(lines)),

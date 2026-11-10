@@ -107,7 +107,7 @@ struct CompositeValueTests {
     @Test("The identity card's parts in separate fragments on one row")
     func identityCardFragments() {
         let page = [Card.line("SERIA XT", 0.55, 0.12, 0.15, 0.03), Card.line("NR 123456", 0.72, 0.12, 0.15, 0.03)]
-        let fields = IdentityDocumentReader.read(CaptureText(pages: [page]), template: IdentityTemplates.identityCard, today: CaptureDay(date: today))
+        let fields = IdentityDocumentReader.read(CaptureText(pages: [page]), template: IdentityTemplates.identityCard, today: CalendarDay(today))
         #expect(fields.first { $0.key == .documentNumber }?.value.text == "XT123456")
         #expect(CompositeValue.identityCard.parts(in: "XT") == .init(series: "XT", number: nil), "A series alone waits for its number")
     }

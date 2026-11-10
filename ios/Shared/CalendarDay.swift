@@ -15,6 +15,25 @@ public struct CalendarDay: Hashable, Comparable, Sendable, Codable, CustomString
         self.day = day
     }
 
+    /// The day with these numbers, or nil when the calendar has no such day: 31 February,
+    /// month 13, day 0. For numbers read from outside (a page, an answer); a day the app
+    /// works out itself uses ``init(year:month:day:)``.
+    public init?(validYear year: Int, month: Int, day: Int) {
+        guard (1...12).contains(month), day >= 1,
+              let date = Self.isoCalendar.date(from: DateComponents(year: year, month: month, day: day)),
+              Self.isoCalendar.component(.day, from: date) == day,
+              Self.isoCalendar.component(.month, from: date) == month else { return nil }
+        self.init(year: year, month: month, day: day)
+    }
+
+    /// The calendar a day's numbers are in: Gregorian, in UTC. For arithmetic on days
+    /// alone, whatever the phone's calendar or time zone.
+    public static let isoCalendar: Calendar = {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC") ?? .gmt
+        return calendar
+    }()
+
     /// The day that contains `date` in `calendar`'s time zone.
     public init(_ date: Date, calendar: Calendar = .current) {
         let parts = calendar.dateComponents([.year, .month, .day], from: date)

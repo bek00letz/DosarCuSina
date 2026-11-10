@@ -42,7 +42,7 @@ struct MRZCorrectionTests {
         // "S" where a "9" was printed is not a look-alike of 9: the birth date stays unverified.
         #expect(!result.birthDateValid)
         #expect(result.expiryDateValid)
-        #expect(result.expiryDate == CaptureDay(year: 2031, month: 4, day: 12))
+        #expect(result.expiryDate == CalendarDay(printedYear: 2031, month: 4, day: 12))
     }
 
     @Test("Fillers read as K or « are fillers")

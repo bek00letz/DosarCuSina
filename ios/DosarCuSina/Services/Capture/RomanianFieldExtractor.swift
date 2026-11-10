@@ -10,7 +10,7 @@ public enum RomanianFieldExtractor {
     // MARK: - Dates
 
     struct DateMatch {
-        let day: CaptureDay
+        let day: CalendarDay
         let line: Int
         let range: Range<String.Index>
     }
@@ -37,7 +37,7 @@ public enum RomanianFieldExtractor {
 
         for match in TextPattern.matches(#"(?<!\d)(\d{4})-(\d{2})-(\d{2})(?!\d)"#, in: line) {
             if let y = match[1].flatMap(Int.init), let m = match[2].flatMap(Int.init), let d = match[3].flatMap(Int.init),
-               let day = CaptureDay(year: y, month: m, day: d) {
+               let day = CalendarDay(printedYear: y, month: m, day: d) {
                 found.append(DateMatch(day: day, line: index, range: match.range))
             }
         }
@@ -46,7 +46,7 @@ public enum RomanianFieldExtractor {
             guard !found.contains(where: { $0.range.overlaps(match.range) }),
                   let d = match[1].flatMap(Int.init), let m = match[2].flatMap(Int.init),
                   let rawYear = match[3], let y = Int(rawYear) else { continue }
-            let resolved = rawYear.count == 2 ? window.resolve(twoDigitYear: y, month: m, day: d) : CaptureDay(year: y, month: m, day: d)
+            let resolved = rawYear.count == 2 ? window.resolve(twoDigitYear: y, month: m, day: d) : CalendarDay(printedYear: y, month: m, day: d)
             if let day = resolved {
                 found.append(DateMatch(day: day, line: index, range: match.range))
             }
@@ -57,13 +57,13 @@ public enum RomanianFieldExtractor {
         for match in TextPattern.matches(#"(?<![\d.,])(?<!\d )(0[1-9]|[12]\d|3[01]) (0[1-9]|1[0-2]) ((?:19|20)\d{2})(?! ?\d)"#, in: line) {
             guard !found.contains(where: { $0.range.overlaps(match.range) }),
                   let d = match[1].flatMap(Int.init), let m = match[2].flatMap(Int.init), let y = match[3].flatMap(Int.init),
-                  let day = CaptureDay(year: y, month: m, day: d) else { continue }
+                  let day = CalendarDay(printedYear: y, month: m, day: d) else { continue }
             found.append(DateMatch(day: day, line: index, range: match.range))
         }
 
         for match in TextPattern.matches(#"(?<!\d)(\d{1,2})[./-](x{0,1}i{1,3}|iv|v|vi{1,3}|ix|x|xi{1,2})[./-](\d{4})(?!\d)"#, in: line) {
             if let d = match[1].flatMap(Int.init), let m = match[2].flatMap({ romanMonths[$0.lowercased()] }),
-               let y = match[3].flatMap(Int.init), let day = CaptureDay(year: y, month: m, day: d) {
+               let y = match[3].flatMap(Int.init), let day = CalendarDay(printedYear: y, month: m, day: d) {
                 found.append(DateMatch(day: day, line: index, range: match.range))
             }
         }
@@ -72,7 +72,7 @@ public enum RomanianFieldExtractor {
         for match in TextPattern.matches(#"(?<!\d)(\d{1,2})\s+("# + names + #")\.?,?\s+(\d{4})(?!\d)"#, in: line) {
             if let d = match[1].flatMap(Int.init),
                let m = match[2].flatMap({ name in monthNames.first { $0.0 == name.lowercased() }?.1 }),
-               let y = match[3].flatMap(Int.init), let day = CaptureDay(year: y, month: m, day: d) {
+               let y = match[3].flatMap(Int.init), let day = CalendarDay(printedYear: y, month: m, day: d) {
                 found.append(DateMatch(day: day, line: index, range: match.range))
             }
         }
@@ -83,7 +83,7 @@ public enum RomanianFieldExtractor {
                   let d = match[1].flatMap(Int.init),
                   let m = match[2].flatMap({ name in monthNames.first { $0.0 == name.lowercased() }?.1 }),
                   let rawYear = match[3], let y = Int(rawYear),
-                  let day = rawYear.count == 2 ? window.resolve(twoDigitYear: y, month: m, day: d) : CaptureDay(year: y, month: m, day: d)
+                  let day = rawYear.count == 2 ? window.resolve(twoDigitYear: y, month: m, day: d) : CalendarDay(printedYear: y, month: m, day: d)
             else { continue }
             found.append(DateMatch(day: day, line: index, range: match.range))
         }
@@ -96,7 +96,7 @@ public enum RomanianFieldExtractor {
     }
 
     /// The first date after one of the labels: on the label's line (after the label), or on the next line.
-    static func labelledDate(_ labels: [String], in text: CaptureText, window: DateWindow = .aroundToday) -> (day: CaptureDay, source: String)? {
+    static func labelledDate(_ labels: [String], in text: CaptureText, window: DateWindow = .aroundToday) -> (day: CalendarDay, source: String)? {
         for index in text.lines(containing: labels) {
             let line = text.folded[index]
             let labelEnd = labels.compactMap { line.range(of: $0)?.upperBound }.min() ?? line.startIndex
@@ -111,7 +111,7 @@ public enum RomanianFieldExtractor {
     }
 
     /// A validity period on one line ("valabilă de la 01.11.2026 până la 31.10.2027", "12.03.21-12.03.2031").
-    static func validityPeriod(in text: CaptureText, window: DateWindow = .aroundToday) -> (start: CaptureDay, end: CaptureDay, source: String)? {
+    static func validityPeriod(in text: CaptureText, window: DateWindow = .aroundToday) -> (start: CalendarDay, end: CalendarDay, source: String)? {
         let labels = ["valabil", "perioada", "valabilitate", "validity", "de la", "asigurare"]
         for index in text.lines(containing: labels) {
             var found = dates(inLine: text.folded[index], index: index, window: window)
@@ -206,20 +206,20 @@ public enum RomanianFieldExtractor {
 
     /// The amount to pay: a strongly labelled total first, then a plain "total" line that isn't VAT.
     /// `ambiguous` when the amount could have been read another way ("3,750"): the field gets "Verifică".
-    static func total(in text: CaptureText) -> (money: CaptureMoney, source: String, strong: Bool, ambiguous: Bool)? {
+    static func total(in text: CaptureText) -> (money: Money, source: String, strong: Bool, ambiguous: Bool)? {
         let fallbackCurrency = dominantCurrency(in: text)
-        func amountNear(_ index: Int, after labels: [String]) -> (money: CaptureMoney, ambiguous: Bool)? {
+        func amountNear(_ index: Int, after labels: [String]) -> (money: Money, ambiguous: Bool)? {
             let line = text.folded[index]
             let labelEnd = labels.compactMap { line.range(of: $0)?.upperBound }.min() ?? line.startIndex
             let onLine = amounts(inLine: line).filter { $0.range.lowerBound >= labelEnd }
             if let stated = statedAmount(in: onLine) {
-                return (CaptureMoney(amount: stated.amount, currencyCode: currency(inLine: line) ?? fallbackCurrency), stated.isAmbiguous)
+                return (Money(stated.amount, currency: currency(inLine: line) ?? fallbackCurrency), stated.isAmbiguous)
             }
             // The value under its label, never another label's on the next line.
             if index + 1 < text.folded.count {
                 let nextLine = text.folded[index + 1]
                 if let next = amounts(inLine: nextLine).first, standsAlone(next, inLine: nextLine) {
-                    return (CaptureMoney(amount: next.amount, currencyCode: currency(inLine: nextLine) ?? fallbackCurrency), next.isAmbiguous)
+                    return (Money(next.amount, currency: currency(inLine: nextLine) ?? fallbackCurrency), next.isAmbiguous)
                 }
             }
             return nil
@@ -280,7 +280,7 @@ public enum RomanianFieldExtractor {
             items.append(CaptureLineItem(
                 description: description,
                 quantity: quantity,
-                amount: CaptureMoney(amount: amount.amount, currencyCode: currency),
+                amount: Money(amount.amount, currency: currency),
                 componentKey: resolver.componentKey(for: description)
             ))
         }

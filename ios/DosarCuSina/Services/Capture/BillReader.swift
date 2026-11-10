@@ -56,12 +56,12 @@ enum BillReader {
 
     /// The day to pay by: its label's date; else, when the bill doesn't label it, the latest
     /// date in the usual time after its issue, marked "Verifică" (a guess, never a reading).
-    private static func dueDate(in text: CaptureText, layout: LabelledLayout<CaptureFieldKey>, issued: CaptureDay?,
+    private static func dueDate(in text: CaptureText, layout: LabelledLayout<CaptureFieldKey>, issued: CalendarDay?,
                                 window: DateWindow) -> CaptureField? {
         if let (day, source) = layout.day(for: .dueDate, window: window) {
             return field(.dueDate, .day(day), 0.75, source)
         }
-        guard let issued, let latest = issued.addingMonths(usualPaymentMonths) else { return nil }
+        guard let issued, let latest = issued.printed(addingMonths: usualPaymentMonths) else { return nil }
         let candidates = RomanianFieldExtractor.allDates(in: text, window: window).filter { $0.day > issued && $0.day <= latest }
         guard let guess = candidates.max(by: { $0.day < $1.day }) else { return nil }
         return field(.dueDate, .day(guess.day), CaptureField.checkThreshold - 0.15, text.original[guess.line])

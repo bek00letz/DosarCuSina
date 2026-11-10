@@ -73,7 +73,7 @@ enum CaptureConsistency {
     /// The window a date of `key` falls in on this kind of document, for deciding the
     /// century of a two-digit year and for checking a model's answer. Keys without a
     /// rule get a window around today (80 years back, 20 ahead).
-    static func window(for key: CaptureFieldKey, kind: CaptureDocumentKind, today: CaptureDay) -> DateWindow {
+    static func window(for key: CaptureFieldKey, kind: CaptureDocumentKind, today: CalendarDay) -> DateWindow {
         for rule in rules(for: kind) {
             if case .within(key, let window, _) = rule, let resolved = window.resolved(today: today) { return resolved }
         }
@@ -81,7 +81,7 @@ enum CaptureConsistency {
     }
 
     /// Whether a date passes its own window on this kind of document (no rule: it passes).
-    static func isPlausible(_ day: CaptureDay, for key: CaptureFieldKey, kind: CaptureDocumentKind, today: CaptureDay) -> Bool {
+    static func isPlausible(_ day: CalendarDay, for key: CaptureFieldKey, kind: CaptureDocumentKind, today: CalendarDay) -> Bool {
         for rule in rules(for: kind) {
             if case .within(key, let window, _) = rule, let resolved = window.resolved(today: today) { return resolved.contains(day) }
         }
@@ -90,7 +90,7 @@ enum CaptureConsistency {
 
     /// Only the window rules, for one tier's answers before they are merged with the
     /// others, so an impossible date never pushes out a possible one.
-    static func plausible(_ fields: [CaptureField], kind: CaptureDocumentKind, today: CaptureDay) -> [CaptureField] {
+    static func plausible(_ fields: [CaptureField], kind: CaptureDocumentKind, today: CalendarDay) -> [CaptureField] {
         var result = fields
         for rule in rules(for: kind) {
             guard case .within(let key, let window, let outside) = rule, let resolved = window.resolved(today: today) else { continue }
@@ -111,7 +111,7 @@ enum CaptureConsistency {
     static let disputed = 0.5
 
     /// The fields with every rule applied, and the keys that were dropped.
-    static func resolve(_ fields: [CaptureField], kind: CaptureDocumentKind, today: CaptureDay) -> (fields: [CaptureField], dropped: [CaptureFieldKey]) {
+    static func resolve(_ fields: [CaptureField], kind: CaptureDocumentKind, today: CalendarDay) -> (fields: [CaptureField], dropped: [CaptureFieldKey]) {
         let checked = plausible(fields, kind: kind, today: today)
         var dropped: [CaptureFieldKey] = fields.map(\.key).filter { key in !checked.contains { $0.key == key } }
         var fields = preferPersonalNumberBirthDate(checked)
@@ -143,7 +143,7 @@ enum CaptureConsistency {
                 if let subject = field(key), let day = subject.value.day, day > today { drop(key) }
             case .atLeastYearsAfter(let key, let anchorKey, let years):
                 if let subject = field(key), let anchor = field(anchorKey), let day = subject.value.day,
-                   let earliest = anchor.value.day?.addingMonths(years * 12), day < earliest {
+                   let earliest = anchor.value.day?.printed(addingMonths: years * 12), day < earliest {
                     settle(subject, anchor)
                 }
             case .after(let key, let anchorKey):
@@ -184,21 +184,46 @@ enum CaptureConsistency {
     }
 }
 
+// MARK: - Printed days
+
+extension CalendarDay {
+    /// The years a date printed on a document can carry. A year outside them is a misread
+    /// ("0031", "9203"), never a day; the windows below then judge what is plausible for
+    /// each field.
+    static let printedYears = 1900...2200
+
+    /// A day read off a page or out of an answer: nil for a day the calendar doesn't have
+    /// (31 February) or a year no document prints.
+    init?(printedYear year: Int, month: Int, day: Int) {
+        guard Self.printedYears.contains(year) else { return nil }
+        self.init(validYear: year, month: month, day: day)
+    }
+
+    /// The same day `months` calendar months away (the month's last day when it is
+    /// shorter: 31 January and one month is 28 or 29 February), when that is still a day
+    /// a document could print. Nil for a length that can only be a misread.
+    func printed(addingMonths months: Int) -> CalendarDay? {
+        guard months.magnitude <= UInt(Self.printedYears.count * 12) else { return nil }
+        let shifted = adding(months: months, calendar: Self.isoCalendar)
+        return Self.printedYears.contains(shifted.year) ? shifted : nil
+    }
+}
+
 // MARK: - Date windows
 
 /// The days a date can plausibly fall on, inclusive.
 struct DateWindow: Hashable, Sendable {
-    let earliest: CaptureDay
-    let latest: CaptureDay
+    let earliest: CalendarDay
+    let latest: CalendarDay
 
-    func contains(_ day: CaptureDay) -> Bool { earliest <= day && day <= latest }
+    func contains(_ day: CalendarDay) -> Bool { earliest <= day && day <= latest }
 
     /// A window relative to today, as the rules state it.
     struct Rule: Hashable, Sendable {
         let earliest: Bound
         let latest: Bound
 
-        func resolved(today: CaptureDay) -> DateWindow? {
+        func resolved(today: CalendarDay) -> DateWindow? {
             guard let from = earliest.day(today: today), let to = latest.day(today: today), from <= to else { return nil }
             return DateWindow(earliest: from, latest: to)
         }
@@ -211,36 +236,36 @@ struct DateWindow: Hashable, Sendable {
         /// A fixed day, such as the first identity documents with a machine-readable zone.
         case day(year: Int, month: Int, day: Int)
 
-        func day(today: CaptureDay) -> CaptureDay? {
+        func day(today: CalendarDay) -> CalendarDay? {
             switch self {
             case .today: today
-            case .yearsFromToday(let years): today.addingMonths(years * 12)
-            case .day(let year, let month, let day): CaptureDay(year: year, month: month, day: day)
+            case .yearsFromToday(let years): today.printed(addingMonths: years * 12)
+            case .day(let year, let month, let day): CalendarDay(printedYear: year, month: month, day: day)
             }
         }
     }
 
     /// The fallback around the real today, for readers that aren't told the day.
-    static var aroundToday: DateWindow { around(CaptureDay(date: Date())) }
+    static var aroundToday: DateWindow { around(CalendarDay(Date())) }
 
     /// The fallback for dates no rule covers: 80 years back, 20 ahead.
-    static func around(_ today: CaptureDay) -> DateWindow {
-        DateWindow(earliest: today.addingMonths(-80 * 12) ?? today, latest: today.addingMonths(20 * 12) ?? today)
+    static func around(_ today: CalendarDay) -> DateWindow {
+        DateWindow(earliest: today.printed(addingMonths: -80 * 12) ?? today, latest: today.printed(addingMonths: 20 * 12) ?? today)
     }
 
     /// The day a two-digit year means: the candidate inside the window (the later one
     /// when both fit), else the one nearest the window, so the rules can still judge it.
-    func resolve(twoDigitYear yy: Int, month: Int, day: Int) -> CaptureDay? {
+    func resolve(twoDigitYear yy: Int, month: Int, day: Int) -> CalendarDay? {
         guard (0...99).contains(yy) else { return nil }
         let centuries = Set([earliest.year / 100, latest.year / 100, earliest.year / 100 - 1, latest.year / 100 + 1])
-        let candidates = centuries.sorted().compactMap { CaptureDay(year: $0 * 100 + yy, month: month, day: day) }
+        let candidates = centuries.sorted().compactMap { CalendarDay(printedYear: $0 * 100 + yy, month: month, day: day) }
         if let inside = candidates.filter(contains).max() { return inside }
         return candidates.min { distance($0) < distance($1) }
     }
 
     /// Roughly how many days a day is from the window; 0 inside it.
-    private func distance(_ day: CaptureDay) -> Int {
-        func ordinal(_ value: CaptureDay) -> Int { value.year * 372 + value.month * 31 + value.day }
+    private func distance(_ day: CalendarDay) -> Int {
+        func ordinal(_ value: CalendarDay) -> Int { value.year * 372 + value.month * 31 + value.day }
         if day < earliest { return ordinal(earliest) - ordinal(day) }
         if day > latest { return ordinal(day) - ordinal(latest) }
         return 0

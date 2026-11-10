@@ -340,7 +340,7 @@ Every counted string has plural variations (*o zi*, *2 zile*, *20 de zile*); `sc
 
 **One retry.** A reading with little text (fewer than about 20 letters), or an identity document without any of its main fields, is read once more with the page's best other view (a quarter turn, or the photo uncorrected, whichever a quick read finds more text in); the better reading is kept. If it is still poor, the review says "Poza e greu de citit. O poză nouă, dreaptă și fără reflexii, ajută."
 
-Long PDFs are read up to their first 25 pages. Pages are read one pass at a time, and a failed pass doesn't lose the others. The same document captured twice is recognised by its fingerprint.
+Long PDFs are read up to their first 25 pages. Pages are read one pass at a time, and a failed pass doesn't lose the others: it is tried once more after a short backoff (`VisionCaptureRecognizer.retryPause`, since Vision says nothing when it is ready again), and not at all once the reading is cancelled. The same document captured twice is recognised by its fingerprint.
 
 ### 5.2 Per-kind field rules
 

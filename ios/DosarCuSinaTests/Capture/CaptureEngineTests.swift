@@ -62,7 +62,7 @@ struct CaptureEngineTests {
         let result = try await engine.capture(CaptureRequest(.images([CaptureImage(image: image)]), options: CaptureOptions(referenceDate: today)))
 
         #expect(result.kind == .passport)
-        #expect(result.field(.expiryDate)?.value.day == CaptureDay(year: 2031, month: 4, day: 15))
+        #expect(result.field(.expiryDate)?.value.day == CalendarDay(printedYear: 2031, month: 4, day: 15))
         #expect(result.reminder?.blueprintKey == BuiltInBlueprints.documentRenew)
         let documentID = try #require(result.document?.pendingID)
         #expect(await store.processed(id: documentID)?.document.kind == .passport)
@@ -127,9 +127,9 @@ struct CaptureEngineTests {
     @Test("Warranty end is derived from purchase date and length when no tier gave it")
     func derivedWarranty() {
         let fields = CaptureEngine.derived([
-            CaptureField(key: .purchaseDate, value: .day(CaptureDay(year: 2025, month: 1, day: 31)!), confidence: 0.8, tier: .heuristic),
+            CaptureField(key: .purchaseDate, value: .day(CalendarDay(printedYear: 2025, month: 1, day: 31)!), confidence: 0.8, tier: .heuristic),
             CaptureField(key: .warrantyMonths, value: .number(25), confidence: 0.7, tier: .onDeviceModel),
         ])
-        #expect(fields.first { $0.key == .warrantyUntil }?.value.day == CaptureDay(year: 2027, month: 2, day: 28))
+        #expect(fields.first { $0.key == .warrantyUntil }?.value.day == CalendarDay(printedYear: 2027, month: 2, day: 28))
     }
 }

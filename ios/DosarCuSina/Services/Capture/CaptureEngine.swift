@@ -94,7 +94,7 @@ public final class CaptureEngine: Sendable {
         self.store = store
     }
 
-    /// The engine as the app and the Share Extension use it.
+    /// The engine as the app uses it, for what the share extension hands the inbox too.
     public static func standard(componentResolver: any CaptureComponentResolving = CatalogComponentResolver()) -> CaptureEngine {
         CaptureEngine(
             analyzer: CaptureAnalyzer(specializedParsers: [UtilityInvoiceParser()], componentResolver: componentResolver),
@@ -215,7 +215,7 @@ public final class CaptureEngine: Sendable {
         if Self.readsPoorly(analysis), !notices.contains(.littleTextRecognized) {
             notices.append(.littleTextRecognized)
         }
-        let today = CaptureDay(date: options.referenceDate)
+        let today = CalendarDay(options.referenceDate)
         var reading = ReadingArbiter.KindReading(kind: analysis.kind, confidence: analysis.kindConfidence, evidence: analysis.kindEvidence)
         var kindAlternatives: [CaptureAlternative<CaptureDocumentKind>] = []
         var readWithCloudModel = false
@@ -385,7 +385,7 @@ public final class CaptureEngine: Sendable {
     /// out a possible one; then dates are checked against each other, and only fields
     /// that belong on this kind of document are kept, whichever reader found them.
     func settle(_ source: CaptureReadingSource, as kind: CaptureDocumentKind, analysis: CaptureAnalyzer.Analysis?) -> Settled {
-        let today = CaptureDay(date: source.referenceDate)
+        let today = CalendarDay(source.referenceDate)
         let analysis = analysis ?? (source.pages.isEmpty
             ? analyzer.analyze(text: source.text, barcodes: source.barcodes, referenceDate: source.referenceDate, as: kind)
             : analyzer.analyze(pages: source.pages, barcodes: source.barcodes, referenceDate: source.referenceDate, as: kind))
@@ -449,7 +449,7 @@ public final class CaptureEngine: Sendable {
         if lookup[.warrantyUntil] == nil,
            let purchase = lookup[.purchaseDate], let start = purchase.value.day,
            let months = lookup[.warrantyMonths], case .number(let count) = months.value,
-           let until = start.addingMonths(NSDecimalNumber(decimal: count).intValue) {
+           let until = start.printed(addingMonths: NSDecimalNumber(decimal: count).intValue) {
             result.append(CaptureField(
                 key: .warrantyUntil, value: .day(until),
                 confidence: min(purchase.confidence, months.confidence),
@@ -460,7 +460,7 @@ public final class CaptureEngine: Sendable {
         if lookup[.minimumPeriodEnd] == nil,
            let start = lookup[.startDate], let day = start.value.day,
            let months = lookup[.minimumMonths], case .number(let count) = months.value,
-           let end = day.addingMonths(NSDecimalNumber(decimal: count).intValue) {
+           let end = day.printed(addingMonths: NSDecimalNumber(decimal: count).intValue) {
             result.append(CaptureField(
                 key: .minimumPeriodEnd, value: .day(end),
                 confidence: min(start.confidence, months.confidence),

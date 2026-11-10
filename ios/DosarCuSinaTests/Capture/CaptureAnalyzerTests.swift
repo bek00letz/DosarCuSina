@@ -25,7 +25,7 @@ struct CaptureAnalyzerTests {
 
         #expect(analysis.kind == .passport)
         let expiry = try #require(analysis.fields.first { $0.key == .expiryDate })
-        #expect(expiry.value == .day(CaptureDay(year: 2031, month: 4, day: 15)!))
+        #expect(expiry.value == .day(CalendarDay(printedYear: 2031, month: 4, day: 15)!))
         #expect(expiry.tier == .deterministic)
         #expect(expiry.confidence > 0.95)
 
@@ -60,16 +60,16 @@ struct CaptureAnalyzerTests {
         #expect(byKey[.provider]?.value.text == "EXEMPLU SERVICE AUTO S.R.L.")
         #expect(byKey[.providerTaxID]?.value.text == "RO12345674")
         #expect(byKey[.providerTaxID]?.tier == .deterministic)
-        #expect(byKey[.total]?.value.money == CaptureMoney(amount: 695, currencyCode: "RON"))
+        #expect(byKey[.total]?.value.money == Money(695, currency: "RON"))
         #expect(byKey[.licensePlate]?.value.text == "B 123 ABC")
         #expect(byKey[.odometer]?.value == .metric(value: 86_420, unit: .kilometres))
         #expect(byKey[.invoiceNumber]?.value.text == "AUT 004512")
-        #expect(byKey[.issueDate]?.value.day == CaptureDay(year: 2025, month: 3, day: 14))
+        #expect(byKey[.issueDate]?.value.day == CalendarDay(printedYear: 2025, month: 3, day: 14))
 
         let items = try #require(byKey[.lineItems]?.value.lineItems)
         #expect(items.map(\.componentKey) == ["brakes.padsFront", "engine.oil", "engine.oil", nil])
         #expect(items.map(\.isLabour) == [false, false, false, true])
-        #expect(items.first?.amount == CaptureMoney(amount: 320, currencyCode: "RON"))
+        #expect(items.first?.amount == Money(320, currency: "RON"))
 
         let routing = route(analysis)
         let history = try #require(routing.suggestions.first { $0.destination == .historyEntry(templateKey: "vehicle") })
@@ -96,9 +96,9 @@ struct CaptureAnalyzerTests {
         #expect(byKey[.provider]?.value.text == "Groupama Asigurări")
         #expect(byKey[.policyNumber]?.value.text?.contains("012345678") == true)
         #expect(byKey[.claimsPhone]?.value.text == "0800123456")
-        #expect(byKey[.startDate]?.value.day == CaptureDay(year: 2026, month: 11, day: 7))
-        #expect(byKey[.expiryDate]?.value.day == CaptureDay(year: 2027, month: 11, day: 6))
-        #expect(byKey[.total]?.value.money == CaptureMoney(amount: 1240, currencyCode: "RON"))
+        #expect(byKey[.startDate]?.value.day == CalendarDay(printedYear: 2026, month: 11, day: 7))
+        #expect(byKey[.expiryDate]?.value.day == CalendarDay(printedYear: 2027, month: 11, day: 6))
+        #expect(byKey[.total]?.value.money == Money(1240, currency: "RON"))
         #expect(byKey[.bonusMalusClass]?.value.text == "B4")
         #expect(byKey[.vin]?.value.text == "WVWZZZAUZJW000000")
 
@@ -124,15 +124,15 @@ struct CaptureAnalyzerTests {
         #expect(analysis.kind == .fiscalReceipt)
         let byKey = Dictionary(analysis.fields.map { ($0.key, $0) }, uniquingKeysWith: { a, _ in a })
         #expect(byKey[.retailer]?.value.text == "EXEMPLU ELECTRO S.R.L.")
-        #expect(byKey[.purchaseDate]?.value.day == CaptureDay(year: 2025, month: 6, day: 10))
-        #expect(byKey[.purchasePrice]?.value.money == CaptureMoney(amount: Decimal(string: "899.99")!, currencyCode: "RON"))
-        #expect(byKey[.warrantyUntil]?.value.day == CaptureDay(year: 2027, month: 6, day: 10))
+        #expect(byKey[.purchaseDate]?.value.day == CalendarDay(printedYear: 2025, month: 6, day: 10))
+        #expect(byKey[.purchasePrice]?.value.money == Money(Decimal(string: "899.99")!, currency: "RON"))
+        #expect(byKey[.warrantyUntil]?.value.day == CalendarDay(printedYear: 2027, month: 6, day: 10))
         #expect(byKey[.serialNumber]?.value.text == "HX60-2025-0001")
         #expect(byKey[.productName]?.value.text?.hasPrefix("Hotă bucătărie") == true)
 
         let routing = route(analysis)
         #expect(routing.suggestions.first?.destination == .newAsset(templateKey: BuiltInTemplates.Key.purchase))
-        #expect(routing.reminder?.day == CaptureDay(year: 2027, month: 6, day: 10))
+        #expect(routing.reminder?.day == CalendarDay(printedYear: 2027, month: 6, day: 10))
         #expect(routing.reminder?.blueprintKey == BuiltInBlueprints.warrantyEnds)
     }
 
@@ -151,8 +151,8 @@ struct CaptureAnalyzerTests {
 
         #expect(analysis.kind == .drivingLicence)
         let byKey = Dictionary(analysis.fields.map { ($0.key, $0) }, uniquingKeysWith: { a, _ in a })
-        #expect(byKey[.expiryDate]?.value.day == CaptureDay(year: 2031, month: 3, day: 12))
-        #expect(byKey[.issueDate]?.value.day == CaptureDay(year: 2021, month: 3, day: 12))
+        #expect(byKey[.expiryDate]?.value.day == CalendarDay(printedYear: 2031, month: 3, day: 12))
+        #expect(byKey[.issueDate]?.value.day == CalendarDay(printedYear: 2021, month: 3, day: 12))
         #expect(byKey[.documentNumber]?.value.text == "123456789")
         #expect(byKey[.holderName]?.value.text == "ION EXEMPLU")
         #expect(route(analysis).reminder?.blueprintKey == BuiltInBlueprints.documentRenew)
@@ -171,7 +171,7 @@ struct CaptureAnalyzerTests {
         #expect(analysis.kind == .veterinaryRecord)
         let byKey = Dictionary(analysis.fields.map { ($0.key, $0) }, uniquingKeysWith: { a, _ in a })
         #expect(byKey[.microchip]?.value.text == "642000000000001")
-        #expect(byKey[.nextDoseDate]?.value.day == CaptureDay(year: 2026, month: 11, day: 18))
+        #expect(byKey[.nextDoseDate]?.value.day == CalendarDay(printedYear: 2026, month: 11, day: 18))
         let routing = route(analysis)
         #expect(routing.reminder?.blueprintKey == BuiltInBlueprints.petVaccine)
         #expect(routing.reminder?.templateKey == BuiltInTemplates.Key.pet)
@@ -189,7 +189,7 @@ struct CaptureAnalyzerTests {
 
         #expect(analysis.kind == .itpReport)
         let byKey = Dictionary(analysis.fields.map { ($0.key, $0) }, uniquingKeysWith: { a, _ in a })
-        #expect(byKey[.expiryDate]?.value.day == CaptureDay(year: 2027, month: 3, day: 14))
+        #expect(byKey[.expiryDate]?.value.day == CalendarDay(printedYear: 2027, month: 3, day: 14))
         #expect(byKey[.odometer]?.value == .metric(value: 86_420, unit: .kilometres))
         #expect(route(analysis).reminder?.blueprintKey == BuiltInBlueprints.vehicleITP)
     }
@@ -211,7 +211,7 @@ struct CaptureAnalyzerTests {
         #expect(analysis.kind == .utilityInvoice)
         #expect(analysis.kindConfidence >= 0.9)
         #expect(analysis.fields.contains { $0.key == .podCode })
-        #expect(analysis.fields.first { $0.key == .dueDate }?.value.day == CaptureDay(year: 2026, month: 11, day: 25))
+        #expect(analysis.fields.first { $0.key == .dueDate }?.value.day == CalendarDay(printedYear: 2026, month: 11, day: 25))
     }
 
     @Test("Classification is the same on every run, even when scores tie")
@@ -235,8 +235,8 @@ struct FieldMergerTests {
 
     @Test("A checksum-verified value is never replaced by a model")
     func deterministicWins() {
-        let mrz = CaptureField(key: .expiryDate, value: .day(CaptureDay(year: 2031, month: 4, day: 15)!), confidence: 0.99, tier: .deterministic)
-        let model = CaptureField(key: .expiryDate, value: .day(CaptureDay(year: 2013, month: 4, day: 15)!), confidence: 1, tier: .onDeviceModel)
+        let mrz = CaptureField(key: .expiryDate, value: .day(CalendarDay(printedYear: 2031, month: 4, day: 15)!), confidence: 0.99, tier: .deterministic)
+        let model = CaptureField(key: .expiryDate, value: .day(CalendarDay(printedYear: 2013, month: 4, day: 15)!), confidence: 1, tier: .onDeviceModel)
         let merged = FieldMerger.merge([mrz], with: [model])
         #expect(merged == [mrz])
     }
@@ -253,8 +253,8 @@ struct FieldMergerTests {
 
     @Test("Agreement raises confidence and keeps the original source text")
     func agreementBoosts() throws {
-        let heuristic = CaptureField(key: .total, value: .money(CaptureMoney(amount: 695, currencyCode: "RON")), confidence: 0.6, sourceText: "Total de plată: 695,00 lei", tier: .heuristic)
-        let model = CaptureField(key: .total, value: .money(CaptureMoney(amount: 695, currencyCode: "RON")), confidence: 0.72, tier: .onDeviceModel)
+        let heuristic = CaptureField(key: .total, value: .money(Money(695, currency: "RON")), confidence: 0.6, sourceText: "Total de plată: 695,00 lei", tier: .heuristic)
+        let model = CaptureField(key: .total, value: .money(Money(695, currency: "RON")), confidence: 0.72, tier: .onDeviceModel)
         let merged = try #require(FieldMerger.merge([heuristic], with: [model]).first)
         #expect(merged.confidence > 0.8)
         #expect(merged.sourceText == "Total de plată: 695,00 lei")

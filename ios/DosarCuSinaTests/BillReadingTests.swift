@@ -9,7 +9,7 @@ private func field(_ key: CaptureFieldKey, _ value: CaptureValue, confidence: Do
 
 private func day(_ iso: String) -> CaptureValue {
     let parts = iso.split(separator: "-").compactMap { Int($0) }
-    return .day(CaptureDay(year: parts[0], month: parts[1], day: parts[2])!)
+    return .day(CalendarDay(printedYear: parts[0], month: parts[1], day: parts[2])!)
 }
 
 private func index(_ value: Decimal) -> CaptureValue { .number(value) }
@@ -30,7 +30,7 @@ private func bill(service: String = ServiceKind.gas, provider: String = "ENGIE R
         field(.serviceKind, .text(service)),
         field(.clientCode, .text("1000000000")),
         field(.dueDate, day(due)),
-        field(.total, .money(CaptureMoney(amount: total, currencyCode: "RON"))),
+        field(.total, .money(Money(total, currency: "RON"))),
     ]
     if let issued { fields.append(field(.issueDate, day(issued))) }
     if let number { fields.append(field(.invoiceNumber, .text(number))) }
@@ -325,7 +325,7 @@ struct BillReadingTests {
     private func total(_ amount: Decimal) -> (inout CaptureReview) -> Void {
         { review in
             let at = review.fields.firstIndex { $0.key == .total }!
-            review.fields[at].confirm(.money(CaptureMoney(amount: amount, currencyCode: "RON")))
+            review.fields[at].confirm(.money(Money(amount, currency: "RON")))
         }
     }
 

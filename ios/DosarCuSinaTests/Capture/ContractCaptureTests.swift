@@ -9,7 +9,7 @@ import Testing
 struct ContractCaptureTests {
 
     static let referenceDate = Date(timeIntervalSince1970: 1_793_577_600)
-    static let today = CaptureDay(date: referenceDate)
+    static let today = CalendarDay(referenceDate)
 
     static let gasContract = """
     ENGIE Romania S.A.
@@ -75,9 +75,9 @@ struct ContractCaptureTests {
         #expect(value(.clientCode, in: fields) == .text("1000000000"))
         #expect(value(.clcCode, in: fields) == .text("DEG0000000000001"))
         #expect(value(.serviceKind, in: fields) == .text(ServiceKind.gas), "A CLC means gas")
-        #expect(value(.startDate, in: fields) == .day(CaptureDay(year: 2026, month: 3, day: 15)!))
+        #expect(value(.startDate, in: fields) == .day(CalendarDay(printedYear: 2026, month: 3, day: 15)!))
         #expect(value(.minimumMonths, in: fields) == .number(24))
-        #expect(value(.monthlyPrice, in: fields) == .money(CaptureMoney(amount: Decimal(string: "12.50")!, currencyCode: "RON")))
+        #expect(value(.monthlyPrice, in: fields) == .money(Money(Decimal(string: "12.50")!, currency: "RON")))
         #expect(value(.lineItems, in: fields) == nil)
     }
 
@@ -86,8 +86,8 @@ struct ContractCaptureTests {
         #expect(value(.phoneNumber, in: fields) == .text("0700 000 000"))
         #expect(value(.serviceKind, in: fields) == .text(ServiceKind.mobile))
         #expect(value(.minimumMonths, in: fields) == .number(24))
-        #expect(value(.startDate, in: fields) == .day(CaptureDay(year: 2026, month: 2, day: 1)!))
-        #expect(value(.monthlyPrice, in: fields)?.money?.currencyCode == "EUR", "Never turned into lei")
+        #expect(value(.startDate, in: fields) == .day(CalendarDay(printedYear: 2026, month: 2, day: 1)!))
+        #expect(value(.monthlyPrice, in: fields)?.money?.currency == "EUR", "Never turned into lei")
     }
 
     @Test func aBillCarriesTheCodesThatFindItsContract() {
@@ -113,7 +113,7 @@ struct ContractCaptureTests {
                                    normalizer: nil, onDeviceModel: nil, cloudModel: nil, store: nil)
         let result = try await engine.capture(CaptureRequest(.text(Self.gasContract), options: CaptureOptions(storeDocument: false, referenceDate: Self.referenceDate)))
         #expect(result.kind == .contract)
-        let end = try #require(CaptureDay(year: 2028, month: 3, day: 15))
+        let end = try #require(CalendarDay(printedYear: 2028, month: 3, day: 15))
         #expect(result.field(.minimumPeriodEnd)?.value == .day(end))
         #expect(result.reminder == CaptureReminderHint(day: end, blueprintKey: SubscriptionFields.minimumEndsBlueprint, templateKey: BuiltInTemplates.Key.subscription))
         #expect(result.suggestions.contains { $0.destination == .obligation(blueprintKey: SubscriptionFields.minimumEndsBlueprint, templateKey: BuiltInTemplates.Key.subscription) })
@@ -123,11 +123,11 @@ struct ContractCaptureTests {
     }
 
     @Test func aMinimumPeriodEndingBeforeItStartsIsDropped() {
-        let start = CaptureField(key: .startDate, value: .day(CaptureDay(year: 2026, month: 3, day: 15)!), confidence: 0.7, tier: .heuristic)
-        let end = CaptureField(key: .minimumPeriodEnd, value: .day(CaptureDay(year: 2025, month: 3, day: 15)!), confidence: 0.6, tier: .heuristic)
+        let start = CaptureField(key: .startDate, value: .day(CalendarDay(printedYear: 2026, month: 3, day: 15)!), confidence: 0.7, tier: .heuristic)
+        let end = CaptureField(key: .minimumPeriodEnd, value: .day(CalendarDay(printedYear: 2025, month: 3, day: 15)!), confidence: 0.6, tier: .heuristic)
         let resolved = CaptureConsistency.resolve([start, end], kind: .contract, today: Self.today)
         #expect(resolved.dropped == [.minimumPeriodEnd])
-        let ancient = CaptureField(key: .startDate, value: .day(CaptureDay(year: 1950, month: 1, day: 1)!), confidence: 0.7, tier: .heuristic)
+        let ancient = CaptureField(key: .startDate, value: .day(CalendarDay(printedYear: 1950, month: 1, day: 1)!), confidence: 0.7, tier: .heuristic)
         #expect(CaptureConsistency.plausible([ancient], kind: .contract, today: Self.today).isEmpty, "No household contract started in 1950")
     }
 

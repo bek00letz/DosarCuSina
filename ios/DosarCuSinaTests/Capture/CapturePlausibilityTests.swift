@@ -9,11 +9,11 @@ struct CapturePlausibilityTests {
 
     /// 2 November 2026.
     let now = Date(timeIntervalSince1970: 1_793_577_600)
-    let today = CaptureDay(year: 2026, month: 11, day: 2)!
+    let today = CalendarDay(printedYear: 2026, month: 11, day: 2)!
 
-    private func day(_ year: Int, _ month: Int, _ day: Int) -> CaptureDay { CaptureDay(year: year, month: month, day: day)! }
+    private func day(_ year: Int, _ month: Int, _ day: Int) -> CalendarDay { CalendarDay(printedYear: year, month: month, day: day)! }
 
-    private func field(_ key: CaptureFieldKey, _ value: CaptureDay, _ tier: CaptureTier = .heuristic, confidence: Double = 0.8) -> CaptureField {
+    private func field(_ key: CaptureFieldKey, _ value: CalendarDay, _ tier: CaptureTier = .heuristic, confidence: Double = 0.8) -> CaptureField {
         CaptureField(key: key, value: .day(value), confidence: confidence, tier: tier)
     }
 

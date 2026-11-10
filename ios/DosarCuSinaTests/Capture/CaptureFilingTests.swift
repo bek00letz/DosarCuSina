@@ -50,7 +50,7 @@ struct CapturedDocumentFilingTests {
     }
 
     private func policy(document: CapturedDocumentRef?) -> CaptureResult {
-        let expiry = CaptureDay(date: Calendar.current.date(byAdding: .day, value: 375, to: Date())!)
+        let expiry = CalendarDay(Calendar.current.date(byAdding: .day, value: 375, to: Date())!)
         return CaptureResult(kind: .rcaPolicy, kindConfidence: 0.95, fields: [
             CaptureField(key: .expiryDate, value: .day(expiry), confidence: 0.9, tier: .heuristic),
             CaptureField(key: .policyNumber, value: .text("RO/00/X/000000000"), confidence: 0.9, tier: .heuristic),

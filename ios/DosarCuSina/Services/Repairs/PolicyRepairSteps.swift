@@ -107,7 +107,7 @@ struct HomePolicyWithoutDeadlineStep: DataRepairStep {
                 guard !running.contains(key), !found.contains(where: { $0.asset.id == asset.id && $0.blueprint.key == key }),
                       let blueprint = template.blueprints.first(where: { $0.key == key }) else { continue }
                 let analysis = analyzer.analyze(text: text, referenceDate: now, as: .insurancePolicy)
-                guard let end = analysis.fields.first(where: { $0.key == .expiryDate })?.value.day.map(CaptureMapping.calendarDay),
+                guard let end = analysis.fields.first(where: { $0.key == .expiryDate })?.value.day,
                       blueprint.isWorthScheduling(on: end, today: today, values: asset.values) else { continue }
                 found.append(Candidate(asset: asset, attachment: attachment, blueprint: blueprint, day: end))
             }

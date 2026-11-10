@@ -125,7 +125,7 @@ struct PolicyholderTests {
     }
 
     private func policy(holder: String?, number: String? = nil) -> CaptureResult {
-        let expiry = CaptureDay(date: Calendar.current.date(byAdding: .day, value: 375, to: Date())!)
+        let expiry = CalendarDay(Calendar.current.date(byAdding: .day, value: 375, to: Date())!)
         var fields = [
             CaptureField(key: .expiryDate, value: .day(expiry), confidence: 0.9, tier: .heuristic),
             CaptureField(key: .policyNumber, value: .text("RO/00/X00/XX 123456789"), confidence: 0.9, tier: .heuristic),

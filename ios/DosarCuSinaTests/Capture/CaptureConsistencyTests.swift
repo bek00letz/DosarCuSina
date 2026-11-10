@@ -8,10 +8,10 @@ import Testing
 @Suite("Consistency after all tiers")
 struct CaptureConsistencyTests {
 
-    let today = CaptureDay(year: 2026, month: 11, day: 1)!
-    let birth = CaptureDay(year: 1990, month: 5, day: 20)!
+    let today = CalendarDay(printedYear: 2026, month: 11, day: 1)!
+    let birth = CalendarDay(printedYear: 1990, month: 5, day: 20)!
 
-    private func field(_ key: CaptureFieldKey, _ day: CaptureDay, _ tier: CaptureTier, source: String? = nil) -> CaptureField {
+    private func field(_ key: CaptureFieldKey, _ day: CalendarDay, _ tier: CaptureTier, source: String? = nil) -> CaptureField {
         CaptureField(key: key, value: .day(day), confidence: tier == .heuristic ? 0.8 : 0.72, sourceText: source, tier: tier)
     }
 
@@ -32,39 +32,39 @@ struct CaptureConsistencyTests {
         let resolved = CaptureConsistency.resolve([
             field(.birthDate, birth, .heuristic),
             field(.expiryDate, birth, .onDeviceModel),
-            field(.issueDate, CaptureDay(year: 2022, month: 3, day: 1)!, .heuristic),
+            field(.issueDate, CalendarDay(printedYear: 2022, month: 3, day: 1)!, .heuristic),
         ], kind: .passport, today: today)
         #expect(resolved.fields.first { $0.key == .expiryDate } == nil)
 
         // An expiry before the issue date: the less trusted of the two goes.
         let before = CaptureConsistency.resolve([
-            field(.issueDate, CaptureDay(year: 2022, month: 3, day: 1)!, .heuristic),
-            field(.expiryDate, CaptureDay(year: 2012, month: 3, day: 1)!, .onDeviceModel),
+            field(.issueDate, CalendarDay(printedYear: 2022, month: 3, day: 1)!, .heuristic),
+            field(.expiryDate, CalendarDay(printedYear: 2012, month: 3, day: 1)!, .onDeviceModel),
         ], kind: .passport, today: today)
         #expect(keys(before.fields) == [.issueDate])
         // The AI provider is trusted above the phone's labels (`ReadingArbiter`).
         let secondOpinion = CaptureConsistency.resolve([
-            field(.issueDate, CaptureDay(year: 2022, month: 3, day: 1)!, .heuristic),
-            field(.expiryDate, CaptureDay(year: 2021, month: 3, day: 1)!, .cloudModel),
+            field(.issueDate, CalendarDay(printedYear: 2022, month: 3, day: 1)!, .heuristic),
+            field(.expiryDate, CalendarDay(printedYear: 2021, month: 3, day: 1)!, .cloudModel),
         ], kind: .passport, today: today)
         #expect(keys(secondOpinion.fields) == [.expiryDate])
     }
 
     @Test("An issue date in the future, or before the holder turned 14, isn't an identity card's")
     func issueDateBounds() {
-        let future = CaptureConsistency.resolve([field(.issueDate, CaptureDay(year: 2027, month: 1, day: 1)!, .heuristic)], kind: .identityCard, today: today)
+        let future = CaptureConsistency.resolve([field(.issueDate, CalendarDay(printedYear: 2027, month: 1, day: 1)!, .heuristic)], kind: .identityCard, today: today)
         #expect(future.fields.isEmpty)
 
         let child = CaptureConsistency.resolve([
             field(.birthDate, birth, .deterministic),
-            field(.issueDate, CaptureDay(year: 2000, month: 1, day: 1)!, .onDeviceModel),
+            field(.issueDate, CalendarDay(printedYear: 2000, month: 1, day: 1)!, .onDeviceModel),
         ], kind: .identityCard, today: today)
         #expect(keys(child.fields) == [.birthDate])
 
         // Children get passports: the same dates stand on one.
         let passport = CaptureConsistency.resolve([
             field(.birthDate, birth, .deterministic),
-            field(.issueDate, CaptureDay(year: 2000, month: 1, day: 1)!, .heuristic),
+            field(.issueDate, CalendarDay(printedYear: 2000, month: 1, day: 1)!, .heuristic),
         ], kind: .passport, today: today)
         #expect(keys(passport.fields) == [.birthDate, .issueDate])
     }
@@ -72,14 +72,14 @@ struct CaptureConsistencyTests {
     @Test("A valid CNP decides the birth date, unless a checked MRZ already did")
     func personalNumberDecidesBirthDate() {
         let cnp = CaptureField(key: .personalNumber, value: .text("2900520990015"), confidence: 0.97, tier: .deterministic)
-        let printed = field(.birthDate, CaptureDay(year: 1990, month: 5, day: 2)!, .heuristic)
+        let printed = field(.birthDate, CalendarDay(printedYear: 1990, month: 5, day: 2)!, .heuristic)
         let resolved = CaptureConsistency.resolve([cnp, printed], kind: .identityCard, today: today)
         #expect(resolved.fields.first { $0.key == .birthDate }?.value.day == birth)
         #expect(resolved.fields.first { $0.key == .birthDate }?.tier == .deterministic)
 
-        let zone = field(.birthDate, CaptureDay(year: 1990, month: 5, day: 21)!, .deterministic, source: CaptureField.machineReadableSource)
+        let zone = field(.birthDate, CalendarDay(printedYear: 1990, month: 5, day: 21)!, .deterministic, source: CaptureField.machineReadableSource)
         let withZone = CaptureConsistency.resolve([cnp, zone], kind: .identityCard, today: today)
-        #expect(withZone.fields.first { $0.key == .birthDate }?.value.day == CaptureDay(year: 1990, month: 5, day: 21))
+        #expect(withZone.fields.first { $0.key == .birthDate }?.value.day == CalendarDay(printedYear: 1990, month: 5, day: 21))
     }
 
     @Test("When two printed values disagree, the other one is marked for a look")
@@ -113,8 +113,8 @@ struct CaptureConsistencyTests {
     func engineSpecimen() async throws {
         // A second opinion reads the whole card: the birth date where it is, and again as the issue date.
         let cloud = CaptureEngineTests.StubModel(tier: .cloudModel, isAvailable: true, fields: [
-            CaptureField(key: .birthDate, value: .day(CaptureDay(year: 1983, month: 7, day: 3)!), confidence: 0.8, tier: .cloudModel),
-            CaptureField(key: .issueDate, value: .day(CaptureDay(year: 1983, month: 7, day: 3)!), confidence: 0.65, tier: .cloudModel),
+            CaptureField(key: .birthDate, value: .day(CalendarDay(printedYear: 1983, month: 7, day: 3)!), confidence: 0.8, tier: .cloudModel),
+            CaptureField(key: .issueDate, value: .day(CalendarDay(printedYear: 1983, month: 7, day: 3)!), confidence: 0.65, tier: .cloudModel),
         ])
         let engine = CaptureEngine(analyzer: CaptureAnalyzer(), recognizer: PositionedRecognizer(lines: Card.electronicFront),
                                    normalizer: nil, onDeviceModel: nil, cloudModel: cloud, store: nil)
@@ -122,7 +122,7 @@ struct CaptureConsistencyTests {
         let result = try await engine.capture(CaptureRequest(.images([CaptureImage(image: image)]),
                                                              options: CaptureOptions(useCloudModel: true, referenceDate: Date(timeIntervalSince1970: 1_793_577_600))))
         #expect(cloud.calls == 1)
-        #expect(result.field(.birthDate)?.value.day == CaptureDay(year: 1983, month: 7, day: 3))
+        #expect(result.field(.birthDate)?.value.day == CalendarDay(printedYear: 1983, month: 7, day: 3))
         #expect(result.field(.issueDate) == nil)
         #expect(result.field(.givenNames)?.value.text == "CORINA IOANA")
         #expect(result.notices.contains(.identityBackMissing))

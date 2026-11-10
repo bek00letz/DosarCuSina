@@ -109,9 +109,15 @@ public struct VisionCaptureRecognizer: CaptureRecognizing {
         return found.isEmpty ? nil : found
     }
 
-    /// Runs a pass, retrying once after a short pause. Returns nil when both tries fail.
+    /// How long a failed pass waits before its one retry. A pass fails on a cold start,
+    /// while Vision loads its model, or while the Neural Engine is busy elsewhere, and
+    /// Vision says nothing when it is ready again: there is no event to wait for. A
+    /// backoff, not motion, so it lives with the reader and not in `DS.Motion`.
+    static let retryPause: Duration = .milliseconds(300)
+
+    /// Runs a pass, retrying once after `pause`. Returns nil when both tries fail.
     /// Cancellation isn't retried. Only the pass name and error code are logged, never content.
-    static func attempt<T: Sendable>(_ pass: String, _ work: @Sendable () async throws -> T) async -> T? {
+    static func attempt<T: Sendable>(_ pass: String, pause: Duration = retryPause, _ work: @Sendable () async throws -> T) async -> T? {
         for attempt in 1...2 {
             do {
                 return try await work()
@@ -122,7 +128,8 @@ public struct VisionCaptureRecognizer: CaptureRecognizing {
                 let code = (error as NSError).code
                 let domain = (error as NSError).domain
                 CaptureLog.engine.error("Vision \(pass, privacy: .public) pass failed (try \(attempt)): \(domain, privacy: .public) \(code)")
-                if attempt == 1 { try? await Task.sleep(for: .milliseconds(300)) }
+                // Sleeping throws only when the reading is cancelled: no retry then.
+                if attempt == 1 { do { try await Task.sleep(for: pause) } catch { return nil } }
             }
         }
         return nil

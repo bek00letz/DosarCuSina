@@ -122,9 +122,8 @@ struct CaptureKindProfileTests {
         func add(_ key: CaptureFieldKey, _ value: CaptureValue) {
             fields.append(CaptureField(key: key, value: value, confidence: 0.9, sourceText: nil, tier: .heuristic))
         }
-        if let field = kind.profile.deadlineField, let deadlineDay,
-           let day = CaptureDay(year: deadlineDay.year, month: deadlineDay.month, day: deadlineDay.day) {
-            add(field, .day(day))
+        if let field = kind.profile.deadlineField, let deadlineDay {
+            add(field, .day(deadlineDay))
         }
         switch kind {
         case .fiscalReceipt, .warrantyCertificate: add(.productName, .text("Hotă Exemplu"))
@@ -169,7 +168,7 @@ struct CaptureKindProfileTests {
             CaptureField(key: .provider, value: .text("Exemplu Asigurări S.A."), confidence: 0.9, tier: .heuristic),
             CaptureField(key: .policyNumber, value: .text("LOC-000001"), confidence: 0.9, tier: .heuristic),
             CaptureField(key: .coverageType, value: .text(InsuranceCover.home), confidence: 0.7, tier: .heuristic),
-            CaptureField(key: .expiryDate, value: .day(CaptureDay(year: 2027, month: 10, day: 31)!), confidence: 0.9, tier: .heuristic),
+            CaptureField(key: .expiryDate, value: .day(CalendarDay(printedYear: 2027, month: 10, day: 31)!), confidence: 0.9, tier: .heuristic),
         ]
         let routing = CaptureRouter.route(kind: .insurancePolicy, kindConfidence: 0.9, fields: fields)
         var review = CaptureReview(result: CaptureResult(kind: .insurancePolicy, kindConfidence: 0.9, fields: fields, suggestions: routing.suggestions,
@@ -204,7 +203,7 @@ struct CaptureKindProfileTests {
             CaptureField(key: .policyNumber, value: .text("CASCO-000001"), confidence: 0.9, tier: .heuristic),
             CaptureField(key: .claimsPhone, value: .text("0210000002"), confidence: 0.9, tier: .heuristic),
             CaptureField(key: .coverageType, value: .text(InsuranceCover.casco), confidence: 0.7, tier: .heuristic),
-            CaptureField(key: .expiryDate, value: .day(CaptureDay(year: 2027, month: 10, day: 31)!), confidence: 0.9, tier: .heuristic),
+            CaptureField(key: .expiryDate, value: .day(CalendarDay(printedYear: 2027, month: 10, day: 31)!), confidence: 0.9, tier: .heuristic),
         ]
         let routing = CaptureRouter.route(kind: .insurancePolicy, kindConfidence: 0.9, fields: fields)
         let review = CaptureReview(result: CaptureResult(kind: .insurancePolicy, kindConfidence: 0.9, fields: fields, suggestions: routing.suggestions,

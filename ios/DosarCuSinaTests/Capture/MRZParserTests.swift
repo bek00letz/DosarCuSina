@@ -32,8 +32,8 @@ struct MRZParserTests {
         #expect(result.issuingCountry == "UTO")
         #expect(result.surname == "ERIKSSON")
         #expect(result.givenNames == "ANNA MARIA")
-        #expect(result.birthDate == CaptureDay(year: 1974, month: 8, day: 12))
-        #expect(result.expiryDate == CaptureDay(year: 2012, month: 4, day: 15))
+        #expect(result.birthDate == CalendarDay(printedYear: 1974, month: 8, day: 12))
+        #expect(result.expiryDate == CalendarDay(printedYear: 2012, month: 4, day: 15))
         #expect(result.sex == "F")
     }
 
@@ -45,7 +45,7 @@ struct MRZParserTests {
         """
         let result = try #require(MRZParser.parse(text: text, referenceDate: today))
         #expect(result.allChecksValid)
-        #expect(result.expiryDate == CaptureDay(year: 2031, month: 4, day: 15))
+        #expect(result.expiryDate == CalendarDay(printedYear: 2031, month: 4, day: 15))
     }
 
     @Test("ID card (TD1) specimen")
@@ -96,7 +96,7 @@ struct MRZParserTests {
         let result = try #require(MRZParser.parse(text: text, referenceDate: today))
         #expect(result.birthDateValid)
         #expect(result.expiryDateValid)
-        #expect(result.expiryDate == CaptureDay(year: 2012, month: 4, day: 15))
+        #expect(result.expiryDate == CalendarDay(printedYear: 2012, month: 4, day: 15))
     }
 
     @Test("Ordinary text has no machine-readable zone")

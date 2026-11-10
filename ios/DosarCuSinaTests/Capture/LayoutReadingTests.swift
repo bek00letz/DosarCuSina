@@ -95,9 +95,9 @@ struct LayoutReadingTests {
         #expect(byKey[.givenNames]?.value.text == "CORINA IOANA")
         #expect(byKey[.sex]?.value.text == "F")
         #expect(byKey[.nationality]?.value.text == "ROU")
-        #expect(byKey[.birthDate]?.value.day == CaptureDay(year: 1983, month: 7, day: 3))
+        #expect(byKey[.birthDate]?.value.day == CalendarDay(printedYear: 1983, month: 7, day: 3))
         #expect(byKey[.documentNumber]?.value.text == "SP1236343")
-        #expect(byKey[.expiryDate]?.value.day == CaptureDay(year: 2035, month: 4, day: 6))
+        #expect(byKey[.expiryDate]?.value.day == CalendarDay(printedYear: 2035, month: 4, day: 6))
         #expect(byKey[.issueDate] == nil)
         // The specimen's CNP is fictional and fails its control digit: kept, but marked for a look.
         #expect(byKey[.personalNumber]?.value.text == "2830703460094")
@@ -171,7 +171,7 @@ struct LayoutReadingTests {
         ])])
         let layout = LabelledLayout(text: text, words: [("issue", ["data emiterii"]), ("expiry", ["data expirarii"])])
         #expect(layout.day(for: "issue") == nil)
-        #expect(layout.day(for: "expiry")?.0 == CaptureDay(year: 2032, month: 3, day: 15))
+        #expect(layout.day(for: "expiry")?.0 == CalendarDay(printedYear: 2032, month: 3, day: 15))
     }
 
     // MARK: Other layouts
@@ -205,9 +205,9 @@ struct LayoutReadingTests {
         #expect(byKey[.sex]?.value.text == "F")
         #expect(byKey[.nationality]?.value.text == "ROU")
         #expect(byKey[.issuer]?.value.text == "SPCLEP Exemplu")
-        #expect(byKey[.issueDate]?.value.day == CaptureDay(year: 2018, month: 3, day: 12))
-        #expect(byKey[.expiryDate]?.value.day == CaptureDay(year: 2028, month: 12, day: 31))
-        #expect(byKey[.birthDate]?.value.day == CaptureDay(year: 1985, month: 12, day: 31))
+        #expect(byKey[.issueDate]?.value.day == CalendarDay(printedYear: 2018, month: 3, day: 12))
+        #expect(byKey[.expiryDate]?.value.day == CalendarDay(printedYear: 2028, month: 12, day: 31))
+        #expect(byKey[.birthDate]?.value.day == CalendarDay(printedYear: 1985, month: 12, day: 31))
         #expect(byKey[.birthDate]?.tier == .deterministic)
     }
 
@@ -220,7 +220,7 @@ struct LayoutReadingTests {
         let byKey = fields(analysis)
         #expect(byKey[.surname]?.value.text == "EXEMPLU")
         #expect(byKey[.givenNames]?.value.text == "ION")
-        #expect(byKey[.expiryDate]?.value.day == CaptureDay(year: 2032, month: 3, day: 15))
+        #expect(byKey[.expiryDate]?.value.day == CalendarDay(printedYear: 2032, month: 3, day: 15))
         #expect(byKey[.sex]?.value.text == "M")
         #expect(byKey[.sex]?.tier == .deterministic)
     }
@@ -238,12 +238,12 @@ struct LayoutReadingTests {
         """, referenceDate: today)
         let byKey = fields(analysis)
         #expect(byKey[.surname]?.value.text == "EXEMPLU")
-        #expect(byKey[.expiryDate]?.value.day == CaptureDay(year: 2035, month: 4, day: 6))
+        #expect(byKey[.expiryDate]?.value.day == CalendarDay(printedYear: 2035, month: 4, day: 6))
     }
 
     @Test("Dates printed with spaces read only in their strict shape")
     func spacedDates() {
-        #expect(RomanianFieldExtractor.dates(inLine: "06 04 2035", index: 0).first?.day == CaptureDay(year: 2035, month: 4, day: 6))
+        #expect(RomanianFieldExtractor.dates(inLine: "06 04 2035", index: 0).first?.day == CalendarDay(printedYear: 2035, month: 4, day: 6))
         #expect(RomanianFieldExtractor.dates(inLine: "0722 12 34 56", index: 0).isEmpty)
         #expect(RomanianFieldExtractor.dates(inLine: "1 250 12 2024", index: 0).isEmpty)
     }
@@ -263,10 +263,10 @@ struct LayoutReadingTests {
         let analysis = analyzer.analyze(pages: [TextLayout.arrange(lines)], referenceDate: today)
         let byKey = fields(analysis)
         #expect(analysis.kind == .passport)
-        #expect(byKey[.birthDate]?.value.day == CaptureDay(year: 1990, month: 5, day: 20))
+        #expect(byKey[.birthDate]?.value.day == CalendarDay(printedYear: 1990, month: 5, day: 20))
         #expect(byKey[.birthDate]?.tier == .deterministic)
-        #expect(byKey[.issueDate]?.value.day == CaptureDay(year: 2022, month: 3, day: 1))
-        #expect(byKey[.expiryDate]?.value.day == CaptureDay(year: 2032, month: 3, day: 1))
+        #expect(byKey[.issueDate]?.value.day == CalendarDay(printedYear: 2022, month: 3, day: 1))
+        #expect(byKey[.expiryDate]?.value.day == CalendarDay(printedYear: 2032, month: 3, day: 1))
         #expect(byKey[.givenNames]?.value.text == "MARIA")
     }
 
@@ -286,7 +286,7 @@ struct LayoutReadingTests {
         """, referenceDate: today))
         #expect(valid[.personalNumber]?.value.text == "1700615990039")
         #expect(valid[.personalNumber]?.needsCheck == false)
-        #expect(valid[.birthDate]?.value.day == CaptureDay(year: 1970, month: 6, day: 15))
+        #expect(valid[.birthDate]?.value.day == CalendarDay(printedYear: 1970, month: 6, day: 15))
         #expect(valid[.issuer]?.value.text == "DRPCIV EXEMPLU")
         #expect(valid[.licenceCategories]?.value.text == "B")
 
@@ -307,7 +307,7 @@ struct LayoutReadingTests {
             Card.line("XY123456", 0.3, 0.70, 0.2, 0.035),
             Card.line("AB654321", 0.7, 0.10, 0.2, 0.035),
         ]])
-        let read = IdentityDocumentReader.read(text, template: template, today: CaptureDay(year: 2026, month: 11, day: 2)!)
+        let read = IdentityDocumentReader.read(text, template: template, today: CalendarDay(printedYear: 2026, month: 11, day: 2)!)
         let number = read.first { $0.key == .documentNumber }
         #expect(number?.value.text == "XY123456")
         #expect(number?.needsCheck == true)

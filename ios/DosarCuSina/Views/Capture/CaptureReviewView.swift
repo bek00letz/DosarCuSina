@@ -381,7 +381,7 @@ struct CaptureReviewView: View {
                         }
                     }
                     if review.showsLineItems {
-                        CaptureLineItemsEditor(lines: $review.lineItems, currency: review.value(.total)?.money?.currencyCode ?? Money.defaultCurrency)
+                        CaptureLineItemsEditor(lines: $review.lineItems, currency: review.value(.total)?.money?.currency ?? Money.defaultCurrency)
                     }
                     // A policy's class is the person's, never the car's: say where it goes, or why it doesn't.
                     if let bonusMalus = CaptureFilingPlan.bonusMalus(for: review, people: Policyholders.people(in: assets, templates: templatesByKey)) {
@@ -746,7 +746,7 @@ private struct CaptureFieldEditor: View {
     private var editorKind: EditorKind {
         switch field.value {
         case .day?: .date
-        case .money(let money)?: .money(currencyCode: money.currencyCode)
+        case .money(let money)?: .money(currencyCode: money.currency)
         case .number?: .number(unit: nil)
         case .metric(_, let unit)?: .number(unit: unit)
         case nil:
@@ -765,16 +765,16 @@ private struct CaptureFieldEditor: View {
         switch editorKind {
         case .date:
             DSDateField(title, date: Binding(
-                get: { field.value?.day?.date() },
-                set: { field.confirm($0.map { .day(CaptureDay(date: $0)) }) }
+                get: { field.value?.day?.startDate() },
+                set: { field.confirm($0.map { .day(CalendarDay($0)) }) }
             ))
         case .money(let currencyCode):
             DSMoneyField(title, amount: Binding(
                 get: { field.value?.money?.amount },
-                set: { amount in field.confirm(amount.map { .money(CaptureMoney(amount: $0, currencyCode: field.value?.money?.currencyCode ?? currencyCode)) }) }
+                set: { amount in field.confirm(amount.map { .money(Money($0, currency: field.value?.money?.currency ?? currencyCode)) }) }
             ), currencyCode: Binding(
-                get: { field.value?.money?.currencyCode ?? currencyCode },
-                set: { code in if let amount = field.value?.money?.amount { field.confirm(.money(CaptureMoney(amount: amount, currencyCode: code))) } }
+                get: { field.value?.money?.currency ?? currencyCode },
+                set: { code in if let amount = field.value?.money?.amount { field.confirm(.money(Money(amount, currency: code))) } }
             ))
         case .number(let unit):
             // The one number field: what it can't read clearly it refuses in the field.

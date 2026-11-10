@@ -47,10 +47,10 @@ struct IdentityCardTests {
         #expect(byKey[.holderName]?.value.text == "ION-ANDREI EXEMPLU")
         #expect(byKey[.personalNumber]?.value.text == "1800101990006")
         #expect(byKey[.personalNumber]?.tier == .deterministic)
-        #expect(byKey[.birthDate]?.value.day == CaptureDay(year: 1980, month: 1, day: 1))
+        #expect(byKey[.birthDate]?.value.day == CalendarDay(printedYear: 1980, month: 1, day: 1))
         #expect(byKey[.documentNumber]?.value.text == "XY123456")
-        #expect(byKey[.issueDate]?.value.day == CaptureDay(year: 2022, month: 3, day: 15))
-        #expect(byKey[.expiryDate]?.value.day == CaptureDay(year: 2032, month: 3, day: 15))
+        #expect(byKey[.issueDate]?.value.day == CalendarDay(printedYear: 2022, month: 3, day: 15))
+        #expect(byKey[.expiryDate]?.value.day == CalendarDay(printedYear: 2032, month: 3, day: 15))
         #expect(byKey[.sex]?.value.text == "M")
         #expect(byKey[.lineItems] == nil)
         #expect(byKey[.total] == nil)
@@ -69,7 +69,7 @@ struct IdentityCardTests {
         """, referenceDate: today)
 
         let byKey = fields(analysis)
-        #expect(byKey[.birthDate]?.value.day == CaptureDay(year: 1985, month: 12, day: 31))
+        #expect(byKey[.birthDate]?.value.day == CalendarDay(printedYear: 1985, month: 12, day: 31))
         #expect(byKey[.issueDate] == nil)
         #expect(byKey[.expiryDate] == nil)
     }
@@ -102,9 +102,9 @@ struct IdentityCardTests {
         #expect(byKey[.surname]?.value.text == "EXEMPLU")
         #expect(byKey[.givenNames]?.value.text == "MARIA")
         #expect(byKey[.documentNumber]?.value.text == "XT123456")
-        #expect(byKey[.birthDate]?.value.day == CaptureDay(year: 1985, month: 12, day: 31))
-        #expect(byKey[.issueDate]?.value.day == CaptureDay(year: 2018, month: 3, day: 12))
-        #expect(byKey[.expiryDate]?.value.day == CaptureDay(year: 2028, month: 12, day: 31))
+        #expect(byKey[.birthDate]?.value.day == CalendarDay(printedYear: 1985, month: 12, day: 31))
+        #expect(byKey[.issueDate]?.value.day == CalendarDay(printedYear: 2018, month: 3, day: 12))
+        #expect(byKey[.expiryDate]?.value.day == CalendarDay(printedYear: 2028, month: 12, day: 31))
         #expect(byKey[.issuer]?.value.text == "SPCLEP Exemplu")
     }
 
@@ -113,7 +113,7 @@ struct IdentityCardTests {
         #expect(RomanianFieldExtractor.isValidCNP("1800101990006"))
         #expect(!RomanianFieldExtractor.isValidCNP("1800101990007"))
         #expect(!RomanianFieldExtractor.isValidCNP("180010199000"))
-        #expect(RomanianFieldExtractor.birthDate(fromCNP: "5050505990000") == CaptureDay(year: 2005, month: 5, day: 5))
+        #expect(RomanianFieldExtractor.birthDate(fromCNP: "5050505990000") == CalendarDay(printedYear: 2005, month: 5, day: 5))
     }
 
     @Test("Identifiers are never money, and never a billed line")

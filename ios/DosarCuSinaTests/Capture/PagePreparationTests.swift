@@ -112,7 +112,7 @@ struct PagePreparationTests {
         let result = try await engine.capture(CaptureRequest(.images([CaptureImage(image: photo)]),
                                                              options: CaptureOptions(useCloudModel: true, referenceDate: now)))
         #expect(result.kind == .passport)
-        #expect(result.field(.expiryDate)?.value.day == CaptureDay(year: 2031, month: 4, day: 12))
+        #expect(result.field(.expiryDate)?.value.day == CalendarDay(printedYear: 2031, month: 4, day: 12))
         #expect(!result.notices.contains(.littleTextRecognized))
         // The model is shown the page as it was read; the photo as taken is what's kept.
         #expect(model.page?.width == 540)

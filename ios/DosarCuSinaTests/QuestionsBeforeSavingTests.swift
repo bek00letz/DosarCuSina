@@ -191,7 +191,7 @@ struct QuestionsBeforeSavingTests {
         let golf = try car(context)
         let fields = [
             CaptureField(key: .provider, value: .text("Service Exemplu SRL"), confidence: 0.9, sourceText: nil, tier: .heuristic),
-            CaptureField(key: .issueDate, value: .day(CaptureDay(year: 2026, month: 5, day: 30)!), confidence: 0.9, sourceText: nil, tier: .heuristic),
+            CaptureField(key: .issueDate, value: .day(CalendarDay(printedYear: 2026, month: 5, day: 30)!), confidence: 0.9, sourceText: nil, tier: .heuristic),
             CaptureField(key: .odometer, value: .metric(value: 4_572, unit: .kilometres), confidence: 0.9, sourceText: nil, tier: .heuristic),
         ]
         let routing = CaptureRouter.route(kind: .serviceInvoice, kindConfidence: 0.9, fields: fields)

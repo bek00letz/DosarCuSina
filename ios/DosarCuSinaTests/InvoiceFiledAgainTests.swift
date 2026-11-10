@@ -159,7 +159,7 @@ struct InvoiceFiledAgainTests {
         var draft = VisitDraft(date: noon(today))
         let fields = [
             CaptureField(key: .invoiceNumber, value: .text("SRV 0000001"), confidence: 0.9, sourceText: nil, tier: .heuristic),
-            CaptureField(key: .total, value: .money(CaptureMoney(amount: 480, currencyCode: "RON")), confidence: 0.9, sourceText: nil, tier: .heuristic),
+            CaptureField(key: .total, value: .money(Money(480, currency: "RON")), confidence: 0.9, sourceText: nil, tier: .heuristic),
         ]
         let result = CaptureResult(kind: .serviceInvoice, kindConfidence: 0.9, fields: fields, suggestions: [], reminder: nil,
                                    recognizedText: "", barcodes: [], document: .kept(attachmentID: UUID()), notices: [])

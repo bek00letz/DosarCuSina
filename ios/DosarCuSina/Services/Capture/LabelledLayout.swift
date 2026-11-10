@@ -128,7 +128,7 @@ struct LabelledLayout<Key: Hashable> {
     }
 
     /// The date printed for a label: after it on its line, or in its value.
-    func day(for key: Key, window: DateWindow = .aroundToday) -> (CaptureDay, String)? {
+    func day(for key: Key, window: DateWindow = .aroundToday) -> (CalendarDay, String)? {
         for position in positions where position.key == key {
             let line = text.folded[position.line]
             let nextLabel = (positionsByLine[position.line] ?? []).filter { $0.start > position.start }.map(\.start).min() ?? line.endIndex
