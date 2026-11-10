@@ -98,11 +98,19 @@ enum ChangeTimes {
         }
     }
 
+    /// Whether `property` is part of the record's own state: a value or a link it keeps itself
+    /// (`StoredProperty.isOwn`, never a list of the records that point at it), that counts as a
+    /// change of it (`ChangeTimed.changeCounts`), and not its change time. The one definition:
+    /// change times are given by it, and undo checks and takes back by it (`UndoableRecord.isStillAsLeft`).
+    static func isOwnState<M: UndoableRecord>(_ property: StoredProperty<M>, of record: M) -> Bool {
+        property.isOwn && property.name != "updatedAt" && ((record as? any ChangeTimed)?.changeCounts(property.name) ?? true)
+    }
+
     /// The values and links a record keeps itself that count as a change of it, without its
-    /// change time.
-    static func ownState<M: ChangeTimed>(of record: M) -> [String: StoredValue] {
+    /// change time (`isOwnState`).
+    static func ownState<M: UndoableRecord>(of record: M) -> [String: StoredValue] {
         var state: [String: StoredValue] = [:]
-        for property in M.storedProperties where property.isOwn && property.name != "updatedAt" && record.changeCounts(property.name) {
+        for property in M.storedProperties where isOwnState(property, of: record) {
             state[property.name] = property.read(record)
         }
         return state
@@ -122,8 +130,8 @@ enum ChangeTimes {
     private static func stampWhole<M: PartOfChangeTimed>(of part: M, in context: ModelContext, store: ModelContext, now: Date) {
         // The record it belongs to now, or, for a part taken away, the one it belonged to.
         var refs: [RecordRef] = []
-        if case .one(let ref?) = RecordState.capture(part).values[M.wholeProperty] { refs.append(ref) }
-        if let stored = M.find(part.recordKey, in: store), case .one(let ref?) = RecordState.capture(stored).values[M.wholeProperty] {
+        if case .one(let ref?) = RecordState.links(part).values[M.wholeProperty] { refs.append(ref) }
+        if let stored = M.find(part.recordKey, in: store), case .one(let ref?) = RecordState.links(stored).values[M.wholeProperty] {
             refs.append(ref)
         }
         for ref in Set(refs) {
