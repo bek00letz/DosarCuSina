@@ -20,6 +20,7 @@ struct KindLabelTablesTests {
         (.veterinaryRecord, [.microchip, .vaccineName, .nextDoseDate]),
         (.fiscalReceipt, [.purchaseDate, .warrantyMonths, .serialNumber]),
         (.warrantyCertificate, [.purchaseDate, .warrantyMonths, .serialNumber]),
+        (.vehicleRegistration, [.civNumber, .make, .model, .firstRegistrationDate]),
     ]
 
     // MARK: The tables
@@ -37,7 +38,7 @@ struct KindLabelTablesTests {
 
     @Test("What every document prints the same way is one table, read by every kind without a row of its own")
     func invoicesReadTheCommonTable() {
-        for key in [CaptureFieldKey.issueDate, .total, .vin, .odometer] {
+        for key in [CaptureFieldKey.issueDate, .total, .vin, .odometer, .invoiceNumber, .providerTaxID] {
             #expect(!CaptureKindProfile.commonLabels(for: key).isEmpty, "\(key)")
         }
         for kind in [CaptureDocumentKind.serviceInvoice, .other, .medicalResult, .itpReport, .veterinaryRecord] {
@@ -143,6 +144,21 @@ struct KindLabelTablesTests {
         NewWording(kind: .serviceInvoice, row: .total, wording: "suma datorata",
                    text: "EXEMPLU SERVICE AUTO S.R.L.\nSuma datorată: 695,00 lei",
                    reads: .total, value: .money(Money(695, currency: "RON"))),
+        NewWording(kind: .serviceInvoice, row: .invoiceNumber, wording: "numar document",
+                   text: "EXEMPLU SERVICE AUTO S.R.L.\nNumăr document: XYZ-2026-0001",
+                   reads: .invoiceNumber, value: .text("XYZ-2026-0001")),
+        NewWording(kind: .serviceInvoice, row: .providerTaxID, wording: "cod tva",
+                   text: "EXEMPLU SERVICE AUTO S.R.L.\nCod TVA: RO 12345674",
+                   reads: .providerTaxID, value: .text("RO12345674")),
+        NewWording(kind: .rcaPolicy, row: .policyNumber, wording: "identificator polita",
+                   text: "POLIȚĂ RCA\nIdentificator poliță: 123456789",
+                   reads: .policyNumber, value: .text("123456789")),
+        NewWording(kind: .vehicleRegistration, row: .civNumber, wording: "carte identitate vehicul",
+                   text: "CERTIFICAT DE ÎNMATRICULARE\nCarte identitate vehicul: J 123456",
+                   reads: .civNumber, value: .text("J123456")),
+        NewWording(kind: .vehicleRegistration, row: .make, wording: "marca",
+                   text: "CERTIFICAT DE ÎNMATRICULARE\nMarca VW",
+                   reads: .make, value: .text("VW")),
     ]
 
     @Test("A wording added to a kind's table is read with no change to the readers", arguments: newWordings)

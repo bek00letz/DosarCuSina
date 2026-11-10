@@ -158,10 +158,10 @@ public struct CaptureAnalyzer: Sendable {
             }
         case .vehicleRegistration:
             addVehicleIdentity(text, profile: profile, into: &fields)
-            if let civ = RomanianFieldExtractor.civNumber(in: text) {
+            if let civ = RomanianFieldExtractor.civNumber(in: text, labels: profile.labels(for: .civNumber)) {
                 fields.add(.civNumber, .text(civ.value), civ.quality.confidence, civ.source)
             }
-            for (key, entry) in RomanianFieldExtractor.registrationFields(in: text).sorted(by: { $0.key.rawValue < $1.key.rawValue }) {
+            for (key, entry) in RomanianFieldExtractor.registrationFields(in: text, labels: profile.labels).sorted(by: { $0.key.rawValue < $1.key.rawValue }) {
                 fields.add(key, entry.0, 0.65, entry.1)
             }
         case .rcaPolicy, .insurancePolicy:
@@ -169,7 +169,7 @@ public struct CaptureAnalyzer: Sendable {
         case .utilityInvoice:
             // The bill's own labels (its dates, the meter's index, how to pay it), for every
             // provider the same way; the issuer, the number and the total as on any invoice.
-            addIssuer(text, into: &fields)
+            addIssuer(text, profile: profile, into: &fields)
             addInvoiceNumberAndTotal(text, profile: profile, into: &fields)
             fields.add(BillReader.fields(in: text, window: years))
             // The bill's own issue-date wordings are its layout's; when they find none, the
@@ -180,7 +180,7 @@ public struct CaptureAnalyzer: Sendable {
             // What ties the bill to its contract: the codes and the service.
             fields.add(ContractReader.identifierFields(in: text))
         case .contract:
-            addContractProvider(text, into: &fields)
+            addContractProvider(text, profile: profile, into: &fields)
             fields.add(ContractReader.contractFields(in: text, window: years))
         case .serviceInvoice:
             addInvoiceBasics(text, profile: profile, years: years, into: &fields)
@@ -195,7 +195,7 @@ public struct CaptureAnalyzer: Sendable {
                 fields.add(.expiryDate, .day(expiry.day), 0.8, expiry.source)
             }
             addOdometer(text, profile: profile, into: &fields)
-            addIssuer(text, into: &fields)
+            addIssuer(text, profile: profile, into: &fields)
             addIssueDate(text, labels: profile.labels(for: .issueDate), years: years, into: &fields)
         case .veterinaryRecord:
             if let chip = RomanianFieldExtractor.microchip(in: text, labels: profile.labels(for: .microchip)) {
@@ -208,10 +208,10 @@ public struct CaptureAnalyzer: Sendable {
             if let next = RomanianFieldExtractor.labelledDate(profile.labels(for: .nextDoseDate), in: text, window: years) {
                 fields.add(.nextDoseDate, .day(next.day), 0.75, next.source)
             }
-            addIssuer(text, into: &fields)
+            addIssuer(text, profile: profile, into: &fields)
             addIssueDate(text, labels: profile.labels(for: .issueDate), years: years, into: &fields)
         case .medicalResult:
-            addIssuer(text, into: &fields)
+            addIssuer(text, profile: profile, into: &fields)
             addIssueDate(text, labels: profile.labels(for: .issueDate), years: years, into: &fields)
         case .other:
             addInvoiceBasics(text, profile: profile, years: years, into: &fields)
@@ -276,13 +276,13 @@ public struct CaptureAnalyzer: Sendable {
     }
 
     private func addInvoiceBasics(_ text: CaptureText, profile: CaptureKindProfile, years: DateWindow, into fields: inout FieldSet) {
-        addIssuer(text, into: &fields)
+        addIssuer(text, profile: profile, into: &fields)
         addInvoiceNumberAndTotal(text, profile: profile, into: &fields)
         addIssueDate(text, labels: profile.labels(for: .issueDate), years: years, into: &fields)
     }
 
     private func addInvoiceNumberAndTotal(_ text: CaptureText, profile: CaptureKindProfile, into fields: inout FieldSet) {
-        if let invoice = RomanianFieldExtractor.invoiceNumber(in: text) {
+        if let invoice = RomanianFieldExtractor.invoiceNumber(in: text, labels: profile.labels(for: .invoiceNumber)) {
             fields.add(.invoiceNumber, .text(invoice.value), invoice.quality.confidence, invoice.source)
         }
         if let total = RomanianFieldExtractor.total(in: text, labels: profile.labels(for: .total)) {
@@ -295,8 +295,8 @@ public struct CaptureAnalyzer: Sendable {
         ambiguous ? min(confidence, CaptureField.checkThreshold - 0.1) : confidence
     }
 
-    private func addIssuer(_ text: CaptureText, into fields: inout FieldSet) {
-        if let taxID = RomanianFieldExtractor.taxID(in: text) {
+    private func addIssuer(_ text: CaptureText, profile: CaptureKindProfile, into fields: inout FieldSet) {
+        if let taxID = RomanianFieldExtractor.taxID(in: text, labels: profile.labels(for: .providerTaxID)) {
             fields.add(.providerTaxID, .text(taxID.value), taxID.valid ? 0.97 : 0.5, text.original[taxID.line], tier: taxID.valid ? .deterministic : .heuristic)
         }
         if let issuer = RomanianFieldExtractor.issuerName(in: text) {
@@ -306,11 +306,11 @@ public struct CaptureAnalyzer: Sendable {
 
     /// Who provides the service: a provider the phone knows by name (`UtilityProviders`),
     /// else the company printed as the issuer.
-    private func addContractProvider(_ text: CaptureText, into fields: inout FieldSet) {
+    private func addContractProvider(_ text: CaptureText, profile: CaptureKindProfile, into fields: inout FieldSet) {
         if let known = UtilityProviders.named(in: text) {
             fields.add(.provider, .text(known.name), 0.85, nil)
         }
-        addIssuer(text, into: &fields)
+        addIssuer(text, profile: profile, into: &fields)
     }
 
     /// The day the document was issued: after one of `labels`, else the first date on the page.
@@ -350,12 +350,12 @@ public struct CaptureAnalyzer: Sendable {
         if let insurer = insurerNames.first(where: { CaptureText.containsWord($0.keyword, inFolded: haystack) }) {
             fields.add(.provider, .text(insurer.name), 0.85, nil)
         } else {
-            addIssuer(text, into: &fields)
+            addIssuer(text, profile: profile, into: &fields)
         }
-        if let taxID = RomanianFieldExtractor.taxID(in: text), taxID.valid {
+        if let taxID = RomanianFieldExtractor.taxID(in: text, labels: profile.labels(for: .providerTaxID)), taxID.valid {
             fields.add(.providerTaxID, .text(taxID.value), 0.97, text.original[taxID.line], tier: .deterministic)
         }
-        if let policy = RomanianFieldExtractor.policyNumber(in: text) {
+        if let policy = RomanianFieldExtractor.policyNumber(in: text, labels: profile.labels(for: .policyNumber)) {
             fields.add(.policyNumber, .text(policy.value), policy.quality.confidence, policy.source)
         }
         if let phone = RomanianFieldExtractor.claimsPhone(in: text, labels: profile.labels(for: .claimsPhone)) {
@@ -384,7 +384,7 @@ public struct CaptureAnalyzer: Sendable {
     }
 
     private func addPurchase(_ text: CaptureText, profile: CaptureKindProfile, years: DateWindow, into fields: inout FieldSet) {
-        if let taxID = RomanianFieldExtractor.taxID(in: text) {
+        if let taxID = RomanianFieldExtractor.taxID(in: text, labels: profile.labels(for: .providerTaxID)) {
             fields.add(.providerTaxID, .text(taxID.value), taxID.valid ? 0.97 : 0.5, text.original[taxID.line], tier: taxID.valid ? .deterministic : .heuristic)
         }
         if let issuer = RomanianFieldExtractor.issuerName(in: text) {

@@ -5,3 +5,6 @@ for index in text.lines(containing: labels) { _ = index }
 let words = RomanianText.words(line)
 static var labels: [(Label, [LabelWording])] { CaptureKindProfile.policyLabels.map { ($0.0, $0.1.map(LabelWording.words)) } }
 let nonItems = CaptureLexicon.nonItemWords.map { RomanianText.Keyword($0) }
+let pattern = printed(labels) + #"\s*[:.]?\s*(ro)?\s*(\d{2,10})\b"#
+let start = #"^\s*"# + printed(numbers) + #"\s+(.{2,30})$"#
+return pieces.joined(separator: #"\.?\s?"#) + #"\.?"#

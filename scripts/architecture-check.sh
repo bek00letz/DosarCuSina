@@ -135,11 +135,14 @@ rule number-parser "$app" '(^|/)RomanianNumber[^/]*\.swift$' \
 # capture lexicon's (CaptureLexicon); a value printed in parts, CompositeLabels'; a personal
 # document's layout, its template (IdentityTemplates). Capture's readers are told the table, so a
 # wording added there is read with no new code; a list written where it is read, or a list named
-# ...Labels, ...Words or ...Prefixes in any other file, is a second table.
+# ...Labels, ...Words or ...Prefixes in any other file, is a second table. So is a label spelled
+# inside a pattern: an abbreviation or a field's number with its dots made optional ("c\.?\s?u",
+# "d\.?\s?1"), words apart by any space ("cod\s+fiscal"), or a field's number that starts a line
+# ("^\s*b\."); a reader builds those from the table's rows (RomanianFieldExtractor.printed).
 label_tables='^ios/DosarCuSina/Services/Capture/(CaptureKindProfile|CaptureLexicon|CompositeLabels|IdentityTemplates)\.swift$'
 rule labels-outside-their-table '^ios/DosarCuSina/Services/Capture/' "$label_tables" \
-    '(labelledDate\(|lines\(containing: *|contains\(any: *|labels: *)\[ *"|let +labels *= *\[ *"|(let|var) +[A-Za-z_]*([lL]abels|[wW]ords|[pP]refixes)([^A-Za-z0-9_=][^=]*)?= *\[' - \
-    "Labels and words are data in their table: a kind's in its profile (CaptureKindProfile.labels, commonLabels for what every document prints), the shared readers' in CaptureLexicon, a value in parts' in CompositeLabels, a personal document's in its template. Tell the reader the table, as profile.labels(for:); never list labels or words where they are read."
+    '(labelledDate\(|lines\(containing: *|contains\(any: *|labels: *)\[ *"|let +labels *= *\[ *"|(let|var) +[A-Za-z_]*([lL]abels|[wW]ords|[pP]refixes)([^A-Za-z0-9_=][^=]*)?= *\[|[a-z0-9]\\\.\?\\s\?[a-z0-9]|[a-z][a-z]+\\s\+[a-z][a-z]|\^\\s\*[a-z0-9]\\\.' - \
+    "Labels and words are data in their table: a kind's in its profile (CaptureKindProfile.labels, commonLabels for what every document prints), the shared readers' in CaptureLexicon, a value in parts' in CompositeLabels, a personal document's in its template. Tell the reader the table, as profile.labels(for:), and build a pattern from its rows with RomanianFieldExtractor.printed or alternatives; never list labels or words where they are read, nor spell them inside a pattern."
 
 # Codes, numbers, plates and names are compared one way: folded, in capitals, letters and digits
 # only (RomanianText.compact), so a value with a diacritic, a space or a dash still matches.

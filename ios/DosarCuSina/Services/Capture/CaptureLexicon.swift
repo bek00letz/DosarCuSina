@@ -2,8 +2,9 @@ import Foundation
 
 /// The words capture's shared readers look for that aren't one kind's field labels: what
 /// is never a line of an invoice, where the buyer's block starts, what comes before an
-/// issuer's name, which address labels name the place a service is supplied, what sits
-/// beside a policyholder's name, and which words only identity documents print.
+/// issuer's name, a company's legal forms, which address labels name the place a service is
+/// supplied, what sits beside a policyholder's name, and which words only identity documents
+/// print.
 ///
 /// A kind's own labels are its profile's table (`CaptureKindProfile.labels`); a value
 /// printed in parts is `CompositeLabels`'; a personal document's layout is its template
@@ -30,6 +31,11 @@ enum CaptureLexicon {
     /// What comes before an issuer's name on its line and isn't part of it, folded, in the
     /// order they are taken off ("Furnizor: S.C. …" loses both).
     static let issuerPrefixes = ["furnizor:", "furnizor", "vanzator:", "emitent:", "s.c.", "sc "]
+
+    /// A company's legal forms, folded, read with their dots printed or left out ("S.R.L.",
+    /// "SRL", `RomanianFieldExtractor.printed`): a line that names one names a firm, never a
+    /// person.
+    static let companyForms = ["s.r.l.", "s.a.", "s.c.s.", "p.f.a.", "i.i."]
 
     // MARK: Bills and contracts
 

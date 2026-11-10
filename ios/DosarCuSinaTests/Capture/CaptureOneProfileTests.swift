@@ -81,7 +81,7 @@ struct CaptureOneProfileTests {
     @Test("The capture lexicon is written folded")
     func lexiconIsFolded() {
         let lists = [CaptureLexicon.nonItemWords, CaptureLexicon.buyerLabels, CaptureLexicon.issuerPrefixes,
-                     CaptureLexicon.policyholderNeighbourLabels, CaptureLexicon.identityWords, Array(CaptureLexicon.wholeSignalWords)]
+                     CaptureLexicon.policyholderNeighbourLabels, CaptureLexicon.identityWords, Array(CaptureLexicon.wholeSignalWords), CaptureLexicon.companyForms]
             + CaptureLexicon.supplyAddressLabels.map { $0.1 } + CaptureKindProfile.contractLabels.map { $0.1 }
         for word in lists.flatMap({ $0 }) {
             #expect(RomanianText.fold(word) == word, "\"\(word)\" is written folded")

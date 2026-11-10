@@ -2,9 +2,10 @@ import Foundation
 
 // MARK: - Label tables of their own
 
-/// Label tables for values printed in parts on documents read without a template (a
-/// policy, an invoice, a talon): the labels of the whole and of the series, and the
-/// labels of other fields that start the same way, so their numbers are never taken.
+/// How a value printed in parts is read on documents without a template (a policy, an
+/// invoice, a talon): its wordings are its kind's row (`CaptureKindProfile.labels`, an
+/// invoice's in `commonLabels`), and beside them go the labels of other fields that start the
+/// same way, so their numbers are never taken (`table(for:)`).
 enum CompositeLabels {
     /// The words that introduce a part of a value and are never a part themselves, in
     /// capitals as `CompositeValue` reads them.
@@ -28,13 +29,27 @@ enum CompositeLabels {
         "nr. telefon", "nr. de telefon", "nr. crt", "nr. rate", "nr. rata",
     ])
 
-    /// A policy's number: its row of the policy table (`CaptureKindProfile.policyLabels`),
-    /// and the green card's header an RCA printed with its green card shows.
+    /// The table of a value whose own wordings are `wordings` (its kind's row): those, and the
+    /// other fields' labels that start the same way, but for any that is one of its own (the
+    /// CIV's "serie civ" is the CIV's, never another field's).
+    static func table(for wordings: [LabelWording]) -> [(Key, [LabelWording])] {
+        [(.value, wordings), (.other, otherFields.filter { !wordings.contains($0) })]
+    }
+
+    /// The table of a value whose own wordings are the folded `labels` of its kind's row.
+    static func table(for labels: [String]) -> [(Key, [LabelWording])] {
+        table(for: labels.map(LabelWording.words))
+    }
+
+    /// A policy's number: its row of the policy table (`labels`, `CaptureKindProfile.policyLabels`'
+    /// by default), and the green card's header an RCA printed with its green card shows.
+    static func policy(_ labels: [String]) -> [(Key, [LabelWording])] {
+        table(for: labels.map(LabelWording.words) + greenCardNumber)
+    }
+
+    /// A policy's number as the policy table words it.
     static var policy: [(Key, [LabelWording])] {
-        [
-            (.value, CaptureKindProfile.labels(for: .policyNumber, in: CaptureKindProfile.policyLabels).map(LabelWording.words) + greenCardNumber),
-            (.other, otherFields),
-        ]
+        policy(CaptureKindProfile.labels(for: .policyNumber, in: CaptureKindProfile.policyLabels))
     }
 
     /// The header a green card prints over its number, the country's code, the insurer's
@@ -47,19 +62,6 @@ enum CompositeLabels {
         "country code / insurer's code / serial and policy numbers", "country code / insurer's code / number",
         "country code/insurer's code/number", "codul tarii", "country code",
     ])
-
-    static let invoice: [(Key, [LabelWording])] = [
-        (.value, [
-            "nr. factura", "nr factura", "numar factura", "numarul facturii", "factura nr", "factura fiscala nr", "factura seria",
-            "seria si numarul facturii", "serie si numar factura", "seria si numarul", "invoice no", "invoice number", "seria", "serie",
-        ].map(LabelWording.words)),
-        (.other, otherFields),
-    ]
-
-    static let vehicleCard: [(Key, [LabelWording])] = [
-        (.value, ["serie civ", "seria civ", "nr. civ", "numar civ", "c.i.v.", "cartea de identitate a vehiculului"].map(LabelWording.words)),
-        (.other, otherFields.filter { $0.words.map { !["serie civ", "seria civ"].contains($0) } ?? true }),
-    ]
 
     /// A value of `shape`, read at the labels of `table`.
     static func read(_ shape: CompositeValue, labels table: [(Key, [LabelWording])], in text: CaptureText) -> CompositeValue.Found? {
