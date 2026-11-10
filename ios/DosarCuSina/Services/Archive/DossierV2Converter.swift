@@ -5,16 +5,31 @@ import Foundation
 /// values without a v3 field are appended to the asset notes, contacts become
 /// providers, and completed events and service records become history entries.
 enum DossierV2Converter {
-    static func package(from files: [String: Data], calendar: Calendar = .dosar) throws -> DossierV3.Package {
-        let decoder = DossierV3.decoder()
-        guard let manifestData = files["manifest.json"],
-              let manifest = try? decoder.decode(DossierManifestV2.self, from: manifestData) else {
+    /// The files a version 2 archive describes itself with, read whole; every other file
+    /// is a document's, read only when it is written.
+    static let dataFiles: Set<String> = [
+        "data/assets.json", "data/events.json", "data/service_history.json", "data/measurements.json", "data/attachments_meta.json",
+    ]
+
+    /// The version 2 manifest's checksums, which the reader checks every file against.
+    static func checksums(fromManifest data: Data) throws -> [String: String] {
+        try manifest(data).checksums
+    }
+
+    private static func manifest(_ data: Data?) throws -> DossierManifestV2 {
+        guard let data, let manifest = try? DossierV3.decoder().decode(DossierManifestV2.self, from: data) else {
             throw ArchiveError.unreadableFile("manifest.json")
         }
-        for (path, expected) in manifest.checksums {
-            guard let data = files[path] else { throw ArchiveError.missingFile(path) }
-            guard DossierArchiveReader.sha256(data) == expected.lowercased() else { throw ArchiveError.checksumMismatch(path) }
-        }
+        return manifest
+    }
+
+    /// - Parameters:
+    ///   - files: the manifest and the data files, already checked against their checksums
+    ///     by `DossierArchiveReader`.
+    ///   - vault: the documents' files, checked the same way.
+    static func package(from files: [String: Data], vault: DossierV3.ArchiveFiles, calendar: Calendar = .dosar) throws -> DossierV3.Package {
+        let decoder = DossierV3.decoder()
+        let manifest = try manifest(files["manifest.json"])
         func decode<T: Decodable>(_ type: [T].Type, _ path: String) throws -> [T] {
             guard let data = files[path] else { return [] }
             do { return try decoder.decode(type, from: data) } catch { throw ArchiveError.unreadableFile(path) }
@@ -63,7 +78,7 @@ enum DossierV2Converter {
             providers: providers,
             measurements: measurements.map(convert),
             attachments: v3Attachments,
-            files: files.filter { $0.key.hasPrefix(DossierV3.Path.vaultPrefix) }
+            files: vault
         )
         try DossierArchiveReader.validateReferences(package)
         return package

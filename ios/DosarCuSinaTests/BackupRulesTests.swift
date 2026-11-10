@@ -349,7 +349,18 @@ struct ZipLimitTests {
 
     @Test func refusesMoreFilesThanAZipCanDescribe() {
         let entries = (0...Int(UInt16.max)).map { DosarZipEngine.Entry(path: "f\($0)", data: Data()) }
-        #expect(throws: DosarZipEngine.ZipError.tooLargeToWrite) { try DosarZipEngine.createArchive(entries: entries) }
+        #expect(throws: DosarZipEngine.ZipError.tooManyFilesToWrite) { try DosarZipEngine.createArchive(entries: entries) }
+    }
+
+    @Test func asManyFilesAsAWriterTakesAreReadBack() throws {
+        // 65 535 files would mark a ZIP64 archive, which a reader refuses: the writer stops one before.
+        let most = DosarZipEngine.Limits.standard.maxEntries
+        let entries = (0..<most).map { DosarZipEngine.Entry(path: "f\($0)", data: Data()) }
+        let zip = try DosarZipEngine.createArchive(entries: entries)
+        #expect(try DosarZipEngine.Reader(source: MemoryByteSource(zip)).items.count == most)
+        #expect(throws: DosarZipEngine.ZipError.tooManyFilesToWrite) {
+            try DosarZipEngine.createArchive(entries: entries + [DosarZipEngine.Entry(path: "one-more", data: Data())])
+        }
     }
 
     @Test func datesOutsideWhatAZipCanHoldAreWrittenAtItsEnds() throws {
@@ -414,27 +425,80 @@ struct BackupFlowTests {
         #expect(flow.exportURL == nil)
     }
 
-    @Test func replacingEverythingNeedsFaceIDAndMergingDoesnt() async throws {
+    @Test(arguments: [ArchiveImportMode.replace, .merge])
+    func bringingABackupInNeedsFaceIDWhileALockIsOn(mode: ArchiveImportMode) async throws {
         let household = try BackupHousehold()
-        let (owner, _, directory) = flow(household, .succeed)
+        let (owner, _, _) = flow(household, .succeed)
         await owner.export(password: nil)
         let backup = try #require(owner.exportURL)
         let other = Asset(name: "Doar aici", templateKey: BuiltInTemplates.Key.other)
         household.context.insert(other)
+        // The identity card is in the backup only: bringing the backup in, either way, brings it back.
+        let cardID = household.card.id
+        household.context.delete(household.card)
         try household.context.save()
+        let hasCard = { try ModelContext(household.container).fetchCount(FetchDescriptor<Asset>(predicate: #Predicate { $0.id == cardID })) == 1 }
 
-        let (refused, prompts, _) = flow(household, .cancel)
+        let (refused, prompts, copies) = flow(household, .cancel)
         await refused.open(backup)
         let pending = try #require(refused.pending)
-        await refused.runImport(pending, mode: .replace)
+        await refused.runImport(pending, mode: mode)
         #expect(prompts.prompts == 1)
+        #expect(refused.work == nil)
         #expect(try household.asset(other.id).name == "Doar aici", "Nothing was replaced")
+        #expect(try !hasCard(), "Nothing came in")
         #expect(refused.pending == pending, "The backup waits as it was")
 
-        await refused.runImport(pending, mode: .merge)
-        #expect(prompts.prompts == 1, "Merging asks nothing")
-        #expect(refused.resultText != nil)
-        #expect(try FileManager.default.contentsOfDirectory(atPath: directory.path(percentEncoded: false)).filter { $0.hasPrefix("import-") }.isEmpty, "The working copy goes once read")
+        let (allowed, allowedPrompts, _) = flow(household, .succeed)
+        await allowed.runImport(pending, mode: mode)
+        #expect(allowedPrompts.prompts == 1)
+        #expect(allowed.resultText != nil)
+        #expect(try hasCard())
+        #expect(try FileManager.default.contentsOfDirectory(atPath: copies.path(percentEncoded: false)).filter { $0.hasPrefix("import-") }.isEmpty, "The working copy and its files go once read")
+    }
+
+    @Test func withNoLockOnBringingABackupInAsksNothing() async throws {
+        let household = try BackupHousehold()
+        for template in try household.context.fetch(FetchDescriptor<CategoryTemplate>()) { template.isSensitive = false }
+        try household.context.save()
+        let (flow, prompts, _) = flow(household, .cancel)
+        await flow.export(password: nil)
+        await flow.open(try #require(flow.exportURL))
+        await flow.runImport(try #require(flow.pending), mode: .merge)
+        #expect(prompts.prompts == 0)
+        #expect(flow.resultText != nil)
+    }
+
+    @Test func aSecondTapWhileFaceIDIsAskedStartsNothing() async throws {
+        let household = try BackupHousehold()
+        let authenticator = FakeAuthenticator(.succeed)
+        authenticator.delay = .milliseconds(200)
+        let vault = BiometricVaultManager(authenticator: authenticator, appLockEnabled: { false }, observesAppLifecycle: false)
+        let directory = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let flow = BackupFlow(container: household.container, vault: vault, workDirectory: directory, inbox: directory.appending(path: "Inbox"))
+
+        // Export: the second tap comes while the first waits for Face ID.
+        let first = Task { await flow.export(password: nil) }
+        while flow.work == nil { await Task.yield() }
+        #expect(flow.work == .confirming)
+        await flow.export(password: nil)
+        await first.value
+        #expect(authenticator.prompts == 1, "One prompt, one backup")
+        let backup = try #require(flow.exportURL)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: directory.path(percentEncoded: false)).filter { $0.hasSuffix(".dosar") }.count == 1)
+
+        // Import: the same.
+        await flow.open(backup)
+        let pending = try #require(flow.pending)
+        let importing = Task { await flow.runImport(pending, mode: .merge) }
+        while flow.work == nil { await Task.yield() }
+        await flow.runImport(pending, mode: .merge)
+        await flow.runImport(pending, mode: .replace)
+        await importing.value
+        #expect(authenticator.prompts == 2, "One prompt for the import")
+        #expect(flow.doneCount == 1, "Brought in once")
     }
 
     @Test func aFileHandedOverThroughOpenInIsRemovedOnceRead() async throws {

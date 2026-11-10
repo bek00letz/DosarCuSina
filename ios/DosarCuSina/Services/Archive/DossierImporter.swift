@@ -16,7 +16,8 @@ import SwiftData
 /// - a record that is both here and in the archive is merged by one rule, whatever its
 ///   type (`ArchiveMerge`): the archive's copy only when it changed later;
 /// - what a newer build wrote that this one can't read (a recurrence, a template's
-///   section, a row under Date importante, a field value) comes in raw and is kept.
+///   section, tint, hero or pocket, a row under Date importante, a field value, a
+///   deadline's status, a kind) comes in raw and is kept.
 ///
 /// It touches only the context it is given, so a backup is written away from the
 /// main thread (`DossierArchiveService.importPackageAway`).
@@ -190,6 +191,11 @@ struct DossierImporter {
                 template.keptSections = dto.sections.replacingItems(definition.sections)
                 template.keptBlueprints = dto.blueprints.replacingItems(definition.blueprints)
                 template.keptComponents = (dto.components ?? KeptList()).replacingItems(definition.components)
+                // Its tint, hero and pockets as the archive has them: one from a newer build is
+                // shown as the nearest this build knows and goes out again unchanged.
+                template.tintRaw = dto.tint
+                template.heroStyleRaw = dto.heroStyle
+                template.pocketsRaw = dto.pockets ?? SectionPocket.standard.map(\.rawValue)
             }
             template.homeOrder = dto.homeOrder
             template.isOnHome = dto.isOnHome
@@ -230,7 +236,7 @@ struct DossierImporter {
             // Secrets this phone keeps for the record stay; an archive never brings any.
             asset.valuesData = StoredJSON.encode(SecretFields.keepingLocalSecrets(values, from: phone.secrets[id] ?? FieldValues(), definition: definition))
             asset.keptFacts = SecretFields.keepingLocalSecretFacts(dto.customFacts ?? KeptList(), from: phone.secretFacts[id] ?? [])
-            asset.photoData = dto.photoPath.flatMap { package.files[$0] }
+            asset.photoData = try dto.photoPath.flatMap { try package.files.data(at: $0) }
             asset.isExample = dto.isExample
             asset.createdAt = clamped(dto.createdAt)
             asset.updatedAt = changeTime(dto.updatedAt)
@@ -273,7 +279,8 @@ struct DossierImporter {
             obligation.estimatedCost = dto.estimatedCost
             obligation.provider = dto.provider
             obligation.reference = dto.reference
-            obligation.statusRaw = ObligationStatus(rawValue: dto.status)?.rawValue ?? ObligationStatus.active.rawValue
+            // Kept as the archive has it: a status from a newer build reads as the loudest (`ObligationStatus(stored:)`).
+            obligation.statusRaw = dto.status
             obligation.snoozedUntil = dto.snoozedUntil
             obligation.isExample = dto.isExample
             obligation.createdAt = clamped(dto.createdAt)
@@ -413,7 +420,7 @@ struct DossierImporter {
         for dto in package.attachments {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.attachments) }
             let original = try dto.path.map { path -> Data in
-                guard let data = package.files[path] else { throw ArchiveError.missingFile(path) }
+                guard let data = try package.files.data(at: path) else { throw ArchiveError.missingFile(path) }
                 return data
             }
             guard let attachment = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
@@ -427,17 +434,17 @@ struct DossierImporter {
             attachment.kindRaw = dto.kind
             attachment.byteCount = dto.byteCount
             attachment.sha256 = dto.sha256 ?? original.map(Hashing.sha256)
-            attachment.thumbnailData = dto.thumbnailPath.flatMap { package.files[$0] }
+            attachment.thumbnailData = try dto.thumbnailPath.flatMap { try package.files.data(at: $0) }
             // A backup from anywhere brings no card number into a document’s text: the unit that writes it masks it (`FreeText`).
             attachment.extractedText = dto.extractedText
             attachment.documentDate = dto.documentDate?.noonDate(in: calendar)
             attachment.validUntil = dto.validUntil?.noonDate(in: calendar)
             attachment.framing = dto.framing ?? DocumentFraming()
             attachment.isArchived = dto.isArchived
-            attachment.createdAt = dto.createdAt
+            attachment.createdAt = clamped(dto.createdAt)
             attachment.isExample = dto.isExample
             attachment.updatedAt = changeTime(dto.updatedAt)
-            replacePages(of: attachment, with: dto.pagePaths.map { package.files[$0] })
+            replacePages(of: attachment, with: try dto.pagePaths.map { try package.files.data(at: $0) })
             attachment.asset = uuid(dto.assetId).flatMap { assets[$0] }
             attachment.obligation = uuid(dto.obligationId).flatMap { obligations[$0] }
             attachment.historyEntry = uuid(dto.historyEntryId).flatMap { entries[$0] }
