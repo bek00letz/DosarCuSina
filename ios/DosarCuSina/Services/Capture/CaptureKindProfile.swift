@@ -109,6 +109,10 @@ struct CaptureKindProfile: Sendable {
     /// front alone, the review offers to add the back, and the zone's values are said to be
     /// "Pe spatele actului".
     var hasMachineReadableBack = false
+    /// Its number is shaped like a card's, which other digits can be too: the number names
+    /// this kind only beside the kind's own cues (`CardNumberCues`, read by
+    /// `DocumentClassifier`). A bank card's.
+    var cardNumberCues: CardNumberCues? = nil
 
     /// How a new section made from a document is named.
     enum SectionNameRule: Sendable {
@@ -246,7 +250,8 @@ struct CaptureKindProfile: Sendable {
                  model: "Romanian criminal record certificate (certificat de cazier judiciar, fiscal or auto)"),
         identity(.healthInsuranceCard, type: DocumentType.euHealthCard, name: "Card european de sănătate", model: "European health insurance card"),
         identity(.bankCard, type: DocumentType.bankCard, name: "Card bancar",
-                 model: "bank card (debit or credit); never copy its full number, only its last four digits", photoIsOptIn: true),
+                 model: "bank card (debit or credit); never copy its full number, only its last four digits", photoIsOptIn: true,
+                 cardNumberCues: bankCardCues),
         identity(.greenCard, type: DocumentType.greenCard, name: "Carte verde",
                  model: "green card (international motor insurance card, carte verde), not the RCA policy itself"),
         identity(.electronicSignature, type: DocumentType.eSignature, name: "Semnătură electronică",
@@ -465,6 +470,21 @@ struct CaptureKindProfile: Sendable {
         (.expiryDate, ["valabila pana la", "valabil pana la", "urmatoarea inspectie", "data urmatoarei inspectii", "valabilitate"]),
     ]
 
+    /// What tells a bank card's number from other digits of its shape: its network's name or
+    /// a cardholder's caption anywhere on the page; near the number, a caption only a card
+    /// prints over its expiry (`IdentityTemplates.cardExpiryCaptions`) or an expiry written as
+    /// month and two-digit year ("08/28", as cards print it; a vaccine's "03/2027" isn't one);
+    /// or the number itself printed in a card's grouping ("4111 1111 1111 1111").
+    static let bankCardCues = CardNumberCues(
+        weight: 5,
+        bareWeight: 2,
+        pageWords: PaymentCardNetwork.words.flatMap { $0.names } + ["cardholder", "card holder", "contactless", "member since", "client din"],
+        nearbyWords: IdentityTemplates.cardExpiryCaptions,
+        nearLines: 2,
+        expiryPattern: #"(?<![\d/.])(?:0[1-9]|1[0-2]) ?/ ?\d{2}(?![\d/.])"#,
+        groupingIsACue: true
+    )
+
     /// A vet's record: the microchip's line, the vaccine's line and the booster's day.
     static let veterinaryLabels: [(CaptureFieldKey, [String])] = [
         (.microchip, ["microcip", "cip", "transponder"]),
@@ -492,7 +512,7 @@ struct CaptureKindProfile: Sendable {
     /// kept like an identity document's: never searched.
     private static func identity(_ kind: CaptureDocumentKind, type: String, name: LocalizedStringResource, model: String,
                                  photoIsOptIn: Bool = false, isIdentityDocument: Bool = false,
-                                 hasMachineReadableBack: Bool = false) -> CaptureKindProfile {
+                                 hasMachineReadableBack: Bool = false, cardNumberCues: CardNumberCues? = nil) -> CaptureKindProfile {
         var expected = IdentityTemplates.orderedFieldKeys(for: kind)
         // The day the deadline follows is always asked for, even where it is worked out
         // from another (a cazier judiciar's, six months from its issue).
@@ -510,6 +530,7 @@ struct CaptureKindProfile: Sendable {
         // An identity document is read well when its holder, its number and its expiry are.
         profile.essentialKeys = isIdentityDocument ? identityEssentials : []
         profile.hasMachineReadableBack = hasMachineReadableBack
+        profile.cardNumberCues = cardNumberCues
         return profile
     }
 }

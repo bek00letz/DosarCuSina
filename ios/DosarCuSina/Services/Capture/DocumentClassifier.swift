@@ -63,9 +63,20 @@ public enum DocumentClassifier {
         }
         // A fiscal receipt beats a generic invoice when "bon fiscal" is printed.
         if CaptureText.containsWord("bon fiscal", inFolded: haystack) { scores[.serviceInvoice] = (scores[.serviceInvoice] ?? 0) * 0.5 }
-        // A whole card number printed on the page is the strongest sign of a bank card; a
-        // receipt or a statement shows it masked, so it doesn't count there.
-        if PaymentCardNumbers.containsCardNumber(text.joinedOriginal) { scores[.bankCard, default: 0] += cardNumberWeight }
+        // A whole card number printed on the page names a bank card beside the card's own cues
+        // (`CardNumberCues`); a receipt or a statement shows it masked, so it doesn't count
+        // there. Alone, its digits could be a pet's microchip or a code: a hint that names
+        // only a page where no kind has a word of its own.
+        var hints: [CaptureDocumentKind: Double] = [:]
+        for profile in CaptureKindProfile.all {
+            guard let cues = profile.cardNumberCues else { continue }
+            switch cues.evidence(in: text) {
+            case .withCues: scores[profile.kind, default: 0] += cues.weight
+            case .bare: hints[profile.kind, default: 0] += cues.bareWeight
+            case .noNumber: break
+            }
+        }
+        if scores.values.allSatisfy({ $0 == 0 }) { scores.merge(hints, uniquingKeysWith: +) }
 
         // Ties go to the kind listed first in `CaptureDocumentKind`, so the result never depends on dictionary order.
         let order = Dictionary(uniqueKeysWithValues: CaptureDocumentKind.allCases.enumerated().map { ($1, $0) })
@@ -80,9 +91,6 @@ public enum DocumentClassifier {
         let strength = min(best.value / 6, 1)
         return Classification(kind: best.key, confidence: 0.4 + 0.5 * margin * strength + 0.1 * strength)
     }
-
-    /// What a whole card number on the page weighs for a bank card.
-    static let cardNumberWeight = 5.0
 
     /// What the RCA's own words weigh on a page that is the policy, whatever green card is
     /// printed with it: "RCA" and "răspundere civilă auto" together, or more.
