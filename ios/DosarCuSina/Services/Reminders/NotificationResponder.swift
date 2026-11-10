@@ -57,7 +57,7 @@ public final class NotificationResponder: NSObject, UNUserNotificationCenterDele
     }
 
     /// Applies a reminder action. Internal so tests can drive it without a notification.
-    func handle(action: String, payload: ReminderPayload, calendar: Calendar = .current) async {
+    func handle(action: String, payload: ReminderPayload, calendar: Calendar = .dosar) async {
         switch action {
         case ReminderActions.complete, ReminderActions.snooze:
             guard let obligationId = payload.obligationId else { return }

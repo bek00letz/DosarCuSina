@@ -26,7 +26,7 @@ public enum HouseholdRules {
     /// Creates or removes household obligations to match the assets. Doesn't save;
     /// callers fold it into their own single save. Returns whether anything changed.
     @discardableResult
-    public static func reconcile(in context: ModelContext, today: CalendarDay, calendar: Calendar = .current) throws -> Bool {
+    public static func reconcile(in context: ModelContext, today: CalendarDay, calendar: Calendar = .dosar) throws -> Bool {
         let tenancyKey = BuiltInTemplates.Key.tenancy
         let tenancies = try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.templateKey == tenancyKey }))
             .filter { !$0.isDeleted }

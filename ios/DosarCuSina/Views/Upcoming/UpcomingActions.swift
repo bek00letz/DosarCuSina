@@ -7,7 +7,7 @@ import SwiftUI
 @MainActor
 struct UpcomingActions {
     let context: ModelContext
-    var calendar: Calendar = .current
+    var calendar: Calendar = .dosar
 
     /// Snooze lengths offered, in days.
     static let snoozeChoices: [Int] = [1, 3, 7, 14]

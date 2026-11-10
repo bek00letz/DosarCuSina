@@ -76,7 +76,7 @@ public enum WidgetContent {
         feed: WidgetFeed?,
         completed: [WidgetCompletion],
         now: Date,
-        calendar: Calendar = .current,
+        calendar: Calendar = .dosar,
         protectedTitle: String,
         limit: Int
     ) -> [WidgetRow] {

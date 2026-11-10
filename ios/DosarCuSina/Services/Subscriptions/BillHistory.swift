@@ -41,7 +41,7 @@ public enum BillHistory {
 
     // MARK: The trend
 
-    public static func trend(_ bills: [BillRecord], today: CalendarDay, calendar: Calendar = .current) -> BillTrend? {
+    public static func trend(_ bills: [BillRecord], today: CalendarDay, calendar: Calendar = .dosar) -> BillTrend? {
         let priced = bills.filter { $0.amount != nil }.sorted { $0.day < $1.day }
         guard let last = priced.last, let amount = last.amount else { return nil }
         // The one before it, in the same currency: lei are never compared with euro.
@@ -85,7 +85,7 @@ public enum BillHistory {
     static let cyclesToKeepSaying = 2
 
     /// The bill that should have come by now and hasn't, if any.
-    public static func missing(_ bills: [BillRecord], cycleMonths: Int, today: CalendarDay, calendar: Calendar = .current) -> MissingBill? {
+    public static func missing(_ bills: [BillRecord], cycleMonths: Int, today: CalendarDay, calendar: Calendar = .dosar) -> MissingBill? {
         let months = max(cycleMonths, 1)
         let days = Set(bills.map(\.day)).sorted()
         guard let last = days.last else { return nil }
@@ -107,7 +107,7 @@ public enum BillHistory {
     /// A subscription's bills: what capture logged in its history, never the "paid"
     /// records completing a deadline writes.
     @MainActor
-    public static func bills(of asset: Asset, calendar: Calendar = .current) -> [BillRecord] {
+    public static func bills(of asset: Asset, calendar: Calendar = .dosar) -> [BillRecord] {
         (asset.history ?? [])
             .filter { $0.kind == .payment && !$0.isCompletion }
             .map { BillRecord(day: CalendarDay($0.occurredAt, calendar: calendar), amount: $0.totalCost) }
@@ -143,7 +143,7 @@ public struct BillWatchSnapshot: Hashable, Sendable, Identifiable {
     /// Every subscription in the binder (the sections of a category that plays
     /// `.subscription`), as snapshots.
     @MainActor
-    public static func fetchAll(in context: ModelContext, calendar: Calendar = .current) throws -> [BillWatchSnapshot] {
+    public static func fetchAll(in context: ModelContext, calendar: Calendar = .dosar) throws -> [BillWatchSnapshot] {
         let templates = try TemplateStore(context: context).templatesByKey()
         let keys = Array(templates.values.keys(playing: .subscription))
         let subscriptions = try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { keys.contains($0.templateKey) }))

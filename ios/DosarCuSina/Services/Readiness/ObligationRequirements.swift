@@ -77,7 +77,7 @@ public enum ObligationRequirements {
 
     /// Whether the binder already holds it: true, false, or nil when it can't tell.
     @MainActor
-    public static func isInDosar(_ requirement: ObligationRequirement, asset: Asset?, on day: CalendarDay, calendar: Calendar = .current) -> Bool? {
+    public static func isInDosar(_ requirement: ObligationRequirement, asset: Asset?, on day: CalendarDay, calendar: Calendar = .dosar) -> Bool? {
         guard let asset else { return nil }
         switch requirement.check {
         case .none:

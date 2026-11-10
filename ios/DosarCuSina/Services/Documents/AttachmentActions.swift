@@ -64,7 +64,7 @@ public final class AttachmentActions {
     public let context: ModelContext
     let calendar: Calendar
 
-    public init(context: ModelContext, calendar: Calendar = .current) {
+    public init(context: ModelContext, calendar: Calendar = .dosar) {
         self.context = context
         self.calendar = calendar
     }

@@ -75,7 +75,7 @@ public final class CadenceCalculator: Sendable {
     public static func calculateNextDueDate(
         from lastDate: Date,
         interval: CalendarCadenceInterval,
-        calendar: Calendar = .current
+        calendar: Calendar = .dosar
     ) -> Date {
         switch interval {
         case .days(let days):
@@ -102,7 +102,7 @@ public final class CadenceCalculator: Sendable {
     ///
     /// If the source date is February 29th and the target year is not a leap year,
     /// the date is clamped to February 28th.
-    public static func addYears(to date: Date, years: Int, calendar: Calendar = .current) -> Date {
+    public static func addYears(to date: Date, years: Int, calendar: Calendar = .dosar) -> Date {
         guard years != 0 else { return date }
         
         var components = calendar.dateComponents(
@@ -137,7 +137,7 @@ public final class CadenceCalculator: Sendable {
     ///   is that day, or the target month's last day when it is shorter. Without it,
     ///   the date's own day is used, so a date already clamped (28 February) would
     ///   carry its shorter day forward.
-    public static func addMonths(to date: Date, months: Int, dayOfMonth: Int? = nil, calendar: Calendar = .current) -> Date {
+    public static func addMonths(to date: Date, months: Int, dayOfMonth: Int? = nil, calendar: Calendar = .dosar) -> Date {
         guard months != 0 || dayOfMonth != nil else { return date }
         
         var components = calendar.dateComponents(
@@ -193,7 +193,7 @@ public final class CadenceCalculator: Sendable {
         history: [(date: Date, metric: Double)],
         baselineDailyRate: Double? = nil,
         currentDate: Date = Date(),
-        calendar: Calendar = .current
+        calendar: Calendar = .dosar
     ) -> TelemetryProjection? {
         let readings = history.map { TelemetryReading(date: $0.date, metric: $0.metric) }
         return projectTelemetryDueDate(
@@ -213,7 +213,7 @@ public final class CadenceCalculator: Sendable {
         readings: [TelemetryReading],
         baselineDailyRate: Double? = nil,
         currentDate: Date = Date(),
-        calendar: Calendar = .current
+        calendar: Calendar = .dosar
     ) -> TelemetryProjection? {
         let remainingMetric = targetMetric - currentMetric
         

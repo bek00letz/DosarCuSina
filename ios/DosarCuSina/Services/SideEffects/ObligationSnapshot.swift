@@ -72,13 +72,13 @@ extension ObligationSnapshot {
     /// Spotlight): every snapshot except examples, which are only for exploring.
     /// Every outside surface reads this one list.
     @MainActor
-    public static func fetchForOutside(in context: ModelContext, calendar: Calendar = .current) throws -> [ObligationSnapshot] {
+    public static func fetchForOutside(in context: ModelContext, calendar: Calendar = .dosar) throws -> [ObligationSnapshot] {
         try fetchAll(in: context, calendar: calendar).filter { !$0.isExample }
     }
 
     /// Snapshots of every obligation that isn't archived, with asset and category details.
     @MainActor
-    public static func fetchAll(in context: ModelContext, calendar: Calendar = .current) throws -> [ObligationSnapshot] {
+    public static func fetchAll(in context: ModelContext, calendar: Calendar = .dosar) throws -> [ObligationSnapshot] {
         let archived = ObligationStatus.archived.rawValue
         let obligations = try context.fetch(FetchDescriptor<Obligation>(
             predicate: #Predicate { $0.statusRaw != archived },

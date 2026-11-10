@@ -25,21 +25,21 @@ public struct BoxStatus: Hashable, Sendable {
     /// The status of a box from the obligations it holds, ranked exactly as the
     /// Urmează tab ranks them. Only what is inside its attention window counts;
     /// anything further out is "all good" for now.
-    public static func make(_ obligations: [ObligationSnapshot], now: Date = Date(), calendar: Calendar = .current) -> BoxStatus {
+    public static func make(_ obligations: [ObligationSnapshot], now: Date = Date(), calendar: Calendar = .dosar) -> BoxStatus {
         let digest = AttentionModel.digest(obligations, now: now, calendar: calendar, limits: .init(maxNow: 1))
         if let top = digest.now.first { return BoxStatus(state: .pending(top)) }
         return BoxStatus(state: .allGood)
     }
 
     /// The box of one asset: its own obligations and those of the assets filed under it.
-    public static func make(forAsset id: UUID, descendants: Set<UUID> = [], in obligations: [ObligationSnapshot], now: Date = Date(), calendar: Calendar = .current) -> BoxStatus {
+    public static func make(forAsset id: UUID, descendants: Set<UUID> = [], in obligations: [ObligationSnapshot], now: Date = Date(), calendar: Calendar = .dosar) -> BoxStatus {
         let ids = descendants.union([id])
         return make(obligations.filter { $0.assetId.map(ids.contains) ?? false }, now: now, calendar: calendar)
     }
 
     /// The line to show. In a section behind a lock the obligation's title is
     /// replaced, so the line never reveals what is inside.
-    public func line(isSensitive: Bool, now: Date = Date(), calendar: Calendar = .current) -> String {
+    public func line(isSensitive: Bool, now: Date = Date(), calendar: Calendar = .dosar) -> String {
         guard let entry else { return String(localized: "Totul e în regulă", comment: "Box status when nothing needs attention") }
         let title = isSensitive ? String(localized: "O scadență", comment: "Box status title in a locked section") : entry.obligation.title
         let when = WhenWording.phrase(entry.urgency, daysRemaining: entry.daysRemaining, from: now, calendar: calendar)

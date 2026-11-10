@@ -153,7 +153,7 @@ final class LockWindowController {
         window.backgroundColor = .clear
         let root = LockLayer(state: state)
             .environment(vault ?? BiometricVaultManager.shared)
-            .environment(\.locale, .dosarDefault)
+            .dosarLocaleAndCalendar()
         let host = UIHostingController(rootView: root)
         host.view.backgroundColor = .clear
         host.view.accessibilityViewIsModal = true

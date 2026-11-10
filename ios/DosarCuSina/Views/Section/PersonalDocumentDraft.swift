@@ -92,14 +92,14 @@ enum PersonalDocumentFiling {
     /// The last day the document is valid: the expiry typed, or for a type dated by its
     /// issue, the one the documents category works out from the issue date (the same
     /// derivation saving runs). Nil when there is none.
-    static func expiry(_ draft: PersonalDocumentDraft, template: CategoryTemplate, calendar: Calendar = .current) -> CalendarDay? {
+    static func expiry(_ draft: PersonalDocumentDraft, template: CategoryTemplate, calendar: Calendar = .dosar) -> CalendarDay? {
         draft.values.applyingRules(of: template.definition, previous: nil, calendar: calendar)[DocumentFields.expiry]?.dateValue
     }
 
     /// "Expiră pe … Te anunț cu 3 luni și cu o lună înainte.", from the type's reminder
     /// profile; for a cazier judiciar "E valabil până pe …, la 6 luni de la eliberare. …".
     static func reminderLine(_ draft: PersonalDocumentDraft, template: CategoryTemplate, actions: AssetActions, today: CalendarDay,
-                             calendar: Calendar = .current) -> String? {
+                             calendar: Calendar = .dosar) -> String? {
         guard let expiry = expiry(draft, template: template, calendar: calendar),
               let plan = planned(draft, template: template, actions: actions).first(where: { $0.isSelected }) else { return nil }
         return ReminderWording.expiryLine(expiry, profile: plan.blueprint.reminders(for: draft.values), today: today,
@@ -116,7 +116,7 @@ enum PersonalDocumentFiling {
     /// Creates the document under `holder` with its deadline, as one step.
     @discardableResult
     static func save(_ draft: PersonalDocumentDraft, holder: Asset, context: ModelContext,
-                     calendar: Calendar = .current, now: @escaping () -> Date = { Date() }) throws -> Asset {
+                     calendar: Calendar = .dosar, now: @escaping () -> Date = { Date() }) throws -> Asset {
         guard draft.type != nil else { throw PersonalDocumentError.missingType }
         guard let template = try TemplateStore(context: context).template(withRole: .personalDocument) else {
             throw PersonalDocumentError.missingTemplate

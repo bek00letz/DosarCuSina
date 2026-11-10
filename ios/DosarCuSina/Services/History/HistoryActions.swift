@@ -191,7 +191,7 @@ public final class HistoryActions {
         reference: String? = nil,
         documents: [DocumentDraft] = [],
         rating: Int? = nil,
-        calendar: Calendar = .current,
+        calendar: Calendar = .dosar,
         odometerSource: ReadingSource = .person,
         lowerReading: LowerReadingAnswer? = nil,
         replacing earlier: HistoryEntry? = nil

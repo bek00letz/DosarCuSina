@@ -69,7 +69,7 @@ public struct ReminderPayload: Hashable, Sendable {
         self.deepLink = deepLink
     }
 
-    public init(identifier: String, userInfo: [AnyHashable: Any], deliveredAt: Date, calendar: Calendar = .current) {
+    public init(identifier: String, userInfo: [AnyHashable: Any], deliveredAt: Date, calendar: Calendar = .dosar) {
         obligationId = (userInfo[ReminderActions.obligationIdKey] as? String).flatMap(UUID.init(uuidString:))
             ?? ReminderPlanner.obligationId(fromIdentifier: identifier)
         cycle = (userInfo[ReminderActions.cycleKey] as? String).flatMap(CalendarDay.init(isoString:))
@@ -125,7 +125,7 @@ public struct SystemNotificationCenterClient: NotificationCenterClient {
             info[ReminderActions.cycleKey] = cycle.isoString
         }
         content.userInfo = info
-        let parts = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: reminder.fireDate)
+        let parts = Calendar.dosar.dateComponents([.year, .month, .day, .hour, .minute], from: reminder.fireDate)
         let trigger = UNCalendarNotificationTrigger(dateMatching: parts, repeats: false)
         try await center.add(UNNotificationRequest(identifier: reminder.identifier, content: content, trigger: trigger))
     }

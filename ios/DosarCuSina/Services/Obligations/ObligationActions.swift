@@ -26,7 +26,7 @@ public final class ObligationActions {
     private let calendar: Calendar
     private let now: () -> Date
 
-    public init(context: ModelContext, calendar: Calendar = .current, now: @escaping () -> Date = { Date() }) {
+    public init(context: ModelContext, calendar: Calendar = .dosar, now: @escaping () -> Date = { Date() }) {
         self.context = context
         self.calendar = calendar
         self.now = now

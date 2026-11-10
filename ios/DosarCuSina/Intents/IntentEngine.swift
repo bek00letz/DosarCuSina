@@ -62,7 +62,7 @@ enum IntentEngine {
     static func apply(
         _ request: OutsideRequest,
         in context: ModelContext,
-        calendar: Calendar = .current,
+        calendar: Calendar = .dosar,
         now: @escaping () -> Date = { Date() }
     ) throws -> Outcome {
         let id = request.obligationId
@@ -95,7 +95,7 @@ enum IntentEngine {
         container: ModelContainer?,
         sideEffects: (ModelContainer) -> SideEffectsCoordinator = { SideEffectsCoordinator.shared(for: $0) },
         failures: OutsideActionFailures = .shared,
-        calendar: Calendar = .current,
+        calendar: Calendar = .dosar,
         now: @escaping () -> Date = { Date() }
     ) async throws -> Outcome {
         guard let container else {
@@ -124,7 +124,7 @@ enum IntentEngine {
         queue: WidgetCompletionQueue? = .shared(),
         in context: ModelContext,
         failures: OutsideActionFailures = .shared,
-        calendar: Calendar = .current
+        calendar: Calendar = .dosar
     ) -> Int {
         guard let queue else { return 0 }
         let pending = queue.pending()

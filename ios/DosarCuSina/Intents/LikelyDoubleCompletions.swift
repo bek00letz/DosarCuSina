@@ -30,7 +30,7 @@ enum LikelyDoubleCompletions {
     }
 
     /// Whether the two latest completions (newest first) look like one real and one stale tap.
-    static func isLikely(latest: Completion, previous: Completion, calendar: Calendar = .current) -> Bool {
+    static func isLikely(latest: Completion, previous: Completion, calendar: Calendar = .dosar) -> Bool {
         guard let closed = latest.cycle, previous.next == closed else { return false }
         let latestDay = CalendarDay(latest.occurredAt, calendar: calendar)
         let apart = CalendarDay(previous.occurredAt, calendar: calendar).days(to: latestDay, calendar: calendar)
@@ -39,7 +39,7 @@ enum LikelyDoubleCompletions {
 
     /// Every likely case in the household. Reads only.
     @MainActor
-    static func find(in context: ModelContext, calendar: Calendar = .current) throws -> [Candidate] {
+    static func find(in context: ModelContext, calendar: Calendar = .dosar) throws -> [Candidate] {
         try context.fetch(FetchDescriptor<Obligation>()).compactMap { candidate(for: $0, calendar: calendar) }
     }
 
@@ -49,7 +49,7 @@ enum LikelyDoubleCompletions {
     /// tap, and returns whether it changed anything.
     @MainActor
     @discardableResult
-    static func undoSecond(_ candidate: Candidate, in context: ModelContext, calendar: Calendar = .current) throws -> Bool {
+    static func undoSecond(_ candidate: Candidate, in context: ModelContext, calendar: Calendar = .dosar) throws -> Bool {
         let id = candidate.obligationId
         var descriptor = FetchDescriptor<Obligation>(predicate: #Predicate { $0.id == id })
         descriptor.fetchLimit = 1

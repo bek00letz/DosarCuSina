@@ -4,7 +4,7 @@ import Foundation
 enum DueWording {
     /// "în 5 zile", "într-o lună", "azi", "mâine", "acum 3 zile", in the same durations as every
     /// other surface (`DurationWording.distance`).
-    static func relative(daysRemaining days: Int, from today: Date = Date(), calendar: Calendar = .current) -> String {
+    static func relative(daysRemaining days: Int, from today: Date = Date(), calendar: Calendar = .dosar) -> String {
         switch days {
         case -1: return String(localized: "ieri", comment: "Due: yesterday")
         case ..<0: return String(localized: "acum \(DurationWording.distance(days: days, from: today, calendar: calendar))", comment: "Due: this long ago")
@@ -34,7 +34,7 @@ enum DueWording {
     }
 
     /// "Expiră în 5 zile · 7 noiembrie", "De plătit azi · 2 noiembrie", "A expirat acum 3 zile · 30 octombrie".
-    static func line(kind: ObligationKind, due: CalendarDay, today: CalendarDay, calendar: Calendar = .current) -> String {
+    static func line(kind: ObligationKind, due: CalendarDay, today: CalendarDay, calendar: Calendar = .dosar) -> String {
         let days = today.days(to: due, calendar: calendar)
         let when = relative(daysRemaining: days, from: today.startDate(in: calendar), calendar: calendar)
         return "\(verb(for: kind, daysRemaining: days)) \(when) · \(date(due, today: today))"
@@ -44,7 +44,7 @@ enum DueWording {
     /// line: "Expiră pe 12 august 2027" and "Bun de călătorit până pe 12 februarie 2027". Once
     /// the cut-off has passed: "A fost bun de călătorit până pe …"; once it has expired, only
     /// "A expirat pe …". Nil for everything without a cut-off, which keeps `line`.
-    static func travelLines(due: CalendarDay, rule: UrgencyRule, today: CalendarDay, calendar: Calendar = .current) -> [String]? {
+    static func travelLines(due: CalendarDay, rule: UrgencyRule, today: CalendarDay, calendar: Calendar = .dosar) -> [String]? {
         guard let cutoff = rule.travelCutoff(before: due, calendar: calendar) else { return nil }
         let expiry = date(due, today: today)
         guard today <= due else { return [String(localized: "A expirat pe \(expiry)", comment: "A passport's line once it has expired")] }

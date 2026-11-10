@@ -70,7 +70,7 @@ extension PaperIdentity {
     /// A paper already logged in a section's history, as the rule reads it: its number, its
     /// day, its total and the firm that did the work.
     @MainActor
-    public init(entry: HistoryEntry, calendar: Calendar = .current) {
+    public init(entry: HistoryEntry, calendar: Calendar = .dosar) {
         self.init(number: entry.reference, day: CalendarDay(entry.occurredAt, calendar: calendar), total: entry.totalCost,
                   issuer: entry.providerNames.first)
     }

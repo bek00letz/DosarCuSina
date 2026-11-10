@@ -58,7 +58,7 @@ public enum ReminderPlanner {
     public static func plan(
         _ obligations: [ObligationSnapshot],
         now: Date,
-        calendar: Calendar = .current,
+        calendar: Calendar = .dosar,
         defaultMinuteOfDay: Int = AppPreferences.defaultReminderMinuteOfDay,
         limit: Int = ReminderPlanner.defaultLimit,
         locale: Locale = .dosarDefault
@@ -196,7 +196,7 @@ public enum ReminderPlanner {
 
     /// The moment `minuteOfDay` minutes after midnight on `day`, in local time.
     /// Uses calendar components, so daylight-saving changes keep the wall-clock time.
-    public static func fireDate(day: CalendarDay, minuteOfDay: Int, calendar: Calendar = .current) -> Date {
+    public static func fireDate(day: CalendarDay, minuteOfDay: Int, calendar: Calendar = .dosar) -> Date {
         var parts = DateComponents()
         parts.year = day.year
         parts.month = day.month
@@ -221,7 +221,7 @@ public enum ReminderPlanner {
     /// scheduled before they carried it: a lead-day reminder `d<n>` is about the
     /// day `n` days later, the follow-up about the day before. Nil when it can't
     /// be told (a snoozed reminder), so a button on it changes nothing.
-    public static func cycle(fromIdentifier identifier: String, deliveredOn: CalendarDay, calendar: Calendar = .current) -> CalendarDay? {
+    public static func cycle(fromIdentifier identifier: String, deliveredOn: CalendarDay, calendar: Calendar = .dosar) -> CalendarDay? {
         guard obligationId(fromIdentifier: identifier) != nil, let suffix = identifier.split(separator: ".").last else { return nil }
         if suffix == lapseSuffix { return deliveredOn.adding(days: -1, calendar: calendar) }
         guard suffix.hasPrefix("d"), let days = Int(suffix.dropFirst()) else { return nil }
@@ -295,7 +295,7 @@ public enum ReminderPlanner {
 
     /// Durations are worked out from the day the reminder fires, so "Într-o lună"
     /// is true when the person reads it, and say what every screen says that day.
-    static func specificTitle(_ title: String, daysBefore: Int, from fireDate: Date, calendar: Calendar = .current) -> String {
+    static func specificTitle(_ title: String, daysBefore: Int, from fireDate: Date, calendar: Calendar = .dosar) -> String {
         switch daysBefore {
         case ..<0: return String(localized: "Depășit: \(title)", comment: "Reminder title for an overdue obligation")
         case 0: return String(localized: "Azi: \(title)", comment: "Reminder title, due today")
@@ -308,7 +308,7 @@ public enum ReminderPlanner {
 
     /// Before a travel cut-off: "Bun de călătorit încă 3 luni: Pașaport"; on it, "Azi e
     /// ultima zi bună de călătorit: Pașaport".
-    static func travelTitle(_ title: String, daysBefore: Int, from fireDate: Date, calendar: Calendar = .current) -> String {
+    static func travelTitle(_ title: String, daysBefore: Int, from fireDate: Date, calendar: Calendar = .dosar) -> String {
         switch daysBefore {
         case ...0: return String(localized: "Azi e ultima zi bună de călătorit: \(title)", comment: "Reminder title on the last day a document is good for travel (a passport, six months before it expires)")
         case 1: return String(localized: "Mâine e ultima zi bună de călătorit: \(title)", comment: "Reminder title the day before a document stops being good for travel")
@@ -319,7 +319,7 @@ public enum ReminderPlanner {
     }
 
     /// The same for a protected category, naming nothing: "Un act e bun de călătorit încă 3 luni".
-    static func genericTravelTitle(daysBefore: Int, from fireDate: Date, calendar: Calendar = .current) -> String {
+    static func genericTravelTitle(daysBefore: Int, from fireDate: Date, calendar: Calendar = .dosar) -> String {
         switch daysBefore {
         case ...0: return String(localized: "Azi e ultima zi în care un act e bun de călătorit", comment: "Generic reminder title on the last day a document is good for travel")
         case 1: return String(localized: "Mâine e ultima zi în care un act e bun de călătorit", comment: "Generic reminder title the day before a document stops being good for travel")
@@ -329,7 +329,7 @@ public enum ReminderPlanner {
         }
     }
 
-    static func genericTitle(daysBefore: Int, from fireDate: Date, calendar: Calendar = .current) -> String {
+    static func genericTitle(daysBefore: Int, from fireDate: Date, calendar: Calendar = .dosar) -> String {
         switch daysBefore {
         case ..<0: return String(localized: "Ai o scadență depășită", comment: "Generic reminder title")
         case 0: return String(localized: "Ai o scadență azi", comment: "Generic reminder title")

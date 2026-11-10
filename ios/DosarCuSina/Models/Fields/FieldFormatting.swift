@@ -95,7 +95,7 @@ public enum FieldFormatter {
                 ? .valid
                 : .invalid(String(localized: "Numărul de telefon nu e complet.", comment: "Phone field error"))
         case .year:
-            let latest = Calendar.current.component(.year, from: Date()) + 1
+            let latest = Calendar.dosar.component(.year, from: Date()) + 1
             guard let year = RomanianNumber.value(text, as: .count).map({ NSDecimalNumber(decimal: $0).doubleValue }), (1900...Double(latest)).contains(year) else {
                 return .invalid(String(localized: "Scrie anul cu patru cifre, de exemplu 2018.", comment: "Year field error"))
             }

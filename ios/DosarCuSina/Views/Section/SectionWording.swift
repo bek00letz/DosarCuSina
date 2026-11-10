@@ -4,7 +4,7 @@ import Foundation
 
 /// A pet's or a person's age in plain words: "3 ani", "un an și 4 luni", "5 luni".
 enum AgeWording {
-    static func text(born: CalendarDay, today: CalendarDay, calendar: Calendar = .current) -> String? {
+    static func text(born: CalendarDay, today: CalendarDay, calendar: Calendar = .dosar) -> String? {
         guard born <= today else { return nil }
         let parts = calendar.dateComponents([.year, .month], from: born.startDate(in: calendar), to: today.startDate(in: calendar))
         let years = parts.year ?? 0
@@ -21,7 +21,7 @@ enum AgeWording {
 /// The "last time" line for a component in the Istoric pocket:
 /// "acum 18.200 km · 14 mar. 2025 · 420 lei".
 enum ComponentLine {
-    static func detail(_ occurrence: ComponentOccurrence, unit: MeasurementUnit?, locale: Locale = .dosarDefault, calendar: Calendar = .current) -> String {
+    static func detail(_ occurrence: ComponentOccurrence, unit: MeasurementUnit?, locale: Locale = .dosarDefault, calendar: Calendar = .dosar) -> String {
         var parts: [String] = []
         if let since = occurrence.metricSince, let unit = unit?.label {
             let distance = since.formatted(.number.locale(locale).precision(.fractionLength(0)))
@@ -41,7 +41,7 @@ struct MoneySummary: Equatable {
     var lastTwelveMonths: MoneyTotals
     var jobCount: Int
 
-    static func make(entries: [(date: Date, cost: MoneyTotals)], now: Date, calendar: Calendar = .current) -> MoneySummary {
+    static func make(entries: [(date: Date, cost: MoneyTotals)], now: Date, calendar: Calendar = .dosar) -> MoneySummary {
         let yearAgo = calendar.date(byAdding: .year, value: -1, to: now) ?? now
         var all = MoneyTotals()
         var recent = MoneyTotals()

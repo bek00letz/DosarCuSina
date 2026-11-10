@@ -59,7 +59,7 @@ struct UpcomingProvider: TimelineProvider {
     /// One entry now and one at each of the next midnights, so "în 5 zile"
     /// counts down without the app running. The app reloads it after every change.
     func getTimeline(in context: Context, completion: @escaping @Sendable (Timeline<UpcomingEntry>) -> Void) {
-        let calendar = Calendar.current
+        let calendar = Calendar.dosar
         let now = Date.now
         var entries = [entry(at: now)]
         var midnight = calendar.startOfDay(for: now)

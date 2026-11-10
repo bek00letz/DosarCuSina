@@ -14,7 +14,7 @@ import SwiftData
 @MainActor
 struct DataRepairs {
     let context: ModelContext
-    var calendar: Calendar = .current
+    var calendar: Calendar = .dosar
     var ledger: DataRepairLedger = .standard
 
     /// The registry, in the order the steps run. A new repair is a new step at the end.

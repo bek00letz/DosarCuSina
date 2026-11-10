@@ -88,7 +88,7 @@ enum ReminderWording {
 
     /// "Bun de călătorit până pe 12 februarie 2031." for a document with a travel cut-off
     /// expiring on `day`; nil for every other document.
-    static func travelLine(expiring day: CalendarDay, profile: ReminderProfile, today: CalendarDay, calendar: Calendar = .current) -> String? {
+    static func travelLine(expiring day: CalendarDay, profile: ReminderProfile, today: CalendarDay, calendar: Calendar = .dosar) -> String? {
         guard let cutoff = profile.urgencyRule.travelCutoff(before: day, calendar: calendar) else { return nil }
         return String(localized: "Bun de călătorit până pe \(DueWording.date(cutoff, today: today)).", comment: "A passport's last day good for travel, six months before it expires")
     }
@@ -99,7 +99,7 @@ enum ReminderWording {
     /// follows its issue by a rule (`validityMonths`: a cazier judiciar) says so instead of
     /// "Expiră pe".
     static func expiryLine(_ day: CalendarDay, profile: ReminderProfile, today: CalendarDay, validityMonths: Int? = nil,
-                           calendar: Calendar = .current) -> String {
+                           calendar: Calendar = .dosar) -> String {
         let date = DueWording.date(day, today: today)
         let opening = validityMonths.map { validityOpening(day, months: $0, today: today) } ?? String(localized: "Expiră pe \(date).")
         return [opening, travelLine(expiring: day, profile: profile, today: today, calendar: calendar), sentence(profile)]

@@ -18,7 +18,7 @@ public struct HolderGroup: Identifiable {
 public enum DocumentHolders {
     /// The documents of `category` (the household's personal documents when nil), grouped
     /// by the person each is filed under: whoever's category plays the `holder` part.
-    public static func groups(in context: ModelContext, category: String? = nil, includeExamples: Bool = true, calendar: Calendar = .current) throws -> [HolderGroup] {
+    public static func groups(in context: ModelContext, category: String? = nil, includeExamples: Bool = true, calendar: Calendar = .dosar) throws -> [HolderGroup] {
         let store = TemplateStore(context: context)
         let templates = try store.templatesByKey()
         guard let documentsKey = category ?? templates.key(withRole: .personalDocument) else { return [] }

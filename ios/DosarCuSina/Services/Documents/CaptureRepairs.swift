@@ -64,7 +64,7 @@ public struct CaptureRepairs {
 
     /// Visits that may have lost their invoice, each with the one invoice that fits.
     /// A visit with two possible invoices isn't offered: the owner would have to guess.
-    public func visitsWithoutInvoiceCandidates(calendar: Calendar = .current) throws -> [VisitWithoutInvoice] {
+    public func visitsWithoutInvoiceCandidates(calendar: Calendar = .dosar) throws -> [VisitWithoutInvoice] {
         let visitKinds: Set<HistoryKind> = [.maintenance, .repair]
         var used = Set<UUID>()
         var found: [VisitWithoutInvoice] = []

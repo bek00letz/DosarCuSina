@@ -641,7 +641,7 @@ private struct GalleryFields: View {
     @State private var currency = "RON"
     @State private var odometer: Double? = 84_200
     @State private var date: Date?
-    @State private var expiry: Date? = Calendar.current.date(byAdding: .day, value: 120, to: .now)
+    @State private var expiry: Date? = Calendar.dosar.date(byAdding: .day, value: 120, to: .now)
     @State private var fuel: String? = "Benzină"
     @State private var reminders = true
     @State private var contact: DSContactValue? = DSContactValue(name: "Service Auto Exemplu", phone: "0700 000 000")

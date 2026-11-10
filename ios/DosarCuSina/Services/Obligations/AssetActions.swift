@@ -45,7 +45,7 @@ public final class AssetActions {
     /// Seals secret fields (PIN codes) before they are saved.
     private let sealer: SecretSealer
 
-    public init(context: ModelContext, calendar: Calendar = .current, now: @escaping () -> Date = { Date() }, sealer: SecretSealer = .device) {
+    public init(context: ModelContext, calendar: Calendar = .dosar, now: @escaping () -> Date = { Date() }, sealer: SecretSealer = .device) {
         self.context = context
         self.calendar = calendar
         self.now = now
@@ -399,7 +399,7 @@ enum HouseholdMutations {
         return obligation
     }
 
-    static func recurrenceContext(for obligation: Obligation, currentMetric: Double?, calendar: Calendar = .current) -> RecurrenceContext {
+    static func recurrenceContext(for obligation: Obligation, currentMetric: Double?, calendar: Calendar = .dosar) -> RecurrenceContext {
         // Only completions that moved the date take part (not the one being recorded now).
         let steps = obligation.history.filter { $0.nextDueDate != nil }.map {
             RecurrenceEngine.SeriesStep(

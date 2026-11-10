@@ -38,8 +38,9 @@ struct DosarCuSinaApp: App {
             .environment(navigator)
             .environment(preferences)
             .environment(vault)
-            // The binder speaks Romanian and writes dates and money the Romanian way.
-            .environment(\.locale, .dosarDefault)
+            // The binder speaks Romanian, writes dates and money the Romanian way and counts
+            // days in the Gregorian calendar, whatever the phone's region and calendar.
+            .dosarLocaleAndCalendar()
             .onOpenURL { url in
                 navigator.open(url)
             }

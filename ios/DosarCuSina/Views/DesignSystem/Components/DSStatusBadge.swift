@@ -21,13 +21,13 @@ extension DSStatus {
 /// Badge wording for a due day, from its urgency.
 enum DSDueText {
     /// "Azi", "Mâine", "În 5 zile", "Întârziat cu 2 zile", "Depășit de 3 zile".
-    static func text(_ urgency: AttentionUrgency, daysRemaining days: Int, from today: Date = Date(), calendar: Calendar = .current) -> String {
+    static func text(_ urgency: AttentionUrgency, daysRemaining days: Int, from today: Date = Date(), calendar: Calendar = .dosar) -> String {
         WhenWording.standalone(urgency, daysRemaining: days, from: today, calendar: calendar)
     }
 
     /// For documents and warranties: "Valabil" until it needs the person, then
     /// "Expiră în 20 de zile", "Expiră mâine", "Expiră azi", "Expirat de 3 zile".
-    static func expiryText(_ urgency: AttentionUrgency, daysRemaining days: Int, from today: Date = Date(), calendar: Calendar = .current) -> String {
+    static func expiryText(_ urgency: AttentionUrgency, daysRemaining days: Int, from today: Date = Date(), calendar: Calendar = .dosar) -> String {
         if urgency.tone == .calm {
             return String(localized: "Valabil", comment: "Badge: a document is valid and not close to expiring.")
         }

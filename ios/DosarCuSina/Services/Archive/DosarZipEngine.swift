@@ -437,7 +437,7 @@ public final class DosarZipEngine: Sendable {
     // MARK: - Internal Binary Helpers
     
     private static func dosDateTime(from date: Date) -> (time: UInt16, date: UInt16) {
-        let calendar = Calendar.current
+        let calendar = Calendar.dosar
         let comps = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
         // A zip date runs from 1980 to 2107. The manifest keeps the real export time,
         // so a date outside that range is written as its nearest end.
@@ -471,8 +471,7 @@ public final class DosarZipEngine: Sendable {
         comps.hour = hour
         comps.minute = minute
         comps.second = second
-        comps.timeZone = TimeZone.current
-        return Calendar.current.date(from: comps) ?? Date()
+        return Calendar.dosar.date(from: comps) ?? Date()
     }
     
     private static func readUInt16LE(_ data: Data, at offset: Int) -> UInt16 {
