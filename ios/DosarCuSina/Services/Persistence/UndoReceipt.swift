@@ -43,9 +43,11 @@ public enum UndoError: LocalizedError, Equatable {
 ///
 /// Undo takes back only what the step changed, property by property, in one unit of work
 /// (`UndoableRecord.takeBack`). It refuses when anything of a record's own state that the step
-/// changed was changed again since, so it never overwrites something newer; a newer change to
-/// another property of the same record, or another record pointing at it since (another
-/// deadline of the section completed from the widget), stays and doesn't stop it.
+/// changed was changed again since, or when something came to point since at a record whose
+/// own state it changed or that it made (another completion of the same deadline), so it never
+/// overwrites or strands something newer. A newer change to another property of the same
+/// record stays, and so does what came to point at a record the step only linked to (another
+/// deadline of the same section completed from the widget); neither stops it.
 ///
 /// A receipt lives in memory, only while the toast offers it. Actions that can't be
 /// undone don't return one.
@@ -240,11 +242,13 @@ public final class UndoReceipt {
             try UnitOfWork.save(context)
         }
         isUndone = true
+        files?.removeAll()
         files = nil
     }
 
-    /// Whether every record the step left still holds what the step changed, nothing points
-    /// at a record it made that didn't then, and every record it deleted is still gone.
+    /// Whether every record the step left still holds what the step changed, nothing points at
+    /// a record it made or whose own state it changed that didn't then, and every record it
+    /// deleted is still gone.
     private func isUnchangedSinceStep() -> Bool {
         for (ref, state) in after {
             guard let record = UndoableRecords.find(ref, in: context), record.isStillAsLeft(before: before[ref], after: state) else { return false }

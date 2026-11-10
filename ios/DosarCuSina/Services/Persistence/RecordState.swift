@@ -197,10 +197,13 @@ public protocol UndoableRecord: PersistentModel {
 ///   still as the step left it; a newer one stays.
 /// - A list of the records that point at it (a section's history): it follows those records.
 ///   Only what the step itself added or took away is taken back; what another step added since
-///   stays, and never stops an undo.
+///   stays. On a record the step only linked to (the section a completion went into), that
+///   never stops an undo. On a record whose own state the step changed or that it made,
+///   something that came to point at it since was built on the step (another completion of
+///   the same deadline, a document filed under the person it made), and undo refuses.
 ///
 /// A record the step made goes whole (undo deletes it): its own state must still be as the
-/// step left it, and nothing may point at it that didn't then.
+/// step left it.
 extension UndoableRecord {
     static var recordType: String { String(describing: Self.self) }
 
@@ -208,13 +211,16 @@ extension UndoableRecord {
     /// changed from `before`; with no `before` (a record the step made), in every property.
     func isStillAsLeft(before: RecordState?, after: RecordState) -> Bool {
         let changed = before.map { after.changed(from: $0) }
-        for property in Self.storedProperties where changed?.contains(property.name) ?? true {
+        let stepChanged = { (name: String) in changed?.contains(name) ?? true }
+        // A record the step made, or whose own state it changed: whatever came to point at it
+        // since was built on what the step did (another completion of the same deadline, a
+        // document filed under the person the step made), and the undo would pull it away.
+        let ownStateChanged = Self.storedProperties.contains { stepChanged($0.name) && ChangeTimes.isOwnState($0, of: self) }
+        for property in Self.storedProperties {
             guard let left = after.values[property.name] else { continue }
-            let now = property.read(self)
             if ChangeTimes.isOwnState(property, of: self) {
-                guard now == left else { return false }
-            } else if before == nil, !property.isOwn, !now.refs.isSubset(of: left.refs) {
-                // Something points at a record the step made, and would lose it with the undo.
+                guard !stepChanged(property.name) || property.read(self) == left else { return false }
+            } else if !property.isOwn, ownStateChanged, !property.read(self).refs.isSubset(of: left.refs) {
                 return false
             }
         }

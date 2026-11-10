@@ -31,6 +31,13 @@ final class UndoFiles {
         try? FileManager.default.removeItem(at: folder)
     }
 
+    /// Removes every copy and the folder now, whoever still holds this: the step was taken
+    /// back, so nothing will write them back again.
+    func removeAll() {
+        try? FileManager.default.removeItem(at: folder)
+        kept = []
+    }
+
     /// Keeps `data`, known by `digest`; the same bytes are kept once.
     func keep(_ data: Data, as digest: FileDigest) throws {
         guard !kept.contains(digest) else { return }
