@@ -143,7 +143,7 @@ rule labels-outside-their-table '^ios/DosarCuSina/Services/Capture/' "$label_tab
 
 # Codes, numbers, plates and names are compared one way: folded, in capitals, letters and digits
 # only (RomanianText.compact), so a value with a diacritic, a space or a dash still matches.
-rule compact-outside-romanian-text "$app" '^ios/DosarCuSina/Models/Values/RomanianText\.swift$' \
+rule compact-outside-romanian-text "$app" '^ios/Shared/RomanianText\.swift$' \
     'uppercased\(\)\.filter *(\(\{|\{) *\$0\.is(Letter|Number) *\|\| *\$0\.is(Letter|Number)' - \
     'Compare and check codes, numbers, plates and names with RomanianText.compact: folded, in capitals, letters and digits only, the one way.'
 
