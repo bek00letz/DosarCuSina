@@ -493,11 +493,11 @@ Integrations are optional, one tap, and asked in context: *Adaugă în Calendar*
 ## 7. Security
 
 - **Two independent locks:** an app lock (off by default) and per-section locks (Acte and Sănătate start locked; any category can be locked). Either can be on alone.
-- **One unlock opens both** for the session, so the person is never asked twice in a row. The session closes after a minute in the background, or on demand.
+- **One unlock opens both** for the session, so the person is never asked twice in a row. The session closes after a minute in the background, or on demand. The minute is counted on a clock the phone's date, time and time zone settings don't move, which keeps counting while the phone sleeps: setting the phone's clock back or forward while away changes nothing, and a night with the screen off counts as a night.
 - **A failed or cancelled unlock never ejects the person.** Only the locked part stays closed, calmly, with one button to try again.
 - **The device passcode is the fallback** for Face ID, Touch ID or Optic ID.
 - **The lock covers everything.** The app lock and the app-switcher cover are drawn in a window of their own above every window of the app, so a sheet, a full-screen flow, an alert or a menu left open stays under them and can't be seen or reached. Links, notification taps and opened `.dosar` files wait until the app is unlocked.
-- **The app-switcher picture is covered** whenever the app lock is on, or a section lock is on and the session is open (a locked section could be showing). Not behind a Face ID prompt.
+- **The app-switcher picture is covered** whenever the app lock is on, or a section lock is on and the session is open (a locked section could be showing): from the moment the app stops taking taps (the app switcher opening, the way home), and always once it goes to the background, which is when iOS takes the switcher's picture, even with a Face ID prompt still up. The app's own Face ID prompt only makes the app inactive, and isn't covered by it.
 - **A cover is whole from its first frame.** The lock and the app-switcher cover appear at once, never fading in, and switch between each other at once. Uncovering gives taps back to the app at once and fades the cover out; its window goes when the fade has ended (a short fade with Reduce Motion). Covering again during the fade stops it.
 - Turning a lock off asks for Face ID first. **Exporting a backup and "Înlocuiește tot" ask for Face ID or the passcode every time, whenever any lock is on**, without opening or closing the session.
 - Locked sections show nothing of what's inside: box lines, search results, widgets and notifications use generic wording, and the iPhone's search shows nothing of them at all, not even a title.
