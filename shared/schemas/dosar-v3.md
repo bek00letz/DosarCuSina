@@ -37,7 +37,7 @@ files, even when empty. Readers treat a missing data file as an empty array.
 
 - **Identifiers:** UUID strings, written lowercase; compare case-insensitively.
 - **Timestamps** (`createdAt`, `updatedAt`, `occurredAt`, `recordedAt`, `exportedAt`, `snoozedUntil`): ISO 8601 in UTC, such as `2026-03-01T07:30:00Z`. Writers write whole seconds; readers accept fractional seconds and offsets.
-- **Calendar days** (`dueDate`, `cycleDueDate`, `documentDate`, date field values): `yyyy-MM-dd`, with no time zone. A day is the same day everywhere. It must be a day the calendar has: a record with "2026-02-30" makes its data file unreadable (the archive is refused, as a damaged one is); a date field value with one is kept as written, like any value a reader can't read.
+- **Calendar days** (`dueDate`, `cycleDueDate`, `documentDate`, date field values): `yyyy-MM-dd`, with no time zone. A day is the same day everywhere. Readers keep the numbers as written, even for a day the Gregorian calendar doesn't have ("2567-02-29", written by an older iOS build on a phone set to the Buddhist calendar), and write them back unchanged; they never roll one over into the next month.
 - **Month-days** (fixed yearly dates): `MM-dd`.
 - **Money:** `{"amount": "175.50", "currency": "RON"}`. The amount is a decimal string with a dot; the currency is ISO 4217. Amounts in different currencies are never added together.
 - **Optional values** are omitted rather than written as `null`. Readers accept either.

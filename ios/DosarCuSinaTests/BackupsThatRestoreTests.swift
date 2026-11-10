@@ -202,23 +202,26 @@ struct BackupsThatRestoreTests {
         #expect(written.pockets == ["keyFacts", "telepathy"])
     }
 
-    @Test func aDayTheCalendarDoesntHaveIsRefused() throws {
-        #expect(CalendarDay(isoString: "2026-02-30") == nil)
-        #expect(CalendarDay(isoString: "2026-04-31") == nil)
-        #expect(CalendarDay(isoString: "2026-02-29") == nil)
-        #expect(CalendarDay(isoString: "2028-02-29") == CalendarDay(year: 2028, month: 2, day: 29))
-        #expect(CalendarDay(isoString: "2026-12-31T23:00:00Z") == CalendarDay(year: 2026, month: 12, day: 31))
-
+    @Test(arguments: ["2026-02-30", "2567-02-29"])
+    func aDayTheCalendarDoesntHaveComesInAndGoesOutAsWritten(day: String) throws {
+        // An older build on a phone set to another calendar wrote days such as 2567-02-29
+        // (2024 in the Buddhist calendar); the repair list puts them right once they are in.
+        var id = ""
         let archive = try Fixtures.archive("dosar-v3/household") { files in
             NewerVersionTests.rewrite(&files, DossierV3.Path.obligations) { obligations in
-                obligations[0].set("dueDate", "2026-02-30")
+                id = obligations[0]["id"]?.string ?? ""
+                obligations[0].set("dueDate", .string(day))
             }
         }
         let container = try makeInMemoryContainer()
-        #expect(throws: ArchiveError.unreadableFile(DossierV3.Path.obligations)) {
-            try DossierArchiveService(container: container, calendar: calendar).importArchive(archive, mode: .replace)
-        }
-        #expect(try ModelContext(container).fetchCount(FetchDescriptor<Obligation>()) == 0, "Nothing written")
+        let service = DossierArchiveService(container: container, calendar: calendar)
+        try service.importArchive(archive, mode: .replace)
+        let uuid = try #require(UUID(uuidString: id))
+        let obligation = try #require(try ModelContext(container).fetch(FetchDescriptor<Obligation>(predicate: #Predicate { $0.id == uuid })).first)
+        #expect(obligation.dueDay.isoString == day, "Never rolled over into the next month")
+
+        let again = try DossierArchiveReader.read(try service.exportData(exportedAt: noon("2026-11-10")))
+        #expect(again.obligations.first { $0.id == id }?.dueDate.isoString == day)
     }
 
     @Test func aDocumentCreatedInTheFutureComesInAsOfNow() throws {
