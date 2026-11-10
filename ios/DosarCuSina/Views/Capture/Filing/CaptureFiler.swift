@@ -102,14 +102,13 @@ struct CaptureFiler {
         @MainActor
         func filedBefore(keptDocumentID: UUID?, calendar: Calendar) -> (entry: HistoryEntry, paper: FiledPaper)? {
             let visits = PaperIdentity.visits(of: asset)
-            if let kept = keptDocumentID,
-               let entry = visits.first(where: { ($0.attachments ?? []).contains { $0.id == kept && !$0.isDeleted } }) {
-                return (entry, FiledPaper(entry, match: .sameDocument, calendar: calendar))
+            // The same document's visit, on this section only.
+            let keptEntry = keptDocumentID.flatMap { kept in
+                visits.first { ($0.attachments ?? []).contains { $0.id == kept && !$0.isDeleted } }
             }
-            guard document != nil, !isAnotherInvoice else { return nil }
-            let invoice = PaperIdentity(number: reference, day: CalendarDay(occurredAt, calendar: calendar), total: totalCost, issuer: issuer)
-            guard let found = invoice.filed(among: visits, identity: { PaperIdentity(entry: $0, calendar: calendar) }) else { return nil }
-            return (found.paper, FiledPaper(found.paper, match: FiledPaper.Match(found.match), calendar: calendar))
+            let invoice = document == nil || isAnotherInvoice ? nil
+                : PaperIdentity(number: reference, day: CalendarDay(occurredAt, calendar: calendar), total: totalCost, issuer: issuer)
+            return PaperIdentity.filed(keptDocumentEntry: keptEntry, paper: invoice, among: visits, calendar: calendar)
         }
 
         /// This visit as it updates `earlier`, the visit its invoice was filed with: what the
