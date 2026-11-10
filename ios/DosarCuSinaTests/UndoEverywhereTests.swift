@@ -46,7 +46,7 @@ struct UndoEverywhereTests {
     struct Outside: Equatable {
         var reminders: [String: String?]
         var badge: Int?
-        var widget: WidgetSnapshot?
+        var widget: WidgetFeed?
         var spotlight: [String: SpotlightEntry]
     }
 
@@ -83,11 +83,11 @@ struct UndoEverywhereTests {
         func outside() async throws -> Outside {
             await coordinator.reconcileNow()
             let pending = await center.pending()
-            let widget = try? Data(contentsOf: folder.appending(path: WidgetSnapshot.fileName))
+            let widget = try? Data(contentsOf: folder.appending(path: WidgetFeed.fileName))
             return Outside(
                 reminders: Dictionary(uniqueKeysWithValues: pending.map { ($0.identifier, $0.fingerprint) }),
                 badge: await center.badge,
-                widget: try widget.map { try WidgetSnapshot.decoder().decode(WidgetSnapshot.self, from: $0) },
+                widget: widget.flatMap(WidgetFeed.decode),
                 spotlight: index.items
             )
         }

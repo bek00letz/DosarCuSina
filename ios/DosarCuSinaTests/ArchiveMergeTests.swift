@@ -299,7 +299,7 @@ struct ArchiveMergeTests {
         let withoutTime = try #require(entries.first { $0.title == "Frâne față" })
         #expect(withoutTime.updatedAt == ChangeTime.unknown, "An entry the archive carries no time for has none")
         let withTime = try #require(entries.first { $0.title == "ITP" })
-        #expect(withTime.updatedAt == DossierV3.parseTimestamp("2026-03-01T07:45:00Z"))
+        #expect(withTime.updatedAt == MachineText.moment("2026-03-01T07:45:00Z"))
 
         withoutTime.note = "Plăcuțe originale."
         withTime.note = "Corectat."

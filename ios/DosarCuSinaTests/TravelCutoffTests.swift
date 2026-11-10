@@ -149,7 +149,7 @@ struct TravelCutoffTests {
         #expect(box.urgencyTone == (expected.needsAttentionNow ? expected.tone : .calm))
 
         // The widget, from the snapshot the app writes: same urgency and words.
-        let data = try WidgetSnapshot.encoder().encode(WidgetSnapshot.make(from: [item], now: now, calendar: calendar))
+        let data = try WidgetFeed.encode(WidgetFeed.make(from: [item], now: now, calendar: calendar))
         let rows = WidgetContent.rows(feed: try #require(WidgetFeed.decode(data)), completed: [], now: now, calendar: calendar, protectedTitle: "", limit: 8)
         if expected != .later {
             let row = try #require(rows.first)

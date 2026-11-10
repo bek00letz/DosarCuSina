@@ -172,7 +172,7 @@ public final class SideEffectsCoordinator {
             uniquingKeysWith: { first, _ in first }
         )
 
-        widgetWriter.write(WidgetSnapshot.make(from: outside, now: date, calendar: calendar))
+        widgetWriter.write(WidgetFeed.make(from: outside, now: date, calendar: calendar))
         let outcome = await reconciler.apply(plan, badgeCount: badge, openCycles: openCycles, allowPermissionPrompt: allowPermissionPrompt)
         reminderAuthorization = outcome.authorization
         lastOutcome = outcome

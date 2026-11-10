@@ -593,22 +593,3 @@ public struct AttachmentMetadataDTO: Codable, Sendable, Identifiable {
         self.sha256 = sha256
     }
 }
-
-// MARK: - JSON Coder Factory
-
-public extension JSONEncoder {
-    static func dosarArchiveEncoder() -> JSONEncoder {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        return encoder
-    }
-}
-
-public extension JSONDecoder {
-    static func dosarArchiveDecoder() -> JSONDecoder {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        return decoder
-    }
-}

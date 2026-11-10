@@ -122,10 +122,10 @@ struct SecretFieldTests {
     @Test func widgetsNeverCarryAPin() throws {
         let s = try setup()
         let stored = try #require(s.card.value("document.pinAuthentication")?.textValue)
-        let snapshot = WidgetSnapshot.make(from: try ObligationSnapshot.fetchAll(in: s.context, calendar: .bucharest),
-                                           now: noon("2026-11-02"), calendar: .bucharest)
+        let snapshot = WidgetFeed.make(from: try ObligationSnapshot.fetchAll(in: s.context, calendar: .bucharest),
+                                       now: noon("2026-11-02"), calendar: .bucharest)
         #expect(!snapshot.items.isEmpty, "The card's renewal is there")
-        let json = String(decoding: try WidgetSnapshot.encoder().encode(snapshot), as: UTF8.self)
+        let json = String(decoding: try WidgetFeed.encode(snapshot), as: UTF8.self)
         #expect(!json.contains(pin))
         #expect(!json.contains(SecretSealer.prefix))
         #expect(!json.contains(stored))
