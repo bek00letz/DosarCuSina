@@ -53,7 +53,8 @@ public protocol CaptureSemanticExtracting: Sendable {
 /// device with Apple Intelligence turned on. When it isn't available the engine carries on
 /// with the deterministic and heuristic tiers and says so in the result.
 ///
-/// It reads the text the phone recognised, never the picture, in one session:
+/// It reads the text the phone recognised, never the picture, one question per session, so
+/// no question carries another's exchange in the model's small context:
 /// 1. **What the document is**, asked only while the kind is still open
 ///    (`ReadingArbiter.kindIsOpen`: the classifier is unsure and nothing deterministic backs
 ///    it); otherwise the phone's kind stands and the question would change nothing.
@@ -61,12 +62,15 @@ public protocol CaptureSemanticExtracting: Sendable {
 ///    generation schema built for that kind (`OnDeviceSchema`), answered through the same
 ///    mapper and checks as the AI provider's (`ModelAnswerMapper`), each value kept only
 ///    when it is printed in the text.
+///
+/// Each question carries as much of the text as its budget leaves (`OnDevicePromptBudget`:
+/// the model's context, less the instructions, the schema, the question and room for the
+/// answer). A question with no room for text isn't asked; one that still runs out of room
+/// is asked once more with half the text, and then gives up calmly: the phone's reading stands.
 public struct OnDeviceModelExtractor: CaptureSemanticExtracting {
 
     public let tier: CaptureTier = .onDeviceModel
     let resolver: any CaptureComponentResolving
-    /// The on-device model's context is small; long documents are cut to their first part.
-    static let maxCharacters = 6_000
 
     public init(resolver: any CaptureComponentResolving = CatalogComponentResolver()) {
         self.resolver = resolver
@@ -89,31 +93,64 @@ public struct OnDeviceModelExtractor: CaptureSemanticExtracting {
     }
 
     public func extract(_ input: SemanticInput) async throws -> SemanticExtraction {
-        let session = LanguageModelSession(instructions: Self.instructions)
-        let text = String(input.text.prefix(Self.maxCharacters))
-        let options = GenerationOptions(samplingMode: .greedy)
+        let model = SystemLanguageModel.default
 
         // 1. What the document is, only while the model's view can still change it.
         var named: CaptureDocumentKind?
         if input.kindIsOpen {
             let schema = try OnDeviceSchema.kindQuestion()
-            try Task.checkCancellation()
-            let answer = try await session.respond(to: Self.kindPrompt(text: text, guess: input.kind), schema: schema, options: options)
-            named = ModelAnswerMapper.kind(from: OnDeviceSchema.json(answer.content))
+            let question = { (text: String) in Self.kindPrompt(text: text, guess: input.kind) }
+            if let answer = try await ask(model, question, about: input.text, schema: schema,
+                                          answerTokens: OnDevicePromptBudget.kindAnswerTokens) {
+                named = ModelAnswerMapper.kind(from: answer)
+            }
         }
         let kind = input.kindIsOpen ? ReadingArbiter.openKind(input.kind, onDeviceModel: named) : input.kind
 
-        // 2. The facts that kind carries, and nothing else.
+        // 2. The facts that kind carries, and nothing else, in a session of their own.
         let questions = ModelQuestions(kind: kind, reader: .text)
         guard !questions.fields.isEmpty else { return SemanticExtraction(kind: named, fields: []) }
         let schema = try OnDeviceSchema.facts(questions)
-        // The text was given with the kind question; otherwise it comes with this one.
-        let prompt = input.kindIsOpen ? Self.factsPrompt(kind) : Self.textBlock(text) + "\n" + Self.factsPrompt(kind)
-        try Task.checkCancellation()
-        let answer = try await session.respond(to: prompt, schema: schema, options: options)
-        let fields = ModelAnswerMapper.fields(from: OnDeviceSchema.json(answer.content), asked: questions,
+        let question = { (text: String) in Self.factsPrompt(kind, text: text) }
+        guard let answer = try await ask(model, question, about: input.text, schema: schema,
+                                         answerTokens: OnDevicePromptBudget.answerTokens(for: questions)) else {
+            return SemanticExtraction(kind: named, fields: [])
+        }
+        let fields = ModelAnswerMapper.fields(from: answer, asked: questions,
                                               recognizedText: input.text, today: input.today, resolver: resolver)
         return SemanticExtraction(kind: named, fields: fields)
+    }
+
+    /// One question in a fresh session, with as much of `text` as its budget leaves. Nil when
+    /// there is no room for any text at all.
+    private func ask(_ model: SystemLanguageModel, _ question: (String) -> String, about text: String, schema: GenerationSchema,
+                     answerTokens: Int) async throws -> JSONValue? {
+        let counter = OnDeviceTokenCounter(model: model)
+        let fixed = try await counter.tokens(instructions: Self.instructions, schema: schema, question: question(""))
+        let budget = OnDevicePromptBudget(contextSize: model.contextSize, questionTokens: fixed, answerTokens: answerTokens)
+        var length = try await counter.characters(of: text, fitting: budget)
+        guard length > 0 else { return nil }
+        let options = GenerationOptions(samplingMode: .greedy)
+        var retried = false
+        while true {
+            try Task.checkCancellation()
+            let session = LanguageModelSession(model: model, instructions: Self.instructions)
+            do {
+                let answer = try await session.respond(to: question(OnDevicePromptBudget.cut(text, to: length)), schema: schema, options: options)
+                return OnDeviceSchema.json(answer.content)
+            } catch where !retried && Self.ranOutOfRoom(error) && length > OnDevicePromptBudget.retryBelow {
+                // The count was short (or only estimated): once more, with half the text.
+                retried = true
+                length = OnDevicePromptBudget.retryLength(after: length)
+            }
+        }
+    }
+
+    /// Whether the model stopped because the question and its answer didn't fit its context.
+    static func ranOutOfRoom(_ error: any Error) -> Bool {
+        if #available(iOS 27.0, macOS 27.0, *), let error = error as? LanguageModelError, case .contextSizeExceeded = error { return true }
+        if let error = error as? LanguageModelSession.GenerationError, case .exceededContextWindowSize = error { return true }
+        return false
     }
 
     static let instructions = """
@@ -136,8 +173,131 @@ public struct OnDeviceModelExtractor: CaptureSemanticExtracting {
         textBlock(text) + "\nWhat kind of document is this? Our first guess is \"\(guess.rawValue)\". Correct it if it's wrong."
     }
 
-    static func factsPrompt(_ kind: CaptureDocumentKind) -> String {
-        "This is a \(kind.profile.modelDescription). Fill in each field it prints, exactly as printed."
+    /// The facts question, with the text it is about: each question has a session of its own.
+    static func factsPrompt(_ kind: CaptureDocumentKind, text: String) -> String {
+        textBlock(text) + "\nThis is a \(kind.profile.modelDescription). Fill in each field it prints, exactly as printed."
+    }
+}
+
+// MARK: - The prompt's budget
+
+/// How much of a document's text fits one question to Apple's on-device model: its context
+/// (`SystemLanguageModel.contextSize`), less a margin, what the question takes besides the
+/// text (the instructions, the schema and the question's own words) and room for the answer.
+/// Pure arithmetic, so it is pinned by tests; the extractor fills it with counts from the
+/// model when the system can count (iOS 26.4 and later), else with the estimate here.
+struct OnDevicePromptBudget: Equatable, Sendable {
+    /// The model's context, in tokens.
+    let contextSize: Int
+    /// What the question takes besides the document's text.
+    let questionTokens: Int
+    /// Room kept for the answer.
+    let answerTokens: Int
+
+    /// Kept free for what a count can't see (the transcript's own markers) and an estimate that's short.
+    static let marginShare = 0.1
+    /// Below this, too little text is left to read anything from, and the question isn't asked.
+    static let minimumTextTokens = 128
+    /// The most text a question carries, whatever room there is: the first pages hold what
+    /// matters, and a long prompt is slow on the phone.
+    static let maxCharacters = 6_000
+    /// Characters per token when the system can't count: Romanian with its diacritics,
+    /// digits and recognition errors takes about three; two and a half keeps it under.
+    static let estimatedCharactersPerToken = 2.5
+    /// Room for one field's answer, its name and its value (an address is the longest).
+    static let tokensPerField = 40
+    /// Room for one line of an invoice: what it is for and its amount.
+    static let tokensPerLine = 24
+    /// The answer's own braces and separators.
+    static let answerOverhead = 16
+    /// Room for the kind question's answer: one of the app's kinds.
+    static let kindAnswerTokens = 32
+    /// A question that ran out of room with less text than this isn't asked again.
+    static let retryBelow = 400
+
+    /// Tokens left for the document's text; never below zero.
+    var textTokens: Int {
+        let margin = Int((Double(contextSize) * Self.marginShare).rounded(.up))
+        return max(0, contextSize - margin - questionTokens - answerTokens)
+    }
+
+    /// Whether there is room for enough text to ask at all.
+    var fits: Bool { textTokens >= Self.minimumTextTokens }
+
+    /// How many characters of text fit, at `charactersPerToken`: none when it doesn't fit,
+    /// never more than `maxCharacters`.
+    func characters(charactersPerToken: Double = estimatedCharactersPerToken) -> Int {
+        guard fits, charactersPerToken > 0 else { return 0 }
+        return min(Self.maxCharacters, Int((Double(textTokens) * charactersPerToken).rounded(.down)))
+    }
+
+    /// How many characters fit, from a count of `measuredTokens` for `measuredCharacters` of
+    /// the text: all of them when they fit, else a share in proportion, 5% under it.
+    func characters(measuredCharacters: Int, measuredTokens: Int) -> Int {
+        guard fits, measuredCharacters > 0 else { return 0 }
+        guard measuredTokens > textTokens else { return min(measuredCharacters, Self.maxCharacters) }
+        let share = Double(textTokens) / Double(measuredTokens) * 0.95
+        return min(Self.maxCharacters, Int((Double(measuredCharacters) * share).rounded(.down)))
+    }
+
+    /// The room an answer to `questions` is kept: each field, and each line a list of lines can hold.
+    static func answerTokens(for questions: ModelQuestions) -> Int {
+        answerOverhead + questions.fields.reduce(0) { total, field in
+            total + (field.format == .lineItems ? OnDeviceSchema.maximumLines * tokensPerLine : tokensPerField)
+        }
+    }
+
+    /// An estimate of what `characters` of text take, rounded up.
+    static func estimatedTokens(characters: Int) -> Int {
+        Int((Double(characters) / estimatedCharactersPerToken).rounded(.up))
+    }
+
+    /// The length asked with after running out of room: half.
+    static func retryLength(after length: Int) -> Int { length / 2 }
+
+    /// The first `length` characters of `text`, ending at the last line break inside them
+    /// when one is near the end, so a value is never cut in half.
+    static func cut(_ text: String, to length: Int) -> String {
+        guard text.count > length else { return text }
+        let head = text.prefix(length)
+        if let lineEnd = head.lastIndex(of: "\n"), head.distance(from: lineEnd, to: head.endIndex) <= 200 {
+            return String(head[..<lineEnd])
+        }
+        return String(head)
+    }
+}
+
+/// Counts what a question takes with the model's own tokenizer where the system offers it
+/// (iOS 26.4 and later), else estimates it (`OnDevicePromptBudget.estimatedCharactersPerToken`,
+/// and the schema by its JSON encoding, which is longer than what the model is shown).
+struct OnDeviceTokenCounter {
+    let model: SystemLanguageModel
+
+    /// The instructions, the schema and the question's own words.
+    func tokens(instructions: String, schema: GenerationSchema, question: String) async throws -> Int {
+        if #available(iOS 26.4, macOS 26.4, *) {
+            return try await model.tokenCount(for: Instructions(instructions))
+                + model.tokenCount(for: schema)
+                + model.tokenCount(for: question)
+        }
+        return Self.estimatedTokens(instructions: instructions, schema: schema, question: question)
+    }
+
+    /// The estimate, when the system can't count.
+    static func estimatedTokens(instructions: String, schema: GenerationSchema, question: String) -> Int {
+        let schemaCharacters = (try? JSONEncoder().encode(schema).count) ?? OnDevicePromptBudget.maxCharacters
+        return OnDevicePromptBudget.estimatedTokens(characters: instructions.count + schemaCharacters + question.count)
+    }
+
+    /// How many characters of `text` fit `budget`: counted where the system can, else estimated.
+    func characters(of text: String, fitting budget: OnDevicePromptBudget) async throws -> Int {
+        guard budget.fits else { return 0 }
+        let candidate = String(text.prefix(OnDevicePromptBudget.maxCharacters))
+        if #available(iOS 26.4, macOS 26.4, *) {
+            let measured = try await model.tokenCount(for: candidate)
+            return budget.characters(measuredCharacters: candidate.count, measuredTokens: measured)
+        }
+        return min(candidate.count, budget.characters())
     }
 }
 
