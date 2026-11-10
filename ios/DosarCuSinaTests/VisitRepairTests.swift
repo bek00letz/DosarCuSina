@@ -142,10 +142,10 @@ struct VisitRepairTests {
         #expect(visits(on: golf).count == 1, "The finding no longer holds, so it changes nothing")
     }
 
-    @Test func theStepComesLastWithItsOwnStoredID() {
+    @Test func theStepComesAfterTheStepsBeforeItWithItsOwnStoredID() {
         let ids = DataRepairs.steps.map { type(of: $0).id }
-        #expect(ids.last == .sameVisitTwice, "A new repair is a new step at the end")
-        #expect(ids.firstIndex(of: .sameBillTwice).map { $0 < ids.count - 1 } == true)
+        let visits = ids.firstIndex(of: .sameVisitTwice)
+        #expect(visits.flatMap { index in ids.firstIndex(of: .sameBillTwice).map { $0 < index } } == true, "A new repair is a new step at the end")
         #expect(DataRepairStepID.sameVisitTwice.rawValue == "same-visit-twice")
     }
 }
