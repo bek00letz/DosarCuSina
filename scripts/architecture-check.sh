@@ -91,8 +91,8 @@ rule change-time-outside-change-times "$app" \
 # build's types, is the one other writer.
 rule stored-json-outside-model "$app" \
     '^ios/DosarCuSina/Models/|^ios/DosarCuSina/Services/Repairs/UnitKeysRepairStep\.swift$' \
-    '(^|[^A-Za-z0-9_])(valuesData|customFactsData|sectionsData|blueprintsData|componentsData|behaviorData|recurrenceData|framingData) *=([^=]|$)' - \
-    "Write a stored JSON object through its model's accessor (values, customFacts, sections, behavior, recurrence, framing), or its kept form for what a backup carries (keptValues, keptFacts, keptSections, keptBehavior, keptRecurrence, keptFraming), so what a newer build wrote is kept."
+    '(^|[^A-Za-z0-9_])(valuesData|customFactsData|sectionsData|blueprintsData|componentsData|behaviorData|recurrenceData|framingData|remindersData) *=([^=]|$)' - \
+    "Write a stored JSON object through its model's accessor (values, customFacts, sections, behavior, recurrence, framing, reminders), or its kept form for what a backup carries (keptValues, keptFacts, keptSections, keptBehavior, keptRecurrence, keptFraming, keptReminders), so what a newer build wrote is kept."
 
 # SwiftData saves a context by itself unless told not to, around the unit of work. Every
 # container and context is made in one file, which turns that off.

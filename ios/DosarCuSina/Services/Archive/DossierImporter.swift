@@ -19,6 +19,8 @@ import SwiftData
 ///   section, tint, hero or pocket, a row under Date importante, a field value, a
 ///   deadline's status, a kind) comes in raw and is kept.
 ///
+/// - examples a backup carries stay out of a binder that syncs (`keepsExamples`).
+///
 /// It touches only the context it is given, so a backup is written away from the
 /// main thread (`DossierArchiveService.importPackageAway`).
 struct DossierImporter {
@@ -26,6 +28,9 @@ struct DossierImporter {
     let package: DossierV3.Package
     let mode: ArchiveImportMode
     let calendar: Calendar
+    /// False for a binder that syncs: a backup's examples stay out, so none reaches the person's
+    /// other devices (`PersistenceController.syncs`).
+    var keepsExamples = true
     var now = Date()
 
     private func uuid(_ raw: String?) -> UUID? { raw.flatMap(UUID.init(uuidString:)) }
@@ -66,10 +71,10 @@ struct DossierImporter {
         var locks: [String: Bool] = [:]
         /// Custom category key → its fields that are secret or sensitive here.
         var guardedFields: [String: [String: FieldDefinition]] = [:]
-        /// Record id → its sealed values.
+        /// Record id → its sealed values, read or not.
         var secrets: [UUID: FieldValues] = [:]
-        /// Record id → its secret rows.
-        var secretFacts: [UUID: [CustomFact]] = [:]
+        /// Record id → its secret rows as stored here, read or not (`SecretFields.secretFacts`).
+        var secretFacts: [UUID: KeptList<CustomFact>] = [:]
 
         static func capture(in context: ModelContext) throws -> PhoneKeeps {
             var keeps = PhoneKeeps()
@@ -82,9 +87,9 @@ struct DossierImporter {
             }
             for asset in try context.fetch(FetchDescriptor<Asset>()) {
                 let sealed = SecretFields.sealedValues(in: asset.values)
-                if !sealed.isEmpty { keeps.secrets[asset.id] = sealed }
-                let facts = asset.customFacts.filter(\.isSecret)
-                if !facts.isEmpty { keeps.secretFacts[asset.id] = facts }
+                if sealed != FieldValues() { keeps.secrets[asset.id] = sealed }
+                let facts = SecretFields.secretFacts(of: asset.keptFacts)
+                if !facts.isEmpty || !facts.isFullyRead { keeps.secretFacts[asset.id] = facts }
             }
             return keeps
         }
@@ -186,7 +191,12 @@ struct DossierImporter {
                 let template = CategoryTemplate(definition: definition, isBuiltIn: catalog != nil, homeOrder: dto.homeOrder)
                 template.createdAt = clamped(dto.createdAt)
                 return template
-            }) else { continue }
+            }) else {
+                // The phone's copy stays, but a lock the backup has still locks it here (`SectionLocks`):
+                // a lock isn't in the record, so it doesn't wait for a newer copy.
+                if dto.isSensitive { byKey[dto.key]?.isSensitive = true }
+                continue
+            }
             template.isBuiltIn = catalog != nil
             template.apply(definition)
             if catalog == nil {
@@ -225,7 +235,7 @@ struct DossierImporter {
     private func importAssets(_ result: inout ArchiveImportResult, definitions: [String: TemplateDefinition], phone: PhoneKeeps) throws -> [UUID: Asset] {
         var map = try existing(Asset.self, id: \.id)
         var written: [(Asset, DossierV3.Asset)] = []
-        for dto in package.assets {
+        for dto in package.assets where keepsExamples || !dto.isExample {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.assets) }
             guard let asset = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
                 Asset(id: id, name: dto.name, templateKey: dto.templateKey)
@@ -241,7 +251,7 @@ struct DossierImporter {
             let values = definition.map { dto.values.replacingValue(dto.values.value.normalizingChoices(for: $0)) } ?? dto.values
             // Secrets this phone keeps for the record stay; an archive never brings any.
             asset.keptValues = SecretFields.keepingLocalSecrets(values, from: phone.secrets[id] ?? FieldValues(), definition: definition)
-            asset.keptFacts = SecretFields.keepingLocalSecretFacts(dto.customFacts ?? KeptList(), from: phone.secretFacts[id] ?? [])
+            asset.keptFacts = SecretFields.keepingLocalSecretFacts(dto.customFacts ?? KeptList(), from: phone.secretFacts[id] ?? KeptList())
             asset.photoData = try dto.photoPath.flatMap { try package.files.data(at: $0) }
             asset.isExample = dto.isExample
             asset.createdAt = clamped(dto.createdAt)
@@ -265,7 +275,7 @@ struct DossierImporter {
 
     private func importObligations(_ result: inout ArchiveImportResult, assets: [UUID: Asset]) throws -> [UUID: Obligation] {
         var map = try existing(Obligation.self, id: \.id)
-        for dto in package.obligations {
+        for dto in package.obligations where keepsExamples || !dto.isExample {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.obligations) }
             guard let obligation = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
                 Obligation(id: id, title: dto.title, kind: .routine, dueDay: dto.dueDate)
@@ -277,7 +287,7 @@ struct DossierImporter {
             obligation.kindRaw = dto.kind
             obligation.dueDay = dto.dueDate
             obligation.dueMetric = dto.dueMetric
-            obligation.reminders = dto.reminders
+            obligation.keptReminders = dto.reminders
             obligation.remindersCustomized = dto.remindersCustomized ?? false
             obligation.reminderMinuteOfDay = dto.reminderMinuteOfDay
             // A rule from a newer build is kept as it was written (`RecurrenceRule.unreadable`), and
@@ -302,11 +312,28 @@ struct DossierImporter {
 
     private func importProviders(_ result: inout ArchiveImportResult, assets: [UUID: Asset]) throws -> [UUID: Provider] {
         var map = try existing(Provider.self, id: \.id)
-        for dto in package.providers {
+        for dto in package.providers where keepsExamples || !dto.isExample {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.providers) }
+            let archivedSections = dto.assetIds.compactMap { uuid($0).flatMap { assets[$0] } }
+            // Both copies of a firm meet by one rule (`FirmCopies`): the newer one's details stand,
+            // and what only the other knows (a detail, a trade, a section) comes along.
+            let here = map[id].map { (details: FirmCopies.details(of: $0), sections: $0.assets ?? []) }
             guard let provider = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
                 Provider(id: id, name: dto.name)
-            }) else { continue }
+            }) else {
+                if let phone = map[id] {
+                    FirmCopies.gather(FirmCopies.details(of: dto), into: phone)
+                    let sections = FirmCopies.sections(phone.assets ?? [], archivedSections)
+                    if sections.count != (phone.assets ?? []).count { phone.assets = sections }
+                }
+                continue
+            }
+            defer {
+                if let here {
+                    FirmCopies.gather(here.details, into: provider)
+                    provider.assets = FirmCopies.sections(provider.assets ?? [], here.sections)
+                }
+            }
             provider.name = dto.name
             provider.trades = dto.trades
             provider.phone = dto.phone
@@ -315,11 +342,11 @@ struct DossierImporter {
             provider.notes = dto.notes
             provider.manualRating = dto.manualRating
             provider.wouldCallAgain = dto.wouldCallAgain
-            provider.taxID = ProviderTaxID.normalized(dto.taxID) ?? provider.taxID
+            provider.taxID = ProviderTaxID.normalized(dto.taxID)
             provider.isExample = dto.isExample
             provider.createdAt = clamped(dto.createdAt)
             provider.updatedAt = changeTime(dto.updatedAt)
-            provider.assets = dto.assetIds.compactMap { uuid($0).flatMap { assets[$0] } }
+            provider.assets = archivedSections
         }
         return map
     }
@@ -331,7 +358,7 @@ struct DossierImporter {
         providers: [UUID: Provider]
     ) throws -> [UUID: HistoryEntry] {
         var map = try existing(HistoryEntry.self, id: \.id)
-        for dto in package.historyEntries {
+        for dto in package.historyEntries where keepsExamples || !dto.isExample {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.history) }
             guard let entry = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
                 HistoryEntry(id: id, kind: .note, title: dto.title, occurredAt: dto.occurredAt)
@@ -360,7 +387,7 @@ struct DossierImporter {
 
     private func importServiceItems(_ result: inout ArchiveImportResult, entries: [UUID: HistoryEntry], providers: [UUID: Provider]) throws -> [UUID: ServiceItem] {
         var map = try existing(ServiceItem.self, id: \.id)
-        for dto in package.serviceItems {
+        for dto in package.serviceItems where keepsExamples || !dto.isExample {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.serviceItems) }
             guard let item = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
                 ServiceItem(id: id, name: dto.name, componentKey: dto.componentKey)
@@ -389,7 +416,7 @@ struct DossierImporter {
 
     private func importMeasurements(_ result: inout ArchiveImportResult, assets: [UUID: Asset]) throws -> [UUID: MeasurementLog] {
         var map = try existing(MeasurementLog.self, id: \.id)
-        for dto in package.measurements {
+        for dto in package.measurements where keepsExamples || !dto.isExample {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.measurements) }
             guard let log = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
                 MeasurementLog(id: id, kind: .custom, name: dto.name, value: dto.value, recordedAt: dto.recordedAt)
@@ -429,7 +456,7 @@ struct DossierImporter {
     ) throws {
         var map = try existing(Attachment.self, id: \.id)
         var written: [(Attachment, DossierV3.Attachment)] = []
-        for dto in package.attachments {
+        for dto in package.attachments where keepsExamples || !dto.isExample {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.attachments) }
             let original = try dto.path.map { path -> Data in
                 guard let data = try package.files.data(at: path) else { throw ArchiveError.missingFile(path) }

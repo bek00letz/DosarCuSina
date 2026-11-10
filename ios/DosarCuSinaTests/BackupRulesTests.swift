@@ -385,7 +385,7 @@ struct BackupFlowTests {
         let vault = BiometricVaultManager(authenticator: authenticator, appLockEnabled: { appLock }, observesAppLifecycle: false)
         let directory = URL.temporaryDirectory.appending(path: UUID().uuidString)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        return (BackupFlow(container: household.container, vault: vault, workDirectory: directory, inbox: directory.appending(path: "Inbox")), authenticator, directory)
+        return (BackupFlow(container: household.container, vault: vault, workDirectory: directory, inbox: directory.appending(path: "Inbox"), keeper: RecordingBackupKeeper()), authenticator, directory)
     }
 
     @Test func exportingNeedsFaceIDWhileASectionIsLocked() async throws {
@@ -477,7 +477,7 @@ struct BackupFlowTests {
         let directory = URL.temporaryDirectory.appending(path: UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
-        let flow = BackupFlow(container: household.container, vault: vault, workDirectory: directory, inbox: directory.appending(path: "Inbox"))
+        let flow = BackupFlow(container: household.container, vault: vault, workDirectory: directory, inbox: directory.appending(path: "Inbox"), keeper: RecordingBackupKeeper())
 
         // Export: the second tap comes while the first waits for Face ID.
         let first = Task { await flow.export(password: nil) }
@@ -680,7 +680,7 @@ struct StoreOpeningTests {
         let controller = PersistenceController(
             storeURL: URL.temporaryDirectory.appending(path: "\(UUID().uuidString).store"),
             isProtectedDataAvailable: { available.value },
-            makeContainer: { _ in
+            makeContainer: { _, _ in
                 attempts.count += 1
                 guard available.value else { throw Locked() }
                 return try makeInMemoryContainer()
@@ -700,13 +700,13 @@ struct StoreOpeningTests {
         let full = PersistenceController(
             storeURL: URL.temporaryDirectory.appending(path: "\(UUID().uuidString).store"),
             isProtectedDataAvailable: { true },
-            makeContainer: { _ in throw NSError(domain: NSCocoaErrorDomain, code: NSFileWriteOutOfSpaceError) }
+            makeContainer: { _, _ in throw NSError(domain: NSCocoaErrorDomain, code: NSFileWriteOutOfSpaceError) }
         )
         guard case .failed(.outOfSpace) = full.state else { Issue.record("Expected out of space"); return }
         let broken = PersistenceController(
             storeURL: URL.temporaryDirectory.appending(path: "\(UUID().uuidString).store"),
             isProtectedDataAvailable: { true },
-            makeContainer: { _ in throw Locked() }
+            makeContainer: { _, _ in throw Locked() }
         )
         guard case .failed(.unreadable) = broken.state else { Issue.record("Expected unreadable"); return }
     }

@@ -16,6 +16,10 @@ import Observation
 ///   Face ID or the passcode first whenever any lock is on.
 /// - **One thing at a time:** the work is marked started before Face ID is asked, so a
 ///   second tap while the prompt is up starts nothing.
+/// - **It keeps going in the background.** Making a copy, checking one and bringing one in each
+///   run as a `BackupRun` the system keeps going once the person leaves the app or locks the phone
+///   (`BackupKeeper`), with its progress shown by the system and a way to stop it there. A step
+///   stopped that way leaves nothing half-done and says so in plain words (`BackupStopped`).
 @MainActor
 @Observable
 final class BackupFlow {
@@ -55,23 +59,44 @@ final class BackupFlow {
     @ObservationIgnored private let vault: BiometricVaultManager
     @ObservationIgnored private let workDirectory: URL
     @ObservationIgnored private let inbox: URL
+    @ObservationIgnored private let keeper: any BackupKeeper
 
     init(
         container: ModelContainer,
         vault: BiometricVaultManager,
         workDirectory: URL = .temporaryDirectory,
-        inbox: URL = URL.documentsDirectory.appending(path: "Inbox", directoryHint: .isDirectory)
+        inbox: URL = URL.documentsDirectory.appending(path: "Inbox", directoryHint: .isDirectory),
+        keeper: any BackupKeeper = SystemBackupKeeper.shared
     ) {
         self.container = container
         self.vault = vault
         self.workDirectory = workDirectory
         self.inbox = inbox
+        self.keeper = keeper
+    }
+
+    /// What the system shows above a backup step while it runs.
+    private static var title: String { String(localized: "Copia de siguranță", comment: "Title of the system's progress while a backup step runs in the background.") }
+
+    /// Runs `body` as one step the system keeps going in the background, and ends its hold with
+    /// the step's outcome. A step the person or the system stopped throws `stopped`.
+    private func keptGoing<T>(_ subtitle: String, stopped: BackupStopped, _ body: (BackupRun) async throws -> T) async throws -> T {
+        let run = BackupRun()
+        let hold = keeper.hold(run, title: Self.title, subtitle: subtitle)
+        do {
+            let value = try await body(run)
+            hold.end(success: true)
+            return value
+        } catch {
+            hold.end(success: false)
+            if error is CancellationError || run.isCancelled { throw stopped }
+            throw error
+        }
     }
 
     /// Whether a section of the household is behind Face ID.
     private var anySectionLocked: Bool {
-        let locked = FetchDescriptor<CategoryTemplate>(predicate: #Predicate { $0.isSensitive })
-        return ((try? container.mainContext.fetchCount(locked)) ?? 0) > 0
+        ((try? container.mainContext.fetch(FetchDescriptor<CategoryTemplate>())) ?? []).contains(where: \.isSensitive)
     }
 
     /// Face ID or the passcode for the whole binder, whenever any lock is on. The work is
@@ -92,7 +117,11 @@ final class BackupFlow {
         guard await confirmWholeBinder(reason) else { return }
         work = .exporting
         do {
-            exportURL = try await DossierArchiveService(container: container).export(to: workDirectory, password: password)
+            let service = DossierArchiveService(container: container)
+            let directory = workDirectory
+            exportURL = try await keptGoing(String(localized: "Se face copia…", comment: "Subtitle of the system's progress while a backup is made."), stopped: .making) { run in
+                try await service.export(to: directory, password: password, run: run)
+            }
         } catch {
             self.error = UserFacingError(error, doing: String(localized: "Copia nu s-a făcut", comment: "Title of an export error."))
         }
@@ -160,11 +189,16 @@ final class BackupFlow {
             BackupFiles.remove(pending.url)
         }
         do {
-            let package = try await Self.readPackage(at: pending.url, password: pending.password, extractingTo: staging)
-            // Written away from the main thread: a large backup never pauses the screen. The
-            // import has the repair list look again itself, and the prompt says so once
-            // Settings closes.
-            let result = try await DossierArchiveService(container: container).importPackageAway(package, mode: mode)
+            let service = DossierArchiveService(container: container)
+            let result = try await keptGoing(String(localized: "Se pune copia înapoi…", comment: "Subtitle of the system's progress while a backup is brought in."), stopped: .bringingIn) { run in
+                // Read while the phone may lock: the copy is open to it while this works on it.
+                try? BackupFileProtection.set(BackupFileProtection.working, on: pending.url)
+                let package = try await Self.readPackage(at: pending.url, password: pending.password, extractingTo: staging, run: run)
+                // Written away from the main thread: a large backup never pauses the screen. The
+                // import has the repair list look again itself, and the prompt says so once
+                // Settings closes.
+                return try await service.importPackageAway(package, mode: mode, run: run)
+            }
             resultText = BackupWording.result(result)
             doneCount += 1
         } catch {
@@ -176,7 +210,11 @@ final class BackupFlow {
 
     private func read(_ copy: URL, password: String?) async {
         do {
-            pending = PendingImport(url: copy, password: password, summary: try await Self.readSummary(at: copy, password: password))
+            let summary = try await keptGoing(String(localized: "Se verifică copia…", comment: "Subtitle of the system's progress while a backup is checked."), stopped: .checking) { run in
+                try? BackupFileProtection.set(BackupFileProtection.working, on: copy)
+                return try await Self.readSummary(at: copy, password: password, run: run)
+            }
+            pending = PendingImport(url: copy, password: password, summary: summary)
         } catch ArchiveError.needsPassword {
             lockedFile = LockedFile(url: copy)
         } catch ArchiveError.wrongPassword {
@@ -202,19 +240,24 @@ final class BackupFlow {
         copy.deletingPathExtension().appendingPathExtension("files")
     }
 
-    /// Checks a backup and says what it holds, away from the main thread.
-    nonisolated static func readSummary(at url: URL, password: String?) async throws -> ArchiveSummary {
-        try await Task.detached(priority: .userInitiated) {
-            try DossierArchiveReader.summary(contentsOf: url, password: password)
-        }.value
+    /// Checks a backup and says what it holds, away from the main thread. Once checked, the copy
+    /// waits for the person closed to a locked phone again.
+    nonisolated static func readSummary(at url: URL, password: String?, run: BackupRun = BackupRun()) async throws -> ArchiveSummary {
+        try await run.perform {
+            let summary = Result { try DossierArchiveReader.summary(contentsOf: url, password: password, run: run) }
+            // Read or not (a password to ask for), the copy waits closed to a locked phone.
+            try? run.checkpoint(needsProtectedData: true)
+            try BackupFileProtection.set(BackupFileProtection.finished, on: url)
+            return try summary.get()
+        }
     }
 
     /// Reads, checks and decodes a backup away from the main thread; its documents' files
     /// go to `staging`, one file each.
-    nonisolated static func readPackage(at url: URL, password: String?, extractingTo staging: URL) async throws -> DossierV3.Package {
-        try await Task.detached(priority: .userInitiated) {
-            try DossierArchiveReader.read(contentsOf: url, password: password, extractingTo: staging)
-        }.value
+    nonisolated static func readPackage(at url: URL, password: String?, extractingTo staging: URL, run: BackupRun = BackupRun()) async throws -> DossierV3.Package {
+        try await run.perform {
+            try DossierArchiveReader.read(contentsOf: url, password: password, extractingTo: staging, run: run)
+        }
     }
 
     /// Copies the file where only the app reads it, protected while the phone is
@@ -227,7 +270,26 @@ final class BackupFlow {
         let fileManager = FileManager.default
         defer { if BackupFiles.isInside(url, inbox) { BackupFiles.remove(url) } }
         try fileManager.copyItem(at: url, to: copy)
-        try? fileManager.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: copy.path(percentEncoded: false))
+        try? BackupFileProtection.set(BackupFileProtection.finished, on: copy)
         return copy
+    }
+}
+
+/// A backup step the person stopped from the system's progress, or the system ended, in plain
+/// words: what happened and that nothing was left half-done.
+enum BackupStopped: LocalizedError, Equatable {
+    case making
+    case checking
+    case bringingIn
+
+    var errorDescription: String? {
+        switch self {
+        case .making:
+            String(localized: "Copia s-a oprit înainte să fie gata și nu a rămas nimic pe jumătate. Fă-o din nou când vrei.", comment: "A backup being made was stopped before it finished.")
+        case .checking:
+            String(localized: "Verificarea copiei s-a oprit înainte să fie gata. Deschide copia din nou.", comment: "A backup being checked was stopped before it finished.")
+        case .bringingIn:
+            String(localized: "Copia s-a oprit înainte să intre în dosar. Dosarul e cum era; încearcă din nou când vrei.", comment: "A backup being brought in was stopped before it was saved; nothing changed.")
+        }
     }
 }

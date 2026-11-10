@@ -109,10 +109,13 @@ final class SearchIndexStore {
     @ObservationIgnored private let container: ModelContainer
     @ObservationIgnored private let indexer: SearchIndexer
     @ObservationIgnored private var listener: Task<Void, Never>?
+    @ObservationIgnored private var syncListener: Task<Void, Never>?
+    @ObservationIgnored private var lockListener: Task<Void, Never>?
     @ObservationIgnored private static var instance: SearchIndexStore?
 
     static func shared(for container: ModelContainer) -> SearchIndexStore {
         if let instance, instance.container === container { return instance }
+        instance?.stop()
         let store = SearchIndexStore(container: container)
         instance = store
         return store
@@ -135,6 +138,7 @@ final class SearchIndexStore {
         let indexer = indexer
         let container = container
         listener = Task { [weak self] in
+            // Saves made here; what comes from the person's other devices is followed below.
             let saves = NotificationCenter.default.notifications(named: ModelContext.didSave)
                 .compactMap { note -> SearchChanges? in
                     guard let context = note.object as? ModelContext, context.container === container else { return nil }
@@ -149,5 +153,33 @@ final class SearchIndexStore {
                 self?.show(updated)
             }
         }
+        syncListener = Task { [weak self] in
+            let synced = NotificationCenter.default.notifications(named: SyncedChanges.didArrive)
+                .compactMap { note -> SearchChanges? in
+                    guard (note.object as? ModelContainer) === container else { return nil }
+                    return note.userInfo?[SyncedChanges.changesKey] as? SearchChanges
+                }
+            for await changes in synced where !changes.isEmpty {
+                guard let updated = try? await indexer.apply(changes) else { continue }
+                self?.show(updated)
+            }
+        }
+        // A section locked or opened on this device: every entry says again whether it is locked.
+        lockListener = Task { [weak self] in
+            for await _ in NotificationCenter.default.notifications(named: SectionLocks.didChange).map({ _ in () }) {
+                guard let updated = try? await indexer.apply(SearchChanges(everything: true)) else { continue }
+                self?.show(updated)
+            }
+        }
+    }
+
+    /// Stops following the database: the store opened again under another container.
+    func stop() {
+        listener?.cancel()
+        syncListener?.cancel()
+        lockListener?.cancel()
+        listener = nil
+        syncListener = nil
+        lockListener = nil
     }
 }

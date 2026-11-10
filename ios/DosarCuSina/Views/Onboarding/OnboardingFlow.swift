@@ -135,7 +135,7 @@ struct OnboardingFlow: View {
     private func loadExamples() {
         isLoadingExamples = true
         do {
-            try ExampleDataService(context: context).loadExamples()
+            try ExampleDataService.forLoading(from: context).loadExamples()
             onFinish()
         } catch {
             isLoadingExamples = false

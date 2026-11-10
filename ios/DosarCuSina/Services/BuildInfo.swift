@@ -17,6 +17,12 @@ public struct BuildInfo: Equatable, Sendable {
 
     public static let current = BuildInfo(info: Bundle.main.infoDictionary ?? [:])
 
+    /// Whether the app is hosting a test run (xcodebuild test sets this): the tests' own
+    /// containers are in memory, and the host app's binder reaches no iCloud.
+    public static var isTestHost: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    }
+
     /// "1.0 (build 180) · 7754ec8", or without the commit for builds made outside git.
     public var summary: String {
         let versionAndBuild = String(localized: "\(version) (build \(build))", comment: "About: version and build number, e.g. '1.0 (build 180)'.")

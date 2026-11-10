@@ -159,7 +159,8 @@ definition, whatever the archive says about it (`name`, `sections`, field
 types, `blueprints`, `version`, `isBuiltIn`): a key that names a built-in is a
 built-in. From the archive, a reader takes only the household preferences:
 `homeOrder`, `isOnHome` and `isSensitive`, the last one only towards locked (a
-category locked on the device stays locked). For a custom template on both
+category locked on the device stays locked). `isSensitive` is the lock of the device that
+wrote the archive: each device keeps its own, outside the household data. For a custom template on both
 sides, a field that is `secret` or `isSensitive` on the device stays so.
 
 - **Section:** `key`, `title`, `fields`.
@@ -390,7 +391,7 @@ new one for the same thing.
 - **Template sections, blueprints, components and custom facts:** each entry is read on its own. An entry the reader can't read is kept in its place and written back; one it can read with the same `key` (an `id` for a custom fact) replaces it. A secret custom fact (`"isSecret": true`, or any sealed text) is left out by writers and readers, read or not.
 - **Fields:** an unknown `type`, `role`, `defaultValue`, `derivation` or `appliesWhen` is kept as written; the field reads as `text`, without the part it can't read.
 - **Kinds** (`kind` of an obligation, a history entry, a measurement or an attachment), an obligation's `status`, and a custom template's `tint`, `heroStyle` and `pockets` are kept as written. An unknown status behaves as `active` (it still reminds).
-- **Inside the objects a record carries** (an asset's `values` and `customFacts`, a template's `sections` with their fields and options, `blueprints` with their `reminders`, `reminderVariants`, `firstDue` and `facts`, `components` and `behavior`, an obligation's `recurrence`, an attachment's `framing`): a key the reader doesn't know, at any depth, and a value it reads as something else (an unknown `consequence` read as `legal`, a `firstDue` interval in an unknown `unit` read as `ask`) are kept as written while the person leaves that part as it is. An object whose `type` changes keeps nothing of the old one; an entry of a list is known by its `key` or `id`.
+- **Inside the objects a record carries** (an asset's `values` and `customFacts`, a template's `sections` with their fields and options, `blueprints` with their `reminders`, `reminderVariants`, `firstDue` and `facts`, `components` and `behavior`, an obligation's `recurrence` and `reminders`, an attachment's `framing`): a key the reader doesn't know, at any depth, and a value it reads as something else (an unknown `consequence` read as `legal`, a `firstDue` interval in an unknown `unit` read as `ask`) are kept as written while the person leaves that part as it is. An object whose `type` changes keeps nothing of the old one; an entry of a list is known by its `key` or `id`.
 
 Keys a reader doesn't know at the top of a record (beside `id`, `title`, …) are ignored.
 

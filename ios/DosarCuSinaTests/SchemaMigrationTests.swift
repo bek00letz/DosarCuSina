@@ -329,6 +329,113 @@ struct SchemaMigrationTests {
         #expect(try reopened.fetch(FetchDescriptor<Obligation>()).first?.cycleKnownAt == moved)
     }
 
+    /// Version 11 as it shipped: version 10 with since when a deadline's cycle is known. Its frozen
+    /// copy is pinned against version 10 for everything but deadlines, and against version 12 for
+    /// everything but deadlines and categories, which version 12 changes.
+    @Test func theFrozenVersionElevenKeepsTheShapeItShippedWith() {
+        let ten = Self.fingerprint(DosarSchemaV10.models)
+        let eleven = Self.fingerprint(DosarSchemaV11.models)
+        let twelve = Self.fingerprint(DosarSchemaV12.models)
+        for (entity, hash) in ten where entity != "Obligation" {
+            #expect(eleven[entity] == hash, "\(entity) is as version 10 shipped it, which version 11 doesn't change")
+            if entity != "CategoryTemplate" {
+                #expect(twelve[entity] == hash, "\(entity) is as version 11 shipped it, which version 12 doesn't change")
+            }
+        }
+        #expect(eleven["Obligation"] != ten["Obligation"])
+        #expect(eleven.count == twelve.count)
+    }
+
+    @Test func versionTwelveChangesOnlyDeadlinesAndCategories() {
+        let eleven = Self.fingerprint(DosarSchemaV11.models)
+        let twelve = Self.fingerprint(DosarSchemaV12.models)
+        for (entity, hash) in eleven where entity != "Obligation" && entity != "CategoryTemplate" {
+            #expect(twelve[entity] == hash, "\(entity) is as version 11 shipped it")
+        }
+        #expect(twelve["Obligation"] != eleven["Obligation"], "A deadline keeps what a newer build wrote in its reminders")
+        #expect(twelve["CategoryTemplate"] != eleven["CategoryTemplate"], "A category's lock left the store")
+    }
+
+    @Test func aStoreFromVersionElevenKeepsEveryLockOnThisDevice() throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Dosar-v11.store")
+
+        // Written by version 11: Acte opened by the person, a car category locked, a notebook of one's own locked.
+        do {
+            let schema = Schema(versionedSchema: DosarSchemaV11.self)
+            let container = try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)])
+            let context = ModelContext(container)
+            let documents = DosarSchemaV11.CategoryTemplate(key: BuiltInTemplates.Key.documents)
+            documents.isBuiltIn = true
+            documents.isSensitive = false
+            let vehicles = DosarSchemaV11.CategoryTemplate(key: BuiltInTemplates.Key.vehicle)
+            vehicles.isBuiltIn = true
+            vehicles.isSensitive = true
+            let notebook = DosarSchemaV11.CategoryTemplate(key: "custom.0b6c6f43-0000-4000-8000-00000000c0de")
+            notebook.isSensitive = true
+            for model in [documents, vehicles, notebook] as [any PersistentModel] { context.insert(model) }
+            try context.save()
+        }
+
+        // Opened by this version: every lock as it was, now this device's own.
+        let container = try PersistenceController.makeContainer(storeURL: url)
+        let templates = Dictionary(uniqueKeysWithValues: try ModelContext(container).fetch(FetchDescriptor<CategoryTemplate>()).map { ($0.key, $0) })
+        #expect(templates[BuiltInTemplates.Key.documents]?.isSensitive == false, "A lock the person opened stays open")
+        #expect(templates[BuiltInTemplates.Key.vehicle]?.isSensitive == true)
+        #expect(templates["custom.0b6c6f43-0000-4000-8000-00000000c0de"]?.isSensitive == true)
+        #expect(FileManager.default.fileExists(atPath: SectionLocks.file(forStoreAt: url).path(percentEncoded: false)), "Kept beside the store")
+    }
+
+    @Test func aStoreFromVersionElevenOpensWithItsRemindersAsTheyWere() throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Dosar-v11.store")
+        let edited = noon("2026-10-01")
+        let known = noon("2026-10-02")
+
+        // Written by version 11: a car's RCA with reminders of its own and since when its cycle is known.
+        do {
+            let schema = Schema(versionedSchema: DosarSchemaV11.self)
+            let container = try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)])
+            let context = ModelContext(container)
+            let car = DosarSchemaV11.Asset(name: "VW Golf 2018", templateKey: "vehicle")
+            let rca = DosarSchemaV11.Obligation(title: "RCA")
+            rca.dueDayISO = "2027-07-15"
+            rca.reminderLeadDays = [30, 7]
+            rca.consequenceRaw = "legal"
+            rca.graceDays = 3
+            rca.remindersCustomized = true
+            rca.updatedAt = edited
+            rca.cycleKnownAt = known
+            for model in [car, rca] as [any PersistentModel] { context.insert(model) }
+            rca.asset = car
+            try context.save()
+        }
+
+        // Opened by this version: everything as it was, nothing kept beside the reminders yet.
+        let container = try PersistenceController.makeContainer(storeURL: url)
+        let context = ModelContext(container)
+        let rca = try #require(try context.fetch(FetchDescriptor<Obligation>()).first)
+        #expect(rca.reminders == ReminderProfile(leadDays: [30, 7], consequence: .legal, graceDays: 3, followUpAfterLapse: false))
+        #expect(rca.remindersCustomized)
+        #expect(rca.remindersData == nil)
+        #expect(!rca.keptReminders.keepsMore)
+        #expect(rca.updatedAt == edited, "An upgrade isn't a change")
+        #expect(rca.cycleKnownAt == known)
+
+        // What a newer build wrote in them is kept from now on.
+        rca.keptReminders = try JSONDecoder().decode(KeptObject<ReminderProfile>.self, from: Data(
+            #"{"consequence":"legal","followUpAfterLapse":false,"graceDays":3,"leadDays":[30,7],"quietHours":{"from":22,"to":7}}"#.utf8
+        ))
+        try UnitOfWork.save(context)
+        let reopened = try #require(try ModelContext(try PersistenceController.makeContainer(storeURL: url)).fetch(FetchDescriptor<Obligation>()).first)
+        #expect(reopened.keptReminders.keepsMore)
+        #expect(reopened.reminders.leadDays == [30, 7])
+    }
+
     /// The days a version 8 store keeps, written as version 8 wrote them in `calendar`'s time
     /// zone: noon of the day, a snooze's end at the start of its day.
     private struct EightDays {

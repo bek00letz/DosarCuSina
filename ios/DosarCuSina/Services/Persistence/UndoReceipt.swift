@@ -248,11 +248,16 @@ public final class UndoReceipt {
 
     /// Whether every record the step left still holds what the step changed, nothing points at
     /// a record it made or whose own state it changed that didn't then, and every record it
-    /// deleted is still gone.
+    /// deleted is still gone: in this context and in the store under it, where a change from the
+    /// person's other devices lands before this context reads it (`SyncedChanges`). Undo never
+    /// takes back what another device changed since.
     private func isUnchangedSinceStep() -> Bool {
+        let store = PersistenceController.context(in: context.container)
         for (ref, state) in after {
-            guard let record = UndoableRecords.find(ref, in: context), record.isStillAsLeft(before: before[ref], after: state) else { return false }
+            for place in [context, store] {
+                guard let record = UndoableRecords.find(ref, in: place), record.isStillAsLeft(before: before[ref], after: state) else { return false }
+            }
         }
-        return deleted.allSatisfy { UndoableRecords.find($0, in: context) == nil }
+        return deleted.allSatisfy { UndoableRecords.find($0, in: context) == nil && UndoableRecords.find($0, in: store) == nil }
     }
 }

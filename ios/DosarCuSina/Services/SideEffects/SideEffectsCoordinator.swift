@@ -59,6 +59,7 @@ public final class SideEffectsCoordinator {
     /// them made it first.
     public static func shared(for container: ModelContainer) -> SideEffectsCoordinator {
         if let instance, instance.container === container { return instance }
+        instance?.stop()
         let coordinator = SideEffectsCoordinator(container: container)
         coordinator.register(SpotlightIndexer())
         instance = coordinator
@@ -101,9 +102,25 @@ public final class SideEffectsCoordinator {
         observers.append(listen(to: AppPreferences.didChangeNotification, allowPrompt: false))
         observers.append(listen(to: .NSCalendarDayChanged, allowPrompt: false))
         observers.append(listen(to: ShareInbox.didChangeNotification, allowPrompt: false))
+        // What came from the person's other devices: their reminders, badge, widgets and Spotlight too.
+        observers.append(listen(to: SyncedChanges.didArrive, allowPrompt: false))
+        // A section locked or opened on this device: what may show outside follows it.
+        observers.append(listen(to: SectionLocks.didChange, allowPrompt: false))
         let client = reconciler.client
         Task { await client.registerCategories() }
         setNeedsReconcile(allowPermissionPrompt: false)
+    }
+
+    /// Whether this is the coordinator of `container`.
+    public func isFollowing(_ container: ModelContainer) -> Bool { self.container === container }
+
+    /// Stops listening: the store opened again under another container (sync turned on or off),
+    /// whose own coordinator follows it from now on.
+    public func stop() {
+        for observer in observers { observer.cancel() }
+        observers = []
+        pending?.cancel()
+        pending = nil
     }
 
     public func register(_ indexer: any SideEffectIndexer) {

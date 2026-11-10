@@ -4,7 +4,7 @@ import SwiftData
 /// The current schema of the household database.
 ///
 /// Every model lives inside this namespace so that the next version can freeze a
-/// copy of these definitions and migrate from them (as `DosarSchemaV2` to `DosarSchemaV10`
+/// copy of these definitions and migrate from them (as `DosarSchemaV2` to `DosarSchemaV11`
 /// are frozen in `Versions/`). App code uses the top-level type aliases below and never names the
 /// version directly.
 ///
@@ -36,9 +36,12 @@ import SwiftData
 /// Version 11 adds since when a deadline's cycle is known as it now is
 /// (`Obligation.cycleKnownAt`: its due day, its reminders' leads and whether it is active,
 /// whoever changed them; none by default, which reads as its change time), so a reminder that
-/// makes up for warnings already passed counts from then.
-public enum DosarSchemaV11: VersionedSchema {
-    public static let versionIdentifier = Schema.Version(11, 0, 0)
+/// makes up for warnings already passed counts from then. Version 12 adds what a newer build wrote
+/// in a deadline's reminders that this one doesn't read (`Obligation.remindersData`, the profile's
+/// JSON, none by default), so a backup from a newer build keeps it through this one, and keeps a
+/// category's lock on each device instead (`SectionLocks`), never in the store.
+public enum DosarSchemaV12: VersionedSchema {
+    public static let versionIdentifier = Schema.Version(12, 0, 0)
 
     public static var models: [any PersistentModel.Type] {
         [
@@ -59,8 +62,8 @@ public enum DosarSchemaV11: VersionedSchema {
 /// version freezes the one before it in `Versions/`, adds a stage here, and gets a
 /// test that opens a store written by the version before (`SchemaMigrationTests`).
 public enum DosarMigrationPlan: SchemaMigrationPlan {
-    public static var schemas: [any VersionedSchema.Type] { [DosarSchemaV2.self, DosarSchemaV3.self, DosarSchemaV4.self, DosarSchemaV5.self, DosarSchemaV6.self, DosarSchemaV7.self, DosarSchemaV8.self, DosarSchemaV9.self, DosarSchemaV10.self, DosarSchemaV11.self] }
-    public static var stages: [MigrationStage] { [v2ToV3, v3ToV4, v4ToV5, v5ToV6, v6ToV7, v7ToV8, v8ToV9, v9ToV10, v10ToV11] }
+    public static var schemas: [any VersionedSchema.Type] { [DosarSchemaV2.self, DosarSchemaV3.self, DosarSchemaV4.self, DosarSchemaV5.self, DosarSchemaV6.self, DosarSchemaV7.self, DosarSchemaV8.self, DosarSchemaV9.self, DosarSchemaV10.self, DosarSchemaV11.self, DosarSchemaV12.self] }
+    public static var stages: [MigrationStage] { [v2ToV3, v3ToV4, v4ToV5, v5ToV6, v6ToV7, v7ToV8, v8ToV9, v9ToV10, v10ToV11, v11ToV12] }
 
     /// Version 3 only adds optional attributes; existing records keep every value. What
     /// the new attributes should hold for old records is filled in later: the categories'
@@ -114,17 +117,30 @@ public enum DosarMigrationPlan: SchemaMigrationPlan {
     /// next change to its due day, its leads or whether it is active, by the person or the
     /// app, gives it its own.
     static var v10ToV11: MigrationStage { .lightweight(fromVersion: DosarSchemaV10.self, toVersion: DosarSchemaV11.self) }
+
+    /// Version 12 adds an optional value (what a newer build wrote in a deadline's reminders that
+    /// this one doesn't read; existing deadlines have none, which is what they hold) and takes a
+    /// category's lock out of the store, where iCloud would carry it: each device keeps its own
+    /// (`SectionLocks`). Before the store changes shape, every category's lock becomes this
+    /// device's choice, so every lock stays as it was.
+    static var v11ToV12: MigrationStage {
+        .custom(fromVersion: DosarSchemaV11.self, toVersion: DosarSchemaV12.self, willMigrate: { context in
+            let locks = try context.fetch(FetchDescriptor<DosarSchemaV11.CategoryTemplate>())
+                .reduce(into: [String: Bool]()) { locks, template in locks[template.key] = (locks[template.key] ?? false) || template.isSensitive }
+            SectionLocks.of(context.container).adopt(locks)
+        }, didMigrate: nil)
+    }
 }
 
-public typealias CategoryTemplate = DosarSchemaV11.CategoryTemplate
-public typealias Asset = DosarSchemaV11.Asset
-public typealias Obligation = DosarSchemaV11.Obligation
-public typealias HistoryEntry = DosarSchemaV11.HistoryEntry
-public typealias ServiceItem = DosarSchemaV11.ServiceItem
-public typealias MeasurementLog = DosarSchemaV11.MeasurementLog
-public typealias Attachment = DosarSchemaV11.Attachment
-public typealias Provider = DosarSchemaV11.Provider
-public typealias AttachmentPage = DosarSchemaV11.AttachmentPage
+public typealias CategoryTemplate = DosarSchemaV12.CategoryTemplate
+public typealias Asset = DosarSchemaV12.Asset
+public typealias Obligation = DosarSchemaV12.Obligation
+public typealias HistoryEntry = DosarSchemaV12.HistoryEntry
+public typealias ServiceItem = DosarSchemaV12.ServiceItem
+public typealias MeasurementLog = DosarSchemaV12.MeasurementLog
+public typealias Attachment = DosarSchemaV12.Attachment
+public typealias Provider = DosarSchemaV12.Provider
+public typealias AttachmentPage = DosarSchemaV12.AttachmentPage
 
 /// Shared JSON coding for values stored as `Data` on models and written to archives.
 /// Keys are sorted so the same value always produces the same bytes.

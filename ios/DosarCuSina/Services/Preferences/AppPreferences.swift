@@ -3,8 +3,8 @@ import Observation
 
 /// Settings that belong to this device, not to the household data: when to
 /// remind, whether the whole app is locked, whether onboarding was seen.
-/// Which sections are locked is household data and lives on `CategoryTemplate.isSensitive`;
-/// the two locks are independent.
+/// Which sections are locked is this device's choice too, kept beside the store
+/// (`SectionLocks`, read through `CategoryTemplate.isSensitive`); the two locks are independent.
 @MainActor
 @Observable
 public final class AppPreferences {
@@ -20,6 +20,7 @@ public final class AppPreferences {
         static let appLockEnabled = "preferences.appLockEnabled"
         static let hasCompletedOnboarding = "preferences.hasCompletedOnboarding"
         static let showsInSpotlight = "preferences.showsInSpotlight"
+        static let syncsWithICloud = "preferences.syncsWithICloud"
     }
 
     @ObservationIgnored private let defaults: UserDefaults
@@ -46,6 +47,13 @@ public final class AppPreferences {
         didSet { store(showsInSpotlight, Key.showsInSpotlight) }
     }
 
+    /// "Sincronizează cu iCloud": the binder goes to the person's own private iCloud and comes
+    /// back on their other devices, where the build syncs (`PersistenceController.syncIsBuiltIn`).
+    /// Default on; off stops syncing and keeps everything on the phone. Read when the store opens.
+    public var syncsWithICloud: Bool {
+        didSet { store(syncsWithICloud, Key.syncsWithICloud) }
+    }
+
     public init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         let minute = defaults.object(forKey: Key.reminderMinuteOfDay) as? Int
@@ -53,6 +61,7 @@ public final class AppPreferences {
         self.appLockEnabled = defaults.bool(forKey: Key.appLockEnabled)
         self.hasCompletedOnboarding = defaults.bool(forKey: Key.hasCompletedOnboarding)
         self.showsInSpotlight = defaults.object(forKey: Key.showsInSpotlight) as? Bool ?? true
+        self.syncsWithICloud = defaults.object(forKey: Key.syncsWithICloud) as? Bool ?? true
     }
 
     private func store(_ value: Any, _ key: String) {

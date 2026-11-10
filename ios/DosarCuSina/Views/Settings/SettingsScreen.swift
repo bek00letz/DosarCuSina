@@ -53,6 +53,7 @@ struct SettingsScreen: View {
                     SectionVisibilitySettings().id(SettingsSection.categories)
                     CustomCategorySettings(toast: $toast)
                     ExampleSettings(toast: $toast).id(SettingsSection.examples)
+                    ICloudSyncSettings()
                     BackupSettings().id(SettingsSection.backup)
                     DataRepairSettings(isShowingList: $showsRepairs).id(SettingsSection.repairs)
                     StorageSettings()
@@ -243,6 +244,33 @@ private struct SpotlightSettings: View {
     }
 }
 
+// MARK: - iCloud
+
+/// "Sincronizează cu iCloud": on by default; off stops syncing and keeps everything on the phone.
+/// Shown only where the build syncs (`PersistenceController.SyncState`).
+private struct ICloudSyncSettings: View {
+    @Environment(AppPreferences.self) private var preferences
+    private let persistence = PersistenceController.shared
+
+    var body: some View {
+        if persistence.sync != .notInThisBuild {
+            Section {
+                Toggle(isOn: Binding(get: { preferences.syncsWithICloud }, set: set)) {
+                    Text("Sincronizează cu iCloud", comment: "Setting: sync the binder with the person's own iCloud.")
+                }
+                .frame(minHeight: DS.Control.minimumHitTarget)
+            } footer: {
+                Text(SyncWording.footer(for: persistence.sync))
+            }
+        }
+    }
+
+    private func set(_ isOn: Bool) {
+        preferences.syncsWithICloud = isOn
+        persistence.applySyncChoice()
+    }
+}
+
 // MARK: - Secțiuni
 
 private struct SectionVisibilitySettings: View {
@@ -366,7 +394,7 @@ private struct ExampleSettings: View {
 
     private func load() {
         do {
-            try ExampleDataService(context: context).loadExamples()
+            try ExampleDataService.forLoading(from: context).loadExamples()
             doneCount += 1
         } catch {
             self.error = UserFacingError(error)

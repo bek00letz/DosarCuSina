@@ -51,7 +51,14 @@ public struct TemplateStore {
         let existing = try context.fetch(FetchDescriptor<CategoryTemplate>(sortBy: [SortDescriptor(\.createdAt)]))
         var byKey: [String: CategoryTemplate] = [:]
         for template in existing {
-            if template.isBuiltIn, byKey[template.key] != nil {
+            if template.isBuiltIn, let kept = byKey[template.key] {
+                // Each device installs its own built-ins, so sync brings a second copy of each. The
+                // one installed first stays, on every device alike, with the person's newer choice
+                // of its place and whether it shows. Its lock is each device's own (`SectionLocks`).
+                if template.updatedAt > kept.updatedAt {
+                    if kept.homeOrder != template.homeOrder { kept.homeOrder = template.homeOrder }
+                    if kept.isOnHome != template.isOnHome { kept.isOnHome = template.isOnHome }
+                }
                 context.delete(template)
                 changed = true
             } else if byKey[template.key] == nil {
@@ -304,9 +311,10 @@ public struct TemplateStore {
         try save()
     }
 
+    /// Locks or opens a category on this device only (`SectionLocks`): nothing is saved in the
+    /// store, so no other device follows.
     public func setSensitive(_ template: CategoryTemplate, _ isSensitive: Bool) throws {
         template.isSensitive = isSensitive
-        try save()
     }
 
     private func save() throws {

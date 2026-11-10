@@ -14,7 +14,8 @@ struct AddRoot: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(BiometricVaultManager.self) private var vault
 
-    @Query(filter: #Predicate<CategoryTemplate> { $0.isSensitive }) private var lockedTemplates: [CategoryTemplate]
+    /// Every category: which are locked is this device's choice, read through each one (`SectionLocks`).
+    @Query private var templates: [CategoryTemplate]
     @State private var isOnScreen = false
 
     @State private var source: CaptureSource?
@@ -173,7 +174,7 @@ struct AddRoot: View {
 
     /// The categories behind Face ID, by key.
     private var lockedCategories: Set<String> {
-        Set(lockedTemplates.map(\.key))
+        Set(templates.filter(\.isSensitive).map(\.key))
     }
 
     private func row(_ item: InboxItem) -> InboxWording.Row {

@@ -73,6 +73,32 @@ public struct KeptList<Element: Codable & Hashable & Sendable & Identifiable>: H
         return KeptList(items: items, unreadable: kept, origins: mapped)
     }
 
+    /// Only the entries `isIncluded` keeps, readable or not: a readable one with the JSON it was
+    /// read from, one this build can't read raw.
+    public func filtered(_ isIncluded: (Element) -> Bool, unreadable keepsRaw: (JSONValue) -> Bool) -> KeptList {
+        let items = items.filter(isIncluded)
+        let ids = Set(items.map { Self.identity(of: $0) })
+        return KeptList(items: items, unreadable: unreadable.filter { keepsRaw($0.raw) }, origins: origins.filter { ids.contains($0.key) })
+    }
+
+    /// The keys or ids of every entry, readable or not.
+    public var identities: Set<String> {
+        Set(items.map { Self.identity(of: $0) }).union(unreadable.compactMap(\.identity))
+    }
+
+    /// This list without the entries `other` has (the same key or id), then `other`'s entries,
+    /// readable or not, each with what it kept: `other` takes the place of what it replaces.
+    public func replacingEntries(with other: KeptList) -> KeptList {
+        let ids = other.identities
+        let kept = filtered({ !ids.contains(Self.identity(of: $0)) }, unreadable: { raw in raw.keptIdentity.map { !ids.contains($0) } ?? true })
+        let start = kept.items.count + kept.unreadable.count
+        return KeptList(
+            items: kept.items + other.items,
+            unreadable: kept.unreadable + other.unreadable.map { Unreadable(position: start + $0.position, raw: $0.raw) },
+            origins: kept.origins.merging(other.origins) { _, theirs in theirs }
+        )
+    }
+
     private static func identity(of element: Element) -> String {
         "\(element.id)".lowercased()
     }

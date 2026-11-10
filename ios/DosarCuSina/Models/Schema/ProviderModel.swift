@@ -50,7 +50,7 @@ public enum ProviderTrade: String, Codable, CaseIterable, Sendable {
     }
 }
 
-extension DosarSchemaV11 {
+extension DosarSchemaV12 {
     /// A person or business the household relies on: the mechanic, the plumber
     /// who changed the tap, the vet, the insurance agent. Linked to the assets
     /// they look after and to the history entries of the work they did, so

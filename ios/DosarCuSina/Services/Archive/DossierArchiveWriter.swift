@@ -27,22 +27,31 @@ struct DossierArchiveWriter: Sendable {
     static let batchCount = 32
 
     /// Writes the archive to `url` (which must not exist yet), sealed with `password` when
-    /// there is one. On any failure nothing is left at `url`.
-    func write(to url: URL, password: String?) throws {
+    /// there is one. On any failure, or when `run` is stopped, nothing is left at `url`.
+    ///
+    /// The file is open to a locked phone only while it is being written
+    /// (`BackupFileProtection.working`), so a backup the person left running goes on after the phone
+    /// locks; the binder's documents can't be read then, so it waits at the next one until it is
+    /// unlocked (`BackupRun.checkpoint`). Finished, it is closed to a locked phone again
+    /// (`BackupFileProtection.finished`) before it is handed out.
+    func write(to url: URL, password: String?, run: BackupRun = BackupRun()) throws {
         let fileManager = FileManager.default
         let partial = url.deletingLastPathComponent().appending(path: ".\(UUID().uuidString).partial")
         do {
-            let file = try ArchiveFileSink(creating: partial)
+            let file = try ArchiveFileSink(creating: partial, protection: BackupFileProtection.working)
             if let password {
                 let sealed = try ArchiveEncryption.EncryptingSink(file, password: password)
-                try write(into: sealed)
+                try write(into: sealed, run: run)
                 try sealed.finish()
             } else {
-                try write(into: file)
+                try write(into: file, run: run)
             }
             try file.close()
+            try run.checkpoint(needsProtectedData: true)
+            try BackupFileProtection.set(BackupFileProtection.finished, on: partial)
             if fileManager.fileExists(atPath: url.path(percentEncoded: false)) { try fileManager.removeItem(at: url) }
             try fileManager.moveItem(at: partial, to: url)
+            run.did()
         } catch {
             try? fileManager.removeItem(at: partial)
             throw error
@@ -51,7 +60,7 @@ struct DossierArchiveWriter: Sendable {
 
     /// The plain archive, file by file. The documents' files come first, then the data
     /// files, then the manifest with every file's checksum.
-    func write(into sink: ArchiveByteSink) throws {
+    func write(into sink: ArchiveByteSink, run: BackupRun = BackupRun()) throws {
         let zip = DosarZipEngine.Writer(sink: sink, limits: limits)
         var checksums: [String: String] = [:]
         func add(_ path: String, _ data: Data) throws {
@@ -76,10 +85,12 @@ struct DossierArchiveWriter: Sendable {
         var attachmentOrder = FetchDescriptor<Attachment>(sortBy: [SortDescriptor(\.createdAt)])
         attachmentOrder.propertiesToFetch = [\.id]
         let attachmentIDs = try context.fetch(attachmentOrder).map(\.id)
+        // A section, a document, the data files with the manifest, and handing the file out.
+        run.expect(assetIDs.count + attachmentIDs.count + 2)
 
         // Sections, with their photos, in batches.
         var assetDTOs: [DossierV3.Asset] = []
-        try inBatches(assetIDs, fetch: { context, ids in
+        try inBatches(assetIDs, run: run, fetch: { context, ids in
             try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { ids.contains($0.id) }))
         }, id: \.id) { asset in
             var photoPath: String?
@@ -97,7 +108,7 @@ struct DossierArchiveWriter: Sendable {
 
         // Documents, with their files, pages and thumbnails, in batches.
         var attachmentDTOs: [DossierV3.Attachment] = []
-        try inBatches(attachmentIDs, fetch: { context, ids in
+        try inBatches(attachmentIDs, run: run, fetch: { context, ids in
             try context.fetch(FetchDescriptor<Attachment>(predicate: #Predicate { ids.contains($0.id) }))
         }, id: \.id) { attachment in
             let base = "\(DossierV3.Path.vaultPrefix)\(DossierV3.id(attachment.id))"
@@ -156,6 +167,7 @@ struct DossierArchiveWriter: Sendable {
         )
         try zip.add(path: DossierV3.Path.manifest, data: try encoder.encode(manifest), modifiedDate: exportedAt)
         try zip.finish()
+        run.did()
     }
 
     /// Runs `body` on each record of `ids`, in that order, a batch at a time: each batch is
@@ -163,6 +175,7 @@ struct DossierArchiveWriter: Sendable {
     /// says it read `batchBytes`, so what a batch read goes with its context.
     private func inBatches<Model: PersistentModel>(
         _ ids: [UUID],
+        run: BackupRun,
         fetch: (ModelContext, [UUID]) throws -> [Model],
         id: KeyPath<Model, UUID>,
         _ body: (Model) throws -> Int
@@ -177,8 +190,11 @@ struct DossierArchiveWriter: Sendable {
                 let found = Dictionary(try fetch(context, batch).map { ($0[keyPath: id], $0) }, uniquingKeysWith: { first, _ in first })
                 var bytes = 0
                 for uuid in batch {
+                    // Each record's files need the binder's documents: none while the phone is locked.
+                    try run.checkpoint(needsProtectedData: true)
                     next += 1
                     if let model = found[uuid] { bytes += try body(model) }
+                    run.did()
                     if bytes >= Self.batchBytes { break }
                 }
             }
@@ -216,7 +232,7 @@ struct DossierArchiveWriter: Sendable {
             id: DossierV3.id(obligation.id), assetId: DossierV3.id(obligation.asset?.id), title: obligation.title,
             notes: obligation.notes, blueprintKey: obligation.blueprintKey, kind: obligation.kindRaw,
             dueDate: obligation.dueDay, dueMetric: obligation.dueMetric,
-            reminders: obligation.reminders, reminderMinuteOfDay: obligation.reminderMinuteOfDay,
+            reminders: obligation.keptReminders, reminderMinuteOfDay: obligation.reminderMinuteOfDay,
             recurrence: obligation.keptRecurrence, estimatedCost: obligation.estimatedCost, provider: obligation.provider,
             reference: obligation.reference, status: obligation.statusRaw, snoozedUntil: obligation.snoozeEnds(in: calendar),
             isExample: obligation.isExample, createdAt: obligation.createdAt, updatedAt: obligation.updatedAt,

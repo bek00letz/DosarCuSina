@@ -58,6 +58,8 @@ public enum DossierV3 {
         public var version: Int
         public var homeOrder: Int
         public var isOnHome: Bool
+        /// Whether the device that made the backup kept the category locked (`SectionLocks`): bringing
+        /// it in may lock the category on this device, never open it.
         public var isSensitive: Bool
         /// Entries this build can't read (from a newer one) are kept raw, in their places.
         public var sections: KeptList<FieldSection>
@@ -101,7 +103,9 @@ public enum DossierV3 {
         public var kind: String
         public var dueDate: CalendarDay
         public var dueMetric: Double?
-        public var reminders: ReminderProfile
+        /// As stored: what a newer build wrote in it that this one doesn't read comes in and goes out
+        /// as written (`Obligation.keptReminders`).
+        public var reminders: KeptObject<ReminderProfile>
         public var reminderMinuteOfDay: Int?
         public var recurrence: KeptObject<RecurrenceRule>
         public var estimatedCost: Money?

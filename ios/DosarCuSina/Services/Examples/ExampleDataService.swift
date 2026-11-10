@@ -17,6 +17,16 @@ public struct ExampleDataService {
         self.now = now
     }
 
+    /// The service that loads the examples on the screen's behalf: on a binder that syncs, the
+    /// store opens again without iCloud first (`PersistenceController.containerForExamples`), so
+    /// no example ever reaches the person's other devices; it waits on this phone until they go.
+    public static func forLoading(from context: ModelContext) -> ExampleDataService {
+        guard PersistenceController.syncs(context.container), let local = PersistenceController.shared.containerForExamples() else {
+            return ExampleDataService(context: context)
+        }
+        return ExampleDataService(context: local.mainContext)
+    }
+
     public func hasExamples() throws -> Bool {
         var descriptor = FetchDescriptor<Asset>(predicate: #Predicate { $0.isExample })
         descriptor.fetchLimit = 1
