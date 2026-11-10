@@ -167,10 +167,8 @@ private struct PersonalDocumentForm: View {
         .environment(\.dsRevealsValidation, reveals)
         .navigationTitle(Text("Scriu eu", comment: "Title of the screen where a document is typed in by hand."))
         .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .bottom) {
-            DSBottomBar {
-                DSPrimaryButton("Salvează", systemImage: "checkmark") { requestSave() }
-            }
+        .dsPinnedAction {
+            DSPrimaryButton("Salvează", systemImage: "checkmark") { requestSave() }
         }
         .reminderPermissionGate($saveRequest)
         .examplePrompt($exampleQuestion) { save() }

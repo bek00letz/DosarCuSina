@@ -490,7 +490,6 @@ private struct ObligationCompleteSheet: View {
     let onClose: (DSToast?) -> Void
 
     @Environment(\.modelContext) private var context
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var date: Date? = Date()
     @State private var amount: Decimal?
     @State private var currency = Money.defaultCurrency
@@ -525,15 +524,18 @@ private struct ObligationCompleteSheet: View {
                     if let document, document.kind.profile.photoIsOptIn {
                         KeepPhotoChoice(keepsPhoto: $keepsPhotoOnRequest)
                     }
-                    if let errorMessage {
-                        DSNotice(.error, title: "Nu s-a salvat", message: LocalizedStringKey(errorMessage))
-                    }
-                    DSPrimaryButton("Salvează", systemImage: "checkmark") { save() }
-                        .disabled(isSaving || isReading || date == nil)
                 }
                 .padding(DS.Space.m)
             }
             .background(DS.Palette.background)
+            .dsPinnedAction {
+                DSPrimaryButton("Salvează", systemImage: "checkmark") { save() }
+                    .disabled(isSaving || isReading || date == nil)
+            } note: {
+                if let errorMessage {
+                    DSNotice(.error, title: "Nu s-a salvat", message: LocalizedStringKey(errorMessage))
+                }
+            }
             .navigationTitle(Text("Am rezolvat: \(obligation.title)"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -612,23 +614,17 @@ private struct ObligationCompleteSheet: View {
     /// The bill already in the binder, or where it goes, and its index: the review's own words.
     @ViewBuilder private func billNotices(_ bill: CaptureFilingPlan) -> some View {
         if let filed = bill.filedBill {
-            VStack(alignment: .leading, spacing: DS.Space.s) {
-                DSNotice(.info, title: "Factura e deja în dosar",
-                         message: LocalizedStringKey(CaptureReviewView.filedBillText(filed, today: CalendarDay(Date()))))
-                if filed.mayBeAnother {
-                    DSCompactButton("E altă factură", systemImage: "doc.badge.plus") {
-                        withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { isAnotherBill = true }
-                    }
-                }
-            }
-            .transition(.opacity)
+            DSFiledPaperNotice(filed: filed, paper: .bill, onOpen: {
+                onClose(nil)
+                AppNavigator.shared.open(.historyEntry(filed.entryID))
+            }, onAnother: { isAnotherBill = true })
         } else {
             let name = obligation.asset?.name ?? ""
             DSNotice(.success, title: "Am citit factura",
                      message: LocalizedStringKey(String(localized: "O trec în istoricul „\(name)”.", comment: "Am rezolvat: a photo of the bill being paid is logged in its subscription's history.")))
         }
         if let meter = bill.meter {
-            Label { Text(verbatim: CaptureReviewView.meterText(meter)).dsFont(.footnote) } icon: {
+            Label { Text(verbatim: meter.sentence).dsFont(.footnote) } icon: {
                 Image(systemName: "gauge.with.dots.needle.33percent").foregroundStyle(DS.Palette.secondaryLabel)
             }
             .labelStyle(DSLeadingIconLabelStyle())
@@ -650,7 +646,8 @@ private struct ObligationCompleteSheet: View {
     }
 
     private func save(lowerReading: LowerReadingAnswer? = nil) {
-        guard let date else { return }
+        // One filing at a time: a second tap before the button shows it is busy files nothing.
+        guard let date, !isSaving else { return }
         isSaving = true
         errorMessage = nil
         let title = obligation.title
@@ -696,11 +693,13 @@ struct CustomLeadPage: View {
                         .dsFont(.headline, numeric: true)
                 }
                 .frame(minHeight: 44)
-                DSPrimaryButton("Adaugă", systemImage: "plus") { onAdd(days) }
             }
             .padding(DS.Space.m)
         }
         .background(DS.Palette.background)
+        .dsPinnedAction {
+            DSPrimaryButton("Adaugă", systemImage: "plus") { onAdd(days) }
+        }
         .navigationTitle("Altă zi")
         .navigationBarTitleDisplayMode(.inline)
     }

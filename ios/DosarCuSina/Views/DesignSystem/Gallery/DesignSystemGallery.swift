@@ -543,7 +543,34 @@ private struct GalleryStates: View {
             DSNotice(.warning, title: "Pașaportul expiră în 5 luni", message: "Multe țări din afara UE cer cel puțin 6 luni de valabilitate.")
             DSNotice(.error, title: "Nu am putut salva", message: "Spațiul de pe telefon e plin. Eliberează puțin spațiu și încearcă din nou.")
             DSNotice(.success, title: "Copia de rezervă e gata")
+            GallerySection(title: "Factura e deja în dosar", note: "DSFiledPaperNotice: în verificare, în formularul vizitei și la „Am rezolvat”. „E altă factură” apare doar când potrivirea nu e sigură.") {
+                DSFiledPaperNotice(filed: Self.filed(.number), paper: .bill, onOpen: {}, onAnother: {})
+                DSFiledPaperNotice(filed: Self.filed(.numberOnly), paper: .invoice, onOpen: {}, onAnother: {})
+                DSFiledPaperNotice(filed: Self.filed(.dayAndTotal), paper: .invoice, onAnother: {})
+            }
+            GallerySection(title: "Acțiune fixată jos", note: "dsPinnedAction: acțiunea principală stă la marginea de jos, la orice înălțime a foii și orice mărime a textului. Deasupra, nota (de ce nu se poate încă); dedesubt, celelalte acțiuni.") {
+                ScrollView {
+                    Text(verbatim: "Conținutul se derulează pe sub bară.")
+                        .dsFont(.body)
+                        .frame(maxWidth: .infinity, minHeight: 240, alignment: .topLeading)
+                        .padding(DS.Space.m)
+                }
+                .frame(height: 320)
+                .dsPinnedAction {
+                    DSPrimaryButton(verbatim: "Salvează vizita", systemImage: "checkmark") {}
+                        .disabled(true)
+                } secondary: {
+                    DSSecondaryButton(verbatim: "Renunță") {}
+                } note: {
+                    Text(verbatim: "Bifează ce s-a făcut sau scrie totalul ca să poți salva.").dsFont(.footnote)
+                }
+                .clipShape(.rect(cornerRadius: DS.Radius.card, style: .continuous))
+            }
         }
+    }
+
+    private static func filed(_ match: FiledPaper.Match) -> FiledPaper {
+        FiledPaper(entryID: UUID(), match: match, sectionID: nil, section: "VW Golf 2018", day: CalendarDay(year: 2026, month: 10, day: 5))
     }
 }
 

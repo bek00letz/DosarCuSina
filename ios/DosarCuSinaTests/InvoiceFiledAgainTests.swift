@@ -119,6 +119,40 @@ struct InvoiceFiledAgainTests {
         #expect(visits(on: golf).count == 2)
     }
 
+    @Test func theSameNumberFromAnotherFirmIsANewVisit() async throws {
+        let context = try makeContext()
+        let golf = try car(context)
+        let store = CaptureDocumentStore()
+        let first = try await filer(context, store: store).file(.visit(visit(on: golf, number: "0000001", document: try await photo(store, seed: 92))))
+        let entry = try #require(first.visit)
+        // A tyre shop's receipt that happens to carry the same number, on the same day.
+        let other = visit(on: golf, number: "0000001", cost: 150, odometer: nil, firm: "Vulcanizare Exemplu SRL",
+                          document: try await photo(store, seed: 93))
+        #expect(other.filedBefore(keptDocumentID: nil, calendar: .bucharest)?.paper == nil, "Each firm numbers its own invoices")
+        _ = try await filer(context, store: store).file(.visit(other))
+        #expect(visits(on: golf).count == 2, "A visit of its own")
+        #expect(entry.totalCost == Money(480), "The first visit is left as it was")
+    }
+
+    @Test func theSameNumberFromTheSameFirmOnAnotherDayIsOfferedAsAnother() async throws {
+        let context = try makeContext()
+        let golf = try car(context)
+        let store = CaptureDocumentStore()
+        let first = try await filer(context, store: store).file(.visit(visit(on: golf, number: "SRV 0000001", odometer: nil, day: "2025-05-30",
+                                                                               document: try await photo(store, seed: 94))))
+        let entry = try #require(first.visit)
+        // A year later the firm's numbering started again.
+        var later = visit(on: golf, number: "SRV 0000001", cost: 310, odometer: nil, day: "2026-05-30", document: try await photo(store, seed: 95))
+        let filed = try #require(later.filedBefore(keptDocumentID: nil, calendar: .bucharest))
+        #expect(filed.entry.id == entry.id)
+        #expect(filed.paper.match == .numberOnly)
+        #expect(filed.paper.mayBeAnother, "The form offers „E altă factură”")
+        later.isAnotherInvoice = true
+        _ = try await filer(context, store: store).file(.visit(later))
+        #expect(visits(on: golf).count == 2, "Said to be another invoice: a visit of its own")
+        #expect(entry.totalCost == Money(480), "The first visit is left as it was")
+    }
+
     @Test func aVisitTypedWithoutAnInvoiceIsNeverTakenForOne() async throws {
         let context = try makeContext()
         let golf = try car(context)
@@ -142,6 +176,25 @@ struct InvoiceFiledAgainTests {
         _ = try await filer(context, store: store).file(.visit(again))
         #expect(visits(on: golf).count == 1)
         #expect(!kept.isArchived, "The same copy: nothing to archive")
+    }
+
+    @Test func theSameDocumentComesBeforeAnotherPaperWithItsNumber() async throws {
+        let context = try makeContext()
+        let golf = try car(context)
+        let store = CaptureDocumentStore()
+        let first = try await filer(context, store: store).file(.visit(visit(on: golf, number: "SRV 0000001", odometer: nil, document: try await photo(store, seed: 96))))
+        let second = try await filer(context, store: store).file(.visit(visit(on: golf, number: "SRV 0000002", odometer: nil, document: try await photo(store, seed: 97))))
+        let kept = try #require(first.attachment)
+        // The first photo again, read this time with the second invoice's number.
+        let again = visit(on: golf, number: "SRV 0000002", odometer: nil, document: .kept(attachmentID: kept.id))
+        let filed = try #require(again.filedBefore(keptDocumentID: kept.id, calendar: .bucharest))
+        #expect(filed.entry.id == first.visit?.id, "Its own visit first")
+        #expect(filed.paper.match == .sameDocument)
+        #expect(filed.entry.id != second.visit?.id)
+        var other = again
+        other.isAnotherInvoice = true
+        #expect(other.filedBefore(keptDocumentID: kept.id, calendar: .bucharest)?.paper.match == .sameDocument,
+                "„E altă factură” never applies to the same document")
     }
 
     @Test func aBillIsNeverTakenForAVisit() async throws {

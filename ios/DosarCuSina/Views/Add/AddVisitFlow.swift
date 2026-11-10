@@ -120,20 +120,23 @@ private struct VisitForm: View {
                 extrasSection
                 detailsSection
                 providerSection
-                if let errorMessage {
-                    DSNotice(.error, title: "Nu s-a salvat", message: LocalizedStringKey(errorMessage))
-                }
-                DSPrimaryButton("Salvează vizita", systemImage: "checkmark") { save() }
-                    .disabled(isSaving || draft.isEmpty)
-                if draft.isEmpty {
-                    Text("Bifează ce s-a făcut sau scrie totalul ca să poți salva.")
-                        .dsFont(.footnote)
-                }
             }
             .padding(DS.Space.m)
         }
         .background(DS.Palette.background)
         .scrollDismissesKeyboard(.interactively)
+        .dsPinnedAction {
+            DSPrimaryButton("Salvează vizita", systemImage: "checkmark") { save() }
+                .disabled(isSaving || draft.isEmpty)
+        } note: {
+            if let errorMessage {
+                DSNotice(.error, title: "Nu s-a salvat", message: LocalizedStringKey(errorMessage))
+            } else if draft.isEmpty {
+                Text("Bifează ce s-a făcut sau scrie totalul ca să poți salva.")
+                    .dsFont(.footnote)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
         }
@@ -184,41 +187,16 @@ private struct VisitForm: View {
     /// invoice (`PaperIdentity`). Saving updates the visit it was filed with.
     @ViewBuilder private var filedNotice: some View {
         if let filed {
-            VStack(alignment: .leading, spacing: DS.Space.s) {
-                DSNotice(.info, title: "Factura e deja în dosar",
-                         message: LocalizedStringKey(Self.filedText(filed, today: CalendarDay(Date()))), actionTitle: "Vezi factura") {
-                    finish(false)
-                    AppNavigator.shared.open(.historyEntry(filed.entryID))
-                }
-                if filed.mayBeAnother {
-                    DSCompactButton("E altă factură", systemImage: "doc.badge.plus") {
-                        withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { draft.isAnotherInvoice = true }
-                    }
-                }
-            }
-            .transition(.opacity)
+            DSFiledPaperNotice(filed: filed, paper: .invoice, onOpen: {
+                finish(false)
+                AppNavigator.shared.open(.historyEntry(filed.entryID))
+            }, onAnother: { draft.isAnotherInvoice = true })
         }
     }
 
     /// The visit this invoice was filed with before, as saving will find it.
     private var filed: FiledPaper? {
         visit.filedBefore(keptDocumentID: draft.document?.keptAttachmentID, calendar: .dosar)?.paper
-    }
-
-    /// What the visit form says about an invoice already in the binder, and what saving does with it.
-    static func filedText(_ filed: FiledPaper, today: CalendarDay) -> String {
-        let date = DueWording.date(filed.day, today: today)
-        return switch filed.match {
-        case .sameDocument:
-            String(localized: "E în istoricul „\(filed.section)”, din \(date). Dacă salvezi, actualizez ce s-a trecut atunci cu ce e aici.",
-                   comment: "Visit form: the same invoice photo filed again.")
-        case .number:
-            String(localized: "E în istoricul „\(filed.section)”, din \(date), cu același număr. Dacă salvezi, actualizez ce s-a trecut atunci cu ce e aici, iar poza asta devine copia ei nouă.",
-                   comment: "Visit form: another photo of an invoice already filed, known by its number.")
-        case .dayAndTotal:
-            String(localized: "În istoricul „\(filed.section)” e una cu aceeași dată și același total, din \(date). Dacă e aceeași factură, o actualizez, iar poza asta devine copia ei nouă.",
-                   comment: "Visit form: another photo of what looks like an invoice already filed, by its day and total.")
-        }
     }
 
     // MARK: Checklist
@@ -421,6 +399,8 @@ private struct VisitForm: View {
     }
 
     private func save(lowerReading: LowerReadingAnswer? = nil) {
+        // One filing at a time: a second tap before the button shows it is busy files nothing.
+        guard !isSaving else { return }
         errorMessage = nil
         isSaving = true
         Task {
@@ -534,12 +514,15 @@ private struct VisitSavedView: View {
                         }
                     }
                 }
-                DSPrimaryButton("Gata", action: onDone)
-                DSSecondaryButton("Anulează vizita", systemImage: "arrow.uturn.backward", role: .destructive, action: onUndo)
             }
             .padding(DS.Space.m)
         }
         .background(DS.Palette.background)
+        .dsPinnedAction {
+            DSPrimaryButton("Gata", action: onDone)
+        } secondary: {
+            DSSecondaryButton("Anulează vizita", systemImage: "arrow.uturn.backward", role: .destructive, action: onUndo)
+        }
         .sensoryFeedback(.success, trigger: entry.id)
         .navigationBarBackButtonHidden()
     }

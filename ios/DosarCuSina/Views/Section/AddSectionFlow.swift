@@ -201,16 +201,14 @@ struct CustomSectionStep: View {
         .environment(\.dsRevealsValidation, reveals)
         .navigationTitle(Text("Categorie nouă", comment: "Title of the step that describes a category of one's own."))
         .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .bottom) {
-            DSBottomBar {
-                DSPrimaryButton("Continuă") {
-                    guard let custom = model.custom, custom.isComplete else {
-                        reveals = true
-                        return
-                    }
-                    model.chooseCustom(custom)
-                    next()
+        .dsPinnedAction {
+            DSPrimaryButton("Continuă") {
+                guard let custom = model.custom, custom.isComplete else {
+                    reveals = true
+                    return
                 }
+                model.chooseCustom(custom)
+                next()
             }
         }
     }
@@ -292,12 +290,10 @@ private struct EssentialsStep: View {
         .environment(\.dsRevealsValidation, reveals)
         .navigationTitle(Text("Ce trebuie știut", comment: "Title of the essentials step."))
         .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .bottom) {
-            DSBottomBar {
-                DSPrimaryButton("Continuă") {
-                    guard FieldValuesCheck.canSave(model.values, fields: fields) else { reveals = true; return }
-                    next()
-                }
+        .dsPinnedAction {
+            DSPrimaryButton("Continuă") {
+                guard FieldValuesCheck.canSave(model.values, fields: fields) else { reveals = true; return }
+                next()
             }
         }
     }
@@ -370,12 +366,10 @@ private struct ObligationsStep: View {
         .environment(\.dsRevealsValidation, reveals)
         .navigationTitle(Text("Termene", comment: "Header of the obligations list."))
         .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .bottom) {
-            DSBottomBar {
-                DSPrimaryButton("Adaugă în dosar") {
-                    guard model.missingDates.isEmpty else { reveals = true; return }
-                    finish()
-                }
+        .dsPinnedAction {
+            DSPrimaryButton("Adaugă în dosar") {
+                guard model.missingDates.isEmpty else { reveals = true; return }
+                finish()
             }
         }
     }
