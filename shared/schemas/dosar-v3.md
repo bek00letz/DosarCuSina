@@ -159,7 +159,8 @@ definition, whatever the archive says about it (`name`, `sections`, field
 types, `blueprints`, `version`, `isBuiltIn`): a key that names a built-in is a
 built-in. From the archive, a reader takes only the household preferences:
 `homeOrder`, `isOnHome` and `isSensitive`, the last one only towards locked (a
-category locked on the device stays locked). For a custom template on both
+category locked on the device stays locked). `isSensitive` is the lock of the device that
+wrote the archive: each device keeps its own, outside the household data. For a custom template on both
 sides, a field that is `secret` or `isSensitive` on the device stays so.
 
 - **Section:** `key`, `title`, `fields`.

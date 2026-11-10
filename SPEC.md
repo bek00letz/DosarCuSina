@@ -207,7 +207,7 @@ The binder syncs with the person's own private iCloud database (`iCloud.com.ar.d
 - Each device installs its own built-in categories; two copies become one, the one installed first, with the person's newer place and visibility and either copy's lock. Household deadlines and every repair choose the same records on every device.
 - Examples never sync: while they are in the binder, the phone doesn't sync (Settings says so), loading them on a phone that syncs keeps them there, and a backup's examples stay out of a binder that syncs. Sync starts again once they go.
 - Secret codes sync, sealed: each device's sealing key goes through iCloud Keychain (its own copy stays on the device), so a code opens on every device after Face ID. Where iCloud Keychain is off, a code from another device stays sealed and says where it opens.
-- The app lock and the Face ID session stay on each device; a section's lock is household data and syncs.
+- Locks stay on each device: the app lock, the Face ID session and which sections are locked. A lock opened on one device never opens a section on another.
 
 ## 4. Engines
 

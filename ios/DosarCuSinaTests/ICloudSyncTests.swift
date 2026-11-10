@@ -269,12 +269,11 @@ struct ICloudSyncTests {
         let mine = try #require(try TemplateStore(context: context).template(forKey: key))
         mine.createdAt = noon("2026-01-01")
         mine.updatedAt = ChangeTime.unknown
-        // The other device's copy, installed later, moved and locked there.
+        // The other device's copy, installed later, moved there.
         let definition = try #require(BuiltInTemplates.definition(for: key))
         let theirs = CategoryTemplate(definition: definition, isBuiltIn: true, homeOrder: 9)
         theirs.createdAt = noon("2026-03-01")
         theirs.updatedAt = noon("2026-04-01")
-        theirs.isSensitive = true
         theirs.isOnHome = false
         context.insert(theirs)
         try context.save()
@@ -286,7 +285,6 @@ struct ICloudSyncTests {
         #expect(kept.createdAt == noon("2026-01-01"), "The copy installed first stays, on every device alike")
         #expect(kept.homeOrder == 9)
         #expect(!kept.isOnHome)
-        #expect(kept.isSensitive, "A lock is never made weaker")
     }
 
     @Test func twoDevicesHouseholdDeadlinesMeetAsOne() throws {

@@ -3,8 +3,8 @@ import Observation
 
 /// Settings that belong to this device, not to the household data: when to
 /// remind, whether the whole app is locked, whether onboarding was seen.
-/// Which sections are locked is household data and lives on `CategoryTemplate.isSensitive`;
-/// the two locks are independent.
+/// Which sections are locked is this device's choice too, kept beside the store
+/// (`SectionLocks`, read through `CategoryTemplate.isSensitive`); the two locks are independent.
 @MainActor
 @Observable
 public final class AppPreferences {

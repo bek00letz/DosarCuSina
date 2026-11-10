@@ -24,12 +24,13 @@ struct AppShell: View {
     /// How far each tab's content keeps from the bottom edge (the tab bar), and the shell's own.
     @State private var tabInsets: [AppTab: CGFloat] = [:]
     @State private var shellInset: CGFloat = 0
-    @Query(filter: #Predicate<CategoryTemplate> { $0.isSensitive }) private var lockedCategories: [CategoryTemplate]
+    /// Every category: which are locked is this device's choice, read through each one (`SectionLocks`).
+    @Query private var categories: [CategoryTemplate]
 
     private var cover: LockCover? {
         LockCover.decide(
             appLockEnabled: preferences.appLockEnabled,
-            anySectionLocked: !lockedCategories.isEmpty,
+            anySectionLocked: categories.contains(where: \.isSensitive),
             isSessionUnlocked: vault.isSessionUnlocked,
             phase: LockCover.Phase(scenePhase),
             isAuthenticating: vault.isAuthenticating

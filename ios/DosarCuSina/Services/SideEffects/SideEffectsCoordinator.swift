@@ -104,6 +104,8 @@ public final class SideEffectsCoordinator {
         observers.append(listen(to: ShareInbox.didChangeNotification, allowPrompt: false))
         // What came from the person's other devices: their reminders, badge, widgets and Spotlight too.
         observers.append(listen(to: SyncedChanges.didArrive, allowPrompt: false))
+        // A section locked or opened on this device: what may show outside follows it.
+        observers.append(listen(to: SectionLocks.didChange, allowPrompt: false))
         let client = reconciler.client
         Task { await client.registerCategories() }
         setNeedsReconcile(allowPermissionPrompt: false)

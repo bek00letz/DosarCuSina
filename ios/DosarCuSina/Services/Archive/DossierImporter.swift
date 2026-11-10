@@ -191,7 +191,12 @@ struct DossierImporter {
                 let template = CategoryTemplate(definition: definition, isBuiltIn: catalog != nil, homeOrder: dto.homeOrder)
                 template.createdAt = clamped(dto.createdAt)
                 return template
-            }) else { continue }
+            }) else {
+                // The phone's copy stays, but a lock the backup has still locks it here (`SectionLocks`):
+                // a lock isn't in the record, so it doesn't wait for a newer copy.
+                if dto.isSensitive { byKey[dto.key]?.isSensitive = true }
+                continue
+            }
             template.isBuiltIn = catalog != nil
             template.apply(definition)
             if catalog == nil {

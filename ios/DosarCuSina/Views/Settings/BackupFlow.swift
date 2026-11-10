@@ -96,8 +96,7 @@ final class BackupFlow {
 
     /// Whether a section of the household is behind Face ID.
     private var anySectionLocked: Bool {
-        let locked = FetchDescriptor<CategoryTemplate>(predicate: #Predicate { $0.isSensitive })
-        return ((try? container.mainContext.fetchCount(locked)) ?? 0) > 0
+        ((try? container.mainContext.fetch(FetchDescriptor<CategoryTemplate>())) ?? []).contains(where: \.isSensitive)
     }
 
     /// Face ID or the passcode for the whole binder, whenever any lock is on. The work is

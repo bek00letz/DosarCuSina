@@ -38,7 +38,8 @@ import SwiftData
 /// whoever changed them; none by default, which reads as its change time), so a reminder that
 /// makes up for warnings already passed counts from then. Version 12 adds what a newer build wrote
 /// in a deadline's reminders that this one doesn't read (`Obligation.remindersData`, the profile's
-/// JSON, none by default), so a backup from a newer build keeps it through this one.
+/// JSON, none by default), so a backup from a newer build keeps it through this one, and keeps a
+/// category's lock on each device instead (`SectionLocks`), never in the store.
 public enum DosarSchemaV12: VersionedSchema {
     public static let versionIdentifier = Schema.Version(12, 0, 0)
 
@@ -117,10 +118,18 @@ public enum DosarMigrationPlan: SchemaMigrationPlan {
     /// app, gives it its own.
     static var v10ToV11: MigrationStage { .lightweight(fromVersion: DosarSchemaV10.self, toVersion: DosarSchemaV11.self) }
 
-    /// Version 12 only adds an optional value (what a newer build wrote in a deadline's reminders
-    /// that this one doesn't read); existing deadlines keep every value and have none, which is
-    /// what they hold. Only a backup from a newer build brings one.
-    static var v11ToV12: MigrationStage { .lightweight(fromVersion: DosarSchemaV11.self, toVersion: DosarSchemaV12.self) }
+    /// Version 12 adds an optional value (what a newer build wrote in a deadline's reminders that
+    /// this one doesn't read; existing deadlines have none, which is what they hold) and takes a
+    /// category's lock out of the store, where iCloud would carry it: each device keeps its own
+    /// (`SectionLocks`). Before the store changes shape, every category's lock becomes this
+    /// device's choice, so every lock stays as it was.
+    static var v11ToV12: MigrationStage {
+        .custom(fromVersion: DosarSchemaV11.self, toVersion: DosarSchemaV12.self, willMigrate: { context in
+            let locks = try context.fetch(FetchDescriptor<DosarSchemaV11.CategoryTemplate>())
+                .reduce(into: [String: Bool]()) { locks, template in locks[template.key] = (locks[template.key] ?? false) || template.isSensitive }
+            SectionLocks.of(context.container).adopt(locks)
+        }, didMigrate: nil)
+    }
 }
 
 public typealias CategoryTemplate = DosarSchemaV12.CategoryTemplate

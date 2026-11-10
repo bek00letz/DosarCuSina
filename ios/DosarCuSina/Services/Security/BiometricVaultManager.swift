@@ -66,7 +66,8 @@ public struct LockClock: Sendable {
 
 /// Two independent locks over one unlock session:
 /// - the whole-app lock (`AppPreferences.appLockEnabled`, off by default);
-/// - per-section locks (`CategoryTemplate.isSensitive`), on or off whatever the app lock says.
+/// - per-section locks (`CategoryTemplate.isSensitive`, this device's own: `SectionLocks`), on or
+///   off whatever the app lock says.
 ///
 /// One successful authentication opens the session for both, so the person is
 /// never asked twice in a row. The session closes when the app has been in the

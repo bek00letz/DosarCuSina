@@ -58,6 +58,8 @@ public enum DossierV3 {
         public var version: Int
         public var homeOrder: Int
         public var isOnHome: Bool
+        /// Whether the device that made the backup kept the category locked (`SectionLocks`): bringing
+        /// it in may lock the category on this device, never open it.
         public var isSensitive: Bool
         /// Entries this build can't read (from a newer one) are kept raw, in their places.
         public var sections: KeptList<FieldSection>

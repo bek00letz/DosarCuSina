@@ -162,8 +162,9 @@ extension DosarSchemaV12.Attachment: ChangeTimed {}
 extension DosarSchemaV12.Provider: ChangeTimed {}
 
 extension DosarSchemaV12.CategoryTemplate: ChangeTimed {
-    /// What the person chooses for a built-in category; everything else is the catalog's.
-    static let personsOwnChoices: Set<String> = ["homeOrder", "isOnHome", "isSensitive"]
+    /// What the person chooses for a built-in category; everything else is the catalog's. Its lock
+    /// is this device's own and isn't in the record (`SectionLocks`).
+    static let personsOwnChoices: Set<String> = ["homeOrder", "isOnHome"]
 
     public func changeCounts(_ name: String) -> Bool {
         !isBuiltIn || Self.personsOwnChoices.contains(name)

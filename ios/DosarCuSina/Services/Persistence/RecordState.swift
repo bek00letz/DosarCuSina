@@ -502,7 +502,7 @@ extension DosarSchemaV12.CategoryTemplate: UndoableRecord {
             .attribute("key", \.key), .attribute("name", \.name), .attribute("summary", \.summary), .attribute("symbol", \.symbol),
             .attribute("tintRaw", \.tintRaw), .attribute("heroStyleRaw", \.heroStyleRaw), .attribute("isBuiltIn", \.isBuiltIn),
             .attribute("builtInVersion", \.builtInVersion), .attribute("homeOrder", \.homeOrder), .attribute("isOnHome", \.isOnHome),
-            .attribute("isSensitive", \.isSensitive), .attribute("sectionsData", \.sectionsData),
+            .attribute("sectionsData", \.sectionsData),
             .attribute("blueprintsData", \.blueprintsData), .attribute("componentsData", \.componentsData),
             .attribute("pocketsRaw", \.pocketsRaw), .attribute("behaviorData", \.behaviorData),
             .attribute("createdAt", \.createdAt), .attribute("updatedAt", \.updatedAt),

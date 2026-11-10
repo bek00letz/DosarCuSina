@@ -23,8 +23,9 @@ extension DosarSchemaV12 {
         // Household preferences
         public var homeOrder: Int = 0
         public var isOnHome: Bool = true
-        /// Ask for Face ID before showing assets of this category.
-        public var isSensitive: Bool = false
+        /// The lock asked for before the category was first saved (made here, or brought by a
+        /// backup), kept until it is (`SectionLocks`).
+        @Transient private var lockBeforeSaved: Bool? = nil
 
         /// JSON `[FieldSection]`.
         public var sectionsData: Data?
@@ -139,6 +140,32 @@ extension DosarSchemaV12 {
         }
 
         public var isCustom: Bool { !isBuiltIn }
+
+        /// Ask for Face ID before showing sections of this category, on this device: each device
+        /// decides for itself, so the choice lives beside the store, never in it (`SectionLocks`).
+        /// A category this device hasn't decided on is locked as the catalog says, or as it was made.
+        public var isSensitive: Bool {
+            get {
+                let byDefault = lockBeforeSaved ?? (isBuiltIn && SectionLocks.lockedByDefault.contains(key))
+                guard let container = modelContext?.container else { return byDefault }
+                return SectionLocks.of(container).isLocked(key, byDefault: byDefault)
+            }
+            set {
+                guard let container = modelContext?.container else {
+                    lockBeforeSaved = newValue
+                    return
+                }
+                // The choice made now wins over the one asked for before saving.
+                lockBeforeSaved = nil
+                SectionLocks.of(container).set(newValue, for: key)
+            }
+        }
+
+        /// Makes the lock asked for before the category was saved this device's choice.
+        func keepLockAskedBeforeSaving() {
+            guard let lock = lockBeforeSaved, let container = modelContext?.container else { return }
+            SectionLocks.of(container).set(lock, for: key)
+        }
 
         /// The plain definition, as archives and the catalog describe it.
         public var definition: TemplateDefinition {

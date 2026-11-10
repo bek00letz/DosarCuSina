@@ -208,6 +208,7 @@ A new document layout is a new label table, not new reading code; a kind's own l
 
 ## Locks
 
+- Which sections are locked is this device's choice, never household data: `SectionLocks` (beside the store, never in it, never synced), read and written only through `CategoryTemplate.isSensitive` and `TemplateStore.setSensitive`. Never store a lock in a model or send it to iCloud.
 - `BiometricVaultManager` is the one unlock session for the app lock and the section locks. Its timings (the minute away before the session closes) count on `LockClock`, a clock the phone's settings don't move that keeps counting while it sleeps; never `Date` for a lock's timing. `confirmWholeBinder` asks before a backup and before bringing one in, either way, whenever any lock is on.
 - `LockCover.decide` is the one rule for when the app is covered (by the scene's `LockCover.Phase`: always in the background, while inactive except behind the app's own Face ID prompt), and `LockWindowHost` draws the lock and the app-switcher cover in a window above every sheet ([Views/Locks/LockWindow.swift](ios/DosarCuSina/Views/Locks/LockWindow.swift)). Never draw a lock as an overlay of one screen. `LockWindowController` covers at once and hides the window only when the fade out has completed, for the latest uncovering only.
 - `AppNavigator` hands out no route or opened file while the app is locked.

@@ -110,6 +110,7 @@ final class SearchIndexStore {
     @ObservationIgnored private let indexer: SearchIndexer
     @ObservationIgnored private var listener: Task<Void, Never>?
     @ObservationIgnored private var syncListener: Task<Void, Never>?
+    @ObservationIgnored private var lockListener: Task<Void, Never>?
     @ObservationIgnored private static var instance: SearchIndexStore?
 
     static func shared(for container: ModelContainer) -> SearchIndexStore {
@@ -163,13 +164,22 @@ final class SearchIndexStore {
                 self?.show(updated)
             }
         }
+        // A section locked or opened on this device: every entry says again whether it is locked.
+        lockListener = Task { [weak self] in
+            for await _ in NotificationCenter.default.notifications(named: SectionLocks.didChange).map({ _ in () }) {
+                guard let updated = try? await indexer.apply(SearchChanges(everything: true)) else { continue }
+                self?.show(updated)
+            }
+        }
     }
 
     /// Stops following the database: the store opened again under another container.
     func stop() {
         listener?.cancel()
         syncListener?.cancel()
+        lockListener?.cancel()
         listener = nil
         syncListener = nil
+        lockListener = nil
     }
 }

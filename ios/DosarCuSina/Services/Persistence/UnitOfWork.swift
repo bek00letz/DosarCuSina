@@ -137,7 +137,7 @@ public enum UnitOfWork {
         do {
             let result = try work()
             FreeText.mask(context)
-            try context.save()
+            try saving(context)
             return result
         } catch {
             context.rollback()
@@ -191,7 +191,7 @@ public enum UnitOfWork {
             FreeText.mask(context)
             ChangeTimes.stamp(context, origin: scope.origin, now: scope.now ?? Date())
             let pending = scope.receipt?.prepare()
-            try context.save()
+            try saving(context)
             open[ObjectIdentifier(context)] = nil
             if let pending { scope.receipt?.seal(pending) }
         } catch {
@@ -204,7 +204,15 @@ public enum UnitOfWork {
     private static func write(_ context: ModelContext, origin: ChangeOrigin, now: Date?) throws {
         FreeText.mask(context)
         ChangeTimes.stamp(context, origin: origin, now: now ?? Date())
+        try saving(context)
+    }
+
+    /// Saves, then keeps as this device's choice the lock each new category was made with: a
+    /// category's lock lives on the device, not in the store (`SectionLocks`).
+    nonisolated private static func saving(_ context: ModelContext) throws {
+        let made = context.insertedModelsArray.compactMap { $0 as? CategoryTemplate }
         try context.save()
+        for template in made { template.keepLockAskedBeforeSaving() }
     }
 
     /// Discards everything the unit recorded and closes it.
