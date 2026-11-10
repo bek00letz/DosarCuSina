@@ -146,6 +146,8 @@ public final class AppNavigator {
     @ObservationIgnored public private(set) var openCount = 0
 
     @ObservationIgnored private let isAppLocked: @MainActor () -> Bool
+    /// Who waits for the next route (`routeArrives(within:)`), by their own token.
+    @ObservationIgnored private var routeWaiters: [UUID: CheckedContinuation<Bool, Never>] = [:]
 
     public init(isAppLocked: @escaping @MainActor () -> Bool = { BiometricVaultManager.shared.isAppLocked }) {
         self.isAppLocked = isAppLocked
@@ -154,6 +156,41 @@ public final class AppNavigator {
     public func open(_ route: AppRoute) {
         openCount += 1
         pendingRoute = route
+        let waiters = routeWaiters
+        routeWaiters = [:]
+        for waiter in waiters.values { waiter.resume(returning: true) }
+    }
+
+    /// Waits for the next route to be asked for, for at most `limit`, and says whether one
+    /// was. Ends at once, with false, when the waiting task is cancelled. For what may only
+    /// happen if no route comes with the app's opening (`InboxLanding`).
+    public func routeArrives(within limit: Duration) async -> Bool {
+        let token = UUID()
+        var deadline: Task<Void, Never>?
+        defer { deadline?.cancel() }
+        return await withTaskCancellationHandler {
+            await withCheckedContinuation { continuation in
+                guard !Task.isCancelled else {
+                    continuation.resume(returning: false)
+                    return
+                }
+                routeWaiters[token] = continuation
+                // Started once the wait is registered, so its end always finds it.
+                deadline = Task { @MainActor [weak self] in
+                    try? await Task.sleep(for: limit)
+                    self?.stopWaiting(token)
+                }
+            }
+        } onCancel: {
+            Task { @MainActor [weak self] in self?.stopWaiting(token) }
+        }
+    }
+
+    /// Whether anything waits for the next route now (for tests).
+    var isWaitingForRoute: Bool { !routeWaiters.isEmpty }
+
+    private func stopWaiting(_ token: UUID) {
+        routeWaiters.removeValue(forKey: token)?.resume(returning: false)
     }
 
     /// Handles a deep link or an opened `.dosar` file. Returns false for anything else.
