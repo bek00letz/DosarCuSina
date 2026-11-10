@@ -152,6 +152,16 @@ public struct FieldValues: Hashable, Sendable, Codable, Sequence {
         return result
     }
 
+    /// The same values with every value `other` keeps that this build can't read, raw, for each
+    /// field that has no value here.
+    public func addingUnreadable(of other: FieldValues) -> FieldValues {
+        var result = self
+        for (key, raw) in other.unreadable where storage[key] == nil && result.unreadable[key] == nil {
+            result.unreadable[key] = raw
+        }
+        return result
+    }
+
     /// The values with defaults filled in for empty fields (new assets only) and
     /// derived fields worked out again when one of their inputs changed, or when
     /// they are still empty. A derived value the person typed in themselves stays

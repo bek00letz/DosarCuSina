@@ -8,6 +8,9 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-10
 
+### A restore keeps the phone's own secrets, read or not
+- **Decided:** what the phone keeps only for itself through "Înlocuiește tot" and "Adaugă" is taken as stored, not as this build reads it: every secret row of a section (`SecretFields.secretFacts`: those this build reads, with any key a newer build wrote inside them, and those it can't read that say they are secret or hold anything sealed) and every sealed value, read or not (`sealedValues`, `FieldValues.addingUnreadable`). They go back in place of an archive's row with the same id (`KeptList.replacingEntries`). None of them is ever exported, so the phone's copy is the only one. *Alternative:* keep only what this build reads, as before, which lost a newer build's secret rows for good on the first restore.
+
 ### A day the calendar doesn't have is never rolled over
 This closes what "Backups that restore" left open.
 - **Decided:** a day kept as written that its month doesn't have ("2026-02-30", "2026-04-31") becomes a moment in one place, `CalendarDay.moment(atMinute:in:)` (`startDate`, `noonDate` and the reminders' `fireDate` go through it), as its month's last day (`onCalendar`), never the next month's first days: it counts, sorts into Urmează and reminds on 28 February. `DosarFormat` writes it with its own numbers ("30 februarie 2026"), so the person sees what was kept. *Alternatives:* show it as the month's last day too, which hides that the stored day is odd; refuse such days, which "Backups that restore" already dropped because it breaks the repair of other calendars' years.

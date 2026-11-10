@@ -54,11 +54,17 @@ public enum SecretFields {
         raw["isSecret"]?.bool == true || raw.containsString(where: SecretSealer.isSealed) ? nil : raw
     }
 
-    /// Only the sealed values, by their own form.
+    /// Only the sealed values, by their own form: those this build reads, and those it can't
+    /// read with anything sealed in them, kept raw.
     public static func sealedValues(in values: FieldValues) -> FieldValues {
-        var result = FieldValues()
-        for (key, value) in values where isSealed(value) { result[key] = value }
+        var result = values.mappingUnreadable(sealedPart)
+        for (key, value) in values where !isSealed(value) { result[key] = nil }
         return result
+    }
+
+    /// A part this build doesn't read, when it says it is secret or anything in it is sealed.
+    private static func sealedPart(_ raw: JSONValue) -> JSONValue? {
+        withoutSecrets(raw) == nil ? raw : nil
     }
 
     /// The person's own rows without the secret ones, for anything that leaves the binder.
@@ -109,7 +115,8 @@ public enum SecretFields {
             if let field = definition?.allFields.first(where: { $0.key == key }), !field.applies(to: result) { continue }
             result[key] = value
         }
-        return result
+        // A sealed value this build can't read stays too, unless the archive gives its field a value.
+        return result.addingUnreadable(of: sealedValues(in: existing))
     }
 
     /// The same for values as an archive carries them, with what this build doesn't read (none secret).
@@ -121,15 +128,21 @@ public enum SecretFields {
     /// Incoming rows (from an archive, which never carries secret rows) with the
     /// secret rows this phone already keeps for the same record.
     public static func keepingLocalSecretFacts(_ incoming: [CustomFact], from existing: [CustomFact]) -> [CustomFact] {
-        let kept = existing.filter(\.isSecret)
-        let keptIDs = Set(kept.map(\.id))
-        return strippingFacts(incoming).filter { !keptIDs.contains($0.id) } + kept
+        keepingLocalSecretFacts(KeptList(incoming), from: KeptList(existing)).items
     }
 
-    /// The same for rows as an archive carries them, with the rows it can't read (none secret).
-    public static func keepingLocalSecretFacts(_ incoming: KeptList<CustomFact>, from existing: [CustomFact]) -> KeptList<CustomFact> {
-        let stripped = strippingFacts(incoming)
-        return stripped.replacingItems(keepingLocalSecretFacts(stripped.items, from: existing))
+    /// The phone's secret rows of a record, as stored: those this build reads, with what a newer
+    /// build wrote inside them, and those it can't read that say they are secret or hold anything
+    /// sealed. What a restore keeps of the phone's own (`DossierImporter.PhoneKeeps`).
+    public static func secretFacts(of facts: KeptList<CustomFact>) -> KeptList<CustomFact> {
+        facts.filtered(\.isSecret, unreadable: { sealedPart($0) != nil })
+    }
+
+    /// Rows as an archive carries them (none secret, read or not) with every secret row this phone
+    /// keeps for the same record, read or not, each as it is stored here: they are never exported,
+    /// so the phone's copy is the only one. A row from the archive with the same id gives way.
+    public static func keepingLocalSecretFacts(_ incoming: KeptList<CustomFact>, from existing: KeptList<CustomFact>) -> KeptList<CustomFact> {
+        strippingFacts(incoming).replacingEntries(with: secretFacts(of: existing))
     }
 }
 

@@ -66,10 +66,10 @@ struct DossierImporter {
         var locks: [String: Bool] = [:]
         /// Custom category key → its fields that are secret or sensitive here.
         var guardedFields: [String: [String: FieldDefinition]] = [:]
-        /// Record id → its sealed values.
+        /// Record id → its sealed values, read or not.
         var secrets: [UUID: FieldValues] = [:]
-        /// Record id → its secret rows.
-        var secretFacts: [UUID: [CustomFact]] = [:]
+        /// Record id → its secret rows as stored here, read or not (`SecretFields.secretFacts`).
+        var secretFacts: [UUID: KeptList<CustomFact>] = [:]
 
         static func capture(in context: ModelContext) throws -> PhoneKeeps {
             var keeps = PhoneKeeps()
@@ -82,9 +82,9 @@ struct DossierImporter {
             }
             for asset in try context.fetch(FetchDescriptor<Asset>()) {
                 let sealed = SecretFields.sealedValues(in: asset.values)
-                if !sealed.isEmpty { keeps.secrets[asset.id] = sealed }
-                let facts = asset.customFacts.filter(\.isSecret)
-                if !facts.isEmpty { keeps.secretFacts[asset.id] = facts }
+                if sealed != FieldValues() { keeps.secrets[asset.id] = sealed }
+                let facts = SecretFields.secretFacts(of: asset.keptFacts)
+                if !facts.isEmpty || !facts.isFullyRead { keeps.secretFacts[asset.id] = facts }
             }
             return keeps
         }
@@ -241,7 +241,7 @@ struct DossierImporter {
             let values = definition.map { dto.values.replacingValue(dto.values.value.normalizingChoices(for: $0)) } ?? dto.values
             // Secrets this phone keeps for the record stay; an archive never brings any.
             asset.keptValues = SecretFields.keepingLocalSecrets(values, from: phone.secrets[id] ?? FieldValues(), definition: definition)
-            asset.keptFacts = SecretFields.keepingLocalSecretFacts(dto.customFacts ?? KeptList(), from: phone.secretFacts[id] ?? [])
+            asset.keptFacts = SecretFields.keepingLocalSecretFacts(dto.customFacts ?? KeptList(), from: phone.secretFacts[id] ?? KeptList())
             asset.photoData = try dto.photoPath.flatMap { try package.files.data(at: $0) }
             asset.isExample = dto.isExample
             asset.createdAt = clamped(dto.createdAt)
