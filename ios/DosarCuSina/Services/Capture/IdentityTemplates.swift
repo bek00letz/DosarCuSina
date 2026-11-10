@@ -378,8 +378,7 @@ enum IdentityTemplates {
             machineReadableFormats: [],
             fields: [
                 .init(.cardLastFour, [], .cardLastFour, searchesEverywhere: true),
-                .init(.expiryDate, ["valid thru", "valid through", "good thru", "expires end", "expira la", "valabil pana la", "exp. date"],
-                      .cardExpiry, searchesEverywhere: true),
+                .init(.expiryDate, cardExpiryCaptions + ["expira la", "valabil pana la"], .cardExpiry, searchesEverywhere: true),
                 .init(.cardNetwork, [], .cardNetwork, searchesEverywhere: true),
                 .init(.issuer, [], .bankName, searchesEverywhere: true),
             ],
@@ -391,6 +390,12 @@ enum IdentityTemplates {
             documentVariant: variant
         )
     }
+
+    /// The captions a card prints over its expiry and nothing else prints: a cue that digits
+    /// near them are a card's number (`CardNumberCues`). "Expiră la" and "valabil până la"
+    /// caption a card's expiry too, but a vaccine's or an inspection's as well, so they read the
+    /// expiry and are no cue.
+    static let cardExpiryCaptions = ["valid thru", "valid through", "valid until", "good thru", "expires end", "exp. date"]
 
     /// A card that doesn't say whether it is debit or credit: no variant is guessed.
     static let bankCard = paymentCard("card.bank", variant: nil, distinctive: [])
