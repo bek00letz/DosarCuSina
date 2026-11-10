@@ -106,7 +106,40 @@ struct ImageScalingTests {
         #expect(Self.isMarked(sectionPhoto, x: 790, y: 6))
     }
 
+    // MARK: The canvas
+
+    @Test("One canvas: its size in pixels, white when asked, nothing for a size of no pixels")
+    func canvas() throws {
+        let white = try #require(ImageScaling.canvas(width: 30, height: 20, onWhite: true)?.makeImage())
+        #expect(white.width == 30 && white.height == 20)
+        #expect(Self.pixel(white, x: 29, y: 19) == [255, 255, 255])
+        let bare = try #require(ImageScaling.canvas(width: 30, height: 20, onWhite: false)?.makeImage())
+        #expect(bare.width == 30 && bare.height == 20)
+        #expect(ImageScaling.canvas(width: 0, height: 20, onWhite: true) == nil)
+        #expect(ImageScaling.canvas(width: 30, height: -1, onWhite: false) == nil)
+    }
+
+    @Test("A page turned is drawn on the canvas, its sides swapped and its mark moved with it")
+    func turnedPagesUseTheCanvas() throws {
+        let turned = try #require(DocumentPicture.turned(Self.marked(width: 40, height: 20), quarterTurns: 1))
+        #expect(turned.width == 20 && turned.height == 40)
+        #expect(Self.isMarked(turned, x: 18, y: 1), "The top-left mark goes to the top right")
+        #expect(Self.pixel(turned, x: 1, y: 38) == [255, 255, 255])
+        #expect(!Self.isMarked(turned, x: 1, y: 1))
+    }
+
     // MARK: Helpers
+
+    /// The red, green and blue of the pixel `x` from the left and `y` from the top.
+    static func pixel(_ image: CGImage, x: Int, y: Int) -> [UInt8] {
+        var pixel = [UInt8](repeating: 0, count: 4)
+        pixel.withUnsafeMutableBytes { buffer in
+            let context = CGContext(data: buffer.baseAddress, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
+                                    space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)!
+            context.draw(image, in: CGRect(x: -x, y: y - image.height + 1, width: image.width, height: image.height))
+        }
+        return Array(pixel.prefix(3))
+    }
 
     /// A white picture with a red block in its top-left corner, so the way up can be checked.
     static func marked(width: Int, height: Int) -> CGImage {

@@ -1,33 +1,74 @@
 import Foundation
 
-/// The widget snapshot as the widget extension reads it.
+/// What widgets show: the one definition of the widget snapshot, written by the app
+/// (`WidgetFeed.make`, `WidgetSnapshotWriter`) to the shared App Group container and read
+/// by the widget extension as the same type, so the two can't drift apart.
 ///
-/// The app writes the file with `WidgetSnapshot` (Services/SideEffects), the one
-/// definition of the format. The extension can't link the app's model layer, so
-/// it reads the same JSON through this small mirror; a test in the app target
-/// encodes a `WidgetSnapshot` and decodes it here, so the two can't drift apart.
-public struct WidgetFeed: Decodable, Hashable, Sendable {
+/// File: `widget-snapshot.json` in the App Group, written by `MachineText.jsonEncoder()`.
+/// Format (version 1, JSON, keys stable):
+/// ```
+/// {
+///   "version": 1,
+///   "generatedAt": "2026-11-02T08:00:00Z",
+///   "needsActionCount": 2,          // overdue + due today
+///   "items": [{                     // attention order, at most 8
+///     "obligationId": "…", "assetId": "…",
+///     "title": "ITP", "assetName": "VW Golf",
+///     "symbol": "car.fill", "tint": "blue",
+///     "dueDate": "2026-11-15",      // calendar day; the widget works out days left itself
+///     "kind": "legal", "isSensitive": false,
+///     "deepLink": "dosarcusina://obligation/…",
+///     "urgency": {                  // its urgency rule, so the widget counts down
+///       "graceDays": 0, "firstLeadDays": 30, "maxWindowDays": 30   // like the app
+///     }
+///   }]
+/// }
+/// ```
+/// Items from sensitive categories carry a generic title and no asset name.
+public struct WidgetFeed: Codable, Hashable, Sendable {
     public static let fileName = "widget-snapshot.json"
-    /// Versions this reader understands.
-    public static let supportedVersion = 1
+    /// The version the app writes; the widget reads it and every one before it.
+    public static let currentVersion = 1
+    /// The most items a snapshot carries.
+    public static let maxItems = 8
 
-    public struct Item: Decodable, Hashable, Sendable, Identifiable {
+    public struct Item: Codable, Hashable, Sendable, Identifiable {
         public var obligationId: UUID
         public var assetId: UUID?
         public var title: String
         public var assetName: String?
         public var symbol: String
+        /// The category's tint, by its stored name (`TemplateTint`).
         public var tint: String
-        /// `yyyy-MM-dd`.
-        public var dueDate: String
+        public var dueDate: CalendarDay
+        /// The deadline's kind, by its stored name (`ObligationKind`).
         public var kind: String
         public var isSensitive: Bool
         public var deepLink: URL
-        /// The app's urgency rule for it. A snapshot from before it was written has
-        /// none, and reads as a deadline nothing reminds about until the app rewrites it.
+        /// The one urgency rule (`ReminderProfile.urgencyRule`), so the widget's tone,
+        /// wording and count match the app's on every day the timeline covers. A snapshot
+        /// from before it was written has none, and reads as a deadline nothing reminds
+        /// about until the app rewrites it.
         public var urgency: UrgencyRule?
 
         public var id: UUID { obligationId }
+
+        public init(
+            obligationId: UUID, assetId: UUID?, title: String, assetName: String?, symbol: String, tint: String,
+            dueDate: CalendarDay, kind: String, isSensitive: Bool, deepLink: URL, urgency: UrgencyRule?
+        ) {
+            self.obligationId = obligationId
+            self.assetId = assetId
+            self.title = title
+            self.assetName = assetName
+            self.symbol = symbol
+            self.tint = tint
+            self.dueDate = dueDate
+            self.kind = kind
+            self.isSensitive = isSensitive
+            self.deepLink = deepLink
+            self.urgency = urgency
+        }
     }
 
     public var version: Int
@@ -35,10 +76,21 @@ public struct WidgetFeed: Decodable, Hashable, Sendable {
     public var needsActionCount: Int
     public var items: [Item]
 
+    public init(version: Int = WidgetFeed.currentVersion, generatedAt: Date, needsActionCount: Int, items: [Item]) {
+        self.version = version
+        self.generatedAt = generatedAt
+        self.needsActionCount = needsActionCount
+        self.items = items
+    }
+
+    /// The snapshot as the file holds it.
+    public static func encode(_ feed: WidgetFeed) throws -> Data {
+        try MachineText.jsonEncoder().encode(feed)
+    }
+
+    /// The snapshot in a file's bytes, or nil when it can't be read or a newer version wrote it.
     public static func decode(_ data: Data) -> WidgetFeed? {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        guard let feed = try? decoder.decode(WidgetFeed.self, from: data), feed.version <= supportedVersion else { return nil }
+        guard let feed = try? MachineText.jsonDecoder().decode(WidgetFeed.self, from: data), feed.version <= currentVersion else { return nil }
         return feed
     }
 
@@ -84,8 +136,8 @@ public enum WidgetContent {
         let done = Set(completed.map { "\($0.obligationId.uuidString.lowercased())|\($0.dueDay)" })
         let today = CalendarDay(now, calendar: calendar)
         return feed.items.compactMap { item -> WidgetRow? in
-            guard !done.contains("\(item.obligationId.uuidString.lowercased())|\(item.dueDate)"),
-                  let dueDay = CalendarDay(isoString: item.dueDate) else { return nil }
+            let dueDay = item.dueDate
+            guard !done.contains("\(item.obligationId.uuidString.lowercased())|\(dueDay.isoString)") else { return nil }
             let days = today.days(to: dueDay, calendar: calendar)
             let urgency = (item.urgency ?? .noReminders).urgency(of: dueDay, today: today, calendar: calendar)
             return WidgetRow(
@@ -97,7 +149,7 @@ public enum WidgetContent {
                 urgency: urgency,
                 when: WhenWording.standalone(urgency, daysRemaining: days, from: now, calendar: calendar),
                 dueDate: dueDay.startDate(in: calendar),
-                dueKey: item.dueDate,
+                dueKey: dueDay.isoString,
                 deepLink: item.deepLink,
                 canComplete: !item.isSensitive
             )

@@ -486,16 +486,7 @@ public struct ShareInbox: Sendable {
         #endif
     }
 
-    static var encoder: JSONEncoder {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        encoder.outputFormatting = [.sortedKeys]
-        return encoder
-    }
+    static var encoder: JSONEncoder { MachineText.jsonEncoder() }
 
-    static var decoder: JSONDecoder {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        return decoder
-    }
+    static var decoder: JSONDecoder { MachineText.jsonDecoder() }
 }
