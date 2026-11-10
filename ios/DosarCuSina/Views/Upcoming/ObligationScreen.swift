@@ -738,7 +738,6 @@ private struct RescheduleSheet: View {
             ScrollView {
                 DatePicker("Data nouă", selection: $date, displayedComponents: .date)
                     .datePickerStyle(.graphical)
-                    .environment(\.locale, .dosarDefault)
                     .padding(DS.Space.m)
             }
             .dsPinnedAction {

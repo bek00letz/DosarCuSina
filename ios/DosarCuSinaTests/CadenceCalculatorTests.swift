@@ -4,14 +4,13 @@ import Testing
 
 /// Comprehensive unit test suite for `CadenceCalculator`.
 ///
+/// Calendar arithmetic (leap years, month ends, days, weeks, months and years) is
+/// `CalendarDay`'s and is pinned in `MonthArithmeticTests`.
+///
 /// Covers:
-/// 1. Leap year identification (Gregorian 4, 100, 400 rules).
-/// 2. Calendar cadence arithmetic: days, weeks, months and years.
-/// 3. Leap year rollover: Feb 29 on leap years (2024, 2028) vs clamping to Feb 28 on non-leap years (2025, 2026, 2027).
-/// 4. End-of-month clamping across all month boundaries (Jan 31 -> Feb 28/29, Mar 31 -> Apr 30, etc.).
-/// 5. Telemetry projection burn-rate estimation: Δmetric / Δdays.
-/// 6. Boundary & edge cases: negative rate / odometer rollback protection, zero rate fallback, target metric already exceeded.
-/// 7. Event urgency status classification: completed, overdue, urgent, upcoming, planned.
+/// 1. Telemetry projection burn-rate estimation: Δmetric / Δdays.
+/// 2. Boundary & edge cases: negative rate / odometer rollback protection, zero rate fallback, target metric already exceeded.
+/// 3. Event urgency status classification: completed, overdue, urgent, upcoming, planned.
 @Suite struct CadenceCalculatorTests {
     
     // MARK: - Date Helpers
@@ -29,168 +28,6 @@ import Testing
     }
     
     // MARK: - Test Cases
-    
-    /// Verifies leap year identification across standard, century, and 400-year boundary cases.
-    @Test func isLeapYear_RuleVerification() throws {
-        // Standard leap years (divisible by 4, not 100)
-        try assertTrue(CadenceCalculator.isLeapYear(2024), "2024 must be a leap year")
-        try assertTrue(CadenceCalculator.isLeapYear(2028), "2028 must be a leap year")
-        try assertTrue(CadenceCalculator.isLeapYear(2032), "2032 must be a leap year")
-        
-        // 400-year century leap years (divisible by 400)
-        try assertTrue(CadenceCalculator.isLeapYear(2000), "2000 must be a leap year (divisible by 400)")
-        try assertTrue(CadenceCalculator.isLeapYear(2400), "2400 must be a leap year (divisible by 400)")
-        
-        // Standard common years
-        try assertFalse(CadenceCalculator.isLeapYear(2025), "2025 is not a leap year")
-        try assertFalse(CadenceCalculator.isLeapYear(2026), "2026 is not a leap year")
-        try assertFalse(CadenceCalculator.isLeapYear(2027), "2027 is not a leap year")
-        
-        // Century common years (divisible by 100, not 400)
-        try assertFalse(CadenceCalculator.isLeapYear(1900), "1900 is not a leap year (divisible by 100, not 400)")
-        try assertFalse(CadenceCalculator.isLeapYear(2100), "2100 is not a leap year (divisible by 100, not 400)")
-    }
-    
-    /// Verifies leap year rollover from February 29th clamping to February 28th on non-leap years (2025, 2026, 2027).
-    @Test func leapYearRollover_Feb29ClampingOnNonLeapYears() throws {
-        let calendar = Calendar.gregorianUTC
-        let feb29_2024 = makeDate(year: 2024, month: 2, day: 29, calendar: calendar)
-        
-        // 1 year later (2025) -> Feb 28, 2025
-        let date2025 = CadenceCalculator.addYears(to: feb29_2024, years: 1, calendar: calendar)
-        let comp2025 = calendar.dateComponents([.year, .month, .day], from: date2025)
-        try assertEqual(comp2025.year, 2025, "Year should be 2025")
-        try assertEqual(comp2025.month, 2, "Month should be February")
-        try assertEqual(comp2025.day, 28, "Feb 29 on leap 2024 must clamp to Feb 28 on non-leap 2025")
-        
-        // 2 years later (2026) -> Feb 28, 2026
-        let date2026 = CadenceCalculator.addYears(to: feb29_2024, years: 2, calendar: calendar)
-        let comp2026 = calendar.dateComponents([.year, .month, .day], from: date2026)
-        try assertEqual(comp2026.year, 2026, "Year should be 2026")
-        try assertEqual(comp2026.month, 2, "Month should be February")
-        try assertEqual(comp2026.day, 28, "Feb 29 on leap 2024 must clamp to Feb 28 on non-leap 2026")
-        
-        // 3 years later (2027) -> Feb 28, 2027
-        let date2027 = CadenceCalculator.addYears(to: feb29_2024, years: 3, calendar: calendar)
-        let comp2027 = calendar.dateComponents([.year, .month, .day], from: date2027)
-        try assertEqual(comp2027.year, 2027, "Year should be 2027")
-        try assertEqual(comp2027.month, 2, "Month should be February")
-        try assertEqual(comp2027.day, 28, "Feb 29 on leap 2024 must clamp to Feb 28 on non-leap 2027")
-        
-        // A yearly interval from Feb 29 lands on Feb 28 the next year
-        let annualNext = CadenceCalculator.calculateNextDueDate(from: feb29_2024, interval: .years(1), calendar: calendar)
-        let compAnnual = calendar.dateComponents([.year, .month, .day], from: annualNext)
-        try assertEqual(compAnnual.year, 2025, "Annual interval should roll to 2025")
-        try assertEqual(compAnnual.month, 2, "Month should remain February")
-        try assertEqual(compAnnual.day, 28, "Annual recurrence from Feb 29 2024 must be Feb 28 2025")
-    }
-    
-    /// Verifies leap year rollover preserves February 29th when advancing to another leap year (2028).
-    @Test func leapYearRollover_Feb29PreservedOnLeapYears() throws {
-        let calendar = Calendar.gregorianUTC
-        let feb29_2024 = makeDate(year: 2024, month: 2, day: 29, calendar: calendar)
-        
-        // 4 years later (2028 - next leap year) -> Feb 29, 2028
-        let date2028 = CadenceCalculator.addYears(to: feb29_2024, years: 4, calendar: calendar)
-        let comp2028 = calendar.dateComponents([.year, .month, .day], from: date2028)
-        try assertEqual(comp2028.year, 2028, "Year should be 2028")
-        try assertEqual(comp2028.month, 2, "Month should be February")
-        try assertEqual(comp2028.day, 29, "Feb 29 on leap 2024 must remain Feb 29 on leap 2028")
-        
-        // 8 years later (2032 - leap year) -> Feb 29, 2032
-        let date2032 = CadenceCalculator.addYears(to: feb29_2024, years: 8, calendar: calendar)
-        let comp2032 = calendar.dateComponents([.year, .month, .day], from: date2032)
-        try assertEqual(comp2032.year, 2032, "Year should be 2032")
-        try assertEqual(comp2032.month, 2, "Month should be February")
-        try assertEqual(comp2032.day, 29, "Feb 29 on leap 2024 must remain Feb 29 on leap 2032")
-    }
-    
-    /// Verifies explicit interval calendar arithmetic (.days, .weeks, .months, .years).
-    @Test func calendarCadenceInterval_DaysWeeksMonthsYears() throws {
-        let calendar = Calendar.gregorianUTC
-        let baseDate = makeDate(year: 2026, month: 5, day: 1, calendar: calendar)
-        
-        // Days
-        let plus30Days = CadenceCalculator.calculateNextDueDate(from: baseDate, interval: .days(30), calendar: calendar)
-        let compDays = calendar.dateComponents([.year, .month, .day], from: plus30Days)
-        try assertEqual(compDays.year, 2026, "Year should be 2026")
-        try assertEqual(compDays.month, 5, "Month should be May")
-        try assertEqual(compDays.day, 31, "May 1 + 30 days must be May 31")
-        
-        // Weeks
-        let plus2Weeks = CadenceCalculator.calculateNextDueDate(from: baseDate, interval: .weeks(2), calendar: calendar)
-        let compWeeks = calendar.dateComponents([.year, .month, .day], from: plus2Weeks)
-        try assertEqual(compWeeks.year, 2026, "Year should be 2026")
-        try assertEqual(compWeeks.month, 5, "Month should be May")
-        try assertEqual(compWeeks.day, 15, "May 1 + 2 weeks must be May 15")
-        
-        // Months
-        let plus3Months = CadenceCalculator.calculateNextDueDate(from: baseDate, interval: .months(3), calendar: calendar)
-        let compMonths = calendar.dateComponents([.year, .month, .day], from: plus3Months)
-        try assertEqual(compMonths.year, 2026, "Year should be 2026")
-        try assertEqual(compMonths.month, 8, "Month should be August")
-        try assertEqual(compMonths.day, 1, "May 1 + 3 months must be August 1")
-        
-        // Years
-        let plus2Years = CadenceCalculator.calculateNextDueDate(from: baseDate, interval: .years(2), calendar: calendar)
-        let compYears = calendar.dateComponents([.year, .month, .day], from: plus2Years)
-        try assertEqual(compYears.year, 2028, "Year should be 2028")
-        try assertEqual(compYears.month, 5, "Month should be May")
-        try assertEqual(compYears.day, 1, "May 1, 2026 + 2 years must be May 1, 2028")
-    }
-    
-    /// Verifies end-of-month clamping across various month boundaries (Jan 31 -> Feb 28, Mar 31 -> Apr 30, etc.).
-    @Test func addMonths_EndOfMonthClamping() throws {
-        let calendar = Calendar.gregorianUTC
-        
-        // Jan 31, 2026 (non-leap) + 1 month -> Feb 28, 2026
-        let jan31_2026 = makeDate(year: 2026, month: 1, day: 31, calendar: calendar)
-        let feb2026 = CadenceCalculator.addMonths(to: jan31_2026, months: 1, calendar: calendar)
-        let compFeb2026 = calendar.dateComponents([.year, .month, .day], from: feb2026)
-        try assertEqual(compFeb2026.year, 2026, "Year should be 2026")
-        try assertEqual(compFeb2026.month, 2, "Month should be February")
-        try assertEqual(compFeb2026.day, 28, "Jan 31 + 1 month in common year 2026 must clamp to Feb 28")
-        
-        // Jan 31, 2024 (leap) + 1 month -> Feb 29, 2024
-        let jan31_2024 = makeDate(year: 2024, month: 1, day: 31, calendar: calendar)
-        let feb2024 = CadenceCalculator.addMonths(to: jan31_2024, months: 1, calendar: calendar)
-        let compFeb2024 = calendar.dateComponents([.year, .month, .day], from: feb2024)
-        try assertEqual(compFeb2024.year, 2024, "Year should be 2024")
-        try assertEqual(compFeb2024.month, 2, "Month should be February")
-        try assertEqual(compFeb2024.day, 29, "Jan 31 + 1 month in leap year 2024 must clamp to Feb 29")
-        
-        // Mar 31, 2026 + 1 month -> Apr 30, 2026
-        let mar31_2026 = makeDate(year: 2026, month: 3, day: 31, calendar: calendar)
-        let apr2026 = CadenceCalculator.addMonths(to: mar31_2026, months: 1, calendar: calendar)
-        let compApr2026 = calendar.dateComponents([.year, .month, .day], from: apr2026)
-        try assertEqual(compApr2026.year, 2026, "Year should be 2026")
-        try assertEqual(compApr2026.month, 4, "Month should be April")
-        try assertEqual(compApr2026.day, 30, "Mar 31 + 1 month must clamp to Apr 30")
-        
-        // May 31, 2026 + 1 month -> Jun 30, 2026
-        let may31_2026 = makeDate(year: 2026, month: 5, day: 31, calendar: calendar)
-        let jun2026 = CadenceCalculator.addMonths(to: may31_2026, months: 1, calendar: calendar)
-        let compJun2026 = calendar.dateComponents([.year, .month, .day], from: jun2026)
-        try assertEqual(compJun2026.year, 2026, "Year should be 2026")
-        try assertEqual(compJun2026.month, 6, "Month should be June")
-        try assertEqual(compJun2026.day, 30, "May 31 + 1 month must clamp to Jun 30")
-        
-        // Aug 31, 2026 + 1 month -> Sep 30, 2026
-        let aug31_2026 = makeDate(year: 2026, month: 8, day: 31, calendar: calendar)
-        let sep2026 = CadenceCalculator.addMonths(to: aug31_2026, months: 1, calendar: calendar)
-        let compSep2026 = calendar.dateComponents([.year, .month, .day], from: sep2026)
-        try assertEqual(compSep2026.year, 2026, "Year should be 2026")
-        try assertEqual(compSep2026.month, 9, "Month should be September")
-        try assertEqual(compSep2026.day, 30, "Aug 31 + 1 month must clamp to Sep 30")
-        
-        // Oct 31, 2026 + 1 month -> Nov 30, 2026
-        let oct31_2026 = makeDate(year: 2026, month: 10, day: 31, calendar: calendar)
-        let nov2026 = CadenceCalculator.addMonths(to: oct31_2026, months: 1, calendar: calendar)
-        let compNov2026 = calendar.dateComponents([.year, .month, .day], from: nov2026)
-        try assertEqual(compNov2026.year, 2026, "Year should be 2026")
-        try assertEqual(compNov2026.month, 11, "Month should be November")
-        try assertEqual(compNov2026.day, 30, "Oct 31 + 1 month must clamp to Nov 30")
-    }
     
     /// Verifies telemetry projection burn rate estimation: Δmetric / Δdays.
     /// Scenario: 10,000 km on Day 0, 12,000 km on Day 40. Target: 15,000 km.

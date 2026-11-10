@@ -308,7 +308,6 @@ private struct VisitForm: View {
                     DatePicker(selection: $draft.date, in: ...Date.now.addingTimeInterval(86_400), displayedComponents: .date) {
                         Text("Data").dsFont(.headline)
                     }
-                    .environment(\.locale, .dosarDefault)
                     .frame(minHeight: 44)
                     if let counterField, let unit = counterField.unit {
                         DSMetricField(LocalizedStringKey(counterField.label), value: Binding(

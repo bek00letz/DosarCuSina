@@ -1,20 +1,13 @@
 import Foundation
 
-/// Pure mathematical and calendar recurrence engine for life cadence calculations.
+/// Telemetry projections for counter-based cadences (odometer km/day, hours/day,
+/// cycles/day, with rollback guards).
 ///
-/// Handles calendar recurrence (daily, monthly, yearly with leap year Feb 29 -> Feb 28 clamping)
-/// and telemetry projections (odometer km/day, hours/day, cycles/day with rollback guards).
+/// Calendar arithmetic (days, months, years, month ends, 29 February) is `CalendarDay`'s,
+/// the one place it lives; `RecurrenceEngine.add` moves a deadline by its interval.
 public final class CadenceCalculator: Sendable {
     
     // MARK: - Types
-    
-    /// Supported calendar recurrence intervals.
-    public enum CalendarCadenceInterval: Sendable, Equatable {
-        case days(Int)
-        case weeks(Int)
-        case months(Int)
-        case years(Int)
-    }
     
     /// A single timestamped telemetry observation.
     public struct TelemetryReading: Sendable, Equatable {
@@ -57,123 +50,6 @@ public final class CadenceCalculator: Sendable {
     }
     
     public init() {}
-    
-    // MARK: - Calendar Cadence Engine
-    
-    /// Checks whether a given Gregorian year is a leap year.
-    public static func isLeapYear(_ year: Int) -> Bool {
-        return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
-    }
-    
-    /// Computes the next calendar due date based on an explicit cadence interval enum.
-    ///
-    /// - Parameters:
-    ///   - lastDate: The reference date.
-    ///   - interval: Recurrence interval (.days, .weeks, .months, .years).
-    ///   - calendar: Calendar instance.
-    /// - Returns: The next due date.
-    public static func calculateNextDueDate(
-        from lastDate: Date,
-        interval: CalendarCadenceInterval,
-        calendar: Calendar = .dosar
-    ) -> Date {
-        switch interval {
-        case .days(let days):
-            guard days > 0 else { return lastDate }
-            return calendar.date(byAdding: .day, value: days, to: lastDate)
-                ?? lastDate.addingTimeInterval(Double(days) * 86400.0)
-            
-        case .weeks(let weeks):
-            guard weeks > 0 else { return lastDate }
-            return calendar.date(byAdding: .weekOfYear, value: weeks, to: lastDate)
-                ?? lastDate.addingTimeInterval(Double(weeks) * 7.0 * 86400.0)
-            
-        case .months(let months):
-            guard months > 0 else { return lastDate }
-            return addMonths(to: lastDate, months: months, calendar: calendar)
-            
-        case .years(let years):
-            guard years > 0 else { return lastDate }
-            return addYears(to: lastDate, years: years, calendar: calendar)
-        }
-    }
-    
-    /// Adds years to a date with strict February 29th leap year clamping.
-    ///
-    /// If the source date is February 29th and the target year is not a leap year,
-    /// the date is clamped to February 28th.
-    public static func addYears(to date: Date, years: Int, calendar: Calendar = .dosar) -> Date {
-        guard years != 0 else { return date }
-        
-        var components = calendar.dateComponents(
-            [.year, .month, .day, .hour, .minute, .second, .timeZone],
-            from: date
-        )
-        guard let currentYear = components.year,
-              let currentMonth = components.month,
-              let currentDay = components.day else {
-            return calendar.date(byAdding: .year, value: years, to: date) ?? date
-        }
-        
-        let targetYear = currentYear + years
-        let isFeb29 = (currentMonth == 2 && currentDay == 29)
-        
-        if isFeb29 && !isLeapYear(targetYear) {
-            components.year = targetYear
-            components.month = 2
-            components.day = 28
-        } else {
-            components.year = targetYear
-        }
-        
-        return calendar.date(from: components)
-            ?? calendar.date(byAdding: .year, value: years, to: date)
-            ?? date
-    }
-    
-    /// Adds months to a date with end-of-month clamping (e.g., Jan 31 -> Feb 28/29).
-    ///
-    /// - Parameter dayOfMonth: the day a series keeps (31 for "the 31st"). The result
-    ///   is that day, or the target month's last day when it is shorter. Without it,
-    ///   the date's own day is used, so a date already clamped (28 February) would
-    ///   carry its shorter day forward.
-    public static func addMonths(to date: Date, months: Int, dayOfMonth: Int? = nil, calendar: Calendar = .dosar) -> Date {
-        guard months != 0 || dayOfMonth != nil else { return date }
-        
-        var components = calendar.dateComponents(
-            [.year, .month, .day, .hour, .minute, .second, .timeZone],
-            from: date
-        )
-        guard let currentYear = components.year,
-              let currentMonth = components.month,
-              let currentDay = components.day else {
-            return calendar.date(byAdding: .month, value: months, to: date) ?? date
-        }
-        
-        let totalMonths = (currentYear * 12 + (currentMonth - 1)) + months
-        let targetYear = totalMonths / 12
-        let targetMonth = (totalMonths % 12) + 1
-        
-        let daysInTargetMonth: Int
-        switch targetMonth {
-        case 1, 3, 5, 7, 8, 10, 12:
-            daysInTargetMonth = 31
-        case 4, 6, 9, 11:
-            daysInTargetMonth = 30
-        case 2:
-            daysInTargetMonth = isLeapYear(targetYear) ? 29 : 28
-        default:
-            daysInTargetMonth = 30
-        }
-        
-        components.year = targetYear
-        components.month = targetMonth
-        components.day = min(dayOfMonth ?? currentDay, daysInTargetMonth)
-        
-        return calendar.date(from: components)
-            ?? calendar.date(byAdding: .month, value: months, to: date)
-            ?? date
-    }
     
     // MARK: - Telemetry Cadence Engine
     
