@@ -36,6 +36,13 @@ extension DS {
         /// How long work may take before a spinner shows (`DSDelayedProgress`).
         static let progressDelay: Duration = .milliseconds(400)
 
+        /// How long iOS takes to bring the app onto the screen from its icon, a notification
+        /// or a link. What the app was opened for (a tapped reminder, a link, a widget, a search
+        /// result) reaches it while this plays, and nothing says when nothing will: so what the
+        /// app would open by itself waits for this to end, and gives way the moment a route
+        /// comes (`InboxLanding`, through `AppNavigator.routeArrives(within:)`).
+        static let appOpening: Duration = .milliseconds(400)
+
         /// How long a short confirmation stays before it goes by itself, when
         /// nothing else is waiting on it. Unused while the share sheet's confirmation
         /// stays until "Gata" (`ShareConfirmation.closesByItself`); kept as its way back.
