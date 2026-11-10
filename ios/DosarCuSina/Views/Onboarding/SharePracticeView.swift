@@ -20,6 +20,12 @@ struct SharePracticeView: View {
 
     private var inbox: IntakeInbox { .shared }
 
+    /// How often the practice looks in the inbox itself while it waits. The invoice is
+    /// found the moment the share extension signals it, or when the app comes back to the
+    /// front; this only covers a signal iOS didn't deliver (another process posts it, and
+    /// nothing tells the app it was missed). Nothing on screen waits for it.
+    static let missedSignalCheck: Duration = .seconds(1.5)
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.xl) {
@@ -57,11 +63,11 @@ struct SharePracticeView: View {
             if let sampleURL { try? ShareInbox.shared()?.expectPractice(fileAt: sampleURL) }
         }
         .task(id: arrived) {
-            // The extension also signals the app; this check covers a missed signal.
+            // The extension signals the app; this only covers a missed signal.
             while !arrived && !Task.isCancelled {
                 inbox.refresh()
                 checkArrival()
-                try? await Task.sleep(for: .seconds(1.5))
+                try? await Task.sleep(for: Self.missedSignalCheck)
             }
         }
         .onChange(of: inbox.items) { _, _ in checkArrival() }

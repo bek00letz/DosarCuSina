@@ -42,6 +42,9 @@ struct SearchScreen: View {
     @State private var recent = RecentSearches.shared
     @State private var searchTask: Task<Void, Never>?
 
+    /// How long typing pauses before the results follow, so each letter doesn't search alone.
+    static let typingDebounce: Duration = .milliseconds(120)
+
     var body: some View {
         List {
             if trimmedQuery.isEmpty {
@@ -148,7 +151,7 @@ struct SearchScreen: View {
     private func scheduleSearch() {
         searchTask?.cancel()
         searchTask = Task {
-            try? await Task.sleep(for: .milliseconds(120))
+            try? await Task.sleep(for: Self.typingDebounce)
             guard !Task.isCancelled else { return }
             runSearch()
         }

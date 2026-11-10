@@ -33,6 +33,10 @@ private struct ProviderContent: View {
 
     @State private var notes: String
     @State private var saveTask: Task<Void, Never>?
+
+    /// How long typing in the notes pauses before they are kept, so each letter isn't a save.
+    /// Leaving the page keeps them at once.
+    static let notesDebounce: Duration = .milliseconds(700)
     @State private var isEditing = false
     @State private var isConfirmingDelete = false
     @State private var error: UserFacingError?
@@ -218,7 +222,7 @@ private struct ProviderContent: View {
     private func scheduleNotesSave() {
         saveTask?.cancel()
         saveTask = Task {
-            try? await Task.sleep(for: .milliseconds(700))
+            try? await Task.sleep(for: Self.notesDebounce)
             guard !Task.isCancelled else { return }
             flushNotes()
         }
