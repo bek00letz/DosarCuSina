@@ -23,10 +23,10 @@ public struct ObligationSnapshot: Hashable, Sendable, Identifiable {
     /// The category asks for Face ID, so lock-screen text stays generic.
     public var isSensitive: Bool
     public var isExample: Bool
-    /// When the obligation last changed. Its current due day can't have been set
-    /// later, so reminders that would have fired before it never had a chance:
-    /// `ReminderPlanner` makes up for them with one catch-up reminder. Nil when
-    /// unknown (no catch-up).
+    /// Since when the person could know this cycle as it now is: its due day, its reminders'
+    /// leads and that it is active (`Obligation.cycleKnownSince`). Reminders that would have
+    /// fired before it never had a chance: `ReminderPlanner` makes up for them with one
+    /// catch-up reminder. Nil when unknown (no catch-up).
     public var cycleKnownSince: Date?
 
     public init(
@@ -117,7 +117,7 @@ extension ObligationSnapshot {
                 tint: asset?.tintOverride ?? template?.tint ?? .gray,
                 isSensitive: template?.isSensitive ?? false,
                 isExample: obligation.isExample,
-                cycleKnownSince: obligation.updatedAt
+                cycleKnownSince: obligation.cycleKnownSince
             )
         }
     }
