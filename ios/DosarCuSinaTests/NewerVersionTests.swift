@@ -76,7 +76,7 @@ struct NewerVersionTests {
         // Written back exactly as they came, but for what never leaves a phone.
         let output = try DossierArchiveReader.read(try service.exportData())
         func obligation(_ package: DossierV3.Package, _ title: String) throws -> RecurrenceRule {
-            try #require(package.obligations.first { $0.title == title }).recurrence
+            try #require(package.obligations.first { $0.title == title }).recurrence.value
         }
         for title in ["ITP", "RCA"] {
             #expect(try obligation(output, title) == obligation(input, title), "\(title)'s rule is written back as it came")
@@ -124,7 +124,7 @@ struct NewerVersionTests {
         let outBoat = try #require(output.assets.first { $0.name == "Barca de pe lac" })
         #expect(outBoat.customFacts?.items.map(\.label) == ["Loc în port", "Vâsle"])
         #expect(outBoat.customFacts?.unreadable.count == 2)
-        #expect(outBoat.values.keys.contains("boat.registration"))
+        #expect(outBoat.values.value.keys.contains("boat.registration"))
         let outTemplate = try #require(output.templates.first { !$0.isBuiltIn })
         #expect(outTemplate.sections.unreadable.count == 1)
         let field = try #require(outTemplate.sections.items[0].fields.last)
@@ -132,7 +132,7 @@ struct NewerVersionTests {
         #expect(Self.json(field)["type"] == "colour", "Renaming a field keeps the type it was written with")
         #expect(Self.json(field)["derivation"]?["type"] == "paintCode")
         #expect(outTemplate.blueprints.unreadable.count == 1)
-        guard case .unreadable(let rule)? = output.obligations.first(where: { $0.title == "ITP" })?.recurrence else {
+        guard case .unreadable(let rule)? = output.obligations.first(where: { $0.title == "ITP" })?.recurrence.value else {
             Issue.record("The rule a newer build wrote is kept through a snooze")
             return
         }

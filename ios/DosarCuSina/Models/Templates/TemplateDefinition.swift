@@ -27,7 +27,9 @@ public enum TemplateTint: String, Codable, CaseIterable, Sendable {
 
 /// What a category does in the binder, as data, so a custom category can behave like
 /// Acte or Garanții and no screen asks which built-in it is. Raw values are part of the
-/// `.dosar` contract; a value from a newer version reads as the default.
+/// `.dosar` contract; a value from a newer version reads as the default, the one that hides
+/// nothing (a box per section, a plain list, no part), and stays stored as it was written
+/// until the person changes it (`CategoryTemplate.behavior`, through `KeptObject`).
 public struct CategoryBehavior: Hashable, Sendable, Codable {
     /// How the category shows on the Dosar grid.
     public enum Box: String, Codable, Sendable {

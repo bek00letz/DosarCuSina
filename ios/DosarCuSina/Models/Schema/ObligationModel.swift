@@ -130,9 +130,17 @@ extension DosarSchemaV9 {
             set { statusRaw = newValue.rawValue }
         }
 
+        /// How it repeats. Writing it keeps what a newer build wrote inside the rule that this one
+        /// doesn't read, while the rule stays the same kind (`KeptObject`).
         public var recurrence: RecurrenceRule {
-            get { StoredJSON.decode(RecurrenceRule.self, from: recurrenceData) ?? .none }
-            set { recurrenceData = StoredJSON.encode(newValue) }
+            get { KeptObject<RecurrenceRule>.value(in: recurrenceData) ?? .none }
+            set { keptRecurrence = keptRecurrence.replacingValue(newValue) }
+        }
+
+        /// The rule as stored, with what this build doesn't read: what a backup carries.
+        public var keptRecurrence: KeptObject<RecurrenceRule> {
+            get { KeptObject.stored(in: recurrenceData, fallback: .none) ?? KeptObject(.none) }
+            set { recurrenceData = KeptObject.data(newValue) }
         }
 
         public var estimatedCost: Money? {

@@ -45,12 +45,13 @@ struct FreeTextProperty<Model: PersistentModel> {
     /// A section's values, stored as JSON `FieldValues`, by the rule for fields
     /// (`PaymentCardNumbers.sanitizing`): a bank card's last digits cut to four, sealed codes left
     /// alone, a value its own field type tells apart from a card (an IBAN, a microchip) kept whole.
+    /// What a newer build wrote inside a value is masked too, and kept (`KeptObject`).
     static func values(_ name: String, _ keyPath: ReferenceWritableKeyPath<Model, Data?>, fields: @escaping (Model) -> [FieldDefinition]) -> Self {
         Self(name: name) { record, write in
-            guard let values = StoredJSON.decode(FieldValues.self, from: record[keyPath: keyPath]) else { return false }
+            guard let values = KeptObject.stored(in: record[keyPath: keyPath], fallback: FieldValues()) else { return false }
             let masked = PaymentCardNumbers.sanitizing(values, fields: { fields(record) })
             guard masked != values else { return false }
-            if write { record[keyPath: keyPath] = StoredJSON.encode(masked) }
+            if write { record[keyPath: keyPath] = KeptObject.data(masked) }
             return true
         }
     }
@@ -146,9 +147,11 @@ extension DosarSchemaV9.Asset: HoldsFreeText {
 
 extension DosarSchemaV9.Obligation: HoldsFreeText {
     static var freeText: [FreeTextProperty<DosarSchemaV9.Obligation>] {
-        [.text("title", \.title), .text("notes", \.notes), .text("provider", \.provider), .text("reference", \.reference)]
+        // A recurrence is the app's own words, but what a newer build wrote inside it may not be.
+        [.text("title", \.title), .text("notes", \.notes), .text("provider", \.provider), .text("reference", \.reference),
+         .json("recurrenceData", \.recurrenceData)]
     }
-    static var machineText: Set<String> { ["blueprintKey", "kindRaw", "dueDayISO", "consequenceRaw", "recurrenceData", "estimatedCostCurrency", "statusRaw", "snoozedUntilISO"] }
+    static var machineText: Set<String> { ["blueprintKey", "kindRaw", "dueDayISO", "consequenceRaw", "estimatedCostCurrency", "statusRaw", "snoozedUntilISO"] }
 }
 
 extension DosarSchemaV9.HistoryEntry: HoldsFreeText {
@@ -178,10 +181,11 @@ extension DosarSchemaV9.MeasurementLog: HoldsFreeText {
 
 extension DosarSchemaV9.Attachment: HoldsFreeText {
     static var freeText: [FreeTextProperty<DosarSchemaV9.Attachment>] {
-        [.text("title", \.title), .text("fileName", \.fileName), .text("extractedText", \.extractedText)]
+        // A framing is numbers, but what a newer build wrote inside it may not be.
+        [.text("title", \.title), .text("fileName", \.fileName), .text("extractedText", \.extractedText), .json("framingData", \.framingData)]
     }
     static var machineText: Set<String> {
-        ["kindRaw", "contentType", "fileData", "thumbnailData", "sha256", "documentDayISO", "validUntilISO", "documentID", "framingData"]
+        ["kindRaw", "contentType", "fileData", "thumbnailData", "sha256", "documentDayISO", "validUntilISO", "documentID"]
     }
 }
 
