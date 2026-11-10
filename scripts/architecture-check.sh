@@ -77,12 +77,13 @@ rule save-outside-unit-of-work "$app" '^ios/DosarCuSina/Services/Persistence/Uni
 # When a record last changed is written by the unit of work as it saves (ChangeTimes), with the
 # step's clock and whose change it is, and by a backup's importer, which writes the archive's
 # times. A model's initializer gives the moment it is made, and a value type's own initializer
-# copies the value it is given; the unit replaces the first when it saves.
+# copies the value it is given; the unit replaces the first when it saves. Since when a
+# deadline's cycle is known is kept the same way, by the unit (CycleTimes) and the importer.
 rule change-time-outside-change-times "$app" \
-    '^ios/DosarCuSina/Services/Persistence/ChangeTimes\.swift$|^ios/DosarCuSina/Services/Archive/DossierImporter\.swift$' \
-    '(^|[^A-Za-z0-9_])updatedAt *=([^=]|$)' \
+    '^ios/DosarCuSina/Services/Persistence/(ChangeTimes|CycleTimes)\.swift$|^ios/DosarCuSina/Services/Archive/DossierImporter\.swift$' \
+    '(^|[^A-Za-z0-9_])(updatedAt|cycleKnownAt) *=([^=]|$)' \
     '^[[:space:]]*self\.updatedAt = (Date\(\)|updatedAt)[[:space:]]*$' \
-    "Change times are written only by the unit of work (ChangeTimes). Pass the step's clock to it (UnitOfWork.perform(in:now:), save(_:now:)), and open an app-made step with origin: .app."
+    "Change times, and since when a deadline's cycle is known, are written only by the unit of work (ChangeTimes, CycleTimes). Pass the step's clock to it (UnitOfWork.perform(in:now:), save(_:now:)), and open an app-made step with origin: .app."
 
 # A stored JSON object is written through its model's accessor, which lays the new value over
 # what was stored and so keeps what a newer build wrote (KeptObject, KeptList). The models write

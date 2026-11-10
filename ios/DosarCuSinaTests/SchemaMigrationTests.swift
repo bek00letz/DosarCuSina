@@ -174,6 +174,80 @@ struct SchemaMigrationTests {
         }
     }
 
+    /// Version 9 as it shipped: version 8 with its days kept as days. Its frozen copy is pinned
+    /// against version 8 for what keeps no day, and against version 10 for everything but the
+    /// deadline, which version 10 changes.
+    @Test func theFrozenVersionNineKeepsTheShapeItShippedWith() {
+        let nine = Self.fingerprint(DosarSchemaV9.models)
+        let ten = Self.fingerprint(DosarSchemaV10.models)
+        for entity in ["Asset", "CategoryTemplate", "ServiceItem", "MeasurementLog", "AttachmentPage", "Provider"] {
+            #expect(nine[entity] == Self.versionEight[entity], "\(entity) is as version 8 shipped it, which version 9 doesn't change")
+        }
+        for entity in ["HistoryEntry", "Attachment"] {
+            #expect(nine[entity] == ten[entity], "\(entity) is as version 9 shipped it, which version 10 doesn't change")
+        }
+        #expect(nine.count == ten.count)
+    }
+
+    @Test func versionTenChangesOnlyDeadlines() {
+        let nine = Self.fingerprint(DosarSchemaV9.models)
+        let ten = Self.fingerprint(DosarSchemaV10.models)
+        for (entity, hash) in nine where entity != "Obligation" {
+            #expect(ten[entity] == hash, "\(entity) is as version 9 shipped it")
+        }
+        #expect(ten["Obligation"] != nine["Obligation"], "A deadline keeps since when its cycle is known")
+    }
+
+    @Test func aStoreFromVersionNineOpensWithItsDeadlinesKnownSinceTheirChangeTime() throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Dosar-v9.store")
+        let edited = noon("2026-10-01")
+
+        // Written by version 9: a car's RCA, due and snoozed, with its completion.
+        do {
+            let schema = Schema(versionedSchema: DosarSchemaV9.self)
+            let container = try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)])
+            let context = ModelContext(container)
+            let car = DosarSchemaV9.Asset(name: "VW Golf 2018", templateKey: "vehicle")
+            let rca = DosarSchemaV9.Obligation(title: "RCA")
+            rca.dueDayISO = "2027-07-15"
+            rca.snoozedUntilISO = "2027-07-01"
+            rca.reminderLeadDays = [30, 7]
+            rca.updatedAt = edited
+            let paid = DosarSchemaV9.HistoryEntry(title: "RCA")
+            paid.cycleDueDayISO = "2026-07-15"
+            paid.nextDueDayISO = "2027-07-15"
+            for model in [car, rca, paid] as [any PersistentModel] { context.insert(model) }
+            rca.asset = car
+            paid.asset = car
+            paid.obligation = rca
+            try context.save()
+        }
+
+        // Opened by this version: everything as it was; no moment is known yet, so the deadline
+        // reads as known since its change time, as reminders counted before.
+        let container = try PersistenceController.makeContainer(storeURL: url)
+        let context = ModelContext(container)
+        let rca = try #require(try context.fetch(FetchDescriptor<Obligation>()).first)
+        #expect(rca.dueDay == CalendarDay("2027-07-15"))
+        #expect(rca.snoozedUntil == CalendarDay("2027-07-01"))
+        #expect(rca.reminderLeadDays == [30, 7])
+        #expect(rca.updatedAt == edited, "An upgrade isn't a change")
+        #expect(rca.cycleKnownAt == nil)
+        #expect(rca.cycleKnownSince == edited)
+        #expect(rca.historyEntries?.first?.cycleDueDay == CalendarDay("2026-07-15"))
+        #expect(try ObligationSnapshot.fetchAll(in: context).first?.cycleKnownSince == edited)
+
+        // A new due day from now on gives it its own, kept.
+        let moved = noon("2026-11-05")
+        rca.dueDay = CalendarDay("2027-08-01")
+        try UnitOfWork.save(context, now: moved)
+        let reopened = ModelContext(try PersistenceController.makeContainer(storeURL: url))
+        #expect(try reopened.fetch(FetchDescriptor<Obligation>()).first?.cycleKnownAt == moved)
+    }
+
     /// The days a version 8 store keeps, written as version 8 wrote them in `calendar`'s time
     /// zone: noon of the day, a snooze's end at the start of its day.
     private struct EightDays {

@@ -280,7 +280,10 @@ public enum DossierV3 {
     /// - `Attachment.compactedAt`: when this phone made its pages smaller.
     /// - `Provider.contactIdentifier`: the card in this phone's Contacts.
     /// - `AttachmentPage.id`: a page is known by its document and its place in it.
+    /// - `Obligation.cycleKnownAt`: since when this phone's reminders count the deadline's cycle;
+    ///   a copy a backup brings reads as known since its change time (`cycleKnownSince`).
     static let stayOnThePhone: [String: Set<String>] = [
+        "Obligation": ["cycleKnownAt"],
         "Attachment": ["documentID", "compactedAt"],
         "Provider": ["contactIdentifier"],
         "AttachmentPage": ["id"],

@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV9 {
+extension DosarSchemaV10 {
     /// Something that has to be done by a date, once or on a schedule: ITP, RCA,
     /// local taxes, a vaccine, a subscription renewal.
     ///
@@ -54,6 +54,13 @@ extension DosarSchemaV9 {
         public var isExample: Bool = false
         public var createdAt: Date = Date()
         public var updatedAt: Date = Date()
+        /// Since when its cycle is known as it now is: the last time its due day, its reminders'
+        /// leads (or its travel margin) or whether it is active changed, by the person or by
+        /// the app, set by the unit of work as it saves (`CycleTimes`). Not its change time,
+        /// which only the person's own steps move and which a note's edit moves too. Nil for a
+        /// deadline from before version 10 or brought in from a backup: it reads as its change
+        /// time (`cycleKnownSince`). Version 10.
+        public var cycleKnownAt: Date?
 
         public var asset: Asset?
 
@@ -160,6 +167,11 @@ extension DosarSchemaV9 {
             get { StoredDay.day(dueDayISO) ?? CalendarDay(createdAt) }
             set { dueDayISO = StoredDay.text(newValue) }
         }
+
+        /// Since when the person could know this cycle as it now is, which a reminder that makes
+        /// up for warnings already passed counts from (`ReminderPlanner`): `cycleKnownAt`, else,
+        /// when none is kept, its change time.
+        public var cycleKnownSince: Date { cycleKnownAt ?? updatedAt }
 
         /// The day it comes back after "Amână", or nil when it isn't snoozed.
         public var snoozedUntil: CalendarDay? {

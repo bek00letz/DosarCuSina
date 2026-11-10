@@ -13,16 +13,17 @@ struct DaysStoredAsDaysTests {
     nonisolated static let zones: [TimeZone] = (-12...14).compactMap { TimeZone(secondsFromGMT: $0 * 3600) }
 
     /// The only moments the database keeps: when something happened, was made, last changed or
-    /// was made smaller. A new property that means a day is a `StoredDay` text, never a `Date`.
+    /// was made smaller, and since when a deadline's cycle is known. A new property that means a
+    /// day is a `StoredDay` text, never a `Date`.
     @Test func everyStoredMomentIsAMoment() {
         let moments: Set<String> = [
             "CategoryTemplate.createdAt", "CategoryTemplate.updatedAt", "Asset.createdAt", "Asset.updatedAt",
-            "Obligation.createdAt", "Obligation.updatedAt", "HistoryEntry.occurredAt", "HistoryEntry.updatedAt",
+            "Obligation.createdAt", "Obligation.updatedAt", "Obligation.cycleKnownAt", "HistoryEntry.occurredAt", "HistoryEntry.updatedAt",
             "ServiceItem.updatedAt", "MeasurementLog.recordedAt", "MeasurementLog.updatedAt",
             "Attachment.compactedAt", "Attachment.createdAt", "Attachment.updatedAt",
             "Provider.createdAt", "Provider.updatedAt",
         ]
-        let stored = Set(Schema(versionedSchema: DosarSchemaV9.self).entities.flatMap { entity in
+        let stored = Set(Schema(versionedSchema: DosarSchemaV10.self).entities.flatMap { entity in
             entity.attributes.filter { $0.valueType == Date.self || $0.valueType == Date?.self }.map { "\(entity.name).\($0.name)" }
         })
         #expect(stored == moments)
