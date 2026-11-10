@@ -21,9 +21,7 @@ public struct CalendarDay: Hashable, Comparable, Sendable, Codable, CustomString
     /// works out itself uses ``init(year:month:day:)``.
     public init?(validYear year: Int, month: Int, day: Int) {
         guard (1...12).contains(month), day >= 1,
-              let date = Self.isoCalendar.date(from: DateComponents(year: year, month: month, day: day)),
-              Self.isoCalendar.component(.day, from: date) == day,
-              Self.isoCalendar.component(.month, from: date) == month else { return nil }
+              day <= CalendarDay(year: year, month: month, day: 1).daysInMonth(calendar: Self.isoCalendar) else { return nil }
         self.init(year: year, month: month, day: day)
     }
 
@@ -73,12 +71,32 @@ public struct CalendarDay: Hashable, Comparable, Sendable, Codable, CustomString
         return CalendarDay(shifted, calendar: calendar)
     }
 
-    /// The same day `months` calendar months away, or that month's last day when it is
-    /// shorter (31 March less one month is 28 or 29 February).
-    public func adding(months: Int, calendar: Calendar = .dosar) -> CalendarDay {
-        let shifted = calendar.date(byAdding: .month, value: months, to: startDate(in: calendar)) ?? startDate(in: calendar)
-        return CalendarDay(shifted, calendar: calendar)
+    /// The same day `months` calendar months away (a year is twelve), or that month's last
+    /// day when it is shorter: 31 January and one month is 28 or 29 February, 29 February
+    /// and a year is 28 February, 31 March less one month is 28 or 29 February.
+    ///
+    /// The one month arithmetic of the app, its widgets and the share extension: every
+    /// deadline that repeats, every reminder lead in months, every length a document prints.
+    /// How long a month is comes only from the calendar (``daysInMonth(calendar:)``), never
+    /// from a table of its own.
+    ///
+    /// - Parameter dayOfMonth: the day a series keeps (31 for "the 31st") instead of this
+    ///   day's own, so a series already moved to 28 February comes back to 31 March. With
+    ///   no months to add, it moves the day within its own month.
+    public func adding(months: Int, dayOfMonth: Int? = nil, calendar: Calendar = .dosar) -> CalendarDay {
+        let first = firstOfMonth.startDate(in: calendar)
+        let target = CalendarDay(calendar.date(byAdding: .month, value: months, to: first) ?? first, calendar: calendar).firstOfMonth
+        let wanted = dayOfMonth ?? day
+        return CalendarDay(year: target.year, month: target.month, day: min(max(wanted, 1), target.daysInMonth(calendar: calendar)))
     }
+
+    /// How many days this day's month has in `calendar`: 28 or 29 for February (29 in a
+    /// leap year), 30 or 31 for the others. The one place a month's length is known.
+    public func daysInMonth(calendar: Calendar = .dosar) -> Int {
+        calendar.range(of: .day, in: .month, for: firstOfMonth.startDate(in: calendar))?.count ?? 28
+    }
+
+    private var firstOfMonth: CalendarDay { CalendarDay(year: year, month: month, day: 1) }
 
     /// Whole days from `self` to `other` (negative when `other` is earlier).
     public func days(to other: CalendarDay, calendar: Calendar = .dosar) -> Int {
@@ -126,9 +144,7 @@ public struct MonthDay: Hashable, Comparable, Sendable, Codable {
 
     /// This month-day in `year`, clamped to the month's last day (29 February becomes 28 in common years).
     public func day(inYear year: Int, calendar: Calendar = .dosar) -> CalendarDay {
-        let probe = CalendarDay(year: year, month: month, day: 1).startDate(in: calendar)
-        let length = calendar.range(of: .day, in: .month, for: probe)?.count ?? 28
-        return CalendarDay(year: year, month: month, day: min(day, length))
+        CalendarDay(year: year, month: month, day: 1).adding(months: 0, dayOfMonth: day, calendar: calendar)
     }
 
     public static func < (lhs: MonthDay, rhs: MonthDay) -> Bool {

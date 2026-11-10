@@ -32,8 +32,8 @@ public struct NextDue: Hashable, Sendable {
 }
 
 /// Pure date math for obligations: first due dates from blueprints and the
-/// next due date after a completion. All calendar arithmetic goes through
-/// `CadenceCalculator`, which handles month ends and 29 February.
+/// next due date after a completion. All calendar arithmetic is `CalendarDay`'s, in the
+/// app's calendar: month ends and 29 February are handled once, there.
 ///
 /// A series counted from its due dates remembers its day of the month: every
 /// date is that day, or the month's last day when the month is shorter, so a
@@ -121,16 +121,14 @@ public enum RecurrenceEngine {
     /// `day` moved on by `interval`. Months and years land on `dayOfMonth` (the
     /// series' day), or the month's last day when it is shorter; without it, on
     /// `day`'s own day.
+    /// An interval of no days or weeks leaves the day where it is.
     public static func add(_ interval: RecurrenceInterval, to day: CalendarDay, dayOfMonth: Int? = nil, calendar: Calendar = .dosar) -> CalendarDay {
-        let start = day.noonDate(in: calendar)
-        let next: Date
         switch interval.unit {
-        case .day: next = CadenceCalculator.calculateNextDueDate(from: start, interval: .days(interval.every), calendar: calendar)
-        case .week: next = CadenceCalculator.calculateNextDueDate(from: start, interval: .weeks(interval.every), calendar: calendar)
-        case .month: next = CadenceCalculator.addMonths(to: start, months: interval.every, dayOfMonth: dayOfMonth, calendar: calendar)
-        case .year: next = CadenceCalculator.addMonths(to: start, months: interval.every * 12, dayOfMonth: dayOfMonth, calendar: calendar)
+        case .day: interval.every > 0 ? day.adding(days: interval.every, calendar: calendar) : day
+        case .week: interval.every > 0 ? day.adding(days: interval.every * 7, calendar: calendar) : day
+        case .month: day.adding(months: interval.every, dayOfMonth: dayOfMonth, calendar: calendar)
+        case .year: day.adding(months: interval.every * 12, dayOfMonth: dayOfMonth, calendar: calendar)
         }
-        return CalendarDay(next, calendar: calendar)
     }
 
     /// One completion as the series sees it: the cycle it closed and the due day it moved to.
