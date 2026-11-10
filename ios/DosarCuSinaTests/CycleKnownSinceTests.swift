@@ -108,6 +108,23 @@ struct CycleKnownSinceTests {
         #expect(renewal.dueDay == expiry)
     }
 
+    @Test("A newer cycle time doesn't stop an undo, and stays: it is kept like the change time")
+    func aNewerCycleTimeStaysThroughUndo() throws {
+        let context = try makeContext()
+        let renewal = try passport(in: context)
+        let receipt = try ObligationActions(context: context, calendar: calendar, now: { later })
+            .reschedule(renewal, to: CalendarDay("2027-09-01"))
+        let repaired = noon("2026-12-15")
+        try UnitOfWork.perform(in: context, origin: .app, now: repaired) {
+            renewal.reminders = ReminderProfile(leadDays: [90, 0], consequence: .legal, travelMarginDays: 180)
+        }
+        #expect(renewal.cycleKnownAt == repaired)
+        try receipt.undo()
+        #expect(renewal.dueDay == expiry, "The person's step is taken back")
+        #expect(renewal.travelMarginDays == 180, "The repair since stays")
+        #expect(renewal.cycleKnownAt == repaired, "Known with these reminders since the repair")
+    }
+
     @Test("Reminders the person sets, and a deadline started again, give a fresh anchor")
     func theirRemindersAndResumingAreAFreshAnchor() throws {
         let context = try makeContext()

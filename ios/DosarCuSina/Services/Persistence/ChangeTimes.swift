@@ -98,12 +98,18 @@ enum ChangeTimes {
         }
     }
 
+    /// The times the unit of work keeps about a record as it saves, never part of its own state:
+    /// when it last changed, and since when a deadline's cycle is known (`CycleTimes`).
+    static let keptTimes: Set<String> = ["updatedAt", "cycleKnownAt"]
+
     /// Whether `property` is part of the record's own state: a value or a link it keeps itself
     /// (`StoredProperty.isOwn`, never a list of the records that point at it), that counts as a
-    /// change of it (`ChangeTimed.changeCounts`), and not its change time. The one definition:
-    /// change times are given by it, and undo checks and takes back by it (`UndoableRecord.isStillAsLeft`).
+    /// change of it (`ChangeTimed.changeCounts`), and not a time the unit keeps (`keptTimes`).
+    /// The one definition: change times are given by it, and undo checks and takes back by it
+    /// (`UndoableRecord.isStillAsLeft`), so a kept time goes back as it was while still as the
+    /// step left it, and a newer one stays.
     static func isOwnState<M: UndoableRecord>(_ property: StoredProperty<M>, of record: M) -> Bool {
-        property.isOwn && property.name != "updatedAt" && ((record as? any ChangeTimed)?.changeCounts(property.name) ?? true)
+        property.isOwn && !keptTimes.contains(property.name) && ((record as? any ChangeTimed)?.changeCounts(property.name) ?? true)
     }
 
     /// The values and links a record keeps itself that count as a change of it, without its
