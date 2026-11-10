@@ -43,6 +43,17 @@ public enum SecretFields {
         return result
     }
 
+    /// The same for values as stored: what a newer build wrote inside a value this build reads
+    /// is left out too when anything in it is sealed (`KeptObject.mappingKept`).
+    public static func stripping(_ values: KeptObject<FieldValues>, definition: TemplateDefinition?) -> KeptObject<FieldValues> {
+        values.replacingValue(stripping(values.value, definition: definition)).mappingKept(withoutSecrets)
+    }
+
+    /// A part this build doesn't read, or nil when it says it is secret or anything in it is sealed.
+    private static func withoutSecrets(_ raw: JSONValue) -> JSONValue? {
+        raw["isSecret"]?.bool == true || raw.containsString(where: SecretSealer.isSealed) ? nil : raw
+    }
+
     /// Only the sealed values, by their own form.
     public static func sealedValues(in values: FieldValues) -> FieldValues {
         var result = FieldValues()
@@ -55,12 +66,10 @@ public enum SecretFields {
         facts.filter { !$0.isSecret }
     }
 
-    /// The same for rows as stored: a row this build can't read is left out too when it says
-    /// it is secret or anything in it is sealed.
+    /// The same for rows as stored: a row this build can't read, and what a newer build wrote
+    /// inside a row it reads, is left out too when it says it is secret or anything in it is sealed.
     public static func strippingFacts(_ facts: KeptList<CustomFact>) -> KeptList<CustomFact> {
-        facts.replacingItems(strippingFacts(facts.items)).keepingUnreadable { raw in
-            raw["isSecret"]?.bool != true && !raw.containsString(where: SecretSealer.isSealed)
-        }
+        facts.replacingItems(strippingFacts(facts.items)).mappingKept(withoutSecrets)
     }
 
     /// The values with every secret typed in plain sealed. Values already sealed
@@ -101,6 +110,12 @@ public enum SecretFields {
             result[key] = value
         }
         return result
+    }
+
+    /// The same for values as an archive carries them, with what this build doesn't read (none secret).
+    public static func keepingLocalSecrets(_ incoming: KeptObject<FieldValues>, from existing: FieldValues, definition: TemplateDefinition?) -> KeptObject<FieldValues> {
+        let stripped = stripping(incoming, definition: definition)
+        return stripped.replacingValue(keepingLocalSecrets(stripped.value, from: existing, definition: definition))
     }
 
     /// Incoming rows (from an archive, which never carries secret rows) with the

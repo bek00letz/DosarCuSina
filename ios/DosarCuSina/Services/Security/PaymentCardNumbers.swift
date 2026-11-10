@@ -116,8 +116,15 @@ public enum PaymentCardNumbers {
         return result
     }
 
-    /// Rows under Date importante with every card number masked, in their labels and values and
-    /// in the rows this build can't read. A secret row's sealed code is the secret's own business.
+    /// The same for values as stored, and in what a newer build wrote inside a value this
+    /// build reads (`KeptObject.mappingKept`).
+    public static func sanitizing(_ values: KeptObject<FieldValues>, fields: () -> [FieldDefinition]) -> KeptObject<FieldValues> {
+        values.replacingValue(sanitizing(values.value, fields: fields)).mappingKept { redacting($0) }
+    }
+
+    /// Rows under Date importante with every card number masked, in their labels and values, in
+    /// the rows this build can't read and in what a newer build wrote inside the rows it reads.
+    /// A secret row's sealed code is the secret's own business.
     public static func sanitizing(_ facts: KeptList<CustomFact>) -> KeptList<CustomFact> {
         let masked = facts.items.map { fact in
             var fact = fact
@@ -125,7 +132,7 @@ public enum PaymentCardNumbers {
             if !SecretSealer.isSealed(fact.value) { fact.value = redact(fact.value) }
             return fact
         }
-        return facts.replacingItems(masked).mappingUnreadable { redacting($0) }
+        return facts.replacingItems(masked).mappingKept { redacting($0) }
     }
 
     /// Raw JSON a newer build wrote, with any card number in its text masked; sealed codes stay.

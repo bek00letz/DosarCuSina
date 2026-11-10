@@ -68,7 +68,9 @@ public enum DossierV3 {
         public var createdAt: Date
         public var updatedAt: Date
         /// What the category does (its box, its list, its part); missing means the standard behaviour.
-        public var behavior: CategoryBehavior?
+        /// Like a section's values, a deadline's recurrence and a document's framing, what a newer
+        /// build wrote inside it that this one doesn't read comes in and goes out as written (`KeptObject`).
+        public var behavior: KeptObject<CategoryBehavior>?
     }
 
     public struct Asset: Codable, Hashable, Sendable {
@@ -80,7 +82,7 @@ public enum DossierV3 {
         public var symbolOverride: String?
         public var tintOverride: String?
         public var notes: String?
-        public var values: FieldValues
+        public var values: KeptObject<FieldValues>
         /// Free label–value rows under Date importante; rows this build can't read are kept raw.
         public var customFacts: KeptList<CustomFact>?
         /// `vault/photos/<id>.jpg` when the asset has a photo.
@@ -101,7 +103,7 @@ public enum DossierV3 {
         public var dueMetric: Double?
         public var reminders: ReminderProfile
         public var reminderMinuteOfDay: Int?
-        public var recurrence: RecurrenceRule
+        public var recurrence: KeptObject<RecurrenceRule>
         public var estimatedCost: Money?
         public var provider: String?
         public var reference: String?
@@ -229,7 +231,7 @@ public enum DossierV3 {
         public var validUntil: CalendarDay?
         /// How the pages are shown: the document found in each photo and which way up it
         /// goes. Absent when every page is shown as it is.
-        public var framing: DocumentFraming? = nil
+        public var framing: KeptObject<DocumentFraming>? = nil
         /// When it last changed; missing in archives from before version 8 of the database, which reads as `ChangeTime.unknown`.
         public var updatedAt: Date? = nil
 
