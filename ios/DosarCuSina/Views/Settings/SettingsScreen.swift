@@ -152,9 +152,9 @@ private struct NotificationSettings: View {
     private var reminderTime: Binding<Date> {
         Binding {
             let minutes = preferences.reminderMinuteOfDay
-            return Calendar.current.date(bySettingHour: minutes / 60, minute: minutes % 60, second: 0, of: Date()) ?? Date()
+            return Calendar.dosar.date(bySettingHour: minutes / 60, minute: minutes % 60, second: 0, of: Date()) ?? Date()
         } set: { date in
-            let parts = Calendar.current.dateComponents([.hour, .minute], from: date)
+            let parts = Calendar.dosar.dateComponents([.hour, .minute], from: date)
             preferences.reminderMinuteOfDay = (parts.hour ?? 9) * 60 + (parts.minute ?? 0)
         }
     }

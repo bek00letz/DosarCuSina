@@ -3,7 +3,8 @@ import Foundation
 /// A calendar day with no time or time zone, such as an expiry date or a due date.
 ///
 /// Encodes as `"yyyy-MM-dd"` so the same day means the same thing on every
-/// device and platform, whatever the time zone.
+/// device and platform, whatever the time zone. Its numbers are Gregorian, and so is its
+/// arithmetic: it counts in the app's calendar (`Calendar.dosar`) unless told another one.
 public struct CalendarDay: Hashable, Comparable, Sendable, Codable, CustomStringConvertible {
     public var year: Int
     public var month: Int
@@ -28,14 +29,10 @@ public struct CalendarDay: Hashable, Comparable, Sendable, Codable, CustomString
 
     /// The calendar a day's numbers are in: Gregorian, in UTC. For arithmetic on days
     /// alone, whatever the phone's calendar or time zone.
-    public static let isoCalendar: Calendar = {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "UTC") ?? .gmt
-        return calendar
-    }()
+    public static let isoCalendar = Calendar.dosar(in: TimeZone(identifier: "UTC") ?? .gmt)
 
     /// The day that contains `date` in `calendar`'s time zone.
-    public init(_ date: Date, calendar: Calendar = .current) {
+    public init(_ date: Date, calendar: Calendar = .dosar) {
         let parts = calendar.dateComponents([.year, .month, .day], from: date)
         self.init(year: parts.year ?? 1970, month: parts.month ?? 1, day: parts.day ?? 1)
     }
@@ -57,7 +54,7 @@ public struct CalendarDay: Hashable, Comparable, Sendable, Codable, CustomString
     public var description: String { isoString }
 
     /// Midnight at the start of this day in `calendar`'s time zone.
-    public func startDate(in calendar: Calendar = .current) -> Date {
+    public func startDate(in calendar: Calendar = .dosar) -> Date {
         var parts = DateComponents()
         parts.year = year
         parts.month = month
@@ -67,24 +64,24 @@ public struct CalendarDay: Hashable, Comparable, Sendable, Codable, CustomString
 
     /// Noon on this day in `calendar`'s time zone. Stored dates use noon so the
     /// day survives travel across time zones up to ±11 hours.
-    public func noonDate(in calendar: Calendar = .current) -> Date {
+    public func noonDate(in calendar: Calendar = .dosar) -> Date {
         calendar.date(byAdding: .hour, value: 12, to: startDate(in: calendar)) ?? startDate(in: calendar)
     }
 
-    public func adding(days: Int, calendar: Calendar = .current) -> CalendarDay {
+    public func adding(days: Int, calendar: Calendar = .dosar) -> CalendarDay {
         let shifted = calendar.date(byAdding: .day, value: days, to: startDate(in: calendar)) ?? startDate(in: calendar)
         return CalendarDay(shifted, calendar: calendar)
     }
 
     /// The same day `months` calendar months away, or that month's last day when it is
     /// shorter (31 March less one month is 28 or 29 February).
-    public func adding(months: Int, calendar: Calendar = .current) -> CalendarDay {
+    public func adding(months: Int, calendar: Calendar = .dosar) -> CalendarDay {
         let shifted = calendar.date(byAdding: .month, value: months, to: startDate(in: calendar)) ?? startDate(in: calendar)
         return CalendarDay(shifted, calendar: calendar)
     }
 
     /// Whole days from `self` to `other` (negative when `other` is earlier).
-    public func days(to other: CalendarDay, calendar: Calendar = .current) -> Int {
+    public func days(to other: CalendarDay, calendar: Calendar = .dosar) -> Int {
         calendar.dateComponents([.day], from: startDate(in: calendar), to: other.startDate(in: calendar)).day ?? 0
     }
 
@@ -128,7 +125,7 @@ public struct MonthDay: Hashable, Comparable, Sendable, Codable {
     public var isoString: String { MachineText.isoMonthDay(month: month, day: day) }
 
     /// This month-day in `year`, clamped to the month's last day (29 February becomes 28 in common years).
-    public func day(inYear year: Int, calendar: Calendar = .current) -> CalendarDay {
+    public func day(inYear year: Int, calendar: Calendar = .dosar) -> CalendarDay {
         let probe = CalendarDay(year: year, month: month, day: 1).startDate(in: calendar)
         let length = calendar.range(of: .day, in: .month, for: probe)?.count ?? 28
         return CalendarDay(year: year, month: month, day: min(day, length))

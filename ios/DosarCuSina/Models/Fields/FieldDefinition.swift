@@ -276,7 +276,7 @@ public enum FieldDerivation: Hashable, Sendable, Codable {
         }
     }
 
-    public func value(from values: FieldValues, calendar: Calendar = .current) -> FieldValue? {
+    public func value(from values: FieldValues, calendar: Calendar = .dosar) -> FieldValue? {
         switch self {
         case .addMonths(let dateField, let monthsField):
             guard let day = values[dateField]?.dateValue, let months = values[monthsField]?.numberValue, months > 0 else { return nil }

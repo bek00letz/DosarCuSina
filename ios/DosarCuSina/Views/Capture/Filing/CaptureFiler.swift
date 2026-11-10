@@ -22,7 +22,7 @@ import SwiftData
 struct CaptureFiler {
     let context: ModelContext
     var store: CaptureDocumentStore = .shared()
-    var calendar: Calendar = .current
+    var calendar: Calendar = .dosar
     var now: () -> Date = { Date() }
     /// Opens locked sections before the filing writes into one.
     var vault: BiometricVaultManager = .shared
@@ -1063,7 +1063,7 @@ struct CaptureFiler {
 /// reminder exactly when saving makes or moves one.
 enum CaptureReminderPreview {
     @MainActor
-    static func text(for review: CaptureReview, templates: [String: CategoryTemplate], assets: [Asset], calendar: Calendar = .current, today: CalendarDay) -> String? {
+    static func text(for review: CaptureReview, templates: [String: CategoryTemplate], assets: [Asset], calendar: Calendar = .dosar, today: CalendarDay) -> String? {
         text(for: review, plan: CaptureFilingPlan.make(for: review, templates: templates, assets: assets, today: today, calendar: calendar), today: today)
     }
 

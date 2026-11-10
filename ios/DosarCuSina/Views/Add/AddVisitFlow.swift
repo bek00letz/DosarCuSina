@@ -202,7 +202,7 @@ private struct VisitForm: View {
 
     /// The visit this invoice was filed with before, as saving will find it.
     private var filed: FiledPaper? {
-        visit.filedBefore(keptDocumentID: draft.document?.keptAttachmentID, calendar: .current)?.paper
+        visit.filedBefore(keptDocumentID: draft.document?.keptAttachmentID, calendar: .dosar)?.paper
     }
 
     /// What the visit form says about an invoice already in the binder, and what saving does with it.

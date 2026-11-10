@@ -51,7 +51,7 @@ public enum RecurrenceEngine {
         completedOn: CalendarDay,
         rule: RecurrenceRule,
         context: RecurrenceContext = RecurrenceContext(),
-        calendar: Calendar = .current
+        calendar: Calendar = .dosar
     ) -> NextDue? {
         switch rule {
         case .none, .unreadable:
@@ -100,7 +100,7 @@ public enum RecurrenceEngine {
         for blueprint: ObligationBlueprint,
         values: FieldValues,
         today: CalendarDay,
-        calendar: Calendar = .current
+        calendar: Calendar = .dosar
     ) -> CalendarDay? {
         switch blueprint.firstDue {
         case .ask:
@@ -121,7 +121,7 @@ public enum RecurrenceEngine {
     /// `day` moved on by `interval`. Months and years land on `dayOfMonth` (the
     /// series' day), or the month's last day when it is shorter; without it, on
     /// `day`'s own day.
-    public static func add(_ interval: RecurrenceInterval, to day: CalendarDay, dayOfMonth: Int? = nil, calendar: Calendar = .current) -> CalendarDay {
+    public static func add(_ interval: RecurrenceInterval, to day: CalendarDay, dayOfMonth: Int? = nil, calendar: Calendar = .dosar) -> CalendarDay {
         let start = day.noonDate(in: calendar)
         let next: Date
         switch interval.unit {
@@ -158,12 +158,12 @@ public enum RecurrenceEngine {
     }
 
     /// The first of `dates` strictly after `day`.
-    public static func nextFixedDate(after day: CalendarDay, dates: [MonthDay], calendar: Calendar = .current) -> CalendarDay {
+    public static func nextFixedDate(after day: CalendarDay, dates: [MonthDay], calendar: Calendar = .dosar) -> CalendarDay {
         nextFixedDate(onOrAfter: day.adding(days: 1, calendar: calendar), dates: dates, calendar: calendar)
     }
 
     /// The first of `dates` on or after `day`.
-    public static func nextFixedDate(onOrAfter day: CalendarDay, dates: [MonthDay], calendar: Calendar = .current) -> CalendarDay {
+    public static func nextFixedDate(onOrAfter day: CalendarDay, dates: [MonthDay], calendar: Calendar = .dosar) -> CalendarDay {
         let candidates = [day.year, day.year + 1].flatMap { year in
             dates.map { $0.day(inYear: year, calendar: calendar) }
         }

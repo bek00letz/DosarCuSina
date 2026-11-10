@@ -70,7 +70,7 @@ public enum AttentionModel {
     public static func digest(
         _ obligations: [ObligationSnapshot],
         now: Date = Date(),
-        calendar: Calendar = .current,
+        calendar: Calendar = .dosar,
         limits: Limits = .standard
     ) -> AttentionDigest {
         let today = CalendarDay(now, calendar: calendar)
@@ -145,7 +145,7 @@ public enum AttentionModel {
 
     /// One obligation as every surface sees it: days left, its urgency by the one rule
     /// (`UrgencyRule`, from its reminder profile) and its rank.
-    public static func entry(for obligation: ObligationSnapshot, today: CalendarDay, calendar: Calendar = .current) -> AttentionEntry {
+    public static func entry(for obligation: ObligationSnapshot, today: CalendarDay, calendar: Calendar = .dosar) -> AttentionEntry {
         let days = today.days(to: obligation.dueDay, calendar: calendar)
         let rule = obligation.reminders.urgencyRule
         return AttentionEntry(

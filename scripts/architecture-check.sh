@@ -145,6 +145,12 @@ rule romanian-locale "$app" '^ios/Shared/DosarLocale\.swift$' \
     'Locale\(identifier: *"ro' - \
     'Use Locale.dosarDefault, the one place that decides which Romanian locale the app writes in.'
 
+# One calendar counts days everywhere, Gregorian whatever the phone is set to, the way one
+# locale writes them: Calendar.dosar, or Calendar.dosar(in:) for a set time zone.
+rule app-calendar "$app" '^ios/Shared/DosarCalendar\.swift$' \
+    'Calendar\.(current|autoupdatingCurrent)([^A-Za-z0-9_]|$)|Calendar *= *\.(current|autoupdatingCurrent)([^A-Za-z0-9_]|$)|[cC]alendar: *\.(current|autoupdatingCurrent)([^A-Za-z0-9_]|$)|(startDate|noonDate|dueDay)\(in: *\.(current|autoupdatingCurrent)([^A-Za-z0-9_]|$)|(^|[^A-Za-z0-9_.])Calendar\(identifier:' - \
+    "Count days in Calendar.dosar, the app's one calendar (Gregorian, Romanian, the phone's time zone), or Calendar.dosar(in:) for a set time zone. The phone's own calendar may count years and months another way."
+
 # A minimum under 44 anywhere; a fixed height under 44 on a line that is tapped
 # (a button, a tap gesture, a tap shape). The rule reads one line at a time, so a
 # button whose label sets the height on a later line isn't seen.

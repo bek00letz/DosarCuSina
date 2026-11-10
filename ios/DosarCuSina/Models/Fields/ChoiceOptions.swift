@@ -247,7 +247,7 @@ public enum DocumentType {
 
     /// The last day a document issued on `issued` is valid by its rule: the same day,
     /// `validityMonths` later (a shorter month ends on its last day). Nil without a rule.
-    public static func validUntil(issued: CalendarDay, type: String?, variant: String?, calendar: Calendar = .current) -> CalendarDay? {
+    public static func validUntil(issued: CalendarDay, type: String?, variant: String?, calendar: Calendar = .dosar) -> CalendarDay? {
         guard let months = validityMonths(type: type, variant: variant) else { return nil }
         return RecurrenceEngine.add(.months(months), to: issued, calendar: calendar)
     }

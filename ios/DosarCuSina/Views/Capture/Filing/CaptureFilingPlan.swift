@@ -126,7 +126,7 @@ struct CaptureFilingPlan {
     /// The plan for `review` as it stands, with the household's categories and sections.
     @MainActor
     static func make(for review: CaptureReview, templates: [String: CategoryTemplate], assets: [Asset], today: CalendarDay,
-                     calendar: Calendar = .current) -> CaptureFilingPlan {
+                     calendar: Calendar = .dosar) -> CaptureFilingPlan {
         var plan = CaptureFilingPlan()
         let profile = review.kind.profile
         let section = review.existingSection(assets: assets, templates: templates)

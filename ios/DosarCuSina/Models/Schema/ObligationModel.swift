@@ -71,7 +71,7 @@ extension DosarSchemaV8 {
             recurrence: RecurrenceRule = .none,
             reminders: ReminderProfile? = nil,
             estimatedCost: Money? = nil,
-            calendar: Calendar = .current
+            calendar: Calendar = .dosar
         ) {
             self.id = id
             self.title = title
@@ -143,16 +143,16 @@ extension DosarSchemaV8 {
             }
         }
 
-        public func dueDay(in calendar: Calendar = .current) -> CalendarDay {
+        public func dueDay(in calendar: Calendar = .dosar) -> CalendarDay {
             CalendarDay(dueDate, calendar: calendar)
         }
 
-        public func setDueDay(_ day: CalendarDay, calendar: Calendar = .current) {
+        public func setDueDay(_ day: CalendarDay, calendar: Calendar = .dosar) {
             dueDate = day.noonDate(in: calendar)
         }
 
         /// Whole days from today to the due day; negative when overdue.
-        public func daysRemaining(from now: Date = Date(), calendar: Calendar = .current) -> Int {
+        public func daysRemaining(from now: Date = Date(), calendar: Calendar = .dosar) -> Int {
             CalendarDay(now, calendar: calendar).days(to: dueDay(in: calendar), calendar: calendar)
         }
 

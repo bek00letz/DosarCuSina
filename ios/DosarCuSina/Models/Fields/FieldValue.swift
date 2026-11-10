@@ -157,7 +157,7 @@ public struct FieldValues: Hashable, Sendable, Codable, Sequence {
     /// they are still empty. A derived value the person typed in themselves stays
     /// until an input changes, and one given in the same change as its inputs (a
     /// contract's printed end date, beside its start and length) is kept as given.
-    public func applyingRules(of template: TemplateDefinition, previous: FieldValues?, calendar: Calendar = .current) -> FieldValues {
+    public func applyingRules(of template: TemplateDefinition, previous: FieldValues?, calendar: Calendar = .dosar) -> FieldValues {
         var result = self
         if previous == nil {
             for field in template.allFields where result[field.key] == nil {

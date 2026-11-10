@@ -7,7 +7,7 @@ import Foundation
 enum DateUrgency {
     /// A date shown on an asset (an expiry, a warranty's or a contract's end): the
     /// rule of the asset's open deadline due that day, with the reminders the person set.
-    static func rule(for day: CalendarDay, on asset: Asset?, calendar: Calendar = .current) -> UrgencyRule {
+    static func rule(for day: CalendarDay, on asset: Asset?, calendar: Calendar = .dosar) -> UrgencyRule {
         asset?.activeObligations.first { $0.dueDay(in: calendar) == day }?.reminders.urgencyRule ?? .noReminders
     }
 
@@ -33,7 +33,7 @@ extension ObligationBlueprint {
 
 extension Obligation {
     /// Its urgency today, by the one rule. Every screen showing one obligation asks this.
-    func urgency(now: Date = Date(), calendar: Calendar = .current) -> AttentionUrgency {
+    func urgency(now: Date = Date(), calendar: Calendar = .dosar) -> AttentionUrgency {
         reminders.urgencyRule.urgency(of: dueDay(in: calendar), today: CalendarDay(now, calendar: calendar), calendar: calendar)
     }
 }

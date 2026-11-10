@@ -280,9 +280,7 @@ public enum DossierV3 {
         if let date = try? Date(raw, strategy: .iso8601) { return date }
         if let date = try? Date(raw, strategy: Date.ISO8601FormatStyle(includingFractionalSeconds: true)) { return date }
         if let day = CalendarDay(isoString: raw), raw.count == 10 {
-            var utc = Calendar(identifier: .gregorian)
-            utc.timeZone = TimeZone(identifier: "UTC") ?? .gmt
-            return day.startDate(in: utc)
+            return day.startDate(in: CalendarDay.isoCalendar)
         }
         return nil
     }

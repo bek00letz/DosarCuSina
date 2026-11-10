@@ -5,7 +5,7 @@ import Foundation
 /// values without a v3 field are appended to the asset notes, contacts become
 /// providers, and completed events and service records become history entries.
 enum DossierV2Converter {
-    static func package(from files: [String: Data], calendar: Calendar = .current) throws -> DossierV3.Package {
+    static func package(from files: [String: Data], calendar: Calendar = .dosar) throws -> DossierV3.Package {
         let decoder = DossierV3.decoder()
         guard let manifestData = files["manifest.json"],
               let manifest = try? decoder.decode(DossierManifestV2.self, from: manifestData) else {

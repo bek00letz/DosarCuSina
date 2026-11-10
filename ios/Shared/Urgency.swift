@@ -79,7 +79,7 @@ public enum ReminderLead: Hashable, Sendable {
     }
 
     /// The day this lead before `due` falls on.
-    public func day(before due: CalendarDay, calendar: Calendar = .current) -> CalendarDay {
+    public func day(before due: CalendarDay, calendar: Calendar = .dosar) -> CalendarDay {
         switch self {
         case .days(let n): return due.adding(days: -n, calendar: calendar)
         case .months(let n): return due.adding(months: -n, calendar: calendar)
@@ -135,20 +135,20 @@ public struct UrgencyRule: Hashable, Sendable, Codable {
     /// The last day a document with a travel margin is good for travel ("Bun de călătorit
     /// până pe …"): the margin before its due day, the last valid day. Nil when it is good
     /// for travel until it expires.
-    public func travelCutoff(before due: CalendarDay, calendar: Calendar = .current) -> CalendarDay? {
+    public func travelCutoff(before due: CalendarDay, calendar: Calendar = .dosar) -> CalendarDay? {
         guard travelMarginDays > 0 else { return nil }
         return ReminderLead(days: travelMarginDays).day(before: due, calendar: calendar)
     }
 
     /// The day its reminders count back from: the travel cut-off, else the due day.
-    public func reminderAnchor(for due: CalendarDay, calendar: Calendar = .current) -> CalendarDay {
+    public func reminderAnchor(for due: CalendarDay, calendar: Calendar = .dosar) -> CalendarDay {
         travelCutoff(before: due, calendar: calendar) ?? due
     }
 
     /// The first day it needs the person: the later of its first reminder (at least the
     /// day before) and its consequence's window, and never later than its travel cut-off.
     /// A rule with no window and no cut-off starts on the due day.
-    public func attentionStart(before due: CalendarDay, calendar: Calendar = .current) -> CalendarDay {
+    public func attentionStart(before due: CalendarDay, calendar: Calendar = .dosar) -> CalendarDay {
         let cutoff = travelCutoff(before: due, calendar: calendar)
         guard maxWindowDays > 0 else { return cutoff ?? due }
         let reminded = ReminderLead(days: max(firstLeadDays, 1)).day(before: reminderAnchor(for: due, calendar: calendar), calendar: calendar)
@@ -158,11 +158,11 @@ public struct UrgencyRule: Hashable, Sendable, Codable {
     }
 
     /// How many days ahead of `due` it needs the person.
-    public func windowDays(before due: CalendarDay, calendar: Calendar = .current) -> Int {
+    public func windowDays(before due: CalendarDay, calendar: Calendar = .dosar) -> Int {
         attentionStart(before: due, calendar: calendar).days(to: due, calendar: calendar)
     }
 
-    public func urgency(of due: CalendarDay, today: CalendarDay, calendar: Calendar = .current) -> AttentionUrgency {
+    public func urgency(of due: CalendarDay, today: CalendarDay, calendar: Calendar = .dosar) -> AttentionUrgency {
         let days = today.days(to: due, calendar: calendar)
         if days < 0 { return -days <= graceDays ? .withinGrace : .overdue }
         if days == 0 { return .today }

@@ -104,7 +104,7 @@ struct VisitDraft: Equatable {
     /// Fills the draft from a captured invoice: ticks the rows its lines match,
     /// with their costs; lines the catalog doesn't know become "Altceva" rows;
     /// labour and the total, the date and the provider's name fill in when empty.
-    mutating func apply(_ result: CaptureResult, components: [ComponentDefinition], calendar: Calendar = .current) {
+    mutating func apply(_ result: CaptureResult, components: [ComponentDefinition], calendar: Calendar = .dosar) {
         let fields = Dictionary(result.fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
         for line in fields[.lineItems]?.lineItems ?? [] {
             let cost = line.amount?.amount

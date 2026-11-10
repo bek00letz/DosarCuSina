@@ -21,7 +21,7 @@ extension AttentionModel {
     public static func missingBills(
         _ subscriptions: [BillWatchSnapshot],
         now: Date = Date(),
-        calendar: Calendar = .current,
+        calendar: Calendar = .dosar,
         locale: Locale = .dosarDefault
     ) -> [AttentionNote] {
         let today = CalendarDay(now, calendar: calendar)

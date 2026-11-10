@@ -11,7 +11,7 @@ public enum ReadinessEngine {
         _ scenario: ReadinessScenario,
         assets: [ReadinessAsset],
         today: CalendarDay = CalendarDay(Date()),
-        calendar: Calendar = .current
+        calendar: Calendar = .dosar
     ) -> ReadinessChecklist {
         switch scenario {
         case .trip(let plan):
@@ -30,7 +30,7 @@ public enum ReadinessEngine {
         _ scenario: ReadinessScenario,
         assets: [ReadinessAsset],
         today: CalendarDay = CalendarDay(Date()),
-        calendar: Calendar = .current
+        calendar: Calendar = .dosar
     ) -> [ReadinessItem] {
         checklist(scenario, assets: assets, today: today, calendar: calendar).items
     }
@@ -674,14 +674,14 @@ extension ReadinessEngine {
 extension ReadinessAsset {
     /// Readiness view of every asset in the binder.
     @MainActor
-    public static func fetchAll(in context: ModelContext, calendar: Calendar = .current) throws -> [ReadinessAsset] {
+    public static func fetchAll(in context: ModelContext, calendar: Calendar = .dosar) throws -> [ReadinessAsset] {
         let templates = try TemplateStore(context: context).templatesByKey()
         return make(from: try context.fetch(FetchDescriptor<Asset>()), templates: templates, calendar: calendar)
     }
 
     /// Readiness view of `assets`, read with their categories.
     @MainActor
-    public static func make(from assets: [Asset], templates: [String: CategoryTemplate], calendar: Calendar = .current) -> [ReadinessAsset] {
+    public static func make(from assets: [Asset], templates: [String: CategoryTemplate], calendar: Calendar = .dosar) -> [ReadinessAsset] {
         assets.map { asset in
             var obligations: [String: ReadinessObligation] = [:]
             var others: [ReadinessObligation] = []

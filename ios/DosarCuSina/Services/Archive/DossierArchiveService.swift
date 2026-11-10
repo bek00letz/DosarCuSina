@@ -183,7 +183,7 @@ public struct DossierArchiveService {
     public let container: ModelContainer
     private let calendar: Calendar
 
-    public init(container: ModelContainer, calendar: Calendar = .current) {
+    public init(container: ModelContainer, calendar: Calendar = .dosar) {
         self.container = container
         self.calendar = calendar
     }

@@ -36,7 +36,7 @@ enum InboxWording {
         lockedCategories: Set<String>,
         isSessionUnlocked: Bool,
         now: Date = Date(),
-        calendar: Calendar = .current
+        calendar: Calendar = .dosar
     ) -> Row {
         let received = received(item.receivedAt, now: now, calendar: calendar)
         let pageCount = preview?.pageCount ?? (item.payload == .images ? item.files.count : 1)
@@ -158,7 +158,7 @@ enum InboxWording {
         }
     }
 
-    static func received(_ date: Date, now: Date = Date(), calendar: Calendar = .current) -> String {
+    static func received(_ date: Date, now: Date = Date(), calendar: Calendar = .dosar) -> String {
         let time = DosarFormat.time(date, calendar: calendar)
         if calendar.isDate(date, inSameDayAs: now) { return String(localized: "Primit azi la \(time)") }
         if let yesterday = calendar.date(byAdding: .day, value: -1, to: now), calendar.isDate(date, inSameDayAs: yesterday) {

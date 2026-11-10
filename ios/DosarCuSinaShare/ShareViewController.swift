@@ -19,7 +19,7 @@ final class ShareViewController: UIViewController {
         super.viewDidLoad()
         let host = UIHostingController(rootView: ShareConfirmationView(model: model) { [weak self] in
             self?.finish()
-        })
+        }.dosarLocaleAndCalendar())
         addChild(host)
         host.view.translatesAutoresizingMaskIntoConstraints = false
         host.view.backgroundColor = .clear

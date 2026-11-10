@@ -41,7 +41,7 @@ public enum CalendarCount {
 public enum DurationWording {
     /// How far `days` from `today` is: "5 zile", "3 săptămâni", "2 luni și 3 săptămâni",
     /// "un an și 4 luni", "8 ani". The sign of `days` is ignored.
-    public static func distance(days: Int, from today: Date = Date(), calendar: Calendar = .current) -> String {
+    public static func distance(days: Int, from today: Date = Date(), calendar: Calendar = .dosar) -> String {
         let n = abs(days)
         guard n >= 21 else { return DayCount.phrase(n) }
         let start = calendar.startOfDay(for: today)
@@ -91,7 +91,7 @@ public enum DurationWording {
 /// "întârziat cu o zi" (late within grace), "depășit de 3 zile" (late past grace).
 /// The binder's boxes, the badges, the widget and Siri all say it this way.
 public enum WhenWording {
-    public static func phrase(_ urgency: AttentionUrgency, daysRemaining days: Int, from today: Date = Date(), calendar: Calendar = .current) -> String {
+    public static func phrase(_ urgency: AttentionUrgency, daysRemaining days: Int, from today: Date = Date(), calendar: Calendar = .dosar) -> String {
         let distance = DurationWording.distance(days: days, from: today, calendar: calendar)
         switch urgency {
         case .overdue:
@@ -107,7 +107,7 @@ public enum WhenWording {
     }
 
     /// The same words starting a line on their own: "Azi", "În 5 zile", "Depășit de 3 zile".
-    public static func standalone(_ urgency: AttentionUrgency, daysRemaining days: Int, from today: Date = Date(), calendar: Calendar = .current) -> String {
+    public static func standalone(_ urgency: AttentionUrgency, daysRemaining days: Int, from today: Date = Date(), calendar: Calendar = .dosar) -> String {
         let text = phrase(urgency, daysRemaining: days, from: today, calendar: calendar)
         return String(text.prefix(1)).uppercased(with: .dosarDefault) + String(text.dropFirst())
     }

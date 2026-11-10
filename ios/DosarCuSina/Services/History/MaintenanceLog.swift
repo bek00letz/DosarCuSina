@@ -99,7 +99,7 @@ public enum MaintenanceLog {
         in items: [HistoryItemSnapshot],
         currentMetric: Double? = nil,
         now: Date = Date(),
-        calendar: Calendar = .current
+        calendar: Calendar = .dosar
     ) -> [ComponentOccurrence] {
         let today = CalendarDay(now, calendar: calendar)
         return items
@@ -128,14 +128,14 @@ public enum MaintenanceLog {
         in items: [HistoryItemSnapshot],
         currentMetric: Double? = nil,
         now: Date = Date(),
-        calendar: Calendar = .current
+        calendar: Calendar = .dosar
     ) -> ComponentOccurrence? {
         occurrences(of: componentKey, in: items, currentMetric: currentMetric, now: now, calendar: calendar).first
     }
 
     /// The median gap between consecutive replacements, in counter units and days.
     /// Needs at least two occurrences.
-    public static func typicalInterval(of componentKey: String, in items: [HistoryItemSnapshot], calendar: Calendar = .current) -> TypicalInterval? {
+    public static func typicalInterval(of componentKey: String, in items: [HistoryItemSnapshot], calendar: Calendar = .dosar) -> TypicalInterval? {
         let ordered = items.filter { $0.componentKey == componentKey }.sorted { $0.occurredAt < $1.occurredAt }
         guard ordered.count >= 2 else { return nil }
         let pairs = zip(ordered, ordered.dropFirst())
@@ -169,7 +169,7 @@ public enum MaintenanceLog {
         readings: [CadenceCalculator.TelemetryReading] = [],
         currentMetric: Double? = nil,
         now: Date = Date(),
-        calendar: Calendar = .current
+        calendar: Calendar = .dosar
     ) -> NextEstimate? {
         guard let typical = typicalInterval(of: componentKey, in: items, calendar: calendar),
               let last = lastOccurrence(of: componentKey, in: items, currentMetric: currentMetric, now: now, calendar: calendar) else { return nil }
