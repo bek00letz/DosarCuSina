@@ -6,9 +6,11 @@ import Foundation
 /// the one rule for whether a capture may be one, and so whether it may go to the provider.
 ///
 /// When the phone can't be sure a page isn't one, it is treated as one: the kind read, or
-/// any kind another reader saw, is one; the page shows a card number (whole, or already
-/// masked as "•••• 4821"); it carries the words printed only on such a document ("VALID
-/// THRU"); or the person is adding one (the capture starts from its page).
+/// any kind another reader saw, is one; the page shows a whole card number, whatever its
+/// kind (`CaptureCardMask.showsCardNumber`, the one rule: a receipt with the number in one
+/// piece counts, a pet's microchip read into its microchip field doesn't); it carries the
+/// words printed only on such a document ("VALID THRU"); or the person is adding one (the
+/// capture starts from its page).
 ///
 /// Applied where reading by the provider is decided: the engine, before anything is sent
 /// (`CaptureEngine`, so a reading again with added pages is checked on what the phone read
@@ -25,18 +27,20 @@ enum PhoneOnlyReading {
         DocumentType.isReadOnPhoneOnly(values[DocumentType.typeFieldKey]?.textValue)
     }
 
-    /// What the phone read may be such a document: any of `kinds` is one, or `text` shows
-    /// a card number or the words printed only on one.
-    static func mayBeOne(kinds: [CaptureDocumentKind], text: String) -> Bool {
-        kinds.contains(where: isPhoneOnly) || IdentitySignals.hasCardNumber(text) || hasDecisiveWords(text)
+    /// What the phone read may be such a document: any of `kinds` is one, or `text` (as read,
+    /// not yet masked) shows a whole card number by `mask`'s rule or the words printed only on one.
+    static func mayBeOne(kinds: [CaptureDocumentKind], text: String, mask: CaptureCardMask) -> Bool {
+        kinds.contains(where: isPhoneOnly) || mask.showsCardNumber(in: text) || hasDecisiveWords(text)
     }
 
-    /// A reading that may be such a document: its kind, a kind another reader saw, its text
-    /// (masked or not), or the engine already kept it on the phone (`readOnPhoneOnly`).
+    /// A reading that may be such a document: its kind, a kind another reader saw, a whole
+    /// card number on the page (`CaptureResult.showsCardNumber`, before or after masking), its
+    /// words, or the engine already kept it on the phone (`readOnPhoneOnly`).
     static func mayBeOne(_ result: CaptureResult) -> Bool {
         if result.notices.contains(.readOnPhoneOnly) { return true }
         let kinds = [result.kind] + result.kindAlternatives.map(\.value)
-        return mayBeOne(kinds: kinds, text: result.recognizedText) || mayBeOne(kinds: [], text: result.source?.text ?? "")
+        return kinds.contains(where: isPhoneOnly) || result.showsCardNumber
+            || hasDecisiveWords(result.recognizedText) || hasDecisiveWords(result.source?.text ?? "")
     }
 
     /// The words that weigh most for such a document's templates (`IdentityTemplates`):

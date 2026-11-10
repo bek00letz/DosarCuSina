@@ -58,7 +58,7 @@ struct PhoneOnlyReadingTests {
         }
         #expect(PhoneOnlyReading.mayBeOne(page(.bankCard, "")), "Read as a bank card")
         #expect(PhoneOnlyReading.mayBeOne(page(.other, "Plată 4111 1111 1111 1111")), "A whole card number")
-        #expect(PhoneOnlyReading.mayBeOne(page(.other, "Plată •••• 1111")), "One already masked")
+        #expect(PhoneOnlyReading.mayBeOne(page(.other, "Plată 4111111111111111").withoutCardNumbers()), "One the engine masked")
         #expect(PhoneOnlyReading.mayBeOne(page(.other, "VALID THRU 08/28")), "Words only a card prints")
         #expect(PhoneOnlyReading.mayBeOne(page(.other, "GOOD THRU 08/28")))
         #expect(PhoneOnlyReading.mayBeOne(page(.rcaPolicy, "", alternatives: [.bankCard])), "Another reader saw a card")
@@ -246,7 +246,7 @@ struct PhoneOnlyReadingTests {
         #expect(!merged.providerMayRead, "Kept when the page is read again")
 
         let masked = CaptureResult(kind: .other, kindConfidence: 0.5, fields: [], suggestions: [], reminder: nil,
-                                   recognizedText: "Plată •••• 1111", barcodes: [], document: nil, notices: [])
-        #expect(!CaptureReview(result: masked, assets: [], context: context).providerMayRead, "A page that shows a card number")
+                                   recognizedText: "Plată 4111 1111 1111 1111", barcodes: [], document: nil, notices: []).withoutCardNumbers()
+        #expect(!CaptureReview(result: masked, assets: [], context: context).providerMayRead, "A page that shows a card number, masked since")
     }
 }

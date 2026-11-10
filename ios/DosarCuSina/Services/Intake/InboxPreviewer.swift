@@ -14,8 +14,10 @@ import UniformTypeIdentifiers
 ///   provider. Nothing is kept in the document store; only the kind, the title and the
 ///   page count, through `SearchPrivacy.outsideText` so no CNP or card number is kept.
 /// - A picture is kept only when the reading is sure the page can't be a bank card
-///   (`PhoneOnlyReading`, the rule "Citește mai bine" follows): a card's photo shows its
-///   whole number. A page that couldn't be read gets no picture either.
+///   (`PhoneOnlyReading`, the rule "Citește mai bine" follows) and its photo isn't one kept
+///   only on request (`CaptureResult.photoIsOnRequest`): a card's photo, or any page's that
+///   shows a whole card number (`CaptureResult.showsCardNumber`), shows that number. A pet's
+///   microchip read into its field isn't one. A page that couldn't be read gets no picture either.
 /// - Off the main thread; the item's files are only read.
 enum InboxPreviewer {
     /// The picture's longest side in pixels: sharp in a 44 pt well at 3×, a few kilobytes.
@@ -50,7 +52,7 @@ enum InboxPreviewer {
 
     /// Whether the first page's picture may be kept beside the item.
     static func mayKeepPicture(of result: CaptureResult) -> Bool {
-        !result.kind.profile.photoIsOptIn && !PhoneOnlyReading.mayBeOne(result)
+        !result.photoIsOnRequest && !PhoneOnlyReading.mayBeOne(result)
     }
 
     // MARK: First page

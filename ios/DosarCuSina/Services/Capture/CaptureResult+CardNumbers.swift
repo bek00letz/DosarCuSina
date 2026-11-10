@@ -7,13 +7,16 @@ extension CaptureResult {
     /// can't let its number through; only `cardLastFour` keeps four digits, and nothing
     /// more. A value read for a field whose type tells it apart from a card (a microchip that
     /// passes its check) stays whole in its field and, the same digits, in the text read
-    /// (`keptWhole`), so the document's kept text holds it as its section will.
-    /// `CaptureEngine` hands out no other kind of result.
+    /// (`keptWhole`), so the document's kept text holds it as its section will. Whether the
+    /// text showed a whole card number before it was masked is kept (`showedCardNumber`), so
+    /// `showsCardNumber` still answers for the page. `CaptureEngine` hands out no other kind
+    /// of result.
     func withoutCardNumbers() -> CaptureResult {
         let mask = CaptureCardMask(kind: kind, read: readValues)
         let strict = mask.strict
         let kept = mask.kept
         func text(_ value: String) -> String { mask.text(value) }
+        let showed = showsCardNumber
         return CaptureResult(
             id: id,
             kind: kind,
@@ -42,8 +45,37 @@ extension CaptureResult {
                     aiFields: source.aiFields.map { $0.map { $0.withoutCardNumbers(strict: strict, keeping: kept) } },
                     isSinglePhoto: source.isSinglePhoto
                 )
-            }
+            },
+            showedCardNumber: showed
         )
+    }
+
+    /// Whether this page shows a whole card number: its text as read holds one by the
+    /// "anywhere" rule (`CaptureCardMask.showsCardNumber`), leaving out the digits a reader read
+    /// for a field whose type keeps them whole (a pet's microchip in its microchip field). Once
+    /// the text is masked, the fact it showed one before (`showedCardNumber`). The one answer,
+    /// by what the page shows and not by its kind, for: its photo is kept only on request
+    /// (`photoIsOnRequest`), it is read only on the phone (`PhoneOnlyReading`), the share
+    /// inbox shows no picture of it (`InboxPreviewer`), and it may be a personal document
+    /// (`IdentitySignals`).
+    var showsCardNumber: Bool {
+        if showedCardNumber { return true }
+        let mask = CaptureCardMask(kind: kind, read: readValues)
+        return mask.showsCardNumber(in: recognizedText) || mask.showsCardNumber(in: source?.text ?? "")
+    }
+
+    /// Whether saving keeps this page's photo only when the person asks, read as `kind` (the
+    /// review's, which the person may have changed): a kind whose photo is kept only on request
+    /// (a bank card, `CaptureKindProfile.photoIsOptIn`), or any page that shows a whole card
+    /// number (`showsCardNumber`: a receipt, a form or a letter with the number in one piece),
+    /// since its photo shows the number the binder never keeps.
+    func photoIsOnRequest(as kind: CaptureDocumentKind) -> Bool {
+        kind.profile.photoIsOptIn || showsCardNumber
+    }
+
+    /// `photoIsOnRequest(as:)` for the kind read.
+    var photoIsOnRequest: Bool {
+        photoIsOnRequest(as: kind)
     }
 
     /// The values its readers read for a field whose type tells them apart from a card number
@@ -82,6 +114,15 @@ struct CaptureCardMask {
     /// The text with its card numbers masked.
     func text(_ value: String) -> String {
         PaymentCardNumbers.redact(value, strict: strict, keeping: kept)
+    }
+
+    /// Whether `text` shows a whole card number: one the "anywhere" rule finds
+    /// (`PaymentCardNumbers.containsCardNumber`), leaving out what this mask keeps whole. The one
+    /// rule for "the page shows a whole card number", on the text as read (the engine, before
+    /// anything is sent) and on a result (`CaptureResult.showsCardNumber`). On a bank card
+    /// nothing is kept whole, so any card-shaped number counts.
+    func showsCardNumber(in text: String) -> Bool {
+        PaymentCardNumbers.containsCardNumber(text, keeping: kept)
     }
 
     /// What of `values` stays whole: those read for a field whose type keeps them whole, as

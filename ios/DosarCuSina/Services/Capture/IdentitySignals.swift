@@ -9,12 +9,8 @@ enum IdentitySignals {
     static func mayBeIdentity(_ result: CaptureResult) -> Bool {
         if result.kind.isPersonalDocument || result.kindAlternatives.contains(where: { $0.value.isPersonalDocument }) { return true }
         let text = result.source?.text ?? result.recognizedText
-        return hasMachineReadableZone(text) || hasPersonalNumber(text) || hasIdentityWords(text) || hasCardNumber(text)
-    }
-
-    /// A card number, whole or already masked ("•••• 4821"): a bank card, or a page that shows one.
-    static func hasCardNumber(_ text: String) -> Bool {
-        text.contains(PaymentCardNumbers.mask) || PaymentCardNumbers.containsCardNumber(text)
+        // A whole card number on the page, by the one rule (`CaptureResult.showsCardNumber`).
+        return hasMachineReadableZone(text) || hasPersonalNumber(text) || hasIdentityWords(text) || result.showsCardNumber
     }
 
     /// Fillers of a machine-readable zone: a run of `<`, or a long line of zone characters with `<<` in it.
