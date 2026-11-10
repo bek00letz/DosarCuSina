@@ -4,9 +4,9 @@ import Foundation
 /// where it is filed, the deadline it sets and the field that dates it, how it is kept,
 /// who issued it, which fields it carries and what it is called.
 ///
-/// Routing (`CaptureRouter`), the field rules (`CaptureFieldRules`), the AI provider's
-/// questions (`CloudSchema`), the review, its reminder preview and the filer all read
-/// this registry, so they can't disagree. Template and blueprint keys are the built-in
+/// Routing (`CaptureRouter`), the field rules (`CaptureFieldRules`), the questions both
+/// language models are asked (`ModelQuestions`), the review, its reminder preview and the
+/// filer all read this registry, so they can't disagree. Template and blueprint keys are the built-in
 /// catalog's own (`BuiltInTemplates`, `BuiltInBlueprints`); a contract test checks that
 /// each one resolves. How early a deadline reminds comes only from its blueprint.
 struct CaptureKindProfile: Sendable {
@@ -58,8 +58,9 @@ struct CaptureKindProfile: Sendable {
     let documentType: String?
     /// The trade of the firm or person who issued it, when they are worth keeping in Agendă.
     let trade: ProviderTrade?
-    /// The fields a document of this kind usually carries, beyond identity documents
-    /// (whose fields come from `IdentityTemplates`). The AI provider is asked for these.
+    /// The fields a document of this kind usually carries (a personal document's are what
+    /// its `IdentityTemplates` read). Apple's on-device model is asked for exactly these,
+    /// and the AI provider for these first (`ModelQuestions`).
     let expectedKeys: [CaptureFieldKey]
     /// It lists what was done or bought, line by line ("Ce s-a făcut").
     let carriesLineItems: Bool
@@ -72,7 +73,7 @@ struct CaptureKindProfile: Sendable {
     /// What the kind is called, in a few words, for the review's header.
     let name: LocalizedStringResource
     let titleRule: TitleRule
-    /// What the AI provider is told this kind is.
+    /// What the language models are told this kind is.
     let modelDescription: String
     /// Its deadline is made only when the person asks for it: a bill to pay ("Amintește-mi să o plătesc").
     var deadlineIsOptIn = false
@@ -334,8 +335,7 @@ struct CaptureKindProfile: Sendable {
     /// kept like an identity document's: never searched.
     private static func identity(_ kind: CaptureDocumentKind, type: String, name: LocalizedStringResource, model: String,
                                  photoIsOptIn: Bool = false) -> CaptureKindProfile {
-        var expected = IdentityTemplates.all.filter { $0.kind == kind }.flatMap { $0.fields.map(\.key) }
-            .reduce(into: [CaptureFieldKey]()) { keys, key in if !keys.contains(key) { keys.append(key) } }
+        var expected = IdentityTemplates.orderedFieldKeys(for: kind)
         // The day the deadline follows is always asked for, even where it is worked out
         // from another (a cazier judiciar's, six months from its issue).
         if !expected.contains(.expiryDate) { expected.append(.expiryDate) }

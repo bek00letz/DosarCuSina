@@ -225,8 +225,8 @@ struct AIProviderTests {
         #expect(names.isSuperset(of: ["surname", "givenNames", "documentNumber", "birthDate", "expiryDate", "issueDate", "personalNumber", "machineReadableZone"]))
         #expect(names.isSuperset(of: ["policyNumber", "total", "podCode", "vin"]), "A wrong guess never hides another kind's fields")
         #expect(passport.json["required"]?.array?.count == passport.fields.count + 1)
-        #expect(passport.json["required"]?.array?.first?.string == CloudSchema.kindName)
-        #expect(passport.json["properties"]?[CloudSchema.kindName]?["enum"]?.array?.count == CaptureDocumentKind.allCases.count)
+        #expect(passport.json["required"]?.array?.first?.string == ModelQuestions.kindName)
+        #expect(passport.json["properties"]?[ModelQuestions.kindName]?["enum"]?.array?.count == CaptureDocumentKind.allCases.count)
         #expect(!passport.instructions.contains("passport"), "The phone's guess isn't told to the provider")
         #expect(passport.json["additionalProperties"]?.bool == false)
         #expect(passport.fields.first { $0.name == "expiryDate" }?.description.contains("date of expiry") == true)
@@ -244,7 +244,7 @@ struct AIProviderTests {
 
     private func map(_ json: String, kind: CaptureDocumentKind = .passport, text: String = "") throws -> [CaptureFieldKey: CaptureField] {
         let answer = try JSONDecoder().decode(JSONValue.self, from: Data(json.utf8))
-        let fields = CloudAnswerMapper.fields(from: answer, schema: CloudSchema(kind: kind), recognizedText: text, today: today, resolver: CatalogComponentResolver())
+        let fields = ModelAnswerMapper.fields(from: answer, asked: CloudSchema(kind: kind).questions, recognizedText: text, today: today, resolver: CatalogComponentResolver())
         return Dictionary(fields.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
     }
 
@@ -264,7 +264,7 @@ struct AIProviderTests {
         let fields = try map(#"{"surname":"EXEMPLU","givenNames":"MARIA","personalNumber":"1800101990006","expiryDate":"2031-04-12","issueDate":"1990-01-01"}"#, text: text)
         #expect(fields[.surname]?.needsCheck == false)              // in the text
         #expect(fields[.givenNames]?.needsCheck == true)            // only the model saw it
-        #expect(fields[.personalNumber]?.confidence == CloudAnswerMapper.checked)
+        #expect(fields[.personalNumber]?.confidence == ModelAnswerMapper.checked)
         #expect(fields[.expiryDate]?.needsCheck == false)           // inside its window
         #expect(fields[.issueDate]?.needsCheck == true)             // outside: a candidate at most
         #expect(fields[.holderName]?.value.text == "MARIA EXEMPLU")
@@ -286,7 +286,7 @@ struct AIProviderTests {
         #expect(fields[.clientCode]?.needsCheck == true)
 
         let vin = try map(#"{"vin":"1M8GDM9AXKP042788"}"#, kind: .itpReport)
-        #expect(vin[.vin]?.confidence == CloudAnswerMapper.checked)
+        #expect(vin[.vin]?.confidence == ModelAnswerMapper.checked)
     }
 
     @Test("Through the engine: a canned Gemini answer is merged, never above a checked value, with no network")

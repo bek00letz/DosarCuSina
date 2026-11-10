@@ -750,7 +750,7 @@ private struct CaptureFieldEditor: View {
         case .number?: .number(unit: nil)
         case .metric(_, let unit)?: .number(unit: unit)
         case nil:
-            switch CloudSchema.format(of: field.key) {
+            switch ModelQuestions.format(of: field.key) {
             case .date: .date
             case .money: .money(currencyCode: Money.defaultCurrency)
             case .integer: .number(unit: field.key == .odometer ? .kilometres : nil)

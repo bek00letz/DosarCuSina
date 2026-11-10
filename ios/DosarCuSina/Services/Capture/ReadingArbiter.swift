@@ -31,7 +31,7 @@ import Foundation
 ///   parts read by different readers are joined (`agreedValue`).
 /// - Being missing from the text recognised on the phone is never a reason to drop or
 ///   demote an AI value: it is kept, marked "Verifică" unless it passes its own check or
-///   agrees with the phone (`CloudAnswerMapper`). A value outside its plausibility window
+///   agrees with the phone (`ModelAnswerMapper`). A value outside its plausibility window
 ///   is still dropped (`CaptureConsistency`).
 ///
 /// The kind: the AI's kind replaces the phone's unless the phone's rests on deterministic
@@ -60,7 +60,7 @@ enum ReadingArbiter {
 
     static func standing(_ field: CaptureField) -> Standing {
         // The phone's zone values are deterministic only where their check digits pass; the
-        // AI's zone is kept only when all of them pass (`CloudAnswerMapper`).
+        // AI's zone is kept only when all of them pass (`ModelAnswerMapper`).
         if field.sourceText == CaptureField.machineReadableSource, field.tier == .deterministic || field.tier == .cloudModel {
             return .machineReadableZone
         }
@@ -194,11 +194,27 @@ enum ReadingArbiter {
     /// How sure a kind is once the AI read the whole page and named it.
     static let secondOpinionKindConfidence = 0.9
 
+    /// Whether a model's view of the kind can still change it: the classifier is unsure and
+    /// nothing deterministic backs it. Apple's on-device model is asked what the document
+    /// is only then (`SemanticInput.kindIsOpen`).
+    static func kindIsOpen(_ phone: KindReading) -> Bool {
+        phone.confidence < unsureKindBelow && !phone.evidence.isDeterministic
+    }
+
+    /// The kind an open reading takes from Apple's on-device model: the model's, unless it
+    /// names none or "other", which is no opinion. The model is then asked that kind's facts.
+    static func openKind(_ guess: CaptureDocumentKind, onDeviceModel model: CaptureDocumentKind?) -> CaptureDocumentKind {
+        guard let model, model != .other else { return guess }
+        return model
+    }
+
     /// Apple's on-device model corrects the kind only when the classifier is unsure and
     /// nothing deterministic backs it.
     static func kind(_ phone: KindReading, onDeviceModel model: CaptureDocumentKind?) -> KindReading {
-        guard let model, model != phone.kind, model != .other, phone.confidence < unsureKindBelow, !phone.evidence.isDeterministic else { return phone }
-        return KindReading(kind: model, confidence: 0.65, evidence: .onDeviceModel)
+        guard kindIsOpen(phone) else { return phone }
+        let kind = openKind(phone.kind, onDeviceModel: model)
+        guard kind != phone.kind else { return phone }
+        return KindReading(kind: kind, confidence: 0.65, evidence: .onDeviceModel)
     }
 
     /// The AI's kind replaces the phone's unless deterministic evidence backs the phone's.

@@ -137,9 +137,9 @@ struct RomanianNumberTests {
     }
 
     @Test func providerWholeNumbersAreNeverCutShort() {
-        #expect(CloudSchema.wholeNumber(.string("45.724"), kind: .kilometres) == 45724)
-        #expect(CloudSchema.wholeNumber(.number(45.7), kind: .kilometres) == nil)
-        #expect(CloudSchema.wholeNumber(.int(45724), kind: .kilometres) == 45724)
+        #expect(ModelQuestions.wholeNumber(.string("45.724"), kind: .kilometres) == 45724)
+        #expect(ModelQuestions.wholeNumber(.number(45.7), kind: .kilometres) == nil)
+        #expect(ModelQuestions.wholeNumber(.int(45724), kind: .kilometres) == 45724)
     }
 
     /// A water meter's decimals read by the AI provider are kept: the index is asked for as
@@ -157,7 +157,7 @@ struct RomanianNumberTests {
 
         func mapped(_ value: String, printed: String) throws -> CaptureField? {
             let answer = try JSONDecoder().decode(JSONValue.self, from: Data(#"{"documentKind":"utilityInvoice","meterIndex":\#(value)}"#.utf8))
-            return CloudAnswerMapper.fields(from: answer, schema: schema, recognizedText: printed, today: ContractCaptureTests.today,
+            return ModelAnswerMapper.fields(from: answer, asked: schema.questions, recognizedText: printed, today: ContractCaptureTests.today,
                                             resolver: CatalogComponentResolver()).first { $0.key == .meterIndex }
         }
         let water = try #require(try mapped(#""1.234,567""#, printed: "Index nou: 1.234,567 m³"))

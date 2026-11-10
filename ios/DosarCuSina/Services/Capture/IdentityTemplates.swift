@@ -114,12 +114,30 @@ enum IdentityTemplates {
 
     /// Every field key a kind's templates read.
     static func fieldKeys(for kind: CaptureDocumentKind) -> Set<CaptureFieldKey> {
-        Set(all.filter { $0.kind == kind }.flatMap { template in
+        Set(orderedFieldKeys(for: kind))
+    }
+
+    /// Every field key a kind's templates read, once each, in the order they list them:
+    /// a validity printed as one range gives its first day, then its last.
+    static func orderedFieldKeys(for kind: CaptureDocumentKind) -> [CaptureFieldKey] {
+        all.filter { $0.kind == kind }.flatMap { template in
             template.fields.flatMap { field -> [CaptureFieldKey] in
-                if case .dateRange(let start) = field.format { return [field.key, start] }
+                if case .dateRange(let start) = field.format { return [start, field.key] }
                 return [field.key]
             }
-        })
+        }.reduce(into: []) { keys, key in if !keys.contains(key) { keys.append(key) } }
+    }
+
+    /// The printed labels of a field on a kind's templates, the first template that
+    /// prints it: a range's first day is printed under the range's labels.
+    static func labels(of key: CaptureFieldKey, for kind: CaptureDocumentKind) -> [LabelWording] {
+        for template in all where template.kind == kind {
+            for field in template.fields {
+                if field.key == key { return field.labels }
+                if case .dateRange(let start) = field.format, start == key { return field.labels }
+            }
+        }
+        return []
     }
 
     private static let personalNumberLabel = IdentityTemplate.Field(.personalNumber, ["cnp / pin", "cnp/pin", "cnp", "pin"], .personalNumber, searchesEverywhere: true)

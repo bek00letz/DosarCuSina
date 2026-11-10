@@ -13,13 +13,18 @@ public struct SemanticInput: Sendable {
     public let knownFields: [CaptureField]
     /// "Today", for checking dates against their plausibility windows.
     public let today: CaptureDay
+    /// Whether a model's view of the kind can still change it (`ReadingArbiter.kindIsOpen`).
+    /// Apple's model is asked what the document is only then.
+    public let kindIsOpen: Bool
 
-    public init(text: String, firstPage: CGImage?, kind: CaptureDocumentKind, knownFields: [CaptureField], today: CaptureDay = CaptureDay(date: Date())) {
+    public init(text: String, firstPage: CGImage?, kind: CaptureDocumentKind, knownFields: [CaptureField], today: CaptureDay = CaptureDay(date: Date()),
+                kindIsOpen: Bool = false) {
         self.text = text
         self.firstPage = firstPage
         self.kind = kind
         self.knownFields = knownFields
         self.today = today
+        self.kindIsOpen = kindIsOpen
     }
 }
 
@@ -42,120 +47,20 @@ public protocol CaptureSemanticExtracting: Sendable {
     func extract(_ input: SemanticInput) async throws -> SemanticExtraction
 }
 
-// MARK: - Shared mapping
-
-/// Turns the plain answers a model gives into typed fields, dropping anything that isn't
-/// grounded in the recognized text.
-///
-/// Models can invent plausible policy numbers or plates. An identifier is kept only if its
-/// letters and digits appear in the text; dates and amounts must parse.
-enum ModelAnswerMapper {
-    struct Answers {
-        var kind: String?
-        var issuer: String?
-        var documentNumber: String?
-        var issueDate: String?
-        var expiryDate: String?
-        var dueDate: String?
-        var startDate: String?
-        var totalAmount: String?
-        var currency: String?
-        var policyNumber: String?
-        var claimsPhone: String?
-        var licensePlate: String?
-        var vin: String?
-        var productName: String?
-        var serialNumber: String?
-        var purchaseDate: String?
-        var warrantyMonths: Int?
-        var odometerKm: Int?
-        var nextDoseDate: String?
-        var lineItems: [(description: String, amount: String?)] = []
-    }
-
-    static func fields(from answers: Answers, sourceText: String, tier: CaptureTier, resolver: any CaptureComponentResolving) -> SemanticExtraction {
-        let compactSource = compact(sourceText)
-        var fields: [CaptureField] = []
-        let confidence = 0.72
-
-        func addText(_ key: CaptureFieldKey, _ value: String?, mustBeGrounded: Bool) {
-            guard let value = value?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty, value.lowercased() != "null" else { return }
-            if mustBeGrounded, !compactSource.contains(compact(value)) { return }
-            fields.append(CaptureField(key: key, value: .text(value), confidence: confidence, sourceText: nil, tier: tier))
-        }
-        func addDay(_ key: CaptureFieldKey, _ value: String?) {
-            guard let value, let day = isoDay(value) else { return }
-            fields.append(CaptureField(key: key, value: .day(day), confidence: confidence - 0.07, sourceText: nil, tier: tier))
-        }
-
-        addText(.provider, answers.issuer, mustBeGrounded: false)
-        addText(.documentNumber, answers.documentNumber, mustBeGrounded: true)
-        addText(.policyNumber, answers.policyNumber, mustBeGrounded: true)
-        addText(.claimsPhone, answers.claimsPhone, mustBeGrounded: true)
-        addText(.licensePlate, answers.licensePlate.map { $0.uppercased() }, mustBeGrounded: true)
-        if let vin = answers.vin?.uppercased().filter({ !$0.isWhitespace }), vin.count == 17 {
-            addText(.vin, vin, mustBeGrounded: true)
-        }
-        addText(.productName, answers.productName, mustBeGrounded: false)
-        addText(.serialNumber, answers.serialNumber, mustBeGrounded: true)
-        addDay(.issueDate, answers.issueDate)
-        addDay(.expiryDate, answers.expiryDate)
-        addDay(.dueDate, answers.dueDate)
-        addDay(.startDate, answers.startDate)
-        addDay(.purchaseDate, answers.purchaseDate)
-        addDay(.nextDoseDate, answers.nextDoseDate)
-
-        let currency = normalizedCurrency(answers.currency)
-        let printedAmounts = Set(CaptureText(sourceText).folded.flatMap { RomanianFieldExtractor.amounts(inLine: $0).map(\.amount) })
-        if let raw = answers.totalAmount, let amount = RomanianFieldExtractor.amount(raw)?.value, amount > 0,
-           printedAmounts.contains(amount) {
-            fields.append(CaptureField(key: .total, value: .money(CaptureMoney(amount: amount, currencyCode: currency)), confidence: confidence, sourceText: nil, tier: tier))
-        }
-        if let months = answers.warrantyMonths, (1...240).contains(months) {
-            fields.append(CaptureField(key: .warrantyMonths, value: .number(Decimal(months)), confidence: confidence - 0.05, sourceText: nil, tier: tier))
-        }
-        if let km = answers.odometerKm, km > 0, compactSource.contains(String(km)) {
-            fields.append(CaptureField(key: .odometer, value: .metric(value: Decimal(km), unit: .kilometres), confidence: confidence, sourceText: nil, tier: tier))
-        }
-        let items = answers.lineItems.compactMap { item -> CaptureLineItem? in
-            let description = item.description.trimmingCharacters(in: .whitespaces)
-            guard !description.isEmpty else { return nil }
-            let money = item.amount.flatMap { RomanianFieldExtractor.amount($0)?.value }.map { CaptureMoney(amount: $0, currencyCode: currency) }
-            return CaptureLineItem(description: description, amount: money, componentKey: resolver.componentKey(for: description))
-        }
-        if !items.isEmpty {
-            fields.append(CaptureField(key: .lineItems, value: .lineItems(items), confidence: confidence - 0.05, sourceText: nil, tier: tier))
-        }
-
-        let kind = answers.kind.flatMap(CaptureDocumentKind.init(rawValue:)).flatMap { $0 == .other ? nil : $0 }
-        return SemanticExtraction(kind: kind, fields: fields)
-    }
-
-    /// Letters and digits only, uppercased, so "B-123 ABC" and "B 123 ABC" compare equal.
-    static func compact(_ text: String) -> String {
-        RomanianText.fold(text).uppercased().filter { $0.isLetter || $0.isNumber }
-    }
-
-    static func isoDay(_ value: String) -> CaptureDay? {
-        let parts = value.prefix(10).split(separator: "-").compactMap { Int($0) }
-        guard parts.count == 3 else { return nil }
-        return CaptureDay(year: parts[0], month: parts[1], day: parts[2])
-    }
-
-    static func normalizedCurrency(_ value: String?) -> String {
-        switch RomanianText.fold(value ?? "") {
-        case "eur", "euro", "€": "EUR"
-        case "usd", "$": "USD"
-        default: "RON"
-        }
-    }
-}
-
 // MARK: - On-device model
 
 /// Apple's on-device language model (iOS 26 and later). Private, offline and free; needs a
 /// device with Apple Intelligence turned on. When it isn't available the engine carries on
 /// with the deterministic and heuristic tiers and says so in the result.
+///
+/// It reads the text the phone recognised, never the picture, in one session:
+/// 1. **What the document is**, asked only while the kind is still open
+///    (`ReadingArbiter.kindIsOpen`: the classifier is unsure and nothing deterministic backs
+///    it); otherwise the phone's kind stands and the question would change nothing.
+/// 2. **The kind's facts**: exactly the fields its profile lists (`ModelQuestions`), as a
+///    generation schema built for that kind (`OnDeviceSchema`), answered through the same
+///    mapper and checks as the AI provider's (`ModelAnswerMapper`), each value kept only
+///    when it is printed in the text.
 public struct OnDeviceModelExtractor: CaptureSemanticExtracting {
 
     public let tier: CaptureTier = .onDeviceModel
@@ -186,110 +91,132 @@ public struct OnDeviceModelExtractor: CaptureSemanticExtracting {
     public func extract(_ input: SemanticInput) async throws -> SemanticExtraction {
         let session = LanguageModelSession(instructions: Self.instructions)
         let text = String(input.text.prefix(Self.maxCharacters))
-        let prompt = """
-        Document text (recognized from a photo or PDF, may contain recognition errors):
-        ---
-        \(text)
-        ---
-        Our first guess for the document kind is "\(input.kind.rawValue)". Correct it if it's wrong.
-        """
-        let response = try await session.respond(
-            to: prompt,
-            generating: GeneratedDocumentFacts.self,
-            options: GenerationOptions(samplingMode: .greedy)
-        )
-        return ModelAnswerMapper.fields(from: response.content.answers, sourceText: input.text, tier: tier, resolver: resolver)
+        let options = GenerationOptions(samplingMode: .greedy)
+
+        // 1. What the document is, only while the model's view can still change it.
+        var named: CaptureDocumentKind?
+        if input.kindIsOpen {
+            let schema = try OnDeviceSchema.kindQuestion()
+            try Task.checkCancellation()
+            let answer = try await session.respond(to: Self.kindPrompt(text: text, guess: input.kind), schema: schema, options: options)
+            named = ModelAnswerMapper.kind(from: OnDeviceSchema.json(answer.content))
+        }
+        let kind = input.kindIsOpen ? ReadingArbiter.openKind(input.kind, onDeviceModel: named) : input.kind
+
+        // 2. The facts that kind carries, and nothing else.
+        let questions = ModelQuestions(kind: kind, reader: .text)
+        guard !questions.fields.isEmpty else { return SemanticExtraction(kind: named, fields: []) }
+        let schema = try OnDeviceSchema.facts(questions)
+        // The text was given with the kind question; otherwise it comes with this one.
+        let prompt = input.kindIsOpen ? Self.factsPrompt(kind) : Self.textBlock(text) + "\n" + Self.factsPrompt(kind)
+        try Task.checkCancellation()
+        let answer = try await session.respond(to: prompt, schema: schema, options: options)
+        let fields = ModelAnswerMapper.fields(from: OnDeviceSchema.json(answer.content), asked: questions,
+                                              recognizedText: input.text, today: input.today, resolver: resolver)
+        return SemanticExtraction(kind: named, fields: fields)
     }
 
     static let instructions = """
-    You read Romanian household documents: ID cards, passports, driving licences, car registration \
-    certificates, insurance policies (RCA, CASCO, home), utility invoices, car service invoices, \
-    fiscal receipts, warranty certificates, ITP inspection reports, veterinary and medical records. \
-    Extract only what is printed. Never invent values: leave a field empty when it isn't in the text. \
+    You read the text recognised from a photo or PDF of a Romanian household document; it may contain recognition errors. \
+    Answer only with what is printed in it. Never invent, guess or complete a value: leave a field out when it isn't in the text. \
     Write dates as YYYY-MM-DD. Write amounts with a dot as the decimal separator and no thousands separator. \
-    The issuer is the company or clinic that issued the document, not the customer.
+    Copy names, numbers and codes character for character.
     """
-}
 
-@Generable(description: "Facts printed on a Romanian household document")
-struct GeneratedDocumentFacts {
-    @Guide(description: "The kind of document", .anyOf(CaptureDocumentKind.allCases.map(\.rawValue)))
-    var documentKind: String
+    static func textBlock(_ text: String) -> String {
+        """
+        Document text:
+        ---
+        \(text)
+        ---
+        """
+    }
 
-    @Guide(description: "Company, clinic or authority that issued the document, as printed")
-    var issuer: String?
+    static func kindPrompt(text: String, guess: CaptureDocumentKind) -> String {
+        textBlock(text) + "\nWhat kind of document is this? Our first guess is \"\(guess.rawValue)\". Correct it if it's wrong."
+    }
 
-    @Guide(description: "The document's own series and number together, as printed; empty on a policy, whose number is policyNumber")
-    var documentNumber: String?
-
-    @Guide(description: "Issue or invoice date, YYYY-MM-DD")
-    var issueDate: String?
-
-    @Guide(description: "Expiry date or end of validity, YYYY-MM-DD")
-    var expiryDate: String?
-
-    @Guide(description: "Payment due date, YYYY-MM-DD")
-    var dueDate: String?
-
-    @Guide(description: "Start of validity or coverage, YYYY-MM-DD")
-    var startDate: String?
-
-    @Guide(description: "Total amount to pay or paid, digits with a dot for decimals")
-    var totalAmount: String?
-
-    @Guide(description: "Currency code: RON, EUR or USD")
-    var currency: String?
-
-    @Guide(description: "Insurance policy series and number together, e.g. RO/00/X00/XX 123456789; never a registration or contract number")
-    var policyNumber: String?
-
-    @Guide(description: "Phone number for claims or assistance")
-    var claimsPhone: String?
-
-    @Guide(description: "Romanian registration plate, e.g. B 123 ABC")
-    var licensePlate: String?
-
-    @Guide(description: "17-character vehicle identification number")
-    var vin: String?
-
-    @Guide(description: "Product bought, for receipts and warranties")
-    var productName: String?
-
-    @Guide(description: "Product serial number or IMEI")
-    var serialNumber: String?
-
-    @Guide(description: "Purchase date, YYYY-MM-DD")
-    var purchaseDate: String?
-
-    @Guide(description: "Warranty length in months")
-    var warrantyMonths: Int?
-
-    @Guide(description: "Odometer reading in kilometres")
-    var odometerKm: Int?
-
-    @Guide(description: "Date of the next vaccine or booster, YYYY-MM-DD")
-    var nextDoseDate: String?
-
-    @Guide(description: "Parts, services and labour listed with their amounts", .maximumCount(30))
-    var lineItems: [GeneratedLineItem]
-
-    var answers: ModelAnswerMapper.Answers {
-        ModelAnswerMapper.Answers(
-            kind: documentKind, issuer: issuer, documentNumber: documentNumber, issueDate: issueDate,
-            expiryDate: expiryDate, dueDate: dueDate, startDate: startDate, totalAmount: totalAmount,
-            currency: currency, policyNumber: policyNumber, claimsPhone: claimsPhone, licensePlate: licensePlate,
-            vin: vin, productName: productName, serialNumber: serialNumber, purchaseDate: purchaseDate,
-            warrantyMonths: warrantyMonths, odometerKm: odometerKm, nextDoseDate: nextDoseDate,
-            lineItems: lineItems.map { ($0.itemDescription, $0.amount) }
-        )
+    static func factsPrompt(_ kind: CaptureDocumentKind) -> String {
+        "This is a \(kind.profile.modelDescription). Fill in each field it prints, exactly as printed."
     }
 }
 
-@Generable(description: "One line of an invoice or receipt")
-struct GeneratedLineItem {
-    @Guide(description: "What the line is for, as printed")
-    var itemDescription: String
+// MARK: - The generation schema
 
-    @Guide(description: "Line amount, digits with a dot for decimals")
-    var amount: String?
+/// The questions as Foundation Models' generation schema, built for each kind at the
+/// moment it is asked: one optional property per field, its type from the field's format,
+/// its description the shared one (`ModelQuestions`). Choices (a service, a cover, a card
+/// network, the kind) are the app's own keys, so the answer can only name one of them.
+enum OnDeviceSchema {
+
+    /// The kind question: one of the app's kinds, each described by its profile.
+    static func kindQuestion() throws -> GenerationSchema {
+        let kinds = DynamicGenerationSchema(name: "DocumentKindChoice", anyOf: CaptureDocumentKind.allCases.map(\.rawValue))
+        let root = DynamicGenerationSchema(name: "DocumentKind", description: "What a Romanian household document is", properties: [
+            .init(name: ModelQuestions.kindName, description: ModelQuestions.kindDescription, schema: kinds),
+        ])
+        return try GenerationSchema(root: root, dependencies: [])
+    }
+
+    /// The facts of one kind, exactly its questions.
+    static func facts(_ questions: ModelQuestions) throws -> GenerationSchema {
+        let root = DynamicGenerationSchema(
+            name: "DocumentFacts",
+            description: "Facts printed on a \(questions.kind.profile.modelDescription)",
+            properties: questions.fields.map { field in
+                DynamicGenerationSchema.Property(name: field.name, description: field.description, schema: value(of: field), isOptional: true)
+            }
+        )
+        return try GenerationSchema(root: root, dependencies: [])
+    }
+
+    /// The shape of one field's value, from its format. Nested shapes are named after their
+    /// field, so no two share a name.
+    static func value(of field: ModelField) -> DynamicGenerationSchema {
+        switch field.format {
+        case .date:
+            return DynamicGenerationSchema(type: String.self, guides: [.pattern(#/\d{4}-\d{2}-\d{2}/#)])
+        case .integer:
+            return DynamicGenerationSchema(type: Int.self)
+        case .money:
+            return DynamicGenerationSchema(name: "\(field.name)Amount", properties: [
+                .init(name: "amount", schema: DynamicGenerationSchema(type: Double.self)),
+                .init(name: "currency", schema: DynamicGenerationSchema(name: "\(field.name)Currency", anyOf: ModelQuestions.currencies)),
+            ])
+        case .sex:
+            return DynamicGenerationSchema(name: "\(field.name)Choice", anyOf: ["M", "F"])
+        case .serviceKind:
+            return DynamicGenerationSchema(name: "\(field.name)Choice", anyOf: ServiceKind.all)
+        case .coverage:
+            return DynamicGenerationSchema(name: "\(field.name)Choice", anyOf: InsuranceCover.all)
+        case .cardNetwork:
+            return DynamicGenerationSchema(name: "\(field.name)Choice", anyOf: PaymentCardNetwork.all)
+        case .lineItems:
+            let line = DynamicGenerationSchema(name: "\(field.name)Line", properties: [
+                .init(name: "description", description: "What the line is for, as printed", schema: DynamicGenerationSchema(type: String.self)),
+                .init(name: "amount", description: "The line's amount", schema: DynamicGenerationSchema(type: Double.self), isOptional: true),
+            ])
+            return DynamicGenerationSchema(arrayOf: line, maximumElements: maximumLines)
+        case .machineReadableZone:
+            return DynamicGenerationSchema(arrayOf: DynamicGenerationSchema(type: String.self))
+        case .text, .name, .personalNumber, .documentNumber, .country, .categories, .meterIndex, .vin, .plate, .phone, .cardLastFour:
+            return DynamicGenerationSchema(type: String.self)
+        }
+    }
+
+    /// The most lines an invoice is read for.
+    static let maximumLines = 30
+
+    /// An answer as the plain value every model's answer is read from (`ModelAnswerMapper`).
+    static func json(_ content: GeneratedContent) -> JSONValue {
+        switch content.kind {
+        case .null: .null
+        case .bool(let value): .bool(value)
+        case .number(let value): .number(value)
+        case .string(let value): .string(value)
+        case .array(let items): .array(items.map(json))
+        case .structure(let properties, _): .object(properties.mapValues(json))
+        @unknown default: .null
+        }
+    }
 }
