@@ -145,8 +145,8 @@ final class FakeAuthenticator: BiometricAuthenticating, @unchecked Sendable {
 @MainActor
 @Suite("Face ID locks")
 struct BiometricVaultTests {
-    private func vault(_ authenticator: FakeAuthenticator, appLock: Bool = false, clock: @escaping () -> Date = { Date() }) -> BiometricVaultManager {
-        BiometricVaultManager(authenticator: authenticator, now: clock, appLockEnabled: { appLock }, observesAppLifecycle: false)
+    private func vault(_ authenticator: FakeAuthenticator, appLock: Bool = false) -> BiometricVaultManager {
+        BiometricVaultManager(authenticator: authenticator, appLockEnabled: { appLock }, observesAppLifecycle: false)
     }
 
     @Test func sectionLocksWorkWithOrWithoutTheAppLock() {
@@ -198,22 +198,7 @@ struct BiometricVaultTests {
         #expect(authenticator.prompts == 1)
     }
 
-    @Test func relocksOnlyAfterALongerBackgroundTrip() async {
-        var clock = noon("2026-11-02")
-        let manager = vault(FakeAuthenticator(.succeed), appLock: true, clock: { clock })
-        await manager.unlock(reason: "test")
-
-        manager.appDidEnterBackground()
-        clock = clock.addingTimeInterval(BiometricVaultManager.relockAfterBackground - 5)
-        manager.appWillEnterForeground()
-        #expect(manager.isSessionUnlocked, "A quick switch to another app keeps it open")
-
-        manager.appDidEnterBackground()
-        clock = clock.addingTimeInterval(BiometricVaultManager.relockAfterBackground + 5)
-        manager.appWillEnterForeground()
-        #expect(!manager.isSessionUnlocked)
-        #expect(manager.isAppLocked)
-    }
+    // Time away and the relock: `RelockTimingTests`.
 
     @Test func lockClosesTheSession() async {
         let manager = vault(FakeAuthenticator(.succeed))

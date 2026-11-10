@@ -9,22 +9,49 @@ enum LockCover: Equatable {
     /// locked content could be on it.
     case privacy
 
+    /// Where the app's scene is, as the cover reads it.
+    enum Phase: Equatable, CaseIterable {
+        /// On the screen and taking taps.
+        case active
+        /// Still on the screen but not taking taps: the app switcher is opening, or a system
+        /// sheet (the Face ID prompt, the passcode) is over the app.
+        case inactive
+        /// Off the screen. iOS takes the picture for the app switcher now.
+        case background
+
+        init(_ scenePhase: ScenePhase) {
+            switch scenePhase {
+            case .active: self = .active
+            case .inactive: self = .inactive
+            case .background: self = .background
+            // A phase a newer iOS adds is treated as leaving the screen: covered.
+            @unknown default: self = .background
+            }
+        }
+    }
+
     /// The one rule for covering the app.
     /// - The app lock covers everything while the session is closed.
-    /// - Leaving the screen covers the app whenever the app lock is on, or a
-    ///   section lock is on and the session is open (a locked section could be
-    ///   showing). Not while a Face ID prompt is up: that also leaves the screen.
+    /// - Otherwise the app is covered when it leaves the screen and locked content could be on
+    ///   it: the app lock is on, or a section lock is on and the session is open.
+    /// - Leaving the screen is the background, always, even with a Face ID prompt up: that is
+    ///   when iOS takes the app switcher's picture. It is also the inactive state, except while
+    ///   a Face ID prompt is up, since the prompt itself makes the app inactive and must not be
+    ///   covered by the app's own cover.
     static func decide(
         appLockEnabled: Bool,
         anySectionLocked: Bool,
         isSessionUnlocked: Bool,
-        isActive: Bool,
+        phase: Phase,
         isAuthenticating: Bool
     ) -> LockCover? {
         if appLockEnabled, !isSessionUnlocked { return .lock }
-        guard !isActive, !isAuthenticating else { return nil }
-        if appLockEnabled || (anySectionLocked && isSessionUnlocked) { return .privacy }
-        return nil
+        guard appLockEnabled || (anySectionLocked && isSessionUnlocked) else { return nil }
+        switch phase {
+        case .active: return nil
+        case .inactive: return isAuthenticating ? nil : .privacy
+        case .background: return .privacy
+        }
     }
 }
 
