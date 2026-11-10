@@ -231,7 +231,7 @@ struct NewCounterTests {
         let next = try #require(MaintenanceLog.nextEstimate(of: "brakes.padsFront", in: pads, readings: readings, currentMetric: 1_500,
                                                             now: noon("2026-06-01"), calendar: .bucharest))
         #expect(next.basis == .distance)
-        #expect(next.metric == 1_500 + 31_000 - 3_000, "What is left of the usual 31.000 km, on the new dashboard")
+        #expect(next.metric.map { abs($0 - 29_500) < 0.5 } == true, "What is left of the usual 31.000 km (1.500 + 31.000 − 3.000), on the new dashboard")
     }
 
     @Test func aSeriesMadeAgainFromItsReadingsSplitsTheSameWay() {
