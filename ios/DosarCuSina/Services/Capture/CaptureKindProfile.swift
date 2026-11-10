@@ -82,10 +82,14 @@ struct CaptureKindProfile: Sendable {
     /// Its photo is kept only when the person asks ("Păstrează și poza cardului"): a bank
     /// card's photo shows its whole number, which the binder never keeps otherwise.
     var photoIsOptIn = false
-    /// The printed labels of this kind's own values, as data, read with `LabelledLayout`:
-    /// a bill's dates, meter index and payment code (`BillReader`). Longer wordings win,
-    /// and a value is never another label, so a new wording is a new row. Empty for kinds
-    /// whose labels are still listed in the analyzer.
+    /// The printed labels of this kind's own values, as data, folded. A bill's are read as a
+    /// layout (`BillReader` through `LabelledLayout`: longer wordings win, and a value is
+    /// never another label); every other kind's by the shared readers the analyzer runs
+    /// for it, told this table (`labels(for:)`): a policy's expiry, period, claims line and
+    /// class, an ITP report's next inspection, a vet's vaccine, booster and microchip, a
+    /// receipt's date, warranty and serial number. A new wording is a new row, read without
+    /// code. What every document prints the same way (its issue date, its total, a VIN, the
+    /// odometer) is `commonLabels`; values printed in parts are `CompositeLabels`'.
     var labels: [(CaptureFieldKey, [String])] = []
 
     /// How a new section made from a document is named.
@@ -117,6 +121,20 @@ struct CaptureKindProfile: Sendable {
         case .pet: return fields[.petName]?.text ?? String(localized: "Animalul")
         case .fixed(let name): return String(localized: name)
         }
+    }
+
+    // MARK: Labels
+
+    /// The wordings this kind prints `key` under: every row of its own table for `key`,
+    /// else the one every document shares (`commonLabels`). Empty when neither has one.
+    func labels(for key: CaptureFieldKey) -> [String] {
+        let own = labels.filter { $0.0 == key }.flatMap { $0.1 }
+        return own.isEmpty ? Self.commonLabels(for: key) : own
+    }
+
+    /// The wordings every document prints `key` under, whatever its kind.
+    static func commonLabels(for key: CaptureFieldKey) -> [String] {
+        commonLabels.filter { $0.0 == key }.flatMap { $0.1 }
     }
 
     // MARK: Lookup
@@ -219,7 +237,8 @@ struct CaptureKindProfile: Sendable {
             expectedKeys: [.provider, .providerTaxID, .policyNumber, .coverageType, .startDate, .expiryDate, .total, .claimsPhone, .licensePlate, .vin, .bonusMalusClass,
                            .policyholder],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: true, identifierKeys: [.licensePlate, .vin],
-            name: "Poliță RCA", titleRule: .nameAndYear, modelDescription: "compulsory motor insurance (RCA) policy", sectionName: .vehicle
+            name: "Poliță RCA", titleRule: .nameAndYear, modelDescription: "compulsory motor insurance (RCA) policy", sectionName: .vehicle,
+            labels: policyLabels
         ),
         CaptureKindProfile(
             kind: .insurancePolicy, templateKey: nil, filing: .intoSection, blueprintKey: nil,
@@ -228,7 +247,8 @@ struct CaptureKindProfile: Sendable {
             expectedKeys: [.provider, .providerTaxID, .policyNumber, .coverageType, .startDate, .expiryDate, .total, .claimsPhone, .licensePlate,
                            .policyholder],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: [.licensePlate, .vin],
-            name: "Poliță de asigurare", titleRule: .name, modelDescription: "insurance policy (CASCO, home or other)"
+            name: "Poliță de asigurare", titleRule: .name, modelDescription: "insurance policy (CASCO, home or other)",
+            labels: policyLabels
         ),
         CaptureKindProfile(
             kind: .utilityInvoice, templateKey: BuiltInTemplates.Key.subscription, filing: .subscription, blueprintKey: SubscriptionFields.billBlueprint,
@@ -264,7 +284,8 @@ struct CaptureKindProfile: Sendable {
             documentKind: .receipt, documentType: nil, trade: nil,
             expectedKeys: [.retailer, .purchaseDate, .purchasePrice, .productName, .serialNumber, .warrantyMonths, .warrantyUntil, .lineItems],
             carriesLineItems: true, opensVisitFlow: false, logsHistory: false, identifierKeys: [.serialNumber],
-            name: "Bon fiscal", titleRule: .product, modelDescription: "fiscal receipt"
+            name: "Bon fiscal", titleRule: .product, modelDescription: "fiscal receipt",
+            labels: purchaseLabels
         ),
         CaptureKindProfile(
             kind: .warrantyCertificate, templateKey: BuiltInTemplates.Key.purchase, filing: .newSection, blueprintKey: BuiltInBlueprints.warrantyEnds,
@@ -272,7 +293,8 @@ struct CaptureKindProfile: Sendable {
             documentKind: .warranty, documentType: nil, trade: nil,
             expectedKeys: [.retailer, .productName, .serialNumber, .purchaseDate, .warrantyMonths, .warrantyUntil],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: [.serialNumber],
-            name: "Certificat de garanție", titleRule: .product, modelDescription: "warranty certificate"
+            name: "Certificat de garanție", titleRule: .product, modelDescription: "warranty certificate",
+            labels: purchaseLabels
         ),
         CaptureKindProfile(
             kind: .itpReport, templateKey: BuiltInTemplates.Key.vehicle, filing: .intoSection, blueprintKey: BuiltInBlueprints.vehicleITP,
@@ -280,7 +302,8 @@ struct CaptureKindProfile: Sendable {
             documentKind: .report, documentType: nil, trade: .inspectionStation,
             expectedKeys: [.provider, .licensePlate, .vin, .issueDate, .expiryDate, .odometer],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: true, identifierKeys: [.licensePlate, .vin],
-            name: "Raport ITP", titleRule: .name, modelDescription: "periodic technical inspection (ITP) report", sectionName: .vehicle
+            name: "Raport ITP", titleRule: .name, modelDescription: "periodic technical inspection (ITP) report", sectionName: .vehicle,
+            labels: inspectionLabels
         ),
         CaptureKindProfile(
             kind: .veterinaryRecord, templateKey: BuiltInTemplates.Key.pet, filing: .intoSection, blueprintKey: BuiltInBlueprints.petVaccine,
@@ -288,7 +311,8 @@ struct CaptureKindProfile: Sendable {
             documentKind: .report, documentType: nil, trade: .vet,
             expectedKeys: [.provider, .petName, .microchip, .vaccineName, .issueDate, .nextDoseDate],
             carriesLineItems: true, opensVisitFlow: true, logsHistory: true, identifierKeys: [.microchip, .petName],
-            name: "Fișă de la veterinar", titleRule: .fixed("Fișă veterinar"), modelDescription: "veterinary record", sectionName: .pet
+            name: "Fișă de la veterinar", titleRule: .fixed("Fișă veterinar"), modelDescription: "veterinary record", sectionName: .pet,
+            labels: veterinaryLabels
         ),
         CaptureKindProfile(
             kind: .medicalResult, templateKey: BuiltInTemplates.Key.health, filing: .intoSection, blueprintKey: nil,
@@ -327,6 +351,47 @@ struct CaptureKindProfile: Sendable {
                         "cod de inregistrare", "cod inregistrare", "cod de incasare", "cod incasare"]),
     ]
 
+    /// What every document prints the same way, whatever its kind, folded: the day it was
+    /// issued (a bill's own wordings are its table's; these are read when they find none),
+    /// the amount it states, strongest first (`RomanianFieldExtractor.total`), a VIN printed
+    /// in groups after its label, and the odometer on a car's papers.
+    static let commonLabels: [(CaptureFieldKey, [String])] = [
+        (.issueDate, ["data emiterii", "data facturii", "data eliberarii", "emisa la", "data:"]),
+        (.total, ["total de plata", "total plata", "suma de plata", "rest de plata", "total general",
+                  "total factura", "valoare totala", "prima de asigurare", "prima totala", "total cu tva", "de plata"]),
+        (.vin, ["vin", "serie sasiu", "seria sasiu", "nr. identificare", "numar de identificare"]),
+        (.odometer, ["kilometraj", "km bord", "km la bord", "odometru", "rulaj", "km parcursi"]),
+    ]
+
+    /// A policy's own labels, RCA or any other: its period of cover (both days on the line),
+    /// its end when no period is printed, the line with the claims phone, and the class.
+    static let policyLabels: [(CaptureFieldKey, [String])] = [
+        (.validityPeriod, ["valabil", "perioada", "valabilitate", "validity", "de la", "asigurare"]),
+        (.expiryDate, ["pana la", "expira", "data expirarii", "valabila pana"]),
+        (.claimsPhone, ["daune", "dauna", "avizare", "asistenta", "call center", "callcenter", "nonstop", "24/7", "suport clienti"]),
+        (.bonusMalusClass, ["bonus", "malus", "clasa"]),
+    ]
+
+    /// An ITP report's own label: the day the next inspection is due.
+    static let inspectionLabels: [(CaptureFieldKey, [String])] = [
+        (.expiryDate, ["valabila pana la", "valabil pana la", "urmatoarea inspectie", "data urmatoarei inspectii", "valabilitate"]),
+    ]
+
+    /// A vet's record: the microchip's line, the vaccine's line and the booster's day.
+    static let veterinaryLabels: [(CaptureFieldKey, [String])] = [
+        (.microchip, ["microcip", "cip", "transponder"]),
+        (.vaccineName, ["vaccin", "antirabic"]),
+        (.nextDoseDate, ["rapel", "revaccinare", "urmatorul vaccin", "urmatoarea vaccinare", "valabil pana la"]),
+    ]
+
+    /// A receipt's or a warranty certificate's: the day of the sale, the warranty's length
+    /// and the product's serial number.
+    static let purchaseLabels: [(CaptureFieldKey, [String])] = [
+        (.purchaseDate, ["data vanzarii", "data cumpararii", "data achizitiei", "data livrarii", "data:"]),
+        (.warrantyMonths, ["garanti"]),
+        (.serialNumber, ["s/n", "sn", "serial", "seria produs", "serie produs", "imei"]),
+    ]
+
     /// The codes that find a bill's or a contract's subscription, most specific first.
     static let subscriptionCodes: [CaptureFieldKey] = [.podCode, .clcCode, .phoneNumber, .contractNumber, .clientCode]
 
@@ -350,6 +415,12 @@ struct CaptureKindProfile: Sendable {
         profile.photoIsOptIn = photoIsOptIn
         return profile
     }
+}
+
+extension CaptureFieldKey {
+    /// A policy's period of cover ("Valabilă de la 01.11.2026 până la 31.10.2027"): a label
+    /// of its table, whose line gives the start and the end. Never a field of its own.
+    static let validityPeriod: CaptureFieldKey = "validityPeriod"
 }
 
 extension CaptureDocumentKind {
