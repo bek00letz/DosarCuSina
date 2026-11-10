@@ -86,7 +86,8 @@ struct RomanianFieldExtractorTests {
         Avizare daune nonstop:
         0800 123 456
         """)
-        #expect(RomanianFieldExtractor.claimsPhone(in: text)?.value == "0800123456")
+        let labels = CaptureDocumentKind.rcaPolicy.profile.labels(for: .claimsPhone)
+        #expect(RomanianFieldExtractor.claimsPhone(in: text, labels: labels)?.value == "0800123456")
     }
 
     @Test("Odometer prefers a labelled value")
@@ -102,8 +103,9 @@ struct RomanianFieldExtractorTests {
 
     @Test("Warranty length in months or years")
     func warranty() {
-        #expect(RomanianFieldExtractor.warrantyMonths(in: CaptureText("Termen de garanție: 24 luni"))?.months == 24)
-        #expect(RomanianFieldExtractor.warrantyMonths(in: CaptureText("Garanție 3 ani"))?.months == 36)
+        let labels = CaptureDocumentKind.fiscalReceipt.profile.labels(for: .warrantyMonths)
+        #expect(RomanianFieldExtractor.warrantyMonths(in: CaptureText("Termen de garanție: 24 luni"), labels: labels)?.months == 24)
+        #expect(RomanianFieldExtractor.warrantyMonths(in: CaptureText("Garanție 3 ani"), labels: labels)?.months == 36)
     }
 
     @Test("Invoice series and number")

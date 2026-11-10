@@ -106,6 +106,14 @@ rule number-parser "$app" '(^|/)RomanianNumber[^/]*\.swift$' \
     'Decimal\(string: *[a-z]|replacingOccurrences\(of: *",", *with: *"\."\)|NumberFormatter\(\)|\.number\.parseStrategy|ParseStrategy' - \
     'Read numbers from text with the one shared reader. Readers that disagree turn 45,724 into 45.724.'
 
+# A kind's printed labels are data: its profile's table (CaptureKindProfile.labels), or the one
+# every document shares (CaptureKindProfile.commonLabels). Capture's readers are told the
+# table, so a wording added there is read with no new code; a list written where it is read
+# is a second table.
+rule labels-outside-their-table '^ios/DosarCuSina/Services/Capture/' - \
+    '(labelledDate\(|lines\(containing: *|contains\(any: *|labels: *)\[ *"|let +labels *= *\[ *"' - \
+    "A kind's labels are data in its profile (CaptureKindProfile.labels, or commonLabels for what every document prints). Tell the reader the table, as profile.labels(for:); never list labels where they are read."
+
 rule bare-progress-view "$app" "$design_system|^ios/Shared/DSMotion\\.swift\$" \
     'ProgressView\(' - \
     'Use DSDelayedProgress: it waits before it shows and keeps its space, so fast work never flashes a spinner.'
