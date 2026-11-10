@@ -43,11 +43,12 @@ struct FreeTextProperty<Model: PersistentModel> {
     }
 
     /// A section's values, stored as JSON `FieldValues`, by the rule for fields
-    /// (`PaymentCardNumbers.sanitizing`): a bank card's last digits cut to four, sealed codes left alone.
-    static func values(_ name: String, _ keyPath: ReferenceWritableKeyPath<Model, Data?>) -> Self {
+    /// (`PaymentCardNumbers.sanitizing`): a bank card's last digits cut to four, sealed codes left
+    /// alone, a value its own field type tells apart from a card (an IBAN, a microchip) kept whole.
+    static func values(_ name: String, _ keyPath: ReferenceWritableKeyPath<Model, Data?>, fields: @escaping (Model) -> [FieldDefinition]) -> Self {
         Self(name: name) { record, write in
             guard let values = StoredJSON.decode(FieldValues.self, from: record[keyPath: keyPath]) else { return false }
-            let masked = PaymentCardNumbers.sanitizing(values)
+            let masked = PaymentCardNumbers.sanitizing(values, fields: { fields(record) })
             guard masked != values else { return false }
             if write { record[keyPath: keyPath] = StoredJSON.encode(masked) }
             return true
@@ -127,9 +128,20 @@ enum FreeText {
 
 extension DosarSchemaV8.Asset: HoldsFreeText {
     static var freeText: [FreeTextProperty<DosarSchemaV8.Asset>] {
-        [.text("name", \.name), .text("notes", \.notes), .values("valuesData", \.valuesData), .facts("customFactsData", \.customFactsData)]
+        [
+            .text("name", \.name), .text("notes", \.notes), .values("valuesData", \.valuesData, fields: \.categoryFields),
+            .facts("customFactsData", \.customFactsData),
+        ]
     }
     static var machineText: Set<String> { ["templateKey", "symbolOverride", "tintOverrideRaw", "photoData"] }
+
+    /// The fields its category defines, so a value its own type tells apart from a card number
+    /// stays whole (`PaymentCardNumbers.keepsWhole`). None when the category can't be found.
+    /// Read only when a value would be masked, and on any thread (a backup's own context).
+    fileprivate var categoryFields: [FieldDefinition] {
+        guard let context = modelContext, let template = (try? TemplateStore.templatesByKey(in: context))?[templateKey] else { return [] }
+        return template.definition.allFields
+    }
 }
 
 extension DosarSchemaV8.Obligation: HoldsFreeText {
