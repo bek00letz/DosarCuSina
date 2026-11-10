@@ -31,7 +31,7 @@ public enum HistoryKind: String, Codable, CaseIterable, Sendable {
     }
 }
 
-extension DosarSchemaV10 {
+extension DosarSchemaV11 {
     /// One thing that happened to an asset: a visit, a repair, a purchase, an
     /// inspection. It is the asset's single history: completing an obligation
     /// writes one of these, and so does logging a repair by hand.

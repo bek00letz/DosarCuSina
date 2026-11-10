@@ -89,9 +89,11 @@ struct CaptureKindProfile: Sendable {
     /// never another label); every other kind's by the shared readers the analyzer runs
     /// for it, told this table (`labels(for:)`): a policy's expiry, period, claims line and
     /// class, an ITP report's next inspection, a vet's vaccine, booster and microchip, a
-    /// receipt's date, warranty and serial number. A new wording is a new row, read without
-    /// code. What every document prints the same way (its issue date, its total, a VIN, the
-    /// odometer) is `commonLabels`; values printed in parts are `CompositeLabels`'.
+    /// receipt's date, warranty and serial number, a talon's CIV and numbered fields. A new
+    /// wording is a new row, read without code. What every document prints the same way (its issue date, its total, a VIN, the
+    /// odometer, an invoice's number, the tax ID) is `commonLabels`. A value printed in parts
+    /// (a policy's, an invoice's, the CIV's number) is a row like any other, read as one value
+    /// with the other fields' labels that start the same way (`CompositeLabels.table(for:)`).
     var labels: [(CaptureFieldKey, [String])] = []
     /// A payment barcode on it is its payment code (a bill, a service invoice, any other paper).
     var readsPaymentCode = false
@@ -255,7 +257,8 @@ struct CaptureKindProfile: Sendable {
             documentKind: .identity, documentType: nil, trade: nil,
             expectedKeys: [.licensePlate, .vin, .civNumber, .make, .model, .firstRegistrationDate],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: [.licensePlate, .vin],
-            name: "Talon (certificat de înmatriculare)", titleRule: .fixed("Certificat de înmatriculare"), modelDescription: "vehicle registration certificate", sectionName: .vehicle
+            name: "Talon (certificat de înmatriculare)", titleRule: .fixed("Certificat de înmatriculare"), modelDescription: "vehicle registration certificate", sectionName: .vehicle,
+            labels: registrationLabels
         ),
         CaptureKindProfile(
             kind: .rcaPolicy, templateKey: BuiltInTemplates.Key.vehicle, filing: .intoSection, blueprintKey: nil,
@@ -384,18 +387,36 @@ struct CaptureKindProfile: Sendable {
     /// What every document prints the same way, whatever its kind, folded: the day it was
     /// issued (a bill's own wordings are its table's; these are read when they find none),
     /// the amount it states, strongest first (`RomanianFieldExtractor.total`), a VIN printed
-    /// in groups after its label, and the odometer on a car's papers.
+    /// in groups after its label, the odometer on a car's papers, an invoice's series and
+    /// number (read as one value, `CompositeLabels.table(for:)`), and the issuer's tax ID,
+    /// whose dots may be printed or left out ("C.U.I.", "CUI", `RomanianFieldExtractor.taxID`).
     static let commonLabels: [(CaptureFieldKey, [String])] = [
         (.issueDate, ["data emiterii", "data facturii", "data eliberarii", "emisa la", "data:"]),
         (.total, ["total de plata", "total plata", "suma de plata", "rest de plata", "total general",
                   "total factura", "valoare totala", "prima de asigurare", "prima totala", "total cu tva", "de plata"]),
         (.vin, ["vin", "serie sasiu", "seria sasiu", "nr. identificare", "numar de identificare"]),
         (.odometer, ["kilometraj", "km bord", "km la bord", "odometru", "rulaj", "km parcursi"]),
+        (.invoiceNumber, ["nr. factura", "nr factura", "numar factura", "numarul facturii", "factura nr", "factura fiscala nr",
+                          "factura seria", "seria si numarul facturii", "serie si numar factura", "seria si numarul",
+                          "invoice no", "invoice number", "seria", "serie"]),
+        (.providerTaxID, ["c.u.i.", "c.i.f.", "cod fiscal", "cod unic de inregistrare", "cod de identificare fiscala"]),
+    ]
+
+    /// A vehicle registration certificate's (talon) own labels, folded: the vehicle identity
+    /// card's (CIV) series and number (read as one value, `CompositeLabels.table(for:)`), and
+    /// the fields it numbers as the EU model does, at the start of their line, their dots
+    /// printed or left out (`RomanianFieldExtractor.registrationFields`): D.1 the make, D.3 the
+    /// model, B the first registration.
+    static let registrationLabels: [(CaptureFieldKey, [String])] = [
+        (.civNumber, ["serie civ", "seria civ", "nr. civ", "numar civ", "c.i.v.", "cartea de identitate a vehiculului"]),
+        (.make, ["d.1"]),
+        (.model, ["d.3"]),
+        (.firstRegistrationDate, ["b."]),
     ]
 
     /// A policy's own labels, RCA or any other: its period of cover (both days on the line),
     /// its end when no period is printed, the line with the claims phone, the class, its
-    /// series and number (read as one value, `CompositeLabels.policy`, with the green card's
+    /// series and number (read as one value, `CompositeLabels.policy(_:)`, with the green card's
     /// header an RCA may print), and who it insures with their CNP (`PolicyholderReader`).
     static let policyLabels: [(CaptureFieldKey, [String])] = [
         (.validityPeriod, ["valabil", "perioada", "valabilitate", "validity", "de la", "asigurare"]),

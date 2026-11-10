@@ -8,7 +8,7 @@ public enum ChangeTime {
     /// reading or a document saved before version 8, or one from a backup that carries none),
     /// and of a built-in category nobody has changed: older than any change, and the same on
     /// every phone, so two copies of a record nobody has changed since are never taken for a
-    /// newer one. Equal to the default the schema gives those records (`DosarSchemaV10`).
+    /// newer one. Equal to the default the schema gives those records (`DosarSchemaV11`).
     public static let unknown = Date.distantPast
 }
 
@@ -76,6 +76,8 @@ enum ChangeTimes {
     static func stamp(_ context: ModelContext, origin: ChangeOrigin, now: Date) {
         guard origin != .restoring else { return }
         context.processPendingChanges()
+        // Since when each deadline's cycle is known, whoever's step it is (`CycleTimes`).
+        CycleTimes.stamp(context, now: now)
         for model in context.insertedModelsArray {
             guard let record = model as? any ChangeTimed else { continue }
             made(record, now: now)
@@ -96,12 +98,18 @@ enum ChangeTimes {
         }
     }
 
+    /// The times the unit of work keeps about a record as it saves, never part of its own state:
+    /// when it last changed, and since when a deadline's cycle is known (`CycleTimes`).
+    static let keptTimes: Set<String> = ["updatedAt", "cycleKnownAt"]
+
     /// Whether `property` is part of the record's own state: a value or a link it keeps itself
     /// (`StoredProperty.isOwn`, never a list of the records that point at it), that counts as a
-    /// change of it (`ChangeTimed.changeCounts`), and not its change time. The one definition:
-    /// change times are given by it, and undo checks and takes back by it (`UndoableRecord.isStillAsLeft`).
+    /// change of it (`ChangeTimed.changeCounts`), and not a time the unit keeps (`keptTimes`).
+    /// The one definition: change times are given by it, and undo checks and takes back by it
+    /// (`UndoableRecord.isStillAsLeft`), so a kept time goes back as it was while still as the
+    /// step left it, and a newer one stays.
     static func isOwnState<M: UndoableRecord>(_ property: StoredProperty<M>, of record: M) -> Bool {
-        property.isOwn && property.name != "updatedAt" && ((record as? any ChangeTimed)?.changeCounts(property.name) ?? true)
+        property.isOwn && !keptTimes.contains(property.name) && ((record as? any ChangeTimed)?.changeCounts(property.name) ?? true)
     }
 
     /// The values and links a record keeps itself that count as a change of it, without its
@@ -145,15 +153,15 @@ enum ChangeTimes {
     }
 }
 
-extension DosarSchemaV10.Asset: ChangeTimed {}
-extension DosarSchemaV10.Obligation: ChangeTimed {}
-extension DosarSchemaV10.HistoryEntry: ChangeTimed {}
-extension DosarSchemaV10.ServiceItem: ChangeTimed {}
-extension DosarSchemaV10.MeasurementLog: ChangeTimed {}
-extension DosarSchemaV10.Attachment: ChangeTimed {}
-extension DosarSchemaV10.Provider: ChangeTimed {}
+extension DosarSchemaV11.Asset: ChangeTimed {}
+extension DosarSchemaV11.Obligation: ChangeTimed {}
+extension DosarSchemaV11.HistoryEntry: ChangeTimed {}
+extension DosarSchemaV11.ServiceItem: ChangeTimed {}
+extension DosarSchemaV11.MeasurementLog: ChangeTimed {}
+extension DosarSchemaV11.Attachment: ChangeTimed {}
+extension DosarSchemaV11.Provider: ChangeTimed {}
 
-extension DosarSchemaV10.CategoryTemplate: ChangeTimed {
+extension DosarSchemaV11.CategoryTemplate: ChangeTimed {
     /// What the person chooses for a built-in category; everything else is the catalog's.
     static let personsOwnChoices: Set<String> = ["homeOrder", "isOnHome", "isSensitive"]
 
@@ -166,6 +174,6 @@ extension DosarSchemaV10.CategoryTemplate: ChangeTimed {
     }
 }
 
-extension DosarSchemaV10.AttachmentPage: PartOfChangeTimed {
+extension DosarSchemaV11.AttachmentPage: PartOfChangeTimed {
     static var wholeProperty: String { "attachment" }
 }

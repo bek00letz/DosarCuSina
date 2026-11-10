@@ -44,7 +44,7 @@ public enum MeasurementKind: String, Codable, CaseIterable, Sendable {
     }
 }
 
-extension DosarSchemaV10 {
+extension DosarSchemaV11 {
     /// A line in a history entry: a part replaced, a job done, a vaccine given.
     /// `componentKey` ties it to the template's component catalog so "when did I
     /// last change the brake pads" has one answer across entries.

@@ -293,7 +293,7 @@ public final class ObligationActions {
     }
 }
 
-extension DosarSchemaV10.Obligation {
+extension DosarSchemaV11.Obligation {
     /// The counter unit for metric-based obligations, such as kilometres.
     public var metricUnit: MeasurementUnit? {
         if case .metric(_, let unit, _) = recurrence { return unit }
