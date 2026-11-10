@@ -223,7 +223,7 @@ public enum UnitOfWork {
         context.processPendingChanges()
         var touched = Set<RecordRef>()
         for model in context.insertedModelsArray + context.changedModelsArray + context.deletedModelsArray {
-            guard let state = RecordState.capture(any: model) else { continue }
+            guard let state = RecordState.links(any: model) else { continue }
             touched.insert(state.ref)
             touched.formUnion(state.linked)
         }
