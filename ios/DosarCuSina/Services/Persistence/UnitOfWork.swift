@@ -240,13 +240,8 @@ public enum UnitOfWork {
         let message = "\(type(of: error)) was thrown after the unit of work wrote. Ask it before the unit opens."
         PersistenceLog.logger.fault("\(message, privacy: .public)")
         #if DEBUG
-        if isRunningTests { assertionFailure(message) }
+        if BuildInfo.isTestHost { assertionFailure(message) }
         #endif
-    }
-
-    /// Whether the app is hosting a test run (xcodebuild test sets this).
-    private static var isRunningTests: Bool {
-        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     }
 
     /// Runs `action` once the open unit of work has saved, or right away when

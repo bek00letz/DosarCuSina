@@ -28,7 +28,8 @@ struct DosarCuSinaApp: App {
                     AppShell()
                         .modelContainer(container)
                         .environment(\.sideEffects, sideEffects)
-                        .task { start(with: container) }
+                        // Again whenever the store opens under another container (sync turned on or off).
+                        .task(id: ObjectIdentifier(container)) { start(with: container) }
                 case .waitingForUnlock:
                     StoreWaitingView()
                 case .failed(let failure):
@@ -56,6 +57,9 @@ struct DosarCuSinaApp: App {
                 sideEffects?.setNeedsReconcile(allowPermissionPrompt: false)
             case .background:
                 BackgroundRefresh.schedule()
+                // A change to whether the binder syncs (the examples went, say) applies once the
+                // screen is away, so nothing on it, such as an "Anulează", is cut short.
+                persistence.applySyncChoice()
             default:
                 break
             }
@@ -65,7 +69,7 @@ struct DosarCuSinaApp: App {
     /// Installs built-in categories, looks for data to repair and starts the side-effects
     /// pipeline, once per container.
     private func start(with container: ModelContainer) {
-        guard sideEffects == nil else { return }
+        guard sideEffects?.isFollowing(container) != true else { return }
         // Built-in categories, the repair list and the household's own deadlines, each saved
         // through UnitOfWork.
         LaunchData.prepare(in: container.mainContext, today: CalendarDay(Date()))
@@ -84,5 +88,7 @@ struct DosarCuSinaApp: App {
         let coordinator = SideEffectsCoordinator.shared(for: container)
         coordinator.start()
         sideEffects = coordinator
+        // What comes from the person's other devices, when the binder syncs.
+        SyncedChanges.shared(for: container).start()
     }
 }

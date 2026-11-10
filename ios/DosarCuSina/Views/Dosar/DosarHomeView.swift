@@ -149,7 +149,7 @@ struct DosarHomeView: View {
         isLoadingExamples = true
         defer { isLoadingExamples = false }
         do {
-            try ExampleDataService(context: context).loadExamples()
+            try ExampleDataService.forLoading(from: context).loadExamples()
             toast = DSToast(
                 title: LocalizedStringResource("Am pus exemplele. Le ștergi oricând din Setări.", comment: "Toast after loading example data."),
                 actionTitle: nil

@@ -315,7 +315,7 @@ public struct DossierArchiveService {
     /// everything or nothing. Then the repair list looks again (`lookForRepairs`).
     @discardableResult
     public func importPackage(_ package: DossierV3.Package, mode: ArchiveImportMode) throws -> ArchiveImportResult {
-        let result = try Self.write(package, mode: mode, container: container, calendar: calendar)
+        let result = try Self.write(package, mode: mode, container: container, calendar: calendar, keepsExamples: !PersistenceController.syncs(container))
         lookForRepairs()
         return result
     }
@@ -331,9 +331,10 @@ public struct DossierArchiveService {
     func importPackageAway(_ package: DossierV3.Package, mode: ArchiveImportMode, run: BackupRun = BackupRun()) async throws -> ArchiveImportResult {
         let container = container
         let calendar = calendar
+        let keepsExamples = !PersistenceController.syncs(container)
         run.expect(1)
         let result = try await run.perform {
-            try run.writing { try Self.write(package, mode: mode, container: container, calendar: calendar) }
+            try run.writing { try Self.write(package, mode: mode, container: container, calendar: calendar, keepsExamples: keepsExamples) }
         }
         run.did()
         lookForRepairs()
@@ -352,10 +353,10 @@ public struct DossierArchiveService {
 
     /// The one way a package is written: on a context of its own, saved once,
     /// everything or nothing.
-    nonisolated private static func write(_ package: DossierV3.Package, mode: ArchiveImportMode, container: ModelContainer, calendar: Calendar) throws -> ArchiveImportResult {
+    nonisolated static func write(_ package: DossierV3.Package, mode: ArchiveImportMode, container: ModelContainer, calendar: Calendar, keepsExamples: Bool = true) throws -> ArchiveImportResult {
         let context = PersistenceController.context(in: container)
         return try UnitOfWork.performPrivate(in: context) {
-            try DossierImporter(context: context, package: package, mode: mode, calendar: calendar).run()
+            try DossierImporter(context: context, package: package, mode: mode, calendar: calendar, keepsExamples: keepsExamples).run()
         }
     }
 }

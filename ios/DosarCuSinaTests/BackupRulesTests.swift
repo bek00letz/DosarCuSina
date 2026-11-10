@@ -680,7 +680,7 @@ struct StoreOpeningTests {
         let controller = PersistenceController(
             storeURL: URL.temporaryDirectory.appending(path: "\(UUID().uuidString).store"),
             isProtectedDataAvailable: { available.value },
-            makeContainer: { _ in
+            makeContainer: { _, _ in
                 attempts.count += 1
                 guard available.value else { throw Locked() }
                 return try makeInMemoryContainer()
@@ -700,13 +700,13 @@ struct StoreOpeningTests {
         let full = PersistenceController(
             storeURL: URL.temporaryDirectory.appending(path: "\(UUID().uuidString).store"),
             isProtectedDataAvailable: { true },
-            makeContainer: { _ in throw NSError(domain: NSCocoaErrorDomain, code: NSFileWriteOutOfSpaceError) }
+            makeContainer: { _, _ in throw NSError(domain: NSCocoaErrorDomain, code: NSFileWriteOutOfSpaceError) }
         )
         guard case .failed(.outOfSpace) = full.state else { Issue.record("Expected out of space"); return }
         let broken = PersistenceController(
             storeURL: URL.temporaryDirectory.appending(path: "\(UUID().uuidString).store"),
             isProtectedDataAvailable: { true },
-            makeContainer: { _ in throw Locked() }
+            makeContainer: { _, _ in throw Locked() }
         )
         guard case .failed(.unreadable) = broken.state else { Issue.record("Expected unreadable"); return }
     }

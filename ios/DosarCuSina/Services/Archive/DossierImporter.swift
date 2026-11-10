@@ -19,6 +19,8 @@ import SwiftData
 ///   section, tint, hero or pocket, a row under Date importante, a field value, a
 ///   deadline's status, a kind) comes in raw and is kept.
 ///
+/// - examples a backup carries stay out of a binder that syncs (`keepsExamples`).
+///
 /// It touches only the context it is given, so a backup is written away from the
 /// main thread (`DossierArchiveService.importPackageAway`).
 struct DossierImporter {
@@ -26,6 +28,9 @@ struct DossierImporter {
     let package: DossierV3.Package
     let mode: ArchiveImportMode
     let calendar: Calendar
+    /// False for a binder that syncs: a backup's examples stay out, so none reaches the person's
+    /// other devices (`PersistenceController.syncs`).
+    var keepsExamples = true
     var now = Date()
 
     private func uuid(_ raw: String?) -> UUID? { raw.flatMap(UUID.init(uuidString:)) }
@@ -225,7 +230,7 @@ struct DossierImporter {
     private func importAssets(_ result: inout ArchiveImportResult, definitions: [String: TemplateDefinition], phone: PhoneKeeps) throws -> [UUID: Asset] {
         var map = try existing(Asset.self, id: \.id)
         var written: [(Asset, DossierV3.Asset)] = []
-        for dto in package.assets {
+        for dto in package.assets where keepsExamples || !dto.isExample {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.assets) }
             guard let asset = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
                 Asset(id: id, name: dto.name, templateKey: dto.templateKey)
@@ -265,7 +270,7 @@ struct DossierImporter {
 
     private func importObligations(_ result: inout ArchiveImportResult, assets: [UUID: Asset]) throws -> [UUID: Obligation] {
         var map = try existing(Obligation.self, id: \.id)
-        for dto in package.obligations {
+        for dto in package.obligations where keepsExamples || !dto.isExample {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.obligations) }
             guard let obligation = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
                 Obligation(id: id, title: dto.title, kind: .routine, dueDay: dto.dueDate)
@@ -302,7 +307,7 @@ struct DossierImporter {
 
     private func importProviders(_ result: inout ArchiveImportResult, assets: [UUID: Asset]) throws -> [UUID: Provider] {
         var map = try existing(Provider.self, id: \.id)
-        for dto in package.providers {
+        for dto in package.providers where keepsExamples || !dto.isExample {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.providers) }
             let archivedSections = dto.assetIds.compactMap { uuid($0).flatMap { assets[$0] } }
             // Both copies of a firm meet by one rule (`FirmCopies`): the newer one's details stand,
@@ -348,7 +353,7 @@ struct DossierImporter {
         providers: [UUID: Provider]
     ) throws -> [UUID: HistoryEntry] {
         var map = try existing(HistoryEntry.self, id: \.id)
-        for dto in package.historyEntries {
+        for dto in package.historyEntries where keepsExamples || !dto.isExample {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.history) }
             guard let entry = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
                 HistoryEntry(id: id, kind: .note, title: dto.title, occurredAt: dto.occurredAt)
@@ -377,7 +382,7 @@ struct DossierImporter {
 
     private func importServiceItems(_ result: inout ArchiveImportResult, entries: [UUID: HistoryEntry], providers: [UUID: Provider]) throws -> [UUID: ServiceItem] {
         var map = try existing(ServiceItem.self, id: \.id)
-        for dto in package.serviceItems {
+        for dto in package.serviceItems where keepsExamples || !dto.isExample {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.serviceItems) }
             guard let item = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
                 ServiceItem(id: id, name: dto.name, componentKey: dto.componentKey)
@@ -406,7 +411,7 @@ struct DossierImporter {
 
     private func importMeasurements(_ result: inout ArchiveImportResult, assets: [UUID: Asset]) throws -> [UUID: MeasurementLog] {
         var map = try existing(MeasurementLog.self, id: \.id)
-        for dto in package.measurements {
+        for dto in package.measurements where keepsExamples || !dto.isExample {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.measurements) }
             guard let log = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
                 MeasurementLog(id: id, kind: .custom, name: dto.name, value: dto.value, recordedAt: dto.recordedAt)
@@ -446,7 +451,7 @@ struct DossierImporter {
     ) throws {
         var map = try existing(Attachment.self, id: \.id)
         var written: [(Attachment, DossierV3.Attachment)] = []
-        for dto in package.attachments {
+        for dto in package.attachments where keepsExamples || !dto.isExample {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.attachments) }
             let original = try dto.path.map { path -> Data in
                 guard let data = try package.files.data(at: path) else { throw ArchiveError.missingFile(path) }

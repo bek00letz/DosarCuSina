@@ -51,7 +51,15 @@ public struct TemplateStore {
         let existing = try context.fetch(FetchDescriptor<CategoryTemplate>(sortBy: [SortDescriptor(\.createdAt)]))
         var byKey: [String: CategoryTemplate] = [:]
         for template in existing {
-            if template.isBuiltIn, byKey[template.key] != nil {
+            if template.isBuiltIn, let kept = byKey[template.key] {
+                // Each device installs its own built-ins, so sync brings a second copy of each. The
+                // one installed first stays, on every device alike, with the person's newer choice
+                // of its place and whether it shows, and the lock either copy has: never weaker.
+                if template.updatedAt > kept.updatedAt {
+                    if kept.homeOrder != template.homeOrder { kept.homeOrder = template.homeOrder }
+                    if kept.isOnHome != template.isOnHome { kept.isOnHome = template.isOnHome }
+                }
+                if template.isSensitive, !kept.isSensitive { kept.isSensitive = true }
                 context.delete(template)
                 changed = true
             } else if byKey[template.key] == nil {
