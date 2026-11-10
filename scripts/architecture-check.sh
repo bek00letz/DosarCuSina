@@ -166,6 +166,29 @@ rule month-length "$app" '^ios/Shared/CalendarDay\.swift$' \
     '31 *, *2[89] *, *31|case +4 *, *6 *, *9 *, *11|case +1 *, *3 *, *5 *, *7 *, *8|[lL]eap_?[yY]ear|% *400([^0-9]|$)|% *100 *[!=]= *0|[yY]ear[A-Za-z]* *% *4([^0-9]|$)|range\(of: *\.day, *in: *\.month' - \
     "Move a day by months with CalendarDay.adding(months:dayOfMonth:) and ask a month's length with CalendarDay.daysInMonth(calendar:): the calendar knows month ends and 29 February once."
 
+# Machine JSON writes a moment one way and reads every form earlier versions wrote: the
+# shared coders in MachineText, so the widget snapshot, the share inbox, a widget's
+# completions and archives can't drift apart.
+rule json-date-coding "$app" '^ios/Shared/MachineText\.swift$' \
+    'date(En|De)codingStrategy' - \
+    "Code machine JSON with MachineText.jsonEncoder() and MachineText.jsonDecoder() (.readable for an archive): one way to write a moment, and one reader for every form earlier versions wrote."
+
+# A picture is drawn on one bitmap canvas, ImageScaling.canvas: the page turned and the PDF
+# page drawn (DocumentPicture, PDFPageRendering) draw on it too, and sizes change only
+# through ImageScaling. A PDF being written (a context on a consumer) is another job.
+rule own-canvas "$app" '^ios/DosarCuSina/Services/Documents/ImageScaling\.swift$' \
+    '(^|[^A-Za-z0-9_.])CGContext\(|UIGraphicsImageRenderer|UIGraphicsBeginImageContext|CGBitmapContextCreate' \
+    'CGContext\( *consumer:' \
+    "Draw a picture on ImageScaling.canvas(width:height:onWhite:), and change its size with ImageScaling.scaled or decoded: one canvas and one scaler, the same quality everywhere."
+
+# A row that gives way is DSAdaptiveStack, laid out once so a field or a button keeps its
+# state. Widgets are left out on purpose: a Lock Screen line (accessoryInline) shows one
+# line of text the system lays out itself, ignoring any layout of the app's, and offers
+# shorter wordings only through ViewThatFits; the design system isn't in the widget either.
+rule view-that-fits "$app" '^ios/DosarCuSinaWidgets/' \
+    'ViewThatFits' - \
+    "A row that gives way is DSAdaptiveStack: side by side when the pieces fit, stacked otherwise, laid out once so a field or a button keeps its state."
+
 # A minimum under 44 anywhere; a fixed height under 44 on a line that is tapped
 # (a button, a tap gesture, a tap shape). The rule reads one line at a time, so a
 # button whose label sets the height on a later line isn't seen.

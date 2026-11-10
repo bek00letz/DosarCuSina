@@ -3,7 +3,10 @@ import Foundation
 /// What search may keep, decided once for the index and for recent searches:
 /// - a number shaped like a CNP (thirteen digits on their own) is never indexed
 ///   or remembered, wherever it was typed or read, valid or misread;
-/// - sealed text (a secret) is never indexed;
+/// - a card number (`PaymentCardNumbers`) is never indexed or remembered, even masked;
+/// - sealed text (a secret) is never indexed or remembered;
+/// - words kept on this phone outside the binder (recent searches, a trip's plan) are
+///   kept only when `mayRemember` allows them, checked again when they are read back;
 /// - a query that found anything in a locked section is never remembered;
 /// - outside the app (the iPhone's search), nothing from a locked category or the
 ///   examples, and only titles, without those numbers or the values a category keeps
@@ -26,14 +29,19 @@ public enum SearchPrivacy {
         return result
     }
 
-    /// Whether the text holds a number shaped like a CNP.
-    public static func containsCNPShapedNumber(_ text: String) -> Bool {
-        !cnpShapedRanges(in: text).isEmpty
+    /// Whether words the person typed may be kept on this phone outside the binder (among
+    /// the recent searches, in a trip's plan): only when they hold nothing search never
+    /// keeps, no CNP-shaped number, no card number (masked or not) and no sealed value.
+    /// The one rule for what is remembered, used when it is kept and again when it is read
+    /// back, so what an earlier version kept goes too.
+    public static func mayRemember(_ text: String) -> Bool {
+        redacting(text) == text
     }
 
-    /// Whether a search may be kept among the recent ones.
+    /// Whether a search may be kept among the recent ones: its words may be remembered, and
+    /// it found nothing in a locked section.
     public static func mayRemember(_ query: String, results: [SearchResult]) -> Bool {
-        !containsCNPShapedNumber(query) && !results.contains { $0.document.isSensitive }
+        mayRemember(query) && !results.contains { $0.document.isSensitive }
     }
 
     // MARK: - Outside the app

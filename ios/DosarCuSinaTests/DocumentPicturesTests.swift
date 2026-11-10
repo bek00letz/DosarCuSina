@@ -19,7 +19,7 @@ struct DocumentPicturesTests {
 
     /// A white image with a red block in its top-left corner, to see which way it turned.
     static func marked(width: Int = 40, height: Int = 20) -> CGImage {
-        let context = PageTurn.canvas(width: width, height: height)!
+        let context = ImageScaling.canvas(width: width, height: height, onWhite: true)!
         context.setFillColor(CGColor(red: 1, green: 0, blue: 0, alpha: 1))
         // Bitmap contexts count from the bottom: the top-left block sits at the top of the space.
         context.fill(CGRect(x: 0, y: height - height / 2, width: width / 4, height: height / 2))

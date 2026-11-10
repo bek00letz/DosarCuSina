@@ -56,9 +56,10 @@ enum SearchHighlighter {
     }
 }
 
-/// The last few searches, kept on this device only, newest first. A search
-/// that found anything in a locked section, or holds a CNP-shaped number, is
-/// never kept (`SearchPrivacy.mayRemember`).
+/// The last few searches, kept on this device only, newest first. They remember only
+/// what search may keep: a search that found anything in a locked section, or holds
+/// a CNP-shaped number, a card number or a sealed value, is never kept, and one an
+/// earlier version kept is let go when the list is read (`SearchPrivacy.mayRemember`).
 @MainActor
 @Observable
 final class RecentSearches {
@@ -72,7 +73,7 @@ final class RecentSearches {
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         let stored = defaults.stringArray(forKey: Self.key) ?? []
-        items = stored.filter { !SearchPrivacy.containsCNPShapedNumber($0) }
+        items = stored.filter { SearchPrivacy.mayRemember($0) }
         if items != stored { defaults.set(items, forKey: Self.key) }
     }
 
