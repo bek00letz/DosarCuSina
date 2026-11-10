@@ -187,8 +187,56 @@ struct ShareConfirmationTests {
 @Suite("After a share: opening at De verificat")
 @MainActor
 struct InboxLandingTests {
-    private func landing() throws -> InboxLanding {
-        InboxLanding(defaults: try #require(UserDefaults(suiteName: "tests.\(UUID().uuidString)")), settle: .zero)
+    /// A landing whose opening ends at once, unless a test gives it one that never would.
+    private func landing(opening: Duration = .zero) throws -> InboxLanding {
+        InboxLanding(defaults: try #require(UserDefaults(suiteName: "tests.\(UUID().uuidString)")), opening: opening)
+    }
+
+    /// Waits until the landing (or anything) waits on the navigator for a route.
+    private func untilWaiting(_ navigator: AppNavigator) async {
+        while !navigator.isWaitingForRoute { await Task.yield() }
+    }
+
+    @Test("A route that comes with the opening wins, the moment it comes", .timeLimit(.minutes(1)))
+    func aRouteThatComesWithTheOpeningWinsAtOnce() async throws {
+        // An opening that would never end: only the route can end the wait.
+        let landing = try landing(opening: .seconds(3600))
+        let navigator = AppNavigator(isAppLocked: { false })
+        let waiting = [item()]
+        landing.didEnterBackground(navigator: navigator)
+        let landed = Task { @MainActor in
+            await landing.didBecomeActive(waiting: { waiting }, navigator: navigator, isBusy: { false })
+        }
+        await untilWaiting(navigator)
+        let reminder = AppRoute.obligation(UUID())
+        navigator.open(reminder)
+        #expect(await !landed.value)
+        #expect(navigator.consume() == reminder, "De verificat didn't take its place")
+        #expect(!navigator.isWaitingForRoute)
+    }
+
+    @Test("A wait cut short leaves the landing for the next time", .timeLimit(.minutes(1)))
+    func aWaitCutShortLeavesItForNextTime() async throws {
+        let landing = try landing(opening: .seconds(3600))
+        let navigator = AppNavigator(isAppLocked: { false })
+        let waiting = [item()]
+        let cut = Task { @MainActor in
+            await landing.didBecomeActive(waiting: { waiting }, navigator: navigator, isBusy: { false })
+        }
+        await untilWaiting(navigator)
+        // The app went inactive again (a Face ID prompt): the wait ends at once.
+        cut.cancel()
+        #expect(await !cut.value)
+        #expect(navigator.pendingRoute == nil)
+        #expect(!navigator.isWaitingForRoute)
+
+        // Active again: it is still owed, so it waits for the opening again instead of giving up.
+        let again = Task { @MainActor in
+            await landing.didBecomeActive(waiting: { waiting }, navigator: navigator, isBusy: { false })
+        }
+        await untilWaiting(navigator)
+        again.cancel()
+        #expect(await !again.value)
     }
 
     @Test func theNoticeOpensDeVerificatAfterUnlocking() {

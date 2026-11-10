@@ -15,6 +15,8 @@ struct DSSecretValueRow: View {
 
     /// How long a shown code stays on screen.
     static let visibleFor: Duration = .seconds(30)
+    /// How long "Copiat" stays under the row after a copy.
+    static let copiedNoteFor: Duration = .seconds(4)
 
     @State private var shown: String?
     @State private var message: String?
@@ -65,7 +67,7 @@ struct DSSecretValueRow: View {
         .task(id: copied) {
             guard copied > 0 else { return }
             copiedNote = true
-            try? await Task.sleep(for: .seconds(4))
+            try? await Task.sleep(for: Self.copiedNoteFor)
             guard !Task.isCancelled else { return }
             copiedNote = false
         }

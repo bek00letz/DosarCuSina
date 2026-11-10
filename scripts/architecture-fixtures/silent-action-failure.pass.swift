@@ -4,4 +4,4 @@ do {
 } catch {
     toast = DSToast(title: SaveFailure.message(for: error, formKept: false), actionTitle: nil, action: nil)
 }
-try? await Task.sleep(for: .milliseconds(250))
+try? await Task.sleep(for: Self.toastDwell)

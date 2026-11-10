@@ -18,21 +18,19 @@ final class InboxLanding {
 
     /// De verificat: the top of the Adaugă tab.
     static let route: AppRoute = .intake
-    /// How long it lets a notification tap or a link that comes with the app reach the
-    /// navigator first.
-    static let settle: Duration = .milliseconds(400)
     static let seenThroughKey = "inbox.seenThrough"
 
     private let defaults: UserDefaults
-    private let settleDelay: Duration
+    /// How long a route that comes with the app's opening may take to reach the navigator.
+    private let opening: Duration
     /// A cold start counts as coming from the background.
     private var cameFromBackground = true
     /// The navigator's count when the app last left, so a route opened since is known.
     private var routesBeforeBackground = 0
 
-    init(defaults: UserDefaults = .standard, settle: Duration = InboxLanding.settle) {
+    init(defaults: UserDefaults = .standard, opening: Duration = DS.Motion.appOpening) {
         self.defaults = defaults
-        self.settleDelay = settle
+        self.opening = opening
     }
 
     /// The newest arrival De verificat has shown.
@@ -58,17 +56,21 @@ final class InboxLanding {
         routesBeforeBackground = navigator.openCount
     }
 
-    /// The app is active. After a short beat, opens De verificat when something new waits,
-    /// nothing else is being opened and nothing is open over the tabs. Returns whether it did.
+    /// The app is active. Opens De verificat when something new waits, no route came with the
+    /// app and nothing is open over the tabs. Returns whether it did.
     ///
-    /// A beat cut short (the app went inactive again, for Face ID) leaves it for the next time.
+    /// A route asked for while the app was away wins at once. Otherwise it waits for one to
+    /// come with the opening (a tapped reminder or link reaches the app while iOS brings it
+    /// onto the screen) and gives way the moment one does; nothing tells when none will, so it
+    /// waits no longer than the opening itself (`DS.Motion.appOpening`). A wait cut short (the
+    /// app went inactive again, for Face ID) leaves it for the next time.
     @discardableResult
     func didBecomeActive(waiting: () -> [InboxItem], navigator: AppNavigator, isBusy: () -> Bool) async -> Bool {
         guard cameFromBackground else { return false }
-        if settleDelay > .zero { try? await Task.sleep(for: settleDelay) }
+        var routeOpened = navigator.openCount != routesBeforeBackground || navigator.pendingRoute != nil
+        if !routeOpened { routeOpened = await navigator.routeArrives(within: opening) }
         guard !Task.isCancelled else { return false }
         cameFromBackground = false
-        let routeOpened = navigator.openCount != routesBeforeBackground || navigator.pendingRoute != nil
         guard !routeOpened, Self.owesLanding(waiting: waiting(), seenThrough: seenThrough), !isBusy() else { return false }
         navigator.open(Self.route)
         return true
