@@ -62,6 +62,17 @@ enum DSTextKind: Sendable, CaseIterable {
         }
     }
 
+    /// The field type a value of this kind is, when that type's own check tells it apart from
+    /// a card number (`PaymentCardNumbers.keepsWhole`): a microchip or an IBAN that passes its
+    /// check is kept whole, so the field says nothing about a card.
+    var typeKeptWhole: FieldType? {
+        switch self {
+        case .microchip: .microchip
+        case .iban: .iban
+        default: nil
+        }
+    }
+
     var isMultiline: Bool {
         self == .longText || self == .address
     }
@@ -141,7 +152,7 @@ struct DSTextField: View {
         if trimmed.isEmpty {
             return isRequired ? .requiredMissing : .valid
         }
-        return (validator?(trimmed) ?? .valid).notingCardNumber(in: trimmed)
+        return (validator?(trimmed) ?? .valid).notingCardNumber(in: trimmed, as: kind.typeKeptWhole)
     }
 
     private var shownValidation: DSValidation {

@@ -3,8 +3,8 @@ import Foundation
 /// What a section's field types say about its values, beside the card rule itself
 /// (`CardNumberRule.swift` in `ios/Shared`, which reads text alone, so the share extension
 /// uses it too): which values stay whole because their field
-/// says what they are (`keepsWhole`), and how a section's values and rows are masked
-/// (`sanitizing`).
+/// says what they are (`keepsWhole`), how a section's values and rows are masked
+/// (`sanitizing`), and the digits a section keeps whole in all its words (`KeptWhole`).
 extension PaymentCardNumbers {
     /// The field types whose own check tells their value apart from a card number: an IBAN
     /// (country letters and its mod-97 check digits) and a pet's microchip (ISO 11784, 15 digits).
@@ -21,11 +21,14 @@ extension PaymentCardNumbers {
     /// The same values with every text masked by the "anywhere" rule, and the fields that
     /// keep only the last digits (`DocumentFields.cardLastFour`) cut to them. A value whose
     /// field (from `fields`, read only when something would be masked) has a type that tells
-    /// it apart (`keepsWhole`) stays as typed.
+    /// it apart (`keepsWhole`) stays as typed, and so do the same digits in another of the
+    /// values (`KeptWhole`): a note that repeats the microchip.
     public static func sanitizing(_ values: FieldValues, fields: () -> [FieldDefinition]) -> FieldValues {
         // A value this build can't read is masked the same way, wherever text sits in it.
         var result = values.mappingUnreadable { redacting($0) }
-        var types: [String: FieldType]?
+        var fieldsRead = false
+        var types: [String: FieldType] = [:]
+        var kept = KeptWhole.nothing
         for (key, value) in values.storage {
             // A sealed code is the secret's own business, never rewritten.
             guard case .text(let text) = value, !SecretSealer.isSealed(text) else { continue }
@@ -33,10 +36,14 @@ extension PaymentCardNumbers {
                 result[key] = lastFour(of: text).map(FieldValue.text)
                 continue
             }
-            let masked = redact(text)
-            guard masked != text else { continue }
-            if types == nil { types = Dictionary(fields().map { ($0.key, $0.type) }, uniquingKeysWith: { first, _ in first }) }
-            if !keepsWhole(text, as: types?[key]) { result[key] = .text(masked) }
+            guard redact(text) != text else { continue }
+            if !fieldsRead {
+                let all = fields()
+                fieldsRead = true
+                types = Dictionary(all.map { ($0.key, $0.type) }, uniquingKeysWith: { first, _ in first })
+                kept = KeptWhole(values, fields: all)
+            }
+            if !keepsWhole(text, as: types[key]) { result[key] = .text(redact(text, keeping: kept)) }
         }
         return result
     }
@@ -49,12 +56,13 @@ extension PaymentCardNumbers {
 
     /// Rows under Date importante with every card number masked, in their labels and values, in
     /// the rows this build can't read and in what a newer build wrote inside the rows it reads.
-    /// A secret row's sealed code is the secret's own business.
-    public static func sanitizing(_ facts: KeptList<CustomFact>) -> KeptList<CustomFact> {
+    /// What the section keeps whole (`kept`) stays. A secret row's sealed code is the secret's
+    /// own business.
+    public static func sanitizing(_ facts: KeptList<CustomFact>, keeping kept: KeptWhole = .nothing) -> KeptList<CustomFact> {
         let masked = facts.items.map { fact in
             var fact = fact
-            fact.label = redact(fact.label)
-            if !SecretSealer.isSealed(fact.value) { fact.value = redact(fact.value) }
+            fact.label = redact(fact.label, keeping: kept)
+            if !SecretSealer.isSealed(fact.value) { fact.value = redact(fact.value, keeping: kept) }
             return fact
         }
         return facts.replacingItems(masked).mappingKept { redacting($0) }
@@ -63,6 +71,36 @@ extension PaymentCardNumbers {
     /// Raw JSON a newer build wrote, with any card number in its text masked; sealed codes stay.
     public static func redacting(_ raw: JSONValue) -> JSONValue {
         raw.mappingStrings { SecretSealer.isSealed($0) ? $0 : redact($0) }
+    }
+}
+
+extension PaymentCardNumbers.KeptWhole {
+    /// What a section's values keep whole: each value its own field's type keeps whole
+    /// (`keepsWhole`) and that is digits alone (a microchip). An IBAN is left whole by the text
+    /// rule wherever it is printed (`IBAN.ranges`), so it needs nothing here.
+    public init(_ values: FieldValues, fields: [FieldDefinition]) {
+        self.init(typed: fields.compactMap { field in values[field.key]?.textValue.map { (text: $0, type: field.type) } })
+    }
+
+    /// The same for values with their types, as capture reads them (`CaptureFieldKey.typeKeptWhole`).
+    public init(typed values: [(text: String, type: FieldType)]) {
+        let digits = values.compactMap { value -> String? in
+            guard PaymentCardNumbers.keepsWhole(value.text, as: value.type),
+                  value.text.allSatisfy({ ($0.isASCII && $0.isNumber) || $0 == " " || $0 == "-" }) else { return nil }
+            let digits = value.text.filter { $0.isASCII && $0.isNumber }
+            return digits.isEmpty ? nil : digits
+        }
+        self.init(checkedDigits: Set(digits))
+    }
+
+    /// What a section keeps whole: its values, through its category's fields. Nothing without
+    /// a section or its category.
+    public init(section: Asset?, template: CategoryTemplate?) {
+        guard let section, let template else {
+            self = .nothing
+            return
+        }
+        self.init(section.values, fields: template.definition.allFields)
     }
 }
 

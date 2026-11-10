@@ -2,8 +2,9 @@ import Foundation
 
 /// A bank card's full number never stays in the binder: not in what a document's text
 /// keeps, not in a field, a row under Date importante, a note or any other words a record
-/// keeps, not in search, the iPhone's search, backups, logs. Only the last
+/// keeps, not in search, the iPhone's search, backups, logs or the share inbox. Only the last
 /// four digits are kept. One set of rules, here, used wherever text enters or leaves:
+/// - what the share extension writes about a shared file (`InboxItem.originalName`);
 /// - every capture result, before the review or anything else sees it (`CaptureResult.withoutCardNumbers`);
 /// - everything kept: the unit of work masks the words of every record it saves, whoever
 ///   wrote them, an import included (`FreeText`), fields through `sanitizing`;
@@ -12,7 +13,7 @@ import Foundation
 ///
 /// The rule reads text alone and lives in `ios/Shared`, so the app, its widgets and the share
 /// extension use the same one; what a section's field types say about its values (`keepsWhole`,
-/// `sanitizing`) is the app's, beside the fields.
+/// `sanitizing`, `KeptWhole`'s makers) is the app's, beside the fields.
 ///
 /// Two rules, by how sure the app is that the text is a card:
 /// - **Anywhere:** a run of 14 to 19 digits (spaces or dashes between groups allowed) that
@@ -32,12 +33,13 @@ import Foundation
 ///   them ("AB4111…", an IBAN's account in one piece, its first group after the country's
 ///   letters), since a card number is never printed glued to letters; groups that carry on an
 ///   IBAN printed in groups ("RO49 AAAA 1234 5678 9012 3456", even mistyped); any part of an
-///   IBAN that passes its own check (`IBAN.ranges`), in any spacing; and a field's value whose
+///   IBAN that passes its own check (`IBAN.ranges`), in any spacing; a field's value whose
 ///   type names what it is and whose own check it passes (`keepsWhole(_:as:)`: an IBAN, a
-///   pet's microchip).
+///   pet's microchip); and, in the words a section keeps, the same digits as one of its own
+///   values kept that way (`KeptWhole`).
 /// - **On a bank card** (`strict`): any run of eight digits or more, whatever it starts
 ///   with or whether its check digit passes, since a misread digit must not let the rest
-///   through.
+///   through. Nothing is kept whole there.
 ///
 /// A number taken out is written as its last four digits after a mask: "•••• 4821".
 public enum PaymentCardNumbers {
@@ -46,11 +48,40 @@ public enum PaymentCardNumbers {
     /// A masked number with its last four digits ("•••• 4821"), for taking it out whole.
     public static let maskedPattern = #"(?:••••[ -]?)+\d{0,4}"#
 
-    /// The text with every card number in it masked, keeping only the last four digits.
-    public static func redact(_ text: String, strict: Bool = false) -> String {
+    /// The digits of a section's own values that its field types tell apart from a card number
+    /// (a pet's microchip in its microchip field, passing that field's check), which stay whole
+    /// wherever the same section's words hold them: its notes, its rows, its visits, the text
+    /// read off its documents. Made only by the app, from a value and its field's type
+    /// (`KeptWhole(_:fields:)`, `KeptWhole(typed:)`, both through `keepsWhole`), never from
+    /// the digits alone: a 15-digit chip starting 642 and a 15-digit Maestro card can be the
+    /// same digits, and only the field says which it is.
+    public struct KeptWhole: Hashable, Sendable {
+        /// Each value's digits, as a run of the text gives them (`Run.digits`).
+        let digits: Set<String>
+
+        /// Nothing kept whole: every card-shaped run is masked.
+        public static let nothing = KeptWhole(checkedDigits: [])
+
+        /// Digits `keepsWhole` already approved; only its makers call this.
+        init(checkedDigits digits: Set<String>) {
+            self.digits = digits
+        }
+
+        public var isEmpty: Bool { digits.isEmpty }
+
+        /// Whether a run found in the text is one of these values, whole.
+        func keeps(_ run: Run) -> Bool {
+            digits.contains(run.digits)
+        }
+    }
+
+    /// The text with every card number in it masked, keeping only the last four digits. A run
+    /// that is one of `kept` (a section's own typed values) stays whole, except on a bank card.
+    public static func redact(_ text: String, strict: Bool = false, keeping kept: KeptWhole = .nothing) -> String {
         guard text.contains(where: \.isNumber) else { return text }
         var result = text
-        for run in (strict ? runs(in: text, strict: true) : cardNumbers(in: text)).reversed() {
+        let found = strict ? runs(in: text, strict: true) : cardNumbers(in: text).filter { !kept.keeps($0) }
+        for run in found.reversed() {
             result.replaceSubrange(run.range, with: run.masked)
         }
         return result

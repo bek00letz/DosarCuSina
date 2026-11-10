@@ -5,15 +5,19 @@ extension CaptureResult {
     /// read and shown, in what is kept to read the page again, in every reader's values and
     /// their sources, the AI provider's included. Strict for a bank card, so a misread digit
     /// can't let its number through; only `cardLastFour` keeps four digits, and nothing
-    /// more. `CaptureEngine` hands out no other kind of result.
+    /// more. A value read for a field whose type tells it apart from a card (a microchip that
+    /// passes its check) stays whole in its field and, the same digits, in the text read
+    /// (`keptWhole`), so the document's kept text holds it as its section will.
+    /// `CaptureEngine` hands out no other kind of result.
     func withoutCardNumbers() -> CaptureResult {
         let strict = kind == .bankCard
-        func text(_ value: String) -> String { PaymentCardNumbers.redact(value, strict: strict) }
+        let kept = strict ? PaymentCardNumbers.KeptWhole.nothing : keptWhole
+        func text(_ value: String) -> String { PaymentCardNumbers.redact(value, strict: strict, keeping: kept) }
         return CaptureResult(
             id: id,
             kind: kind,
             kindConfidence: kindConfidence,
-            fields: fields.map { $0.withoutCardNumbers(strict: strict) },
+            fields: fields.map { $0.withoutCardNumbers(strict: strict, keeping: kept) },
             suggestions: suggestions,
             reminder: reminder,
             recognizedText: text(recognizedText),
@@ -33,20 +37,33 @@ extension CaptureResult {
                     pages: source.pages.map { page in page.map { RecognizedLine(text($0.text), box: $0.box) } },
                     barcodes: source.barcodes,
                     referenceDate: source.referenceDate,
-                    modelFields: source.modelFields.map { $0.withoutCardNumbers(strict: strict) },
-                    aiFields: source.aiFields.map { $0.map { $0.withoutCardNumbers(strict: strict) } },
+                    modelFields: source.modelFields.map { $0.withoutCardNumbers(strict: strict, keeping: kept) },
+                    aiFields: source.aiFields.map { $0.map { $0.withoutCardNumbers(strict: strict, keeping: kept) } },
                     isSinglePhoto: source.isSinglePhoto
                 )
             }
         )
     }
+
+    /// The values its readers read for a field whose type tells them apart from a card number
+    /// (`CaptureFieldKey.typeKeptWhole`), by every reader, as `PaymentCardNumbers.KeptWhole`
+    /// keeps them: only those that pass that type's check.
+    var keptWhole: PaymentCardNumbers.KeptWhole {
+        let readers = fields + (source?.modelFields ?? []) + (source?.aiFields ?? [])
+        let read = readers.map { ($0.key, $0.value) } + fieldAlternatives.map { ($0.key, $0.alternative.value) }
+        return PaymentCardNumbers.KeptWhole(typed: read.compactMap { key, value in
+            guard let type = key.typeKeptWhole, let text = value.text else { return nil }
+            return (text: text, type: type)
+        })
+    }
 }
 
 extension CaptureField {
-    /// The field with any card number in its value or its source masked.
-    func withoutCardNumbers(strict: Bool) -> CaptureField {
+    /// The field with any card number in its value or its source masked; what the result keeps
+    /// whole (`kept`) stays in its source line.
+    func withoutCardNumbers(strict: Bool, keeping kept: PaymentCardNumbers.KeptWhole = .nothing) -> CaptureField {
         CaptureField(key: key, value: value.withoutCardNumbers(key: key, strict: strict), confidence: confidence,
-                     sourceText: sourceText.map { PaymentCardNumbers.redact($0, strict: strict) }, tier: tier)
+                     sourceText: sourceText.map { PaymentCardNumbers.redact($0, strict: strict, keeping: kept) }, tier: tier)
     }
 }
 

@@ -215,13 +215,16 @@ struct CardNumbersKeptOutTests {
         #expect(try #require(Provider.find(firm.recordKey, in: ModelContext(context.container))).notes == ibans.joined(separator: "\n"))
 
         // A Romanian pet's microchip whose digits would pass as a Maestro card: whole in its own
-        // field, masked in the notes, where nothing says what it is.
+        // field, and in the section's notes, where its field says what those digits are. Other
+        // digits shaped the same way, and a card number, are still masked there.
         let chip = PersonalDocumentCaptureTests.withCheckDigit("642" + String(repeating: "0", count: 8) + "123")
+        let other = PersonalDocumentCaptureTests.withCheckDigit("642" + String(repeating: "0", count: 8) + "456")
         let pets = try #require(try store.template(forKey: BuiltInTemplates.Key.pet))
-        let pet = try actions.create(name: "Motănelul din exemplu", template: pets, values: FieldValues([PetFields.microchip: .text(chip)]), notes: "Cip \(chip)")
+        let pet = try actions.create(name: "Motănelul din exemplu", template: pets, values: FieldValues([PetFields.microchip: .text(chip)]),
+                                     notes: "Cip \(chip)\nAlt cip \(other)\nCard \(Self.visa)")
         let stored = try #require(Asset.find(pet.recordKey, in: ModelContext(context.container)))
         #expect(stored.values[PetFields.microchip]?.textValue == chip)
-        #expect(stored.notes == "Cip \(PaymentCardNumbers.mask) \(chip.suffix(4))")
+        #expect(stored.notes == "Cip \(chip)\nAlt cip \(PaymentCardNumbers.mask) \(other.suffix(4))\nCard \(Self.visaMasked)")
 
         // An IBAN field of one's own whose account is the test card number: it passes its own check.
         let iban = PersonalDocumentCaptureTests.iban(country: "RO", account: "AAAA" + Self.visa.filter(\.isNumber))

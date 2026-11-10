@@ -202,6 +202,13 @@ rule month-length "$app" '^ios/Shared/CalendarDay\.swift$' \
 # Machine JSON writes a moment one way and reads every form earlier versions wrote: the
 # shared coders in MachineText, so the widget snapshot, the share inbox, a widget's
 # completions and archives can't drift apart.
+# What a section keeps whole from the card rule (a pet's microchip) comes only from a value and
+# its field's type, through PaymentCardNumbers.keepsWhole: never from digits alone, since a chip
+# and a card can be the same digits.
+rule kept-whole-without-its-type "$app" '^ios/(Shared/CardNumberRule|DosarCuSina/Services/Security/PaymentCardNumbers)\.swift$' \
+    'KeptWhole\( *checkedDigits:' - \
+    "Make PaymentCardNumbers.KeptWhole from values and their fields: KeptWhole(_:fields:), KeptWhole(typed:) or KeptWhole(section:template:), which keep only what the field's type keeps whole."
+
 rule json-date-coding "$app" '^ios/Shared/MachineText\.swift$' \
     'date(En|De)codingStrategy' - \
     "Code machine JSON with MachineText.jsonEncoder() and MachineText.jsonDecoder() (.readable for an archive): one way to write a moment, and one reader for every form earlier versions wrote."
