@@ -244,10 +244,10 @@ public struct DossierArchiveService {
             DossierV3.Obligation(
                 id: DossierV3.id(obligation.id), assetId: DossierV3.id(obligation.asset?.id), title: obligation.title,
                 notes: obligation.notes, blueprintKey: obligation.blueprintKey, kind: obligation.kindRaw,
-                dueDate: obligation.dueDay(in: calendar), dueMetric: obligation.dueMetric,
+                dueDate: obligation.dueDay, dueMetric: obligation.dueMetric,
                 reminders: obligation.reminders, reminderMinuteOfDay: obligation.reminderMinuteOfDay,
                 recurrence: obligation.recurrence, estimatedCost: obligation.estimatedCost, provider: obligation.provider,
-                reference: obligation.reference, status: obligation.statusRaw, snoozedUntil: obligation.snoozedUntil,
+                reference: obligation.reference, status: obligation.statusRaw, snoozedUntil: obligation.snoozeEnds(in: calendar),
                 isExample: obligation.isExample, createdAt: obligation.createdAt, updatedAt: obligation.updatedAt,
                 remindersCustomized: obligation.remindersCustomized ? true : nil
             )
@@ -257,8 +257,8 @@ public struct DossierArchiveService {
                 id: DossierV3.id(entry.id), assetId: DossierV3.id(entry.asset?.id), obligationId: DossierV3.id(entry.obligation?.id),
                 kind: entry.kindRaw, title: entry.title, occurredAt: entry.occurredAt, metricReading: entry.metricReading,
                 totalCost: entry.totalCost, note: entry.note, rating: entry.rating,
-                cycleDueDate: entry.cycleDueDate.map { CalendarDay($0, calendar: calendar) },
-                nextDueDate: entry.nextDueDate.map { CalendarDay($0, calendar: calendar) },
+                cycleDueDate: entry.cycleDueDay,
+                nextDueDate: entry.nextDueDay,
                 previousStatus: entry.previousStatusRaw, previousDueMetric: entry.previousDueMetric,
                 providerIds: entry.providerIds.map(DossierV3.id).sorted(), isExample: entry.isExample,
                 reference: entry.reference, updatedAt: DossierV3.changeTime(entry.updatedAt)
@@ -316,12 +316,12 @@ public struct DossierArchiveService {
                 id: DossierV3.id(attachment.id), title: attachment.title, fileName: attachment.fileName, kind: attachment.kindRaw,
                 contentType: attachment.contentType, byteCount: attachment.byteCount, sha256: attachment.sha256,
                 path: path, pagePaths: pagePaths, thumbnailPath: thumbnailPath, extractedText: attachment.extractedText,
-                documentDate: attachment.documentDate.map { CalendarDay($0, calendar: calendar) }, isArchived: attachment.isArchived,
+                documentDate: attachment.documentDay, isArchived: attachment.isArchived,
                 supersededById: DossierV3.id(attachment.supersededBy?.id), createdAt: attachment.createdAt,
                 isExample: attachment.isExample, assetId: DossierV3.id(attachment.asset?.id),
                 obligationId: DossierV3.id(attachment.obligation?.id), historyEntryId: DossierV3.id(attachment.historyEntry?.id),
                 serviceItemId: DossierV3.id(attachment.serviceItem?.id), measurementId: DossierV3.id(attachment.measurement?.id),
-                providerId: DossierV3.id(attachment.provider?.id), validUntil: attachment.validUntil.map { CalendarDay($0, calendar: calendar) },
+                providerId: DossierV3.id(attachment.provider?.id), validUntil: attachment.validUntil,
                 framing: attachment.framing.isPlain ? nil : attachment.framing,
                 updatedAt: DossierV3.changeTime(attachment.updatedAt)
             )

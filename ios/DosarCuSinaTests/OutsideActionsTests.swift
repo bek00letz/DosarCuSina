@@ -74,12 +74,12 @@ struct OutsideActionsTests {
 
         // "Am rezolvat" on the November reminder, or "Gata" on a widget that still showed November.
         await send(OutsideRequest(obligationId: home.rent.id, cycle: CalendarDay("2026-11-05"), action: .complete, surface: surface), to: home, now: now)
-        #expect(home.rent.dueDay(in: calendar) == CalendarDay("2026-12-05"), "December stays open")
+        #expect(home.rent.dueDay == CalendarDay("2026-12-05"), "December stays open")
         #expect(home.rent.history.count == before)
 
         // A tap that can't say which cycle it was for changes nothing either.
         await send(OutsideRequest(obligationId: home.rent.id, cycle: nil, action: .complete, surface: surface), to: home, now: now)
-        #expect(home.rent.dueDay(in: calendar) == CalendarDay("2026-12-05"))
+        #expect(home.rent.dueDay == CalendarDay("2026-12-05"))
         #expect(home.rent.history.count == before)
         #expect(home.failures.all().isEmpty, "A stale tap isn't a failure")
     }
@@ -92,7 +92,7 @@ struct OutsideActionsTests {
                                                     obligationId: home.rent.id, cycle: CalendarDay("2026-12-05")))
 
         await send(OutsideRequest(obligationId: home.rent.id, cycle: CalendarDay("2026-12-05"), action: .complete, surface: surface), to: home, now: now)
-        #expect(home.rent.dueDay(in: calendar) == CalendarDay("2027-01-05"))
+        #expect(home.rent.dueDay == CalendarDay("2027-01-05"))
 
         if surface == .widget {
             // The queue is applied by the app, whose own coordinator follows the save.
@@ -184,7 +184,7 @@ struct OutsideActionsTests {
         #expect(try ObligationSnapshot.fetchForOutside(in: context, calendar: calendar).isEmpty, "Siri, Shortcuts, widgets and reminders see no examples")
 
         let example = try #require(try context.fetch(FetchDescriptor<Obligation>()).first { $0.isExample && $0.status == .active })
-        let outcome = try IntentEngine.apply(OutsideRequest(obligationId: example.id, cycle: example.dueDay(in: calendar), action: .complete, surface: .shortcut),
+        let outcome = try IntentEngine.apply(OutsideRequest(obligationId: example.id, cycle: example.dueDay, action: .complete, surface: .shortcut),
                                              in: context, calendar: calendar)
         #expect(outcome == .skipped)
     }
@@ -218,7 +218,7 @@ struct OutsideActionsTests {
         let candidate = try #require(found.first)
         #expect(try LikelyDoubleCompletions.undoSecond(candidate, in: context, calendar: calendar))
         #expect(rent.history.count == 1)
-        #expect(rent.dueDay(in: calendar) == CalendarDay("2026-12-05"))
+        #expect(rent.dueDay == CalendarDay("2026-12-05"))
         #expect(try !LikelyDoubleCompletions.undoSecond(candidate, in: context, calendar: calendar))
         #expect(rent.history.count == 1)
         #expect(try LikelyDoubleCompletions.find(in: context, calendar: calendar).isEmpty)
@@ -233,14 +233,14 @@ struct OutsideActionsTests {
         let actions = ObligationActions(context: context, calendar: calendar)
         let rca = try actions.create(title: "RCA", kind: .insurance, dueDay: CalendarDay(Date(), calendar: calendar), for: nil,
                                      recurrence: .interval(.years(1), anchor: .dueDate))
-        let first = rca.dueDay(in: calendar)
+        let first = rca.dueDay
         // The reminder shown today, as the notification center hands it back.
         let identifier = ReminderPlanner.identifier(obligationId: rca.id, suffix: "d0")
         let payload = ReminderPayload(identifier: identifier, userInfo: ["obligationId": rca.id.uuidString, "dueDay": first.isoString],
                                       deliveredAt: Date(), calendar: calendar)
         // Done in the app.
         try actions.complete(rca)
-        #expect(rca.dueDay(in: calendar) == RecurrenceEngine.add(.years(1), to: first, calendar: calendar))
+        #expect(rca.dueDay == RecurrenceEngine.add(.years(1), to: first, calendar: calendar))
 
         let folder = URL.temporaryDirectory.appending(path: UUID().uuidString)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
@@ -251,6 +251,6 @@ struct OutsideActionsTests {
                                               sideEffects: { _ in coordinator }, failures: OutsideActionFailures(suiteName: "tests.\(UUID().uuidString)"))
         await responder.handle(action: ReminderActions.complete, payload: payload, calendar: calendar)
         #expect(rca.history.count == 1, "The stale tap completed nothing")
-        #expect(rca.dueDay(in: calendar) == RecurrenceEngine.add(.years(1), to: first, calendar: calendar), "Next year's cycle stays open")
+        #expect(rca.dueDay == RecurrenceEngine.add(.years(1), to: first, calendar: calendar), "Next year's cycle stays open")
     }
 }

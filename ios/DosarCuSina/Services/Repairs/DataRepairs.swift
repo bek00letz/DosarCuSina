@@ -41,6 +41,7 @@ struct DataRepairs {
         SameBillTwiceStep(),
         CardNumbersStep(),
         SameVisitTwiceStep(),
+        DayYearsStep(),
     ]
 
     static func step(_ id: DataRepairStepID) -> any DataRepairStep {
@@ -104,6 +105,7 @@ enum DataRepairStepID: String, CaseIterable, Sendable, Hashable {
     case sameBillTwice = "same-bill-twice"
     case cardNumbers = "card-numbers"
     case sameVisitTwice = "same-visit-twice"
+    case dayYears = "day-years"
 }
 
 /// One thing a repair would change, in plain words, with what applying it needs.
@@ -147,6 +149,8 @@ struct DataRepairFinding: Identifiable, Hashable, Sendable {
         case cardNumbers(RecordRef)
         /// The same visit, repair or purchase logged more than once in a section's history: `merge` join `keep`.
         case sameVisit(keep: UUID, merge: [UUID])
+        /// A day kept with a year that can't be: set to `to`, the day it means, when that is known.
+        case dayYear(DayYearsStep.Place, from: CalendarDay, to: CalendarDay?)
     }
 }
 

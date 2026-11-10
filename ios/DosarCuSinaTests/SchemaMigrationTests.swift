@@ -145,6 +145,151 @@ struct SchemaMigrationTests {
         }
     }
 
+    /// Version 8 as it shipped: version 7 with when a history entry, a line item, a reading and a
+    /// document last changed. Read from the shipped models before version 9 existed.
+    static let versionEight: [String: String] = [
+        "Asset": "58a6RIU1oRUxD3p2eFaJmRdPZEPsiXxOu/r0Cdbm4z0=",
+        "Attachment": "FY6Xa9w0aZgrdVuZZ4Y8RkikrPlj8MzyQjry3mG/DKA=",
+        "AttachmentPage": "JuCkdlh81AVcycaJFrC8aBf8R7nkEg6kKyfUIOP9QdI=",
+        "CategoryTemplate": "6ISuox65O5PR9u6cYpQ9MKBEqdCrUMgGOFTuEMpsZhg=",
+        "HistoryEntry": "Kx+fLucvnb738u9jqhxEF+NxO2XpOiOgkernU2TgaMY=",
+        "MeasurementLog": "c3fbetMFbEImm5eJIAPCuPBb5ry9+3bxFEh7tukqqaI=",
+        "Obligation": "g6w9CXVyhDkfgNfidSWvzsICUSR70fTqF3h1Z55p2Y8=",
+        "Provider": "q0DxoXrt4EWS6yXxmvgMH5Z2iOyuc8aZ5QoFphvUZw4=",
+        "ServiceItem": "/BS5EFz6yHYk8QrzcDMNIkzvKNBhcNj0uS85aNIkTYQ=",
+    ]
+
+    @Test func theFrozenVersionEightKeepsTheShapeItShippedWith() {
+        #expect(Self.fingerprint(DosarSchemaV8.models) == Self.versionEight)
+    }
+
+    @Test func versionNineChangesOnlyTheRecordsThatKeepDays() {
+        let nine = Self.fingerprint(DosarSchemaV9.models)
+        let dated = ["Obligation", "HistoryEntry", "Attachment"]
+        for (entity, hash) in Self.versionEight where !dated.contains(entity) {
+            #expect(nine[entity] == hash, "\(entity) is as version 8 shipped it")
+        }
+        for entity in dated {
+            #expect(nine[entity] != Self.versionEight[entity], "\(entity) keeps its days as days")
+        }
+    }
+
+    /// The days a version 8 store keeps, written as version 8 wrote them in `calendar`'s time
+    /// zone: noon of the day, a snooze's end at the start of its day.
+    private struct EightDays {
+        static let due = CalendarDay("2026-07-15")
+        static let snooze = CalendarDay("2026-07-01")
+        static let cycle = CalendarDay("2025-07-15")
+        static let next = CalendarDay("2026-07-15")
+        static let issued = CalendarDay("2025-07-10")
+        static let valid = CalendarDay("2026-07-14")
+    }
+
+    /// Writes a version 8 store with a deadline (due and snoozed), its completion and its policy.
+    private func writeVersionEight(at url: URL, in calendar: Calendar, edited: Date) throws {
+        let schema = Schema(versionedSchema: DosarSchemaV8.self)
+        let container = try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)])
+        let context = ModelContext(container)
+        let car = DosarSchemaV8.Asset(name: "VW Golf 2018", templateKey: "vehicle")
+        let rca = DosarSchemaV8.Obligation(title: "RCA")
+        rca.dueDate = EightDays.due.noonDate(in: calendar)
+        rca.snoozedUntil = EightDays.snooze.startDate(in: calendar)
+        rca.updatedAt = edited
+        let paid = DosarSchemaV8.HistoryEntry(title: "RCA")
+        paid.cycleDueDate = EightDays.cycle.noonDate(in: calendar)
+        paid.nextDueDate = EightDays.next.noonDate(in: calendar)
+        paid.updatedAt = edited
+        let policy = DosarSchemaV8.Attachment(fileName: "polita.pdf")
+        policy.documentDate = EightDays.issued.noonDate(in: calendar)
+        policy.validUntil = EightDays.valid.noonDate(in: calendar)
+        policy.updatedAt = edited
+        let note = DosarSchemaV8.HistoryEntry(title: "Spălat")
+        for model in [car, rca, paid, policy, note] as [any PersistentModel] { context.insert(model) }
+        rca.asset = car
+        paid.asset = car
+        paid.obligation = rca
+        policy.asset = car
+        policy.obligation = rca
+        note.asset = car
+        try context.save()
+    }
+
+    private func expectTheSameDays(in context: ModelContext, edited: Date, _ comment: Comment? = nil) throws {
+        let rca = try #require(try context.fetch(FetchDescriptor<Obligation>()).first)
+        #expect(rca.title == "RCA")
+        #expect(rca.dueDay == EightDays.due, comment)
+        #expect(rca.snoozedUntil == EightDays.snooze, comment)
+        #expect(rca.updatedAt == edited, "An upgrade isn't a change")
+        let paid = try #require(rca.historyEntries?.first)
+        #expect(paid.cycleDueDay == EightDays.cycle, comment)
+        #expect(paid.nextDueDay == EightDays.next, comment)
+        #expect(paid.isCompletion)
+        #expect(paid.updatedAt == edited)
+        let policy = try #require(rca.attachments?.first)
+        #expect(policy.documentDay == EightDays.issued, comment)
+        #expect(policy.validUntil == EightDays.valid, comment)
+        #expect(policy.updatedAt == edited)
+        let note = try #require(try context.fetch(FetchDescriptor<HistoryEntry>()).first { $0.title == "Spălat" })
+        #expect(note.cycleDueDay == nil && note.nextDueDay == nil && !note.isCompletion, "A visit stays a visit")
+    }
+
+    @Test func aStoreFromVersionEightOpensWithEveryDayTheSameDay() throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Dosar-v8.store")
+        let edited = noon("2026-10-01")
+
+        // Written by version 8 on this phone, in its time zone.
+        try writeVersionEight(at: url, in: .dosar, edited: edited)
+
+        // Opened by this version: every day as it was, kept as a day.
+        let container = try PersistenceController.makeContainer(storeURL: url)
+        let context = ModelContext(container)
+        try expectTheSameDays(in: context, edited: edited)
+        let rca = try #require(try context.fetch(FetchDescriptor<Obligation>()).first)
+        #expect(rca.dueDayISO == "2026-07-15")
+        #expect(rca.snoozedUntilISO == "2026-07-01")
+
+        // A day changed from now on is kept as a day.
+        rca.dueDay = CalendarDay("2027-07-15")
+        try UnitOfWork.save(context)
+        let reopened = ModelContext(try PersistenceController.makeContainer(storeURL: url))
+        #expect(try reopened.fetch(FetchDescriptor<Obligation>()).first?.dueDay == CalendarDay("2027-07-15"))
+    }
+
+    /// A phone anywhere from twelve hours behind to fourteen ahead upgrades with every day the
+    /// same day it was written on there.
+    @Test(arguments: ["Etc/GMT+12", "Pacific/Pago_Pago", "America/Los_Angeles", "UTC", "Europe/Bucharest", "Asia/Kolkata", "Asia/Tokyo", "Pacific/Auckland", "Pacific/Kiritimati"])
+    func aStoreFromVersionEightKeepsItsDaysInTheTimeZoneItWasWrittenIn(zone: String) throws {
+        let calendar = Calendar.dosar(in: try #require(TimeZone(identifier: zone)))
+        let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Dosar-v8.store")
+        let edited = noon("2026-10-01")
+        try writeVersionEight(at: url, in: calendar, edited: edited)
+
+        let container = try DayMigration.$calendar.withValue(calendar) { try PersistenceController.makeContainer(storeURL: url) }
+        try expectTheSameDays(in: ModelContext(container), edited: edited, "Written and upgraded in \(zone)")
+    }
+
+    /// The time zone isn't stored, so the upgrade reads the moments where the phone is then:
+    /// a phone that moved up to eleven hours away since keeps every day.
+    @Test(arguments: [("Europe/Bucharest", "Asia/Tokyo"), ("Europe/Bucharest", "America/New_York"), ("Asia/Tokyo", "Europe/London"), ("America/Los_Angeles", "Asia/Dubai")])
+    func aStoreFromVersionEightKeepsItsDaysAfterTheMoveToAnotherTimeZone(written: String, upgraded: String) throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Dosar-v8.store")
+        let edited = noon("2026-10-01")
+        try writeVersionEight(at: url, in: .dosar(in: try #require(TimeZone(identifier: written))), edited: edited)
+
+        let there = Calendar.dosar(in: try #require(TimeZone(identifier: upgraded)))
+        let container = try DayMigration.$calendar.withValue(there) { try PersistenceController.makeContainer(storeURL: url) }
+        try expectTheSameDays(in: ModelContext(container), edited: edited, "Written in \(written), upgraded in \(upgraded)")
+    }
+
     @Test func aStoreFromVersionSevenOpensWithItsRecordsAndNoKnownChangeTime() throws {
         let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)

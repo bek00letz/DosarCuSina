@@ -353,8 +353,8 @@ struct UndoReceiptTests {
     // MARK: Every stored property is recorded
 
     @Test func everyStoredPropertyOfEveryModelIsRecorded() throws {
-        let schema = Schema(versionedSchema: DosarSchemaV8.self)
-        #expect(UndoableRecords.types.count == DosarSchemaV8.models.count, "Every model of the schema can be undone")
+        let schema = Schema(versionedSchema: DosarSchemaV9.self)
+        #expect(UndoableRecords.types.count == DosarSchemaV9.models.count, "Every model of the schema can be undone")
         for entity in schema.entities {
             let type = try #require(UndoableRecords.types[entity.name], "\(entity.name) is recorded")
             #expect(Set(Self.propertyNames(type)) == Set(entity.properties.map(\.name)), "\(entity.name) lists every stored property")
@@ -420,16 +420,16 @@ struct HistoryDeletionTests {
         let entry = try actions.complete(policy, cost: Money(1_150), metricReading: 101_000).value
         let paper = try AttachmentActions(context: context).file(DocumentDraft(fileName: "polita.pdf", kind: .policy, originalData: Data([1])),
                                                                   asset: golf, historyEntry: entry)
-        #expect(policy.dueDay(in: .bucharest) == CalendarDay("2027-11-10"))
+        #expect(policy.dueDay == CalendarDay("2027-11-10"))
 
         let effect = HistoryDeletion(of: entry)
-        #expect(effect.reopensCycle.map { CalendarDay($0, calendar: .bucharest) } == CalendarDay("2026-11-10"))
+        #expect(effect.reopensCycle == CalendarDay("2026-11-10"))
         #expect(!effect.keepsDeadline)
         #expect(effect.removedReading == 101_000)
         #expect(effect.keptDocuments == 1)
 
         try HistoryActions(context: context).delete(entry)
-        #expect(policy.dueDay(in: .bucharest) == CalendarDay("2026-11-10"), "The deadline is open again")
+        #expect(policy.dueDay == CalendarDay("2026-11-10"), "The deadline is open again")
         #expect(policy.status == .active)
         #expect(policy.history.isEmpty)
         #expect(golf.measurements?.map(\.value) == [100_000], "Its reading went with it")
@@ -445,14 +445,14 @@ struct HistoryDeletionTests {
         let policy = try rca(on: golf, actions)
         let older = try actions.complete(policy).value
         try actions.complete(policy)
-        #expect(policy.dueDay(in: .bucharest) == CalendarDay("2028-11-10"))
+        #expect(policy.dueDay == CalendarDay("2028-11-10"))
 
         let effect = HistoryDeletion(of: older)
         #expect(effect.reopensCycle == nil)
         #expect(effect.keepsDeadline)
 
         try HistoryActions(context: context).delete(older)
-        #expect(policy.dueDay(in: .bucharest) == CalendarDay("2028-11-10"), "The deadline stays where it is")
+        #expect(policy.dueDay == CalendarDay("2028-11-10"), "The deadline stays where it is")
         #expect(policy.history.count == 1)
     }
 
@@ -468,7 +468,7 @@ struct HistoryDeletionTests {
         #expect(policy.latestCompletion?.id == second.id, "By the cycle closed, the second is the latest")
 
         try HistoryActions(context: context).delete(second)
-        #expect(policy.dueDay(in: .bucharest) == CalendarDay("2027-11-10"))
+        #expect(policy.dueDay == CalendarDay("2027-11-10"))
     }
 
     @Test func deletingTheCompletionOfAOneOffOpensItAgain() throws {
@@ -479,7 +479,7 @@ struct HistoryDeletionTests {
         #expect(task.status == .done)
         try HistoryActions(context: context).delete(entry)
         #expect(task.status == .active)
-        #expect(task.dueDay(in: .bucharest) == CalendarDay("2026-11-20"))
+        #expect(task.dueDay == CalendarDay("2026-11-20"))
     }
 
     @Test func deletingAVisitTakesItsPartsAndReadingButKeepsItsInvoiceAndTheFirm() throws {

@@ -8,7 +8,7 @@ public enum ChangeTime {
     /// reading or a document saved before version 8, or one from a backup that carries none),
     /// and of a built-in category nobody has changed: older than any change, and the same on
     /// every phone, so two copies of a record nobody has changed since are never taken for a
-    /// newer one. Equal to the default the schema gives those records (`DosarSchemaV8`).
+    /// newer one. Equal to the default the schema gives those records (`DosarSchemaV9`).
     public static let unknown = Date.distantPast
 }
 
@@ -137,15 +137,15 @@ enum ChangeTimes {
     }
 }
 
-extension DosarSchemaV8.Asset: ChangeTimed {}
-extension DosarSchemaV8.Obligation: ChangeTimed {}
-extension DosarSchemaV8.HistoryEntry: ChangeTimed {}
-extension DosarSchemaV8.ServiceItem: ChangeTimed {}
-extension DosarSchemaV8.MeasurementLog: ChangeTimed {}
-extension DosarSchemaV8.Attachment: ChangeTimed {}
-extension DosarSchemaV8.Provider: ChangeTimed {}
+extension DosarSchemaV9.Asset: ChangeTimed {}
+extension DosarSchemaV9.Obligation: ChangeTimed {}
+extension DosarSchemaV9.HistoryEntry: ChangeTimed {}
+extension DosarSchemaV9.ServiceItem: ChangeTimed {}
+extension DosarSchemaV9.MeasurementLog: ChangeTimed {}
+extension DosarSchemaV9.Attachment: ChangeTimed {}
+extension DosarSchemaV9.Provider: ChangeTimed {}
 
-extension DosarSchemaV8.CategoryTemplate: ChangeTimed {
+extension DosarSchemaV9.CategoryTemplate: ChangeTimed {
     /// What the person chooses for a built-in category; everything else is the catalog's.
     static let personsOwnChoices: Set<String> = ["homeOrder", "isOnHome", "isSensitive"]
 
@@ -158,6 +158,6 @@ extension DosarSchemaV8.CategoryTemplate: ChangeTimed {
     }
 }
 
-extension DosarSchemaV8.AttachmentPage: PartOfChangeTimed {
+extension DosarSchemaV9.AttachmentPage: PartOfChangeTimed {
     static var wholeProperty: String { "attachment" }
 }

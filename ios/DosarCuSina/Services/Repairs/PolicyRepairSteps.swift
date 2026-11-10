@@ -140,7 +140,7 @@ struct HomePolicyWithoutDeadlineStep: DataRepairStep {
             let obligation = try HouseholdMutations.makeObligation(from: candidate.blueprint, for: candidate.asset, firstDue: candidate.day,
                                                                    today: today, calendar: calendar, in: context)
             candidate.attachment.obligation = obligation
-            candidate.attachment.validUntil = candidate.day.noonDate(in: calendar)
+            candidate.attachment.validUntil = candidate.day
         }
     }
 }

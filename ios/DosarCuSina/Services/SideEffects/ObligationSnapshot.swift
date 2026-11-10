@@ -10,7 +10,8 @@ public struct ObligationSnapshot: Hashable, Sendable, Identifiable {
     public var kind: ObligationKind
     public var status: ObligationStatus
     public var dueDay: CalendarDay
-    public var snoozedUntil: Date?
+    /// The day it comes back after "Amână"; hidden until that day starts where the phone is.
+    public var snoozedUntil: CalendarDay?
     public var reminders: ReminderProfile
     public var reminderMinuteOfDay: Int?
     public var estimatedCost: Money?
@@ -34,7 +35,7 @@ public struct ObligationSnapshot: Hashable, Sendable, Identifiable {
         kind: ObligationKind,
         status: ObligationStatus = .active,
         dueDay: CalendarDay,
-        snoozedUntil: Date? = nil,
+        snoozedUntil: CalendarDay? = nil,
         reminders: ReminderProfile? = nil,
         reminderMinuteOfDay: Int? = nil,
         estimatedCost: Money? = nil,
@@ -68,6 +69,17 @@ public struct ObligationSnapshot: Hashable, Sendable, Identifiable {
 }
 
 extension ObligationSnapshot {
+    /// Still hidden at `now`: the day its snooze ends hasn't started yet where the phone is.
+    public func isSnoozed(at now: Date = Date(), calendar: Calendar = .dosar) -> Bool {
+        guard let snoozedUntil else { return false }
+        return CalendarDay(now, calendar: calendar) < snoozedUntil
+    }
+
+    /// The moment its snooze ends, the start of that day where the phone is, while still ahead of `now`.
+    public func snoozeEnds(after now: Date, calendar: Calendar = .dosar) -> Date? {
+        snoozedUntil.map { $0.startDate(in: calendar) }.flatMap { $0 > now ? $0 : nil }
+    }
+
     /// What may leave the app (reminders, the badge, widgets, Siri and Shortcuts,
     /// Spotlight): every snapshot except examples, which are only for exploring.
     /// Every outside surface reads this one list.
@@ -82,7 +94,7 @@ extension ObligationSnapshot {
         let archived = ObligationStatus.archived.rawValue
         let obligations = try context.fetch(FetchDescriptor<Obligation>(
             predicate: #Predicate { $0.statusRaw != archived },
-            sortBy: [SortDescriptor(\.dueDate)]
+            sortBy: [Obligation.byDueDay]
         ))
         let templates = try TemplateStore(context: context).templatesByKey()
         return obligations.map { obligation in
@@ -93,7 +105,7 @@ extension ObligationSnapshot {
                 title: obligation.title,
                 kind: obligation.kind,
                 status: obligation.status,
-                dueDay: obligation.dueDay(in: calendar),
+                dueDay: obligation.dueDay,
                 snoozedUntil: obligation.snoozedUntil,
                 reminders: obligation.reminders,
                 reminderMinuteOfDay: obligation.reminderMinuteOfDay,

@@ -264,7 +264,7 @@ public final class HistoryActions {
         let effect = HistoryDeletion(of: entry)
         try UnitOfWork.perform(in: context, now: now()) {
             if let reopened = effect.reopensCycle, let obligation = entry.obligation {
-                obligation.dueDate = reopened
+                obligation.dueDay = reopened
                 obligation.dueMetric = entry.previousDueMetric
                 if obligation.status == .done {
                     obligation.status = entry.previousStatusRaw.flatMap(ObligationStatus.init(rawValue:)) ?? .active

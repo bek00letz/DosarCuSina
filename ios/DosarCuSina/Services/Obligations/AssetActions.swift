@@ -181,7 +181,7 @@ public final class AssetActions {
                           !blueprint.recurrence.repeats,
                           previous[fieldKey] != values[fieldKey],
                           let day = values[fieldKey]?.dateValue else { continue }
-                    obligation.setDueDay(day.adding(days: offset, calendar: calendar), calendar: calendar)
+                    obligation.dueDay = day.adding(days: offset, calendar: calendar)
                 }
                 // A field that drives a deadline gets a value and the section has none from
                 // it: the deadline is made, as adding the section would have (a policy's end
@@ -381,8 +381,7 @@ enum HouseholdMutations {
             dueDay: due,
             recurrence: blueprint.recurrence,
             reminders: blueprint.reminders(for: asset.values),
-            estimatedCost: blueprint.estimatedCost,
-            calendar: calendar
+            estimatedCost: blueprint.estimatedCost
         )
         obligation.blueprintKey = blueprint.key
         obligation.notes = blueprint.note
@@ -398,13 +397,13 @@ enum HouseholdMutations {
 
     static func recurrenceContext(for obligation: Obligation, currentMetric: Double?, calendar: Calendar = .dosar) -> RecurrenceContext {
         // Only completions that moved the date take part (not the one being recorded now).
-        let steps = obligation.history.filter { $0.nextDueDate != nil }.map {
+        let steps = obligation.history.filter { $0.nextDueDay != nil }.map {
             RecurrenceEngine.SeriesStep(
-                cycle: $0.cycleDueDate.map { CalendarDay($0, calendar: calendar) },
-                next: $0.nextDueDate.map { CalendarDay($0, calendar: calendar) }
+                cycle: $0.cycleDueDay,
+                next: $0.nextDueDay
             )
         }
-        let seriesDay = RecurrenceEngine.seriesStart(current: obligation.dueDay(in: calendar), completions: steps).day
+        let seriesDay = RecurrenceEngine.seriesStart(current: obligation.dueDay, completions: steps).day
         guard let asset = obligation.asset else { return RecurrenceContext(currentMetric: currentMetric, seriesDayOfMonth: seriesDay) }
         let series = readingSeries(of: asset, unit: obligation.metricUnit)
         let readings = series.readings

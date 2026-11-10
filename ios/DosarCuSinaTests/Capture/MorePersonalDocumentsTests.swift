@@ -99,7 +99,7 @@ struct MorePersonalDocumentsTests {
         #expect(card.value(DocumentFields.expiry) == .date(CalendarDay("2027-10-31")))
         let renewal = try #require(card.activeObligations.first)
         #expect(renewal.blueprintKey == BuiltInBlueprints.documentRenew)
-        #expect(renewal.dueDay(in: .bucharest) == CalendarDay("2027-10-31"))
+        #expect(renewal.dueDay == CalendarDay("2027-10-31"))
         #expect(renewal.reminders.leadDays == [30, 7], "Its type's reminders, from the catalog")
         #expect(renewal.reminders.consequence == .legal)
     }
@@ -186,7 +186,7 @@ struct MorePersonalDocumentsTests {
         #expect(certificate.value(DocumentFields.issuer) == .text("EXEMPLU TRUST SRL"))
         #expect(certificate.value(DocumentFields.issueDate) == .date(CalendarDay("2026-02-01")))
         let renewal = try #require(certificate.activeObligations.first)
-        #expect(renewal.dueDay(in: .bucharest) == CalendarDay("2029-01-31"))
+        #expect(renewal.dueDay == CalendarDay("2029-01-31"))
         #expect(renewal.reminders.leadDays == [30, 7])
     }
 

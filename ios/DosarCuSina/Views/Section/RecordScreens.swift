@@ -137,7 +137,7 @@ private struct HistoryEntryContent: View {
         let effect = HistoryDeletion(of: entry)
         var sentences: [String] = []
         if let reopened = effect.reopensCycle {
-            let day = DosarFormat.longDay(CalendarDay(reopened))
+            let day = DosarFormat.longDay(reopened)
             sentences.append(String(localized: "Termenul revine la \(day), ca și cum nu l-ai fi rezolvat.", comment: "Deleting the latest completion moves its deadline back to the day it was due."))
         } else if effect.keepsDeadline {
             sentences.append(String(localized: "Termenul rămâne cum e acum.", comment: "Deleting an older completion leaves its deadline alone."))

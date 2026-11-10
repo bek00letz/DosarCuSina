@@ -273,7 +273,7 @@ struct WidgetEngineTests {
 
         let completed = IntentEngine.applyQueuedWidgetCompletions(queue: queue, in: context, calendar: .bucharest)
         #expect(completed == 1, "The October tap is for a cycle that's already gone")
-        #expect(rent.dueDay(in: .bucharest) == CalendarDay("2026-12-05"))
+        #expect(rent.dueDay == CalendarDay("2026-12-05"))
         #expect(rent.history.count == 1)
         #expect(queue.pending().isEmpty)
     }

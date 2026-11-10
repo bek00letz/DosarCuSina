@@ -31,7 +31,7 @@ public enum HistoryKind: String, Codable, CaseIterable, Sendable {
     }
 }
 
-extension DosarSchemaV8 {
+extension DosarSchemaV9 {
     /// One thing that happened to an asset: a visit, a repair, a purchase, an
     /// inspection. It is the asset's single history: completing an obligation
     /// writes one of these, and so does logging a repair by hand.
@@ -58,10 +58,12 @@ extension DosarSchemaV8 {
         public var updatedAt: Date = Date.distantPast
 
         // Set when the entry records the completion of an obligation, for undo.
-        /// Noon on the due day of the cycle it closed.
-        public var cycleDueDate: Date?
-        /// The due date the obligation moved to.
-        public var nextDueDate: Date?
+        /// The due day of the cycle it closed, as an ISO day (`StoredDay`); read and write it
+        /// through `cycleDueDay`. Version 9; before, noon of the day in the phone's time zone.
+        public var cycleDueDayISO: String?
+        /// The due day the obligation moved to, as an ISO day; read and write it through
+        /// `nextDueDay`. Version 9, as `cycleDueDayISO`.
+        public var nextDueDayISO: String?
         public var previousStatusRaw: String?
         public var previousDueMetric: Double?
 
@@ -110,7 +112,19 @@ extension DosarSchemaV8 {
         public var providerNames: [String] { (providers ?? []).map(\.name).sorted() }
         public var providerIds: [UUID] { (providers ?? []).map(\.id) }
 
+        /// The due day of the cycle this completion closed; nil when it isn't a completion.
+        public var cycleDueDay: CalendarDay? {
+            get { StoredDay.day(cycleDueDayISO) }
+            set { cycleDueDayISO = newValue.map(StoredDay.text) }
+        }
+
+        /// The due day the completion moved its obligation to; nil when it ended the series.
+        public var nextDueDay: CalendarDay? {
+            get { StoredDay.day(nextDueDayISO) }
+            set { nextDueDayISO = newValue.map(StoredDay.text) }
+        }
+
         /// Whether this entry is the completion of an obligation.
-        public var isCompletion: Bool { cycleDueDate != nil }
+        public var isCompletion: Bool { cycleDueDayISO != nil }
     }
 }

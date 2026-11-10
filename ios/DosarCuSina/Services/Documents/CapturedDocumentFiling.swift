@@ -112,7 +112,7 @@ extension AttachmentActions {
         }
         // How long the paper itself is valid, as read now: its deadline moving on later never changes it.
         if let validUntil {
-            filed.validUntil = validUntil.noonDate(in: calendar)
+            filed.validUntil = validUntil
             try UnitOfWork.save(context)
         }
         return filed
@@ -132,7 +132,7 @@ extension AttachmentActions {
         if let title, !title.isEmpty { attachment.title = title }
         if let kind { attachment.kind = kind }
         if let extractedText { attachment.extractedText = extractedText }
-        if let documentDate { attachment.documentDate = documentDate.noonDate(in: calendar) }
+        if let documentDate { attachment.documentDay = documentDate }
         try UnitOfWork.save(context)
     }
 

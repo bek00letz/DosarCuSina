@@ -72,17 +72,17 @@ enum IntentEngine {
               obligation.status == .active,
               !obligation.isExample,
               let cycle = request.cycle,
-              obligation.dueDay(in: calendar) == cycle
+              obligation.dueDay == cycle
         else { return .skipped }
 
         let actions = ObligationActions(context: context, calendar: calendar, now: now)
         switch request.action {
         case .complete:
             try actions.complete(obligation)
-            return .completed(next: obligation.status == .active ? obligation.dueDay(in: calendar) : nil)
+            return .completed(next: obligation.status == .active ? obligation.dueDay : nil)
         case .snooze(let days):
             try actions.snooze(obligation, days: days)
-            return .snoozed(until: obligation.snoozedUntil.map { CalendarDay($0, calendar: calendar) } ?? cycle)
+            return .snoozed(until: obligation.snoozedUntil ?? cycle)
         }
     }
 

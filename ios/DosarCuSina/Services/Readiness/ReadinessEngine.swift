@@ -704,7 +704,7 @@ extension ReadinessAsset {
             for obligation in asset.activeObligations {
                 let lastDone = obligation.history.first.map { CalendarDay($0.occurredAt, calendar: calendar) }
                 let reading = ReadinessObligation(
-                    id: obligation.id, due: obligation.dueDay(in: calendar), lastDone: lastDone, reference: obligation.reference,
+                    id: obligation.id, due: obligation.dueDay, lastDone: lastDone, reference: obligation.reference,
                     title: obligation.title, kind: obligation.kind, amount: obligation.estimatedCost
                 )
                 if let key = obligation.blueprintKey { obligations[key] = reading } else { others.append(reading) }

@@ -320,7 +320,7 @@ struct CustomCategoryBehaviourTests {
         let receipt = try store.editCustom(boats, name: "Bărci", symbol: "sailboat.fill", switches: oftener, changingDeadlines: true)
         #expect(service.recurrence == .metric(every: 50, unit: .engineHours, fallback: .years(1)))
         #expect(service.status == .active)
-        #expect(service.dueDay(in: calendar) == CalendarDay("2027-05-01"), "The day already set stays")
+        #expect(service.dueDay == CalendarDay("2027-05-01"), "The day already set stays")
         #expect(try store.effects(of: oftener, on: boats).isEmpty, "Nothing left to ask")
 
         try receipt.undo()

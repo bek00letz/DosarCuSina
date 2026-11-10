@@ -60,7 +60,7 @@ public final class ObligationActions {
             let completedDay = CalendarDay(completedAt, calendar: calendar)
 
             let entry = HistoryEntry(kind: .forCompleting(obligation.kind), title: obligation.title, occurredAt: completedAt)
-            entry.cycleDueDate = obligation.dueDate
+            entry.cycleDueDay = obligation.dueDay
             entry.previousStatusRaw = obligation.statusRaw
             entry.previousDueMetric = obligation.dueMetric
             entry.totalCost = cost
@@ -80,15 +80,15 @@ public final class ObligationActions {
 
             let recurrenceContext = HouseholdMutations.recurrenceContext(for: obligation, currentMetric: metricReading, calendar: calendar)
             if let next = RecurrenceEngine.nextDue(
-                after: obligation.dueDay(in: calendar),
+                after: obligation.dueDay,
                 completedOn: completedDay,
                 rule: obligation.recurrence,
                 context: recurrenceContext,
                 calendar: calendar
             ) {
-                obligation.setDueDay(next.day, calendar: calendar)
+                obligation.dueDay = next.day
                 obligation.dueMetric = next.metric
-                entry.nextDueDate = obligation.dueDate
+                entry.nextDueDay = obligation.dueDay
             } else {
                 obligation.status = .done
             }
@@ -113,8 +113,8 @@ public final class ObligationActions {
     @discardableResult
     func recordPastCompletion(of obligation: Obligation, on date: Date, cost: Money?) throws -> HistoryEntry {
         let entry = HistoryEntry(kind: .forCompleting(obligation.kind), title: obligation.title, occurredAt: date)
-        entry.cycleDueDate = date
-        entry.nextDueDate = obligation.dueDate
+        entry.cycleDueDay = CalendarDay(date, calendar: calendar)
+        entry.nextDueDay = obligation.dueDay
         entry.previousStatusRaw = ObligationStatus.active.rawValue
         entry.totalCost = cost
         entry.isExample = obligation.isExample
@@ -133,7 +133,7 @@ public final class ObligationActions {
         try UnitOfWork.performUndoable(in: context, now: now()) {
             guard obligation.status == .active else { throw ObligationActionError.notActive }
             let today = CalendarDay(now(), calendar: calendar)
-            obligation.snoozedUntil = today.adding(days: max(1, days), calendar: calendar).startDate(in: calendar)
+            obligation.snoozedUntil = today.adding(days: max(1, days), calendar: calendar)
             try save()
         }.receipt
     }
@@ -181,7 +181,7 @@ public final class ObligationActions {
     @discardableResult
     public func reschedule(_ obligation: Obligation, to day: CalendarDay) throws -> UndoReceipt {
         try UnitOfWork.performUndoable(in: context, now: now()) {
-            obligation.setDueDay(day, calendar: calendar)
+            obligation.dueDay = day
             obligation.snoozedUntil = nil
             try save()
         }.receipt
@@ -258,8 +258,7 @@ public final class ObligationActions {
             dueDay: dueDay,
             recurrence: recurrence,
             reminders: reminders,
-            estimatedCost: estimatedCost,
-            calendar: calendar
+            estimatedCost: estimatedCost
         )
         obligation.provider = provider
         obligation.reference = reference
@@ -294,7 +293,7 @@ public final class ObligationActions {
     }
 }
 
-extension DosarSchemaV8.Obligation {
+extension DosarSchemaV9.Obligation {
     /// The counter unit for metric-based obligations, such as kilometres.
     public var metricUnit: MeasurementUnit? {
         if case .metric(_, let unit, _) = recurrence { return unit }

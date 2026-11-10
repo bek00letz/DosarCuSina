@@ -43,7 +43,7 @@ public enum BillReminders {
             for bill in bills where bill.status == .active { receipt = try actions.pause(bill) }
         case .resumed:
             // Only a bill still to pay; an older one waits for the next bill.
-            for bill in bills where bill.status == .paused && bill.dueDay(in: calendar) >= today { receipt = try actions.resume(bill) }
+            for bill in bills where bill.status == .paused && bill.dueDay >= today { receipt = try actions.resume(bill) }
         }
         return receipt.map { Undoable(value: change, receipt: $0) }
     }
