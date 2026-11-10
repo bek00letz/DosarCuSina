@@ -532,12 +532,15 @@ struct CaptureReview: Identifiable {
     @MainActor
     private static func otherDestination(kind: CaptureDocumentKind, suggestions: [CaptureSuggestion], fields: [CaptureField], candidates: [Asset],
                                          behaviors: [String: CategoryBehavior]) -> Destination {
-        // 1. An identifier on the document matches a section.
+        // 1. An identifier on the document matches a section. A personal document is found
+        // only among personal documents, and nothing else is filed into one by a number
+        // they share: a green card names its car's plate and may print its RCA's number.
         let hints = suggestions.flatMap(\.assetHints)
+        let searched = candidates.filter { behaviors.plays(.personalDocument, $0.templateKey) == kind.isPersonalDocument }
         for hint in hints {
             let wanted = CaptureMapping.normalizedIdentifier(hint.value)
             guard !wanted.isEmpty else { continue }
-            if let match = candidates.first(where: { asset in
+            if let match = searched.first(where: { asset in
                 asset.values.contains { _, value in
                     value.textValue.map(CaptureMapping.normalizedIdentifier) == wanted
                 }

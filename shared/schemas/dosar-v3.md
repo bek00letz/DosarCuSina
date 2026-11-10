@@ -236,7 +236,7 @@ leaves the asset at the top level.
 
 A reader skips a single value it can't read and keeps the rest of the asset.
 
-**A bank card's number is never written.** A bank card (`document.type` `documentType.bankCard`) carries `document.cardNetwork` and `document.cardLastFour`, which holds four digits and nothing more. Writers write no card number in any value or `extractedText`; readers mask any they find (a run of 14 to 19 digits that starts like a card number and passes the Luhn check, or is printed in groups of four) to its last four digits after `••••`, and cut `document.cardLastFour` to its last four digits. A cazier keeps what it says, as printed, in `document.recordResult`.
+**A bank card's number is never written.** A bank card (`document.type` `documentType.bankCard`) carries `document.cardNetwork` and `document.cardLastFour`, which holds four digits and nothing more. Writers write no card number in any value or `extractedText`; readers mask any they find (a run of 14 to 19 digits that starts like a card number and passes the Luhn check, or is printed in groups of four) to its last four digits after `••••`, and cut `document.cardLastFour` to its last four digits. A cazier keeps what it says, as printed, in `document.recordResult`. A green card (`documentType.greenCard`) keeps the plate of the car it covers in `document.vehiclePlate`, as text ("B 123 ABC").
 
 **Choice values are option keys**, such as `fuel.diesel`, `vehicleUse.personal`, `documentType.passport` or `species.dog`, never display text. Single choices are `text` values and multiple choices are `choices` values. Labels come from the field's options, so they follow the reader's language.
 

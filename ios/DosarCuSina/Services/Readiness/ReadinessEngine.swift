@@ -59,6 +59,19 @@ public enum ReadinessEngine {
         }
     }
 
+    /// Whether a green card is this car's: it names the car's plate, or one of the two has
+    /// no plate written down. Plates are compared by their letters and digits, so
+    /// "B-123-ABC" is "B 123 ABC".
+    static func covers(_ greenCard: ReadinessAsset, car: ReadinessAsset) -> Bool {
+        func plate(_ text: String?) -> String? {
+            let compact = text.map(CaptureMapping.normalizedIdentifier) ?? ""
+            return compact.isEmpty ? nil : compact
+        }
+        guard let named = plate(greenCard.values[DocumentFields.vehiclePlate]?.textValue),
+              let own = plate(car.values[VehicleFields.plate]?.textValue) else { return true }
+        return named == own
+    }
+
     static func expiry(_ asset: ReadinessAsset) -> CalendarDay? {
         asset.values[DocumentFields.expiry]?.dateValue
     }
@@ -298,8 +311,11 @@ extension ReadinessEngine {
                              missing: String(localized: "Nu e în dosar. Adaugă data ca să verific.", comment: "Trip check: no ITP deadline.")),
         ]
 
-        // The green card comes with the RCA; a card filed on its own counts too.
-        let greenCards = documents(of: DocumentType.greenCard, in: assets).compactMap { card in expiry(card).map { (card, $0) } }
+        // The green card comes with the RCA; a card filed on its own counts too, for the car
+        // whose plate it names (one that names none counts for every car).
+        let greenCards = documents(of: DocumentType.greenCard, in: assets)
+            .filter { covers($0, car: car) }
+            .compactMap { card in expiry(card).map { (card, $0) } }
         let greenTitle = String(localized: "Carte verde (RCA)", comment: "Trip check: the green card, which comes with the RCA.")
         let greenID = "trip.greenCard.\(car.id)"
         if case let (card, until)? = greenCards.max(by: { $0.1 < $1.1 }), DueDayValidity.covers(through: plan.end, due: until) {
