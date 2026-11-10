@@ -175,8 +175,16 @@ private struct VisitForm: View {
                 if isReading { DSDelayedProgress(label: "Citesc factura…").padding(DS.Space.s) }
             }
         } else {
-            DSNotice(.success, title: "Factura e atașată", message: readNote.map { LocalizedStringKey($0) })
+            if draft.keepsPhoto {
+                DSNotice(.success, title: "Factura e atașată", message: readNote.map { LocalizedStringKey($0) })
+            } else {
+                DSNotice(.success, title: "Am citit factura", message: readNote.map { LocalizedStringKey($0) })
+            }
             filedNotice
+            // Its photo shows a whole card number: kept only when the person asks.
+            if let kind = draft.photoOnRequestKind {
+                KeepPhotoChoice(keepsPhoto: $draft.keepsPhotoOnRequest, kind: kind)
+            }
         }
         if draft.document == nil, let readNote {
             DSNotice(.warning, title: "Factura nu s-a citit", message: LocalizedStringKey(readNote))
@@ -440,7 +448,8 @@ private struct VisitForm: View {
             documentTitle: draft.documentTitle,
             documentText: draft.documentText,
             reference: draft.reference,
-            isAnotherInvoice: draft.isAnotherInvoice
+            isAnotherInvoice: draft.isAnotherInvoice,
+            keepsPhoto: draft.keepsPhoto
         )
     }
 

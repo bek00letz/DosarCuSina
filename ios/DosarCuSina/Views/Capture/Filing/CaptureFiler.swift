@@ -83,6 +83,9 @@ struct CaptureFiler {
         /// The person said it is another invoice, when it only looked like one already filed
         /// by its day and total ("E altă factură").
         var isAnotherInvoice = false
+        /// The invoice's photo is kept: false only when it is kept on request
+        /// (`CaptureResult.photoIsOnRequest`: it shows a whole card number) and the person hasn't asked.
+        var keepsPhoto = true
 
         /// Who issued the invoice, as named here.
         @MainActor var issuer: String? {
@@ -556,7 +559,8 @@ struct CaptureFiler {
             replacing: filed?.entry
         ).value
         var outcome = Outcome(asset: visit.asset, visit: entry)
-        if let document {
+        // The invoice's photo, unless it shows a whole card number and the person didn't ask to keep it.
+        if let document, visit.keepsPhoto {
             let documents = AttachmentActions(context: context, calendar: calendar)
             let kept = try documents.fileCaptured(
                 document,

@@ -501,7 +501,8 @@ private struct ObligationCompleteSheet: View {
     @State private var isSaving = false
     @State private var exampleQuestion: ExampleSectionQuestion?
     @State private var readingQuestion: LowerReadingQuestion?
-    /// A bank card's photo is kept only when the person asks.
+    /// A bank card's photo, or any page's that shows a whole card number, is kept only when
+    /// the person asks (`CaptureResult.photoIsOnRequest`).
     @State private var keepsPhotoOnRequest = false
     /// A bill that only looked like one already filed, by its day and total: the person
     /// said it is another bill ("E altă factură"). A new photo asks again.
@@ -521,8 +522,8 @@ private struct ObligationCompleteSheet: View {
                         }
                     }
                     documentSection
-                    if let document, document.kind.profile.photoIsOptIn {
-                        KeepPhotoChoice(keepsPhoto: $keepsPhotoOnRequest)
+                    if let document, document.photoIsOnRequest {
+                        KeepPhotoChoice(keepsPhoto: $keepsPhotoOnRequest, kind: document.kind)
                     }
                 }
                 .padding(DS.Space.m)
@@ -580,10 +581,10 @@ private struct ObligationCompleteSheet: View {
                     .frame(minHeight: 44)
             } else if let document {
                 let next = CaptureFiler.nextDay(in: document)
-                // A bank card's photo is kept only on request, so it isn't promised here.
+                // A photo kept only on request (a bank card, a page with a card's number) isn't promised here.
                 let message: LocalizedStringKey = if let next {
                     "Următorul termen: \(DueWording.date(next, today: CalendarDay(Date())))."
-                } else if document.kind.profile.photoIsOptIn {
+                } else if document.photoIsOnRequest {
                     "Nu am găsit o dată nouă pe el."
                 } else {
                     "Nu am găsit o dată nouă pe el. Îl păstrez oricum."
