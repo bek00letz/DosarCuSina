@@ -254,35 +254,16 @@ public enum DossierV3 {
 
     // MARK: Coding
 
+    /// The archive's JSON: indented, keys sorted, moments in UTC to the second
+    /// (`MachineText.jsonEncoder(.readable)`).
     public static func encoder() -> JSONEncoder {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-        encoder.dateEncodingStrategy = .custom { date, encoder in
-            var container = encoder.singleValueContainer()
-            try container.encode(date.formatted(Date.ISO8601FormatStyle()))
-        }
-        return encoder
+        MachineText.jsonEncoder(.readable)
     }
 
-    /// Accepts timestamps with or without fractional seconds and with any UTC offset.
+    /// Accepts timestamps with or without fractional seconds, with any UTC offset, or a
+    /// day alone (`MachineText.jsonDecoder`).
     public static func decoder() -> JSONDecoder {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .custom { decoder in
-            let container = try decoder.singleValueContainer()
-            let raw = try container.decode(String.self)
-            if let date = parseTimestamp(raw) { return date }
-            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Not an ISO 8601 timestamp: \(raw)")
-        }
-        return decoder
-    }
-
-    static func parseTimestamp(_ raw: String) -> Date? {
-        if let date = try? Date(raw, strategy: .iso8601) { return date }
-        if let date = try? Date(raw, strategy: Date.ISO8601FormatStyle(includingFractionalSeconds: true)) { return date }
-        if let day = CalendarDay(isoString: raw), raw.count == 10 {
-            return day.startDate(in: CalendarDay.isoCalendar)
-        }
-        return nil
+        MachineText.jsonDecoder()
     }
 
     static func id(_ uuid: UUID) -> String { uuid.uuidString.lowercased() }

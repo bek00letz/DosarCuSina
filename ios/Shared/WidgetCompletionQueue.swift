@@ -79,9 +79,7 @@ public struct WidgetCompletionQueue: Sendable {
 
     private static func read(_ url: URL) -> [WidgetCompletion] {
         guard let data = try? Data(contentsOf: url) else { return [] }
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        return (try? decoder.decode([WidgetCompletion].self, from: data)) ?? []
+        return (try? MachineText.jsonDecoder().decode([WidgetCompletion].self, from: data)) ?? []
     }
 
     private static func write(_ items: [WidgetCompletion], to url: URL) {
@@ -89,10 +87,7 @@ public struct WidgetCompletionQueue: Sendable {
             try? FileManager.default.removeItem(at: url)
             return
         }
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        encoder.outputFormatting = [.sortedKeys]
-        guard let data = try? encoder.encode(items) else { return }
+        guard let data = try? MachineText.jsonEncoder().encode(items) else { return }
         // Readable after first unlock, like the widget snapshot, so a locked phone still shows widgets.
         try? data.write(to: url, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
     }
