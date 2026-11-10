@@ -110,9 +110,9 @@ public enum RomanianFieldExtractor {
         return nil
     }
 
-    /// A validity period on one line ("valabilă de la 01.11.2026 până la 31.10.2027", "12.03.21-12.03.2031").
-    static func validityPeriod(in text: CaptureText, window: DateWindow = .aroundToday) -> (start: CalendarDay, end: CalendarDay, source: String)? {
-        let labels = ["valabil", "perioada", "valabilitate", "validity", "de la", "asigurare"]
+    /// A validity period on one line after one of `labels` ("valabilă de la 01.11.2026 până la
+    /// 31.10.2027", "12.03.21-12.03.2031"), or on the line after it.
+    static func validityPeriod(in text: CaptureText, labels: [String], window: DateWindow = .aroundToday) -> (start: CalendarDay, end: CalendarDay, source: String)? {
         for index in text.lines(containing: labels) {
             var found = dates(inLine: text.folded[index], index: index, window: window)
             if found.count < 2, index + 1 < text.folded.count {
@@ -199,14 +199,16 @@ public enum RomanianFieldExtractor {
         }?.key ?? "RON"
     }
 
-    private static let strongTotalLabels = [
-        "total de plata", "total plata", "suma de plata", "rest de plata", "total general",
-        "total factura", "valoare totala", "prima de asigurare", "prima totala", "total cu tva", "de plata",
-    ]
+    /// A total that isn't labelled more strongly: the word alone, on a line that isn't VAT.
+    static let plainTotalLabel = "total"
+    /// Words that make a "total" line some other sum: VAT, a subtotal, a sum without VAT.
+    static let notTheTotal = ["tva", "subtotal", "fara"]
 
-    /// The amount to pay: a strongly labelled total first, then a plain "total" line that isn't VAT.
+    /// The amount to pay: a total labelled by one of `labels` first, strongest first (the kind's
+    /// table, `CaptureKindProfile.labels(for: .total)`), then a plain "total" line that isn't VAT.
     /// `ambiguous` when the amount could have been read another way ("3,750"): the field gets "Verifică".
-    static func total(in text: CaptureText) -> (money: Money, source: String, strong: Bool, ambiguous: Bool)? {
+    static func total(in text: CaptureText, labels strongTotalLabels: [String] = CaptureKindProfile.commonLabels(for: .total))
+        -> (money: Money, source: String, strong: Bool, ambiguous: Bool)? {
         let fallbackCurrency = dominantCurrency(in: text)
         func amountNear(_ index: Int, after labels: [String]) -> (money: Money, ambiguous: Bool)? {
             let line = text.folded[index]
@@ -232,10 +234,10 @@ public enum RomanianFieldExtractor {
                 }
             }
         }
-        for index in text.lines(containing: ["total"]).reversed() {
+        for index in text.lines(containing: [plainTotalLabel]).reversed() {
             let line = text.folded[index]
-            guard !["tva", "subtotal", "fara"].contains(where: { CaptureText.containsWord($0, inFolded: line) }) else { continue }
-            if let found = amountNear(index, after: ["total"]) {
+            guard !notTheTotal.contains(where: { CaptureText.containsWord($0, inFolded: line) }) else { continue }
+            if let found = amountNear(index, after: [plainTotalLabel]) {
                 return (found.money, text.original[index], false, found.ambiguous)
             }
         }
@@ -317,6 +319,8 @@ public enum RomanianFieldExtractor {
 
     private static let companyPattern = #"\b(s\.?\s?r\.?\s?l\.?|s\.?\s?a\.?|s\.?\s?c\.?\s?s\.?|p\.?\s?f\.?\s?a\.?|i\.?\s?i\.?)(?=\s|$|,)"#
     private static let buyerLabels = ["client", "cumparator", "beneficiar", "asigurat", "contractant"]
+    /// What comes before an issuer's name on its line and isn't part of it.
+    private static let issuerPrefixes = ["Furnizor:", "Furnizor", "Vânzător:", "Vanzator:", "Emitent:", "S.C.", "SC "]
 
     /// The company that issued the document: a line with a company suffix that isn't in the buyer's block.
     static func issuerName(in text: CaptureText) -> (name: String, line: Int)? {
@@ -327,7 +331,7 @@ public enum RomanianFieldExtractor {
             }
             if inBuyerBlock { continue }
             var name = text.original[index]
-            for prefix in ["Furnizor:", "Furnizor", "Vânzător:", "Vanzator:", "Emitent:", "S.C.", "SC "] where name.hasPrefix(prefix) {
+            for prefix in issuerPrefixes where name.hasPrefix(prefix) {
                 name = String(name.dropFirst(prefix.count))
             }
             name = name.trimmingCharacters(in: .whitespaces.union(CharacterSet(charactersIn: ":,")))
@@ -385,9 +389,10 @@ public enum RomanianFieldExtractor {
 
     /// A 17-character VIN. The position-9 check digit is optional in Europe, so a match is
     /// reported with whether it also passes the check (stronger evidence when it does).
-    static func vin(in text: CaptureText) -> (value: String, checksumValid: Bool, source: String)? {
+    /// After one of `labels`, a VIN printed in groups is read joined.
+    static func vin(in text: CaptureText, labels: [String] = CaptureKindProfile.commonLabels(for: .vin))
+        -> (value: String, checksumValid: Bool, source: String)? {
         let pattern = #"(?<![A-Z0-9])([A-HJ-NPR-Z0-9]{17})(?![A-Z0-9])"#
-        let labels = ["vin", "serie sasiu", "seria sasiu", "nr. identificare", "numar de identificare"]
         for (index, line) in text.original.enumerated() {
             var candidates = [line.uppercased()]
             // VINs are sometimes printed in groups ("WVW ZZZ AUZ ..."); join the part after a VIN label.
@@ -433,9 +438,8 @@ public enum RomanianFieldExtractor {
         }
     }
 
-    /// A phone number on a line mentioning claims or assistance, or on the line after it.
-    static func claimsPhone(in text: CaptureText) -> (value: String, source: String)? {
-        let labels = ["daune", "dauna", "avizare", "asistenta", "call center", "callcenter", "nonstop", "24/7", "suport clienti"]
+    /// A phone number on a line with one of `labels` (claims, assistance), or on the line after it.
+    static func claimsPhone(in text: CaptureText, labels: [String]) -> (value: String, source: String)? {
         for index in text.lines(containing: labels) {
             if let phone = phones(inLine: text.folded[index]).first { return (phone, text.original[index]) }
             if index + 1 < text.folded.count, let phone = phones(inLine: text.folded[index + 1]).first {
@@ -459,7 +463,7 @@ public enum RomanianFieldExtractor {
     /// The reading before values printed in parts had one rule, kept switched off until
     /// that rule is proven on real documents (`policyNumber(in:)` replaces it).
     static func legacyPolicyNumber(in text: CaptureText) -> (value: String, source: String)? {
-        let labels = ["seria si numarul", "seria si nr", "nr. polita", "nr polita", "numar polita", "numarul politei", "polita nr", "polita seria", "polita rca seria", "serie polita"]
+        let labels = legacyPolicyLabels
         for index in text.lines(containing: labels) {
             let original = text.original[index]
             let folded = text.folded[index]
@@ -477,9 +481,15 @@ public enum RomanianFieldExtractor {
         return nil
     }
 
-    /// RCA bonus-malus class (B0–B8, M1–M8).
-    static func bonusMalus(in text: CaptureText) -> String? {
-        for index in text.lines(containing: ["bonus", "malus", "clasa"]) {
+    /// The labels the switched-off reading looked for (`CompositeLabels.policy` replaces them).
+    private static let legacyPolicyLabels = [
+        "seria si numarul", "seria si nr", "nr. polita", "nr polita", "numar polita", "numarul politei",
+        "polita nr", "polita seria", "polita rca seria", "serie polita",
+    ]
+
+    /// RCA bonus-malus class (B0–B8, M1–M8), on a line with one of `labels`.
+    static func bonusMalus(in text: CaptureText, labels: [String]) -> String? {
+        for index in text.lines(containing: labels) {
             if let match = TextPattern.first(#"\b(b[0-8]|m[1-8])\b"#, in: text.folded[index]), let value = match[1] {
                 return value.uppercased()
             }
@@ -487,11 +497,14 @@ public enum RomanianFieldExtractor {
         return nil
     }
 
-    /// An odometer reading. Prefers a labelled value ("Km bord: 86.420") over a bare "86420 km".
-    static func odometer(in text: CaptureText) -> (km: Decimal, source: String, labelled: Bool)? {
+    /// An odometer reading. Prefers a value after one of `labels` ("Km bord: 86.420") over a
+    /// bare "86420 km". A label's words may be printed together ("kmbord").
+    static func odometer(in text: CaptureText, labels: [String] = CaptureKindProfile.commonLabels(for: .odometer))
+        -> (km: Decimal, source: String, labelled: Bool)? {
         let number = #"(\d{1,3}(?:[., ]\d{3})+|\d{3,7})(?!\d|[.,]\d)"#
+        let label = alternatives(labels, spaces: #"\s*"#)
         for (index, line) in text.folded.enumerated() {
-            if let match = TextPattern.first(#"(?:kilometraj|km\s*bord|km\s*la\s*bord|odometru|rulaj|km\s*parcursi)\s*[:.]?\s*"# + number, in: line),
+            if let match = TextPattern.first(label + #"\s*[:.]?\s*"# + number, in: line),
                let raw = match[1], let km = RomanianNumber.value(raw, as: .kilometres, from: .document) {
                 return (km, text.original[index], true)
             }
@@ -505,10 +518,11 @@ public enum RomanianFieldExtractor {
         return nil
     }
 
-    /// Warranty length in months ("Termen de garanție: 24 luni", "garanție 2 ani").
-    static func warrantyMonths(in text: CaptureText) -> (months: Int, source: String)? {
-        for index in text.lines(containing: ["garanti"]) {
-            if let match = TextPattern.first(#"garanti\w*[^\d\n]{0,25}(\d{1,3})\s*(luni|luna|ani|an)\b"#, in: text.folded[index]),
+    /// Warranty length in months after one of `labels` ("Termen de garanție: 24 luni", "garanție 2 ani").
+    static func warrantyMonths(in text: CaptureText, labels: [String]) -> (months: Int, source: String)? {
+        let label = alternatives(labels)
+        for index in text.lines(containing: labels) {
+            if let match = TextPattern.first(label + #"\w*[^\d\n]{0,25}(\d{1,3})\s*(luni|luna|ani|an)\b"#, in: text.folded[index]),
                let count = match[1].flatMap(Int.init), let unit = match[2] {
                 let months = unit.hasPrefix("an") ? count * 12 : count
                 if (1...240).contains(months) { return (months, text.original[index]) }
@@ -517,27 +531,40 @@ public enum RomanianFieldExtractor {
         return nil
     }
 
-    /// A 15-digit ISO pet microchip number.
-    static func microchip(in text: CaptureText) -> (value: String, source: String)? {
+    /// The country part of a chip implanted in Romania (ISO 3166 numeric code).
+    static let romanianChipPrefix = "642"
+
+    /// A 15-digit ISO pet microchip number: on a line with one of `labels`, or one implanted in Romania.
+    static func microchip(in text: CaptureText, labels: [String]) -> (value: String, source: String)? {
         for (index, line) in text.folded.enumerated() {
             let compact = line.replacingOccurrences(of: " ", with: "")
             if let match = TextPattern.first(#"(?<!\d)(\d{15})(?!\d)"#, in: compact), let value = match[1],
-               ["microcip", "cip", "transponder"].contains(where: { CaptureText.containsWord($0, inFolded: line) }) || value.hasPrefix("642") {
+               labels.contains(where: { CaptureText.containsWord($0, inFolded: line) }) || value.hasPrefix(romanianChipPrefix) {
                 return (value, text.original[index])
             }
         }
         return nil
     }
 
-    /// A serial number after "S/N", "Serie", "Seria produs" or "IMEI".
-    static func serialNumber(in text: CaptureText) -> (value: String, source: String)? {
+    /// A serial number after one of `labels` ("S/N", "Seria produs", "IMEI").
+    static func serialNumber(in text: CaptureText, labels: [String]) -> (value: String, source: String)? {
+        let label = alternatives(labels)
         for (index, line) in text.original.enumerated() {
-            if let match = TextPattern.first(#"(?:s/n|sn|serial|seria produs|serie produs|imei)\s*[:.#]?\s*([A-Z0-9][A-Z0-9-]{4,24})"#, in: line),
+            if let match = TextPattern.first(label + #"\s*[:.#]?\s*([A-Z0-9][A-Z0-9-]{4,24})"#, in: line),
                let value = match[1] {
                 return (value.uppercased(), text.original[index])
             }
         }
         return nil
+    }
+
+    /// A table's wordings as one group of a pattern, in their order: each one as printed,
+    /// with `spaces` between its words.
+    static func alternatives(_ labels: [String], spaces: String = " ") -> String {
+        let wordings = labels.map { label in
+            label.split(separator: " ").map { NSRegularExpression.escapedPattern(for: String($0)) }.joined(separator: spaces)
+        }
+        return "(?:" + wordings.joined(separator: "|") + ")"
     }
 
     // MARK: - Numbered document fields
