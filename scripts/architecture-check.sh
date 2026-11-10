@@ -164,12 +164,13 @@ rule question-outside-its-rule "$app" \
     '(LowerReadingQuestion|ExampleSectionQuestion)\(' - \
     "Ask with the question's one rule, before the step's unit of work writes anything: HouseholdMutations.askAboutReading with the step's PlannedReading, or ExampleOwnership.requireReal."
 
-# A wait of a set time written where it waits: a screen waits for the event it needs
-# instead. The services' own durations (a reader's retry, the coordinator's debounce) are
-# theirs to name and stay outside this rule.
-rule guessed-pause '^ios/(DosarCuSina/(App|Intents|Models|Navigation|Views)|DosarCuSinaWidgets|DosarCuSinaShare|Shared)/' - \
+# A wait of a set time written where it waits, anywhere in the app, its widgets, the share
+# extension and ios/Shared: code waits for the event it needs instead. A wait with no event
+# to wait for (a service's backoff before a retry, the coordinator's debounce) is a named
+# duration beside the code that owns it, saying why.
+rule guessed-pause '^ios/(DosarCuSina|DosarCuSinaWidgets|DosarCuSinaShare|Shared)/' - \
     '(Task\.sleep|asyncAfter|Thread\.sleep|usleep|\.delay|scheduledTimer|Timer\.publish)[[:space:]]*\(.*[^A-Za-z0-9_][0-9]' - \
-    "Wait for the event this needs (a dismissal, a layout, an answer, an animation's completion), never a set time. A pause that only lets motion finish comes from DS.Motion; a debounce, or how long something stays, is a named duration that says why."
+    "Wait for the event this needs (a dismissal, a layout, an answer, an animation's completion), never a set time. A pause that only lets motion finish comes from DS.Motion; a debounce, a backoff before a retry, or how long something stays, is a named duration that says why."
 
 # Checked in its own pass below: tab roots are the views AppShell puts inside
 # NavigationStack(path:), and their body must not start another stack.
