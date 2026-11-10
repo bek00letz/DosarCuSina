@@ -122,6 +122,15 @@ struct DSNotice: View {
         self.action = action
     }
 
+    /// For words that are already localized (a wording type's).
+    init(_ kind: Kind, title: Text, message: Text? = nil, actionTitle: Text? = nil, action: (() -> Void)? = nil) {
+        self.kind = kind
+        self.title = title
+        self.message = message
+        self.actionTitle = actionTitle
+        self.action = action
+    }
+
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: DS.Space.s) {
             Image(systemName: kind.systemImage)

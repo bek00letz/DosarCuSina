@@ -81,22 +81,6 @@ struct CaptureReviewView: View {
         CaptureFilingPlan.make(for: review, templates: templatesByKey, assets: assets, today: CalendarDay(Date()))
     }
 
-    /// What the review says about a bill already in the binder, and what saving does with it.
-    static func filedBillText(_ filed: FiledPaper, today: CalendarDay) -> String {
-        let date = DueWording.date(filed.day, today: today)
-        return switch filed.match {
-        case .sameDocument:
-            String(localized: "E în „\(filed.section)”, cea din \(date). Dacă salvezi, o actualizez cu ce am citit acum.",
-                   comment: "Capture review: the same bill's photo filed again.")
-        case .number:
-            String(localized: "E în „\(filed.section)”, cea din \(date), cu același număr. Dacă salvezi, o actualizez cu ce am citit acum, iar poza asta devine copia ei nouă.",
-                   comment: "Capture review: another photo of a bill already filed, known by its invoice number.")
-        case .dayAndTotal:
-            String(localized: "În „\(filed.section)” e una cu aceeași dată și același total, cea din \(date). Dacă e aceeași, o actualizez, iar poza asta devine copia ei nouă.",
-                   comment: "Capture review: another photo of what looks like a bill already filed, by its day and total.")
-        }
-    }
-
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.xl) {
@@ -108,15 +92,18 @@ struct CaptureReviewView: View {
                     KeepPhotoChoice(keepsPhoto: $review.keepsPhotoOnRequest)
                 }
                 reminderSection
-                if let errorMessage {
-                    DSNotice(.error, title: "Nu s-a salvat", message: LocalizedStringKey(errorMessage))
-                }
-                DSPrimaryButton("Salvează", systemImage: "checkmark") {
-                    requestSave()
-                }
-                .disabled(isSaving)
             }
             .padding(DS.Space.m)
+        }
+        .dsPinnedAction {
+            DSPrimaryButton("Salvează", systemImage: "checkmark") {
+                requestSave()
+            }
+            .disabled(isSaving)
+        } note: {
+            if let errorMessage {
+                DSNotice(.error, title: "Nu s-a salvat", message: LocalizedStringKey(errorMessage))
+            }
         }
         .background(DS.Palette.background)
         .navigationTitle("Verifică actul")
@@ -256,19 +243,10 @@ struct CaptureReviewView: View {
         backPageNotice
         if let filed = plan.filedBill {
             // A bill already in the binder: the same photo, or another photo of the same bill.
-            VStack(alignment: .leading, spacing: DS.Space.s) {
-                DSNotice(.info, title: "Factura e deja în dosar",
-                         message: LocalizedStringKey(Self.filedBillText(filed, today: CalendarDay(Date()))), actionTitle: "Vezi factura") {
-                    onClose(.dismissed)
-                    AppNavigator.shared.open(.historyEntry(filed.entryID))
-                }
-                if filed.mayBeAnother {
-                    DSCompactButton("E altă factură", systemImage: "doc.badge.plus") {
-                        withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { review.isAnotherBill = true }
-                    }
-                }
-            }
-            .transition(.opacity)
+            DSFiledPaperNotice(filed: filed, paper: .bill, onOpen: {
+                onClose(.dismissed)
+                AppNavigator.shared.open(.historyEntry(filed.entryID))
+            }, onAnother: { review.isAnotherBill = true })
         } else if let duplicate = review.duplicateAttachmentID {
             DSNotice(.info, title: "Ai mai adăugat poza asta", message: "Dacă salvezi, o pun la locul ales mai jos, împreună cu ce am citit.", actionTitle: "Vezi unde e acum") {
                 onClose(.dismissed)
@@ -392,7 +370,7 @@ struct CaptureReviewView: View {
                     }
                     // A bill's index goes to its subscription's meter: say where, as saving will do it.
                     if let meter = plan.meter {
-                        Label { Text(verbatim: Self.meterText(meter)).dsFont(.footnote) } icon: {
+                        Label { Text(verbatim: meter.sentence).dsFont(.footnote) } icon: {
                             Image(systemName: "gauge.with.dots.needle.33percent").foregroundStyle(DS.Palette.secondaryLabel)
                         }
                         .labelStyle(DSLeadingIconLabelStyle())
@@ -401,18 +379,6 @@ struct CaptureReviewView: View {
                     }
                 }
             }
-        }
-    }
-
-    /// What saving does with a bill's meter index, in a line under what was read.
-    static func meterText(_ meter: CaptureFilingPlan.Meter) -> String {
-        switch meter {
-        case .record(let reading, let subscription):
-            String(localized: "Indexul \(reading.written) se trece la „\(subscription)”.", comment: "Capture review: the bill's meter index is recorded on its subscription.")
-        case .alreadyKept(let reading, let subscription):
-            String(localized: "Indexul \(reading.written) e deja trecut la „\(subscription)”.", comment: "Capture review: the same bill was filed before, its index is already there.")
-        case .unknownService:
-            String(localized: "Indexul nu-l trec: nu știu dacă e de gaz, de curent sau de apă.", comment: "Capture review: the subscription's service isn't known, so the index isn't recorded.")
         }
     }
 
@@ -579,6 +545,7 @@ struct CaptureReviewView: View {
     // MARK: Saving
 
     private func requestSave() {
+        guard !isSaving else { return }
         errorMessage = nil
         let filer = CaptureFiler(context: context)
         if filer.touchesReminders(review) {
@@ -589,6 +556,8 @@ struct CaptureReviewView: View {
     }
 
     private func save(lowerReading: LowerReadingAnswer? = nil) {
+        // One filing at a time: a second tap before the button shows it is busy files nothing.
+        guard !isSaving else { return }
         isSaving = true
         Task {
             do {

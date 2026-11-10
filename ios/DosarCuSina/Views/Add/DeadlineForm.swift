@@ -80,17 +80,20 @@ struct DeadlineForm: View {
                         }
                     }
                 }
-                if let errorMessage {
-                    DSNotice(.error, title: "Nu s-a salvat", message: LocalizedStringKey(errorMessage))
-                }
-                DSPrimaryButton("Salvează termenul", systemImage: "checkmark") {
-                    guard canSave else { reveals = true; return }
-                    saveRequest = ReminderSaveRequest { save(asset: asset, blueprints: blueprints) }
-                }
             }
             .padding(DS.Space.m)
         }
         .background(DS.Palette.background)
+        .dsPinnedAction {
+            DSPrimaryButton("Salvează termenul", systemImage: "checkmark") {
+                guard canSave else { reveals = true; return }
+                saveRequest = ReminderSaveRequest { save(asset: asset, blueprints: blueprints) }
+            }
+        } note: {
+            if let errorMessage {
+                DSNotice(.error, title: "Nu s-a salvat", message: LocalizedStringKey(errorMessage))
+            }
+        }
         .environment(\.dsRevealsValidation, reveals)
         .navigationTitle("Un termen")
         .navigationBarTitleDisplayMode(.inline)
