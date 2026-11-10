@@ -50,12 +50,22 @@ extension CaptureField {
     }
 }
 
+extension CaptureFieldKey {
+    /// The field type a value read for this key is, when that type's own check tells it apart
+    /// from a card number (`PaymentCardNumbers.keepsWhole`): a pet's microchip.
+    var typeKeptWhole: FieldType? {
+        self == .microchip ? .microchip : nil
+    }
+}
+
 extension CaptureValue {
-    /// The value with any card number masked; a card's last four digits stay four digits.
+    /// The value with any card number masked; a card's last four digits stay four digits, and a
+    /// value its own type tells apart from a card (a microchip that passes its check) stays whole.
     func withoutCardNumbers(key: CaptureFieldKey, strict: Bool) -> CaptureValue {
         switch self {
         case .text(let text):
             if key == .cardLastFour { return PaymentCardNumbers.lastFour(of: text).map(CaptureValue.text) ?? self }
+            if !strict, PaymentCardNumbers.keepsWhole(text, as: key.typeKeptWhole) { return self }
             return .text(PaymentCardNumbers.redact(text, strict: strict))
         case .lineItems(let items):
             return .lineItems(items.map { item in
