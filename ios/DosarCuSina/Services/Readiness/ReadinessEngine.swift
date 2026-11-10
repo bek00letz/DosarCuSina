@@ -64,7 +64,7 @@ public enum ReadinessEngine {
     /// "B-123-ABC" is "B 123 ABC".
     static func covers(_ greenCard: ReadinessAsset, car: ReadinessAsset) -> Bool {
         func plate(_ text: String?) -> String? {
-            let compact = text.map(CaptureMapping.normalizedIdentifier) ?? ""
+            let compact = text.map(RomanianText.compact) ?? ""
             return compact.isEmpty ? nil : compact
         }
         guard let named = plate(greenCard.values[DocumentFields.vehiclePlate]?.textValue),

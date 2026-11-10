@@ -19,6 +19,15 @@ public enum RomanianText {
             .replacingOccurrences(of: "\u{202F}", with: " ")
     }
 
+    /// A value as compared and checked: folded, in capitals, letters and digits only, so
+    /// "B-123 ABC", "b 123 abc" and "B123ABC" are one plate, "RO49 AAAA …" one IBAN and
+    /// "Service Exemplu S.R.L." the same firm as "SERVICE EXEMPLU SRL". The one way every
+    /// code, number, plate and name is compared without spaces, punctuation, case or
+    /// diacritics (the `compact-outside-romanian-text` check).
+    public static func compact(_ text: String) -> String {
+        fold(text).uppercased().filter { $0.isLetter || $0.isNumber }
+    }
+
     /// The folded words of `text`: runs of letters and digits, everything else dropped.
     public static func words(_ text: String) -> [Substring] {
         fold(text).split { !$0.isLetter && !$0.isNumber }

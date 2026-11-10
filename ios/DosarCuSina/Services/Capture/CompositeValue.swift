@@ -31,11 +31,9 @@ struct CompositeValue: Sendable, Hashable {
     /// A placeholder of the whole value, for the AI provider's question.
     let example: String
 
-    /// The words that introduce a part and are never a part themselves.
-    static let partWords = ["NR", "NO", "NUMAR", "NUMARUL", "NUMBER", "SERIA", "SERIE", "SERIES"]
     /// A number's own label inside a value: "nr.", "Nr.:", "număr", "No.".
     private static let connector = #"(?:(?:NR|NO|NUMARUL|NUMAR|NUMBER)\s*\.?\s*:?\s*)"#
-    private static let notAPartWord = "(?!(?:" + partWords.joined(separator: "|") + ")(?![A-Z0-9]))"
+    private static let notAPartWord = "(?!(?:" + CompositeLabels.partWords.joined(separator: "|") + ")(?![A-Z0-9]))"
     /// What separates a series from its number: the number's label, a comma, a space, or
     /// nothing when a letter meets a digit ("XT123456"). Never nothing between two digits,
     /// so a series ending in digits never takes the number's first ones.
@@ -138,7 +136,7 @@ struct CompositeValue: Sendable, Hashable {
         let start = anchored ? "^[\\s:.,-]*" : #"(?<![A-Z0-9/.-])"#
         let pattern = start + Self.connector + "?(" + number + #")(?![A-Z0-9])"#
         for match in TextPattern.matches(pattern, in: prepared, caseInsensitive: false) {
-            if let digits = match[1], digits.contains(where: \.isNumber), !Self.partWords.contains(digits) { return digits }
+            if let digits = match[1], digits.contains(where: \.isNumber), !CompositeLabels.partWords.contains(digits) { return digits }
         }
         return nil
     }
@@ -161,7 +159,7 @@ struct CompositeValue: Sendable, Hashable {
     }
 
     private func isSeries(_ text: String) -> Bool {
-        text.contains(where: \.isLetter) && !Self.partWords.contains(text)
+        text.contains(where: \.isLetter) && !CompositeLabels.partWords.contains(text)
     }
 
     /// Whether only a part of a value that has two was read.
@@ -185,18 +183,13 @@ struct CompositeValue: Sendable, Hashable {
     /// Two readings of the same value, joined: equal, one a part of the other (the whole
     /// wins), or two parts read in two places (joined). Nil when they disagree.
     func agreement(_ first: String, _ second: String) -> String? {
-        if Self.compact(first) == Self.compact(second) { return normalized(first) }
+        if RomanianText.compact(first) == RomanianText.compact(second) { return normalized(first) }
         // A value printed as one code has no parts to complete each other.
         guard series != nil, let a = parts(in: first), let b = parts(in: second) else { return nil }
         func compatible(_ x: String?, _ y: String?) -> Bool { x == nil || y == nil || x == y }
         guard compatible(a.series, b.series), compatible(a.number, b.number) else { return nil }
         let merged = Parts(series: a.series ?? b.series, number: a.number ?? b.number)
         return merged.isEmpty ? nil : joined(merged)
-    }
-
-    /// Letters and digits only, for comparing two writings of one value.
-    static func compact(_ text: String) -> String {
-        prepared(text).filter { $0.isLetter || $0.isNumber }
     }
 
     // MARK: - Choosing among readings
@@ -239,7 +232,7 @@ struct CompositeValue: Sendable, Hashable {
     func choose(_ readings: [(parts: Parts, source: String)]) -> Found? {
         let wholes = readings.filter { $0.parts.number != nil && (series == nil || $0.parts.series != nil) }
         if let first = wholes.first {
-            let differs = wholes.contains { Self.compact(joined($0.parts)) != Self.compact(joined(first.parts)) }
+            let differs = wholes.contains { RomanianText.compact(joined($0.parts)) != RomanianText.compact(joined(first.parts)) }
             return Found(parts: first.parts, value: joined(first.parts), quality: differs ? .conflicting : .whole, source: first.source)
         }
         let seriesOnly = readings.first { $0.parts.series != nil && $0.parts.number == nil }
@@ -291,77 +284,5 @@ extension CaptureKindProfile {
     /// calls "the document number" on it is folded into this one.
     var numberKey: CaptureFieldKey? {
         [CaptureFieldKey.documentNumber, .policyNumber, .invoiceNumber, .contractNumber].first(where: expectedKeys.contains)
-    }
-}
-
-// MARK: - Label tables of their own
-
-/// Label tables for values printed in parts on documents read without a template (a
-/// policy, an invoice, a talon): the labels of the whole and of the series, and the
-/// labels of other fields that start the same way, so their numbers are never taken.
-enum CompositeLabels {
-    /// A label's role in a composite's own table.
-    enum Key: Hashable, Sendable {
-        case value
-        case other
-    }
-
-    /// Labels of other fields that begin like a part's label ("Nr. înmatriculare",
-    /// "Serie șasiu"), shared by every table: longer wordings win, so these are never
-    /// read as the start of a series or a number.
-    static let otherFields: [LabelWording] = words([
-        "nr. inmatriculare", "nr inmatriculare", "numar de inmatriculare", "numar inmatriculare", "nr. de inmatriculare",
-        "nr. inregistrare", "numar de inregistrare", "nr. identificare", "nr identificare", "numar de identificare", "nr. de identificare",
-        "serie sasiu", "seria sasiu", "seria de sasiu", "serie de sasiu", "serie civ", "seria civ", "serie motor", "seria motor",
-        "serie contor", "seria contor", "seria contorului", "seria si numarul contorului", "serie si numar contor", "serie/numar contor",
-        "serie produs", "seria produs", "nr. contract", "numar contract", "nr. client", "cod client",
-        "nr. telefon", "nr. de telefon", "nr. crt", "nr. rate", "nr. rata",
-    ])
-
-    static let policy: [(Key, [LabelWording])] = [
-        (.value, [
-            "seria si numarul politei", "seria si numarul", "seria si nr", "serie si numar", "seria/numarul", "serie/numar", "seria / numarul", "serie / numar",
-            "nr. polita", "nr polita", "numar polita", "numarul politei", "polita nr", "polita seria", "polita rca seria", "serie polita",
-        ].map(LabelWording.words) + greenCardNumber + ["seria", "serie"].map(LabelWording.words)),
-        (.other, otherFields),
-    ]
-
-    /// The header a green card prints over its number, the country's code, the insurer's
-    /// and the number (field 4 of the Council of Bureaux model, in English beside the
-    /// country's own language), as BAAR's Romanian models word it; an RCA printed with its
-    /// green card shows it too. Read by the policy table and the green card's template.
-    static let greenCardNumber: [LabelWording] = words([
-        "codul tarii / codul asiguratorului / seria si numarul politei", "codul tarii/codul asiguratorului/seria si numarul politei",
-        "codul tarii / codul asiguratorului / numarul", "codul tarii/codul asiguratorului/numarul",
-        "country code / insurer's code / serial and policy numbers", "country code / insurer's code / number",
-        "country code/insurer's code/number", "codul tarii", "country code",
-    ])
-
-    static let invoice: [(Key, [LabelWording])] = [
-        (.value, [
-            "nr. factura", "nr factura", "numar factura", "numarul facturii", "factura nr", "factura fiscala nr", "factura seria",
-            "seria si numarul facturii", "serie si numar factura", "seria si numarul", "invoice no", "invoice number", "seria", "serie",
-        ].map(LabelWording.words)),
-        (.other, otherFields),
-    ]
-
-    static let vehicleCard: [(Key, [LabelWording])] = [
-        (.value, ["serie civ", "seria civ", "nr. civ", "numar civ", "c.i.v.", "cartea de identitate a vehiculului"].map(LabelWording.words)),
-        (.other, otherFields.filter { $0.words.map { !["serie civ", "seria civ"].contains($0) } ?? true }),
-    ]
-
-    /// A value of `shape`, read at the labels of `table`.
-    static func read(_ shape: CompositeValue, labels table: [(Key, [LabelWording])], in text: CaptureText) -> CompositeValue.Found? {
-        LabelledLayout(text: text, labels: table).composite(shape, for: .value)
-    }
-
-    private static func words(_ list: [String]) -> [LabelWording] { list.map(LabelWording.words) }
-}
-
-extension LabelWording {
-    /// The words of a `words` label.
-    var words: String? {
-        if case .words(let words) = self { return words }
-        return nil
     }
 }

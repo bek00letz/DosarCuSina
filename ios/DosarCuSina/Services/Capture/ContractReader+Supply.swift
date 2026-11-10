@@ -7,32 +7,13 @@ extension ContractReader {
 
     // MARK: - The supply address
 
-    /// What an address label names. The payer's address and the consumption point's codes
-    /// are labels too, so their values are never read as the supply address and "cod loc de
-    /// consum" never reads as "loc de consum".
+    /// What an address label names (`CaptureLexicon.supplyAddressLabels`). The payer's address
+    /// and the consumption point's codes are labels too, so their values are never read as the
+    /// supply address and "cod loc de consum" never reads as "loc de consum".
     enum AddressLabel: Hashable, Sendable {
         case supply
         case other
     }
-
-    /// Address labels, folded. Longer wordings win.
-    static let addressLabels: [(AddressLabel, [String])] = [
-        (.supply, [
-            "adresa locului de consum", "adresa loc de consum", "adresa loc consum", "adresa locului de livrare",
-            "adresa de livrare", "adresa punctului de consum", "adresa punct de consum", "adresa punct consum",
-            "adresa de consum", "adresa locului de furnizare", "adresa de furnizare", "adresa de instalare",
-            "adresa instalarii", "adresa de prestare", "adresa prestarii serviciului", "adresa serviciului",
-            "locul de consum", "loc de consum", "loc consum", "punctul de consum", "punct de consum",
-        ]),
-        (.other, [
-            "adresa de facturare", "adresa facturare", "adresa de corespondenta", "adresa corespondenta",
-            "adresa client", "adresa clientului", "adresa titular", "adresa titularului", "adresa platitorului",
-            "adresa sediului", "sediul social", "sediul", "sediu", "domiciliul", "domiciliu",
-            "cod loc de consum", "cod loc consum", "cod punct de consum", "cod punct consum", "cod locul de consum",
-            "nr loc consum", "nr. loc consum", "numar loc consum", "numar loc de consum", "id loc consum",
-            "denumire loc consum", "denumire loc de consum", "tip loc consum", "tip loc de consum",
-        ]),
-    ]
 
     /// The longest supply address kept, so a paragraph read after a label is never taken for one.
     static let addressMaxLength = 160
@@ -41,7 +22,7 @@ extension ContractReader {
     /// with the next line when it only names the town ("Sector 3, București"). Never the
     /// billing address: only supply labels are read.
     static func supplyAddress(in text: CaptureText) -> CaptureField? {
-        let layout = LabelledLayout(text: text, words: addressLabels)
+        let layout = LabelledLayout(text: text, words: CaptureLexicon.supplyAddressLabels)
         for found in layout.allFound(for: .supply) {
             var value = cleanedAddress(found.value)
             var source = found.source

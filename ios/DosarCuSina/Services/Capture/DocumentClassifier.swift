@@ -44,7 +44,7 @@ public enum DocumentClassifier {
         var scores: [CaptureDocumentKind: Double] = [:]
         for (kind, words) in signals {
             scores[kind] = words.reduce(0) { total, signal in
-                total + (CaptureText.containsWord(signal.0, inFolded: haystack, as: wholeWords.contains(signal.0) ? .word : nil) ? signal.1 : 0)
+                total + (CaptureText.containsWord(signal.0, inFolded: haystack, as: CaptureLexicon.wholeSignalWords.contains(signal.0) ? .word : nil) ? signal.1 : 0)
             }
         }
         // An RCA policy is also an insurance policy; prefer the specific kind when RCA terms are present.
@@ -87,8 +87,4 @@ public enum DocumentClassifier {
     /// What the RCA's own words weigh on a page that is the policy, whatever green card is
     /// printed with it: "RCA" and "răspundere civilă auto" together, or more.
     static let policyWithItsGreenCard = 7.0
-
-    /// Signals whose longer forms mean something else, so they only count whole:
-    /// a meter's "index" isn't the "indexare" of a price.
-    static let wholeWords: Set<String> = ["index"]
 }

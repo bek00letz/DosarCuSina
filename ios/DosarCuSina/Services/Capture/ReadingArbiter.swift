@@ -133,7 +133,7 @@ enum ReadingArbiter {
             return shape.agreement(first, second).map(CaptureValue.text)
         }
         // A document number's shape is its document's; written differently, it is still the same.
-        if existing.key == .documentNumber, CompositeValue.compact(first) == CompositeValue.compact(second) { return existing.value }
+        if existing.key == .documentNumber, RomanianText.compact(first) == RomanianText.compact(second) { return existing.value }
         return nil
     }
 

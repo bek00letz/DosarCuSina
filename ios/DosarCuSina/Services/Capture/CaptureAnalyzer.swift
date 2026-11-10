@@ -131,7 +131,7 @@ public struct CaptureAnalyzer: Sendable {
         }
         if let mrz, mrz.allChecksValid, kind.isIdentityDocument {
             kindEvidence = .machineReadableZone
-        } else if kind == .utilityInvoice, !kindEvidence.isDeterministic, barcodes.contains(where: \.isPaymentCode) {
+        } else if kind.profile.isBill, !kindEvidence.isDeterministic, barcodes.contains(where: \.isPaymentCode) {
             kindEvidence = .paymentBarcode
         }
 
@@ -217,7 +217,7 @@ public struct CaptureAnalyzer: Sendable {
             addInvoiceBasics(text, profile: profile, years: years, into: &fields)
         }
 
-        if kind == .utilityInvoice || kind == .serviceInvoice || kind == .other,
+        if profile.readsPaymentCode,
            let barcode = barcodes.first(where: { !$0.payload.isEmpty }) {
             fields.add(.paymentCode, .text(barcode.payload), 0.95, nil, tier: .deterministic)
         }
@@ -241,6 +241,12 @@ public struct CaptureAnalyzer: Sendable {
     // MARK: - Field groups
 
     /// The fields a machine-readable zone holds: certain where its check digits pass.
+    /// Every field the machine-readable zone can give (`machineReadableFields`).
+    static let machineReadableKeys: Set<CaptureFieldKey> = [
+        .documentCode, .issuingCountry, .documentNumber, .nationality, .surname, .givenNames, .holderName,
+        .birthDate, .expiryDate, .sex, .personalNumber,
+    ]
+
     static func machineReadableFields(_ mrz: MRZParser.Result) -> [CaptureField] {
         let tier: CaptureTier = mrz.allChecksValid ? .deterministic : .heuristic
         let source = CaptureField.machineReadableSource

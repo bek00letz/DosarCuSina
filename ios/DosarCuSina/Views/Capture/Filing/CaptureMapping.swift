@@ -139,11 +139,6 @@ enum CaptureMapping {
         }
     }
 
-    /// Values compared without spaces, dashes or case, so "B 123 ABC" finds "B-123-ABC".
-    static func normalizedIdentifier(_ text: String) -> String {
-        text.uppercased().filter { $0.isLetter || $0.isNumber }
-    }
-
     /// The choices a capture field offers in the review, kept as their stable keys: the
     /// service a contract is for, the cover of a policy. Nil for a field typed as text.
     static func choices(for key: CaptureFieldKey, kind: CaptureDocumentKind) -> [ChoiceOption]? {

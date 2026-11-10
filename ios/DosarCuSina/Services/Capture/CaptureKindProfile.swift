@@ -75,8 +75,10 @@ struct CaptureKindProfile: Sendable {
     let titleRule: TitleRule
     /// What the language models are told this kind is.
     let modelDescription: String
-    /// Its deadline is made only when the person asks for it: a bill to pay ("Amintește-mi să o plătesc").
-    var deadlineIsOptIn = false
+    /// A bill to pay: its deadline is made only when the person asks for it ("Amintește-mi
+    /// să o plătesc"), its total is its subscription's last bill, it finds its subscription
+    /// as a bill, and a payment barcode on it says what it is.
+    var isBill = false
     /// What a new section made from it is called.
     var sectionName: SectionNameRule = .title
     /// Its photo is kept only when the person asks ("Păstrează și poza cardului"): a bank
@@ -91,6 +93,20 @@ struct CaptureKindProfile: Sendable {
     /// code. What every document prints the same way (its issue date, its total, a VIN, the
     /// odometer) is `commonLabels`; values printed in parts are `CompositeLabels`'.
     var labels: [(CaptureFieldKey, [String])] = []
+    /// A payment barcode on it is its payment code (a bill, a service invoice, any other paper).
+    var readsPaymentCode = false
+    /// An identity document (passport, identity card, driving licence): it belongs in a
+    /// sensitive category by default, and a reading without its essentials is retried with
+    /// another view of the photo.
+    var isIdentityDocument = false
+    /// The fields that, read by the phone's own tiers with good confidence, make the
+    /// on-device model unnecessary (`isComplete`), and by which a weak reading is judged
+    /// (`lacksExpectedFields`). Empty means the model always helps.
+    var essentialKeys: [CaptureFieldKey] = []
+    /// Its machine-readable zone is printed on its back (an identity card): read from the
+    /// front alone, the review offers to add the back, and the zone's values are said to be
+    /// "Pe spatele actului".
+    var hasMachineReadableBack = false
 
     /// How a new section made from a document is named.
     enum SectionNameRule: Sendable {
@@ -128,13 +144,19 @@ struct CaptureKindProfile: Sendable {
     /// The wordings this kind prints `key` under: every row of its own table for `key`,
     /// else the one every document shares (`commonLabels`). Empty when neither has one.
     func labels(for key: CaptureFieldKey) -> [String] {
-        let own = labels.filter { $0.0 == key }.flatMap { $0.1 }
+        let own = Self.labels(for: key, in: labels)
         return own.isEmpty ? Self.commonLabels(for: key) : own
     }
 
     /// The wordings every document prints `key` under, whatever its kind.
     static func commonLabels(for key: CaptureFieldKey) -> [String] {
-        commonLabels.filter { $0.0 == key }.flatMap { $0.1 }
+        labels(for: key, in: commonLabels)
+    }
+
+    /// Every wording of `table`'s rows for `key`, for a reader told one table of its kind
+    /// (a policy's number and holder, a contract's codes).
+    static func labels(for key: CaptureFieldKey, in table: [(CaptureFieldKey, [String])]) -> [String] {
+        table.filter { $0.0 == key }.flatMap { $0.1 }
     }
 
     // MARK: Lookup
@@ -214,9 +236,10 @@ struct CaptureKindProfile: Sendable {
     private static let issuedOn: [CaptureFieldKey] = [.issueDate, .startDate, .purchaseDate]
 
     static let all: [CaptureKindProfile] = [
-        identity(.passport, type: DocumentType.passport, name: "Pașaport", model: "passport data page"),
-        identity(.identityCard, type: DocumentType.idCard, name: "Carte de identitate", model: "identity card"),
-        identity(.drivingLicence, type: DocumentType.drivingLicence, name: "Permis de conducere", model: "EU driving licence"),
+        identity(.passport, type: DocumentType.passport, name: "Pașaport", model: "passport data page", isIdentityDocument: true),
+        identity(.identityCard, type: DocumentType.idCard, name: "Carte de identitate", model: "identity card", isIdentityDocument: true,
+                 hasMachineReadableBack: true),
+        identity(.drivingLicence, type: DocumentType.drivingLicence, name: "Permis de conducere", model: "EU driving licence", isIdentityDocument: true),
         identity(.criminalRecord, type: DocumentType.criminalRecord, name: "Cazier",
                  model: "Romanian criminal record certificate (certificat de cazier judiciar, fiscal or auto)"),
         identity(.healthInsuranceCard, type: DocumentType.euHealthCard, name: "Card european de sănătate", model: "European health insurance card"),
@@ -261,8 +284,8 @@ struct CaptureKindProfile: Sendable {
             expectedKeys: [.provider, .serviceKind, .invoiceNumber, .issueDate, .dueDate, .total, .clientCode, .contractNumber, .podCode, .clcCode,
                            .phoneNumber, .meterIndex, .supplyAddress, .directDebit],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: true, identifierKeys: subscriptionCodes,
-            name: "Factură de utilități", titleRule: .wordAndProvider("Factură"), modelDescription: "utility, internet, TV or phone bill", deadlineIsOptIn: true, sectionName: .subscription,
-            labels: billLabels
+            name: "Factură de utilități", titleRule: .wordAndProvider("Factură"), modelDescription: "utility, internet, TV or phone bill", isBill: true, sectionName: .subscription,
+            labels: billLabels, readsPaymentCode: true
         ),
         CaptureKindProfile(
             kind: .contract, templateKey: BuiltInTemplates.Key.subscription, filing: .subscription, blueprintKey: SubscriptionFields.minimumEndsBlueprint,
@@ -272,7 +295,8 @@ struct CaptureKindProfile: Sendable {
                            .phoneNumber, .podCode, .clcCode, .supplyAddress],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: subscriptionCodes,
             name: "Contract sau act adițional", titleRule: .wordAndProvider("Contract"),
-            modelDescription: "contract or addendum for gas, electricity, water, internet, TV or a mobile plan", sectionName: .subscription
+            modelDescription: "contract or addendum for gas, electricity, water, internet, TV or a mobile plan", sectionName: .subscription,
+            labels: contractLabels
         ),
         CaptureKindProfile(
             kind: .serviceInvoice, templateKey: BuiltInTemplates.Key.vehicle, filing: .intoSection, blueprintKey: nil,
@@ -280,7 +304,8 @@ struct CaptureKindProfile: Sendable {
             documentKind: .invoice, documentType: nil, trade: .mechanic,
             expectedKeys: [.provider, .providerTaxID, .invoiceNumber, .issueDate, .total, .licensePlate, .vin, .odometer, .lineItems],
             carriesLineItems: true, opensVisitFlow: true, logsHistory: true, identifierKeys: [.licensePlate, .vin],
-            name: "Factură de service", titleRule: .wordAndProvider("Factură"), modelDescription: "car service invoice", sectionName: .vehicle
+            name: "Factură de service", titleRule: .wordAndProvider("Factură"), modelDescription: "car service invoice", sectionName: .vehicle,
+            readsPaymentCode: true
         ),
         CaptureKindProfile(
             kind: .fiscalReceipt, templateKey: BuiltInTemplates.Key.purchase, filing: .newSection, blueprintKey: BuiltInBlueprints.warrantyEnds,
@@ -335,7 +360,8 @@ struct CaptureKindProfile: Sendable {
         documentKind: .other, documentType: nil, trade: nil,
         expectedKeys: [.provider, .documentNumber, .invoiceNumber, .issueDate, .dueDate, .expiryDate, .total],
         carriesLineItems: true, opensVisitFlow: false, logsHistory: false, identifierKeys: [],
-        name: "Alt document", titleRule: .fixed("Document"), modelDescription: "household document"
+        name: "Alt document", titleRule: .fixed("Document"), modelDescription: "household document",
+        readsPaymentCode: true
     )
 
     /// A bill's own labels, folded: when it was issued, when to pay it, the meter's index and
@@ -368,12 +394,49 @@ struct CaptureKindProfile: Sendable {
     ]
 
     /// A policy's own labels, RCA or any other: its period of cover (both days on the line),
-    /// its end when no period is printed, the line with the claims phone, and the class.
+    /// its end when no period is printed, the line with the claims phone, the class, its
+    /// series and number (read as one value, `CompositeLabels.policy`, with the green card's
+    /// header an RCA may print), and who it insures with their CNP (`PolicyholderReader`).
     static let policyLabels: [(CaptureFieldKey, [String])] = [
         (.validityPeriod, ["valabil", "perioada", "valabilitate", "validity", "de la", "asigurare"]),
         (.expiryDate, ["pana la", "expira", "data expirarii", "valabila pana"]),
         (.claimsPhone, ["daune", "dauna", "avizare", "asistenta", "call center", "callcenter", "nonstop", "24/7", "suport clienti"]),
         (.bonusMalusClass, ["bonus", "malus", "clasa"]),
+        (.policyNumber, ["seria si numarul politei", "seria si numarul", "seria si nr", "serie si numar", "seria/numarul", "serie/numar",
+                         "seria / numarul", "serie / numar", "nr. polita", "nr polita", "numar polita", "numarul politei", "polita nr",
+                         "polita seria", "polita rca seria", "serie polita", "seria", "serie"]),
+        (.policyholder, ["nume/denumire proprietar", "nume / denumire proprietar", "denumire proprietar", "nume proprietar",
+                         "proprietar/utilizator", "proprietar / utilizator", "proprietarul vehiculului", "proprietar", "nume asigurat",
+                         "asiguratul", "asigurat", "contractant"]),
+        (.policyholderPersonalNumber, ["c.u.i. / c.n.p. proprietar", "c.u.i./c.n.p. proprietar", "cui / cnp proprietar", "cui/cnp proprietar",
+                                       "c.n.p. proprietar", "cnp proprietar", "c.n.p./c.u.i.", "cnp/cui", "cui/cnp", "cnp asigurat",
+                                       "c.n.p. asigurat"]),
+    ]
+
+    /// A contract's own labels, and the codes a bill shares with its contract (client code,
+    /// contract number, POD, CLC, the phone number of a plan), matched as whole words and
+    /// read as one layout by `ContractReader`. Longer wordings win, so "contract de
+    /// abonament nr" is a number, never a price.
+    static let contractLabels: [(CaptureFieldKey, [String])] = [
+        (.contractNumber, ["numar contract", "nr. contract", "nr contract", "contract nr", "contractul nr", "numarul contractului",
+                           "contract de furnizare nr", "contract de abonament nr", "contract de prestari servicii nr",
+                           "act aditional nr", "nr. contractului", "contract numarul"]),
+        (.startDate, ["data intrarii in vigoare", "intra in vigoare la", "intra in vigoare", "data inceperii", "data incheierii",
+                      "incheiat la data de", "incheiat astazi", "data semnarii", "data activarii", "incepand cu data de", "data de inceput"]),
+        (.minimumMonths, ["perioada minima", "perioada contractuala", "durata minima", "durata contractului", "perioada initiala",
+                          "perioada determinata", "durata minima a contractului"]),
+        (.minimumPeriodEnd, ["perioada minima se incheie", "sfarsitul perioadei minime", "data de sfarsit a perioadei minime",
+                             "perioada minima expira", "finalul perioadei minime"]),
+        (.monthlyPrice, ["abonament lunar", "abonamentul lunar", "pret lunar", "pretul lunar", "tarif lunar", "cost lunar",
+                         "valoare lunara", "pretul abonamentului", "tarif abonament", "pret abonament"]),
+        (.clientCode, ["cod client", "cod abonat", "cont client", "numar client", "nr. client", "client nr", "client id",
+                       "cod incasare", "cod de incasare", "cont facturare", "cont de facturare", "cod partener", "numar partener",
+                       "cod client apa", "cod apa", "apa canal cod client", "apa canal cod", "apa nova cod client", "apa nova cod"]),
+        (.podCode, ["pod", "cod pod", "codul pod", "punct de delimitare", "punct de delimitare pod", "cod punct de delimitare",
+                    "punctul de delimitare", "loc consum"]),
+        (.clcCode, ["clc", "cod clc", "cod loc consum", "cod loc consum (clc)", "cod loc de consum (clc)",
+                    "loc consum gaze"]),
+        (.phoneNumber, ["numar de telefon", "nr. de telefon", "numar telefon", "nr. telefon", "nr telefon", "msisdn", "numarul de telefon"]),
     ]
 
     /// An ITP report's own label: the day the next inspection is due.
@@ -396,6 +459,9 @@ struct CaptureKindProfile: Sendable {
         (.serialNumber, ["s/n", "sn", "serial", "seria produs", "serie produs", "imei"]),
     ]
 
+    /// What an identity document is judged by: its holder, its number and its expiry.
+    static let identityEssentials: [CaptureFieldKey] = [.surname, .documentNumber, .expiryDate]
+
     /// The codes that find a bill's or a contract's subscription, most specific first.
     static let subscriptionCodes: [CaptureFieldKey] = [.podCode, .clcCode, .phoneNumber, .contractNumber, .clientCode]
 
@@ -404,7 +470,8 @@ struct CaptureKindProfile: Sendable {
     /// renewed by its expiry. Its read text is
     /// kept like an identity document's: never searched.
     private static func identity(_ kind: CaptureDocumentKind, type: String, name: LocalizedStringResource, model: String,
-                                 photoIsOptIn: Bool = false) -> CaptureKindProfile {
+                                 photoIsOptIn: Bool = false, isIdentityDocument: Bool = false,
+                                 hasMachineReadableBack: Bool = false) -> CaptureKindProfile {
         var expected = IdentityTemplates.orderedFieldKeys(for: kind)
         // The day the deadline follows is always asked for, even where it is worked out
         // from another (a cazier judiciar's, six months from its issue).
@@ -418,6 +485,10 @@ struct CaptureKindProfile: Sendable {
             name: name, titleRule: .name, modelDescription: model, sectionName: .holder
         )
         profile.photoIsOptIn = photoIsOptIn
+        profile.isIdentityDocument = isIdentityDocument
+        // An identity document is read well when its holder, its number and its expiry are.
+        profile.essentialKeys = isIdentityDocument ? identityEssentials : []
+        profile.hasMachineReadableBack = hasMachineReadableBack
         return profile
     }
 }

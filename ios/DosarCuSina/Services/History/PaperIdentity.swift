@@ -106,7 +106,7 @@ public struct PaperIdentity: Hashable, Sendable {
     /// "SERVICE EXEMPLU SRL"); nil when nothing is left.
     static func comparable(_ text: String?) -> String? {
         guard let text else { return nil }
-        let folded = RomanianText.fold(text).uppercased().filter { $0.isLetter || $0.isNumber }
+        let folded = RomanianText.compact(text)
         return folded.isEmpty ? nil : folded
     }
 }
