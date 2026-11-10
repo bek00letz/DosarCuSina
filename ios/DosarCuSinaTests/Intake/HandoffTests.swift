@@ -172,9 +172,8 @@ struct ShareInboxTests {
         #expect(written.version == InboxItem.currentVersion)
     }
 
-    @Test func theAppGroupIsTheOneTheWidgetSnapshotUses() {
-        #expect(AppGroup.identifier == WidgetSnapshot.appGroupIdentifier)
-        #expect(WidgetFeed.fileName == WidgetSnapshot.fileName)
+    @Test func theWidgetSnapshotIsWrittenToTheAppGroup() {
+        #expect(WidgetSnapshotWriter().directory == AppGroup.containerURL)
     }
 }
 
@@ -183,16 +182,16 @@ struct WidgetContentTests {
     let car = (UUID(), "VW Golf")
 
     private func feed(_ snapshots: [ObligationSnapshot], now: Date) throws -> WidgetFeed {
-        let data = try WidgetSnapshot.encoder().encode(WidgetSnapshot.make(from: snapshots, now: now, calendar: .bucharest))
+        let data = try WidgetFeed.encode(WidgetFeed.make(from: snapshots, now: now, calendar: .bucharest))
         return try #require(WidgetFeed.decode(data), "The widget reads exactly what the app writes")
     }
 
     @Test func theWidgetReadsTheAppsSnapshot() throws {
         let itp = snapshot("ITP", kind: .legal, due: "2026-11-07", asset: car)
         let decoded = try feed([itp], now: noon("2026-11-02"))
-        #expect(decoded.version == WidgetSnapshot.currentVersion)
+        #expect(decoded.version == WidgetFeed.currentVersion)
         #expect(decoded.items.first?.obligationId == itp.id)
-        #expect(decoded.items.first?.dueDate == "2026-11-07")
+        #expect(decoded.items.first?.dueDate.isoString == "2026-11-07")
         #expect(decoded.items.first?.deepLink == DeepLink.url(for: .obligation(itp.id)))
     }
 
@@ -274,7 +273,7 @@ struct WidgetEngineTests {
 
         let completed = IntentEngine.applyQueuedWidgetCompletions(queue: queue, in: context, calendar: .bucharest)
         #expect(completed == 1, "The October tap is for a cycle that's already gone")
-        #expect(rent.dueDay(in: .bucharest) == CalendarDay("2026-12-05"))
+        #expect(rent.dueDay == CalendarDay("2026-12-05"))
         #expect(rent.history.count == 1)
         #expect(queue.pending().isEmpty)
     }

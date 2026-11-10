@@ -28,14 +28,14 @@ struct CascoInRCAFieldsStep: DataRepairStep {
                   let rca = template.blueprints.first(where: { $0.key == BuiltInBlueprints.vehicleRCA })?.facts,
                   let casco = template.blueprints.first(where: { $0.key == BuiltInBlueprints.vehicleCASCO })?.facts,
                   let field = rca.policyNumber, let number = asset.values[field]?.textValue else { return nil }
-            let wanted = ModelAnswerMapper.compact(number)
+            let wanted = RomanianText.compact(number)
             guard wanted.count >= 4 else { return nil }
             // A CASCO policy on the car, and only CASCO (a page that also names RCA could be either).
             let filedAsCasco = (asset.attachments ?? []).contains { attachment in
                 guard attachment.kind == .policy, let text = attachment.extractedText else { return false }
                 return InsuranceCover.read(in: text, among: [InsuranceCover.casco]) != nil
                     && InsuranceCover.read(in: text, among: [InsuranceCover.rca]) == nil
-                    && ModelAnswerMapper.compact(text).contains(wanted)
+                    && RomanianText.compact(text).contains(wanted)
             }
             return filedAsCasco ? Candidate(asset: asset, number: number, rca: rca, casco: casco) : nil
         }
@@ -140,7 +140,7 @@ struct HomePolicyWithoutDeadlineStep: DataRepairStep {
             let obligation = try HouseholdMutations.makeObligation(from: candidate.blueprint, for: candidate.asset, firstDue: candidate.day,
                                                                    today: today, calendar: calendar, in: context)
             candidate.attachment.obligation = obligation
-            candidate.attachment.validUntil = candidate.day.noonDate(in: calendar)
+            candidate.attachment.validUntil = candidate.day
         }
     }
 }
@@ -199,10 +199,10 @@ struct HomePolicySetsStep: DataRepairStep {
     /// Which policy the home's kept facts are: from the papers that carry its number, else
     /// from the deadlines running.
     static func cover(of asset: Asset, number: String?) -> Cover {
-        let wanted = number.map(ModelAnswerMapper.compact) ?? ""
+        let wanted = number.map(RomanianText.compact) ?? ""
         let papers = (asset.attachments ?? []).filter { attachment in
             guard attachment.kind == .policy, !attachment.isArchived, wanted.count >= 4 else { return false }
-            return attachment.extractedText.map { ModelAnswerMapper.compact($0).contains(wanted) } ?? false
+            return attachment.extractedText.map { RomanianText.compact($0).contains(wanted) } ?? false
         }
         let fromPapers = Set(papers.compactMap { paper -> Cover? in
             switch paper.obligation?.blueprintKey {

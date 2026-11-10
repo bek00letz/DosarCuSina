@@ -246,17 +246,10 @@ public enum RomanianFieldExtractor {
 
     // MARK: - Line items
 
-    private static let nonItemWords = [
-        "total", "tva", "subtotal", "rest", "de plata", "cui", "cif", "cod fiscal", "nr.", "cont", "iban",
-        "data", "tel", "telefon", "adresa", "banca", "capital", "reg. com", "j40", "numerar", "card",
-        "rest", "achitat", "bon fiscal", "discount", "scadent", "client", "cumparator", "furnizor",
-        "km bord", "kilometraj", "odometru", "garanti", "valabil",
-    ]
-
     /// Lines that look like an invoice or receipt line: a description followed by an amount.
     static func lineItems(in text: CaptureText, currency: String, resolver: any CaptureComponentResolving) -> [CaptureLineItem] {
         var items: [CaptureLineItem] = []
-        let nonItems = nonItemWords.map { RomanianText.Keyword($0) }
+        let nonItems = CaptureLexicon.nonItemWords.map { RomanianText.Keyword($0) }
         for (index, line) in text.folded.enumerated() {
             guard !nonItems.contains(where: { $0.isFound(inFolded: line) }) else { continue }
             // A line carrying a personal number is never a billed item.
@@ -305,9 +298,12 @@ public enum RomanianFieldExtractor {
         return expected == control
     }
 
-    /// The first tax ID after a CUI/CIF label, and whether its control digit is valid.
-    static func taxID(in text: CaptureText) -> (value: String, valid: Bool, line: Int)? {
-        let pattern = #"(?:c\.?\s?u\.?\s?i\.?|c\.?\s?i\.?\s?f\.?|cod\s+fiscal|cod\s+unic\s+de\s+inregistrare|cod\s+de\s+identificare\s+fiscala)\s*[:.]?\s*(ro)?\s*(\d{2,10})\b"#
+    /// The first tax ID after one of `labels` (CUI, CIF, cod fiscal: the common row of
+    /// `CaptureKindProfile`), and whether its control digit is valid.
+    static func taxID(in text: CaptureText, labels: [String] = CaptureKindProfile.commonLabels(for: .providerTaxID))
+        -> (value: String, valid: Bool, line: Int)? {
+        guard !labels.isEmpty else { return nil }
+        let pattern = printed(labels) + #"\s*[:.]?\s*(ro)?\s*(\d{2,10})\b"#
         for (index, line) in text.folded.enumerated() {
             if let match = TextPattern.first(pattern, in: line), let digits = match[2] {
                 let value = (match[1] != nil ? "RO" : "") + digits
@@ -317,21 +313,26 @@ public enum RomanianFieldExtractor {
         return nil
     }
 
-    private static let companyPattern = #"\b(s\.?\s?r\.?\s?l\.?|s\.?\s?a\.?|s\.?\s?c\.?\s?s\.?|p\.?\s?f\.?\s?a\.?|i\.?\s?i\.?)(?=\s|$|,)"#
-    private static let buyerLabels = ["client", "cumparator", "beneficiar", "asigurat", "contractant"]
-    /// What comes before an issuer's name on its line and isn't part of it.
-    private static let issuerPrefixes = ["Furnizor:", "Furnizor", "Vânzător:", "Vanzator:", "Emitent:", "S.C.", "SC "]
+    /// Whether a line names a company by its legal form ("S.R.L.", "S.A.", "PFA"): a firm,
+    /// never a person.
+    static func namesACompany(_ line: String) -> Bool {
+        TextPattern.first(companyPattern, in: RomanianText.fold(line)) != nil
+    }
+
+    /// A company's legal form (`CaptureLexicon.companyForms`), as a whole word.
+    private static let companyPattern = #"\b"# + printed(CaptureLexicon.companyForms) + #"(?=\s|$|,)"#
 
     /// The company that issued the document: a line with a company suffix that isn't in the buyer's block.
     static func issuerName(in text: CaptureText) -> (name: String, line: Int)? {
         for (index, line) in text.folded.enumerated() {
             guard TextPattern.first(companyPattern, in: line) != nil else { continue }
             let inBuyerBlock = (max(0, index - 2)...index).contains { lineIndex in
-                buyerLabels.contains { text.folded[lineIndex].contains($0) }
+                CaptureLexicon.buyerLabels.contains { text.folded[lineIndex].contains($0) }
             }
             if inBuyerBlock { continue }
             var name = text.original[index]
-            for prefix in issuerPrefixes where name.hasPrefix(prefix) {
+            // The prefixes are folded; the name keeps its own letters ("Vânzător: …" loses its label).
+            for prefix in CaptureLexicon.issuerPrefixes where RomanianText.fold(name).hasPrefix(prefix) {
                 name = String(name.dropFirst(prefix.count))
             }
             name = name.trimmingCharacters(in: .whitespaces.union(CharacterSet(charactersIn: ":,")))
@@ -340,31 +341,12 @@ public enum RomanianFieldExtractor {
         return nil
     }
 
-    /// Invoice series and number ("Factura seria ABC nr. 12345", "Nr. factură: XYZ-2026-0001"),
-    /// read by the one rule for values printed in parts.
-    static func invoiceNumber(in text: CaptureText) -> CompositeValue.Found? {
-        CompositeLabels.read(.invoice, labels: CompositeLabels.invoice, in: text)
-    }
-
-    /// The reading before values printed in parts had one rule, kept switched off until
-    /// that rule is proven on real documents (`invoiceNumber(in:)` replaces it).
-    static func legacyInvoiceNumber(in text: CaptureText) -> (value: String, source: String)? {
-        let patterns = [
-            #"(?:factura|factura fiscala|invoice)[^\n]*?seri[ae]\s*[:.]?\s*([a-z]{1,6})\s*(?:nr\.?|numar|no\.?)\s*[:.]?\s*([a-z0-9-]{2,20})"#,
-            #"seri[ae]\s*[:.]?\s*([a-z]{1,6})\s*(?:nr\.?|numar)\s*[:.]?\s*(\d{2,12})"#,
-            #"(?:factura|factura fiscala|invoice)\s*(?:nr\.?|numar|no\.?)\s*[:.]?\s*()([a-z0-9][a-z0-9 /-]{2,20}[0-9])"#,
-            #"nr\.?\s*factura\s*[:.]?\s*()([a-z0-9][a-z0-9/-]{2,20})"#,
-        ]
-        for (index, line) in text.folded.enumerated() {
-            for pattern in patterns {
-                if let match = TextPattern.first(pattern, in: line), let number = match[2] {
-                    let series = (match[1] ?? "").uppercased()
-                    let value = (series.isEmpty ? "" : series + " ") + number.uppercased().trimmingCharacters(in: .whitespaces)
-                    return (value, text.original[index])
-                }
-            }
-        }
-        return nil
+    /// Invoice series and number ("Factura seria ABC nr. 12345", "Nr. factură: XYZ-2026-0001")
+    /// after one of `labels` (every invoice's row of `CaptureKindProfile.commonLabels`), read by
+    /// the one rule for values printed in parts.
+    static func invoiceNumber(in text: CaptureText, labels: [String] = CaptureKindProfile.commonLabels(for: .invoiceNumber))
+        -> CompositeValue.Found? {
+        CompositeLabels.read(.invoice, labels: CompositeLabels.table(for: labels), in: text)
     }
 
     private static let countyCodes = Set([
@@ -450,42 +432,21 @@ public enum RomanianFieldExtractor {
     }
 
     /// The insurance policy's series and number, as one value, wherever and however they
-    /// are printed (`CompositeValue`, `CompositeLabels.policy`).
-    static func policyNumber(in text: CaptureText) -> CompositeValue.Found? {
-        CompositeLabels.read(.policy, labels: CompositeLabels.policy, in: text)
+    /// are printed (`CompositeValue`), after one of `labels` (the policy table's row) or the
+    /// green card's header (`CompositeLabels.policy(_:)`).
+    static func policyNumber(in text: CaptureText,
+                             labels: [String] = CaptureKindProfile.labels(for: .policyNumber, in: CaptureKindProfile.policyLabels))
+        -> CompositeValue.Found? {
+        CompositeLabels.read(.policy, labels: CompositeLabels.policy(labels), in: text)
     }
 
-    /// The vehicle identity card's (CIV) series and number, as one value.
-    static func civNumber(in text: CaptureText) -> CompositeValue.Found? {
-        CompositeLabels.read(.vehicleCard, labels: CompositeLabels.vehicleCard, in: text)
+    /// The vehicle identity card's (CIV) series and number, as one value, after one of `labels`
+    /// (the talon's row, `CaptureKindProfile.registrationLabels`).
+    static func civNumber(in text: CaptureText,
+                          labels: [String] = CaptureKindProfile.labels(for: .civNumber, in: CaptureKindProfile.registrationLabels))
+        -> CompositeValue.Found? {
+        CompositeLabels.read(.vehicleCard, labels: CompositeLabels.table(for: labels), in: text)
     }
-
-    /// The reading before values printed in parts had one rule, kept switched off until
-    /// that rule is proven on real documents (`policyNumber(in:)` replaces it).
-    static func legacyPolicyNumber(in text: CaptureText) -> (value: String, source: String)? {
-        let labels = legacyPolicyLabels
-        for index in text.lines(containing: labels) {
-            let original = text.original[index]
-            let folded = text.folded[index]
-            let labelEnd = labels.compactMap { folded.range(of: $0)?.upperBound }.min() ?? folded.startIndex
-            let offset = folded.distance(from: folded.startIndex, to: labelEnd)
-            let tail = String(original.dropFirst(min(offset, original.count)))
-            if let match = TextPattern.first(#"([A-Z0-9][A-Z0-9/ .-]{3,40}\d)"#, in: tail.uppercased(), caseInsensitive: false),
-               let value = match[1] {
-                let cleaned = value
-                    .replacingOccurrences(of: "NR.", with: "NR")
-                    .trimmingCharacters(in: .whitespaces.union(CharacterSet(charactersIn: ":.")))
-                return (cleaned, original)
-            }
-        }
-        return nil
-    }
-
-    /// The labels the switched-off reading looked for (`CompositeLabels.policy` replaces them).
-    private static let legacyPolicyLabels = [
-        "seria si numarul", "seria si nr", "nr. polita", "nr polita", "numar polita", "numarul politei",
-        "polita nr", "polita seria", "polita rca seria", "serie polita",
-    ]
 
     /// RCA bonus-malus class (B0–B8, M1–M8), on a line with one of `labels`.
     static func bonusMalus(in text: CaptureText, labels: [String]) -> String? {
@@ -567,18 +528,46 @@ public enum RomanianFieldExtractor {
         return "(?:" + wordings.joined(separator: "|") + ")"
     }
 
+    /// A table's wordings as one group of a pattern, in their order, matched as a label is
+    /// printed: its words apart by any space, and in a word written with dots (an
+    /// abbreviation, "c.u.i.", or a field's number, "d.1") each dot printed or left out, with a
+    /// space or none after it ("C.U.I.", "CUI", "C. U. I.", "D.1", "D1", "D 1").
+    static func printed(_ labels: [String]) -> String {
+        let wordings = labels.map { label in
+            label.split(separator: " ").map { word in
+                let pieces = word.split(separator: ".").map { NSRegularExpression.escapedPattern(for: String($0)) }
+                guard word.contains(".") else { return pieces.joined() }
+                return pieces.joined(separator: #"\.?\s?"#) + #"\.?"#
+            }.joined(separator: #"\s+"#)
+        }
+        return "(?:" + wordings.joined(separator: "|") + ")"
+    }
+
     // MARK: - Numbered document fields
 
-    /// Vehicle registration certificate fields: `A` plate, `B` first registration, `D.1` make, `D.3` model, `E` VIN.
-    static func registrationFields(in text: CaptureText) -> [CaptureFieldKey: (CaptureValue, String)] {
+    /// A vehicle registration certificate's numbered fields, each at the start of its line
+    /// after its number in `table` (the talon's, `CaptureKindProfile.registrationLabels`):
+    /// `D.1` the make, `D.3` the model, `B` the first registration. The plate and the VIN are
+    /// read as on any car's paper (`licensePlate`, `vin`).
+    static func registrationFields(in text: CaptureText, labels table: [(CaptureFieldKey, [String])] = CaptureKindProfile.registrationLabels)
+        -> [CaptureFieldKey: (CaptureValue, String)] {
+        /// What starts a line with the field's number; nil when the table has none for it.
+        func start(_ key: CaptureFieldKey) -> String? {
+            let numbers = CaptureKindProfile.labels(for: key, in: table)
+            return numbers.isEmpty ? nil : #"^\s*"# + printed(numbers)
+        }
+        let make = start(.make).map { $0 + #"\s+(.{2,30})$"# }
+        let model = start(.model).map { $0 + #"\s+(.{1,40})$"# }
+        let registered = start(.firstRegistrationDate).map { $0 + #"\s"# }
         var result: [CaptureFieldKey: (CaptureValue, String)] = [:]
         for (index, line) in text.original.enumerated() {
             let folded = text.folded[index]
-            if let match = TextPattern.first(#"^\s*d\.?\s?1\.?\s+(.{2,30})$"#, in: line), let value = match[1] {
+            if let make, let match = TextPattern.first(make, in: line), let value = match[1] {
                 result[.make] = (.text(value.trimmingCharacters(in: .whitespaces)), line)
-            } else if let match = TextPattern.first(#"^\s*d\.?\s?3\.?\s+(.{1,40})$"#, in: line), let value = match[1] {
+            } else if let model, let match = TextPattern.first(model, in: line), let value = match[1] {
                 result[.model] = (.text(value.trimmingCharacters(in: .whitespaces)), line)
-            } else if TextPattern.first(#"^\s*b\.?\s"#, in: folded) != nil, let day = dates(inLine: folded, index: index).first?.day {
+            } else if let registered, TextPattern.first(registered, in: folded) != nil,
+                      let day = dates(inLine: folded, index: index).first?.day {
                 result[.firstRegistrationDate] = (.day(day), line)
             }
         }

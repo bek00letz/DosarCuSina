@@ -6,7 +6,6 @@ extension AssetActions {
     /// Saves once; on failure nothing changes.
     public func setPhoto(_ asset: Asset, _ data: Data?) throws {
         asset.photoData = data
-        asset.updatedAt = Date()
-        try UnitOfWork.save(context)
+        try UnitOfWork.save(context, now: now())
     }
 }

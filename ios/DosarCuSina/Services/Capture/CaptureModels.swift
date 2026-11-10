@@ -21,6 +21,12 @@ public enum CaptureDocumentKind: String, Codable, Sendable, CaseIterable {
     /// A bank card. Only its bank, network, kind, last four digits and expiry are kept;
     /// its full number never is (`PaymentCardNumbers`).
     case bankCard
+    /// The international motor insurance card (carte verde), filed on its own beside the
+    /// RCA it comes with.
+    case greenCard
+    /// A qualified electronic signature certificate (certificat calificat de semnătură
+    /// electronică) from a trust service provider.
+    case electronicSignature
     case vehicleRegistration
     case rcaPolicy
     case insurancePolicy
@@ -36,18 +42,16 @@ public enum CaptureDocumentKind: String, Codable, Sendable, CaseIterable {
     case medicalResult
     case other
 
-    /// Identity documents hold personal data and belong in a sensitive category by default.
-    /// Only these carry a machine-readable zone, a back to add and the essentials a weak
-    /// reading is judged by.
+    /// Identity documents hold personal data and belong in a sensitive category by default;
+    /// a weak reading of one is judged by its essentials. Declared by its profile
+    /// (`CaptureKindProfile.isIdentityDocument`).
     public var isIdentityDocument: Bool {
-        switch self {
-        case .passport, .identityCard, .drivingLicence: true
-        default: false
-        }
+        profile.isIdentityDocument
     }
 
     /// A document of its holder's, filed under them in the personal documents category
-    /// and named after them: an identity document, a cazier, a health card, a bank card.
+    /// and named after them: an identity document, a cazier, a health card, a bank card,
+    /// a green card, an electronic signature.
     /// Its kind profile names its document type; its fields come from its templates.
     public var isPersonalDocument: Bool {
         profile.documentType != nil
@@ -496,6 +500,9 @@ public struct CaptureResult: Sendable, Codable, Hashable {
     /// What the readers read, kept so the page can be read again as another kind
     /// (`CaptureEngine.reinterpret`) without new pictures. Nil for a hand-made result.
     public let source: CaptureReadingSource?
+    /// The text as read showed a whole card number, masked since (`withoutCardNumbers`): kept
+    /// so `showsCardNumber` still knows once the text no longer shows the digits.
+    public let showedCardNumber: Bool
 
     public init(
         id: UUID = UUID(),
@@ -512,7 +519,8 @@ public struct CaptureResult: Sendable, Codable, Hashable {
         kindAlternatives: [CaptureAlternative<CaptureDocumentKind>] = [],
         fieldAlternatives: [CaptureFieldAlternative] = [],
         readWithCloudModel: Bool = false,
-        source: CaptureReadingSource? = nil
+        source: CaptureReadingSource? = nil,
+        showedCardNumber: Bool = false
     ) {
         self.id = id
         self.kind = kind
@@ -529,6 +537,7 @@ public struct CaptureResult: Sendable, Codable, Hashable {
         self.fieldAlternatives = fieldAlternatives
         self.readWithCloudModel = readWithCloudModel
         self.source = source
+        self.showedCardNumber = showedCardNumber
     }
 
     /// The best field for a key.

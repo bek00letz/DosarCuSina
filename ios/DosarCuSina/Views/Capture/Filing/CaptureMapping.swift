@@ -29,7 +29,7 @@ enum CaptureMapping {
     /// Template fields a capture field can fill, most specific first. A policy's insurer,
     /// number and claims phone aren't here: they go where its deadline's facts say.
     static let candidates: [CaptureFieldKey: [String]] = [
-        .licensePlate: [VehicleFields.plate],
+        .licensePlate: [VehicleFields.plate, DocumentFields.vehiclePlate],
         .vin: [VehicleFields.vin],
         .civNumber: [VehicleFields.civ],
         .make: [VehicleFields.make],
@@ -137,11 +137,6 @@ enum CaptureMapping {
         default:
             return nil
         }
-    }
-
-    /// Values compared without spaces, dashes or case, so "B 123 ABC" finds "B-123-ABC".
-    static func normalizedIdentifier(_ text: String) -> String {
-        text.uppercased().filter { $0.isLetter || $0.isNumber }
     }
 
     /// The choices a capture field offers in the review, kept as their stable keys: the

@@ -49,6 +49,16 @@ struct VisitDraft: Equatable {
     /// The person said this invoice is another one, when it only looked like one already in
     /// the binder by its day and total ("E altă factură"). A new invoice asks again.
     var isAnotherInvoice = false
+    /// The invoice's kind when its photo is kept only on request (`CaptureResult.photoIsOnRequest`:
+    /// it shows a whole card number); nil when it is kept as any invoice is.
+    var photoOnRequestKind: CaptureDocumentKind?
+    /// The person asked to keep that photo ("Păstrează și poza actului"). A new invoice asks again.
+    var keepsPhotoOnRequest = false
+
+    /// Saving keeps the invoice's photo: always, unless it is kept only on request and the person hasn't asked.
+    var keepsPhoto: Bool {
+        photoOnRequestKind == nil || keepsPhotoOnRequest
+    }
 
     init(date: Date) {
         self.date = date
@@ -137,8 +147,12 @@ struct VisitDraft: Equatable {
             provider = .new(name)
         }
         if let document = result.document {
-            if document != self.document { isAnotherInvoice = false }
+            if document != self.document {
+                isAnotherInvoice = false
+                keepsPhotoOnRequest = false
+            }
             self.document = document
+            photoOnRequestKind = result.photoIsOnRequest ? result.kind : nil
         }
         if let taxID = fields[.providerTaxID]?.text { providerTaxID = taxID }
         if let number = fields[.invoiceNumber]?.text, !number.trimmingCharacters(in: .whitespaces).isEmpty { reference = number }

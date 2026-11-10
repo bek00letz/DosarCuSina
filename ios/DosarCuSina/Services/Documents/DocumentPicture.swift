@@ -144,7 +144,7 @@ public enum DocumentPicture {
         guard turns != 0 else { return image }
         let box = CGRect(x: 0, y: 0, width: image.width, height: image.height)
         let size = PageTurn.size(box.size, quarterTurns: turns)
-        guard let context = PageTurn.canvas(width: Int(size.width), height: Int(size.height)) else { return nil }
+        guard let context = ImageScaling.canvas(width: Int(size.width), height: Int(size.height), onWhite: true) else { return nil }
         context.interpolationQuality = .high
         context.concatenate(PageTurn.transform(box: box, quarterTurns: turns))
         context.draw(image, in: box)
@@ -224,16 +224,6 @@ enum PageTurn {
         default: return CGAffineTransform(translationX: -minX, y: -minY)
         }
     }
-
-    /// A white canvas of this many pixels, ready to draw on.
-    static func canvas(width: Int, height: Int) -> CGContext? {
-        guard width > 0, height > 0, let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
-              let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
-                                      space: colorSpace, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else { return nil }
-        context.setFillColor(CGColor(gray: 1, alpha: 1))
-        context.fill(CGRect(x: 0, y: 0, width: width, height: height))
-        return context
-    }
 }
 
 // MARK: - PDF pages
@@ -290,7 +280,7 @@ public enum PDFPageRendering {
         if asked > Double(maxPixels) { scale *= CGFloat((Double(maxPixels) / asked).squareRoot()) }
         let width = max(1, Int((area.width * scale).rounded()))
         let height = max(1, Int((area.height * scale).rounded()))
-        guard let context = PageTurn.canvas(width: width, height: height) else { return nil }
+        guard let context = ImageScaling.canvas(width: width, height: height, onWhite: true) else { return nil }
         context.interpolationQuality = .high
         context.scaleBy(x: CGFloat(width) / area.width, y: CGFloat(height) / area.height)
         context.translateBy(x: -area.minX, y: -(shown.height - area.maxY))

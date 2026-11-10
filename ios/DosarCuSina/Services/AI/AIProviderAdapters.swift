@@ -518,11 +518,12 @@ public enum JSONValue: Hashable, Sendable, Codable, ExpressibleByStringLiteral, 
     public var array: [JSONValue]? { if case .array(let value) = self { value } else { nil } }
     public var bool: Bool? { if case .bool(let value) = self { value } else { nil } }
     public var string: String? { if case .string(let value) = self { value } else { nil } }
+    /// A JSON number, whole or not. Text is never read as a number here: an answer's
+    /// numbers are read by `ModelQuestions.number(_:as:)`, through the one number reader.
     public var double: Double? {
         switch self {
-        case .int(let value): Double(value)
+        case .int(let whole): Double(whole)
         case .number(let value): value
-        case .string(let value): Double(value)
         default: nil
         }
     }

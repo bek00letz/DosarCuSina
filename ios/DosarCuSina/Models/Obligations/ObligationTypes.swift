@@ -369,7 +369,8 @@ public enum RecurrenceRule: Hashable, Sendable, Codable {
 ///
 /// Encoding: `{"type": "field", "field": "document.expiry", "offsetDays": 0}`,
 /// `{"type": "afterInterval", "every": 1, "unit": "year"}`, `{"type": "nextFixedDate"}`,
-/// `{"type": "ask"}`.
+/// `{"type": "ask"}`. A type or unit this build doesn't know reads as `ask` (the person
+/// enters the date) and is written back as stored.
 public enum FirstDueRule: Hashable, Sendable, Codable {
     /// Taken from a date field on the asset, shifted by `offsetDays`.
     case field(key: String, offsetDays: Int)
@@ -388,7 +389,12 @@ public enum FirstDueRule: Hashable, Sendable, Codable {
         case "field":
             self = .field(key: try c.decode(String.self, forKey: .field), offsetDays: try c.decodeIfPresent(Int.self, forKey: .offsetDays) ?? 0)
         case "afterInterval":
-            let unit = RecurrenceInterval.Unit(rawValue: try c.decode(String.self, forKey: .unit)) ?? .day
+            // A unit this build doesn't know asks, as an unknown rule does, rather than guess one;
+            // the rule stays stored as written (`KeptList`).
+            guard let unit = RecurrenceInterval.Unit(rawValue: try c.decode(String.self, forKey: .unit)) else {
+                self = .ask
+                return
+            }
             self = .afterInterval(RecurrenceInterval(every: try c.decode(Int.self, forKey: .every), unit: unit))
         case "nextFixedDate":
             self = .nextFixedDate

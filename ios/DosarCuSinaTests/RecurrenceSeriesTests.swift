@@ -22,7 +22,7 @@ struct RecurrenceSeriesTests {
             try actions.complete(rent)
             let month = (step % 12) + 1
             let year = 2027 + step / 12
-            #expect(rent.dueDay(in: calendar) == CalendarDay(year: year, month: month, day: min(31, lastDay(year: year, month: month))))
+            #expect(rent.dueDay == CalendarDay(year: year, month: month, day: min(31, lastDay(year: year, month: month))))
         }
     }
 
@@ -34,7 +34,7 @@ struct RecurrenceSeriesTests {
         let expected = ["2029-02-28", "2030-02-28", "2031-02-28", "2032-02-29", "2033-02-28", "2034-02-28", "2035-02-28", "2036-02-29"]
         for day in expected {
             try actions.complete(tax)
-            #expect(tax.dueDay(in: calendar) == CalendarDay(day))
+            #expect(tax.dueDay == CalendarDay(day))
         }
     }
 
@@ -44,10 +44,10 @@ struct RecurrenceSeriesTests {
         let rent = try actions.create(title: "Chirie", kind: .payment, dueDay: CalendarDay("2027-01-31"), for: nil,
                                       recurrence: .interval(.months(1), anchor: .dueDate))
         try actions.complete(rent)
-        #expect(rent.dueDay(in: calendar) == CalendarDay("2027-02-28"))
+        #expect(rent.dueDay == CalendarDay("2027-02-28"))
         try actions.reschedule(rent, to: CalendarDay("2027-03-15"))
         try actions.complete(rent)
-        #expect(rent.dueDay(in: calendar) == CalendarDay("2027-04-15"))
+        #expect(rent.dueDay == CalendarDay("2027-04-15"))
     }
 
     @Test func theSeriesStartIsReadFromItsCompletions() {

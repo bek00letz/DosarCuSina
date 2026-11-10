@@ -93,6 +93,19 @@ struct CaptureFilingPlan {
             case .unknownService: nil
             }
         }
+
+        /// What saving does with the index, in a line under what was read: the review's and
+        /// "Am rezolvat"'s.
+        var sentence: String {
+            switch self {
+            case .record(let reading, let subscription):
+                String(localized: "Indexul \(reading.written) se trece la „\(subscription)”.", comment: "Capture review: the bill's meter index is recorded on its subscription.")
+            case .alreadyKept(let reading, let subscription):
+                String(localized: "Indexul \(reading.written) e deja trecut la „\(subscription)”.", comment: "Capture review: the same bill was filed before, its index is already there.")
+            case .unknownService:
+                String(localized: "Indexul nu-l trec: nu știu dacă e de gaz, de curent sau de apă.", comment: "Capture review: the subscription's service isn't known, so the index isn't recorded.")
+            }
+        }
     }
     /// What happens to the meter index the bill prints; nil when it prints none, or when it
     /// goes nowhere a meter is kept (no place chosen yet, not a subscription, a service without a meter).
@@ -151,7 +164,7 @@ struct CaptureFilingPlan {
             plan.quiet = .noSuchDeadline
             return plan
         }
-        if profile.deadlineIsOptIn {
+        if profile.isBill {
             guard review.remindsToPay else { plan.quiet = .notWanted; return plan }
             if review.paysByDirectDebit(assets: assets) { plan.quiet = .paidByDirectDebit; return plan }
         }
@@ -163,8 +176,8 @@ struct CaptureFilingPlan {
             return plan
         }
         let reminders = blueprint.reminders(for: values)
-        if let existing = section.flatMap({ existingDeadline(blueprint, in: $0, takesUpPaused: profile.deadlineIsOptIn) }) {
-            let due = existing.dueDay(in: calendar)
+        if let existing = section.flatMap({ existingDeadline(blueprint, in: $0, takesUpPaused: profile.isBill) }) {
+            let due = existing.dueDay
             // A deadline that follows a field takes the document's own date; any other never
             // moves back for an older document.
             guard blueprint.isFieldDriven || day >= due else {
@@ -177,7 +190,7 @@ struct CaptureFilingPlan {
         }
         // A bill already logged here whose reminder is no longer running (paid, or taken
         // away): another photo of it never asks to be paid a second time.
-        if profile.deadlineIsOptIn, let filed = plan.filedBill, let section, filed.sectionID == section.id {
+        if profile.isBill, let filed = plan.filedBill, let section, filed.sectionID == section.id {
             plan.quiet = .billFiledBefore
             return plan
         }
@@ -221,17 +234,20 @@ struct CaptureFilingPlan {
     @MainActor
     static func filedBill(for review: CaptureReview, section: Asset?, templates: [String: CategoryTemplate], assets: [Asset],
                           today: CalendarDay, calendar: Calendar) -> FiledPaper? {
-        guard review.kind.profile.deadlineIsOptIn else { return nil }
-        if let kept = review.duplicateAttachmentID,
-           let document = assets.lazy.flatMap({ $0.attachments ?? [] }).first(where: { $0.id == kept }),
-           let entry = document.historyEntry, !entry.isDeleted, !entry.isCompletion, entry.kind == .payment,
-           let owner = entry.asset, templates.plays(.subscription, owner.templateKey) {
-            return FiledPaper(entry, match: .sameDocument, calendar: calendar)
+        guard review.kind.profile.isBill else { return nil }
+        // The same document's bill, in whichever subscription it is now.
+        let keptEntry = review.duplicateAttachmentID.flatMap { kept in
+            assets.lazy.flatMap { $0.attachments ?? [] }.first { $0.id == kept }?.historyEntry
+        }.flatMap { entry -> HistoryEntry? in
+            guard !entry.isCompletion, entry.kind == .payment, let owner = entry.asset,
+                  templates.plays(.subscription, owner.templateKey) else { return nil }
+            return entry
         }
-        guard !review.isAnotherBill, let section, templates.plays(.subscription, section.templateKey) else { return nil }
-        let bill = PaperIdentity(number: review.value(.invoiceNumber)?.text, day: CaptureFiler.billDay(review, today: today), total: review.total)
-        guard let found = bill.filed(among: PaperIdentity.bills(of: section), identity: { PaperIdentity(entry: $0, calendar: calendar) }) else { return nil }
-        return FiledPaper(found.paper, match: FiledPaper.Match(found.match), calendar: calendar)
+        let subscription = section.flatMap { templates.plays(.subscription, $0.templateKey) ? $0 : nil }
+        let bill = review.isAnotherBill || subscription == nil ? nil
+            : PaperIdentity.bill(number: review.value(.invoiceNumber)?.text, day: CaptureFiler.billDay(review, today: today), total: review.total)
+        return PaperIdentity.filed(keptDocumentEntry: keptEntry, paper: bill, among: subscription.map(PaperIdentity.bills(of:)) ?? [],
+                                   calendar: calendar)?.paper
     }
 
     /// The meter reading the bill recorded before: the same document's, else one a document of
@@ -254,7 +270,7 @@ struct CaptureFilingPlan {
     static func existingDeadline(_ blueprint: ObligationBlueprint, in section: Asset, takesUpPaused: Bool) -> Obligation? {
         if let active = section.activeObligations.first(where: { $0.blueprintKey == blueprint.key }) { return active }
         guard takesUpPaused else { return nil }
-        return (section.obligations ?? []).filter { $0.blueprintKey == blueprint.key && $0.status == .paused }.max { $0.dueDate < $1.dueDate }
+        return (section.obligations ?? []).filter { $0.blueprintKey == blueprint.key && $0.status == .paused }.max { $0.dueDay < $1.dueDay }
     }
 
     /// The category the document's values land in: a bill or a contract filed under a

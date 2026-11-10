@@ -103,7 +103,7 @@ struct PersonalDocumentCaptureTests {
         #expect(document.value(DocumentFields.expiry) == .date(CalendarDay("2027-04-15")), "The category's own rule wrote the same day")
         #expect(document.value(DocumentFields.recordResult) == .text("NU FIGUREAZĂ ÎN CAZIERUL JUDICIAR"))
         let renewal = try #require(document.activeObligations.first)
-        #expect(renewal.dueDay(in: .bucharest) == CalendarDay("2027-04-15"))
+        #expect(renewal.dueDay == CalendarDay("2027-04-15"))
         #expect(renewal.reminders.consequence == .comfort, "A cazier is asked for a purpose, never crowds Acum")
     }
 
@@ -127,7 +127,7 @@ struct PersonalDocumentCaptureTests {
         values[DocumentFields.issueDate] = .date(CalendarDay("2026-10-15"))
         try actions.update(cazier, name: cazier.name, values: values, notes: nil)
         #expect(cazier.value(DocumentFields.expiry) == .date(CalendarDay("2027-04-15")))
-        #expect(cazier.activeObligations.first?.dueDay(in: .bucharest) == CalendarDay("2027-04-15"))
+        #expect(cazier.activeObligations.first?.dueDay == CalendarDay("2027-04-15"))
     }
 
     @Test("An expired cazier read from a photo is only history")
@@ -169,7 +169,7 @@ struct PersonalDocumentCaptureTests {
         let seen = ReadinessAsset(id: card.id, name: card.name, templateKey: card.templateKey, role: .personalDocument, values: card.values)
         #expect(ReadinessEngine.documents(of: DocumentType.euHealthCard, in: [seen]).count == 1, "The trip check finds it by its type")
         #expect(ReadinessEngine.expiry(seen) == CalendarDay("2029-12-31"), "and reads this very field")
-        #expect(card.activeObligations.first?.dueDay(in: .bucharest) == CalendarDay("2029-12-31"))
+        #expect(card.activeObligations.first?.dueDay == CalendarDay("2029-12-31"))
     }
 
     // MARK: Bank cards
@@ -210,7 +210,7 @@ struct PersonalDocumentCaptureTests {
         #expect(card.value(DocumentFields.issuer) == .text("Banca Transilvania"))
         #expect(DocumentSummary.line(card.values, today: Self.today) == "Visa •••• 1111, expiră 08/28")
         let renewal = try #require(card.activeObligations.first)
-        #expect(renewal.dueDay(in: .bucharest) == CalendarDay("2028-08-31"))
+        #expect(renewal.dueDay == CalendarDay("2028-08-31"))
         #expect(renewal.reminders.leadDays == [30, 0], "A month before, and on the day")
         #expect(SecretFields.fields(in: BuiltInTemplates.documents).allSatisfy { !$0.applies(to: card.values) }, "No PIN, ever")
     }
@@ -371,6 +371,110 @@ struct PersonalDocumentCaptureTests {
         }
     }
 
+    /// The example IBANs the public specifications print.
+    static let exampleIBANs = ["GB82WEST12345698765432", "DE89370400440532013000", "FR1420041010050500013M02606", "RO49AAAA1B31007593840000"]
+
+    @Test("An IBAN stays whole: in one piece, in groups, after a label, in any case, even mistyped")
+    func ibansStayWhole() {
+        for iban in Self.exampleIBANs {
+            let grouped = FieldFormatter.groupIBAN(iban)
+            let mistyped = String(grouped.dropLast()) + (grouped.last == "1" ? "2" : "1")
+            let written = [
+                iban, grouped, iban.lowercased(), grouped.lowercased(), grouped.replacingOccurrences(of: " ", with: "-"),
+                "IBAN: \(grouped).", "Cont \(iban), deschis la ghișeu", mistyped, "IBAN \(mistyped)",
+            ]
+            for text in written {
+                #expect(PaymentCardNumbers.redact(text) == text, "\(text)")
+                #expect(!PaymentCardNumbers.containsCardNumber(text), "\(text)")
+            }
+            let labelled = "IBAN: \(grouped)."
+            #expect(IBAN.ranges(in: labelled).map { labelled[$0] } == [Substring(grouped)], "\(iban)")
+            #expect(IBAN.ranges(in: mistyped).isEmpty, "A mistyped IBAN doesn't pass its check")
+        }
+        // An IBAN whose account is the test card number: it passes its own check, so it is kept.
+        let cardShaped = Self.iban(country: "RO", account: "AAAA" + Self.testNumber.filter(\.isNumber))
+        for text in [cardShaped, FieldFormatter.groupIBAN(cardShaped)] {
+            #expect(IBAN.isValid(text))
+            #expect(PaymentCardNumbers.redact(text) == text, "\(text)")
+        }
+        // A country's own length: a German IBAN with a digit too many is not one.
+        #expect(!IBAN.isValid(Self.iban(country: "DE", account: "370400440532013000" + "0")))
+    }
+
+    @Test("IBANs and codes made at random stay whole; only a 16-digit code alone can still look like a card")
+    func sampledCodesStayWhole() {
+        var generator = SeededGenerator(seed: 20_261_110)
+        func digits(_ count: Int) -> String { String((0..<count).map { _ in Character(String(Int.random(in: 0...9, using: &generator))) }) }
+        for _ in 0..<2_000 {
+            let romanian = Self.iban(country: "RO", account: "AAAA" + digits(16))
+            let healthCard = "80642" + digits(15)
+            let samples = [
+                romanian, FieldFormatter.groupIBAN(romanian),
+                FieldFormatter.groupIBAN(String(romanian.dropLast()) + (romanian.last == "1" ? "2" : "1")),
+                FieldFormatter.groupIBAN(healthCard), healthCard, "AB" + digits(16), digits(16) + "XY",
+            ]
+            for text in samples {
+                #expect(PaymentCardNumbers.redact(text) == text, "\(text)")
+            }
+        }
+        // A 20-digit health card number whose last sixteen digits would pass as a Mastercard.
+        let healthCard = "8064 " + FieldFormatter.groupIBAN(Self.withCheckDigit("2221" + String(repeating: "0", count: 11)))
+        #expect(PaymentCardNumbers.redact(healthCard) == healthCard)
+    }
+
+    @Test("A card number next to an IBAN or a code is still masked; one glued to letters is a code")
+    func cardNumbersBesideCodes() {
+        let masked = [
+            "RO49AAAA1B31007593840000 4111111111111111": "RO49AAAA1B31007593840000 •••• 1111",
+            "IBAN RO49 AAAA 1B31 0075 9384 0000, card 4111 1111 1111 1111": "IBAN RO49 AAAA 1B31 0075 9384 0000, card •••• 1111",
+            "RO49 AAAA 1B31 0075 9384 0000 4111 1111 1111 1111": "RO49 AAAA 1B31 0075 9384 0000 •••• 1111",
+            "4111 1111 1111 1111 GB82WEST12345698765432": "•••• 1111 GB82WEST12345698765432",
+            "Card: 4111111111111111": "Card: •••• 1111",
+            "nr. 4111 1111 1111 1111": "nr. •••• 1111",
+            "Plătit cu 4111 1111 1111 1111 azi": "Plătit cu •••• 1111 azi",
+            "VISA 4111 1111 1111 1112": "VISA •••• 1112",
+            "Contract X12 4111 1111 1111 1111": "Contract X12 •••• 1111",
+            "AB12 4111 1111 1111 1111": "AB12 •••• 1111",
+        ]
+        for (text, expected) in masked {
+            #expect(PaymentCardNumbers.redact(text) == expected, "\(text)")
+        }
+        // Two cards in one number printed all in fours: each starts where the one before ends.
+        let twoCards = Self.testNumber + " " + FieldFormatter.groupIBAN(CardNumbersKeptOutTests.mastercard)
+        #expect(PaymentCardNumbers.redact(twoCards) == "•••• 1111 •••• 4444")
+        for text in ["AB4111111111111111", "4111111111111111RON"] {
+            #expect(PaymentCardNumbers.redact(text) == text, "\(text)")
+        }
+        // A dash is not a letter: a card after one is still a card.
+        #expect(PaymentCardNumbers.redact("Cod XY-4111111111111111") == "Cod XY-•••• 1111")
+        // On a bank card every long run still goes, glued or not.
+        #expect(PaymentCardNumbers.redact("NR4111111111111111", strict: true) == "NR•••• 1111")
+    }
+
+    @Test("A value whose field says what it is stays whole when it passes that field's own check")
+    func typedValuesStayWhole() {
+        // A Romanian pet's microchip that would pass as a Maestro card.
+        let chip = Self.withCheckDigit("642" + String(repeating: "0", count: 8) + "123")
+        let iban = FieldDefinition(key: "x.iban", label: "IBAN", type: .iban)
+        let microchip = FieldDefinition(key: "x.chip", label: "Microcip", type: .microchip)
+        let note = FieldDefinition(key: "x.note", label: "Notă", type: .text)
+        let values = FieldValues([iban.key: .text(Self.exampleIBANs[3]), microchip.key: .text(chip), note.key: .text(chip)])
+        #expect(PaymentCardNumbers.containsCardNumber(chip), "Alone, the digits look like a card")
+        let kept = PaymentCardNumbers.sanitizing(values, fields: { [iban, microchip, note] })
+        #expect(kept[microchip.key]?.textValue == chip)
+        #expect(kept[iban.key]?.textValue == Self.exampleIBANs[3])
+        #expect(kept[note.key]?.textValue == chip, "A plain text field that repeats the section's microchip keeps it")
+        // Without a microchip field holding those digits, nothing says what they are.
+        let alone = PaymentCardNumbers.sanitizing(FieldValues([note.key: .text(chip)]), fields: { [microchip, note] })
+        #expect(alone[note.key]?.textValue == "\(PaymentCardNumbers.mask) \(chip.suffix(4))", "A plain text field is masked")
+        // A card number typed into a microchip field fails its check (sixteen digits) and goes.
+        let wrong = PaymentCardNumbers.sanitizing(FieldValues([microchip.key: .text(Self.testNumber)]), fields: { [microchip] })
+        #expect(wrong[microchip.key]?.textValue == "\(PaymentCardNumbers.mask) 1111")
+        // Read from a vet's record: the microchip stays, other values are masked.
+        #expect(CaptureValue.text(chip).withoutCardNumbers(key: .microchip, strict: false) == .text(chip))
+        #expect(CaptureValue.text(chip).withoutCardNumbers(key: .provider, strict: false) != .text(chip))
+    }
+
     @Test("Every kind of personal document is filed under its holder and asked for its own fields")
     func personalKinds() {
         for kind in [CaptureDocumentKind.criminalRecord, .healthInsuranceCard, .bankCard] {
@@ -408,5 +512,29 @@ struct PersonalDocumentCaptureTests {
             return total + (doubled > 9 ? doubled - 9 : doubled)
         }
         return digits + String((10 - sum % 10) % 10)
+    }
+
+    /// The same numbers on every run (SplitMix64), so a sampled test never flakes.
+    struct SeededGenerator: RandomNumberGenerator {
+        var state: UInt64
+        init(seed: UInt64) { state = seed }
+        mutating func next() -> UInt64 {
+            state &+= 0x9E37_79B9_7F4A_7C15
+            var value = state
+            value = (value ^ (value >> 30)) &* 0xBF58_476D_1CE4_E5B9
+            value = (value ^ (value >> 27)) &* 0x94D0_49BB_1331_11EB
+            return value ^ (value >> 31)
+        }
+    }
+
+    /// An IBAN for `country` with `account` after the check digits that make it pass (ISO 13616).
+    static func iban(country: String, account: String) -> String {
+        var remainder = 0
+        for character in account + country + "00" {
+            let value = character.wholeNumberValue.map(String.init) ?? String(Int(character.asciiValue ?? 0) - 55)
+            for digit in value { remainder = (remainder * 10 + (digit.wholeNumberValue ?? 0)) % 97 }
+        }
+        let check = 98 - remainder
+        return country + (check < 10 ? "0" : "") + String(check) + account
     }
 }

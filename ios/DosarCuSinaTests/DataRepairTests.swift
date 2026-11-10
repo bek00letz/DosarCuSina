@@ -124,7 +124,7 @@ struct DataRepairTests {
         let context = try makeContext()
         let car = try golf(context, km: 45_724)
         let itp = Obligation(title: "ITP", kind: .legal, dueDay: CalendarDay("2027-05-01"),
-                             recurrence: DossierV2Converter.recurrence(cadenceDays: 730), calendar: .bucharest)
+                             recurrence: DossierV2Converter.recurrence(cadenceDays: 730))
         context.insert(itp)
         itp.asset = car
         try context.save()
@@ -132,7 +132,7 @@ struct DataRepairTests {
         let found = try applyTwice(.firstVersionDeadlines, in: context) {
             #expect(itp.blueprintKey == "vehicle.itp")
             #expect(itp.recurrence == .legal(.vehicleITP))
-            #expect(itp.dueDay(in: .bucharest) == CalendarDay("2027-05-01"), "The date the person has stays")
+            #expect(itp.dueDay == CalendarDay("2027-05-01"), "The date the person has stays")
         }
         #expect(found.first?.message == "„ITP” la VW Golf 2018 a venit dintr-o copie veche, fără regula lui. Îi pun regula obișnuită?")
     }
@@ -152,16 +152,16 @@ struct DataRepairTests {
         let context = try makeContext()
         let car = try golf(context, km: 45_724)
         let rent = Obligation(title: "Rată leasing", kind: .payment, dueDay: CalendarDay("2026-05-10"),
-                              recurrence: .interval(.months(1), anchor: .dueDate), calendar: .bucharest)
+                              recurrence: .interval(.months(1), anchor: .dueDate))
         context.insert(rent)
         rent.asset = car
         try context.save()
         _ = try ObligationActions(context: context, calendar: .bucharest, now: { noon("2026-05-08") }).complete(rent)
         _ = try ObligationActions(context: context, calendar: .bucharest, now: { noon("2026-05-10") }).complete(rent)
-        #expect(rent.dueDay(in: .bucharest) == CalendarDay("2026-07-10"))
+        #expect(rent.dueDay == CalendarDay("2026-07-10"))
 
         try applyTwice(.doubleCompletions, in: context) {
-            #expect(rent.dueDay(in: .bucharest) == CalendarDay("2026-06-10"))
+            #expect(rent.dueDay == CalendarDay("2026-06-10"))
             #expect(rent.history.count == 1)
         }
     }
@@ -238,7 +238,7 @@ struct DataRepairTests {
         #expect(written.contains("hologram"), "A value this build can't read is written back unchanged")
 
         let context = try makeContext()
-        let obligation = Obligation(title: "ITP", kind: .legal, dueDay: CalendarDay("2027-05-01"), calendar: .bucharest)
+        let obligation = Obligation(title: "ITP", kind: .legal, dueDay: CalendarDay("2027-05-01"))
         context.insert(obligation)
         obligation.consequenceRaw = "catastrophic"
         obligation.kindRaw = "spaceLaw"

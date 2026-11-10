@@ -50,6 +50,9 @@ struct DossierImporter {
         let serviceItems = try importServiceItems(&result, entries: entries, providers: providers)
         let measurements = try importMeasurements(&result, assets: assets)
         try importAttachments(&result, assets: assets, obligations: obligations, entries: entries, serviceItems: serviceItems, measurements: measurements, providers: providers)
+        // The app's own step inside the import's writer, which gives no change times: what it
+        // changes keeps the time it had (the archive's, or the phone's), and the deadline it
+        // makes has the time it was made, as at launch (`ChangeOrigin.app`).
         try HouseholdRules.reconcile(in: context, today: CalendarDay(now, calendar: calendar), calendar: calendar)
         return result
     }
@@ -175,7 +178,7 @@ struct DossierImporter {
                 isOnHomeByDefault: dto.isOnHome, isSensitiveByDefault: dto.isSensitive,
                 sections: dto.sections.items, blueprints: dto.blueprints.items, components: dto.components?.items ?? [],
                 pockets: dto.pockets.map { $0.compactMap(SectionPocket.init(rawValue:)) } ?? SectionPocket.standard,
-                behavior: dto.behavior ?? .standard,
+                behavior: dto.behavior?.value ?? .standard,
                 version: 0
             ))
             let isLocked = phone.lock(dto.key, archive: dto.isSensitive, default: catalog?.isSensitiveByDefault ?? false)
@@ -191,6 +194,7 @@ struct DossierImporter {
                 template.keptSections = dto.sections.replacingItems(definition.sections)
                 template.keptBlueprints = dto.blueprints.replacingItems(definition.blueprints)
                 template.keptComponents = (dto.components ?? KeptList()).replacingItems(definition.components)
+                template.keptBehavior = dto.behavior
                 // Its tint, hero and pockets as the archive has them: one from a newer build is
                 // shown as the nearest this build knows and goes out again unchanged.
                 template.tintRaw = dto.tint
@@ -207,6 +211,8 @@ struct DossierImporter {
         for definition in BuiltInTemplates.all where byKey[definition.key] == nil {
             let template = CategoryTemplate(definition: definition, isBuiltIn: true, homeOrder: order)
             template.isSensitive = phone.lock(definition.key, archive: false, default: definition.isSensitiveByDefault)
+            // Installed from the catalog, not changed by anyone (`ChangeTimes`).
+            template.updatedAt = ChangeTime.unknown
             context.insert(template)
             byKey[definition.key] = template
             order += 1
@@ -232,9 +238,9 @@ struct DossierImporter {
             // Choice values written as display text (v2 backups, older builds) become option keys.
             let definition = definitions[dto.templateKey]
             // No card number comes in with a backup: the unit that writes it masks every one (`FreeText`).
-            let values = definition.map { dto.values.normalizingChoices(for: $0) } ?? dto.values
+            let values = definition.map { dto.values.replacingValue(dto.values.value.normalizingChoices(for: $0)) } ?? dto.values
             // Secrets this phone keeps for the record stay; an archive never brings any.
-            asset.valuesData = StoredJSON.encode(SecretFields.keepingLocalSecrets(values, from: phone.secrets[id] ?? FieldValues(), definition: definition))
+            asset.keptValues = SecretFields.keepingLocalSecrets(values, from: phone.secrets[id] ?? FieldValues(), definition: definition)
             asset.keptFacts = SecretFields.keepingLocalSecretFacts(dto.customFacts ?? KeptList(), from: phone.secretFacts[id] ?? [])
             asset.photoData = try dto.photoPath.flatMap { try package.files.data(at: $0) }
             asset.isExample = dto.isExample
@@ -262,29 +268,33 @@ struct DossierImporter {
         for dto in package.obligations {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.obligations) }
             guard let obligation = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
-                Obligation(id: id, title: dto.title, kind: .routine, dueDay: dto.dueDate, calendar: calendar)
+                Obligation(id: id, title: dto.title, kind: .routine, dueDay: dto.dueDate)
             }) else { continue }
             obligation.title = dto.title
             obligation.notes = dto.notes
             obligation.blueprintKey = dto.blueprintKey
             // Kept as the archive has it: a kind from a newer build reads as the loudest.
             obligation.kindRaw = dto.kind
-            obligation.setDueDay(dto.dueDate, calendar: calendar)
+            obligation.dueDay = dto.dueDate
             obligation.dueMetric = dto.dueMetric
             obligation.reminders = dto.reminders
             obligation.remindersCustomized = dto.remindersCustomized ?? false
             obligation.reminderMinuteOfDay = dto.reminderMinuteOfDay
-            // A rule from a newer build is kept as it was written (`RecurrenceRule.unreadable`).
-            obligation.recurrence = dto.recurrence
+            // A rule from a newer build is kept as it was written (`RecurrenceRule.unreadable`), and
+            // so is what it wrote inside a rule this build reads (`KeptObject`).
+            obligation.keptRecurrence = dto.recurrence
             obligation.estimatedCost = dto.estimatedCost
             obligation.provider = dto.provider
             obligation.reference = dto.reference
             // Kept as the archive has it: a status from a newer build reads as the loudest (`ObligationStatus(stored:)`).
             obligation.statusRaw = dto.status
-            obligation.snoozedUntil = dto.snoozedUntil
+            obligation.snoozedUntil = dto.snoozedUntil.map { StoredDay.day(of: $0, storedAs: .startOfDay, calendar: calendar) }
             obligation.isExample = dto.isExample
             obligation.createdAt = clamped(dto.createdAt)
             obligation.updatedAt = changeTime(dto.updatedAt)
+            // A backup doesn't carry since when its cycle is known: the copy it brings reads as
+            // known since its change time (`Obligation.cycleKnownSince`), as before version 11.
+            obligation.cycleKnownAt = nil
             obligation.asset = uuid(dto.assetId).flatMap { assets[$0] }
         }
         return map
@@ -335,8 +345,8 @@ struct DossierImporter {
             entry.note = dto.note
             entry.reference = dto.reference
             entry.rating = dto.rating
-            entry.cycleDueDate = dto.cycleDueDate?.noonDate(in: calendar)
-            entry.nextDueDate = dto.nextDueDate?.noonDate(in: calendar)
+            entry.cycleDueDay = dto.cycleDueDate
+            entry.nextDueDay = dto.nextDueDate
             entry.previousStatusRaw = dto.previousStatus
             entry.previousDueMetric = dto.previousDueMetric
             entry.isExample = dto.isExample
@@ -401,6 +411,8 @@ struct DossierImporter {
             log.notes = dto.notes
             log.isExample = dto.isExample
             log.updatedAt = changeTime(dto.updatedAt)
+            // An archive from before version 10 says nothing: one counter, as it was.
+            log.startsCounter = dto.startsCounter ?? false
             log.asset = uuid(dto.assetId).flatMap { assets[$0] }
         }
         return map
@@ -437,9 +449,9 @@ struct DossierImporter {
             attachment.thumbnailData = try dto.thumbnailPath.flatMap { try package.files.data(at: $0) }
             // A backup from anywhere brings no card number into a document’s text: the unit that writes it masks it (`FreeText`).
             attachment.extractedText = dto.extractedText
-            attachment.documentDate = dto.documentDate?.noonDate(in: calendar)
-            attachment.validUntil = dto.validUntil?.noonDate(in: calendar)
-            attachment.framing = dto.framing ?? DocumentFraming()
+            attachment.documentDay = dto.documentDate
+            attachment.validUntil = dto.validUntil
+            attachment.keptFraming = dto.framing
             attachment.isArchived = dto.isArchived
             attachment.createdAt = clamped(dto.createdAt)
             attachment.isExample = dto.isExample

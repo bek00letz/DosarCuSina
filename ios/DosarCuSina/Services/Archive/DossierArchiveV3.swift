@@ -68,7 +68,9 @@ public enum DossierV3 {
         public var createdAt: Date
         public var updatedAt: Date
         /// What the category does (its box, its list, its part); missing means the standard behaviour.
-        public var behavior: CategoryBehavior?
+        /// Like a section's values, a deadline's recurrence and a document's framing, what a newer
+        /// build wrote inside it that this one doesn't read comes in and goes out as written (`KeptObject`).
+        public var behavior: KeptObject<CategoryBehavior>?
     }
 
     public struct Asset: Codable, Hashable, Sendable {
@@ -80,7 +82,7 @@ public enum DossierV3 {
         public var symbolOverride: String?
         public var tintOverride: String?
         public var notes: String?
-        public var values: FieldValues
+        public var values: KeptObject<FieldValues>
         /// Free label–value rows under Date importante; rows this build can't read are kept raw.
         public var customFacts: KeptList<CustomFact>?
         /// `vault/photos/<id>.jpg` when the asset has a photo.
@@ -101,7 +103,7 @@ public enum DossierV3 {
         public var dueMetric: Double?
         public var reminders: ReminderProfile
         public var reminderMinuteOfDay: Int?
-        public var recurrence: RecurrenceRule
+        public var recurrence: KeptObject<RecurrenceRule>
         public var estimatedCost: Money?
         public var provider: String?
         public var reference: String?
@@ -196,6 +198,9 @@ public enum DossierV3 {
         public var isExample: Bool
         /// When it last changed; missing in archives from before version 8 of the database, which reads as `ChangeTime.unknown`.
         public var updatedAt: Date? = nil
+        /// True on the first reading of a new counter ("Contor nou"); written only then, and
+        /// missing in archives from before version 10 of the database, which read as one counter.
+        public var startsCounter: Bool? = nil
     }
 
     public struct Attachment: Codable, Hashable, Sendable {
@@ -229,7 +234,7 @@ public enum DossierV3 {
         public var validUntil: CalendarDay?
         /// How the pages are shown: the document found in each photo and which way up it
         /// goes. Absent when every page is shown as it is.
-        public var framing: DocumentFraming? = nil
+        public var framing: KeptObject<DocumentFraming>? = nil
         /// When it last changed; missing in archives from before version 8 of the database, which reads as `ChangeTime.unknown`.
         public var updatedAt: Date? = nil
 
@@ -298,35 +303,16 @@ public enum DossierV3 {
 
     // MARK: Coding
 
+    /// The archive's JSON: indented, keys sorted, moments in UTC to the second
+    /// (`MachineText.jsonEncoder(.readable)`).
     public static func encoder() -> JSONEncoder {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-        encoder.dateEncodingStrategy = .custom { date, encoder in
-            var container = encoder.singleValueContainer()
-            try container.encode(date.formatted(Date.ISO8601FormatStyle()))
-        }
-        return encoder
+        MachineText.jsonEncoder(.readable)
     }
 
-    /// Accepts timestamps with or without fractional seconds and with any UTC offset.
+    /// Accepts timestamps with or without fractional seconds, with any UTC offset, or a
+    /// day alone (`MachineText.jsonDecoder`).
     public static func decoder() -> JSONDecoder {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .custom { decoder in
-            let container = try decoder.singleValueContainer()
-            let raw = try container.decode(String.self)
-            if let date = parseTimestamp(raw) { return date }
-            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Not an ISO 8601 timestamp: \(raw)")
-        }
-        return decoder
-    }
-
-    static func parseTimestamp(_ raw: String) -> Date? {
-        if let date = try? Date(raw, strategy: .iso8601) { return date }
-        if let date = try? Date(raw, strategy: Date.ISO8601FormatStyle(includingFractionalSeconds: true)) { return date }
-        if let day = CalendarDay(isoString: raw), raw.count == 10 {
-            return day.startDate(in: CalendarDay.isoCalendar)
-        }
-        return nil
+        MachineText.jsonDecoder()
     }
 
     static func id(_ uuid: UUID) -> String { uuid.uuidString.lowercased() }
@@ -341,7 +327,10 @@ public enum DossierV3 {
     /// - `Attachment.compactedAt`: when this phone made its pages smaller.
     /// - `Provider.contactIdentifier`: the card in this phone's Contacts.
     /// - `AttachmentPage.id`: a page is known by its document and its place in it.
+    /// - `Obligation.cycleKnownAt`: since when this phone's reminders count the deadline's cycle;
+    ///   a copy a backup brings reads as known since its change time (`cycleKnownSince`).
     static let stayOnThePhone: [String: Set<String>] = [
+        "Obligation": ["cycleKnownAt"],
         "Attachment": ["documentID", "compactedAt"],
         "Provider": ["contactIdentifier"],
         "AttachmentPage": ["id"],

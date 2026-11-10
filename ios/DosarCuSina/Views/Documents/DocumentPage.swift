@@ -444,7 +444,7 @@ struct PaperPage: View {
                     ExpiryBadge(day: day, rule: attachment.obligation?.reminders.urgencyRule ?? DateUrgency.rule(for: day, on: attachment.asset))
                         .padding(.bottom, DS.Space.xs)
                 }
-                if let date = attachment.documentDate {
+                if let date = attachment.documentDay {
                     DSRowSeparator()
                     DSReadOnlyValueRow(label: Text("Data de pe act", comment: "The date printed on a paper."), value: Text(verbatim: DosarFormat.day(date)))
                 }

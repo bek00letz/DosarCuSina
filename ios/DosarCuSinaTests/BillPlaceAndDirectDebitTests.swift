@@ -476,7 +476,7 @@ struct BillPlaceAndDirectDebitTests {
         let next = try await filer(context, on: "2026-12-06").save(try review(gasBill(issued: "2026-12-05", due: "2026-12-20"), context))
         #expect(next.obligation?.id == reminder.id)
         #expect(reminder.status == .active)
-        #expect(reminder.dueDay(in: .bucharest) == CalendarDay("2026-12-20"))
+        #expect(reminder.dueDay == CalendarDay("2026-12-20"))
         #expect((gas.obligations ?? []).filter { $0.blueprintKey == SubscriptionFields.billBlueprint }.count == 1)
     }
 

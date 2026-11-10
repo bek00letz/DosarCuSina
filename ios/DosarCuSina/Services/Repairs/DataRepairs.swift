@@ -11,6 +11,9 @@ import SwiftData
 ///   (`runsByItself`), run then; every other step only lists what it would change.
 /// - `apply` changes what the owner approved, one finding, or all of one kind, in one
 ///   `UnitOfWork`, and works hero values out from the readings again.
+/// - Both are the app's own steps (`ChangeOrigin.app`), the owner's OK included: what a repair
+///   changes keeps its change time, so a copy changed by the person on another phone still
+///   comes in with "Adaugă", and the list finds the repair again after that import.
 @MainActor
 struct DataRepairs {
     let context: ModelContext
@@ -37,6 +40,8 @@ struct DataRepairs {
         BillNumbersStep(),
         SameBillTwiceStep(),
         CardNumbersStep(),
+        SameVisitTwiceStep(),
+        DayYearsStep(),
     ]
 
     static func step(_ id: DataRepairStepID) -> any DataRepairStep {
@@ -46,7 +51,7 @@ struct DataRepairs {
     /// Runs the steps that change nothing anyone sees, then lists what waits for the owner,
     /// leaving out what they chose to leave as it is.
     func detect() throws -> [DataRepairFinding] {
-        try UnitOfWork.perform(in: context) {
+        try UnitOfWork.perform(in: context, origin: .app) {
             for step in Self.steps where step.runsByItself { try step.runByItself(in: context) }
         }
         var scan = DataRepairScan(context: context, calendar: calendar)
@@ -64,7 +69,7 @@ struct DataRepairs {
         let findings = findings.filter(\.isFixable)
         guard !findings.isEmpty else { return }
         let byStep = Dictionary(grouping: findings, by: \.step)
-        try UnitOfWork.perform(in: context) {
+        try UnitOfWork.perform(in: context, origin: .app) {
             for step in Self.steps {
                 guard let mine = byStep[type(of: step).id], !mine.isEmpty else { continue }
                 try step.apply(mine, in: context, calendar: calendar)
@@ -99,6 +104,8 @@ enum DataRepairStepID: String, CaseIterable, Sendable, Hashable {
     case billNumbers = "bill-numbers"
     case sameBillTwice = "same-bill-twice"
     case cardNumbers = "card-numbers"
+    case sameVisitTwice = "same-visit-twice"
+    case dayYears = "day-years"
 }
 
 /// One thing a repair would change, in plain words, with what applying it needs.
@@ -140,6 +147,10 @@ struct DataRepairFinding: Identifiable, Hashable, Sendable {
         case sameBill(keep: UUID, merge: [UUID])
         /// A record whose words hold a whole card number: kept as its last four digits.
         case cardNumbers(RecordRef)
+        /// The same visit, repair or purchase logged more than once in a section's history: `merge` join `keep`.
+        case sameVisit(keep: UUID, merge: [UUID])
+        /// A day kept with a year that can't be: set to `to`, the day it means, when that is known.
+        case dayYear(DayYearsStep.Place, from: CalendarDay, to: CalendarDay?)
     }
 }
 

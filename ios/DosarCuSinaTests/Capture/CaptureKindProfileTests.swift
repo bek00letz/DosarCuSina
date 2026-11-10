@@ -153,7 +153,7 @@ struct CaptureKindProfileTests {
         let made = plan.blueprint.flatMap { blueprint in outcome.asset?.activeObligations.first { $0.blueprintKey == blueprint.key } }
         #expect((made != nil) == plan.schedulesReminder, "\(kind): saving made a deadline exactly when the plan said so")
         if let made, let deadline = plan.deadline {
-            #expect(made.dueDay(in: .bucharest) == deadline.day)
+            #expect(made.dueDay == deadline.day)
             #expect(made.reminderLeadDays == deadline.reminders.leadDays, "\(kind): it reminds as the line said")
         }
     }
@@ -181,7 +181,7 @@ struct CaptureKindProfileTests {
         let outcome = try await filer.save(review)
         let policy = try #require(outcome.obligation)
         #expect(policy.blueprintKey == BuiltInBlueprints.homeInsurance)
-        #expect(policy.dueDay(in: .bucharest) == CalendarDay("2027-10-31"))
+        #expect(policy.dueDay == CalendarDay("2027-10-31"))
         #expect(home.value(HomeFields.optionalPolicyNumber) == .text("LOC-000001"), "An optional policy keeps its own facts")
         #expect(home.value(HomeFields.policyNumber) == nil, "never PAD's")
         let insurer = try #require(try context.fetch(FetchDescriptor<Provider>()).first)
@@ -233,7 +233,7 @@ struct CaptureKindProfileTests {
         values["subscription.contractEnd"] = .date(CalendarDay("2027-03-31"))
         try actions.update(subscription, name: "Gaz", values: values, notes: nil)
         let end = try #require(subscription.activeObligations.first { $0.blueprintKey == "subscription.contractEnd" })
-        #expect(end.dueDay(in: .bucharest) == CalendarDay("2027-03-31"))
+        #expect(end.dueDay == CalendarDay("2027-03-31"))
 
         // A day that has passed makes nothing: the contract is already over.
         values["subscription.contractEnd"] = nil
@@ -323,7 +323,7 @@ struct CaptureKindProfileTests {
         #expect(found.count == 1)
         try repairs.apply(found)
         let deadline = try #require(home.activeObligations.first { $0.blueprintKey == BuiltInBlueprints.homeInsurance })
-        #expect(deadline.dueDay(in: .bucharest) == CalendarDay(year: year, month: 5, day: 31))
+        #expect(deadline.dueDay == CalendarDay(year: year, month: 5, day: 31))
         #expect(policy.obligation?.id == deadline.id)
         #expect(try repairs.detect().filter { $0.step == .homePolicyWithoutDeadline }.isEmpty, "Applied once, not found again")
     }

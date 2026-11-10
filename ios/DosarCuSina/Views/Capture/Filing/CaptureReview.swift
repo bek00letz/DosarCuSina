@@ -93,7 +93,7 @@ struct CaptureReview: Identifiable {
     /// its kind (a cazier, a bank card), not a loose paper on the person.
     var filesAsPersonalDocument = false
     /// The person asked to keep the photo of a document whose photo is kept only on
-    /// request ("Păstrează și poza cardului"). Off until they turn it on.
+    /// request (`photoIsOnRequest`, "Păstrează și poza"). Off until they turn it on.
     var keepsPhotoOnRequest = false
     /// The person confirmed that the bank pays this subscription by direct debit, as the
     /// bill says ("Plătesc prin debit direct"). Never on until they turn it on.
@@ -141,9 +141,9 @@ struct CaptureReview: Identifiable {
             .map(\.element)
     }
 
-    /// An identity card read without the zone on its back: the review offers to add it.
+    /// A card read without the zone on its back: the review offers to add it.
     var asksForBackPage: Bool {
-        kind == .identityCard && result.notices.contains(.identityBackMissing)
+        kind.profile.hasMachineReadableBack && result.notices.contains(.identityBackMissing)
     }
 
     /// The bill's lines as the person left them: corrected, added or removed. An
@@ -199,10 +199,16 @@ struct CaptureReview: Identifiable {
         DocumentType.validityMonths(type: kind.profile.documentType, variant: value(.documentVariant)?.text)
     }
 
-    /// Saving keeps the document's photo: always, except where the kind keeps it only on
-    /// request (a bank card) and the person hasn't asked.
+    /// The document's photo is kept only when the person asks ("Păstrează și poza"): a bank
+    /// card, or any page that shows a whole card number (`CaptureResult.photoIsOnRequest`).
+    var photoIsOnRequest: Bool {
+        result.photoIsOnRequest(as: kind)
+    }
+
+    /// Saving keeps the document's photo: always, except where it is kept only on request
+    /// (`photoIsOnRequest`) and the person hasn't asked.
     var keepsPhoto: Bool {
-        !kind.profile.photoIsOptIn || keepsPhotoOnRequest
+        !photoIsOnRequest || keepsPhotoOnRequest
     }
 
     /// When a contract's minimum period ends: as printed, or its length after its start.
@@ -355,7 +361,7 @@ struct CaptureReview: Identifiable {
     mutating func kindChanged(assets: [Asset]) {
         kindAlternatives.removeAll { $0.value == kind }
         if remindsToPay == suggested.remindsToPay {
-            remindsToPay = kind.profile.deadlineIsOptIn
+            remindsToPay = kind.profile.isBill
             suggested.remindsToPay = remindsToPay
         }
         let values = Dictionary(currentFields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
@@ -390,7 +396,7 @@ struct CaptureReview: Identifiable {
             provider: values[.provider]?.text,
             service: values[.serviceKind]?.text,
             codes: codes.compactMapValues { values[$0]?.text },
-            isBill: kind == .utilityInvoice,
+            isBill: kind.profile.isBill,
             supplyAddress: values[.supplyAddress]?.text
         )
     }
@@ -487,7 +493,7 @@ struct CaptureReview: Identifiable {
         self.behaviors = behaviors
         let values = Dictionary(result.fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
         self.title = CaptureMapping.defaultTitle(for: result.kind, fields: values)
-        self.remindsToPay = result.kind.profile.deadlineIsOptIn
+        self.remindsToPay = result.kind.profile.isBill
         let place = Self.suggestPlace(kind: result.kind, suggestions: result.suggestions, fields: result.fields, assets: assets, behaviors: behaviors)
         self.destination = place.destination
         self.newAssetName = Self.defaultAssetName(kind: result.kind, values: values)
@@ -532,14 +538,17 @@ struct CaptureReview: Identifiable {
     @MainActor
     private static func otherDestination(kind: CaptureDocumentKind, suggestions: [CaptureSuggestion], fields: [CaptureField], candidates: [Asset],
                                          behaviors: [String: CategoryBehavior]) -> Destination {
-        // 1. An identifier on the document matches a section.
+        // 1. An identifier on the document matches a section. A personal document is found
+        // only among personal documents, and nothing else is filed into one by a number
+        // they share: a green card names its car's plate and may print its RCA's number.
         let hints = suggestions.flatMap(\.assetHints)
+        let searched = candidates.filter { behaviors.plays(.personalDocument, $0.templateKey) == kind.isPersonalDocument }
         for hint in hints {
-            let wanted = CaptureMapping.normalizedIdentifier(hint.value)
+            let wanted = RomanianText.compact(hint.value)
             guard !wanted.isEmpty else { continue }
-            if let match = candidates.first(where: { asset in
+            if let match = searched.first(where: { asset in
                 asset.values.contains { _, value in
-                    value.textValue.map(CaptureMapping.normalizedIdentifier) == wanted
+                    value.textValue.map(RomanianText.compact) == wanted
                 }
             }) {
                 return .asset(match.id)

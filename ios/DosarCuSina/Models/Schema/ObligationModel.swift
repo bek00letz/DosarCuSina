@@ -1,12 +1,12 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV8 {
+extension DosarSchemaV11 {
     /// Something that has to be done by a date, once or on a schedule: ITP, RCA,
     /// local taxes, a vaccine, a subscription renewal.
     ///
     /// An obligation is never copied to make the next cycle. Completing it writes
-    /// a `HistoryEntry` and moves `dueDate` forward (see `ObligationActions`).
+    /// a `HistoryEntry` and moves its due day forward (see `ObligationActions`).
     @Model
     public final class Obligation {
         public var id: UUID = UUID()
@@ -15,8 +15,10 @@ extension DosarSchemaV8 {
         /// The template blueprint this came from, when it came from one.
         public var blueprintKey: String?
         public var kindRaw: String = ObligationKind.routine.rawValue
-        /// Noon on the due day (see `CalendarDay.noonDate`). Use `dueDay` to read and write it.
-        public var dueDate: Date = Date()
+        /// The due day as an ISO day, `2026-11-15` (`StoredDay`): the same day in every time
+        /// zone, and it sorts as the days do. Read and write it through `dueDay`. Version 9;
+        /// before, noon of the day in the phone's time zone (`dueDate`).
+        public var dueDayISO: String = ""
         /// For counter-based obligations, the reading at which it is due (for example 160 000 km).
         public var dueMetric: Double?
         /// Reminder profile, stored flat: lead days (largest first; `0` is the day they count
@@ -45,11 +47,20 @@ extension DosarSchemaV8 {
         /// Policy, contract or invoice number.
         public var reference: String?
         public var statusRaw: String = ObligationStatus.active.rawValue
-        /// Hidden from attention and reminders until this moment.
-        public var snoozedUntil: Date?
+        /// Hidden from attention and reminders until this day starts where the phone is, as an
+        /// ISO day (`StoredDay`). Read and write it through `snoozedUntil`. Version 9; before, the
+        /// start of that day in the phone's time zone.
+        public var snoozedUntilISO: String?
         public var isExample: Bool = false
         public var createdAt: Date = Date()
         public var updatedAt: Date = Date()
+        /// Since when its cycle is known as it now is: the last time its due day, its reminders'
+        /// leads (or its travel margin) or whether it is active changed, by the person or by
+        /// the app, set by the unit of work as it saves (`CycleTimes`). Not its change time,
+        /// which only the person's own steps move and which a note's edit moves too. Nil for a
+        /// deadline from before version 11 or brought in from a backup: it reads as its change
+        /// time (`cycleKnownSince`). Version 11.
+        public var cycleKnownAt: Date?
 
         public var asset: Asset?
 
@@ -70,13 +81,12 @@ extension DosarSchemaV8 {
             dueDay: CalendarDay,
             recurrence: RecurrenceRule = .none,
             reminders: ReminderProfile? = nil,
-            estimatedCost: Money? = nil,
-            calendar: Calendar = .dosar
+            estimatedCost: Money? = nil
         ) {
             self.id = id
             self.title = title
             self.kindRaw = kind.rawValue
-            self.dueDate = dueDay.noonDate(in: calendar)
+            self.dueDayISO = StoredDay.text(dueDay)
             self.recurrenceData = StoredJSON.encode(recurrence)
             let profile = reminders ?? kind.defaultProfile
             self.reminderLeadDays = profile.leadDays
@@ -127,9 +137,17 @@ extension DosarSchemaV8 {
             set { statusRaw = newValue.rawValue }
         }
 
+        /// How it repeats. Writing it keeps what a newer build wrote inside the rule that this one
+        /// doesn't read, while the rule stays the same kind (`KeptObject`).
         public var recurrence: RecurrenceRule {
-            get { StoredJSON.decode(RecurrenceRule.self, from: recurrenceData) ?? .none }
-            set { recurrenceData = StoredJSON.encode(newValue) }
+            get { KeptObject<RecurrenceRule>.value(in: recurrenceData) ?? .none }
+            set { keptRecurrence = keptRecurrence.replacingValue(newValue) }
+        }
+
+        /// The rule as stored, with what this build doesn't read: what a backup carries.
+        public var keptRecurrence: KeptObject<RecurrenceRule> {
+            get { KeptObject.stored(in: recurrenceData, fallback: .none) ?? KeptObject(.none) }
+            set { recurrenceData = KeptObject.data(newValue) }
         }
 
         public var estimatedCost: Money? {
@@ -143,23 +161,42 @@ extension DosarSchemaV8 {
             }
         }
 
-        public func dueDay(in calendar: Calendar = .dosar) -> CalendarDay {
-            CalendarDay(dueDate, calendar: calendar)
+        /// The day it is due: the same day wherever the phone is. A deadline whose stored day
+        /// can't be read (none was ever written) is due on the day it was made.
+        public var dueDay: CalendarDay {
+            get { StoredDay.day(dueDayISO) ?? CalendarDay(createdAt) }
+            set { dueDayISO = StoredDay.text(newValue) }
         }
 
-        public func setDueDay(_ day: CalendarDay, calendar: Calendar = .dosar) {
-            dueDate = day.noonDate(in: calendar)
+        /// Since when the person could know this cycle as it now is, which a reminder that makes
+        /// up for warnings already passed counts from (`ReminderPlanner`): `cycleKnownAt`, else,
+        /// when none is kept, its change time.
+        public var cycleKnownSince: Date { cycleKnownAt ?? updatedAt }
+
+        /// The day it comes back after "Amână", or nil when it isn't snoozed.
+        public var snoozedUntil: CalendarDay? {
+            get { StoredDay.day(snoozedUntilISO) }
+            set { snoozedUntilISO = newValue.map(StoredDay.text) }
         }
 
         /// Whole days from today to the due day; negative when overdue.
         public func daysRemaining(from now: Date = Date(), calendar: Calendar = .dosar) -> Int {
-            CalendarDay(now, calendar: calendar).days(to: dueDay(in: calendar), calendar: calendar)
+            CalendarDay(now, calendar: calendar).days(to: dueDay, calendar: calendar)
         }
 
-        public func isSnoozed(at now: Date = Date()) -> Bool {
+        /// Still hidden at `now`: its day hasn't started yet where the phone is (`calendar`).
+        public func isSnoozed(at now: Date = Date(), calendar: Calendar = .dosar) -> Bool {
             guard let snoozedUntil else { return false }
-            return snoozedUntil > now
+            return CalendarDay(now, calendar: calendar) < snoozedUntil
         }
+
+        /// The moment it stops being hidden: its day's start where the phone is (`calendar`).
+        public func snoozeEnds(in calendar: Calendar = .dosar) -> Date? {
+            snoozedUntil?.startDate(in: calendar)
+        }
+
+        /// Fetches sorted by due day, earliest first: ISO days sort as the days do.
+        public static var byDueDay: SortDescriptor<Obligation> { SortDescriptor(\.dueDayISO, comparator: .lexical) }
 
         /// Completions of this obligation, newest first. Two recorded at the same
         /// moment are ordered by the cycle they closed, which only moves forward.
@@ -167,7 +204,7 @@ extension DosarSchemaV8 {
             (historyEntries ?? []).sorted {
                 $0.occurredAt != $1.occurredAt
                     ? $0.occurredAt > $1.occurredAt
-                    : ($0.cycleDueDate ?? .distantPast) > ($1.cycleDueDate ?? .distantPast)
+                    : ($0.cycleDueDay ?? .earliest) > ($1.cycleDueDay ?? .earliest)
             }
         }
     }

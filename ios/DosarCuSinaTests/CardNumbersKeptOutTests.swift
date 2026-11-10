@@ -30,8 +30,8 @@ struct CardNumbersKeptOutTests {
     // MARK: Every stored text is listed
 
     @Test func everyStoredTextOfEveryModelIsWordsOrNeverWords() throws {
-        let schema = Schema(versionedSchema: DosarSchemaV8.self)
-        #expect(FreeText.types.count == DosarSchemaV8.models.count, "Every model says which of its texts are words")
+        let schema = Schema(versionedSchema: DosarSchemaV11.self)
+        #expect(FreeText.types.count == DosarSchemaV11.models.count, "Every model says which of its texts are words")
         let textTypes: Set<String> = ["String", "Optional<String>", "Data", "Optional<Data>", "Array<String>"]
         for entity in schema.entities {
             let type = try #require(FreeText.types.first { String(describing: $0) == entity.name }, "\(entity.name) lists its words")
@@ -200,6 +200,41 @@ struct CardNumbersKeptOutTests {
         try UnitOfWork.save(context)
         #expect(try #require(Provider.find(firm.recordKey, in: ModelContext(context.container))).notes == texts.joined(separator: "\n"))
         #expect(FreeText.mask(firm, write: false).isEmpty)
+    }
+
+    @Test func ibansAndAPetsMicrochipAreKeptWholeWhereverTheyAreTyped() throws {
+        let context = try makeContext()
+        let store = TemplateStore(context: context)
+        let actions = AssetActions(context: context, calendar: .bucharest, now: { noon("2026-11-10") }, sealer: .ephemeral())
+        // The example IBANs, in one piece and in groups, in a firm's notes and a row.
+        let ibans = PersonalDocumentCaptureTests.exampleIBANs.flatMap { [$0, FieldFormatter.groupIBAN($0)] }
+        let firm = Provider(name: "ENGIE Romania S.A.")
+        firm.notes = ibans.joined(separator: "\n")
+        context.insert(firm)
+        try UnitOfWork.save(context)
+        #expect(try #require(Provider.find(firm.recordKey, in: ModelContext(context.container))).notes == ibans.joined(separator: "\n"))
+
+        // A Romanian pet's microchip whose digits would pass as a Maestro card: whole in its own
+        // field, and in the section's notes, where its field says what those digits are. Other
+        // digits shaped the same way, and a card number, are still masked there.
+        let chip = PersonalDocumentCaptureTests.withCheckDigit("642" + String(repeating: "0", count: 8) + "123")
+        let other = PersonalDocumentCaptureTests.withCheckDigit("642" + String(repeating: "0", count: 8) + "456")
+        let pets = try #require(try store.template(forKey: BuiltInTemplates.Key.pet))
+        let pet = try actions.create(name: "Motănelul din exemplu", template: pets, values: FieldValues([PetFields.microchip: .text(chip)]),
+                                     notes: "Cip \(chip)\nAlt cip \(other)\nCard \(Self.visa)")
+        let stored = try #require(Asset.find(pet.recordKey, in: ModelContext(context.container)))
+        #expect(stored.values[PetFields.microchip]?.textValue == chip)
+        #expect(stored.notes == "Cip \(chip)\nAlt cip \(PaymentCardNumbers.mask) \(other.suffix(4))\nCard \(Self.visaMasked)")
+
+        // An IBAN field of one's own whose account is the test card number: it passes its own check.
+        let iban = PersonalDocumentCaptureTests.iban(country: "RO", account: "AAAA" + Self.visa.filter(\.isNumber))
+        let rent = try store.createCustom(name: "Chirie", symbol: "house.fill", tint: .teal, sections: [
+            FieldSection(key: "rent.main", title: "Chirie", fields: [FieldDefinition(key: "rent.iban", label: "IBAN", type: .iban)]),
+        ])
+        let flat = try actions.create(name: "Apartament", template: rent, values: FieldValues(["rent.iban": .text(FieldFormatter.groupIBAN(iban))]))
+        let kept = try #require(Asset.find(flat.recordKey, in: ModelContext(context.container)))
+        #expect(kept.values["rent.iban"]?.textValue.map { FieldFormatter.normalize($0, as: .iban) } == iban)
+        #expect(FreeText.mask(kept, write: false).isEmpty)
     }
 
     // MARK: A backup brought in

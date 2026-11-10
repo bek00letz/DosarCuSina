@@ -67,8 +67,8 @@ enum LikelyDoubleCompletions {
             Completion(
                 id: $0.id,
                 occurredAt: $0.occurredAt,
-                cycle: $0.cycleDueDate.map { CalendarDay($0, calendar: calendar) },
-                next: $0.nextDueDate.map { CalendarDay($0, calendar: calendar) }
+                cycle: $0.cycleDueDay,
+                next: $0.nextDueDay
             )
         }
         guard history.count == 2, isLikely(latest: history[0], previous: history[1], calendar: calendar),

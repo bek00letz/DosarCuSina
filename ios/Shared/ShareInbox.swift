@@ -29,8 +29,10 @@ public struct InboxItem: Codable, Hashable, Sendable, Identifiable {
     public var payload: Payload
     /// File names inside the item's folder, in page order.
     public var files: [String]
-    /// The name the file had in the app it came from, for the list row.
-    public var originalName: String?
+    /// The name the file had in the app it came from, for the list row, with any card number
+    /// in it masked (`PaymentCardNumbers.redact`) as it is written, and again when an item an
+    /// earlier version wrote is read: the App Group never keeps one, even until the item is filed.
+    public private(set) var originalName: String?
     /// The sample invoice from the share practice, not a real document. Set when
     /// the item arrives, from the file's fingerprint (`expectPractice`), never its name.
     public var isPractice: Bool
@@ -41,7 +43,7 @@ public struct InboxItem: Codable, Hashable, Sendable, Identifiable {
         self.receivedAt = receivedAt
         self.payload = payload
         self.files = files
-        self.originalName = originalName
+        self.originalName = originalName.map { PaymentCardNumbers.redact($0) }
         self.isPractice = isPractice
     }
 
@@ -56,7 +58,7 @@ public struct InboxItem: Codable, Hashable, Sendable, Identifiable {
         receivedAt = try container.decode(Date.self, forKey: .receivedAt)
         payload = try container.decode(Payload.self, forKey: .payload)
         files = try container.decode([String].self, forKey: .files)
-        originalName = try container.decodeIfPresent(String.self, forKey: .originalName)
+        originalName = try container.decodeIfPresent(String.self, forKey: .originalName).map { PaymentCardNumbers.redact($0) }
         isPractice = try container.decodeIfPresent(Bool.self, forKey: .isPractice) ?? false
     }
 }
@@ -486,16 +488,7 @@ public struct ShareInbox: Sendable {
         #endif
     }
 
-    static var encoder: JSONEncoder {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        encoder.outputFormatting = [.sortedKeys]
-        return encoder
-    }
+    static var encoder: JSONEncoder { MachineText.jsonEncoder() }
 
-    static var decoder: JSONDecoder {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        return decoder
-    }
+    static var decoder: JSONDecoder { MachineText.jsonDecoder() }
 }

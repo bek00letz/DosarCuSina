@@ -44,7 +44,7 @@ public enum MeasurementKind: String, Codable, CaseIterable, Sendable {
     }
 }
 
-extension DosarSchemaV8 {
+extension DosarSchemaV11 {
     /// A line in a history entry: a part replaced, a job done, a vaccine given.
     /// `componentKey` ties it to the template's component catalog so "when did I
     /// last change the brake pads" has one answer across entries.
@@ -125,6 +125,12 @@ extension DosarSchemaV8 {
         /// When it last changed, set by the unit of work that saved the change (`ChangeTimes`).
         /// Records from before version 8 have `ChangeTime.unknown`, older than any change. Version 8.
         public var updatedAt: Date = Date.distantPast
+        /// The first reading of a new counter ("Contor nou": a replaced meter or dashboard, or
+        /// one that went round): from it on, the section's readings in its unit count on their
+        /// own, and the ones before stay as the old counter's history (`ReadingSeries`). Set
+        /// only by `HouseholdMutations.recordReading`, handed on when it goes
+        /// (`HouseholdMutations.deleteReading`). Version 10; false before.
+        public var startsCounter: Bool = false
 
         public var asset: Asset?
 
@@ -191,11 +197,14 @@ extension DosarSchemaV8 {
         public var sha256: String?
         /// Text read from the document (OCR or PDF text), used by search.
         public var extractedText: String?
-        /// The date printed on the document (issue or invoice date), noon of that day.
-        public var documentDate: Date?
+        /// The date printed on the document (issue or invoice date), as an ISO day (`StoredDay`);
+        /// read and write it through `documentDay`. Version 9; before, noon of the day in the
+        /// phone's time zone (`documentDate`).
+        public var documentDayISO: String?
         /// The last day the document itself is valid, as read when it was filed (a policy's
-        /// end), noon of that day. Its deadline moving on later never changes it.
-        public var validUntil: Date?
+        /// end), as an ISO day; read and write it through `validUntil`. Its deadline moving on
+        /// later never changes it. Version 9, as `documentDayISO`.
+        public var validUntilISO: String?
         /// Identifier of the source document in Capture's document store on this
         /// device. Local only: archives don't carry it.
         public var documentID: String?
@@ -243,6 +252,18 @@ extension DosarSchemaV8 {
         public var kind: DocumentKind {
             get { DocumentKind(rawValue: kindRaw) ?? .other }
             set { kindRaw = newValue.rawValue }
+        }
+
+        /// The day printed on the document (its issue or invoice date).
+        public var documentDay: CalendarDay? {
+            get { StoredDay.day(documentDayISO) }
+            set { documentDayISO = newValue.map(StoredDay.text) }
+        }
+
+        /// The last day the document itself is valid, as read when it was filed.
+        public var validUntil: CalendarDay? {
+            get { StoredDay.day(validUntilISO) }
+            set { validUntilISO = newValue.map(StoredDay.text) }
         }
 
         /// Page images in order.

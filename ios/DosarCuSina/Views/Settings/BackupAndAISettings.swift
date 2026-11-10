@@ -186,15 +186,16 @@ private struct BackupPasswordSheet: View {
                         Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(DSStatus.soon.color)
                     }
                     .dsFont(.footnote)
-                    VStack(spacing: DS.Space.s) {
-                        DSPrimaryButton("Fă copia cu parolă", systemImage: "lock.fill") { onExport(password) }
-                            .disabled(!rule.isReady)
-                        DSSecondaryButton("Fă copia fără parolă") { onExport(nil) }
-                    }
                 }
                 .padding(DS.Space.m)
             }
             .background(DS.Palette.background)
+            .dsPinnedAction {
+                DSPrimaryButton("Fă copia cu parolă", systemImage: "lock.fill") { onExport(password) }
+                    .disabled(!rule.isReady)
+            } secondary: {
+                DSSecondaryButton("Fă copia fără parolă") { onExport(nil) }
+            }
             .navigationTitle(Text("Copie de siguranță", comment: "Settings section."))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

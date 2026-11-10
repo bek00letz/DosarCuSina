@@ -5,17 +5,16 @@ import SwiftData
 /// name, a note, a section's values, its rows under Date importante, a document's text), as
 /// opposed to ids, keys, hashes, content types and pictures. The unit of work masks every card
 /// number in these as it saves (`FreeText`).
-struct FreeTextProperty<Model: PersistentModel> {
+struct FreeTextProperty<Model: HoldsFreeText> {
     let name: String
     /// Whether the property holds a card number; with `write`, it is masked too.
     let mask: (_ record: Model, _ write: Bool) -> Bool
 
-    /// Plain text, masked by the "anywhere" rule (`PaymentCardNumbers.redact`).
+    /// Plain text, masked by the "anywhere" rule (`PaymentCardNumbers.redact`); what the
+    /// record's section keeps whole stays (`HoldsFreeText.keptWhole`).
     static func text(_ name: String, _ keyPath: ReferenceWritableKeyPath<Model, String>) -> Self {
         Self(name: name) { record, write in
-            let text = record[keyPath: keyPath]
-            let masked = PaymentCardNumbers.redact(text)
-            guard masked != text else { return false }
+            guard let masked = Self.masked(record[keyPath: keyPath], in: record) else { return false }
             if write { record[keyPath: keyPath] = masked }
             return true
         }
@@ -23,9 +22,7 @@ struct FreeTextProperty<Model: PersistentModel> {
 
     static func text(_ name: String, _ keyPath: ReferenceWritableKeyPath<Model, String?>) -> Self {
         Self(name: name) { record, write in
-            guard let text = record[keyPath: keyPath] else { return false }
-            let masked = PaymentCardNumbers.redact(text)
-            guard masked != text else { return false }
+            guard let text = record[keyPath: keyPath], let masked = Self.masked(text, in: record) else { return false }
             if write { record[keyPath: keyPath] = masked }
             return true
         }
@@ -35,32 +32,44 @@ struct FreeTextProperty<Model: PersistentModel> {
     static func texts(_ name: String, _ keyPath: ReferenceWritableKeyPath<Model, [String]>) -> Self {
         Self(name: name) { record, write in
             let texts = record[keyPath: keyPath]
-            let masked = texts.map { PaymentCardNumbers.redact($0) }
+            let masked = texts.map { Self.masked($0, in: record) ?? $0 }
             guard masked != texts else { return false }
             if write { record[keyPath: keyPath] = masked }
             return true
         }
     }
 
+    /// The text with its card numbers masked, or nil when it holds none. What the record's section
+    /// keeps whole is read only when something would be masked.
+    private static func masked(_ text: String, in record: Model) -> String? {
+        guard PaymentCardNumbers.redact(text) != text else { return nil }
+        let masked = PaymentCardNumbers.redact(text, keeping: record.keptWhole)
+        return masked == text ? nil : masked
+    }
+
     /// A section's values, stored as JSON `FieldValues`, by the rule for fields
-    /// (`PaymentCardNumbers.sanitizing`): a bank card's last digits cut to four, sealed codes left alone.
-    static func values(_ name: String, _ keyPath: ReferenceWritableKeyPath<Model, Data?>) -> Self {
+    /// (`PaymentCardNumbers.sanitizing`): a bank card's last digits cut to four, sealed codes left
+    /// alone, a value its own field type tells apart from a card (an IBAN, a microchip) kept whole.
+    /// What a newer build wrote inside a value is masked too, and kept (`KeptObject`).
+    static func values(_ name: String, _ keyPath: ReferenceWritableKeyPath<Model, Data?>, fields: @escaping (Model) -> [FieldDefinition]) -> Self {
         Self(name: name) { record, write in
-            guard let values = StoredJSON.decode(FieldValues.self, from: record[keyPath: keyPath]) else { return false }
-            let masked = PaymentCardNumbers.sanitizing(values)
+            guard let values = KeptObject.stored(in: record[keyPath: keyPath], fallback: FieldValues()) else { return false }
+            let masked = PaymentCardNumbers.sanitizing(values, fields: { fields(record) })
             guard masked != values else { return false }
-            if write { record[keyPath: keyPath] = StoredJSON.encode(masked) }
+            if write { record[keyPath: keyPath] = KeptObject.data(masked) }
             return true
         }
     }
 
     /// Rows under Date importante, stored as JSON, with the rows a newer build wrote
-    /// (`PaymentCardNumbers.sanitizing` for rows): a secret row's sealed code is left alone.
+    /// (`PaymentCardNumbers.sanitizing` for rows): a secret row's sealed code is left alone, and
+    /// what the record's section keeps whole stays.
     static func facts(_ name: String, _ keyPath: ReferenceWritableKeyPath<Model, Data?>) -> Self {
         Self(name: name) { record, write in
             guard let data = record[keyPath: keyPath] else { return false }
             let facts = KeptList<CustomFact>.stored(in: data)
-            let masked = PaymentCardNumbers.sanitizing(facts)
+            guard PaymentCardNumbers.sanitizing(facts) != facts else { return false }
+            let masked = PaymentCardNumbers.sanitizing(facts, keeping: record.keptWhole)
             guard masked != facts else { return false }
             if write { record[keyPath: keyPath] = StoredJSON.encode(masked) }
             return true
@@ -89,6 +98,11 @@ protocol HoldsFreeText: UndoableRecord {
     /// Stored text and data that are never words: ids, keys, raw values of the app's own
     /// choices, hashes, content types, the app's own JSON (a rule, a framing) and pictures.
     static var machineText: Set<String> { get }
+    /// What its words keep whole: the digits its section's own typed values hold, such as a pet's
+    /// microchip (`PaymentCardNumbers.KeptWhole`), so a note, a visit or a document's text that
+    /// repeats the microchip keeps it as its field does. Nothing for a record of no section (a
+    /// firm, a category). Read only when something would be masked.
+    var keptWhole: PaymentCardNumbers.KeptWhole { get }
 }
 
 /// A bank card's full number is never kept in the binder, whoever wrote it and from wherever:
@@ -119,35 +133,56 @@ enum FreeText {
 
     /// Every type of the schema that keeps words.
     static var types: [any HoldsFreeText.Type] {
-        DosarSchemaV8.models.compactMap { $0 as? any HoldsFreeText.Type }
+        DosarSchemaV11.models.compactMap { $0 as? any HoldsFreeText.Type }
     }
 }
 
 // MARK: - The schema's words
 
-extension DosarSchemaV8.Asset: HoldsFreeText {
-    static var freeText: [FreeTextProperty<DosarSchemaV8.Asset>] {
-        [.text("name", \.name), .text("notes", \.notes), .values("valuesData", \.valuesData), .facts("customFactsData", \.customFactsData)]
+extension DosarSchemaV11.Asset: HoldsFreeText {
+    static var freeText: [FreeTextProperty<DosarSchemaV11.Asset>] {
+        [
+            .text("name", \.name), .text("notes", \.notes), .values("valuesData", \.valuesData, fields: \.categoryFields),
+            .facts("customFactsData", \.customFactsData),
+        ]
     }
     static var machineText: Set<String> { ["templateKey", "symbolOverride", "tintOverrideRaw", "photoData"] }
-}
 
-extension DosarSchemaV8.Obligation: HoldsFreeText {
-    static var freeText: [FreeTextProperty<DosarSchemaV8.Obligation>] {
-        [.text("title", \.title), .text("notes", \.notes), .text("provider", \.provider), .text("reference", \.reference)]
+    var keptWhole: PaymentCardNumbers.KeptWhole {
+        PaymentCardNumbers.KeptWhole(values, fields: categoryFields)
     }
-    static var machineText: Set<String> { ["blueprintKey", "kindRaw", "consequenceRaw", "recurrenceData", "estimatedCostCurrency", "statusRaw"] }
+
+    /// The fields its category defines, so a value its own type tells apart from a card number
+    /// stays whole (`PaymentCardNumbers.keepsWhole`). None when the category can't be found.
+    /// Read only when a value would be masked, and on any thread (a backup's own context).
+    fileprivate var categoryFields: [FieldDefinition] {
+        guard let context = modelContext, let template = (try? TemplateStore.templatesByKey(in: context))?[templateKey] else { return [] }
+        return template.definition.allFields
+    }
 }
 
-extension DosarSchemaV8.HistoryEntry: HoldsFreeText {
-    static var freeText: [FreeTextProperty<DosarSchemaV8.HistoryEntry>] {
+extension DosarSchemaV11.Obligation: HoldsFreeText {
+    static var freeText: [FreeTextProperty<DosarSchemaV11.Obligation>] {
+        // A recurrence is the app's own words, but what a newer build wrote inside it may not be.
+        [.text("title", \.title), .text("notes", \.notes), .text("provider", \.provider), .text("reference", \.reference),
+         .json("recurrenceData", \.recurrenceData)]
+    }
+    static var machineText: Set<String> { ["blueprintKey", "kindRaw", "dueDayISO", "consequenceRaw", "estimatedCostCurrency", "statusRaw", "snoozedUntilISO"] }
+    var keptWhole: PaymentCardNumbers.KeptWhole { asset?.keptWhole ?? .nothing }
+
+}
+
+extension DosarSchemaV11.HistoryEntry: HoldsFreeText {
+    static var freeText: [FreeTextProperty<DosarSchemaV11.HistoryEntry>] {
         [.text("title", \.title), .text("note", \.note), .text("reference", \.reference)]
     }
-    static var machineText: Set<String> { ["kindRaw", "totalCostCurrency", "previousStatusRaw"] }
+    static var machineText: Set<String> { ["kindRaw", "totalCostCurrency", "cycleDueDayISO", "nextDueDayISO", "previousStatusRaw"] }
+    var keptWhole: PaymentCardNumbers.KeptWhole { asset?.keptWhole ?? .nothing }
+
 }
 
-extension DosarSchemaV8.ServiceItem: HoldsFreeText {
-    static var freeText: [FreeTextProperty<DosarSchemaV8.ServiceItem>] {
+extension DosarSchemaV11.ServiceItem: HoldsFreeText {
+    static var freeText: [FreeTextProperty<DosarSchemaV11.ServiceItem>] {
         [
             .text("name", \.name), .text("group", \.group), .text("partBrandOrCode", \.partBrandOrCode),
             .text("partSerialNumber", \.partSerialNumber), .text("batchOrTicket", \.batchOrTicket),
@@ -155,31 +190,40 @@ extension DosarSchemaV8.ServiceItem: HoldsFreeText {
         ]
     }
     static var machineText: Set<String> { ["componentKey", "currency"] }
+    var keptWhole: PaymentCardNumbers.KeptWhole { entry?.asset?.keptWhole ?? .nothing }
+
 }
 
-extension DosarSchemaV8.MeasurementLog: HoldsFreeText {
-    static var freeText: [FreeTextProperty<DosarSchemaV8.MeasurementLog>] {
+extension DosarSchemaV11.MeasurementLog: HoldsFreeText {
+    static var freeText: [FreeTextProperty<DosarSchemaV11.MeasurementLog>] {
         [.text("name", \.name), .text("source", \.source), .text("notes", \.notes)]
     }
     static var machineText: Set<String> { ["kindRaw", "unit", "unitPriceCurrency"] }
+    var keptWhole: PaymentCardNumbers.KeptWhole { asset?.keptWhole ?? .nothing }
+
 }
 
-extension DosarSchemaV8.Attachment: HoldsFreeText {
-    static var freeText: [FreeTextProperty<DosarSchemaV8.Attachment>] {
-        [.text("title", \.title), .text("fileName", \.fileName), .text("extractedText", \.extractedText)]
+extension DosarSchemaV11.Attachment: HoldsFreeText {
+    static var freeText: [FreeTextProperty<DosarSchemaV11.Attachment>] {
+        // A framing is numbers, but what a newer build wrote inside it may not be.
+        [.text("title", \.title), .text("fileName", \.fileName), .text("extractedText", \.extractedText), .json("framingData", \.framingData)]
     }
     static var machineText: Set<String> {
-        ["kindRaw", "contentType", "fileData", "thumbnailData", "sha256", "documentID", "framingData"]
+        ["kindRaw", "contentType", "fileData", "thumbnailData", "sha256", "documentDayISO", "validUntilISO", "documentID"]
     }
+    var keptWhole: PaymentCardNumbers.KeptWhole { SearchIndexBuilder.section(of: self)?.keptWhole ?? .nothing }
+
 }
 
-extension DosarSchemaV8.AttachmentPage: HoldsFreeText {
-    static var freeText: [FreeTextProperty<DosarSchemaV8.AttachmentPage>] { [] }
+extension DosarSchemaV11.AttachmentPage: HoldsFreeText {
+    static var freeText: [FreeTextProperty<DosarSchemaV11.AttachmentPage>] { [] }
     static var machineText: Set<String> { ["imageData"] }
+    var keptWhole: PaymentCardNumbers.KeptWhole { .nothing }
+
 }
 
-extension DosarSchemaV8.Provider: HoldsFreeText {
-    static var freeText: [FreeTextProperty<DosarSchemaV8.Provider>] {
+extension DosarSchemaV11.Provider: HoldsFreeText {
+    static var freeText: [FreeTextProperty<DosarSchemaV11.Provider>] {
         [
             .text("name", \.name), .texts("trades", \.trades), .text("phone", \.phone), .text("email", \.email),
             .text("address", \.address), .text("notes", \.notes),
@@ -187,10 +231,12 @@ extension DosarSchemaV8.Provider: HoldsFreeText {
     }
     /// A tax ID is a CUI, digits only and at most ten of them (`ProviderTaxID`).
     static var machineText: Set<String> { ["contactIdentifier", "taxID"] }
+    var keptWhole: PaymentCardNumbers.KeptWhole { .nothing }
+
 }
 
-extension DosarSchemaV8.CategoryTemplate: HoldsFreeText {
-    static var freeText: [FreeTextProperty<DosarSchemaV8.CategoryTemplate>] {
+extension DosarSchemaV11.CategoryTemplate: HoldsFreeText {
+    static var freeText: [FreeTextProperty<DosarSchemaV11.CategoryTemplate>] {
         [
             .text("name", \.name), .text("summary", \.summary), .json("sectionsData", \.sectionsData),
             .json("blueprintsData", \.blueprintsData), .json("componentsData", \.componentsData),
@@ -198,4 +244,6 @@ extension DosarSchemaV8.CategoryTemplate: HoldsFreeText {
         ]
     }
     static var machineText: Set<String> { ["key", "symbol", "tintRaw", "heroStyleRaw", "pocketsRaw"] }
+    var keptWhole: PaymentCardNumbers.KeptWhole { .nothing }
+
 }

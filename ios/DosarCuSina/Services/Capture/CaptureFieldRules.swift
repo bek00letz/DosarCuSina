@@ -6,39 +6,11 @@ import Foundation
 /// carries a personal number, birth date or sex.
 extension CaptureDocumentKind {
 
-    /// Fields that identify a person. Only identity documents may carry them.
+    /// Fields that identify a person. Only personal documents may carry them.
     static let personalKeys: Set<CaptureFieldKey> = [.personalNumber, .birthDate, .sex, .nationality]
 
-    /// Fields printed on identity documents.
-    static let identityKeys: Set<CaptureFieldKey> = [
-        .documentNumber, .documentCode, .issuingCountry, .nationality, .surname, .givenNames, .holderName,
-        .birthDate, .sex, .personalNumber, .issueDate, .expiryDate, .issuer, .documentVariant,
-    ]
-
-    /// Whether a field may appear on this kind of document. Only kinds whose profile lists
-    /// what was done or bought carry lines: a policy, a utility bill or a report has no
-    /// "Ce s-a făcut", whatever a model reads into it.
-    func allows(_ key: CaptureFieldKey) -> Bool {
-        switch self {
-        case .passport, .identityCard:
-            return Self.identityKeys.contains(key)
-        case .drivingLicence:
-            return Self.identityKeys.contains(key) || key == .licenceCategories
-        case _ where isPersonalDocument:
-            // Another personal document carries what its templates read, its holder and its
-            // variant, and nothing else: a bank card has no CNP, a cazier no total.
-            return IdentityTemplates.fieldKeys(for: self).contains(key) || key == .holderName || key == .documentVariant
-        default:
-            if key == .lineItems { return profile.carriesLineItems }
-            // Who a policy insures, and their class, only on a policy.
-            if Self.policyholderKeys.contains(key) { return profile.readsCover }
-            // A document carries one number of its own: a policy's is its policy number, never
-            // a second "Serie și număr" beside it (`CompositeValue.reconcile` folds one in).
-            if key == .documentNumber { return profile.numberKey == .documentNumber }
-            if Self.subscriptionKeys.contains(key) { return profile.filing == .subscription }
-            return !Self.personalKeys.contains(key) && !Self.personalDocumentKeys.contains(key)
-        }
-    }
+    /// Whether a field may appear on this kind of document (`CaptureKindProfile.allows`).
+    func allows(_ key: CaptureFieldKey) -> Bool { profile.allows(key) }
 
     /// Fields only bills and contracts carry: where the service is supplied and whether
     /// the bank pays it. A policy or a receipt has neither, whatever a model reads into it.
@@ -67,17 +39,12 @@ extension CaptureDocumentKind {
 
     /// The fields a document of this kind usually carries, from its profile (identity
     /// documents' come from their templates in `IdentityTemplates`). Both language models
-    /// are asked for these (`ModelQuestions`).
+    /// are asked for these (`ModelQuestions`), and every one is kept (`allows`).
     var expectedKeys: [CaptureFieldKey] { profile.expectedKeys }
 
-    /// Fields that, found by the pattern tiers with good confidence, make the
-    /// on-device model unnecessary. Empty means the model always helps.
-    var essentialKeys: [CaptureFieldKey] {
-        switch self {
-        case .passport, .identityCard, .drivingLicence: [.surname, .documentNumber, .expiryDate]
-        default: []
-        }
-    }
+    /// Fields that, found by the pattern tiers with good confidence, make the on-device
+    /// model unnecessary: the profile's (`CaptureKindProfile.essentialKeys`).
+    var essentialKeys: [CaptureFieldKey] { profile.essentialKeys }
 
     /// Whether a reading of this kind has none of the fields it should carry: for an
     /// identity document, not one of its essentials, its personal number or birth date.
@@ -93,5 +60,38 @@ extension CaptureDocumentKind {
         let keys = essentialKeys
         guard !keys.isEmpty else { return false }
         return keys.allSatisfy { key in fields.contains { $0.key == key && $0.confidence >= minimumConfidence } }
+    }
+}
+
+extension CaptureKindProfile {
+    /// Whether a field may be kept on a document of this kind, decided from the profile
+    /// alone, so what a kind is asked and what it keeps can't disagree:
+    /// - every field it is asked for (`expectedKeys`) is kept;
+    /// - a personal document keeps only what its templates read, what its machine-readable
+    ///   zone gives when its templates have one, its holder and its variant: a bank card has
+    ///   no CNP, a cazier no total, an identity card no line items;
+    /// - any other kind keeps what belongs to no other family: never a person's own data
+    ///   or a personal document's; lines only when it lists what was done or bought; who a
+    ///   policy insures only on a policy; the supply address and direct debit only on a
+    ///   subscription's paper; and one number of its own (`numberKey`: a policy's is its
+    ///   policy number, never a second "Serie și număr" beside it).
+    func allows(_ key: CaptureFieldKey) -> Bool {
+        if expectedKeys.contains(key) { return true }
+        if documentType != nil { return personalDocumentFields.contains(key) }
+        if key == .lineItems { return carriesLineItems }
+        if CaptureDocumentKind.policyholderKeys.contains(key) { return readsCover }
+        if key == .documentNumber { return numberKey == .documentNumber }
+        if CaptureDocumentKind.subscriptionKeys.contains(key) { return filing == .subscription }
+        return !CaptureDocumentKind.personalKeys.contains(key) && !CaptureDocumentKind.personalDocumentKeys.contains(key)
+    }
+
+    /// What a personal document keeps besides what it is asked: what its templates read, its
+    /// machine-readable zone's values when its templates read one, its holder and variant.
+    private var personalDocumentFields: Set<CaptureFieldKey> {
+        var keys = IdentityTemplates.fieldKeys(for: kind).union([.holderName, .documentVariant])
+        if IdentityTemplates.all.contains(where: { $0.kind == kind && !$0.machineReadableFormats.isEmpty }) {
+            keys.formUnion(CaptureAnalyzer.machineReadableKeys)
+        }
+        return keys
     }
 }

@@ -78,7 +78,7 @@ struct ObligationListScreen: View {
     }
 
     var body: some View {
-        let obligations = (asset.obligations ?? []).filter { $0.status == .active || $0.status == .paused }.sorted { $0.dueDate < $1.dueDate }
+        let obligations = (asset.obligations ?? []).filter { $0.status == .active || $0.status == .paused }.sorted { $0.dueDay < $1.dueDay }
         let suggestions = unusedBlueprints
         List {
             Section {

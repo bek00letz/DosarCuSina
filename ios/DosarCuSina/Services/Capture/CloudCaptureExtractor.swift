@@ -139,9 +139,17 @@ public struct CloudCaptureExtractor: CaptureSemanticExtracting {
         CaptureLog.engine.info("Reading with \(config.provider.rawValue, privacy: .public), \(schema.fields.count) fields")
         // A capture closed by now sends nothing.
         try Task.checkCancellation()
-        let answer = try await client.read(CloudReadingRequest(instructions: schema.instructions, schema: schema.json, jpeg: jpeg), config: config)
-        let fields = ModelAnswerMapper.fields(from: answer, asked: schema.questions, recognizedText: input.text, today: input.today, resolver: resolver)
+        let answer = try await client.read(Self.request(schema, jpeg: jpeg), config: config)
+        let fields = ModelAnswerMapper.fields(from: answer, asked: schema.questions, recognizedText: input.recognizedText, today: input.today, resolver: resolver)
         return SemanticExtraction(kind: ModelAnswerMapper.kind(from: answer), fields: fields)
+    }
+
+    /// What the provider is sent: the questions and the page's picture, never the text the
+    /// phone read (the text checks the answers on the phone, `ModelAnswerMapper`). A page
+    /// that may be a bank card is never sent at all (`PhoneOnlyReading`). Text for a model, if
+    /// a request ever carries some, is `SemanticInput.text`, masked as Apple's model reads it.
+    static func request(_ schema: CloudSchema, jpeg: Data) -> CloudReadingRequest {
+        CloudReadingRequest(instructions: schema.instructions, schema: schema.json, jpeg: jpeg)
     }
 
     /// The page as a JPEG, no larger than `sentLongEdge`.

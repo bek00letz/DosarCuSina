@@ -265,7 +265,7 @@ struct SealedValueTests {
         let data = try household.service.exportData(exportedAt: noon("2026-11-02"))
         let package = try DossierArchiveReader.read(data)
         let card = try #require(package.assets.first { $0.id == DossierV3.id(household.card.id) })
-        #expect(card.values["document.number"] == nil)
+        #expect(card.values.value["document.number"] == nil)
 
         let index = try SearchIndexBuilder(context: household.context).build()
         #expect(index.search(String(sealed.dropFirst(SecretSealer.prefix.count).prefix(12))).isEmpty)
@@ -596,7 +596,7 @@ struct SearchPrivacyTests {
 
     @Test func aDocumentOfAVisitInALockedSectionIsLockedToo() throws {
         let household = try BackupHousehold()
-        let obligation = Obligation(title: "Reînnoire", kind: .routine, dueDay: CalendarDay(year: 2027, month: 1, day: 1), calendar: .bucharest)
+        let obligation = Obligation(title: "Reînnoire", kind: .routine, dueDay: CalendarDay(year: 2027, month: 1, day: 1))
         household.context.insert(obligation)
         obligation.asset = household.card
         let attachment = Attachment(fileName: "dovada.pdf", contentType: "application/pdf", data: Data([1]), kind: .other)

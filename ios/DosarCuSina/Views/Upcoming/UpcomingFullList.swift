@@ -59,7 +59,7 @@ struct UpcomingFullList: View {
     }
 
     private func isSnoozed(_ item: ObligationSnapshot) -> Bool {
-        item.snoozedUntil.map { $0 > Date() } ?? false
+        item.isSnoozed()
     }
 
     private func row(_ item: ObligationSnapshot, today: CalendarDay) -> some View {

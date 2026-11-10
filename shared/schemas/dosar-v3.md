@@ -248,7 +248,7 @@ leaves the asset at the top level.
 
 A reader skips a single value it can't read and keeps the rest of the asset.
 
-**A bank card's number is never written.** A bank card (`document.type` `documentType.bankCard`) carries `document.cardNetwork` and `document.cardLastFour`, which holds four digits and nothing more. Writers write no card number in any value or `extractedText`; readers mask any they find (a run of 14 to 19 digits that starts like a card number and passes the Luhn check, or is printed in groups of four) to its last four digits after `••••`, and cut `document.cardLastFour` to its last four digits. A cazier keeps what it says, as printed, in `document.recordResult`.
+**A bank card's number is never written.** A bank card (`document.type` `documentType.bankCard`) carries `document.cardNetwork` and `document.cardLastFour`, which holds four digits and nothing more. Writers write no card number in any value or `extractedText`; readers mask any they find (a run of 14 to 19 digits that starts like a card number and passes the Luhn check, or is printed in groups of four) to its last four digits after `••••`, and cut `document.cardLastFour` to its last four digits. A cazier keeps what it says, as printed, in `document.recordResult`. A green card (`documentType.greenCard`) keeps the plate of the car it covers in `document.vehiclePlate`, as text ("B 123 ABC").
 
 **Choice values are option keys**, such as `fuel.diesel`, `vehicleUse.personal`, `documentType.passport` or `species.dog`, never display text. Single choices are `text` values and multiple choices are `choices` values. Labels come from the field's options, so they follow the reader's language.
 
@@ -326,9 +326,10 @@ diacritics, and words joined by `-`.
 (`electricity|gas|coldWater|hotWater|thermalEnergy|biomarker|bloodPressure|bodyWeight|diopters|odometer|engineHours|cycles|custom`),
 `name`, `value`, `secondaryValue`?, `unit`, `recordedAt`, `unitPrice`?,
 `isSelfRead`, `referenceMin`?, `referenceMax`?, `source`?, `notes`?,
-`isExample`, `updatedAt`?.
+`isExample`, `updatedAt`?, `startsCounter`?.
 
 - **`unit`:** a unit key (see Units above), or `""` when the reading has none. Readings in the same unit form one series: a counter's readings are matched to its field and its metric deadlines by this key.
+- **`startsCounter`:** `true` on the first reading of a new counter ("Contor nou": a replaced meter or dashboard, or one that went round past its last digit). Ordered by `recordedAt`, the readings in its unit on its asset from it on are the new counter's, and the ones before stay as the old counter's history: a rate or a distance is counted on each counter on its own, and a lower reading is only ever compared with its own counter's. Written only when `true`; missing (every archive written before it existed) is `false`, so those readings are one counter, as they were.
 
 ### Attachment (`data/attachments.json`)
 
@@ -389,8 +390,9 @@ new one for the same thing.
 - **Template sections, blueprints, components and custom facts:** each entry is read on its own. An entry the reader can't read is kept in its place and written back; one it can read with the same `key` (an `id` for a custom fact) replaces it. A secret custom fact (`"isSecret": true`, or any sealed text) is left out by writers and readers, read or not.
 - **Fields:** an unknown `type`, `role`, `defaultValue`, `derivation` or `appliesWhen` is kept as written; the field reads as `text`, without the part it can't read.
 - **Kinds** (`kind` of an obligation, a history entry, a measurement or an attachment), an obligation's `status`, and a custom template's `tint`, `heroStyle` and `pockets` are kept as written. An unknown status behaves as `active` (it still reminds).
+- **Inside the objects a record carries** (an asset's `values` and `customFacts`, a template's `sections` with their fields and options, `blueprints` with their `reminders`, `reminderVariants`, `firstDue` and `facts`, `components` and `behavior`, an obligation's `recurrence`, an attachment's `framing`): a key the reader doesn't know, at any depth, and a value it reads as something else (an unknown `consequence` read as `legal`, a `firstDue` interval in an unknown `unit` read as `ask`) are kept as written while the person leaves that part as it is. An object whose `type` changes keeps nothing of the old one; an entry of a list is known by its `key` or `id`.
 
-Keys a reader doesn't know inside a record it reads are ignored.
+Keys a reader doesn't know at the top of a record (beside `id`, `title`, …) are ignored.
 
 ## Password-protected archives
 

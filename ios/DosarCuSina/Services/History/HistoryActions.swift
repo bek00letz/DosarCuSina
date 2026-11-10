@@ -58,7 +58,8 @@ public struct LineItemDraft {
 @MainActor
 public final class HistoryActions {
     public let context: ModelContext
-    private let now: () -> Date
+    /// The clock its steps give their change times by (`UnitOfWork`).
+    let now: () -> Date
 
     public init(context: ModelContext, now: @escaping () -> Date = { Date() }) {
         self.context = context
@@ -97,7 +98,7 @@ public final class HistoryActions {
         let earlier = Self.replaceable(earlier)
         let reading = plannedReading(metricReading, on: asset, at: date, replacing: earlier)
         try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
-        return try UnitOfWork.perform(in: context) {
+        return try UnitOfWork.perform(in: context, now: now()) {
             let entry = entryToWrite(replacing: earlier, kind: kind, title: title, on: date, in: asset)
             entry.metricReading = metricReading
             entry.totalCost = totalCost
@@ -202,7 +203,7 @@ public final class HistoryActions {
         let earlier = Self.replaceable(earlier)
         let reading = plannedReading(odometer, on: asset, at: date, source: odometerSource, replacing: earlier)
         try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
-        return try UnitOfWork.performUndoable(in: context) {
+        return try UnitOfWork.performUndoable(in: context, now: now()) {
             let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
             let catalog = template?.components ?? []
             let ticked = checklist.map { item in
@@ -261,14 +262,13 @@ public final class HistoryActions {
     /// older record; the step just taken is undone with its receipt.
     public func delete(_ entry: HistoryEntry) throws {
         let effect = HistoryDeletion(of: entry)
-        try UnitOfWork.perform(in: context) {
+        try UnitOfWork.perform(in: context, now: now()) {
             if let reopened = effect.reopensCycle, let obligation = entry.obligation {
-                obligation.dueDate = reopened
+                obligation.dueDay = reopened
                 obligation.dueMetric = entry.previousDueMetric
                 if obligation.status == .done {
                     obligation.status = entry.previousStatusRaw.flatMap(ObligationStatus.init(rawValue:)) ?? .active
                 }
-                obligation.updatedAt = now()
             }
             if effect.removedReading != nil { HouseholdMutations.removeReading(recordedBy: entry, in: context) }
             for attachment in entry.attachments ?? [] { attachment.historyEntry = nil }
@@ -278,7 +278,7 @@ public final class HistoryActions {
     }
 
     private func save() throws {
-        try UnitOfWork.save(context)
+        try UnitOfWork.save(context, now: now())
     }
 }
 

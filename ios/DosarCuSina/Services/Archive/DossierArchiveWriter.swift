@@ -195,7 +195,7 @@ struct DossierArchiveWriter: Sendable {
             isSensitive: template.isSensitive, sections: template.keptSections, blueprints: template.keptBlueprints,
             // As stored: a pocket from a newer build goes out as it came in.
             components: template.keptComponents, pockets: template.pocketsRaw,
-            createdAt: template.createdAt, updatedAt: template.updatedAt, behavior: template.behavior == .standard ? nil : template.behavior
+            createdAt: template.createdAt, updatedAt: template.updatedAt, behavior: template.keptBehavior?.omitted { $0 == .standard }
         )
     }
 
@@ -204,7 +204,7 @@ struct DossierArchiveWriter: Sendable {
         DossierV3.Asset(
             id: DossierV3.id(asset.id), templateKey: asset.templateKey, name: asset.name,
             parentId: DossierV3.id(asset.parent?.id), symbolOverride: asset.symbolOverride, tintOverride: asset.tintOverrideRaw, notes: asset.notes,
-            values: SecretFields.stripping(asset.values, definition: definitions[asset.templateKey] ?? BuiltInTemplates.definition(for: asset.templateKey)),
+            values: SecretFields.stripping(asset.keptValues, definition: definitions[asset.templateKey] ?? BuiltInTemplates.definition(for: asset.templateKey)),
             customFacts: SecretFields.strippingFacts(asset.keptFacts).nilIfEmpty,
             photoPath: photoPath, isExample: asset.isExample,
             createdAt: asset.createdAt, updatedAt: asset.updatedAt
@@ -215,10 +215,10 @@ struct DossierArchiveWriter: Sendable {
         DossierV3.Obligation(
             id: DossierV3.id(obligation.id), assetId: DossierV3.id(obligation.asset?.id), title: obligation.title,
             notes: obligation.notes, blueprintKey: obligation.blueprintKey, kind: obligation.kindRaw,
-            dueDate: obligation.dueDay(in: calendar), dueMetric: obligation.dueMetric,
+            dueDate: obligation.dueDay, dueMetric: obligation.dueMetric,
             reminders: obligation.reminders, reminderMinuteOfDay: obligation.reminderMinuteOfDay,
-            recurrence: obligation.recurrence, estimatedCost: obligation.estimatedCost, provider: obligation.provider,
-            reference: obligation.reference, status: obligation.statusRaw, snoozedUntil: obligation.snoozedUntil,
+            recurrence: obligation.keptRecurrence, estimatedCost: obligation.estimatedCost, provider: obligation.provider,
+            reference: obligation.reference, status: obligation.statusRaw, snoozedUntil: obligation.snoozeEnds(in: calendar),
             isExample: obligation.isExample, createdAt: obligation.createdAt, updatedAt: obligation.updatedAt,
             remindersCustomized: obligation.remindersCustomized ? true : nil
         )
@@ -229,8 +229,8 @@ struct DossierArchiveWriter: Sendable {
             id: DossierV3.id(entry.id), assetId: DossierV3.id(entry.asset?.id), obligationId: DossierV3.id(entry.obligation?.id),
             kind: entry.kindRaw, title: entry.title, occurredAt: entry.occurredAt, metricReading: entry.metricReading,
             totalCost: entry.totalCost, note: entry.note, rating: entry.rating,
-            cycleDueDate: entry.cycleDueDate.map { CalendarDay($0, calendar: calendar) },
-            nextDueDate: entry.nextDueDate.map { CalendarDay($0, calendar: calendar) },
+            cycleDueDate: entry.cycleDueDay,
+            nextDueDate: entry.nextDueDay,
             previousStatus: entry.previousStatusRaw, previousDueMetric: entry.previousDueMetric,
             providerIds: entry.providerIds.map(DossierV3.id).sorted(), isExample: entry.isExample,
             reference: entry.reference, updatedAt: DossierV3.changeTime(entry.updatedAt)
@@ -265,7 +265,7 @@ struct DossierArchiveWriter: Sendable {
             value: log.value, secondaryValue: log.secondaryValue, unit: MeasurementUnit.storedKey(for: log.unit), recordedAt: log.recordedAt,
             unitPrice: log.unitPrice, isSelfRead: log.isSelfRead, referenceMin: log.referenceMin,
             referenceMax: log.referenceMax, source: log.source, notes: log.notes, isExample: log.isExample,
-            updatedAt: DossierV3.changeTime(log.updatedAt)
+            updatedAt: DossierV3.changeTime(log.updatedAt), startsCounter: log.startsCounter ? true : nil
         )
     }
 
@@ -274,13 +274,13 @@ struct DossierArchiveWriter: Sendable {
             id: DossierV3.id(attachment.id), title: attachment.title, fileName: attachment.fileName, kind: attachment.kindRaw,
             contentType: attachment.contentType, byteCount: attachment.byteCount, sha256: attachment.sha256,
             path: path, pagePaths: pagePaths, thumbnailPath: thumbnailPath, extractedText: attachment.extractedText,
-            documentDate: attachment.documentDate.map { CalendarDay($0, calendar: calendar) }, isArchived: attachment.isArchived,
+            documentDate: attachment.documentDay, isArchived: attachment.isArchived,
             supersededById: DossierV3.id(attachment.supersededBy?.id), createdAt: attachment.createdAt,
             isExample: attachment.isExample, assetId: DossierV3.id(attachment.asset?.id),
             obligationId: DossierV3.id(attachment.obligation?.id), historyEntryId: DossierV3.id(attachment.historyEntry?.id),
             serviceItemId: DossierV3.id(attachment.serviceItem?.id), measurementId: DossierV3.id(attachment.measurement?.id),
-            providerId: DossierV3.id(attachment.provider?.id), validUntil: attachment.validUntil.map { CalendarDay($0, calendar: calendar) },
-            framing: attachment.framing.isPlain ? nil : attachment.framing,
+            providerId: DossierV3.id(attachment.provider?.id), validUntil: attachment.validUntil,
+            framing: attachment.keptFraming?.omitted(when: \.isPlain),
             updatedAt: DossierV3.changeTime(attachment.updatedAt)
         )
     }

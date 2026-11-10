@@ -174,6 +174,14 @@ public struct PostalAddress: Hashable, Sendable {
         return table
     }()
 
+    /// Whether a word starts or marks a part of an address ("Str.", "nr.", "bl.", "jud.",
+    /// "sector"), in any case and with or without its dot: where a name printed before its
+    /// address ends.
+    static func isMarker(_ word: String) -> Bool {
+        let folded = RomanianText.fold(word).filter { $0.isLetter }
+        return !folded.isEmpty && markers[folded] != nil
+    }
+
     /// The capital, named without a marker.
     private static let capital = "bucuresti"
     /// Words that say nothing about the place: the country.

@@ -37,7 +37,7 @@ struct ObligationRow: View {
     var body: some View {
         DSListRow(
             title: Text(verbatim: obligation.title),
-            subtitle: Text(verbatim: DosarFormat.day(obligation.dueDay())),
+            subtitle: Text(verbatim: DosarFormat.day(obligation.dueDay)),
             showsChevron: true
         ) {
             DSStatusBadge(urgency: obligation.urgency(), daysRemaining: obligation.daysRemaining())
@@ -328,8 +328,8 @@ extension Attachment {
     /// The last day the paper itself is valid: as read when it was filed. A paper filed
     /// before that was kept (version 3) falls back to its deadline's day.
     var validUntilDay: CalendarDay? {
-        if let validUntil { return CalendarDay(validUntil) }
-        return obligation?.dueDay()
+        if let validUntil { return validUntil }
+        return obligation?.dueDay
     }
 
     /// "Valabil până la …" for a paper that is valid until a day (a policy, as read when
@@ -338,8 +338,8 @@ extension Attachment {
         if let day = validUntilDay {
             return String(localized: "Valabil până la \(DosarFormat.day(day))", comment: "Document row: valid until.")
         }
-        if let documentDate {
-            return String(localized: "Din \(DosarFormat.day(documentDate))", comment: "Document row: the date on the document.")
+        if let documentDay {
+            return String(localized: "Din \(DosarFormat.day(documentDay))", comment: "Document row: the date on the document.")
         }
         return nil
     }
@@ -436,9 +436,11 @@ struct HistoryLines {
         let items = HistoryItemSnapshot.items(of: asset)
         let current = HouseholdMutations.currentMetric(of: asset)
         let unit = HouseholdMutations.heroMetricUnit(template: definition)
+        // "Acum … km" since the job, counted over every counter (a new dashboard since too).
+        let readings = unit.map { HouseholdMutations.readingSeries(of: asset, unit: $0).readings } ?? []
         let names = Dictionary(definition.components.map { ($0.key, $0.name) }, uniquingKeysWith: { first, _ in first })
         let components = MaintenanceLog.trackedComponents(in: items).compactMap { key -> Line? in
-            guard let last = MaintenanceLog.lastOccurrence(of: key, in: items, currentMetric: current, now: now) else { return nil }
+            guard let last = MaintenanceLog.lastOccurrence(of: key, in: items, currentMetric: current, readings: readings, now: now) else { return nil }
             return Line(id: key, entryID: last.entryId, title: names[key] ?? last.name, detail: ComponentLine.detail(last, unit: unit))
         }
         if !components.isEmpty { return components }

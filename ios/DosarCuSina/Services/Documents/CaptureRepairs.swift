@@ -40,7 +40,7 @@ public struct CaptureRepairs {
     /// The document stays where it is now, with its pages and everything read from it.
     public func dropStaleDocumentLinks(_ approved: [StaleDocumentLinks]) throws {
         let ids = Set(approved.map(\.attachmentID))
-        try UnitOfWork.perform(in: context) {
+        try UnitOfWork.perform(in: context, origin: .app) {
             for attachment in try context.fetch(FetchDescriptor<Attachment>()) where ids.contains(attachment.id) {
                 let home = attachment.asset?.id
                 if let obligation = attachment.obligation, obligation.asset?.id != home { attachment.obligation = nil }
@@ -75,7 +75,7 @@ public struct CaptureRepairs {
             let weekBefore = visitDay.adding(days: -7, calendar: calendar)
             let loose = (asset.attachments ?? []).filter { invoice in
                 guard invoice.kind == .invoice, invoice.historyEntry == nil, !used.contains(invoice.id) else { return false }
-                let filed = CalendarDay(invoice.documentDate ?? invoice.createdAt, calendar: calendar)
+                let filed = invoice.documentDay ?? CalendarDay(invoice.createdAt, calendar: calendar)
                 return filed >= weekBefore && filed <= visitDay
             }
             guard loose.count == 1, let invoice = loose.first else { continue }
@@ -88,7 +88,7 @@ public struct CaptureRepairs {
     /// Links each approved invoice to its visit, in one save. An invoice already linked
     /// to an entry is left alone.
     public func linkInvoices(_ approved: [VisitWithoutInvoice]) throws {
-        try UnitOfWork.perform(in: context) {
+        try UnitOfWork.perform(in: context, origin: .app) {
             let entries = Dictionary(try context.fetch(FetchDescriptor<HistoryEntry>()).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
             let documents = Dictionary(try context.fetch(FetchDescriptor<Attachment>()).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
             for pair in approved {
@@ -146,7 +146,7 @@ public struct CaptureRepairs {
     /// jobs, parts and documents move over, its trades join, details it lacks are filled
     /// in, and the copies go. A group already merged changes nothing.
     public func mergeDuplicateProviders(_ approved: [DuplicateProviders]) throws {
-        try UnitOfWork.perform(in: context) {
+        try UnitOfWork.perform(in: context, origin: .app) {
             let providers = Dictionary(try context.fetch(FetchDescriptor<Provider>()).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
             for group in approved {
                 guard let kept = providers[group.keptID] else { continue }
@@ -171,7 +171,6 @@ public struct CaptureRepairs {
                     kept.wouldCallAgain = kept.wouldCallAgain ?? copy.wouldCallAgain
                     kept.contactIdentifier = kept.contactIdentifier ?? copy.contactIdentifier
                     kept.taxID = kept.taxID ?? copy.taxID
-                    kept.updatedAt = Date()
                     context.delete(copy)
                 }
             }

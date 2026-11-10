@@ -51,7 +51,7 @@ struct ArchiveTests {
         #expect(car.value("vehicle.plate") == .text("B-123-ABC"))
         let itp = try #require(car.obligations?.first { $0.title == "ITP" })
         #expect(itp.recurrence == .legal(.vehicleITP))
-        #expect(itp.dueDay(in: calendar) == CalendarDay("2028-03-01"))
+        #expect(itp.dueDay == CalendarDay("2028-03-01"))
         #expect(itp.history.first?.totalCost == Money(Decimal(string: "175.5")!))
         #expect(itp.history.first?.attachments?.first?.fileData.map { String(decoding: $0, as: UTF8.self) }?.hasPrefix("Inspecție") == true)
         #expect(car.timeline.count == 2, "Completions and repairs share one history")
@@ -123,7 +123,7 @@ struct ArchiveTests {
 
         func signature(_ context: ModelContext) throws -> [String] {
             try context.fetch(FetchDescriptor<Obligation>()).map {
-                "\($0.id)|\($0.title)|\($0.dueDay(in: calendar))|\($0.statusRaw)|\(String(describing: $0.recurrence))|\(String(describing: $0.estimatedCost))|\($0.asset?.id.uuidString ?? "-")"
+                "\($0.id)|\($0.title)|\($0.dueDay)|\($0.statusRaw)|\(String(describing: $0.recurrence))|\(String(describing: $0.estimatedCost))|\($0.asset?.id.uuidString ?? "-")"
             }.sorted()
         }
         #expect(try signature(copy) == signature(context))
@@ -196,7 +196,7 @@ struct ArchiveTests {
         #expect(result == expected)
         let names = { (container: ModelContainer) in Set(try ModelContext(container).fetch(FetchDescriptor<Asset>()).map(\.name)) }
         #expect(try names(away) == names(here))
-        #expect(try ModelContext(away).fetchCount(FetchDescriptor<DosarSchemaV8.Attachment>()) == ModelContext(here).fetchCount(FetchDescriptor<DosarSchemaV8.Attachment>()))
+        #expect(try ModelContext(away).fetchCount(FetchDescriptor<DosarSchemaV11.Attachment>()) == ModelContext(here).fetchCount(FetchDescriptor<DosarSchemaV11.Attachment>()))
 
         // A failure part way leaves nothing behind.
         var broken = package
@@ -216,8 +216,8 @@ struct ArchiveTests {
         let context = ModelContext(container)
         let firm = try #require(try context.fetch(FetchDescriptor<Provider>()).first { $0.name == "Service auto exemplu" })
         #expect(firm.taxID == "12345678")
-        let policies = try context.fetch(FetchDescriptor<DosarSchemaV8.Attachment>()).filter { $0.title == "Poliță RCA 2025" }
-        #expect(policies.first?.validUntil.map { CalendarDay($0, calendar: calendar) } == CalendarDay("2026-12-14"),
+        let policies = try context.fetch(FetchDescriptor<DosarSchemaV11.Attachment>()).filter { $0.title == "Poliță RCA 2025" }
+        #expect(policies.first?.validUntil == CalendarDay("2026-12-14"),
                 "Last year's policy keeps last year's end, whatever its deadline says now")
 
         // A category of the person's own that behaves like Garanții keeps doing so.

@@ -39,16 +39,16 @@ public struct SearchIndexBuilder {
             result[asset.persistentModelID] = assetDocuments(asset, templates: templates)
         }
         for obligation in try context.fetch(FetchDescriptor<Obligation>()) {
-            result[obligation.persistentModelID] = [Self.redacted(obligationDocument(obligation, templates: templates))]
+            result[obligation.persistentModelID] = obligationDocuments(obligation, templates: templates)
         }
         for entry in try context.fetch(FetchDescriptor<HistoryEntry>()) {
-            result[entry.persistentModelID] = [Self.redacted(historyDocument(entry, templates: templates))]
+            result[entry.persistentModelID] = historyDocuments(entry, templates: templates)
         }
         for provider in try context.fetch(FetchDescriptor<Provider>()) {
-            result[provider.persistentModelID] = [Self.redacted(providerDocument(provider))]
+            result[provider.persistentModelID] = [Self.redacted(providerDocument(provider), keeping: .nothing)]
         }
         for attachment in try context.fetch(FetchDescriptor<Attachment>()) {
-            result[attachment.persistentModelID] = [Self.redacted(attachmentDocument(attachment, templates: templates))]
+            result[attachment.persistentModelID] = attachmentDocuments(attachment, templates: templates)
         }
         return result
     }
@@ -61,13 +61,13 @@ public struct SearchIndexBuilder {
         case Self.entity(Asset.self):
             return try fetch(Asset.self, id).map { assetDocuments($0, templates: templates) } ?? []
         case Self.entity(Obligation.self):
-            return try fetch(Obligation.self, id).map { [Self.redacted(obligationDocument($0, templates: templates))] } ?? []
+            return try fetch(Obligation.self, id).map { obligationDocuments($0, templates: templates) } ?? []
         case Self.entity(HistoryEntry.self):
-            return try fetch(HistoryEntry.self, id).map { [Self.redacted(historyDocument($0, templates: templates))] } ?? []
+            return try fetch(HistoryEntry.self, id).map { historyDocuments($0, templates: templates) } ?? []
         case Self.entity(Provider.self):
-            return try fetch(Provider.self, id).map { [Self.redacted(providerDocument($0))] } ?? []
+            return try fetch(Provider.self, id).map { [Self.redacted(providerDocument($0), keeping: .nothing)] } ?? []
         case Self.entity(Attachment.self):
-            return try fetch(Attachment.self, id).map { [Self.redacted(attachmentDocument($0, templates: templates))] } ?? []
+            return try fetch(Attachment.self, id).map { attachmentDocuments($0, templates: templates) } ?? []
         default:
             return []
         }
@@ -141,13 +141,33 @@ public struct SearchIndexBuilder {
 
     private func assetDocuments(_ asset: Asset, templates: [String: CategoryTemplate]) -> [SearchDocument] {
         let template = templates[asset.templateKey]
-        return ([assetDocument(asset, template: template)] + componentDocuments(asset, template: template)).map(Self.redacted)
+        let kept = PaymentCardNumbers.KeptWhole(section: asset, template: template)
+        return ([assetDocument(asset, template: template)] + componentDocuments(asset, template: template)).map { Self.redacted($0, keeping: kept) }
     }
 
-    /// The document with every CNP-shaped number and sealed value taken out of what can be matched.
-    static func redacted(_ document: SearchDocument) -> SearchDocument {
+    private func obligationDocuments(_ obligation: Obligation, templates: [String: CategoryTemplate]) -> [SearchDocument] {
+        [Self.redacted(obligationDocument(obligation, templates: templates), keeping: Self.keptWhole(by: obligation.asset, templates))]
+    }
+
+    private func historyDocuments(_ entry: HistoryEntry, templates: [String: CategoryTemplate]) -> [SearchDocument] {
+        [Self.redacted(historyDocument(entry, templates: templates), keeping: Self.keptWhole(by: entry.asset, templates))]
+    }
+
+    private func attachmentDocuments(_ attachment: Attachment, templates: [String: CategoryTemplate]) -> [SearchDocument] {
+        [Self.redacted(attachmentDocument(attachment, templates: templates), keeping: Self.keptWhole(by: Self.section(of: attachment), templates))]
+    }
+
+    /// What a section keeps whole in its own words and its records' (a pet's microchip in its
+    /// field), so the index holds it as the binder stores it (`PaymentCardNumbers.KeptWhole`).
+    static func keptWhole(by section: Asset?, _ templates: [String: CategoryTemplate]) -> PaymentCardNumbers.KeptWhole {
+        PaymentCardNumbers.KeptWhole(section: section, template: section.flatMap { templates[$0.templateKey] })
+    }
+
+    /// The document with every CNP-shaped number, card number and sealed value taken out of
+    /// what can be matched; what its section keeps whole (`kept`) stays, as it is stored.
+    static func redacted(_ document: SearchDocument, keeping kept: PaymentCardNumbers.KeptWhole) -> SearchDocument {
         var result = document
-        result.fields = document.fields.map { SearchField(SearchPrivacy.redacting($0.text), weight: $0.weight) }
+        result.fields = document.fields.map { SearchField(SearchPrivacy.redacting($0.text, keeping: kept), weight: $0.weight) }
         return result
     }
 
@@ -216,7 +236,7 @@ public struct SearchIndexBuilder {
     }
 
     private func obligationDocument(_ obligation: Obligation, templates: [String: CategoryTemplate]) -> SearchDocument {
-        let due = DosarFormat.day(obligation.dueDay(), locale: locale)
+        let due = DosarFormat.day(obligation.dueDay, locale: locale)
         return SearchDocument(
             id: id(.obligation, obligation.id), kind: .obligation, title: obligation.title,
             subtitle: [obligation.asset?.name, due].compactMap { $0 }.joined(separator: " · "),
@@ -228,7 +248,7 @@ public struct SearchIndexBuilder {
                 SearchField(obligation.asset?.name, weight: SearchField.Weight.label),
                 SearchField(obligation.notes, weight: SearchField.Weight.note),
             ],
-            date: obligation.dueDate, isSensitive: isSensitive(obligation.asset, templates)
+            date: obligation.dueDay.noonDate(), isSensitive: isSensitive(obligation.asset, templates)
         )
     }
 
@@ -296,7 +316,7 @@ public struct SearchIndexBuilder {
                 SearchField(section?.name, weight: SearchField.Weight.label),
                 SearchField(readText, weight: SearchField.Weight.extracted),
             ],
-            date: attachment.documentDate ?? attachment.createdAt,
+            date: attachment.documentDay?.noonDate() ?? attachment.createdAt,
             isSensitive: isLocked
         )
     }

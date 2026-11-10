@@ -104,7 +104,7 @@ struct PersonalDocumentTests {
         #expect(document.value(DocumentFields.issueDate) == .date(CalendarDay("2026-10-15")))
         #expect(document.value(DocumentFields.expiry) == .date(CalendarDay("2027-04-15")), "The category's own rule, as a photo and Editează")
         let deadline = try #require(document.activeObligations.first)
-        #expect(deadline.dueDay(in: .bucharest) == CalendarDay("2027-04-15"))
+        #expect(deadline.dueDay == CalendarDay("2027-04-15"))
         #expect(deadline.reminders.leadDays == [7, 0])
         #expect(deadline.reminders.consequence == .comfort, "Doar să nu uit")
     }

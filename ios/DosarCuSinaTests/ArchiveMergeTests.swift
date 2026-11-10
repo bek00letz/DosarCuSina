@@ -72,7 +72,7 @@ struct ArchiveMergeTests {
                                      recurrence: .metric(every: 100, unit: .engineHours, fallback: .years(1)),
                                      reminders: ReminderProfile(leadDays: [60, 14, 0], consequence: .financial, graceDays: 5,
                                                                 followUpAfterLapse: true, travelMarginDays: 30),
-                                     estimatedCost: Money(Decimal(350), currency: "EUR"), calendar: calendar)
+                                     estimatedCost: Money(Decimal(350), currency: "EUR"))
             service.notes = "Cu filtrul de combustibil."
             service.blueprintKey = "boat.engine"
             service.dueMetric = 300
@@ -81,7 +81,7 @@ struct ArchiveMergeTests {
             service.provider = "Service nautic exemplu"
             service.reference = "POL-000002"
             service.statusRaw = ObligationStatus.paused.rawValue
-            service.snoozedUntil = noon("2025-08-20")
+            service.snoozedUntil = CalendarDay("2025-08-20")
             service.isExample = true
             context.insert(service)
             service.asset = boat
@@ -105,8 +105,8 @@ struct ArchiveMergeTests {
             repair.note = "Garanție un an."
             repair.reference = "EXM 0000001"
             repair.rating = 4
-            repair.cycleDueDate = noon("2025-05-01", calendar: calendar)
-            repair.nextDueDate = noon("2025-09-01", calendar: calendar)
+            repair.cycleDueDay = CalendarDay("2025-05-01")
+            repair.nextDueDay = CalendarDay("2025-09-01")
             repair.previousStatusRaw = ObligationStatus.active.rawValue
             repair.previousDueMetric = 200
             repair.isExample = true
@@ -143,6 +143,7 @@ struct ArchiveMergeTests {
             hours.source = "Ceasul de bord"
             hours.notes = "Citit la ponton."
             hours.isExample = true
+            hours.startsCounter = true
             context.insert(hours)
             hours.asset = boat
 
@@ -155,8 +156,8 @@ struct ArchiveMergeTests {
             invoice.thumbnailData = Data([9, 9])
             invoice.byteCount = 42
             invoice.extractedText = "Factura nr. EXM 0000001, total 560,50 EUR"
-            invoice.documentDate = noon("2025-05-20", calendar: calendar)
-            invoice.validUntil = noon("2026-05-20", calendar: calendar)
+            invoice.documentDay = CalendarDay("2025-05-20")
+            invoice.validUntil = CalendarDay("2026-05-20")
             invoice.framing = DocumentFraming(pages: [PageFraming(quarterTurns: 1), PageFraming(prefersWholePhoto: true)])
             invoice.createdAt = noon("2025-05-21")
             invoice.isExample = true
@@ -299,7 +300,7 @@ struct ArchiveMergeTests {
         let withoutTime = try #require(entries.first { $0.title == "Frâne față" })
         #expect(withoutTime.updatedAt == ChangeTime.unknown, "An entry the archive carries no time for has none")
         let withTime = try #require(entries.first { $0.title == "ITP" })
-        #expect(withTime.updatedAt == DossierV3.parseTimestamp("2026-03-01T07:45:00Z"))
+        #expect(withTime.updatedAt == MachineText.moment("2026-03-01T07:45:00Z"))
 
         withoutTime.note = "Plăcuțe originale."
         withTime.note = "Corectat."

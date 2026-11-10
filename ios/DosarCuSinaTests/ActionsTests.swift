@@ -29,10 +29,10 @@ struct ActionsTests {
         let entry = try actions.complete(rca, cost: Money(1_200)).value
 
         #expect(rca.status == .active)
-        #expect(rca.dueDay(in: calendar) == CalendarDay("2027-11-10"))
+        #expect(rca.dueDay == CalendarDay("2027-11-10"))
         #expect(rca.history.count == 1)
         #expect(entry.totalCost == Money(1_200))
-        #expect(entry.cycleDueDate.map { CalendarDay($0, calendar: calendar) } == CalendarDay("2026-11-10"))
+        #expect(entry.cycleDueDay == CalendarDay("2026-11-10"))
         #expect(entry.kind == .payment)
         #expect(entry.asset?.id == asset.id, "The completion lands in the asset's history")
         #expect(asset.timeline.map(\.id) == [entry.id])
@@ -62,7 +62,7 @@ struct ActionsTests {
         try first.receipt.undo()
         #expect(throws: UndoError.unavailable) { try first.receipt.undo() }
 
-        #expect(itp.dueDay(in: calendar) == CalendarDay("2026-11-05"))
+        #expect(itp.dueDay == CalendarDay("2026-11-05"))
         #expect(itp.status == .active)
         #expect(itp.history.isEmpty)
     }
@@ -80,7 +80,7 @@ struct ActionsTests {
         let actions = ObligationActions(context: context, calendar: calendar, now: { noon("2026-11-02") })
         let item = try actions.create(title: "Udat", kind: .routine, dueDay: CalendarDay("2026-11-02"), for: nil)
         try actions.snooze(item, days: 3)
-        #expect(item.snoozedUntil.map { CalendarDay($0, calendar: calendar) } == CalendarDay("2026-11-05"))
+        #expect(item.snoozedUntil == CalendarDay("2026-11-05"))
         #expect(item.isSnoozed(at: noon("2026-11-04")))
         #expect(!item.isSnoozed(at: noon("2026-11-05")))
         try actions.complete(item)
@@ -128,7 +128,7 @@ struct ActionsTests {
         // Changing the expiry moves the renewal with it.
         values["document.expiry"] = .date(CalendarDay("2033-04-01"))
         try actions.update(passport, name: "Pașaport", values: values, notes: nil)
-        #expect(passport.activeObligations.first?.dueDay(in: calendar) == CalendarDay("2033-04-01"))
+        #expect(passport.activeObligations.first?.dueDay == CalendarDay("2033-04-01"))
     }
 
     @Test func weightReadingsKeepTheLatestValueOnThePet() throws {
@@ -154,7 +154,7 @@ struct ActionsTests {
         let actions = ObligationActions(context: context)
         let item = try actions.create(title: "RCA", kind: .insurance, dueDay: CalendarDay(Date()), for: nil,
                                       recurrence: .interval(.years(1), anchor: .dueDate))
-        let before = item.dueDay()
+        let before = item.dueDay
         let navigator = AppNavigator()
         let center = FakeNotificationCenter(status: .authorized)
         let folder = URL.temporaryDirectory.appending(path: UUID().uuidString)
@@ -166,7 +166,7 @@ struct ActionsTests {
 
         await responder.handle(action: ReminderActions.complete, payload: ReminderPayload(obligationId: item.id, cycle: before))
         #expect(item.history.count == 1)
-        #expect(item.dueDay() == RecurrenceEngine.add(.years(1), to: before))
+        #expect(item.dueDay == RecurrenceEngine.add(.years(1), to: before))
         #expect(coordinator.lastReconciledAt != nil, "Reminders are planned again after the button")
 
         await responder.handle(action: ReminderActions.complete, payload: ReminderPayload(obligationId: item.id, cycle: before))
@@ -174,7 +174,7 @@ struct ActionsTests {
 
         await responder.handle(action: ReminderActions.snooze, payload: ReminderPayload(obligationId: item.id, cycle: before))
         #expect(item.snoozedUntil == nil, "Nor does a snooze for a closed cycle")
-        await responder.handle(action: ReminderActions.snooze, payload: ReminderPayload(obligationId: item.id, cycle: item.dueDay()))
+        await responder.handle(action: ReminderActions.snooze, payload: ReminderPayload(obligationId: item.id, cycle: item.dueDay))
         #expect(item.snoozedUntil != nil)
 
         await responder.handle(action: "com.apple.UNNotificationDefaultActionIdentifier",

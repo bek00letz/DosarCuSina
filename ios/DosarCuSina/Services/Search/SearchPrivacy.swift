@@ -3,21 +3,27 @@ import Foundation
 /// What search may keep, decided once for the index and for recent searches:
 /// - a number shaped like a CNP (thirteen digits on their own) is never indexed
 ///   or remembered, wherever it was typed or read, valid or misread;
-/// - sealed text (a secret) is never indexed;
+/// - a card number (`PaymentCardNumbers`) is never indexed or remembered, even masked; what a
+///   section's own typed values keep whole (a pet's microchip) is searched as it is stored
+///   (`PaymentCardNumbers.KeptWhole`), by the same rule the save uses;
+/// - sealed text (a secret) is never indexed or remembered;
+/// - words kept on this phone outside the binder (recent searches, a trip's plan) are
+///   kept only when `mayRemember` allows them, checked again when they are read back;
 /// - a query that found anything in a locked section is never remembered;
 /// - outside the app (the iPhone's search), nothing from a locked category or the
 ///   examples, and only titles, without those numbers or the values a category keeps
 ///   out of search (`mayShowOutside`, `outsideText`).
 public enum SearchPrivacy {
     /// The text with every CNP-shaped number, every card number and every sealed value
-    /// taken out. A card number is never searched, even by its last four digits.
-    public static func redacting(_ text: String) -> String {
+    /// taken out. A card number is never searched, even by its last four digits. What the
+    /// record's section keeps whole (`kept`) stays, as it stays where it is stored.
+    public static func redacting(_ text: String, keeping kept: PaymentCardNumbers.KeptWhole = .nothing) -> String {
         guard text.contains(where: \.isNumber) || text.contains(SecretSealer.prefix) || text.contains(PaymentCardNumbers.mask) else { return text }
         var result = text
         for range in cnpShapedRanges(in: result).reversed() {
             result.replaceSubrange(range, with: "")
         }
-        result = PaymentCardNumbers.redact(result).replacingOccurrences(of: PaymentCardNumbers.maskedPattern, with: "", options: .regularExpression)
+        result = PaymentCardNumbers.redact(result, keeping: kept).replacingOccurrences(of: PaymentCardNumbers.maskedPattern, with: "", options: .regularExpression)
         if result.contains(SecretSealer.prefix) {
             result = result.split(separator: " ", omittingEmptySubsequences: false)
                 .filter { !SecretSealer.isSealed(String($0)) }
@@ -26,14 +32,19 @@ public enum SearchPrivacy {
         return result
     }
 
-    /// Whether the text holds a number shaped like a CNP.
-    public static func containsCNPShapedNumber(_ text: String) -> Bool {
-        !cnpShapedRanges(in: text).isEmpty
+    /// Whether words the person typed may be kept on this phone outside the binder (among
+    /// the recent searches, in a trip's plan): only when they hold nothing search never
+    /// keeps, no CNP-shaped number, no card number (masked or not) and no sealed value.
+    /// The one rule for what is remembered, used when it is kept and again when it is read
+    /// back, so what an earlier version kept goes too.
+    public static func mayRemember(_ text: String) -> Bool {
+        redacting(text) == text
     }
 
-    /// Whether a search may be kept among the recent ones.
+    /// Whether a search may be kept among the recent ones: its words may be remembered, and
+    /// it found nothing in a locked section.
     public static func mayRemember(_ query: String, results: [SearchResult]) -> Bool {
-        !containsCNPShapedNumber(query) && !results.contains { $0.document.isSensitive }
+        mayRemember(query) && !results.contains { $0.document.isSensitive }
     }
 
     // MARK: - Outside the app
@@ -49,10 +60,11 @@ public enum SearchPrivacy {
     /// A title or a short line as it may be shown outside the app: without any
     /// CNP-shaped number, any sealed value, or any of `withheld` (the values its
     /// category keeps out of search, such as a document number), written with or
-    /// without separators. Nil when nothing worth showing is left.
-    public static func outsideText(_ text: String?, withholding withheld: [String] = []) -> String? {
+    /// without separators; what its section keeps whole (`kept`) stays, as in the app. Nil
+    /// when nothing worth showing is left.
+    public static func outsideText(_ text: String?, withholding withheld: [String] = [], keeping kept: PaymentCardNumbers.KeptWhole = .nothing) -> String? {
         guard let text else { return nil }
-        var result = redacting(text)
+        var result = redacting(text, keeping: kept)
         for value in withheld {
             guard let pattern = withheldPattern(value) else { continue }
             result = result.replacingOccurrences(of: pattern, with: " ", options: [.regularExpression, .caseInsensitive])

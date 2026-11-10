@@ -60,6 +60,6 @@ struct RomanianTextTests {
     @Test func classifierKeepsMeterIndexApartFromIndexation() {
         let bill = DocumentClassifier.classify(text: CaptureText("Furnizor gaze naturale\nIndex nou 12.345\nCod loc de consum 123"), mrz: nil)
         #expect(bill.kind == .utilityInvoice)
-        #expect(!CaptureText.containsWord("index", inFolded: "indexare pret", as: DocumentClassifier.wholeWords.contains("index") ? .word : nil))
+        #expect(!CaptureText.containsWord("index", inFolded: "indexare pret", as: CaptureLexicon.wholeSignalWords.contains("index") ? .word : nil))
     }
 }

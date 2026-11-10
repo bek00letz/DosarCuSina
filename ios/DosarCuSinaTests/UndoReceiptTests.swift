@@ -309,12 +309,153 @@ struct UndoReceiptTests {
         #expect(!Self.differences(before, after).isEmpty, "The step changed something")
         #expect(receipt.canUndo)
         #expect(Set(Self.differences(before, after).map(\.ref)).isSubset(of: receipt.touched), "The receipt names every record the step changed")
+        // Pictures and files only by their digest, and a copy kept of exactly what the step took away.
+        for state in Array(receipt.before.values) + Array(receipt.after.values) {
+            for name in UndoableRecords.keptOutside[state.ref.type] ?? [] {
+                guard case .file? = state.values[name] else {
+                    Issue.record("\(state.ref).\(name) is kept as a value, not by its digest")
+                    continue
+                }
+            }
+        }
+        let taken = Set(Self.filePlaces(in: before).subtracting(Self.filePlaces(in: after)).map(\.digest))
+        #expect((receipt.files?.kept ?? []) == taken, "The receipt keeps a copy of what the step took, and of nothing a record still has")
 
         try receipt.undo()
         let undone = try Self.database(house.context)
         let left = Self.differences(before, undone)
         #expect(left.isEmpty, "Still different after undo: \(left.map(\.description))")
         #expect(!receipt.canUndo, "A receipt is used once")
+        #expect(receipt.files == nil, "Once taken back, its copies go")
+    }
+
+    // MARK: Undo takes back only what the step changed
+
+    @Test("Another deadline of the same section completed from the widget while the toast shows doesn't stop Anulează, and stays done")
+    func anotherDeadlineCompletedSinceDoesNotStopTheUndo() throws {
+        let house = try Household.make()
+        let context = house.context
+        let before = try Self.database(context)
+        let done = try ObligationActions(context: context, calendar: .bucharest, now: { noon("2026-11-03") }).complete(house.rca)
+        let afterStep = try Self.database(context)
+        let widget = OutsideRequest(obligationId: house.kit.id, cycle: house.kit.dueDay, action: .complete, surface: .widget)
+        #expect(try IntentEngine.apply(widget, in: context, calendar: .bucharest, now: { noon("2026-11-03") }) == .completed(next: nil))
+        let afterWidget = try Self.database(context)
+        let byWidget = Set(Self.differences(afterStep, afterWidget).map(\.ref))
+        #expect(byWidget.contains(RecordRef(house.car)), "The widget's completion is in the car's history too")
+
+        try done.receipt.undo()
+        let undone = try Self.database(context)
+        #expect(Set(Self.differences(before, undone).map(\.ref)) == byWidget, "Only what the widget did is left")
+        for ref in byWidget where ref != RecordRef(house.car) {
+            #expect(undone[ref] == afterWidget[ref], "\(ref) is as the widget left it")
+        }
+        #expect(house.kit.status == .done, "The kit stays done")
+        #expect((house.car.history ?? []).compactMap(\.obligation?.id) == [house.kit.id], "Its completion stays in the car's history; the RCA's is gone")
+    }
+
+    @Test("A newer change to another field of the same record stays after Anulează, with its change time")
+    func aNewerChangeToAnotherFieldStays() throws {
+        let house = try Household.make()
+        let facts = house.home.customFacts
+        let receipt = try AssetActions(context: house.context, calendar: .bucharest, now: { noon("2026-11-03") })
+            .setCustomFacts(house.home, Array(facts.dropFirst()))
+        // Another screen writes the home's notes meanwhile.
+        house.home.notes = "Cheia e la vecini"
+        try UnitOfWork.save(house.context, now: noon("2026-11-04"))
+
+        try receipt.undo()
+        #expect(house.home.customFacts.map(\.label) == facts.map(\.label), "What the step changed is back")
+        #expect(house.home.notes == "Cheia e la vecini", "The newer change stays")
+        #expect(house.home.updatedAt == noon("2026-11-04"), "And so does its change time")
+        let saved = try #require(try Self.database(house.context)[RecordRef(house.home)])
+        #expect(saved == RecordState.capture(house.home), "As saved")
+    }
+
+    @Test("A newer change to what the step changed stops Anulează, and changes nothing")
+    func aNewerChangeToTheSameFieldStopsTheUndo() throws {
+        let house = try Household.make()
+        let assets = AssetActions(context: house.context, calendar: .bucharest, now: { noon("2026-11-03") })
+        let receipt = try assets.setCustomFacts(house.home, [])
+        _ = try assets.setCustomFacts(house.home, [CustomFact(label: "Cod poartă", value: "56")])
+        let before = try Self.database(house.context)
+
+        #expect(throws: UndoError.changedSince) { try receipt.undo() }
+        #expect(Self.differences(before, try Self.database(house.context)).isEmpty, "A refused undo changes nothing")
+        #expect(house.home.customFacts.map(\.label) == ["Cod poartă"])
+    }
+
+    @Test("Anulează refuses when something was filed since under a record the step made")
+    func undoRefusesWhenSomethingPointsAtWhatTheStepMade() throws {
+        let house = try Household.make()
+        let assets = AssetActions(context: house.context, calendar: .bucharest, now: { noon("2026-11-03") })
+        let receipt = try assets.move(house.card, to: .newMember(name: "Manole Ana"), renamingTo: "Carte de identitate – Manole Ana")
+        let ana = try #require(house.card.parent)
+        let documents = try #require(try TemplateStore(context: house.context).template(forKey: BuiltInTemplates.Key.documents))
+        _ = try assets.create(name: "Pașaport – Manole Ana", template: documents,
+                              values: FieldValues(["document.type": .text(DocumentType.passport)]), parent: ana)
+        let before = try Self.database(house.context)
+
+        #expect(throws: UndoError.changedSince) { try receipt.undo() }
+        #expect(Self.differences(before, try Self.database(house.context)).isEmpty, "The passport and its person stay")
+    }
+
+    // MARK: Pictures and files
+
+    @Test("Deleting a document keeps its pictures on disk for Anulează, and brings them back")
+    func aDeletedDocumentsPicturesComeBackFromDisk() throws {
+        let house = try Household.make()
+        let picture = Data([5, 6, 7])
+        let page = try #require(house.keptInvoice.pages?.first)
+        let pageRef = RecordRef(page)
+        let receipt = try AttachmentActions(context: house.context).delete(house.keptInvoice)
+        let files = try #require(receipt.files, "What the delete took is kept")
+        #expect(files.kept.contains(FileDigest(picture)))
+        #expect(FileManager.default.fileExists(atPath: files.folder.appending(path: FileDigest(picture).name).path()), "On disk")
+        #expect(receipt.before[pageRef]?.values["imageData"] == .file(FileDigest(picture)), "The receipt knows the page by its digest")
+        let folder = files.folder
+
+        try receipt.undo()
+        let back = try house.context.fetch(FetchDescriptor<AttachmentPage>())
+        #expect(back.map(\.imageData) == [picture], "The page's picture is back")
+        #expect(back.first?.attachment?.historyEntry?.id == house.repair.id)
+        #expect(receipt.files == nil && !FileManager.default.fileExists(atPath: folder.path()), "Once taken back, the copy goes")
+    }
+
+    @Test("A receipt knows the pictures a record still has by digest, and keeps no copy of them")
+    func aReceiptHoldsNoPictureARecordStillHas() throws {
+        let house = try Household.make()
+        let photo = Data(repeating: 7, count: 4_096)
+        house.home.photoData = photo
+        try UnitOfWork.save(house.context)
+        let receipt = try AssetActions(context: house.context, calendar: .bucharest, now: { noon("2026-11-03") }).setCustomFacts(house.home, [])
+
+        let state = try #require(receipt.before[RecordRef(house.home)])
+        #expect(state.values["photoData"] == .file(FileDigest(photo)))
+        #expect(receipt.files == nil, "Nothing is copied: the home still has its photo")
+        try receipt.undo()
+        #expect(house.home.photoData == photo)
+        #expect(house.home.customFacts.count == 2)
+    }
+
+    @Test("What an earlier run kept for an undo goes at launch; a receipt's own copies go with it, and one that changed is never written back")
+    func undoFilesLeaveWithTheirReceipt() throws {
+        let root = URL.temporaryDirectory.appending(path: "undo-files-\(UUID().uuidString)", directoryHint: .isDirectory)
+        let earlier = root.appending(path: "an-earlier-run", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: earlier, withIntermediateDirectories: true)
+        let picture = Data([1, 2, 3])
+        var files: UndoFiles? = UndoFiles(root: root)
+        try files?.keep(picture, as: FileDigest(picture))
+        let folder = try #require(files?.folder)
+
+        UndoFiles.removeLeftovers(root: root)
+        #expect(!FileManager.default.fileExists(atPath: earlier.path()), "An earlier run's copies go")
+        #expect(files?.bytes(of: [FileDigest(picture)]) == [FileDigest(picture): picture], "This run's stay")
+
+        try Data([9]).write(to: folder.appending(path: FileDigest(picture).name))
+        #expect(files?.bytes(of: [FileDigest(picture)]) == nil, "A copy that no longer matches is never written back")
+        files = nil
+        #expect(!FileManager.default.fileExists(atPath: folder.path()), "The receipt's copies go with it")
     }
 
     // MARK: Undo never overwrites something newer
@@ -353,8 +494,8 @@ struct UndoReceiptTests {
     // MARK: Every stored property is recorded
 
     @Test func everyStoredPropertyOfEveryModelIsRecorded() throws {
-        let schema = Schema(versionedSchema: DosarSchemaV8.self)
-        #expect(UndoableRecords.types.count == DosarSchemaV8.models.count, "Every model of the schema can be undone")
+        let schema = Schema(versionedSchema: DosarSchemaV11.self)
+        #expect(UndoableRecords.types.count == DosarSchemaV11.models.count, "Every model of the schema can be undone")
         for entity in schema.entities {
             let type = try #require(UndoableRecords.types[entity.name], "\(entity.name) is recorded")
             #expect(Set(Self.propertyNames(type)) == Set(entity.properties.map(\.name)), "\(entity.name) lists every stored property")
@@ -379,6 +520,22 @@ struct UndoReceiptTests {
 
     private static func states<M: UndoableRecord>(of type: M.Type, in context: ModelContext) throws -> [RecordState] {
         try context.fetch(FetchDescriptor<M>()).map { RecordState.capture($0) }
+    }
+
+    /// Where a picture or a file is: its record and property.
+    struct FilePlace: Hashable {
+        let ref: RecordRef
+        let name: String
+        let digest: FileDigest
+    }
+
+    /// Every picture and file in `database`, where it is.
+    static func filePlaces(in database: [RecordRef: RecordState]) -> Set<FilePlace> {
+        database.values.reduce(into: []) { places, state in
+            for (name, value) in state.values {
+                if case .file(let digest?) = value { places.insert(FilePlace(ref: state.ref, name: name, digest: digest)) }
+            }
+        }
     }
 
     struct Difference: CustomStringConvertible {
@@ -420,16 +577,16 @@ struct HistoryDeletionTests {
         let entry = try actions.complete(policy, cost: Money(1_150), metricReading: 101_000).value
         let paper = try AttachmentActions(context: context).file(DocumentDraft(fileName: "polita.pdf", kind: .policy, originalData: Data([1])),
                                                                   asset: golf, historyEntry: entry)
-        #expect(policy.dueDay(in: .bucharest) == CalendarDay("2027-11-10"))
+        #expect(policy.dueDay == CalendarDay("2027-11-10"))
 
         let effect = HistoryDeletion(of: entry)
-        #expect(effect.reopensCycle.map { CalendarDay($0, calendar: .bucharest) } == CalendarDay("2026-11-10"))
+        #expect(effect.reopensCycle == CalendarDay("2026-11-10"))
         #expect(!effect.keepsDeadline)
         #expect(effect.removedReading == 101_000)
         #expect(effect.keptDocuments == 1)
 
         try HistoryActions(context: context).delete(entry)
-        #expect(policy.dueDay(in: .bucharest) == CalendarDay("2026-11-10"), "The deadline is open again")
+        #expect(policy.dueDay == CalendarDay("2026-11-10"), "The deadline is open again")
         #expect(policy.status == .active)
         #expect(policy.history.isEmpty)
         #expect(golf.measurements?.map(\.value) == [100_000], "Its reading went with it")
@@ -445,14 +602,14 @@ struct HistoryDeletionTests {
         let policy = try rca(on: golf, actions)
         let older = try actions.complete(policy).value
         try actions.complete(policy)
-        #expect(policy.dueDay(in: .bucharest) == CalendarDay("2028-11-10"))
+        #expect(policy.dueDay == CalendarDay("2028-11-10"))
 
         let effect = HistoryDeletion(of: older)
         #expect(effect.reopensCycle == nil)
         #expect(effect.keepsDeadline)
 
         try HistoryActions(context: context).delete(older)
-        #expect(policy.dueDay(in: .bucharest) == CalendarDay("2028-11-10"), "The deadline stays where it is")
+        #expect(policy.dueDay == CalendarDay("2028-11-10"), "The deadline stays where it is")
         #expect(policy.history.count == 1)
     }
 
@@ -468,7 +625,7 @@ struct HistoryDeletionTests {
         #expect(policy.latestCompletion?.id == second.id, "By the cycle closed, the second is the latest")
 
         try HistoryActions(context: context).delete(second)
-        #expect(policy.dueDay(in: .bucharest) == CalendarDay("2027-11-10"))
+        #expect(policy.dueDay == CalendarDay("2027-11-10"))
     }
 
     @Test func deletingTheCompletionOfAOneOffOpensItAgain() throws {
@@ -479,7 +636,7 @@ struct HistoryDeletionTests {
         #expect(task.status == .done)
         try HistoryActions(context: context).delete(entry)
         #expect(task.status == .active)
-        #expect(task.dueDay(in: .bucharest) == CalendarDay("2026-11-20"))
+        #expect(task.dueDay == CalendarDay("2026-11-20"))
     }
 
     @Test func deletingAVisitTakesItsPartsAndReadingButKeepsItsInvoiceAndTheFirm() throws {

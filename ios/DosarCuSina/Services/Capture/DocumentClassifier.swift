@@ -44,11 +44,15 @@ public enum DocumentClassifier {
         var scores: [CaptureDocumentKind: Double] = [:]
         for (kind, words) in signals {
             scores[kind] = words.reduce(0) { total, signal in
-                total + (CaptureText.containsWord(signal.0, inFolded: haystack, as: wholeWords.contains(signal.0) ? .word : nil) ? signal.1 : 0)
+                total + (CaptureText.containsWord(signal.0, inFolded: haystack, as: CaptureLexicon.wholeSignalWords.contains(signal.0) ? .word : nil) ? signal.1 : 0)
             }
         }
         // An RCA policy is also an insurance policy; prefer the specific kind when RCA terms are present.
         if let rca = scores[.rcaPolicy], rca >= 3 { scores[.insurancePolicy] = (scores[.insurancePolicy] ?? 0) * 0.5 }
+        // A green card sent with its RCA policy (one PDF, the card as its last page) is the
+        // policy: it sets the car's deadline. A green card alone never prints the policy's
+        // own words, so where they weigh this much the card isn't a kind of its own.
+        if let rca = scores[.rcaPolicy], rca >= Self.policyWithItsGreenCard { scores[.greenCard] = nil }
         // A contract mentions the gas, the POD and the client code a bill does; a bill
         // quotes its contract. What decides is whether there is something to pay.
         let isBill = billMarkers.contains { CaptureText.containsWord($0, inFolded: haystack) }
@@ -59,9 +63,20 @@ public enum DocumentClassifier {
         }
         // A fiscal receipt beats a generic invoice when "bon fiscal" is printed.
         if CaptureText.containsWord("bon fiscal", inFolded: haystack) { scores[.serviceInvoice] = (scores[.serviceInvoice] ?? 0) * 0.5 }
-        // A whole card number printed on the page is the strongest sign of a bank card; a
-        // receipt or a statement shows it masked, so it doesn't count there.
-        if PaymentCardNumbers.containsCardNumber(text.joinedOriginal) { scores[.bankCard, default: 0] += cardNumberWeight }
+        // A whole card number printed on the page names a bank card beside the card's own cues
+        // (`CardNumberCues`); a receipt or a statement shows it masked, so it doesn't count
+        // there. Alone, its digits could be a pet's microchip or a code: a hint that names
+        // only a page where no kind has a word of its own.
+        var hints: [CaptureDocumentKind: Double] = [:]
+        for profile in CaptureKindProfile.all {
+            guard let cues = profile.cardNumberCues else { continue }
+            switch cues.evidence(in: text) {
+            case .withCues: scores[profile.kind, default: 0] += cues.weight
+            case .bare: hints[profile.kind, default: 0] += cues.bareWeight
+            case .noNumber: break
+            }
+        }
+        if scores.values.allSatisfy({ $0 == 0 }) { scores.merge(hints, uniquingKeysWith: +) }
 
         // Ties go to the kind listed first in `CaptureDocumentKind`, so the result never depends on dictionary order.
         let order = Dictionary(uniqueKeysWithValues: CaptureDocumentKind.allCases.enumerated().map { ($1, $0) })
@@ -77,10 +92,7 @@ public enum DocumentClassifier {
         return Classification(kind: best.key, confidence: 0.4 + 0.5 * margin * strength + 0.1 * strength)
     }
 
-    /// What a whole card number on the page weighs for a bank card.
-    static let cardNumberWeight = 5.0
-
-    /// Signals whose longer forms mean something else, so they only count whole:
-    /// a meter's "index" isn't the "indexare" of a price.
-    static let wholeWords: Set<String> = ["index"]
+    /// What the RCA's own words weigh on a page that is the policy, whatever green card is
+    /// printed with it: "RCA" and "răspundere civilă auto" together, or more.
+    static let policyWithItsGreenCard = 7.0
 }

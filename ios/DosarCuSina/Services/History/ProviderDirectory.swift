@@ -5,7 +5,8 @@ import SwiftData
 @MainActor
 public final class ProviderActions {
     public let context: ModelContext
-    private let now: () -> Date
+    /// The clock its steps give their change times by (`UnitOfWork`).
+    let now: () -> Date
 
     public init(context: ModelContext, now: @escaping () -> Date = { Date() }) {
         self.context = context
@@ -54,7 +55,6 @@ public final class ProviderActions {
             if let asset { try link(existing, to: asset) }
             if existing.taxID == nil, let taxID {
                 existing.taxID = taxID
-                existing.updatedAt = now()
                 try save()
             }
             return existing
@@ -70,26 +70,22 @@ public final class ProviderActions {
     public func link(_ provider: Provider, to asset: Asset) throws {
         guard !(provider.assets ?? []).contains(where: { $0.id == asset.id }) else { return }
         provider.assets = (provider.assets ?? []) + [asset]
-        provider.updatedAt = now()
         try save()
     }
 
     public func unlink(_ provider: Provider, from asset: Asset) throws {
         provider.assets = (provider.assets ?? []).filter { $0.id != asset.id }
-        provider.updatedAt = now()
         try save()
     }
 
     /// The person's own 1–5 rating; job ratings take precedence when there are any.
     public func setRating(_ provider: Provider, _ rating: Int?) throws {
         provider.manualRating = rating.map { min(max($0, 1), 5) }
-        provider.updatedAt = now()
         try save()
     }
 
     public func setWouldCallAgain(_ provider: Provider, _ value: Bool?) throws {
         provider.wouldCallAgain = value
-        provider.updatedAt = now()
         try save()
     }
 
@@ -98,14 +94,14 @@ public final class ProviderActions {
     /// documents they issued), which the delete only cleared.
     @discardableResult
     public func delete(_ provider: Provider) throws -> UndoReceipt {
-        try UnitOfWork.performUndoable(in: context) {
+        try UnitOfWork.performUndoable(in: context, now: now()) {
             context.delete(provider)
             try save()
         }.receipt
     }
 
     private func save() throws {
-        try UnitOfWork.save(context)
+        try UnitOfWork.save(context, now: now())
     }
 }
 

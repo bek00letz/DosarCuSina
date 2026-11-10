@@ -168,9 +168,17 @@ public struct DocumentFraming: Codable, Hashable, Sendable {
 
 extension Attachment {
     /// How the document's pages are shown, shared and read. A document from before
-    /// version 6, or one nothing was decided about, shows its pages as they are.
+    /// version 6, or one nothing was decided about, shows its pages as they are. Writing it
+    /// keeps what a newer build wrote inside it that this one doesn't read (`KeptObject`).
     public var framing: DocumentFraming {
-        get { StoredJSON.decode(DocumentFraming.self, from: framingData) ?? DocumentFraming() }
-        set { framingData = newValue.isPlain ? nil : StoredJSON.encode(newValue) }
+        get { KeptObject<DocumentFraming>.value(in: framingData) ?? DocumentFraming() }
+        set { keptFraming = (keptFraming ?? KeptObject(DocumentFraming())).replacingValue(newValue) }
+    }
+
+    /// The framing as stored, with what this build doesn't read: what a backup carries. Nil, and
+    /// nothing stored, when every page is shown as it came and nothing more is kept.
+    public var keptFraming: KeptObject<DocumentFraming>? {
+        get { KeptObject.stored(in: framingData, fallback: DocumentFraming()) }
+        set { framingData = KeptObject.data(newValue, omittedWhen: \.isPlain) }
     }
 }

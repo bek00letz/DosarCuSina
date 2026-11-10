@@ -40,7 +40,7 @@ public enum FieldFormatter {
         case .microchip:
             return trimmed.filter(\.isNumber)
         case .iban:
-            return trimmed.uppercased().filter { $0.isLetter || $0.isNumber }
+            return RomanianText.compact(trimmed)
         case .phone:
             return normalizePhone(trimmed)
         case .email:
@@ -75,7 +75,7 @@ public enum FieldFormatter {
                 ? .valid
                 : .warning(String(localized: "Microcipurile au de obicei 15 cifre.", comment: "Microchip field hint"))
         case .iban:
-            return isValidIBAN(normalize(text, as: .iban))
+            return IBAN.isValid(normalize(text, as: .iban))
                 ? .valid
                 : .invalid(String(localized: "IBAN-ul nu e corect. Verifică cifrele.", comment: "IBAN field error"))
         case .email:
@@ -206,7 +206,7 @@ public enum FieldFormatter {
 
     /// Formats a Romanian plate as `B-123-ABC` / `CJ-12-XYZ`, or nil if it isn't one.
     public static func formatPlate(_ raw: String) -> String? {
-        let compact = raw.uppercased().filter { $0.isLetter || $0.isNumber }
+        let compact = RomanianText.compact(raw)
         guard compact.allSatisfy(\.isASCII) else { return nil }
         let letters = compact.prefix { $0.isLetter }
         let rest = compact.dropFirst(letters.count)
@@ -221,31 +221,8 @@ public enum FieldFormatter {
 
     // MARK: IBAN
 
-    /// ISO 13616 check: moves the first four characters to the end and checks mod 97.
-    public static func isValidIBAN(_ raw: String) -> Bool {
-        let iban = raw.uppercased().filter { $0.isLetter || $0.isNumber }
-        guard (15...34).contains(iban.count), iban.allSatisfy(\.isASCII) else { return false }
-        if iban.hasPrefix("RO") && iban.count != 24 { return false }
-        let rearranged = iban.dropFirst(4) + iban.prefix(4)
-        var remainder = 0
-        for character in rearranged {
-            let chunk: String
-            if let digit = character.wholeNumberValue {
-                chunk = String(digit)
-            } else if let ascii = character.asciiValue, character.isLetter {
-                chunk = String(Int(ascii) - 55)
-            } else {
-                return false
-            }
-            for c in chunk {
-                remainder = (remainder * 10 + (c.wholeNumberValue ?? 0)) % 97
-            }
-        }
-        return remainder == 1
-    }
-
     public static func groupIBAN(_ raw: String) -> String {
-        let compact = raw.uppercased().filter { $0.isLetter || $0.isNumber }
+        let compact = RomanianText.compact(raw)
         return stride(from: 0, to: compact.count, by: 4).map { offset -> String in
             let start = compact.index(compact.startIndex, offsetBy: offset)
             let end = compact.index(start, offsetBy: 4, limitedBy: compact.endIndex) ?? compact.endIndex

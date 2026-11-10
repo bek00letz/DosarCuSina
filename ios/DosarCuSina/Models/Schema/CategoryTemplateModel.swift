@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV8 {
+extension DosarSchemaV11 {
     /// A category of assets (Car, Home, a user's own "Bikes") and its field and
     /// obligation definitions, plus this household's preferences for it.
     ///
@@ -63,21 +63,29 @@ extension DosarSchemaV8 {
                 sectionsData = StoredJSON.encode(KeptList(definition.sections))
                 blueprintsData = StoredJSON.encode(KeptList(definition.blueprints))
                 componentsData = StoredJSON.encode(KeptList(definition.components))
+                keptBehavior = KeptObject(definition.behavior)
             } else {
                 sectionsData = KeptList.writing(definition.sections, over: sectionsData)
                 blueprintsData = KeptList.writing(definition.blueprints, over: blueprintsData)
                 componentsData = KeptList.writing(definition.components, over: componentsData)
+                behavior = definition.behavior
             }
             pocketsRaw = definition.pockets.map(\.rawValue)
-            behaviorData = definition.behavior == .standard ? nil : StoredJSON.encode(definition.behavior)
             builtInVersion = isBuiltIn ? definition.version : 0
-            updatedAt = Date()
         }
 
-        /// What the category does in the binder.
+        /// What the category does in the binder. Writing it keeps what a newer build wrote inside
+        /// it that this one doesn't read (`KeptObject`).
         public var behavior: CategoryBehavior {
-            get { StoredJSON.decode(CategoryBehavior.self, from: behaviorData) ?? .standard }
-            set { behaviorData = newValue == .standard ? nil : StoredJSON.encode(newValue); updatedAt = Date() }
+            get { KeptObject<CategoryBehavior>.value(in: behaviorData) ?? .standard }
+            set { keptBehavior = (keptBehavior ?? KeptObject(.standard)).replacingValue(newValue) }
+        }
+
+        /// The behaviour as stored, with what this build doesn't read: what a backup carries. Nil,
+        /// and nothing stored, for the standard behaviour with nothing more.
+        public var keptBehavior: KeptObject<CategoryBehavior>? {
+            get { KeptObject.stored(in: behaviorData, fallback: .standard) }
+            set { behaviorData = KeptObject.data(newValue, omittedWhen: { $0 == .standard }) }
         }
 
         public var tint: TemplateTint {
@@ -90,20 +98,21 @@ extension DosarSchemaV8 {
             set { heroStyleRaw = newValue.rawValue }
         }
 
-        /// The sections this build can read. Writing them keeps the ones it can't (`KeptList`).
+        /// The sections this build can read. Writing them keeps the ones it can't, and inside the
+        /// ones it reads what it doesn't read there (`KeptList`).
         public var sections: [FieldSection] {
-            get { keptSections.items }
-            set { sectionsData = KeptList.writing(newValue, over: sectionsData); updatedAt = Date() }
+            get { KeptList.items(in: sectionsData) }
+            set { sectionsData = KeptList.writing(newValue, over: sectionsData) }
         }
 
         public var blueprints: [ObligationBlueprint] {
-            get { keptBlueprints.items }
-            set { blueprintsData = KeptList.writing(newValue, over: blueprintsData); updatedAt = Date() }
+            get { KeptList.items(in: blueprintsData) }
+            set { blueprintsData = KeptList.writing(newValue, over: blueprintsData) }
         }
 
         public var components: [ComponentDefinition] {
-            get { keptComponents.items }
-            set { componentsData = KeptList.writing(newValue, over: componentsData); updatedAt = Date() }
+            get { KeptList.items(in: componentsData) }
+            set { componentsData = KeptList.writing(newValue, over: componentsData) }
         }
 
         /// The sections as stored, with any a newer build wrote that this one can't read:
@@ -126,7 +135,7 @@ extension DosarSchemaV8 {
         /// The pockets a section page shows, in the global order.
         public var pockets: [SectionPocket] {
             get { SectionPocket.ordered(pocketsRaw.compactMap(SectionPocket.init(rawValue:))) }
-            set { pocketsRaw = SectionPocket.ordered(newValue).map(\.rawValue); updatedAt = Date() }
+            set { pocketsRaw = SectionPocket.ordered(newValue).map(\.rawValue) }
         }
 
         public var isCustom: Bool { !isBuiltIn }

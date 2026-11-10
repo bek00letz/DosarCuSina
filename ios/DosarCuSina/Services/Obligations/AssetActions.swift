@@ -41,7 +41,8 @@ public struct PlannedObligation: Hashable, Sendable, Identifiable {
 public final class AssetActions {
     public let context: ModelContext
     private let calendar: Calendar
-    private let now: () -> Date
+    /// The clock its steps give their change times by (`UnitOfWork`).
+    let now: () -> Date
     /// Seals secret fields (PIN codes) before they are saved.
     private let sealer: SecretSealer
 
@@ -112,7 +113,7 @@ public final class AssetActions {
         let today = CalendarDay(now(), calendar: calendar)
         // One step: a failure part-way leaves no section without its deadlines. Inside a
         // caller's unit this joins it, and only that unit rolls back.
-        return try UnitOfWork.perform(in: context) {
+        return try UnitOfWork.perform(in: context, now: now()) {
             let asset = Asset(name: name, templateKey: template.key, values: prepared, notes: notes, isExample: isExample)
             context.insert(asset)
             if let newParent {
@@ -164,16 +165,15 @@ public final class AssetActions {
         // Every question first, before anything is written (`StepQuestion`).
         let reading = template.flatMap { plannedReading(asset, values: values, template: $0.definition, source: readingSource, date: readingDate) }
         try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
-        return try UnitOfWork.perform(in: context) {
+        return try UnitOfWork.perform(in: context, now: now()) {
             var outcome = EditOutcome()
             asset.name = name
             asset.values = values
             asset.notes = notes
-            asset.updatedAt = now()
             if let template {
                 // A value the deadlines' reminders depend on changed (the document's type, a
                 // pet's species): they remind as the new value asks, unless the person set them.
-                DeadlineReminders.follow(asset, template: template.definition, from: previous, now: now())
+                DeadlineReminders.follow(asset, template: template.definition, from: previous)
                 let blueprints = Dictionary(template.blueprints.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
                 for obligation in asset.activeObligations {
                     guard let key = obligation.blueprintKey, let blueprint = blueprints[key],
@@ -181,8 +181,7 @@ public final class AssetActions {
                           !blueprint.recurrence.repeats,
                           previous[fieldKey] != values[fieldKey],
                           let day = values[fieldKey]?.dateValue else { continue }
-                    obligation.setDueDay(day.adding(days: offset, calendar: calendar), calendar: calendar)
-                    obligation.updatedAt = now()
+                    obligation.dueDay = day.adding(days: offset, calendar: calendar)
                 }
                 // A field that drives a deadline gets a value and the section has none from
                 // it: the deadline is made, as adding the section would have (a policy's end
@@ -261,15 +260,27 @@ public final class AssetActions {
         return log
     }
 
+    /// "Nu e contor nou": the reading the person once said started a new counter doesn't. The
+    /// readings in its unit count as one counter again (the lower ones then set aside, as
+    /// `ReadingSeries` sets aside any reading that breaks the order), and the hero value follows
+    /// them. One undoable step; nothing is deleted.
+    @discardableResult
+    public func notANewCounter(_ start: MeasurementLog) throws -> UndoReceipt {
+        try UnitOfWork.performUndoable(in: context, now: now()) {
+            start.startsCounter = false
+            if let asset = start.asset { HouseholdMutations.syncHeroMetric(of: asset, in: context) }
+            try save()
+        }.receipt
+    }
+
     /// Replaces the free label–value rows shown under Date importante. A secret
     /// row (a code) is sealed before it is saved, like a PIN field; a card number in any row is
     /// kept as its last four digits (`FreeText`).
     @discardableResult
     public func setCustomFacts(_ asset: Asset, _ facts: [CustomFact]) throws -> UndoReceipt {
-        try UnitOfWork.performUndoable(in: context) {
+        try UnitOfWork.performUndoable(in: context, now: now()) {
             let kept = facts.filter { !$0.label.trimmingCharacters(in: .whitespaces).isEmpty || !$0.value.trimmingCharacters(in: .whitespaces).isEmpty }
             asset.customFacts = try SecretFields.sealingFacts(kept, sealer: sealer)
-            asset.updatedAt = now()
             try save()
         }.receipt
     }
@@ -313,7 +324,7 @@ public final class AssetActions {
     /// and the side effects follow the save as always.
     @discardableResult
     public func delete(_ asset: Asset, children: ChildrenOnDelete = .keep) throws -> UndoReceipt {
-        try UnitOfWork.performUndoable(in: context) {
+        try UnitOfWork.performUndoable(in: context, now: now()) {
             if children == .delete {
                 for child in Self.descendants(of: asset) { context.delete(child) }
             }
@@ -330,7 +341,6 @@ public final class AssetActions {
             throw AssetActionError.wouldCreateLoop
         }
         child.parent = parent
-        child.updatedAt = now()
         try save()
     }
 
@@ -359,7 +369,7 @@ public final class AssetActions {
     }
 
     private func save() throws {
-        try UnitOfWork.save(context)
+        try UnitOfWork.save(context, now: now())
     }
 }
 
@@ -384,8 +394,7 @@ enum HouseholdMutations {
             dueDay: due,
             recurrence: blueprint.recurrence,
             reminders: blueprint.reminders(for: asset.values),
-            estimatedCost: blueprint.estimatedCost,
-            calendar: calendar
+            estimatedCost: blueprint.estimatedCost
         )
         obligation.blueprintKey = blueprint.key
         obligation.notes = blueprint.note
@@ -401,13 +410,13 @@ enum HouseholdMutations {
 
     static func recurrenceContext(for obligation: Obligation, currentMetric: Double?, calendar: Calendar = .dosar) -> RecurrenceContext {
         // Only completions that moved the date take part (not the one being recorded now).
-        let steps = obligation.history.filter { $0.nextDueDate != nil }.map {
+        let steps = obligation.history.filter { $0.nextDueDay != nil }.map {
             RecurrenceEngine.SeriesStep(
-                cycle: $0.cycleDueDate.map { CalendarDay($0, calendar: calendar) },
-                next: $0.nextDueDate.map { CalendarDay($0, calendar: calendar) }
+                cycle: $0.cycleDueDay,
+                next: $0.nextDueDay
             )
         }
-        let seriesDay = RecurrenceEngine.seriesStart(current: obligation.dueDay(in: calendar), completions: steps).day
+        let seriesDay = RecurrenceEngine.seriesStart(current: obligation.dueDay, completions: steps).day
         guard let asset = obligation.asset else { return RecurrenceContext(currentMetric: currentMetric, seriesDayOfMonth: seriesDay) }
         let series = readingSeries(of: asset, unit: obligation.metricUnit)
         let readings = series.readings

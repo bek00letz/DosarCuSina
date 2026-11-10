@@ -37,9 +37,9 @@ struct FieldFormatterTests {
     }
 
     @Test func ibanUsesTheMod97Check() {
-        #expect(FieldFormatter.isValidIBAN("RO49 AAAA 1B31 0075 9384 0000"))
-        #expect(!FieldFormatter.isValidIBAN("RO49 AAAA 1B31 0075 9384 0001"))
-        #expect(!FieldFormatter.isValidIBAN("RO49AAAA1B310075"))
+        #expect(IBAN.isValid("RO49 AAAA 1B31 0075 9384 0000"))
+        #expect(!IBAN.isValid("RO49 AAAA 1B31 0075 9384 0001"))
+        #expect(!IBAN.isValid("RO49AAAA1B310075"))
         #expect(FieldFormatter.validate("RO49AAAA1B31007593840001", as: .iban).allowsSaving == false)
         #expect(FieldFormatter.groupIBAN("RO49AAAA1B31007593840000") == "RO49 AAAA 1B31 0075 9384 0000")
     }

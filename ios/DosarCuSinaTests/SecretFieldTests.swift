@@ -122,10 +122,10 @@ struct SecretFieldTests {
     @Test func widgetsNeverCarryAPin() throws {
         let s = try setup()
         let stored = try #require(s.card.value("document.pinAuthentication")?.textValue)
-        let snapshot = WidgetSnapshot.make(from: try ObligationSnapshot.fetchAll(in: s.context, calendar: .bucharest),
-                                           now: noon("2026-11-02"), calendar: .bucharest)
+        let snapshot = WidgetFeed.make(from: try ObligationSnapshot.fetchAll(in: s.context, calendar: .bucharest),
+                                       now: noon("2026-11-02"), calendar: .bucharest)
         #expect(!snapshot.items.isEmpty, "The card's renewal is there")
-        let json = String(decoding: try WidgetSnapshot.encoder().encode(snapshot), as: UTF8.self)
+        let json = String(decoding: try WidgetFeed.encode(snapshot), as: UTF8.self)
         #expect(!json.contains(pin))
         #expect(!json.contains(SecretSealer.prefix))
         #expect(!json.contains(stored))
@@ -136,9 +136,9 @@ struct SecretFieldTests {
         let data = try DossierArchiveService(container: s.container, calendar: .bucharest).exportData()
         let package = try DossierArchiveReader.read(data)
         let exported = try #require(package.assets.first { $0.name == s.card.name })
-        #expect(exported.values["document.pinAuthentication"] == nil)
-        #expect(exported.values["document.pinSigning"] == nil)
-        #expect(exported.values["document.expiry"] != nil, "Everything else travels")
+        #expect(exported.values.value["document.pinAuthentication"] == nil)
+        #expect(exported.values.value["document.pinSigning"] == nil)
+        #expect(exported.values.value["document.expiry"] != nil, "Everything else travels")
         for path in package.files.paths {
             let file = try #require(try package.files.data(at: path))
             #expect(file.range(of: Data(SecretSealer.prefix.utf8)) == nil)

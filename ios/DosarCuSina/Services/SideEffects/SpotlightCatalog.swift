@@ -48,7 +48,9 @@ public struct SpotlightEntry: Hashable, Sendable {
 /// - nothing from the examples (deadlines come from `ObligationSnapshot.fetchForOutside`,
 ///   the one list of what may leave the app);
 /// - no CNP-shaped number, sealed value, or value the category keeps out of search
-///   (a document number) inside a title, and never the text read off a document;
+///   (a document number) inside a title, and never the text read off a document; a card
+///   number never, but what the section's own typed values keep whole (a pet's microchip)
+///   as the app keeps it (`PaymentCardNumbers.KeptWhole`);
 /// - no closed one-off deadline and no archived document: a result is something current.
 public enum SpotlightCatalog {
     @MainActor
@@ -64,10 +66,15 @@ public enum SpotlightCatalog {
             assets.map { ($0.id, SearchPrivacy.withheldValues(of: $0, definition: templates[$0.templateKey]?.definition)) },
             uniquingKeysWith: { first, _ in first }
         )
+        // What a section keeps whole in its words (a pet's microchip), shown as the app shows it.
+        let kept = Dictionary(
+            assets.map { ($0.id, SearchIndexBuilder.keptWhole(by: $0, templates)) },
+            uniquingKeysWith: { first, _ in first }
+        )
         var entries: [SpotlightEntry] = []
 
         for asset in assets where SearchPrivacy.mayShowOutside(isLocked: isLocked(asset), isExample: asset.isExample) {
-            guard let title = SearchPrivacy.outsideText(asset.name, withholding: withheld[asset.id] ?? []) else { continue }
+            guard let title = SearchPrivacy.outsideText(asset.name, withholding: withheld[asset.id] ?? [], keeping: kept[asset.id] ?? .nothing) else { continue }
             let category = templates[asset.templateKey]?.name
             entries.append(SpotlightEntry(kind: .section, route: .asset(asset.id), title: title, detail: category,
                                           keywords: category.map { [$0] } ?? []))
@@ -76,8 +83,9 @@ public enum SpotlightCatalog {
         for obligation in obligations where obligation.status == .active || obligation.status == .paused {
             guard SearchPrivacy.mayShowOutside(isLocked: obligation.isSensitive, isExample: obligation.isExample) else { continue }
             let hidden = obligation.assetId.flatMap { withheld[$0] } ?? []
-            guard let name = SearchPrivacy.outsideText(obligation.title, withholding: hidden) else { continue }
-            let section = SearchPrivacy.outsideText(obligation.assetName, withholding: hidden)
+            let whole = obligation.assetId.flatMap { kept[$0] } ?? .nothing
+            guard let name = SearchPrivacy.outsideText(obligation.title, withholding: hidden, keeping: whole) else { continue }
+            let section = SearchPrivacy.outsideText(obligation.assetName, withholding: hidden, keeping: whole)
             let title = section.map { deadlineTitle(name, section: $0) } ?? name
             let due = DosarFormat.longDay(obligation.dueDay, locale: locale)
             let detail = obligation.status == .paused
@@ -92,8 +100,9 @@ public enum SpotlightCatalog {
             let section = SearchIndexBuilder.section(of: attachment)
             guard SearchPrivacy.mayShowOutside(isLocked: isLocked(section), isExample: attachment.isExample || section?.isExample == true) else { continue }
             let hidden = section.flatMap { withheld[$0.id] } ?? []
-            guard let title = SearchPrivacy.outsideText(attachment.displayTitle, withholding: hidden) else { continue }
-            let sectionName = SearchPrivacy.outsideText(section?.name, withholding: hidden)
+            let whole = section.flatMap { kept[$0.id] } ?? .nothing
+            guard let title = SearchPrivacy.outsideText(attachment.displayTitle, withholding: hidden, keeping: whole) else { continue }
+            let sectionName = SearchPrivacy.outsideText(section?.name, withholding: hidden, keeping: whole)
             entries.append(SpotlightEntry(kind: .document, route: .document(attachment.id), title: title, detail: sectionName,
                                           keywords: sectionName.map { [$0] } ?? []))
         }

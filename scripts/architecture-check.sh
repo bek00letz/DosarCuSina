@@ -74,6 +74,26 @@ rule save-outside-unit-of-work "$app" '^ios/DosarCuSina/Services/Persistence/Uni
     '[cC]ontext\??\.save\(\)' - \
     'Save through UnitOfWork.save(context). When one tap does several things, wrap them in UnitOfWork.perform(in:).'
 
+# When a record last changed is written by the unit of work as it saves (ChangeTimes), with the
+# step's clock and whose change it is, and by a backup's importer, which writes the archive's
+# times. A model's initializer gives the moment it is made, and a value type's own initializer
+# copies the value it is given; the unit replaces the first when it saves. Since when a
+# deadline's cycle is known is kept the same way, by the unit (CycleTimes) and the importer.
+rule change-time-outside-change-times "$app" \
+    '^ios/DosarCuSina/Services/Persistence/(ChangeTimes|CycleTimes)\.swift$|^ios/DosarCuSina/Services/Archive/DossierImporter\.swift$' \
+    '(^|[^A-Za-z0-9_])(updatedAt|cycleKnownAt) *=([^=]|$)' \
+    '^[[:space:]]*self\.updatedAt = (Date\(\)|updatedAt)[[:space:]]*$' \
+    "Change times, and since when a deadline's cycle is known, are written only by the unit of work (ChangeTimes, CycleTimes). Pass the step's clock to it (UnitOfWork.perform(in:now:), save(_:now:)), and open an app-made step with origin: .app."
+
+# A stored JSON object is written through its model's accessor, which lays the new value over
+# what was stored and so keeps what a newer build wrote (KeptObject, KeptList). The models write
+# their own data; a repair that rewrites stored JSON in place, never reading it into this
+# build's types, is the one other writer.
+rule stored-json-outside-model "$app" \
+    '^ios/DosarCuSina/Models/|^ios/DosarCuSina/Services/Repairs/UnitKeysRepairStep\.swift$' \
+    '(^|[^A-Za-z0-9_])(valuesData|customFactsData|sectionsData|blueprintsData|componentsData|behaviorData|recurrenceData|framingData) *=([^=]|$)' - \
+    "Write a stored JSON object through its model's accessor (values, customFacts, sections, behavior, recurrence, framing), or its kept form for what a backup carries (keptValues, keptFacts, keptSections, keptBehavior, keptRecurrence, keptFraming), so what a newer build wrote is kept."
+
 # SwiftData saves a context by itself unless told not to, around the unit of work. Every
 # container and context is made in one file, which turns that off.
 rule context-outside-persistence "$app" '^ios/DosarCuSina/Services/Persistence/PersistenceController\.swift$' \
@@ -102,17 +122,34 @@ rule animation-curve "$app" '^ios/Shared/DSMotion\.swift$' \
     'progressViewStyle|gaugeStyle' \
     'Animate with a DS.Motion spring through dsAnimation, so Reduce Motion turns movement into a short fade.'
 
+# Numbers in text, a model's answers included, are read by one reader: RomanianNumber.read for
+# what is printed or typed, RomanianNumber.canonical for the machine form, and, for a model's
+# answer, ModelQuestions.number(_:as:) over both. Never a number made from text another way,
+# and never through floating point ("Decimal(string: String(double))").
 rule number-parser "$app" '(^|/)RomanianNumber[^/]*\.swift$' \
-    'Decimal\(string: *[a-z]|replacingOccurrences\(of: *",", *with: *"\."\)|NumberFormatter\(\)|\.number\.parseStrategy|ParseStrategy' - \
-    'Read numbers from text with the one shared reader. Readers that disagree turn 45,724 into 45.724.'
+    'Decimal\(string: *([a-z]|String\()|(^|[^A-Za-z0-9_.])(Double|Float)\( *("|[A-Za-z_.]*([tT]ext|[sS]tring|[rR]aw)\))|replacingOccurrences\(of: *",", *with: *"\."\)|NumberFormatter\(\)|\.number\.parseStrategy|ParseStrategy' - \
+    "Read numbers from text with the one shared reader: RomanianNumber.read (or .value) for what is printed or typed, RomanianNumber.canonical for the machine form, ModelQuestions.number(_:as:) for a model's answer. Readers that disagree turn 45,724 into 45.724, and a detour through Double changes amounts."
 
 # A kind's printed labels are data: its profile's table (CaptureKindProfile.labels), or the one
-# every document shares (CaptureKindProfile.commonLabels). Capture's readers are told the
-# table, so a wording added there is read with no new code; a list written where it is read
-# is a second table.
-rule labels-outside-their-table '^ios/DosarCuSina/Services/Capture/' - \
-    '(labelledDate\(|lines\(containing: *|contains\(any: *|labels: *)\[ *"|let +labels *= *\[ *"' - \
-    "A kind's labels are data in its profile (CaptureKindProfile.labels, or commonLabels for what every document prints). Tell the reader the table, as profile.labels(for:); never list labels where they are read."
+# every document shares (CaptureKindProfile.commonLabels). Words the shared readers look for that
+# are no one kind's (stop words, the buyer's block, an issuer's prefixes, address labels) are the
+# capture lexicon's (CaptureLexicon); a value printed in parts, CompositeLabels'; a personal
+# document's layout, its template (IdentityTemplates). Capture's readers are told the table, so a
+# wording added there is read with no new code; a list written where it is read, or a list named
+# ...Labels, ...Words or ...Prefixes in any other file, is a second table. So is a label spelled
+# inside a pattern: an abbreviation or a field's number with its dots made optional ("c\.?\s?u",
+# "d\.?\s?1"), words apart by any space ("cod\s+fiscal"), or a field's number that starts a line
+# ("^\s*b\."); a reader builds those from the table's rows (RomanianFieldExtractor.printed).
+label_tables='^ios/DosarCuSina/Services/Capture/(CaptureKindProfile|CaptureLexicon|CompositeLabels|IdentityTemplates)\.swift$'
+rule labels-outside-their-table '^ios/DosarCuSina/Services/Capture/' "$label_tables" \
+    '(labelledDate\(|lines\(containing: *|contains\(any: *|labels: *)\[ *"|let +labels *= *\[ *"|(let|var) +[A-Za-z_]*([lL]abels|[wW]ords|[pP]refixes)([^A-Za-z0-9_=][^=]*)?= *\[|[a-z0-9]\\\.\?\\s\?[a-z0-9]|[a-z][a-z]+\\s\+[a-z][a-z]|\^\\s\*[a-z0-9]\\\.' - \
+    "Labels and words are data in their table: a kind's in its profile (CaptureKindProfile.labels, commonLabels for what every document prints), the shared readers' in CaptureLexicon, a value in parts' in CompositeLabels, a personal document's in its template. Tell the reader the table, as profile.labels(for:), and build a pattern from its rows with RomanianFieldExtractor.printed or alternatives; never list labels or words where they are read, nor spell them inside a pattern."
+
+# Codes, numbers, plates and names are compared one way: folded, in capitals, letters and digits
+# only (RomanianText.compact), so a value with a diacritic, a space or a dash still matches.
+rule compact-outside-romanian-text "$app" '^ios/Shared/RomanianText\.swift$' \
+    'uppercased\(\)\.filter *(\(\{|\{) *\$0\.is(Letter|Number) *\|\| *\$0\.is(Letter|Number)' - \
+    'Compare and check codes, numbers, plates and names with RomanianText.compact: folded, in capitals, letters and digits only, the one way.'
 
 rule bare-progress-view "$app" "$design_system|^ios/Shared/DSMotion\\.swift\$" \
     'ProgressView\(' - \
@@ -166,6 +203,36 @@ rule month-length "$app" '^ios/Shared/CalendarDay\.swift$' \
     '31 *, *2[89] *, *31|case +4 *, *6 *, *9 *, *11|case +1 *, *3 *, *5 *, *7 *, *8|[lL]eap_?[yY]ear|% *400([^0-9]|$)|% *100 *[!=]= *0|[yY]ear[A-Za-z]* *% *4([^0-9]|$)|range\(of: *\.day, *in: *\.month' - \
     "Move a day by months with CalendarDay.adding(months:dayOfMonth:) and ask a month's length with CalendarDay.daysInMonth(calendar:): the calendar knows month ends and 29 February once."
 
+# Machine JSON writes a moment one way and reads every form earlier versions wrote: the
+# shared coders in MachineText, so the widget snapshot, the share inbox, a widget's
+# completions and archives can't drift apart.
+# What a section keeps whole from the card rule (a pet's microchip) comes only from a value and
+# its field's type, through PaymentCardNumbers.keepsWhole: never from digits alone, since a chip
+# and a card can be the same digits.
+rule kept-whole-without-its-type "$app" '^ios/(Shared/CardNumberRule|DosarCuSina/Services/Security/PaymentCardNumbers)\.swift$' \
+    'KeptWhole\( *checkedDigits:' - \
+    "Make PaymentCardNumbers.KeptWhole from values and their fields: KeptWhole(_:fields:), KeptWhole(typed:) or KeptWhole(section:template:), which keep only what the field's type keeps whole."
+
+rule json-date-coding "$app" '^ios/Shared/MachineText\.swift$' \
+    'date(En|De)codingStrategy' - \
+    "Code machine JSON with MachineText.jsonEncoder() and MachineText.jsonDecoder() (.readable for an archive): one way to write a moment, and one reader for every form earlier versions wrote."
+
+# A picture is drawn on one bitmap canvas, ImageScaling.canvas: the page turned and the PDF
+# page drawn (DocumentPicture, PDFPageRendering) draw on it too, and sizes change only
+# through ImageScaling. A PDF being written (a context on a consumer) is another job.
+rule own-canvas "$app" '^ios/DosarCuSina/Services/Documents/ImageScaling\.swift$' \
+    '(^|[^A-Za-z0-9_.])CGContext\(|UIGraphicsImageRenderer|UIGraphicsBeginImageContext|CGBitmapContextCreate' \
+    'CGContext\( *consumer:' \
+    "Draw a picture on ImageScaling.canvas(width:height:onWhite:), and change its size with ImageScaling.scaled or decoded: one canvas and one scaler, the same quality everywhere."
+
+# A row that gives way is DSAdaptiveStack, laid out once so a field or a button keeps its
+# state. Widgets are left out on purpose: a Lock Screen line (accessoryInline) shows one
+# line of text the system lays out itself, ignoring any layout of the app's, and offers
+# shorter wordings only through ViewThatFits; the design system isn't in the widget either.
+rule view-that-fits "$app" '^ios/DosarCuSinaWidgets/' \
+    'ViewThatFits' - \
+    "A row that gives way is DSAdaptiveStack: side by side when the pieces fit, stacked otherwise, laid out once so a field or a button keeps its state."
+
 # A minimum under 44 anywhere; a fixed height under 44 on a line that is tapped
 # (a button, a tap gesture, a tap shape). The rule reads one line at a time, so a
 # button whose label sets the height on a later line isn't seen.
@@ -174,9 +241,12 @@ rule small-hit-target "$app" - \
     "min(Height|Width): *$small|(Button|onTapGesture|contentShape|Toggle|Link).*[^A-Za-z]height: *$small" - \
     'Tap targets are at least 44 pt (DS.Space and the DS buttons already are). If nothing here is tapped, drop the minimum instead.'
 
+# Actions, the unit of work, and the steps that change data with no one to tell: the category
+# store's changes, the repair list, the household's own deadlines. Reading a category is not
+# a change and may fall back.
 rule silent-action-failure "$app" - \
-    'try\? *(await +)?[A-Za-z_.]*[aA]ctions[.(]|try\? *(await +)?UnitOfWork\.' - \
-    "Don't drop an action's failure with try?. Catch it and show SaveFailure.message(for:formKept:), or let it throw to a caller that does."
+    'try\? *(await +)?[A-Za-z_.]*[aA]ctions[.(]|try\? *(await +)?UnitOfWork\.|try\? *(await +)?(TemplateStore\([^)]*\)|[A-Za-z_]*[sS]tore)\.(installBuiltIns|createCustom|editCustom|setPockets|update|delete|move|setOnHome|setSensitive)\(|try\? *(await +)?[A-Za-z_.]*(DataRepair[A-Za-z]*|[rR]epairs)[.(]|try\? *(await +)?[A-Za-z_.]*(HouseholdRules\.|reconcileHouseholdRules\()' - \
+    "Don't drop a change's failure with try?. Catch it and show SaveFailure.message(for:formKept:), let it throw to a caller that does, or, for a step no one sees (launch, the repair list), log it with PersistenceLog.attempt."
 
 # A question for the person is made by its one rule, which changes nothing, so every action
 # asks it before its unit of work writes (StepQuestion). The design system's gallery shows them.
@@ -197,6 +267,16 @@ rule guessed-pause '^ios/(DosarCuSina|DosarCuSinaWidgets|DosarCuSinaShare|Shared
 # NavigationStack(path:), and their body must not start another stack.
 rule stack-in-tab-root "$app" - '-' - \
     'Tab roots live inside the stack AppShell gives each tab. Push with NavigationLink(value: AppRoute…) instead of adding a stack.'
+
+# Checked in their own pass below, which follows braces: a screen's or a sheet's main action
+# is pinned to its bottom edge by one modifier, .dsPinnedAction, which shows it at any sheet
+# height and text size. A main action written inside a ScrollView's braces sits at the end of
+# scrolling content, out of sight; a bottom inset that draws buttons or the bar itself is a
+# second pinned bar. The pass sees what is written inside the braces, not a property they name.
+rule main-action-in-scroll '^ios/(DosarCuSina|DosarCuSinaShare)/' "$design_system" '-' - \
+    "Pin a screen's or a sheet's main action with .dsPinnedAction { DSPrimaryButton(…) }, with note: for what is said above it and secondary: for the actions under it. Inside the ScrollView it is lost at the end of the content."
+rule hand-pinned-action "$app" '^ios/Shared/DSBottomBar\.swift$' '-' - \
+    'Pin actions with .dsPinnedAction (note: and secondary: for what goes with them), the one bar, which keeps its height, material and keyboard behaviour everywhere.'
 
 # --- The scan ----------------------------------------------------------------
 
@@ -231,6 +311,44 @@ scan() {
                 if (unless[i] != "-" && code ~ unless[i]) continue
                 print path "\t" id[i] "\t" FNR
             }
+        }
+    ' "$rules" "$map" $files
+
+    # Braces: a DSPrimaryButton inside a ScrollView's braces (main-action-in-scroll), and a
+    # bottom inset that draws the bar or a full-width button (hand-pinned-action). Strings and
+    # comments are left out before braces are counted.
+    # shellcheck disable=SC2086
+    awk -F'\t' -v rules_file="$rules" -v map_file="$map" '
+        function code_of(line) {
+            if (line ~ /^[[:space:]]*(\/\/|\/\*|\*)/) return ""
+            sub(/(^|[[:space:]])\/\/.*$/, "", line)
+            gsub(/"([^"\\]|\\.)*"/, "\"\"", line)
+            return line
+        }
+        function covers(rule_id) {
+            return path ~ inc[rule_id] && !(exc[rule_id] != "-" && path ~ exc[rule_id])
+        }
+        FILENAME == rules_file { inc[$1] = $2; exc[$1] = $3; next }
+        FILENAME == map_file { path_of[$2] = $1; next }
+        FNR == 1 { path = path_of[FILENAME]; depth = 0; scroll_at = -1; inset_at = -1 }
+        {
+            code = code_of($0)
+            if (code == "") next
+            if (scroll_at < 0 && code ~ /(^|[^A-Za-z0-9_])ScrollView[[:space:]]*(\([^)]*\))?[[:space:]]*\{/) {
+                scroll_at = depth
+            } else if (scroll_at >= 0 && code ~ /(^|[^A-Za-z0-9_])DSPrimaryButton[[:space:]]*\(/ && covers("main-action-in-scroll")) {
+                print path "\tmain-action-in-scroll\t" FNR
+            }
+            if (code ~ /safeAreaInset\(edge: *\.bottom/) {
+                if (inset_at < 0) inset_at = depth
+            }
+            if (inset_at >= 0 && code ~ /(^|[^A-Za-z0-9_])(DSBottomBar|DSPrimaryButton|DSSecondaryButton)[[:space:]]*[({]|dsFullWidthButton\(/ && covers("hand-pinned-action")) {
+                print path "\thand-pinned-action\t" FNR
+            }
+            opened = gsub(/\{/, "{", code); closed = gsub(/\}/, "}", code)
+            depth += opened - closed
+            if (scroll_at >= 0 && depth <= scroll_at) scroll_at = -1
+            if (inset_at >= 0 && depth <= inset_at) inset_at = -1
         }
     ' "$rules" "$map" $files
 

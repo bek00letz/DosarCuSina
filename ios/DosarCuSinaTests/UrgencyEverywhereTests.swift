@@ -45,7 +45,7 @@ struct UrgencyEverywhereTests {
         }
 
         // The widget: the same urgency and words, from the snapshot the app writes.
-        let data = try WidgetSnapshot.encoder().encode(WidgetSnapshot.make(from: [item], now: now, calendar: calendar))
+        let data = try WidgetFeed.encode(WidgetFeed.make(from: [item], now: now, calendar: calendar))
         let feed = try #require(WidgetFeed.decode(data))
         let rows = WidgetContent.rows(feed: feed, completed: [], now: now, calendar: calendar, protectedTitle: "", limit: 8)
         if let row = rows.first {
@@ -174,7 +174,7 @@ struct UrgencyEverywhereTests {
             snapshot("Impozit", kind: .tax, due: "2026-11-06"),
             snapshot("Udat", kind: .routine, due: "2026-11-04"),
         ]
-        let feed = try #require(WidgetFeed.decode(WidgetSnapshot.encoder().encode(WidgetSnapshot.make(from: items, now: now, calendar: calendar))))
+        let feed = try #require(WidgetFeed.decode(WidgetFeed.encode(WidgetFeed.make(from: items, now: now, calendar: calendar))))
         for offset in 0..<7 {
             let midnight = calendar.startOfDay(for: today.adding(days: offset, calendar: calendar).noonDate(in: calendar))
             let rows = WidgetContent.rows(feed: feed, completed: [], now: midnight, calendar: calendar, protectedTitle: "", limit: 8)

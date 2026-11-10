@@ -255,6 +255,8 @@ public enum DossierArchiveReader {
 public struct DossierArchiveService {
     public let container: ModelContainer
     private let calendar: Calendar
+    /// The repair list every import looks at again (`DataRepairs`).
+    var repairs: DataRepairCenter = .shared
 
     public init(container: ModelContainer, calendar: Calendar = .dosar) {
         self.container = container
@@ -302,10 +304,12 @@ public struct DossierArchiveService {
     }
 
     /// Writes an already read package into the database, as one unit of work:
-    /// everything or nothing.
+    /// everything or nothing. Then the repair list looks again (`lookForRepairs`).
     @discardableResult
     public func importPackage(_ package: DossierV3.Package, mode: ArchiveImportMode) throws -> ArchiveImportResult {
-        try Self.write(package, mode: mode, container: container, calendar: calendar)
+        let result = try Self.write(package, mode: mode, container: container, calendar: calendar)
+        lookForRepairs()
+        return result
     }
 
     /// The same, away from the main thread, so a large backup never pauses the
@@ -314,9 +318,21 @@ public struct DossierArchiveService {
     public func importPackageAway(_ package: DossierV3.Package, mode: ArchiveImportMode) async throws -> ArchiveImportResult {
         let container = container
         let calendar = calendar
-        return try await Task.detached(priority: .userInitiated) {
+        let result = try await Task.detached(priority: .userInitiated) {
             try Self.write(package, mode: mode, container: container, calendar: calendar)
         }.value
+        lookForRepairs()
+        return result
+    }
+
+    /// What a backup brought may need repairs (deadlines from a first-version copy, a firm
+    /// kept twice): after every import, whichever way it came in, the repair list looks again,
+    /// and the calm prompt says so. The backup is in by then, so a repair list that can't look
+    /// doesn't undo it: the failure is logged, and the list looks again at the next launch.
+    private func lookForRepairs() {
+        PersistenceLog.attempt("Refreshing the repair list after an import") {
+            try repairs.refresh(in: container.mainContext, announce: true)
+        }
     }
 
     /// The one way a package is written: on a context of its own, saved once,

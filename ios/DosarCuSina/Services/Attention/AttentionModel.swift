@@ -90,7 +90,7 @@ public enum AttentionModel {
             case .active:
                 break
             }
-            if let snoozedUntil = obligation.snoozedUntil, snoozedUntil > now {
+            if obligation.isSnoozed(at: now, calendar: calendar) {
                 hidden += 1
                 continue
             }
