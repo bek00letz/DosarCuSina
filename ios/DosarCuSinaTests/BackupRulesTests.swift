@@ -477,24 +477,7 @@ struct BackupFlowTests {
 @MainActor
 @Suite("The lock covers everything")
 struct LockCoverTests {
-    @Test func theAppLockCoversWhileTheSessionIsClosed() {
-        #expect(LockCover.decide(appLockEnabled: true, anySectionLocked: false, isSessionUnlocked: false, isActive: true, isAuthenticating: false) == .lock)
-        #expect(LockCover.decide(appLockEnabled: true, anySectionLocked: false, isSessionUnlocked: false, isActive: false, isAuthenticating: true) == .lock)
-        #expect(LockCover.decide(appLockEnabled: true, anySectionLocked: false, isSessionUnlocked: true, isActive: true, isAuthenticating: false) == nil)
-    }
-
-    @Test func theAppSwitcherPictureIsCoveredWheneverLockedContentCouldShow() {
-        // App lock on: always.
-        #expect(LockCover.decide(appLockEnabled: true, anySectionLocked: false, isSessionUnlocked: true, isActive: false, isAuthenticating: false) == .privacy)
-        // Only section locks, with a section open: covered.
-        #expect(LockCover.decide(appLockEnabled: false, anySectionLocked: true, isSessionUnlocked: true, isActive: false, isAuthenticating: false) == .privacy)
-        // Only section locks, all closed: nothing locked can be on screen.
-        #expect(LockCover.decide(appLockEnabled: false, anySectionLocked: true, isSessionUnlocked: false, isActive: false, isAuthenticating: false) == nil)
-        // No lock at all.
-        #expect(LockCover.decide(appLockEnabled: false, anySectionLocked: false, isSessionUnlocked: true, isActive: false, isAuthenticating: false) == nil)
-        // Not behind a Face ID prompt.
-        #expect(LockCover.decide(appLockEnabled: false, anySectionLocked: true, isSessionUnlocked: true, isActive: false, isAuthenticating: true) == nil)
-    }
+    // When the app is covered, every combination: `LockCoverDecisionTests`.
 
     @Test func linksAndOpenedFilesWaitUntilUnlock() throws {
         let locked = Flag(true)

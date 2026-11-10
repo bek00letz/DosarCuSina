@@ -39,40 +39,66 @@ public enum UnlockResult: Sendable, Equatable {
     case cancelled
 }
 
+/// The clock every lock timing counts on: how long the app was away, for the relock.
+///
+/// It counts on `ContinuousClock`, which keeps counting while the phone sleeps and which the
+/// phone's date, time and time zone settings don't move. So a minute away is a minute whatever
+/// the phone's clock says when the app comes back, and a night with the screen off counts as a
+/// night. (`SuspendingClock` stops while the phone sleeps; `Date` follows the phone's clock.)
+/// Tests give the vault a clock they move themselves.
+public struct LockClock: Sendable {
+    private let read: @Sendable () -> Duration
+
+    /// A clock that reads `elapsed` as how long it has counted since a start of its own.
+    public init(elapsed read: @escaping @Sendable () -> Duration) {
+        self.read = read
+    }
+
+    /// How long the clock has counted since its own start. Only differences mean anything.
+    public var elapsed: Duration { read() }
+
+    /// The phone's clock for time away (`ContinuousClock`).
+    public static let continuous: LockClock = {
+        let start = ContinuousClock.now
+        return LockClock { start.duration(to: .now) }
+    }()
+}
+
 /// Two independent locks over one unlock session:
 /// - the whole-app lock (`AppPreferences.appLockEnabled`, off by default);
 /// - per-section locks (`CategoryTemplate.isSensitive`), on or off whatever the app lock says.
 ///
 /// One successful authentication opens the session for both, so the person is
 /// never asked twice in a row. The session closes when the app has been in the
-/// background longer than `relockAfterBackground`, or on `lock()`.
+/// background longer than `relockAfterBackground`, counted on `LockClock`, or on `lock()`.
 @MainActor
 @Observable
 public final class BiometricVaultManager {
     public static let shared = BiometricVaultManager()
 
     /// How long the app may stay in the background before the session closes.
-    public static let relockAfterBackground: TimeInterval = 60
+    public static let relockAfterBackground: Duration = .seconds(60)
 
     public private(set) var isSessionUnlocked = false
     /// An authentication prompt is on screen.
     public private(set) var isAuthenticating = false
 
     @ObservationIgnored private let authenticator: any BiometricAuthenticating
-    @ObservationIgnored private let now: () -> Date
+    @ObservationIgnored private let clock: LockClock
     @ObservationIgnored private let appLockEnabled: @MainActor () -> Bool
-    @ObservationIgnored private var backgroundedAt: Date?
+    /// When the app went to the background, on `clock`.
+    @ObservationIgnored private var backgroundedAt: Duration?
     @ObservationIgnored private var inFlight: Task<UnlockResult, Never>?
     @ObservationIgnored private var observers: [any NSObjectProtocol] = []
 
     public init(
         authenticator: any BiometricAuthenticating = SystemBiometricAuthenticator(),
-        now: @escaping () -> Date = { Date() },
+        clock: LockClock = .continuous,
         appLockEnabled: @escaping @MainActor () -> Bool = { AppPreferences.shared.appLockEnabled },
         observesAppLifecycle: Bool = true
     ) {
         self.authenticator = authenticator
-        self.now = now
+        self.clock = clock
         self.appLockEnabled = appLockEnabled
         #if canImport(UIKit)
         if observesAppLifecycle {
@@ -179,14 +205,16 @@ public final class BiometricVaultManager {
 
     // MARK: Lifecycle
 
+    /// Time away starts when the app first goes to the background, and counts until it
+    /// comes back.
     func appDidEnterBackground() {
-        backgroundedAt = now()
+        if backgroundedAt == nil { backgroundedAt = clock.elapsed }
     }
 
     func appWillEnterForeground() {
         defer { backgroundedAt = nil }
         guard let backgroundedAt else { return }
-        if now().timeIntervalSince(backgroundedAt) > Self.relockAfterBackground {
+        if clock.elapsed - backgroundedAt > Self.relockAfterBackground {
             lock()
         }
     }

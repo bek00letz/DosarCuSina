@@ -7,7 +7,8 @@ import ImageIO
 /// The one way a picture changes size: in memory (`scaled`, smaller or larger) or while it
 /// is read from its file (`decoded`, upright). Every page kept, thumbnail, hero photo, page
 /// read and page sent to the AI provider is sized here. Flattening a photographed page
-/// lives here too, with the shared Core Image context. Turning is `DocumentPicture.turned`.
+/// lives here too, with the shared Core Image context, and the one bitmap canvas (`canvas`)
+/// every picture is drawn on. Turning is `DocumentPicture.turned`, on that canvas.
 enum ImageScaling {
 
     /// Which way `scaled` may change a picture's size.
@@ -91,10 +92,22 @@ enum ImageScaling {
 
     private static let context = CIContext(options: [.useSoftwareRenderer: false])
 
-    private static func redrawn(_ image: CGImage, width: Int, height: Int) -> CGImage? {
-        guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
+    /// The one bitmap canvas a picture is drawn on, here and by `DocumentPicture` (a page
+    /// turned, a PDF page drawn): `width` × `height` pixels, sRGB, eight bits a channel, no
+    /// alpha. Painted white first when `onWhite`, so what isn't drawn on reads as paper.
+    static func canvas(width: Int, height: Int, onWhite: Bool) -> CGContext? {
+        guard width > 0, height > 0, let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
               let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
                                       space: colorSpace, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else { return nil }
+        if onWhite {
+            context.setFillColor(CGColor(gray: 1, alpha: 1))
+            context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+        }
+        return context
+    }
+
+    private static func redrawn(_ image: CGImage, width: Int, height: Int) -> CGImage? {
+        guard let context = canvas(width: width, height: height, onWhite: false) else { return nil }
         context.interpolationQuality = .high
         context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
         return context.makeImage()

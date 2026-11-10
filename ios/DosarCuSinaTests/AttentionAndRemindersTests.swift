@@ -405,7 +405,7 @@ struct NotificationReconcilerTests {
 @Suite("Widget snapshot")
 struct WidgetSnapshotTests {
     @Test func protectedItemsAreRedactedAndOrderFollowsAttention() throws {
-        let widget = WidgetSnapshot.make(from: [
+        let widget = WidgetFeed.make(from: [
             snapshot("Analize", kind: .health, due: "2026-11-03", asset: (UUID(), "Profil medical"), isSensitive: true),
             snapshot("ITP", kind: .legal, due: "2026-11-05", asset: (UUID(), "VW Golf")),
         ], now: noon("2026-11-02"), calendar: .bucharest)
@@ -415,21 +415,21 @@ struct WidgetSnapshotTests {
         #expect(hidden.title != "Analize")
         #expect(hidden.assetName == nil)
 
-        let data = try WidgetSnapshot.encoder().encode(widget)
+        let data = try WidgetFeed.encode(widget)
         let json = String(decoding: data, as: UTF8.self)
         #expect(json.contains("\"dueDate\":\"2026-11-05\""))
-        #expect(try WidgetSnapshot.decoder().decode(WidgetSnapshot.self, from: data) == widget)
+        #expect(WidgetFeed.decode(data) == widget)
     }
 
     @Test func examplesNeverReachWidgetsEvenWhenTheyAreAllThereIs() {
-        let onlyExamples = WidgetSnapshot.make(from: [
+        let onlyExamples = WidgetFeed.make(from: [
             snapshot("RCA exemplu", kind: .insurance, due: "2026-11-01", isExample: true),
             snapshot("ITP exemplu", kind: .legal, due: "2026-11-03", isExample: true),
         ], now: noon("2026-11-02"), calendar: .bucharest)
         #expect(onlyExamples.items.isEmpty)
         #expect(onlyExamples.needsActionCount == 0)
 
-        let mixed = WidgetSnapshot.make(from: [
+        let mixed = WidgetFeed.make(from: [
             snapshot("RCA exemplu", kind: .insurance, due: "2026-11-01", isExample: true),
             snapshot("ITP", kind: .legal, due: "2026-11-05"),
         ], now: noon("2026-11-02"), calendar: .bucharest)
@@ -441,7 +441,7 @@ struct WidgetSnapshotTests {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
         let writer = WidgetSnapshotWriter(directory: directory)
-        let snapshot = WidgetSnapshot.make(from: [snapshot("ITP", kind: .legal, due: "2026-11-05")], now: noon("2026-11-02"), calendar: .bucharest)
+        let snapshot = WidgetFeed.make(from: [snapshot("ITP", kind: .legal, due: "2026-11-05")], now: noon("2026-11-02"), calendar: .bucharest)
         #expect(writer.write(snapshot))
         var later = snapshot
         later.generatedAt = later.generatedAt.addingTimeInterval(60)
@@ -476,8 +476,8 @@ struct SideEffectsExampleTests {
         #expect(await center.pendingReminders.isEmpty)
         #expect(await center.badge == 0)
         #expect(await center.promptCount == 0)
-        let data = try Data(contentsOf: directory.appending(path: WidgetSnapshot.fileName))
-        let widget = try WidgetSnapshot.decoder().decode(WidgetSnapshot.self, from: data)
+        let data = try Data(contentsOf: directory.appending(path: WidgetFeed.fileName))
+        let widget = try #require(WidgetFeed.decode(data))
         #expect(widget.items.isEmpty)
 
         // A real obligation next to the examples does reach both.
@@ -486,7 +486,7 @@ struct SideEffectsExampleTests {
         await coordinator.reconcileNow()
         #expect(await !center.pendingReminders.isEmpty)
         #expect(await center.pendingReminders.keys.allSatisfy { !$0.isEmpty })
-        let updated = try WidgetSnapshot.decoder().decode(WidgetSnapshot.self, from: Data(contentsOf: directory.appending(path: WidgetSnapshot.fileName)))
+        let updated = try #require(WidgetFeed.decode(Data(contentsOf: directory.appending(path: WidgetFeed.fileName))))
         #expect(updated.items.map(\.title) == ["RCA"])
     }
 }

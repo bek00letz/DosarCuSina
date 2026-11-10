@@ -1,6 +1,7 @@
 import Foundation
 
-/// Text written for machines, not people: ISO days and hex digests. ASCII digits,
+/// Text written for machines, not people: ISO days, moments, hex digests and the JSON the
+/// app, its widgets and its share extension keep and hand each other. ASCII digits,
 /// zero-padded, never localized, so stored values, archives and fingerprints read the
 /// same on every phone. The one place such text is written; what people read goes
 /// through `DosarFormat`, `Money` and `RomanianNumber` instead.
@@ -32,4 +33,53 @@ public enum MachineText {
     }
 
     private static let hexDigits = Array("0123456789abcdef")
+
+    // MARK: JSON
+
+    /// How machine JSON is laid out. Every layout sorts its keys, so the same value always
+    /// gives the same bytes.
+    public enum JSONLayout: Sendable {
+        /// One line: what the app, its widgets and its share extension keep and hand each
+        /// other (the widget snapshot, the share inbox, a widget's completions, outside
+        /// failures).
+        case compact
+        /// Indented, slashes left as they are: a `.dosar` archive, which people may open.
+        case readable
+    }
+
+    /// The one JSON encoder for machine text: moments as ISO 8601 in UTC, to the second
+    /// (`2026-11-02T08:00:00Z`), keys sorted.
+    public static func jsonEncoder(_ layout: JSONLayout = .compact) -> JSONEncoder {
+        let encoder = JSONEncoder()
+        switch layout {
+        case .compact: encoder.outputFormatting = [.sortedKeys]
+        case .readable: encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+        }
+        encoder.dateEncodingStrategy = .iso8601
+        return encoder
+    }
+
+    /// The one JSON decoder for machine text. Reads every moment `jsonEncoder` writes and
+    /// what earlier versions and other writers wrote: with or without fractional seconds,
+    /// with any UTC offset, or a day alone (its start in UTC).
+    public static func jsonDecoder() -> JSONDecoder {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+            let raw = try container.decode(String.self)
+            if let date = moment(raw) { return date }
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Not an ISO 8601 timestamp: \(raw)")
+        }
+        return decoder
+    }
+
+    /// A moment written as ISO 8601, as `jsonDecoder` reads it; nil when it isn't one.
+    public static func moment(_ raw: String) -> Date? {
+        if let date = try? Date(raw, strategy: .iso8601) { return date }
+        if let date = try? Date(raw, strategy: Date.ISO8601FormatStyle(includingFractionalSeconds: true)) { return date }
+        if raw.count == 10, let day = CalendarDay(isoString: raw) {
+            return day.startDate(in: CalendarDay.isoCalendar)
+        }
+        return nil
+    }
 }
