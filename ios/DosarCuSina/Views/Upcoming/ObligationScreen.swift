@@ -546,7 +546,7 @@ private struct ObligationCompleteSheet: View {
                 isAnotherBill = false
                 if amount == nil, let total = document?.field(.total)?.value.money {
                     amount = total.amount
-                    currency = total.currencyCode
+                    currency = total.currency
                 }
             }
             .confirmationDialog("Actul nou", isPresented: $isChoosingSource, titleVisibility: .visible) {

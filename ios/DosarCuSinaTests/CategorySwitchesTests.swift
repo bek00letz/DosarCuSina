@@ -225,7 +225,7 @@ struct CustomCategoryBehaviourTests {
             CaptureField(key: .provider, value: .text("ENGIE Romania S.A."), confidence: 0.9, sourceText: nil, tier: .heuristic),
             CaptureField(key: .serviceKind, value: .text(ServiceKind.gas), confidence: 0.9, sourceText: nil, tier: .heuristic),
             CaptureField(key: .clcCode, value: .text("DEG0000000000001"), confidence: 0.9, sourceText: nil, tier: .heuristic),
-            CaptureField(key: .total, value: .money(CaptureMoney(amount: 120, currencyCode: "RON")), confidence: 0.9, sourceText: nil, tier: .heuristic),
+            CaptureField(key: .total, value: .money(Money(120, currency: "RON")), confidence: 0.9, sourceText: nil, tier: .heuristic),
         ]
         let routing = CaptureRouter.route(kind: .utilityInvoice, kindConfidence: 0.9, fields: fields)
         let result = CaptureResult(kind: .utilityInvoice, kindConfidence: 0.9, fields: fields, suggestions: routing.suggestions, reminder: routing.reminder,

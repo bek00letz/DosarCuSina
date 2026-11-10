@@ -12,7 +12,7 @@ import Testing
 @Suite("On-device model")
 struct OnDeviceModelTests {
 
-    static let today = CaptureDay(year: 2026, month: 11, day: 10)!
+    static let today = CalendarDay(printedYear: 2026, month: 11, day: 10)!
 
     // MARK: The schema, kind by kind
 
@@ -146,11 +146,11 @@ struct OnDeviceModelTests {
         """, kind: .rcaPolicy, text: Self.policy)
         #expect(fields[.provider]?.value.text == "Exemplu Asigurări S.A.")
         #expect(fields[.policyNumber] != nil)
-        #expect(fields[.expiryDate]?.value.day == CaptureDay(year: 2027, month: 11, day: 6))
-        #expect(fields[.startDate]?.value.day == CaptureDay(year: 2026, month: 11, day: 7))
+        #expect(fields[.expiryDate]?.value.day == CalendarDay(printedYear: 2027, month: 11, day: 6))
+        #expect(fields[.startDate]?.value.day == CalendarDay(printedYear: 2026, month: 11, day: 7))
         #expect(fields[.licensePlate]?.value.text == "B 123 ABC")
         #expect(fields[.claimsPhone] != nil)
-        #expect(fields[.total]?.value == .money(CaptureMoney(amount: 1240, currencyCode: "RON")))
+        #expect(fields[.total]?.value == .money(Money(1240, currency: "RON")))
         #expect(fields[.coverageType]?.value.text == InsuranceCover.rca)
         #expect(fields.values.allSatisfy { $0.confidence == ModelAnswerMapper.printedInText })
     }
@@ -261,9 +261,9 @@ struct OnDeviceModelTests {
         let model = RecordingModel()
         let engine = CaptureEngine(analyzer: CaptureAnalyzer(), recognizer: CaptureEngineTests.FixedRecognizer(text: text), normalizer: nil,
                                    onDeviceModel: model, cloudModel: nil, store: nil)
-        _ = try await engine.capture(CaptureRequest(.text(text), options: CaptureOptions(storeDocument: false, referenceDate: Self.today.date() ?? Date())))
+        _ = try await engine.capture(CaptureRequest(.text(text), options: CaptureOptions(storeDocument: false, referenceDate: Self.today.startDate())))
         let input = try #require(model.inputs.first)
-        let analysis = CaptureAnalyzer().analyze(text: text, barcodes: [], referenceDate: Self.today.date() ?? Date())
+        let analysis = CaptureAnalyzer().analyze(text: text, barcodes: [], referenceDate: Self.today.startDate())
         let reading = ReadingArbiter.KindReading(kind: analysis.kind, confidence: analysis.kindConfidence, evidence: analysis.kindEvidence)
         #expect(input.kindIsOpen == ReadingArbiter.kindIsOpen(reading))
         #expect(input.kind == analysis.kind)

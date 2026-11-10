@@ -82,7 +82,7 @@ public struct CaptureAnalyzer: Sendable {
         var notices: [CaptureNotice] = []
         var fields = FieldSet()
         var text = lines.joiningRows()
-        let today = CaptureDay(date: referenceDate)
+        let today = CalendarDay(referenceDate)
         // Two-digit years on documents no rule covers take the century nearest today.
         let years = DateWindow.around(today)
 
@@ -379,7 +379,7 @@ public struct CaptureAnalyzer: Sendable {
         }
         if let warranty = RomanianFieldExtractor.warrantyMonths(in: text) {
             fields.add(.warrantyMonths, .number(Decimal(warranty.months)), 0.75, warranty.source)
-            if let start = fields.day(.purchaseDate), let until = start.addingMonths(warranty.months) {
+            if let start = fields.day(.purchaseDate), let until = start.printed(addingMonths: warranty.months) {
                 fields.add(.warrantyUntil, .day(until), 0.7, warranty.source)
             }
         }
@@ -407,7 +407,7 @@ struct FieldSet {
     }
 
     func text(_ key: CaptureFieldKey) -> String? { fields.first { $0.key == key }?.value.text }
-    func day(_ key: CaptureFieldKey) -> CaptureDay? { fields.first { $0.key == key }?.value.day }
+    func day(_ key: CaptureFieldKey) -> CalendarDay? { fields.first { $0.key == key }?.value.day }
 }
 
 // MARK: - Merging tiers

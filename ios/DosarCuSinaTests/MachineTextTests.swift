@@ -17,7 +17,7 @@ struct MachineTextTests {
     func dayTypesAgree() {
         #expect(CalendarDay(year: 2031, month: 3, day: 2).isoString == "2031-03-02")
         #expect(MonthDay(month: 11, day: 1).isoString == "11-01")
-        #expect(CaptureDay(year: 2031, month: 3, day: 2)?.description == "2031-03-02")
+        #expect(CalendarDay(printedYear: 2031, month: 3, day: 2)?.description == "2031-03-02")
     }
 
     @Test("Digests are lowercase hex, two digits a byte")

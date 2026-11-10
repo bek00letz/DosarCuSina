@@ -279,9 +279,9 @@ struct UndoReceiptTests {
                 CaptureField(key: .serviceKind, value: .text(ServiceKind.gas), confidence: 0.9, tier: .heuristic),
                 CaptureField(key: .clcCode, value: .text("DEG0000000000001"), confidence: 0.9, tier: .heuristic),
                 CaptureField(key: .invoiceNumber, value: .text("EXM 0000001"), confidence: 0.9, tier: .heuristic),
-                CaptureField(key: .issueDate, value: .day(CaptureDay(year: 2026, month: 10, day: 5)!), confidence: 0.9, tier: .heuristic),
-                CaptureField(key: .dueDate, value: .day(CaptureDay(year: 2026, month: 11, day: 20)!), confidence: 0.9, tier: .heuristic),
-                CaptureField(key: .total, value: .money(CaptureMoney(amount: total, currencyCode: "RON")), confidence: 0.9, tier: .heuristic),
+                CaptureField(key: .issueDate, value: .day(CalendarDay(printedYear: 2026, month: 10, day: 5)!), confidence: 0.9, tier: .heuristic),
+                CaptureField(key: .dueDate, value: .day(CalendarDay(printedYear: 2026, month: 11, day: 20)!), confidence: 0.9, tier: .heuristic),
+                CaptureField(key: .total, value: .money(Money(total, currency: "RON")), confidence: 0.9, tier: .heuristic),
             ]
             let routing = CaptureRouter.route(kind: .utilityInvoice, kindConfidence: 0.9, fields: fields)
             return CaptureResult(kind: .utilityInvoice, kindConfidence: 0.9, fields: fields, suggestions: routing.suggestions, reminder: routing.reminder,
@@ -289,7 +289,7 @@ struct UndoReceiptTests {
         }
 
         private func policy(_ document: CapturedDocumentRef) -> CaptureResult {
-            let expiry = CaptureDay(date: Calendar.current.date(byAdding: .day, value: 375, to: Date())!)
+            let expiry = CalendarDay(Calendar.current.date(byAdding: .day, value: 375, to: Date())!)
             return CaptureResult(kind: .rcaPolicy, kindConfidence: 0.95, fields: [
                 CaptureField(key: .expiryDate, value: .day(expiry), confidence: 0.9, tier: .heuristic),
                 CaptureField(key: .policyNumber, value: .text("RO/00/X/000000000"), confidence: 0.9, tier: .heuristic),

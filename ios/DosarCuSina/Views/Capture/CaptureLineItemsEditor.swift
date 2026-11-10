@@ -45,7 +45,7 @@ struct CaptureLineItemsEditor: View {
                             .multilineTextAlignment(.leading)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         if let amount = line.amount {
-                            Text(verbatim: CaptureMapping.money(amount).formattedCompact())
+                            Text(verbatim: amount.formattedCompact())
                                 .dsFont(.body, numeric: true)
                                 .foregroundStyle(DS.Palette.label)
                         }
@@ -126,7 +126,7 @@ private struct CaptureLineItemSheet: View {
         .onAppear {
             text = line?.description ?? ""
             amount = line?.amount?.amount
-            currencyCode = line?.amount?.currencyCode ?? currency
+            currencyCode = line?.amount?.currency ?? currency
         }
     }
 
@@ -136,7 +136,7 @@ private struct CaptureLineItemSheet: View {
         let edited = CaptureLineItem(
             description: description,
             quantity: line?.quantity,
-            amount: amount.map { CaptureMoney(amount: $0, currencyCode: currencyCode) },
+            amount: amount.map { Money($0, currency: currencyCode) },
             componentKey: CatalogComponentResolver().componentKey(for: description)
         )
         onSave(edited)

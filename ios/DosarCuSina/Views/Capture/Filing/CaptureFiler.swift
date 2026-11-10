@@ -169,7 +169,7 @@ struct CaptureFiler {
     /// follows, else any expiry, next dose, warranty end or due date it carries.
     static func nextDay(in result: CaptureResult) -> CalendarDay? {
         let keys: [CaptureFieldKey] = (result.kind.profile.deadlineField.map { [$0] } ?? []) + [.expiryDate, .nextDoseDate, .warrantyUntil, .dueDate]
-        return keys.lazy.compactMap { result.field($0)?.value.day }.first.map(CaptureMapping.calendarDay)
+        return keys.lazy.compactMap { result.field($0)?.value.day }.first
     }
 
     // MARK: Plan
@@ -951,7 +951,7 @@ struct CaptureFiler {
 
     /// The day a bill is logged on: the day it was issued, else today.
     static func billDay(_ review: CaptureReview, today: CalendarDay) -> CalendarDay {
-        review.value(.issueDate)?.day.map(CaptureMapping.calendarDay) ?? today
+        review.value(.issueDate)?.day ?? today
     }
 
     /// The home's subscription the bill or contract belongs to, updated with what was

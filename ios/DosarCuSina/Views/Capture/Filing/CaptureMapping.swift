@@ -64,15 +64,17 @@ enum CaptureMapping {
         .warrantyMonths: [PurchaseFieldKeys.warrantyMonths],
     ]
 
-    /// Field roles a capture field can fill when the template has no specific match.
-    private static func role(for key: CaptureFieldKey) -> FieldRole? {
-        switch key.role {
-        case .purchaseDate: return .purchaseDate
-        case .purchasePrice: return .purchasePrice
-        case .retailer: return .retailer
-        case .warrantyUntil: return .warrantyUntil
-        case .expiry: return .expiryDate
-        case .keyFact, .title, .none: return nil
+    /// The template field role a capture field fills when the template has no specific
+    /// match (`candidates`). Only roles one value can fill whatever the category: a key fact
+    /// or an identifier is a field the template names, never a role guessed from the kind.
+    static func role(for key: CaptureFieldKey) -> FieldRole? {
+        switch key {
+        case .purchaseDate: .purchaseDate
+        case .purchasePrice: .purchasePrice
+        case .retailer: .retailer
+        case .warrantyUntil: .warrantyUntil
+        case .expiryDate: .expiryDate
+        default: nil
         }
     }
 
@@ -123,9 +125,9 @@ enum CaptureMapping {
         case (.text, .number(let number)):
             return .text(NSDecimalNumber(decimal: number).stringValue)
         case (.date, .day(let day)):
-            return .date(calendarDay(day))
+            return .date(day)
         case (.money, .money(let money)):
-            return .money(Money(money.amount, currency: money.currencyCode))
+            return .money(money)
         case (.number, .number(let number)):
             return .number(NSDecimalNumber(decimal: number).doubleValue)
         case (.number, .metric(let number, _)):
@@ -135,14 +137,6 @@ enum CaptureMapping {
         default:
             return nil
         }
-    }
-
-    static func calendarDay(_ day: CaptureDay) -> CalendarDay {
-        CalendarDay(year: day.year, month: day.month, day: day.day)
-    }
-
-    static func money(_ money: CaptureMoney) -> Money {
-        Money(money.amount, currency: money.currencyCode)
     }
 
     /// Values compared without spaces, dashes or case, so "B 123 ABC" finds "B-123-ABC".
@@ -260,8 +254,8 @@ enum CaptureMapping {
             if PaymentCardNetwork.all.contains(text) { return PaymentCardNetwork.label(for: text) ?? text }
             return text
         case .day(let day):
-            return DosarFormat.longDay(CalendarDay(year: day.year, month: day.month, day: day.day))
-        case .money(let amount): return Self.money(amount).formattedCompact()
+            return DosarFormat.longDay(day)
+        case .money(let amount): return amount.formattedCompact()
         case .number(let number): return NSDecimalNumber(decimal: number).stringValue
         case .metric(let number, let unit): return "\(NSDecimalNumber(decimal: number).stringValue) \(unit.label)"
         case .lineItems(let items): return items.map(\.description).joined(separator: ", ")

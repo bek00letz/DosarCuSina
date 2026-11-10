@@ -13,7 +13,7 @@ import Testing
 struct ReadingArbiterTests {
 
     static let referenceDate = Date(timeIntervalSince1970: 1_793_577_600)
-    static let today = CaptureDay(date: referenceDate)
+    static let today = CalendarDay(referenceDate)
 
     /// An RCA policy whose words leave the classifier unsure (it also mentions a subscription
     /// and consumption), so a provider-specific reader can claim it.
@@ -81,7 +81,7 @@ struct ReadingArbiterTests {
         #expect(read.kindEvidence == .secondOpinion)
         #expect(read.kindAlternatives == [CaptureAlternative(.utilityInvoice, source: .phone)])
         #expect(read.readWithCloudModel)
-        let expiry = try #require(CaptureDay(year: 2027, month: 10, day: 31))
+        let expiry = try #require(CalendarDay(printedYear: 2027, month: 10, day: 31))
         #expect(read.field(.expiryDate)?.value.day == expiry)
         #expect(read.reminder?.blueprintKey == BuiltInBlueprints.vehicleRCA)
         #expect(read.field(.provider)?.value.text == "Exemplu Asigurări S.A.", "The bill reader's provider is not the policy's")
@@ -92,7 +92,7 @@ struct ReadingArbiterTests {
         var review = CaptureReview(result: read, assets: [car], context: context)
         #expect(review.kind == .rcaPolicy)
         #expect(review.blueprintKey == "vehicle.rca")
-        #expect(review.reminderDay == CaptureMapping.calendarDay(expiry))
+        #expect(review.reminderDay == expiry)
         #expect(!review.remindsToPay)
         #expect(review.destination == .asset(car.id))
         #expect(review.kindAlternatives == [CaptureAlternative(.utilityInvoice, source: .phone)], "Pe telefon părea: …")
@@ -246,7 +246,7 @@ struct ReadingArbiterTests {
 
     @Test("A weak reading: unsure kind, missing essentials, a failed check, little text, a provider's format alone")
     func weakReading() throws {
-        let expiry = try #require(CaptureDay(year: 2031, month: 4, day: 12))
+        let expiry = try #require(CalendarDay(printedYear: 2031, month: 4, day: 12))
         #expect(ReadingArbiter.weaknesses(of: result()).isEmpty)
         #expect(!ReadingArbiter.isWeak(result()))
 

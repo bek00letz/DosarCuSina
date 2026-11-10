@@ -65,7 +65,7 @@ enum ContractReader {
         if let found = layout.found(for: .monthlyPrice),
            let amount = RomanianFieldExtractor.amounts(inLine: found.folded).first(where: { $0.amount > 0 }) {
             let currency = RomanianFieldExtractor.currency(inLine: found.folded) ?? RomanianFieldExtractor.dominantCurrency(in: text)
-            fields.append(field(.monthlyPrice, .money(CaptureMoney(amount: amount.amount, currencyCode: currency)), 0.65, found.source))
+            fields.append(field(.monthlyPrice, .money(Money(amount.amount, currency: currency)), 0.65, found.source))
         }
         return fields
     }

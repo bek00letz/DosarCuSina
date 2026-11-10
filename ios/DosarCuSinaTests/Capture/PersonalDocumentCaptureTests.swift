@@ -78,7 +78,7 @@ struct PersonalDocumentCaptureTests {
         #expect(result.field(.givenNames)?.value.text == "ION")
         #expect(result.field(.personalNumber)?.value.text == "1800101990006")
         #expect(result.field(.documentNumber)?.value.text == "123456/2026")
-        #expect(result.field(.issueDate)?.value.day == CaptureDay(year: 2026, month: 10, day: 15))
+        #expect(result.field(.issueDate)?.value.day == CalendarDay(printedYear: 2026, month: 10, day: 15))
         #expect(result.field(.issuer)?.value.text == "IPJ Exemplu")
         #expect(result.field(.recordResult)?.value.text == "NU FIGUREAZĂ ÎN CAZIERUL JUDICIAR")
         #expect(result.field(.sex) == nil, "A cazier carries only what its template reads")
@@ -149,11 +149,11 @@ struct PersonalDocumentCaptureTests {
         #expect(result.kind == .healthInsuranceCard)
         #expect(result.field(.surname)?.value.text == "EXEMPLU")
         #expect(result.field(.givenNames)?.value.text == "MARIA")
-        #expect(result.field(.birthDate)?.value.day == CaptureDay(year: 1985, month: 6, day: 15))
+        #expect(result.field(.birthDate)?.value.day == CalendarDay(printedYear: 1985, month: 6, day: 15))
         #expect(result.field(.personalNumber)?.value.text == "2850615990011")
         #expect(result.field(.issuer)?.value.text == "1234567890 - CNAS")
         #expect(result.field(.documentNumber)?.value.text == "80642000000000000001")
-        #expect(result.field(.expiryDate)?.value.day == CaptureDay(year: 2029, month: 12, day: 31))
+        #expect(result.field(.expiryDate)?.value.day == CalendarDay(printedYear: 2029, month: 12, day: 31))
         #expect(result.recognizedText.contains("80642000000000000001"), "A health card's number isn't a bank card's")
     }
 
@@ -182,7 +182,7 @@ struct PersonalDocumentCaptureTests {
         #expect(result.field(.cardNetwork)?.value.text == PaymentCardNetwork.visa)
         #expect(result.field(.issuer)?.value.text == "Banca Transilvania")
         #expect(result.field(.documentVariant)?.value.text == DocumentType.Variant.bankCardDebit)
-        #expect(result.field(.expiryDate)?.value.day == CaptureDay(year: 2028, month: 8, day: 31), "Valid through the end of the month")
+        #expect(result.field(.expiryDate)?.value.day == CalendarDay(printedYear: 2028, month: 8, day: 31), "Valid through the end of the month")
         try expectNoCardNumber(in: result)
         #expect(result.recognizedText.contains("\(PaymentCardNumbers.mask) 1111"))
     }
@@ -283,7 +283,7 @@ struct PersonalDocumentCaptureTests {
         let answer = try JSONDecoder().decode(JSONValue.self, from: Data("""
         {"documentKind":"bankCard","cardLastFour":"4111111111111111","holderName":"ION EXEMPLU 4111 1111 1111 1111","expiryDate":"2028-08-31","cardNetwork":"cardNetwork.visa"}
         """.utf8))
-        let fields = ModelAnswerMapper.fields(from: answer, asked: schema.questions, recognizedText: "", today: try #require(CaptureDay(year: 2026, month: 11, day: 3)),
+        let fields = ModelAnswerMapper.fields(from: answer, asked: schema.questions, recognizedText: "", today: try #require(CalendarDay(printedYear: 2026, month: 11, day: 3)),
                                               resolver: CatalogComponentResolver())
         #expect(fields.first { $0.key == CaptureFieldKey.cardLastFour }?.value.text == "1111")
         let reading = CaptureResult(kind: .bankCard, kindConfidence: 0.9, fields: fields, suggestions: [], reminder: nil,

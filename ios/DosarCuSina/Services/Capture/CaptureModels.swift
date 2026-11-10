@@ -1,8 +1,10 @@
 import Foundation
 
-// The value types every capture produces. They don't depend on the app's
-// SwiftData models, so the same pipeline can run in the app, in a Share
-// Extension, or in a test, and Core's model layer adopts the result at the edge.
+// The value types every capture produces. They don't depend on the app's SwiftData
+// models, only on its value types (`CalendarDay`, `Money`, `MeasurementUnit`), so the
+// pipeline runs off the main thread and in a test, and filing adopts the result at the
+// edge. Capture runs only in the app: the share extension hands what it gets to the
+// inbox (`ShareInbox`), and the app reads it.
 
 // MARK: - Document kind
 
@@ -54,88 +56,21 @@ public enum CaptureDocumentKind: String, Codable, Sendable, CaseIterable {
 
 // MARK: - Values
 
-/// A calendar day with no time and no time zone.
-///
-/// Expiry and due dates are days, not instants. Storing them as `Date` invites
-/// off-by-one bugs when the time zone changes, so the pipeline keeps them as days
-/// and converts at the edge with ``date(in:)``.
-public struct CaptureDay: Hashable, Codable, Sendable, Comparable, CustomStringConvertible {
-    public let year: Int
-    public let month: Int
-    public let day: Int
-
-    /// Returns `nil` for impossible days such as 31 February.
-    public init?(year: Int, month: Int, day: Int) {
-        guard (1...12).contains(month), day >= 1, year >= 1900, year <= 2200 else { return nil }
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "UTC") ?? .gmt
-        guard let date = calendar.date(from: DateComponents(year: year, month: month, day: day)),
-              calendar.component(.day, from: date) == day,
-              calendar.component(.month, from: date) == month else { return nil }
-        self.year = year
-        self.month = month
-        self.day = day
-    }
-
-    public init(date: Date, calendar: Calendar = .current) {
-        let parts = calendar.dateComponents([.year, .month, .day], from: date)
-        // A Gregorian date always has these components.
-        self.year = parts.year ?? 1970
-        self.month = parts.month ?? 1
-        self.day = parts.day ?? 1
-    }
-
-    /// Midnight at the start of this day in the given calendar.
-    public func date(in calendar: Calendar = .current) -> Date? {
-        calendar.date(from: DateComponents(year: year, month: month, day: day))
-    }
-
-    /// Adds whole months, clamping to the last day of a shorter month (31 Jan + 1 month = 28/29 Feb).
-    public func addingMonths(_ months: Int) -> CaptureDay? {
-        let total = (year * 12 + (month - 1)) + months
-        let newYear = total / 12
-        let newMonth = total % 12 + 1
-        var clampedDay = day
-        while clampedDay > 27 {
-            if let result = CaptureDay(year: newYear, month: newMonth, day: clampedDay) { return result }
-            clampedDay -= 1
-        }
-        return CaptureDay(year: newYear, month: newMonth, day: clampedDay)
-    }
-
-    public static func < (lhs: CaptureDay, rhs: CaptureDay) -> Bool {
-        (lhs.year, lhs.month, lhs.day) < (rhs.year, rhs.month, rhs.day)
-    }
-
-    /// ISO 8601 calendar date, e.g. `2031-03-12`.
-    public var description: String {
-        MachineText.isoDay(year: year, month: month, day: day)
-    }
-}
-
-/// An amount of money in one currency. Never added across currencies.
-public struct CaptureMoney: Hashable, Codable, Sendable {
-    public let amount: Decimal
-    /// ISO 4217 code, e.g. `RON`, `EUR`.
-    public let currencyCode: String
-
-    public init(amount: Decimal, currencyCode: String) {
-        self.amount = amount
-        self.currencyCode = currencyCode
-    }
-}
+// Days are the app's `CalendarDay` (read off a page with `init(printedYear:month:day:)`,
+// which knows the years a document prints) and amounts its `Money`: capture runs only in
+// the app, so it keeps no copies of its own.
 
 /// One line of an invoice or receipt: a part, a service, or labour.
 public struct CaptureLineItem: Hashable, Codable, Sendable {
     public let description: String
     public let quantity: Decimal?
-    public let amount: CaptureMoney?
+    public let amount: Money?
     /// The catalog component guessed from the description (e.g. `brakes.padsFront`), if any.
     public let componentKey: String?
     /// Whether the line is labour rather than a part.
     public let isLabour: Bool
 
-    public init(description: String, quantity: Decimal? = nil, amount: CaptureMoney? = nil, componentKey: String? = nil, isLabour: Bool? = nil) {
+    public init(description: String, quantity: Decimal? = nil, amount: Money? = nil, componentKey: String? = nil, isLabour: Bool? = nil) {
         self.description = description
         self.quantity = quantity
         self.amount = amount
@@ -147,16 +82,16 @@ public struct CaptureLineItem: Hashable, Codable, Sendable {
 /// A typed field value.
 public enum CaptureValue: Hashable, Codable, Sendable {
     case text(String)
-    case day(CaptureDay)
-    case money(CaptureMoney)
+    case day(CalendarDay)
+    case money(Money)
     case number(Decimal)
     /// A meter reading such as an odometer: `value` in `unit` (kilometres, engine hours, m³).
     case metric(value: Decimal, unit: MeasurementUnit)
     case lineItems([CaptureLineItem])
 
     public var text: String? { if case .text(let value) = self { value } else { nil } }
-    public var day: CaptureDay? { if case .day(let value) = self { value } else { nil } }
-    public var money: CaptureMoney? { if case .money(let value) = self { value } else { nil } }
+    public var day: CalendarDay? { if case .day(let value) = self { value } else { nil } }
+    public var money: Money? { if case .money(let value) = self { value } else { nil } }
     public var lineItems: [CaptureLineItem]? { if case .lineItems(let value) = self { value } else { nil } }
 }
 
@@ -186,17 +121,6 @@ public enum CaptureTier: String, Codable, Sendable, CaseIterable, Comparable {
     }
 
     public static func < (lhs: CaptureTier, rhs: CaptureTier) -> Bool { lhs.rank < rhs.rank }
-}
-
-/// The role a field can play once it lands on an asset. Raw values match Core's field roles.
-public enum CaptureFieldRole: String, Codable, Sendable {
-    case keyFact
-    case purchaseDate
-    case purchasePrice
-    case retailer
-    case warrantyUntil
-    case expiry
-    case title
 }
 
 /// A stable field identifier. Keys are plain strings so they survive the `.dosar`
@@ -306,22 +230,6 @@ public struct CaptureFieldKey: RawRepresentable, Hashable, Codable, Sendable, Ex
     public static let microchip: CaptureFieldKey = "microchip"
     public static let vaccineName: CaptureFieldKey = "vaccineName"
     public static let nextDoseDate: CaptureFieldKey = "nextDoseDate"
-
-    /// The asset-field role this key maps to, if it has one.
-    public var role: CaptureFieldRole? {
-        switch self {
-        case .policyNumber, .claimsPhone, .vin, .licensePlate, .podCode, .clcCode,
-             .clientCode, .contractNumber, .phoneNumber, .microchip, .documentNumber, .serialNumber:
-            .keyFact
-        case .purchaseDate: .purchaseDate
-        case .purchasePrice: .purchasePrice
-        case .retailer: .retailer
-        case .warrantyUntil: .warrantyUntil
-        case .expiryDate: .expiry
-        case .productName: .title
-        default: nil
-        }
-    }
 }
 
 /// One extracted fact, with how sure we are and where it came from.
@@ -403,13 +311,13 @@ public struct CaptureSuggestion: Hashable, Codable, Sendable {
 /// (`ObligationBlueprint.reminders`), never capture's.
 public struct CaptureReminderHint: Hashable, Codable, Sendable {
     /// The day that matters (expiry, due date, next dose).
-    public let day: CaptureDay
+    public let day: CalendarDay
     /// The deadline, as a blueprint of the binder's catalog: `vehicle.rca`, `document.renew`.
     public let blueprintKey: String
     /// The category whose blueprint it is.
     public let templateKey: String
 
-    public init(day: CaptureDay, blueprintKey: String, templateKey: String) {
+    public init(day: CalendarDay, blueprintKey: String, templateKey: String) {
         self.day = day
         self.blueprintKey = blueprintKey
         self.templateKey = templateKey

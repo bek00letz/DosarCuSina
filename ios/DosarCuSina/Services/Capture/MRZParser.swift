@@ -34,9 +34,9 @@ public enum MRZParser {
         public let issuingCountry: String
         public let documentNumber: String
         public let nationality: String
-        public let birthDate: CaptureDay?
+        public let birthDate: CalendarDay?
         public let sex: String?
-        public let expiryDate: CaptureDay?
+        public let expiryDate: CalendarDay?
         public let surname: String
         public let givenNames: String
         /// Optional data. On Romanian passports this holds the personal numeric code.
@@ -129,7 +129,7 @@ public enum MRZParser {
     static func parse(lines: [String], format: Format, referenceDate: Date) -> Result? {
         let rows = lines.map { Array($0) }
         guard rows.allSatisfy({ $0.count == format.lineLength }) else { return nil }
-        let today = CaptureDay(date: referenceDate)
+        let today = CalendarDay(referenceDate)
 
         switch format {
         case .td3:
@@ -250,7 +250,7 @@ public enum MRZParser {
         let birth: DateWindow
         let expiry: DateWindow
 
-        init(kind: CaptureDocumentKind, today: CaptureDay) {
+        init(kind: CaptureDocumentKind, today: CalendarDay) {
             birth = CaptureConsistency.window(for: .birthDate, kind: kind, today: today)
             expiry = CaptureConsistency.window(for: .expiryDate, kind: kind, today: today)
         }
@@ -433,7 +433,7 @@ public enum MRZParser {
     /// Converts YYMMDD, deciding the century with the date's plausibility window
     /// (`DateWindow.resolve`), so an expiry is never in the 1900s and a birth year
     /// after this year's belongs to the last century.
-    private static func day(fromYYMMDD value: String, in window: DateWindow) -> CaptureDay? {
+    private static func day(fromYYMMDD value: String, in window: DateWindow) -> CalendarDay? {
         guard value.count == 6, value.allSatisfy(\.isNumber),
               let yy = Int(value.prefix(2)),
               let mm = Int(value.dropFirst(2).prefix(2)),

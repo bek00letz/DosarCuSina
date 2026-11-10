@@ -17,7 +17,7 @@ struct LineItemRulesTests {
     }
 
     @Test func proseAndZeroAmountsAreNotLines() {
-        let ron = { (amount: Decimal) in CaptureMoney(amount: amount, currencyCode: "RON") }
+        let ron = { (amount: Decimal) in Money(amount, currency: "RON") }
         let lines = [
             CaptureLineItem(description: "Plăcuțe frână față", amount: ron(320)),
             CaptureLineItem(description: "În scopul respectării și îndeplinirii obligațiilor legale", amount: ron(0)),
@@ -37,7 +37,7 @@ struct LineItemRulesTests {
             assets: [], context: context
         )
         #expect(review.showsLineItems, "A receipt offers lines even when none were read")
-        review.lineItems = [CaptureLineItem(description: "Aragaz Exemplu", amount: CaptureMoney(amount: 1899, currencyCode: "RON"))]
+        review.lineItems = [CaptureLineItem(description: "Aragaz Exemplu", amount: Money(1899, currency: "RON"))]
         #expect(review.value(.lineItems)?.lineItems?.count == 1)
         #expect(review.fields.first { $0.key == .lineItems }?.tier == .deterministic, "What the person typed is certain")
         review.lineItems = []

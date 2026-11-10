@@ -181,7 +181,7 @@ struct CaptureReview: Identifiable {
     var reminderDay: CalendarDay? {
         let field = kind.profile.deadlineField
         if field == .minimumPeriodEnd { return minimumPeriodEnd }
-        if let day = field.flatMap({ value($0)?.day }) { return CaptureMapping.calendarDay(day) }
+        if let day = field.flatMap({ value($0)?.day }) { return day }
         return validityEnd
     }
 
@@ -190,7 +190,7 @@ struct CaptureReview: Identifiable {
     var validityEnd: CalendarDay? {
         guard kind.profile.deadlineField == .expiryDate, value(.expiryDate) == nil,
               let issued = value(.issueDate)?.day else { return nil }
-        return DocumentType.validUntil(issued: CaptureMapping.calendarDay(issued), type: kind.profile.documentType,
+        return DocumentType.validUntil(issued: issued, type: kind.profile.documentType,
                                        variant: value(.documentVariant)?.text)
     }
 
@@ -211,22 +211,22 @@ struct CaptureReview: Identifiable {
     var minimumPeriodEnd: CalendarDay? {
         func edited(_ key: CaptureFieldKey) -> Bool { fields.contains { $0.key == key && $0.isEdited } }
         let printed = value(.minimumPeriodEnd)?.day
-        let worked: CaptureDay? = {
+        let worked: CalendarDay? = {
             guard let start = value(.startDate)?.day, let months = value(.minimumMonths), case .number(let count) = months else { return nil }
-            return start.addingMonths(NSDecimalNumber(decimal: count).intValue)
+            return start.printed(addingMonths: NSDecimalNumber(decimal: count).intValue)
         }()
         let termsEdited = edited(.startDate) || edited(.minimumMonths)
         let end = (printed != nil && (edited(.minimumPeriodEnd) || !termsEdited)) ? printed : (worked ?? printed)
-        return end.map(CaptureMapping.calendarDay)
+        return end
     }
 
     var total: Money? {
-        (value(.total)?.money ?? value(.purchasePrice)?.money).map(CaptureMapping.money)
+        (value(.total)?.money ?? value(.purchasePrice)?.money)
     }
 
     /// The date printed on the document.
     var documentDay: CalendarDay? {
-        kind.profile.documentDateFields.lazy.compactMap { value($0)?.day }.first.map(CaptureMapping.calendarDay)
+        kind.profile.documentDateFields.lazy.compactMap { value($0)?.day }.first
     }
 
     /// The last day the document itself is valid, as read (a policy's end, an identity

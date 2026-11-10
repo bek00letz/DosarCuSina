@@ -9,7 +9,7 @@ private func field(_ key: CaptureFieldKey, _ value: CaptureValue, confidence: Do
 
 private func day(_ iso: String) -> CaptureValue {
     let parts = iso.split(separator: "-").compactMap { Int($0) }
-    return .day(CaptureDay(year: parts[0], month: parts[1], day: parts[2])!)
+    return .day(CalendarDay(printedYear: parts[0], month: parts[1], day: parts[2])!)
 }
 
 /// A capture result routed the way the engine routes it.
@@ -31,7 +31,7 @@ private func gasBill(clc: String = "DEG0000000000001", issued: String = "2026-10
         field(.invoiceNumber, .text("EX \(issued.filter(\.isNumber))")),
         field(.issueDate, day(issued)),
         field(.dueDate, day(due)),
-        field(.total, .money(CaptureMoney(amount: Decimal(string: "245.30")!, currencyCode: "RON"))),
+        field(.total, .money(Money(Decimal(string: "245.30")!, currency: "RON"))),
     ]
     if let supplyAddress { fields.append(field(.supplyAddress, .text(supplyAddress))) }
     if let directDebit { fields.append(field(.directDebit, .text(directDebit))) }

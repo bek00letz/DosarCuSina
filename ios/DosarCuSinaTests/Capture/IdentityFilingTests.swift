@@ -21,11 +21,11 @@ struct IdentityFilingTests {
             field(.givenNames, .text("CORINA IOANA")),
             field(.holderName, .text("CORINA IOANA MANOLE")),
             field(.personalNumber, .text("2900520990015"), confidence: 0.97, tier: .deterministic),
-            field(.birthDate, .day(CaptureDay(year: 1990, month: 5, day: 20)!), confidence: 0.97, tier: .deterministic),
+            field(.birthDate, .day(CalendarDay(printedYear: 1990, month: 5, day: 20)!), confidence: 0.97, tier: .deterministic),
             field(.sex, .text("F"), confidence: 0.97, tier: .deterministic),
             field(.nationality, .text("ROU")),
             field(.documentNumber, .text("SP1236343")),
-            field(.expiryDate, .day(CaptureDay(year: 2035, month: 4, day: 6)!)),
+            field(.expiryDate, .day(CalendarDay(printedYear: 2035, month: 4, day: 6)!)),
         ]
     }
 
@@ -153,7 +153,7 @@ struct IdentityFilingTests {
         var withZone = cardFields.filter { $0.key != .documentNumber && $0.key != .expiryDate }
         let zone = CaptureField.machineReadableSource
         withZone.append(CaptureField(key: .documentNumber, value: .text("SP1236343"), confidence: 0.99, sourceText: zone, tier: .deterministic))
-        withZone.append(CaptureField(key: .expiryDate, value: .day(CaptureDay(year: 2035, month: 4, day: 7)!), confidence: 0.99, sourceText: zone, tier: .deterministic))
+        withZone.append(CaptureField(key: .expiryDate, value: .day(CalendarDay(printedYear: 2035, month: 4, day: 7)!), confidence: 0.99, sourceText: zone, tier: .deterministic))
         let routing = CaptureRouter.route(kind: .identityCard, kindConfidence: 0.98, fields: withZone)
         var after = CaptureReview(result: CaptureResult(kind: .identityCard, kindConfidence: 0.98, fields: withZone, suggestions: routing.suggestions,
                                                         reminder: routing.reminder, recognizedText: "", barcodes: [], document: nil, notices: []),
@@ -165,7 +165,7 @@ struct IdentityFilingTests {
         #expect(edited.alternatives == [zoneValue], "The zone's value is offered beside it")
         #expect(after.fields.first { $0.key == .surname }?.alternatives.isEmpty == true, "Nothing to offer when they agree")
         // A field they didn't touch takes the zone's value.
-        #expect(after.value(.expiryDate) == .day(CaptureDay(year: 2035, month: 4, day: 7)!))
+        #expect(after.value(.expiryDate) == .day(CalendarDay(printedYear: 2035, month: 4, day: 7)!))
         #expect(after.fields.first { $0.key == .expiryDate }?.alternatives.isEmpty == true)
 
         let index = try #require(after.fields.firstIndex { $0.key == .documentNumber })

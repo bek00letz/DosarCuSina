@@ -29,16 +29,16 @@ struct RomanianFieldExtractorTests {
         let line = RomanianText.fold("Emisă la 15.11.2026, scadentă pe 3 decembrie 2026, recepție 01/XII/2026, ISO 2026-12-20")
         let days = RomanianFieldExtractor.dates(inLine: line, index: 0).map(\.day)
         #expect(days == [
-            CaptureDay(year: 2026, month: 11, day: 15)!,
-            CaptureDay(year: 2026, month: 12, day: 3)!,
-            CaptureDay(year: 2026, month: 12, day: 1)!,
-            CaptureDay(year: 2026, month: 12, day: 20)!,
+            CalendarDay(printedYear: 2026, month: 11, day: 15)!,
+            CalendarDay(printedYear: 2026, month: 12, day: 3)!,
+            CalendarDay(printedYear: 2026, month: 12, day: 1)!,
+            CalendarDay(printedYear: 2026, month: 12, day: 20)!,
         ])
     }
 
     @Test("Impossible dates are rejected")
     func impossibleDates() {
-        #expect(CaptureDay(year: 2026, month: 2, day: 30) == nil)
+        #expect(CalendarDay(printedYear: 2026, month: 2, day: 30) == nil)
         #expect(RomanianFieldExtractor.dates(inLine: "31.02.2026", index: 0).isEmpty)
     }
 
@@ -49,7 +49,7 @@ struct RomanianFieldExtractorTests {
         Data scadenței: 21.11.2026
         """)
         let due = try #require(RomanianFieldExtractor.labelledDate(["scadent"], in: text))
-        #expect(due.day == CaptureDay(year: 2026, month: 11, day: 21))
+        #expect(due.day == CalendarDay(printedYear: 2026, month: 11, day: 21))
     }
 
     @Test("Company tax ID checksum (CUI)")

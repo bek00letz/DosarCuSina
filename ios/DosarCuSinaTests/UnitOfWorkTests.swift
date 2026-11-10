@@ -147,7 +147,7 @@ struct UnitOfWorkTests {
         let store = CaptureDocumentStore()
         let captured = try await store.store(.init(pages: [CaptureDocumentStoreTests.page(width: 800, height: 520, seed: 9)], kind: .identityCard))
         let id = try #require(captured.ref.pendingID)
-        let expiry = try #require(CaptureDay(year: 2032, month: 3, day: 15))
+        let expiry = try #require(CalendarDay(printedYear: 2032, month: 3, day: 15))
         let fields = [
             CaptureField(key: .surname, value: .text("EXEMPLU"), confidence: 0.8, tier: .heuristic),
             CaptureField(key: .givenNames, value: .text("ION"), confidence: 0.8, tier: .heuristic),

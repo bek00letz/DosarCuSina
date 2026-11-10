@@ -108,7 +108,7 @@ struct VisitDraft: Equatable {
         let fields = Dictionary(result.fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
         for line in fields[.lineItems]?.lineItems ?? [] {
             let cost = line.amount?.amount
-            if let currency = line.amount?.currencyCode { self.currency = currency }
+            if let currency = line.amount?.currency { self.currency = currency }
             let key = line.componentKey.flatMap { key in components.contains { $0.key == key } ? key : nil }
                 ?? (line.isLabour ? nil : ComponentCatalog.match(line.description, in: components)?.key)
             if let key {
@@ -124,10 +124,10 @@ struct VisitDraft: Equatable {
         }
         if total == nil, let money = fields[.total]?.money {
             total = money.amount
-            currency = money.currencyCode
+            currency = money.currency
         }
-        if let day = (fields[.issueDate] ?? fields[.purchaseDate])?.day, let date = day.date(in: calendar) {
-            self.date = CalendarDay(date, calendar: calendar).noonDate(in: calendar)
+        if let day = (fields[.issueDate] ?? fields[.purchaseDate])?.day {
+            self.date = day.noonDate(in: calendar)
         }
         if odometer == nil, case .metric(let value, _)? = fields[.odometer] {
             odometer = NSDecimalNumber(decimal: value).doubleValue

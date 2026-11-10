@@ -68,7 +68,7 @@ struct PolicyFilingTests {
     /// bill's fields, but the policy's own text kept for reading again.
     private func readAsABill() -> CaptureResult {
         let today = Date(timeIntervalSince1970: 1_793_577_600) // 2 November 2026
-        let due = CaptureDay(year: 2026, month: 11, day: 20)!
+        let due = CalendarDay(printedYear: 2026, month: 11, day: 20)!
         return CaptureResult(
             kind: .utilityInvoice, kindConfidence: 0.7,
             fields: [CaptureField(key: .dueDate, value: .day(due), confidence: 0.6, tier: .heuristic)],
@@ -88,9 +88,9 @@ struct PolicyFilingTests {
         #expect(corrected.kind == .rcaPolicy)
         #expect(corrected.blueprintKey == "vehicle.rca")
         #expect(!corrected.remindsToPay, "Not a bill any more")
-        let expiry = try #require(CaptureDay(year: 2027, month: 10, day: 31))
+        let expiry = try #require(CalendarDay(printedYear: 2027, month: 10, day: 31))
         #expect(corrected.value(.expiryDate) == .day(expiry), "The policy's own expiry, read from its text")
-        #expect(corrected.reminderDay == CaptureMapping.calendarDay(expiry))
+        #expect(corrected.reminderDay == expiry)
         #expect(corrected.value(.dueDate) == nil, "The bill's payment date doesn't stay on a policy")
     }
 
@@ -118,10 +118,10 @@ struct PolicyFilingTests {
         #expect(review.addableKeys.contains(.expiryDate))
         #expect(!review.addableKeys.contains(.dueDate), "Only what this kind carries")
         review.addField(.expiryDate)
-        let expiry = try #require(CaptureDay(year: 2027, month: 10, day: 31))
+        let expiry = try #require(CalendarDay(printedYear: 2027, month: 10, day: 31))
         let index = try #require(review.fields.firstIndex { $0.key == .expiryDate })
         review.fields[index].confirm(.day(expiry))
         #expect(!review.addableKeys.contains(.expiryDate))
-        #expect(review.reminderDay == CaptureMapping.calendarDay(expiry))
+        #expect(review.reminderDay == expiry)
     }
 }

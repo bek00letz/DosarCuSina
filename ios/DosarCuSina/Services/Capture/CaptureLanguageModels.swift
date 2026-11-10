@@ -12,12 +12,12 @@ public struct SemanticInput: Sendable {
     public let kind: CaptureDocumentKind
     public let knownFields: [CaptureField]
     /// "Today", for checking dates against their plausibility windows.
-    public let today: CaptureDay
+    public let today: CalendarDay
     /// Whether a model's view of the kind can still change it (`ReadingArbiter.kindIsOpen`).
     /// Apple's model is asked what the document is only then.
     public let kindIsOpen: Bool
 
-    public init(text: String, firstPage: CGImage?, kind: CaptureDocumentKind, knownFields: [CaptureField], today: CaptureDay = CaptureDay(date: Date()),
+    public init(text: String, firstPage: CGImage?, kind: CaptureDocumentKind, knownFields: [CaptureField], today: CalendarDay = CalendarDay(Date()),
                 kindIsOpen: Bool = false) {
         self.text = text
         self.firstPage = firstPage

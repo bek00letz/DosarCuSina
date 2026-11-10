@@ -24,11 +24,11 @@ struct BillReaderTests {
     }
 
     private func day(_ year: Int, _ month: Int, _ day: Int) -> CaptureValue {
-        .day(CaptureDay(year: year, month: month, day: day)!)
+        .day(CalendarDay(printedYear: year, month: month, day: day)!)
     }
 
     private func money(_ amount: String, _ currency: String = "RON") -> CaptureValue {
-        .money(CaptureMoney(amount: Decimal(string: amount)!, currencyCode: currency))
+        .money(Money(Decimal(string: amount)!, currency: currency))
     }
 
     private func invoiceNumber(_ analysis: CaptureAnalyzer.Analysis) -> String {
@@ -244,9 +244,9 @@ struct BillReaderTests {
     }
 
     @Test func romanNumeralMonths() {
-        let cases: [(String, CaptureDay)] = [
-            ("15.XI.2024", CaptureDay(year: 2024, month: 11, day: 15)!), ("01.IV.2026", CaptureDay(year: 2026, month: 4, day: 1)!),
-            ("28/II/2025", CaptureDay(year: 2025, month: 2, day: 28)!), ("12-VIII-2026", CaptureDay(year: 2026, month: 8, day: 12)!),
+        let cases: [(String, CalendarDay)] = [
+            ("15.XI.2024", CalendarDay(printedYear: 2024, month: 11, day: 15)!), ("01.IV.2026", CalendarDay(printedYear: 2026, month: 4, day: 1)!),
+            ("28/II/2025", CalendarDay(printedYear: 2025, month: 2, day: 28)!), ("12-VIII-2026", CalendarDay(printedYear: 2026, month: 8, day: 12)!),
         ]
         for (raw, expected) in cases {
             #expect(RomanianFieldExtractor.dates(inLine: RomanianText.fold(raw), index: 0).first?.day == expected, "\(raw)")

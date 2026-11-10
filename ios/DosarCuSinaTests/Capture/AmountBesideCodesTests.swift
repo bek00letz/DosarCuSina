@@ -38,7 +38,7 @@ struct AmountBesideCodesTests {
     @Test("The owner's policy: the premium, never the bonus-malus class, an instalment or a limit")
     func ownersPremium() {
         let analysis = CaptureAnalyzer().analyze(text: RCAPages.contract, referenceDate: Date(timeIntervalSince1970: 1_793_577_600), as: .rcaPolicy)
-        #expect(analysis.fields.first { $0.key == .total }?.value.money == CaptureMoney(amount: Decimal(string: "1234.56")!, currencyCode: "RON"))
+        #expect(analysis.fields.first { $0.key == .total }?.value.money == Money(Decimal(string: "1234.56")!, currency: "RON"))
         #expect(analysis.fields.first { $0.key == .bonusMalusClass }?.value.text == "B6")
     }
 }

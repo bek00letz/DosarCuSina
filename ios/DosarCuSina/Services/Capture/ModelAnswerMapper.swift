@@ -45,7 +45,7 @@ enum ModelAnswerMapper {
     }
 
     /// The fields of an answer to `questions`. A property it wasn't asked for is ignored.
-    static func fields(from answer: JSONValue, asked questions: ModelQuestions, recognizedText: String, today: CaptureDay,
+    static func fields(from answer: JSONValue, asked questions: ModelQuestions, recognizedText: String, today: CalendarDay,
                        resolver: any CaptureComponentResolving) -> [CaptureField] {
         // Dates and the holder follow the kind the reader saw.
         let kind = Self.kind(from: answer) ?? questions.kind
@@ -82,7 +82,7 @@ enum ModelAnswerMapper {
         // The zone first: when its check digits pass, its values are the ones kept.
         if let zone = questions.fields.first(where: { $0.format == .machineReadableZone }),
            let lines = answer[zone.name]?.array?.compactMap(\.string), !lines.isEmpty,
-           let mrz = MRZParser.parse(text: lines.joined(separator: "\n"), referenceDate: today.date() ?? Date()),
+           let mrz = MRZParser.parse(text: lines.joined(separator: "\n"), referenceDate: today.noonDate()),
            mrz.allChecksValid {
             for field in CaptureAnalyzer.machineReadableFields(mrz) {
                 add(field.key, field.value, .checked, inText: true, source: CaptureField.machineReadableSource)
@@ -126,7 +126,7 @@ enum ModelAnswerMapper {
                 let currency = normalizedCurrency(raw["currency"]?.string)
                 let amounts = Set(printed.folded.flatMap { RomanianFieldExtractor.amounts(inLine: $0).map(\.amount) })
                 let inText = amounts.contains(decimal)
-                add(key, .money(CaptureMoney(amount: decimal, currencyCode: currency)), inText ? .grounded : .candidate, inText: inText)
+                add(key, .money(Money(decimal, currency: currency)), inText ? .grounded : .candidate, inText: inText)
             case .integer:
                 guard let value = ModelQuestions.wholeNumber(raw, kind: key == .odometer ? .kilometres : .count), value >= 0, value < 10_000_000 else { continue }
                 if key == .minimumMonths, !ContractReader.plausibleMonths.contains(value) { continue }
@@ -143,7 +143,7 @@ enum ModelAnswerMapper {
                 let currency = normalizedCurrency(nil)
                 let items = (raw.array ?? []).compactMap { item -> CaptureLineItem? in
                     guard let description = item["description"]?.string?.trimmingCharacters(in: .whitespaces), !description.isEmpty else { return nil }
-                    let money = item["amount"]?.double.flatMap { Decimal(string: String($0)) }.map { CaptureMoney(amount: $0, currencyCode: currency) }
+                    let money = item["amount"]?.double.flatMap { Decimal(string: String($0)) }.map { Money($0, currency: currency) }
                     return CaptureLineItem(description: description, amount: money, componentKey: resolver.componentKey(for: description))
                 }
                 // From the phone's text, only the lines printed in it.
@@ -203,10 +203,10 @@ enum ModelAnswerMapper {
         RomanianText.fold(text).uppercased().filter { $0.isLetter || $0.isNumber }
     }
 
-    static func isoDay(_ value: String) -> CaptureDay? {
+    static func isoDay(_ value: String) -> CalendarDay? {
         let parts = value.prefix(10).split(separator: "-").compactMap { Int($0) }
         guard parts.count == 3 else { return nil }
-        return CaptureDay(year: parts[0], month: parts[1], day: parts[2])
+        return CalendarDay(printedYear: parts[0], month: parts[1], day: parts[2])
     }
 
     static func normalizedCurrency(_ value: String?) -> String {

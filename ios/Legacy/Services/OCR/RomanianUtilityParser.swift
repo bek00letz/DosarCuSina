@@ -646,15 +646,15 @@ public struct LegacyUtilityInvoiceParser: CaptureSpecializedParser {
             add(.meterIndex, .number(Decimal(string: String(index)) ?? Decimal(index)))
         }
         if let total = bill.totalAmount, let amount = Decimal(string: String(total)) {
-            add(.total, .money(CaptureMoney(amount: amount, currencyCode: bill.currency)))
+            add(.total, .money(Money(amount, currency: bill.currency)))
         }
         return CaptureAnalyzer.SpecializedParse(kind: .utilityInvoice, fields: fields)
     }
 
     /// The utility parser returns dates at midnight UTC; read them back as calendar days.
-    static func utcDay(_ date: Date) -> CaptureDay {
+    static func utcDay(_ date: Date) -> CalendarDay {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "UTC") ?? .gmt
-        return CaptureDay(date: date, calendar: calendar)
+        return CalendarDay(date, calendar: calendar)
     }
 }

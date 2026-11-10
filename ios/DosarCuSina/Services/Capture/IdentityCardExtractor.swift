@@ -24,7 +24,7 @@ enum IdentityDocumentReader {
     static let failedFormat = 0.45
 
     /// - Parameter today: Decides the century of two-digit years, through each date's window.
-    static func read(_ text: CaptureText, template: IdentityTemplate, today: CaptureDay) -> [CaptureField] {
+    static func read(_ text: CaptureText, template: IdentityTemplate, today: CalendarDay) -> [CaptureField] {
         let layout = LabelledLayout(text: text, labels: template.labelTable)
         func window(_ key: CaptureFieldKey) -> DateWindow { CaptureConsistency.window(for: key, kind: template.kind, today: today) }
         var fields: [CaptureField] = []
@@ -155,13 +155,13 @@ enum IdentityDocumentReader {
     /// A card's expiry printed as month and year ("08/28", "08/2028"): the last day of
     /// that month, the two-digit year read in the expiry's window. The latest one when a
     /// card prints two (a "member since" month is earlier).
-    static func cardExpiry(in value: String, window: DateWindow) -> CaptureDay? {
+    static func cardExpiry(in value: String, window: DateWindow) -> CalendarDay? {
         let pattern = #"(?<![\d/])(0[1-9]|1[0-2])\s?[/\-.]\s?(\d{4}|\d{2})(?![\d/])"#
-        let days = TextPattern.matches(pattern, in: value).compactMap { match -> CaptureDay? in
+        let days = TextPattern.matches(pattern, in: value).compactMap { match -> CalendarDay? in
             guard let month = match[1].flatMap(Int.init), let yearText = match[2], let year = Int(yearText) else { return nil }
-            let first = yearText.count == 2 ? window.resolve(twoDigitYear: year, month: month, day: 1) : CaptureDay(year: year, month: month, day: 1)
+            let first = yearText.count == 2 ? window.resolve(twoDigitYear: year, month: month, day: 1) : CalendarDay(printedYear: year, month: month, day: 1)
             guard let first else { return nil }
-            return (28...31).reversed().lazy.compactMap { CaptureDay(year: first.year, month: first.month, day: $0) }.first
+            return (28...31).reversed().lazy.compactMap { CalendarDay(printedYear: first.year, month: first.month, day: $0) }.first
         }
         return days.filter(window.contains).max() ?? days.max()
     }
@@ -169,7 +169,7 @@ enum IdentityDocumentReader {
     /// A validity range at its label: two dates, the first before the second, on the
     /// value or on the line after the label. Each date's two-digit year is read in its
     /// own window ("12.03.18-31.12.28": issued 2018, valid until 2028).
-    private static func dateRange(at found: LabelledLayout<IdentityLabelKey>.Found?, start: DateWindow, end: DateWindow) -> (start: CaptureDay, end: CaptureDay, source: String)? {
+    private static func dateRange(at found: LabelledLayout<IdentityLabelKey>.Found?, start: DateWindow, end: DateWindow) -> (start: CalendarDay, end: CalendarDay, source: String)? {
         guard let found else { return nil }
         let starts = RomanianFieldExtractor.dates(inLine: found.folded, index: found.label.line, window: start)
         let ends = RomanianFieldExtractor.dates(inLine: found.folded, index: found.label.line, window: end)
@@ -280,7 +280,7 @@ extension RomanianFieldExtractor {
     }
 
     /// The birth date a CNP encodes: sex and century digit, then YYMMDD.
-    static func birthDate(fromCNP cnp: String) -> CaptureDay? {
+    static func birthDate(fromCNP cnp: String) -> CalendarDay? {
         let numbers = cnp.compactMap(\.wholeNumberValue)
         guard numbers.count == 13 else { return nil }
         let century: Int
@@ -294,7 +294,7 @@ extension RomanianFieldExtractor {
         let month = numbers[3] * 10 + numbers[4]
         let day = numbers[5] * 10 + numbers[6]
         guard (1...12).contains(month), (1...31).contains(day) else { return nil }
-        return CaptureDay(year: year, month: month, day: day)
+        return CalendarDay(printedYear: year, month: month, day: day)
     }
 
     /// The sex a CNP encodes: odd first digits are men, even ones women (9: foreigners, not encoded).
