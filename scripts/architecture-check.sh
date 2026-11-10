@@ -166,6 +166,13 @@ rule month-length "$app" '^ios/Shared/CalendarDay\.swift$' \
     '31 *, *2[89] *, *31|case +4 *, *6 *, *9 *, *11|case +1 *, *3 *, *5 *, *7 *, *8|[lL]eap_?[yY]ear|% *400([^0-9]|$)|% *100 *[!=]= *0|[yY]ear[A-Za-z]* *% *4([^0-9]|$)|range\(of: *\.day, *in: *\.month' - \
     "Move a day by months with CalendarDay.adding(months:dayOfMonth:) and ask a month's length with CalendarDay.daysInMonth(calendar:): the calendar knows month ends and 29 February once."
 
+# Machine JSON writes a moment one way and reads every form earlier versions wrote: the
+# shared coders in MachineText, so the widget snapshot, the share inbox, a widget's
+# completions and archives can't drift apart.
+rule json-date-coding "$app" '^ios/Shared/MachineText\.swift$' \
+    'date(En|De)codingStrategy' - \
+    "Code machine JSON with MachineText.jsonEncoder() and MachineText.jsonDecoder() (.readable for an archive): one way to write a moment, and one reader for every form earlier versions wrote."
+
 # A minimum under 44 anywhere; a fixed height under 44 on a line that is tapped
 # (a button, a tap gesture, a tap shape). The rule reads one line at a time, so a
 # button whose label sets the height on a later line isn't seen.

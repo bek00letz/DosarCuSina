@@ -200,10 +200,8 @@ public struct OutsideActionFailures: Sendable {
 
     public func all() -> [Failure] {
         guard let data = defaults.data(forKey: Self.key) else { return [] }
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
         do {
-            return try decoder.decode([Failure].self, from: data)
+            return try MachineText.jsonDecoder().decode([Failure].self, from: data)
         } catch {
             // Written by this app only; something unreadable is dropped rather than shown wrong.
             defaults.removeObject(forKey: Self.key)
@@ -242,10 +240,8 @@ public struct OutsideActionFailures: Sendable {
         if items.isEmpty {
             defaults.removeObject(forKey: Self.key)
         } else {
-            let encoder = JSONEncoder()
-            encoder.dateEncodingStrategy = .iso8601
             do {
-                defaults.set(try encoder.encode(items), forKey: Self.key)
+                defaults.set(try MachineText.jsonEncoder().encode(items), forKey: Self.key)
             } catch {
                 return
             }
