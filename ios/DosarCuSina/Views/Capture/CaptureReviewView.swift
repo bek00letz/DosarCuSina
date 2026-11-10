@@ -88,8 +88,8 @@ struct CaptureReviewView: View {
                 notices
                 fieldsSection
                 destinationSection
-                if review.kind.profile.photoIsOptIn {
-                    KeepPhotoChoice(keepsPhoto: $review.keepsPhotoOnRequest)
+                if review.photoIsOnRequest {
+                    KeepPhotoChoice(keepsPhoto: $review.keepsPhotoOnRequest, kind: review.kind)
                 }
                 reminderSection
             }

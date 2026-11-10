@@ -87,10 +87,11 @@ public enum PaymentCardNumbers {
         return result
     }
 
-    /// Whether the text holds something shaped like a card number (the "anywhere" rule).
-    public static func containsCardNumber(_ text: String) -> Bool {
+    /// Whether the text holds something shaped like a card number (the "anywhere" rule), leaving
+    /// out a run that is one of `kept` (a value its field's type keeps whole), as `redact` does.
+    public static func containsCardNumber(_ text: String, keeping kept: KeptWhole = .nothing) -> Bool {
         guard text.contains(where: \.isNumber) else { return false }
-        return !cardNumbers(in: text).isEmpty
+        return cardNumbers(in: text).contains { !kept.keeps($0) }
     }
 
     /// The last four digits of the card number in the text: a full number by the

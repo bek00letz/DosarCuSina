@@ -500,6 +500,9 @@ public struct CaptureResult: Sendable, Codable, Hashable {
     /// What the readers read, kept so the page can be read again as another kind
     /// (`CaptureEngine.reinterpret`) without new pictures. Nil for a hand-made result.
     public let source: CaptureReadingSource?
+    /// The text as read showed a whole card number, masked since (`withoutCardNumbers`): kept
+    /// so `showsCardNumber` still knows once the text no longer shows the digits.
+    public let showedCardNumber: Bool
 
     public init(
         id: UUID = UUID(),
@@ -516,7 +519,8 @@ public struct CaptureResult: Sendable, Codable, Hashable {
         kindAlternatives: [CaptureAlternative<CaptureDocumentKind>] = [],
         fieldAlternatives: [CaptureFieldAlternative] = [],
         readWithCloudModel: Bool = false,
-        source: CaptureReadingSource? = nil
+        source: CaptureReadingSource? = nil,
+        showedCardNumber: Bool = false
     ) {
         self.id = id
         self.kind = kind
@@ -533,6 +537,7 @@ public struct CaptureResult: Sendable, Codable, Hashable {
         self.fieldAlternatives = fieldAlternatives
         self.readWithCloudModel = readWithCloudModel
         self.source = source
+        self.showedCardNumber = showedCardNumber
     }
 
     /// The best field for a key.

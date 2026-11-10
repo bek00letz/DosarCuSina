@@ -93,7 +93,7 @@ struct CaptureReview: Identifiable {
     /// its kind (a cazier, a bank card), not a loose paper on the person.
     var filesAsPersonalDocument = false
     /// The person asked to keep the photo of a document whose photo is kept only on
-    /// request ("Păstrează și poza cardului"). Off until they turn it on.
+    /// request (`photoIsOnRequest`, "Păstrează și poza"). Off until they turn it on.
     var keepsPhotoOnRequest = false
     /// The person confirmed that the bank pays this subscription by direct debit, as the
     /// bill says ("Plătesc prin debit direct"). Never on until they turn it on.
@@ -199,10 +199,16 @@ struct CaptureReview: Identifiable {
         DocumentType.validityMonths(type: kind.profile.documentType, variant: value(.documentVariant)?.text)
     }
 
-    /// Saving keeps the document's photo: always, except where the kind keeps it only on
-    /// request (a bank card) and the person hasn't asked.
+    /// The document's photo is kept only when the person asks ("Păstrează și poza"): a bank
+    /// card, or any page that shows a whole card number (`CaptureResult.photoIsOnRequest`).
+    var photoIsOnRequest: Bool {
+        result.photoIsOnRequest(as: kind)
+    }
+
+    /// Saving keeps the document's photo: always, except where it is kept only on request
+    /// (`photoIsOnRequest`) and the person hasn't asked.
     var keepsPhoto: Bool {
-        !kind.profile.photoIsOptIn || keepsPhotoOnRequest
+        !photoIsOnRequest || keepsPhotoOnRequest
     }
 
     /// When a contract's minimum period ends: as printed, or its length after its start.

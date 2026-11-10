@@ -254,8 +254,12 @@ public final class CaptureEngine: Sendable {
         // capture before this point means nothing is sent. A page that may be a bank card
         // (`PhoneOnlyReading`, on what the phone read of these very pages) is never sent,
         // whoever asked: the tap, the automatic reading, or a reading again with added pages.
+        // A card number counts as the result's rule will count it: leaving out what the phone's
+        // readers read for a field that keeps it whole (a pet's microchip).
         try Task.checkCancellation()
-        let staysOnPhone = PhoneOnlyReading.mayBeOne(kinds: [analysis.kind, reading.kind], text: text)
+        let phoneRead = (analysis.fields + modelFields).map { (key: $0.key, value: $0.value) }
+        let staysOnPhone = PhoneOnlyReading.mayBeOne(kinds: [analysis.kind, reading.kind], text: text,
+                                                     mask: CaptureCardMask(kind: reading.kind, read: phoneRead))
         if options.useCloudModel, staysOnPhone {
             CaptureLog.engine.info("Not sending to the AI provider: read only on the phone")
             notices.append(.readOnPhoneOnly)
@@ -368,7 +372,8 @@ public final class CaptureEngine: Sendable {
             kindAlternatives: result.kindAlternatives.filter { $0.value != kind },
             fieldAlternatives: settled.alternatives,
             readWithCloudModel: result.readWithCloudModel,
-            source: result.source
+            source: result.source,
+            showedCardNumber: result.showedCardNumber
         ).withoutCardNumbers()
     }
 
