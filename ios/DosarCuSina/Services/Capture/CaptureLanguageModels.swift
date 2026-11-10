@@ -7,7 +7,16 @@ import FoundationModels
 /// What a language-model tier receives: the recognized text, the first page, and what the
 /// deterministic tiers already concluded.
 public struct SemanticInput: Sendable {
+    /// The text a model may read, the only text any tier puts in front of one: what the phone
+    /// recognised with its card numbers masked by the rule capture's result goes through
+    /// (`CaptureCardMask`): strictly when the phone takes the page for a bank card, else
+    /// keeping whole what the phone read for a field whose type tells it apart (a microchip).
+    /// A card's last four digits, its network, expiry and bank stay, so its questions can be
+    /// answered.
     public let text: String
+    /// The text as recognised, only for checking that an answer is printed on the page
+    /// (`ModelAnswerMapper`); never put in a question.
+    public let recognizedText: String
     public let firstPage: CGImage?
     public let kind: CaptureDocumentKind
     public let knownFields: [CaptureField]
@@ -19,7 +28,8 @@ public struct SemanticInput: Sendable {
 
     public init(text: String, firstPage: CGImage?, kind: CaptureDocumentKind, knownFields: [CaptureField], today: CalendarDay = CalendarDay(Date()),
                 kindIsOpen: Bool = false) {
-        self.text = text
+        self.text = CaptureCardMask(kind: kind, read: knownFields.map { (key: $0.key, value: $0.value) }).text(text)
+        self.recognizedText = text
         self.firstPage = firstPage
         self.kind = kind
         self.knownFields = knownFields
@@ -53,7 +63,8 @@ public protocol CaptureSemanticExtracting: Sendable {
 /// device with Apple Intelligence turned on. When it isn't available the engine carries on
 /// with the deterministic and heuristic tiers and says so in the result.
 ///
-/// It reads the text the phone recognised, never the picture, one question per session, so
+/// It reads the text the phone recognised with its card numbers masked (`SemanticInput.text`),
+/// never the picture, one question per session, so
 /// no question carries another's exchange in the model's small context:
 /// 1. **What the document is**, asked only while the kind is still open
 ///    (`ReadingArbiter.kindIsOpen`: the classifier is unsure and nothing deterministic backs
@@ -117,7 +128,7 @@ public struct OnDeviceModelExtractor: CaptureSemanticExtracting {
             return SemanticExtraction(kind: named, fields: [])
         }
         let fields = ModelAnswerMapper.fields(from: answer, asked: questions,
-                                              recognizedText: input.text, today: input.today, resolver: resolver)
+                                              recognizedText: input.recognizedText, today: input.today, resolver: resolver)
         return SemanticExtraction(kind: named, fields: fields)
     }
 

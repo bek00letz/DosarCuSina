@@ -10,9 +10,10 @@ extension CaptureResult {
     /// (`keptWhole`), so the document's kept text holds it as its section will.
     /// `CaptureEngine` hands out no other kind of result.
     func withoutCardNumbers() -> CaptureResult {
-        let strict = kind == .bankCard
-        let kept = strict ? PaymentCardNumbers.KeptWhole.nothing : keptWhole
-        func text(_ value: String) -> String { PaymentCardNumbers.redact(value, strict: strict, keeping: kept) }
+        let mask = CaptureCardMask(kind: kind, read: readValues)
+        let strict = mask.strict
+        let kept = mask.kept
+        func text(_ value: String) -> String { mask.text(value) }
         return CaptureResult(
             id: id,
             kind: kind,
@@ -49,9 +50,44 @@ extension CaptureResult {
     /// (`CaptureFieldKey.typeKeptWhole`), by every reader, as `PaymentCardNumbers.KeptWhole`
     /// keeps them: only those that pass that type's check.
     var keptWhole: PaymentCardNumbers.KeptWhole {
+        CaptureCardMask.keptWhole(readValues)
+    }
+
+    /// Every value its readers read, with the field it was read for.
+    private var readValues: [(key: CaptureFieldKey, value: CaptureValue)] {
         let readers = fields + (source?.modelFields ?? []) + (source?.aiFields ?? [])
-        let read = readers.map { ($0.key, $0.value) } + fieldAlternatives.map { ($0.key, $0.alternative.value) }
-        return PaymentCardNumbers.KeptWhole(typed: read.compactMap { key, value in
+        return readers.map { (key: $0.key, value: $0.value) } + fieldAlternatives.map { (key: $0.key, value: $0.alternative.value) }
+    }
+}
+
+/// How card numbers are masked in what capture read of one document, the one rule for the
+/// result it hands out (`CaptureResult.withoutCardNumbers`) and for the text a language
+/// model may read (`SemanticInput.text`), so a model is never shown more of a card than
+/// the binder keeps: on a bank card, strictly (`PaymentCardNumbers.redact(_:strict:)`, any
+/// long run of digits, nothing kept whole); on anything else, by the "anywhere" rule,
+/// keeping whole what a reader read for a field whose type tells it apart from a card
+/// (a pet's microchip that passes its check, `CaptureFieldKey.typeKeptWhole`).
+struct CaptureCardMask {
+    /// Strict: the document is a bank card.
+    let strict: Bool
+    /// What stays whole; nothing on a bank card.
+    let kept: PaymentCardNumbers.KeptWhole
+
+    /// The mask for a document of `kind` whose readers read `values`.
+    init(kind: CaptureDocumentKind, read values: [(key: CaptureFieldKey, value: CaptureValue)]) {
+        strict = kind == .bankCard
+        kept = strict ? .nothing : Self.keptWhole(values)
+    }
+
+    /// The text with its card numbers masked.
+    func text(_ value: String) -> String {
+        PaymentCardNumbers.redact(value, strict: strict, keeping: kept)
+    }
+
+    /// What of `values` stays whole: those read for a field whose type keeps them whole, as
+    /// `PaymentCardNumbers.KeptWhole` keeps them (only those that pass that type's check).
+    static func keptWhole(_ values: [(key: CaptureFieldKey, value: CaptureValue)]) -> PaymentCardNumbers.KeptWhole {
+        PaymentCardNumbers.KeptWhole(typed: values.compactMap { key, value in
             guard let type = key.typeKeptWhole, let text = value.text else { return nil }
             return (text: text, type: type)
         })
