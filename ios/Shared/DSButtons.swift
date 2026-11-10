@@ -84,6 +84,13 @@ struct DSCompactButton: View {
         self.action = action
     }
 
+    /// For titles that are already localized (a wording type's).
+    init(verbatim title: String, systemImage: String? = nil, action: @escaping () -> Void) {
+        self.title = Text(verbatim: title)
+        self.systemImage = systemImage
+        self.action = action
+    }
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: DS.Space.xxs) {

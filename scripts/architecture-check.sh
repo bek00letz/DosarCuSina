@@ -221,6 +221,16 @@ rule guessed-pause '^ios/(DosarCuSina|DosarCuSinaWidgets|DosarCuSinaShare|Shared
 rule stack-in-tab-root "$app" - '-' - \
     'Tab roots live inside the stack AppShell gives each tab. Push with NavigationLink(value: AppRoute…) instead of adding a stack.'
 
+# Checked in their own pass below, which follows braces: a screen's or a sheet's main action
+# is pinned to its bottom edge by one modifier, .dsPinnedAction, which shows it at any sheet
+# height and text size. A main action written inside a ScrollView's braces sits at the end of
+# scrolling content, out of sight; a bottom inset that draws buttons or the bar itself is a
+# second pinned bar. The pass sees what is written inside the braces, not a property they name.
+rule main-action-in-scroll '^ios/(DosarCuSina|DosarCuSinaShare)/' "$design_system" '-' - \
+    "Pin a screen's or a sheet's main action with .dsPinnedAction { DSPrimaryButton(…) }, with note: for what is said above it and secondary: for the actions under it. Inside the ScrollView it is lost at the end of the content."
+rule hand-pinned-action "$app" '^ios/Shared/DSBottomBar\.swift$' '-' - \
+    'Pin actions with .dsPinnedAction (note: and secondary: for what goes with them), the one bar, which keeps its height, material and keyboard behaviour everywhere.'
+
 # --- The scan ----------------------------------------------------------------
 
 # Prints "path<TAB>rule<TAB>line" for every match. $1 is a file of
@@ -254,6 +264,44 @@ scan() {
                 if (unless[i] != "-" && code ~ unless[i]) continue
                 print path "\t" id[i] "\t" FNR
             }
+        }
+    ' "$rules" "$map" $files
+
+    # Braces: a DSPrimaryButton inside a ScrollView's braces (main-action-in-scroll), and a
+    # bottom inset that draws the bar or a full-width button (hand-pinned-action). Strings and
+    # comments are left out before braces are counted.
+    # shellcheck disable=SC2086
+    awk -F'\t' -v rules_file="$rules" -v map_file="$map" '
+        function code_of(line) {
+            if (line ~ /^[[:space:]]*(\/\/|\/\*|\*)/) return ""
+            sub(/(^|[[:space:]])\/\/.*$/, "", line)
+            gsub(/"([^"\\]|\\.)*"/, "\"\"", line)
+            return line
+        }
+        function covers(rule_id) {
+            return path ~ inc[rule_id] && !(exc[rule_id] != "-" && path ~ exc[rule_id])
+        }
+        FILENAME == rules_file { inc[$1] = $2; exc[$1] = $3; next }
+        FILENAME == map_file { path_of[$2] = $1; next }
+        FNR == 1 { path = path_of[FILENAME]; depth = 0; scroll_at = -1; inset_at = -1 }
+        {
+            code = code_of($0)
+            if (code == "") next
+            if (scroll_at < 0 && code ~ /(^|[^A-Za-z0-9_])ScrollView[[:space:]]*(\([^)]*\))?[[:space:]]*\{/) {
+                scroll_at = depth
+            } else if (scroll_at >= 0 && code ~ /(^|[^A-Za-z0-9_])DSPrimaryButton[[:space:]]*\(/ && covers("main-action-in-scroll")) {
+                print path "\tmain-action-in-scroll\t" FNR
+            }
+            if (code ~ /safeAreaInset\(edge: *\.bottom/) {
+                if (inset_at < 0) inset_at = depth
+            }
+            if (inset_at >= 0 && code ~ /(^|[^A-Za-z0-9_])(DSBottomBar|DSPrimaryButton|DSSecondaryButton)[[:space:]]*[({]|dsFullWidthButton\(/ && covers("hand-pinned-action")) {
+                print path "\thand-pinned-action\t" FNR
+            }
+            opened = gsub(/\{/, "{", code); closed = gsub(/\}/, "}", code)
+            depth += opened - closed
+            if (scroll_at >= 0 && depth <= scroll_at) scroll_at = -1
+            if (inset_at >= 0 && depth <= inset_at) inset_at = -1
         }
     ' "$rules" "$map" $files
 

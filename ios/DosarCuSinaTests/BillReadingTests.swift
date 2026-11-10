@@ -144,8 +144,8 @@ struct BillReadingTests {
         _ = try home(context)
         let planned = try plan(bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20"), context)
         let meter = try #require(planned.meter)
-        #expect(CaptureReviewView.meterText(meter) == "Indexul 12.345 m³ se trece la „Gaz – ENGIE Romania S.A.”.")
-        #expect(CaptureReviewView.meterText(.unknownService) == "Indexul nu-l trec: nu știu dacă e de gaz, de curent sau de apă.")
+        #expect(meter.sentence == "Indexul 12.345 m³ se trece la „Gaz – ENGIE Romania S.A.”.")
+        #expect(CaptureFilingPlan.Meter.unknownService.sentence == "Indexul nu-l trec: nu știu dacă e de gaz, de curent sau de apă.")
     }
 
     @Test func anIndexGoesNowhereWithoutAMeter() throws {
@@ -275,7 +275,7 @@ struct BillReadingTests {
         let planned = try #require(try plan(again, context).meter)
         let reading = try #require(planned.reading)
         #expect(planned == .alreadyKept(reading, subscription: gas.name))
-        #expect(CaptureReviewView.meterText(planned) == "Indexul 12.345 m³ e deja trecut la „\(gas.name)”.")
+        #expect(planned.sentence == "Indexul 12.345 m³ e deja trecut la „\(gas.name)”.")
         let second = try await save(again, context)
         #expect(second.asset?.id == gas.id)
         #expect(readings(of: gas).count == 1, "Not recorded twice")
@@ -431,7 +431,7 @@ struct BillReadingTests {
         #expect(filed.entryID == entry.id)
         #expect(filed.match == .number)
         #expect(filed.section == gas.name)
-        #expect(CaptureReviewView.filedBillText(filed, today: CalendarDay(today))
+        #expect(FiledPaperWording.message(filed, paper: .bill, today: CalendarDay(today))
             == "E în „\(gas.name)”, cea din 5 octombrie, cu același număr. Dacă salvezi, o actualizez cu ce am citit acum, iar poza asta devine copia ei nouă.")
         #expect(planned.meter == .alreadyKept(try #require(planned.meter?.reading), subscription: gas.name))
 

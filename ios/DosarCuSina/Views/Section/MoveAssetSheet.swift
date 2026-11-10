@@ -136,11 +136,9 @@ struct MoveAssetSheet: View {
             .dsAnimation(value: proposedName)
         }
         .scrollDismissesKeyboard(.interactively)
-        .safeAreaInset(edge: .bottom) {
-            DSBottomBar {
-                DSPrimaryButton("Mută aici", systemImage: "arrow.turn.up.right") { move() }
-                    .disabled(choice == nil)
-            }
+        .dsPinnedAction {
+            DSPrimaryButton("Mută aici", systemImage: "arrow.turn.up.right") { move() }
+                .disabled(choice == nil)
         }
     }
 
