@@ -71,7 +71,7 @@ enum DeadlineReminders {
     /// reminders the person set takes only the new travel margin. Values the profile doesn't
     /// read change nothing. Doesn't save; returns the deadlines that changed.
     @discardableResult
-    static func follow(_ asset: Asset, template: TemplateDefinition, from previous: FieldValues, now: Date) -> [Obligation] {
+    static func follow(_ asset: Asset, template: TemplateDefinition, from previous: FieldValues) -> [Obligation] {
         let values = asset.values
         let blueprints = Dictionary(template.blueprints.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
         var changed: [Obligation] = []
@@ -79,26 +79,26 @@ enum DeadlineReminders {
             guard let blueprint = obligation.blueprintKey.flatMap({ blueprints[$0] }),
                   blueprint.reminders(for: previous) != blueprint.reminders(for: values),
                   let profile = expected(for: obligation, blueprint: blueprint, values: values),
-                  give(profile, to: obligation, now: now) else { continue }
+                  give(profile, to: obligation) else { continue }
             changed.append(obligation)
         }
         return changed
     }
 
     /// Gives `obligation` the profile it follows for its section's values (`expected`); false
-    /// when it already has it or follows nothing.
+    /// when it already has it or follows nothing. The repair list runs it as the app's own step
+    /// (`ChangeOrigin.app`), so the deadline keeps its change time.
     @discardableResult
-    static func refresh(_ obligation: Obligation, template: TemplateDefinition, now: Date) -> Bool {
+    static func refresh(_ obligation: Obligation, template: TemplateDefinition) -> Bool {
         guard let asset = obligation.asset,
               let profile = expected(for: obligation, blueprint: template.blueprints.first { $0.key == obligation.blueprintKey }, values: asset.values)
         else { return false }
-        return give(profile, to: obligation, now: now)
+        return give(profile, to: obligation)
     }
 
-    private static func give(_ profile: ReminderProfile, to obligation: Obligation, now: Date) -> Bool {
+    private static func give(_ profile: ReminderProfile, to obligation: Obligation) -> Bool {
         guard obligation.reminders != profile else { return false }
         obligation.reminders = profile
-        obligation.updatedAt = now
         return true
     }
 }

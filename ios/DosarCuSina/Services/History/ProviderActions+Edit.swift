@@ -37,7 +37,6 @@ extension ProviderActions {
         provider.address = clean(details.address)
         provider.notes = clean(details.notes)
         provider.contactIdentifier = details.contactIdentifier
-        provider.updatedAt = Date()
-        try UnitOfWork.save(context)
+        try UnitOfWork.save(context, now: now())
     }
 }

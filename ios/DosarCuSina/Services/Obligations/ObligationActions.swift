@@ -56,7 +56,7 @@ public final class ObligationActions {
         // Every question first, before anything is written (`StepQuestion`).
         let reading = plannedReading(metricReading, completing: obligation, on: completedAt)
         try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
-        return try UnitOfWork.performUndoable(in: context) {
+        return try UnitOfWork.performUndoable(in: context, now: now()) {
             let completedDay = CalendarDay(completedAt, calendar: calendar)
 
             let entry = HistoryEntry(kind: .forCompleting(obligation.kind), title: obligation.title, occurredAt: completedAt)
@@ -93,7 +93,6 @@ public final class ObligationActions {
                 obligation.status = .done
             }
             obligation.snoozedUntil = nil
-            obligation.updatedAt = now()
             try save()
             return entry
         }
@@ -131,11 +130,10 @@ public final class ObligationActions {
     /// Hides the obligation and its reminders for `days` days, then reminds once.
     @discardableResult
     public func snooze(_ obligation: Obligation, days: Int) throws -> UndoReceipt {
-        try UnitOfWork.performUndoable(in: context) {
+        try UnitOfWork.performUndoable(in: context, now: now()) {
             guard obligation.status == .active else { throw ObligationActionError.notActive }
             let today = CalendarDay(now(), calendar: calendar)
             obligation.snoozedUntil = today.adding(days: max(1, days), calendar: calendar).startDate(in: calendar)
-            obligation.updatedAt = now()
             try save()
         }.receipt
     }
@@ -143,9 +141,8 @@ public final class ObligationActions {
     /// Brings a snoozed obligation back now ("Anulează amânarea"). Undoable.
     @discardableResult
     public func clearSnooze(_ obligation: Obligation) throws -> UndoReceipt {
-        try UnitOfWork.performUndoable(in: context) {
+        try UnitOfWork.performUndoable(in: context, now: now()) {
             obligation.snoozedUntil = nil
-            obligation.updatedAt = now()
             try save()
         }.receipt
     }
@@ -157,7 +154,6 @@ public final class ObligationActions {
     public func setReminders(_ obligation: Obligation, _ profile: ReminderProfile) throws {
         obligation.reminders = profile
         obligation.remindersCustomized = DeadlineReminders.isCustomized(profile, for: obligation, in: context)
-        obligation.updatedAt = now()
         try save()
     }
 
@@ -165,7 +161,6 @@ public final class ObligationActions {
     public func setFollowUpAfterLapse(_ obligation: Obligation, _ isOn: Bool) throws {
         obligation.followUpAfterLapse = isOn
         obligation.remindersCustomized = DeadlineReminders.isCustomized(obligation.reminders, for: obligation, in: context)
-        obligation.updatedAt = now()
         try save()
     }
 
@@ -175,10 +170,9 @@ public final class ObligationActions {
     @discardableResult
     public func restoreUsualReminders(_ obligation: Obligation) throws -> Undoable<ReminderProfile>? {
         guard let usual = DeadlineReminders.restorable(obligation, in: context) else { return nil }
-        return try UnitOfWork.performUndoable(in: context) {
+        return try UnitOfWork.performUndoable(in: context, now: now()) {
             obligation.reminders = usual
             obligation.remindersCustomized = false
-            obligation.updatedAt = now()
             try save()
             return usual
         }
@@ -186,10 +180,9 @@ public final class ObligationActions {
 
     @discardableResult
     public func reschedule(_ obligation: Obligation, to day: CalendarDay) throws -> UndoReceipt {
-        try UnitOfWork.performUndoable(in: context) {
+        try UnitOfWork.performUndoable(in: context, now: now()) {
             obligation.setDueDay(day, calendar: calendar)
             obligation.snoozedUntil = nil
-            obligation.updatedAt = now()
             try save()
         }.receipt
     }
@@ -199,7 +192,6 @@ public final class ObligationActions {
         guard obligation.estimatedCost != estimatedCost || obligation.reference != reference else { return }
         obligation.estimatedCost = estimatedCost
         obligation.reference = reference
-        obligation.updatedAt = now()
         try save()
     }
 
@@ -207,13 +199,13 @@ public final class ObligationActions {
     /// larger step (an edit that turns on direct debit), the receipt takes back that whole step.
     @discardableResult
     public func pause(_ obligation: Obligation) throws -> UndoReceipt {
-        try UnitOfWork.performUndoable(in: context) { try setStatus(.paused, of: obligation) }.receipt
+        try UnitOfWork.performUndoable(in: context, now: now()) { try setStatus(.paused, of: obligation) }.receipt
     }
 
     /// Starts a paused obligation again. Undoable, like `pause`.
     @discardableResult
     public func resume(_ obligation: Obligation) throws -> UndoReceipt {
-        try UnitOfWork.performUndoable(in: context) { try setStatus(.active, of: obligation) }.receipt
+        try UnitOfWork.performUndoable(in: context, now: now()) { try setStatus(.active, of: obligation) }.receipt
     }
 
     /// Changes how the obligation repeats (a service every 150 hours instead of 100). The
@@ -221,9 +213,8 @@ public final class ObligationActions {
     /// Undoable, like `pause`.
     @discardableResult
     public func setRecurrence(_ obligation: Obligation, _ rule: RecurrenceRule) throws -> UndoReceipt {
-        try UnitOfWork.performUndoable(in: context) {
+        try UnitOfWork.performUndoable(in: context, now: now()) {
             obligation.recurrence = rule
-            obligation.updatedAt = now()
             try save()
         }.receipt
     }
@@ -231,7 +222,7 @@ public final class ObligationActions {
     /// Puts the obligation away for good, keeping it and its history. Undoable, like `pause`.
     @discardableResult
     public func archive(_ obligation: Obligation) throws -> UndoReceipt {
-        try UnitOfWork.performUndoable(in: context) { try setStatus(.archived, of: obligation) }.receipt
+        try UnitOfWork.performUndoable(in: context, now: now()) { try setStatus(.archived, of: obligation) }.receipt
     }
 
     /// Deletes the obligation and its reminders. What it closed stays in the section's
@@ -239,7 +230,7 @@ public final class ObligationActions {
     /// receipt brings it back with every link (`UndoReceipt` reads what a delete takes).
     @discardableResult
     public func delete(_ obligation: Obligation) throws -> UndoReceipt {
-        try UnitOfWork.performUndoable(in: context) {
+        try UnitOfWork.performUndoable(in: context, now: now()) {
             context.delete(obligation)
             try save()
         }.receipt
@@ -295,12 +286,11 @@ public final class ObligationActions {
     private func setStatus(_ status: ObligationStatus, of obligation: Obligation) throws {
         obligation.status = status
         if status != .active { obligation.snoozedUntil = nil }
-        obligation.updatedAt = now()
         try save()
     }
 
     private func save() throws {
-        try UnitOfWork.save(context)
+        try UnitOfWork.save(context, now: now())
     }
 }
 

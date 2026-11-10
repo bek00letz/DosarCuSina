@@ -58,7 +58,7 @@ extension AssetActions {
     /// made for the move goes away again.
     @discardableResult
     public func move(_ child: Asset, to target: MoveTarget, renamingTo newName: String? = nil) throws -> UndoReceipt {
-        try UnitOfWork.performUndoable(in: context) {
+        try UnitOfWork.performUndoable(in: context, now: now()) {
             let parent: Asset?
             switch target {
             case .standalone:

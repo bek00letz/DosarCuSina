@@ -249,7 +249,7 @@ struct CaptureFiler {
         // Every question the person must answer is asked before anything is written.
         try askFirst(for: intent, document: document)
         // From here nothing waits: one step, everything or nothing.
-        let filing = try UnitOfWork.performUndoable(in: context) {
+        let filing = try UnitOfWork.performUndoable(in: context, now: now()) {
             switch intent {
             case .review(let review): try fileReview(review, document: document, pictures: pictures)
             case .completion(let completion): try fileCompletion(completion, document: document)

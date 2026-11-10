@@ -71,13 +71,12 @@ extension DosarSchemaV8 {
             pocketsRaw = definition.pockets.map(\.rawValue)
             behaviorData = definition.behavior == .standard ? nil : StoredJSON.encode(definition.behavior)
             builtInVersion = isBuiltIn ? definition.version : 0
-            updatedAt = Date()
         }
 
         /// What the category does in the binder.
         public var behavior: CategoryBehavior {
             get { StoredJSON.decode(CategoryBehavior.self, from: behaviorData) ?? .standard }
-            set { behaviorData = newValue == .standard ? nil : StoredJSON.encode(newValue); updatedAt = Date() }
+            set { behaviorData = newValue == .standard ? nil : StoredJSON.encode(newValue) }
         }
 
         public var tint: TemplateTint {
@@ -93,17 +92,17 @@ extension DosarSchemaV8 {
         /// The sections this build can read. Writing them keeps the ones it can't (`KeptList`).
         public var sections: [FieldSection] {
             get { keptSections.items }
-            set { sectionsData = KeptList.writing(newValue, over: sectionsData); updatedAt = Date() }
+            set { sectionsData = KeptList.writing(newValue, over: sectionsData) }
         }
 
         public var blueprints: [ObligationBlueprint] {
             get { keptBlueprints.items }
-            set { blueprintsData = KeptList.writing(newValue, over: blueprintsData); updatedAt = Date() }
+            set { blueprintsData = KeptList.writing(newValue, over: blueprintsData) }
         }
 
         public var components: [ComponentDefinition] {
             get { keptComponents.items }
-            set { componentsData = KeptList.writing(newValue, over: componentsData); updatedAt = Date() }
+            set { componentsData = KeptList.writing(newValue, over: componentsData) }
         }
 
         /// The sections as stored, with any a newer build wrote that this one can't read:
@@ -126,7 +125,7 @@ extension DosarSchemaV8 {
         /// The pockets a section page shows, in the global order.
         public var pockets: [SectionPocket] {
             get { SectionPocket.ordered(pocketsRaw.compactMap(SectionPocket.init(rawValue:))) }
-            set { pocketsRaw = SectionPocket.ordered(newValue).map(\.rawValue); updatedAt = Date() }
+            set { pocketsRaw = SectionPocket.ordered(newValue).map(\.rawValue) }
         }
 
         public var isCustom: Bool { !isBuiltIn }

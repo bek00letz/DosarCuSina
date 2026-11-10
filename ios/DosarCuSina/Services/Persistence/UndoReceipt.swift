@@ -152,10 +152,11 @@ public final class UndoReceipt {
     // MARK: Undo
 
     /// Puts back everything the step changed, in one unit of work: records it deleted come
-    /// back, records it changed get their values and links back, records it created go.
+    /// back, records it changed get their values and links back, records it created go. Their
+    /// change times come back too: the unit gives none of its own (`ChangeOrigin.restoring`).
     public func undo() throws {
         guard canUndo else { throw UndoError.unavailable }
-        try UnitOfWork.perform(in: context) {
+        try UnitOfWork.perform(in: context, origin: .restoring) {
             guard isUnchangedSinceStep() else { throw UndoError.changedSince }
             var brought: [RecordRef: any UndoableRecord] = [:]
             for ref in deleted {

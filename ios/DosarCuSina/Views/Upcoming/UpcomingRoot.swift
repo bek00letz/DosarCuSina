@@ -60,21 +60,37 @@ struct UpcomingRoot: View {
         }
     }
 
-    /// Changes whenever anything the list shows changes.
+    /// Changes whenever anything the list shows changes: the values themselves, never their
+    /// change time, which only the person's own steps move (`ChangeTimes`), so a repair that
+    /// gives a deadline its document's reminders still redraws the list.
     private var changeToken: Int {
         var hasher = Hasher()
         for obligation in obligations {
             hasher.combine(obligation.id)
-            hasher.combine(obligation.updatedAt)
+            hasher.combine(obligation.title)
+            hasher.combine(obligation.kindRaw)
             hasher.combine(obligation.dueDate)
+            hasher.combine(obligation.dueMetric)
             hasher.combine(obligation.statusRaw)
             hasher.combine(obligation.snoozedUntil)
+            hasher.combine(obligation.reminderLeadDays)
+            hasher.combine(obligation.consequenceRaw)
+            hasher.combine(obligation.graceDays)
+            hasher.combine(obligation.followUpAfterLapse)
+            hasher.combine(obligation.travelMarginDays)
+            hasher.combine(obligation.reminderMinuteOfDay)
+            hasher.combine(obligation.recurrenceData)
+            hasher.combine(obligation.estimatedCostAmount)
+            hasher.combine(obligation.estimatedCostCurrency)
+            hasher.combine(obligation.isExample)
             hasher.combine(obligation.asset?.name)
         }
         let subscriptionKeys = templates.keys(playing: .subscription)
         for subscription in sections where subscriptionKeys.contains(subscription.templateKey) {
             hasher.combine(subscription.id)
-            hasher.combine(subscription.updatedAt)
+            hasher.combine(subscription.name)
+            hasher.combine(subscription.valuesData)
+            hasher.combine(subscription.isExample)
             hasher.combine(subscription.history?.count)
         }
         return hasher.finalize()

@@ -34,8 +34,19 @@ public struct TemplateStore {
     /// changed into a custom one, keeping household preferences (order,
     /// visibility, Face ID). Also removes duplicate built-ins that a sync merge
     /// may have produced. Saves only when something changed.
+    ///
+    /// It is the app's own step (`ChangeOrigin.app`): a category it upgrades keeps its change
+    /// time, so the order, visibility and lock the person chose on another phone still come
+    /// in with "Adaugă" after an app update; one it installs starts with none
+    /// (`ChangeTime.unknown`).
     @discardableResult
     public func installBuiltIns(catalog: [TemplateDefinition] = BuiltInTemplates.all) throws -> Bool {
+        try UnitOfWork.perform(in: context, origin: .app) {
+            try installingBuiltIns(catalog: catalog)
+        }
+    }
+
+    private func installingBuiltIns(catalog: [TemplateDefinition]) throws -> Bool {
         var changed = false
         let existing = try context.fetch(FetchDescriptor<CategoryTemplate>(sortBy: [SortDescriptor(\.createdAt)]))
         var byKey: [String: CategoryTemplate] = [:]
@@ -261,7 +272,6 @@ public struct TemplateStore {
             template.isOnHome = definition.isOnHomeByDefault
             template.isSensitive = definition.isSensitiveByDefault
         }
-        template.updatedAt = Date()
         try save()
     }
 

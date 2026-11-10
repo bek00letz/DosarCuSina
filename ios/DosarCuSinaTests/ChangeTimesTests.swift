@@ -94,14 +94,22 @@ struct ChangeTimesTests {
         #expect(records.document.updatedAt > long)
     }
 
-    @Test("A step that sets the change time itself keeps it")
+    @Test("A step with a clock of its own gives its time, through the unit of work")
     func aStepsOwnTimeWins() throws {
         let records = try Records.make(at: long)
         let own = noon("2026-11-02")
         records.visit.note = "Corectat."
-        records.visit.updatedAt = own
-        try UnitOfWork.save(records.context)
+        try UnitOfWork.save(records.context, now: own)
         #expect(records.visit.updatedAt == own)
+    }
+
+    @Test("A time written by hand is no way around the unit of work: the change gets the step's time")
+    func aHandWrittenTimeIsReplaced() throws {
+        let records = try Records.make(at: long)
+        records.visit.note = "Corectat."
+        records.visit.updatedAt = noon("2020-01-01")
+        try UnitOfWork.save(records.context, now: noon("2026-11-02"))
+        #expect(records.visit.updatedAt == noon("2026-11-02"))
     }
 
     @Test("Writing a value a record already has changes nothing")
