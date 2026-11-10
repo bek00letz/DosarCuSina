@@ -197,8 +197,8 @@ A new document layout is a new label table, not new reading code; a kind's own l
 
 ## Locks
 
-- `BiometricVaultManager` is the one unlock session for the app lock and the section locks. `confirmWholeBinder` asks before a backup or "Înlocuiește tot" whenever any lock is on.
-- `LockCover.decide` is the one rule for when the app is covered, and `LockWindowHost` draws the lock and the app-switcher cover in a window above every sheet ([Views/Locks/LockWindow.swift](ios/DosarCuSina/Views/Locks/LockWindow.swift)). Never draw a lock as an overlay of one screen. `LockWindowController` covers at once and hides the window only when the fade out has completed, for the latest uncovering only.
+- `BiometricVaultManager` is the one unlock session for the app lock and the section locks. Its timings (the minute away before the session closes) count on `LockClock`, a clock the phone's settings don't move that keeps counting while it sleeps; never `Date` for a lock's timing. `confirmWholeBinder` asks before a backup or "Înlocuiește tot" whenever any lock is on.
+- `LockCover.decide` is the one rule for when the app is covered (by the scene's `LockCover.Phase`: always in the background, while inactive except behind the app's own Face ID prompt), and `LockWindowHost` draws the lock and the app-switcher cover in a window above every sheet ([Views/Locks/LockWindow.swift](ios/DosarCuSina/Views/Locks/LockWindow.swift)). Never draw a lock as an overlay of one screen. `LockWindowController` covers at once and hides the window only when the fade out has completed, for the latest uncovering only.
 - `AppNavigator` hands out no route or opened file while the app is locked.
 - What search may keep, and what may be shown outside the app in the iPhone's search, is decided in `SearchPrivacy` ([Services/Search/SearchPrivacy.swift](ios/DosarCuSina/Services/Search/SearchPrivacy.swift)).
 
