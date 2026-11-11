@@ -406,6 +406,13 @@ struct EstimatedReadingTests {
 
     // MARK: Bills kept before
 
+    @Test func theRepairComesLastWithItsOwnStoredID() {
+        let ids = DataRepairs.steps.map { type(of: $0).id }
+        #expect(ids.last == .estimatedBillReadings, "A new repair is a new step at the end")
+        #expect(ids.dropLast().last == .dayYears)
+        #expect(DataRepairStepID.estimatedBillReadings.rawValue == "estimated-bill-readings")
+    }
+
     @Test func aBillWhoseKeptTextSaysEstimatedIsOfferedAndMarkedOnceApproved() async throws {
         let context = try makeContext()
         _ = try home(context)
