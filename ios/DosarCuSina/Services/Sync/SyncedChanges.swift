@@ -18,19 +18,25 @@ import SwiftData
 ///
 /// When one arrives, the app's own steps that keep two devices' binders one run again, each
 /// idempotent and choosing the same records on every device (`settle`): records that share an id
-/// joined into one, one copy of each built-in category, one copy of each household deadline. It
-/// also follows the store's iCloud events (`CloudArrival`), so a step that acts on what is missing
-/// waits until what is on its way has arrived, and runs once an import finishes.
+/// joined into one (`RecordsMeet`), one copy of each built-in category, one copy of each household
+/// deadline. The steps that wait for the binder to arrive (`CloudArrival`) run again once it has.
+///
+/// It starts where the store opens (`PersistenceController.followEveryContainer`), not with a
+/// screen, so what arrives while the app runs in the background (woken by iCloud, or by the
+/// background refresh) reaches the reminders too. The history is read away from the main
+/// thread: the store says a change came after every save, the app's own included. It lets go of
+/// a container the store no longer runs on (`ContainerHolder`).
 @MainActor
-final class SyncedChanges {
+final class SyncedChanges: ContainerHolder {
     /// Posted with `object` the container and the changes as `SearchChanges` under `changesKey`.
     nonisolated static let didArrive = Notification.Name("SyncedChanges.didArrive")
     nonisolated static let changesKey = "changes"
 
-    private let container: ModelContainer
+    /// Nil once the container was retired.
+    private var container: ModelContainer?
     private var last: DefaultHistoryToken?
     private var listener: Task<Void, Never>?
-    private var events: Task<Void, Never>?
+    private var arrival: Task<Void, Never>?
     private let now: () -> Date
 
     private static var instance: SyncedChanges?
@@ -38,6 +44,7 @@ final class SyncedChanges {
     static func shared(for container: ModelContainer) -> SyncedChanges {
         if let instance, instance.container === container { return instance }
         instance?.stop()
+        instance?.container = nil
         let changes = SyncedChanges(container: container)
         instance = changes
         return changes
@@ -47,21 +54,29 @@ final class SyncedChanges {
         self.container = container
         self.now = now
         last = Self.latestToken(in: container)
+        ContainerRetirement.add(self)
+    }
+
+    func containerRetired(_ container: ModelContainer) {
+        guard self.container === container else { return }
+        stop()
+        self.container = nil
+        if Self.instance === self { Self.instance = nil }
     }
 
     /// Starts listening to the store's remote changes. Does nothing for a store that doesn't sync.
     func start() {
-        guard listener == nil, PersistenceController.syncs(container) else { return }
+        guard listener == nil, let container, PersistenceController.syncs(container) else { return }
+        // One read at a time: a notice that comes while one runs waits for it.
         listener = Task { [weak self] in
-            for await _ in NotificationCenter.default.notifications(named: .NSPersistentStoreRemoteChange) {
-                self?.read()
+            for await _ in NotificationCenter.default.notifications(named: .NSPersistentStoreRemoteChange).map({ _ in () }) {
+                await self?.read()
             }
         }
-        events = Task { [weak self] in
-            for await note in NotificationCenter.default.notifications(named: NSPersistentCloudKitContainer.eventChangedNotification) {
-                let key = NSPersistentCloudKitContainer.eventNotificationUserInfoKey
-                guard let event = note.userInfo?[key] as? NSPersistentCloudKitContainer.Event else { continue }
-                self?.follow(event)
+        // What waited for the binder to arrive runs once it has.
+        arrival = Task { [weak self] in
+            for await _ in NotificationCenter.default.notifications(named: CloudArrival.didBecomeWhole, object: container).map({ _ in () }) {
+                self?.settle()
             }
         }
     }
@@ -69,18 +84,18 @@ final class SyncedChanges {
     func stop() {
         listener?.cancel()
         listener = nil
-        events?.cancel()
-        events = nil
+        arrival?.cancel()
+        arrival = nil
     }
 
-    /// An import that finished leaves the binder whole: the steps that waited for it run.
-    private func follow(_ event: NSPersistentCloudKitContainer.Event) {
-        if CloudArrival.of(container).follow(event) { settle() }
-    }
-
-    /// Reads what came since the last read and tells everyone that follows the binder.
-    func read() {
-        guard let (changes, token) = try? Self.changes(in: container, after: last) else { return }
+    /// Reads what came since the last read, away from the main thread, and tells everyone that
+    /// follows the binder.
+    func read() async {
+        guard let container else { return }
+        let request = SyncedHistoryRead(container: container, after: last)
+        let read = await Task.detached { request.reading() }.value
+        // The store may have opened under another container meanwhile.
+        guard self.container === container, let (changes, token) = read.value else { return }
         if let token { last = token }
         guard !changes.isEmpty else { return }
         settle()
@@ -93,6 +108,7 @@ final class SyncedChanges {
     /// (`HouseholdRules.reconcile`, which removes nothing while the binder is still arriving).
     /// Each chooses the same records on every device, so their results meet without a conflict.
     func settle() {
+        guard let container else { return }
         let context = container.mainContext
         PersistenceLog.attempt("Joining records that share an id after a synced change") {
             _ = try RecordsMeet.join(in: context)
@@ -106,6 +122,7 @@ final class SyncedChanges {
     }
 
     // MARK: Reading the history
+
 
     /// What every transaction not made by this app wrote after `token` (all of them when nil), and
     /// the last transaction's token.
@@ -134,5 +151,24 @@ final class SyncedChanges {
         var descriptor = HistoryDescriptor<DefaultHistoryTransaction>(sortBy: [SortDescriptor(\.transactionIdentifier, order: .reverse)])
         descriptor.fetchLimit = 1
         return try? PersistenceController.context(in: container).fetchHistory(descriptor).first?.token
+    }
+}
+
+/// One read of the history, handed to the thread it runs on and back. A history token is a
+/// value, and the container is safe to share.
+private struct SyncedHistoryRead: @unchecked Sendable {
+    let container: ModelContainer
+    let after: DefaultHistoryToken?
+    var value: (SearchChanges, DefaultHistoryToken?)?
+
+    init(container: ModelContainer, after: DefaultHistoryToken?) {
+        self.container = container
+        self.after = after
+    }
+
+    func reading() -> SyncedHistoryRead {
+        var read = self
+        read.value = try? SyncedChanges.changes(in: container, after: after)
+        return read
     }
 }

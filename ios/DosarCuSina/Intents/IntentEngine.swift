@@ -58,6 +58,10 @@ enum IntentEngine {
     }
 
     /// Applies one request and saves. Throws only when saving fails.
+    ///
+    /// The cycle is checked against the store as it is now as well as against the context: a
+    /// completion from another device lands in the store under the context (`SyncedChanges`), so
+    /// an old reminder's "Am rezolvat" never closes the next cycle a second time.
     @discardableResult
     static func apply(
         _ request: OutsideRequest,
@@ -68,11 +72,15 @@ enum IntentEngine {
         let id = request.obligationId
         var descriptor = FetchDescriptor<Obligation>(predicate: #Predicate { $0.id == id })
         descriptor.fetchLimit = 1
+        func stillOpen(_ obligation: Obligation?) -> Bool {
+            guard let obligation, obligation.status == .active, !obligation.isExample, let cycle = request.cycle else { return false }
+            return obligation.dueDay == cycle
+        }
+        let store = PersistenceController.context(in: context.container)
         guard let obligation = try context.fetch(descriptor).first,
-              obligation.status == .active,
-              !obligation.isExample,
-              let cycle = request.cycle,
-              obligation.dueDay == cycle
+              stillOpen(obligation),
+              stillOpen(try store.fetch(descriptor).first),
+              let cycle = request.cycle
         else { return .skipped }
 
         let actions = ObligationActions(context: context, calendar: calendar, now: now)

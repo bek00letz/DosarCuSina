@@ -30,41 +30,45 @@ struct SyncArrivalTests {
 
     // MARK: A binder still arriving
 
-    @Test("A store that syncs is whole only once an import has finished and none is under way")
-    func whenTheBinderIsWhole() {
-        let arrival = CloudArrival(syncs: true)
-        #expect(!arrival.isWhole, "Nothing has come yet")
-        let setup = UUID(), first = UUID(), second = UUID()
-        arrival.follow(event: setup, stage: .settingUp, hasEnded: false, succeeded: false)
-        #expect(!arrival.follow(event: setup, stage: .settingUp, hasEnded: true, succeeded: true))
-        #expect(!arrival.isWhole, "Setting up brings nothing")
-        arrival.follow(event: first, stage: .importing, hasEnded: false, succeeded: false)
-        #expect(!arrival.follow(event: first, stage: .importing, hasEnded: true, succeeded: false), "A failed import may have stopped half-way")
-        #expect(!arrival.isWhole)
-        arrival.follow(event: second, stage: .importing, hasEnded: false, succeeded: false)
-        #expect(arrival.follow(event: second, stage: .importing, hasEnded: true, succeeded: true), "The steps that waited run now")
+    @Test("A binder is whole once its first download has finished and no download is under way")
+    func whenTheBinderIsWhole() throws {
+        let container = try makeInMemoryContainer()
+        let arrival = CloudArrival.of(container)
+        #expect(arrival.isWhole, "A container nothing is said about has nothing on its way")
+        CloudArrival.firstDownload(pending: true, in: container)
+        #expect(!arrival.isWhole, "The first download hasn't finished on this phone")
+        CloudArrival.follow(SyncEvent(kind: .setup, finishedAt: nil, succeeded: false), in: container)
+        CloudArrival.follow(SyncEvent(kind: .setup, finishedAt: noon("2026-11-11"), succeeded: true), in: container)
+        CloudArrival.follow(SyncEvent(kind: .download, finishedAt: nil, succeeded: false), in: container)
+        CloudArrival.follow(SyncEvent(kind: .download, finishedAt: noon("2026-11-11"), succeeded: true), in: container)
+        #expect(!arrival.isWhole, "Still waiting until the phone knows the first download finished")
+        CloudArrival.firstDownload(pending: false, in: container)
         #expect(arrival.isWhole)
-        arrival.follow(event: UUID(), stage: .other, hasEnded: false, succeeded: false)
+        CloudArrival.follow(SyncEvent(kind: .upload, finishedAt: nil, succeeded: false), in: container)
         #expect(arrival.isWhole, "Sending this device's changes brings nothing")
-        arrival.follow(event: first, stage: .importing, hasEnded: false, succeeded: false)
-        #expect(!arrival.isWhole, "A later import under way")
-        #expect(CloudArrival(syncs: false).isWhole, "A store that doesn't sync is always whole")
+        CloudArrival.follow(SyncEvent(kind: .download, finishedAt: nil, succeeded: false), in: container)
+        #expect(!arrival.isWhole, "A later batch under way")
+        CloudArrival.follow(SyncEvent(kind: .download, finishedAt: noon("2026-11-11"), succeeded: false, problem: .offline), in: container)
+        #expect(arrival.isWhole, "Nothing more is coming down for now")
     }
 
-    @Test("Nothing of the household's goes while the binder is still arriving")
+    @Test("Nothing of the household's goes while the binder is still arriving, and it settles once it has")
     func theDeclarationWaitsForItsTenancy() throws {
         let context = try makeContext()
         // The declaration came first; its tenancy is still on its way.
         _ = declaration(in: context)
         try context.save()
-        let arrival = CloudArrival.of(context.container)
-        let importing = UUID()
-        arrival.follow(event: importing, stage: .importing, hasEnded: false, succeeded: false)
+        let container = context.container
+        CloudArrival.follow(SyncEvent(kind: .download, finishedAt: nil, succeeded: false), in: container)
 
         #expect(try !LaunchData.reconcileHouseholdRules(in: context, today: today))
-        #expect(try declarations(in: context).count == 1, "Kept while the import runs")
+        #expect(try declarations(in: context).count == 1, "Kept while the download runs")
 
-        arrival.follow(event: importing, stage: .importing, hasEnded: true, succeeded: true)
+        let told = Told()
+        let observer = NotificationCenter.default.addObserver(forName: CloudArrival.didBecomeWhole, object: container, queue: nil) { _ in told.value = true }
+        defer { NotificationCenter.default.removeObserver(observer) }
+        CloudArrival.follow(SyncEvent(kind: .download, finishedAt: noon("2026-11-11"), succeeded: true), in: container)
+        #expect(told.value, "The steps that waited are told they can run")
         #expect(try LaunchData.reconcileHouseholdRules(in: context, today: today))
         #expect(try declarations(in: context).isEmpty, "Once all of it has come, a declaration nobody used goes with no tenancy")
     }
@@ -82,4 +86,9 @@ struct SyncArrivalTests {
         #expect(left.count == 1, "Its completion is the person's record")
         #expect(left.first?.historyEntries?.count == 1)
     }
+}
+
+/// Whether a notification came, kept for a test.
+private final class Told: @unchecked Sendable {
+    var value = false
 }

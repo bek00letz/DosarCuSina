@@ -1,4 +1,3 @@
-import CoreData
 import Foundation
 import SwiftData
 import Synchronization
@@ -9,19 +8,27 @@ import Synchronization
 /// A binder arrives from iCloud a batch at a time, in no order the app chooses: on a new device
 /// the household's rental income declaration can come before the tenancy it is for. A step that
 /// removes something because what calls for it is missing (`HouseholdRules.reconcile`) would
-/// then remove the person's record, and the removal would go back to every device. So it waits:
-/// a store that syncs is whole once an import from iCloud has finished since it opened and none
-/// is under way (`NSPersistentCloudKitContainer`'s events, followed by `SyncedChanges`). A store
-/// that doesn't sync is always whole. Joining two copies of a record waits too (`RecordsMeet`):
-/// what is still on its way may point at the copy that would go. Adding what the app itself
-/// installs (the built-in categories) never waits. Read from any thread (a backup brought in off
-/// the main thread asks too).
+/// then remove the person's record, and the removal would go back to every device. So it waits
+/// while the binder may still be on its way: the first download for the account hasn't finished
+/// on this phone (`PersistenceController.binderMayBeArriving`, from the sync events and what the
+/// phone remembers, `SyncHealthTracker`), or a download from iCloud is under way (a later batch).
+/// `PersistenceController` tells it both as it follows the mirroring's events (`SyncEvent`); a
+/// container it doesn't run, a test's, is always whole. Joining two copies of a record waits too
+/// (`RecordsMeet`): what is still on its way may point at the copy that would go. When it
+/// becomes whole it says so (`didBecomeWhole`), and `SyncedChanges` settles again. Read from any
+/// thread (a backup brought in off the main thread asks too).
 final class CloudArrival: Sendable {
+    /// Posted with `object` the container when what was on its way has all arrived.
+    static let didBecomeWhole = Notification.Name("CloudArrival.didBecomeWhole")
+
     private struct State {
-        /// An import from iCloud finished, so what was there when the store opened has come.
-        var hasArrivedOnce = false
-        /// Imports under way, by the event's id.
-        var running: Set<UUID> = []
+        /// The first download for the account hasn't finished on this phone.
+        var firstDownloadPending = false
+        /// Setting up the mirroring, or a download, is under way.
+        var settingUp = false
+        var downloading = false
+
+        var isWhole: Bool { !firstDownloadPending && !settingUp && !downloading }
     }
 
     /// One container's arrival, kept while the container lives.
@@ -32,69 +39,50 @@ final class CloudArrival: Sendable {
 
     private static let arrivals = Mutex<[ObjectIdentifier: Entry]>([:])
 
-    /// The arrival of `container`'s binder; one per container. A container opened again (sync
-    /// turned on or off) starts again: nothing has arrived in it yet.
+    /// The arrival of `container`'s binder; one per container. A container opened again starts
+    /// again, whole until it is told otherwise.
     static func of(_ container: ModelContainer) -> CloudArrival {
         arrivals.withLock { arrivals in
             let key = ObjectIdentifier(container)
             if let entry = arrivals[key], entry.container === container { return entry.arrival }
-            let syncs = container.configurations.contains { $0.cloudKitContainerIdentifier != nil }
-            let arrival = CloudArrival(syncs: syncs)
+            let arrival = CloudArrival()
             arrivals = arrivals.filter { $0.value.container != nil }
             arrivals[key] = Entry(container: container, arrival: arrival)
             return arrival
         }
     }
 
-    private let syncs: Bool
     private let state = Mutex(State())
 
-    init(syncs: Bool) {
-        self.syncs = syncs
-    }
-
-    /// Whether nothing is still on its way: no import under way, and, for a store that syncs, one
-    /// has finished since it opened.
+    /// Whether nothing is still on its way.
     var isWhole: Bool {
-        state.withLock { $0.running.isEmpty && ($0.hasArrivedOnce || !syncs) }
+        state.withLock { $0.isWhole }
     }
 
-    /// What one of the store's iCloud events is to the binder's arrival.
-    enum Stage: Sendable {
-        /// Getting ready to sync, before the first import: nothing has come yet.
-        case settingUp
-        /// Bringing what other devices saved.
-        case importing
-        /// Anything else (sending this device's changes): nothing comes with it.
-        case other
+    /// Whether the first download for the account is still to finish on this phone.
+    static func firstDownload(pending: Bool, in container: ModelContainer) {
+        of(container).change(in: container) { $0.firstDownloadPending = pending }
     }
 
-    /// Follows one of the store's iCloud events. Returns true when an import has just finished
-    /// and left the binder whole, so the steps that waited can run.
-    @discardableResult
-    func follow(event id: UUID, stage: Stage, hasEnded: Bool, succeeded: Bool) -> Bool {
-        guard stage != .other else { return false }
-        return state.withLock { state in
-            guard hasEnded else {
-                state.running.insert(id)
-                return false
+    /// Follows one of the mirroring's events for `container`.
+    static func follow(_ event: SyncEvent, in container: ModelContainer) {
+        of(container).change(in: container) { state in
+            let running = event.finishedAt == nil
+            switch event.kind {
+            case .setup: state.settingUp = running
+            case .download: state.downloading = running
+            case .upload: break
             }
-            state.running.remove(id)
-            // A failed import (no network) may have stopped half-way: what is here isn't all yet.
-            guard stage == .importing, succeeded else { return false }
-            state.hasArrivedOnce = true
-            return state.running.isEmpty
         }
     }
 
-    /// Follows the event a store's `NSPersistentCloudKitContainer.eventChangedNotification` carries.
-    @discardableResult
-    func follow(_ event: NSPersistentCloudKitContainer.Event) -> Bool {
-        let stage: Stage = switch event.type {
-        case .setup: .settingUp
-        case .import: .importing
-        default: .other
+    /// Applies `change`, and says so when it left the binder whole.
+    private func change(in container: ModelContainer, _ change: (inout State) -> Void) {
+        let becameWhole = state.withLock { state in
+            let before = state.isWhole
+            change(&state)
+            return !before && state.isWhole
         }
-        return follow(event: event.identifier, stage: stage, hasEnded: event.endDate != nil, succeeded: event.succeeded)
+        if becameWhole { NotificationCenter.default.post(name: Self.didBecomeWhole, object: container) }
     }
 }

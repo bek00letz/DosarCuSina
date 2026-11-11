@@ -15,6 +15,9 @@ public enum UndoError: LocalizedError, Equatable {
     case unavailable
     /// The pictures or files the step took, kept for its undo, can no longer be read.
     case picturesLost
+    /// The binder reopened since (iCloud sync turned on or off, examples came in): the step was
+    /// taken on what the store no longer runs on, so it isn't taken back.
+    case binderReopened
 
     public var errorDescription: String? {
         switch self {
@@ -26,6 +29,9 @@ public enum UndoError: LocalizedError, Equatable {
         case .picturesLost:
             String(localized: "Nu mai pot anula, pentru că pozele păstrate pentru asta nu mai sunt pe telefon. Adaugă-le din nou, dacă e nevoie.",
                    comment: "Undo refused because the copies of the pictures a deletion took could not be read back.")
+        case .binderReopened:
+            String(localized: "Nu mai pot anula, pentru că dosarul s-a redeschis între timp, când s-a schimbat sincronizarea cu iCloud. Corectează de mână ce e nevoie.",
+                   comment: "Undo refused because the binder reopened under a new container (iCloud sync changed) after the step.")
         }
     }
 }
@@ -50,10 +56,18 @@ public enum UndoError: LocalizedError, Equatable {
 /// deadline of the same section completed from the widget); neither stops it.
 ///
 /// A receipt lives in memory, only while the toast offers it. Actions that can't be
-/// undone don't return one.
+/// undone don't return one. When the store opens again under another container, the receipt
+/// lets go of its context and offers no undo (`UndoError.binderReopened`): taking the step back
+/// would write through a container that no longer runs the binder, perhaps one that synced.
 @MainActor
-public final class UndoReceipt {
-    let context: ModelContext
+public final class UndoReceipt: ContainerHolder {
+    /// The context the step was taken on; nil once its container was retired.
+    private var heldContext: ModelContext?
+    /// Whether the store reopened under another container since the step.
+    public private(set) var isRetired = false
+    /// Only read while recording, inside a unit of work on a live container, or after `undo()`
+    /// checked `isRetired`.
+    var context: ModelContext { heldContext! }
     /// Records the step created; undo deletes them.
     private(set) var inserted: [RecordRef] = []
     /// Records the step changed or deleted, as they were before it.
@@ -68,12 +82,21 @@ public final class UndoReceipt {
     private(set) var isUndone = false
 
     init(context: ModelContext) {
-        self.context = context
+        heldContext = context
+        ContainerRetirement.add(self)
+    }
+
+    func containerRetired(_ container: ModelContainer) {
+        guard let heldContext, heldContext.container === container else { return }
+        self.heldContext = nil
+        isRetired = true
+        files?.removeAll()
+        files = nil
     }
 
     /// Whether "Anulează" can take this step back: it saved, changed something, and wasn't taken back yet.
     public var canUndo: Bool {
-        isSealed && !isUndone && !(inserted.isEmpty && before.isEmpty)
+        isSealed && !isUndone && !isRetired && !(inserted.isEmpty && before.isEmpty)
     }
 
     /// The records the step touched, for tests and for checking what a step did.
@@ -208,6 +231,7 @@ public final class UndoReceipt {
     /// come back too, unless a newer change gave one since: the unit gives none of its own
     /// (`ChangeOrigin.restoring`).
     public func undo() throws {
+        if isRetired { throw UndoError.binderReopened }
         guard canUndo else { throw UndoError.unavailable }
         let needed = filesToWriteBack
         let bytes: [FileDigest: Data]
