@@ -43,6 +43,8 @@ enum RecordsMeet {
         // Records that aren't parts first, so a document's pages go with the copy that goes.
         let types = UndoableRecords.ordered
         let passes = [types.filter { !($0 is any PartOfChangeTimed.Type) }, types.filter { $0 is any PartOfChangeTimed.Type }]
+        // Nothing shared: no step at all, so nothing is saved.
+        guard try types.contains(where: { try !copies(of: $0, in: context).isEmpty }) else { return false }
         return try UnitOfWork.perform(in: context, origin: .restoring) {
             var changed = false
             var made: Set<PersistentIdentifier>?

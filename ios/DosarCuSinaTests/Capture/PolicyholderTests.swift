@@ -40,7 +40,8 @@ struct PolicyholderTests {
 
     @Test("An install from before gets the person's class field, and keeps its people")
     func upgrade() throws {
-        let context = try makeContext()
+        // A binder the older catalog installed: an older catalog never writes over a newer one.
+        let context = PersistenceController.context(in: try makeInMemoryContainer())
         let store = TemplateStore(context: context)
         var older = BuiltInTemplates.member
         older.version = 13
