@@ -24,6 +24,17 @@ struct OnboardingFlow: View {
     /// The first photo's toast, with its "Anulează". Onboarding covers the whole screen, the
     /// shell's toast host with it, so it shows its own.
     @State private var toast: DSToast?
+    /// Whether the last step waited for the person's binder to come down from iCloud.
+    @State private var waitedForICloud = false
+    /// Whether anything is in the binder, read one section at most.
+    @Query(OnboardingFlow.anySection) private var someSection: [Asset]
+    private let persistence = PersistenceController.shared
+
+    private static var anySection: FetchDescriptor<Asset> {
+        var descriptor = FetchDescriptor<Asset>()
+        descriptor.fetchLimit = 1
+        return descriptor
+    }
 
     var body: some View {
         NavigationStack {
@@ -117,7 +128,42 @@ struct OnboardingFlow: View {
         }
     }
 
+    /// How to start. On a new device signed into iCloud, the person's binder may be on its way:
+    /// the step waits for it, and offers examples only once it is known the binder is empty.
+    @ViewBuilder
     private var examples: some View {
+        if persistence.binderMayBeArriving {
+            arriving
+        } else if waitedForICloud, !someSection.isEmpty {
+            arrived
+        } else {
+            chooseStart
+        }
+    }
+
+    private var arriving: some View {
+        OnboardingPage(
+            symbols: ["icloud.and.arrow.down"],
+            title: "Dosarul tău poate fi pe drum",
+            message: "Ești conectat la iCloud, așa că aduc întâi ce ai pe celelalte dispozitive. Exemplele le poți vedea după, dacă dosarul e gol."
+        ) {
+            DSDelayedProgress(label: "Se aduce dosarul tău din iCloud…")
+            DSSecondaryButton("Începe fără să aștept", action: onFinish)
+        }
+        .onAppear { waitedForICloud = true }
+    }
+
+    private var arrived: some View {
+        OnboardingPage(
+            symbols: ["checkmark.icloud"],
+            title: "Dosarul tău a ajuns",
+            message: "Am adus ce ai pe celelalte dispozitive. Ce schimbi aici apare și acolo."
+        ) {
+            DSPrimaryButton("Deschide dosarul", action: onFinish)
+        }
+    }
+
+    private var chooseStart: some View {
         OnboardingPage(
             symbols: ["sparkles"],
             title: "Cum vrei să începi?",
@@ -133,13 +179,16 @@ struct OnboardingFlow: View {
     }
 
     private func loadExamples() {
+        guard !isLoadingExamples else { return }
         isLoadingExamples = true
-        do {
-            try ExampleDataService.forLoading(from: context).loadExamples()
-            onFinish()
-        } catch {
-            isLoadingExamples = false
-            errorMessage = String(localized: "Încearcă din nou. Poți începe și gol; exemplele se pot încărca oricând din Setări.")
+        Task {
+            do {
+                try await ExampleDataService.loadExamples(from: context)
+                onFinish()
+            } catch {
+                isLoadingExamples = false
+                errorMessage = String(localized: "Încearcă din nou. Poți începe și gol; exemplele se pot încărca oricând din Setări.")
+            }
         }
     }
 }

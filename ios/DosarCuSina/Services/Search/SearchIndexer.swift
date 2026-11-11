@@ -97,17 +97,19 @@ public actor SearchIndexer {
 
 /// The search index the screen shows, kept up to date after every save in the
 /// database, from any context. One per database, so switching tabs never reads
-/// the whole binder again.
+/// the whole binder again. When the store opens again under another container, it lets go of
+/// the old one at once (`ContainerHolder`), and Caută asks for the new one's.
 @MainActor
 @Observable
-final class SearchIndexStore {
+final class SearchIndexStore: ContainerHolder {
     /// Nil until the first read is done.
     private(set) var index: SearchIndex?
     /// Goes up each time the index changes, for screens to search again.
     private(set) var generation = 0
 
-    @ObservationIgnored private let container: ModelContainer
-    @ObservationIgnored private let indexer: SearchIndexer
+    /// Nil once the container was retired.
+    @ObservationIgnored private var container: ModelContainer?
+    @ObservationIgnored private var indexer: SearchIndexer?
     @ObservationIgnored private var listener: Task<Void, Never>?
     @ObservationIgnored private var syncListener: Task<Void, Never>?
     @ObservationIgnored private var lockListener: Task<Void, Never>?
@@ -124,6 +126,18 @@ final class SearchIndexStore {
     init(container: ModelContainer) {
         self.container = container
         self.indexer = SearchIndexer(container: container)
+        ContainerRetirement.add(self)
+    }
+
+    /// Whether this store follows `container` (and hasn't let go of it).
+    func isFollowing(_ container: ModelContainer) -> Bool { self.container === container }
+
+    func containerRetired(_ container: ModelContainer) {
+        guard self.container === container else { return }
+        stop()
+        self.container = nil
+        indexer = nil
+        if Self.instance === self { Self.instance = nil }
     }
 
     private func show(_ fresh: SearchIndex?) {
@@ -134,9 +148,7 @@ final class SearchIndexStore {
 
     /// Listens for saves, then reads the index. Saves made while it reads wait their turn.
     func start() {
-        guard listener == nil else { return }
-        let indexer = indexer
-        let container = container
+        guard listener == nil, let indexer, let container else { return }
         listener = Task { [weak self] in
             // Saves made here; what comes from the person's other devices is followed below.
             let saves = NotificationCenter.default.notifications(named: ModelContext.didSave)

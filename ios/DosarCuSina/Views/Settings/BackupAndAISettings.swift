@@ -14,7 +14,9 @@ struct BackupSettings: View {
     static let dossierType = UTType(exportedAs: "com.ar.dosarcusina.dossier", conformingTo: .zip)
 
     var body: some View {
+        // A new flow whenever the store opens under another container, so none keeps the old one.
         BackupSection(container: context.container, vault: vault)
+            .id(ObjectIdentifier(context.container))
     }
 }
 
