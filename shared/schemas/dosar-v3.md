@@ -327,10 +327,11 @@ diacritics, and words joined by `-`.
 (`electricity|gas|coldWater|hotWater|thermalEnergy|biomarker|bloodPressure|bodyWeight|diopters|odometer|engineHours|cycles|custom`),
 `name`, `value`, `secondaryValue`?, `unit`, `recordedAt`, `unitPrice`?,
 `isSelfRead`, `referenceMin`?, `referenceMax`?, `source`?, `notes`?,
-`isExample`, `updatedAt`?, `startsCounter`?.
+`isExample`, `updatedAt`?, `startsCounter`?, `basis`?.
 
 - **`unit`:** a unit key (see Units above), or `""` when the reading has none. Readings in the same unit form one series: a counter's readings are matched to its field and its metric deadlines by this key.
 - **`startsCounter`:** `true` on the first reading of a new counter ("Contor nou": a replaced meter or dashboard, or one that went round past its last digit). Ordered by `recordedAt`, the readings in its unit on its asset from it on are the new counter's, and the ones before stay as the old counter's history: a rate or a distance is counted on each counter on its own, and a lower reading is only ever compared with its own counter's. Written only when `true`; missing (every archive written before it existed) is `false`, so those readings are one counter, as they were.
+- **`basis`:** how the reading was taken: `read` (off the counter: by the person, by the distributor, a self-reading, a regularisation bill's index) or `estimated` (an index the provider estimated, or one the person said was). An estimate counts only until a later reading of the same counter is lower than it; it stays in the series' history. Written only when known; missing (every archive written before it existed, and a paper that doesn't say) is not said, and counts as a reading. Any other string is kept as written and read as not said.
 
 ### Attachment (`data/attachments.json`)
 

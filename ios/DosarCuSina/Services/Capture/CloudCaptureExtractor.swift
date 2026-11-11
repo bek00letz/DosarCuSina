@@ -67,6 +67,9 @@ struct CloudSchema: Sendable {
             ]
         case .integer:
             return ["type": ["integer", "null"], "description": description]
+        case .meterReading:
+            return ["type": ["string", "null"], "description": description,
+                    "enum": .array(ReadingBasis.allCases.map { JSONValue.string($0.rawValue) } + [.null])]
         case .serviceKind:
             return ["type": ["string", "null"], "description": description,
                     "enum": .array(ServiceKind.all.map(JSONValue.string) + [.null])]

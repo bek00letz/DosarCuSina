@@ -8,7 +8,7 @@ public enum ChangeTime {
     /// reading or a document saved before version 8, or one from a backup that carries none),
     /// and of a built-in category nobody has changed: older than any change, and the same on
     /// every phone, so two copies of a record nobody has changed since are never taken for a
-    /// newer one. Equal to the default the schema gives those records (`DosarSchemaV13`).
+    /// newer one. Equal to the default the schema gives those records (`DosarSchemaV14`).
     public static let unknown = Date.distantPast
 }
 
@@ -160,15 +160,15 @@ enum ChangeTimes {
     }
 }
 
-extension DosarSchemaV13.Asset: ChangeTimed {}
-extension DosarSchemaV13.Obligation: ChangeTimed {}
-extension DosarSchemaV13.HistoryEntry: ChangeTimed {}
-extension DosarSchemaV13.ServiceItem: ChangeTimed {}
-extension DosarSchemaV13.MeasurementLog: ChangeTimed {}
-extension DosarSchemaV13.Attachment: ChangeTimed {}
-extension DosarSchemaV13.Provider: ChangeTimed {}
+extension DosarSchemaV14.Asset: ChangeTimed {}
+extension DosarSchemaV14.Obligation: ChangeTimed {}
+extension DosarSchemaV14.HistoryEntry: ChangeTimed {}
+extension DosarSchemaV14.ServiceItem: ChangeTimed {}
+extension DosarSchemaV14.MeasurementLog: ChangeTimed {}
+extension DosarSchemaV14.Attachment: ChangeTimed {}
+extension DosarSchemaV14.Provider: ChangeTimed {}
 
-extension DosarSchemaV13.CategoryTemplate: ChangeTimed {
+extension DosarSchemaV14.CategoryTemplate: ChangeTimed {
     /// What the person chooses for a built-in category; everything else is the catalog's. Its lock
     /// is this device's own and isn't in the record (`SectionLocks`).
     static let personsOwnChoices: Set<String> = ["homeOrder", "isOnHome"]
@@ -182,6 +182,6 @@ extension DosarSchemaV13.CategoryTemplate: ChangeTimed {
     }
 }
 
-extension DosarSchemaV13.AttachmentPage: PartOfChangeTimed {
+extension DosarSchemaV14.AttachmentPage: PartOfChangeTimed {
     static var wholeProperty: String { "attachment" }
 }

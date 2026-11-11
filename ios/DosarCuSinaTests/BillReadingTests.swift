@@ -210,7 +210,8 @@ struct BillReadingTests {
             #expect(question.previous == 12_345)
             #expect(question.value == 12_000)
             #expect(question.unit == .cubicMetres)
-            #expect(question.question == "Citirea e mai mică decât ultima dată. Corectez citirea veche?")
+            #expect(question.question == "Citirea e mai mică decât ultima dată. Cea veche era o estimare?", "One bill is too little history to tell: the likelier first")
+            #expect(question.answers == [.wasEstimate, .newCounter])
         }
 
         let kept = try await save(lower, context, lowerReading: .keepAside)

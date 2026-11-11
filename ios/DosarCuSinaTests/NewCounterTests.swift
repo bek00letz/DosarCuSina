@@ -57,11 +57,13 @@ struct NewCounterTests {
         (asset.measurements ?? []).filter { !$0.isDeleted }.sorted { $0.recordedAt < $1.recordedAt }
     }
 
-    @Test func theQuestionOffersThreeAnswers() {
-        #expect(LowerReadingAnswer.allCases == [.correctOld, .keepAside, .newCounter])
-        #expect(LowerReadingAnswer.allCases.map(\.title) == ["Corectează citirea veche", "Lasă citirea veche", "Contor nou"])
-        let question = LowerReadingQuestion(previous: 145_000, previousDate: noon("2026-01-10"), value: 1_200, unit: .kilometres)
-        #expect(question.explanation.hasSuffix("Dacă e un contor nou, cele vechi rămân în istoric."))
+    @Test func aCarsQuestionOffersThreeAnswers() {
+        #expect(LowerReadingAnswer.allCases == [.wasEstimate, .newCounter, .correctOld, .keepAside])
+        #expect(LowerReadingAnswer.allCases.map(\.title) == ["Era o estimare", "Contor nou", "Corectează citirea veche", "Lasă citirea veche"])
+        let answers = LowerReadingAnswer.offered(for: .odometer, likelyNewCounter: false)
+        #expect(answers == [.correctOld, .keepAside, .newCounter], "As the owner set them, for a counter that is always read")
+        let question = LowerReadingQuestion(previous: 145_000, previousDate: noon("2026-01-10"), value: 144_200, unit: .kilometres, answers: answers)
+        #expect(question.explanation.hasSuffix("Dacă o corectezi, citirea veche se șterge. Dacă o lași, cea nouă rămâne deoparte. Dacă e un contor nou, cele vechi rămân în istoric."))
     }
 
     @Test func aNewCounterKeepsTheOldReadingsAndShowsTheNewOne() throws {

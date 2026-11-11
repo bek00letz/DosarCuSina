@@ -21,6 +21,8 @@ enum ModelFieldFormat: Hashable, Sendable {
     /// A meter's index, as printed, decimals and all: read by the one number reader as a
     /// meter index (`RomanianNumber`), so it is read the way the phone reads a bill.
     case meterIndex
+    /// How a meter's index was taken: one of the `ReadingBasis` keys.
+    case meterReading
     case lineItems
     case vin
     case plate
@@ -124,6 +126,7 @@ struct ModelQuestions: Sendable {
         case .total, .purchasePrice, .monthlyPrice: .money
         case .warrantyMonths, .odometer, .minimumMonths: .integer
         case .meterIndex: .meterIndex
+        case .meterReading: .meterReading
         case .serviceKind: .serviceKind
         case .coverageType: .coverage
         case .lineItems: .lineItems
@@ -188,6 +191,9 @@ struct ModelQuestions: Sendable {
         case .clcCode: "The CLC code of the consumption point."
         case .meterIndex: "The meter's new index (the current reading, not the previous one), exactly as printed, "
             + "with its decimals, e.g. \"12.345,678\"."
+        case .meterReading: "How the meter's new index was taken: \"\(ReadingBasis.estimated.rawValue)\" when the bill says it was estimated "
+            + "(index estimat, citire estimată, an E beside it), \"\(ReadingBasis.read.rawValue)\" when it says it was read (citire reală, "
+            + "citit de distribuitor, autocitire, an R beside it) or the bill is a regularisation (factură de regularizare). Null when it doesn't say."
         case .productName: "The product bought."
         case .serialNumber: "The product's serial number or IMEI."
         case .warrantyMonths: "The warranty length in months."

@@ -634,14 +634,31 @@ private struct GalleryFeedback: View {
                     .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
                 }
             }
-            GallerySection(title: "O citire mai mică", note: "Un contor doar crește. Corectează șterge citirea veche, Lasă păstrează cea nouă deoparte, Anulează întoarce la formular.") {
+            GallerySection(title: "O citire mai mică", note: "Un contor doar crește. Întreabă cu răspunsul mai probabil întâi. La kilometri: Corectează șterge citirea veche, Lasă păstrează cea nouă deoparte. La un contor de utilități: Era o estimare păstrează citirea veche în istoric, fără s-o mai socotească. Anulează întoarce la formular.") {
                 DSCard {
-                    Button {
-                        readingQuestion = LowerReadingQuestion(previous: 45_724, previousDate: .now, value: 4_572, unit: .kilometres)
-                    } label: {
-                        Text(verbatim: "Scrie 4.572 km").frame(maxWidth: .infinity)
+                    VStack(spacing: DS.Space.s) {
+                        Button {
+                            readingQuestion = LowerReadingQuestion(previous: 45_724, previousDate: .now, value: 45_272, unit: .kilometres,
+                                                                   answers: LowerReadingAnswer.offered(for: .odometer, likelyNewCounter: false))
+                        } label: {
+                            Text(verbatim: "Scrie 45.272 km").frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
+                        Button {
+                            readingQuestion = LowerReadingQuestion(previous: 12_500, previousDate: .now, value: 12_350, unit: .cubicMetres,
+                                                                   answers: LowerReadingAnswer.offered(for: .gas, likelyNewCounter: false))
+                        } label: {
+                            Text(verbatim: "Scrie 12.350 m³ după o estimare").frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
+                        Button {
+                            readingQuestion = LowerReadingQuestion(previous: 12_500, previousDate: .now, value: 20, unit: .cubicMetres,
+                                                                   answers: LowerReadingAnswer.offered(for: .gas, likelyNewCounter: true))
+                        } label: {
+                            Text(verbatim: "Scrie 20 m³ (contor nou)").frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
                     }
-                    .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
                 }
             }
         }

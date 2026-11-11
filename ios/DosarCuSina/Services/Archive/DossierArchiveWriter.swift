@@ -281,7 +281,7 @@ struct DossierArchiveWriter: Sendable {
             value: log.value, secondaryValue: log.secondaryValue, unit: MeasurementUnit.storedKey(for: log.unit), recordedAt: log.recordedAt,
             unitPrice: log.unitPrice, isSelfRead: log.isSelfRead, referenceMin: log.referenceMin,
             referenceMax: log.referenceMax, source: log.source, notes: log.notes, isExample: log.isExample,
-            updatedAt: DossierV3.changeTime(log.updatedAt), startsCounter: log.startsCounter ? true : nil
+            updatedAt: DossierV3.changeTime(log.updatedAt), startsCounter: log.startsCounter ? true : nil, basis: log.basisRaw
         )
     }
 

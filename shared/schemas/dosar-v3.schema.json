@@ -337,7 +337,8 @@
           "recordedAt": { "$ref": "#/$defs/timestamp" },
           "unitPrice": { "$ref": "#/$defs/money" },
           "updatedAt": { "$ref": "#/$defs/timestamp", "description": "When the record last changed. Missing in archives from before it was written: a reader takes it as older than any change." },
-          "startsCounter": { "type": "boolean", "description": "True on the first reading of a new counter (a replaced meter or dashboard, or one that went round): from it on, the readings in its unit on its asset count on their own. Written only when true; missing reads as false, one counter." }
+          "startsCounter": { "type": "boolean", "description": "True on the first reading of a new counter (a replaced meter or dashboard, or one that went round): from it on, the readings in its unit on its asset count on their own. Written only when true; missing reads as false, one counter." },
+          "basis": { "type": "string", "description": "How the reading was taken: read (off the counter) or estimated (an estimate of it, which counts only until a later reading of its counter is lower). Written only when known; missing is not said. Any other string is kept and read as not said." }
         }
       }
     },

@@ -200,6 +200,10 @@ public struct CaptureFieldKey: RawRepresentable, Hashable, Codable, Sendable, Ex
     public static let podCode: CaptureFieldKey = "podCode"
     public static let clcCode: CaptureFieldKey = "clcCode"
     public static let meterIndex: CaptureFieldKey = "meterIndex"
+    /// How the bill says its index was taken, as a `ReadingBasis` key: "estimated" (an index
+    /// the provider estimated) or "read" (read by the distributor or the customer, or a
+    /// regularisation's). Never a value of its own: it goes with the index onto the reading.
+    public static let meterReading: CaptureFieldKey = "meterReading"
 
     // Ongoing contracts (bills and the contracts themselves)
     /// What the contract is for, as a `ServiceKind` key ("service.gas").
