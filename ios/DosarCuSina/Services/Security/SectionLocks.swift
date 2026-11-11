@@ -17,9 +17,9 @@ import SwiftData
 /// the device, not to the binder: "Începe din nou" leaves it where it is.
 ///
 /// Locks stay on when they can't be read (`needsChoosingAgain`). A file that is there but can't be
-/// read, or none where an older build's "Începe din nou" moved it aside, means every category of
-/// one's own and every one the catalog locks is locked, with every lock the moved file still shows,
-/// until the person keeps the locks as they are in Settings (`chooseAgain`, after Face ID). What
+/// read, or none where an older build's "Începe din nou" moved it aside, means every category is
+/// locked, whatever it was before and whatever is chosen meanwhile, until the person keeps the locks
+/// in Settings (`chooseAgain`, after Face ID); then they open what they want, one by one. What
 /// couldn't be read is never written over: the first change reads the file again, and if it still
 /// can't, sets it aside and starts a new one that remembers the wait. A choice that can't be
 /// written throws, so the screen says so and nothing shows as locked that isn't.
@@ -41,8 +41,7 @@ final class SectionLocks: Observable, @unchecked Sendable {
     private let file: URL?
     private let mutex = NSLock()
     private var choices: [String: Bool]
-    /// Every category of one's own and every one the catalog locks stays locked until the person
-    /// keeps the locks as they are (`chooseAgain`).
+    /// Every category stays locked until the person keeps the locks (`chooseAgain`).
     private var untilChosenAgain: Bool
     /// The file is there and couldn't be read: it is read again before anything is written, and
     /// never written over.
@@ -60,11 +59,11 @@ final class SectionLocks: Observable, @unchecked Sendable {
     }
 
     /// Whether `key` is locked on this device: its choice here, else `byDefault`. While the locks
-    /// wait to be chosen again, a category of one's own (`ownCategory`) is locked too.
-    func isLocked(_ key: String, byDefault: Bool, ownCategory: Bool) -> Bool {
+    /// wait to be chosen again, every category is locked.
+    func isLocked(_ key: String, byDefault: Bool) -> Bool {
         registrar.access(self, keyPath: \.generation)
         return mutex.withLock {
-            choices[key] ?? (byDefault || (untilChosenAgain && ownCategory))
+            untilChosenAgain || (choices[key] ?? byDefault)
         }
     }
 
@@ -92,9 +91,9 @@ final class SectionLocks: Observable, @unchecked Sendable {
         }
     }
 
-    /// Ends the wait after the locks couldn't be read: `locks` (every category's lock as it is now)
-    /// become this device's choices, and a category of one's own from another device starts open
-    /// again. Only after Face ID (`TemplateStore.keepLocksAsTheyAre`).
+    /// Ends the wait after the locks couldn't be read: `locks` (every category's lock as it shows
+    /// now: on) become this device's choices, and a category of one's own from another device starts
+    /// open again. Only after Face ID (`TemplateStore.keepLocksAsTheyAre`).
     func chooseAgain(_ locks: [String: Bool]) throws {
         try update(endingTheWait: true) { choices in
             for (key, locked) in locks where key != Self.waitKey { choices[key] = locked }
@@ -160,9 +159,9 @@ final class SectionLocks: Observable, @unchecked Sendable {
         var fileUnread: Bool
     }
 
-    /// What `file` says. A file that is there and can't be read keeps every lock on. With none, the
-    /// locks an older build's "Începe din nou" moved aside stay on, and so does every category of
-    /// one's own and every one the catalog locks, until the person chooses again.
+    /// What `file` says. A file that is there and can't be read keeps every category locked. With
+    /// none where an older build's "Începe din nou" moved it aside, every category is locked too,
+    /// until the person chooses again.
     static func load(_ file: URL) -> Loaded {
         if FileManager.default.fileExists(atPath: file.path(percentEncoded: false)) {
             guard let data = try? Data(contentsOf: file), var stored = try? JSONDecoder().decode([String: Bool].self, from: data) else {
@@ -171,25 +170,15 @@ final class SectionLocks: Observable, @unchecked Sendable {
             let waits = stored.removeValue(forKey: waitKey) ?? false
             return Loaded(choices: stored, untilChosenAgain: waits, fileUnread: false)
         }
-        guard let moved = movedAside(file) else { return Loaded(choices: [:], untilChosenAgain: false, fileUnread: false) }
-        return Loaded(choices: moved, untilChosenAgain: true, fileUnread: false)
+        return Loaded(choices: [:], untilChosenAgain: wasMovedAside(file), fileUnread: false)
     }
 
-    /// The locks that are on in the files an older build's "Începe din nou" moved aside with the
-    /// store ("unreadable-<when>-<file>"); nil when there is none.
-    private static func movedAside(_ file: URL) -> [String: Bool]? {
-        let directory = file.deletingLastPathComponent()
+    /// Whether an older build's "Începe din nou" moved this device's locks aside with the store
+    /// ("unreadable-<when>-<file>").
+    private static func wasMovedAside(_ file: URL) -> Bool {
         let suffix = "-" + file.lastPathComponent
-        let names = ((try? FileManager.default.contentsOfDirectory(atPath: directory.path(percentEncoded: false))) ?? [])
-            .filter { $0.hasPrefix("unreadable-") && $0.hasSuffix(suffix) }
-        guard !names.isEmpty else { return nil }
-        var locks: [String: Bool] = [:]
-        for name in names {
-            guard let data = try? Data(contentsOf: directory.appending(path: name)),
-                  let stored = try? JSONDecoder().decode([String: Bool].self, from: data) else { continue }
-            for (key, locked) in stored where locked && key != waitKey { locks[key] = true }
-        }
-        return locks
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: file.deletingLastPathComponent().path(percentEncoded: false))) ?? []
+        return names.contains { $0.hasPrefix("unreadable-") && $0.hasSuffix(suffix) }
     }
 
     /// Keeps a file that couldn't be read beside the new one, never under it.

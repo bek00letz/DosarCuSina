@@ -9,6 +9,7 @@ import Testing
 @Suite("Locks hold")
 struct LocksHoldTests {
     private let vehicle = BuiltInTemplates.Key.vehicle
+    private let home = BuiltInTemplates.Key.home
     private let documents = BuiltInTemplates.Key.documents
     private let notebook = "custom.0b6c6f43-0000-4000-8000-00000000c0de"
     private let fromAnotherDevice = "custom.0b6c6f43-0000-4000-8000-0000000000aa"
@@ -24,7 +25,7 @@ struct LocksHoldTests {
     }
 
     private func locked(_ locks: SectionLocks, _ key: String) -> Bool {
-        locks.isLocked(key, byDefault: SectionLocks.lockedByDefault.contains(key), ownCategory: key.hasPrefix("custom."))
+        locks.isLocked(key, byDefault: SectionLocks.lockedByDefault.contains(key))
     }
 
     /// A category of one's own that arrives as iCloud writes it: this device made no choice for it.
@@ -49,27 +50,27 @@ struct LocksHoldTests {
 
         let locks = SectionLocks(file: file)
         #expect(locks.needsChoosingAgain)
-        #expect(locked(locks, notebook), "A category of one's own is locked until the locks are chosen again")
-        #expect(locked(locks, documents), "So is one the catalog locks")
-        #expect(!locked(locks, vehicle))
+        for key in [notebook, documents, vehicle, home, fromAnotherDevice] {
+            #expect(locked(locks, key), "Every category is locked until the locks are chosen again: \(key)")
+        }
 
         // A change sets the unread file aside and starts a new one that remembers the wait.
         try locks.set(true, for: vehicle)
+        try locks.set(false, for: home)
+        #expect(locked(locks, home), "Nothing opens while the locks wait")
         let setAside = try FileManager.default.contentsOfDirectory(atPath: folder.path(percentEncoded: false)).filter { $0.contains(".unread-") }
         #expect(setAside.count == 1)
         #expect(try Data(contentsOf: folder.appending(path: try #require(setAside.first))) == unreadable, "What couldn't be read is kept as it was")
         let reopened = SectionLocks(file: file)
         #expect(reopened.needsChoosingAgain, "Still waiting after a relaunch")
-        #expect(locked(reopened, notebook))
-        #expect(locked(reopened, vehicle))
+        for key in [notebook, vehicle, home] { #expect(locked(reopened, key)) }
         #expect(reopened.all[SectionLocks.waitKey] == nil, "The wait isn't a category")
 
-        // Kept as they are: every lock stays, and the wait ends.
-        try reopened.chooseAgain([notebook: true, vehicle: true, documents: true])
+        // Kept: every lock stays on, and the wait ends.
+        try reopened.chooseAgain([notebook: true, vehicle: true, documents: true, home: true])
         let chosen = SectionLocks(file: file)
         #expect(!chosen.needsChoosingAgain)
-        #expect(locked(chosen, notebook))
-        #expect(locked(chosen, vehicle))
+        for key in [notebook, vehicle, documents, home] { #expect(locked(chosen, key)) }
         #expect(!locked(chosen, fromAnotherDevice), "A category from another device starts open again")
     }
 
@@ -101,7 +102,7 @@ struct LocksHoldTests {
         #expect(!locked(locks, vehicle), "Nothing shows as locked that isn't kept")
     }
 
-    @Test func aStoreWhoseLocksCantBeReadOpensWithEveryLockOn() async throws {
+    @Test func aStoreWhoseLocksCantBeReadOpensWithEveryCategoryLocked() async throws {
         let folder = try folder()
         defer { try? FileManager.default.removeItem(at: folder) }
         let url = folder.appending(path: "Dosar.store")
@@ -111,32 +112,37 @@ struct LocksHoldTests {
         try arrives(fromAnotherDevice, in: container)
 
         #expect(SectionLocks.of(container).needsChoosingAgain)
-        #expect(try template(fromAnotherDevice, in: container).isSensitive, "A category of one's own stays locked")
-        #expect(try template(documents, in: container).isSensitive)
         let store = TemplateStore(context: container.mainContext)
-        #expect(throws: LockLowering.Needed.self) { try store.setSensitive(try template(fromAnotherDevice, in: container), false) }
-        #expect(try template(fromAnotherDevice, in: container).isSensitive, "Never opened without Face ID")
+        for category in try store.all() {
+            #expect(category.isSensitive, "Every category stays locked, built-ins included: \(category.key)")
+        }
+        #expect(try template(fromAnotherDevice, in: container).isSensitive)
+        #expect(throws: LockLowering.Needed.self) { try store.setSensitive(try template(vehicle, in: container), false) }
 
         try store.keepLocksAsTheyAre(lowering: try await faceIDConfirmed())
         #expect(!SectionLocks.of(container).needsChoosingAgain)
-        #expect(try template(fromAnotherDevice, in: container).isSensitive, "Kept as it was shown")
+        for category in try store.all() {
+            #expect(category.isSensitive, "Kept on, as the list showed it: \(category.key)")
+        }
+        // Then each one opens again with Face ID.
+        try store.setSensitive(try template(vehicle, in: container), false, lowering: try await faceIDConfirmed())
+        #expect(try !template(vehicle, in: container).isSensitive)
         try arrives(notebook, in: container)
         #expect(try !template(notebook, in: container).isSensitive, "Once chosen again, a new one from another device starts open")
     }
 
-    @Test func locksAnOlderBuildMovedAsideStayOn() throws {
+    @Test func locksAnOlderBuildMovedAsideKeepEveryCategoryLocked() throws {
         let folder = try folder()
         defer { try? FileManager.default.removeItem(at: folder) }
         let file = folder.appending(path: "Dosar.store.section-locks.json")
-        try Data("{\"vehicle\":true,\"documents\":false,\"\(notebook)\":true}".utf8)
+        try Data("{\"vehicle\":true,\"home\":false,\"\(notebook)\":true}".utf8)
             .write(to: folder.appending(path: "unreadable-20261101T120000-Dosar.store.section-locks.json"))
 
         let locks = SectionLocks(file: file)
         #expect(locks.needsChoosingAgain)
-        #expect(locked(locks, vehicle), "A lock the moved file has stays on")
-        #expect(locked(locks, notebook))
-        #expect(locked(locks, documents), "Locked by default until chosen again")
-        #expect(locked(locks, fromAnotherDevice))
+        for key in [vehicle, home, notebook, documents, fromAnotherDevice] {
+            #expect(locked(locks, key), "Every category is locked until chosen again: \(key)")
+        }
     }
 
     // MARK: "Începe din nou" keeps this device's locks

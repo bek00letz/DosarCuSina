@@ -213,8 +213,8 @@ struct DossierImporter {
             }
             template.homeOrder = dto.homeOrder
             template.isOnHome = dto.isOnHome
-            // Never opens what is locked here now: while this device's locks couldn't be read, a
-            // category of one's own the backup brings stays locked until they are chosen again.
+            // Never opens what is locked here now: while this device's locks couldn't be read, every
+            // category the backup brings stays locked until they are chosen again.
             try template.setLock(isLocked || template.isSensitive)
             template.updatedAt = changeTime(dto.updatedAt)
         }

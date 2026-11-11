@@ -147,12 +147,12 @@ extension DosarSchemaV13 {
         /// Ask for Face ID before showing sections of this category, on this device: each device
         /// decides for itself, so the choice lives beside the store, never in it (`SectionLocks`).
         /// A category this device hasn't decided on is locked as the catalog says, or as it was made;
-        /// while this device's locks couldn't be read, every category of one's own is locked too.
+        /// while this device's locks couldn't be read, every category is locked.
         /// Changed only through `setLock`.
         public var isSensitive: Bool {
             let byDefault = lockBeforeSaved ?? (isBuiltIn && SectionLocks.lockedByDefault.contains(key))
             guard let container = modelContext?.container else { return byDefault }
-            return SectionLocks.of(container).isLocked(key, byDefault: byDefault, ownCategory: !isBuiltIn)
+            return SectionLocks.of(container).isLocked(key, byDefault: byDefault)
         }
 
         /// Locks or opens the category on this device. Opening one that is locked now takes the

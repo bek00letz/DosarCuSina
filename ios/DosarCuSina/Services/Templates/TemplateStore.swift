@@ -315,9 +315,9 @@ public struct TemplateStore {
     }
 
     /// Ends the wait after this device's locks couldn't be read (`SectionLocks.needsChoosingAgain`):
-    /// every category keeps the lock it shows now, as this device's choice, and a category of
-    /// one's own that arrives from another device starts open again. That opens what would have
-    /// been locked, so it takes the person's Face ID first (`lowering`).
+    /// every category keeps the lock it shows now (on, for every one), as this device's choice, and
+    /// a category of one's own that arrives from another device starts open again. That opens what
+    /// would have been locked, so it takes the person's Face ID first (`lowering`).
     public func keepLocksAsTheyAre(lowering: LockLowering) throws {
         let locks = Dictionary(try all().map { ($0.key, $0.isSensitive) }, uniquingKeysWith: { $0 || $1 })
         try SectionLocks.of(context.container).chooseAgain(locks)

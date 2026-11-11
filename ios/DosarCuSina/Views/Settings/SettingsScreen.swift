@@ -167,8 +167,8 @@ private struct NotificationSettings: View {
 /// Turning a lock off asks for Face ID first, every time, even with the app open behind its
 /// lock (`BiometricVaultManager.confirmLowering`), so nobody else holding the phone can switch
 /// it off. Turning the app lock on asks too, so the person knows Face ID opens it; a section's
-/// lock goes on at once. When this device's locks couldn't be read, they stay on and the list
-/// says so, with one way to keep them as they are (`LocksNotReadNotice`).
+/// lock goes on at once. When this device's locks couldn't be read, every section stays locked and
+/// the list says so, with one way to keep them (`LocksNotReadNotice`).
 private struct LockSettings: View {
     @Environment(\.modelContext) private var context
     @Environment(BiometricVaultManager.self) private var vault
@@ -185,7 +185,8 @@ private struct LockSettings: View {
     var body: some View {
         let used = Set(assets.map(\.templateKey))
         let shown = templates.filter { used.contains($0.key) || $0.behavior.box == .wholeCategory || $0.isSensitive }
-        if SectionLocks.of(context.container).needsChoosingAgain {
+        let waiting = SectionLocks.of(context.container).needsChoosingAgain
+        if waiting {
             LocksNotReadNotice(biometryName: vault.biometryName, isConfirming: isConfirming, keep: keepLocksAsTheyAre)
         }
         Section {
@@ -206,6 +207,8 @@ private struct LockSettings: View {
                     Label { Text(verbatim: template.name) } icon: { Image(systemName: template.symbol).foregroundStyle(template.tintColor) }
                 }
                 .frame(minHeight: 44)
+                // Every section stays locked until the locks are kept again (`LocksNotReadNotice`).
+                .disabled(waiting)
             }
         } header: {
             Text("Secțiuni protejate", comment: "Settings section: per-section locks.")
@@ -263,9 +266,9 @@ private struct LockSettings: View {
     }
 }
 
-/// Says plainly that this device's locks couldn't be read and stay on meanwhile: every category
-/// of one's own and every one locked by default asks for Face ID until the person checks the list
-/// under it and keeps it as it is ("Păstrează protecțiile de mai jos", after Face ID).
+/// Says plainly that this device's locks couldn't be read and stay on meanwhile: every section asks
+/// for Face ID, and the switches under it wait, until the person keeps the locks ("Păstrează
+/// protecțiile", after Face ID); then each one can be turned off again, with Face ID.
 private struct LocksNotReadNotice: View {
     let biometryName: String
     let isConfirming: Bool
@@ -280,7 +283,7 @@ private struct LocksNotReadNotice: View {
                 VStack(alignment: .leading, spacing: DS.Space.xxs) {
                     Text("Nu am putut citi ce secțiuni ai protejat", comment: "Settings notice: this device's section locks couldn't be read.")
                         .dsFont(.body)
-                    Text("Până alegi din nou, secțiunile tale și cele protejate de obicei cer \(biometryName). Verifică lista de mai jos, apoi păstreaz-o.", comment: "Settings notice: what happens while the section locks couldn't be read, and what to do.")
+                    Text("Până alegi din nou, toate secțiunile cer \(biometryName). Păstrează protecțiile, apoi oprește-le pe cele pe care nu le vrei.", comment: "Settings notice: what happens while the section locks couldn't be read, and what to do.")
                         .dsFont(.footnote)
                         .foregroundStyle(DS.Palette.secondaryLabel)
                 }
@@ -289,7 +292,7 @@ private struct LocksNotReadNotice: View {
             .accessibilityElement(children: .combine)
             Button(action: keep) {
                 HStack {
-                    Text("Păstrează protecțiile de mai jos", comment: "Keeps the section locks as the list shows them, after they couldn't be read.")
+                    Text("Păstrează protecțiile", comment: "Keeps every section locked after the section locks couldn't be read, so each can then be turned off with Face ID.")
                     Spacer()
                     if isConfirming { DSDelayedProgress(label: nil) }
                 }
