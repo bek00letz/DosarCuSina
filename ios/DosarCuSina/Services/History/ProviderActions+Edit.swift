@@ -20,23 +20,51 @@ public struct ProviderDetails: Equatable, Sendable {
         self.notes = notes
         self.contactIdentifier = contactIdentifier
     }
-}
 
-extension ProviderActions {
-    /// Replaces a provider's details. Phone and e-mail are normalized the same way
-    /// `create` does; empty text is stored as nil.
-    public func update(_ provider: Provider, with details: ProviderDetails) throws {
+    /// The details as they are kept: phone and e-mail normalized the same way `create` does,
+    /// empty text as nil.
+    var kept: ProviderDetails {
         func clean(_ text: String?) -> String? {
             guard let trimmed = text?.trimmingCharacters(in: .whitespacesAndNewlines), !trimmed.isEmpty else { return nil }
             return trimmed
         }
-        provider.name = details.name.trimmingCharacters(in: .whitespacesAndNewlines)
-        provider.trades = details.trades
-        provider.phone = clean(details.phone).map { FieldFormatter.normalize($0, as: .phone) }
-        provider.email = clean(details.email).map { FieldFormatter.normalize($0, as: .email) }
-        provider.address = clean(details.address)
-        provider.notes = clean(details.notes)
-        provider.contactIdentifier = details.contactIdentifier
+        return ProviderDetails(
+            name: name.trimmingCharacters(in: .whitespacesAndNewlines), trades: trades,
+            phone: clean(phone).map { FieldFormatter.normalize($0, as: .phone) },
+            email: clean(email).map { FieldFormatter.normalize($0, as: .email) },
+            address: clean(address), notes: clean(notes), contactIdentifier: contactIdentifier
+        )
+    }
+}
+
+extension ProviderActions {
+    /// Writes a provider's details, as kept (`ProviderDetails.kept`). Only what the edit changed
+    /// from the details it started from (`startedFrom`, else the provider as stored now) is
+    /// written, detail by detail (`ThreeWay`): a detail left as it was read keeps what is stored
+    /// now, so a phone number added meanwhile on another device stays.
+    public func update(_ provider: Provider, with details: ProviderDetails, startedFrom start: ProviderDetails? = nil) throws {
+        let edited = details.kept
+        let base = (start ?? provider.details).kept
+        let stored = provider.details
+        func lay<Value: Equatable>(_ keyPath: KeyPath<ProviderDetails, Value>) -> Value {
+            ThreeWay.value(edited[keyPath: keyPath], over: stored[keyPath: keyPath], startedFrom: base[keyPath: keyPath])
+        }
+        let name = lay(\.name), trades = lay(\.trades), phone = lay(\.phone), email = lay(\.email)
+        let address = lay(\.address), notes = lay(\.notes), contact = lay(\.contactIdentifier)
+        if provider.name != name { provider.name = name }
+        if provider.trades != trades { provider.trades = trades }
+        if provider.phone != phone { provider.phone = phone }
+        if provider.email != email { provider.email = email }
+        if provider.address != address { provider.address = address }
+        if provider.notes != notes { provider.notes = notes }
+        if provider.contactIdentifier != contact { provider.contactIdentifier = contact }
         try UnitOfWork.save(context, now: now())
+    }
+}
+
+extension Provider {
+    /// What the person can change on the card, as stored.
+    var details: ProviderDetails {
+        ProviderDetails(name: name, trades: trades, phone: phone, email: email, address: address, notes: notes, contactIdentifier: contactIdentifier)
     }
 }

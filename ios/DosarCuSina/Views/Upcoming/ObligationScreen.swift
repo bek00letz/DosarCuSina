@@ -425,7 +425,7 @@ private struct ObligationPage: View {
         if on { leads.insert(days) } else { leads.remove(days) }
         let profile = current.withLeadDays(Array(leads))
         saveRequest = ReminderSaveRequest {
-            run { try ObligationActions(context: context).setReminders(obligation, profile) }
+            run { try ObligationActions(context: context).setReminders(obligation, profile, startedFrom: current) }
         }
     }
 

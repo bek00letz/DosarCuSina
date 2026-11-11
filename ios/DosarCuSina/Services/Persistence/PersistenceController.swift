@@ -503,6 +503,8 @@ public final class PersistenceController {
         default: arriving = false
         }
         if arriving != binderMayBeArriving { binderMayBeArriving = arriving }
+        // The app's own steps on what is missing read it there, from any thread (`CloudArrival`).
+        if let container { CloudArrival.firstDownload(pending: arriving, in: container) }
     }
 
     // MARK: What iCloud reports
@@ -511,6 +513,7 @@ public final class PersistenceController {
     /// is room (`SyncPause.iCloudFull`); iCloud saying no one is signed in asks for the account again.
     func record(_ event: SyncEvent) {
         guard sync == .on, let tracker else { return }
+        if let container { CloudArrival.follow(event, in: container) }
         let problem = tracker.record(event)
         if health != tracker.health { health = tracker.health }
         followArrival()
@@ -588,7 +591,7 @@ public final class PersistenceController {
         return base.appending(path: "Dosar-v2.store")
     }
 
-    public nonisolated static let schema = Schema(versionedSchema: DosarSchemaV12.self)
+    public nonisolated static let schema = Schema(versionedSchema: DosarSchemaV13.self)
 
     // MARK: iCloud
 

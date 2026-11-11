@@ -140,9 +140,10 @@ struct ReminderSettingsSheet: View {
     }
 
     private func setLeads(_ leads: [Int]) {
-        let profile = obligation.reminders.withLeadDays(leads)
+        let current = obligation.reminders
+        let profile = current.withLeadDays(leads)
         saveRequest = ReminderSaveRequest {
-            run { try ObligationActions(context: context).setReminders(obligation, profile) }
+            run { try ObligationActions(context: context).setReminders(obligation, profile, startedFrom: current) }
         }
     }
 

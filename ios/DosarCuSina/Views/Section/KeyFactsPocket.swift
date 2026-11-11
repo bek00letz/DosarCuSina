@@ -161,12 +161,15 @@ struct KeyFactsPocket: View {
 
     private func save(_ fact: CustomFact) {
         var facts = asset.customFacts
+        // The rows as the editor started from them: the row as it opened, the others as they are.
+        var start = facts
         if let index = facts.firstIndex(where: { $0.id == fact.id }) {
             facts[index] = fact
+            if let opened = editing, opened.id == fact.id { start[index] = opened }
         } else {
             facts.append(fact)
         }
-        apply(facts)
+        apply(facts, startedFrom: start)
         editing = nil
     }
 
@@ -177,9 +180,9 @@ struct KeyFactsPocket: View {
     }
 
     @discardableResult
-    private func apply(_ facts: [CustomFact]) -> UndoReceipt? {
+    private func apply(_ facts: [CustomFact], startedFrom start: [CustomFact]? = nil) -> UndoReceipt? {
         do {
-            return try AssetActions(context: context).setCustomFacts(asset, facts)
+            return try AssetActions(context: context).setCustomFacts(asset, facts, startedFrom: start)
         } catch {
             self.error = UserFacingError(error)
             return nil

@@ -134,7 +134,7 @@ struct CaptureReview: Identifiable {
     /// Fields shown on the review: everything read, in a sensible order, without repeats.
     var visibleFields: [Field] {
         let keys = Set(fields.map(\.key))
-        let order = Dictionary(uniqueKeysWithValues: CaptureMapping.reviewOrder.enumerated().map { ($1, $0) })
+        let order = Dictionary(CaptureMapping.reviewOrder.enumerated().map { ($1, $0) }, uniquingKeysWith: { first, _ in first })
         return fields.enumerated()
             .filter { CaptureMapping.isShownInReview($0.element.key, among: keys) }
             .sorted { (order[$0.element.key] ?? 100 + $0.offset, $0.offset) < (order[$1.element.key] ?? 100 + $1.offset, $1.offset) }

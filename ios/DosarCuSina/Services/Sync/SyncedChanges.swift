@@ -17,8 +17,9 @@ import SwiftData
 /// read (`changes(in:after:)`).
 ///
 /// When one arrives, the app's own steps that keep two devices' binders one run again, each
-/// idempotent and choosing the same records on every device (`settle`): one copy of each built-in
-/// category, one copy of each household deadline.
+/// idempotent and choosing the same records on every device (`settle`): records that share an id
+/// joined into one (`RecordsMeet`), one copy of each built-in category, one copy of each household
+/// deadline. The steps that wait for the binder to arrive (`CloudArrival`) run again once it has.
 ///
 /// It starts where the store opens (`PersistenceController.followEveryContainer`), not with a
 /// screen, so what arrives while the app runs in the background (woken by iCloud, or by the
@@ -35,6 +36,7 @@ final class SyncedChanges: ContainerHolder {
     private var container: ModelContainer?
     private var last: DefaultHistoryToken?
     private var listener: Task<Void, Never>?
+    private var arrival: Task<Void, Never>?
     private let now: () -> Date
 
     private static var instance: SyncedChanges?
@@ -71,11 +73,19 @@ final class SyncedChanges: ContainerHolder {
                 await self?.read()
             }
         }
+        // What waited for the binder to arrive runs once it has.
+        arrival = Task { [weak self] in
+            for await _ in NotificationCenter.default.notifications(named: CloudArrival.didBecomeWhole, object: container).map({ _ in () }) {
+                self?.settle()
+            }
+        }
     }
 
     func stop() {
         listener?.cancel()
         listener = nil
+        arrival?.cancel()
+        arrival = nil
     }
 
     /// Reads what came since the last read, away from the main thread, and tells everyone that
@@ -92,13 +102,17 @@ final class SyncedChanges: ContainerHolder {
         NotificationCenter.default.post(name: Self.didArrive, object: container, userInfo: [Self.changesKey: changes])
     }
 
-    /// The app's own steps that make two devices' binders one: one copy of each built-in category
+    /// The app's own steps that make two devices' binders one: records that share an id joined
+    /// into one (`RecordsMeet`), one copy of each built-in category
     /// (`TemplateStore.installBuiltIns`), one copy of each household deadline
-    /// (`HouseholdRules.reconcile`). Each chooses the same records on every device, so their
-    /// results meet without a conflict.
+    /// (`HouseholdRules.reconcile`, which removes nothing while the binder is still arriving).
+    /// Each chooses the same records on every device, so their results meet without a conflict.
     func settle() {
         guard let container else { return }
         let context = container.mainContext
+        PersistenceLog.attempt("Joining records that share an id after a synced change") {
+            _ = try RecordsMeet.join(in: context)
+        }
         PersistenceLog.attempt("Settling the built-in categories after a synced change") {
             _ = try TemplateStore(context: context).installBuiltIns()
         }

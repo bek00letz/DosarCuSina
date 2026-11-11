@@ -33,6 +33,8 @@ struct TemplateStoreTests {
         context.insert(CategoryTemplate(definition: BuiltInTemplates.home, isBuiltIn: true, homeOrder: 0))
         context.insert(CategoryTemplate(definition: BuiltInTemplates.home, isBuiltIn: true, homeOrder: 1))
         try context.save()
+        // Copies of one category meet as one (`RecordsMeet`), as they do at launch, before the catalog.
+        try RecordsMeet.join(in: context)
         try TemplateStore(context: context).installBuiltIns()
         let homeKey = BuiltInTemplates.Key.home
         #expect(try context.fetchCount(FetchDescriptor<CategoryTemplate>(predicate: #Predicate { $0.key == homeKey })) == 1)

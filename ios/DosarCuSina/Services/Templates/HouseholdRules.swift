@@ -26,6 +26,10 @@ public enum HouseholdRules {
     /// Creates or removes household obligations to match the assets. Doesn't save;
     /// callers fold it into their own single save. Returns whether anything changed.
     ///
+    /// With no tenancy, a declaration goes only once the binder has all arrived (`CloudArrival`)
+    /// and only when nothing of the person's is on it (a completion, a document): one they
+    /// filed or attached a paper to stays, as theirs.
+    ///
     /// Two copies of one (each phone made its own, and "Adaugă" brought them together) become
     /// one: the copy furthest on is kept (`kept(among:)`), and what the others recorded, their
     /// completions and documents, moves onto it before they go. At launch it is the app's own
@@ -41,8 +45,15 @@ public enum HouseholdRules {
             .filter { !$0.isDeleted }
 
         guard !tenancies.isEmpty else {
-            existing.forEach(context.delete)
-            return !existing.isEmpty
+            // A binder still arriving from iCloud may bring its tenancy later: nothing goes before
+            // it has arrived (`CloudArrival`), or the removal would reach every device.
+            guard CloudArrival.of(context.container).isWhole else { return false }
+            // A declaration with something of the person's on it (a completion, a document) is
+            // their record and stays; the income it declares is still due after the last tenancy
+            // ends. Only one nobody has used goes.
+            let unused = existing.filter { ($0.historyEntries ?? []).isEmpty && ($0.attachments ?? []).isEmpty }
+            unused.forEach(context.delete)
+            return !unused.isEmpty
         }
         // Examples only produce an example declaration; one real tenancy makes it real.
         let isExample = tenancies.allSatisfy(\.isExample)

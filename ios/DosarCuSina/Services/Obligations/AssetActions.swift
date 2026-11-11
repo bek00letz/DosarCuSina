@@ -144,24 +144,34 @@ public final class AssetActions {
     /// `lowerReading` answers it, and the hero value is then worked out from the readings.
     /// A subscription whose direct debit changed pauses or resumes its bill reminder
     /// (`BillReminders`); the outcome says so, with the receipt that takes back the whole edit.
+    ///
+    /// Only what the edit changed is written (`ThreeWay`): a form passes what it started from
+    /// (`startedFrom`), and a name, a note or a field it left as it read them keeps what is
+    /// stored now, so a change made since on another device stays. Without one, the edit started
+    /// from what is stored now (a filing that worked its values out just before).
     @discardableResult
     public func update(
         _ asset: Asset,
         name: String,
         values: FieldValues,
         notes: String?,
+        startedFrom start: SectionEditStart? = nil,
         readingSource: ReadingSource = .person,
         readingDate: Date? = nil,
         lowerReading: LowerReadingAnswer? = nil
     ) throws -> EditOutcome {
+        let opened = start ?? SectionEditStart(asset)
+        let name = ThreeWay.value(name, over: asset.name, startedFrom: opened.name)
+        let laid = opened.laying(values, on: asset)
+        let notes = ThreeWay.value(notes, over: asset.notes, startedFrom: opened.notes)
         let previous = asset.values
         let template = try TemplateStore(context: context).template(forKey: asset.templateKey)
         let values = try template.map {
             try SecretFields.sealing(
-                values.normalizingChoices(for: $0.definition).applyingRules(of: $0.definition, previous: previous, calendar: calendar),
+                laid.normalizingChoices(for: $0.definition).applyingRules(of: $0.definition, previous: previous, calendar: calendar),
                 definition: $0.definition, sealer: sealer
             )
-        } ?? values
+        } ?? laid
         // Every question first, before anything is written (`StepQuestion`).
         let reading = template.flatMap { plannedReading(asset, values: values, template: $0.definition, source: readingSource, date: readingDate) }
         try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
@@ -220,7 +230,9 @@ public final class AssetActions {
     /// Asks what saving `values` on `asset` with `update` would ask (a lower counter), without
     /// changing anything: for a screen that saves the edit with other changes in one unit of
     /// work (a section's photo and its fields), so it asks before the unit writes the photo.
-    public func askFirst(updating asset: Asset, to values: FieldValues, lowerReading: LowerReadingAnswer?) throws {
+    /// `start` is what the form started from, as `update` takes it.
+    public func askFirst(updating asset: Asset, to values: FieldValues, startedFrom start: SectionEditStart? = nil, lowerReading: LowerReadingAnswer?) throws {
+        let values = (start ?? SectionEditStart(asset)).laying(values, on: asset)
         try HouseholdMutations.askAboutReading(try plannedReading(updating: asset, to: values), answer: lowerReading)
     }
 
@@ -229,6 +241,26 @@ public final class AssetActions {
         guard let reading = HouseholdMutations.heroMetricValue(values: values, template: template),
               reading != HouseholdMutations.heroMetricValue(of: asset, template: template) else { return nil }
         return PlannedReading(reading, on: asset, at: date ?? now(), source: source, unit: HouseholdMutations.heroMetricUnit(template: template))
+    }
+
+    /// What an edit of a section started from: its name, values and notes as the form read them
+    /// when it opened. Saving writes only what changed from these (`update`).
+    public struct SectionEditStart: Equatable, Sendable {
+        public let name: String
+        public let values: FieldValues
+        public let notes: String?
+
+        public init(_ asset: Asset) {
+            name = asset.name
+            values = asset.values
+            notes = asset.notes
+        }
+
+        /// The edit's values laid over the section's values as stored now: every field the edit
+        /// changed, and every other field as stored now.
+        func laying(_ edited: FieldValues, on asset: Asset) -> FieldValues {
+            ThreeWay.laying(edited, over: asset.values, startedFrom: values)
+        }
     }
 
     /// What saving an edit changed beyond the values, for the screen to say.
@@ -275,10 +307,13 @@ public final class AssetActions {
 
     /// Replaces the free label–value rows shown under Date importante. A secret
     /// row (a code) is sealed before it is saved, like a PIN field; a card number in any row is
-    /// kept as its last four digits (`FreeText`).
+    /// kept as its last four digits (`FreeText`). Only what the edit changed from the rows it
+    /// started from (`startedFrom`, else the rows stored now) is written, row by row and value by
+    /// value (`ThreeWay`): a row added, changed or taken out since on another device stays so.
     @discardableResult
-    public func setCustomFacts(_ asset: Asset, _ facts: [CustomFact]) throws -> UndoReceipt {
-        try UnitOfWork.performUndoable(in: context, now: now()) {
+    public func setCustomFacts(_ asset: Asset, _ facts: [CustomFact], startedFrom start: [CustomFact]? = nil) throws -> UndoReceipt {
+        let facts = ThreeWay.laying(facts, over: asset.customFacts, startedFrom: start ?? asset.customFacts)
+        return try UnitOfWork.performUndoable(in: context, now: now()) {
             let kept = facts.filter { !$0.label.trimmingCharacters(in: .whitespaces).isEmpty || !$0.value.trimmingCharacters(in: .whitespaces).isEmpty }
             asset.customFacts = try SecretFields.sealingFacts(kept, sealer: sealer)
             try save()

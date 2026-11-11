@@ -151,7 +151,12 @@ public final class ObligationActions {
     /// person chose: from now on its reminders stay as set when its section changes (all but
     /// the travel cut-off, which follows the document). Choosing exactly the usual ones lets
     /// them follow the document again (`DeadlineReminders.isCustomized`).
-    public func setReminders(_ obligation: Obligation, _ profile: ReminderProfile) throws {
+    ///
+    /// Only what the change made from the profile it started from (`startedFrom`, else the one
+    /// stored now) is written, part by part (`ThreeWay`): a lead turned on here and the follow-up
+    /// turned off meanwhile on another device both stay.
+    public func setReminders(_ obligation: Obligation, _ profile: ReminderProfile, startedFrom start: ReminderProfile? = nil) throws {
+        let profile = ThreeWay.laying(profile, over: obligation.reminders, startedFrom: start ?? obligation.reminders)
         obligation.reminders = profile
         obligation.remindersCustomized = DeadlineReminders.isCustomized(profile, for: obligation, in: context)
         try save()
@@ -293,7 +298,7 @@ public final class ObligationActions {
     }
 }
 
-extension DosarSchemaV12.Obligation {
+extension DosarSchemaV13.Obligation {
     /// The counter unit for metric-based obligations, such as kilometres.
     public var metricUnit: MeasurementUnit? {
         if case .metric(_, let unit, _) = recurrence { return unit }

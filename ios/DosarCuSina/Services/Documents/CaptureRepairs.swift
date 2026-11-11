@@ -116,7 +116,7 @@ public struct CaptureRepairs {
     public func duplicateProviderCandidates() throws -> [DuplicateProviders] {
         let providers = try context.fetch(FetchDescriptor<Provider>()).filter { !$0.isExample }
         // Each firm starts in a group of its own; a shared name or CUI joins two groups.
-        var group = Dictionary(uniqueKeysWithValues: providers.map { ($0.id, $0.id) })
+        var group = Dictionary(providers.map { ($0.id, $0.id) }, uniquingKeysWith: { first, _ in first })
         func root(_ id: UUID) -> UUID {
             var current = id
             while let parent = group[current], parent != current { current = parent }
@@ -135,10 +135,14 @@ public struct CaptureRepairs {
             }
         }
         let groups = Dictionary(grouping: providers) { root($0.id) }
-        return groups.values.filter { $0.count > 1 }.compactMap { group in
+        return groups.values.compactMap { group in
             let ordered = group.sorted { ($0.createdAt, $0.id.uuidString) < ($1.createdAt, $1.id.uuidString) }
-            guard let kept = ordered.first else { return nil }
-            return DuplicateProviders(keptID: kept.id, duplicateIDs: ordered.dropFirst().map(\.id))
+            // Two copies of one firm with the same id are one firm, which `RecordsMeet` joins: only
+            // firms with ids of their own are offered here.
+            var seen = Set<UUID>()
+            let ids = ordered.map(\.id).filter { seen.insert($0).inserted }
+            guard let kept = ids.first, ids.count > 1 else { return nil }
+            return DuplicateProviders(keptID: kept, duplicateIDs: Array(ids.dropFirst()))
         }.sorted { $0.keptID.uuidString < $1.keptID.uuidString }
     }
 

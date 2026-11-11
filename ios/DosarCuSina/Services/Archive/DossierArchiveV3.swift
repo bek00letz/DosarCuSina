@@ -333,11 +333,20 @@ public enum DossierV3 {
     /// - `AttachmentPage.id`: a page is known by its document and its place in it.
     /// - `Obligation.cycleKnownAt`: since when this phone's reminders count the deadline's cycle;
     ///   a copy a backup brings reads as known since its change time (`cycleKnownSince`).
+    /// - `copyID`, on every record: which copy of the record this is, given by the device that
+    ///   made the copy. A record a backup brings in is a new copy, with one of its own; carried
+    ///   along, two devices' copies would look like one and could never be told apart
+    ///   (`RecordsMeet`).
     static let stayOnThePhone: [String: Set<String>] = [
-        "Obligation": ["cycleKnownAt"],
-        "Attachment": ["documentID", "compactedAt"],
-        "Provider": ["contactIdentifier"],
-        "AttachmentPage": ["id"],
+        "Asset": ["copyID"],
+        "Obligation": ["cycleKnownAt", "copyID"],
+        "HistoryEntry": ["copyID"],
+        "ServiceItem": ["copyID"],
+        "MeasurementLog": ["copyID"],
+        "Attachment": ["documentID", "compactedAt", "copyID"],
+        "Provider": ["contactIdentifier", "copyID"],
+        "AttachmentPage": ["id", "copyID"],
+        "CategoryTemplate": ["copyID"],
     ]
     static func id(_ uuid: UUID?) -> String? { uuid.map(id) }
 }

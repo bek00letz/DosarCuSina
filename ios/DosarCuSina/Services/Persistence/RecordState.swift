@@ -59,7 +59,7 @@ public struct RecordState: Hashable {
     }
 
     static func capture<M: UndoableRecord>(_ record: M) -> RecordState {
-        RecordState(ref: RecordRef(record), values: Dictionary(uniqueKeysWithValues: M.storedProperties.map { ($0.name, $0.read(record)) }))
+        RecordState(ref: RecordRef(record), values: Dictionary(M.storedProperties.map { ($0.name, $0.read(record)) }, uniquingKeysWith: { first, _ in first }))
     }
 
     /// Only the relationships of `model`: what a delete reaches and what a rollback fetches
@@ -70,7 +70,7 @@ public struct RecordState: Hashable {
     }
 
     static func links<M: UndoableRecord>(_ record: M) -> RecordState {
-        RecordState(ref: RecordRef(record), values: Dictionary(uniqueKeysWithValues: M.storedProperties.filter(\.isLink).map { ($0.name, $0.read(record)) }))
+        RecordState(ref: RecordRef(record), values: Dictionary(M.storedProperties.filter(\.isLink).map { ($0.name, $0.read(record)) }, uniquingKeysWith: { first, _ in first }))
     }
 
     /// Every record this one points to, through any relationship.
@@ -118,6 +118,11 @@ public struct StoredProperty<Model: PersistentModel> {
     let write: (Model, StoredValue, RestoreSources) -> Void
     /// A picture's or a file's bytes, to keep what a step takes away; nil for every other property.
     let bytes: ((Model) -> Data?)?
+    /// What joining `other` into `kept`, two copies of one record, does with this property
+    /// (`RecordsMeet`): a value or a link the record keeps comes from the newer copy; the records
+    /// that point at either copy all point at `kept`; a list of its own keeps both copies'
+    /// records; its parts (a document's pages) are the newer copy's.
+    let meet: (_ kept: Model, _ other: Model, _ join: RecordJoin) -> Void
 
     static func attribute<Value: Hashable>(_ name: String, _ keyPath: ReferenceWritableKeyPath<Model, Value>) -> Self {
         value(name, keyPath)
@@ -130,7 +135,7 @@ public struct StoredProperty<Model: PersistentModel> {
         return Self(name: name, isOwn: true, isLink: false, read: { .file($0[keyPath: keyPath].map(FileDigest.init)) }, write: { model, value, sources in
             guard case .file(let digest) = value else { return assertionFailure("\(name) is a picture or a file") }
             model[keyPath: keyPath] = digest.flatMap(sources.file)
-        }, bytes: { $0[keyPath: keyPath] })
+        }, bytes: { $0[keyPath: keyPath] }, meet: newerValue(keyPath))
     }
 
     private static func value<Value: Hashable>(_ name: String, _ keyPath: ReferenceWritableKeyPath<Model, Value>) -> Self {
@@ -140,7 +145,15 @@ public struct StoredProperty<Model: PersistentModel> {
                 return
             }
             model[keyPath: keyPath] = typed
-        }, bytes: nil)
+        }, bytes: nil, meet: newerValue(keyPath))
+    }
+
+    /// The newer copy's value, written only where it differs.
+    private static func newerValue<Value: Equatable>(_ keyPath: ReferenceWritableKeyPath<Model, Value>) -> (Model, Model, RecordJoin) -> Void {
+        { kept, other, join in
+            guard join.otherIsNewer, kept[keyPath: keyPath] != other[keyPath: keyPath] else { return }
+            kept[keyPath: keyPath] = other[keyPath: keyPath]
+        }
     }
 
     static func toOne<Target: UndoableRecord>(_ name: String, _ keyPath: ReferenceWritableKeyPath<Model, Target?>) -> Self {
@@ -149,7 +162,13 @@ public struct StoredProperty<Model: PersistentModel> {
         }, write: { model, value, sources in
             guard case .one(let ref) = value else { return assertionFailure("\(name) is a relationship to one record") }
             model[keyPath: keyPath] = ref.flatMap { sources.record($0) as? Target }
-        }, bytes: nil)
+        }, bytes: nil, meet: { kept, other, join in
+            // The newer copy's link, to the copy of its record that stays.
+            let source = join.otherIsNewer ? other : kept
+            let target = source[keyPath: keyPath].map { join.kept($0) }
+            guard kept[keyPath: keyPath] !== target else { return }
+            kept[keyPath: keyPath] = target
+        })
     }
 
     /// The records that point at this one (a section's history, a document's pages).
@@ -169,7 +188,24 @@ public struct StoredProperty<Model: PersistentModel> {
         }, write: { model, value, sources in
             guard case .many(let refs) = value else { return assertionFailure("\(name) is a relationship to many records") }
             model[keyPath: keyPath] = refs.compactMap { sources.record($0) as? Target }
-        }, bytes: nil)
+        }, bytes: nil, meet: { kept, other, join in
+            let current = (kept[keyPath: keyPath] ?? []).filter { !$0.isDeleted }
+            let theirs = (other[keyPath: keyPath] ?? []).filter { !$0.isDeleted }
+            // A record's parts (a document's pages) are the newer copy's; the other copy's go.
+            if Target.self is any PartOfChangeTimed.Type {
+                guard join.otherIsNewer else {
+                    for part in theirs { join.context.delete(part) }
+                    return
+                }
+                for part in current { join.context.delete(part) }
+                kept[keyPath: keyPath] = theirs
+                return
+            }
+            // Every record either copy has, once each: what pointed at the other points here now.
+            let joined = current + theirs.filter { record in !current.contains { $0 === record } }
+            guard joined.count != current.count else { return }
+            kept[keyPath: keyPath] = joined
+        })
     }
 }
 
@@ -181,6 +217,8 @@ public protocol UndoableRecord: PersistentModel {
     static var storedProperties: [StoredProperty<Self>] { get }
     /// What identifies the record across contexts: its id.
     var recordKey: String { get }
+    /// Which copy of the record this is, given by the device that made it (`RecordsMeet`).
+    var copyID: UUID? { get set }
     /// An empty record, to bring back one a step deleted; every property is then written.
     static func blank() -> Self
     static func find(_ key: String, in context: ModelContext) -> Self?
@@ -267,18 +305,23 @@ extension UndoableRecord {
 /// Every recorded type of the schema, by name.
 enum UndoableRecords {
     static var types: [String: any UndoableRecord.Type] {
-        Dictionary(uniqueKeysWithValues: DosarSchemaV12.models.compactMap { $0 as? any UndoableRecord.Type }.map { ($0.recordType, $0) })
+        Dictionary(ordered.map { ($0.recordType, $0) }, uniquingKeysWith: { first, _ in first })
+    }
+
+    /// Every recorded type, in the schema's order.
+    static var ordered: [any UndoableRecord.Type] {
+        DosarSchemaV13.models.compactMap { $0 as? any UndoableRecord.Type }
     }
 
     /// What the schema says, by type: read once, from the models' own declarations.
     private static let schemaFacts: (owned: [String: Set<String>], keptOutside: [String: Set<String>]) = {
-        let schema = Schema(versionedSchema: DosarSchemaV12.self)
-        let owned = Dictionary(uniqueKeysWithValues: schema.entities.map { entity in
+        let schema = Schema(versionedSchema: DosarSchemaV13.self)
+        let owned = Dictionary(schema.entities.map { entity in
             (entity.name, Set(entity.relationships.filter { if case .cascade = $0.deleteRule { true } else { false } }.map(\.name)))
-        })
-        let keptOutside = Dictionary(uniqueKeysWithValues: schema.entities.map { entity in
+        }, uniquingKeysWith: { first, _ in first })
+        let keptOutside = Dictionary(schema.entities.map { entity in
             (entity.name, Set(entity.attributes.filter { $0.options.contains(.externalStorage) }.map(\.name)))
-        })
+        }, uniquingKeysWith: { first, _ in first })
         return (owned, keptOutside)
     }()
 
@@ -331,10 +374,10 @@ private extension ModelContext {
 
 // MARK: - The schema's records
 
-extension DosarSchemaV12.Asset: UndoableRecord {
-    public static var storedProperties: [StoredProperty<DosarSchemaV12.Asset>] {
+extension DosarSchemaV13.Asset: UndoableRecord {
+    public static var storedProperties: [StoredProperty<DosarSchemaV13.Asset>] {
         [
-            .attribute("id", \.id), .attribute("name", \.name), .attribute("templateKey", \.templateKey),
+            .attribute("id", \.id), .attribute("copyID", \.copyID), .attribute("name", \.name), .attribute("templateKey", \.templateKey),
             .attribute("symbolOverride", \.symbolOverride), .attribute("tintOverrideRaw", \.tintOverrideRaw),
             .attribute("notes", \.notes), .attribute("photoData", \.photoData), .attribute("valuesData", \.valuesData),
             .attribute("customFactsData", \.customFactsData), .attribute("isExample", \.isExample),
@@ -348,14 +391,14 @@ extension DosarSchemaV12.Asset: UndoableRecord {
     public static func blank() -> Self { Self(name: "", templateKey: "") }
     public static func find(_ key: String, in context: ModelContext) -> Self? {
         guard let id = UUID(uuidString: key) else { return nil }
-        return context.first(#Predicate<DosarSchemaV12.Asset> { $0.id == id }) as? Self
+        return context.first(#Predicate<DosarSchemaV13.Asset> { $0.id == id }) as? Self
     }
 }
 
-extension DosarSchemaV12.Obligation: UndoableRecord {
-    public static var storedProperties: [StoredProperty<DosarSchemaV12.Obligation>] {
+extension DosarSchemaV13.Obligation: UndoableRecord {
+    public static var storedProperties: [StoredProperty<DosarSchemaV13.Obligation>] {
         [
-            .attribute("id", \.id), .attribute("title", \.title), .attribute("notes", \.notes),
+            .attribute("id", \.id), .attribute("copyID", \.copyID), .attribute("title", \.title), .attribute("notes", \.notes),
             .attribute("blueprintKey", \.blueprintKey), .attribute("kindRaw", \.kindRaw), .attribute("dueDayISO", \.dueDayISO),
             .attribute("dueMetric", \.dueMetric), .attribute("reminderLeadDays", \.reminderLeadDays),
             .attribute("consequenceRaw", \.consequenceRaw), .attribute("graceDays", \.graceDays),
@@ -374,14 +417,14 @@ extension DosarSchemaV12.Obligation: UndoableRecord {
     public static func blank() -> Self { Self(title: "", kind: .routine, dueDay: CalendarDay(Date())) }
     public static func find(_ key: String, in context: ModelContext) -> Self? {
         guard let id = UUID(uuidString: key) else { return nil }
-        return context.first(#Predicate<DosarSchemaV12.Obligation> { $0.id == id }) as? Self
+        return context.first(#Predicate<DosarSchemaV13.Obligation> { $0.id == id }) as? Self
     }
 }
 
-extension DosarSchemaV12.HistoryEntry: UndoableRecord {
-    public static var storedProperties: [StoredProperty<DosarSchemaV12.HistoryEntry>] {
+extension DosarSchemaV13.HistoryEntry: UndoableRecord {
+    public static var storedProperties: [StoredProperty<DosarSchemaV13.HistoryEntry>] {
         [
-            .attribute("id", \.id), .attribute("kindRaw", \.kindRaw), .attribute("title", \.title),
+            .attribute("id", \.id), .attribute("copyID", \.copyID), .attribute("kindRaw", \.kindRaw), .attribute("title", \.title),
             .attribute("occurredAt", \.occurredAt), .attribute("metricReading", \.metricReading),
             .attribute("totalCostAmount", \.totalCostAmount), .attribute("totalCostCurrency", \.totalCostCurrency),
             .attribute("note", \.note), .attribute("reference", \.reference), .attribute("rating", \.rating),
@@ -396,14 +439,14 @@ extension DosarSchemaV12.HistoryEntry: UndoableRecord {
     public static func blank() -> Self { Self(kind: .note, title: "", occurredAt: Date()) }
     public static func find(_ key: String, in context: ModelContext) -> Self? {
         guard let id = UUID(uuidString: key) else { return nil }
-        return context.first(#Predicate<DosarSchemaV12.HistoryEntry> { $0.id == id }) as? Self
+        return context.first(#Predicate<DosarSchemaV13.HistoryEntry> { $0.id == id }) as? Self
     }
 }
 
-extension DosarSchemaV12.ServiceItem: UndoableRecord {
-    public static var storedProperties: [StoredProperty<DosarSchemaV12.ServiceItem>] {
+extension DosarSchemaV13.ServiceItem: UndoableRecord {
+    public static var storedProperties: [StoredProperty<DosarSchemaV13.ServiceItem>] {
         [
-            .attribute("id", \.id), .attribute("name", \.name), .attribute("componentKey", \.componentKey),
+            .attribute("id", \.id), .attribute("copyID", \.copyID), .attribute("name", \.name), .attribute("componentKey", \.componentKey),
             .attribute("group", \.group), .attribute("partBrandOrCode", \.partBrandOrCode),
             .attribute("partSerialNumber", \.partSerialNumber), .attribute("costAmount", \.costAmount),
             .attribute("laborCostAmount", \.laborCostAmount), .attribute("partsCostAmount", \.partsCostAmount),
@@ -417,14 +460,14 @@ extension DosarSchemaV12.ServiceItem: UndoableRecord {
     public static func blank() -> Self { Self(name: "") }
     public static func find(_ key: String, in context: ModelContext) -> Self? {
         guard let id = UUID(uuidString: key) else { return nil }
-        return context.first(#Predicate<DosarSchemaV12.ServiceItem> { $0.id == id }) as? Self
+        return context.first(#Predicate<DosarSchemaV13.ServiceItem> { $0.id == id }) as? Self
     }
 }
 
-extension DosarSchemaV12.MeasurementLog: UndoableRecord {
-    public static var storedProperties: [StoredProperty<DosarSchemaV12.MeasurementLog>] {
+extension DosarSchemaV13.MeasurementLog: UndoableRecord {
+    public static var storedProperties: [StoredProperty<DosarSchemaV13.MeasurementLog>] {
         [
-            .attribute("id", \.id), .attribute("kindRaw", \.kindRaw), .attribute("name", \.name), .attribute("value", \.value),
+            .attribute("id", \.id), .attribute("copyID", \.copyID), .attribute("kindRaw", \.kindRaw), .attribute("name", \.name), .attribute("value", \.value),
             .attribute("secondaryValue", \.secondaryValue), .attribute("unit", \.unit), .attribute("recordedAt", \.recordedAt),
             .attribute("unitPriceAmount", \.unitPriceAmount), .attribute("unitPriceCurrency", \.unitPriceCurrency),
             .attribute("isSelfRead", \.isSelfRead), .attribute("referenceMin", \.referenceMin),
@@ -437,14 +480,14 @@ extension DosarSchemaV12.MeasurementLog: UndoableRecord {
     public static func blank() -> Self { Self(kind: .custom, name: "", value: 0) }
     public static func find(_ key: String, in context: ModelContext) -> Self? {
         guard let id = UUID(uuidString: key) else { return nil }
-        return context.first(#Predicate<DosarSchemaV12.MeasurementLog> { $0.id == id }) as? Self
+        return context.first(#Predicate<DosarSchemaV13.MeasurementLog> { $0.id == id }) as? Self
     }
 }
 
-extension DosarSchemaV12.Attachment: UndoableRecord {
-    public static var storedProperties: [StoredProperty<DosarSchemaV12.Attachment>] {
+extension DosarSchemaV13.Attachment: UndoableRecord {
+    public static var storedProperties: [StoredProperty<DosarSchemaV13.Attachment>] {
         [
-            .attribute("id", \.id), .attribute("title", \.title), .attribute("fileName", \.fileName),
+            .attribute("id", \.id), .attribute("copyID", \.copyID), .attribute("title", \.title), .attribute("fileName", \.fileName),
             .attribute("kindRaw", \.kindRaw), .attribute("contentType", \.contentType), .attribute("fileData", \.fileData),
             .attribute("thumbnailData", \.thumbnailData), .attribute("byteCount", \.byteCount), .attribute("sha256", \.sha256),
             .attribute("extractedText", \.extractedText), .attribute("documentDayISO", \.documentDayISO),
@@ -460,26 +503,26 @@ extension DosarSchemaV12.Attachment: UndoableRecord {
     public static func blank() -> Self { Self(fileName: "", contentType: "public.data", data: nil) }
     public static func find(_ key: String, in context: ModelContext) -> Self? {
         guard let id = UUID(uuidString: key) else { return nil }
-        return context.first(#Predicate<DosarSchemaV12.Attachment> { $0.id == id }) as? Self
+        return context.first(#Predicate<DosarSchemaV13.Attachment> { $0.id == id }) as? Self
     }
 }
 
-extension DosarSchemaV12.AttachmentPage: UndoableRecord {
-    public static var storedProperties: [StoredProperty<DosarSchemaV12.AttachmentPage>] {
-        [.attribute("id", \.id), .attribute("index", \.index), .attribute("imageData", \.imageData), .toOne("attachment", \.attachment)]
+extension DosarSchemaV13.AttachmentPage: UndoableRecord {
+    public static var storedProperties: [StoredProperty<DosarSchemaV13.AttachmentPage>] {
+        [.attribute("id", \.id), .attribute("copyID", \.copyID), .attribute("index", \.index), .attribute("imageData", \.imageData), .toOne("attachment", \.attachment)]
     }
     public var recordKey: String { id.uuidString }
     public static func blank() -> Self { Self(index: 0, imageData: nil) }
     public static func find(_ key: String, in context: ModelContext) -> Self? {
         guard let id = UUID(uuidString: key) else { return nil }
-        return context.first(#Predicate<DosarSchemaV12.AttachmentPage> { $0.id == id }) as? Self
+        return context.first(#Predicate<DosarSchemaV13.AttachmentPage> { $0.id == id }) as? Self
     }
 }
 
-extension DosarSchemaV12.Provider: UndoableRecord {
-    public static var storedProperties: [StoredProperty<DosarSchemaV12.Provider>] {
+extension DosarSchemaV13.Provider: UndoableRecord {
+    public static var storedProperties: [StoredProperty<DosarSchemaV13.Provider>] {
         [
-            .attribute("id", \.id), .attribute("name", \.name), .attribute("trades", \.trades), .attribute("phone", \.phone),
+            .attribute("id", \.id), .attribute("copyID", \.copyID), .attribute("name", \.name), .attribute("trades", \.trades), .attribute("phone", \.phone),
             .attribute("email", \.email), .attribute("address", \.address), .attribute("notes", \.notes),
             .attribute("manualRating", \.manualRating), .attribute("wouldCallAgain", \.wouldCallAgain),
             .attribute("contactIdentifier", \.contactIdentifier), .attribute("taxID", \.taxID),
@@ -492,14 +535,14 @@ extension DosarSchemaV12.Provider: UndoableRecord {
     public static func blank() -> Self { Self(name: "") }
     public static func find(_ key: String, in context: ModelContext) -> Self? {
         guard let id = UUID(uuidString: key) else { return nil }
-        return context.first(#Predicate<DosarSchemaV12.Provider> { $0.id == id }) as? Self
+        return context.first(#Predicate<DosarSchemaV13.Provider> { $0.id == id }) as? Self
     }
 }
 
-extension DosarSchemaV12.CategoryTemplate: UndoableRecord {
-    public static var storedProperties: [StoredProperty<DosarSchemaV12.CategoryTemplate>] {
+extension DosarSchemaV13.CategoryTemplate: UndoableRecord {
+    public static var storedProperties: [StoredProperty<DosarSchemaV13.CategoryTemplate>] {
         [
-            .attribute("key", \.key), .attribute("name", \.name), .attribute("summary", \.summary), .attribute("symbol", \.symbol),
+            .attribute("key", \.key), .attribute("copyID", \.copyID), .attribute("name", \.name), .attribute("summary", \.summary), .attribute("symbol", \.symbol),
             .attribute("tintRaw", \.tintRaw), .attribute("heroStyleRaw", \.heroStyleRaw), .attribute("isBuiltIn", \.isBuiltIn),
             .attribute("builtInVersion", \.builtInVersion), .attribute("homeOrder", \.homeOrder), .attribute("isOnHome", \.isOnHome),
             .attribute("sectionsData", \.sectionsData),
@@ -513,6 +556,6 @@ extension DosarSchemaV12.CategoryTemplate: UndoableRecord {
         Self(definition: TemplateDefinition(key: "", name: "", symbol: "square.grid.2x2", tint: .gray, sections: []), isBuiltIn: false, homeOrder: 0)
     }
     public static func find(_ key: String, in context: ModelContext) -> Self? {
-        context.first(#Predicate<DosarSchemaV12.CategoryTemplate> { $0.key == key }) as? Self
+        context.first(#Predicate<DosarSchemaV13.CategoryTemplate> { $0.key == key }) as? Self
     }
 }
