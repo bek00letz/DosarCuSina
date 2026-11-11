@@ -152,6 +152,12 @@ enum ModelAnswerMapper {
                 guard !kept.isEmpty else { continue }
                 let allPrinted = kept.allSatisfy { isPrinted($0.description) }
                 add(key, .lineItems(kept), allPrinted ? .grounded : .candidate, inText: allPrinted)
+            case .meterReading:
+                // A judgement about the index: kept when it names a known way; from the phone's
+                // text only when the text says so, in the words the bill's own reader reads.
+                guard let basis = raw.string.flatMap(ReadingBasis.init(rawValue:)) else { continue }
+                let said = CaptureDocumentKind.utilityInvoice.profile.meterReadingCues?.mentions(basis, in: printed) ?? false
+                add(key, .text(basis.rawValue), said ? .grounded : .candidate, inText: said)
             case .serviceKind:
                 // A judgement about the page, not text copied from it: kept when it names a known service.
                 guard let service = raw.string, ServiceKind.all.contains(service) else { continue }

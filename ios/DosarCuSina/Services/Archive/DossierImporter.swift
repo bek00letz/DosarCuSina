@@ -440,6 +440,8 @@ struct DossierImporter {
             log.updatedAt = changeTime(dto.updatedAt)
             // An archive from before version 10 says nothing: one counter, as it was.
             log.startsCounter = dto.startsCounter ?? false
+            // An archive from before version 14 says nothing about how a reading was taken.
+            log.basisRaw = dto.basis
             log.asset = uuid(dto.assetId).flatMap { assets[$0] }
         }
         return map

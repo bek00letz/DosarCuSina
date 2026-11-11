@@ -51,7 +51,8 @@ struct ReadingTests {
     }
 
     @Test func theQuestionNamesBothReadings() {
-        let question = LowerReadingQuestion(previous: 45_724, previousDate: noon("2026-01-10"), value: 4_572, unit: .kilometres)
+        let question = LowerReadingQuestion(previous: 45_724, previousDate: noon("2026-01-10"), value: 4_572, unit: .kilometres,
+                                            answers: LowerReadingAnswer.offered(for: .odometer, likelyNewCounter: false))
         #expect(question.question == "Kilometrajul e mai mic decât ultima dată. Corectez citirea veche?")
         #expect(question.explanation.contains("45.724 km"))
         #expect(question.explanation.contains("4.572 km"))

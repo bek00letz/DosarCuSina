@@ -205,6 +205,10 @@ public enum DossierV3 {
         /// True on the first reading of a new counter ("Contor nou"); written only then, and
         /// missing in archives from before version 10 of the database, which read as one counter.
         public var startsCounter: Bool? = nil
+        /// How the reading was taken, as a `ReadingBasis` key ("read", "estimated"); written only
+        /// when it is known, and missing in archives from before version 14 of the database,
+        /// which read as not said. A key a newer build wrote is kept as it is.
+        public var basis: String? = nil
     }
 
     public struct Attachment: Codable, Hashable, Sendable {

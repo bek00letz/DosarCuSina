@@ -40,6 +40,7 @@ enum BillReader {
         }
         if let index = meterIndex(in: layout) {
             fields.append(index)
+            if let reading = readingBasis(in: text, layout: layout) { fields.append(reading) }
         }
         if let code = paymentCode(in: text, layout: layout) {
             fields.append(code)
@@ -89,11 +90,44 @@ enum BillReader {
     /// The first number in a label's value that isn't part of a date, read by the one number
     /// reader as a meter index. Nil when that number can't be read one way only.
     static func meterNumber(in folded: String) -> RomanianNumber.Reading? {
+        meterNumberAndRest(in: folded)?.reading
+    }
+
+    /// The index's number in a label's value (`meterNumber`) and what is printed after it.
+    private static func meterNumberAndRest(in folded: String) -> (reading: RomanianNumber.Reading, rest: Substring)? {
         let dates = RomanianFieldExtractor.dates(inLine: folded, index: 0).map(\.range)
         let numbers = TextPattern.matches(#"(?<![\d.,])(\d+(?:[.,]\d+)*)(?!\d)"#, in: folded)
         guard let first = numbers.first(where: { number in !dates.contains { $0.overlaps(number.range) } }),
-              let raw = first[1] else { return nil }
-        return try? RomanianNumber.read(raw, as: .meterIndex, from: .document).get()
+              let raw = first[1], let reading = try? RomanianNumber.read(raw, as: .meterIndex, from: .document).get() else { return nil }
+        return (reading, folded[first.range.upperBound...])
+    }
+
+    // MARK: - How the index was taken
+
+    /// How the bill says its new index was taken (`.meterReading`, a `ReadingBasis` key), by
+    /// its kind's cues (`CaptureKindProfile.meterReadingCues`), the strongest place first: the
+    /// index's own label and what is printed beside its number ("Index estimat: 12.345",
+    /// "12.345 (E)"); else a row that says how it was read ("Tip citire: citire reală"); else a
+    /// regularisation bill, whose index is read. Nil when the bill doesn't say, or says both.
+    static func readingBasis(in text: CaptureText, layout: LabelledLayout<CaptureFieldKey>) -> CaptureField? {
+        guard let cues = CaptureDocumentKind.utilityInvoice.profile.meterReadingCues else { return nil }
+        for found in layout.allFound(for: .meterIndex) {
+            guard let (_, rest) = meterNumberAndRest(in: found.folded) else { continue }
+            let label = String(text.folded[found.label.line][found.label.start..<found.label.end])
+            if let basis = cues.basis(saidBy: label + " " + rest, marksAtStart: rest) {
+                return field(.meterReading, .text(basis.rawValue), 0.75, found.source)
+            }
+            break
+        }
+        for found in layout.allFound(for: .meterReading) {
+            if let basis = cues.basis(saidBy: found.folded, marksAtStart: Substring(found.folded)) {
+                return field(.meterReading, .text(basis.rawValue), 0.7, found.source)
+            }
+        }
+        if let line = cues.regularisationLine(in: text) {
+            return field(.meterReading, .text(ReadingBasis.read.rawValue), 0.7, text.original[line])
+        }
+        return nil
     }
 
     // MARK: - How to pay
@@ -120,5 +154,63 @@ enum BillReader {
 
     private static func field(_ key: CaptureFieldKey, _ value: CaptureValue, _ confidence: Double, _ source: String?) -> CaptureField {
         CaptureField(key: key, value: value, confidence: confidence, sourceText: source, tier: .heuristic)
+    }
+}
+
+/// How a bill says its meter's index was taken, as data on the bill kind's profile
+/// (`CaptureKindProfile.meterReadingCues`, a utility bill's `billReadingCues`), read the one
+/// way by `BillReader.readingBasis`. A new wording is a new word in the table.
+struct MeterReadingCues: Sendable {
+    /// Words, folded, that say the index was estimated.
+    let estimatedWords: [String]
+    /// Words, folded, that say it was read: by the distributor, by the customer, or on a
+    /// regularisation.
+    let readWords: [String]
+    /// What a bill prints as a mark of an estimated index: right after its number ("12.345 E"),
+    /// or as the whole value of a reading-type row.
+    let estimatedMarks: [String]
+    /// The marks of a read index ("R", "C" for citit, "A" for autocitit).
+    let readMarks: [String]
+    /// Words, folded, anywhere on the page that make the bill a regularisation.
+    let regularisationWords: [String]
+    /// A line that is only one of these, folded, is a regularisation's heading.
+    let regularisationHeadings: [String]
+
+    /// What `folded` says about the index: estimated, read, or nothing (nil) when it says
+    /// neither or both (a legend, "E = estimat, R = real"). `marksAtStart` is where a mark may
+    /// stand on its own, at its start, in brackets or not.
+    func basis(saidBy folded: String, marksAtStart: Substring) -> ReadingBasis? {
+        let estimated = estimatedWords.contains { CaptureText.containsWord($0, inFolded: folded) } || Self.startsWith(estimatedMarks, marksAtStart)
+        let read = readWords.contains { CaptureText.containsWord($0, inFolded: folded) } || Self.startsWith(readMarks, marksAtStart)
+        switch (estimated, read) {
+        case (true, false): return .estimated
+        case (false, true): return .read
+        default: return nil
+        }
+    }
+
+    /// Whether `text` says, anywhere, what `basis` is said with (its words; a regularisation for
+    /// read): how a model's answer about the index is checked against the phone's text. A mark
+    /// alone ("E") proves nothing there.
+    func mentions(_ basis: ReadingBasis, in text: CaptureText) -> Bool {
+        switch basis {
+        case .estimated: estimatedWords.contains { text.containsWord($0) }
+        case .read: readWords.contains { text.containsWord($0) } || regularisationLine(in: text) != nil
+        }
+    }
+
+    /// The first line that makes the bill a regularisation, if any.
+    func regularisationLine(in text: CaptureText) -> Int? {
+        text.folded.indices.first { index in
+            let line = text.folded[index]
+            let bare = line.trimmingCharacters(in: .whitespacesAndNewlines.union(.punctuationCharacters))
+            return regularisationHeadings.contains(bare) || regularisationWords.contains { CaptureText.containsWord($0, inFolded: line) }
+        }
+    }
+
+    /// Whether `text` starts with one of `marks` standing on its own: "e", "(e)", "- r".
+    private static func startsWith(_ marks: [String], _ text: Substring) -> Bool {
+        let alternatives = marks.map { NSRegularExpression.escapedPattern(for: $0) }.joined(separator: "|")
+        return TextPattern.first(#"^[\s\-–:]*[(\[]?\s*(?:"# + alternatives + #")\s*[)\]]?(?![\p{L}\d])"#, in: String(text)) != nil
     }
 }

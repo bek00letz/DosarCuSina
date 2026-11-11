@@ -42,9 +42,34 @@ public enum MeasurementKind: String, Codable, CaseIterable, Sendable {
         case .biomarker, .bloodPressure, .bodyWeight, .diopters, .custom: return false
         }
     }
+
+    /// A utility's meter, whose bills may print an index the provider estimated between two
+    /// readings ("index estimat"), corrected later by a real one. A lower reading on such a
+    /// counter is most often that correction, so the question a lower reading asks offers
+    /// "Era o estimare" (`LowerReadingAnswer`). A car's dashboard or an engine's hours are
+    /// always read, never estimated.
+    public var mayBeEstimated: Bool {
+        switch self {
+        case .electricity, .gas, .coldWater, .hotWater, .thermalEnergy: return true
+        case .odometer, .engineHours, .cycles, .biomarker, .bloodPressure, .bodyWeight, .diopters, .custom: return false
+        }
+    }
 }
 
-extension DosarSchemaV13 {
+/// Whether a reading was read off the counter or is an estimate of it. Stored on the reading
+/// (`MeasurementLog.basis`, its key part of the `.dosar` contract); none when nothing says.
+public enum ReadingBasis: String, Codable, CaseIterable, Sendable {
+    /// Read off the counter: by the person, by the distributor, or a self-reading a bill prints
+    /// ("citire reală", "citit de distribuitor", "autocitire"), and the index of a
+    /// regularisation bill ("factură de regularizare"), which corrects the estimates before it.
+    case read
+    /// An estimate of the counter: the index a bill prints as estimated ("index estimat", an E
+    /// beside it), or one the person said was ("Era o estimare"). It counts only until a later
+    /// reading of its counter is lower.
+    case estimated
+}
+
+extension DosarSchemaV14 {
     /// A line in a history entry: a part replaced, a job done, a vaccine given.
     /// `componentKey` ties it to the template's component catalog so "when did I
     /// last change the brake pads" has one answer across entries.
@@ -136,6 +161,11 @@ extension DosarSchemaV13 {
         /// only by `HouseholdMutations.recordReading`, handed on when it goes
         /// (`HouseholdMutations.deleteReading`). Version 10; false before.
         public var startsCounter: Bool = false
+        /// Whether the reading was read off the counter or is an estimate of it, as a
+        /// `ReadingBasis` key; none when nothing says (a paper that doesn't, every reading from
+        /// before version 14). Read and write it through `basis`, which keeps a key a newer
+        /// build wrote. Version 14.
+        public var basisRaw: String?
 
         public var asset: Asset?
 
@@ -163,6 +193,17 @@ extension DosarSchemaV13 {
             get { MeasurementKind(rawValue: kindRaw) ?? .custom }
             set { kindRaw = newValue.rawValue }
         }
+
+        /// Whether the reading was read off the counter or estimated; nil when nothing says, or
+        /// when a newer build wrote a key this one doesn't know (kept as it was until set).
+        public var basis: ReadingBasis? {
+            get { basisRaw.flatMap(ReadingBasis.init(rawValue:)) }
+            set { basisRaw = newValue?.rawValue }
+        }
+
+        /// An estimate of the counter (the provider's, or one the person said was): it counts
+        /// only until a later reading of its counter is lower (`ReadingSeries`).
+        public var isEstimate: Bool { basis == .estimated }
 
         public var unitPrice: Money? {
             guard let unitPriceAmount else { return nil }

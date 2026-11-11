@@ -1,36 +1,74 @@
 import Foundation
 import SwiftData
 
-/// Where a counter reading comes from.
+/// Where a counter reading comes from, for the step that records it. Not stored itself: what
+/// is stored is how the reading was taken (`MeasurementLog.basis`), which a person's reading
+/// always has (read) and a document's has when the paper says.
 public enum ReadingSource: Sendable, Hashable {
     /// Read off the counter by the person: the edit form, the visit form, "Gata".
     case person
-    /// Printed on a document (an invoice's "Km bord"), dated by the document.
+    /// Printed on a document (an invoice's "Km bord", a bill's index), dated by the document.
     case document
     /// Worked out from the pace so far. Only ever a placeholder in a field: never stored.
     case estimate
 }
 
-/// The person's answer when a counter reading is lower than an earlier one, in the order the
-/// question offers them (`.readingPrompt`).
+/// The person's answer when a counter reading is lower than an earlier one. `allCases` is every
+/// answer there is; a question offers the ones that fit its counter, the likelier first
+/// (`LowerReadingQuestion.answers`, from `offered(for:likelyNewCounter:)`), and `.readingPrompt`
+/// shows them in that order.
 public enum LowerReadingAnswer: Sendable, Hashable, CaseIterable {
-    /// "Corectează citirea veche": the earlier, higher readings were wrong. They go, and the new one counts.
-    case correctOld
-    /// "Lasă citirea veche": the new reading is kept aside. It stays in the list but doesn't count
-    /// while the readings before it are higher.
-    case keepAside
+    /// "Era o estimare": the earlier, higher readings were estimates (a bill's estimated index
+    /// before the real one that corrects it). They stay as history, marked as estimates
+    /// (`ReadingBasis.estimated`), and count no more; the new one counts. Offered on a counter
+    /// whose readings may be estimated (`MeasurementKind.mayBeEstimated`), in place of
+    /// "Corectează citirea veche": a bill's printed index is never thrown away.
+    case wasEstimate
     /// "Contor nou": the meter or the dashboard was replaced, or the counter went round. The new
     /// reading starts a new counter (`MeasurementLog.startsCounter`): the older readings stay as
     /// the old counter's history, and nothing after it is compared with them again.
     case newCounter
+    /// "Corectează citirea veche": the earlier, higher readings were wrong (a typo). They go, and
+    /// the new one counts. Offered on a counter that is always read (a car's kilometres).
+    case correctOld
+    /// "Lasă citirea veche": the new reading is kept aside. It stays in the list but doesn't count
+    /// while the readings before it are higher. Offered beside "Corectează citirea veche".
+    case keepAside
 
     /// The answer's button.
     public var title: String {
         switch self {
+        case .wasEstimate: String(localized: "Era o estimare", comment: "Answer to a lower reading: the earlier, higher readings were estimates (a bill's estimated index); they stay as history and count no more.")
+        case .newCounter: String(localized: "Contor nou", comment: "Answer to a lower reading: the meter or the dashboard was replaced, or it went round; the new reading starts a new counter.")
         case .correctOld: String(localized: "Corectează citirea veche", comment: "Answer to a lower reading: the earlier, higher readings were wrong.")
         case .keepAside: String(localized: "Lasă citirea veche", comment: "Answer to a lower reading: keep the earlier one, set the new one aside.")
-        case .newCounter: String(localized: "Contor nou", comment: "Answer to a lower reading: the meter or the dashboard was replaced, or it went round; the new reading starts a new counter.")
         }
+    }
+
+    /// What the answer does, one sentence of the question's explanation.
+    var consequence: String {
+        switch self {
+        case .wasEstimate: String(localized: "Dacă era o estimare, rămâne în istoric, dar nu se mai socotește.", comment: "Lower-reading question: what the answer Era o estimare does to the earlier reading.")
+        case .newCounter: String(localized: "Dacă e un contor nou, cele vechi rămân în istoric.", comment: "Lower-reading question: what the answer Contor nou does to the earlier readings.")
+        case .correctOld: String(localized: "Dacă o corectezi, citirea veche se șterge.", comment: "Lower-reading question: what the answer Corectează citirea veche does.")
+        case .keepAside: String(localized: "Dacă o lași, cea nouă rămâne deoparte.", comment: "Lower-reading question: what the answer Lasă citirea veche does.")
+        }
+    }
+
+    /// The answers a lower reading on a counter of `kind` offers, the likelier first: on a
+    /// counter whose readings may be estimated, "Era o estimare" and "Contor nou"; on one that
+    /// is always read, "Corectează citirea veche", "Lasă citirea veche" and "Contor nou". "Contor
+    /// nou" comes first when the drop looks like a new counter (`ReadingDrop.Size.large`). The
+    /// one rule for every counter; the order within each group is `allCases`'.
+    static func offered(for kind: MeasurementKind, likelyNewCounter: Bool) -> [LowerReadingAnswer] {
+        let corrections = allCases.filter { answer in
+            switch answer {
+            case .wasEstimate: kind.mayBeEstimated
+            case .newCounter: false
+            case .correctOld, .keepAside: !kind.mayBeEstimated
+            }
+        }
+        return likelyNewCounter ? [.newCounter] + corrections : corrections + [.newCounter]
     }
 }
 
@@ -42,23 +80,92 @@ public struct LowerReadingQuestion: StepQuestion, Equatable, Sendable {
     public let previousDate: Date
     public let value: Double
     public let unit: MeasurementUnit?
+    /// What the person may answer, the likelier first (`LowerReadingAnswer.offered`).
+    public let answers: [LowerReadingAnswer]
 
-    /// "Kilometrajul e mai mic decât ultima dată. Corectez citirea veche?"
+    /// "Kilometrajul e mai mic decât ultima dată. Corectez citirea veche?": the question asks
+    /// about the likelier answer, the first.
     public var question: String {
-        unit == .kilometres
-            ? String(localized: "Kilometrajul e mai mic decât ultima dată. Corectez citirea veche?", comment: "Asked when a kilometre reading is lower than an earlier one.")
-            : String(localized: "Citirea e mai mică decât ultima dată. Corectez citirea veche?", comment: "Asked when a counter reading (a meter, engine hours) is lower than an earlier one.")
+        let kilometres = unit == .kilometres
+        switch answers.first {
+        case .wasEstimate?:
+            return kilometres
+                ? String(localized: "Kilometrajul e mai mic decât ultima dată. Cel vechi era o estimare?", comment: "Asked when a kilometre reading is lower than an earlier one that may have been an estimate.")
+                : String(localized: "Citirea e mai mică decât ultima dată. Cea veche era o estimare?", comment: "Asked when a meter reading is lower than an earlier one that may have been an estimate (a bill's estimated index).")
+        case .newCounter?:
+            return kilometres
+                ? String(localized: "Kilometrajul e mai mic decât ultima dată. E un contor nou?", comment: "Asked when a kilometre reading is much lower than an earlier one: a replaced dashboard.")
+                : String(localized: "Citirea e mai mică decât ultima dată. E un contor nou?", comment: "Asked when a counter reading is much lower than an earlier one: a replaced meter, or one that went round.")
+        default:
+            return kilometres
+                ? String(localized: "Kilometrajul e mai mic decât ultima dată. Corectez citirea veche?", comment: "Asked when a kilometre reading is lower than an earlier one.")
+                : String(localized: "Citirea e mai mică decât ultima dată. Corectez citirea veche?", comment: "Asked when a counter reading (a meter, engine hours) is lower than an earlier one.")
+        }
     }
 
-    /// What each answer does, with both numbers.
+    /// Both numbers, then what each answer does, in the answers' order.
     public var explanation: String {
         let before = MeasurementUnit.written(previous, in: unit)
         let now = MeasurementUnit.written(value, in: unit)
         let day = DosarFormat.day(previousDate)
-        return String(localized: "Ultima dată: \(before), pe \(day). Acum: \(now). Dacă o corectezi, citirea veche se șterge. Dacă o lași, cea nouă rămâne deoparte. Dacă e un contor nou, cele vechi rămân în istoric.", comment: "Explains the lower-reading question: the earlier reading, the new one, and what each of the three answers does.")
+        let numbers = String(localized: "Ultima dată: \(before), pe \(day). Acum: \(now).", comment: "Lower-reading question: the earlier reading and its day, and the new one; what each answer does follows.")
+        return ([numbers] + answers.map(\.consequence)).joined(separator: " ")
     }
 
     public var errorDescription: String? { question }
+}
+
+/// How far a lower reading falls below the highest one before it on its counter, measured in
+/// the counter's own use (`ReadingSeries.progress`): whether it asks at all, and which answer
+/// it offers first. The one rule for every counter, a car's kilometres and a meter's index
+/// alike; only the answers differ, by whether the counter's readings may be estimated.
+struct ReadingDrop: Equatable {
+    enum Size: Equatable {
+        /// Within a few months of use: an estimate corrected, or a typo.
+        case small
+        /// Between the two, or too little history to tell.
+        case unsure
+        /// Down to about nothing, or more than about a year of use: a new meter or dashboard,
+        /// or one that went round (99999 to 00000).
+        case large
+    }
+
+    /// A few months of use, in days: about half a year. Distributors read a meter at least
+    /// every few months and bill estimates between, so a regularisation corrects at most the
+    /// months since the last real reading, and an estimate rarely runs ahead of the meter by
+    /// more than the months it covers. A drop within this, below estimates, is that correction.
+    static let correctionDays: Double = 183
+    /// About a year of use, in days. A drop larger than this is more than any estimate runs
+    /// ahead, so a new counter is the likelier answer.
+    static let newCounterDays: Double = 365
+    /// A reading at most this share of the one before it is about nothing: a new meter starts
+    /// at 0, and a counter that went round starts again from there.
+    static let nearZeroShare = 0.01
+    /// The least time the counter's readings must cover before its use is known: two months,
+    /// so the pace is never one bill's.
+    static let shortestHistoryDays: Double = 60
+
+    let size: Size
+
+    init(from highest: Double, to value: Double, series: ReadingSeries) {
+        if value <= highest * Self.nearZeroShare {
+            size = .large
+            return
+        }
+        guard let progress = series.progress(), progress.days >= Self.shortestHistoryDays, progress.distance > 0 else {
+            size = .unsure
+            return
+        }
+        let perDay = progress.distance / progress.days
+        let drop = highest - value
+        if drop <= perDay * Self.correctionDays {
+            size = .small
+        } else if drop > perDay * Self.newCounterDays {
+            size = .large
+        } else {
+            size = .unsure
+        }
+    }
 }
 
 /// A reading a step will record, worked out before the step writes anything: the step asks
@@ -75,6 +182,9 @@ struct PlannedReading {
     let unit: MeasurementUnit?
     let kind: MeasurementKind
     let name: String
+    /// How it was taken: read, for the person's own reading; what the paper says, for a
+    /// document's (`ReadingBasis`); nil when it doesn't say.
+    let basis: ReadingBasis?
     /// Readings the step takes away before it records this one (the one a document recorded
     /// when it was filed before): they never make it ask.
     let replaces: @MainActor (MeasurementLog) -> Bool
@@ -84,7 +194,8 @@ struct PlannedReading {
     let continuesCounter: Bool
 
     init(_ value: Double, on asset: Asset, at date: Date, source: ReadingSource, unit: MeasurementUnit?,
-         kind: MeasurementKind? = nil, name: String = "", replacing replaces: @escaping @MainActor (MeasurementLog) -> Bool = { _ in false }) {
+         kind: MeasurementKind? = nil, name: String = "", basis: ReadingBasis? = nil,
+         replacing replaces: @escaping @MainActor (MeasurementLog) -> Bool = { _ in false }) {
         let kind = kind ?? MeasurementKind.forUnit(unit)
         self.value = value
         self.asset = asset
@@ -93,6 +204,7 @@ struct PlannedReading {
         self.unit = unit ?? kind.defaultUnit
         self.kind = kind
         self.name = name
+        self.basis = source == .person ? .read : basis
         self.replaces = replaces
         let unit = self.unit
         self.continuesCounter = kind.isCumulative && (asset.measurements ?? []).contains {
@@ -125,6 +237,9 @@ public struct ReadingSeries: Sendable, Equatable {
     public let readings: [Reading]
     /// Readings that break the order of their counter and are left out.
     public let setAside: [Reading]
+    /// Estimates a later reading of their counter is lower than (`correctedEstimates`): kept as
+    /// history, never counted, never flagged as breaking the order.
+    public let corrected: [Reading]
     /// When each counter after the first starts: the moment of the reading that started it.
     public let counterStarts: [Date]
 
@@ -134,23 +249,28 @@ public struct ReadingSeries: Sendable, Equatable {
             counters = ordered.isEmpty ? [] : [ordered]
             readings = ordered
             setAside = []
+            corrected = []
             counterStarts = []
             return
         }
         let split = Self.split(raw, date: \.date, metric: \.metric, startsCounter: \.startsCounter)
         var counters: [[Reading]] = []
         var setAside: [Reading] = []
+        var corrected: [Reading] = []
         for readings in split {
-            let run = Self.longestRun(readings)
+            let estimates = Set(Self.correctedEstimates(readings, metric: \.metric, isEstimate: \.isEstimate))
+            corrected += readings.indices.filter { estimates.contains($0) }.map { readings[$0] }
+            let run = Self.longestRun(readings.indices.filter { !estimates.contains($0) }.map { readings[$0] })
             counters.append(run.kept)
             setAside += run.left
         }
         self.counters = counters
         self.setAside = setAside
+        self.corrected = corrected
         self.counterStarts = split.dropFirst().compactMap { $0.first?.date }
         self.readings = counters.enumerated().flatMap { index, readings in
             readings.enumerated().map { position, reading in
-                Reading(date: reading.date, metric: reading.metric, startsCounter: index > 0 && position == 0)
+                Reading(date: reading.date, metric: reading.metric, startsCounter: index > 0 && position == 0, isEstimate: reading.isEstimate)
             }
         }
     }
@@ -215,6 +335,21 @@ public struct ReadingSeries: Sendable, Equatable {
         return counters
     }
 
+    /// The estimates among one counter's readings, in the series' order (`split`), that a later
+    /// reading of the counter is lower than, by their place: a bill's estimated index once the
+    /// real one (a regularisation, a reading by the distributor or the person) comes in below it,
+    /// or an estimate the provider lowered since. They count no more; the readings that corrected
+    /// them do. The one rule for the series and for the question a lower reading asks.
+    static func correctedEstimates<T>(_ ordered: [T], metric: (T) -> Double, isEstimate: (T) -> Bool) -> [Int] {
+        var lowestAfter = Double.infinity
+        var corrected: [Int] = []
+        for index in ordered.indices.reversed() {
+            if isEstimate(ordered[index]), lowestAfter < metric(ordered[index]) { corrected.append(index) }
+            lowestAfter = min(lowestAfter, metric(ordered[index]))
+        }
+        return corrected.reversed()
+    }
+
     /// The longest run of `ordered` that never goes down (ties keep the earlier readings), and
     /// what is left out.
     private static func longestRun(_ ordered: [Reading]) -> (kept: [Reading], left: [Reading]) {
@@ -245,7 +380,8 @@ extension HouseholdMutations {
     static func readingSeries(of asset: Asset, unit: MeasurementUnit?) -> ReadingSeries {
         let logs = (asset.measurements ?? []).filter { !$0.isDeleted && (unit == nil || $0.measurementUnit == unit) }
         let cumulative = logs.allSatisfy(\.kind.isCumulative)
-        return ReadingSeries(logs.map { .init(date: $0.recordedAt, metric: $0.value, startsCounter: $0.startsCounter) }, cumulative: cumulative)
+        return ReadingSeries(logs.map { .init(date: $0.recordedAt, metric: $0.value, startsCounter: $0.startsCounter, isEstimate: $0.isEstimate) },
+                             cumulative: cumulative)
     }
 
     /// The asset's counter readings in `unit`, counter by counter, in the series' order
@@ -266,13 +402,18 @@ extension HouseholdMutations {
     ///
     /// - An estimate is never stored (returns nil).
     /// - A counter reading lower than one recorded before its date, on the same counter, asks
-    ///   first: without `answer` it throws `LowerReadingQuestion`; `.correctOld` removes the
-    ///   higher earlier readings (and the visit readings that logged them); `.keepAside` keeps
-    ///   the new one, which the series then leaves aside; `.newCounter` makes the new one the
-    ///   first of a new counter (`MeasurementLog.startsCounter`), so the higher ones stay as the
-    ///   old counter's and count no more. An action asks before its unit of work writes
-    ///   anything (`askAboutReading`, with the same `PlannedReading`), so inside a unit this
-    ///   only ever finds the question already answered.
+    ///   first (`askAboutReading`), unless every higher one is an estimate and the drop is small
+    ///   (`ReadingDrop`): that is the real index correcting them, and the estimates count no
+    ///   more by themselves (`ReadingSeries.correctedEstimates`). Without `answer` it throws
+    ///   `LowerReadingQuestion`; `.wasEstimate` marks the higher earlier readings as estimates,
+    ///   which then count no more; `.correctOld` removes them (and the visit readings that logged
+    ///   them); `.keepAside` keeps the new one, which the series then leaves aside;
+    ///   `.newCounter` makes the new one the first of a new counter
+    ///   (`MeasurementLog.startsCounter`), so the higher ones stay as the old counter's and count
+    ///   no more. An action asks before its unit of work writes anything (`askAboutReading`,
+    ///   with the same `PlannedReading`), so inside a unit this only ever finds the question
+    ///   already answered, or none to ask.
+    /// - The reading keeps how it was taken (`PlannedReading.basis`).
     /// - The hero value is then worked out from the readings.
     @discardableResult
     static func recordReading(
@@ -283,11 +424,12 @@ extension HouseholdMutations {
         unit: MeasurementUnit?,
         kind: MeasurementKind? = nil,
         name: String = "",
+        basis: ReadingBasis? = nil,
         answer: LowerReadingAnswer? = nil,
         isExample: Bool? = nil,
         in context: ModelContext
     ) throws -> MeasurementLog? {
-        try recordReading(PlannedReading(value, on: asset, at: date, source: source, unit: unit, kind: kind, name: name),
+        try recordReading(PlannedReading(value, on: asset, at: date, source: source, unit: unit, kind: kind, name: name, basis: basis),
                           answer: answer, isExample: isExample, in: context)
     }
 
@@ -302,11 +444,18 @@ extension HouseholdMutations {
         let log = MeasurementLog(kind: reading.kind, name: reading.name, value: reading.value, unit: reading.unit, recordedAt: reading.date)
         log.isExample = isExample ?? asset.isExample
         log.startsCounter = reading.continuesCounter || (answer == .newCounter && !higher.isEmpty)
+        log.basis = reading.basis
         context.insert(log)
         log.asset = asset
-        // Taken away once the new reading is in, so a counter one of them started passes on to it.
-        if answer == .correctOld {
+        switch answer {
+        case .correctOld?:
+            // Taken away once the new reading is in, so a counter one of them started passes on to it.
             for old in higher { removeReading(old, from: asset, in: context) }
+        case .wasEstimate?:
+            // Kept as history; the new reading below them corrects them (`ReadingSeries.correctedEstimates`).
+            for old in higher where !old.isEstimate { old.basis = .estimated }
+        case .keepAside?, .newCounter?, nil:
+            break
         }
         syncHeroMetric(of: asset, in: context)
         return log
@@ -315,25 +464,46 @@ extension HouseholdMutations {
     /// Asks the question recording `reading` raises, without changing anything: the one rule
     /// for a lower counter, which every action calls before its unit of work writes anything
     /// (`StepQuestion`). Throws `LowerReadingQuestion` when a counter reading is lower than one
-    /// recorded on or before its day on the same counter and `answer` is nil; returns otherwise.
-    /// Nil `reading`: the step records none.
+    /// recorded on or before its day on the same counter and `answer` is nil, with the answers
+    /// that fit, the likelier first (`ReadingDrop`, `LowerReadingAnswer.offered`). Asks nothing
+    /// when every higher reading is an estimate and the drop is small: the real index
+    /// correcting them, which the series follows by itself. Nil `reading`: the step records none.
     static func askAboutReading(_ reading: PlannedReading?, answer: LowerReadingAnswer?) throws {
-        guard let reading, reading.isStored, answer == nil,
-              let highest = higherReadings(than: reading).max(by: { $0.value < $1.value }) else { return }
-        throw LowerReadingQuestion(previous: highest.value, previousDate: highest.recordedAt, value: reading.value, unit: reading.unit)
+        guard let reading, reading.isStored, answer == nil else { return }
+        let higher = higherReadings(than: reading)
+        guard let highest = higher.max(by: { $0.value < $1.value }) else { return }
+        let drop = ReadingDrop(from: highest.value, to: reading.value, series: series(around: reading))
+        if drop.size == .small, higher.allSatisfy(\.isEstimate) { return }
+        throw LowerReadingQuestion(previous: highest.value, previousDate: highest.recordedAt, value: reading.value, unit: reading.unit,
+                                   answers: LowerReadingAnswer.offered(for: reading.kind, likelyNewCounter: drop.size == .large))
+    }
+
+    /// The series `reading` joins, without the readings the step replaces: whose use measures
+    /// how far below the others it falls.
+    private static func series(around reading: PlannedReading) -> ReadingSeries {
+        let logs = (reading.asset.measurements ?? []).filter {
+            !$0.isDeleted && $0.measurementUnit == reading.unit && $0.kind.isCumulative && !reading.replaces($0)
+        }
+        return ReadingSeries(logs.map { .init(date: $0.recordedAt, metric: $0.value, startsCounter: $0.startsCounter, isEstimate: $0.isEstimate) })
     }
 
     /// The counter readings recording `reading` would find higher than it: on its counter
-    /// (from the newest "Contor nou" on or before its day), recorded on or before its day. What
-    /// makes it ask first, and what `.correctOld` removes; the one rule `recordReading` and the
-    /// question share. Readings the step replaces first don't count, and a reading that takes
-    /// the place of one that started a counter starts it, so nothing comes before it.
+    /// (from the newest "Contor nou" on or before its day), recorded on or before its day, and
+    /// not an estimate a reading already kept corrected (`ReadingSeries.correctedEstimates`).
+    /// What makes it ask first, and what `.correctOld` removes and `.wasEstimate` marks; the one
+    /// rule `recordReading` and the question share. Readings the step replaces first don't
+    /// count, and a reading that takes the place of one that started a counter starts it, so
+    /// nothing comes before it.
     private static func higherReadings(than reading: PlannedReading) -> [MeasurementLog] {
         guard reading.kind.isCumulative, !reading.continuesCounter else { return [] }
         let unit = reading.unit
-        let logs = (reading.asset.measurements ?? []).filter {
-            !$0.isDeleted && $0.measurementUnit == unit && $0.kind.isCumulative && $0.recordedAt <= reading.date && !reading.replaces($0)
+        let all = (reading.asset.measurements ?? []).filter {
+            !$0.isDeleted && $0.measurementUnit == unit && $0.kind.isCumulative && !reading.replaces($0)
         }
+        let corrected = Set(ReadingSeries.split(all, date: \.recordedAt, metric: \.value, startsCounter: \.startsCounter).flatMap { counter in
+            ReadingSeries.correctedEstimates(counter, metric: \.value, isEstimate: \.isEstimate).map { counter[$0].id }
+        })
+        let logs = all.filter { $0.recordedAt <= reading.date && !corrected.contains($0.id) }
         let start = logs.filter(\.startsCounter).map(\.recordedAt).max()
         return logs.filter { log in log.value > reading.value && (start.map { log.recordedAt >= $0 } ?? true) }
     }

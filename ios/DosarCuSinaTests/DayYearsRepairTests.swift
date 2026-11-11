@@ -103,10 +103,11 @@ struct DayYearsRepairTests {
         #expect(document.value(DocumentFields.expiry) == .date(CalendarDay("2032-01-15")))
     }
 
-    @Test func theStepComesLastWithItsOwnStoredID() {
+    @Test func theStepComesAfterTheOnesBeforeItWithItsOwnStoredID() throws {
         let ids = DataRepairs.steps.map { type(of: $0).id }
-        #expect(ids.last == .dayYears, "A new repair is a new step at the end")
-        #expect(ids.firstIndex(of: .sameVisitTwice).map { $0 < ids.count - 1 } == true)
+        let visits = try #require(ids.firstIndex(of: .sameVisitTwice))
+        let days = try #require(ids.firstIndex(of: .dayYears))
+        #expect(visits < days, "A new repair is a new step at the end")
         #expect(DataRepairStepID.dayYears.rawValue == "day-years")
     }
 }

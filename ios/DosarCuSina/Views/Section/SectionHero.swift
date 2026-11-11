@@ -113,7 +113,9 @@ struct SectionHero: View {
             HeroValueTile(
                 label: String(localized: "Ultimul index", comment: "Hero of a gas, electricity or water subscription: the meter's last index."),
                 value: last.written,
-                note: last.isFromDocument
+                note: last.isEstimate
+                    ? String(localized: "Estimat, de pe factura din \(day)", comment: "Under the last meter index: an index the bill estimated, and the bill's day.")
+                    : last.isFromDocument
                     ? String(localized: "De pe factura din \(day)", comment: "Under the last meter index: the bill it was read from.")
                     : String(localized: "Notat pe \(day)", comment: "Under the last meter index: the day it was recorded.")
             )

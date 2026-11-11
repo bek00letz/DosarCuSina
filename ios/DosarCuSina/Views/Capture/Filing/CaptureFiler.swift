@@ -595,12 +595,8 @@ struct CaptureFiler {
                                     earlier: MeasurementLog?, templates: [String: CategoryTemplate]) throws -> MeasurementLog? {
         // Planned before the earlier reading goes, as the filing asked about it (`askAboutMeter`):
         // the new one takes its place, and a new counter it started.
-        let replaced = earlier?.id
         let planned = reading.flatMap { reading in
-            subscription.map { subscription in
-                PlannedReading(reading.value, on: subscription, at: reading.day.noonDate(in: calendar), source: .document,
-                               unit: reading.unit, kind: reading.kind, replacing: { log in log.id == replaced })
-            }
+            subscription.map { reading.planned(on: $0, replacing: earlier?.id, calendar: calendar) }
         }
         // Only a reading a bill recorded on a subscription is the bill's to replace.
         if let earlier, !earlier.isDeleted, let owner = earlier.asset, templates.plays(.subscription, owner.templateKey) {
@@ -684,12 +680,8 @@ struct CaptureFiler {
         guard case .record(let reading, _)? = plan.meter,
               let section = review.existingSection(assets: assets, templates: templates),
               templates.plays(.subscription, section.templateKey) else { return }
-        let earlier = plan.readingFiledBefore
-        let planned = PlannedReading(
-            reading.value, on: section, at: reading.day.noonDate(in: calendar), source: .document, unit: reading.unit, kind: reading.kind,
-            replacing: { log in earlier != nil && log.id == earlier }
-        )
-        try HouseholdMutations.askAboutReading(planned, answer: lowerReading)
+        try HouseholdMutations.askAboutReading(reading.planned(on: section, replacing: plan.readingFiledBefore, calendar: calendar),
+                                               answer: lowerReading)
     }
 
     /// The reading writing a review's values onto `asset` records (the kilometres an invoice

@@ -195,6 +195,7 @@ enum CaptureMapping {
         case .podCode: return String(localized: "Cod loc de consum (POD)")
         case .clcCode: return String(localized: "Cod loc de consum gaze (CLC)")
         case .meterIndex: return String(localized: "Index contor")
+        case .meterReading: return String(localized: "Cum s-a citit indexul")
         case .serviceKind: return String(localized: "Serviciu")
         case .contractNumber: return String(localized: "Număr contract")
         case .phoneNumber: return String(localized: "Număr de telefon")
@@ -234,7 +235,8 @@ enum CaptureMapping {
         // Bookkeeping, not something read off the page: filing uses it, people don't need to check it.
         // Direct debit is a suggestion the person confirms beside the reminder, not a value to edit.
         // The policyholder's CNP is only for finding them among the household's people.
-        case .lineItems, .documentCode, .issuingCountry, .documentVariant, .directDebit, .policyholderPersonalNumber: return false
+        // How the index was taken goes with the index, said in the line under it (`CaptureFilingPlan.Meter`).
+        case .lineItems, .documentCode, .issuingCountry, .documentVariant, .directDebit, .policyholderPersonalNumber, .meterReading: return false
         case .holderName: return !keys.contains(.surname) && !keys.contains(.givenNames)
         default: return true
         }

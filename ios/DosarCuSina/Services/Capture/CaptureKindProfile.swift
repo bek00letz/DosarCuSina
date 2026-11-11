@@ -113,6 +113,9 @@ struct CaptureKindProfile: Sendable {
     /// this kind only beside the kind's own cues (`CardNumberCues`, read by
     /// `DocumentClassifier`). A bank card's.
     var cardNumberCues: CardNumberCues? = nil
+    /// How it says its meter's index was taken, estimated or read (`MeterReadingCues`, read by
+    /// `BillReader`). A utility bill's.
+    var meterReadingCues: MeterReadingCues? = nil
 
     /// How a new section made from a document is named.
     enum SectionNameRule: Sendable {
@@ -290,10 +293,10 @@ struct CaptureKindProfile: Sendable {
             readsCover: false, defaultCover: nil, deadlineField: .dueDate, documentDateFields: issuedOn,
             documentKind: .invoice, documentType: nil, trade: nil,
             expectedKeys: [.provider, .serviceKind, .invoiceNumber, .issueDate, .dueDate, .total, .clientCode, .contractNumber, .podCode, .clcCode,
-                           .phoneNumber, .meterIndex, .supplyAddress, .directDebit],
+                           .phoneNumber, .meterIndex, .meterReading, .supplyAddress, .directDebit],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: true, identifierKeys: subscriptionCodes,
             name: "Factură de utilități", titleRule: .wordAndProvider("Factură"), modelDescription: "utility, internet, TV or phone bill", isBill: true, sectionName: .subscription,
-            labels: billLabels, readsPaymentCode: true
+            labels: billLabels, readsPaymentCode: true, meterReadingCues: billReadingCues
         ),
         CaptureKindProfile(
             kind: .contract, templateKey: BuiltInTemplates.Key.subscription, filing: .subscription, blueprintKey: SubscriptionFields.minimumEndsBlueprint,
@@ -382,9 +385,12 @@ struct CaptureKindProfile: Sendable {
         (.dueDate, ["data scadentei", "data scadenta", "scadenta", "scadentei", "scadent la", "scadent pe", "scadent",
                     "data limita de plata", "data limita plata", "termen limita de plata", "termen limita plata", "termen de plata",
                     "termen plata", "de platit pana la", "de achitat pana la", "plateste pana la", "platiti pana la", "achitati pana la"]),
-        (.meterIndex, ["index nou autocitit", "index autocitit nou", "index nou citit", "index nou", "index curent", "index actual",
-                       "index citit", "index autocitit", "1.8.0"]),
+        (.meterIndex, ["index nou autocitit", "index autocitit nou", "index nou citit", "index nou estimat", "index estimat nou", "index nou", "index curent",
+                       "index actual", "index citit", "index autocitit", "index estimat", "index citit de distribuitor", "1.8.0"]),
         (.previousMeterIndex, ["index vechi", "index anterior", "index precedent"]),
+        // How the index was taken, in a column or a row of its own; its words are `billReadingCues`'.
+        (.meterReading, ["tip citire", "tip index", "mod citire", "mod de citire", "modalitate citire", "modalitate de citire",
+                         "sursa index", "sursa citirii", "tip factura"]),
         (.paymentCode, ["cod de plata", "codul de plata", "cod plata", "cod pentru plata", "cod bare client", "cod de bare", "cod bare",
                         "cod de inregistrare", "cod inregistrare", "cod de incasare", "cod incasare"]),
     ]
@@ -483,6 +489,21 @@ struct CaptureKindProfile: Sendable {
         nearLines: 2,
         expiryPattern: #"(?<![\d/.])(?:0[1-9]|1[0-2]) ?/ ?\d{2}(?![\d/.])"#,
         groupingIsACue: true
+    )
+
+    /// How a bill says its index was taken, folded: on the index's own label or beside its
+    /// number ("Index estimat", "12.345 (E)"), in a reading-type row's value ("Tip citire:
+    /// citire reală"), or by being a regularisation, whose index is a real reading that corrects
+    /// the estimates before it. "Citit" alone is too common a column heading to say anything,
+    /// so it counts only as a row's whole value.
+    static let billReadingCues = MeterReadingCues(
+        estimatedWords: ["estimat", "estimata", "estimate", "estimare", "estimativ", "citire estimata", "index estimat"],
+        readWords: ["citire reala", "index real", "real", "reala", "citit de distribuitor", "citita de distribuitor", "citire distribuitor",
+                    "citire de catre distribuitor", "autocitit", "autocitita", "autocitire", "regularizare"],
+        estimatedMarks: ["e"],
+        readMarks: ["r", "c", "a", "citit", "citita"],
+        regularisationWords: ["factura de regularizare", "factura fiscala de regularizare", "factura regularizare", "regularizare consum"],
+        regularisationHeadings: ["regularizare"]
     )
 
     /// A vet's record: the microchip's line, the vaccine's line and the booster's day.
