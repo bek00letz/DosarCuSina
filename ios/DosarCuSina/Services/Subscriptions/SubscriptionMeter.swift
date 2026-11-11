@@ -18,6 +18,8 @@ enum SubscriptionMeter {
         var unit: MeasurementUnit
         /// The bill's day: a document's reading is dated by the document.
         var day: CalendarDay
+        /// How the bill says the index was taken (estimated, read); nil when it doesn't say.
+        var basis: ReadingBasis? = nil
 
         /// "12.345 m³": the index with its unit, as the app writes it.
         var written: String { SubscriptionMeter.written(value, in: unit) }
@@ -28,14 +30,25 @@ enum SubscriptionMeter {
             !log.isDeleted && log.measurementUnit == unit && log.value == value
                 && CalendarDay(log.recordedAt, calendar: calendar) == day
         }
+
+        /// This reading as a step plans it on `subscription` (`PlannedReading`): from the
+        /// document, dated by it at noon, with how the bill says it was taken. `replaces` is
+        /// the reading the bill recorded before, which filing takes away first. The one plan the
+        /// filing asks about and then records.
+        @MainActor
+        func planned(on subscription: Asset, replacing replaces: UUID?, calendar: Calendar) -> PlannedReading {
+            PlannedReading(value, on: subscription, at: day.noonDate(in: calendar), source: .document, unit: unit, kind: kind, basis: basis,
+                           replacing: { log in replaces != nil && log.id == replaces })
+        }
     }
 
-    /// The reading a bill's index gives a subscription with these values, dated `day`. Nil
-    /// when the service has no meter or isn't known (`meterKind`), or the index isn't a number.
-    static func reading(_ index: CaptureValue?, service: String?, day: CalendarDay) -> Reading? {
+    /// The reading a bill's index gives a subscription with these values, dated `day`, taken as
+    /// `basis` says (`CaptureFieldKey.meterReading`). Nil when the service has no meter or isn't
+    /// known (`meterKind`), or the index isn't a number.
+    static func reading(_ index: CaptureValue?, basis: CaptureValue? = nil, service: String?, day: CalendarDay) -> Reading? {
         guard let kind = ServiceKind.meterKind(for: service), let unit = kind.defaultUnit,
               let value = number(index), value.isFinite, value >= 0 else { return nil }
-        return Reading(value: value, kind: kind, unit: unit, day: day)
+        return Reading(value: value, kind: kind, unit: unit, day: day, basis: basis?.text.flatMap(ReadingBasis.init(rawValue:)))
     }
 
     /// The number an index was read as.
@@ -61,6 +74,8 @@ enum SubscriptionMeter {
         var day: CalendarDay
         /// Read off a document kept in the binder (a bill), rather than typed or imported.
         var isFromDocument: Bool
+        /// An estimate (`ReadingBasis.estimated`): the bill's estimated index, the last one so far.
+        var isEstimate: Bool = false
 
         var written: String { SubscriptionMeter.written(value, in: unit) }
     }
@@ -75,6 +90,6 @@ enum SubscriptionMeter {
             !$0.isDeleted && $0.measurementUnit == unit && $0.recordedAt == latest.date && $0.value == latest.metric
         }
         return Last(value: latest.metric, unit: unit, day: CalendarDay(latest.date, calendar: calendar),
-                    isFromDocument: !(log?.attachments ?? []).isEmpty)
+                    isFromDocument: !(log?.attachments ?? []).isEmpty, isEstimate: latest.isEstimate)
     }
 }

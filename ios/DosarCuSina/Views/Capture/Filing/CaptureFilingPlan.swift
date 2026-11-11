@@ -98,6 +98,8 @@ struct CaptureFilingPlan {
         /// "Am rezolvat"'s.
         var sentence: String {
             switch self {
+            case .record(let reading, let subscription) where reading.basis == .estimated:
+                String(localized: "Indexul estimat \(reading.written) se trece la „\(subscription)”. Se socotește până vine citirea reală.", comment: "Capture review: the bill's estimated meter index is recorded on its subscription, and counts until the real reading comes.")
             case .record(let reading, let subscription):
                 String(localized: "Indexul \(reading.written) se trece la „\(subscription)”.", comment: "Capture review: the bill's meter index is recorded on its subscription.")
             case .alreadyKept(let reading, let subscription):
@@ -216,7 +218,8 @@ struct CaptureFilingPlan {
         var values = section?.values ?? FieldValues()
         for (key, value) in CaptureFiler.values(from: review, for: template.definition) where values[key] == nil { values[key] = value }
         guard let service = SubscriptionFields.service(of: values) else { return .unknownService }
-        guard let reading = SubscriptionMeter.reading(index, service: service, day: CaptureFiler.billDay(review, today: today)) else { return nil }
+        guard let reading = SubscriptionMeter.reading(index, basis: review.value(.meterReading), service: service,
+                                                      day: CaptureFiler.billDay(review, today: today)) else { return nil }
         let name = section?.name ?? CaptureFiler.subscriptionName(review)
         // The same bill filed again: the reading it recorded is already there.
         if let section, let earlier = readingFiledBefore,

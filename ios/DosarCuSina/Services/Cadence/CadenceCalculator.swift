@@ -16,11 +16,15 @@ public final class CadenceCalculator: Sendable {
         /// The first reading of a new counter (`MeasurementLog.startsCounter`): the readings
         /// from it on count on their own (`ReadingSeries.counters`).
         public let startsCounter: Bool
+        /// An estimate of the counter (`MeasurementLog.isEstimate`): it counts only until a
+        /// later reading of its counter is lower (`ReadingSeries`).
+        public let isEstimate: Bool
 
-        public init(date: Date, metric: Double, startsCounter: Bool = false) {
+        public init(date: Date, metric: Double, startsCounter: Bool = false, isEstimate: Bool = false) {
             self.date = date
             self.metric = metric
             self.startsCounter = startsCounter
+            self.isEstimate = isEstimate
         }
 
         /// The same reading, at the same moment and value, whether or not it starts a counter.

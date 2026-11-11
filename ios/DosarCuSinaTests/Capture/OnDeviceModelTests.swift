@@ -51,6 +51,7 @@ struct OnDeviceModelTests {
         case .serviceKind: "choice:" + ServiceKind.all.joined(separator: ",")
         case .coverage: "choice:" + InsuranceCover.all.joined(separator: ",")
         case .cardNetwork: "choice:" + PaymentCardNetwork.all.joined(separator: ",")
+        case .meterReading: "choice:" + ReadingBasis.allCases.map(\.rawValue).joined(separator: ",")
         case .lineItems: "lines"
         case .machineReadableZone: "strings"
         case .text, .name, .personalNumber, .documentNumber, .country, .categories, .meterIndex, .vin, .plate, .phone, .cardLastFour: "string"

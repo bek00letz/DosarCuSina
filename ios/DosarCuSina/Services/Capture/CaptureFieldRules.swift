@@ -12,9 +12,10 @@ extension CaptureDocumentKind {
     /// Whether a field may appear on this kind of document (`CaptureKindProfile.allows`).
     func allows(_ key: CaptureFieldKey) -> Bool { profile.allows(key) }
 
-    /// Fields only bills and contracts carry: where the service is supplied and whether
-    /// the bank pays it. A policy or a receipt has neither, whatever a model reads into it.
-    static let subscriptionKeys: Set<CaptureFieldKey> = [.supplyAddress, .directDebit]
+    /// Fields only bills and contracts carry: where the service is supplied, whether the bank
+    /// pays it and how the meter's index was taken. A policy or a receipt has none of them,
+    /// whatever a model reads into it.
+    static let subscriptionKeys: Set<CaptureFieldKey> = [.supplyAddress, .directDebit, .meterReading]
 
     /// Fields only a policy carries: who it insures and their bonus-malus class.
     static let policyholderKeys: Set<CaptureFieldKey> = [.policyholder, .policyholderPersonalNumber, .bonusMalusClass]

@@ -42,6 +42,7 @@ struct DataRepairs {
         CardNumbersStep(),
         SameVisitTwiceStep(),
         DayYearsStep(),
+        EstimatedBillReadingsStep(),
     ]
 
     static func step(_ id: DataRepairStepID) -> any DataRepairStep {
@@ -106,6 +107,7 @@ enum DataRepairStepID: String, CaseIterable, Sendable, Hashable {
     case cardNumbers = "card-numbers"
     case sameVisitTwice = "same-visit-twice"
     case dayYears = "day-years"
+    case estimatedBillReadings = "estimated-bill-readings"
 }
 
 /// One thing a repair would change, in plain words, with what applying it needs.
@@ -151,6 +153,8 @@ struct DataRepairFinding: Identifiable, Hashable, Sendable {
         case sameVisit(keep: UUID, merge: [UUID])
         /// A day kept with a year that can't be: set to `to`, the day it means, when that is known.
         case dayYear(DayYearsStep.Place, from: CalendarDay, to: CalendarDay?)
+        /// A bill's index its kept text says was estimated: the reading is marked as an estimate.
+        case readingEstimate(logID: UUID)
     }
 }
 

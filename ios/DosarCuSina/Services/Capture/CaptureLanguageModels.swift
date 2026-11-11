@@ -358,6 +358,8 @@ enum OnDeviceSchema {
             return DynamicGenerationSchema(name: "\(field.name)Choice", anyOf: ["M", "F"])
         case .serviceKind:
             return DynamicGenerationSchema(name: "\(field.name)Choice", anyOf: ServiceKind.all)
+        case .meterReading:
+            return DynamicGenerationSchema(name: "\(field.name)Choice", anyOf: ReadingBasis.allCases.map(\.rawValue))
         case .coverage:
             return DynamicGenerationSchema(name: "\(field.name)Choice", anyOf: InsuranceCover.all)
         case .cardNetwork:

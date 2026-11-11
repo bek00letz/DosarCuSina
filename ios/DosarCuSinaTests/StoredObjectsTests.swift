@@ -18,7 +18,7 @@ struct StoredObjectsTests {
     /// A new JSON property fails this until it has its case below, and its case fails until the
     /// property is read and written through `KeptObject` or `KeptList`.
     @Test func everyStoredJSONPropertyIsKept() {
-        let stored = Set(Schema(versionedSchema: DosarSchemaV13.self).entities.flatMap { entity in
+        let stored = Set(Schema(versionedSchema: DosarSchemaV14.self).entities.flatMap { entity in
             entity.attributes.filter { $0.valueType == Data.self || $0.valueType == Data?.self }.map { "\(entity.name).\($0.name)" }
         })
         #expect(stored == Self.files.union(StoredObject.allCases.map(\.property)))
