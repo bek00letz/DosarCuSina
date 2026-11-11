@@ -407,7 +407,8 @@ struct BackupFlowTests {
 
     @Test func withNoLockOnNothingIsAsked() async throws {
         let household = try BackupHousehold()
-        for template in try household.context.fetch(FetchDescriptor<CategoryTemplate>()) { template.isSensitive = false }
+        let lowering = try await faceIDConfirmed()
+        for template in try household.context.fetch(FetchDescriptor<CategoryTemplate>()) { try template.setLock(false, lowering: lowering) }
         try household.context.save()
         let (flow, prompts, _) = flow(household, .cancel)
         await flow.export(password: nil)
@@ -417,7 +418,8 @@ struct BackupFlowTests {
 
     @Test func theAppLockAloneAlsoAsks() async throws {
         let household = try BackupHousehold()
-        for template in try household.context.fetch(FetchDescriptor<CategoryTemplate>()) { template.isSensitive = false }
+        let lowering = try await faceIDConfirmed()
+        for template in try household.context.fetch(FetchDescriptor<CategoryTemplate>()) { try template.setLock(false, lowering: lowering) }
         try household.context.save()
         let (flow, prompts, _) = flow(household, .fail, appLock: true)
         await flow.export(password: nil)
@@ -459,7 +461,8 @@ struct BackupFlowTests {
 
     @Test func withNoLockOnBringingABackupInAsksNothing() async throws {
         let household = try BackupHousehold()
-        for template in try household.context.fetch(FetchDescriptor<CategoryTemplate>()) { template.isSensitive = false }
+        let lowering = try await faceIDConfirmed()
+        for template in try household.context.fetch(FetchDescriptor<CategoryTemplate>()) { try template.setLock(false, lowering: lowering) }
         try household.context.save()
         let (flow, prompts, _) = flow(household, .cancel)
         await flow.export(password: nil)

@@ -618,6 +618,142 @@ struct SchemaMigrationTests {
         try expectTheSameDays(in: ModelContext(container), edited: edited, "Written in \(written), upgraded in \(upgraded)")
     }
 
+    // MARK: An upgrade that stops halfway
+
+    /// A new folder for one test's store, removed by the caller.
+    private func migrationFolder() throws -> URL {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        return folder
+    }
+
+    /// Opens the store at `url` with `plan`'s stages only, as a launch that stopped once the store
+    /// had changed shape: the stage ran, the app never got further.
+    private func stopAfterTheShapeChanges<Plan: SchemaMigrationPlan>(at url: URL, _ plan: Plan.Type, to version: any VersionedSchema.Type) throws {
+        let schema = Schema(versionedSchema: version)
+        _ = try ModelContainer(for: schema, migrationPlan: plan, configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)])
+    }
+
+    private func exists(_ url: URL) -> Bool {
+        FileManager.default.fileExists(atPath: url.path(percentEncoded: false))
+    }
+
+    @Test func anUpgradeToDaysStoppedHalfwayFinishesAtTheNextLaunch() throws {
+        let folder = try migrationFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Dosar-v8.store")
+        let edited = noon("2026-10-01")
+        try writeVersionEight(at: url, in: .dosar, edited: edited)
+
+        try stopAfterTheShapeChanges(at: url, UpToNine.self, to: DosarSchemaV9.self)
+        let carry = MigrationCarry.file(named: DayMigration.carryName, forStoreAt: url)
+        #expect(exists(carry), "What the stage read is kept beside the store before it changes shape")
+
+        // The next launch: the later stages run, then the days come back before anything reads them.
+        let container = try PersistenceController.makeContainer(storeURL: url)
+        try expectTheSameDays(in: ModelContext(container), edited: edited, "Finished at the next launch")
+        #expect(!exists(carry), "Finished, it goes")
+        #expect(!MigrationCarry.isPending(storeAt: url))
+    }
+
+    @Test func finishingAnUpgradeTwiceChangesNothing() throws {
+        let folder = try migrationFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Dosar-v8.store")
+        let edited = noon("2026-10-01")
+        try writeVersionEight(at: url, in: .dosar, edited: edited)
+        try stopAfterTheShapeChanges(at: url, UpToNine.self, to: DosarSchemaV9.self)
+        let carry = MigrationCarry.file(named: DayMigration.carryName, forStoreAt: url)
+        let kept = try Data(contentsOf: carry)
+
+        let first = try PersistenceController.makeContainer(storeURL: url)
+        try expectTheSameDays(in: ModelContext(first), edited: edited)
+        // As if the file couldn't go the first time: the next open finishes again.
+        try kept.write(to: carry)
+        let second = try PersistenceController.makeContainer(storeURL: url)
+        try expectTheSameDays(in: ModelContext(second), edited: edited, "Finished twice, the same")
+        try MigrationCarry.finishPending(in: second)
+        try expectTheSameDays(in: ModelContext(second), edited: edited, "Nothing left to finish")
+        #expect(!exists(carry))
+    }
+
+    @Test func anUpgradeThatCantKeepWhatItCarriesLeavesTheStoreAsItWas() throws {
+        let folder = try migrationFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Dosar-v8.store")
+        let edited = noon("2026-10-01")
+        try writeVersionEight(at: url, in: .dosar, edited: edited)
+
+        // Something stands where the carry goes, so it can't be written: the stage stops.
+        let carry = MigrationCarry.file(named: DayMigration.carryName, forStoreAt: url)
+        try FileManager.default.createDirectory(at: carry, withIntermediateDirectories: true)
+        try Data("x".utf8).write(to: carry.appending(path: "in-the-way"))
+        #expect(throws: (any Error).self) { try PersistenceController.makeContainer(storeURL: url) }
+
+        // Once it can, the upgrade runs again from the start, every day with it.
+        try FileManager.default.removeItem(at: carry)
+        let container = try PersistenceController.makeContainer(storeURL: url)
+        try expectTheSameDays(in: ModelContext(container), edited: edited, "Upgraded on the next try")
+    }
+
+    /// Writes a version 11 store: Acte opened by the person, a car category locked, a notebook of one's own locked.
+    private func writeVersionElevenLocks(at url: URL) throws {
+        let schema = Schema(versionedSchema: DosarSchemaV11.self)
+        let container = try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)])
+        let context = ModelContext(container)
+        let documents = DosarSchemaV11.CategoryTemplate(key: BuiltInTemplates.Key.documents)
+        documents.isBuiltIn = true
+        documents.isSensitive = false
+        let vehicles = DosarSchemaV11.CategoryTemplate(key: BuiltInTemplates.Key.vehicle)
+        vehicles.isBuiltIn = true
+        vehicles.isSensitive = true
+        let notebook = DosarSchemaV11.CategoryTemplate(key: Self.notebook)
+        notebook.isSensitive = true
+        for model in [documents, vehicles, notebook] as [any PersistentModel] { context.insert(model) }
+        try context.save()
+    }
+
+    private static let notebook = "custom.0b6c6f43-0000-4000-8000-00000000c0de"
+
+    private func expectTheSameLocks(at url: URL, _ comment: Comment? = nil) throws {
+        let container = try PersistenceController.makeContainer(storeURL: url)
+        let templates = Dictionary(try ModelContext(container).fetch(FetchDescriptor<CategoryTemplate>()).map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
+        #expect(templates[BuiltInTemplates.Key.documents]?.isSensitive == false, comment)
+        #expect(templates[BuiltInTemplates.Key.vehicle]?.isSensitive == true, comment)
+        #expect(templates[Self.notebook]?.isSensitive == true, comment)
+    }
+
+    @Test func anUpgradeOfLocksStoppedHalfwayKeepsEveryLock() throws {
+        let folder = try migrationFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Dosar-v11.store")
+        try writeVersionElevenLocks(at: url)
+
+        try stopAfterTheShapeChanges(at: url, UpToTwelve.self, to: DosarSchemaV12.self)
+        let carry = MigrationCarry.file(named: LockMigration.carryName, forStoreAt: url)
+        #expect(exists(carry), "The locks are kept beside the store before it drops them")
+
+        try expectTheSameLocks(at: url, "Every lock as it was, after an upgrade that stopped halfway")
+        #expect(!exists(carry))
+        #expect(exists(SectionLocks.file(forStoreAt: url)))
+    }
+
+    @Test func anUpgradeThatCantKeepTheLocksLeavesTheStoreAsItWas() throws {
+        let folder = try migrationFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Dosar-v11.store")
+        try writeVersionElevenLocks(at: url)
+
+        let carry = MigrationCarry.file(named: LockMigration.carryName, forStoreAt: url)
+        try FileManager.default.createDirectory(at: carry, withIntermediateDirectories: true)
+        try Data("x".utf8).write(to: carry.appending(path: "in-the-way"))
+        #expect(throws: (any Error).self) { try PersistenceController.makeContainer(storeURL: url) }
+
+        // The store still holds its locks: the next try carries them.
+        try FileManager.default.removeItem(at: carry)
+        try expectTheSameLocks(at: url, "Upgraded on the next try, every lock with it")
+    }
+
     @Test func aStoreFromVersionSevenOpensWithItsRecordsAndNoKnownChangeTime() throws {
         let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
@@ -901,4 +1037,16 @@ struct SchemaMigrationTests {
         let reopened = ModelContext(try PersistenceController.makeContainer(storeURL: url))
         #expect(try reopened.fetch(FetchDescriptor<Provider>()).first?.taxID == "12345678")
     }
+}
+
+/// The upgrade to version 9 alone: with it, a test stops a launch once the store has changed shape.
+private enum UpToNine: SchemaMigrationPlan {
+    static var schemas: [any VersionedSchema.Type] { [DosarSchemaV8.self, DosarSchemaV9.self] }
+    static var stages: [MigrationStage] { [DosarMigrationPlan.v8ToV9] }
+}
+
+/// The upgrade to version 12 alone, the one that takes the locks out of the store.
+private enum UpToTwelve: SchemaMigrationPlan {
+    static var schemas: [any VersionedSchema.Type] { [DosarSchemaV11.self, DosarSchemaV12.self] }
+    static var stages: [MigrationStage] { [DosarMigrationPlan.v11ToV12] }
 }

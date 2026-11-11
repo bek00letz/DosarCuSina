@@ -642,11 +642,20 @@ public final class PersistenceController {
     /// place a container is made: its main context saves only through the unit of work, and every
     /// context it gives says the change is the app's own (`localAuthor`), so a change that came
     /// from another device is told apart (`SyncedChanges`). An in-memory one never syncs.
+    ///
+    /// Before anything reads it, an upgrade that stopped halfway is finished from what its stages
+    /// carried (`MigrationCarry.finishPending`); if that can't be done yet, the store doesn't open
+    /// (the recovery screen, or a wait for the phone's unlock), so nothing ever reads it half
+    /// upgraded. This device's section locks are read again if they couldn't be before.
     public static func makeContainer(storeURL: URL? = nil, inMemory: Bool = false, syncs: Bool = false) throws -> ModelContainer {
         let configuration = configuration(storeURL: storeURL, inMemory: inMemory, syncs: syncs && !inMemory)
         let container = try ModelContainer(for: schema, migrationPlan: DosarMigrationPlan.self, configurations: [configuration])
         container.mainContext.autosaveEnabled = false
         container.mainContext.author = localAuthor
+        if !configuration.isStoredInMemoryOnly {
+            try MigrationCarry.finishPending(in: container)
+            SectionLocks.of(container).readAgainIfUnread()
+        }
         if configuration.cloudKitContainerIdentifier != nil { ContainerRetirement.markSyncing(container) }
         return container
     }
@@ -668,14 +677,19 @@ public final class PersistenceController {
         return context
     }
 
-    private static func moveStoreAside(at url: URL) {
+    /// Moves the store's files aside, with any carry of an upgrade under way (`MigrationCarry`),
+    /// which belongs to that store. This device's section locks stay where they are: they are the
+    /// device's choices, not the binder's, and the binder that comes back (from iCloud, or a
+    /// backup) keeps them (`SectionLocks`).
+    static func moveStoreAside(at url: URL) {
         let fileManager = FileManager.default
         let stamp = Date().formatted(.iso8601.year().month().day().time(includingFractionalSeconds: false))
             .replacingOccurrences(of: ":", with: "")
         let directory = url.deletingLastPathComponent()
         let baseName = url.lastPathComponent
+        let locks = SectionLocks.file(forStoreAt: url).lastPathComponent
         let siblings = (try? fileManager.contentsOfDirectory(atPath: directory.path())) ?? []
-        for name in siblings where name.hasPrefix(baseName) {
+        for name in siblings where name.hasPrefix(baseName) && !name.hasPrefix(locks) {
             let source = directory.appending(path: name)
             let target = directory.appending(path: "unreadable-\(stamp)-\(name)")
             try? fileManager.moveItem(at: source, to: target)

@@ -50,7 +50,7 @@ extension DosarSchemaV13 {
             self.isBuiltIn = isBuiltIn
             self.homeOrder = homeOrder
             self.isOnHome = definition.isOnHomeByDefault
-            self.isSensitive = definition.isSensitiveByDefault
+            self.lockBeforeSaved = definition.isSensitiveByDefault
             apply(definition)
         }
 
@@ -146,28 +146,38 @@ extension DosarSchemaV13 {
 
         /// Ask for Face ID before showing sections of this category, on this device: each device
         /// decides for itself, so the choice lives beside the store, never in it (`SectionLocks`).
-        /// A category this device hasn't decided on is locked as the catalog says, or as it was made.
+        /// A category this device hasn't decided on is locked as the catalog says, or as it was made;
+        /// while this device's locks couldn't be read, every category of one's own is locked too.
+        /// Changed only through `setLock`.
         public var isSensitive: Bool {
-            get {
-                let byDefault = lockBeforeSaved ?? (isBuiltIn && SectionLocks.lockedByDefault.contains(key))
-                guard let container = modelContext?.container else { return byDefault }
-                return SectionLocks.of(container).isLocked(key, byDefault: byDefault)
-            }
-            set {
-                guard let container = modelContext?.container else {
-                    lockBeforeSaved = newValue
-                    return
-                }
-                // The choice made now wins over the one asked for before saving.
-                lockBeforeSaved = nil
-                SectionLocks.of(container).set(newValue, for: key)
-            }
+            let byDefault = lockBeforeSaved ?? (isBuiltIn && SectionLocks.lockedByDefault.contains(key))
+            guard let container = modelContext?.container else { return byDefault }
+            return SectionLocks.of(container).isLocked(key, byDefault: byDefault, ownCategory: !isBuiltIn)
         }
 
-        /// Makes the lock asked for before the category was saved this device's choice.
-        func keepLockAskedBeforeSaving() {
+        /// Locks or opens the category on this device. Opening one that is locked now takes the
+        /// person's Face ID first, every time (`lowering`, from `BiometricVaultManager.confirmLowering`);
+        /// without it, it throws `LockLowering.Needed` and nothing changes. Throws too when the choice
+        /// can't be kept (`SectionLocks`). A category not saved yet only remembers the lock it is
+        /// made with.
+        func setLock(_ locked: Bool, lowering: LockLowering? = nil) throws {
+            guard let container = modelContext?.container else {
+                lockBeforeSaved = locked
+                return
+            }
+            if !locked, lowering == nil, isSensitive { throw LockLowering.Needed() }
+            try SectionLocks.of(container).set(locked, for: key)
+            // The choice made now wins over the one asked for before saving.
+            lockBeforeSaved = nil
+        }
+
+        /// Makes the lock asked for before the category was saved this device's choice, unless this
+        /// device already chose one for its key (a built-in installed again after "Începe din nou",
+        /// a category brought back by undo): before the save (`UnitOfWork`), so a category is never
+        /// saved without the lock it was made with.
+        func keepLockAskedBeforeSaving() throws {
             guard let lock = lockBeforeSaved, let container = modelContext?.container else { return }
-            SectionLocks.of(container).set(lock, for: key)
+            try SectionLocks.of(container).adopt([key: lock])
         }
 
         /// The plain definition, as archives and the catalog describe it.

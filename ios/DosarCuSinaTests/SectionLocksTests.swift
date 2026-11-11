@@ -40,7 +40,7 @@ struct SectionLocksTests {
         #expect(locked.contains(BuiltInTemplates.Key.documents))
     }
 
-    @Test func aChangeFromAnotherDeviceNeverChangesThisDevicesLock() throws {
+    @Test func aChangeFromAnotherDeviceNeverChangesThisDevicesLock() async throws {
         let folder = try folder()
         defer { try? FileManager.default.removeItem(at: folder) }
         let container = try store(folder)
@@ -49,7 +49,7 @@ struct SectionLocksTests {
         let vehicles = try #require(try TemplateStore(context: context).template(forKey: key))
         try TemplateStore(context: context).setSensitive(vehicles, true)
         let documents = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.documents))
-        try TemplateStore(context: context).setSensitive(documents, false)
+        try TemplateStore(context: context).setSensitive(documents, false, lowering: try await faceIDConfirmed())
 
         // The other device changes the same categories' records, as iCloud writes them under the store.
         let fromICloud = ModelContext(container)
@@ -69,13 +69,13 @@ struct SectionLocksTests {
         #expect(try TemplateStore(context: reopened.mainContext).template(forKey: key)?.isSensitive == true)
     }
 
-    @Test func twoDevicesLockEachForItself() throws {
+    @Test func twoDevicesLockEachForItself() async throws {
         let here = try makeContext()
         let there = try makeContext()
         let key = BuiltInTemplates.Key.vehicle
         try TemplateStore(context: here).setSensitive(try #require(try TemplateStore(context: here).template(forKey: key)), true)
         #expect(try TemplateStore(context: there).template(forKey: key)?.isSensitive == false)
-        try TemplateStore(context: there).setSensitive(try #require(try TemplateStore(context: there).template(forKey: BuiltInTemplates.Key.documents)), false)
+        try TemplateStore(context: there).setSensitive(try #require(try TemplateStore(context: there).template(forKey: BuiltInTemplates.Key.documents)), false, lowering: try await faceIDConfirmed())
         #expect(try TemplateStore(context: here).template(forKey: BuiltInTemplates.Key.documents)?.isSensitive == true)
     }
 
@@ -120,13 +120,13 @@ struct SectionLocksTests {
     }
 
     @Test(arguments: [ArchiveImportMode.merge, .replace])
-    func aBackupMayLockACategoryHereButNeverOpenOne(mode: ArchiveImportMode) throws {
+    func aBackupMayLockACategoryHereButNeverOpenOne(mode: ArchiveImportMode) async throws {
         let source = try makeInMemoryContainer()
         let sourceContext = PersistenceController.context(in: source)
         try TemplateStore(context: sourceContext).installBuiltIns()
         let sourceStore = TemplateStore(context: sourceContext)
         try sourceStore.setSensitive(try #require(try sourceStore.template(forKey: BuiltInTemplates.Key.vehicle)), true)
-        try sourceStore.setSensitive(try #require(try sourceStore.template(forKey: BuiltInTemplates.Key.documents)), false)
+        try sourceStore.setSensitive(try #require(try sourceStore.template(forKey: BuiltInTemplates.Key.documents)), false, lowering: try await faceIDConfirmed())
         let data = try DossierArchiveService(container: source, calendar: .bucharest).exportData(exportedAt: noon("2026-11-10"))
 
         let here = try makeContext()

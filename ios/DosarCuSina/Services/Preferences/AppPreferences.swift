@@ -31,9 +31,17 @@ public final class AppPreferences {
     }
 
     /// Ask for Face ID (or the passcode) to open the app at all. Default off.
-    /// Section locks work the same whether this is on or off.
-    public var appLockEnabled: Bool {
+    /// Section locks work the same whether this is on or off. Changed only through `setAppLock`.
+    public private(set) var appLockEnabled: Bool {
         didSet { store(appLockEnabled, Key.appLockEnabled) }
+    }
+
+    /// Turns the app lock on or off. Turning it off takes the person's Face ID first, every time
+    /// (`lowering`, from `BiometricVaultManager.confirmLowering`); without it, it throws
+    /// `LockLowering.Needed` and the lock stays on.
+    public func setAppLock(_ isOn: Bool, lowering: LockLowering? = nil) throws {
+        if !isOn, appLockEnabled, lowering == nil { throw LockLowering.Needed() }
+        appLockEnabled = isOn
     }
 
     public var hasCompletedOnboarding: Bool {
