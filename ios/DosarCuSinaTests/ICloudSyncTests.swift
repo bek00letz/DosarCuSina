@@ -56,6 +56,8 @@ struct ICloudSyncTests {
         var syncs: [Bool] = []
         var examples = false
         var wanted = true
+        /// How many times the store said it opened to sync (the sealing key shared).
+        var keyShared = 0
     }
 
     private func controller(_ opened: Opened) -> PersistenceController {
@@ -68,8 +70,29 @@ struct ICloudSyncTests {
             },
             buildSyncs: true,
             personWantsSync: { opened.wanted },
-            holdsExamples: { _ in opened.examples }
+            holdsExamples: { _ in opened.examples },
+            didOpenToSync: { opened.keyShared += 1 }
         )
+    }
+
+    @Test func theSealingKeyIsSharedEachTimeTheStoreOpensToSyncAndOnlyThen() {
+        let opened = Opened()
+        opened.examples = true
+        let persistence = controller(opened)
+        #expect(opened.keyShared == 0, "Not while the binder stays on the phone")
+
+        opened.examples = false
+        persistence.applySyncChoice()
+        #expect(persistence.sync == .on)
+        #expect(opened.keyShared == 1, "As soon as it opens to sync")
+
+        opened.wanted = false
+        persistence.applySyncChoice()
+        #expect(opened.keyShared == 1, "Not when sync is turned off")
+
+        opened.wanted = true
+        persistence.applySyncChoice()
+        #expect(opened.keyShared == 2, "Again when it is turned on")
     }
 
     @Test func aStoreWithoutExamplesOpensToSync() {
