@@ -52,7 +52,7 @@ struct ICloudSyncTests {
     // MARK: Opening the store
 
     /// A controller over in-memory stores, recording whether each was opened to sync.
-    private final class Opened {
+    private final class Opened: @unchecked Sendable {
         var syncs: [Bool] = []
         var examples = false
         var wanted = true
@@ -64,52 +64,60 @@ struct ICloudSyncTests {
             isProtectedDataAvailable: { true },
             makeContainer: { _, syncs in
                 opened.syncs.append(syncs)
-                return try makeInMemoryContainer()
+                let container = try makeInMemoryContainer()
+                if syncs { ContainerRetirement.markSyncing(container) }
+                return container
             },
             buildSyncs: true,
             personWantsSync: { opened.wanted },
-            holdsExamples: { _ in opened.examples }
+            holdsExamples: { _ in opened.examples },
+            // This phone downloaded the account's binder before: examples may come in.
+            memory: InMemorySyncMemory(firstDownloadFinishedFor: PersistenceController.SignedIn().id)
         )
     }
 
-    @Test func aStoreWithoutExamplesOpensToSync() {
+    @Test func aStoreWithoutExamplesOpensToSync() async {
         let opened = Opened()
         let persistence = controller(opened)
+        await persistence.settleSync()
         #expect(persistence.sync == .on)
-        #expect(opened.syncs == [false, true], "Looked at without iCloud first, then opened to sync")
+        #expect(opened.syncs == [false, true], "Opened without iCloud first, then to sync")
     }
 
-    @Test func examplesKeepTheBinderOnThePhoneUntilTheyGo() {
+    @Test func examplesKeepTheBinderOnThePhoneUntilTheyGo() async {
         let opened = Opened()
         opened.examples = true
         let persistence = controller(opened)
+        await persistence.settleSync()
         #expect(persistence.sync == .waitingForExamples)
         #expect(!opened.syncs.contains(true), "Never opened to sync while examples are there")
 
-        persistence.applySyncChoice()
+        await persistence.settleSync()
         #expect(opened.syncs.count == 1, "Nothing changed, nothing opens again")
 
         opened.examples = false
-        persistence.applySyncChoice()
+        await persistence.settleSync()
         #expect(persistence.sync == .on)
         #expect(opened.syncs.last == true)
     }
 
-    @Test func examplesComingInOpenTheStoreWithoutICloudFirst() {
+    @Test func examplesComingInOpenTheStoreWithoutICloudFirst() async throws {
         let opened = Opened()
         let persistence = controller(opened)
+        await persistence.settleSync()
         #expect(persistence.sync == .on)
-        let local = persistence.containerForExamples()
-        #expect(local != nil)
+        let local = try await persistence.loadingExamples { $0 }
+        #expect(!PersistenceController.syncs(local))
         #expect(persistence.sync == .waitingForExamples)
         #expect(opened.syncs.last == false)
     }
 
-    @Test func turningSyncOffKeepsEverythingOnThePhone() {
+    @Test func turningSyncOffKeepsEverythingOnThePhone() async {
         let opened = Opened()
         let persistence = controller(opened)
+        await persistence.settleSync()
         opened.wanted = false
-        persistence.applySyncChoice()
+        await persistence.settleSync()
         #expect(persistence.sync == .off)
         #expect(opened.syncs.last == false)
         #expect(persistence.container != nil)
@@ -185,7 +193,7 @@ struct ICloudSyncTests {
         var changes: [SearchChanges] = []
     }
 
-    @Test func whatCameIsToldToEverythingThatFollowsTheBinder() throws {
+    @Test func whatCameIsToldToEverythingThatFollowsTheBinder() async throws {
         let folder = URL.temporaryDirectory.appending(path: "told-\(UUID().uuidString)", directoryHint: .isDirectory)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: folder) }
@@ -198,7 +206,7 @@ struct ICloudSyncTests {
         defer { NotificationCenter.default.removeObserver(observer) }
 
         // Nothing came: nothing is told.
-        synced.read()
+        await synced.read()
         #expect(received.changes.isEmpty)
 
         let fromICloud = ModelContext(container)
@@ -206,7 +214,7 @@ struct ICloudSyncTests {
         let theirs = Asset(name: "Apartament Exemplu", templateKey: BuiltInTemplates.Key.vehicle)
         fromICloud.insert(theirs)
         try fromICloud.save()
-        synced.read()
+        await synced.read()
         #expect(received.changes.count == 1)
         #expect(received.changes.first?.changed.contains(theirs.persistentModelID) == true)
         // The app's own steps that make two binders one ran: the built-in categories are there once.

@@ -77,7 +77,8 @@ struct SearchScreen: View {
         .onChange(of: router.searchPath.count) { before, after in
             if after > before, !trimmedQuery.isEmpty { recent.add(trimmedQuery, results: results) }
         }
-        .task {
+        // Again whenever the store opens under another container: the old one's index lets go of it.
+        .task(id: ObjectIdentifier(context.container)) {
             // One index per database, kept up to date off the main thread after every save.
             let shared = SearchIndexStore.shared(for: context.container)
             shared.start()

@@ -208,8 +208,11 @@ public enum UnitOfWork {
     }
 
     /// Saves, then keeps as this device's choice the lock each new category was made with: a
-    /// category's lock lives on the device, not in the store (`SectionLocks`).
+    /// category's lock lives on the device, not in the store (`SectionLocks`). Nothing saves
+    /// through a container the store no longer runs on (`ContainerRetirement`): a screen or a
+    /// receipt that still held it is told the binder reopened.
     nonisolated private static func saving(_ context: ModelContext) throws {
+        if ContainerRetirement.isRetired(context.container) { throw BinderReopened() }
         let made = context.insertedModelsArray.compactMap { $0 as? CategoryTemplate }
         try context.save()
         for template in made { template.keepLockAskedBeforeSaving() }

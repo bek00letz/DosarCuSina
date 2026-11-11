@@ -17,14 +17,20 @@ public struct ExampleDataService {
         self.now = now
     }
 
-    /// The service that loads the examples on the screen's behalf: on a binder that syncs, the
-    /// store opens again without iCloud first (`PersistenceController.containerForExamples`), so
-    /// no example ever reaches the person's other devices; it waits on this phone until they go.
-    public static func forLoading(from context: ModelContext) -> ExampleDataService {
-        guard PersistenceController.syncs(context.container), let local = PersistenceController.shared.containerForExamples() else {
-            return ExampleDataService(context: context)
+    /// Loads the examples on a screen's behalf, the one way screens do: on a binder that syncs,
+    /// the store opens again without iCloud first and the container that synced is gone before
+    /// anything is written (`PersistenceController.loadingExamples`), so no example ever reaches
+    /// the person's other devices; the binder waits on this phone until they go. Refused while
+    /// the person's binder may still be coming down from iCloud
+    /// (`PersistenceController.examplesMayLoad`).
+    public static func loadExamples(from context: ModelContext) async throws {
+        let persistence = PersistenceController.shared
+        guard persistence.container === context.container else {
+            return try ExampleDataService(context: context).loadExamples()
         }
-        return ExampleDataService(context: local.mainContext)
+        try await persistence.loadingExamples { container in
+            try ExampleDataService(context: container.mainContext).loadExamples()
+        }
     }
 
     public func hasExamples() throws -> Bool {

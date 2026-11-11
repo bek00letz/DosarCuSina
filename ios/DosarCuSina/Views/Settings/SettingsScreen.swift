@@ -247,10 +247,20 @@ private struct SpotlightSettings: View {
 // MARK: - iCloud
 
 /// "Sincronizează cu iCloud": on by default; off stops syncing and keeps everything on the phone.
+/// Under the switch, how sync is going in plain words and what to do when it isn't
+/// (`SyncWording.status`): no iCloud account, another account, iCloud full, sync that didn't start.
+/// A copy kept before switching accounts is offered until it is brought in or deleted.
 /// Shown only where the build syncs (`PersistenceController.SyncState`).
 private struct ICloudSyncSettings: View {
     @Environment(AppPreferences.self) private var preferences
+    @Environment(AppNavigator.self) private var navigator
+    @Environment(\.scenePhase) private var scenePhase
     private let persistence = PersistenceController.shared
+    @State private var isConfirmingSwitch = false
+    @State private var isSwitching = false
+    @State private var keptCopies: [URL] = []
+    @State private var copyToDelete: URL?
+    @State private var error: UserFacingError?
 
     var body: some View {
         if persistence.sync != .notInThisBuild {
@@ -259,15 +269,132 @@ private struct ICloudSyncSettings: View {
                     Text("Sincronizează cu iCloud", comment: "Setting: sync the binder with the person's own iCloud.")
                 }
                 .frame(minHeight: DS.Control.minimumHitTarget)
+                if let status = SyncWording.status(sync: persistence.sync, health: persistence.health, isStopping: persistence.isStoppingSync) {
+                    SyncStatusRow(status: status)
+                    switch status.action {
+                    case .retry?:
+                        Button(action: persistence.retrySync) {
+                            Text("Încearcă din nou", comment: "Tries to start iCloud sync again after it stopped by itself.")
+                                .frame(minHeight: DS.Control.minimumHitTarget)
+                        }
+                    case .syncWithThisAccount?:
+                        Button {
+                            isConfirmingSwitch = true
+                        } label: {
+                            HStack {
+                                Text("Sincronizează cu contul acesta", comment: "Starts syncing the binder with the iCloud account the phone is signed into now.")
+                                Spacer()
+                                if isSwitching { DSDelayedProgress(label: nil) }
+                            }
+                            .frame(minHeight: DS.Control.minimumHitTarget)
+                        }
+                        .disabled(isSwitching)
+                    case nil:
+                        EmptyView()
+                    }
+                }
+                ForEach(keptCopies, id: \.self) { copy in
+                    KeptCopyRow(copy: copy, bringBack: { navigator.open(copy) }, delete: { copyToDelete = copy })
+                }
             } footer: {
                 Text(SyncWording.footer(for: persistence.sync))
             }
+            .onAppear { keptCopies = KeptCopies.all() }
+            .onChange(of: scenePhase) { _, phase in if phase == .active { keptCopies = KeptCopies.all() } }
+            .confirmationDialog(Text("Treci pe contul acesta?", comment: "Confirmation title before syncing with another iCloud account."), isPresented: $isConfirmingSwitch, titleVisibility: .visible) {
+                Button(action: switchAccount) { Text("Păstrează o copie și treci", comment: "Keeps a copy of the binder, then syncs with the iCloud account on the phone.") }
+                Button(role: .cancel) {} label: { Text("Rămâi pe telefon", comment: "Cancels switching iCloud accounts; the binder stays on the phone.") }
+            } message: {
+                Text("Pe telefon apare dosarul din contul acesta. Dosarul de acum rămâne într-o copie, pe care o poți adăuga apoi de aici.", comment: "Confirmation message before syncing with another iCloud account.")
+            }
+            .confirmationDialog(Text("Ștergi copia?", comment: "Confirmation title before deleting a copy kept before switching iCloud accounts."), isPresented: Binding(get: { copyToDelete != nil }, set: { if !$0 { copyToDelete = nil } }), titleVisibility: .visible) {
+                Button(role: .destructive) {
+                    if let copyToDelete { KeptCopies.remove(copyToDelete) }
+                    keptCopies = KeptCopies.all()
+                } label: { Text("Șterge copia", comment: "Deletes a copy kept before switching iCloud accounts.") }
+                Button(role: .cancel) {} label: { Text("Păstrează", comment: "Cancel a delete.") }
+            } message: {
+                Text("Copia se șterge de pe telefon și nu mai poate fi adăugată înapoi.", comment: "Confirmation message before deleting a kept copy.")
+            }
+            .userErrorAlert($error)
         }
     }
 
     private func set(_ isOn: Bool) {
         preferences.syncsWithICloud = isOn
         persistence.applySyncChoice()
+    }
+
+    private func switchAccount() {
+        guard !isSwitching else { return }
+        isSwitching = true
+        Task {
+            defer { isSwitching = false }
+            do {
+                try await persistence.syncWithThisAccount()
+                keptCopies = KeptCopies.all()
+            } catch {
+                self.error = UserFacingError(error, doing: String(localized: "Nu am trecut pe contul acesta", comment: "Title of an error while switching iCloud accounts."))
+            }
+        }
+    }
+}
+
+/// How sync is going, in one line and what it means.
+private struct SyncStatusRow: View {
+    let status: SyncWording.Status
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: DS.Space.s) {
+            symbol
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: DS.Space.xxs) {
+                Text(verbatim: status.title)
+                    .dsFont(.body)
+                if let detail = status.detail {
+                    Text(verbatim: detail)
+                        .dsFont(.footnote)
+                        .foregroundStyle(DS.Palette.secondaryLabel)
+                }
+            }
+        }
+        .padding(.vertical, DS.Space.xxs)
+        .accessibilityElement(children: .combine)
+    }
+
+    @ViewBuilder
+    private var symbol: some View {
+        switch status.tone {
+        case .fine: Image(systemName: "checkmark.icloud.fill").foregroundStyle(DSStatus.done.color)
+        case .working: Image(systemName: "arrow.triangle.2.circlepath.icloud").foregroundStyle(DS.Palette.secondaryLabel)
+        case .attention: Image(systemName: "exclamationmark.icloud.fill").foregroundStyle(DSStatus.overdue.color)
+        }
+    }
+}
+
+/// A copy of the binder kept before switching iCloud accounts: brought in through the backup
+/// screen ("Adaugă" keeps what is here), or deleted. Each action is a row of its own, so each
+/// has the whole row as its target.
+private struct KeptCopyRow: View {
+    let copy: URL
+    let bringBack: () -> Void
+    let delete: () -> Void
+
+    var body: some View {
+        Label {
+            Text("Copia dosarului de dinainte de schimbarea contului", comment: "A copy of the binder kept before switching iCloud accounts.")
+        } icon: {
+            Image(systemName: "doc.on.doc")
+        }
+        .frame(minHeight: DS.Control.minimumHitTarget)
+        Button(action: bringBack) {
+            Text("Adaugă copia în dosar", comment: "Brings a copy kept before switching iCloud accounts into the binder.")
+                .frame(minHeight: DS.Control.minimumHitTarget)
+        }
+        Button(role: .destructive, action: delete) {
+            Text("Șterge copia", comment: "Deletes a copy kept before switching iCloud accounts.")
+                .frame(minHeight: DS.Control.minimumHitTarget)
+        }
     }
 }
 
@@ -359,16 +486,23 @@ private struct ExampleSettings: View {
     @Environment(\.modelContext) private var context
     @Query(filter: #Predicate<Asset> { $0.isExample }) private var examples: [Asset]
     @State private var isConfirmingRemoval = false
+    @State private var isLoading = false
     @State private var error: UserFacingError?
     @State private var doneCount = 0
+    private let persistence = PersistenceController.shared
 
     var body: some View {
         Section {
             if examples.isEmpty {
                 Button(action: load) {
-                    Label { Text("Încarcă exemple", comment: "Loads example data.") } icon: { Image(systemName: "sparkles") }
-                        .frame(minHeight: 44)
+                    HStack {
+                        Label { Text("Încarcă exemple", comment: "Loads example data.") } icon: { Image(systemName: "sparkles") }
+                        Spacer()
+                        if isLoading { DSDelayedProgress(label: nil) }
+                    }
+                    .frame(minHeight: 44)
                 }
+                .disabled(isLoading || !persistence.examplesMayLoad)
             } else {
                 Button(role: .destructive) {
                     isConfirmingRemoval = true
@@ -380,7 +514,11 @@ private struct ExampleSettings: View {
         } header: {
             Text("Exemple", comment: "Settings section.")
         } footer: {
-            Text("Exemplele arată cum arată un dosar plin. Sunt marcate „Exemplu”, nu trimit amintiri și pleacă dintr-o atingere. Ce ai adăugat tu rămâne.", comment: "Footer of the examples setting.")
+            if persistence.binderMayBeArriving {
+                Text("Exemplele așteaptă dosarul tău din iCloud. Dacă e gol, le poți încărca după.", comment: "Footer of the examples setting while the person's binder may still be coming down from iCloud.")
+            } else {
+                Text("Exemplele arată cum arată un dosar plin. Sunt marcate „Exemplu”, nu trimit amintiri și pleacă dintr-o atingere. Ce ai adăugat tu rămâne.", comment: "Footer of the examples setting.")
+            }
         }
         .confirmationDialog(Text("Ștergi exemplele?", comment: "Confirmation title."), isPresented: $isConfirmingRemoval, titleVisibility: .visible) {
             Button(role: .destructive, action: remove) { Text("Șterge exemplele", comment: "Removes example data.") }
@@ -393,11 +531,16 @@ private struct ExampleSettings: View {
     }
 
     private func load() {
-        do {
-            try ExampleDataService.forLoading(from: context).loadExamples()
-            doneCount += 1
-        } catch {
-            self.error = UserFacingError(error)
+        guard !isLoading else { return }
+        isLoading = true
+        Task {
+            defer { isLoading = false }
+            do {
+                try await ExampleDataService.loadExamples(from: context)
+                doneCount += 1
+            } catch {
+                self.error = UserFacingError(error)
+            }
         }
     }
 

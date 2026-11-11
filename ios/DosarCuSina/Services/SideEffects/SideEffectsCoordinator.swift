@@ -25,10 +25,12 @@ public protocol SideEffectIndexer: AnyObject {
 /// outside the app (`IntentEngine`) and the background refresh.
 ///
 /// There is one per database (`shared(for:)`), and its passes run one after
-/// another, so two reconcilers never work on the notification center at once.
+/// another, so two reconcilers never work on the notification center at once. It starts where
+/// the store opens (`PersistenceController.followEveryContainer`), so it follows in a launch in
+/// the background too, and lets go of a container the store no longer runs on (`ContainerHolder`).
 @MainActor
 @Observable
-public final class SideEffectsCoordinator {
+public final class SideEffectsCoordinator: ContainerHolder {
     /// Shown in Settings.
     public private(set) var reminderAuthorization: ReminderAuthorization = .notDetermined
     public private(set) var lastReconciledAt: Date?
@@ -36,7 +38,8 @@ public final class SideEffectsCoordinator {
     public private(set) var lastOutcome: NotificationReconciler.Outcome?
     public private(set) var lastFailure: String?
 
-    @ObservationIgnored private let container: ModelContainer
+    /// Nil once the container was retired.
+    @ObservationIgnored private var container: ModelContainer?
     @ObservationIgnored private let reconciler: NotificationReconciler
     @ObservationIgnored private let widgetWriter: WidgetSnapshotWriter
     @ObservationIgnored private let inboxNotices: any InboxNoticeCenter
@@ -90,6 +93,14 @@ public final class SideEffectsCoordinator {
         self.preferences = preferences
         self.calendar = calendar
         self.now = now
+        ContainerRetirement.add(self)
+    }
+
+    public func containerRetired(_ container: ModelContainer) {
+        guard self.container === container else { return }
+        stop()
+        self.container = nil
+        if Self.instance === self { Self.instance = nil }
     }
 
     /// Starts listening for saves and other triggers, registers notification actions,
@@ -172,6 +183,7 @@ public final class SideEffectsCoordinator {
         if let waiting = waitingInboxItems() {
             await InboxNotice.follow(waiting: waiting, center: inboxNotices)
         }
+        guard let container else { return }
         let context = PersistenceController.context(in: container)
         let outside: [ObligationSnapshot]
         do {

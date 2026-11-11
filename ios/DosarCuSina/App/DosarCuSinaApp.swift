@@ -18,6 +18,19 @@ struct DosarCuSinaApp: App {
     init() {
         UNUserNotificationCenter.current().delegate = Self.notificationResponder
         BackgroundRefresh.register()
+        // Reminders, the badge, widgets, Spotlight and what comes from the person's other devices
+        // follow the binder from where the store opens, and again whenever it opens under another
+        // container: in a launch in the background too (woken by iCloud or the background
+        // refresh), where no screen ever draws.
+        PersistenceController.shared.followEveryContainer(Self.follow)
+    }
+
+    /// Starts everything that follows `container` outside a screen.
+    private static func follow(_ container: ModelContainer) {
+        // The same coordinator notification buttons, widgets, Siri and the background refresh use.
+        SideEffectsCoordinator.shared(for: container).start()
+        // What comes from the person's other devices, when the binder syncs.
+        SyncedChanges.shared(for: container).start()
     }
 
     var body: some Scene {
@@ -55,10 +68,13 @@ struct DosarCuSinaApp: App {
             switch phase {
             case .active:
                 sideEffects?.setNeedsReconcile(allowPermissionPrompt: false)
+                // Signed into iCloud (or into another account) in the phone's settings meanwhile.
+                persistence.accountMayHaveChanged()
             case .background:
                 BackgroundRefresh.schedule()
-                // A change to whether the binder syncs (the examples went, say) applies once the
-                // screen is away, so nothing on it, such as an "Anulează", is cut short.
+                // A change to whether the binder syncs (the examples went, the iCloud account came
+                // back) applies once the screen is away, so nothing on it, such as an "Anulează",
+                // is cut short.
                 persistence.applySyncChoice()
             default:
                 break
@@ -84,11 +100,7 @@ struct DosarCuSinaApp: App {
         DocumentShareFiles.removeLeftovers()
         // Pictures an earlier run kept for an undo it can no longer offer.
         UndoFiles.removeLeftovers()
-        // The same coordinator notification buttons, widgets, Siri and the background refresh use.
-        let coordinator = SideEffectsCoordinator.shared(for: container)
-        coordinator.start()
-        sideEffects = coordinator
-        // What comes from the person's other devices, when the binder syncs.
-        SyncedChanges.shared(for: container).start()
+        // Started where the store opened (`follow`); the screens show its permission and outcome.
+        sideEffects = SideEffectsCoordinator.shared(for: container)
     }
 }

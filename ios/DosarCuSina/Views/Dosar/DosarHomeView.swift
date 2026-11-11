@@ -33,7 +33,12 @@ struct DosarHomeView: View {
     var body: some View {
         ScrollView {
             if assets.isEmpty {
-                DosarEmptyState(isLoading: isLoadingExamples, addFirst: addSection, loadExamples: loadExamples)
+                DosarEmptyState(
+                    isLoading: isLoadingExamples,
+                    binderMayBeArriving: PersistenceController.shared.binderMayBeArriving,
+                    addFirst: addSection,
+                    loadExamples: loadExamples
+                )
                     .padding(.horizontal, DS.Space.m)
                     .transition(.opacity)
             } else {
@@ -146,16 +151,19 @@ struct DosarHomeView: View {
     }
 
     private func loadExamples() {
+        guard !isLoadingExamples else { return }
         isLoadingExamples = true
-        defer { isLoadingExamples = false }
-        do {
-            try ExampleDataService.forLoading(from: context).loadExamples()
-            toast = DSToast(
-                title: LocalizedStringResource("Am pus exemplele. Le ștergi oricând din Setări.", comment: "Toast after loading example data."),
-                actionTitle: nil
-            )
-        } catch {
-            self.error = UserFacingError(error)
+        Task {
+            defer { isLoadingExamples = false }
+            do {
+                try await ExampleDataService.loadExamples(from: context)
+                toast = DSToast(
+                    title: LocalizedStringResource("Am pus exemplele. Le ștergi oricând din Setări.", comment: "Toast after loading example data."),
+                    actionTitle: nil
+                )
+            } catch {
+                self.error = UserFacingError(error)
+            }
         }
     }
 }
@@ -293,9 +301,11 @@ struct BinderBoxes {
 
 // MARK: - Empty
 
-/// The first run, before anything is in the binder.
+/// The first run, before anything is in the binder. While the person's binder may still be
+/// coming down from iCloud, it says so in place of the examples (`BinderArrivingNotice`).
 struct DosarEmptyState: View {
     let isLoading: Bool
+    var binderMayBeArriving = false
     let addFirst: () -> Void
     let loadExamples: () -> Void
 
@@ -319,12 +329,18 @@ struct DosarEmptyState: View {
             }
             VStack(spacing: DS.Space.s) {
                 DSPrimaryButton("Adaugă primul lucru", systemImage: "plus", action: addFirst)
-                DSSecondaryButton("Încarcă exemple", systemImage: "sparkles", action: loadExamples)
-                    .disabled(isLoading)
-                Text("Exemplele sunt marcate și le ștergi dintr-o atingere, din Setări.", comment: "Footnote under the load examples button.")
-                    .dsFont(.footnote)
-                    .multilineTextAlignment(.center)
+                if binderMayBeArriving {
+                    BinderArrivingNotice()
+                        .transition(.opacity)
+                } else {
+                    DSSecondaryButton("Încarcă exemple", systemImage: "sparkles", action: loadExamples)
+                        .disabled(isLoading)
+                    Text("Exemplele sunt marcate și le ștergi dintr-o atingere, din Setări.", comment: "Footnote under the load examples button.")
+                        .dsFont(.footnote)
+                        .multilineTextAlignment(.center)
+                }
             }
+            .dsAnimation(value: binderMayBeArriving)
         }
         .frame(maxWidth: 520)
         .frame(maxWidth: .infinity)
