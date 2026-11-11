@@ -1,6 +1,9 @@
 import CryptoKit
 import Foundation
 import Security
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// The rules for secret fields (`FieldType.secret`), such as the PIN codes of
 /// an electronic identity card. One place decides them:
@@ -158,17 +161,24 @@ extension FieldDefinition {
 public enum SecretFieldError: LocalizedError, Equatable {
     /// The phone's Keychain refused to keep or give the key.
     case keyUnavailable
-    /// The sealed value can't be opened with any key this device has: it was written on another
-    /// of the person's devices whose key hasn't reached this one (iCloud Keychain is off here), or
-    /// restored from a phone whose key is gone. It is kept as it is, never written over.
+    /// The sealed value can't be opened with any key this device has, and no other device's key
+    /// has reached this one: it was written on another of the person's devices that hasn't shared
+    /// its key yet, or iCloud Keychain is off on one of them (this device can't tell which), or it
+    /// was restored from a phone whose key is gone. It is kept as it is, never written over.
     case unreadable
+    /// The same, while keys of the person's other devices do reach this one, so iCloud Keychain
+    /// works here: the device that wrote the code hasn't shared its key yet (it does once the app
+    /// opens there to sync), or iCloud Keychain is off there.
+    case notSharedYet
 
     public var errorDescription: String? {
         switch self {
         case .keyUnavailable:
             return String(localized: "Codul nu s-a putut păstra în siguranță pe acest telefon. Încearcă din nou peste puțin timp.")
         case .unreadable:
-            return String(localized: "Codul se deschide pe dispozitivul pe care l-ai scris. Ca să se deschidă și aici, pornește Parole în iCloud din Configurări.", comment: "A sealed code from another device whose key hasn't reached this one.")
+            return String(localized: "Codul a fost scris pe alt dispozitiv. Deschide aplicația pe el, apoi încearcă din nou aici peste câteva minute. Dacă tot nu se deschide, pornește Parole în iCloud pe ambele, din Configurări.", comment: "A sealed code from another device; no other device's key has reached this one, so either device may have iCloud Keychain off.")
+        case .notSharedYet:
+            return String(localized: "Codul a fost scris pe alt dispozitiv. Deschide aplicația pe el, cu Parole în iCloud pornit, apoi încearcă din nou aici peste câteva minute.", comment: "A sealed code from another device that hasn't shared its key yet; iCloud Keychain works on this one.")
         }
     }
 }
@@ -208,12 +218,14 @@ public struct SecretSealer: Sendable {
             throw SecretFieldError.unreadable
         }
         guard let box = try? AES.GCM.SealedBox(combined: data) else { throw SecretFieldError.unreadable }
-        for key in try openingKeys() {
+        let keys = try openingKeys()
+        for key in keys {
             guard let plain = try? AES.GCM.open(box, using: key) else { continue }
             guard let text = String(data: plain, encoding: .utf8) else { throw SecretFieldError.unreadable }
             return text
         }
-        throw SecretFieldError.unreadable
+        // More than one key means another device's key reached this one: iCloud Keychain works here.
+        throw keys.count > 1 ? SecretFieldError.notSharedYet : SecretFieldError.unreadable
     }
 
     /// The person's keys (`SecretKeyring.standard`): this device's own seals, and the key of each of
@@ -236,8 +248,13 @@ protocol SecretKeyStore: Sendable {
     func read(account: String, synchronizable: Bool) throws -> Data?
     /// Every key synced through iCloud Keychain, by account.
     func readSynchronizable() throws -> [String: Data]
-    /// Adds a key; false when one is already kept under `account`.
+    /// Adds a key; false when one is already kept under `account`. A synced key is kept only while
+    /// the device is unlocked; this device's own, only while it is unlocked and only on it.
     func add(_ data: Data, account: String, synchronizable: Bool) throws -> Bool
+    /// The accounts of the synced keys an earlier build kept readable while the device is locked.
+    func syncedKeysReadableWhileLocked() throws -> [String]
+    /// Keeps the synced key under `account` only while the device is unlocked, its value as it is.
+    func keepOnlyWhileUnlocked(syncedAccount account: String) throws
 }
 
 /// The sealing keys of the person's devices, so a code sealed on one opens on the others.
@@ -246,9 +263,14 @@ protocol SecretKeyStore: Sendable {
 ///   `WhenUnlockedThisDeviceOnly`), as every build before kept it, and never removed: it is the way
 ///   back while the synced copy isn't proven.
 /// - **A synced copy of it** goes to iCloud Keychain under an account named after the key
-///   (`syncedAccount`, `AfterFirstUnlock`, synchronizable), so each device adds its own and none
-///   ever writes over another's. It is read back before it counts; until then the device keeps
-///   using its own key alone.
+///   (`syncedAccount`, `WhenUnlocked`, synchronizable), so each device adds its own and none
+///   ever writes over another's. It is added as soon as the binder opens to sync
+///   (`SecretKeySharing`), and again whenever a code is sealed or opened, and read back before it
+///   counts; until then the device keeps using its own key alone.
+/// - **Every synced copy is kept only while the device is unlocked**, like the device's own key:
+///   nothing opens a code while the phone is locked (reminders, widgets and search never carry
+///   one). A copy an earlier build kept readable after the first unlock is moved to the stronger
+///   class in place (`keepOnlyWhileUnlocked`), its value untouched, and read back.
 /// - **Opening** tries this device's key, then every key iCloud Keychain brought. Where iCloud
 ///   Keychain is off, a code sealed on another device stays sealed and shows that it opens there
 ///   (`SecretFieldError.unreadable`); nothing writes over it.
@@ -266,6 +288,18 @@ struct SecretKeyring: Sendable {
 
     static func syncedAccount(for key: Data) -> String {
         syncedPrefix + Hashing.sha256(key).prefix(16)
+    }
+
+    /// Shares this device's key with the person's other devices, when it has one: its synced copy,
+    /// with every synced copy kept only while unlocked. Throws when the Keychain can't be read now
+    /// (the phone is locked), so the caller tries again once it is unlocked. Nothing is made: a
+    /// device that never sealed a code has no key to share yet.
+    func shareOwnKey() throws {
+        guard let own = try store.read(account: Self.ownAccount, synchronizable: false), own.count == 32 else {
+            strengthenSyncedCopies()
+            return
+        }
+        keepSyncedCopy(of: own)
     }
 
     /// This device's own key, made once, with its synced copy kept in step.
@@ -304,11 +338,96 @@ struct SecretKeyring: Sendable {
         (try? store.read(account: Self.syncedAccount(for: own), synchronizable: true)) == own
     }
 
-    /// Adds the synced copy of `own` when it isn't there yet. A failure changes nothing: the
-    /// device's own key still seals and opens, and the next use tries again.
+    /// Adds the synced copy of `own` when it isn't there yet, after keeping every synced copy only
+    /// while unlocked. A failure changes nothing: the device's own key still seals and opens, and
+    /// the next use tries again.
     private func keepSyncedCopy(of own: Data) {
+        strengthenSyncedCopies()
         guard !isSynced(own) else { return }
         _ = try? store.add(own, account: Self.syncedAccount(for: own), synchronizable: true)
+    }
+
+    /// Moves every synced copy an earlier build kept readable while locked to the stronger class,
+    /// one at a time, in place, its value untouched: this device's and those of the person's other
+    /// devices alike, so a device still on an earlier build is covered too. Each is read back and
+    /// put back as it was if it isn't there; one that didn't move stays as it was and is tried
+    /// again next time. This device's own key is never touched.
+    private func strengthenSyncedCopies() {
+        guard let weaker = try? store.syncedKeysReadableWhileLocked() else { return }
+        for account in weaker where account.hasPrefix(Self.syncedPrefix) {
+            guard let before = try? store.read(account: account, synchronizable: true) else { continue }
+            do {
+                try store.keepOnlyWhileUnlocked(syncedAccount: account)
+            } catch {
+                PersistenceLog.failed("Keep a synced key only while unlocked", error)
+                continue
+            }
+            // Read back: a key that isn't there as it was is put back, never lost.
+            if (try? store.read(account: account, synchronizable: true)) != before {
+                _ = try? store.add(before, account: account, synchronizable: true)
+            }
+        }
+    }
+}
+
+/// Shares this device's sealing key as soon as the binder opens to sync with iCloud, so a code
+/// sealed before sync (or on an earlier build) opens on the person's other devices without waiting
+/// for the next code sealed or opened here. `PersistenceController` starts it each time the store
+/// opens to sync, launch included. It runs off the main thread, one at a time; when the Keychain
+/// can't be read yet (the phone is locked), it tries again once the phone is unlocked. Sharing is
+/// idempotent: a key already shared is only read back.
+@MainActor
+final class SecretKeySharing {
+    static let standard = SecretKeySharing(ring: .standard)
+
+    private let ring: SecretKeyring
+    private let center: NotificationCenter
+    private let unlocked: Notification.Name
+    private var unlockObserver: (any NSObjectProtocol)?
+    /// The sharing under way, if any.
+    private(set) var running: Task<Void, Never>?
+    /// Whether it waits for the phone to be unlocked to try again.
+    var isWaitingForUnlock: Bool { unlockObserver != nil }
+
+    init(ring: SecretKeyring, center: NotificationCenter = .default, unlocked: Notification.Name = SecretKeySharing.protectedDataAvailable) {
+        self.ring = ring
+        self.center = center
+        self.unlocked = unlocked
+    }
+
+    /// Shares the key, unless a sharing is already under way.
+    func start() {
+        guard running == nil else { return }
+        let ring = ring
+        running = Task {
+            let shared = await Task.detached(priority: .utility) { (try? ring.shareOwnKey()) != nil }.value
+            running = nil
+            if shared { stopWaiting() } else { waitForUnlock() }
+        }
+    }
+
+    private func waitForUnlock() {
+        guard unlockObserver == nil else { return }
+        unlockObserver = center.addObserver(forName: unlocked, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.stopWaiting()
+                self?.start()
+            }
+        }
+    }
+
+    private func stopWaiting() {
+        if let unlockObserver { center.removeObserver(unlockObserver) }
+        unlockObserver = nil
+    }
+
+    /// The system's word that the phone's protected files (and the Keychain) can be read.
+    nonisolated static var protectedDataAvailable: Notification.Name {
+        #if canImport(UIKit)
+        UIApplication.protectedDataDidBecomeAvailableNotification
+        #else
+        Notification.Name("protectedDataDidBecomeAvailable")
+        #endif
     }
 }
 
@@ -355,13 +474,41 @@ struct KeychainSecretKeyStore: SecretKeyStore {
     func add(_ data: Data, account: String, synchronizable: Bool) throws -> Bool {
         var item = base(account: account, synchronizable: synchronizable)
         item[kSecValueData as String] = data
-        // A synced key can be read once the phone was unlocked after it started; this device's
-        // own, only while it is unlocked, as before.
-        item[kSecAttrAccessible as String] = synchronizable ? kSecAttrAccessibleAfterFirstUnlock : kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+        // Both only while the phone is unlocked: the synced copy in a class that goes to the
+        // person's devices, this device's own on it alone, as before.
+        item[kSecAttrAccessible as String] = synchronizable ? kSecAttrAccessibleWhenUnlocked : kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         switch SecItemAdd(item as CFDictionary, nil) {
         case errSecSuccess: return true
         case errSecDuplicateItem: return false
         default: throw SecretFieldError.keyUnavailable
+        }
+    }
+
+    func syncedKeysReadableWhileLocked() throws -> [String] {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: Self.service,
+            kSecAttrSynchronizable as String: true,
+            kSecReturnAttributes as String: true,
+            kSecMatchLimit as String: kSecMatchLimitAll,
+        ]
+        var result: AnyObject?
+        switch SecItemCopyMatching(query as CFDictionary, &result) {
+        case errSecSuccess:
+            return (result as? [[String: Any]] ?? []).compactMap { item in
+                guard let account = item[kSecAttrAccount as String] as? String, account.hasPrefix(SecretKeyring.syncedPrefix) else { return nil }
+                let accessible = item[kSecAttrAccessible as String] as? String
+                return accessible == (kSecAttrAccessibleWhenUnlocked as String) ? nil : account
+            }
+        case errSecItemNotFound: return []
+        default: throw SecretFieldError.keyUnavailable
+        }
+    }
+
+    func keepOnlyWhileUnlocked(syncedAccount account: String) throws {
+        let change: [String: Any] = [kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked]
+        guard SecItemUpdate(base(account: account, synchronizable: true) as CFDictionary, change as CFDictionary) == errSecSuccess else {
+            throw SecretFieldError.keyUnavailable
         }
     }
 

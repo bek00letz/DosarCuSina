@@ -61,6 +61,7 @@ public final class PersistenceController {
     @ObservationIgnored private let buildSyncs: Bool
     @ObservationIgnored private let personWantsSync: @MainActor () -> Bool
     @ObservationIgnored private let holdsExamples: @MainActor (ModelContainer) -> Bool
+    @ObservationIgnored private let didOpenToSync: @MainActor () -> Void
     @ObservationIgnored private var unlockObserver: (any NSObjectProtocol)?
 
     public convenience init(storeURL: URL = PersistenceController.defaultStoreURL) {
@@ -70,7 +71,8 @@ public final class PersistenceController {
             makeContainer: { try Self.makeContainer(storeURL: $0, syncs: $1) },
             buildSyncs: Self.syncIsBuiltIn,
             personWantsSync: { AppPreferences.shared.syncsWithICloud },
-            holdsExamples: { Self.anyExamples(in: $0) }
+            holdsExamples: { Self.anyExamples(in: $0) },
+            didOpenToSync: { SecretKeySharing.standard.start() }
         )
     }
 
@@ -80,7 +82,8 @@ public final class PersistenceController {
         makeContainer: @escaping @MainActor (URL, Bool) throws -> ModelContainer,
         buildSyncs: Bool = false,
         personWantsSync: @escaping @MainActor () -> Bool = { true },
-        holdsExamples: @escaping @MainActor (ModelContainer) -> Bool = { _ in false }
+        holdsExamples: @escaping @MainActor (ModelContainer) -> Bool = { _ in false },
+        didOpenToSync: @escaping @MainActor () -> Void = {}
     ) {
         self.storeURL = storeURL
         self.isProtectedDataAvailable = isProtectedDataAvailable
@@ -88,6 +91,7 @@ public final class PersistenceController {
         self.buildSyncs = buildSyncs
         self.personWantsSync = personWantsSync
         self.holdsExamples = holdsExamples
+        self.didOpenToSync = didOpenToSync
         self.state = .waitingForUnlock
         open()
     }
@@ -140,6 +144,9 @@ public final class PersistenceController {
             state = .ready(container)
             self.sync = sync
             stopWaiting()
+            // The binder syncs from now: this device's sealing key goes to iCloud Keychain at once,
+            // so the codes it sealed open on the person's other devices (`SecretKeySharing`).
+            if sync == .on { didOpenToSync() }
         } catch {
             if !isProtectedDataAvailable() {
                 state = .waitingForUnlock
