@@ -47,7 +47,7 @@ public final class NotificationResponder: NSObject, @preconcurrency UNUserNotifi
         let action = response.actionIdentifier
         let request = response.notification.request
         if InboxNotice.isNotice(request.identifier) {
-            await openInbox()
+            openInbox()
             return
         }
         let payload = ReminderPayload(identifier: request.identifier, userInfo: request.content.userInfo, deliveredAt: response.notification.date)
