@@ -14,13 +14,18 @@ extension AssetActions {
         public var addedPages: AddedPages?
         /// The text read off the document again ("Citește din nou", or with its back).
         public var readText: String?
+        /// What the form started from; only what changed from it is written (`update`). Nil:
+        /// the document as stored now.
+        public var start: SectionEditStart?
 
-        public init(name: String, values: FieldValues, notes: String?, addedPages: AddedPages? = nil, readText: String? = nil) {
+        public init(name: String, values: FieldValues, notes: String?, addedPages: AddedPages? = nil, readText: String? = nil,
+                    startedFrom start: SectionEditStart? = nil) {
             self.name = name
             self.values = values
             self.notes = notes
             self.addedPages = addedPages
             self.readText = readText
+            self.start = start
         }
     }
 
@@ -46,13 +51,14 @@ extension AssetActions {
                 if let pages = edit.addedPages { try attachments.addPages(pages, to: picture) }
                 if let text = edit.readText { try attachments.setReadText(text, of: picture) }
             }
+            let start = edit.start ?? SectionEditStart(document)
             var name = edit.name
-            if name == document.name, let oldName = Self.documentName(document.values),
+            if name == start.name, let oldName = Self.documentName(start.values),
                let newName = Self.documentName(edit.values),
-               let retyped = DocumentNaming.retyped(document.name, from: oldName, to: newName) {
+               let retyped = DocumentNaming.retyped(start.name, from: oldName, to: newName) {
                 name = retyped
             }
-            return try update(document, name: name, values: edit.values, notes: edit.notes)
+            return try update(document, name: name, values: edit.values, notes: edit.notes, startedFrom: start)
         }
     }
 

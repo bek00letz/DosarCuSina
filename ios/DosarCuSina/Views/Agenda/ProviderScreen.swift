@@ -258,12 +258,6 @@ private struct ProviderContent: View {
     }
 }
 
-extension Provider {
-    var details: ProviderDetails {
-        ProviderDetails(name: name, trades: trades, phone: phone, email: email, address: address, notes: notes, contactIdentifier: contactIdentifier)
-    }
-}
-
 /// Adds or edits a provider. "Alege din agendă" fills the name and phone from
 /// Contacts without asking for Contacts access; typing works just as well.
 struct ProviderEditSheet: View {
@@ -363,7 +357,9 @@ struct ProviderEditSheet: View {
         do {
             let actions = ProviderActions(context: context)
             if let provider {
-                try actions.update(provider, with: draft)
+                // Only what changed in the form is written: a detail changed meanwhile on another
+                // device stays.
+                try actions.update(provider, with: draft, startedFrom: original)
             } else {
                 let created = try actions.create(
                     name: trimmed,

@@ -49,12 +49,16 @@ struct DocumentEditSheet: View {
         _name = State(initialValue: document.name)
         _values = State(initialValue: document.values)
         _notes = State(initialValue: document.notes ?? "")
+        start = AssetActions.SectionEditStart(document)
     }
+
+    /// What the form started from: saving writes only what changed from it.
+    private let start: AssetActions.SectionEditStart
 
     private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
 
     private var hasChanges: Bool {
-        name != document.name || values != document.values || notes != (document.notes ?? "") || addedPages != nil || readText != nil
+        name != start.name || values != start.values || notes != (start.notes ?? "") || addedPages != nil || readText != nil
     }
 
     private var isReading: Bool { reading == .reading }
@@ -236,7 +240,7 @@ struct DocumentEditSheet: View {
         do {
             let note = notes.trimmingCharacters(in: .whitespacesAndNewlines)
             let edit = AssetActions.DocumentEdit(name: trimmedName, values: values, notes: note.isEmpty ? nil : note,
-                                                 addedPages: addedPages, readText: readText)
+                                                 addedPages: addedPages, readText: readText, startedFrom: start)
             let saved = try AssetActions(context: context).editDocument(document, edit, picture: picture)
             savedCount += 1
             announce(.undo(addedPages == nil

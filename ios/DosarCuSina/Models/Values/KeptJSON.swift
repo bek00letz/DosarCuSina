@@ -14,6 +14,12 @@ import Foundation
 ///   another kind of rule, or a field that became another type, keeps nothing of the old one;
 /// - a list's entries pair by their `key` or `id`, else by being unchanged, else by their place
 ///   when the list kept its length; an entry the edit took out goes, with what it kept.
+///
+/// The same rule lays a form's edit over what is stored now (`ThreeWay`): read as the form opened
+/// it, edited by the person, stored as it is when they save, perhaps changed since on another
+/// device. So what the stored value has that the form never read stays (a key, or a list entry
+/// with a `key` or `id`, added on the other device), and what the form left as it read it and the
+/// stored value no longer has stays gone (removed on the other device).
 extension JSONValue {
     /// What `edited` writes over `stored`, which this build read as `asRead`.
     static func laying(_ edited: JSONValue, over stored: JSONValue, readAs asRead: JSONValue) -> JSONValue {
@@ -25,6 +31,9 @@ extension JSONValue {
             for (key, value) in made {
                 if let wasRead = read[key], let wasKept = kept[key] {
                     merged[key] = laying(value, over: wasKept, readAs: wasRead)
+                } else if let wasRead = read[key], value == wasRead {
+                    // Left as read, and no longer stored: it was taken out since, and stays out.
+                    continue
                 } else {
                     merged[key] = value
                 }
@@ -37,12 +46,26 @@ extension JSONValue {
         case (.array(let kept), .array(let read), .array(let made)):
             let origins = Self.storedIndices(of: read, in: kept)
             var taken = Set<Int>()
-            return .array(made.enumerated().map { index, value in
-                guard let match = Self.readEntry(pairing: value, at: index, of: made.count, in: read, taken: taken),
-                      let origin = origins[match] else { return value }
+            var merged: [JSONValue] = []
+            for (index, value) in made.enumerated() {
+                guard let match = Self.readEntry(pairing: value, at: index, of: made.count, in: read, taken: taken) else {
+                    merged.append(value)
+                    continue
+                }
                 taken.insert(match)
-                return laying(value, over: kept[origin], readAs: read[match])
-            })
+                guard let origin = origins[match] else {
+                    // An entry known by its key or id, left as read, and no longer stored: taken
+                    // out since, it stays out.
+                    if read[match].keptIdentity == nil || value != read[match] { merged.append(value) }
+                    continue
+                }
+                merged.append(laying(value, over: kept[origin], readAs: read[match]))
+            }
+            // Entries stored with a key or id this build never read, and the edit didn't make:
+            // added since, they stay.
+            let known = Set((read + made).compactMap(\.keptIdentity))
+            merged += kept.filter { entry in entry.keptIdentity.map { !known.contains($0) } ?? false }
+            return .array(merged)
         default:
             return edited
         }
@@ -104,11 +127,13 @@ extension JSONValue {
 
     // MARK: Pairing a list's entries
 
-    /// For each entry as read, the place of the stored entry it was read from: the same place when
-    /// nothing was left out in reading, else the same key or id.
+    /// For each entry as read, the place of the stored entry it was read from: the one with the
+    /// same key or id, else the same place when nothing was left out in reading.
     private static func storedIndices(of read: [JSONValue], in kept: [JSONValue]) -> [Int?] {
-        if kept.count == read.count { return Array(read.indices) }
-        return read.map { entry in entry.keptIdentity.flatMap { id in kept.firstIndex { $0.keptIdentity == id } } }
+        read.enumerated().map { index, entry in
+            if let id = entry.keptIdentity { return kept.firstIndex { $0.keptIdentity == id } }
+            return kept.count == read.count ? index : nil
+        }
     }
 
     /// The entry as read that `value` (at `index` of `count` edited entries) is: the same key or

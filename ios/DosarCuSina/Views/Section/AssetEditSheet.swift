@@ -28,6 +28,9 @@ struct AssetEditSheet: View {
     @State private var toast: DSToast?
 
     private let originalPhoto: Data?
+    /// What the form started from: saving writes only what changed from it, so a change made
+    /// meanwhile on another device stays.
+    private let start: AssetActions.SectionEditStart
 
     init(asset: Asset, definition: TemplateDefinition, announce: @escaping (DSToast) -> Void = { _ in }) {
         self.asset = asset
@@ -38,10 +41,15 @@ struct AssetEditSheet: View {
         _notes = State(initialValue: asset.notes ?? "")
         _photoData = State(initialValue: asset.photoData)
         originalPhoto = asset.photoData
+        start = AssetActions.SectionEditStart(asset)
+    }
+
+    private var hasFieldChanges: Bool {
+        trimmedName != start.name || values != start.values || notes != (start.notes ?? "")
     }
 
     private var hasChanges: Bool {
-        name != asset.name || values != asset.values || notes != (asset.notes ?? "") || photoData != originalPhoto
+        hasFieldChanges || photoData != originalPhoto
     }
 
     private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -124,15 +132,16 @@ struct AssetEditSheet: View {
         do {
             let actions = AssetActions(context: context)
             // A lower counter is asked before the photo is written (`StepQuestion`).
-            try actions.askFirst(updating: asset, to: values, lowerReading: lowerReading)
+            try actions.askFirst(updating: asset, to: values, startedFrom: start, lowerReading: lowerReading)
             // The photo and the fields are one change: both are kept, or neither.
             let outcome = try UnitOfWork.perform(in: context) { () -> AssetActions.EditOutcome? in
                 if photoData != originalPhoto {
                     try actions.setPhoto(asset, photoData)
                 }
-                guard trimmedName != asset.name || values != asset.values || notes != (asset.notes ?? "") else { return nil }
+                guard hasFieldChanges else { return nil }
                 let note = notes.trimmingCharacters(in: .whitespacesAndNewlines)
-                return try actions.update(asset, name: trimmedName, values: values, notes: note.isEmpty ? nil : note, lowerReading: lowerReading)
+                return try actions.update(asset, name: trimmedName, values: values, notes: note.isEmpty ? nil : note,
+                                          startedFrom: start, lowerReading: lowerReading)
             }
             savedCount += 1
             if let bill = outcome?.billReminder {
