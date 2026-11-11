@@ -7,17 +7,30 @@ import Testing
 /// opens on the others, without ever losing this device's own key. Every value is a placeholder.
 @Suite("Sealing keys on every device")
 struct SecretKeyringTests {
-    /// The Keychain, in memory: this device's items and the synced ones apart.
+    /// The Keychain, in memory: this device's items and the synced ones apart, with which synced
+    /// ones an earlier build kept readable while the phone is locked.
     final class Keychain: SecretKeyStore, @unchecked Sendable {
         var local: [String: Data] = [:]
         var synced: [String: Data] = [:]
+        /// Synced accounts readable while locked (an earlier build's class).
+        var readableWhileLocked: Set<String> = []
         var syncedWritesFail = false
+        var updatesFail = false
+        /// An update that loses the item, to show it is put back.
+        var updatesLoseTheItem = false
+        /// The phone is locked: nothing kept only while unlocked can be read.
+        var isLocked = false
 
         func read(account: String, synchronizable: Bool) throws -> Data? {
-            synchronizable ? synced[account] : local[account]
+            if isLocked { throw SecretFieldError.keyUnavailable }
+            return synchronizable ? synced[account] : local[account]
         }
-        func readSynchronizable() throws -> [String: Data] { synced }
+        func readSynchronizable() throws -> [String: Data] {
+            if isLocked { throw SecretFieldError.keyUnavailable }
+            return synced
+        }
         func add(_ data: Data, account: String, synchronizable: Bool) throws -> Bool {
+            if isLocked { throw SecretFieldError.keyUnavailable }
             if synchronizable {
                 if syncedWritesFail { throw SecretFieldError.keyUnavailable }
                 guard synced[account] == nil else { return false }
@@ -27,6 +40,14 @@ struct SecretKeyringTests {
                 local[account] = data
             }
             return true
+        }
+        func syncedKeysReadableWhileLocked() throws -> [String] {
+            Array(readableWhileLocked).filter { synced[$0] != nil }.sorted()
+        }
+        func keepOnlyWhileUnlocked(syncedAccount account: String) throws {
+            if updatesFail || synced[account] == nil { throw SecretFieldError.keyUnavailable }
+            if updatesLoseTheItem { synced[account] = nil }
+            readableWhileLocked.remove(account)
         }
     }
 
@@ -76,7 +97,7 @@ struct SecretKeyringTests {
         let hereRing = SecretKeyring(store: here)
         let hereSealer = SecretSealer(sealingKey: { try hereRing.sealingKey() }, openingKeys: { try hereRing.openingKeys() })
         #expect(throws: SecretFieldError.unreadable) { try hereSealer.open(sealed) }
-        #expect(SecretFieldError.unreadable.errorDescription?.contains("dispozitivul") == true, "It says where it opens")
+        #expect(SecretFieldError.unreadable.errorDescription?.contains("alt dispozitiv") == true, "It says where it was written")
 
         // iCloud Keychain on: the other device's key arrives, and its codes open here too.
         for (account, key) in there.synced { here.synced[account] = key }
@@ -96,4 +117,128 @@ struct SecretKeyringTests {
         #expect(keychain.synced.values.contains(key))
     }
 
+    // MARK: Shared as soon as the binder syncs
+
+    @Test func aKeySealedBeforeSyncIsSharedWithoutSealingOrOpeningAnything() throws {
+        let keychain = Keychain()
+        let old = Self.keyData()
+        keychain.local[SecretKeyring.ownAccount] = old
+        let ring = SecretKeyring(store: keychain)
+
+        try ring.shareOwnKey()
+        #expect(keychain.synced[SecretKeyring.syncedAccount(for: old)] == old)
+        #expect(keychain.local[SecretKeyring.ownAccount] == old, "The device's own key stays where it was")
+
+        try ring.shareOwnKey()
+        #expect(keychain.synced.count == 1, "Sharing again adds nothing")
+    }
+
+    @Test func aDeviceThatNeverSealedACodeMakesNoKeyToShare() throws {
+        let keychain = Keychain()
+        try SecretKeyring(store: keychain).shareOwnKey()
+        #expect(keychain.local.isEmpty)
+        #expect(keychain.synced.isEmpty)
+    }
+
+    @Test func aLockedPhoneSharesLater() {
+        let keychain = Keychain()
+        keychain.local[SecretKeyring.ownAccount] = Self.keyData()
+        keychain.isLocked = true
+        #expect(throws: SecretFieldError.keyUnavailable) { try SecretKeyring(store: keychain).shareOwnKey() }
+        #expect(keychain.synced.isEmpty)
+    }
+
+    @MainActor
+    @Test func sharingRunsWhenAskedAndAgainOnceThePhoneIsUnlocked() async throws {
+        let keychain = Keychain()
+        let old = Self.keyData()
+        keychain.local[SecretKeyring.ownAccount] = old
+        keychain.isLocked = true
+        let center = NotificationCenter()
+        let unlocked = Notification.Name("test.unlocked")
+        let sharing = SecretKeySharing(ring: SecretKeyring(store: keychain), center: center, unlocked: unlocked)
+
+        sharing.start()
+        await sharing.running?.value
+        #expect(keychain.synced.isEmpty)
+        #expect(sharing.isWaitingForUnlock, "Tries again once the phone is unlocked")
+
+        keychain.isLocked = false
+        center.post(name: unlocked, object: nil)
+        for _ in 0..<100 where sharing.running == nil && sharing.isWaitingForUnlock { await Task.yield() }
+        await sharing.running?.value
+        #expect(keychain.synced[SecretKeyring.syncedAccount(for: old)] == old)
+        #expect(!sharing.isWaitingForUnlock)
+    }
+
+    // MARK: Kept only while the phone is unlocked
+
+    @Test func anEarlierBuildsSyncedCopiesMoveToTheStrongerClassWithTheirValues() throws {
+        let keychain = Keychain()
+        let own = Self.keyData(), other = Self.keyData()
+        keychain.local[SecretKeyring.ownAccount] = own
+        let ownAccount = SecretKeyring.syncedAccount(for: own), otherAccount = SecretKeyring.syncedAccount(for: other)
+        keychain.synced = [ownAccount: own, otherAccount: other]
+        keychain.readableWhileLocked = [ownAccount, otherAccount]
+
+        try SecretKeyring(store: keychain).shareOwnKey()
+        #expect(keychain.readableWhileLocked.isEmpty, "Every synced copy is kept only while unlocked")
+        #expect(keychain.synced == [ownAccount: own, otherAccount: other], "Their values stay as they were")
+        #expect(keychain.local == [SecretKeyring.ownAccount: own], "The device's own key is never touched")
+    }
+
+    @Test func aCopyThatDidntMoveStaysAsItWas() throws {
+        let keychain = Keychain()
+        let own = Self.keyData()
+        keychain.local[SecretKeyring.ownAccount] = own
+        let account = SecretKeyring.syncedAccount(for: own)
+        keychain.synced = [account: own]
+        keychain.readableWhileLocked = [account]
+        keychain.updatesFail = true
+
+        let ring = SecretKeyring(store: keychain)
+        #expect(try ring.sealingKey().withUnsafeBytes { Data($0) } == own)
+        #expect(keychain.synced == [account: own])
+        #expect(keychain.readableWhileLocked == [account], "Tried again next time")
+
+        keychain.updatesFail = false
+        try ring.shareOwnKey()
+        #expect(keychain.readableWhileLocked.isEmpty)
+    }
+
+    @Test func aCopyLostOnTheWayIsPutBack() throws {
+        let keychain = Keychain()
+        let other = Self.keyData()
+        let account = SecretKeyring.syncedAccount(for: other)
+        keychain.synced = [account: other]
+        keychain.readableWhileLocked = [account]
+        keychain.updatesLoseTheItem = true
+
+        try SecretKeyring(store: keychain).shareOwnKey()
+        #expect(keychain.synced[account] == other, "Another device's key is never lost here")
+    }
+
+    // MARK: What a code from another device says
+
+    @Test func aCodeFromAnotherDeviceSaysWhatToDoForEachCause() throws {
+        let there = SymmetricKey(size: .bits256), here = SymmetricKey(size: .bits256), third = SymmetricKey(size: .bits256)
+        let sealed = try SecretSealer(key: { there }).seal("0000")
+
+        // Only this device's key: iCloud Keychain may be off on either device.
+        let alone = SecretSealer(sealingKey: { here }, openingKeys: { [here] })
+        #expect(throws: SecretFieldError.unreadable) { try alone.open(sealed) }
+
+        // Another device's key reached this one: iCloud Keychain works here, the writer hasn't shared yet.
+        let receiving = SecretSealer(sealingKey: { here }, openingKeys: { [here, third] })
+        #expect(throws: SecretFieldError.notSharedYet) { try receiving.open(sealed) }
+
+        for error in [SecretFieldError.unreadable, .notSharedYet] {
+            let text = try #require(error.errorDescription)
+            #expect(text.contains("alt dispozitiv"), "Says where it was written")
+            #expect(text.contains("Deschide aplicația pe el"), "Says what to do next")
+            #expect(text.contains("Parole în iCloud"))
+            #expect(!text.contains("!"))
+        }
+        #expect(SecretFieldError.unreadable.errorDescription != SecretFieldError.notSharedYet.errorDescription)
+    }
 }

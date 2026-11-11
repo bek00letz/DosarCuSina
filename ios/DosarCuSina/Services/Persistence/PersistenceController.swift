@@ -124,6 +124,7 @@ public final class PersistenceController {
     @ObservationIgnored private let account: any ICloudAccountReader
     @ObservationIgnored private let memory: SyncMemory
     @ObservationIgnored private let keepCopy: @MainActor (ModelContainer) async throws -> URL
+    @ObservationIgnored private let didOpenToSync: @MainActor () -> Void
     @ObservationIgnored private var unlockObserver: (any NSObjectProtocol)?
     @ObservationIgnored private var systemObservers: [any NSObjectProtocol] = []
     @ObservationIgnored private var pause: SyncPause?
@@ -144,7 +145,8 @@ public final class PersistenceController {
             holdsExamples: { Self.anyExamples(in: $0) },
             account: SystemICloudAccountReader(),
             memory: DeviceSyncMemory.shared,
-            keepCopy: { try await KeptCopies.keep(container: $0) }
+            keepCopy: { try await KeptCopies.keep(container: $0) },
+            didOpenToSync: { SecretKeySharing.standard.start() }
         )
         if builtIn { observeTheSystem() }
     }
@@ -158,7 +160,8 @@ public final class PersistenceController {
         holdsExamples: @escaping @Sendable (ModelContainer) -> Bool = { _ in false },
         account: any ICloudAccountReader = SignedIn(),
         memory: SyncMemory = InMemorySyncMemory(),
-        keepCopy: @escaping @MainActor (ModelContainer) async throws -> URL = { _ in URL.temporaryDirectory }
+        keepCopy: @escaping @MainActor (ModelContainer) async throws -> URL = { _ in URL.temporaryDirectory },
+        didOpenToSync: @escaping @MainActor () -> Void = {}
     ) {
         self.storeURL = storeURL
         self.isProtectedDataAvailable = isProtectedDataAvailable
@@ -169,6 +172,7 @@ public final class PersistenceController {
         self.account = account
         self.memory = memory
         self.keepCopy = keepCopy
+        self.didOpenToSync = didOpenToSync
         self.state = .waitingForUnlock
         open()
     }
@@ -460,6 +464,9 @@ public final class PersistenceController {
         }
         followArrival()
         opened(fresh)
+        // The binder syncs from now: this device's sealing key goes to iCloud Keychain at once,
+        // so the codes it sealed open on the person's other devices (`SecretKeySharing`).
+        if syncs { didOpenToSync() }
     }
 
     /// Retires `old`: every holder lets go of it and nothing writes through it again. One that
