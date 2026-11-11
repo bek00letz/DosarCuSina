@@ -17,8 +17,10 @@ import SwiftData
 /// read (`changes(in:after:)`).
 ///
 /// When one arrives, the app's own steps that keep two devices' binders one run again, each
-/// idempotent and choosing the same records on every device (`settle`): one copy of each built-in
-/// category, one copy of each household deadline.
+/// idempotent and choosing the same records on every device (`settle`): records that share an id
+/// joined into one, one copy of each built-in category, one copy of each household deadline. It
+/// also follows the store's iCloud events (`CloudArrival`), so a step that acts on what is missing
+/// waits until what is on its way has arrived, and runs once an import finishes.
 @MainActor
 final class SyncedChanges {
     /// Posted with `object` the container and the changes as `SearchChanges` under `changesKey`.
@@ -28,6 +30,7 @@ final class SyncedChanges {
     private let container: ModelContainer
     private var last: DefaultHistoryToken?
     private var listener: Task<Void, Never>?
+    private var events: Task<Void, Never>?
     private let now: () -> Date
 
     private static var instance: SyncedChanges?
@@ -54,11 +57,25 @@ final class SyncedChanges {
                 self?.read()
             }
         }
+        events = Task { [weak self] in
+            for await note in NotificationCenter.default.notifications(named: NSPersistentCloudKitContainer.eventChangedNotification) {
+                let key = NSPersistentCloudKitContainer.eventNotificationUserInfoKey
+                guard let event = note.userInfo?[key] as? NSPersistentCloudKitContainer.Event else { continue }
+                self?.follow(event)
+            }
+        }
     }
 
     func stop() {
         listener?.cancel()
         listener = nil
+        events?.cancel()
+        events = nil
+    }
+
+    /// An import that finished leaves the binder whole: the steps that waited for it run.
+    private func follow(_ event: NSPersistentCloudKitContainer.Event) {
+        if CloudArrival.of(container).follow(event) { settle() }
     }
 
     /// Reads what came since the last read and tells everyone that follows the binder.
@@ -70,12 +87,16 @@ final class SyncedChanges {
         NotificationCenter.default.post(name: Self.didArrive, object: container, userInfo: [Self.changesKey: changes])
     }
 
-    /// The app's own steps that make two devices' binders one: one copy of each built-in category
+    /// The app's own steps that make two devices' binders one: records that share an id joined
+    /// into one (`RecordsMeet`), one copy of each built-in category
     /// (`TemplateStore.installBuiltIns`), one copy of each household deadline
-    /// (`HouseholdRules.reconcile`). Each chooses the same records on every device, so their
-    /// results meet without a conflict.
+    /// (`HouseholdRules.reconcile`, which removes nothing while the binder is still arriving).
+    /// Each chooses the same records on every device, so their results meet without a conflict.
     func settle() {
         let context = container.mainContext
+        PersistenceLog.attempt("Joining records that share an id after a synced change") {
+            _ = try RecordsMeet.join(in: context)
+        }
         PersistenceLog.attempt("Settling the built-in categories after a synced change") {
             _ = try TemplateStore(context: context).installBuiltIns()
         }

@@ -388,6 +388,72 @@ struct SchemaMigrationTests {
         #expect(FileManager.default.fileExists(atPath: SectionLocks.file(forStoreAt: url).path(percentEncoded: false)), "Kept beside the store")
     }
 
+    /// Every stored property of every entity, by entity, as name, kind and whether it may be empty.
+    private static func shape(_ models: [any PersistentModel.Type]) -> [String: Set<String>] {
+        guard let model = NSManagedObjectModel.makeManagedObjectModel(for: models) else { return [:] }
+        return model.entitiesByName.mapValues { entity in
+            Set(entity.attributesByName.map { "\($0.key) \($0.value.attributeType.rawValue) \($0.value.isOptional)" })
+                .union(entity.relationshipsByName.map { "\($0.key) → \($0.value.destinationEntity?.name ?? "") \($0.value.isToMany) \($0.value.deleteRule.rawValue)" })
+        }
+    }
+
+    @Test("Version 13 only adds which copy of it each record is, to every model")
+    func versionThirteenAddsOnlyWhichCopy() {
+        let twelve = Self.shape(DosarSchemaV12.models)
+        let thirteen = Self.shape(DosarSchemaV13.models)
+        #expect(Set(twelve.keys) == Set(thirteen.keys))
+        for (entity, properties) in thirteen {
+            let copy = properties.filter { $0.hasPrefix("copyID ") }
+            #expect(copy.count == 1, "\(entity) says which copy it is")
+            #expect(copy.first?.hasSuffix(" true") == true, "\(entity).copyID may be empty, as CloudKit needs")
+            #expect(properties.subtracting(copy) == twelve[entity], "\(entity) is otherwise as version 12 shipped it")
+        }
+        let elevenHashes = Self.fingerprint(DosarSchemaV11.models)
+        let twelveHashes = Self.fingerprint(DosarSchemaV12.models)
+        #expect(twelveHashes["Obligation"] != elevenHashes["Obligation"])
+        #expect(twelveHashes["HistoryEntry"] == elevenHashes["HistoryEntry"], "The frozen version 12 keeps version 11's untouched entities")
+    }
+
+    @Test func aStoreFromVersionTwelveOpensWithEverythingAsItWas() throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Dosar-v12.store")
+        let edited = noon("2026-10-01")
+        let carID = UUID()
+
+        // Written by version 12: a car with its RCA and a firm.
+        do {
+            let schema = Schema(versionedSchema: DosarSchemaV12.self)
+            let container = try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)])
+            let context = ModelContext(container)
+            let car = DosarSchemaV12.Asset(name: "VW Golf 2018", templateKey: "vehicle")
+            car.id = carID
+            car.updatedAt = edited
+            let rca = DosarSchemaV12.Obligation(title: "RCA")
+            rca.dueDayISO = "2027-07-15"
+            let firm = DosarSchemaV12.Provider(name: "Service Exemplu SRL")
+            for model in [car, rca, firm] as [any PersistentModel] { context.insert(model) }
+            rca.asset = car
+            firm.assets = [car]
+            try context.save()
+        }
+
+        // Opened by this version: everything as it was, and no copy named yet.
+        let container = try PersistenceController.makeContainer(storeURL: url)
+        let context = ModelContext(container)
+        let car = try #require(try context.fetch(FetchDescriptor<Asset>()).first)
+        #expect(car.id == carID)
+        #expect(car.name == "VW Golf 2018")
+        #expect(car.updatedAt == edited, "An upgrade isn't a change")
+        #expect(car.copyID == nil, "Only the device that made a copy names it, when it meets another")
+        #expect(car.obligations?.first?.dueDay == CalendarDay("2027-07-15"))
+        #expect(car.providers?.first?.name == "Service Exemplu SRL")
+        #expect(try context.fetch(FetchDescriptor<Provider>()).allSatisfy { $0.copyID == nil })
+        // A record made from now on is named from the start.
+        #expect(Asset(name: "Apartament Exemplu", templateKey: "home").copyID != nil)
+    }
+
     @Test func aStoreFromVersionElevenOpensWithItsRemindersAsTheyWere() throws {
         let folder = FileManager.default.temporaryDirectory.appending(path: "migration-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)

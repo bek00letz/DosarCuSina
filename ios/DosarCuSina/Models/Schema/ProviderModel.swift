@@ -50,7 +50,7 @@ public enum ProviderTrade: String, Codable, CaseIterable, Sendable {
     }
 }
 
-extension DosarSchemaV12 {
+extension DosarSchemaV13 {
     /// A person or business the household relies on: the mechanic, the plumber
     /// who changed the tap, the vet, the insurance agent. Linked to the assets
     /// they look after and to the history entries of the work they did, so
@@ -58,6 +58,8 @@ extension DosarSchemaV12 {
     @Model
     public final class Provider {
         public var id: UUID = UUID()
+        /// Which copy of this record it is (`Asset.copyID`). Version 13.
+        public var copyID: UUID?
         public var name: String = ""
         /// `ProviderTrade` raw values; free text is allowed for trades not in the list.
         public var trades: [String] = []
@@ -93,6 +95,7 @@ extension DosarSchemaV12 {
         public var attachments: [Attachment]? = []
 
         public init(id: UUID = UUID(), name: String, trades: [ProviderTrade] = [], phone: String? = nil) {
+            self.copyID = UUID()
             self.id = id
             self.name = name
             self.trades = trades.map(\.rawValue)

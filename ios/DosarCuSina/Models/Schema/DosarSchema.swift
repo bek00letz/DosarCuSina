@@ -4,7 +4,7 @@ import SwiftData
 /// The current schema of the household database.
 ///
 /// Every model lives inside this namespace so that the next version can freeze a
-/// copy of these definitions and migrate from them (as `DosarSchemaV2` to `DosarSchemaV11`
+/// copy of these definitions and migrate from them (as `DosarSchemaV2` to `DosarSchemaV12`
 /// are frozen in `Versions/`). App code uses the top-level type aliases below and never names the
 /// version directly.
 ///
@@ -39,9 +39,12 @@ import SwiftData
 /// makes up for warnings already passed counts from then. Version 12 adds what a newer build wrote
 /// in a deadline's reminders that this one doesn't read (`Obligation.remindersData`, the profile's
 /// JSON, none by default), so a backup from a newer build keeps it through this one, and keeps a
-/// category's lock on each device instead (`SectionLocks`), never in the store.
-public enum DosarSchemaV12: VersionedSchema {
-    public static let versionIdentifier = Schema.Version(12, 0, 0)
+/// category's lock on each device instead (`SectionLocks`), never in the store. Version 13 adds
+/// which copy of a record this is (`copyID` on every model, none by default), given by the device
+/// that made the copy: the same binder on two devices has the same ids, so iCloud brings two copies
+/// of each record, and every device joins them into the same one by it (`RecordsMeet`).
+public enum DosarSchemaV13: VersionedSchema {
+    public static let versionIdentifier = Schema.Version(13, 0, 0)
 
     public static var models: [any PersistentModel.Type] {
         [
@@ -62,8 +65,8 @@ public enum DosarSchemaV12: VersionedSchema {
 /// version freezes the one before it in `Versions/`, adds a stage here, and gets a
 /// test that opens a store written by the version before (`SchemaMigrationTests`).
 public enum DosarMigrationPlan: SchemaMigrationPlan {
-    public static var schemas: [any VersionedSchema.Type] { [DosarSchemaV2.self, DosarSchemaV3.self, DosarSchemaV4.self, DosarSchemaV5.self, DosarSchemaV6.self, DosarSchemaV7.self, DosarSchemaV8.self, DosarSchemaV9.self, DosarSchemaV10.self, DosarSchemaV11.self, DosarSchemaV12.self] }
-    public static var stages: [MigrationStage] { [v2ToV3, v3ToV4, v4ToV5, v5ToV6, v6ToV7, v7ToV8, v8ToV9, v9ToV10, v10ToV11, v11ToV12] }
+    public static var schemas: [any VersionedSchema.Type] { [DosarSchemaV2.self, DosarSchemaV3.self, DosarSchemaV4.self, DosarSchemaV5.self, DosarSchemaV6.self, DosarSchemaV7.self, DosarSchemaV8.self, DosarSchemaV9.self, DosarSchemaV10.self, DosarSchemaV11.self, DosarSchemaV12.self, DosarSchemaV13.self] }
+    public static var stages: [MigrationStage] { [v2ToV3, v3ToV4, v4ToV5, v5ToV6, v6ToV7, v7ToV8, v8ToV9, v9ToV10, v10ToV11, v11ToV12, v12ToV13] }
 
     /// Version 3 only adds optional attributes; existing records keep every value. What
     /// the new attributes should hold for old records is filled in later: the categories'
@@ -130,17 +133,24 @@ public enum DosarMigrationPlan: SchemaMigrationPlan {
             SectionLocks.of(context.container).adopt(locks)
         }, didMigrate: nil)
     }
+
+    /// Version 13 only adds an optional value to every model (which copy of the record this is);
+    /// existing records keep every value and have none. Nothing guesses one for them here: two
+    /// devices would guess differently for the same record. The device that made a copy gives it
+    /// one when it meets another copy of the same record (`RecordsMeet`), and every record made
+    /// from now on has one from the start.
+    static var v12ToV13: MigrationStage { .lightweight(fromVersion: DosarSchemaV12.self, toVersion: DosarSchemaV13.self) }
 }
 
-public typealias CategoryTemplate = DosarSchemaV12.CategoryTemplate
-public typealias Asset = DosarSchemaV12.Asset
-public typealias Obligation = DosarSchemaV12.Obligation
-public typealias HistoryEntry = DosarSchemaV12.HistoryEntry
-public typealias ServiceItem = DosarSchemaV12.ServiceItem
-public typealias MeasurementLog = DosarSchemaV12.MeasurementLog
-public typealias Attachment = DosarSchemaV12.Attachment
-public typealias Provider = DosarSchemaV12.Provider
-public typealias AttachmentPage = DosarSchemaV12.AttachmentPage
+public typealias CategoryTemplate = DosarSchemaV13.CategoryTemplate
+public typealias Asset = DosarSchemaV13.Asset
+public typealias Obligation = DosarSchemaV13.Obligation
+public typealias HistoryEntry = DosarSchemaV13.HistoryEntry
+public typealias ServiceItem = DosarSchemaV13.ServiceItem
+public typealias MeasurementLog = DosarSchemaV13.MeasurementLog
+public typealias Attachment = DosarSchemaV13.Attachment
+public typealias Provider = DosarSchemaV13.Provider
+public typealias AttachmentPage = DosarSchemaV13.AttachmentPage
 
 /// Shared JSON coding for values stored as `Data` on models and written to archives.
 /// Keys are sorted so the same value always produces the same bytes.

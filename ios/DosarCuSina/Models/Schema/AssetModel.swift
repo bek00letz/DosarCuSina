@@ -1,12 +1,18 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV12 {
+extension DosarSchemaV13 {
     /// Something the household looks after: a car, a home, a pet, a passport.
     /// Its details live in `values`, described by the template named in `templateKey`.
     @Model
     public final class Asset {
         public var id: UUID = UUID()
+        /// Which copy of this record it is, given by the device that made the copy, never changed
+        /// and never in a backup: the same binder on two devices has the same ids, so iCloud can
+        /// bring two copies of one record, and every device joins them into the same one by it
+        /// (`RecordsMeet`). None for a record from before version 13 until it meets another copy.
+        /// Version 13.
+        public var copyID: UUID?
         public var name: String = ""
         /// `CategoryTemplate.key`. A key with no installed template renders as a standard asset.
         public var templateKey: String = ""
@@ -49,6 +55,7 @@ extension DosarSchemaV12 {
         public var children: [Asset]? = []
 
         public init(id: UUID = UUID(), name: String, templateKey: String, values: FieldValues = FieldValues(), notes: String? = nil, isExample: Bool = false) {
+            self.copyID = UUID()
             self.id = id
             self.name = name
             self.templateKey = templateKey

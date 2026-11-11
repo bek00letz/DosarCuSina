@@ -31,13 +31,15 @@ public enum HistoryKind: String, Codable, CaseIterable, Sendable {
     }
 }
 
-extension DosarSchemaV12 {
+extension DosarSchemaV13 {
     /// One thing that happened to an asset: a visit, a repair, a purchase, an
     /// inspection. It is the asset's single history: completing an obligation
     /// writes one of these, and so does logging a repair by hand.
     @Model
     public final class HistoryEntry {
         public var id: UUID = UUID()
+        /// Which copy of this record it is (`Asset.copyID`). Version 13.
+        public var copyID: UUID?
         public var kindRaw: String = HistoryKind.note.rawValue
         public var title: String = ""
         public var occurredAt: Date = Date()
@@ -80,6 +82,7 @@ extension DosarSchemaV12 {
         public var attachments: [Attachment]? = []
 
         public init(id: UUID = UUID(), kind: HistoryKind, title: String, occurredAt: Date) {
+            self.copyID = UUID()
             self.id = id
             self.kindRaw = kind.rawValue
             self.title = title

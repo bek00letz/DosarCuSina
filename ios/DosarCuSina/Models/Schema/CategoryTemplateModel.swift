@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV12 {
+extension DosarSchemaV13 {
     /// A category of assets (Car, Home, a user's own "Bikes") and its field and
     /// obligation definitions, plus this household's preferences for it.
     ///
@@ -11,6 +11,8 @@ extension DosarSchemaV12 {
     @Model
     public final class CategoryTemplate {
         public var key: String = ""
+        /// Which copy of this record it is (`Asset.copyID`). Version 13.
+        public var copyID: UUID?
         public var name: String = ""
         public var summary: String?
         public var symbol: String = "square.grid.2x2"
@@ -43,6 +45,7 @@ extension DosarSchemaV12 {
         public var updatedAt: Date = Date()
 
         public init(definition: TemplateDefinition, isBuiltIn: Bool, homeOrder: Int) {
+            self.copyID = UUID()
             self.key = definition.key
             self.isBuiltIn = isBuiltIn
             self.homeOrder = homeOrder

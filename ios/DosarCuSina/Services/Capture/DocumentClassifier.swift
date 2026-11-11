@@ -79,7 +79,7 @@ public enum DocumentClassifier {
         if scores.values.allSatisfy({ $0 == 0 }) { scores.merge(hints, uniquingKeysWith: +) }
 
         // Ties go to the kind listed first in `CaptureDocumentKind`, so the result never depends on dictionary order.
-        let order = Dictionary(uniqueKeysWithValues: CaptureDocumentKind.allCases.enumerated().map { ($1, $0) })
+        let order = Dictionary(CaptureDocumentKind.allCases.enumerated().map { ($1, $0) }, uniquingKeysWith: { first, _ in first })
         let ranked = scores.sorted { lhs, rhs in
             lhs.value != rhs.value ? lhs.value > rhs.value : (order[lhs.key] ?? 0) < (order[rhs.key] ?? 0)
         }

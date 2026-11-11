@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV12 {
+extension DosarSchemaV13 {
     /// Something that has to be done by a date, once or on a schedule: ITP, RCA,
     /// local taxes, a vaccine, a subscription renewal.
     ///
@@ -10,6 +10,8 @@ extension DosarSchemaV12 {
     @Model
     public final class Obligation {
         public var id: UUID = UUID()
+        /// Which copy of this record it is (`Asset.copyID`). Version 13.
+        public var copyID: UUID?
         public var title: String = ""
         public var notes: String?
         /// The template blueprint this came from, when it came from one.
@@ -88,6 +90,7 @@ extension DosarSchemaV12 {
             reminders: ReminderProfile? = nil,
             estimatedCost: Money? = nil
         ) {
+            self.copyID = UUID()
             self.id = id
             self.title = title
             self.kindRaw = kind.rawValue

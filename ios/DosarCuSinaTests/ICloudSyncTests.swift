@@ -127,7 +127,7 @@ struct ICloudSyncTests {
 
     @Test("Every model is shaped as CloudKit needs: defaults or optional, nothing unique, relationships optional with inverses")
     func everyModelIsCloudKitShaped() throws {
-        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: DosarSchemaV12.models))
+        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: DosarSchemaV13.models))
         for entity in model.entities {
             #expect(entity.uniquenessConstraints.flatMap { $0 }.isEmpty, "\(entity.name ?? "") has nothing unique")
             for (name, attribute) in entity.attributesByName {
@@ -278,11 +278,15 @@ struct ICloudSyncTests {
         context.insert(theirs)
         try context.save()
 
-        try TemplateStore(context: context).installBuiltIns()
+        // Records with one key meet as one (`RecordsMeet`), then the catalog has nothing to do.
+        let names = [mine.copyID, theirs.copyID].compactMap { $0 }
+        try RecordsMeet.join(in: context)
+        #expect(try !TemplateStore(context: context).installBuiltIns())
         let copies = try context.fetch(FetchDescriptor<CategoryTemplate>(predicate: #Predicate { $0.key == key }))
         let kept = try #require(copies.first)
         #expect(copies.count == 1)
-        #expect(kept.createdAt == noon("2026-01-01"), "The copy installed first stays, on every device alike")
+        #expect(kept.copyID == names.min { $0.uuidString < $1.uuidString },
+                "The copy with the smallest name stays, on every device alike")
         #expect(kept.homeOrder == 9)
         #expect(!kept.isOnHome)
     }

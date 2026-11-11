@@ -30,10 +30,16 @@ public struct TemplateStore {
     }
 
     /// Installs built-in templates that are missing and gives installed ones the
-    /// catalog's definition whenever theirs is from another version or was
+    /// catalog's definition whenever theirs is from an older catalog or was
     /// changed into a custom one, keeping household preferences (order,
-    /// visibility, Face ID). Also removes duplicate built-ins that a sync merge
-    /// may have produced. Saves only when something changed.
+    /// visibility, Face ID). Saves only when something changed.
+    ///
+    /// A built-in's definition is the app's own, and the newest catalog in the binder decides it:
+    /// a build whose catalog is older than one that already shaped the binder (another device
+    /// runs a newer version, and sync brought its categories) leaves every built-in as it is, so
+    /// two versions never write each other's categories back and forth. Copies of one category
+    /// from two devices are joined before this runs (`RecordsMeet`), with the person's newer
+    /// choice of its place and whether it shows.
     ///
     /// It is the app's own step (`ChangeOrigin.app`): a category it upgrades keeps its change
     /// time, so the order, visibility and lock the person chose on another phone still come
@@ -49,29 +55,23 @@ public struct TemplateStore {
     private func installingBuiltIns(catalog: [TemplateDefinition]) throws -> Bool {
         var changed = false
         let existing = try context.fetch(FetchDescriptor<CategoryTemplate>(sortBy: [SortDescriptor(\.createdAt)]))
+        // A newer build's catalog already shaped the built-ins: this one leaves them as they are.
+        let catalogVersion = catalog.map(\.version).max() ?? 0
+        let newestInBinder = existing.filter(\.isBuiltIn).map(\.builtInVersion).max() ?? 0
+        guard newestInBinder <= catalogVersion else { return false }
         var byKey: [String: CategoryTemplate] = [:]
-        for template in existing {
-            if template.isBuiltIn, let kept = byKey[template.key] {
-                // Each device installs its own built-ins, so sync brings a second copy of each. The
-                // one installed first stays, on every device alike, with the person's newer choice
-                // of its place and whether it shows. Its lock is each device's own (`SectionLocks`).
-                if template.updatedAt > kept.updatedAt {
-                    if kept.homeOrder != template.homeOrder { kept.homeOrder = template.homeOrder }
-                    if kept.isOnHome != template.isOnHome { kept.isOnHome = template.isOnHome }
-                }
-                context.delete(template)
-                changed = true
-            } else if byKey[template.key] == nil {
-                byKey[template.key] = template
-            }
+        // Copies of one key are joined by `RecordsMeet`; until they are, the first is the one read.
+        for template in existing where byKey[template.key] == nil {
+            byKey[template.key] = template
         }
         changed = try retireOldBuiltIns(byKey: &byKey) || changed
         var nextOrder = (existing.map(\.homeOrder).max() ?? -1) + 1
         for definition in catalog {
             if let installed = byKey[definition.key] {
                 // A built-in is always the app's own definition: a newer catalog
-                // upgrades it, and one changed from outside is put back.
-                if !installed.isBuiltIn || installed.builtInVersion != definition.version {
+                // upgrades it, and one changed from outside is put back. An older one never
+                // writes over a newer one.
+                if !installed.isBuiltIn || installed.builtInVersion < definition.version {
                     installed.isBuiltIn = true
                     installed.apply(definition)
                     changed = true

@@ -220,7 +220,7 @@ public final class PersistenceController {
         return base.appending(path: "Dosar-v2.store")
     }
 
-    public nonisolated static let schema = Schema(versionedSchema: DosarSchemaV12.self)
+    public nonisolated static let schema = Schema(versionedSchema: DosarSchemaV13.self)
 
     // MARK: iCloud
 

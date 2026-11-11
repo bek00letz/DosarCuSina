@@ -44,13 +44,15 @@ public enum MeasurementKind: String, Codable, CaseIterable, Sendable {
     }
 }
 
-extension DosarSchemaV12 {
+extension DosarSchemaV13 {
     /// A line in a history entry: a part replaced, a job done, a vaccine given.
     /// `componentKey` ties it to the template's component catalog so "when did I
     /// last change the brake pads" has one answer across entries.
     @Model
     public final class ServiceItem {
         public var id: UUID = UUID()
+        /// Which copy of this record it is (`Asset.copyID`). Version 13.
+        public var copyID: UUID?
         public var name: String = ""
         /// A key from the template's component catalog, or `custom.<slug>` for free text.
         public var componentKey: String?
@@ -83,6 +85,7 @@ extension DosarSchemaV12 {
         public var attachments: [Attachment]? = []
 
         public init(id: UUID = UUID(), name: String, componentKey: String? = nil) {
+            self.copyID = UUID()
             self.id = id
             self.name = name
             self.componentKey = componentKey
@@ -102,6 +105,8 @@ extension DosarSchemaV12 {
     @Model
     public final class MeasurementLog {
         public var id: UUID = UUID()
+        /// Which copy of this record it is (`Asset.copyID`). Version 13.
+        public var copyID: UUID?
         public var kindRaw: String = MeasurementKind.custom.rawValue
         /// What was measured, such as "Glicemie" or "Index zi".
         public var name: String = ""
@@ -138,6 +143,7 @@ extension DosarSchemaV12 {
         public var attachments: [Attachment]? = []
 
         public init(id: UUID = UUID(), kind: MeasurementKind, name: String, value: Double, unit: MeasurementUnit? = nil, recordedAt: Date = Date()) {
+            self.copyID = UUID()
             self.id = id
             self.kindRaw = kind.rawValue
             self.name = name
@@ -180,6 +186,8 @@ extension DosarSchemaV12 {
     @Model
     public final class Attachment {
         public var id: UUID = UUID()
+        /// Which copy of this record it is (`Asset.copyID`). Version 13.
+        public var copyID: UUID?
         /// A short name the person recognizes, such as "Poliță RCA 2026".
         public var title: String?
         public var fileName: String = ""
@@ -239,6 +247,7 @@ extension DosarSchemaV12 {
         public var provider: Provider?
 
         public init(id: UUID = UUID(), fileName: String, contentType: String, data: Data?, kind: DocumentKind = .other) {
+            self.copyID = UUID()
             self.id = id
             self.fileName = fileName
             self.contentType = contentType
@@ -276,12 +285,15 @@ extension DosarSchemaV12 {
     @Model
     public final class AttachmentPage {
         public var id: UUID = UUID()
+        /// Which copy of this record it is (`Asset.copyID`). Version 13.
+        public var copyID: UUID?
         /// Zero-based position in the document.
         public var index: Int = 0
         @Attribute(.externalStorage) public var imageData: Data?
         public var attachment: Attachment?
 
         public init(id: UUID = UUID(), index: Int, imageData: Data?) {
+            self.copyID = UUID()
             self.id = id
             self.index = index
             self.imageData = imageData
