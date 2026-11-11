@@ -81,6 +81,14 @@ func makeContext() throws -> ModelContext {
     return context
 }
 
+/// The person's Face ID for turning a lock off, from a vault whose Face ID always works: the only
+/// way a test gets one, as in the app (`BiometricVaultManager.confirmLowering`).
+@MainActor
+func faceIDConfirmed() async throws -> LockLowering {
+    let vault = BiometricVaultManager(authenticator: FakeAuthenticator(.succeed), appLockEnabled: { false }, observesAppLifecycle: false)
+    return try #require(await vault.confirmLowering(reason: "Test"))
+}
+
 /// Snapshot for pure-function tests.
 func snapshot(
     _ title: String = "Obligație",

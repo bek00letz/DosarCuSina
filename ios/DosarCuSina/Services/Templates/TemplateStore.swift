@@ -269,16 +269,12 @@ public struct TemplateStore {
         try save()
     }
 
-    /// Replaces a custom template's definition. Built-ins only take preference changes.
-    public func update(_ template: CategoryTemplate, with definition: TemplateDefinition) throws {
-        if template.isBuiltIn {
-            template.isOnHome = definition.isOnHomeByDefault
-            template.isSensitive = definition.isSensitiveByDefault
-        } else {
-            template.apply(definition)
-            template.isOnHome = definition.isOnHomeByDefault
-            template.isSensitive = definition.isSensitiveByDefault
-        }
+    /// Replaces a custom template's definition. Built-ins only take preference changes. A lock it
+    /// turns off takes the person's Face ID first (`lowering`), as `setSensitive` does.
+    public func update(_ template: CategoryTemplate, with definition: TemplateDefinition, lowering: LockLowering? = nil) throws {
+        try template.setLock(definition.isSensitiveByDefault, lowering: lowering)
+        if !template.isBuiltIn { template.apply(definition) }
+        template.isOnHome = definition.isOnHomeByDefault
         try save()
     }
 
@@ -312,9 +308,19 @@ public struct TemplateStore {
     }
 
     /// Locks or opens a category on this device only (`SectionLocks`): nothing is saved in the
-    /// store, so no other device follows.
-    public func setSensitive(_ template: CategoryTemplate, _ isSensitive: Bool) throws {
-        template.isSensitive = isSensitive
+    /// store, so no other device follows. Opening a locked one takes the person's Face ID first,
+    /// every time (`lowering`, from `BiometricVaultManager.confirmLowering`); locking needs none.
+    public func setSensitive(_ template: CategoryTemplate, _ isSensitive: Bool, lowering: LockLowering? = nil) throws {
+        try template.setLock(isSensitive, lowering: lowering)
+    }
+
+    /// Ends the wait after this device's locks couldn't be read (`SectionLocks.needsChoosingAgain`):
+    /// every category keeps the lock it shows now (on, for every one), as this device's choice, and
+    /// a category of one's own that arrives from another device starts open again. That opens what
+    /// would have been locked, so it takes the person's Face ID first (`lowering`).
+    public func keepLocksAsTheyAre(lowering: LockLowering) throws {
+        let locks = Dictionary(try all().map { ($0.key, $0.isSensitive) }, uniquingKeysWith: { $0 || $1 })
+        try SectionLocks.of(context.container).chooseAgain(locks)
     }
 
     private func save() throws {

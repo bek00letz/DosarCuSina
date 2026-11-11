@@ -3,7 +3,7 @@ import Observation
 import SwiftData
 
 /// Which categories this device keeps behind Face ID: the one source of truth for a section's
-/// lock (`CategoryTemplate.isSensitive` reads and writes it).
+/// lock (`CategoryTemplate.isSensitive` reads it, `CategoryTemplate.setLock` writes it).
 ///
 /// Each phone or iPad decides for itself. The choice lives on the device, beside the store, never
 /// in it: iCloud never carries it, and a lock turned off on one device can't open a section on
@@ -13,7 +13,16 @@ import SwiftData
 ///
 /// The choices are kept in a small file next to the store (`file(forStoreAt:)`), readable once the
 /// phone was unlocked after it started (so reminders and widgets planned in the background follow
-/// it), and a store kept in memory (tests, previews) has its own, gone with it.
+/// it), and a store kept in memory (tests, previews) has its own, gone with it. The file belongs to
+/// the device, not to the binder: "Începe din nou" leaves it where it is.
+///
+/// Locks stay on when they can't be read (`needsChoosingAgain`). A file that is there but can't be
+/// read, or none where an older build's "Începe din nou" moved it aside, means every category is
+/// locked, whatever it was before and whatever is chosen meanwhile, until the person keeps the locks
+/// in Settings (`chooseAgain`, after Face ID); then they open what they want, one by one. What
+/// couldn't be read is never written over: the first change reads the file again, and if it still
+/// can't, sets it aside and starts a new one that remembers the wait. A choice that can't be
+/// written throws, so the screen says so and nothing shows as locked that isn't.
 ///
 /// A backup carries the locks of the device that made it, as that device's settings; bringing one
 /// in may lock a category here, never open one (`DossierImporter`).
@@ -25,58 +34,157 @@ final class SectionLocks: Observable, @unchecked Sendable {
     /// The built-in categories locked until this device decides otherwise.
     static let lockedByDefault: Set<String> = Set(BuiltInTemplates.all.filter(\.isSensitiveByDefault).map(\.key))
 
+    /// Kept among the choices in the file while the locks wait to be chosen again. An older build
+    /// reads it as the choice for a category that doesn't exist, and leaves it.
+    static let waitKey = "#untilChosenAgain"
+
     private let file: URL?
     private let mutex = NSLock()
     private var choices: [String: Bool]
+    /// Every category stays locked until the person keeps the locks (`chooseAgain`).
+    private var untilChosenAgain: Bool
+    /// The file is there and couldn't be read: it is read again before anything is written, and
+    /// never written over.
+    private var fileUnread: Bool
     private let registrar = ObservationRegistrar()
     /// Goes up with every change, for screens that show a lock.
     private(set) var generation = 0
 
     init(file: URL?) {
         self.file = file
-        choices = file.flatMap { try? Data(contentsOf: $0) }.flatMap { try? JSONDecoder().decode([String: Bool].self, from: $0) } ?? [:]
+        let loaded = file.map(SectionLocks.load) ?? Loaded(choices: [:], untilChosenAgain: false, fileUnread: false)
+        choices = loaded.choices
+        untilChosenAgain = loaded.untilChosenAgain
+        fileUnread = loaded.fileUnread
     }
 
-    /// Whether `key` is locked on this device: its choice here, else `byDefault`.
+    /// Whether `key` is locked on this device: its choice here, else `byDefault`. While the locks
+    /// wait to be chosen again, every category is locked.
     func isLocked(_ key: String, byDefault: Bool) -> Bool {
         registrar.access(self, keyPath: \.generation)
-        return choice(for: key) ?? byDefault
+        return mutex.withLock {
+            untilChosenAgain || (choices[key] ?? byDefault)
+        }
     }
 
-    /// This device's choice for `key`, nil while it hasn't made one.
-    func choice(for key: String) -> Bool? {
-        mutex.withLock { choices[key] }
+    /// Whether this device's locks couldn't be read and wait for the person to keep them as they
+    /// are now (Settings says so).
+    var needsChoosingAgain: Bool {
+        registrar.access(self, keyPath: \.generation)
+        return mutex.withLock { untilChosenAgain }
     }
 
     /// Every choice this device made.
     var all: [String: Bool] { mutex.withLock { choices } }
 
-    /// Locks or opens `key` on this device.
-    func set(_ locked: Bool, for key: String) {
-        update { $0[key] = locked }
+    /// Locks or opens `key` on this device. Throws when the choice can't be kept; then nothing
+    /// changes.
+    func set(_ locked: Bool, for key: String) throws {
+        try update { $0[key] = locked }
     }
 
     /// Takes `values` as this device's choices for the keys it hasn't decided on: an upgrade's
-    /// locks, as the store had them.
-    func adopt(_ values: [String: Bool]) {
-        update { choices in
-            for (key, locked) in values where choices[key] == nil { choices[key] = locked }
+    /// locks, as the store had them (`LockMigration`).
+    func adopt(_ values: [String: Bool]) throws {
+        try update { choices in
+            for (key, locked) in values where key != Self.waitKey && choices[key] == nil { choices[key] = locked }
         }
     }
 
-    private func update(_ change: (inout [String: Bool]) -> Void) {
-        let changed: Bool = mutex.withLock {
-            let before = choices
-            change(&choices)
-            guard choices != before else { return false }
-            if let file, let data = try? JSONEncoder().encode(choices) {
-                try? data.write(to: file, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
-            }
+    /// Ends the wait after the locks couldn't be read: `locks` (every category's lock as it shows
+    /// now: on) become this device's choices, and a category of one's own from another device starts
+    /// open again. Only after Face ID (`TemplateStore.keepLocksAsTheyAre`).
+    func chooseAgain(_ locks: [String: Bool]) throws {
+        try update(endingTheWait: true) { choices in
+            for (key, locked) in locks where key != Self.waitKey { choices[key] = locked }
+        }
+    }
+
+    /// Reads the file again if it couldn't be read before: the store opened again.
+    func readAgainIfUnread() {
+        guard let file else { return }
+        let read: Bool = mutex.withLock {
+            guard fileUnread else { return false }
+            let again = Self.load(file)
+            guard !again.fileUnread else { return false }
+            choices = again.choices
+            untilChosenAgain = again.untilChosenAgain
+            fileUnread = false
             return true
         }
-        guard changed else { return }
+        if read { told() }
+    }
+
+    private func update(endingTheWait: Bool = false, _ change: (inout [String: Bool]) -> Void) throws {
+        let changed: Bool = try mutex.withLock {
+            if fileUnread, let file {
+                // It may read now; then the change goes over what it says.
+                let again = Self.load(file)
+                if !again.fileUnread {
+                    choices = again.choices
+                    untilChosenAgain = again.untilChosenAgain
+                    fileUnread = false
+                }
+            }
+            var next = choices
+            change(&next)
+            let waits = untilChosenAgain && !endingTheWait
+            guard next != choices || waits != untilChosenAgain else { return false }
+            if let file {
+                if fileUnread { try Self.setAside(file) }
+                var stored = next
+                if waits { stored[Self.waitKey] = true }
+                let encoder = JSONEncoder()
+                encoder.outputFormatting = [.sortedKeys]
+                try encoder.encode(stored).write(to: file, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+                fileUnread = false
+            }
+            choices = next
+            untilChosenAgain = waits
+            return true
+        }
+        if changed { told() }
+    }
+
+    private func told() {
         registrar.withMutation(of: self, keyPath: \.generation) { generation += 1 }
         NotificationCenter.default.post(name: Self.didChange, object: self)
+    }
+
+    // MARK: The file
+
+    struct Loaded: Equatable {
+        var choices: [String: Bool]
+        var untilChosenAgain: Bool
+        var fileUnread: Bool
+    }
+
+    /// What `file` says. A file that is there and can't be read keeps every category locked. With
+    /// none where an older build's "Începe din nou" moved it aside, every category is locked too,
+    /// until the person chooses again.
+    static func load(_ file: URL) -> Loaded {
+        if FileManager.default.fileExists(atPath: file.path(percentEncoded: false)) {
+            guard let data = try? Data(contentsOf: file), var stored = try? JSONDecoder().decode([String: Bool].self, from: data) else {
+                return Loaded(choices: [:], untilChosenAgain: true, fileUnread: true)
+            }
+            let waits = stored.removeValue(forKey: waitKey) ?? false
+            return Loaded(choices: stored, untilChosenAgain: waits, fileUnread: false)
+        }
+        return Loaded(choices: [:], untilChosenAgain: wasMovedAside(file), fileUnread: false)
+    }
+
+    /// Whether an older build's "Începe din nou" moved this device's locks aside with the store
+    /// ("unreadable-<when>-<file>").
+    private static func wasMovedAside(_ file: URL) -> Bool {
+        let suffix = "-" + file.lastPathComponent
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: file.deletingLastPathComponent().path(percentEncoded: false))) ?? []
+        return names.contains { $0.hasPrefix("unreadable-") && $0.hasSuffix(suffix) }
+    }
+
+    /// Keeps a file that couldn't be read beside the new one, never under it.
+    private static func setAside(_ file: URL) throws {
+        let target = file.deletingLastPathComponent().appending(path: file.lastPathComponent + ".unread-\(UUID().uuidString)")
+        try FileManager.default.moveItem(at: file, to: target)
     }
 
     // MARK: One per store

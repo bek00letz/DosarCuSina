@@ -39,6 +39,22 @@ public enum UnlockResult: Sendable, Equatable {
     case cancelled
 }
 
+/// The person's answer that a lock may be turned off: Face ID, Touch ID or the passcode, asked
+/// just now. Only `BiometricVaultManager.confirmLowering` makes one, and every way of turning a
+/// lock off takes one (`CategoryTemplate.setLock`, `AppPreferences.setAppLock`,
+/// `TemplateStore.keepLocksAsTheyAre`), so no lock goes off without asking.
+public struct LockLowering: Sendable {
+    fileprivate init() {}
+
+    /// A lock was about to be turned off without asking first.
+    public struct Needed: LocalizedError, Equatable {
+        public var errorDescription: String? {
+            String(localized: "Protecția a rămas pornită. Ca s-o oprești, confirmă că ești tu.",
+                   comment: "Shown when a lock was about to be turned off without Face ID.")
+        }
+    }
+}
+
 /// The clock every lock timing counts on: how long the app was away, for the relock.
 ///
 /// It counts on `ContinuousClock`, which keeps counting while the phone sleeps and which the
@@ -188,6 +204,16 @@ public final class BiometricVaultManager {
     public func confirmWholeBinder(anySectionLocked: Bool, reason: String) async -> UnlockResult {
         guard appLockEnabled() || anySectionLocked else { return .success }
         return await authenticateForReveal(reason: reason)
+    }
+
+    /// Asks for Face ID or the passcode before a lock is turned off: a section's, the app's, or
+    /// the wait after this device's locks couldn't be read (`SectionLocks.needsChoosingAgain`).
+    /// It asks every time, even with the session open (inside the app it always is while the app
+    /// lock is on), and never opens or closes the session. Its answer is what every way of
+    /// turning a lock off asks for (`CategoryTemplate.setLock`, `AppPreferences.setAppLock`,
+    /// `TemplateStore.keepLocksAsTheyAre`); turning a lock on needs none.
+    public func confirmLowering(reason: String) async -> LockLowering? {
+        await authenticateForReveal(reason: reason) == .success ? LockLowering() : nil
     }
 
     /// Asks for Face ID or the passcode before a document from a locked category leaves

@@ -194,7 +194,7 @@ struct DossierImporter {
             }) else {
                 // The phone's copy stays, but a lock the backup has still locks it here (`SectionLocks`):
                 // a lock isn't in the record, so it doesn't wait for a newer copy.
-                if dto.isSensitive { byKey[dto.key]?.isSensitive = true }
+                if dto.isSensitive { try byKey[dto.key]?.setLock(true) }
                 continue
             }
             template.isBuiltIn = catalog != nil
@@ -213,14 +213,16 @@ struct DossierImporter {
             }
             template.homeOrder = dto.homeOrder
             template.isOnHome = dto.isOnHome
-            template.isSensitive = isLocked
+            // Never opens what is locked here now: while this device's locks couldn't be read, every
+            // category the backup brings stays locked until they are chosen again.
+            try template.setLock(isLocked || template.isSensitive)
             template.updatedAt = changeTime(dto.updatedAt)
         }
         // Built-ins the archive didn't mention.
         var order = (byKey.values.map(\.homeOrder).max() ?? -1) + 1
         for definition in BuiltInTemplates.all where byKey[definition.key] == nil {
             let template = CategoryTemplate(definition: definition, isBuiltIn: true, homeOrder: order)
-            template.isSensitive = phone.lock(definition.key, archive: false, default: definition.isSensitiveByDefault)
+            try template.setLock(phone.lock(definition.key, archive: false, default: definition.isSensitiveByDefault))
             // Installed from the catalog, not changed by anyone (`ChangeTimes`).
             template.updatedAt = ChangeTime.unknown
             context.insert(template)

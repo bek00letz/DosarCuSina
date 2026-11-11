@@ -92,13 +92,13 @@ struct SpotlightTests {
     // MARK: What is shown
 
     @Test("Nothing of the app is in the iPhone's search while the whole app is locked, or with the setting off")
-    func appLockHidesEverything() {
+    func appLockHidesEverything() async throws {
         let defaults = UserDefaults(suiteName: "SpotlightTests.\(UUID().uuidString)")!
         let preferences = AppPreferences(defaults: defaults)
         #expect(SpotlightIndexer.showsAnything(preferences))
-        preferences.appLockEnabled = true
+        try preferences.setAppLock(true)
         #expect(!SpotlightIndexer.showsAnything(preferences))
-        preferences.appLockEnabled = false
+        try preferences.setAppLock(false, lowering: try await faceIDConfirmed())
         preferences.showsInSpotlight = false
         #expect(!SpotlightIndexer.showsAnything(preferences))
     }
@@ -147,12 +147,12 @@ struct SpotlightTests {
     /// Every built-in category, locked and unlocked: a locked one shows nothing at all,
     /// titles included, whether or not the session is open.
     @Test(arguments: BuiltInTemplates.all.map(\.key), [false, true])
-    func aLockedCategoryShowsNothing(key: String, isLocked: Bool) throws {
+    func aLockedCategoryShowsNothing(key: String, isLocked: Bool) async throws {
         let container = try makeInMemoryContainer()
         let context = ModelContext(container)
         try TemplateStore(context: context).installBuiltIns()
         let category = try template(key, in: context)
-        try TemplateStore(context: context).setSensitive(category, isLocked)
+        try TemplateStore(context: context).setSensitive(category, isLocked, lowering: try await faceIDConfirmed())
         let section = try AssetActions(context: context, calendar: calendar, now: { today })
             .create(name: "Secțiune de probă", template: category, values: FieldValues())
         let deadline = try ObligationActions(context: context, calendar: calendar, now: { today })
@@ -169,14 +169,14 @@ struct SpotlightTests {
         }
     }
 
-    @Test func actsLockedByDefaultShowNothingAndUnlockedShowOnlyTheirTitles() throws {
+    @Test func actsLockedByDefaultShowNothingAndUnlockedShowOnlyTheirTitles() async throws {
         let h = try household()
         let locked = routes(try entries(h.context))
         #expect(!locked.contains(.asset(h.passport.id)))
         #expect(!locked.contains(.obligation(h.passportRenewal.id)))
         #expect(!locked.contains(.document(h.passportPhoto.id)))
 
-        try TemplateStore(context: h.context).setSensitive(try template(BuiltInTemplates.Key.documents, in: h.context), false)
+        try TemplateStore(context: h.context).setSensitive(try template(BuiltInTemplates.Key.documents, in: h.context), false, lowering: try await faceIDConfirmed())
         let unlocked = try entries(h.context)
         let passport = try #require(unlocked.first { $0.route == .asset(h.passport.id) })
         #expect(passport.title == "Pașaport – Manole Corina")
@@ -184,10 +184,10 @@ struct SpotlightTests {
         #expect(unlocked.contains { $0.route == .document(h.passportPhoto.id) })
     }
 
-    @Test func neverACNPADocumentNumberASecretOrTheTextReadOffADocument() throws {
+    @Test func neverACNPADocumentNumberASecretOrTheTextReadOffADocument() async throws {
         let h = try household()
         let documents = try template(BuiltInTemplates.Key.documents, in: h.context)
-        try TemplateStore(context: h.context).setSensitive(documents, false)
+        try TemplateStore(context: h.context).setSensitive(documents, false, lowering: try await faceIDConfirmed())
         let sealer = SecretSealer.ephemeral()
         let assets = AssetActions(context: h.context, calendar: calendar, now: { today }, sealer: sealer)
         // Names a person typed with the numbers in them.

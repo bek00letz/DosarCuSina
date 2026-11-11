@@ -65,7 +65,9 @@ public enum DosarSchemaV14: VersionedSchema {
 
 /// Migration plan for the household database, oldest version first. Every new
 /// version freezes the one before it in `Versions/`, adds a stage here, and gets a
-/// test that opens a store written by the version before (`SchemaMigrationTests`).
+/// test that opens a store written by the version before (`SchemaMigrationTests`). A custom
+/// stage that carries something across the change of shape carries it through `MigrationCarry`,
+/// never in memory, so an upgrade that stops halfway finishes at the next launch.
 public enum DosarMigrationPlan: SchemaMigrationPlan {
     public static var schemas: [any VersionedSchema.Type] { [DosarSchemaV2.self, DosarSchemaV3.self, DosarSchemaV4.self, DosarSchemaV5.self, DosarSchemaV6.self, DosarSchemaV7.self, DosarSchemaV8.self, DosarSchemaV9.self, DosarSchemaV10.self, DosarSchemaV11.self, DosarSchemaV12.self, DosarSchemaV13.self, DosarSchemaV14.self] }
     public static var stages: [MigrationStage] { [v2ToV3, v3ToV4, v4ToV5, v5ToV6, v6ToV7, v7ToV8, v8ToV9, v9ToV10, v10ToV11, v11ToV12, v12ToV13, v13ToV14] }
@@ -106,8 +108,9 @@ public enum DosarMigrationPlan: SchemaMigrationPlan {
 
     /// Version 9 keeps every day as a day (`StoredDay`) instead of a moment. Before the store
     /// changes shape, each moment is read as the day it meant in the phone's time zone at that
-    /// moment (`DayMigration`); after, the days are written into their new places and saved once.
-    /// Nothing else changes, change times included.
+    /// moment (`DayMigration`) and carried in a file beside the store (`MigrationCarry`); once the
+    /// store opens, the days are written into their new places and saved once, at the next launch
+    /// when the upgrade stopped halfway. Nothing else changes, change times included.
     static var v8ToV9: MigrationStage { DayMigration.stage }
 
     /// Version 10 only adds a flag with a default (a reading doesn't start a new counter);
@@ -126,15 +129,10 @@ public enum DosarMigrationPlan: SchemaMigrationPlan {
     /// Version 12 adds an optional value (what a newer build wrote in a deadline's reminders that
     /// this one doesn't read; existing deadlines have none, which is what they hold) and takes a
     /// category's lock out of the store, where iCloud would carry it: each device keeps its own
-    /// (`SectionLocks`). Before the store changes shape, every category's lock becomes this
-    /// device's choice, so every lock stays as it was.
-    static var v11ToV12: MigrationStage {
-        .custom(fromVersion: DosarSchemaV11.self, toVersion: DosarSchemaV12.self, willMigrate: { context in
-            let locks = try context.fetch(FetchDescriptor<DosarSchemaV11.CategoryTemplate>())
-                .reduce(into: [String: Bool]()) { locks, template in locks[template.key] = (locks[template.key] ?? false) || template.isSensitive }
-            SectionLocks.of(context.container).adopt(locks)
-        }, didMigrate: nil)
-    }
+    /// (`SectionLocks`). Before the store changes shape, every category's lock is carried beside it
+    /// (`LockMigration`, `MigrationCarry`), and once the store opens it becomes this device's
+    /// choice, so every lock stays as it was, even when the upgrade stopped halfway.
+    static var v11ToV12: MigrationStage { LockMigration.stage }
 
     /// Version 13 only adds an optional value to every model (which copy of the record this is);
     /// existing records keep every value and have none. Nothing guesses one for them here: two
