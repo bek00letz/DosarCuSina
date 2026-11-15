@@ -199,7 +199,7 @@ struct DeadlineEditSheet: View {
         do {
             let receipt = try ObligationActions(context: context, calendar: calendar).edit(obligation, to: draft, startedFrom: start)
             errorMessage = nil
-            onClose(receipt.map { .undo("Am salvat „\(obligation.title)”.", receipt: $0) })
+            onClose(receipt.map { DSToast.undo("Am salvat „\(obligation.title)”.", receipt: $0) })
         } catch {
             errorMessage = SaveFailure.message(for: error, formKept: true)
         }
