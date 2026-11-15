@@ -12,7 +12,11 @@ public struct ObligationSnapshot: Hashable, Sendable, Identifiable {
     public var dueDay: CalendarDay
     /// The day it comes back after "Amână"; hidden until that day starts where the phone is.
     public var snoozedUntil: CalendarDay?
+    /// Its reminders as this cycle uses them (`Obligation.cycleReminders`: a lead longer than how
+    /// it repeats is left out), so reminders, urgency and the widget read the same leads.
     public var reminders: ReminderProfile
+    /// Minutes after midnight for its reminders, when it has a time of its own; nil uses the
+    /// general time from Settings (`AppPreferences.reminderMinuteOfDay`).
     public var reminderMinuteOfDay: Int?
     public var estimatedCost: Money?
     public var assetId: UUID?
@@ -107,7 +111,7 @@ extension ObligationSnapshot {
                 status: obligation.status,
                 dueDay: obligation.dueDay,
                 snoozedUntil: obligation.snoozedUntil,
-                reminders: obligation.reminders,
+                reminders: obligation.cycleReminders,
                 reminderMinuteOfDay: obligation.reminderMinuteOfDay,
                 estimatedCost: obligation.estimatedCost,
                 assetId: asset?.id,

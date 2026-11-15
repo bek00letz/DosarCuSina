@@ -29,12 +29,17 @@ public struct OutsideRequest: Hashable, Sendable {
     public var cycle: CalendarDay?
     public var action: OutsideAction
     public var surface: OutsideSurface
+    /// When the person acted, when it was some time before the app could act on it (a widget's
+    /// "Gata" left for the app). A deadline counted from when it was done counts from then, not
+    /// from when the app next opened. Nil: now.
+    public var actedAt: Date?
 
-    public init(obligationId: UUID, cycle: CalendarDay?, action: OutsideAction, surface: OutsideSurface) {
+    public init(obligationId: UUID, cycle: CalendarDay?, action: OutsideAction, surface: OutsideSurface, actedAt: Date? = nil) {
         self.obligationId = obligationId
         self.cycle = cycle
         self.action = action
         self.surface = surface
+        self.actedAt = actedAt
     }
 }
 
@@ -86,7 +91,8 @@ enum IntentEngine {
         let actions = ObligationActions(context: context, calendar: calendar, now: now)
         switch request.action {
         case .complete:
-            try actions.complete(obligation)
+            // Never later than now: a clock set back on the phone can't date it ahead.
+            try actions.complete(obligation, on: request.actedAt.map { min($0, now()) })
             return .completed(next: obligation.status == .active ? obligation.dueDay : nil)
         case .snooze(let days):
             try actions.snooze(obligation, days: days)
@@ -132,7 +138,8 @@ enum IntentEngine {
         queue: WidgetCompletionQueue? = .shared(),
         in context: ModelContext,
         failures: OutsideActionFailures = .shared,
-        calendar: Calendar = .dosar
+        calendar: Calendar = .dosar,
+        now: @escaping () -> Date = { Date() }
     ) -> Int {
         guard let queue else { return 0 }
         let pending = queue.pending()
@@ -140,9 +147,10 @@ enum IntentEngine {
         var completed = 0
         var handled: [WidgetCompletion] = []
         for item in pending {
-            let request = OutsideRequest(obligationId: item.obligationId, cycle: CalendarDay(isoString: item.dueDay), action: .complete, surface: .widget)
+            let request = OutsideRequest(obligationId: item.obligationId, cycle: CalendarDay(isoString: item.dueDay), action: .complete, surface: .widget,
+                                         actedAt: item.requestedAt)
             do {
-                if case .completed = try apply(request, in: context, calendar: calendar) { completed += 1 }
+                if case .completed = try apply(request, in: context, calendar: calendar, now: now) { completed += 1 }
                 handled.append(item)
             } catch {
                 failures.record(request, at: item.requestedAt)
@@ -164,7 +172,8 @@ enum WidgetCompletionHandler {
             obligationId: completion.obligationId,
             cycle: CalendarDay(isoString: completion.dueDay),
             action: .complete,
-            surface: .widget
+            surface: .widget,
+            actedAt: completion.requestedAt
         )
         do {
             try await IntentEngine.perform(request, container: PersistenceController.shared.container)
