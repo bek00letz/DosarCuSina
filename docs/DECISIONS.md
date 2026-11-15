@@ -18,6 +18,12 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 - **Decided:** the way back is a switch (`CompletionShape.asksByKind`): off, every kind asks what the sheet asked before (when, the cost, a photo of the new document), through the same sheet. It is removed once the owner agrees.
 - **Left open:** a cost or a paper can't be added to a completion later from Istoric; that is a feature of its own (an edit of a record). A completion that a document's expiry field drives (a passport) writes no entry in Istoric, as before, so it keeps no note or cost.
 
+## 2026-11-15
+
+### Asking for notifications always asks
+- **Decided:** when the person asks for notifications (Settings' "Pornește notificările", the explanation's "Continuă") and hasn't decided yet, the system asks, whatever there is to remind about: an empty binder, only examples (which never remind), or a deadline whose reminders have all passed. A pass on its own never asks, and the ask in context after a save asks only when something reminds. One rule for all three, `PermissionPrompt` (`never`, `inContext`, `personAsked`), read by `NotificationReconciler`; the person's request comes in only through `SideEffectsCoordinator.askForPermission()`, which asks even when the binder can't be read, then schedules what there is and returns with the answer, read again from the system. Allowed or refused, nothing is asked again; a refusal is changed in the phone's Settings, which Settings opens.
+- **Why:** a tester tapped "Pornește notificările" before adding anything and nothing happened: the button only asked when there was something to remind about, a rule meant for the ask after a save. A button that answers with nothing breaks the promise on it. Refines "Permissions are asked in context" (below): the person's own tap is the context.
+
 ## 2026-11-11
 
 ### An upgrade interrupted halfway finishes at the next launch

@@ -120,7 +120,7 @@ struct WaitingForEventsTests {
     // MARK: The permission
 
     @MainActor
-    @Test("Asking returns with the person's answer, once, and only when something reminds")
+    @Test("Asking returns with the person's answer, once, even with nothing to remind about yet")
     func askingReturnsWithTheAnswer() async throws {
         for grants in [true, false] {
             let container = try makeInMemoryContainer()
@@ -129,22 +129,65 @@ struct WaitingForEventsTests {
             let center = FakeNotificationCenter(status: .notDetermined, grants: grants)
             let coordinator = try Self.coordinator(container, center: center)
 
-            #expect(await coordinator.askForPermission() == .notDetermined, "Nothing reminds: nothing to ask")
-            #expect(await center.promptCount == 0)
+            await coordinator.reconcileNow(allowPermissionPrompt: true)
+            #expect(await center.promptCount == 0, "A pass in context with nothing to remind about asks nothing")
+            #expect(coordinator.reminderAuthorization == .notDetermined)
 
-            try ObligationActions(context: context, calendar: .bucharest, now: { noon("2026-11-02") })
-                .create(title: "RCA", kind: .insurance, dueDay: CalendarDay("2026-11-30"), for: nil)
             let answer = await coordinator.askForPermission()
+            #expect(await center.promptCount == 1, "The person asked: the system asks, though nothing reminds yet")
             #expect(answer == (grants ? .authorized : .denied))
             #expect(coordinator.reminderAuthorization == answer, "Settings shows it as soon as it returns")
-            #expect(await center.promptCount == 1)
 
             let permission = ReminderPermission(client: center, becomesActive: Notification.Name("tests.\(UUID().uuidString)"))
             await permission.refresh()
             #expect(permission.status == answer)
+
+            try ObligationActions(context: context, calendar: .bucharest, now: { noon("2026-11-02") })
+                .create(title: "RCA", kind: .insurance, dueDay: CalendarDay("2026-11-30"), for: nil)
             #expect(await coordinator.askForPermission() == answer)
-            #expect(await center.promptCount == 1, "Asked once")
+            #expect(await center.promptCount == 1, "Asked once: allowed or refused, the system isn't asked again")
+            #expect(await center.pendingReminders.isEmpty == !grants, "Then the pass schedules what there is")
         }
+    }
+
+    @MainActor
+    @Test("With only examples in the binder, the person's request still asks, and examples still remind of nothing")
+    func examplesOnlyStillAsks() async throws {
+        let container = try makeInMemoryContainer()
+        let context = container.mainContext
+        try TemplateStore(context: context).installBuiltIns()
+        try ExampleDataService(context: context, calendar: .bucharest, now: { noon("2026-11-02") }).loadExamples()
+        let center = FakeNotificationCenter(status: .notDetermined)
+        let coordinator = try Self.coordinator(container, center: center)
+
+        await coordinator.reconcileNow(allowPermissionPrompt: true)
+        #expect(await center.promptCount == 0, "Examples never remind, so nothing asks in context")
+
+        #expect(await coordinator.askForPermission() == .authorized)
+        #expect(await center.promptCount == 1)
+        #expect(await center.pendingReminders.isEmpty)
+    }
+
+    @MainActor
+    @Test("Refused, the request asks nothing: the phone's Settings is the way back")
+    func refusedAsksNothing() async throws {
+        let center = FakeNotificationCenter(status: .denied)
+        let coordinator = try Self.coordinator(try makeInMemoryContainer(), center: center)
+        #expect(await coordinator.askForPermission() == .denied)
+        #expect(await center.promptCount == 0)
+        #expect(coordinator.reminderAuthorization == .denied)
+    }
+
+    @MainActor
+    @Test("The person's request is answered even when the binder can't be read")
+    func asksWithoutTheBinder() async throws {
+        let container = try makeInMemoryContainer()
+        let center = FakeNotificationCenter(status: .notDetermined)
+        let coordinator = try Self.coordinator(container, center: center)
+        coordinator.containerRetired(container)
+
+        #expect(await coordinator.askForPermission() == .authorized)
+        #expect(await center.promptCount == 1)
     }
 
     @MainActor

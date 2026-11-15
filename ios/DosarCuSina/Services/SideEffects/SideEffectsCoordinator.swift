@@ -140,6 +140,8 @@ public final class SideEffectsCoordinator: ContainerHolder {
     }
 
     /// Schedules a pass after a short delay; repeated calls fold into one.
+    /// `allowPermissionPrompt` is the ask in context (`PermissionPrompt.inContext`): only when
+    /// there is something to remind about. The person's own request is `askForPermission()`.
     public func setNeedsReconcile(allowPermissionPrompt: Bool) {
         pendingAllowsPrompt = pendingAllowsPrompt || allowPermissionPrompt
         pending?.cancel()
@@ -152,38 +154,47 @@ public final class SideEffectsCoordinator: ContainerHolder {
         }
     }
 
-    /// After the in-app explanation, or from Settings: a pass now that may ask for notification
-    /// permission. It returns once the pass has run, so with the person's answer when the
-    /// system asked; screens read the permission again then, never after a guessed pause.
+    /// The person asked for notifications (Settings' "Pornește notificările", the explanation's
+    /// "Continuă"): the one way in for that request. While they haven't decided, the system
+    /// asks, whatever there is to remind about (`PermissionPrompt.personAsked`), even with an
+    /// empty binder or only examples, and even when the binder can't be read; then the pass
+    /// schedules what there is. It returns once the pass has run, with the person's answer;
+    /// screens read the permission again then, never after a guessed pause. Already allowed
+    /// or refused, nothing is asked (a refusal changes only in the phone's Settings).
     /// A pass already waiting folds into this one.
     @discardableResult
     public func askForPermission() async -> ReminderAuthorization {
         pending?.cancel()
         pending = nil
         pendingAllowsPrompt = false
-        await reconcileNow(allowPermissionPrompt: true)
+        await pass(prompt: .personAsked)
         return reminderAuthorization
     }
 
     /// Rebuilds reminders, badge, widget snapshot and indexes from the database now.
     /// A pass asked for while another runs waits for it, then runs on what is saved.
+    /// `allowPermissionPrompt` is the ask in context, as in `setNeedsReconcile`.
     public func reconcileNow(allowPermissionPrompt: Bool = false) async {
+        await pass(prompt: allowPermissionPrompt ? .inContext : .never)
+    }
+
+    private func pass(prompt: PermissionPrompt) async {
         let previous = inFlight
         let pass = Task { [weak self] in
             await previous?.value
-            await self?.runPass(allowPermissionPrompt: allowPermissionPrompt)
+            await self?.runPass(prompt: prompt)
         }
         inFlight = pass
         await pass.value
     }
 
-    private func runPass(allowPermissionPrompt: Bool) async {
+    private func runPass(prompt: PermissionPrompt) async {
         // The share's notice has done its job once nothing it announced still waits.
         // Outside the database, so a store that can't be read doesn't keep it up.
         if let waiting = waitingInboxItems() {
             await InboxNotice.follow(waiting: waiting, center: inboxNotices)
         }
-        guard let container else { return }
+        guard let container else { return await settlePermissionWithoutPlan(prompt) }
         let context = PersistenceController.context(in: container)
         let outside: [ObligationSnapshot]
         do {
@@ -191,7 +202,7 @@ public final class SideEffectsCoordinator: ContainerHolder {
             outside = try ObligationSnapshot.fetchForOutside(in: context, calendar: calendar)
         } catch {
             lastFailure = String(describing: error)
-            return
+            return await settlePermissionWithoutPlan(prompt)
         }
         let date = now()
         let plan = ReminderPlanner.plan(outside, now: date, calendar: calendar, defaultMinuteOfDay: preferences.reminderMinuteOfDay)
@@ -202,7 +213,7 @@ public final class SideEffectsCoordinator: ContainerHolder {
         )
 
         widgetWriter.write(WidgetFeed.make(from: outside, now: date, calendar: calendar))
-        let outcome = await reconciler.apply(plan, badgeCount: badge, openCycles: openCycles, allowPermissionPrompt: allowPermissionPrompt)
+        let outcome = await reconciler.apply(plan, badgeCount: badge, openCycles: openCycles, prompt: prompt)
         reminderAuthorization = outcome.authorization
         lastOutcome = outcome
         lastFailure = nil
@@ -210,6 +221,12 @@ public final class SideEffectsCoordinator: ContainerHolder {
             await indexer.reconcile(obligations: outside, context: context)
         }
         lastReconciledAt = date
+    }
+
+    /// A pass that can't read the binder still answers the person's request for notifications
+    /// (by the same rule, with nothing planned) and keeps the permission Settings shows current.
+    private func settlePermissionWithoutPlan(_ prompt: PermissionPrompt) async {
+        reminderAuthorization = await reconciler.authorization(asking: prompt, somethingToRemind: false)
     }
 
     private func listen(to name: Notification.Name, allowPrompt: Bool) -> Task<Void, Never> {

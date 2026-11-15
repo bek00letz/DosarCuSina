@@ -144,7 +144,7 @@ struct OutsideActionsTests {
         await center.deliver(DeliveredReminder(identifier: ReminderPlanner.continueIdentifier, obligationId: nil, cycle: nil))
         await center.deliver(DeliveredReminder(identifier: "someone.else", obligationId: nil, cycle: nil))
 
-        let outcome = await NotificationReconciler(client: center).apply([], badgeCount: 0, openCycles: [open: CalendarDay("2026-11-10")], allowPermissionPrompt: false)
+        let outcome = await NotificationReconciler(client: center).apply([], badgeCount: 0, openCycles: [open: CalendarDay("2026-11-10")], prompt: .never)
         #expect(outcome.clearedDelivered == 3)
         #expect(await center.deliveredReminders.map(\.identifier) == ["obligation.\(open.uuidString.lowercased()).d7", "someone.else"])
     }
