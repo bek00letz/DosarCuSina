@@ -167,7 +167,7 @@ struct OnboardingFlow: View {
         OnboardingPage(
             symbols: ["sparkles"],
             title: "Cum vrei să începi?",
-            message: "Cu exemple vezi cum arată un dosar plin: o mașină, o casă, un câine. Le ștergi cu o atingere din Setări."
+            message: "Cu exemple vezi cum arată un dosar plin: o mașină, o casă, un câine. Le ștergi cu o atingere, de la capătul dosarului."
         ) {
             if let errorMessage {
                 DSNotice(.error, title: "Exemplele nu s-au încărcat", message: LocalizedStringKey(errorMessage))
@@ -187,7 +187,7 @@ struct OnboardingFlow: View {
                 onFinish()
             } catch {
                 isLoadingExamples = false
-                errorMessage = String(localized: "Încearcă din nou. Poți începe și gol; exemplele se pot încărca oricând din Setări.")
+                errorMessage = String(localized: "Încearcă din nou. Poți începe și gol; cât dosarul e gol, exemplele se încarcă de acolo.")
             }
         }
     }

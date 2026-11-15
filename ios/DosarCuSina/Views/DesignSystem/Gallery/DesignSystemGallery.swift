@@ -432,6 +432,17 @@ private struct GalleryCards: View {
                     }
                 }
             }
+            GallerySection(title: "Cutia care adaugă", note: "DSAddBox: ultima cutie din dosar. Sub titlu numește ce poate adăuga și n-are încă o cutie, ca dosarul să arate ce poate ține.") {
+                HStack(spacing: DS.Space.s) {
+                    DSAddBox(title: "Adaugă o secțiune", detail: "Acte, Garanții, Abonamente, Locuințe…")
+                    DSAddBox(title: "Adaugă o secțiune")
+                }
+            }
+            GallerySection(title: "Acțiuni în plus", note: "DSMoreActionsToolbar: o singură acțiune apare cu numele ei („Mută la…”); mai multe intră în „Mai multe”; niciuna, nimic.") {
+                Text(verbatim: "Se vede în bara de sus a paginii unui act.")
+                    .dsFont(.footnote)
+                    .foregroundStyle(DS.Palette.secondaryLabel)
+            }
             GallerySection(title: "Card simplu") {
                 DSCard {
                     VStack(alignment: .leading, spacing: DS.Space.xs) {
