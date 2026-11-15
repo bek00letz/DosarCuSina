@@ -250,6 +250,18 @@ public final class HistoryActions {
         try save()
     }
 
+    /// Writes the note of a record in Istoric ("Adaugă o notă" after a chore's "Gata", or from
+    /// the record's page), or clears it with nil or blank text. Undoable: the receipt takes back
+    /// only the note.
+    @discardableResult
+    public func setNote(_ entry: HistoryEntry, _ note: String?) throws -> UndoReceipt {
+        let text = note?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return try UnitOfWork.performUndoable(in: context, now: now()) {
+            entry.note = (text?.isEmpty ?? true) ? nil : text
+            try save()
+        }.receipt
+    }
+
     /// Rates the job 1–5, or clears the rating with nil. The providers' ratings follow.
     public func rate(_ entry: HistoryEntry, _ rating: Int?) throws {
         entry.rating = rating.map { min(max($0, 1), 5) }

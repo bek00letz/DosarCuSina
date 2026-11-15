@@ -29,6 +29,8 @@ struct UpcomingRoot: View {
     @State private var expanded: Set<String> = []
     @State private var toast: DSToast?
     @State private var snoozing: AttentionEntry?
+    /// "Adaugă o notă" after a chore's "Gata".
+    @State private var noteRequest: HistoryNoteRequest?
 
     @Environment(ShellRouter.self) private var router
 
@@ -44,6 +46,7 @@ struct UpcomingRoot: View {
                 }
             }
         .dsToast($toast)
+        .historyNoteSheet($noteRequest, toast: $toast)
         .task(id: changeToken) { reload() }
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in reload() }
         .onReceive(NotificationCenter.default.publisher(for: OutsideActionFailures.didChange)) { _ in reload() }
@@ -362,7 +365,10 @@ struct UpcomingRoot: View {
             let actions = UpcomingActions(context: context)
             guard let obligation = actions.obligation(entry.id) else { return }
             do {
-                toast = try actions.complete(obligation, title: obligation.title)
+                // The quick way, one step for every kind; a chore's toast offers a note.
+                toast = try actions.complete(obligation, title: obligation.title) { entryID, shown in
+                    noteRequest = HistoryNoteRequest(entryID: entryID, restoring: shown)
+                }
             } catch {
                 toast = UpcomingActions.failureToast(error)
             }

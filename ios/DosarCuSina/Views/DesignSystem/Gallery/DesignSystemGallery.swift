@@ -601,6 +601,15 @@ private struct GalleryFeedback: View {
                             Text(verbatim: "Șterge „VW Golf 2018”").frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
+                        // A toast with a next step: a chore's "Gata" offers a note (`DSToast.offer`).
+                        Button {
+                            var chore = DSToast(title: "Udat: gata.", action: {}, duration: DSToast.offerDuration)
+                            chore.offer = DSToast.Offer(title: Text(verbatim: "Adaugă o notă")) { _ in }
+                            toast = chore
+                        } label: {
+                            Text(verbatim: "Udat: gata, cu notă").frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
                     }
                 }
             }

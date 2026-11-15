@@ -42,12 +42,21 @@ struct CaptureFiler {
 
     /// "Am rezolvat": the date, what it cost, and optionally the new document (the new
     /// policy, the ITP report), whose date sets the next deadline and whose values
-    /// update the section, as a review would.
+    /// update the section, as a review would. What the sheet asks is the deadline's kind's
+    /// (`CompletionShape`); the sheet builds this through `CompletionDraft`.
     struct Completion {
         var obligation: Obligation
         var date: Date
         var cost: Money?
         var document: CaptureResult?
+        /// The day the renewed document expires, as the person left it: it wins over the one
+        /// read off the document. Nil: the document's, if any.
+        var nextDue: CalendarDay?
+        /// A note on the completion ("Ce a spus medicul"), kept on its entry in Istoric.
+        var note: String?
+        /// The counter the person read (a car's kilometres), on the deadline's counter
+        /// (`ObligationActions.counter`).
+        var metricReading: Double?
         /// The person asked to keep the photo of a document kept only on request (a bank card).
         var keepsPhotoOnRequest = false
         /// A photo of a bill that only looked like one already filed, by its day and total:
@@ -480,8 +489,10 @@ struct CaptureFiler {
         }
 
         // 2. The deadline: the cycle closes, and the new document's date sets the next one.
-        let newDay = completion.document.flatMap(Self.nextDay(in:)).flatMap { $0 > today ? $0 : nil }
-        outcome.completion = try renew(obligation, to: newDay, done: true, on: completion.date, cost: completion.cost)
+        // The day the person left wins over the one read off the document.
+        let newDay = (completion.nextDue ?? completion.document.flatMap(Self.nextDay(in:))).flatMap { $0 > today ? $0 : nil }
+        outcome.completion = try renew(obligation, to: newDay, done: true, on: completion.date, cost: completion.cost,
+                                       note: completion.note, metricReading: completion.metricReading)
         if obligation.status == .active { outcome.nextDue = obligation.dueDay }
 
         // A bill, in its subscription's history, once.
@@ -631,6 +642,10 @@ struct CaptureFiler {
         case .review(let review):
             try askFirst(for: review)
         case .completion(let completion):
+            // The counter the person read, as completing records it.
+            let typed = ObligationActions(context: context, calendar: calendar, now: now)
+                .plannedReading(completion.metricReading, completing: completion.obligation, on: completion.date)
+            try HouseholdMutations.askAboutReading(typed, answer: lowerReading)
             guard let review = completionReview(completion), let asset = completion.obligation.asset else { return }
             try ExampleOwnership.requireReal(asset)
             let templates = try TemplateStore(context: context).templatesByKey()
@@ -783,8 +798,11 @@ struct CaptureFiler {
     ///   next date is the document's;
     /// - a one-off: it moves to the document's date.
     /// An older date never moves a deadline back. `done` is the person's "Am rezolvat": the
-    /// cycle closes even when the document has no later date. Returns the completion written.
-    private func renew(_ obligation: Obligation, to day: CalendarDay?, done: Bool, on date: Date?, cost: Money?) throws -> HistoryEntry? {
+    /// cycle closes even when the document has no later date, with what the person said of it
+    /// (a note, the counter read: asked before the unit opened, `askFirst`). Returns the
+    /// completion written.
+    private func renew(_ obligation: Obligation, to day: CalendarDay?, done: Bool, on date: Date?, cost: Money?,
+                       note: String? = nil, metricReading: Double? = nil) throws -> HistoryEntry? {
         let actions = ObligationActions(context: context, calendar: calendar, now: now)
         let due = obligation.dueDay
         guard done || (day.map { $0 > due } ?? false) else { return nil }
@@ -797,7 +815,8 @@ struct CaptureFiler {
             return nil
         }
         if done || obligation.recurrence.repeats {
-            let entry = try actions.complete(obligation, on: date, cost: cost).value
+            let entry = try actions.complete(obligation, on: date, cost: cost, metricReading: metricReading, note: note,
+                                             lowerReading: lowerReading).value
             if obligation.status == .active, let day, obligation.dueDay != day {
                 try actions.reschedule(obligation, to: day)
             }
@@ -837,7 +856,8 @@ struct CaptureFiler {
                 break
             }
         case .completion(let completion):
-            if completion.document != nil { add(completion.obligation.asset) }
+            // A document's values, or a new expiry typed into the section's field.
+            if completion.document != nil || completion.nextDue != nil { add(completion.obligation.asset) }
         case .visit(let visit):
             add(visit.asset)
         }
