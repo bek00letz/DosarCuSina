@@ -26,10 +26,22 @@ struct DSToast: Identifiable {
     var duration: Duration = .seconds(5)
     /// Haptic played when the toast appears, matching what just happened.
     var feedback: SensoryFeedback? = .success
+    /// A small next step offered beside the button ("Adaugă o notă" after a chore's "Gata").
+    /// Using it closes the toast.
+    var offer: Offer?
+
+    /// A next step a toast offers: its title and what it does, handed the toast it was shown
+    /// on (to show again when the step is left without saving).
+    struct Offer {
+        let title: Text
+        let action: @MainActor (DSToast) -> Void
+    }
 
     /// How long a toast for something deleted stays: longer than other steps, since it
     /// brings back more and the screen it came from has usually closed.
     static let deletionDuration: Duration = .seconds(8)
+    /// How long a toast that offers a next step stays: long enough to read it and choose.
+    static let offerDuration: Duration = .seconds(8)
 
     /// A toast confirming a saved change the person can take back, e.g. "ITP: gata". The
     /// button appears only when the receipt has something to undo.
@@ -127,6 +139,8 @@ private struct DSToastModifier: ViewModifier {
                     if let toast {
                         DSToastView(toast: toast) {
                             run(toast)
+                        } onOffer: {
+                            take(toast)
                         } onDismiss: {
                             dismiss()
                         }
@@ -199,37 +213,54 @@ private struct DSToastModifier: ViewModifier {
             toast = .failure(error)
         }
     }
+
+    /// The offered next step: the toast closes and the step runs.
+    private func take(_ shown: DSToast) {
+        guard let offer = shown.offer else { return }
+        actionCount += 1
+        usedID = shown.id
+        dismiss()
+        offer.action(shown)
+    }
 }
 
 private struct DSToastView: View {
     let toast: DSToast
     let onAction: () -> Void
+    let onOffer: () -> Void
     let onDismiss: () -> Void
 
     @State private var dragOffset: CGFloat = 0
 
     var body: some View {
-        HStack(spacing: DS.Space.s) {
-            Image(systemName: toast.systemImage)
-                .font(.system(.body, weight: .semibold))
-                .foregroundStyle(toast.tint)
-                .accessibilityHidden(true)
-
-            Text(toast.title)
-                .dsFont(.subheadline)
-                .foregroundStyle(DS.Palette.label)
-                .lineLimit(2)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            if let actionTitle = toast.actionTitle, toast.offersAction {
-                Button(action: onAction) {
-                    actionTitle
-                        .font(.subheadline.weight(.semibold))
-                        .padding(.horizontal, DS.Space.xs)
-                        .frame(minHeight: 44)
-                        .contentShape(.rect)
+        Group {
+            if let offer = toast.offer {
+                // Two buttons: the words on their own line, the buttons under them at the
+                // trailing edge, stacked when they don't fit side by side.
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack(spacing: DS.Space.s) {
+                        icon
+                        title
+                    }
+                    .padding(.top, DS.Space.xs)
+                    HStack(spacing: 0) {
+                        Spacer(minLength: 0)
+                        DSAdaptiveStack(horizontalAlignment: .trailing, spacing: DS.Space.xxs, stackedSpacing: 0) {
+                            button(offer.title, action: onOffer)
+                            if let actionTitle = toast.actionTitle, toast.offersAction {
+                                button(actionTitle, action: onAction)
+                            }
+                        }
+                    }
                 }
-                .buttonStyle(.borderless)
+            } else {
+                HStack(spacing: DS.Space.s) {
+                    icon
+                    title
+                    if let actionTitle = toast.actionTitle, toast.offersAction {
+                        button(actionTitle, action: onAction)
+                    }
+                }
             }
         }
         .padding(.leading, DS.Space.m)
@@ -251,5 +282,31 @@ private struct DSToastView: View {
         )
         .accessibilityElement(children: .contain)
         .accessibilityAction(named: Text("Închide")) { onDismiss() }
+    }
+
+    private var icon: some View {
+        Image(systemName: toast.systemImage)
+            .font(.system(.body, weight: .semibold))
+            .foregroundStyle(toast.tint)
+            .accessibilityHidden(true)
+    }
+
+    private var title: some View {
+        Text(toast.title)
+            .dsFont(.subheadline)
+            .foregroundStyle(DS.Palette.label)
+            .lineLimit(2)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func button(_ title: Text, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            title
+                .font(.subheadline.weight(.semibold))
+                .padding(.horizontal, DS.Space.xs)
+                .frame(minHeight: 44)
+                .contentShape(.rect)
+        }
+        .buttonStyle(.borderless)
     }
 }

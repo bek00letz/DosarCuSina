@@ -100,7 +100,22 @@ A calm, short list built on the attention model (4.4):
 
 *Pregătește-te* at the end holds the situations about the whole household; today *Pleci din țară* (4.6).
 
-Snoozed and paused items are counted, not listed. Tapping a deadline opens its page: when it is and why it matters, last time's price and who did it, the policy number and claims phone of that deadline's own policy, what to bring (with what the binder already holds ticked), the actions (*Am rezolvat* — done, snooze, reschedule, pause, add to Calendar) and how it reminds.
+Snoozed and paused items are counted, not listed. Tapping a deadline opens its page: when it is and why it matters, last time's date, price, note and who did it, the policy number and claims phone of that deadline's own policy, what to bring (with what the binder already holds ticked), the actions (*Am rezolvat* or, for a chore, *Gata* — done, snooze, reschedule, pause, add to Calendar) and how it reminds. Each of last time's rows shows only when the deadline has it, so a chore lists none of them unless it does.
+
+**What completing asks, by kind.** What closing a deadline asks in the app is its kind's, declared once (`ObligationKind.completion`, a `CompletionShape`), and saving keeps only that (`CompletionDraft`), through the same filer and actions for every kind:
+
+| Kind | Asks |
+| :--- | :--- |
+| Chore (*routine*, *Doar să nu uit*) | Nothing. *Gata* marks it done today, with no sheet; the toast has *Anulează* and *Adaugă o notă*, a small note on that completion in Istoric, itself undoable. |
+| Upkeep (*maintenance*) | *Când*, *Cât a costat*, the invoice, and the section's counter where it has one (a car's kilometres), which asks first when it is lower. |
+| Bill (*payment*) | *Când*, *Cât ai plătit*, the bill, filed as a bill (below, 5.4). |
+| Renewal | *Când*, the new document and *Expiră pe*, filled from its photo; the day the person leaves sets the next deadline. |
+| Legal check | *Când*, *Cât a costat*, the proof (a report, a certificate, a receipt). |
+| Insurance | *Când*, *Cât a costat*, the new policy, whose facts fill the section. |
+| Tax | *Când*, *Cât ai plătit*, the receipt. |
+| Health | *Când*, *Cât a costat*, a note, the result. |
+
+Every paper is optional and read by the same capture. Outside the app (reminder buttons, the widget, Siri) and Urmează's swipe, every kind completes in one step; a chore's toast in Urmează offers the note too. A record's note can be added or changed later from its page in Istoric.
 
 ### 2.6 Adaugă
 
