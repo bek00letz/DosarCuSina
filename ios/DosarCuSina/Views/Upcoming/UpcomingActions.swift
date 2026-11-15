@@ -26,10 +26,13 @@ struct UpcomingActions {
         return try? context.fetch(descriptor).first
     }
 
-    /// Completes and returns the toast with its undo.
-    func complete(_ obligation: Obligation, title: String, cost: Money? = nil, on date: Date? = nil) throws -> DSToast {
+    /// Completes today in one step and returns the toast with its undo. When the deadline's
+    /// kind asks nothing (a chore, `CompletionShape.offersNoteAfter`) and the screen can show
+    /// the note sheet, the toast also offers "Adaugă o notă", which hands `addNote` the
+    /// completion's entry in Istoric and the toast, to show again if no note is saved.
+    func complete(_ obligation: Obligation, title: String, addNote: (@MainActor (UUID, DSToast) -> Void)? = nil) throws -> DSToast {
         let actions = ObligationActions(context: context, calendar: calendar)
-        let done = try actions.complete(obligation, on: date, cost: cost)
+        let done = try actions.complete(obligation)
         let message: LocalizedStringResource
         if obligation.status == .active {
             let next = DosarFormat.longDay(obligation.dueDay)
@@ -37,7 +40,15 @@ struct UpcomingActions {
         } else {
             message = "\(title): gata."
         }
-        return .undo(message, receipt: done.receipt)
+        var toast = DSToast.undo(message, receipt: done.receipt)
+        if obligation.kind.completion.offersNoteAfter, let addNote {
+            let entryID = done.value.id
+            toast.offer = DSToast.Offer(title: Text("Adaugă o notă", comment: "Toast after a chore's Gata: opens a note for that completion.")) { shown in
+                addNote(entryID, shown)
+            }
+            toast.duration = DSToast.offerDuration
+        }
+        return toast
     }
 
     func snooze(_ obligation: Obligation, days: Int, title: String) throws -> DSToast {

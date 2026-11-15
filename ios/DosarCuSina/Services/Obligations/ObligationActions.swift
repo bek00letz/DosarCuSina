@@ -99,11 +99,32 @@ public final class ObligationActions {
     }
 
     /// The reading "Gata" records with the counter the person read (`metricReading`): on the
-    /// deadline's section, in the deadline's unit, on the day it was done. Asked about before
-    /// the step's unit opens, by `complete` and by any flow that completes inside a larger step.
+    /// deadline's section, in its counter's unit (`counter`), on the day it was done. Asked about
+    /// before the step's unit opens, by `complete` and by any flow that completes inside a larger step.
     func plannedReading(_ metricReading: Double?, completing obligation: Obligation, on date: Date) -> PlannedReading? {
         guard let metricReading, let asset = obligation.asset else { return nil }
-        return PlannedReading(metricReading, on: asset, at: date, source: .person, unit: obligation.metricUnit)
+        let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
+        let unit = Self.counter(completing: obligation, template: template?.definition)?.unit ?? obligation.metricUnit
+        return PlannedReading(metricReading, on: asset, at: date, source: .person, unit: unit)
+    }
+
+    /// The counter a completion reads ("Am rezolvat" on an oil change): the one the deadline
+    /// counts on (every 15.000 km), else its section's own (a car's kilometres, a boat's engine
+    /// hours); nil when there is none. The sheet asks it by this title, and the reading is
+    /// recorded in this unit (`plannedReading`): the same counter either way.
+    struct Counter: Equatable {
+        /// The section's own name for it ("Kilometraj"), else the unit's ("km").
+        let title: String
+        let unit: MeasurementUnit
+    }
+
+    static func counter(completing obligation: Obligation, template: TemplateDefinition?) -> Counter? {
+        let own = template.flatMap(HouseholdMutations.heroMetricField(of:))
+        if let unit = obligation.metricUnit {
+            return Counter(title: own.flatMap { $0.unit == unit ? $0.label : nil } ?? unit.label, unit: unit)
+        }
+        guard obligation.asset != nil, let own, let unit = own.unit else { return nil }
+        return Counter(title: own.label, unit: unit)
     }
 
     /// A completion from before the binder knew the obligation (last year's ITP): logged

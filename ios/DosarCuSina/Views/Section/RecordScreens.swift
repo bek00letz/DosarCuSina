@@ -35,6 +35,8 @@ private struct HistoryEntryContent: View {
     @Environment(\.dismiss) private var dismiss
     @State private var isConfirmingDelete = false
     @State private var error: UserFacingError?
+    @State private var noteRequest: HistoryNoteRequest?
+    @State private var toast: DSToast?
 
     var body: some View {
         ScrollView {
@@ -96,9 +98,20 @@ private struct HistoryEntryContent: View {
                     }
                 }
 
+                // The record's note, added or changed here too (`HistoryNoteSheet`).
                 if let note = entry.note, !note.isEmpty {
                     DSPocketCard(String(localized: "Note", comment: "Header: notes.")) {
                         Text(verbatim: note).dsFont(.body).textSelection(.enabled)
+                            .padding(.bottom, DS.Space.s)
+                        DSRowSeparator()
+                        Button { noteRequest = HistoryNoteRequest(entryID: entry.id) } label: {
+                            DSListRow("Schimbă nota", systemImage: "square.and.pencil", showsChevron: true)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                } else {
+                    DSSecondaryButton("Adaugă o notă", systemImage: "square.and.pencil") {
+                        noteRequest = HistoryNoteRequest(entryID: entry.id)
                     }
                 }
 
@@ -123,6 +136,8 @@ private struct HistoryEntryContent: View {
         .background(DS.Palette.background)
         .navigationTitle(Text(verbatim: entry.asset?.name ?? entry.title))
         .navigationBarTitleDisplayMode(.inline)
+        .dsToast($toast)
+        .historyNoteSheet($noteRequest, toast: $toast)
         .confirmationDialog(Text("Ștergi „\(entry.title)” din istoric?", comment: "Delete confirmation for a history entry."), isPresented: $isConfirmingDelete, titleVisibility: .visible) {
             Button(role: .destructive, action: delete) { Text("Șterge", comment: "Confirm deleting.") }
             Button(role: .cancel) {} label: { Text("Păstrează", comment: "Cancel a delete.") }
