@@ -32,6 +32,7 @@ private struct ObligationPage: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dismiss) private var dismiss
     @Environment(\.announce) private var announce
+    @Environment(AppPreferences.self) private var preferences
 
     @State private var toast: DSToast?
     @State private var isCompleting = false
@@ -62,6 +63,7 @@ private struct ObligationPage: View {
                     actions
                     lastTime
                     requirements
+                    if obligation.status == .active { ObligationRepeatSection(obligation: obligation, toast: $toast) }
                     reminders
                     moreActions
                 }
@@ -127,7 +129,7 @@ private struct ObligationPage: View {
                 .dsFont(.display)
                 .accessibilityAddTraits(.isHeader)
             if obligation.status == .active {
-                let lines = DueWording.travelLines(due: obligation.dueDay, rule: obligation.reminders.urgencyRule, today: today)
+                let lines = DueWording.travelLines(due: obligation.dueDay, rule: obligation.urgencyRule, today: today)
                     ?? [DueWording.line(kind: obligation.kind, due: obligation.dueDay, today: today)]
                 ForEach(lines, id: \.self) { line in
                     Text(verbatim: line)
@@ -328,7 +330,7 @@ private struct ObligationPage: View {
 
     /// What the deadline reminds, in words, and the way into its settings.
     private var reminderSummary: some View {
-        let profile = obligation.reminders
+        let profile = obligation.cycleReminders
         return VStack(alignment: .leading, spacing: DS.Space.s) {
             DSSectionHeader("Când te anunț")
             ReminderPermissionNotice()
@@ -336,6 +338,8 @@ private struct ObligationPage: View {
                 VStack(alignment: .leading, spacing: DS.Space.xs) {
                     Text(verbatim: ReminderWording.sentence(profile))
                         .dsFont(.headline)
+                    Text(verbatim: ReminderWording.atTime(obligation.reminderMinuteOfDay, usual: preferences.reminderMinuteOfDay))
+                        .dsFont(.subheadline, numeric: true)
                     if profile.followUpAfterLapse {
                         Text(verbatim: ReminderWording.followUp).dsFont(.footnote)
                     }
