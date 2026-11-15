@@ -8,7 +8,7 @@ enum DateUrgency {
     /// A date shown on an asset (an expiry, a warranty's or a contract's end): the
     /// rule of the asset's open deadline due that day, with the reminders the person set.
     static func rule(for day: CalendarDay, on asset: Asset?, calendar: Calendar = .dosar) -> UrgencyRule {
-        asset?.activeObligations.first { $0.dueDay == day }?.reminders.urgencyRule ?? .noReminders
+        asset?.activeObligations.first { $0.dueDay == day }?.urgencyRule ?? .noReminders
     }
 
     /// A date field being filled in: the rule of the deadline the field starts (the
@@ -17,7 +17,7 @@ enum DateUrgency {
     static func rule(forField key: String, values: FieldValues, definition: TemplateDefinition?, asset: Asset? = nil) -> UrgencyRule {
         guard let blueprint = definition?.blueprints.first(where: { $0.startsFrom(field: key) }) else { return .noReminders }
         if let live = asset?.activeObligations.first(where: { $0.blueprintKey == blueprint.key }) {
-            return live.reminders.urgencyRule
+            return live.urgencyRule
         }
         return blueprint.reminders(for: values).urgencyRule
     }
@@ -34,6 +34,6 @@ extension ObligationBlueprint {
 extension Obligation {
     /// Its urgency today, by the one rule. Every screen showing one obligation asks this.
     func urgency(now: Date = Date(), calendar: Calendar = .dosar) -> AttentionUrgency {
-        reminders.urgencyRule.urgency(of: dueDay, today: CalendarDay(now, calendar: calendar), calendar: calendar)
+        urgencyRule.urgency(of: dueDay, today: CalendarDay(now, calendar: calendar), calendar: calendar)
     }
 }

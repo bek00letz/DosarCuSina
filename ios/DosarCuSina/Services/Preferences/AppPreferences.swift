@@ -65,7 +65,7 @@ public final class AppPreferences {
     public init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         let minute = defaults.object(forKey: Key.reminderMinuteOfDay) as? Int
-        self.reminderMinuteOfDay = minute.map { min(max($0, 0), 24 * 60 - 1) } ?? Self.defaultReminderMinuteOfDay
+        self.reminderMinuteOfDay = minute.map(ReminderClock.clamped) ?? Self.defaultReminderMinuteOfDay
         self.appLockEnabled = defaults.bool(forKey: Key.appLockEnabled)
         self.hasCompletedOnboarding = defaults.bool(forKey: Key.hasCompletedOnboarding)
         self.showsInSpotlight = defaults.object(forKey: Key.showsInSpotlight) as? Bool ?? true

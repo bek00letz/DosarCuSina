@@ -55,8 +55,8 @@ struct RecurrenceSeriesTests {
         // A series that already drifted (31 January, 28 February, 28 March) still remembers the 31st.
         let steps = [Step(cycle: CalendarDay("2027-02-28"), next: CalendarDay("2027-03-28")),
                      Step(cycle: CalendarDay("2027-01-31"), next: CalendarDay("2027-02-28"))]
-        #expect(RecurrenceEngine.seriesStart(current: CalendarDay("2027-03-28"), completions: steps) == CalendarDay("2027-01-31"))
-        #expect(RecurrenceEngine.seriesStart(current: CalendarDay("2027-03-15"), completions: steps) == CalendarDay("2027-03-15"),
+        #expect(RecurrenceEngine.seriesStart(current: CalendarDay("2027-03-28"), completions: steps, interval: .months(1), calendar: calendar) == CalendarDay("2027-01-31"))
+        #expect(RecurrenceEngine.seriesStart(current: CalendarDay("2027-03-15"), completions: steps, interval: .months(1), calendar: calendar) == CalendarDay("2027-03-15"),
                 "A due day that no completion led to was set by hand")
         let next = RecurrenceEngine.nextDue(after: CalendarDay("2027-03-28"), completedOn: CalendarDay("2027-03-28"),
                                             rule: .interval(.months(1), anchor: .dueDate),

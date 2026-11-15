@@ -451,7 +451,11 @@ enum HouseholdMutations {
                 next: $0.nextDueDay
             )
         }
-        let seriesDay = RecurrenceEngine.seriesStart(current: obligation.dueDay, completions: steps).day
+        // Only a series counted from its due dates keeps a day of the month, and only its own steps count.
+        var seriesDay: Int?
+        if case .interval(let interval, .dueDate) = obligation.recurrence {
+            seriesDay = RecurrenceEngine.seriesStart(current: obligation.dueDay, completions: steps, interval: interval, calendar: calendar).day
+        }
         guard let asset = obligation.asset else { return RecurrenceContext(currentMetric: currentMetric, seriesDayOfMonth: seriesDay) }
         let series = readingSeries(of: asset, unit: obligation.metricUnit)
         let readings = series.readings
