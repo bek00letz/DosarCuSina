@@ -99,11 +99,32 @@ public final class ObligationActions {
     }
 
     /// The reading "Gata" records with the counter the person read (`metricReading`): on the
-    /// deadline's section, in the deadline's unit, on the day it was done. Asked about before
-    /// the step's unit opens, by `complete` and by any flow that completes inside a larger step.
+    /// deadline's section, in its counter's unit (`counter`), on the day it was done. Asked about
+    /// before the step's unit opens, by `complete` and by any flow that completes inside a larger step.
     func plannedReading(_ metricReading: Double?, completing obligation: Obligation, on date: Date) -> PlannedReading? {
         guard let metricReading, let asset = obligation.asset else { return nil }
-        return PlannedReading(metricReading, on: asset, at: date, source: .person, unit: obligation.metricUnit)
+        let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
+        let unit = Self.counter(completing: obligation, template: template?.definition)?.unit ?? obligation.metricUnit
+        return PlannedReading(metricReading, on: asset, at: date, source: .person, unit: unit)
+    }
+
+    /// The counter a completion reads ("Am rezolvat" on an oil change): the one the deadline
+    /// counts on (every 15.000 km), else its section's own (a car's kilometres, a boat's engine
+    /// hours); nil when there is none. The sheet asks it by this title, and the reading is
+    /// recorded in this unit (`plannedReading`): the same counter either way.
+    struct Counter: Equatable {
+        /// The section's own name for it ("Kilometraj"), else the unit's ("km").
+        let title: String
+        let unit: MeasurementUnit
+    }
+
+    static func counter(completing obligation: Obligation, template: TemplateDefinition?) -> Counter? {
+        let own = template.flatMap(HouseholdMutations.heroMetricField(of:))
+        if let unit = obligation.metricUnit {
+            return Counter(title: own.flatMap { $0.unit == unit ? $0.label : nil } ?? unit.label, unit: unit)
+        }
+        guard obligation.asset != nil, let own, let unit = own.unit else { return nil }
+        return Counter(title: own.label, unit: unit)
     }
 
     /// A completion from before the binder knew the obligation (last year's ITP): logged
@@ -213,16 +234,39 @@ public final class ObligationActions {
         try UnitOfWork.performUndoable(in: context, now: now()) { try setStatus(.active, of: obligation) }.receipt
     }
 
-    /// Changes how the obligation repeats (a service every 150 hours instead of 100). The
-    /// due day and the counter it is due at stay; the new rule counts from the next cycle.
-    /// Undoable, like `pause`.
+    /// Changes how the obligation repeats (a service every 150 hours instead of 100, watering
+    /// every 3 days instead of every week). The due day and the counter it is due at stay; the
+    /// new rule counts from the next cycle. Undoable, like `pause`.
+    ///
+    /// Only what the change made from the rule it started from (`startedFrom`, else the one
+    /// stored now) is written, part by part (`ThreeWay`): the interval changed here and the
+    /// anchor changed meanwhile on another device both stay.
     @discardableResult
-    public func setRecurrence(_ obligation: Obligation, _ rule: RecurrenceRule) throws -> UndoReceipt {
+    public func setRecurrence(_ obligation: Obligation, _ rule: RecurrenceRule, startedFrom start: RecurrenceRule? = nil) throws -> UndoReceipt {
         try UnitOfWork.performUndoable(in: context, now: now()) {
-            obligation.recurrence = rule
+            let laid = ThreeWay.laying(rule, over: obligation.recurrence, startedFrom: start ?? obligation.recurrence)
+            if laid != obligation.recurrence { obligation.recurrence = laid }
             try save()
         }.receipt
     }
+
+    /// The time of day this deadline reminds at ("Ora amintirii"), in minutes after midnight;
+    /// nil goes back to the general time in Settings, which then applies to it again whenever
+    /// that changes. Synced and carried in backups like the deadline's other values; it doesn't
+    /// change since when the cycle is known (`CycleTimes`). Undoable.
+    ///
+    /// `startedFrom` is the time the editor opened with: a time changed meanwhile on another
+    /// device stays when this edit left it as it was (`ThreeWay`).
+    @discardableResult
+    public func setReminderTime(_ obligation: Obligation, minuteOfDay: Int?, startedFrom start: Int?) throws -> UndoReceipt {
+        let minute = minuteOfDay.map(ReminderClock.clamped)
+        return try UnitOfWork.performUndoable(in: context, now: now()) {
+            let kept = ThreeWay.value(minute, over: obligation.reminderMinuteOfDay, startedFrom: start)
+            if kept != obligation.reminderMinuteOfDay { obligation.reminderMinuteOfDay = kept }
+            try save()
+        }.receipt
+    }
+
 
     /// Puts the obligation away for good, keeping it and its history. Undoable, like `pause`.
     @discardableResult
@@ -254,7 +298,8 @@ public final class ObligationActions {
         estimatedCost: Money? = nil,
         provider: String? = nil,
         reference: String? = nil,
-        notes: String? = nil
+        notes: String? = nil,
+        reminderMinuteOfDay: Int? = nil
     ) throws -> Obligation {
         let isExample = try ExampleOwnership.requireReal(asset)
         let obligation = Obligation(
@@ -268,6 +313,7 @@ public final class ObligationActions {
         obligation.provider = provider
         obligation.reference = reference
         obligation.notes = notes
+        obligation.reminderMinuteOfDay = reminderMinuteOfDay.map(ReminderClock.clamped)
         context.insert(obligation)
         obligation.asset = asset
         obligation.isExample = isExample
@@ -277,10 +323,12 @@ public final class ObligationActions {
 
     /// Creates an obligation from a template blueprint. `firstDue` overrides the
     /// blueprint's own rule; it is required when the blueprint asks for a date.
+    /// `reminderMinuteOfDay` is a reminder time of its own, nil for the general one.
     @discardableResult
-    public func create(from blueprint: ObligationBlueprint, for asset: Asset, firstDue: CalendarDay? = nil) throws -> Obligation {
+    public func create(from blueprint: ObligationBlueprint, for asset: Asset, firstDue: CalendarDay? = nil, reminderMinuteOfDay: Int? = nil) throws -> Obligation {
         try ExampleOwnership.requireReal(asset)
         let obligation = try HouseholdMutations.makeObligation(from: blueprint, for: asset, firstDue: firstDue, today: CalendarDay(now(), calendar: calendar), calendar: calendar, in: context)
+        obligation.reminderMinuteOfDay = reminderMinuteOfDay.map(ReminderClock.clamped)
         try save()
         return obligation
     }

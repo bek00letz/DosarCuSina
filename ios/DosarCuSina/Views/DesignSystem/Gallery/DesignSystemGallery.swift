@@ -601,6 +601,15 @@ private struct GalleryFeedback: View {
                             Text(verbatim: "Șterge „VW Golf 2018”").frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
+                        // A toast with a next step: a chore's "Gata" offers a note (`DSToast.offer`).
+                        Button {
+                            var chore = DSToast(title: "Udat: gata.", action: {}, duration: DSToast.offerDuration)
+                            chore.offer = DSToast.Offer(title: Text(verbatim: "Adaugă o notă")) { _ in }
+                            toast = chore
+                        } label: {
+                            Text(verbatim: "Udat: gata, cu notă").frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
                     }
                 }
             }
@@ -689,6 +698,8 @@ private struct GalleryFields: View {
     @State private var fuel: String? = "Benzină"
     @State private var reminders = true
     @State private var contact: DSContactValue? = DSContactValue(name: "Service Auto Exemplu", phone: "0700 000 000")
+    @State private var repeatChoice = RepeatChoice(frequency: .day, every: 3)
+    @State private var reminderMinute: Int?
     @State private var revealAll = false
 
     var body: some View {
@@ -715,6 +726,14 @@ private struct GalleryFields: View {
                         DSDateField("Data cumpărării", date: $date)
                         DSExpiryDateField("Pașaport valabil până la", date: $expiry, urgencyRule: GallerySample.passport, footnote: "Bun de călătorit până cu 6 luni înainte să expire. Te anunț cu 3 luni înainte de ziua aceea.")
                         DSToggleField("Mementouri", isOn: $reminders, systemImage: "bell.fill")
+                    }
+                }
+            }
+            GallerySection(title: "Termene") {
+                DSCard {
+                    VStack(spacing: DS.Space.m) {
+                        DSRepeatField(choice: $repeatChoice)
+                        DSReminderTimeField(minuteOfDay: $reminderMinute, usualMinuteOfDay: AppPreferences.defaultReminderMinuteOfDay)
                     }
                 }
             }

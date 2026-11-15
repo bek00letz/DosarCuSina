@@ -147,15 +147,53 @@ public enum RecurrenceEngine {
 
     /// The first due day of the unbroken series `current` belongs to. Walks back
     /// through the completions, newest first, while each one moved the date to the
-    /// cycle after it; a due day the person set by hand starts a new series. Its day
+    /// cycle after it by `interval`; a due day the person set by hand, or a step another
+    /// rule took (before the person changed how it repeats), starts a new series. Its day
     /// of the month is the day the series keeps.
-    public static func seriesStart(current: CalendarDay, completions: [SeriesStep]) -> CalendarDay {
+    public static func seriesStart(current: CalendarDay, completions: [SeriesStep], interval: RecurrenceInterval, calendar: Calendar = .dosar) -> CalendarDay {
         var start = current
         for step in completions {
-            guard let next = step.next, next == start, let cycle = step.cycle else { break }
+            guard let next = step.next, next == start, let cycle = step.cycle,
+                  isStep(of: interval, from: cycle, to: next, calendar: calendar) else { break }
             start = cycle
         }
         return start
+    }
+
+    /// Whether `next` is one `interval` after `cycle` in a series: days and weeks exactly, months
+    /// and years on the series' day or the month's last day when it is shorter (31 January to
+    /// 28 February, then 31 March).
+    static func isStep(of interval: RecurrenceInterval, from cycle: CalendarDay, to next: CalendarDay, calendar: Calendar = .dosar) -> Bool {
+        switch interval.unit {
+        case .day, .week:
+            return add(interval, to: cycle, calendar: calendar) == next
+        case .month, .year:
+            // The series' day is at least the later of the two days a clamped month shows.
+            return add(interval, to: cycle, dayOfMonth: max(cycle.day, next.day), calendar: calendar) == next
+        }
+    }
+
+    /// The day the cycle due on `due` began: one step of its rule before it (for a deadline
+    /// counted from when it was done, the day it was done, when it was done on time), or the
+    /// fixed date before it. Nil for a rule whose cycle has no set length (none, a counter, a
+    /// legal rule read from the section): its leads all count.
+    public static func cycleStart(endingOn due: CalendarDay, rule: RecurrenceRule, calendar: Calendar = .dosar) -> CalendarDay? {
+        switch rule {
+        case .interval(let interval, _):
+            guard interval.every > 0 else { return nil }
+            switch interval.unit {
+            case .day: return due.adding(days: -interval.every, calendar: calendar)
+            case .week: return due.adding(days: -interval.every * 7, calendar: calendar)
+            case .month: return due.adding(months: -interval.every, calendar: calendar)
+            case .year: return due.adding(months: -interval.every * 12, calendar: calendar)
+            }
+        case .fixedDates(let dates):
+            guard !dates.isEmpty else { return nil }
+            let candidates = [due.year - 1, due.year].flatMap { year in dates.map { $0.day(inYear: year, calendar: calendar) } }
+            return candidates.filter { $0 < due }.max()
+        case .none, .unreadable, .metric, .legal:
+            return nil
+        }
     }
 
     /// The first of `dates` strictly after `day`.

@@ -716,6 +716,122 @@
         }
       }
     },
+    "La fiecare %lld ani": {
+      "comment": "How often a deadline repeats, in years. Plural forms: În fiecare an, La fiecare 2 ani, La fiecare 20 de ani.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "În fiecare an"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La fiecare %lld ani"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La fiecare %lld de ani"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "La fiecare %lld luni": {
+      "comment": "How often a deadline repeats, in months. Plural forms: În fiecare lună, La fiecare 3 luni, La fiecare 20 de luni.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "În fiecare lună"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La fiecare %lld luni"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La fiecare %lld de luni"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "La fiecare %lld săptămâni": {
+      "comment": "How often a deadline repeats, in weeks. Plural forms: În fiecare săptămână, La fiecare 3 săptămâni, La fiecare 20 de săptămâni.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "În fiecare săptămână"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La fiecare %lld săptămâni"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La fiecare %lld de săptămâni"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "La fiecare %lld zile": {
+      "comment": "How often a deadline repeats, in days. Plural forms: În fiecare zi, La fiecare 3 zile, La fiecare 20 de zile.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "În fiecare zi"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La fiecare %lld zile"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "La fiecare %lld de zile"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Mai târziu": {
       "comment": "Status of an obligation that is not due soon."
     },

@@ -17,7 +17,13 @@ struct DeadlineForm: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.calendar) private var calendar
+    @Environment(AppPreferences.self) private var preferences
     @Query private var assets: [Asset]
+
+    /// On: "Se repetă" is the shared control (`DSRepeatField`: every so many days, weeks, months
+    /// or years, from the due day or from when it was done). Off: the earlier three choices
+    /// (`DeadlineChoice.Repeat`), kept as the way back until the owner has used the new one.
+    static let usesRepeatField = true
 
     private enum Choice: Hashable {
         case blueprint(String)
@@ -28,6 +34,9 @@ struct DeadlineForm: View {
     @State private var ownTitle = ""
     @State private var importance: DeadlineChoice.Importance? = .reminder
     @State private var repeats: DeadlineChoice.Repeat? = .never
+    @State private var repeatChoice = RepeatChoice.never
+    /// Its own reminder time, or nil for the general one from Settings.
+    @State private var reminderMinute: Int?
     @State private var due: Date?
     @State private var reveals = false
     @State private var errorMessage: String?
@@ -60,7 +69,11 @@ struct DeadlineForm: View {
                                 VStack(alignment: .leading, spacing: DS.Space.s) {
                                     DSTextField("Ce trebuie făcut", text: $ownTitle, prompt: "Cazier pentru angajare", isRequired: true)
                                     DSChoiceField("Cât de important e", selection: $importance, options: DeadlineChoice.Importance.allCases, isRequired: true) { $0.title }
-                                    DSChoiceField("Se repetă", selection: $repeats, options: DeadlineChoice.Repeat.allCases, isRequired: true) { $0.title }
+                                    if Self.usesRepeatField {
+                                        DSRepeatField(choice: $repeatChoice)
+                                    } else {
+                                        DSChoiceField("Se repetă", selection: $repeats, options: DeadlineChoice.Repeat.allCases, isRequired: true) { $0.title }
+                                    }
                                 }
                             }
                         }
@@ -76,6 +89,8 @@ struct DeadlineForm: View {
                                     Text(verbatim: ReminderWording.sentence(reminders))
                                         .dsFont(.subheadline)
                                 }
+                                DS.Hairline()
+                                DSReminderTimeField(minuteOfDay: $reminderMinute, usualMinuteOfDay: preferences.reminderMinuteOfDay)
                             }
                         }
                     }
@@ -99,7 +114,8 @@ struct DeadlineForm: View {
         .navigationBarTitleDisplayMode(.inline)
         .reminderPermissionGate($saveRequest)
         .examplePrompt($exampleQuestion) { retryAfterKeeping?() }
-        .dsDiscardGuard(hasChanges: !ownTitle.isEmpty || due != nil || (choice != nil && choice != initialChoice))
+        .dsDiscardGuard(hasChanges: !ownTitle.isEmpty || due != nil || (choice != nil && choice != initialChoice)
+                            || repeatChoice != .never || reminderMinute != nil)
         .onAppear {
             if choice == nil, startsWithOwn { choice = .own }
             if choice == nil, let key = startsWithBlueprint, let blueprint = blueprints.first(where: { $0.key == key }) {
@@ -126,16 +142,29 @@ struct DeadlineForm: View {
         return (template?.blueprints ?? []).filter { !taken.contains($0.key) && ($0.appliesWhen?.isMet(by: asset.values) ?? true) }
     }
 
-    /// The reminders the chosen deadline will have, said before it is saved.
+    /// The reminders the chosen deadline will have, said before it is saved: within its first
+    /// cycle, as they will remind (`ReminderProfile.forCycle`).
     private func reminders(blueprints: [ObligationBlueprint], asset: Asset?) -> ReminderProfile? {
+        let profile: ReminderProfile?
+        let rule: RecurrenceRule
         switch choice {
         case .blueprint(let key):
-            return blueprints.first { $0.key == key }?.reminders(for: asset?.values ?? FieldValues())
+            let blueprint = blueprints.first { $0.key == key }
+            profile = blueprint?.reminders(for: asset?.values ?? FieldValues())
+            rule = blueprint?.recurrence ?? .none
         case .own:
-            return importance.map { DeadlineChoice.reminders(for: $0) }
+            profile = importance.map { DeadlineChoice.reminders(for: $0) }
+            rule = ownRule
         case nil:
             return nil
         }
+        guard let profile, let due else { return profile }
+        return profile.forCycle(due: CalendarDay(due, calendar: calendar), rule: rule, calendar: calendar)
+    }
+
+    /// How a deadline of the person's own repeats, from the control in use.
+    private var ownRule: RecurrenceRule {
+        Self.usesRepeatField ? repeatChoice.rule : (repeats ?? .never).rule
     }
 
     private func select(_ value: Choice, blueprint: ObligationBlueprint?, asset: Asset?) {
@@ -155,7 +184,7 @@ struct DeadlineForm: View {
             switch choice {
             case .blueprint(let key):
                 guard let blueprint = blueprints.first(where: { $0.key == key }) else { return }
-                obligation = try actions.create(from: blueprint, for: asset, firstDue: day)
+                obligation = try actions.create(from: blueprint, for: asset, firstDue: day, reminderMinuteOfDay: reminderMinute)
             case .own:
                 let importance = importance ?? .reminder
                 obligation = try actions.create(
@@ -163,12 +192,13 @@ struct DeadlineForm: View {
                     kind: importance.kind,
                     dueDay: day,
                     for: asset,
-                    recurrence: (repeats ?? .never).rule,
-                    reminders: DeadlineChoice.reminders(for: importance)
+                    recurrence: ownRule,
+                    reminders: DeadlineChoice.reminders(for: importance),
+                    reminderMinuteOfDay: reminderMinute
                 )
             }
             errorMessage = nil
-            onSaved("Am adăugat \(obligation.title). \(ReminderWording.sentence(obligation.reminders))")
+            onSaved("Am adăugat \(obligation.title). \(ReminderWording.sentence(obligation.cycleReminders))")
         } catch let question as ExampleSectionQuestion {
             retryAfterKeeping = { save(asset: asset, blueprints: blueprints) }
             exampleQuestion = question
@@ -206,6 +236,8 @@ enum DeadlineChoice {
         }
     }
 
+    /// The three choices "Se repetă" offered before `DSRepeatField`. Kept, switched off
+    /// (`DeadlineForm.usesRepeatField`), as the way back; remove once the owner agrees.
     enum Repeat: String, CaseIterable, Identifiable, Hashable {
         case never, monthly, yearly
 

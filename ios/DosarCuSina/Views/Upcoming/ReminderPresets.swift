@@ -116,6 +116,27 @@ enum ReminderWording {
                       comment: "Capture review: a document's validity worked out from its issue date, e.g. „la 6 luni de la eliberare”.")
     }
 
+    /// A deadline's reminder time as its row shows it: "Ora obișnuită (09:00)" for the general
+    /// time from Settings (`nil`), "07:30" for one of its own.
+    static func time(_ minuteOfDay: Int?, usual: Int, calendar: Calendar = .dosar) -> String {
+        guard let minuteOfDay else {
+            let usualTime = DosarFormat.time(minuteOfDay: usual, calendar: calendar)
+            return String(localized: "Ora obișnuită (\(usualTime))", comment: "A deadline's reminder time: the general one from Settings, e.g. „Ora obișnuită (09:00)”.")
+        }
+        return DosarFormat.time(minuteOfDay: minuteOfDay, calendar: calendar)
+    }
+
+    /// "Îți amintesc la 07:30." or "Îți amintesc la ora obișnuită, 09:00.": the time in a
+    /// sentence, on the deadline's page and after it changes.
+    static func atTime(_ minuteOfDay: Int?, usual: Int, calendar: Calendar = .dosar) -> String {
+        guard let minuteOfDay else {
+            let usualTime = DosarFormat.time(minuteOfDay: usual, calendar: calendar)
+            return String(localized: "Îți amintesc la ora obișnuită, \(usualTime).", comment: "A deadline reminds at the general time from Settings, e.g. „Îți amintesc la ora obișnuită, 09:00.”")
+        }
+        let time = DosarFormat.time(minuteOfDay: minuteOfDay, calendar: calendar)
+        return String(localized: "Îți amintesc la \(time).", comment: "A deadline reminds at a time of its own, e.g. „Îți amintesc la 07:30.”")
+    }
+
     /// The follow-up line under the sentence, when it is on.
     static let followUp = String(localized: "Dacă nu e rezolvat, îți mai amintesc o dată a doua zi după termen.", comment: "Reminder sentence: follow-up after the due date")
 }

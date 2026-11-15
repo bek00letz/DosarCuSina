@@ -71,6 +71,12 @@ enum DosarFormat {
         write(date, .time, locale: locale, timeZone: calendar.timeZone)
     }
 
+    /// "09:00": a time of day kept as minutes after midnight (a reminder's time), the same on
+    /// every day. Written on a mid-January day, when no time zone moves its clocks.
+    static func time(minuteOfDay: Int, locale: Locale = .dosarDefault, calendar: Calendar = .dosar) -> String {
+        time(ReminderClock.moment(minuteOfDay: minuteOfDay, calendar: calendar), locale: locale, calendar: calendar)
+    }
+
     // MARK: - One writer
 
     private enum Shape {

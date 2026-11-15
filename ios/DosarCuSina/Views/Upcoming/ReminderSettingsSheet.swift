@@ -2,25 +2,49 @@ import SwiftData
 import SwiftUI
 
 /// What the reminder editor shows for one deadline: its reminders, and its usual ones when
-/// "Revino la cele obișnuite" is offered.
+/// "Revino la cele obișnuite" is offered, how it repeats (a lead longer than the repeat doesn't
+/// remind, `ReminderProfile.forCycle`) and its reminder time.
 struct ReminderSettings: Equatable {
     var profile: ReminderProfile
     /// The reminders its document gives, only when the person set others
     /// (`DeadlineReminders.restorable`); nil hides "Revino la cele obișnuite".
     var usual: ReminderProfile?
+    /// The cycle its leads count back in: its due day and how it repeats.
+    var due: CalendarDay
+    var rule: RecurrenceRule
+    /// Its own reminder time, nil for the general one.
+    var minuteOfDay: Int?
+    /// The general reminder time, from Settings.
+    var usualMinuteOfDay: Int
 
-    init(profile: ReminderProfile, usual: ReminderProfile?) {
+    init(profile: ReminderProfile, usual: ReminderProfile?, due: CalendarDay = CalendarDay(Date()), rule: RecurrenceRule = .none,
+         minuteOfDay: Int? = nil, usualMinuteOfDay: Int = AppPreferences.defaultReminderMinuteOfDay) {
         self.profile = profile
         self.usual = usual
+        self.due = due
+        self.rule = rule
+        self.minuteOfDay = minuteOfDay
+        self.usualMinuteOfDay = usualMinuteOfDay
     }
 
     @MainActor
-    init(obligation: Obligation, in context: ModelContext) {
-        self.init(profile: obligation.reminders, usual: DeadlineReminders.restorable(obligation, in: context))
+    init(obligation: Obligation, in context: ModelContext, usualMinuteOfDay: Int = AppPreferences.defaultReminderMinuteOfDay) {
+        self.init(profile: obligation.reminders, usual: DeadlineReminders.restorable(obligation, in: context), due: obligation.dueDay,
+                  rule: obligation.recurrence, minuteOfDay: obligation.reminderMinuteOfDay, usualMinuteOfDay: usualMinuteOfDay)
     }
 
-    /// The lead rows, largest first: the presets and any other lead the profile holds.
-    var leadRows: [Int] { ReminderPreset.rows(for: profile.leadDays) }
+    /// The reminders as this cycle sends them: what the sentence says.
+    var cycleProfile: ReminderProfile { profile.forCycle(due: due, rule: rule) }
+
+    /// Whether a lead reminds in this cycle, or is longer than how often it repeats.
+    func fits(_ days: Int) -> Bool { profile.fits(lead: days, due: due, rule: rule) }
+
+    /// The lead rows, largest first: the presets that fit how often it repeats, and every
+    /// other lead the profile holds.
+    var leadRows: [Int] { ReminderPreset.rows(for: profile.leadDays).filter { profile.leadDays.contains($0) || fits($0) } }
+
+    /// "Ora obișnuită (09:00)" or "07:30".
+    var timeText: String { ReminderWording.time(minuteOfDay, usual: usualMinuteOfDay) }
 }
 
 /// The editor itself: the reminder sentence, a row per lead, "Altă zi…", the follow-up and,
@@ -31,12 +55,13 @@ struct ReminderSettingsForm: View {
     var onOtherDay: () -> Void = {}
     var onToggleFollowUp: () -> Void = {}
     var onRestoreUsual: () -> Void = {}
+    var onReminderTime: () -> Void = {}
 
     var body: some View {
         let profile = settings.profile
         VStack(alignment: .leading, spacing: DS.Space.l) {
             VStack(alignment: .leading, spacing: DS.Space.xs) {
-                Text(verbatim: ReminderWording.sentence(profile))
+                Text(verbatim: ReminderWording.sentence(settings.cycleProfile))
                     .dsFont(.headline)
                 if profile.followUpAfterLapse {
                     Text(verbatim: ReminderWording.followUp).dsFont(.footnote)
@@ -48,6 +73,8 @@ struct ReminderSettingsForm: View {
                 VStack(alignment: .leading, spacing: DS.Space.xs) {
                     ForEach(settings.leadRows, id: \.self) { days in
                         DSCheckRow(title: Text(verbatim: ReminderWording.rowTitle(days: days, from: .init(profile))),
+                                   subtitle: settings.fits(days) ? nil : Text("Se repetă mai des de atât, așa că nu te anunț atât de devreme.",
+                                                                              comment: "Under a reminder lead longer than how often the deadline repeats."),
                                    isOn: profile.leadDays.contains(days)) {
                             onToggleLead(days)
                         }
@@ -59,6 +86,16 @@ struct ReminderSettingsForm: View {
                             .contentShape(.rect)
                     }
                 }
+            }
+
+            DSCard {
+                Button(action: onReminderTime) {
+                    DSListRow(title: Text("Ora amintirii", comment: "Reminder settings: the time of day this deadline reminds at."),
+                              subtitle: Text(verbatim: settings.timeText), systemImage: "clock", showsChevron: true, trailing: { EmptyView() })
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text("Ora amintirii"))
+                .accessibilityValue(Text(verbatim: settings.timeText))
             }
 
             DSCard {
@@ -101,20 +138,23 @@ struct ReminderSettingsSheet: View {
     let onClose: () -> Void
 
     @Environment(\.modelContext) private var context
+    @Environment(AppPreferences.self) private var preferences
     @State private var toast: DSToast?
     @State private var saveRequest: ReminderSaveRequest?
     @State private var isAddingCustomLead = false
+    @State private var isChoosingTime = false
     @State private var restoredCount = 0
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 ReminderSettingsForm(
-                    settings: ReminderSettings(obligation: obligation, in: context),
+                    settings: ReminderSettings(obligation: obligation, in: context, usualMinuteOfDay: preferences.reminderMinuteOfDay),
                     onToggleLead: { days in setLeads(ReminderPreset.toggling(days, in: obligation.reminders.leadDays)) },
                     onOtherDay: { isAddingCustomLead = true },
                     onToggleFollowUp: toggleFollowUp,
-                    onRestoreUsual: { saveRequest = ReminderSaveRequest { restoreUsual() } }
+                    onRestoreUsual: { saveRequest = ReminderSaveRequest { restoreUsual() } },
+                    onReminderTime: { isChoosingTime = true }
                 )
                 .padding(DS.Space.m)
             }
@@ -130,6 +170,14 @@ struct ReminderSettingsSheet: View {
                 CustomLeadPage { days in
                     isAddingCustomLead = false
                     setLeads(obligation.reminders.leadDays + [days])
+                }
+            }
+            // "Ora amintirii" is a page inside this sheet too: back keeps the time as it was,
+            // "Salvează ora" saves it as one step the toast can take back.
+            .navigationDestination(isPresented: $isChoosingTime) {
+                ReminderTimePage(startedFrom: obligation.reminderMinuteOfDay, usualMinuteOfDay: preferences.reminderMinuteOfDay) { minute in
+                    isChoosingTime = false
+                    saveRequest = ReminderSaveRequest { setTime(minute) }
                 }
             }
         }
@@ -163,7 +211,46 @@ struct ReminderSettingsSheet: View {
         }
     }
 
+    private func setTime(_ minute: Int?) {
+        let start = obligation.reminderMinuteOfDay
+        guard minute != start else { return }
+        run {
+            let receipt = try ObligationActions(context: context).setReminderTime(obligation, minuteOfDay: minute, startedFrom: start)
+            toast = .undo("\(ReminderWording.atTime(obligation.reminderMinuteOfDay, usual: preferences.reminderMinuteOfDay))", receipt: receipt)
+        }
+    }
+
     private func run(_ change: () throws -> Void) {
         do { try change() } catch { toast = UpcomingActions.failureToast(error) }
+    }
+}
+
+/// "Ora amintirii": the general time or one of this deadline's own (`DSReminderTimeField`),
+/// saved with "Salvează ora". A page pushed inside the reminder settings sheet, whose back
+/// button leaves the time as it was.
+struct ReminderTimePage: View {
+    let usualMinuteOfDay: Int
+    let onSave: (Int?) -> Void
+    @State private var minuteOfDay: Int?
+
+    init(startedFrom start: Int?, usualMinuteOfDay: Int, onSave: @escaping (Int?) -> Void) {
+        self.usualMinuteOfDay = usualMinuteOfDay
+        self.onSave = onSave
+        self._minuteOfDay = State(initialValue: start)
+    }
+
+    var body: some View {
+        ScrollView {
+            DSCard {
+                DSReminderTimeField(minuteOfDay: $minuteOfDay, usualMinuteOfDay: usualMinuteOfDay)
+            }
+            .padding(DS.Space.m)
+        }
+        .background(DS.Palette.background)
+        .dsPinnedAction {
+            DSPrimaryButton("Salvează ora", systemImage: "checkmark") { onSave(minuteOfDay) }
+        }
+        .navigationTitle("Ora amintirii")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }

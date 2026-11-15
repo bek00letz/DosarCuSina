@@ -32,6 +32,7 @@ private struct ObligationPage: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dismiss) private var dismiss
     @Environment(\.announce) private var announce
+    @Environment(AppPreferences.self) private var preferences
 
     @State private var toast: DSToast?
     @State private var isCompleting = false
@@ -42,6 +43,10 @@ private struct ObligationPage: View {
     @State private var isEditingReminders = false
     @State private var saveRequest: ReminderSaveRequest?
     @State private var unlockFailed = false
+    /// "Adaugă o notă" after a chore's "Gata".
+    @State private var noteRequest: HistoryNoteRequest?
+    /// The toast of the last one-tap "Gata", while it shows.
+    @State private var quickToastID: UUID?
 
     private var vault: BiometricVaultManager { .shared }
     private var today: CalendarDay { CalendarDay(Date()) }
@@ -62,6 +67,7 @@ private struct ObligationPage: View {
                     actions
                     lastTime
                     requirements
+                    if obligation.status == .active { ObligationRepeatSection(obligation: obligation, toast: $toast) }
                     reminders
                     moreActions
                 }
@@ -72,6 +78,7 @@ private struct ObligationPage: View {
         .navigationTitle(Text(verbatim: isLocked ? "" : obligation.title))
         .navigationBarTitleDisplayMode(.inline)
         .dsToast($toast)
+        .historyNoteSheet($noteRequest, toast: $toast)
         .dsAnimation(value: isLocked)
         .reminderPermissionGate($saveRequest)
         .task { await ReminderPermission.shared.refresh() }
@@ -127,7 +134,7 @@ private struct ObligationPage: View {
                 .dsFont(.display)
                 .accessibilityAddTraits(.isHeader)
             if obligation.status == .active {
-                let lines = DueWording.travelLines(due: obligation.dueDay, rule: obligation.reminders.urgencyRule, today: today)
+                let lines = DueWording.travelLines(due: obligation.dueDay, rule: obligation.urgencyRule, today: today)
                     ?? [DueWording.line(kind: obligation.kind, due: obligation.dueDay, today: today)]
                 ForEach(lines, id: \.self) { line in
                     Text(verbatim: line)
@@ -179,8 +186,15 @@ private struct ObligationPage: View {
 
     @ViewBuilder private var actions: some View {
         if obligation.status == .active {
+            // What completing asks is the kind's: a chore is done in one tap, the rest open the sheet.
+            let shape = obligation.kind.completion
             VStack(spacing: DS.Space.s) {
-                DSPrimaryButton("Am rezolvat", systemImage: "checkmark") { isCompleting = true }
+                DSPrimaryButton(shape.actionTitle, systemImage: "checkmark") {
+                    if shape.isOneTap { completeNow() } else { isCompleting = true }
+                }
+                // A second "Gata" waits while the first one's toast shows, so a double tap
+                // never closes the next cycle too.
+                .disabled(shape.isOneTap && quickToastID != nil && toast?.id == quickToastID)
                 HStack(spacing: DS.Space.s) {
                     DSSecondaryButton("Amână", systemImage: "clock.arrow.circlepath") { isSnoozing = true }
                     DSSecondaryButton("Pune în calendar", systemImage: "calendar.badge.plus") { isAddingToCalendar = true }
@@ -255,6 +269,13 @@ private struct ObligationPage: View {
                     Text(verbatim: entry.effectiveCost.formatted()).dsFont(.headline, numeric: true)
                 }
             }
+            // What the person noted last time ("Adaugă o notă" after a chore, a check-up's note).
+            if let note = entry.note?.trimmingCharacters(in: .whitespacesAndNewlines), !note.isEmpty {
+                Text(verbatim: note)
+                    .dsFont(.body)
+                    .foregroundStyle(DS.Palette.secondaryLabel)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             ForEach(entry.providers ?? []) { provider in
                 VStack(alignment: .leading, spacing: DS.Space.xs) {
                     HStack(spacing: DS.Space.xs) {
@@ -328,7 +349,7 @@ private struct ObligationPage: View {
 
     /// What the deadline reminds, in words, and the way into its settings.
     private var reminderSummary: some View {
-        let profile = obligation.reminders
+        let profile = obligation.cycleReminders
         return VStack(alignment: .leading, spacing: DS.Space.s) {
             DSSectionHeader("Când te anunț")
             ReminderPermissionNotice()
@@ -336,6 +357,8 @@ private struct ObligationPage: View {
                 VStack(alignment: .leading, spacing: DS.Space.xs) {
                     Text(verbatim: ReminderWording.sentence(profile))
                         .dsFont(.headline)
+                    Text(verbatim: ReminderWording.atTime(obligation.reminderMinuteOfDay, usual: preferences.reminderMinuteOfDay))
+                        .dsFont(.subheadline, numeric: true)
                     if profile.followUpAfterLapse {
                         Text(verbatim: ReminderWording.followUp).dsFont(.footnote)
                     }
@@ -429,6 +452,19 @@ private struct ObligationPage: View {
         }
     }
 
+    /// A chore's "Gata": done today, no sheet; the toast takes it back or adds a note to it.
+    private func completeNow() {
+        do {
+            let done = try UpcomingActions(context: context).complete(obligation, title: obligation.title) { entryID, shown in
+                noteRequest = HistoryNoteRequest(entryID: entryID, restoring: shown)
+            }
+            quickToastID = done.id
+            toast = done
+        } catch {
+            toast = UpcomingActions.failureToast(error)
+        }
+    }
+
     private func snooze(_ days: Int) {
         do {
             toast = try UpcomingActions(context: context).snooze(obligation, days: days, title: obligation.title)
@@ -478,202 +514,6 @@ private struct ObligationPage: View {
 
     private func run(_ change: () throws -> Void) {
         do { try change() } catch { toast = UpcomingActions.failureToast(error) }
-    }
-}
-
-// MARK: - Complete
-
-/// "Am rezolvat": when, how much, and optionally a photo of the new document,
-/// whose date becomes the next deadline.
-private struct ObligationCompleteSheet: View {
-    let obligation: Obligation
-    let onClose: (DSToast?) -> Void
-
-    @Environment(\.modelContext) private var context
-    @State private var date: Date? = Date()
-    @State private var amount: Decimal?
-    @State private var currency = Money.defaultCurrency
-    @State private var source: CaptureSource?
-    @State private var isChoosingSource = false
-    /// Reading the new document. It ends with the sheet: a reading still running stops.
-    @State private var session = CaptureSession()
-    @State private var errorMessage: String?
-    @State private var isSaving = false
-    @State private var exampleQuestion: ExampleSectionQuestion?
-    @State private var readingQuestion: LowerReadingQuestion?
-    /// A bank card's photo, or any page's that shows a whole card number, is kept only when
-    /// the person asks (`CaptureResult.photoIsOnRequest`).
-    @State private var keepsPhotoOnRequest = false
-    /// A bill that only looked like one already filed, by its day and total: the person
-    /// said it is another bill ("E altă factură"). A new photo asks again.
-    @State private var isAnotherBill = false
-
-    private var isReading: Bool { session.phase == .reading }
-    private var document: CaptureResult? { session.result }
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: DS.Space.xl) {
-                    DSCard {
-                        VStack(alignment: .leading, spacing: DS.Space.m) {
-                            DSDateField("Când", date: $date, in: Date.distantPast...Date.now, isRequired: true)
-                            DSMoneyField("Cât a costat", amount: $amount, currencyCode: $currency, footnote: lastCostNote)
-                        }
-                    }
-                    documentSection
-                    if let document, document.photoIsOnRequest {
-                        KeepPhotoChoice(keepsPhoto: $keepsPhotoOnRequest, kind: document.kind)
-                    }
-                }
-                .padding(DS.Space.m)
-            }
-            .background(DS.Palette.background)
-            .dsPinnedAction {
-                DSPrimaryButton("Salvează", systemImage: "checkmark") { save() }
-                    .disabled(isSaving || isReading || date == nil)
-            } note: {
-                if let errorMessage {
-                    DSNotice(.error, title: "Nu s-a salvat", message: LocalizedStringKey(errorMessage))
-                }
-            }
-            .navigationTitle(Text("Am rezolvat: \(obligation.title)"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
-            }
-            .dsDiscardGuard(hasChanges: amount != nil || document != nil)
-            .examplePrompt($exampleQuestion) { save() }
-            .readingPrompt($readingQuestion) { save(lowerReading: $0) }
-            .onChange(of: document?.id) { _, _ in
-                isAnotherBill = false
-                if amount == nil, let total = document?.field(.total)?.value.money {
-                    amount = total.amount
-                    currency = total.currency
-                }
-            }
-            .confirmationDialog("Actul nou", isPresented: $isChoosingSource, titleVisibility: .visible) {
-                if CaptureSource.isCameraAvailable { Button("Fotografiază actul") { source = .camera } }
-                Button("Alege din poze") { source = .photos }
-                Button("Din Fișiere") { source = .files }
-                Button("Renunță", role: .cancel) {}
-            }
-            .captureSourcePicker($source) { payload in
-                read(payload)
-            } onError: { _ in
-                errorMessage = String(localized: "Poza nu s-a putut deschide. Încearcă din nou.")
-            }
-        }
-    }
-
-    private var lastCostNote: LocalizedStringKey? {
-        guard let cost = obligation.history.first?.totalCost else { return nil }
-        return "Data trecută: \(cost.formattedCompact())."
-    }
-
-    @ViewBuilder private var documentSection: some View {
-        VStack(alignment: .leading, spacing: DS.Space.s) {
-            DSSectionHeader("Actul nou", subtitle: "Opțional. Din el iau data următoare.")
-            if document != nil, let bill = billPlan {
-                // A photo of the bill: filed as a bill, as the review says it.
-                billNotices(bill)
-                Button("Alege alt act") { isChoosingSource = true }
-                    .frame(minHeight: 44)
-            } else if let document {
-                let next = CaptureFiler.nextDay(in: document)
-                // A photo kept only on request (a bank card, a page with a card's number) isn't promised here.
-                let message: LocalizedStringKey = if let next {
-                    "Următorul termen: \(DueWording.date(next, today: CalendarDay(Date())))."
-                } else if document.photoIsOnRequest {
-                    "Nu am găsit o dată nouă pe el."
-                } else {
-                    "Nu am găsit o dată nouă pe el. Îl păstrez oricum."
-                }
-                DSNotice(.success, title: "Am citit actul", message: message)
-                Button("Alege alt act") { isChoosingSource = true }
-                    .frame(minHeight: 44)
-            } else {
-                DSActionCard("Fotografiază actul nou", subtitle: "Polița, raportul sau chitanța.", systemImage: "doc.viewfinder") {
-                    isChoosingSource = true
-                }
-                .disabled(isReading)
-                if isReading { DSDelayedProgress(label: "Citesc actul…") }
-                if session.phase == .failed {
-                    DSNotice(.warning, title: "Actul nu s-a citit", message: "Încearcă o poză mai clară, cu actul întins și fără umbre.")
-                }
-            }
-        }
-    }
-
-    /// What saving does with a photo of the bill on its subscription (`CaptureFiler.billPlan`):
-    /// the bill in Istoric, once, and its meter index. Nil for any other document.
-    private var billPlan: CaptureFilingPlan? {
-        guard document != nil else { return nil }
-        return try? CaptureFiler(context: context).billPlan(for: completion(date: date ?? Date()))
-    }
-
-    /// The bill already in the binder, or where it goes, and its index: the review's own words.
-    @ViewBuilder private func billNotices(_ bill: CaptureFilingPlan) -> some View {
-        if let filed = bill.filedBill {
-            DSFiledPaperNotice(filed: filed, paper: .bill, onOpen: {
-                onClose(nil)
-                AppNavigator.shared.open(.historyEntry(filed.entryID))
-            }, onAnother: { isAnotherBill = true })
-        } else {
-            let name = obligation.asset?.name ?? ""
-            DSNotice(.success, title: "Am citit factura",
-                     message: LocalizedStringKey(String(localized: "O trec în istoricul „\(name)”.", comment: "Am rezolvat: a photo of the bill being paid is logged in its subscription's history.")))
-        }
-        if let meter = bill.meter {
-            Label { Text(verbatim: meter.sentence).dsFont(.footnote) } icon: {
-                Image(systemName: "gauge.with.dots.needle.33percent").foregroundStyle(DS.Palette.secondaryLabel)
-            }
-            .labelStyle(DSLeadingIconLabelStyle())
-            .fixedSize(horizontal: false, vertical: true)
-        }
-    }
-
-    /// What saving files, from the sheet as it stands.
-    private func completion(date: Date) -> CaptureFiler.Completion {
-        let cost = amount.map { Money($0, currency: currency) }
-        return CaptureFiler.Completion(obligation: obligation, date: date, cost: cost, document: document,
-                                       keepsPhotoOnRequest: keepsPhotoOnRequest, isAnotherBill: isAnotherBill)
-    }
-
-    private func read(_ payload: CaptureRequest.Payload) {
-        // A bank card's new card is read only on the phone, like any bank card (`PhoneOnlyReading`).
-        session.destination.staysOnPhone = obligation.asset.map { PhoneOnlyReading.holdsOne($0.values) } ?? false
-        session.read(payload)
-    }
-
-    private func save(lowerReading: LowerReadingAnswer? = nil) {
-        // One filing at a time: a second tap before the button shows it is busy files nothing.
-        guard let date, !isSaving else { return }
-        isSaving = true
-        errorMessage = nil
-        let title = obligation.title
-        Task {
-            do {
-                var filer = CaptureFiler(context: context)
-                filer.lowerReading = lowerReading
-                let outcome = try await filer.file(.completion(completion(date: date)))
-                let message: LocalizedStringResource = outcome.nextDue.map {
-                    "\(title): gata. Următorul termen e pe \(DueWording.date($0, today: CalendarDay(Date())))."
-                } ?? "\(title): gata."
-                let toast: DSToast = outcome.receipt.map { .undo(message, receipt: $0) } ?? DSToast(title: message, actionTitle: nil)
-                session.close()
-                onClose(toast)
-            } catch let question as ExampleSectionQuestion {
-                isSaving = false
-                exampleQuestion = question
-            } catch let question as LowerReadingQuestion {
-                isSaving = false
-                readingQuestion = question
-            } catch {
-                isSaving = false
-                errorMessage = SaveFailure.message(for: error, formKept: true)
-            }
-        }
     }
 }
 

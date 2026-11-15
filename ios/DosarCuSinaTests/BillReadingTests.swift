@@ -592,6 +592,34 @@ struct BillReadingTests {
         #expect(left.isEmpty, "Still different after undo: \(left.map(\.description))")
     }
 
+    @Test("A payment's sheet, as its kind asks it, still files the photo of the bill as a bill")
+    func aPaymentsSheetStillFilesTheBill() async throws {
+        let context = try makeContext()
+        let (gas, reminder) = try gasWithReminder(context)
+        let store = CaptureDocumentStore()
+        let shape = reminder.kind.completion
+        #expect(shape.cost == .paid)
+        #expect(shape.paper == .bill)
+        var draft = CompletionDraft(date: noon(today))
+        draft.amount = 245
+        draft.document = bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", number: "EXM 0000001",
+                              document: try await newPhoto(store, seed: 73))
+        // What a payment doesn't ask is never filed, whatever the draft still holds.
+        draft.note = "Nu se cere"
+        draft.reading = 1
+        let completion = draft.completion(of: reminder, shape: shape, counter: nil, calendar: .bucharest, now: noon(today))
+        #expect(completion.note == nil)
+        #expect(completion.metricReading == nil)
+
+        let outcome = try await filer(context, store: store).file(.completion(completion))
+        let entry = try #require(outcome.bill)
+        #expect(bills(on: gas).map(\.id) == [entry.id], "Logged once in Istoric, as a bill")
+        #expect(entry.totalCost == Money(245))
+        #expect(readings(of: gas).map(\.value) == [12_345], "Its index, on the subscription")
+        #expect(reminder.status == .done, "Paid")
+        #expect(outcome.receipt?.canUndo == true)
+    }
+
     @Test func amRezolvatWithAnotherPhotoOfABillAlreadyFiledLogsItOnce() async throws {
         let context = try makeContext()
         _ = try home(context)

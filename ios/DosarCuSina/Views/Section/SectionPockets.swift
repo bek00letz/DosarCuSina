@@ -314,7 +314,7 @@ struct DocumentRowLink: View {
                     showsChevron: true
                 ) {
                     if let day = attachment.validUntilDay {
-                        ExpiryBadge(day: day, rule: attachment.obligation?.reminders.urgencyRule ?? DateUrgency.rule(for: day, on: attachment.asset))
+                        ExpiryBadge(day: day, rule: attachment.obligation?.urgencyRule ?? DateUrgency.rule(for: day, on: attachment.asset))
                     }
                 }
             }

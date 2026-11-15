@@ -441,7 +441,7 @@ struct PaperPage: View {
                 if let day = attachment.validUntilDay {
                     DSRowSeparator()
                     DSReadOnlyValueRow(label: Text("Valabil până la", comment: "A paper's last valid day."), value: Text(verbatim: DosarFormat.longDay(day)))
-                    ExpiryBadge(day: day, rule: attachment.obligation?.reminders.urgencyRule ?? DateUrgency.rule(for: day, on: attachment.asset))
+                    ExpiryBadge(day: day, rule: attachment.obligation?.urgencyRule ?? DateUrgency.rule(for: day, on: attachment.asset))
                         .padding(.bottom, DS.Space.xs)
                 }
                 if let date = attachment.documentDay {
