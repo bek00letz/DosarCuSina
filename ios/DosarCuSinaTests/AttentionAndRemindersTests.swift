@@ -130,13 +130,13 @@ struct ReminderProfileTests {
                                       reminders: ReminderProfile(leadDays: [7], consequence: .legal))
         let center = FakeNotificationCenter(status: .authorized)
         let reconciler = NotificationReconciler(client: center)
-        await reconciler.apply(ReminderPlanner.plan([open], now: today, calendar: calendar), badgeCount: 0, allowPermissionPrompt: false)
+        await reconciler.apply(ReminderPlanner.plan([open], now: today, calendar: calendar), badgeCount: 0, prompt: .never)
         let lapseId = ReminderPlanner.identifier(obligationId: id, suffix: ReminderPlanner.lapseSuffix)
         #expect(await center.pendingReminders[lapseId] != nil)
 
         var done = open
         done.status = .done
-        await reconciler.apply(ReminderPlanner.plan([done], now: today, calendar: calendar), badgeCount: 0, allowPermissionPrompt: false)
+        await reconciler.apply(ReminderPlanner.plan([done], now: today, calendar: calendar), badgeCount: 0, prompt: .never)
         #expect(await center.pendingReminders[lapseId] == nil)
     }
 
@@ -306,13 +306,16 @@ struct ReminderPlannerTests {
 actor FakeNotificationCenter: NotificationCenterClient {
     var status: ReminderAuthorization
     var grants: Bool
+    /// False: the system's question doesn't show (an error), so nothing is decided.
+    var answers: Bool
     private(set) var pendingReminders: [String: PendingReminder] = [:]
     private(set) var promptCount = 0
     private(set) var badge: Int?
 
-    init(status: ReminderAuthorization, grants: Bool = true, pending: [PendingReminder] = []) {
+    init(status: ReminderAuthorization, grants: Bool = true, answers: Bool = true, pending: [PendingReminder] = []) {
         self.status = status
         self.grants = grants
+        self.answers = answers
         for item in pending { pendingReminders[item.identifier] = item }
     }
 
@@ -320,6 +323,7 @@ actor FakeNotificationCenter: NotificationCenterClient {
 
     func requestAuthorization() async -> Bool {
         promptCount += 1
+        guard answers else { return false }
         status = grants ? .authorized : .denied
         return grants
     }
@@ -360,45 +364,78 @@ struct NotificationReconcilerTests {
         let center = FakeNotificationCenter(status: .notDetermined)
         let reconciler = NotificationReconciler(client: center)
 
-        await reconciler.apply(plan(["A"]), badgeCount: 0, allowPermissionPrompt: false)
+        await reconciler.apply(plan(["A"]), badgeCount: 0, prompt: .never)
         #expect(await center.promptCount == 0)
 
-        await reconciler.apply([], badgeCount: 0, allowPermissionPrompt: true)
+        await reconciler.apply([], badgeCount: 0, prompt: .inContext)
         #expect(await center.promptCount == 0, "Nothing to remind about, nothing to ask")
 
-        let outcome = await reconciler.apply(plan(["A"]), badgeCount: 2, allowPermissionPrompt: true)
+        let outcome = await reconciler.apply(plan(["A"]), badgeCount: 2, prompt: .inContext)
         #expect(await center.promptCount == 1)
         #expect(outcome.authorization == .authorized)
         #expect(await center.pendingReminders.count == plan(["A"]).count)
         #expect(await center.badge == 2)
     }
 
+    @Test func asksWheneverThePersonAsks() async {
+        let center = FakeNotificationCenter(status: .notDetermined, grants: false)
+        let reconciler = NotificationReconciler(client: center)
+
+        let outcome = await reconciler.apply([], badgeCount: 0, prompt: .personAsked)
+        #expect(await center.promptCount == 1, "Nothing planned yet, but the person asked")
+        #expect(outcome.authorization == .denied)
+
+        await reconciler.apply(plan(["A"]), badgeCount: 0, prompt: .personAsked)
+        #expect(await center.promptCount == 1, "Once decided, the system isn't asked again")
+        #expect(await center.pendingReminders.isEmpty)
+    }
+
+    @Test func aQuestionThatDidNotShowLeavesItUndecided() async {
+        let center = FakeNotificationCenter(status: .notDetermined, answers: false)
+        let outcome = await NotificationReconciler(client: center).apply(plan(["A"]), badgeCount: 0, prompt: .personAsked)
+        #expect(await center.promptCount == 1)
+        #expect(outcome.authorization == .notDetermined, "Read again from the system, not guessed from the reply")
+        #expect(await center.pendingReminders.isEmpty)
+    }
+
+    @Test func whichPassesAsk() {
+        #expect(!PermissionPrompt.never.asks(somethingToRemind: true))
+        #expect(!PermissionPrompt.inContext.asks(somethingToRemind: false))
+        #expect(PermissionPrompt.inContext.asks(somethingToRemind: true))
+        #expect(PermissionPrompt.personAsked.asks(somethingToRemind: false))
+        #expect(PermissionPrompt.personAsked.asks(somethingToRemind: true))
+    }
+
     @Test func diffsAgainstWhatIsPending() async {
         let first = plan(["A", "B"])
         let center = FakeNotificationCenter(status: .authorized)
         let reconciler = NotificationReconciler(client: center)
-        await reconciler.apply(first, badgeCount: 0, allowPermissionPrompt: false)
+        await reconciler.apply(first, badgeCount: 0, prompt: .never)
 
-        let unchanged = await reconciler.apply(first, badgeCount: 0, allowPermissionPrompt: false)
+        let unchanged = await reconciler.apply(first, badgeCount: 0, prompt: .never)
         #expect(unchanged.added == 0 && unchanged.removed == 0)
 
-        let renamed = await reconciler.apply([first[0]], badgeCount: 0, allowPermissionPrompt: false)
+        let renamed = await reconciler.apply([first[0]], badgeCount: 0, prompt: .never)
         #expect(renamed.removed == first.count - 1)
         #expect(await center.pendingReminders.count == 1)
     }
 
     @Test func leavesOtherAppsRequestsAlone() async {
         let center = FakeNotificationCenter(status: .authorized, pending: [PendingReminder(identifier: "someone-else", fingerprint: nil)])
-        await NotificationReconciler(client: center).apply([], badgeCount: 0, allowPermissionPrompt: false)
+        await NotificationReconciler(client: center).apply([], badgeCount: 0, prompt: .never)
         #expect(await center.pendingReminders["someone-else"] != nil)
     }
 
     @Test func deniedPermissionClearsOurRequests() async {
         let stale = PendingReminder(identifier: "obligation.\(UUID().uuidString.lowercased()).d1", fingerprint: "x")
         let center = FakeNotificationCenter(status: .denied, pending: [stale])
-        await NotificationReconciler(client: center).apply(plan(["A"]), badgeCount: 0, allowPermissionPrompt: true)
+        await NotificationReconciler(client: center).apply(plan(["A"]), badgeCount: 0, prompt: .inContext)
         #expect(await center.pendingReminders.isEmpty)
         #expect(await center.promptCount == 0)
+
+        let outcome = await NotificationReconciler(client: center).apply([], badgeCount: 0, prompt: .personAsked)
+        #expect(await center.promptCount == 0, "Refused: only the phone's Settings turns them on")
+        #expect(outcome.authorization == .denied)
     }
 }
 

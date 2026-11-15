@@ -3,7 +3,9 @@ import UIKit
 
 /// Notification permission, asked in context: the first time the person saves
 /// something that reminds, the app explains in one sentence, then the system
-/// asks (through `SideEffectsCoordinator`, right after the save). This gate
+/// asks (`SideEffectsCoordinator.askForPermission()`, right after the save). Its
+/// "Continuă" and Settings' "Pornește notificările" are the person's own request, so
+/// the system asks even when nothing is planned yet. This gate
 /// and Settings are the only places that ask; plain saves never do. If it was
 /// refused, screens show calmly how to turn it on; nothing else depends on it.
 @MainActor

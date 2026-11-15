@@ -28,6 +28,12 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 - **Decided:** a reminder lead that would fall on or before the day the cycle began (the due day one step of the rule before, or the fixed date before) is left out of that cycle: `ReminderProfile.forCycle`, read through `Obligation.cycleReminders` by the reminders, the urgency rule (`Obligation.urgencyRule`), Urmează, the widget and the page. It never fires in the past, never counts as a warning missed (no catch-up) and never keeps the deadline urgent for its whole cycle; when no lead fits, it reminds on the day, so a repeating deadline is never silent. The leads stay stored as the person chose them, so a longer repeat uses them again; the reminder settings don't offer a lead that doesn't fit, and one kept says why. *Alternative:* shorten a lead to the longest that fits, which would remind the day after it was done; or drop the leads when the repeat changes, which loses them.
 - **Left open:** a counter-based rule and the ITP rule keep every lead (their cycle has no set length here; their leads are short).
 
+## 2026-11-15
+
+### Asking for notifications always asks
+- **Decided:** when the person asks for notifications (Settings' "Pornește notificările", the explanation's "Continuă") and hasn't decided yet, the system asks, whatever there is to remind about: an empty binder, only examples (which never remind), or a deadline whose reminders have all passed. A pass on its own never asks, and the ask in context after a save asks only when something reminds. One rule for all three, `PermissionPrompt` (`never`, `inContext`, `personAsked`), read by `NotificationReconciler`; the person's request comes in only through `SideEffectsCoordinator.askForPermission()`, which asks even when the binder can't be read, then schedules what there is and returns with the answer, read again from the system. Allowed or refused, nothing is asked again; a refusal is changed in the phone's Settings, which Settings opens.
+- **Why:** a tester tapped "Pornește notificările" before adding anything and nothing happened: the button only asked when there was something to remind about, a rule meant for the ask after a save. A button that answers with nothing breaks the promise on it. Refines "Permissions are asked in context" (below): the person's own tap is the context.
+
 ## 2026-11-11
 
 ### An upgrade interrupted halfway finishes at the next launch
