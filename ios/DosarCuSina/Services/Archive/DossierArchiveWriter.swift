@@ -211,7 +211,8 @@ struct DossierArchiveWriter: Sendable {
             isSensitive: template.isSensitive, sections: template.keptSections, blueprints: template.keptBlueprints,
             // As stored: a pocket from a newer build goes out as it came in.
             components: template.keptComponents, pockets: template.pocketsRaw,
-            createdAt: template.createdAt, updatedAt: template.updatedAt, behavior: template.keptBehavior?.omitted { $0 == .standard }
+            createdAt: template.createdAt, updatedAt: template.updatedAt, behavior: template.keptBehavior?.omitted { $0 == .standard },
+            boxGrouping: template.boxGroupingRaw
         )
     }
 

@@ -148,7 +148,7 @@ public enum BuiltInTemplates {
             ],
             components: BuiltInComponents.vehicle,
             pockets: [.upcoming, .documents, .history, .people, .money, .keyFacts],
-            behavior: CategoryBehavior(visit: Visits.service,
+            behavior: CategoryBehavior(sectionNoun: .car, visit: Visits.service,
                                        offerTitle: String(localized: "Mașină", comment: "Add-section option."), shortlistOrder: 1)
         )
     }
@@ -215,8 +215,8 @@ public enum BuiltInTemplates {
                                     reminders: profile([14, 0], .comfort, grace: 30), isSuggested: false),
             ],
             components: BuiltInComponents.home,
-            pockets: [.upcoming, .tenants, .products, .subscriptions, .documents, .history, .people, .money, .keyFacts],
-            behavior: CategoryBehavior(role: .home, visit: Visits.tradesperson,
+            pockets: [.upcoming, .tenants, .products, .subscriptions, .plants, .documents, .history, .people, .money, .keyFacts],
+            behavior: CategoryBehavior(role: .home, sectionNoun: .home, visit: Visits.tradesperson,
                                        offerTitle: String(localized: "Casă sau apartament", comment: "Add-section option."), shortlistOrder: 2)
         )
     }
@@ -363,7 +363,7 @@ public enum BuiltInTemplates {
             ],
             components: BuiltInComponents.pet,
             pockets: [.upcoming, .documents, .history, .people, .money, .keyFacts],
-            behavior: CategoryBehavior(visit: Visits.vet,
+            behavior: CategoryBehavior(sectionNoun: .pet, visit: Visits.vet,
                                        offerTitle: String(localized: "Animal de companie", comment: "Add-section option."), shortlistOrder: 3)
         )
     }
@@ -530,7 +530,7 @@ public enum BuiltInTemplates {
             ],
             pockets: [.upcoming, .documents, .history, .money, .keyFacts],
             behavior: CategoryBehavior(box: .wholeCategory, listing: .byMonthlyCost, role: .subscription, parentPocket: .subscriptions,
-                                       offerTitle: String(localized: "Abonament", comment: "Add-section option."), shortlistOrder: 6)
+                                       mayBelongTo: .home, offerTitle: String(localized: "Abonament", comment: "Add-section option."), shortlistOrder: 6)
         )
     }
 
@@ -587,7 +587,7 @@ public enum BuiltInTemplates {
             ],
             components: BuiltInComponents.bike,
             pockets: [.upcoming, .history, .people, .money, .keyFacts],
-            behavior: CategoryBehavior(visit: Visits.service)
+            behavior: CategoryBehavior(sectionNoun: .bike, visit: Visits.service)
         )
     }
 
@@ -616,7 +616,10 @@ public enum BuiltInTemplates {
                                     firstDue: .afterInterval(.years(2)),
                                     reminders: profile([7], .comfort, grace: 30), isSuggested: false),
             ],
-            pockets: [.upcoming, .history, .keyFacts]
+            pockets: [.upcoming, .history, .keyFacts],
+            // One "Plante" box for all of them; each may stand in a home, on its page, or on its own.
+            behavior: CategoryBehavior(parentPocket: .plants, defaultGrouping: .grouped, sectionNoun: .plant,
+                                       mayBelongTo: .home, goesUnderTheOnlyOne: true)
         )
     }
 
@@ -705,7 +708,8 @@ public enum BuiltInTemplates {
                                     reminders: profile([3, 0], .comfort, grace: 14)),
             ],
             components: BuiltInComponents.espresso,
-            pockets: [.upcoming, .history, .money, .keyFacts]
+            pockets: [.upcoming, .history, .money, .keyFacts],
+            behavior: CategoryBehavior(sectionNoun: .espressoMachine)
         )
     }
 }

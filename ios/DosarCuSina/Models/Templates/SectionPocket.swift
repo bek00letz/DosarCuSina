@@ -12,6 +12,8 @@ public enum SectionPocket: String, Codable, CaseIterable, Sendable, Comparable {
     case products
     /// Subscriptions filed under an asset or listed in the Abonamente box.
     case subscriptions
+    /// Plants kept in a home, also listed in the Plante box.
+    case plants
     /// Documents (Acte).
     case documents
     /// What happened: visits, repairs, purchases (Istoric).
@@ -32,6 +34,7 @@ public enum SectionPocket: String, Codable, CaseIterable, Sendable, Comparable {
         case .tenants: return String(localized: "Chiriași", comment: "Section pocket")
         case .products: return String(localized: "Produse", comment: "Section pocket")
         case .subscriptions: return String(localized: "Abonamente", comment: "Section pocket")
+        case .plants: return String(localized: "Plante", comment: "Section pocket")
         case .documents: return String(localized: "Acte", comment: "Section pocket")
         case .history: return String(localized: "Istoric", comment: "Section pocket")
         case .people: return String(localized: "Oameni", comment: "Section pocket")

@@ -133,14 +133,14 @@ enum FreeText {
 
     /// Every type of the schema that keeps words.
     static var types: [any HoldsFreeText.Type] {
-        DosarSchemaV14.models.compactMap { $0 as? any HoldsFreeText.Type }
+        DosarSchemaV15.models.compactMap { $0 as? any HoldsFreeText.Type }
     }
 }
 
 // MARK: - The schema's words
 
-extension DosarSchemaV14.Asset: HoldsFreeText {
-    static var freeText: [FreeTextProperty<DosarSchemaV14.Asset>] {
+extension DosarSchemaV15.Asset: HoldsFreeText {
+    static var freeText: [FreeTextProperty<DosarSchemaV15.Asset>] {
         [
             .text("name", \.name), .text("notes", \.notes), .values("valuesData", \.valuesData, fields: \.categoryFields),
             .facts("customFactsData", \.customFactsData),
@@ -161,8 +161,8 @@ extension DosarSchemaV14.Asset: HoldsFreeText {
     }
 }
 
-extension DosarSchemaV14.Obligation: HoldsFreeText {
-    static var freeText: [FreeTextProperty<DosarSchemaV14.Obligation>] {
+extension DosarSchemaV15.Obligation: HoldsFreeText {
+    static var freeText: [FreeTextProperty<DosarSchemaV15.Obligation>] {
         // A recurrence is the app's own words, but what a newer build wrote inside it may not be.
         [.text("title", \.title), .text("notes", \.notes), .text("provider", \.provider), .text("reference", \.reference),
          .json("recurrenceData", \.recurrenceData), .json("remindersData", \.remindersData)]
@@ -172,8 +172,8 @@ extension DosarSchemaV14.Obligation: HoldsFreeText {
 
 }
 
-extension DosarSchemaV14.HistoryEntry: HoldsFreeText {
-    static var freeText: [FreeTextProperty<DosarSchemaV14.HistoryEntry>] {
+extension DosarSchemaV15.HistoryEntry: HoldsFreeText {
+    static var freeText: [FreeTextProperty<DosarSchemaV15.HistoryEntry>] {
         [.text("title", \.title), .text("note", \.note), .text("reference", \.reference)]
     }
     static var machineText: Set<String> { ["kindRaw", "totalCostCurrency", "cycleDueDayISO", "nextDueDayISO", "previousStatusRaw"] }
@@ -181,8 +181,8 @@ extension DosarSchemaV14.HistoryEntry: HoldsFreeText {
 
 }
 
-extension DosarSchemaV14.ServiceItem: HoldsFreeText {
-    static var freeText: [FreeTextProperty<DosarSchemaV14.ServiceItem>] {
+extension DosarSchemaV15.ServiceItem: HoldsFreeText {
+    static var freeText: [FreeTextProperty<DosarSchemaV15.ServiceItem>] {
         [
             .text("name", \.name), .text("group", \.group), .text("partBrandOrCode", \.partBrandOrCode),
             .text("partSerialNumber", \.partSerialNumber), .text("batchOrTicket", \.batchOrTicket),
@@ -194,8 +194,8 @@ extension DosarSchemaV14.ServiceItem: HoldsFreeText {
 
 }
 
-extension DosarSchemaV14.MeasurementLog: HoldsFreeText {
-    static var freeText: [FreeTextProperty<DosarSchemaV14.MeasurementLog>] {
+extension DosarSchemaV15.MeasurementLog: HoldsFreeText {
+    static var freeText: [FreeTextProperty<DosarSchemaV15.MeasurementLog>] {
         [.text("name", \.name), .text("source", \.source), .text("notes", \.notes)]
     }
     static var machineText: Set<String> { ["kindRaw", "unit", "unitPriceCurrency", "basisRaw"] }
@@ -203,8 +203,8 @@ extension DosarSchemaV14.MeasurementLog: HoldsFreeText {
 
 }
 
-extension DosarSchemaV14.Attachment: HoldsFreeText {
-    static var freeText: [FreeTextProperty<DosarSchemaV14.Attachment>] {
+extension DosarSchemaV15.Attachment: HoldsFreeText {
+    static var freeText: [FreeTextProperty<DosarSchemaV15.Attachment>] {
         // A framing is numbers, but what a newer build wrote inside it may not be.
         [.text("title", \.title), .text("fileName", \.fileName), .text("extractedText", \.extractedText), .json("framingData", \.framingData)]
     }
@@ -215,15 +215,15 @@ extension DosarSchemaV14.Attachment: HoldsFreeText {
 
 }
 
-extension DosarSchemaV14.AttachmentPage: HoldsFreeText {
-    static var freeText: [FreeTextProperty<DosarSchemaV14.AttachmentPage>] { [] }
+extension DosarSchemaV15.AttachmentPage: HoldsFreeText {
+    static var freeText: [FreeTextProperty<DosarSchemaV15.AttachmentPage>] { [] }
     static var machineText: Set<String> { ["imageData"] }
     var keptWhole: PaymentCardNumbers.KeptWhole { .nothing }
 
 }
 
-extension DosarSchemaV14.Provider: HoldsFreeText {
-    static var freeText: [FreeTextProperty<DosarSchemaV14.Provider>] {
+extension DosarSchemaV15.Provider: HoldsFreeText {
+    static var freeText: [FreeTextProperty<DosarSchemaV15.Provider>] {
         [
             .text("name", \.name), .texts("trades", \.trades), .text("phone", \.phone), .text("email", \.email),
             .text("address", \.address), .text("notes", \.notes),
@@ -235,15 +235,15 @@ extension DosarSchemaV14.Provider: HoldsFreeText {
 
 }
 
-extension DosarSchemaV14.CategoryTemplate: HoldsFreeText {
-    static var freeText: [FreeTextProperty<DosarSchemaV14.CategoryTemplate>] {
+extension DosarSchemaV15.CategoryTemplate: HoldsFreeText {
+    static var freeText: [FreeTextProperty<DosarSchemaV15.CategoryTemplate>] {
         [
             .text("name", \.name), .text("summary", \.summary), .json("sectionsData", \.sectionsData),
             .json("blueprintsData", \.blueprintsData), .json("componentsData", \.componentsData),
             .json("behaviorData", \.behaviorData),
         ]
     }
-    static var machineText: Set<String> { ["key", "symbol", "tintRaw", "heroStyleRaw", "pocketsRaw"] }
+    static var machineText: Set<String> { ["key", "symbol", "tintRaw", "heroStyleRaw", "pocketsRaw", "boxGroupingRaw"] }
     var keptWhole: PaymentCardNumbers.KeptWhole { .nothing }
 
 }

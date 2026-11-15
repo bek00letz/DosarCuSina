@@ -42,7 +42,7 @@ struct MoveTests {
         #expect(AssetActions.moveDestinations(for: h.tenancy, among: all).map(\.name) == ["Casa de la țară"])
         #expect(AssetActions.offersNewMember(for: h.card))
         #expect(!AssetActions.offersNewMember(for: h.tenancy))
-        #expect(AssetActions.parentTemplateKey(for: h.flat) == nil, "A top-level home has nowhere to move")
+        #expect(!AssetActions.canMove(h.flat), "A top-level home has nowhere to move")
     }
 
     @Test func movingADocumentFilesItUnderTheOtherPersonAndRenamesIt() throws {

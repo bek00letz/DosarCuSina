@@ -37,12 +37,41 @@ private struct CategoryContent: View {
     @Environment(ShellRouter.self) private var router
     @Query(sort: \Asset.name) private var assets: [Asset]
     @Query private var categories: [CategoryTemplate]
+    @State private var layout = BinderLayoutStore.shared
+    @State private var error: UserFacingError?
 
     /// The category of the people documents are filed under.
     private var holderKey: String? { categories.first { $0.behavior.role == .holder }?.key }
 
     var body: some View {
         let mine = assets.filter { $0.templateKey == template.key }
+        let offer = template.groupingOffer(sections: mine.count)
+        content(mine)
+            .toolbar {
+                if let offer {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Menu {
+                            BoxGroupingButton(offer: offer) { setGrouping(offer) }
+                        } label: {
+                            Label { Text("Mai multe", comment: "Toolbar menu with more actions for a category's page.") } icon: { Image(systemName: "ellipsis.circle") }
+                        }
+                    }
+                }
+            }
+            .sensoryFeedback(.selection, trigger: template.grouping)
+            .userErrorAlert($error)
+    }
+
+    /// One box on the binder for the category's sections, or one each again.
+    private func setGrouping(_ grouping: BoxGrouping) {
+        do {
+            try layout.setGrouping(template, grouping, assets: assets, context: context)
+        } catch {
+            self.error = UserFacingError(error)
+        }
+    }
+
+    private func content(_ mine: [Asset]) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.xl) {
                 // What the page lists is the category's own data, so a category of the

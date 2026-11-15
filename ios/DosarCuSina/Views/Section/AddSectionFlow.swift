@@ -250,6 +250,7 @@ private struct EssentialsStep: View {
     @Bindable var model: AddSectionModel
     let next: () -> Void
     @State private var reveals = false
+    @Environment(\.modelContext) private var context
     @Query(sort: \Asset.name) private var assets: [Asset]
     @Query private var templates: [CategoryTemplate]
 
@@ -276,6 +277,7 @@ private struct EssentialsStep: View {
                 if model.template?.behavior.role == .personalDocument, model.request.parentID == nil {
                     holderPicker
                 }
+                placePicker
                 if fields.isEmpty {
                     Text("Restul detaliilor le completezi oricând din pagina secțiunii, cu Editează.", comment: "Footnote when a category has no essential fields.")
                         .dsFont(.footnote)
@@ -310,6 +312,22 @@ private struct EssentialsStep: View {
                 options: members.map(\.id),
                 footnote: "Actele stau grupate pe persoane."
             ) { id in members.first { $0.id == id }?.name ?? "" }
+        }
+    }
+
+    /// The home a plant (or a subscription) stands in, from the sections of the part its category
+    /// may belong to (`CategoryBehavior.mayBelongTo`); the only one is chosen already for a plant.
+    /// "Unde stă" stays the room's field.
+    @ViewBuilder
+    private var placePicker: some View {
+        let places = model.possibleParents(in: context)
+        if !places.isEmpty {
+            DSChoiceField(
+                "Locuința",
+                selection: Binding(get: { model.parentID }, set: { model.parentID = $0 }),
+                options: places.map(\.id),
+                footnote: "Apare și pe pagina locuinței. Poți schimba oricând, cu „Mută la…”."
+            ) { id in places.first { $0.id == id }?.name ?? "" }
         }
     }
 }

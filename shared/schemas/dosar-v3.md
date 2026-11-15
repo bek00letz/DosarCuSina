@@ -126,10 +126,15 @@ to update the app, and imports version 2 through a converter.
 (`blue|orange|pink|brown|indigo|teal|purple|green|red|yellow|mint|cyan|gray`),
 `heroStyle` (`vehicle|home|document|pet|standard`), `isBuiltIn`, `version`,
 `homeOrder`, `isOnHome`, `isSensitive`, `sections`, `blueprints`,
-`components`?, `pockets`?, `behavior`?, `createdAt`, `updatedAt`.
+`components`?, `pockets`?, `behavior`?, `boxGrouping`?, `createdAt`, `updatedAt`.
+
+`boxGrouping` is the household's choice of one box on the binder for the category's sections
+(`grouped`) or one each (`separate`). Missing, nobody chose, and the category starts as its
+`behavior.defaultGrouping` says. A value a reader doesn't know is kept as written and read as
+missing.
 
 `pockets` lists the parts a section page shows. The values are
-`upcoming|tenants|products|subscriptions|documents|history|people|money|keyFacts`,
+`upcoming|tenants|products|subscriptions|plants|documents|history|people|money|keyFacts`,
 always shown in that order. When the key is missing, readers use
 `upcoming, documents, history, people, money, keyFacts`.
 
@@ -141,8 +146,12 @@ doesn't know, reads as the default.
 - **`box`:** `perSection` (one box per top-level section, the default), `wholeCategory` (one box for the category: Acte, Garanții, Abonamente) or `insideOther` (no box: its sections live inside another).
 - **`listing`:** what the category's page lists: `plain` (the default), `byHolder`, `byWarranty` or `byMonthlyCost`.
 - **`role`:** the part it plays for other categories: `holder` (people documents are filed under), `personalDocument`, `subscription` (ongoing contracts bills file into) or `home` (where contracts tied to an address live).
-- **`parentPocket`:** the pocket of a parent's page its sections show in (`tenants`, `products`, `subscriptions`).
+- **`parentPocket`:** the pocket of a parent's page its sections show in (`tenants`, `products`, `subscriptions`, `plants`).
 - **`addedOnlyUnderParent`:** its sections are only added under another section (a tenancy).
+- **`defaultGrouping`:** for a `perSection` box, whether its sections start in one box together (`grouped`, plants) or one each (`separate`, the default). The household's `boxGrouping` wins.
+- **`sectionNoun`:** what its sections are called when a box counts them: `car`, `home`, `pet`, `bike`, `plant` or `espressoMachine`. Missing or unknown, they are counted as sections.
+- **`mayBelongTo`:** a `role` whose sections its own may be filed under, or stand on their own (`home`: a subscription, a plant).
+- **`goesUnderTheOnlyOne`:** a new section goes under the household's only section of the `mayBelongTo` part by itself (a plant into the only home).
 - **`visit`:** how its visits read and what they are: `{"title": "Am fost la service", "checklistTitle": "Ce s-a făcut", "providerTitle": "Service-ul", "kind": "maintenance", "trade": "mechanic"}`. `kind` is a history entry's kind, `trade` a provider's. Missing, it reads as a job done: "Am făcut o lucrare", "Ce s-a făcut", "Cine a lucrat", `repair`, `other`; a missing or unknown key inside reads as that one's.
 - **`offerTitle`:** its option when adding a section, one thing rather than the category ("Mașină" for "Mașini"). Missing or empty, the category's `name`.
 - **`shortlistOrder`:** its place, from 1, among the categories offered first when adding a section ("Cele mai des folosite"). Missing, it is offered with the others, in the binder's order.
@@ -158,7 +167,7 @@ start with `custom.`. A built-in template always takes the reader's own
 definition, whatever the archive says about it (`name`, `sections`, field
 types, `blueprints`, `version`, `isBuiltIn`): a key that names a built-in is a
 built-in. From the archive, a reader takes only the household preferences:
-`homeOrder`, `isOnHome` and `isSensitive`, the last one only towards locked (a
+`homeOrder`, `isOnHome`, `boxGrouping` and `isSensitive`, the last one only towards locked (a
 category locked on the device stays locked). `isSensitive` is the lock of the device that
 wrote the archive: each device keeps its own, outside the household data. For a custom template on both
 sides, a field that is `secret` or `isSensitive` on the device stays so.

@@ -25,6 +25,34 @@ public enum TemplateTint: String, Codable, CaseIterable, Sendable {
     case blue, orange, pink, brown, indigo, teal, purple, green, red, yellow, mint, cyan, gray
 }
 
+/// Whether a category's sections each get a box on the Dosar grid or share one. The catalog
+/// says which a category starts with (`CategoryBehavior.defaultGrouping`); the person can choose
+/// the other for each category (`CategoryTemplate.chosenGrouping`). Raw values are part of the
+/// `.dosar` contract.
+public enum BoxGrouping: String, Codable, Sendable, CaseIterable {
+    /// One box per section: the car, the other car.
+    case separate
+    /// One box for all of the category's sections, which opens to their list ("Mașini").
+    case grouped
+
+    /// The one rule for what the person is offered for a category: the other choice, or nil.
+    /// Grouping is offered once its sections have boxes of their own and it has two or more;
+    /// splitting a grouped box again is always offered, so there is always a way back.
+    public static func offer(for behavior: CategoryBehavior, now current: BoxGrouping, sections: Int) -> BoxGrouping? {
+        guard behavior.offersGrouping else { return nil }
+        if current == .grouped { return .separate }
+        return sections >= 2 ? .grouped : nil
+    }
+}
+
+/// What a category's sections are called when they are counted ("3 mașini"), as data, so the
+/// count of a grouped box reads in the category's own words. A category without one, or with
+/// one from a newer version, counts them as sections ("3 secțiuni"). Raw values are part of the
+/// `.dosar` contract; the words are in `BoxStatus.count(_:of:)`.
+public enum SectionNoun: String, Codable, Sendable, CaseIterable {
+    case car, home, pet, bike, plant, espressoMachine
+}
+
 /// What a category does in the binder, as data, so a custom category can behave like
 /// Acte or Garanții and no screen asks which built-in it is. Raw values are part of the
 /// `.dosar` contract; a value from a newer version reads as the default, the one that hides
@@ -71,6 +99,18 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
     public var parentPocket: SectionPocket?
     /// Its sections are only added under another section, never on their own (a tenancy).
     public var addedOnlyUnderParent: Bool
+    /// Whether its sections start in one box or one each, when its box is `perSection`; nil reads
+    /// as `.separate`. The person's choice for the category wins (`CategoryTemplate.grouping`).
+    public var defaultGrouping: BoxGrouping?
+    /// What its sections are called when counted ("3 plante"); nil counts them as sections.
+    public var sectionNoun: SectionNoun?
+    /// Its sections may be filed under a section of the category that plays this part, or stand
+    /// on their own: a subscription under a home or a phone plan alone, a plant on a home's sill
+    /// or on its own. "Mută la…" offers the sections that play it, and standing on its own.
+    public var mayBelongTo: Role?
+    /// A new section goes under the household's only section of the `mayBelongTo` part by itself
+    /// (the only home); with none or several it stands on its own until the person moves it.
+    public var goesUnderTheOnlyOne: Bool
     /// How its visits read and what they are ("Am fost la service"); nil reads as
     /// `VisitWording.standard`. Read it through `visitWording`.
     public var visit: VisitWording?
@@ -82,12 +122,17 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
     public var shortlistOrder: Int?
 
     public init(box: Box = .perSection, listing: Listing = .plain, role: Role? = nil, parentPocket: SectionPocket? = nil, addedOnlyUnderParent: Bool = false,
+                defaultGrouping: BoxGrouping? = nil, sectionNoun: SectionNoun? = nil, mayBelongTo: Role? = nil, goesUnderTheOnlyOne: Bool = false,
                 visit: VisitWording? = nil, offerTitle: String? = nil, shortlistOrder: Int? = nil) {
         self.box = box
         self.listing = listing
         self.role = role
         self.parentPocket = parentPocket
         self.addedOnlyUnderParent = addedOnlyUnderParent
+        self.defaultGrouping = defaultGrouping
+        self.sectionNoun = sectionNoun
+        self.mayBelongTo = mayBelongTo
+        self.goesUnderTheOnlyOne = goesUnderTheOnlyOne
         self.visit = visit
         self.offerTitle = offerTitle
         self.shortlistOrder = shortlistOrder
@@ -99,6 +144,11 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
     /// Whether its sections get boxes of their own on the Dosar grid.
     public var hasSectionBoxes: Bool { box == .perSection }
 
+    /// Whether the person can choose between one box per section and one box for them all: only
+    /// a category whose sections have boxes of their own. A category with one box (Acte) or none
+    /// (tenants) keeps it.
+    public var offersGrouping: Bool { hasSectionBoxes }
+
     /// How its visits read: its own wording, else the standard one.
     public var visitWording: VisitWording { visit ?? .standard }
 
@@ -108,7 +158,9 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
         return offerTitle
     }
 
-    private enum CodingKeys: String, CodingKey { case box, listing, role, parentPocket, addedOnlyUnderParent, visit, offerTitle, shortlistOrder }
+    private enum CodingKeys: String, CodingKey {
+        case box, listing, role, parentPocket, addedOnlyUnderParent, defaultGrouping, sectionNoun, mayBelongTo, goesUnderTheOnlyOne, visit, offerTitle, shortlistOrder
+    }
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -117,6 +169,10 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
         role = (try? c.decodeIfPresent(String.self, forKey: .role)).flatMap { $0.flatMap(Role.init(rawValue:)) }
         parentPocket = (try? c.decodeIfPresent(String.self, forKey: .parentPocket)).flatMap { $0.flatMap(SectionPocket.init(rawValue:)) }
         addedOnlyUnderParent = (try? c.decodeIfPresent(Bool.self, forKey: .addedOnlyUnderParent)).flatMap { $0 } ?? false
+        defaultGrouping = (try? c.decodeIfPresent(String.self, forKey: .defaultGrouping)).flatMap { $0.flatMap(BoxGrouping.init(rawValue:)) }
+        sectionNoun = (try? c.decodeIfPresent(String.self, forKey: .sectionNoun)).flatMap { $0.flatMap(SectionNoun.init(rawValue:)) }
+        mayBelongTo = (try? c.decodeIfPresent(String.self, forKey: .mayBelongTo)).flatMap { $0.flatMap(Role.init(rawValue:)) }
+        goesUnderTheOnlyOne = (try? c.decodeIfPresent(Bool.self, forKey: .goesUnderTheOnlyOne)).flatMap { $0 } ?? false
         visit = (try? c.decodeIfPresent(VisitWording.self, forKey: .visit)).flatMap { $0 }
         offerTitle = (try? c.decodeIfPresent(String.self, forKey: .offerTitle)).flatMap { $0 }
         shortlistOrder = (try? c.decodeIfPresent(Int.self, forKey: .shortlistOrder)).flatMap { $0 }
@@ -205,7 +261,7 @@ public struct TemplateDefinition: Hashable, Sendable, Codable, Identifiable {
 
     /// Revision of the built-in catalog. Bump it whenever a built-in definition
     /// changes so installed copies are upgraded (preferences are kept).
-    public static let builtInCatalogVersion = 16
+    public static let builtInCatalogVersion = 17
 
     public static let customKeyPrefix = "custom."
 

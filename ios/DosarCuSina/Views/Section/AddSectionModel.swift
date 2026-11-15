@@ -46,6 +46,7 @@ struct CustomSectionDraft: Equatable {
         case .tenants: String(localized: "Contractele chiriașilor și chiria.", comment: "Pocket explanation.")
         case .products: String(localized: "Lucruri cumpărate, cu garanția lor.", comment: "Pocket explanation.")
         case .subscriptions: String(localized: "Ce plătești lunar sau anual.", comment: "Pocket explanation.")
+        case .plants: String(localized: "Plantele din casă, cu udatul lor.", comment: "Pocket explanation.")
         case .documents: String(localized: "Poze și PDF-uri cu actele și facturile.", comment: "Pocket explanation.")
         case .history: String(localized: "Ce s-a făcut, când și cât a costat.", comment: "Pocket explanation.")
         case .people: String(localized: "Cine are grijă de el, cu telefonul lui.", comment: "Pocket explanation.")
@@ -101,10 +102,21 @@ final class AddSectionModel {
         custom = nil
         values = FieldValues()
         name = ""
+        // Where it goes when the request didn't say: a plant into the only home
+        // (`AssetActions.automaticParent`); the essentials step shows it and can change it.
+        parentID = request.parentID ?? template.modelContext.flatMap { AssetActions.automaticParent(for: template.behavior, in: $0)?.id }
+    }
+
+    /// The sections the new one can be filed under when the request didn't say (the homes, for a
+    /// plant); empty when it isn't something filed under another.
+    func possibleParents(in context: ModelContext) -> [Asset] {
+        guard request.parentID == nil, let template else { return [] }
+        return AssetActions.possibleParents(for: template.behavior, in: context)
     }
 
     func chooseCustom(_ draft: CustomSectionDraft) {
         template = nil
+        parentID = request.parentID
         custom = draft
         values = FieldValues()
         name = draft.name
@@ -169,8 +181,9 @@ final class AddSectionModel {
             obligations: planned,
             parent: parent
         )
-        // A top-level section of a category hidden from home brings the category back.
-        if parent == nil, !category.isOnHome, category.behavior.hasSectionBoxes {
+        // A section that shows in a box (its own, or its category's shared one, as a plant in a
+        // home) brings its category back to the binder when it was hidden.
+        if !category.isOnHome, category.hasBox(forSectionUnder: parent) {
             try store.setOnHome(category, true)
         }
         return asset

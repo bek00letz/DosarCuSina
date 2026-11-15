@@ -91,7 +91,7 @@ private struct PersonalDocumentContent: View {
                 }
                 .keyboardShortcut("e", modifiers: .command)
             }
-            if AssetActions.parentTemplateKey(for: document) != nil {
+            if AssetActions.canMove(document) {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Button { isMoving = true } label: {

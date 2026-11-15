@@ -8,7 +8,7 @@ public enum ChangeTime {
     /// reading or a document saved before version 8, or one from a backup that carries none),
     /// and of a built-in category nobody has changed: older than any change, and the same on
     /// every phone, so two copies of a record nobody has changed since are never taken for a
-    /// newer one. Equal to the default the schema gives those records (`DosarSchemaV14`).
+    /// newer one. Equal to the default the schema gives those records (`DosarSchemaV15`).
     public static let unknown = Date.distantPast
 }
 
@@ -160,18 +160,19 @@ enum ChangeTimes {
     }
 }
 
-extension DosarSchemaV14.Asset: ChangeTimed {}
-extension DosarSchemaV14.Obligation: ChangeTimed {}
-extension DosarSchemaV14.HistoryEntry: ChangeTimed {}
-extension DosarSchemaV14.ServiceItem: ChangeTimed {}
-extension DosarSchemaV14.MeasurementLog: ChangeTimed {}
-extension DosarSchemaV14.Attachment: ChangeTimed {}
-extension DosarSchemaV14.Provider: ChangeTimed {}
+extension DosarSchemaV15.Asset: ChangeTimed {}
+extension DosarSchemaV15.Obligation: ChangeTimed {}
+extension DosarSchemaV15.HistoryEntry: ChangeTimed {}
+extension DosarSchemaV15.ServiceItem: ChangeTimed {}
+extension DosarSchemaV15.MeasurementLog: ChangeTimed {}
+extension DosarSchemaV15.Attachment: ChangeTimed {}
+extension DosarSchemaV15.Provider: ChangeTimed {}
 
-extension DosarSchemaV14.CategoryTemplate: ChangeTimed {
-    /// What the person chooses for a built-in category; everything else is the catalog's. Its lock
-    /// is this device's own and isn't in the record (`SectionLocks`).
-    static let personsOwnChoices: Set<String> = ["homeOrder", "isOnHome"]
+extension DosarSchemaV15.CategoryTemplate: ChangeTimed {
+    /// What the person chooses for a built-in category (its place, whether it shows, one box or one
+    /// per section); everything else is the catalog's. Its lock is this device's own and isn't in
+    /// the record (`SectionLocks`).
+    static let personsOwnChoices: Set<String> = ["homeOrder", "isOnHome", "boxGroupingRaw"]
 
     public func changeCounts(_ name: String) -> Bool {
         !isBuiltIn || Self.personsOwnChoices.contains(name)
@@ -182,6 +183,6 @@ extension DosarSchemaV14.CategoryTemplate: ChangeTimed {
     }
 }
 
-extension DosarSchemaV14.AttachmentPage: PartOfChangeTimed {
+extension DosarSchemaV15.AttachmentPage: PartOfChangeTimed {
     static var wholeProperty: String { "attachment" }
 }

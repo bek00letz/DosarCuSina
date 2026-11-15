@@ -193,8 +193,9 @@
           "blueprints": { "type": "array", "items": { "$ref": "#/$defs/blueprint" } },
           "pockets": {
             "type": "array",
-            "items": { "enum": ["upcoming", "tenants", "products", "subscriptions", "documents", "history", "people", "money", "keyFacts"] }
+            "items": { "enum": ["upcoming", "tenants", "products", "subscriptions", "plants", "documents", "history", "people", "money", "keyFacts"] }
           },
+          "boxGrouping": { "type": "string" },
           "behavior": {
             "type": "object",
             "properties": {
@@ -203,6 +204,10 @@
               "role": { "type": "string" },
               "parentPocket": { "type": "string" },
               "addedOnlyUnderParent": { "type": "boolean" },
+              "defaultGrouping": { "type": "string" },
+              "sectionNoun": { "type": "string" },
+              "mayBelongTo": { "type": "string" },
+              "goesUnderTheOnlyOne": { "type": "boolean" },
               "visit": {
                 "type": "object",
                 "properties": {

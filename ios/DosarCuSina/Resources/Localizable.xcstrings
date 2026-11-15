@@ -30,6 +30,64 @@
         }
       }
     },
+    "%lld animale": {
+      "comment": "How many pets a box holds.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "un animal"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld animale"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de animale"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld biciclete": {
+      "comment": "How many bikes a box holds.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "o bicicletă"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld biciclete"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de biciclete"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld contacte": {
       "comment": "Agenda box: how many people and firms are saved.",
       "localizations": {
@@ -88,6 +146,35 @@
         }
       }
     },
+    "%lld espressoare": {
+      "comment": "How many espresso machines a box holds.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "un espressor"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld espressoare"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de espressoare"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld intrări de arătat cumpărătorului.": {
       "comment": "Readiness: how many history entries a buyer can be shown.",
       "localizations": {
@@ -110,6 +197,35 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld de intrări de arătat cumpărătorului."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld locuințe": {
+      "comment": "How many homes a box holds.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "o locuință"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld locuințe"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de locuințe"
                 }
               }
             }
@@ -175,6 +291,35 @@
         }
       }
     },
+    "%lld mașini": {
+      "comment": "How many cars a box holds.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "o mașină"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld mașini"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de mașini"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld pagini": {
       "comment": "How many pages a document shared from another app has: „3 pagini”. Only shown for two or more.",
       "localizations": {
@@ -197,6 +342,35 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld de pagini"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld plante": {
+      "comment": "How many plants a box holds.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "o plantă"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld plante"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de plante"
                 }
               }
             }
@@ -234,7 +408,7 @@
       }
     },
     "%lld secțiuni": {
-      "comment": "A number of sections, with Romanian plural forms.",
+      "comment": "How many sections a box holds, for a category without words of its own.",
       "localizations": {
         "ro": {
           "variations": {

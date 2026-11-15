@@ -125,7 +125,7 @@ private struct SectionContent: View {
                 }
                 .keyboardShortcut("e", modifiers: .command)
             }
-            if AssetActions.parentTemplateKey(for: asset) != nil {
+            if AssetActions.canMove(asset) {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Button {
@@ -222,11 +222,7 @@ struct PocketView: View {
         switch pocket {
         case .upcoming:
             UpcomingPocket(asset: asset)
-        case .tenants:
-            ChildrenPocket(asset: asset, pocket: pocket)
-        case .products:
-            ChildrenPocket(asset: asset, pocket: pocket)
-        case .subscriptions:
+        case .tenants, .products, .subscriptions, .plants:
             ChildrenPocket(asset: asset, pocket: pocket)
         case .documents:
             DocumentsPocket(asset: asset)

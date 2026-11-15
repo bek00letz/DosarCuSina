@@ -57,9 +57,9 @@ struct PocketEmptyLine: View {
     }
 }
 
-// MARK: - Chiriași, Produse, Abonamente
+// MARK: - Chiriași, Produse, Abonamente, Plante
 
-/// Assets filed under this one (tenants, products, subscriptions), with a button that adds one.
+/// Assets filed under this one (tenants, products, subscriptions, plants), with a button that adds one.
 /// Which categories a pocket gathers is their own data (`CategoryBehavior.parentPocket`).
 struct ChildrenPocket: View {
     let asset: Asset
@@ -79,6 +79,16 @@ struct ChildrenPocket: View {
         let childKey = kinds.first?.key ?? ""
         let children = (asset.children ?? []).filter { keys.contains($0.templateKey) }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
         let definition = kinds.first?.definition
+        // Sections that have boxes of their own on the binder (plants) show on a parent only once
+        // the household keeps them: their category is on the binder, or this parent holds some.
+        if children.isEmpty, kinds.allSatisfy({ $0.behavior.hasSectionBoxes && !$0.isOnHome }) {
+            EmptyView()
+        } else {
+            card(children: children, childKey: childKey, definition: definition)
+        }
+    }
+
+    private func card(children: [Asset], childKey: String, definition: TemplateDefinition?) -> some View {
         DSPocketCard(pocket.title, count: children.isEmpty ? nil : children.count) {
             if children.isEmpty {
                 PocketEmptyLine(text: emptyText)
@@ -109,6 +119,7 @@ struct ChildrenPocket: View {
         switch pocket {
         case .tenants: String(localized: "Niciun chiriaș. Adaugă contractul și îți spunem când se termină.", comment: "Empty Chiriași pocket.")
         case .products: String(localized: "Niciun produs. Adaugă aragazul sau centrala și ții minte garanția.", comment: "Empty Produse pocket.")
+        case .plants: String(localized: "Nicio plantă trecută aici. Adaug-o și îți amintim de udat.", comment: "Empty Plante pocket on a home's page.")
         default: String(localized: "Niciun abonament trecut aici.", comment: "Empty Abonamente pocket.")
         }
     }
@@ -117,6 +128,7 @@ struct ChildrenPocket: View {
         switch pocket {
         case .tenants: String(localized: "Adaugă un chiriaș", comment: "Button in the Chiriași pocket.")
         case .products: String(localized: "Adaugă un produs", comment: "Button in the Produse pocket.")
+        case .plants: String(localized: "Adaugă o plantă", comment: "Button in the Plante pocket of a home's page.")
         default: String(localized: "Adaugă un abonament", comment: "Button in the Abonamente pocket.")
         }
     }
