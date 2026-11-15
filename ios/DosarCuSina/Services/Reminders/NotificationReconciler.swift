@@ -1,11 +1,36 @@
 import Foundation
 @preconcurrency import UserNotifications
 
-/// Whether the app may show reminders, in the app's own terms.
+/// Whether the app may show reminders, in the app's own terms. Quiet delivery the system
+/// chose (provisional, ephemeral) counts as authorized: the reminders are scheduled, and
+/// the phone's Settings is where the person makes them louder.
 public enum ReminderAuthorization: String, Sendable {
     case notDetermined
     case denied
     case authorized
+}
+
+/// When a pass may ask the system for notification permission. It asks only while the
+/// person hasn't decided (`ReminderAuthorization.notDetermined`); once they have, only the
+/// phone's Settings changes it.
+public enum PermissionPrompt: Sendable {
+    /// Passes on their own (saves, the day changing, the app becoming active) never ask.
+    case never
+    /// Right after the person saved something that reminds: asks only when there is
+    /// something to remind about, so the question comes in context.
+    case inContext
+    /// The person asked for notifications (Settings' "Pornește notificările", the
+    /// explanation's "Continuă"): asks whatever is planned, even with nothing to remind about yet.
+    case personAsked
+
+    /// Whether a pass with this prompt asks an undecided person, given whether anything is planned.
+    public func asks(somethingToRemind: Bool) -> Bool {
+        switch self {
+        case .never: false
+        case .inContext: somethingToRemind
+        case .personAsked: true
+        }
+    }
 }
 
 /// A pending request as the reconciler sees it.
@@ -194,18 +219,23 @@ public struct NotificationReconciler: Sendable {
         public var clearedDelivered: Int = 0
     }
 
-    /// - Parameter allowPermissionPrompt: ask for permission when it was never
-    ///   asked and there is something to remind about. Pass true only right after
-    ///   the person saved something, so the question comes in context.
+    /// The permission, after asking the system when `prompt` asks an undecided person
+    /// (`PermissionPrompt.asks`, the one rule). It returns once the person answered, with
+    /// the permission read again from the system, so a question that didn't show leaves it undecided.
+    public func authorization(asking prompt: PermissionPrompt, somethingToRemind: Bool) async -> ReminderAuthorization {
+        let current = await client.authorization()
+        guard current == .notDetermined, prompt.asks(somethingToRemind: somethingToRemind) else { return current }
+        _ = await client.requestAuthorization()
+        return await client.authorization()
+    }
+
+    /// - Parameter prompt: whether this pass may ask for permission (`PermissionPrompt`).
     /// - Parameter openCycles: the due day of every obligation that still reminds.
     ///   A shown reminder for any other cycle (done, snoozed past, deleted) is cleared.
     ///   Nil leaves Notification Center alone.
     @discardableResult
-    public func apply(_ plan: [PlannedReminder], badgeCount: Int, openCycles: [UUID: CalendarDay]? = nil, allowPermissionPrompt: Bool) async -> Outcome {
-        var authorization = await client.authorization()
-        if authorization == .notDetermined, allowPermissionPrompt, !plan.isEmpty {
-            authorization = await client.requestAuthorization() ? .authorized : .denied
-        }
+    public func apply(_ plan: [PlannedReminder], badgeCount: Int, openCycles: [UUID: CalendarDay]? = nil, prompt: PermissionPrompt) async -> Outcome {
+        let authorization = await self.authorization(asking: prompt, somethingToRemind: !plan.isEmpty)
 
         let pending = await client.pending().filter { $0.identifier.hasPrefix(ReminderPlanner.identifierPrefix) }
         let wanted = authorization == .authorized ? plan : []

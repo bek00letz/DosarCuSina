@@ -22,6 +22,12 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 - **Decided:** plants kept before stand on their own. A repair step at the end of the list (`SectionsIntoTheirHomeStep`) offers each to move into the household's only home, asking first; with several homes it only says to move them with "Mută la…"; examples are left as they are. Built-in catalog 17.
 - **Left open:** a category of one's own has no switch for "may stand in a home": its sections would need a pocket of their own on a home's page, named after it, and today pockets are a fixed list. *Alternatives:* a generic pocket on a home's page, one card per such category with its name; or keep it to built-ins.
 
+## 2026-11-15
+
+### Asking for notifications always asks
+- **Decided:** when the person asks for notifications (Settings' "Pornește notificările", the explanation's "Continuă") and hasn't decided yet, the system asks, whatever there is to remind about: an empty binder, only examples (which never remind), or a deadline whose reminders have all passed. A pass on its own never asks, and the ask in context after a save asks only when something reminds. One rule for all three, `PermissionPrompt` (`never`, `inContext`, `personAsked`), read by `NotificationReconciler`; the person's request comes in only through `SideEffectsCoordinator.askForPermission()`, which asks even when the binder can't be read, then schedules what there is and returns with the answer, read again from the system. Allowed or refused, nothing is asked again; a refusal is changed in the phone's Settings, which Settings opens.
+- **Why:** a tester tapped "Pornește notificările" before adding anything and nothing happened: the button only asked when there was something to remind about, a rule meant for the ask after a save. A button that answers with nothing breaks the promise on it. Refines "Permissions are asked in context" (below): the person's own tap is the context.
+
 ## 2026-11-11
 
 ### An upgrade interrupted halfway finishes at the next launch
