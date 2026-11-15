@@ -63,27 +63,10 @@ enum ReminderWording {
     /// "Te anunț cu o lună și cu 7 zile înainte și în ziua termenului." For a passport:
     /// "Te anunț cu 3 luni înainte de ultima zi bună de călătorit și în ziua aceea."
     static func sentence(_ profile: ReminderProfile) -> String {
-        let leadDays = profile.leadDays
-        let before = leadDays.filter { $0 > 0 }.sorted(by: >).map { String(localized: "cu \(phrase(days: $0))", comment: "Part of the reminder sentence") }
-        let onTheDay = leadDays.contains(0)
-        guard !before.isEmpty else {
-            guard onTheDay else { return String(localized: "Nu te anunț dinainte.", comment: "Reminder sentence: no reminders chosen") }
-            switch Anchor(profile) {
-            case .dueDay: return String(localized: "Te anunț în ziua termenului.", comment: "Reminder sentence: only on the due day")
-            case .travelCutoff: return String(localized: "Te anunț în ultima zi bună de călătorit.", comment: "Reminder sentence: only on the last day a passport is good for travel")
-            }
+        guard let when = whenPhrase(profile) else {
+            return String(localized: "Nu te anunț dinainte.", comment: "Reminder sentence: no reminders chosen")
         }
-        let list = before.formatted(.list(type: .and).locale(.dosarDefault))
-        switch Anchor(profile) {
-        case .dueDay:
-            return onTheDay
-                ? String(localized: "Te anunț \(list) înainte și în ziua termenului.", comment: "Reminder sentence: leads before, and on the day")
-                : String(localized: "Te anunț \(list) înainte.", comment: "Reminder sentence: leads before the due day")
-        case .travelCutoff:
-            return onTheDay
-                ? String(localized: "Te anunț \(list) înainte de ultima zi bună de călătorit și în ziua aceea.", comment: "Reminder sentence for a passport: leads before the last day it is good for travel, and on that day")
-                : String(localized: "Te anunț \(list) înainte de ultima zi bună de călătorit.", comment: "Reminder sentence for a passport: leads before the last day it is good for travel")
-        }
+        return String(localized: "Te anunț \(when).", comment: "Reminder sentence: when it reminds, e.g. „Te anunț cu o lună și cu 7 zile înainte și în ziua termenului.”")
     }
 
     /// "Bun de călătorit până pe 12 februarie 2031." for a document with a travel cut-off
@@ -135,6 +118,56 @@ enum ReminderWording {
         }
         let time = DosarFormat.time(minuteOfDay: minuteOfDay, calendar: calendar)
         return String(localized: "Îți amintesc la \(time).", comment: "A deadline reminds at a time of its own, e.g. „Îți amintesc la 07:30.”")
+    }
+
+    /// When it reminds and at what time, in words, without the full stop: „Îți amintesc cu o zi
+    /// înainte, la 07:30”, „Îți amintesc cu o lună și cu 7 zile înainte și în ziua termenului, la
+    /// ora obișnuită (09:00)”. For a passport the leads count from the last day good for travel.
+    static func summary(_ profile: ReminderProfile, minuteOfDay: Int?, usual: Int, calendar: Calendar = .dosar) -> String {
+        guard let when = whenPhrase(profile) else {
+            return String(localized: "Nu te anunț dinainte", comment: "A deadline's schedule line: no reminders chosen.")
+        }
+        guard let minuteOfDay else {
+            let usualTime = DosarFormat.time(minuteOfDay: usual, calendar: calendar)
+            return String(localized: "Îți amintesc \(when), la ora obișnuită (\(usualTime))",
+                          comment: "A deadline's schedule line: when it reminds, at the general time, e.g. „Îți amintesc cu o zi înainte, la ora obișnuită (09:00)”.")
+        }
+        let time = DosarFormat.time(minuteOfDay: minuteOfDay, calendar: calendar)
+        return String(localized: "Îți amintesc \(when), la \(time)",
+                      comment: "A deadline's schedule line: when it reminds, at its own time, e.g. „Îți amintesc cu o zi înainte, la 07:30”.")
+    }
+
+    /// How a deadline repeats and when it reminds, in one line, as its page says it: „La fiecare
+    /// 3 zile, de la data la care l-ai făcut · Îți amintesc cu o zi înainte, la 07:30”. `profile`
+    /// is the cycle's (`Obligation.cycleReminders`), what it actually sends.
+    static func schedule(rule: RecurrenceRule, profile: ReminderProfile, minuteOfDay: Int?, usual: Int, calendar: Calendar = .dosar) -> String {
+        "\(RepeatWording.phrase(rule)) · \(summary(profile, minuteOfDay: minuteOfDay, usual: usual, calendar: calendar))"
+    }
+
+    /// The leads in words, in the middle of a sentence: „cu o zi înainte”, „în ziua termenului”,
+    /// „cu 3 luni înainte de ultima zi bună de călătorit și în ziua aceea”; nil for none.
+    private static func whenPhrase(_ profile: ReminderProfile) -> String? {
+        let before = profile.leadDays.filter { $0 > 0 }.sorted(by: >).map { String(localized: "cu \(phrase(days: $0))", comment: "Part of the reminder sentence") }
+        let onTheDay = profile.leadDays.contains(0)
+        let anchor = Anchor(profile)
+        guard !before.isEmpty else {
+            guard onTheDay else { return nil }
+            switch anchor {
+            case .dueDay: return String(localized: "în ziua termenului", comment: "Part of a deadline's schedule line: it reminds on the due day.")
+            case .travelCutoff: return String(localized: "în ultima zi bună de călătorit", comment: "Part of a deadline's schedule line: on the last day a passport is good for travel.")
+            }
+        }
+        let list = before.formatted(.list(type: .and).locale(.dosarDefault))
+        switch anchor {
+        case .dueDay:
+            return onTheDay
+                ? String(localized: "\(list) înainte și în ziua termenului", comment: "Part of a deadline's schedule line: leads before, and on the day.")
+                : String(localized: "\(list) înainte", comment: "Part of a deadline's schedule line: leads before the due day.")
+        case .travelCutoff:
+            return onTheDay
+                ? String(localized: "\(list) înainte de ultima zi bună de călătorit și în ziua aceea", comment: "Part of a deadline's schedule line for a passport: leads before its last day good for travel, and on that day.")
+                : String(localized: "\(list) înainte de ultima zi bună de călătorit", comment: "Part of a deadline's schedule line for a passport: leads before its last day good for travel.")
+        }
     }
 
     /// The follow-up line under the sentence, when it is on.
