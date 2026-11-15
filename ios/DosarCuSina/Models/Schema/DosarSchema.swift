@@ -158,6 +158,11 @@ public enum DosarMigrationPlan: SchemaMigrationPlan {
     static var v14ToV15: MigrationStage { .lightweight(fromVersion: DosarSchemaV14.self, toVersion: DosarSchemaV15.self) }
 }
 
+/// The schema the app runs on, for code that needs the schema itself (its models, a `Schema`):
+/// outside `Models/Schema/`, code names this and the model aliases below, never a version, so
+/// the next version is one change here (the `frozen-schema-version` check).
+public typealias CurrentSchema = DosarSchemaV15
+
 public typealias CategoryTemplate = DosarSchemaV15.CategoryTemplate
 public typealias Asset = DosarSchemaV15.Asset
 public typealias Obligation = DosarSchemaV15.Obligation
