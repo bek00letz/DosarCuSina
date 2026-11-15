@@ -180,7 +180,7 @@ struct CompletionShapeTests {
         let draft = CompletionDraft(date: noon(today), reading: 90_000)
         let completion = draft.completion(of: oil, shape: oil.kind.completion, counter: counter, calendar: calendar, now: noon(today))
 
-        await #expect(throws: LowerReadingQuestion.self) { try await filer(context).file(.completion(completion)) }
+        await #expect(throws: LowerReadingQuestion.self) { _ = try await filer(context).file(.completion(completion)) }
         #expect(oil.history.count == 1, "Nothing written while it asks")
     }
 
