@@ -65,6 +65,17 @@ final class IntakeInbox {
         leaving.remove(item.id)
     }
 
+    /// Takes an item out of De verificat with "Anulează" ("Șterge" on its row, "Șterge din De
+    /// verificat" in its review): hidden at once, brought back by the toast's button, removed for
+    /// good once the toast is gone. `title` is what its row calls it.
+    func dismissal(of item: InboxItem, title: String) -> DSToast {
+        setAside(item)
+        // Outside the database: the item only leaves the inbox once the undo can't come any more.
+        var toast = DSToast(title: "Am scos „\(title)” din De verificat.", action: { self.keep(item) })
+        toast.whenGone = { self.remove(item) }
+        return toast
+    }
+
     /// Re-reads the inbox folder.
     func refresh() {
         let contents = inbox?.contents() ?? ShareInbox.Contents()

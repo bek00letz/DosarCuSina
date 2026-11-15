@@ -103,7 +103,7 @@ struct AddPersonalDocumentFlow: View {
             dismiss()
             announce(toast)
             if let assetID { onCreated(assetID) }
-        case .visitSaved(let toast):
+        case .visitSaved(let toast), .removedFromInbox(let toast):
             dismiss()
             announce(toast)
         case .dismissed:
