@@ -28,6 +28,8 @@ struct DosarHomeView: View {
     @State private var isLoadingExamples = false
     @State private var error: UserFacingError?
     @State private var toast: DSToast?
+    /// Counts grouping changes, for the feedback a change gives.
+    @State private var groupingChanges = 0
     @Namespace private var zoom
 
     var body: some View {
@@ -97,6 +99,7 @@ struct DosarHomeView: View {
         }
         .padding(.top, DS.Space.xs)
         .animation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion), value: order)
+        .sensoryFeedback(.selection, trigger: groupingChanges)
     }
 
     private func boxView(_ box: BinderBox, order: [BinderBoxID]) -> some View {
@@ -133,9 +136,18 @@ struct DosarHomeView: View {
                 Label { Text("Mută mai în spate", comment: "Context menu: move a box later.") } icon: { Image(systemName: "arrow.forward") }
             }
             .disabled(order.last == box.id)
+            if let key = box.categoryKey, let offer = box.groupingOffer {
+                Divider()
+                BoxGroupingButton(offer: offer) { setGrouping(key, offer) }
+            }
         }
         .accessibilityAction(named: Text("Mută mai în față", comment: "Context menu: move a box earlier.")) { move(box.id, by: -1, in: order) }
         .accessibilityAction(named: Text("Mută mai în spate", comment: "Context menu: move a box later.")) { move(box.id, by: 1, in: order) }
+        .accessibilityActions {
+            if let key = box.categoryKey, let offer = box.groupingOffer {
+                Button { setGrouping(key, offer) } label: { offer.offerTitle }
+            }
+        }
         .sensoryFeedback(.impact(weight: .medium), trigger: dragging == box.id) { _, isDragging in isDragging }
     }
 
@@ -144,6 +156,18 @@ struct DosarHomeView: View {
     private func move(_ id: BinderBoxID, by offset: Int, in order: [BinderBoxID]) {
         layout.update(BinderLayout.move(id, by: offset, in: order))
         layout.persist()
+    }
+
+    /// Groups a category's sections into one box, or gives each its box again; the one box
+    /// stands where the first of them stood. The grid moves with the order's spring.
+    private func setGrouping(_ key: String, _ grouping: BoxGrouping) {
+        guard let template = templates.first(where: { $0.key == key }) else { return }
+        do {
+            try layout.setGrouping(template, grouping, assets: assets, context: context)
+            groupingChanges += 1
+        } catch {
+            self.error = UserFacingError(error)
+        }
     }
 
     private func addSection() {
@@ -212,6 +236,15 @@ struct BinderBox: Identifiable {
     let tone: DSBoxTone
     let isExample: Bool
     let isLocked: Bool
+    /// The category whose boxes its press-and-hold menu can group or split, with what it offers.
+    var categoryKey: String?
+    var groupingOffer: BoxGrouping?
+}
+
+extension BinderLayout.AssetInfo {
+    init(_ asset: Asset) {
+        self.init(id: asset.id, templateKey: asset.templateKey, isTopLevel: asset.parent == nil, createdAt: asset.createdAt)
+    }
 }
 
 /// Builds the boxes from the data for one render.
@@ -235,9 +268,14 @@ struct BinderBoxes {
         self.vault = vault
         snapshots = (try? ObligationSnapshot.fetchAll(in: context)) ?? []
         defaultOrder = BinderLayout.defaultOrder(
-            templates: byKey.values.map { .init(key: $0.key, homeOrder: $0.homeOrder, isOnHome: $0.isOnHome, box: $0.behavior.box) },
-            assets: assets.map { .init(id: $0.id, templateKey: $0.templateKey, isTopLevel: $0.parent == nil, createdAt: $0.createdAt) }
+            templates: byKey.values.map { .init(key: $0.key, homeOrder: $0.homeOrder, isOnHome: $0.isOnHome, box: $0.behavior.box, groupsSections: $0.groupsSections) },
+            assets: assets.map(BinderLayout.AssetInfo.init)
         )
+    }
+
+    /// The sections of a category, wherever they are filed.
+    private func sections(of key: String) -> [Asset] {
+        assets.filter { $0.templateKey == key }
     }
 
     func box(for id: BinderBoxID) -> BinderBox? {
@@ -257,14 +295,35 @@ struct BinderBoxes {
                 statusText: status.line(isSensitive: isLocked),
                 tone: status.tone,
                 isExample: asset.isExample,
-                isLocked: isLocked
+                isLocked: isLocked,
+                categoryKey: asset.templateKey,
+                groupingOffer: template?.groupingOffer(sections: sections(of: asset.templateKey).count)
             )
         case .category(let key):
             guard let template = templatesByKey[key] else { return nil }
             let isLocked = vault.isLocked(template)
+            let all = sections(of: key)
+            if template.behavior.offersGrouping {
+                // A category's sections grouped into one box: how many, and the most pressing of
+                // them with what is filed under them, as each of their own boxes would say.
+                let held = Set(all.flatMap { [$0.id] + AssetActions.descendants(of: $0).map(\.id) })
+                let status = BoxStatus.make(forAssets: held, in: snapshots)
+                return BinderBox(
+                    id: id,
+                    title: template.name,
+                    symbol: template.symbol,
+                    tint: template.tintColor,
+                    photo: nil,
+                    statusText: status.line(counting: all.count, of: template.behavior.sectionNoun, isSensitive: isLocked),
+                    tone: status.tone,
+                    isExample: !all.isEmpty && all.allSatisfy(\.isExample),
+                    isLocked: isLocked,
+                    categoryKey: key,
+                    groupingOffer: template.groupingOffer(sections: all.count)
+                )
+            }
             let members = Set(assets.filter { $0.templateKey == key || belongsToCategory($0, key) }.map(\.id))
             let status = BoxStatus.make(snapshots.filter { $0.assetId.map(members.contains) ?? false })
-            let all = assets.filter { $0.templateKey == key }
             return BinderBox(
                 id: id,
                 title: template.name,

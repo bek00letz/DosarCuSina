@@ -73,6 +73,9 @@ public enum DossierV3 {
         /// Like a section's values, a deadline's recurrence and a document's framing, what a newer
         /// build wrote inside it that this one doesn't read comes in and goes out as written (`KeptObject`).
         public var behavior: KeptObject<CategoryBehavior>?
+        /// The person's choice of one box on the binder for the category's sections or one each
+        /// (`BoxGrouping`, kept as written); missing means they haven't chosen: the catalog's.
+        public var boxGrouping: String?
     }
 
     public struct Asset: Codable, Hashable, Sendable {

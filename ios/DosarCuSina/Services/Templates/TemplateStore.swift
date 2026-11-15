@@ -307,6 +307,17 @@ public struct TemplateStore {
         try save()
     }
 
+    /// One box on the binder for the category's sections ("Mașini"), or one each: the person's
+    /// choice, kept on the category so it syncs like its place and whether it shows (one of a
+    /// built-in's own choices, `ChangeTimes`). Kept even when it is what the catalog says, so a
+    /// later catalog never turns it back. A category whose box isn't one per section has no such
+    /// choice, and nothing changes.
+    public func setGrouping(_ template: CategoryTemplate, _ grouping: BoxGrouping) throws {
+        guard template.behavior.offersGrouping, template.chosenGrouping != grouping else { return }
+        template.chosenGrouping = grouping
+        try save()
+    }
+
     /// Locks or opens a category on this device only (`SectionLocks`): nothing is saved in the
     /// store, so no other device follows. Opening a locked one takes the person's Face ID first,
     /// every time (`lowering`, from `BiometricVaultManager.confirmLowering`); locking needs none.

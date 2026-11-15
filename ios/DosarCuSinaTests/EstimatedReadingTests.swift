@@ -406,10 +406,10 @@ struct EstimatedReadingTests {
 
     // MARK: Bills kept before
 
-    @Test func theRepairComesLastWithItsOwnStoredID() {
+    @Test func theRepairComesAfterTheStepsBeforeItWithItsOwnStoredID() throws {
         let ids = DataRepairs.steps.map { type(of: $0).id }
-        #expect(ids.last == .estimatedBillReadings, "A new repair is a new step at the end")
-        #expect(ids.dropLast().last == .dayYears)
+        let estimates = try #require(ids.firstIndex(of: .estimatedBillReadings))
+        #expect(ids.firstIndex(of: .dayYears) == estimates - 1, "A new repair is a new step at the end")
         #expect(DataRepairStepID.estimatedBillReadings.rawValue == "estimated-bill-readings")
     }
 

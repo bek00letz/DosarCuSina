@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import SwiftData
 
 /// One box on the Dosar grid.
 enum BinderBoxID: Hashable, Sendable {
@@ -47,7 +48,9 @@ enum BinderBoxID: Hashable, Sendable {
 ///
 /// What each category gets is its own data (`CategoryBehavior.box`), never its key:
 /// - a category with many small records (Acte, Garanții, Abonamente) gets one box;
-/// - every other category on the home screen gets one box per top-level asset;
+/// - every other category on the home screen gets one box per top-level asset, or, when its
+///   sections are grouped (`CategoryTemplate.groupsSections`: the person's choice, else the
+///   catalog's, as for plants), one box for all of them, wherever they are filed, once it has any;
 /// - a category that lives inside another (tenancies in a home, people in Acte) gets
 ///   none. Anything filed under another asset lives inside its parent.
 /// - Agenda comes last. The order follows the categories' home order until the
@@ -59,6 +62,8 @@ enum BinderLayout {
         var homeOrder: Int
         var isOnHome: Bool
         var box: CategoryBehavior.Box = .perSection
+        /// Its sections share one box (`CategoryTemplate.groupsSections`).
+        var groupsSections = false
     }
 
     struct AssetInfo: Hashable, Sendable {
@@ -75,7 +80,9 @@ enum BinderLayout {
         for template in templates.sorted(by: { $0.homeOrder < $1.homeOrder }) where template.isOnHome {
             switch template.box {
             case .wholeCategory: result.append(.category(template.key))
-            case .perSection: result += topLevel.filter { $0.templateKey == template.key }.map { .asset($0.id) }
+            case .perSection where template.groupsSections:
+                if assets.contains(where: { $0.templateKey == template.key }) { result.append(.category(template.key)) }
+            case .perSection: result += sectionBoxes(of: template.key, assets: topLevel)
             case .insideOther: break
             }
         }
@@ -98,6 +105,37 @@ enum BinderLayout {
                 result.insert(id, at: position + 1)
             } else {
                 result.insert(id, at: 0)
+            }
+        }
+        return result
+    }
+
+    /// The boxes a category's sections have when each has its own: the top-level ones, oldest first.
+    static func sectionBoxes(of key: String, assets: [AssetInfo]) -> [BinderBoxID] {
+        assets.filter { $0.isTopLevel && $0.templateKey == key }.sorted { $0.createdAt < $1.createdAt }.map { .asset($0.id) }
+    }
+
+    /// The saved order once a category's section boxes (`members`, in the order they show) are
+    /// grouped into its one box, or that box is split into them again: the new box takes the
+    /// place of the first of the old ones, so nothing else moves. An order that holds none of
+    /// them stays as it is, and `merge` puts the new box where the defaults say.
+    static func regrouped(_ saved: [BinderBoxID], category key: String, members: [BinderBoxID], grouped: Bool) -> [BinderBoxID] {
+        let box = BinderBoxID.category(key)
+        let sections = Set(members)
+        var result: [BinderBoxID] = []
+        if grouped {
+            guard saved.contains(where: sections.contains) else { return saved }
+            for id in saved where id != box {
+                if !sections.contains(id) {
+                    result.append(id)
+                } else if !result.contains(box) {
+                    result.append(box)
+                }
+            }
+        } else {
+            guard saved.contains(box) else { return saved }
+            for id in saved where !sections.contains(id) {
+                if id == box { result += members } else { result.append(id) }
             }
         }
         return result
@@ -153,6 +191,18 @@ final class BinderLayoutStore {
 
     func persist() {
         defaults.set(saved.map(\.storageKey), forKey: Self.key)
+    }
+
+    /// Groups a category's sections into one box, or gives each its box again, from wherever it
+    /// is offered (a box's menu, the category's page, Setări): the person's choice, kept on the
+    /// category (`TemplateStore.setGrouping`), and this device's order kept around it, the one box
+    /// standing where the first of its sections stood (`BinderLayout.regrouped`).
+    func setGrouping(_ template: CategoryTemplate, _ grouping: BoxGrouping, assets: [Asset], context: ModelContext) throws {
+        let members = BinderLayout.sectionBoxes(of: template.key, assets: assets.map(BinderLayout.AssetInfo.init))
+        try TemplateStore(context: context).setGrouping(template, grouping)
+        guard !saved.isEmpty else { return }
+        saved = BinderLayout.regrouped(saved, category: template.key, members: members, grouped: grouping == .grouped)
+        persist()
     }
 
     func reset() {

@@ -27,6 +27,7 @@ struct MoveAssetSheet: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \Asset.name) private var assets: [Asset]
+    @Query private var categories: [CategoryTemplate]
 
     @State private var choice: Choice?
     @State private var newMemberName = ""
@@ -37,6 +38,8 @@ struct MoveAssetSheet: View {
     private var destinations: [Asset] { AssetActions.moveDestinations(for: asset, among: assets) }
     private var offersNewMember: Bool { AssetActions.offersNewMember(for: asset) }
     private var offersStandalone: Bool { AssetActions.offersStandalone(for: asset) }
+    /// The category it stands in on its own: "Abonamente", "Plante".
+    private var categoryName: String { categories.first { $0.key == asset.templateKey }?.name ?? "" }
 
     /// The holder's name the document would move to, for the rename offer.
     private var newHolderName: String? {
@@ -97,7 +100,7 @@ struct MoveAssetSheet: View {
                         if offersStandalone {
                             if !destinations.isEmpty { DSRowSeparator() }
                             DSCheckRow(
-                                title: Text("În Abonamente, fără locuință", comment: "Move option: a subscription stands on its own, like a phone plan."),
+                                title: Text("În „\(categoryName)”, fără locuință", comment: "Move option: a subscription or a plant stands on its own, in its category's box (Abonamente, Plante)."),
                                 isOn: choice == .standalone
                             ) {
                                 choice = .standalone
@@ -168,7 +171,7 @@ struct MoveAssetSheet: View {
     /// Where it is now, for the toast.
     private var toastTitle: LocalizedStringResource {
         guard let place = asset.parent?.name else {
-            return LocalizedStringResource("Mutat în Abonamente", comment: "Toast after a subscription was taken out of its home.")
+            return LocalizedStringResource("Mutat în „\(categoryName)”", comment: "Toast after a subscription or a plant was taken out of its home, into its category (Abonamente, Plante).")
         }
         return LocalizedStringResource("Mutat la „\(place)”", comment: "Toast after moving something under another parent.")
     }

@@ -54,6 +54,7 @@ struct ArchiveMergeTests {
                 behavior: CategoryBehavior(box: .wholeCategory, listing: .byWarranty, offerTitle: "Barcă"),
                 version: 0
             ), isBuiltIn: false, homeOrder: 40)
+            boats.chosenGrouping = .grouped
             context.insert(boats)
 
             let boat = Asset(name: "Barca de pe lac", templateKey: boats.key,

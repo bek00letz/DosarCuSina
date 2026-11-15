@@ -31,7 +31,7 @@ extension ReminderProfile {
     }
 }
 
-extension DosarSchemaV14.Obligation {
+extension Obligation {
     /// Its reminders as this cycle uses them (`ReminderProfile.forCycle`): what reminders,
     /// urgency, Urmează, the widget and the page read. The stored profile (`reminders`) is what
     /// the person edits.

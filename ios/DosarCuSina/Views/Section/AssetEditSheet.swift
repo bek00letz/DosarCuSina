@@ -61,7 +61,7 @@ struct AssetEditSheet: View {
                     VStack(alignment: .leading, spacing: DS.Space.m) {
                         DSTextField("Nume", text: $name, isRequired: true)
                         PhotoPickerRow(photoData: $photoData, item: $photoItem)
-                        if AssetActions.parentTemplateKey(for: asset) != nil {
+                        if AssetActions.canMove(asset) {
                             moveRow
                         }
                     }

@@ -253,7 +253,7 @@ rule unique-keys "$app" - \
 # store's changes, the repair list, the household's own deadlines. Reading a category is not
 # a change and may fall back.
 rule silent-action-failure "$app" - \
-    'try\? *(await +)?[A-Za-z_.]*[aA]ctions[.(]|try\? *(await +)?UnitOfWork\.|try\? *(await +)?(TemplateStore\([^)]*\)|[A-Za-z_]*[sS]tore)\.(installBuiltIns|createCustom|editCustom|setPockets|update|delete|move|setOnHome|setSensitive)\(|try\? *(await +)?[A-Za-z_.]*(DataRepair[A-Za-z]*|[rR]epairs)[.(]|try\? *(await +)?[A-Za-z_.]*(HouseholdRules\.|reconcileHouseholdRules\()' - \
+    'try\? *(await +)?[A-Za-z_.]*[aA]ctions[.(]|try\? *(await +)?UnitOfWork\.|try\? *(await +)?(TemplateStore\([^)]*\)|[A-Za-z_]*[sS]tore)\.(installBuiltIns|createCustom|editCustom|setPockets|update|delete|move|setOnHome|setGrouping|setSensitive)\(|try\? *(await +)?[A-Za-z_.]*(DataRepair[A-Za-z]*|[rR]epairs)[.(]|try\? *(await +)?[A-Za-z_.]*(HouseholdRules\.|reconcileHouseholdRules\()' - \
     "Don't drop a change's failure with try?. Catch it and show SaveFailure.message(for:formKept:), let it throw to a caller that does, or, for a step no one sees (launch, the repair list), log it with PersistenceLog.attempt."
 
 # A question for the person is made by its one rule, which changes nothing, so every action

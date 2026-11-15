@@ -213,6 +213,8 @@ struct DossierImporter {
             }
             template.homeOrder = dto.homeOrder
             template.isOnHome = dto.isOnHome
+            // As written: a choice from a newer build goes out again unchanged.
+            template.boxGroupingRaw = dto.boxGrouping
             // Never opens what is locked here now: while this device's locks couldn't be read, every
             // category the backup brings stays locked until they are chosen again.
             try template.setLock(isLocked || template.isSensitive)

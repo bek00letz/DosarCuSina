@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV14 {
+extension DosarSchemaV15 {
     /// A category of assets (Car, Home, a user's own "Bikes") and its field and
     /// obligation definitions, plus this household's preferences for it.
     ///
@@ -25,6 +25,11 @@ extension DosarSchemaV14 {
         // Household preferences
         public var homeOrder: Int = 0
         public var isOnHome: Bool = true
+        /// Whether the person chose one box on the binder for the category's sections or one
+        /// each, as a `BoxGrouping` key; none until they choose, which follows the catalog
+        /// (`CategoryBehavior.defaultGrouping`). Read and write it through `chosenGrouping`, which
+        /// keeps a key a newer build wrote. Version 15.
+        public var boxGroupingRaw: String?
         /// The lock asked for before the category was first saved (made here, or brought by a
         /// backup), kept until it is (`SectionLocks`).
         @Transient private var lockBeforeSaved: Bool? = nil
@@ -90,6 +95,40 @@ extension DosarSchemaV14 {
         public var keptBehavior: KeptObject<CategoryBehavior>? {
             get { KeptObject.stored(in: behaviorData, fallback: .standard) }
             set { behaviorData = KeptObject.data(newValue, omittedWhen: { $0 == .standard }) }
+        }
+
+        /// The person's choice of one box or one per section; nil while they haven't chosen, or
+        /// when a newer build wrote a choice this one doesn't know (kept as it was until set).
+        /// Written only through `TemplateStore.setGrouping`.
+        public var chosenGrouping: BoxGrouping? {
+            get { boxGroupingRaw.flatMap(BoxGrouping.init(rawValue:)) }
+            set { boxGroupingRaw = newValue?.rawValue }
+        }
+
+        /// How the category's sections show on the binder: the person's choice, else the
+        /// catalog's. Only a category whose sections have boxes of their own groups them
+        /// (`CategoryBehavior.offersGrouping`); any other always reads `.separate` here, as its
+        /// box is its own (Acte has one, tenants none).
+        public var grouping: BoxGrouping {
+            let own = self.behavior
+            guard own.offersGrouping else { return .separate }
+            return chosenGrouping ?? own.defaultGrouping ?? .separate
+        }
+
+        /// Whether the category's sections share one box on the binder, which lists them all,
+        /// wherever they are filed (a plant in a home too).
+        public var groupsSections: Bool { grouping == .grouped }
+
+        /// What the person is offered for the category now that it has `sections` sections
+        /// (`BoxGrouping.offer`): one box for them all, one each again, or nothing.
+        public func groupingOffer(sections: Int) -> BoxGrouping? {
+            BoxGrouping.offer(for: behavior, now: grouping, sections: sections)
+        }
+
+        /// Whether a section of this category filed under `parent` (nil: on its own) shows in a
+        /// box on the binder: its own box on its own, or its category's when they share one.
+        public func hasBox(forSectionUnder parent: Asset?) -> Bool {
+            behavior.hasSectionBoxes && (parent == nil || groupsSections)
         }
 
         public var tint: TemplateTint {

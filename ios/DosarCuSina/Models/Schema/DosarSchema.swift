@@ -4,7 +4,7 @@ import SwiftData
 /// The current schema of the household database.
 ///
 /// Every model lives inside this namespace so that the next version can freeze a
-/// copy of these definitions and migrate from them (as `DosarSchemaV2` to `DosarSchemaV13`
+/// copy of these definitions and migrate from them (as `DosarSchemaV2` to `DosarSchemaV14`
 /// are frozen in `Versions/`). App code uses the top-level type aliases below and never names the
 /// version directly.
 ///
@@ -45,8 +45,11 @@ import SwiftData
 /// of each record, and every device joins them into the same one by it (`RecordsMeet`). Version 14
 /// adds whether a reading was read off the counter or estimated (`MeasurementLog.basisRaw`, none
 /// by default: not said), so a bill's estimated index is told from the real one that corrects it.
-public enum DosarSchemaV14: VersionedSchema {
-    public static let versionIdentifier = Schema.Version(14, 0, 0)
+/// Version 15 adds whether the person chose one box on the binder for a category's sections or
+/// one each (`CategoryTemplate.boxGroupingRaw`, none by default: the catalog's choice), a choice of
+/// theirs that syncs like the category's place and whether it shows.
+public enum DosarSchemaV15: VersionedSchema {
+    public static let versionIdentifier = Schema.Version(15, 0, 0)
 
     public static var models: [any PersistentModel.Type] {
         [
@@ -69,8 +72,8 @@ public enum DosarSchemaV14: VersionedSchema {
 /// stage that carries something across the change of shape carries it through `MigrationCarry`,
 /// never in memory, so an upgrade that stops halfway finishes at the next launch.
 public enum DosarMigrationPlan: SchemaMigrationPlan {
-    public static var schemas: [any VersionedSchema.Type] { [DosarSchemaV2.self, DosarSchemaV3.self, DosarSchemaV4.self, DosarSchemaV5.self, DosarSchemaV6.self, DosarSchemaV7.self, DosarSchemaV8.self, DosarSchemaV9.self, DosarSchemaV10.self, DosarSchemaV11.self, DosarSchemaV12.self, DosarSchemaV13.self, DosarSchemaV14.self] }
-    public static var stages: [MigrationStage] { [v2ToV3, v3ToV4, v4ToV5, v5ToV6, v6ToV7, v7ToV8, v8ToV9, v9ToV10, v10ToV11, v11ToV12, v12ToV13, v13ToV14] }
+    public static var schemas: [any VersionedSchema.Type] { [DosarSchemaV2.self, DosarSchemaV3.self, DosarSchemaV4.self, DosarSchemaV5.self, DosarSchemaV6.self, DosarSchemaV7.self, DosarSchemaV8.self, DosarSchemaV9.self, DosarSchemaV10.self, DosarSchemaV11.self, DosarSchemaV12.self, DosarSchemaV13.self, DosarSchemaV14.self, DosarSchemaV15.self] }
+    public static var stages: [MigrationStage] { [v2ToV3, v3ToV4, v4ToV5, v5ToV6, v6ToV7, v7ToV8, v8ToV9, v9ToV10, v10ToV11, v11ToV12, v12ToV13, v13ToV14, v14ToV15] }
 
     /// Version 3 only adds optional attributes; existing records keep every value. What
     /// the new attributes should hold for old records is filled in later: the categories'
@@ -147,17 +150,23 @@ public enum DosarMigrationPlan: SchemaMigrationPlan {
     /// estimate here; a bill whose kept text says its index was estimated is offered in the repair
     /// list (`EstimatedBillReadingsStep`).
     static var v13ToV14: MigrationStage { .lightweight(fromVersion: DosarSchemaV13.self, toVersion: DosarSchemaV14.self) }
+
+    /// Version 15 only adds an optional value to categories (whether the person chose one box for
+    /// its sections or one each); existing categories keep every value and have none, which means
+    /// the catalog's choice: cars and homes one box each, as before, and plants one box together.
+    /// Nothing is guessed for anyone; the person chooses from the binder or the category's page.
+    static var v14ToV15: MigrationStage { .lightweight(fromVersion: DosarSchemaV14.self, toVersion: DosarSchemaV15.self) }
 }
 
-public typealias CategoryTemplate = DosarSchemaV14.CategoryTemplate
-public typealias Asset = DosarSchemaV14.Asset
-public typealias Obligation = DosarSchemaV14.Obligation
-public typealias HistoryEntry = DosarSchemaV14.HistoryEntry
-public typealias ServiceItem = DosarSchemaV14.ServiceItem
-public typealias MeasurementLog = DosarSchemaV14.MeasurementLog
-public typealias Attachment = DosarSchemaV14.Attachment
-public typealias Provider = DosarSchemaV14.Provider
-public typealias AttachmentPage = DosarSchemaV14.AttachmentPage
+public typealias CategoryTemplate = DosarSchemaV15.CategoryTemplate
+public typealias Asset = DosarSchemaV15.Asset
+public typealias Obligation = DosarSchemaV15.Obligation
+public typealias HistoryEntry = DosarSchemaV15.HistoryEntry
+public typealias ServiceItem = DosarSchemaV15.ServiceItem
+public typealias MeasurementLog = DosarSchemaV15.MeasurementLog
+public typealias Attachment = DosarSchemaV15.Attachment
+public typealias Provider = DosarSchemaV15.Provider
+public typealias AttachmentPage = DosarSchemaV15.AttachmentPage
 
 /// Shared JSON coding for values stored as `Data` on models and written to archives.
 /// Keys are sorted so the same value always produces the same bytes.

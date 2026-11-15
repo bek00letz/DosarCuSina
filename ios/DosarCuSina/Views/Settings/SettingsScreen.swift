@@ -481,6 +481,7 @@ private struct KeptCopyRow: View {
 private struct SectionVisibilitySettings: View {
     @Environment(\.modelContext) private var context
     @Query(sort: [SortDescriptor(\CategoryTemplate.homeOrder)]) private var templates: [CategoryTemplate]
+    @Query private var assets: [Asset]
     @State private var layout = BinderLayoutStore.shared
     @State private var error: UserFacingError?
 
@@ -491,6 +492,14 @@ private struct SectionVisibilitySettings: View {
                     Label { Text(verbatim: template.name) } icon: { Image(systemName: template.symbol).foregroundStyle(template.tintColor) }
                 }
                 .frame(minHeight: 44)
+                // One box for all of them, or one each: offered as on the binder (`BoxGrouping.offer`).
+                if template.isOnHome, template.groupingOffer(sections: assets.filter { $0.templateKey == template.key }.count) != nil {
+                    Toggle(isOn: Binding(get: { template.groupsSections }, set: { setGrouping(template, $0 ? .grouped : .separate) })) {
+                        Text("„\(template.name)” într-o singură cutie", comment: "Setting: show all of a category's sections (Mașini) in one box on the binder.")
+                    }
+                    .frame(minHeight: 44)
+                    .padding(.leading, DS.Space.xl)
+                }
             }
             Button {
                 layout.reset()
@@ -510,6 +519,14 @@ private struct SectionVisibilitySettings: View {
     private func setOnHome(_ template: CategoryTemplate, _ isOn: Bool) {
         do {
             try TemplateStore(context: context).setOnHome(template, isOn)
+        } catch {
+            self.error = UserFacingError(error)
+        }
+    }
+
+    private func setGrouping(_ template: CategoryTemplate, _ grouping: BoxGrouping) {
+        do {
+            try layout.setGrouping(template, grouping, assets: assets, context: context)
         } catch {
             self.error = UserFacingError(error)
         }

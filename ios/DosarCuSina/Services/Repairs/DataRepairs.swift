@@ -43,6 +43,7 @@ struct DataRepairs {
         SameVisitTwiceStep(),
         DayYearsStep(),
         EstimatedBillReadingsStep(),
+        SectionsIntoTheirHomeStep(),
     ]
 
     static func step(_ id: DataRepairStepID) -> any DataRepairStep {
@@ -108,6 +109,7 @@ enum DataRepairStepID: String, CaseIterable, Sendable, Hashable {
     case sameVisitTwice = "same-visit-twice"
     case dayYears = "day-years"
     case estimatedBillReadings = "estimated-bill-readings"
+    case sectionsIntoTheirHome = "sections-into-their-home"
 }
 
 /// One thing a repair would change, in plain words, with what applying it needs.
@@ -155,6 +157,9 @@ struct DataRepairFinding: Identifiable, Hashable, Sendable {
         case dayYear(DayYearsStep.Place, from: CalendarDay, to: CalendarDay?)
         /// A bill's index its kept text says was estimated: the reading is marked as an estimate.
         case readingEstimate(logID: UUID)
+        /// A section on its own (a plant) filed under the household's only home; both nil for the
+        /// note that, with several homes, says to move them with "Mută la…".
+        case intoHome(assetID: UUID?, homeID: UUID?)
     }
 }
 
