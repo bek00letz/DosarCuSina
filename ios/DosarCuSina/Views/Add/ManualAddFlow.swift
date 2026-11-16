@@ -1,7 +1,8 @@
 import SwiftData
 import SwiftUI
 
-/// "Scriu eu": pick the section, then what to type in for it: a deadline or a visit.
+/// "Scriu eu": pick the section, then what to type in for it: a deadline, or a visit where its
+/// category logs them, in its kind's words (`VisitShape.title`, `startHint`).
 /// Everything saves through the engine's actions. A paper is added with a photo, from
 /// Adaugă's other three ways in or from the section's own page ("Adaugă un act"), never here:
 /// the label says typing, so nothing behind it asks for a photo.
@@ -63,9 +64,9 @@ struct ManualAddFlow: View {
                 case .deadline(let id):
                     DeadlineForm(assetID: id) { message in onClose(message) }
                 case .visit(let id):
-                    AddVisitFlow(assetID: id, prefill: nil) { receipt in
+                    AddVisitFlow(assetID: id, prefill: nil) { toast in
                         // This sheet closes: the shell shows the toast, with its "Anulează".
-                        if let receipt, let toast = CaptureFlowResult.visit(receipt: receipt).toast { announce(toast) }
+                        if let toast { announce(toast) }
                         onClose(nil)
                     }
                 }
@@ -94,6 +95,7 @@ private struct ManualWhatView: View {
     let onClose: (LocalizedStringResource?) -> Void
 
     @Environment(\.announce) private var announce
+    @Environment(\.modelContext) private var context
     @Query private var assets: [Asset]
     @State private var source: CaptureSource?
     @State private var isChoosingSource = false
@@ -110,8 +112,11 @@ private struct ManualWhatView: View {
                 DSActionCard("Un termen", subtitle: "ITP, o asigurare, un vaccin, o plată.", systemImage: "calendar.badge.clock") {
                     path.append(.deadline(assetID))
                 }
-                DSActionCard("O vizită sau o reparație", subtitle: "Ce s-a făcut, cât a costat, cine a lucrat.", systemImage: "wrench.and.screwdriver") {
-                    path.append(.visit(assetID))
+                // Only where the category logs visits, in its kind's words.
+                if let shape = asset.flatMap(visitShape(of:)) {
+                    DSActionCard(LocalizedStringKey(shape.title), subtitle: LocalizedStringKey(shape.startHint), systemImage: shape.symbol) {
+                        path.append(.visit(assetID))
+                    }
                 }
                 if ManualAddFlow.offersDocumentPhoto {
                     DSActionCard("Un act", subtitle: "Poză, PDF sau scanare. Îl citesc și ți-l arăt.", systemImage: "doc.viewfinder") {
@@ -150,5 +155,10 @@ private struct ManualWhatView: View {
                 }
             }
         }
+    }
+
+    /// The visit form's shape for the section's category; nil when it logs none.
+    private func visitShape(of asset: Asset) -> VisitShape? {
+        (try? TemplateStore(context: context).template(forKey: asset.templateKey))?.behavior.visit.shape
     }
 }

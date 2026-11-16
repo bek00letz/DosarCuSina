@@ -491,7 +491,7 @@ struct HistoryPocket: View {
             }
         } footer: {
             // A pocket's button, like every other pocket's: the page has no one main action.
-            PocketAddButton(addition: .visit(title: definition.behavior.visitWording.title), add: add)
+            if let addition = PocketAddition.history(of: definition.behavior) { PocketAddButton(addition: addition, add: add) }
         }
     }
 }

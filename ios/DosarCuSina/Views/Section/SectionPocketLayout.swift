@@ -60,8 +60,11 @@ enum PocketAddition: Hashable, Identifiable, Sendable {
     /// A photo of a paper for this section, through capture (`photoFirstCapture`). Beside a
     /// person's own documents it is named apart from them.
     case paper(besidePersonal: Bool)
-    /// A visit, a repair or a job, in the category's own words (`VisitWording.title`).
-    case visit(title: String)
+    /// A visit of the category's kind, in its words (`VisitShape.title`): a service, a job, a
+    /// repair, a doctor's or a vet's visit.
+    case visit(VisitKind)
+    /// A dated note in Istoric, where the category takes notes instead of visits (a plant).
+    case note
     /// Someone who looks after it.
     case person
     /// A row of the person's own under Date importante.
@@ -74,6 +77,7 @@ enum PocketAddition: Hashable, Identifiable, Sendable {
         case .personalDocument: "personalDocument"
         case .paper: "paper"
         case .visit: "visit"
+        case .note: "note"
         case .person: "person"
         case .keyFact: "keyFact"
         }
@@ -85,7 +89,7 @@ enum PocketAddition: Hashable, Identifiable, Sendable {
         case .deadline: .listed(.upcoming)
         case .child(let pocket, _): pocket
         case .personalDocument, .paper: .listed(.documents)
-        case .visit: .listed(.history)
+        case .visit, .note: .listed(.history)
         case .person: .listed(.people)
         case .keyFact: .listed(.keyFacts)
         }
@@ -107,7 +111,8 @@ enum PocketAddition: Hashable, Identifiable, Sendable {
             besidePersonal
                 ? String(localized: "Scanează un document", comment: "Adds a photo of another paper on a person's page, beside their own documents.")
                 : String(localized: "Adaugă un act", comment: "Adds a photo of a paper to a section, from its Acte pocket or its add menu.")
-        case .visit(let title): title
+        case .visit(let kind): kind.shape?.title ?? ""
+        case .note: String(localized: "Adaugă o notă")
         case .person: String(localized: "Adaugă o persoană", comment: "Adds someone who looks after a section.")
         case .keyFact: String(localized: "Adaugă un rând", comment: "Adds a row of one's own under Date importante.")
         }
@@ -129,7 +134,8 @@ enum PocketAddition: Hashable, Identifiable, Sendable {
         case .child: "plus"
         case .personalDocument: "person.text.rectangle"
         case .paper: "doc.viewfinder"
-        case .visit: "wrench.and.screwdriver"
+        case .visit(let kind): kind.shape?.symbol ?? "wrench.and.screwdriver"
+        case .note: "note.text.badge.plus"
         case .person: "person.badge.plus"
         case .keyFact: "list.bullet.rectangle"
         }
@@ -176,6 +182,16 @@ struct SectionPageLayout: Equatable, Sendable {
             }
         }
         return layout
+    }
+}
+
+extension PocketAddition {
+    /// What Istoric adds, by the category's visit kind: its visit, a note (a plant), or nothing
+    /// (a subscription, whose bills come with a photo). The one rule for the pocket's button and
+    /// the page's menu.
+    static func history(of behavior: CategoryBehavior) -> PocketAddition? {
+        if behavior.visit.offersVisit { return .visit(behavior.visit) }
+        return behavior.visit.addsNote ? .note : nil
     }
 }
 
@@ -242,7 +258,7 @@ struct PocketContents {
         case .listed(.documents):
             return isHolder ? .personalDocument : .paper(besidePersonal: false)
         case .listed(.history):
-            return .visit(title: definition.behavior.visitWording.title)
+            return PocketAddition.history(of: definition.behavior)
         case .listed(.people):
             return .person
         case .listed(.money):

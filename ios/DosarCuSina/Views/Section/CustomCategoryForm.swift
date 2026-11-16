@@ -50,8 +50,8 @@ struct CustomCategoryForm: View {
                     .padding(.vertical, DS.Space.xs)
                     DSRowSeparator()
                     DSCheckRow(
-                        title: Text("Are revizii", comment: "Switch of a category of one's own: its sections have a regular service."),
-                        subtitle: Text("Îți amintesc din timp, ca la mașină.", comment: "Explains the service switch."),
+                        title: Text("Are revizii sau lucrări", comment: "Switch of a category of one's own: its sections have a regular service or job, logged as visits."),
+                        subtitle: Text("Le notezi în istoric și îți amintesc din timp, ca la mașină.", comment: "Explains the service switch: visits and a reminder."),
                         isOn: draft.switches.service != nil,
                         action: { draft.switches.service = draft.switches.service == nil ? CategorySwitches.Service(.time) : nil }
                     ) {

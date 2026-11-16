@@ -1,21 +1,25 @@
 import SwiftData
 import SwiftUI
 
-/// One visit with many parts: a car service, a vet check-up, a tradesperson's
-/// job. Big check rows grouped by the template's components, each with an
-/// optional cost and brand; the date, the counter, the total and who did it;
-/// and an invoice photo that ticks the rows by itself. One save through
-/// `CaptureFiler` (the visit and its invoice together), then the form closes with the toast
-/// every save shows, "Vizita e în istoric." with "Anulează" (`VisitEnding`).
+/// One visit, shaped by its category's kind (`VisitKind`, laid over the category by `VisitForm`):
+/// a car's service with its parts, brands and kilometres; a tradesperson's job; a repair and its
+/// warranty; a doctor's visit with what it was for and its papers; a vet's with the pet's
+/// vaccines and treatments. The paper's photo fills what the kind asks by itself. One save
+/// through `CaptureFiler` (the visit and its paper together), then the form closes with the
+/// toast every save shows, the kind's own words with "Anulează" (`VisitEnding`).
+///
+/// A shaped screen: it holds no words of its own. Every word comes from the form (`VisitForm`,
+/// `VisitShape`) or the words every kind shares (`VisitFormWording`); the architecture check
+/// refuses a text literal here (`text-in-shaped-screen`).
 struct AddVisitFlow: View {
     let assetID: UUID
     private let prefill: CaptureResult?
     private let embedsNavigation: Bool
-    /// Called when the flow ends: with the saved visit's receipt, for the toast's "Anulează",
+    /// Called when the flow ends: with the saved visit's toast (its "Anulează" takes it back),
     /// or nil when nothing was saved.
-    private let onFinish: ((UndoReceipt?) -> Void)?
+    private let onFinish: ((DSToast?) -> Void)?
 
-    /// Presented on its own (from a section's Istoric): it brings its own navigation bar.
+    /// Presented on its own (from a section's page): it brings its own navigation bar.
     init(assetID: UUID) {
         self.assetID = assetID
         self.prefill = nil
@@ -23,8 +27,8 @@ struct AddVisitFlow: View {
         self.onFinish = nil
     }
 
-    /// Opened from capture with an invoice already read, inside capture's navigation.
-    init(assetID: UUID, prefill: CaptureResult?, onFinish: @escaping (UndoReceipt?) -> Void) {
+    /// Opened from capture with a paper already read, or from "Scriu eu", inside their navigation.
+    init(assetID: UUID, prefill: CaptureResult?, onFinish: @escaping (DSToast?) -> Void) {
         self.assetID = assetID
         self.prefill = prefill
         self.embedsNavigation = false
@@ -32,6 +36,7 @@ struct AddVisitFlow: View {
     }
 
     @Query private var assets: [Asset]
+    @Environment(\.modelContext) private var context
 
     var body: some View {
         let asset = assets.first { $0.id == assetID }
@@ -46,17 +51,26 @@ struct AddVisitFlow: View {
 
     @ViewBuilder private func content(_ asset: Asset?) -> some View {
         if let asset {
-            VisitForm(asset: asset, prefill: prefill, onFinish: onFinish)
+            let definition = (try? TemplateStore(context: context).template(forKey: asset.templateKey))?.definition
+            if let form = definition.flatMap(VisitForm.make(for:)) {
+                VisitFormView(asset: asset, form: form, prefill: prefill, onFinish: onFinish)
+            } else {
+                // A link to a visit of a section whose category has none.
+                DSEmptyState(LocalizedStringKey(VisitFormWording.noVisits), systemImage: "calendar.badge.exclamationmark",
+                             message: LocalizedStringKey(VisitFormWording.noVisitsMessage))
+                    .toolbar { ToolbarItem(placement: .cancellationAction) { DSCancelButton() } }
+            }
         } else {
-            DSEmptyState("Secțiunea nu mai există", systemImage: "questionmark.folder", message: "Poate a fost ștearsă. Închide și alege alta.")
+            DSEmptyState(LocalizedStringKey(VisitFormWording.sectionGone), systemImage: "questionmark.folder", message: LocalizedStringKey(VisitFormWording.sectionGoneMessage))
         }
     }
 }
 
-private struct VisitForm: View {
+private struct VisitFormView: View {
     let asset: Asset
+    let form: VisitForm
     let prefill: CaptureResult?
-    let onFinish: ((UndoReceipt?) -> Void)?
+    let onFinish: ((DSToast?) -> Void)?
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -68,7 +82,7 @@ private struct VisitForm: View {
     @State private var didStart = false
     @State private var source: CaptureSource?
     @State private var isChoosingSource = false
-    /// Reading an invoice picked here. It ends with the form: a reading still running stops.
+    /// Reading a paper picked here. It ends with the form: a reading still running stops.
     @State private var session = CaptureSession()
     @State private var readNote: String?
     @State private var errorMessage: String?
@@ -77,66 +91,53 @@ private struct VisitForm: View {
     /// The visit is saved and the form is closing: nothing is left to lose.
     @State private var isDone = false
     @State private var saved: HistoryEntry?
-    /// What saving the visit did, for "Anulează vizita": a kept invoice goes back where it was.
+    /// What saving the visit did, for "Anulează": a kept paper goes back where it was.
     @State private var receipt: UndoReceipt?
     @State private var toast: DSToast?
     @State private var exampleQuestion: ExampleSectionQuestion?
     @State private var readingQuestion: LowerReadingQuestion?
 
     private var isReading: Bool { session.phase == .reading }
-
-    private var template: CategoryTemplate? { try? TemplateStore(context: context).template(forKey: asset.templateKey) }
-
-    /// The category's own wording for its visits (`CategoryBehavior.visit`).
-    private var wording: VisitWording { template?.behavior.visitWording ?? .standard }
-
-    private var components: [ComponentDefinition] { template?.components ?? [] }
-
-    /// The counter field (km, hours), when the template has one that only goes up.
-    private var counterField: FieldDefinition? {
-        guard let definition = template?.definition,
-              let field = HouseholdMutations.heroMetricField(of: definition),
-              MeasurementKind.forUnit(field.unit).isCumulative else { return nil }
-        return field
-    }
+    private var shape: VisitShape { form.shape }
 
     var body: some View {
         Group {
             if let saved {
                 VisitSavedView(entry: saved, asset: asset) { finish(true) } onUndo: { undo() }
             } else {
-                form
+                content
             }
         }
-        .navigationTitle(Text(verbatim: wording.title))
+        .navigationTitle(Text(verbatim: form.title))
         .navigationBarTitleDisplayMode(.inline)
         .dsToast($toast)
         .task { start() }
     }
 
-    private var form: some View {
+    private var content: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.xl) {
                 Text(verbatim: asset.name)
                     .dsFont(.title)
-                invoiceCard
-                checklist
-                extrasSection
+                if let paper = shape.paper { paperCard(paper) }
+                if form.hasChecklist, let work = shape.work { checklist(work) }
+                if form.hasRows { rowsSection }
+                if let note = shape.note { noteSection(note) }
                 detailsSection
-                providerSection
+                if let provider = shape.provider { providerSection(provider) }
             }
             .padding(DS.Space.m)
         }
         .background(DS.Palette.background)
         .scrollDismissesKeyboard(.interactively)
         .dsPinnedAction {
-            DSPrimaryButton("Salvează vizita", systemImage: "checkmark") { save() }
-                .disabled(isSaving || draft.isEmpty)
+            DSPrimaryButton(verbatim: shape.save, systemImage: "checkmark") { save() }
+                .disabled(isSaving || !draft.satisfies(form))
         } note: {
             if let errorMessage {
-                DSNotice(.error, title: "Nu s-a salvat", message: LocalizedStringKey(errorMessage))
-            } else if draft.isEmpty {
-                Text("Bifează ce s-a făcut sau scrie totalul ca să poți salva.")
+                DSNotice(.error, title: Text(verbatim: VisitFormWording.notSaved), message: Text(verbatim: errorMessage))
+            } else if !draft.satisfies(form), let requirement = form.requirementNote {
+                Text(verbatim: requirement)
                     .dsFont(.footnote)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -144,22 +145,22 @@ private struct VisitForm: View {
         .toolbar {
             ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
         }
-        .dsDiscardGuard(hasChanges: !draft.isEmpty && saved == nil && !isDone)
-        .confirmationDialog("Atașează factura", isPresented: $isChoosingSource, titleVisibility: .visible) {
-            if CaptureSource.isCameraAvailable { Button("Fotografiază factura") { source = .camera } }
-            Button("Alege din poze") { source = .photos }
-            Button("Din Fișiere") { source = .files }
-            Button("Renunță", role: .cancel) {}
+        .dsDiscardGuard(hasChanges: draft.hasContent && saved == nil && !isDone)
+        .confirmationDialog(Text(verbatim: shape.paper?.sourceTitle ?? form.title), isPresented: $isChoosingSource, titleVisibility: .visible) {
+            if CaptureSource.isCameraAvailable, let paper = shape.paper { Button(paper.camera) { source = .camera } }
+            Button(VisitFormWording.photos) { source = .photos }
+            Button(VisitFormWording.files) { source = .files }
+            Button(VisitFormWording.cancel, role: .cancel) {}
         }
         .captureSourcePicker($source) { payload in
             read(payload)
         } onError: { _ in
-            readNote = String(localized: "Poza nu s-a putut deschide. Încearcă din nou.")
+            readNote = VisitFormWording.photoDidNotOpen
         }
         .onChange(of: session.phase) { _, phase in
             switch phase {
             case .read(let result): apply(result)
-            case .failed: readNote = String(localized: "Încearcă o poză mai clară. Poți bifa și de mână.")
+            case .failed: readNote = form.failedNote
             default: break
             }
         }
@@ -167,31 +168,27 @@ private struct VisitForm: View {
         .readingPrompt($readingQuestion) { save(lowerReading: $0) }
     }
 
-    // MARK: Invoice
+    // MARK: The paper
 
-    @ViewBuilder private var invoiceCard: some View {
+    @ViewBuilder private func paperCard(_ paper: VisitShape.Paper) -> some View {
         if draft.document == nil {
-            DSActionCard("Atașează factura", subtitle: "Bifez singur ce scrie pe ea și trec sumele.", systemImage: "doc.viewfinder") {
+            DSActionCard(LocalizedStringKey(paper.action), subtitle: form.paperHint.map { LocalizedStringKey($0) }, systemImage: "doc.viewfinder") {
                 isChoosingSource = true
             }
             .disabled(isReading)
             .overlay(alignment: .bottomTrailing) {
-                if isReading { DSDelayedProgress(label: "Citesc factura…").padding(DS.Space.s) }
+                if isReading { DSDelayedProgress(label: LocalizedStringKey(paper.reading)).padding(DS.Space.s) }
             }
         } else {
-            if draft.keepsPhoto {
-                DSNotice(.success, title: "Factura e atașată", message: readNote.map { LocalizedStringKey($0) })
-            } else {
-                DSNotice(.success, title: "Am citit factura", message: readNote.map { LocalizedStringKey($0) })
-            }
-            filedNotice
+            DSNotice(.success, title: Text(verbatim: draft.keepsPhoto ? paper.attached : paper.read), message: readNote.map { Text(verbatim: $0) })
+            if paper.isInvoice { filedNotice }
             // Its photo shows a whole card number: kept only when the person asks.
             if let kind = draft.photoOnRequestKind {
                 KeepPhotoChoice(keepsPhoto: $draft.keepsPhotoOnRequest, kind: kind)
             }
         }
         if draft.document == nil, let readNote {
-            DSNotice(.warning, title: "Factura nu s-a citit", message: LocalizedStringKey(readNote))
+            DSNotice(.warning, title: Text(verbatim: paper.unread), message: Text(verbatim: readNote))
         }
     }
 
@@ -206,17 +203,17 @@ private struct VisitForm: View {
         }
     }
 
-    /// The visit this invoice was filed with before, as saving will find it.
+    /// The visit this paper was filed with before, as saving will find it.
     private var filed: FiledPaper? {
         visit.filedBefore(keptDocumentID: draft.document?.keptAttachmentID, calendar: .dosar)?.paper
     }
 
-    // MARK: Checklist
+    // MARK: What was done
 
-    private var checklist: some View {
+    private func checklist(_ work: VisitShape.WorkWords) -> some View {
         VStack(alignment: .leading, spacing: DS.Space.l) {
-            DSSectionHeader(LocalizedStringKey(wording.checklistTitle), subtitle: "Atinge ce s-a făcut. Prețul și marca sunt opționale.")
-            ForEach(ComponentCatalog.checklist(for: components)) { group in
+            DSSectionHeader(LocalizedStringKey(work.header), subtitle: LocalizedStringKey(work.checklistHint))
+            ForEach(ComponentCatalog.checklist(for: form.components)) { group in
                 VStack(alignment: .leading, spacing: DS.Space.xs) {
                     Text(verbatim: group.title)
                         .dsFont(.captionEmphasized)
@@ -244,8 +241,10 @@ private struct VisitForm: View {
             action: { draft.toggle(component.key) }
         ) {
             VStack(alignment: .leading, spacing: DS.Space.xs) {
-                DSMoneyField("Cât a costat", amount: partCost(component.key), currencyCode: $draft.currency)
-                DSTextField("Marcă sau cod", text: partBrand(component.key), prompt: "Opțional")
+                DSMoneyField(LocalizedStringKey(VisitFormWording.rowCost), amount: partCost(component.key), currencyCode: $draft.currency)
+                if shape.asksBrand {
+                    DSTextField(LocalizedStringKey(VisitFormWording.brand), text: partBrand(component.key), prompt: LocalizedStringKey(VisitFormWording.optional))
+                }
             }
             .padding(.leading, DS.Space.xl)
         }
@@ -253,8 +252,7 @@ private struct VisitForm: View {
 
     private func lastDone(_ key: String) -> String? {
         guard let last = MaintenanceLog.lastOccurrence(of: key, in: HistoryItemSnapshot.items(of: asset)) else { return nil }
-        let date = DosarFormat.monthYear(last.date)
-        return String(localized: "Ultima dată: \(date)")
+        return VisitFormWording.lastDone(DosarFormat.monthYear(last.date))
     }
 
     private func partCost(_ key: String) -> Binding<Decimal?> {
@@ -265,26 +263,33 @@ private struct VisitForm: View {
         Binding(get: { draft.parts[key]?.brand ?? "" }, set: { draft.parts[key, default: VisitDraft.Part()].brand = $0 })
     }
 
-    // MARK: Extras
-
-    private var extrasSection: some View {
+    /// Rows of one's own: beside the checklist for what isn't on it, or what was done, row by row.
+    private var rowsSection: some View {
         VStack(alignment: .leading, spacing: DS.Space.s) {
-            DSSectionHeader("Altceva", subtitle: "Ce nu e în listă.")
+            DSSectionHeader(LocalizedStringKey(form.rowsHeader ?? ""), subtitle: form.rowsHint.map { LocalizedStringKey($0) })
             ForEach($draft.extras) { $extra in
                 DSCard {
                     VStack(alignment: .leading, spacing: DS.Space.xs) {
-                        DSTextField("Ce s-a făcut", text: $extra.name)
-                        DSMoneyField("Cât a costat", amount: $extra.cost, currencyCode: $draft.currency)
-                        Button("Scoate rândul", role: .destructive) {
+                        DSTextField(LocalizedStringKey(shape.work?.rowName ?? ""), text: $extra.name)
+                        DSMoneyField(LocalizedStringKey(VisitFormWording.rowCost), amount: $extra.cost, currencyCode: $draft.currency)
+                        Button(VisitFormWording.removeRow, role: .destructive) {
                             draft.extras.removeAll { $0.id == extra.id }
                         }
-                        .frame(minHeight: 44)
+                        .frame(minHeight: DS.Control.minimumHitTarget)
                     }
                 }
             }
-            DSSecondaryButton("Adaugă altceva", systemImage: "plus") {
+            DSSecondaryButton(verbatim: form.addRow ?? "", systemImage: "plus") {
                 draft.extras.append(VisitDraft.Extra(name: "", cost: nil))
             }
+        }
+    }
+
+    // MARK: A note
+
+    private func noteSection(_ note: VisitShape.Note) -> some View {
+        DSCard {
+            DSTextField(LocalizedStringKey(note.label), text: $draft.note, kind: .longText, prompt: LocalizedStringKey(note.prompt))
         }
     }
 
@@ -292,63 +297,71 @@ private struct VisitForm: View {
 
     private var detailsSection: some View {
         VStack(alignment: .leading, spacing: DS.Space.s) {
-            DSSectionHeader("Detalii")
+            DSSectionHeader(LocalizedStringKey(VisitFormWording.details))
             DSCard {
                 VStack(alignment: .leading, spacing: DS.Space.m) {
                     DatePicker(selection: $draft.date, in: ...Date.now.addingTimeInterval(86_400), displayedComponents: .date) {
-                        Text("Data").dsFont(.headline)
+                        Text(verbatim: VisitFormWording.date).dsFont(.headline)
                     }
-                    .frame(minHeight: 44)
-                    if let counterField, let unit = counterField.unit {
+                    .frame(minHeight: DS.Control.minimumHitTarget)
+                    if let warranty = form.warrantyNote(on: CalendarDay(draft.date, calendar: .dosar), values: asset.values) {
+                        Text(verbatim: warranty)
+                            .dsFont(.footnote)
+                            .foregroundStyle(DS.Palette.secondaryLabel)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    if let counterField = form.counterField, let unit = counterField.unit {
                         DSMetricField(LocalizedStringKey(counterField.label), value: Binding(
                             get: { draft.odometer },
                             set: { draft.odometer = $0; draft.odometerSource = .person }
                         ), unit: unit,
                                       footnote: draft.odometer == nil && draft.odometerEstimate != nil
-                                          ? "Cifra gri e doar o estimare. Scrie cifra de la bord, dacă o știi." : nil,
+                                          ? LocalizedStringKey(VisitFormWording.estimate) : nil,
                                       placeholder: draft.odometerEstimate)
                     }
-                    DSMoneyField("Total plătit", amount: $draft.total, currencyCode: $draft.currency,
-                                 footnote: partsSumNote)
+                    DSMoneyField(LocalizedStringKey(shape.costLabel), amount: $draft.total, currencyCode: $draft.currency,
+                                 footnote: costNote.map { LocalizedStringKey($0) })
                 }
             }
         }
     }
 
-    private var partsSumNote: LocalizedStringKey? {
-        guard draft.total == nil, let sum = draft.partsSum else { return nil }
-        let text = Money(sum, currency: draft.currency).formattedCompact()
-        return "Piesele adună \(text). Lasă gol dacă ăsta e totalul."
+    /// Under the money field: what the rows add up to, while no total is typed; else the kind's hint.
+    private var costNote: String? {
+        if draft.total == nil, let sum = draft.partsSum {
+            return form.sumNote(Money(sum, currency: draft.currency).formattedCompact())
+        }
+        return shape.costHint
     }
 
-    // MARK: Provider
+    // MARK: Who did it
 
-    private var providerSection: some View {
-        let candidates = providerCandidates
+    private func providerSection(_ words: VisitShape.Provider) -> some View {
+        let candidates = providerCandidates(trade: words.trade)
         return VStack(alignment: .leading, spacing: DS.Space.s) {
-            DSSectionHeader(LocalizedStringKey(wording.providerTitle))
+            DSSectionHeader(LocalizedStringKey(words.header))
             DSCard {
                 VStack(alignment: .leading, spacing: DS.Space.xs) {
                     ForEach(Array(candidates.enumerated()), id: \.element.id) { index, provider in
                         if index > 0 { DS.Hairline() }
                         DSCheckRow(
                             title: Text(verbatim: provider.name),
-                            subtitle: provider.rating.map { Text("Notă \($0.formatted(.number.precision(.fractionLength(0...1)).locale(.dosarDefault))) din 5") },
+                            subtitle: provider.rating.map { Text(verbatim: VisitFormWording.rating($0.formatted(.number.precision(.fractionLength(0...1)).locale(.dosarDefault)))) },
                             isOn: draft.provider == .existing(provider.id),
                             action: { draft.provider = draft.provider == .existing(provider.id) ? .none : .existing(provider.id) }
                         )
                     }
                     if !candidates.isEmpty { DS.Hairline() }
-                    DSTextField(candidates.isEmpty ? "Nume" : "Altcineva", text: Binding(
+                    DSTextField(LocalizedStringKey(candidates.isEmpty ? VisitFormWording.name : VisitFormWording.someoneElse), text: Binding(
                         get: { if case .new(let name) = draft.provider { return name } else { return newProviderName } },
                         set: { name in
                             newProviderName = name
                             draft.provider = name.trimmingCharacters(in: .whitespaces).isEmpty ? .none : .new(name)
                         }
-                    ), prompt: "Service Exemplu SRL")
+                    ), prompt: LocalizedStringKey(words.prompt))
                     if draft.provider != .none {
                         VStack(alignment: .leading, spacing: DS.Space.xxs) {
-                            Text("Cum a lucrat?").dsFont(.footnote)
+                            Text(verbatim: words.rating).dsFont(.footnote)
                             DSStarRating(rating: draft.rating.map(Double.init)) { draft.rating = $0 }
                         }
                         .transition(DS.Motion.transition(from: .top, reduceMotion: reduceMotion))
@@ -359,11 +372,10 @@ private struct VisitForm: View {
         .dsAnimation(value: draft.provider)
     }
 
-    /// People who worked on this asset first, then others with the right trade.
-    private var providerCandidates: [Provider] {
+    /// People who worked on this asset first, then others with the kind's trade.
+    private func providerCandidates(trade: ProviderTrade) -> [Provider] {
         let directory = ProviderDirectory(context: context)
         var result = directory.providers(for: asset)
-        let trade = wording.trade
         for provider in allProviders where provider.has(trade) && !result.contains(where: { $0.id == provider.id }) {
             result.append(provider)
         }
@@ -375,9 +387,11 @@ private struct VisitForm: View {
     private func start() {
         guard !didStart else { return }
         didStart = true
-        let readings = HouseholdMutations.readingSeries(of: asset, unit: counterField?.unit).readings
-        let fallback = counterField.flatMap { asset.value($0.key)?.numberValue }
-        draft.odometerEstimate = counterField == nil ? nil : OdometerEstimate.value(readings: readings, fallback: fallback, now: Date())
+        if let counterField = form.counterField {
+            let readings = HouseholdMutations.readingSeries(of: asset, unit: counterField.unit).readings
+            let fallback = asset.value(counterField.key)?.numberValue
+            draft.odometerEstimate = OdometerEstimate.value(readings: readings, fallback: fallback, now: Date())
+        }
         if let prefill { apply(prefill) }
     }
 
@@ -389,9 +403,9 @@ private struct VisitForm: View {
     private func apply(_ result: CaptureResult) {
         let before = draft.ticked.count + draft.extras.count
         if case .new(let name) = draft.provider { newProviderName = name }
-        draft.apply(result, components: components)
+        draft.apply(result, form: form)
         if case .new(let name) = draft.provider {
-            // An invoice from someone already in Oameni picks them, not a duplicate.
+            // A paper from someone already in Oameni picks them, not a duplicate.
             let wanted = SearchText.normalize(name)
             if let known = allProviders.first(where: { SearchText.normalize($0.name) == wanted }) {
                 draft.provider = .existing(known.id)
@@ -401,13 +415,7 @@ private struct VisitForm: View {
         }
         let found = draft.ticked.count + draft.extras.count - before
         draft.documentTitle = CaptureMapping.defaultTitle(for: result.kind, fields: Dictionary(result.fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first }))
-        if draft.document != nil {
-            readNote = found > 0
-                ? String(localized: "Am bifat \(found) rânduri de pe factură. Verifică-le.")
-                : String(localized: "Nu am găsit rânduri de bifat. Bifează de mână.")
-        } else {
-            readNote = String(localized: "Încearcă o poză mai clară. Poți bifa și de mână.")
-        }
+        readNote = draft.document != nil ? form.readNote(found: found) : form.failedNote
     }
 
     private func save(lowerReading: LowerReadingAnswer? = nil) {
@@ -418,8 +426,8 @@ private struct VisitForm: View {
         Task {
             defer { isSaving = false }
             do {
-                // The provider, the visit and the invoice are one unit of work: all kept, or
-                // none; an invoice already in the binder moves to the visit, never left out.
+                // The provider, the visit and the paper are one unit of work: all kept, or
+                // none; a paper already in the binder moves to the visit, never left out.
                 var filer = CaptureFiler(context: context)
                 filer.lowerReading = lowerReading
                 let outcome = try await filer.file(.visit(visit))
@@ -440,33 +448,16 @@ private struct VisitForm: View {
         }
     }
 
-    /// The visit as saving files it, from the form as it stands.
+    /// The visit as saving files it, from the form as it stands: only what its kind asks.
     private var visit: CaptureFiler.Visit {
-        CaptureFiler.Visit(
-            asset: asset,
-            kind: wording.kind,
-            occurredAt: draft.date,
-            checklist: draft.checklistItems,
-            extraItems: draft.extraItems,
-            totalCost: draft.totalMoney,
-            odometer: draft.odometer,
-            odometerSource: draft.odometerSource,
-            provider: providerChoice,
-            rating: draft.rating,
-            document: draft.document,
-            documentTitle: draft.documentTitle,
-            documentText: draft.documentText,
-            reference: draft.reference,
-            isAnotherInvoice: draft.isAnotherInvoice,
-            keepsPhoto: draft.keepsPhoto
-        )
+        draft.filing(on: asset, form: form, provider: providerChoice)
     }
 
     private var providerChoice: CaptureFiler.Visit.ProviderChoice {
         switch draft.provider {
         case .none: return .none
         case .existing(let id): return allProviders.first { $0.id == id }.map { .existing($0) } ?? .none
-        case .new(let name): return .named(name, trade: wording.trade, taxID: draft.providerTaxID)
+        case .new(let name): return .named(name, trade: shape.provider?.trade ?? .other, taxID: draft.providerTaxID)
         }
     }
 
@@ -476,45 +467,52 @@ private struct VisitForm: View {
             try receipt.undo()
             self.receipt = nil
             saved = nil
-            toast = DSToast(title: "Vizita a fost anulată.", systemImage: "arrow.uturn.backward.circle.fill", tint: DS.Palette.accent, actionTitle: nil)
+            toast = DSToast(title: LocalizedStringResource(stringLiteral: VisitFormWording.undone), systemImage: "arrow.uturn.backward.circle.fill",
+                            tint: DS.Palette.accent, actionTitle: nil)
         } catch {
             toast = .failure(error)
         }
     }
 
-    /// Ends the flow. Saved and not taken back, the receipt goes with it, so the screen
+    /// The toast a saved visit closes with, in its kind's words.
+    private func ending(_ receipt: UndoReceipt?) -> DSToast? {
+        receipt.map { VisitEnding.toast($0, saying: shape.toast) }
+    }
+
+    /// Ends the flow. Saved and not taken back, the toast goes with it, so the screen
     /// underneath can still offer "Anulează" once this one closes.
     private func finish(_ didSave: Bool) {
-        if let onFinish { onFinish(didSave ? receipt : nil) } else { dismiss() }
+        if let onFinish { onFinish(didSave ? ending(receipt) : nil) } else { dismiss() }
     }
 
     /// Closes the form once the visit is saved. Opened from capture or "Scriu eu", the screen
-    /// underneath shows the toast with the receipt; opened on its own (from Istoric), the
-    /// shell's host shows it, so "Anulează" stays once the form has gone.
+    /// underneath shows the toast; opened on its own (from a section's page), the shell's host
+    /// shows it, so "Anulează" stays once the form has gone.
     private func close(saving receipt: UndoReceipt?) {
         isDone = true
         if let onFinish {
-            onFinish(receipt)
+            onFinish(ending(receipt))
         } else {
-            if let receipt { announce(VisitEnding.toast(receipt)) }
+            if let toast = ending(receipt) { announce(toast) }
             dismiss()
         }
     }
 }
 
 /// How the visit form ends once a visit is saved: it closes with the toast every save shows,
-/// "Vizita e în istoric." with "Anulează", which takes the visit, its invoice and its firm back.
-/// What changed is on the visit's entry in Istoric.
+/// the kind's words („Vizita e în istoric.”, „Lucrarea e în istoric.”) with "Anulează", which
+/// takes the visit, its paper and its firm back. What changed is on the visit's entry in Istoric.
 enum VisitEnding {
     /// The first version showed what changed ("Ce s-a schimbat", `VisitSavedView`) with "Închide"
     /// and "Anulează vizita", and from capture a toast with "Anulează" after it: two endings.
     /// Off; kept as a way back until the toast alone is proven. Remove it with the owner's OK.
     nonisolated static let showsWhatChanged = false
 
-    /// The toast a saved visit closes with, wherever the form was opened.
+    /// The toast a saved visit closes with, wherever the form was opened, in its kind's words
+    /// (`VisitShape.toast`).
     @MainActor
-    static func toast(_ receipt: UndoReceipt) -> DSToast {
-        .undo("Vizita e în istoric.", receipt: receipt)
+    static func toast(_ receipt: UndoReceipt, saying words: String) -> DSToast {
+        .undo(LocalizedStringResource(stringLiteral: words), receipt: receipt)
     }
 }
 
@@ -535,17 +533,17 @@ private struct VisitSavedView: View {
                         .font(.system(.largeTitle))
                         .foregroundStyle(DSStatus.done.color)
                         .accessibilityHidden(true)
-                    Text("Salvat în istoricul \(asset.name)")
+                    Text(verbatim: VisitFormWording.savedIn(asset.name))
                         .dsFont(.title)
                     if !entry.effectiveCost.isEmpty {
-                        Text("Total: \(entry.effectiveCost.formatted())")
+                        Text(verbatim: VisitFormWording.total(entry.effectiveCost.formatted()))
                             .dsFont(.body, numeric: true)
                     }
                 }
                 .accessibilityElement(children: .combine)
                 if !changes.isEmpty {
                     VStack(alignment: .leading, spacing: DS.Space.s) {
-                        DSSectionHeader("Ce s-a schimbat")
+                        DSSectionHeader(LocalizedStringKey(VisitFormWording.whatChanged))
                         DSCard {
                             VStack(alignment: .leading, spacing: DS.Space.xs) {
                                 ForEach(Array(changes.enumerated()), id: \.element.id) { index, change in
@@ -567,9 +565,9 @@ private struct VisitSavedView: View {
         }
         .background(DS.Palette.background)
         .dsPinnedAction {
-            DSPrimaryButton("Închide", action: onDone)
+            DSPrimaryButton(verbatim: VisitFormWording.close, action: onDone)
         } secondary: {
-            DSSecondaryButton("Anulează vizita", systemImage: "arrow.uturn.backward", role: .destructive, action: onUndo)
+            DSSecondaryButton(verbatim: VisitFormWording.undo, systemImage: "arrow.uturn.backward", role: .destructive, action: onUndo)
         }
         .sensoryFeedback(.success, trigger: entry.id)
         .navigationBarBackButtonHidden()
@@ -577,10 +575,7 @@ private struct VisitSavedView: View {
 
     private func detail(_ change: VisitChange) -> String {
         let day = DosarFormat.dayMonth(entry.occurredAt)
-        guard let previous = change.previous else {
-            return String(localized: "Pe \(day). Prima dată în dosar.")
-        }
-        let before = DosarFormat.monthYear(previous)
-        return String(localized: "Pe \(day). Înainte: \(before).")
+        guard let previous = change.previous else { return VisitFormWording.firstTime(on: day) }
+        return VisitFormWording.before(on: day, previous: DosarFormat.monthYear(previous))
     }
 }

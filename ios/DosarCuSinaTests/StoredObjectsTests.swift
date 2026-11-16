@@ -174,7 +174,7 @@ struct StoredObjectsTests {
 
         init() {
             boats = CategoryTemplate(definition: TemplateDefinition(
-                key: "custom.0b6c6f43-0000-4000-8000-00000000b0a7", name: "Bărci", symbol: "sailboat.fill", tint: .teal, sections: []
+                key: "custom.0b6c6f43-0000-4000-8000-00000000b0a7", name: "Bărci", symbol: "sailboat.fill", tint: .teal, sections: [], behavior: .standard
             ), isBuiltIn: false, homeOrder: 50)
             boat = Asset(name: "Barca de pe lac", templateKey: boats.key)
             check = Obligation(title: "Verificare", kind: .maintenance, dueDay: CalendarDay("2027-05-01"))
@@ -239,7 +239,7 @@ struct StoredObjectsTests {
         #expect(check.reminders.consequence == .legal, "An unknown consequence reads as the loudest")
         #expect(check.firstDue == .ask, "An interval in a unit this build doesn't know asks for the date")
         #expect(records.boats.behavior.box == .perSection, "An unknown box reads as a box per section, which hides nothing")
-        #expect(records.boats.behavior.visitWording.kind == .repair)
+        #expect(records.boats.behavior.visit == .job, "A visit from a newer version reads as a job done, which hides nothing")
         #expect(records.boats.sections.first?.fields.first?.role == nil)
 
         // Setting what this build reads writes it; a value it read as something else stays only

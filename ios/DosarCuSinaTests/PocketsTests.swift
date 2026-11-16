@@ -9,7 +9,7 @@ struct PocketsTests {
         #expect(SectionPocket.ordered([.keyFacts, .upcoming, .history, .documents, .upcoming]) == [.upcoming, .documents, .history, .keyFacts])
         #expect(SectionPocket.allCases.first == .upcoming)
         #expect(SectionPocket.allCases.last == .keyFacts)
-        let definition = TemplateDefinition(key: "x", name: "X", symbol: "star", tint: .gray, sections: [], pockets: [.money, .upcoming])
+        let definition = TemplateDefinition(key: "x", name: "X", symbol: "star", tint: .gray, sections: [], pockets: [.money, .upcoming], behavior: .standard)
         #expect(definition.pockets == [.upcoming, .money])
     }
 

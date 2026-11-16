@@ -133,7 +133,7 @@ struct CategorySwitchesTests {
     func applyingTheSameAnswersIsNoChange() {
         let older = TemplateDefinition(key: "custom.old", name: "Unelte", symbol: "hammer", tint: .orange,
                                        sections: [FieldSection(key: "tool", title: "Unealtă", fields: [FieldDefinition(key: "tool.serial", label: "Serie", type: .text)])],
-                                       pockets: [.upcoming, .products, .keyFacts])
+                                       pockets: [.upcoming, .products, .keyFacts], behavior: .standard)
         for definition in BuiltInTemplates.all + [older] {
             #expect(CategorySwitches(reading: definition, grouping: .separate).applied(to: definition) == definition, "\(definition.key)")
         }
@@ -144,7 +144,7 @@ struct CategorySwitchesTests {
         let older = TemplateDefinition(key: "custom.old", name: "Unelte", symbol: "hammer", tint: .orange,
                                        sections: [FieldSection(key: "tool", title: "Unealtă", fields: [FieldDefinition(key: "tool.serial", label: "Serie", type: .text)])],
                                        blueprints: [ObligationBlueprint(key: "tool.check", title: "Verificare", kind: .maintenance, recurrence: .interval(.years(1), anchor: .completion))],
-                                       pockets: [.upcoming, .products, .keyFacts])
+                                       pockets: [.upcoming, .products, .keyFacts], behavior: .standard)
         let changed = CategorySwitches(hasDocuments: true, hasBills: true, service: CategorySwitches.Service(.kilometres), belongsTo: .vehicle, grouping: .grouped).applied(to: older)
         #expect(changed.pockets == [.upcoming, .products, .subscriptions, .documents, .keyFacts])
         #expect(changed.sections.map(\.key) == ["tool", CategorySwitches.counterSectionKey])

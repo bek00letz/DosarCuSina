@@ -296,6 +296,16 @@ rule de-verificat-outside-inbox "$app" '^ios/DosarCuSina/Views/Add/AddRoot\.swif
     '"(Date )?[Dd]e verificat"' - \
     '„De verificat” is only the share inbox in Adaugă. The repair list is „De corectat”; a readiness check worth a look is „Merită o privire”.'
 
+# Checked in its own pass below: a shaped screen is one shared screen whose parts vary by a
+# declared kind (the visit form, by VisitKind). It holds no words of its own: every word comes from
+# its kind's description or the words every kind shares, so every category reads right and
+# docs/COPY_MATRIX.md shows it. A string literal with a letter in it is text of the screen's own,
+# besides a symbol's name (systemImage:, systemName:) and what is interpolated into a literal.
+# The list grows as the other shared screens get their kinds.
+shaped_screens='^ios/DosarCuSina/Views/Add/(AddVisitFlow|Visit/[A-Za-z]+)\.swift$'
+rule text-in-shaped-screen "$shaped_screens" - '-' - \
+    "A shaped screen's words come from its kind's description (VisitShape, laid over the category by VisitForm) or from the words every kind shares (VisitFormWording). Add the words there and draw them from it."
+
 # Checked in its own pass below: tab roots are the views AppShell puts inside
 # NavigationStack(path:), and their body must not start another stack.
 rule stack-in-tab-root "$app" - '-' - \
@@ -390,6 +400,43 @@ scan() {
             if (scroll_at >= 0 && depth <= scroll_at) scroll_at = -1
             if (pocket_at >= 0 && depth <= pocket_at) pocket_at = -1
             if (inset_at >= 0 && depth <= inset_at) inset_at = -1
+        }
+    ' "$rules" "$map" $files
+
+    # Shaped screens (text-in-shaped-screen): a string literal with a letter in it, besides a
+    # symbol's name, is text the screen holds of its own. What is interpolated into a literal
+    # ("\(name)") is code, not text, so it is taken out before letters are looked for.
+    # shellcheck disable=SC2086
+    awk -F'\t' -v rules_file="$rules" -v map_file="$map" '
+        function words_in(text,    out, i, c, depth) {
+            out = ""; depth = 0
+            for (i = 1; i <= length(text); i++) {
+                c = substr(text, i, 1)
+                if (depth == 0 && c == "\\" && substr(text, i + 1, 1) == "(") { depth = 1; i++; continue }
+                if (depth > 0) {
+                    if (c == "(") depth++
+                    else if (c == ")") depth--
+                    continue
+                }
+                out = out c
+            }
+            return out
+        }
+        FILENAME == rules_file { inc[$1] = $2; next }
+        FILENAME == map_file { path_of[$2] = $1; next }
+        FNR == 1 { path = path_of[FILENAME] }
+        {
+            if (path !~ inc["text-in-shaped-screen"]) next
+            if ($0 ~ /^[[:space:]]*(\/\/|\/\*|\*)/) next
+            rest = $0
+            sub(/(^|[[:space:]])\/\/.*$/, "", rest)
+            while (match(rest, /"([^"\\]|\\.)*"/)) {
+                before = substr(rest, 1, RSTART - 1)
+                literal = substr(rest, RSTART + 1, RLENGTH - 2)
+                rest = substr(rest, RSTART + RLENGTH)
+                if (before ~ /(systemImage|systemName):[[:space:]]*$/) continue
+                if (words_in(literal) ~ /[A-Za-z]/) { print path "\ttext-in-shaped-screen\t" FNR; break }
+            }
         }
     ' "$rules" "$map" $files
 

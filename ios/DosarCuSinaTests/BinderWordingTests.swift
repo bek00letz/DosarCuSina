@@ -26,12 +26,12 @@ struct BinderWordingTests {
 
     @Test func visitButtonFollowsTheCategory() {
         // Every category's own wording is pinned in CategoryOffersAndVisitsTests.
-        #expect(BuiltInTemplates.vehicle.behavior.visitWording.title == "Am fost la service")
-        #expect(BuiltInTemplates.bike.behavior.visitWording.title == "Am fost la service")
-        #expect(BuiltInTemplates.pet.behavior.visitWording.title == "Am fost la veterinar")
-        #expect(BuiltInTemplates.home.behavior.visitWording.title == "Am chemat un meseriaș")
-        #expect(BuiltInTemplates.health.behavior.visitWording.title == "Am fost la medic")
-        #expect(CategoryBehavior.standard.visitWording.title == "Am făcut o lucrare")
+        #expect(BuiltInTemplates.vehicle.behavior.visit.shape?.title == "Am fost la service")
+        #expect(BuiltInTemplates.bike.behavior.visit.shape?.title == "Am fost la service")
+        #expect(BuiltInTemplates.pet.behavior.visit.shape?.title == "Am fost la veterinar")
+        #expect(BuiltInTemplates.home.behavior.visit.shape?.title == "Am chemat un meseriaș")
+        #expect(BuiltInTemplates.health.behavior.visit.shape?.title == "Am fost la medic")
+        #expect(CategoryBehavior.standard.visit.shape == nil, "A category of one's own has no visits until its switch says")
     }
 
     @Test func componentLineShowsDistanceDateAndPrice() {

@@ -64,7 +64,8 @@ struct CaptureFiler {
         var isAnotherBill = false
     }
 
-    /// A visit from the visit form, with the invoice it was read from.
+    /// A visit from the visit form, with the paper it was read from: only what its kind asks
+    /// (`VisitDraft.filing`, `VisitShape`), so a doctor's visit carries no counter and no parts.
     struct Visit {
         enum ProviderChoice {
             case none
@@ -75,6 +76,8 @@ struct CaptureFiler {
         }
         var asset: Asset
         var kind: HistoryKind
+        /// The record's title in Istoric (`VisitForm.entryTitle`); nil names it by what was done.
+        var title: String? = nil
         var occurredAt: Date
         var checklist: [HistoryActions.ChecklistItem]
         var extraItems: [LineItemDraft] = []
@@ -84,6 +87,8 @@ struct CaptureFiler {
         var odometerSource: ReadingSource = .person
         var provider: ProviderChoice = .none
         var rating: Int?
+        /// What it was for, or what was fixed, as the kind asks it (`VisitShape.note`).
+        var note: String? = nil
         var document: CapturedDocumentRef?
         var documentTitle: String?
         var documentText: String?
@@ -92,6 +97,9 @@ struct CaptureFiler {
         /// The person said it is another invoice, when it only looked like one already filed
         /// by its day and total ("E altă factură").
         var isAnotherInvoice = false
+        /// The paper it keeps: an invoice (`VisitShape.Paper.isInvoice`), another photo of which is
+        /// known by its number, day and total; a doctor's or a vet's paper, known only as the same document.
+        var paper: VisitShape.Paper = .invoice
         /// The invoice's photo is kept: false only when it is kept on request
         /// (`CaptureResult.photoIsOnRequest`: it shows a whole card number) and the person hasn't asked.
         var keepsPhoto = true
@@ -118,7 +126,7 @@ struct CaptureFiler {
             let keptEntry = keptDocumentID.flatMap { kept in
                 visits.first { ($0.attachments ?? []).contains { $0.id == kept && !$0.isDeleted } }
             }
-            let invoice = document == nil || isAnotherInvoice ? nil
+            let invoice = document == nil || isAnotherInvoice || !paper.isInvoice ? nil
                 : PaperIdentity(number: reference, day: CalendarDay(occurredAt, calendar: calendar), total: totalCost, issuer: issuer)
             return PaperIdentity.filed(keptDocumentEntry: keptEntry, paper: invoice, among: visits, calendar: calendar)
         }
@@ -556,12 +564,14 @@ struct CaptureFiler {
         let entry = try HistoryActions(context: context, now: now).recordVisit(
             on: visit.asset,
             kind: visit.kind,
+            title: visit.title,
             occurredAt: visit.occurredAt,
             checklist: visit.checklist,
             extraItems: visit.extraItems,
             totalCost: visit.totalCost,
             odometer: visit.odometer,
             provider: provider,
+            note: visit.note,
             reference: visit.reference,
             rating: visit.rating,
             calendar: calendar,
@@ -576,7 +586,7 @@ struct CaptureFiler {
             let kept = try documents.fileCaptured(
                 document,
                 title: visit.documentTitle,
-                kind: .invoice,
+                kind: visit.paper.documentKind,
                 extractedText: visit.documentText,
                 documentDate: CalendarDay(visit.occurredAt, calendar: calendar),
                 asset: visit.asset,

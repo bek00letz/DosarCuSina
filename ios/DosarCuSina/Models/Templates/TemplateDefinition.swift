@@ -124,9 +124,10 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
     /// A new section goes under the household's only section of the `mayBelongTo` part by itself
     /// (the only home); with none or several it stands on its own until the person moves it.
     public var goesUnderTheOnlyOne: Bool
-    /// How its visits read and what they are ("Am fost la service"); nil reads as
-    /// `VisitWording.standard`. Read it through `visitWording`.
-    public var visit: VisitWording?
+    /// What its visits are, and so what the visit form asks and says (`VisitKind.shape`): a
+    /// service, a job, a repair, a doctor's or a vet's visit, a note, or none. Every category says
+    /// it; there is no default. A stored behaviour without one reads as none (`VisitKind(stored:)`).
+    public var visit: VisitKind
     /// Its option in "Adaugă o secțiune", one thing rather than the category ("Mașină",
     /// not "Mașini"); nil shows the category's name. Read it through `offerTitle(name:)`.
     public var offerTitle: String?
@@ -136,7 +137,7 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
 
     public init(box: Box = .perSection, listing: Listing = .plain, role: Role? = nil, parentPocket: SectionPocket? = nil, addedOnlyUnderParent: Bool = false,
                 defaultGrouping: BoxGrouping? = nil, sectionNoun: SectionNoun? = nil, mayBelongTo: Role? = nil, goesUnderTheOnlyOne: Bool = false,
-                visit: VisitWording? = nil, offerTitle: String? = nil, shortlistOrder: Int? = nil) {
+                visit: VisitKind, offerTitle: String? = nil, shortlistOrder: Int? = nil) {
         self.box = box
         self.listing = listing
         self.role = role
@@ -151,8 +152,9 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
         self.shortlistOrder = shortlistOrder
     }
 
-    /// Any category the person makes: a box per section, a plain list.
-    public static let standard = CategoryBehavior()
+    /// Any category the person makes, before its switches: a box per section, a plain list, no
+    /// visits (`CategorySwitches` gives it the kind „Are revizii sau lucrări” says).
+    public static let standard = CategoryBehavior(visit: .none)
 
     /// Whether its sections get boxes of their own on the Dosar grid.
     public var hasSectionBoxes: Bool { box == .perSection }
@@ -166,9 +168,6 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
     /// a category whose sections have boxes of their own. A category with one box (Acte) or none
     /// (tenants) keeps it.
     public var offersGrouping: Bool { hasSectionBoxes }
-
-    /// How its visits read: its own wording, else the standard one.
-    public var visitWording: VisitWording { visit ?? .standard }
 
     /// Its option's title in "Adaugă o secțiune": its own, else the category's `name`.
     public func offerTitle(name: String) -> String {
@@ -191,7 +190,7 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
         sectionNoun = (try? c.decodeIfPresent(String.self, forKey: .sectionNoun)).flatMap { $0.flatMap(SectionNoun.init(rawValue:)) }
         mayBelongTo = (try? c.decodeIfPresent(String.self, forKey: .mayBelongTo)).flatMap { $0.flatMap(Role.init(rawValue:)) }
         goesUnderTheOnlyOne = (try? c.decodeIfPresent(Bool.self, forKey: .goesUnderTheOnlyOne)).flatMap { $0 } ?? false
-        visit = (try? c.decodeIfPresent(VisitWording.self, forKey: .visit)).flatMap { $0 }
+        visit = VisitKind(stored: (try? c.decodeIfPresent(JSONValue.self, forKey: .visit)).flatMap { $0 })
         offerTitle = (try? c.decodeIfPresent(String.self, forKey: .offerTitle)).flatMap { $0 }
         shortlistOrder = (try? c.decodeIfPresent(Int.self, forKey: .shortlistOrder)).flatMap { $0 }
     }
@@ -238,7 +237,7 @@ public struct TemplateDefinition: Hashable, Sendable, Codable, Identifiable {
         blueprints: [ObligationBlueprint] = [],
         components: [ComponentDefinition] = [],
         pockets: [SectionPocket] = SectionPocket.standard,
-        behavior: CategoryBehavior = .standard,
+        behavior: CategoryBehavior,
         version: Int = TemplateDefinition.builtInCatalogVersion
     ) {
         self.behavior = behavior
@@ -279,7 +278,7 @@ public struct TemplateDefinition: Hashable, Sendable, Codable, Identifiable {
 
     /// Revision of the built-in catalog. Bump it whenever a built-in definition
     /// changes so installed copies are upgraded (preferences are kept).
-    public static let builtInCatalogVersion = 18
+    public static let builtInCatalogVersion = 19
 
     public static let customKeyPrefix = "custom."
 

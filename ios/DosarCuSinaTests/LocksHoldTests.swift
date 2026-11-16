@@ -31,7 +31,7 @@ struct LocksHoldTests {
     /// A category of one's own that arrives as iCloud writes it: this device made no choice for it.
     private func arrives(_ key: String, in container: ModelContainer) throws {
         let context = ModelContext(container)
-        context.insert(CategoryTemplate(definition: TemplateDefinition(key: key, name: "Caiet", symbol: "book", tint: .gray, sections: []), isBuiltIn: false, homeOrder: 50))
+        context.insert(CategoryTemplate(definition: TemplateDefinition(key: key, name: "Caiet", symbol: "book", tint: .gray, sections: [], behavior: .standard), isBuiltIn: false, homeOrder: 50))
         try context.save()
     }
 
@@ -203,7 +203,7 @@ struct LocksHoldTests {
         #expect(throws: LockLowering.Needed.self) { try store.setSensitive(acte, false) }
         #expect(acte.isSensitive)
         #expect(throws: LockLowering.Needed.self) { try acte.setLock(false) }
-        #expect(throws: LockLowering.Needed.self) { try store.update(acte, with: TemplateDefinition(key: documents, name: acte.name, symbol: acte.symbol, tint: .gray, isSensitiveByDefault: false, sections: [])) }
+        #expect(throws: LockLowering.Needed.self) { try store.update(acte, with: TemplateDefinition(key: documents, name: acte.name, symbol: acte.symbol, tint: .gray, isSensitiveByDefault: false, sections: [], behavior: .standard)) }
         #expect(acte.isSensitive, "Every way of turning it off asks")
 
         try store.setSensitive(acte, false, lowering: try await faceIDConfirmed())

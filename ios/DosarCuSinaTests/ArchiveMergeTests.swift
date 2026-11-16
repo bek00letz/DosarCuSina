@@ -51,7 +51,7 @@ struct ArchiveMergeTests {
                                                  recurrence: .metric(every: 100, unit: .engineHours, fallback: .years(1)))],
                 components: [ComponentDefinition(key: "engine.impeller", name: "Rotor pompă", group: "Motor")],
                 pockets: [.upcoming, .history, .keyFacts],
-                behavior: CategoryBehavior(box: .wholeCategory, listing: .byWarranty, offerTitle: "Barcă"),
+                behavior: CategoryBehavior(box: .wholeCategory, listing: .byWarranty, visit: .service, offerTitle: "Barcă"),
                 version: 0
             ), isBuiltIn: false, homeOrder: 40)
             boats.chosenGrouping = .grouped

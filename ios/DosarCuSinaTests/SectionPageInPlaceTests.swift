@@ -82,8 +82,8 @@ struct SectionPageInPlaceTests {
         let contents = try pocketContents(of: car, in: context)
         let layout = contents.layout(pockets: cars.definition.pockets, folds: true)
         #expect(layout.shown == [.listed(.upcoming), .listed(.keyFacts)], "Urmează and its plate under Date importante")
-        #expect(layout.additions == [.paper(besidePersonal: false), .visit(title: cars.behavior.visitWording.title), .person])
-        #expect(layout.additions.map(\.title) == ["Adaugă un act", cars.behavior.visitWording.title, "Adaugă o persoană"])
+        #expect(layout.additions == [.paper(besidePersonal: false), .visit(cars.behavior.visit), .person])
+        #expect(layout.additions.map(\.title) == ["Adaugă un act", "Am fost la service", "Adaugă o persoană"])
         #expect(!layout.additions.map(\.pocket).contains(.listed(.money)), "No Bani until something cost money")
     }
 

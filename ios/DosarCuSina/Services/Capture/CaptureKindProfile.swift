@@ -117,6 +117,15 @@ struct CaptureKindProfile: Sendable {
     /// `BillReader`). A utility bill's.
     var meterReadingCues: MeterReadingCues? = nil
 
+    /// Whether a document of this kind, going to a section whose category logs `visit`, opens the
+    /// visit form rather than the review: an invoice with parts and jobs (`opensVisitFlow`), for a
+    /// category whose visits ask for a paper (`VisitShape.paper`). The form is the section's kind's
+    /// (a doctor's invoice files a doctor's visit, with its own fields); a category with no visits,
+    /// or none that keep a paper, gets the paper filed as a document by the review.
+    func opensVisit(into visit: VisitKind) -> Bool {
+        opensVisitFlow && visit.shape?.paper != nil
+    }
+
     /// How a new section made from a document is named.
     enum SectionNameRule: Sendable {
         /// The document's title.

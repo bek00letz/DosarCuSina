@@ -196,7 +196,7 @@ struct UndoEverywhereTests {
         let receipt = try await Step.fileAVisitWithANewPhoto.run(in: house)
         let shared = try sharedItem()
 
-        let result = CaptureFlowResult.visit(receipt: receipt).leaving(shared.item, inbox: shared.intake)
+        let result = CaptureFlowResult.visit(receipt: receipt, saying: "Vizita e în istoric.").leaving(shared.item, inbox: shared.intake)
         guard case .visitSaved(let toast) = result else { Issue.record("A visit"); return }
         #expect(String(localized: toast.title) == "Vizita e în istoric.")
         #expect(toast.offersAction, "Anulează is there once the capture has closed")
@@ -215,7 +215,7 @@ struct UndoEverywhereTests {
         let house = try UndoReceiptTests.Household.make()
         let receipt = try await Step.fileAVisitWithANewPhoto.run(in: house)
         let shared = try sharedItem()
-        let result = CaptureFlowResult.visit(receipt: receipt).leaving(shared.item, inbox: shared.intake)
+        let result = CaptureFlowResult.visit(receipt: receipt, saying: "Vizita e în istoric.").leaving(shared.item, inbox: shared.intake)
         result.toast?.whenGone?()
         #expect(shared.inbox.contents().items.isEmpty, "Gone for good once the undo can't come")
 

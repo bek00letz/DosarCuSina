@@ -46,11 +46,11 @@ enum CaptureFlowResult {
         return .filed(toast: toast, assetID: assetID)
     }
 
-    /// The toast for a visit saved with its invoice, with "Anulează", which takes the visit,
-    /// its invoice and its firm back, as the visit's own "Anulează vizita" does.
+    /// A visit saved with its paper, its toast in the kind's words (`VisitShape.toast`) with
+    /// "Anulează", which takes the visit, its paper and its firm back.
     @MainActor
-    static func visit(receipt: UndoReceipt) -> CaptureFlowResult {
-        .visitSaved(toast: VisitEnding.toast(receipt))
+    static func visit(receipt: UndoReceipt, saying words: String) -> CaptureFlowResult {
+        .visitSaved(toast: VisitEnding.toast(receipt, saying: words))
     }
 
     /// The toast the flow closes with; nil when nothing was saved.
@@ -156,13 +156,21 @@ struct CaptureFlowView: View {
 
     @ViewBuilder private func content(for result: CaptureResult) -> some View {
         let review = review(for: result)
-        if result.kind.profile.opensVisitFlow, review.duplicateAttachmentID == nil, case .asset(let id) = review.destination {
-            AddVisitFlow(assetID: id, prefill: result) { receipt in
-                finish(receipt.map(CaptureFlowResult.visit(receipt:)) ?? .dismissed)
+        if review.duplicateAttachmentID == nil, case .asset(let id) = review.destination,
+           result.kind.profile.opensVisit(into: visitKind(of: id)) {
+            AddVisitFlow(assetID: id, prefill: result) { toast in
+                finish(toast.map { .visitSaved(toast: $0) } ?? .dismissed)
             }
         } else {
             reviewView(review)
         }
+    }
+
+    /// What visits the section's category logs (`CategoryBehavior.visit`).
+    private func visitKind(of assetID: UUID) -> VisitKind {
+        guard let asset = assets.first(where: { $0.id == assetID }),
+              let template = try? TemplateStore(context: context).template(forKey: asset.templateKey) else { return .none }
+        return template.behavior.visit
     }
 
     private func review(for result: CaptureResult) -> CaptureReview {
