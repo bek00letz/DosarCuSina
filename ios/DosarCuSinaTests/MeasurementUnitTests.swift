@@ -122,7 +122,7 @@ struct MeasurementUnitTests {
         custom.blueprintsData = Data(String(decoding: try #require(custom.blueprintsData), as: UTF8.self).replacingOccurrences(of: #""unit":"m3""#, with: #""unit":"m³""#).utf8)
         let boiler = Asset(name: "Centrală Apartament", templateKey: custom.key)
         context.insert(boiler)
-        let deadline = Obligation(title: "Verificare", kind: .maintenance, completion: .ownService, dueDay: CalendarDay("2027-01-10"),
+        let deadline = Obligation(title: "Verificare", kind: .maintenance, dueDay: CalendarDay("2027-01-10"),
                                   recurrence: .metric(every: 500, unit: gas, fallback: .years(1)))
         deadline.recurrenceData = Data(#"{"every":500,"fallbackEvery":1,"fallbackUnit":"year","type":"metric","unit":"mc"}"#.utf8)
         context.insert(deadline)
