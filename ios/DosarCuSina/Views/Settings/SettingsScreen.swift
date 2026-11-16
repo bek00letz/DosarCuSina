@@ -2,9 +2,10 @@ import SwiftUI
 import SwiftData
 import UserNotifications
 
-/// Where Settings opens: the section a link asks for, kept at the top while the list lays
-/// itself out (rows measuring themselves, a status read late), until the person scrolls.
-/// Waits for the list, never for a guessed pause. Pure, so it is tested.
+/// Where the earlier Settings list (`SettingsListScreen`) opens: the section a link asks for,
+/// kept at the top while the list lays itself out (rows measuring themselves, a status read
+/// late), until the person scrolls. Waits for the list, never for a guessed pause. Pure, so it is
+/// tested. The pages' Settings lands with `SettingsPage.path(for:)` instead.
 struct SettingsLanding: Equatable {
     /// The section to keep at the top; nil once the person has scrolled, or with no link.
     private(set) var section: SettingsSection?
@@ -24,8 +25,10 @@ struct SettingsLanding: Equatable {
     }
 }
 
-/// Settings, in plain words. Opens at a section when a link asks for one.
-struct SettingsScreen: View {
+/// The earlier Settings: every section stacked in one long list. Switched off
+/// (`SettingsScreen.usesPages`) and kept as the way back until the owner has used the short list
+/// of pages; it shows the same sections, so nothing in it drifts.
+struct SettingsListScreen: View {
     let initialSection: SettingsSection?
 
     @Environment(\.dismiss) private var dismiss
@@ -92,7 +95,7 @@ struct SettingsScreen: View {
 
 // MARK: - Notificări
 
-private struct NotificationSettings: View {
+struct NotificationSettings: View {
     @Environment(\.sideEffects) private var sideEffects
     @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var scenePhase
@@ -167,7 +170,7 @@ private struct NotificationSettings: View {
 /// it off. Turning the app lock on asks too, so the person knows Face ID opens it; a section's
 /// lock goes on at once. When this device's locks couldn't be read, every section stays locked and
 /// the list says so, with one way to keep them (`LocksNotReadNotice`).
-private struct LockSettings: View {
+struct LockSettings: View {
     @Environment(\.modelContext) private var context
     @Environment(BiometricVaultManager.self) private var vault
     @Environment(AppPreferences.self) private var preferences
@@ -305,7 +308,7 @@ private struct LocksNotReadNotice: View {
 
 /// Whether sections, deadlines and documents appear in Spotlight. Off deletes the app's
 /// whole index; the coordinator does it after the preference changes (`SpotlightIndexer`).
-private struct SpotlightSettings: View {
+struct SpotlightSettings: View {
     @Environment(AppPreferences.self) private var preferences
     @Environment(BiometricVaultManager.self) private var vault
 
@@ -329,7 +332,7 @@ private struct SpotlightSettings: View {
 /// (`SyncWording.status`): no iCloud account, another account, iCloud full, sync that didn't start.
 /// A copy kept before switching accounts is offered until it is brought in or deleted.
 /// Shown only where the build syncs (`PersistenceController.SyncState`).
-private struct ICloudSyncSettings: View {
+struct ICloudSyncSettings: View {
     @Environment(AppPreferences.self) private var preferences
     @Environment(AppNavigator.self) private var navigator
     @Environment(\.scenePhase) private var scenePhase
@@ -478,7 +481,7 @@ private struct KeptCopyRow: View {
 
 // MARK: - Secțiuni
 
-private struct SectionVisibilitySettings: View {
+struct SectionVisibilitySettings: View {
     @Environment(\.modelContext) private var context
     @Query(sort: [SortDescriptor(\CategoryTemplate.homeOrder)]) private var templates: [CategoryTemplate]
     @Query private var assets: [Asset]
@@ -537,7 +540,7 @@ private struct SectionVisibilitySettings: View {
 
 /// The person's own categories, each opening its name, symbol and switches
 /// (`CategoryEditSheet`). Built-in categories behave as they always do, so they aren't here.
-private struct CustomCategorySettings: View {
+struct CustomCategorySettings: View {
     @Binding var toast: DSToast?
     @Query(sort: [SortDescriptor(\CategoryTemplate.homeOrder)]) private var templates: [CategoryTemplate]
     @State private var editing: CategoryTemplate?
@@ -575,12 +578,11 @@ private struct CustomCategorySettings: View {
 
 // MARK: - Exemple
 
-private struct ExampleSettings: View {
+struct ExampleSettings: View {
     /// Settings' toast: removing the examples can be taken back from it.
     @Binding var toast: DSToast?
     @Environment(\.modelContext) private var context
     @Query(filter: #Predicate<Asset> { $0.isExample }) private var examples: [Asset]
-    @State private var isConfirmingRemoval = false
     @State private var isLoading = false
     @State private var error: UserFacingError?
     @State private var doneCount = 0
@@ -599,9 +601,8 @@ private struct ExampleSettings: View {
                 }
                 .disabled(isLoading || !persistence.examplesMayLoad)
             } else {
-                Button(role: .destructive) {
-                    isConfirmingRemoval = true
-                } label: {
+                // The same step as the binder's, taken back from its toast, so it asks nothing first.
+                Button(role: .destructive, action: remove) {
                     Label { Text("Șterge exemplele", comment: "Removes example data.") } icon: { Image(systemName: "trash") }
                         .frame(minHeight: 44)
                 }
@@ -614,12 +615,6 @@ private struct ExampleSettings: View {
             } else {
                 Text("Exemplele arată cum arată un dosar plin. Sunt marcate „Exemplu”, nu trimit amintiri și pleacă dintr-o atingere. Ce ai adăugat tu rămâne.", comment: "Footer of the examples setting.")
             }
-        }
-        .confirmationDialog(Text("Ștergi exemplele?", comment: "Confirmation title."), isPresented: $isConfirmingRemoval, titleVisibility: .visible) {
-            Button(role: .destructive, action: remove) { Text("Șterge exemplele", comment: "Removes example data.") }
-            Button(role: .cancel) {} label: { Text("Păstrează", comment: "Cancel a delete.") }
-        } message: {
-            Text("Pleacă doar ce e marcat „Exemplu”.", comment: "Confirmation message when removing examples.")
         }
         .sensoryFeedback(.success, trigger: doneCount)
         .userErrorAlert($error)
@@ -641,13 +636,8 @@ private struct ExampleSettings: View {
 
     private func remove() {
         do {
-            let removed = try ExampleDataService(context: context).removeExamples()
             // The toast brings its own haptic, and "Anulează" brings every example back.
-            toast = .undoDeletion(removed.value.isEmpty
-                ? LocalizedStringResource("Am șters exemplele.", comment: "Toast after removing the examples.")
-                : LocalizedStringResource("Am șters exemplele. Ce ai pus tu în ele a rămas al tău.",
-                                          comment: "Toast after removing the examples, some kept because the person added to them."),
-                receipt: removed.receipt)
+            toast = try ExampleRemoval.remove(in: context)
         } catch {
             self.error = UserFacingError(error)
         }
@@ -656,7 +646,7 @@ private struct ExampleSettings: View {
 
 // MARK: - Spațiu ocupat
 
-private struct StorageSettings: View {
+struct StorageSettings: View {
     @Environment(\.modelContext) private var context
     @State private var report: StorageReport?
     @State private var isConfirmingCompaction = false
@@ -748,7 +738,7 @@ enum AboutWording {
     }
 }
 
-private struct AboutSettings: View {
+struct AboutSettings: View {
     @State private var isShowingGallery = false
 
     var body: some View {

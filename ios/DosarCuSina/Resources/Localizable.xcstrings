@@ -88,6 +88,64 @@
         }
       }
     },
+    "%lld categorii": {
+      "comment": "A number of categories, with Romanian plural forms (o categorie).",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "o categorie"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld categorii"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de categorii"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld categorii ascunse": {
+      "comment": "Settings row: how many categories are hidden from the binder, with Romanian plural forms (o categorie ascunsă).",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "O categorie ascunsă"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld categorii ascunse"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de categorii ascunse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld contacte": {
       "comment": "Agenda box: how many people and firms are saved.",
       "localizations": {
@@ -255,6 +313,35 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld de lucruri de rezolvat"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld lucruri de verificat": {
+      "comment": "Settings row: how many things wait in the repair list, with Romanian plural forms (un lucru de verificat).",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Un lucru de verificat"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld lucruri de verificat"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de lucruri de verificat"
                 }
               }
             }
@@ -458,6 +545,35 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld de secțiuni nu și-au găsit locul din copie și sunt acum direct în dosar."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld sugestii pentru dosar": {
+      "comment": "Urmează, Din timp: how many suggestions wait for the binder, with Romanian plural forms (O sugestie pentru dosar).",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "O sugestie pentru dosar"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld sugestii pentru dosar"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de sugestii pentru dosar"
                 }
               }
             }

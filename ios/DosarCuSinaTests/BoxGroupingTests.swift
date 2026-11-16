@@ -109,13 +109,13 @@ struct BoxGroupingTests {
             .init(id: fern, templateKey: "plants", isTopLevel: false, createdAt: noon("2026-03-01")),
             .init(id: basil, templateKey: "plants", isTopLevel: true, createdAt: noon("2026-03-02")),
         ]
-        let order = BinderLayout.defaultOrder(templates: templates, assets: assets)
+        let order = BinderLayout.defaultOrder(templates: templates, assets: assets, hasContacts: true)
         #expect(order == [.category("vehicle"), .asset(flat), .category("plants"), .agenda],
                 "One box per grouped category, a plant in a home counted too; none for a category with nothing in it")
 
         var separate = templates
         separate[0].groupsSections = false
-        #expect(Array(BinderLayout.defaultOrder(templates: separate, assets: assets).prefix(2)) == [.asset(car1), .asset(car2)])
+        #expect(Array(BinderLayout.defaultOrder(templates: separate, assets: assets, hasContacts: true).prefix(2)) == [.asset(car1), .asset(car2)])
     }
 
     @Test func theOneBoxStandsWhereTheFirstOfItsSectionsStoodAndGivesThemBack() {
@@ -235,7 +235,7 @@ struct BoxGroupingTests {
         var scan = DataRepairScan(context: context, calendar: calendar)
         let findings = try SectionsIntoTheirHomeStep().findings(&scan)
         #expect(findings.count == 2, "One for each plant of the person's own, examples left as they are")
-        #expect(findings.allSatisfy { $0.isFixable })
+        #expect(!findings.contains { !$0.isFixable }, "Each one can be moved")
         #expect(findings.contains { $0.message == "Trec „Ferigă” la „Apartament Exemplu”? Apare pe pagina locuinței și rămâne în „Plante”." })
 
         let changed = fern.updatedAt

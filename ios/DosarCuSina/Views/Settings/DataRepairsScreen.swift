@@ -3,17 +3,35 @@ import SwiftUI
 
 /// The repair list: each thing an earlier version saved wrongly, in plain words, with
 /// "Corectează" and "Lasă așa", one by one or all of one kind. Nothing changes without a tap,
-/// and "Lasă așa" is remembered.
+/// and "Lasă așa" is remembered. The suggestions' page (`SuggestionsScreen`) is the same list
+/// over the suggestions (`DataRepairStep.isSuggestion`), each with its step's own verb.
 struct DataRepairsScreen: View {
+    /// Which findings the page lists.
+    enum Listing {
+        /// Data an earlier version saved wrongly: Setări › Date de verificat.
+        case corrections
+        /// What the app can now do better with what is there: Urmează › Din timp.
+        case suggestions
+    }
+
+    var listing: Listing = .corrections
+
     @Environment(\.modelContext) private var context
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var center = DataRepairCenter.shared
     @State private var error: UserFacingError?
     @State private var doneCount = 0
 
+    private var groups: [(title: String, findings: [DataRepairFinding])] {
+        switch listing {
+        case .corrections: center.groups
+        case .suggestions: center.suggestionGroups
+        }
+    }
+
     var body: some View {
         List {
-            ForEach(center.groups, id: \.title) { group in
+            ForEach(groups, id: \.title) { group in
                 Section {
                     ForEach(group.findings) { finding in
                         DataRepairRow(finding: finding, apply: { apply([finding]) }, dismiss: { dismiss([finding]) })
@@ -26,7 +44,10 @@ struct DataRepairsScreen: View {
                             Menu {
                                 if group.findings.contains(where: \.isFixable) {
                                     Button { apply(group.findings.filter(\.isFixable)) } label: {
-                                        Text("Corectează toate", comment: "Applies every repair of one kind.")
+                                        switch listing {
+                                        case .corrections: Text("Corectează toate", comment: "Applies every repair of one kind.")
+                                        case .suggestions: Text("Fă-le pe toate", comment: "Applies every suggestion of one kind.")
+                                        }
                                     }
                                 }
                                 Button { dismiss(group.findings) } label: {
@@ -44,16 +65,29 @@ struct DataRepairsScreen: View {
             }
         }
         .overlay {
-            if center.pending.isEmpty {
-                DSEmptyState("Totul arată bine", systemImage: "checkmark.seal",
-                             message: "Nu am găsit nimic salvat greșit de o versiune mai veche.")
+            if groups.isEmpty {
+                switch listing {
+                case .corrections:
+                    DSEmptyState("Totul arată bine", systemImage: "checkmark.seal",
+                                 message: "Nu am găsit nimic salvat greșit de o versiune mai veche.")
+                case .suggestions:
+                    DSEmptyState("Nicio sugestie acum", systemImage: "lightbulb",
+                                 message: "Când dosarul poate fi ținut mai simplu, îți spun aici.")
+                }
             }
         }
-        .navigationTitle(Text("Date de verificat", comment: "Title of the repair list."))
+        .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
         .task { refresh() }
         .sensoryFeedback(.success, trigger: doneCount)
         .userErrorAlert($error)
+    }
+
+    private var title: Text {
+        switch listing {
+        case .corrections: Text("Date de verificat", comment: "Title of the repair list.")
+        case .suggestions: Text("Sugestii", comment: "Title of the page of suggestions for the binder, opened from Urmează.")
+        }
     }
 
     private func refresh() {
@@ -86,7 +120,14 @@ struct DataRepairsScreen: View {
     }
 }
 
-/// One finding: what looks wrong, as a question, and its two answers.
+/// The suggestions for the binder, opened from their note in Urmează › Din timp.
+struct SuggestionsScreen: View {
+    var body: some View {
+        DataRepairsScreen(listing: .suggestions)
+    }
+}
+
+/// One finding: what looks wrong (or could be better), as a question, and its two answers.
 private struct DataRepairRow: View {
     let finding: DataRepairFinding
     let apply: () -> Void
@@ -105,7 +146,8 @@ private struct DataRepairRow: View {
     @ViewBuilder private var buttons: some View {
         if finding.isFixable {
             Button(action: apply) {
-                Text("Corectează", comment: "Applies one repair from the repair list.")
+                // The step's own verb: "Corectează" for a correction, "Mută" for a plant.
+                Text(verbatim: DataRepairs.step(finding.step).applyTitle)
                     .lineLimit(1)
                     .frame(minHeight: 44)
             }
@@ -128,7 +170,8 @@ private struct DataRepairRow: View {
     }
 }
 
-/// The row in Settings that opens the repair list, with how many things wait.
+/// The row in Settings that opens the repair list, with how many things wait. Used by the
+/// earlier Settings list (`SettingsListScreen`), kept as the way back.
 struct DataRepairSettings: View {
     @Binding var isShowingList: Bool
     @State private var center = DataRepairCenter.shared
@@ -158,9 +201,11 @@ struct DataRepairSettings: View {
 }
 
 extension View {
-    /// The calm prompt after launch or an import, when the repair list has something new:
+    /// The calm prompt after launch or an import, when the repair list has a new correction:
     /// "Am găsit date de verificat", the first thing in words, "Arată-mi" or "Mai târziu".
-    /// Shown only when nothing else is in front (no sheet, no lock, onboarding done).
+    /// Shown only when nothing else is in front (no sheet, no lock, onboarding done), once per
+    /// finding. Never for a suggestion (`DataRepairCenter.announcement` holds corrections only):
+    /// those wait quietly in Urmează › Din timp.
     func dataRepairPrompt(isAllowed: Bool, onShow: @escaping () -> Void) -> some View {
         modifier(DataRepairPromptModifier(isAllowed: isAllowed, onShow: onShow))
     }

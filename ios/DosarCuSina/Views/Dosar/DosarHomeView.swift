@@ -87,21 +87,30 @@ struct DosarHomeView: View {
     private var grid: some View {
         let model = BinderBoxes(templates: templates, assets: assets, providerCount: providers.count, vault: vault, context: context)
         let order = layout.order(defaults: model.defaultOrder)
-        return LazyVGrid(columns: columns, spacing: DS.Space.s) {
-            ForEach(order, id: \.self) { id in
-                if let box = model.box(for: id) {
-                    boxView(box, order: order)
+        return VStack(spacing: 0) {
+            LazyVGrid(columns: columns, spacing: DS.Space.s) {
+                ForEach(order, id: \.self) { id in
+                    if let box = model.box(for: id) {
+                        boxView(box, order: order)
+                    }
                 }
+                // A category with nothing yet is folded in here, and named, so the binder still
+                // shows what it can hold; its box takes its place as soon as it holds something.
+                Button(action: addSection) {
+                    DSAddBox(title: "Adaugă o secțiune", detail: model.addBoxLine)
+                }
+                .buttonStyle(.dsPressable)
+                .accessibilityHint(Text("Alegi ce vrei să ții în dosar: o mașină, o casă, un animal.", comment: "VoiceOver hint of the add-section box."))
             }
-            Button(action: addSection) {
-                DSAddBox(title: "Adaugă o secțiune")
+            .padding(.top, DS.Space.xs)
+            .animation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion), value: order)
+            .sensoryFeedback(.selection, trigger: groupingChanges)
+            if ExampleRemoval.isOffered(assets: assets) {
+                BinderExamplesNotice(remove: removeExamples)
+                    .transition(.opacity)
             }
-            .buttonStyle(.dsPressable)
-            .accessibilityHint(Text("Alegi ce vrei să ții în dosar: o mașină, o casă, un animal.", comment: "VoiceOver hint of the add-section box."))
         }
-        .padding(.top, DS.Space.xs)
-        .animation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion), value: order)
-        .sensoryFeedback(.selection, trigger: groupingChanges)
+        .dsAnimation(value: ExampleRemoval.isOffered(assets: assets))
     }
 
     private func boxView(_ box: BinderBox, order: [BinderBoxID]) -> some View {
@@ -184,12 +193,21 @@ struct DosarHomeView: View {
             do {
                 try await ExampleDataService.loadExamples(from: context)
                 toast = DSToast(
-                    title: LocalizedStringResource("Am pus exemplele. Le ștergi oricând din Setări.", comment: "Toast after loading example data."),
+                    title: LocalizedStringResource("Am pus exemplele. Le ștergi oricând de la capătul dosarului.", comment: "Toast after loading example data: 'Șterge exemplele' is at the end of the binder."),
                     actionTitle: nil
                 )
             } catch {
                 self.error = UserFacingError(error)
             }
+        }
+    }
+
+    /// "Șterge exemplele" at the end of the binder: one undoable step, taken back from its toast.
+    private func removeExamples() {
+        do {
+            toast = try ExampleRemoval.remove(in: context)
+        } catch {
+            self.error = UserFacingError(error)
         }
     }
 }
@@ -260,6 +278,10 @@ struct BinderBoxes {
     private let providerCount: Int
     private let vault: BiometricVaultManager
 
+    /// What the add box names under its title: the categories folded into it, then what
+    /// "Adaugă o secțiune" offers (`SectionOffers`), „Acte, Garanții, Abonamente, Mașini…”.
+    let addBoxLine: String?
+
     init(templates: [CategoryTemplate], assets: [Asset], providerCount: Int, vault: BiometricVaultManager, context: ModelContext) {
         var byKey: [String: CategoryTemplate] = [:]
         for template in templates where byKey[template.key] == nil { byKey[template.key] = template }
@@ -269,10 +291,14 @@ struct BinderBoxes {
         self.providerCount = providerCount
         self.vault = vault
         snapshots = (try? ObligationSnapshot.fetchAll(in: context)) ?? []
-        defaultOrder = BinderLayout.defaultOrder(
-            templates: byKey.values.map { .init(key: $0.key, homeOrder: $0.homeOrder, isOnHome: $0.isOnHome, box: $0.behavior.box, groupsSections: $0.groupsSections) },
-            assets: assets.map(BinderLayout.AssetInfo.init)
-        )
+        let infos = byKey.values.map { BinderLayout.TemplateInfo($0) }
+        let assetInfos = assets.map(BinderLayout.AssetInfo.init)
+        defaultOrder = BinderLayout.defaultOrder(templates: infos, assets: assetInfos, hasContacts: providerCount > 0)
+        addBoxLine = BinderLayout.addBoxLine(BinderLayout.addBoxNames(
+            offered: SectionOffers(Array(byKey.values)).inOrder.map { BinderLayout.TemplateInfo($0) },
+            templates: infos,
+            assets: assetInfos
+        ))
     }
 
     /// The sections of a category, wherever they are filed.
@@ -324,7 +350,8 @@ struct BinderBoxes {
                     groupingOffer: template.groupingOffer(sections: all.count)
                 )
             }
-            let members = Set(assets.filter { $0.templateKey == key || belongsToCategory($0, key) }.map(\.id))
+            let info = BinderLayout.TemplateInfo(template)
+            let members = Set(assets.filter { BinderLayout.holds(info, assetOf: templatesByKey[$0.templateKey].map { BinderLayout.TemplateInfo($0) }, assetKey: $0.templateKey) }.map(\.id))
             let status = BoxStatus.make(snapshots.filter { $0.assetId.map(members.contains) ?? false })
             return BinderBox(
                 id: id,
@@ -332,6 +359,8 @@ struct BinderBoxes {
                 symbol: template.symbol,
                 tint: template.tintColor,
                 photo: nil,
+                // Folded into the add box while it holds nothing (`BinderLayout.defaultOrder`); shown
+                // empty only while it holds just the people its documents will go under.
                 statusText: all.isEmpty ? String(localized: "Gol deocamdată", comment: "Box status when a category box holds nothing yet.") : status.line(isSensitive: isLocked),
                 tone: all.isEmpty ? .neutral : status.tone,
                 isExample: !all.isEmpty && all.allSatisfy(\.isExample),
@@ -353,10 +382,12 @@ struct BinderBoxes {
             )
         }
     }
+}
 
-    /// A person's own deadlines count towards the box their personal documents live in (Acte).
-    private func belongsToCategory(_ asset: Asset, _ key: String) -> Bool {
-        templatesByKey[key]?.behavior.role == .personalDocument && templatesByKey[asset.templateKey]?.behavior.role == .holder
+extension BinderLayout.TemplateInfo {
+    init(_ template: CategoryTemplate) {
+        self.init(key: template.key, homeOrder: template.homeOrder, isOnHome: template.isOnHome, box: template.behavior.box,
+                  groupsSections: template.groupsSections, role: template.behavior.role, name: template.name)
     }
 }
 
@@ -407,7 +438,7 @@ struct DosarEmptyState: View {
             if !binderMayBeArriving {
                 DSSecondaryButton("Încarcă exemple", systemImage: "sparkles", action: loadExamples)
                     .disabled(isLoading)
-                Text("Exemplele sunt marcate și le ștergi dintr-o atingere, din Setări.", comment: "Footnote under the load examples button.")
+                Text("Exemplele sunt marcate și le ștergi dintr-o atingere, de la capătul dosarului.", comment: "Footnote under the load examples button.")
                     .dsFont(.footnote)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)

@@ -21,8 +21,10 @@ struct UpcomingRoot: View {
 
     @State private var snapshots: [ObligationSnapshot] = []
     @State private var digest: AttentionDigest?
-    /// Calm notes with nothing due: a bill that hasn't come.
+    /// Calm notes with nothing due: a bill that hasn't come. The suggestions' note joins them
+    /// as they are drawn, from the repair registry's suggestions.
     @State private var notes: [AttentionNote] = []
+    @State private var repairs = DataRepairCenter.shared
     /// Reminder buttons and widget taps that couldn't be saved, while their cycle is still open.
     @State private var unsaved: [OutsideActionFailures.Failure] = []
     @State private var today = CalendarDay(Date())
@@ -43,6 +45,7 @@ struct UpcomingRoot: View {
                 switch destination {
                 case .later: UpcomingFullList(mode: .later)
                 case .hidden: UpcomingFullList(mode: .hidden)
+                case .suggestions: SuggestionsScreen()
                 }
             }
         .dsToast($toast)
@@ -138,9 +141,13 @@ struct UpcomingRoot: View {
                         sectionHeader("Curând", subtitle: "În următoarele 30 de zile")
                     }
                 }
-                if !notes.isEmpty {
+                let calm = AttentionModel.calmNotes(
+                    missingBills: notes,
+                    suggestions: AttentionModel.suggestionNote(count: repairs.suggestions.count, topics: repairs.suggestionTopics)
+                )
+                if !calm.isEmpty {
                     Section {
-                        ForEach(notes) { note in noteRow(note) }
+                        ForEach(calm) { note in noteRow(note) }
                     } header: {
                         sectionHeader("Din timp", subtitle: "Nimic de plătit acum, doar de știut.")
                     }
@@ -163,13 +170,7 @@ struct UpcomingRoot: View {
                 } header: {
                     sectionHeader("Pregătește-te", subtitle: nil)
                 }
-                if snapshots.contains(where: \.isExample) {
-                    Section {
-                        Text("Unele termene sunt date de exemplu, marcate „Exemplu”. Le ștergi din Setări › Exemple.")
-                            .dsFont(.footnote)
-                            .listRowBackground(Color.clear)
-                    }
-                }
+                // Examples are marked on each row; "Șterge exemplele" is on the binder, where they are.
             }
             .listStyle(.insetGrouped)
             .dsAnimation(value: digest)
@@ -247,17 +248,31 @@ struct UpcomingRoot: View {
         return String(localized: "\(count), primul pe \(first)", comment: "Deadlines in a section, and the date of the first")
     }
 
-    /// A calm note: no badge, no alarm colour, opens the subscription.
+    /// A calm note: no badge, no alarm colour; opens the subscription, or the suggestions.
+    @ViewBuilder
     private func noteRow(_ note: AttentionNote) -> some View {
-        NavigationLink(value: AppRoute.asset(note.assetId)) {
-            DSListRow(
-                title: Text(verbatim: note.title),
-                subtitle: Text(verbatim: note.detail),
-                systemImage: "envelope.open",
-                trailing: { EmptyView() }
-            )
+        switch note.opens {
+        case .section(let id):
+            NavigationLink(value: AppRoute.asset(id)) {
+                DSListRow(
+                    title: Text(verbatim: note.title),
+                    subtitle: Text(verbatim: note.detail),
+                    systemImage: "envelope.open",
+                    trailing: { EmptyView() }
+                )
+            }
+            .accessibilityHint(Text("Deschide abonamentul.", comment: "VoiceOver hint of a missing-bill note."))
+        case .suggestions:
+            NavigationLink(value: UpcomingDestination.suggestions) {
+                DSListRow(
+                    title: Text(verbatim: note.title),
+                    subtitle: Text(verbatim: note.detail),
+                    systemImage: "lightbulb",
+                    trailing: { EmptyView() }
+                )
+            }
+            .accessibilityHint(Text("Deschide sugestiile. Alegi tu ce se schimbă.", comment: "VoiceOver hint of the suggestions note in Urmează."))
         }
-        .accessibilityHint(Text("Deschide abonamentul.", comment: "VoiceOver hint of a missing-bill note."))
     }
 
     /// A reminder button or widget tap that couldn't be saved: says which and where,
@@ -391,6 +406,8 @@ struct UpcomingRoot: View {
 enum UpcomingDestination: Hashable {
     case later
     case hidden
+    /// The suggestions for the binder, from their calm note in "Din timp".
+    case suggestions
 }
 
 /// One obligation in Urmează: the section it belongs to, what it is, and when in plain words.

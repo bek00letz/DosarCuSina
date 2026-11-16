@@ -106,7 +106,8 @@ struct CaptureKindProfileTests {
         custom.behavior = CategoryBehavior(box: .wholeCategory, listing: .byWarranty)
         let order = BinderLayout.defaultOrder(
             templates: [.init(key: custom.key, homeOrder: 0, isOnHome: true, box: custom.behavior.box)],
-            assets: [.init(id: UUID(), templateKey: custom.key, isTopLevel: true, createdAt: .now)]
+            assets: [.init(id: UUID(), templateKey: custom.key, isTopLevel: true, createdAt: .now)],
+            hasContacts: true
         )
         #expect(order == [.category(custom.key), .agenda], "One box for the whole category, like Garanții")
         #expect(StoredJSON.decode(CategoryBehavior.self, from: Data(#"{"box":"somethingNew","listing":"byHolder"}"#.utf8))
