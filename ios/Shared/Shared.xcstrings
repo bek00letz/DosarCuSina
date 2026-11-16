@@ -1,28 +1,39 @@
 {
-  "sourceLanguage": "ro",
-  "strings": {
-    "%lld ani": {
-      "comment": "A number of years, with Romanian plural forms.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "un an"
+  "sourceLanguage" : "ro",
+  "strings" : {
+    "%@ și %@" : {
+      "comment" : "A duration in months and weeks, e.g. '2 luni și 3 săptămâni'.\nA duration or an age in years and months, e.g. 'un an și 4 luni'.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ și %2$@"
+          }
+        }
+      }
+    },
+    "%lld ani" : {
+      "comment" : "A number of years, with Romanian plural forms.",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ani"
                 }
               },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld ani"
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "un an"
                 }
               },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld de ani"
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld de ani"
                 }
               }
             }
@@ -30,28 +41,28 @@
         }
       }
     },
-    "%lld luni": {
-      "comment": "A number of months, with Romanian plural forms.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "o lună"
+    "%lld luni" : {
+      "comment" : "A number of months, with Romanian plural forms.",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld luni"
                 }
               },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld luni"
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "o lună"
                 }
               },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld de luni"
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld de luni"
                 }
               }
             }
@@ -59,28 +70,28 @@
         }
       }
     },
-    "%lld săptămâni": {
-      "comment": "A number of weeks, with Romanian plural forms.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "o săptămână"
+    "%lld săptămâni" : {
+      "comment" : "A number of weeks, with Romanian plural forms.",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld săptămâni"
                 }
               },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld săptămâni"
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "o săptămână"
                 }
               },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld de săptămâni"
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld de săptămâni"
                 }
               }
             }
@@ -88,28 +99,28 @@
         }
       }
     },
-    "%lld zile": {
-      "comment": "A number of days, with Romanian plural forms: 1 zi, 2 zile, 20 de zile.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "o zi"
+    "%lld zile" : {
+      "comment" : "A number of days, with Romanian plural forms: o zi, 2 zile, 20 de zile.",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld zile"
                 }
               },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld zile"
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "o zi"
                 }
               },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld de zile"
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld de zile"
                 }
               }
             }
@@ -117,35 +128,92 @@
         }
       }
     },
-    "Am primit %lld acte": {
-      "comment": "After a share: how many documents arrived. One is a word: „Am primit un act”.",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Am primit un act"
+    "Am primit %lld acte" : {
+      "comment" : "After a share: how many documents arrived. One is a word: „Am primit un act”.",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Am primit %lld acte"
                 }
               },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Am primit %lld acte"
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Am primit un act"
                 }
               },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Am primit %lld de acte"
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Am primit %lld de acte"
                 }
               }
             }
           }
         }
       }
+    },
+    "Atinge notificarea ca să continui. Te așteaptă în aplicație, la De verificat." : {
+      "comment" : "Share sheet: a notice is on its way."
+    },
+    "Deschide Dosar cu Șină ca să continui. Te așteaptă la De verificat." : {
+      "comment" : "Share sheet: no notice, notifications aren't allowed."
+    },
+    "Deschide aplicația ca să le pui la locul lor." : {
+      "comment" : "Body of the notice after a share of several documents."
+    },
+    "Deschide aplicația ca să-l pui la locul lui." : {
+      "comment" : "Body of the notice after a share of one document."
+    },
+    "Fișierul e prea mare" : {
+      "comment" : "Share sheet: a file or the share is too large."
+    },
+    "Nu pot primi asta" : {
+      "comment" : "Share sheet: nothing it can read."
+    },
+    "Nu s-a trimis" : {
+      "comment" : "Share sheet: the copy failed."
+    },
+    "Pot primi poze, PDF-uri și text. Trimite factura sau actul ca poză sau PDF." : {
+      "comment" : "Share sheet: what it can read."
+    },
+    "Renunță" : {
+      "comment" : "Share sheet: stops copying what was shared and closes."
+    },
+    "Se trimite…" : {
+      "comment" : "Share sheet: copying what was shared."
+    },
+    "Te întorci în aplicație și vezi unde a ajuns." : {
+      "comment" : "Share sheet: the practice invoice, sent from inside the app."
+    },
+    "Telefonul nu mi-a dat fișierul. Încearcă din nou din aplicația din care l-ai trimis." : {
+      "comment" : "Share sheet: what to do after a failed copy."
+    },
+    "Trimite actele câte unul, sau ca poze în loc de un PDF mare." : {
+      "comment" : "Share sheet: what to do with a file that is too large."
+    },
+    "azi" : {
+      "comment" : "When: due today."
+    },
+    "depășit de %@" : {
+      "comment" : "When: late past its grace, by a duration such as '3 zile'."
+    },
+    "mâine" : {
+      "comment" : "When: due tomorrow."
+    },
+    "Închide" : {
+      "comment" : "Share sheet: closes the confirmation; what was shared is already in the app."
+    },
+    "în %@" : {
+      "comment" : "In a duration such as '5 zile' or '2 luni și 3 săptămâni'. A duration of one ('o lună', 'un an') is joined: 'într-o lună'."
+    },
+    "întârziat cu %@" : {
+      "comment" : "When: late, but within the accepted grace, by a duration such as '2 zile'."
     }
   },
-  "version": "1.0"
+  "version" : "1.0"
 }
