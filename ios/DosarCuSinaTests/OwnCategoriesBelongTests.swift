@@ -68,12 +68,15 @@ struct OwnCategoriesBelongTests {
         let context = try makeContext()
         let store = TemplateStore(context: context)
         let tools = try store.createCustom(name: "Unelte", symbol: "hammer", switches: .defaults)
-        let split = try store.createCustom(name: "Rulote", symbol: "car.side.rear.open", switches: .defaults)
+        let split = try store.createCustom(name: "Rulote", symbol: "car.side.rear.open", switches: CategorySwitches(hasBills: true))
+        let likeWarranties = try store.createCustom(name: "Scule", symbol: "wrench.and.screwdriver.fill", switches: .defaults)
         try UnitOfWork.perform(in: context) {
             // As an earlier version kept „O cutie pentru toate”.
             tools.behavior.box = .wholeCategory
             split.behavior.box = .wholeCategory
             split.chosenGrouping = .separate
+            // As a backup brings one that behaves like Garanții.
+            likeWarranties.behavior = CategoryBehavior(box: .wholeCategory, listing: .byWarranty)
             try UnitOfWork.save(context)
         }
         #expect(CategorySwitches(reading: tools).grouping == .grouped, "Read as one box until it is moved")
@@ -83,6 +86,13 @@ struct OwnCategoriesBelongTests {
         _ = try DataRepairs(context: context, calendar: calendar).detect()
         #expect(tools.behavior.box == .perSection && tools.chosenGrouping == .grouped && tools.groupsSections, "The same one box")
         #expect(split.behavior.box == .perSection && split.chosenGrouping == .separate, "A grouping chosen already stays")
+        #expect(split.behavior.role == .home, "Its bills' part stays")
+        #expect(likeWarranties.behavior.box == .wholeCategory, "One that behaves like Garanții keeps its box")
+        #expect(CategorySwitches(reading: likeWarranties).grouping == .grouped)
+        try store.editCustom(likeWarranties, name: "Scule", symbol: "wrench.and.screwdriver.fill", switches: CategorySwitches(grouping: .grouped), changingDeadlines: false)
+        #expect(likeWarranties.behavior.box == .wholeCategory, "Asked for one box, it keeps the one it has")
+        try store.editCustom(likeWarranties, name: "Scule", symbol: "wrench.and.screwdriver.fill", switches: CategorySwitches(grouping: .separate), changingDeadlines: false)
+        #expect(likeWarranties.behavior.box == .perSection && !likeWarranties.groupsSections, "Asked for a box each, it gets them")
         #expect(tools.updatedAt == changed, "Nothing anyone sees changed: no change time")
         let documents = try template(BuiltInTemplates.Key.documents, in: context)
         #expect(documents.behavior.box == .wholeCategory, "A built-in keeps the catalog's box")
@@ -145,7 +155,8 @@ struct OwnCategoriesBelongTests {
         // Still in its own box, wherever it is filed.
         #expect(tyres.hasBox(forSectionUnder: first))
         let assets = try context.fetch(FetchDescriptor<Asset>())
-        let order = BinderLayout.defaultOrder(templates: [BinderLayout.TemplateInfo(tyres)], assets: assets.map(BinderLayout.AssetInfo.init), hasContacts: false)
+        let order = BinderLayout.defaultOrder(templates: [BinderLayout.TemplateInfo(tyres)],
+                                              assets: assets.filter { $0.templateKey == tyres.key }.map(BinderLayout.AssetInfo.init), hasContacts: false)
         #expect(order == [.category(tyres.key)])
 
         // „Mută la…”: another of the same part, or on its own.

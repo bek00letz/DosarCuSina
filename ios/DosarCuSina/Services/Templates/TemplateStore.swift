@@ -258,8 +258,7 @@ public struct TemplateStore {
             definition.name = name
             definition.symbol = symbol
             template.apply(definition)
-            takeBoxAsGrouping(template)
-            if template.grouping != switches.grouping { try setGrouping(template, switches.grouping) }
+            try setBoxes(switches.grouping, of: template)
             try standOnTheirOwnWhereNoLongerBelonging(template)
             let rules = Self.serviceRules(of: definition)
             let actions = ObligationActions(context: context)
@@ -277,14 +276,34 @@ public struct TemplateStore {
     /// category (`CategoryBehavior.Box.wholeCategory`, "O cutie pentru toate" before it was the
     /// grouping): its box becomes one per section, grouped, which looks the same, so the one
     /// choice of one box is the grouping (`CategorySwitches.grouping`). A grouping already chosen
-    /// stays. Run by `OwnCategoryBoxesStep` and by `editCustom`; a built-in keeps the catalog's box.
-    /// Changes nothing anyone sees, and saves nothing itself.
+    /// stays. Only a box the switches wrote: a category of one's own that behaves like Garanții
+    /// (its list, its words, its part, brought by a backup) keeps its box, and a built-in the
+    /// catalog's. Run by `OwnCategoryBoxesStep` and by `editCustom`. Changes nothing anyone sees,
+    /// and saves nothing itself.
     @discardableResult
     func takeBoxAsGrouping(_ template: CategoryTemplate) -> Bool {
         guard !template.isBuiltIn, template.behavior.box == .wholeCategory else { return false }
+        // What the switches write, besides the box: a home's part for bills, nothing else.
+        var besidesTheBox = template.behavior
+        besidesTheBox.box = .perSection
+        if besidesTheBox.role == .home { besidesTheBox.role = nil }
+        guard besidesTheBox == .standard else { return false }
         template.behavior.box = .perSection
         if template.chosenGrouping == nil { template.chosenGrouping = .grouped }
         return true
+    }
+
+    /// One box or one each, as a category of one's own's switch answers it: its grouping
+    /// (`setGrouping`). A box of the whole category's that `takeBoxAsGrouping` leaves (one that
+    /// behaves like Garanții) stays while one box is asked, and becomes one per section when a
+    /// box each is. Saves nothing itself beyond the grouping's step.
+    private func setBoxes(_ grouping: BoxGrouping, of template: CategoryTemplate) throws {
+        takeBoxAsGrouping(template)
+        if template.behavior.box == .wholeCategory {
+            guard grouping == .separate else { return }
+            template.behavior.box = .perSection
+        }
+        if template.grouping != grouping { try setGrouping(template, grouping) }
     }
 
     /// The sections of `template` filed under one whose category doesn't play the part it may

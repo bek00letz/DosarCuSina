@@ -143,7 +143,7 @@ behave like a built-in one: `{"box": "wholeCategory", "listing": "byHolder", "ro
 "personalDocument"}`. All keys are optional; a missing key, or a value a reader
 doesn't know, reads as the default.
 
-- **`box`:** `perSection` (one box per top-level section, the default), `wholeCategory` (one box for the category: Acte, Garanții, Abonamente) or `insideOther` (no box: its sections live inside another). A custom category is always `perSection`, its one box being the household's `boxGrouping`; readers turn an older custom `wholeCategory` into `perSection` with `boxGrouping` `grouped` when none is chosen.
+- **`box`:** `perSection` (one box per top-level section, the default), `wholeCategory` (one box for the category: Acte, Garanții, Abonamente) or `insideOther` (no box: its sections live inside another). A custom category's one box is the household's `boxGrouping`: readers turn an older custom `wholeCategory` whose behaviour says nothing else (beside a `home` role) into `perSection` with `boxGrouping` `grouped` when none is chosen; one that also says a `listing`, words or another part keeps it.
 - **`listing`:** what the category's page lists: `plain` (the default), `byHolder`, `byWarranty` or `byMonthlyCost`.
 - **`role`:** the part it plays for other categories: `holder` (people documents are filed under), `personalDocument`, `subscription` (ongoing contracts bills file into), `home` (where contracts tied to an address live) or `vehicle` (a car; from catalog 18). `home`, `vehicle` and `holder` hold sections of other categories (`mayBelongTo`).
 - **`parentPocket`:** the pocket of a parent's page its sections show in (`tenants`, `products`, `subscriptions`, `plants`).
