@@ -66,7 +66,7 @@ struct SettingsGridSuggestionsTests {
         #expect(SettingsStatus.dosarScreen(hiddenCategories: 1) == "O categorie ascunsă")
         #expect(SettingsStatus.dosarScreen(hiddenCategories: 3) == "3 categorii ascunse")
 
-        #expect(SettingsStatus.iCloud(sync: .on, health: .upToDate, isStopping: false) == "Totul e sincronizat")
+        #expect(SettingsStatus.iCloud(sync: .on, health: .upToDate(.now), isStopping: false) == "Totul e sincronizat")
         #expect(SettingsStatus.iCloud(sync: .noAccount, health: nil, isStopping: false) == "Nu ești conectat la iCloud")
         #expect(SettingsStatus.iCloud(sync: .off, health: nil, isStopping: false) == "Doar pe telefon")
         #expect(SettingsStatus.iCloud(sync: .notInThisBuild, health: nil, isStopping: false) == "Doar pe telefon")
@@ -167,7 +167,7 @@ struct SettingsGridSuggestionsTests {
     // MARK: Suggestions
 
     @Test func onlyThePlantStepIsASuggestion() {
-        #expect(DataRepairs.steps.filter(\.isSuggestion).map { type(of: $0).id } == [.sectionsIntoTheirHome])
+        #expect(DataRepairs.steps.filter { $0.isSuggestion }.map { type(of: $0).id } == [.sectionsIntoTheirHome])
         #expect(DataRepairs.step(.sectionsIntoTheirHome).applyTitle == "Mută")
         #expect(DataRepairs.step(.counterOutliers).applyTitle == "Corectează")
     }
