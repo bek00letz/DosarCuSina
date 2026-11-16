@@ -143,7 +143,7 @@ struct CategorySwitchesTests {
     func otherDataStays() {
         let older = TemplateDefinition(key: "custom.old", name: "Unelte", symbol: "hammer", tint: .orange,
                                        sections: [FieldSection(key: "tool", title: "Unealtă", fields: [FieldDefinition(key: "tool.serial", label: "Serie", type: .text)])],
-                                       blueprints: [ObligationBlueprint(key: "tool.check", title: "Verificare", kind: .maintenance, recurrence: .interval(.years(1), anchor: .completion))],
+                                       blueprints: [ObligationBlueprint(key: "tool.check", title: "Verificare", kind: .maintenance, completion: .ownService, recurrence: .interval(.years(1), anchor: .completion))],
                                        pockets: [.upcoming, .products, .keyFacts], behavior: .standard)
         let changed = CategorySwitches(hasDocuments: true, hasBills: true, service: CategorySwitches.Service(.kilometres), belongsTo: .vehicle, grouping: .grouped).applied(to: older)
         #expect(changed.pockets == [.upcoming, .products, .subscriptions, .documents, .keyFacts])

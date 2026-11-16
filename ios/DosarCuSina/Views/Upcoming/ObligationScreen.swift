@@ -242,7 +242,7 @@ private struct ObligationPage: View {
         if obligation.status == .active {
             // What completing asks is the kind's: a chore is done in one tap, the rest open the
             // sheet, the same entry as Urmează's swipe and menu (`CompletionEntry`).
-            let shape = obligation.kind.completion
+            let shape = obligation.completion(template: template?.definition)
             VStack(spacing: DS.Space.s) {
                 DSPrimaryButton(shape.actionTitle, systemImage: "checkmark") {
                     startCompleting()

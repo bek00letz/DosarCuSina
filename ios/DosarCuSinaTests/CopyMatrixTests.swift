@@ -129,22 +129,61 @@ struct CopyMatrixTests {
 
     // MARK: „Gata” and „Am rezolvat”
 
+    /// What each of a category's deadlines states about closing it; one that states none
+    /// (`everyDeadlineStatesItsCompletion` fails then) is shown as it would read.
+    static func completionKind(_ blueprint: ObligationBlueprint) -> CompletionKind {
+        blueprint.completion ?? .own(blueprint.kind)
+    }
+
+    /// The counter closing a deadline asks, by its title, where the category keeps one: the
+    /// section's own (work on a vehicle), or only the one the deadline counts on (work at home).
+    static func counterTitle(_ blueprint: ObligationBlueprint, in definition: TemplateDefinition) -> String? {
+        let own = HouseholdMutations.heroMetricField(of: definition)
+        switch completionKind(blueprint).shape.counter {
+        case nil:
+            return nil
+        case .section?:
+            if case .metric(_, let unit, _) = blueprint.recurrence { return own?.unit == unit ? own?.label : unit.label }
+            return own?.label
+        case .countedOn?:
+            guard case .metric(_, let unit, _) = blueprint.recurrence else { return nil }
+            return own?.unit == unit ? own?.label : unit.label
+        }
+    }
+
     /// What closing each of a category's deadlines asks, in its kind's words.
     static func completionRows(_ definition: TemplateDefinition) -> [(String, String)] {
         definition.blueprints.map { blueprint in
-            let shape = blueprint.kind.completion
+            let kind = completionKind(blueprint)
+            let shape = kind.shape
             var asks: [String] = []
             if shape.isOneTap { asks.append("nothing: done today, „Adaugă o notă” after") }
-            if shape.asksDate { asks.append("Când") }
+            if shape.asksDate { asks.append(CompletionWording.when) }
             if let cost = shape.cost { asks.append(cost.words) }
             if let paper = shape.paper {
-                asks.append("\(paper.headerWords) (\(paper.purposeWords)) — \(paper.actionWords): \(paper.exampleWords)")
+                asks.append("\(paper.headerWords) (\(paper.purposeWords)) — \(paper.actionWords): \(paper.exampleWords) "
+                            + "[\(paper.readingWords) / \(paper.readWords) / \(paper.unreadWords) / \(paper.noDateKeptWords)]")
             }
-            if shape.asksNewExpiry { asks.append("the new expiry") }
-            if shape.asksNote { asks.append("a note") }
-            if shape.asksReading, HouseholdMutations.heroMetricField(of: definition) != nil { asks.append("the counter") }
-            return ("\(blueprint.title) (\(blueprint.kind.rawValue))", "\(shape.actionWords) / \(shape.menuWords) — " + asks.joined(separator: "; "))
+            if let newEnd = shape.newEnd { asks.append("\(newEnd.label) — \(CompletionWording.newEndFootnote)") }
+            if let note = shape.note { asks.append("\(CompletionWording.note) — \(note.prompt)") }
+            if let counter = counterTitle(blueprint, in: definition) { asks.append(counter) }
+            return ("\(blueprint.title) (`\(kind.rawValue)`)", "\(shape.actionWords) / \(shape.menuWords) — " + asks.joined(separator: "; "))
         }
+    }
+
+    /// „Am rezolvat”'s frame, the same for every deadline.
+    static var completionSharedRows: [(String, String)] {
+        [
+            ("Its title", CompletionWording.title("ITP")),
+            ("Where the photo comes from", "\(CompletionWording.photos) · \(CompletionWording.files) · \(CompletionWording.cancel) · \(CompletionWording.anotherPhoto)"),
+            ("Not read", CompletionWording.unreadMessage),
+            ("A bill read", "\(CompletionWording.billRead) — \(CompletionWording.billLogged(in: "Gaze"))"),
+            ("Read, with its next date", CompletionWording.nextDeadline(sampleDay)),
+            ("What it cost last time", CompletionWording.lastCost(sampleSum)),
+            ("The button", CompletionWording.save),
+            ("Not saved", "\(CompletionWording.notSaved) · \(CompletionWording.photoDidNotOpen)"),
+            ("The toast", "\(String(localized: CompletionWording.done("ITP", next: sampleDay))) / \(String(localized: CompletionWording.done("ITP"))) Anulează"),
+        ]
     }
 
     // MARK: The file
@@ -186,7 +225,10 @@ struct CopyMatrixTests {
                 out += "No visits: offered nowhere, and Istoric adds nothing by hand.\n"
             }
         }
-        out += "\n## „Gata” and „Am rezolvat”\n"
+        out += "\n## „Gata” and „Am rezolvat”\n\n### What every deadline shares\n\n" + table(completionSharedRows) + "\n"
+        out += "\n### The household's own (`HouseholdRules`)\n\n" + table(completionRows(TemplateDefinition(
+            key: "household", name: "Gospodărie", summary: "", symbol: "house", tint: .gray, sections: [],
+            blueprints: HouseholdRules.blueprints, behavior: CategoryBehavior(visit: .none)))) + "\n"
         for category in categories where !category.definition.blueprints.isEmpty {
             out += "\n### \(category.title)\n\n" + table(completionRows(category.definition)) + "\n"
         }
@@ -219,6 +261,79 @@ struct CopyMatrixTests {
             let words = Self.visitRows(form).map(\.1).joined(separator: " ")
             let tokens = Set(RomanianText.fold(words).split { !$0.isLetter }.map(String.init))
             #expect(tokens.isDisjoint(with: Self.vehicleWords), "\(category.title): \(tokens.intersection(Self.vehicleWords).sorted())")
+        }
+    }
+
+    @Test("Every deadline states what closing it asks")
+    func everyDeadlineStatesItsCompletion() throws {
+        for category in try Self.categories() {
+            for blueprint in category.definition.blueprints {
+                #expect(blueprint.completion != nil, "\(category.title): \(blueprint.title) states no completion")
+            }
+        }
+    }
+
+    /// The object pronoun a paper's noun takes, and the subject one: „Îl păstrez … pe el”.
+    static func pronouns(_ gender: CompletionShape.Paper.Gender) -> (object: String, subject: String) {
+        switch gender {
+        case .masculine: ("il", "el")
+        case .feminine: ("o", "ea")
+        case .plural: ("le", "ele")
+        }
+    }
+
+    @Test("A paper's sentences agree with its noun: „O păstrez” for „Chitanța”, „Îl păstrez” for „Raportul”")
+    func papersAgreeWithTheirNouns() {
+        let subjects: Set<String> = ["el", "ea", "ele"]
+        let objects: Set<String> = ["il", "o", "le"]
+        for kind in CompletionKind.allCases {
+            guard let paper = kind.shape.paper else { continue }
+            let (object, subject) = Self.pronouns(paper.gender)
+            for sentence in [paper.purposeWords, paper.noDateWords, paper.noDateKeptWords] {
+                let words = RomanianText.fold(sentence).split { !$0.isLetter }.map(String.init)
+                for (index, word) in words.enumerated() {
+                    // „Îl păstrez”, „O trec”: the word before the verb is the object pronoun.
+                    if ["pastrez", "trec"].contains(word), index > 0 {
+                        #expect(words[index - 1] == object, "\(kind): „\(sentence)” for „\(paper.name)”")
+                    }
+                    // „Din el”, „pe ea”: the word after the preposition is the subject pronoun.
+                    if ["din", "pe"].contains(word), index + 1 < words.count, subjects.contains(words[index + 1]) {
+                        #expect(words[index + 1] == subject, "\(kind): „\(sentence)” for „\(paper.name)”")
+                    }
+                }
+            }
+        }
+    }
+
+    /// Words of a doctor's or a vet's: a health or a pet's category only.
+    static let careWords: Set<String> = ["medic", "medicul", "medicului", "veterinar", "veterinarul", "vaccin", "vaccinul", "vaccinare",
+                                         "vaccinari", "analize", "analizele", "reteta", "retete", "rapel", "rapelului", "clinica", "laborator"]
+
+    /// The words of a matrix row, folded, without the deadline's or the category's own title.
+    static func tokens(_ text: String) -> Set<String> {
+        Set(RomanianText.fold(text).split { !$0.isLetter }.map(String.init))
+    }
+
+    @Test("Vehicle words only for a vehicle's deadlines, a doctor's and a vet's only for health and pets")
+    func completionWordsStayWithTheirCategories() throws {
+        for category in try Self.categories() {
+            let words = Self.completionRows(category.definition).map(\.1).joined(separator: " ")
+            let kind = category.definition.behavior.visit
+            if kind != .service {
+                #expect(Self.tokens(words).isDisjoint(with: Self.vehicleWords), "\(category.title): \(Self.tokens(words).intersection(Self.vehicleWords).sorted())")
+            }
+            if kind != .doctor && kind != .vet {
+                #expect(Self.tokens(words).isDisjoint(with: Self.careWords), "\(category.title): \(Self.tokens(words).intersection(Self.careWords).sorted())")
+            }
+        }
+    }
+
+    @Test("Visit words of a doctor's and a vet's stay with health and pets")
+    func visitCareWordsStayWithHealthAndPets() throws {
+        for category in try Self.categories() {
+            guard let form = VisitForm.make(for: category.definition), form.kind != .doctor, form.kind != .vet else { continue }
+            let words = Self.tokens(Self.visitRows(form).map(\.1).joined(separator: " "))
+            #expect(words.isDisjoint(with: Self.careWords), "\(category.title): \(words.intersection(Self.careWords).sorted())")
         }
     }
 

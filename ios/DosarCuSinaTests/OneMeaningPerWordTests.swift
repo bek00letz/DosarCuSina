@@ -12,7 +12,7 @@ import Testing
 @Suite("One meaning per word")
 struct OneMeaningPerWordTests {
     /// Every kind but a chore asks something before it is done.
-    nonisolated static let kindsThatAsk = ObligationKind.allCases.filter { !$0.completion.isOneTap }
+    nonisolated static let kindsThatAsk = ObligationKind.allCases.filter { !CompletionKind.own($0).shape.isOneTap }
 
     // MARK: The repair list, the inbox and a check worth a look
 
@@ -38,12 +38,17 @@ struct OneMeaningPerWordTests {
     // MARK: Gata and Anulează
 
     @Test func gataIsOnlyForAChoreDoneInOneTap() {
-        #expect(ObligationKind.routine.completion.actionTitle == "Gata")
-        #expect(ObligationKind.routine.completion.menuTitle == "Gata")
-        for kind in ObligationKind.allCases where kind != .routine {
-            #expect(kind.completion.actionTitle == "Am rezolvat", "\(kind): the page's button")
-            #expect(kind.completion.menuTitle == "Am rezolvat…", "\(kind): Urmează's menu opens the same sheet")
+        for kind in CompletionKind.allCases {
+            let shape = kind.shape
+            if shape.isOneTap {
+                #expect(shape.actionTitle == "Gata", "\(kind)")
+                #expect(shape.menuTitle == "Gata", "\(kind)")
+            } else {
+                #expect(shape.actionTitle == "Am rezolvat", "\(kind): the page's button")
+                #expect(shape.menuTitle == "Am rezolvat…", "\(kind): Urmează's menu opens the same sheet")
+            }
         }
+        #expect(CompletionKind.chore.shape.isOneTap && CompletionKind.own(.routine) == .chore)
     }
 
     @Test func theShareSheetClosesAndNeverSaysGataOrAnuleaza() {

@@ -22,7 +22,7 @@ struct CompletionEntry {
     /// Starts completing `obligation` the way its kind says. A chore's toast offers
     /// "Adaugă o notă", which hands `addNote` the completion's entry and the toast.
     func start(_ obligation: Obligation, addNote: @escaping @MainActor (UUID, DSToast) -> Void) throws -> Start {
-        guard obligation.kind.completion.isOneTap else {
+        guard obligation.completion(in: context).isOneTap else {
             return .asks(CompletionRequest(obligationID: obligation.id))
         }
         return .done(try UpcomingActions(context: context).complete(obligation, title: obligation.title, addNote: addNote))

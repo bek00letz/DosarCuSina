@@ -302,7 +302,7 @@ rule de-verificat-outside-inbox "$app" '^ios/DosarCuSina/Views/Add/AddRoot\.swif
 # docs/COPY_MATRIX.md shows it. A string literal with a letter in it is text of the screen's own,
 # besides a symbol's name (systemImage:, systemName:) and what is interpolated into a literal.
 # The list grows as the other shared screens get their kinds.
-shaped_screens='^ios/DosarCuSina/Views/Add/(AddVisitFlow|Visit/[A-Za-z]+)\.swift$'
+shaped_screens='^ios/DosarCuSina/Views/(Add/(AddVisitFlow|Visit/[A-Za-z]+)|Upcoming/ObligationCompleteSheet)\.swift$'
 rule text-in-shaped-screen "$shaped_screens" - '-' - \
     "A shaped screen's words come from its kind's description (VisitShape, laid over the category by VisitForm) or from the words every kind shares (VisitFormWording). Add the words there and draw them from it."
 

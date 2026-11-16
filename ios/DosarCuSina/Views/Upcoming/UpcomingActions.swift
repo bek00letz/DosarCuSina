@@ -41,7 +41,7 @@ struct UpcomingActions {
             message = "\(title): gata."
         }
         var toast = DSToast.undo(message, receipt: done.receipt)
-        if obligation.kind.completion.offersNoteAfter, let addNote {
+        if obligation.completion(in: context).offersNoteAfter, let addNote {
             let entryID = done.value.id
             toast.offer = DSToast.Offer(title: Text("Adaugă o notă", comment: "Toast after a chore's Gata: opens a note for that completion.")) { shown in
                 addNote(entryID, shown)

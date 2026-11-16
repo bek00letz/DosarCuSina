@@ -47,7 +47,7 @@ struct ArchiveMergeTests {
                     FieldDefinition(key: "boat.registration", label: "Înmatriculare", type: .text, role: .identifier, isEssential: true),
                     FieldDefinition(key: "boat.hours", label: "Ore motor", type: .metric, role: .heroMetric, unit: .engineHours),
                 ])],
-                blueprints: [ObligationBlueprint(key: "boat.engine", title: "Service motor", kind: .maintenance,
+                blueprints: [ObligationBlueprint(key: "boat.engine", title: "Service motor", kind: .maintenance, completion: .ownService,
                                                  recurrence: .metric(every: 100, unit: .engineHours, fallback: .years(1)))],
                 components: [ComponentDefinition(key: "engine.impeller", name: "Rotor pompă", group: "Motor")],
                 pockets: [.upcoming, .history, .keyFacts],

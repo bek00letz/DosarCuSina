@@ -476,6 +476,10 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
     public var key: String
     public var title: String
     public var kind: ObligationKind
+    /// What closing it asks in the app (`CompletionKind.shape`). Every blueprint states one;
+    /// nil only when read from a blueprint written before they did, or by a newer version,
+    /// which then completes as a deadline of one's own of its kind (`CompletionKind.own`).
+    public var completion: CompletionKind?
     public var recurrence: RecurrenceRule
     public var firstDue: FirstDueRule
     /// How it reminds by default; the person can change it per obligation.
@@ -498,6 +502,7 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
         key: String,
         title: String,
         kind: ObligationKind,
+        completion: CompletionKind,
         recurrence: RecurrenceRule,
         firstDue: FirstDueRule = .ask,
         reminders: ReminderProfile? = nil,
@@ -512,6 +517,7 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
         self.key = key
         self.title = title
         self.kind = kind
+        self.completion = completion
         self.recurrence = recurrence
         self.firstDue = firstDue
         self.reminders = reminders ?? kind.defaultProfile
@@ -531,7 +537,7 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case key, title, kind, recurrence, firstDue, reminders, reminderVariants, appliesWhen, estimatedCost, isSuggested, note, facts
+        case key, title, kind, completion, recurrence, firstDue, reminders, reminderVariants, appliesWhen, estimatedCost, isSuggested, note, facts
     }
 
     public init(from decoder: Decoder) throws {
@@ -539,6 +545,7 @@ public struct ObligationBlueprint: Hashable, Sendable, Codable, Identifiable {
         key = try c.decode(String.self, forKey: .key)
         title = try c.decode(String.self, forKey: .title)
         kind = ObligationKind(stored: try c.decode(String.self, forKey: .kind))
+        completion = CompletionKind(stored: (try? c.decodeIfPresent(String.self, forKey: .completion)) ?? nil)
         recurrence = try c.decodeIfPresent(RecurrenceRule.self, forKey: .recurrence) ?? .none
         firstDue = try c.decodeIfPresent(FirstDueRule.self, forKey: .firstDue) ?? .ask
         reminders = try c.decodeIfPresent(ReminderProfile.self, forKey: .reminders) ?? kind.defaultProfile

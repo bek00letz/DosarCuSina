@@ -195,7 +195,7 @@ struct UpcomingRoot: View {
     /// the same sheet. Nothing on the left: opening the page is the tap's.
     private func row(_ entry: AttentionEntry) -> some View {
         let isLocked = vault.isLocked(sectionIsSensitive: entry.obligation.isSensitive)
-        let shape = entry.obligation.kind.completion
+        let shape = entry.obligation.completion.asked
         return NavigationLink(value: AppRoute.obligation(entry.id)) {
             UpcomingRow(entry: entry, today: today, isLocked: isLocked)
         }

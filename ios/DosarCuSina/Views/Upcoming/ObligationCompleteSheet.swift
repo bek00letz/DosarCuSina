@@ -1,12 +1,18 @@
 import SwiftData
 import SwiftUI
 
-/// "Am rezolvat": what closing this deadline asks, as its kind says (`CompletionShape`): when,
-/// what it cost or was paid, the paper (the invoice, the bill, the new document or policy, the
-/// proof, the receipt, the result), a renewed document's new expiry, a note, the section's
-/// counter. A chore never opens it: its "Gata" is one tap. Saving files through
-/// `CaptureFiler` (`CompletionDraft` keeps only what the kind asks): the paper's date becomes
-/// the next deadline, a bill is filed as a bill.
+/// "Am rezolvat": what closing this deadline asks, as its blueprint states
+/// (`Obligation.completion`, a `CompletionShape`): when, what it cost or was paid, the paper by
+/// its name (the service's invoice, the bill, the ITP report, the new policy, the pet's health
+/// booklet), a renewed document's or contract's new end, a note, the counter. A chore never
+/// opens it: its "Gata" is one tap. Saving files through `CaptureFiler` (`CompletionDraft`
+/// keeps only what the kind asks): the paper's date becomes the next deadline, a bill is filed
+/// as a bill.
+///
+/// A shaped screen: it holds no words of its own. Every word comes from the deadline's shape
+/// (its paper's, its note's, its new end's) or the words every kind shares
+/// (`CompletionWording`); the architecture check refuses a text literal here
+/// (`text-in-shaped-screen`).
 struct ObligationCompleteSheet: View {
     let obligation: Obligation
     let onClose: (DSToast?) -> Void
@@ -22,7 +28,7 @@ struct ObligationCompleteSheet: View {
     @State private var exampleQuestion: ExampleSectionQuestion?
     @State private var readingQuestion: LowerReadingQuestion?
 
-    private var shape: CompletionShape { obligation.kind.completion }
+    private var shape: CompletionShape { obligation.completion(template: template?.definition) }
     private var isReading: Bool { session.phase == .reading }
     private var document: CaptureResult? { session.result }
 
@@ -32,7 +38,7 @@ struct ObligationCompleteSheet: View {
 
     /// The counter the sheet asks for, where the kind asks one and the section has one.
     private var counter: ObligationActions.Counter? {
-        shape.asksReading ? ObligationActions.counter(completing: obligation, template: template?.definition) : nil
+        shape.counter.flatMap { ObligationActions.counter(completing: obligation, template: template?.definition, asks: $0) }
     }
 
     /// The draft with the paper as read.
@@ -56,14 +62,14 @@ struct ObligationCompleteSheet: View {
             }
             .background(DS.Palette.background)
             .dsPinnedAction {
-                DSPrimaryButton("Salvează", systemImage: "checkmark") { save() }
+                DSPrimaryButton(verbatim: CompletionWording.save, systemImage: "checkmark") { save() }
                     .disabled(isSaving || isReading || (shape.asksDate && draft.date == nil))
             } note: {
                 if let errorMessage {
-                    DSNotice(.error, title: "Nu s-a salvat", message: LocalizedStringKey(errorMessage))
+                    DSNotice(.error, title: LocalizedStringKey(CompletionWording.notSaved), message: LocalizedStringKey(errorMessage))
                 }
             }
-            .navigationTitle(Text("Am rezolvat: \(obligation.title)"))
+            .navigationTitle(Text(verbatim: CompletionWording.title(obligation.title)))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
@@ -72,29 +78,29 @@ struct ObligationCompleteSheet: View {
             .examplePrompt($exampleQuestion) { save() }
             .readingPrompt($readingQuestion) { save(lowerReading: $0) }
             .onChange(of: document?.id) { _, _ in took(document) }
-            .confirmationDialog(Text(shape.paper?.header ?? "Actul nou"), isPresented: $isChoosingSource, titleVisibility: .visible) {
-                if CaptureSource.isCameraAvailable { Button("Fotografiază actul") { source = .camera } }
-                Button("Alege din poze") { source = .photos }
-                Button("Din Fișiere") { source = .files }
-                Button("Renunță", role: .cancel) {}
+            .confirmationDialog(Text(verbatim: shape.paper?.headerWords ?? ""), isPresented: $isChoosingSource, titleVisibility: .visible) {
+                if CaptureSource.isCameraAvailable, let paper = shape.paper { Button(paper.actionWords) { source = .camera } }
+                Button(CompletionWording.photos) { source = .photos }
+                Button(CompletionWording.files) { source = .files }
+                Button(CompletionWording.cancel, role: .cancel) {}
             }
             .captureSourcePicker($source) { payload in
                 read(payload)
             } onError: { _ in
-                errorMessage = String(localized: "Poza nu s-a putut deschide. Încearcă din nou.")
+                errorMessage = CompletionWording.photoDidNotOpen
             }
         }
     }
 
     // MARK: Details
 
-    /// When, what it cost, the counter, the new expiry and the note: each only when the kind asks it.
+    /// When, what it cost, the counter, the new end and the note: each only when the kind asks it.
     @ViewBuilder private var detailsCard: some View {
         if shape.asksDate || shape.cost != nil || counter != nil || shape.asksNewExpiry || shape.asksNote {
             DSCard {
                 VStack(alignment: .leading, spacing: DS.Space.m) {
                     if shape.asksDate {
-                        DSDateField("Când", date: $draft.date, in: Date.distantPast...Date.now, isRequired: true)
+                        DSDateField(LocalizedStringKey(CompletionWording.when), date: $draft.date, in: Date.distantPast...Date.now, isRequired: true)
                     }
                     if let cost = shape.cost {
                         DSMoneyField(cost.title, amount: $draft.amount, currencyCode: $draft.currency, footnote: lastCostNote)
@@ -102,12 +108,12 @@ struct ObligationCompleteSheet: View {
                     if let counter {
                         DSMetricField(LocalizedStringKey(counter.title), value: $draft.reading, unit: counter.unit)
                     }
-                    if shape.asksNewExpiry {
-                        DSExpiryDateField("Expiră pe", date: $draft.newExpiry, urgencyRule: obligation.reminders.urgencyRule,
-                                          footnote: "De aici încep să-ți amintesc din nou.")
+                    if let newEnd = shape.newEnd {
+                        DSExpiryDateField(LocalizedStringKey(newEnd.label), date: $draft.newExpiry, urgencyRule: obligation.reminders.urgencyRule,
+                                          footnote: LocalizedStringKey(CompletionWording.newEndFootnote))
                     }
-                    if shape.asksNote {
-                        DSTextField("Notă", text: $draft.note, kind: .longText, prompt: "Ce s-a făcut, ce urmează.")
+                    if let note = shape.note {
+                        DSTextField(LocalizedStringKey(CompletionWording.note), text: $draft.note, kind: .longText, prompt: LocalizedStringKey(note.prompt))
                     }
                 }
             }
@@ -116,7 +122,7 @@ struct ObligationCompleteSheet: View {
 
     private var lastCostNote: LocalizedStringKey? {
         guard let cost = obligation.history.first?.totalCost else { return nil }
-        return "Data trecută: \(cost.formattedCompact())."
+        return LocalizedStringKey(CompletionWording.lastCost(cost.formattedCompact()))
     }
 
     // MARK: Paper
@@ -128,31 +134,31 @@ struct ObligationCompleteSheet: View {
                 if document != nil, let bill = billPlan {
                     // A photo of the bill: filed as a bill, as the review says it.
                     billNotices(bill)
-                    Button("Alege alt act") { isChoosingSource = true }
-                        .frame(minHeight: 44)
+                    Button(CompletionWording.anotherPhoto) { isChoosingSource = true }
+                        .frame(minHeight: DS.Control.minimumHitTarget)
                 } else if let document {
                     let next = CaptureFiler.nextDay(in: document)
                     // A photo kept only on request (a bank card, a page with a card's number) isn't promised here.
-                    let message: LocalizedStringKey = if let next, !shape.asksNewExpiry {
-                        "Următorul termen: \(DueWording.date(next, today: CalendarDay(Date())))."
-                    } else if next != nil {
-                        "Am trecut mai sus data la care expiră. Verifică-o."
+                    let message: String = if let next, shape.newEnd == nil {
+                        CompletionWording.nextDeadline(DueWording.date(next, today: CalendarDay(Date())))
+                    } else if next != nil, let newEnd = shape.newEnd {
+                        newEnd.filledFromPhoto
                     } else if document.photoIsOnRequest {
-                        "Nu am găsit o dată nouă pe el."
+                        paper.noDateWords
                     } else {
-                        "Nu am găsit o dată nouă pe el. Îl păstrez oricum."
+                        paper.noDateKeptWords
                     }
-                    DSNotice(.success, title: "Am citit actul", message: message)
-                    Button("Alege alt act") { isChoosingSource = true }
-                        .frame(minHeight: 44)
+                    DSNotice(.success, title: LocalizedStringKey(paper.readWords), message: LocalizedStringKey(message))
+                    Button(CompletionWording.anotherPhoto) { isChoosingSource = true }
+                        .frame(minHeight: DS.Control.minimumHitTarget)
                 } else {
-                    DSActionCard(paper.actionTitle, subtitle: paper.example, systemImage: "doc.viewfinder") {
+                    DSActionCard(paper.actionTitle, subtitle: paper.exampleTitle, systemImage: "doc.viewfinder") {
                         isChoosingSource = true
                     }
                     .disabled(isReading)
-                    if isReading { DSDelayedProgress(label: "Citesc actul…") }
+                    if isReading { DSDelayedProgress(label: LocalizedStringKey(paper.readingWords)) }
                     if session.phase == .failed {
-                        DSNotice(.warning, title: "Actul nu s-a citit", message: "Încearcă o poză mai clară, cu actul întins și fără umbre.")
+                        DSNotice(.warning, title: LocalizedStringKey(paper.unreadWords), message: LocalizedStringKey(CompletionWording.unreadMessage))
                     }
                 }
             }
@@ -174,9 +180,8 @@ struct ObligationCompleteSheet: View {
                 AppNavigator.shared.open(.historyEntry(filed.entryID))
             }, onAnother: { draft.isAnotherBill = true })
         } else {
-            let name = obligation.asset?.name ?? ""
-            DSNotice(.success, title: "Am citit factura",
-                     message: LocalizedStringKey(String(localized: "O trec în istoricul „\(name)”.", comment: "Am rezolvat: a photo of the bill being paid is logged in its subscription's history.")))
+            DSNotice(.success, title: LocalizedStringKey(CompletionWording.billRead),
+                     message: LocalizedStringKey(CompletionWording.billLogged(in: obligation.asset?.name ?? "")))
         }
         if let meter = bill.meter {
             Label { Text(verbatim: meter.sentence).dsFont(.footnote) } icon: {
@@ -226,9 +231,9 @@ struct ObligationCompleteSheet: View {
                 var filer = CaptureFiler(context: context)
                 filer.lowerReading = lowerReading
                 let outcome = try await filer.file(.completion(completion))
-                let message: LocalizedStringResource = outcome.nextDue.map {
-                    "\(title): gata. Următorul termen e pe \(DueWording.date($0, today: CalendarDay(Date())))."
-                } ?? "\(title): gata."
+                let message = outcome.nextDue.map {
+                    CompletionWording.done(title, next: DueWording.date($0, today: CalendarDay(Date())))
+                } ?? CompletionWording.done(title)
                 let toast: DSToast = outcome.receipt.map { .undo(message, receipt: $0) } ?? DSToast(title: message, actionTitle: nil)
                 session.close()
                 onClose(toast)
