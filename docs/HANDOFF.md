@@ -103,6 +103,11 @@ Newest first. Copy this template:
 
 Never write security findings, crash traces or local paths here. See [SECURITY.md](../SECURITY.md).
 
+### 2026-11-16 — owner (with Claude) — `claude/note-who-and-gender`
+- **Did:** a note's page in Istoric (and a deadline closed with one tap, as „Garanția se termină”) names no one: `HistoryEntryShape.providerHeader` is nil for it, since nothing that makes one adds a person. A category of one's own no longer has a gender guessed from its name: its sections take its name (`TemplateDefinition.sectionName`), and only a built-in's declared gender is ever read (the examples' question).
+- **Tests:** `pagesNamingNoOneHoldNoOne`, `ownCategoryNamesItsSections`; the matrix shows „names no one” for notes. Run on GitHub.
+- **Next:** check the new wording on a phone.
+
 ### 2026-11-16 — owner (with Claude) — `claude/matrix-leftovers`
 - **Done:** what the copy matrix still showed reading wrong, each at its cause and pinned in the matrix's rules. A new section's name before anything is typed, and the name of one left unnamed, is what one of its sections is called (`CategoryBehavior.singular`, declared with its gender by every built-in, catalog 21; a category of one's own's is its name), never the category's plural; the examples' question reads that gender. A completion is stored and shown as its completion kind's record (`CompletionKind.record`): a rovinietă and the kit bought, a policy with its insurer, upkeep at home with no vet or service; its page reads the deadline's completion, so earlier records read right with nothing rewritten (no repair). Acte's empty line names the papers capture files into the category (`CaptureKindProfile.papersKept`); Date importante's names no policy. *Polița nouă*'s photo says which paper. The bonus-malus line shows only for a deadline that keeps who a policy insures (a car's RCA). „Pe” or „în” comes from the paper's noun (`Noun.surface`). `CustomCategoryForm`, `KeepPhotoChoice` and `SectionLists` are shaped screens, in the matrix. Whole lei take the leu's plural from the String Catalog.
 - **Way back:** `CompletionRecord.decidesHistoryKind` (off: completions stored and shown by their importance, as before, `HistoryKind.byImportance`).

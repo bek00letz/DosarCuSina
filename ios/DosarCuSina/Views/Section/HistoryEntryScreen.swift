@@ -83,8 +83,8 @@ private struct HistoryEntryContent: View {
                     }
                 }
 
-                if !people.isEmpty {
-                    DSPocketCard(shape.providerHeader) {
+                if let providerHeader = shape.providerHeader, !people.isEmpty {
+                    DSPocketCard(providerHeader) {
                         ForEach(Array(people.enumerated()), id: \.element.id) { index, provider in
                             if index > 0 { DSRowSeparator() }
                             ProviderCard(provider: provider)

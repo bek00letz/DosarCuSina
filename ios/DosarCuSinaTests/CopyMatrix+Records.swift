@@ -74,7 +74,7 @@ extension CopyMatrixTests {
             let ratedWithSomeone = shape.asksRating(isCompletion: isCompletion, hasSomeone: true)
             let rating = rated ? shape.ratingHeader : ratedWithSomeone ? "\(shape.ratingHeader) (only when someone did it)" : "no rating"
             let deleted = isCompletion ? HistoryEntryWording.keepsDeadline : HistoryEntryWording.removesRows(parts: shape.rowsAreParts)
-            return ("\(page.title) (`\(page.said)`)", "\(shape.itemsHeader) · \(shape.providerHeader) · \(rating) · \(shape.referenceWords("0001")) · deleting: \(deleted)")
+            return ("\(page.title) (`\(page.said)`)", "\(shape.itemsHeader) · \(shape.providerHeader ?? "names no one") · \(rating) · \(shape.referenceWords("0001")) · deleting: \(deleted)")
         }
     }
 
@@ -148,11 +148,26 @@ struct RecordsCopyRulesTests {
                 if let visitProvider, ![CompletionRecord.job, .care, .vaccination].contains(record) {
                     #expect(page.shape.providerHeader != visitProvider, "\(said) names „\(visitProvider)”")
                 }
-                #expect((page.shape.providerHeader == HistoryEntryWording.paidTo) == (completion.shape.cost == .paid), "\(said): „\(page.shape.providerHeader)”")
+                #expect((page.shape.providerHeader == HistoryEntryWording.paidTo) == (completion.shape.cost == .paid), "\(said): „\(page.shape.providerHeader ?? "no one")”")
                 #expect((page.shape.itemsHeader == HistoryEntryWording.whatWasChecked) == (record == .check), "\(said): „\(page.shape.itemsHeader)”")
                 if completion.shape.isOneTap {
                     #expect(!page.shape.asksRating(isCompletion: true, hasSomeone: false), "\(said): a chore no one did asks no stars")
                 }
+            }
+        }
+    }
+
+    @Test("A record's page names no one only where nothing that makes it adds a person: a note, a deadline closed with one tap and no paper")
+    func pagesNamingNoOneHoldNoOne() throws {
+        #expect(HistoryEntryShape.make(.note, visit: nil).providerHeader == nil, "A note added by hand (`HistoryActions.addNote`) takes no one")
+        for kind in HistoryKind.allCases where kind != .note {
+            #expect(HistoryEntryShape.make(kind, visit: nil).providerHeader != nil, "\(kind)")
+        }
+        for category in try CopyMatrixTests.categories() {
+            for page in CopyMatrixTests.recordPages(category.definition) {
+                guard let completion = page.completion, page.shape.providerHeader == nil else { continue }
+                // Who a completion names comes only from its paper's issuer; with none, there is no one to show.
+                #expect(completion.shape.isOneTap && completion.shape.paper == nil, "\(category.title): \(page.title) (\(completion.record)) hides who issued its paper")
             }
         }
     }

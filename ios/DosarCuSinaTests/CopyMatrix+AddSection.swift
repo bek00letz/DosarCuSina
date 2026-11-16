@@ -215,7 +215,7 @@ struct AddSectionCopyRulesTests {
         for category in try CopyMatrixTests.categories() {
             let definition = category.definition
             let prompt = AddSectionModel.suggestedName(values: FieldValues(), definition: definition)
-            #expect(prompt == definition.sectionSingular.name, "\(category.title): „\(prompt)”")
+            #expect(prompt == definition.sectionName, "\(category.title): „\(prompt)”")
             if definition.key.hasPrefix(TemplateDefinition.customKeyPrefix) {
                 #expect(prompt == definition.name, "\(category.title): a category of one's own is named as one thing already")
             } else {
@@ -223,8 +223,8 @@ struct AddSectionCopyRulesTests {
                 #expect(prompt != definition.name, "\(category.title): „\(prompt)” is the category's own name")
             }
         }
-        #expect(BuiltInTemplates.purchase.sectionSingular.name == "Produsul", "An empty Garanții section is a product, not „Garanții”")
-        #expect(BuiltInTemplates.vehicle.sectionSingular.gender == .feminine)
+        #expect(BuiltInTemplates.purchase.sectionName == "Produsul", "An empty Garanții section is a product, not „Garanții”")
+        #expect(BuiltInTemplates.vehicle.behavior.singular?.gender == .feminine)
         #expect(BuiltInTemplates.gender(ofSectionIn: BuiltInTemplates.Key.subscription) == .masculineOrNeuter, "„Păstrezi … ca al tău?” for a subscription")
     }
 

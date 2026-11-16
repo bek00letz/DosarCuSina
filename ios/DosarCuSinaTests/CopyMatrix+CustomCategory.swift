@@ -32,8 +32,8 @@ extension CopyMatrixTests {
     static func customCategorySection() -> String {
         "## A category of one's own\n\nWhat `CustomCategoryForm` asks when a category of one's own is made („Altceva…”) "
             + "or changed in Setări, from `CustomCategoryWording` and each counter's words (`CategorySwitches.Counter`). "
-            + "Its name is what one of its sections is called (`SectionSingular.ofOwnCategory`), so a new section's "
-            + "name before anything is typed is the category's own.\n\n### What every category of one's own shares\n\n"
+            + "Its name is what one of its sections is called (`TemplateDefinition.sectionName`), so a new section's "
+            + "name before anything is typed is the category's own; no gender is guessed from it.\n\n### What every category of one's own shares\n\n"
             + table(customCategorySharedRows) + "\n\n### What its service counts by\n\n" + table(customCategoryCounterRows) + "\n"
     }
 }
@@ -52,11 +52,10 @@ struct CustomCategoryCopyRulesTests {
         }
     }
 
-    @Test("A category of one's own names its sections after itself, with the gender its name gives")
-    func ownCategoryNamesItsSections() {
-        #expect(SectionSingular.ofOwnCategory(named: "Barca") == SectionSingular("Barca", .feminine))
-        #expect(SectionSingular.ofOwnCategory(named: "Pianul") == SectionSingular("Pianul", .masculineOrNeuter))
-        #expect(SectionSingular.ofOwnCategory(named: "Mașina de cusut").gender == .feminine, "By its first word")
-        #expect(SectionSingular.ofOwnCategory(named: " Categorie ") == SectionSingular("Categorie", .feminine))
+    @Test("A category of one's own names its sections after itself, and no gender is guessed from its name")
+    func ownCategoryNamesItsSections() throws {
+        let own = try #require(try CopyMatrixTests.categories().first { $0.definition.key.hasPrefix(TemplateDefinition.customKeyPrefix) })
+        #expect(own.definition.behavior.singular == nil, "Nothing of it is said in a gender („Carte” would read as „îl”)")
+        #expect(own.definition.sectionName == own.definition.name)
     }
 }

@@ -920,7 +920,7 @@ No usual deadlines: only „Alt termen”.
 | Where | Words |
 | :--- | :--- |
 | Reparație (`repair`) | Ce s-a reparat · Cine a reparat · Cum a lucrat? · Nr. 0001 · deleting: Ce ai notat aici se șterge de pe acest telefon. |
-| Garanția se termină (`acknowledged`, stored as `note`) | Ce ai notat · Cine s-a ocupat · no rating · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Garanția se termină (`acknowledged`, stored as `note`) | Ce ai notat · names no one · no rating · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
 
 ### Abonamente (`subscription`)
 
@@ -928,7 +928,7 @@ No usual deadlines: only „Alt termen”.
 | :--- | :--- |
 | Reînnoire anuală (`bill`, stored as `payment`) | Ce cuprinde · Cui ai plătit · no rating · Factura nr. 0001 · deleting: Termenul rămâne cum e acum. |
 | Se termină contractul (`renewal`, stored as `note`) | Ce s-a făcut · Cine l-a emis · no rating · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
-| Se termină perioada minimă (`acknowledged`, stored as `note`) | Ce ai notat · Cine s-a ocupat · no rating · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Se termină perioada minimă (`acknowledged`, stored as `note`) | Ce ai notat · names no one · no rating · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
 | Factura de plătit (`bill`, stored as `payment`) | Ce cuprinde · Cui ai plătit · no rating · Factura nr. 0001 · deleting: Termenul rămâne cum e acum. |
 
 ### Altele (`other`)
@@ -951,7 +951,7 @@ No usual deadlines: only „Alt termen”.
 
 | Where | Words |
 | :--- | :--- |
-| Notă (`note`) | Ce ai notat · Cine s-a ocupat · no rating · Nr. 0001 · deleting: Ce ai notat aici se șterge de pe acest telefon. |
+| Notă (`note`) | Ce ai notat · names no one · no rating · Nr. 0001 · deleting: Ce ai notat aici se șterge de pe acest telefon. |
 | Udat (`atHome`, stored as `maintenance`) | Ce s-a făcut · Cine s-a ocupat · Cum a fost (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
 | Fertilizat (`atHome`, stored as `maintenance`) | Ce s-a făcut · Cine s-a ocupat · Cum a fost (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
 | Schimbat ghiveciul (`atHome`, stored as `maintenance`) | Ce s-a făcut · Cine s-a ocupat · Cum a fost (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
@@ -1890,7 +1890,7 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 
 ## A category of one's own
 
-What `CustomCategoryForm` asks when a category of one's own is made („Altceva…”) or changed in Setări, from `CustomCategoryWording` and each counter's words (`CategorySwitches.Counter`). Its name is what one of its sections is called (`SectionSingular.ofOwnCategory`), so a new section's name before anything is typed is the category's own.
+What `CustomCategoryForm` asks when a category of one's own is made („Altceva…”) or changed in Setări, from `CustomCategoryWording` and each counter's words (`CategorySwitches.Counter`). Its name is what one of its sections is called (`TemplateDefinition.sectionName`), so a new section's name before anything is typed is the category's own; no gender is guessed from it.
 
 ### What every category of one's own shares
 

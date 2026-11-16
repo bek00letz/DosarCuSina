@@ -38,7 +38,7 @@ extension BuiltInTemplates {
     /// (`SectionSingular`): a car is „mașina”, a document „actul”. Only built-ins hold examples;
     /// any other reads as a thing („al tău”).
     static func gender(ofSectionIn templateKey: String) -> GrammaticalGender {
-        definition(for: templateKey)?.sectionSingular.gender ?? .masculineOrNeuter
+        definition(for: templateKey)?.behavior.singular?.gender ?? .masculineOrNeuter
     }
 }
 
