@@ -33,6 +33,9 @@ enum CaptureFlowResult {
     /// `assetID` is the section the document was filed in, so the screen underneath can open it.
     case filed(toast: DSToast, assetID: UUID?)
     case visitSaved(toast: DSToast)
+    /// The person took the item it was read from out of De verificat ("Șterge din De verificat"):
+    /// its toast's "Anulează" brings it back (`IntakeInbox.dismissal`).
+    case removedFromInbox(toast: DSToast)
     case dismissed
 
     /// The toast for a filing: where it went, and "Anulează" when the receipt can take it back.
@@ -47,13 +50,13 @@ enum CaptureFlowResult {
     /// its invoice and its firm back, as the visit's own "Anulează vizita" does.
     @MainActor
     static func visit(receipt: UndoReceipt) -> CaptureFlowResult {
-        .visitSaved(toast: .undo("Vizita e în istoric.", receipt: receipt))
+        .visitSaved(toast: VisitEnding.toast(receipt))
     }
 
     /// The toast the flow closes with; nil when nothing was saved.
     var toast: DSToast? {
         switch self {
-        case .filed(let toast, _), .visitSaved(let toast): toast
+        case .filed(let toast, _), .visitSaved(let toast), .removedFromInbox(let toast): toast
         case .dismissed: nil
         }
     }
@@ -63,6 +66,7 @@ enum CaptureFlowResult {
         switch self {
         case .filed(_, let assetID): .filed(toast: toast, assetID: assetID)
         case .visitSaved: .visitSaved(toast: toast)
+        case .removedFromInbox: .removedFromInbox(toast: toast)
         case .dismissed: .dismissed
         }
     }
@@ -70,9 +74,11 @@ enum CaptureFlowResult {
     /// What the share-inbox item the capture was read from does when the flow closes with this
     /// result. Saved, and "Anulează" can still take it back (a filing or a visit): the item
     /// waits, hidden, until the toast is gone, and comes back to De verificat with the undo.
-    /// Saved with nothing to take back: it leaves at once. Not saved: it stays.
+    /// Saved with nothing to take back: it leaves at once. Not saved: it stays. Taken out of De
+    /// verificat: its own toast already says when it leaves.
     @MainActor
     func leaving(_ item: InboxItem, inbox: IntakeInbox) -> CaptureFlowResult {
+        if case .removedFromInbox = self { return self }
         guard var toast = self.toast else { return self }
         guard toast.offersAction else {
             inbox.remove(item)
@@ -104,7 +110,8 @@ struct CaptureFlowView: View {
             Group {
                 switch session.phase {
                 case .idle, .reading:
-                    CaptureReadingView()
+                    // Reading can be left at any moment: closing stops it and lets go of the pages.
+                    CaptureReadingView { finish(.dismissed) }
                 case .read(let result):
                     content(for: result)
                 case .failed:
@@ -168,6 +175,11 @@ struct CaptureFlowView: View {
 
     private func reviewView(_ review: CaptureReview) -> some View {
         let addPages: ((CaptureRequest.Payload) -> Void)? = canAddPages ? { added in self.addPages(added) } : nil
+        // Read from De verificat: the review can take the item out of it.
+        var removeFromInbox: (() -> Void)?
+        if let item = input.inboxItem {
+            removeFromInbox = { finish(.removedFromInbox(toast: inboxDismissal(of: item))) }
+        }
         // One review for the whole flow: each new reading is merged into it, keeping
         // everything the person changed (`CaptureReview.carryingEdits`).
         return CaptureReviewView(
@@ -180,6 +192,7 @@ struct CaptureFlowView: View {
             readAgainError: session.readAgainError,
             asksToSendToProvider: session.asksToSendToProvider,
             onAnswerSending: { session.answerSending($0) },
+            onRemoveFromInbox: removeFromInbox,
             onClose: { finish($0) }
         )
     }
@@ -196,6 +209,15 @@ struct CaptureFlowView: View {
         session.readAgain(.pages, payload: .images(existing + more))
     }
 
+    /// Takes the item this capture was read from out of De verificat, with "Anulează", named as
+    /// its row there names it.
+    private func inboxDismissal(of item: InboxItem) -> DSToast {
+        let inbox = IntakeInbox.shared
+        // The person opened it, so it is unlocked here whatever its category.
+        let title = inbox.row(for: item, lockedCategories: [], isSessionUnlocked: true).title
+        return inbox.dismissal(of: item, title: title)
+    }
+
     private func finish(_ result: CaptureFlowResult) {
         // Saved or not, this capture is over: nothing keeps reading, its pages are let go.
         session.close()
@@ -207,6 +229,9 @@ struct CaptureFlowView: View {
 /// The skeleton shown while capture reads the document. The layout matches the
 /// review, so nothing jumps when the values arrive.
 private struct CaptureReadingView: View {
+    /// "Închide": stops the reading and ends the capture.
+    let onClose: () -> Void
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.l) {
@@ -240,5 +265,10 @@ private struct CaptureReadingView: View {
         .background(DS.Palette.background)
         .navigationTitle("Citesc actul")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Închide", action: onClose)
+            }
+        }
     }
 }

@@ -107,6 +107,8 @@ struct CaptureReview: Identifiable {
     var pageChoices: [Int: PageChoice] = [:]
     /// The person chose the place themselves, even the one suggested: nothing to check.
     private(set) var placeConfirmed = false
+    /// The person moved the document to another place than the one shown.
+    private(set) var placeEdited = false
     /// The person is adding a document read only on the phone (the capture started from a
     /// bank card's page): the AI provider never reads it.
     var staysOnPhone = false
@@ -410,9 +412,31 @@ struct CaptureReview: Identifiable {
 
     /// The person chose where the document goes, from the list: their choice, nothing to check.
     mutating func choosePlace(_ place: Destination) {
+        if place != destination { placeEdited = true }
         destination = place
         placeConfirmed = true
     }
+
+    // MARK: The person's changes
+
+    /// The person changed something the reading proposed: a value (typed, chosen from another
+    /// reader, added or cleared), the kind, the title, the place or a new section's name, the
+    /// reminder to pay, direct debit, "E altă factură", the photo kept or a page's framing.
+    /// Closing the review without saving asks first only then ("Renunți la modificări?"); a
+    /// review left as it was read closes at once, since closing loses nothing. A reading again
+    /// (the back of a card, the AI provider) is not a change of theirs.
+    var hasPersonsChanges: Bool {
+        let proposed = suggested.fields
+        let valueChanged = fields.contains { $0.value != proposed[$0.key] }
+            || proposed.keys.contains { key in !fields.contains { $0.key == key } }
+        return valueChanged || kindEdited || placeEdited
+            || title != suggested.title
+            || newAssetName != suggested.newAssetName
+            || remindsToPay != suggested.remindsToPay
+            || keepsPhotoOnRequest || turnsOnDirectDebit || isAnotherBill
+            || !pageChoices.isEmpty
+    }
+
 
     /// The subscription that already exists and that saving would file into: the one
     /// chosen, or the one a chosen home holds for this contract. Nil for a new one.
@@ -566,14 +590,7 @@ struct CaptureReview: Identifiable {
             }
         }
         // 3. The category the document belongs to.
-        let templateKey = suggestions.lazy.compactMap { suggestion -> String? in
-            switch suggestion.destination {
-            case .newAsset(let key): return key
-            case .obligation(_, let key?): return key
-            case .historyEntry(let key?): return key
-            default: return nil
-            }
-        }.first ?? kind.profile.templateKey
+        let templateKey = suggestedTemplateKeys(suggestions).first ?? kind.profile.templateKey
         guard let templateKey else { return .none }
         // New documents, products and cars get their own section; bills and
         // policies go to the only section of their kind when there is one.
@@ -585,6 +602,19 @@ struct CaptureReview: Identifiable {
         if !createsNew, sameKind.count == 1, let only = sameKind.first { return .asset(only.id) }
         if createsNew || sameKind.isEmpty { return .newAsset(templateKey: templateKey) }
         return .none
+    }
+
+    /// The categories routing names for a document, in its order: where a new section goes, or
+    /// the category of the section a deadline or a history entry belongs in.
+    static func suggestedTemplateKeys(_ suggestions: [CaptureSuggestion]) -> [String] {
+        suggestions.compactMap { suggestion -> String? in
+            switch suggestion.destination {
+            case .newAsset(let key): return key
+            case .obligation(_, let key?): return key
+            case .historyEntry(let key?): return key
+            default: return nil
+            }
+        }
     }
 
     /// What a new section made from the document is called, by the kind's profile: a new
@@ -660,6 +690,7 @@ struct CaptureReview: Identifiable {
         merged.isAnotherBill = previous.isAnotherBill
         merged.pageChoices = previous.pageChoices
         if previous.placeConfirmed { merged.placeConfirmed = true }
+        if previous.placeEdited { merged.placeEdited = true }
         merged.staysOnPhone = previous.staysOnPhone
         return merged
     }

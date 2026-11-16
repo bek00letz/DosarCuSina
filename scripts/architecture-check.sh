@@ -249,6 +249,14 @@ rule unique-keys "$app" - \
     'uniqueKeysWithValues' - \
     "Two records can share an id until RecordsMeet joins them, so a dictionary must never stop the app on a repeated key. Use Dictionary(_:uniquingKeysWith:) and say which one is kept (the first, or RecordsMeet's own choice), or read the records after RecordsMeet.join."
 
+# A version's models are frozen the day the next version comes: code that names one by its
+# version (an extension, a predicate, the schema itself) silently stays with the frozen copy.
+# Only the schema, its frozen versions and the migration stages, all in Models/Schema/, name a
+# version; everything else uses the model aliases and CurrentSchema.
+rule frozen-schema-version "$app" '^ios/DosarCuSina/Models/Schema/' \
+    '(^|[^A-Za-z0-9_])DosarSchemaV[0-9]+[[:space:]]*[.]|(^|[^A-Za-z0-9_])extension[[:space:]]+DosarSchemaV[0-9]+' - \
+    "Name a model by its alias (Asset, Obligation…) and the schema as CurrentSchema, never a version: a version is frozen when the next one comes, and what names it stays with the frozen copy. Only Models/Schema/ (the schema, its frozen versions, the migration stages) names a version."
+
 # Actions, the unit of work, and the steps that change data with no one to tell: the category
 # store's changes, the repair list, the household's own deadlines. Reading a category is not
 # a change and may fall back.

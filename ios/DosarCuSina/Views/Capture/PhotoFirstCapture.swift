@@ -48,7 +48,7 @@ private struct PhotoFirstCapture: ViewModifier {
                 CaptureFlowView(input: input) { result in
                     flow = nil
                     switch result {
-                    case .filed(let toast, _), .visitSaved(let toast):
+                    case .filed(let toast, _), .visitSaved(let toast), .removedFromInbox(let toast):
                         onFiled(toast)
                     case .dismissed:
                         break

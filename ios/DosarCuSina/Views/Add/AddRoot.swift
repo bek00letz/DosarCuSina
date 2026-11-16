@@ -253,17 +253,12 @@ struct AddRoot: View {
 
     /// Hides the item at once and removes it for good once its toast is gone.
     private func dismiss(_ item: InboxItem) {
-        inbox.setAside(item)
-        // Outside the database: the item only leaves the inbox once the undo can't come any more.
-        let title = row(item).title
-        var leaving = DSToast(title: "Am scos „\(title)” din De verificat.", action: { inbox.keep(item) })
-        leaving.whenGone = { inbox.remove(item) }
-        toast = leaving
+        toast = inbox.dismissal(of: item, title: row(item).title)
     }
 
     private func show(_ result: CaptureFlowResult) {
         switch result {
-        case .filed(let toast, _), .visitSaved(let toast):
+        case .filed(let toast, _), .visitSaved(let toast), .removedFromInbox(let toast):
             self.toast = toast
         case .dismissed:
             break

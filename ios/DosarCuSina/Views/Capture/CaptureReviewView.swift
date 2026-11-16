@@ -28,6 +28,8 @@ struct CaptureReviewView: View {
     var asksToSendToProvider = false
     /// The answer to "Trimit poza la <provider>?".
     var onAnswerSending: ((Bool) -> Void)?
+    /// Read from De verificat: "Șterge din De verificat" takes the item out, with "Anulează".
+    var onRemoveFromInbox: (() -> Void)?
     let onClose: (CaptureFlowResult) -> Void
 
     init(
@@ -40,6 +42,7 @@ struct CaptureReviewView: View {
         readAgainError: String? = nil,
         asksToSendToProvider: Bool = false,
         onAnswerSending: ((Bool) -> Void)? = nil,
+        onRemoveFromInbox: (() -> Void)? = nil,
         onClose: @escaping (CaptureFlowResult) -> Void
     ) {
         self._review = State(initialValue: review)
@@ -51,6 +54,7 @@ struct CaptureReviewView: View {
         self.readAgainError = readAgainError
         self.asksToSendToProvider = asksToSendToProvider
         self.onAnswerSending = onAnswerSending
+        self.onRemoveFromInbox = onRemoveFromInbox
         self.onClose = onClose
     }
 
@@ -71,6 +75,8 @@ struct CaptureReviewView: View {
     /// The person added something to an example section: "Păstrezi … ca al tău?".
     @State private var exampleQuestion: ExampleSectionQuestion?
     @State private var readingQuestion: LowerReadingQuestion?
+    /// The person opened the notices behind the first one ("Mai sunt 2 lucruri de verificat").
+    @State private var showsEveryNotice = false
 
     private var templatesByKey: [String: CategoryTemplate] {
         Dictionary(templates.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
@@ -82,18 +88,21 @@ struct CaptureReviewView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: DS.Space.xl) {
-                documentCard
-                notices
-                fieldsSection
-                destinationSection
-                if review.photoIsOnRequest {
-                    KeepPhotoChoice(keepsPhoto: $review.keepsPhotoOnRequest, kind: review.kind)
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: DS.Space.xl) {
+                    // What needs confirming most comes first: what it is, where it goes, when
+                    // you'll be reminded. Then one notice at a time, then the values.
+                    summaryCard(proxy)
+                    noticeArea
+                    fieldsSection
+                    if review.photoIsOnRequest {
+                        KeepPhotoChoice(keepsPhoto: $review.keepsPhotoOnRequest, kind: review.kind)
+                    }
+                    readingOffer
                 }
-                reminderSection
+                .padding(DS.Space.m)
             }
-            .padding(DS.Space.m)
         }
         .dsPinnedAction {
             DSPrimaryButton("Salvează", systemImage: "checkmark") {
@@ -109,14 +118,35 @@ struct CaptureReviewView: View {
         .navigationTitle("Verifică actul")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
+            ToolbarItem(placement: .cancellationAction) {
+                // From De verificat, closing keeps the item there for later: the button says so.
+                if onRemoveFromInbox != nil {
+                    DSCancelButton(Text("Mai târziu", comment: "Closes the review of something shared; it stays in De verificat."))
+                } else {
+                    DSCancelButton()
+                }
+            }
+            if let onRemoveFromInbox {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(role: .destructive, action: onRemoveFromInbox) {
+                        Label {
+                            Text("Șterge din De verificat", comment: "Takes something shared out of De verificat, from its review.")
+                        } icon: {
+                            Image(systemName: "trash")
+                        }
+                    }
+                    .disabled(isSaving)
+                }
+            }
         }
-        .dsDiscardGuard(hasChanges: !isSaving)
+        // Asks only once the person changed what the reading proposed: closing loses nothing else.
+        .dsDiscardGuard(hasChanges: review.hasPersonsChanges && !isSaving, message: discardMessage)
         .reminderPermissionGate($saveRequest)
         .sheet(isPresented: $isPickingDestination) {
             CaptureDestinationPicker(
                 destination: Binding(get: { review.destination }, set: { review.choosePlace($0) }),
                 newAssetName: $review.newAssetName, templates: templates, assets: assets,
+                offer: CaptureDestinations.offer(for: review, assets: assets),
                 offersNewHolder: review.kind.isPersonalDocument,
                 filesUnderSubscription: review.kind.profile.filing == .subscription
             )
@@ -138,56 +168,83 @@ struct CaptureReviewView: View {
         // The pages belong to the capture session, which lets go of them when the capture ends.
     }
 
+    /// What "Renunță la modificări" loses, from De verificat: the item itself stays.
+    private var discardMessage: Text? {
+        guard onRemoveFromInbox != nil else { return nil }
+        return Text("Ce ai schimbat nu se salvează. Actul rămâne în De verificat.", comment: "Closing the review of something shared, after changes.")
+    }
+
+    // MARK: Summary
+
+    /// One card for what needs confirming most: what the document is, where it goes and when
+    /// you'll be reminded, each changed from here.
+    private func summaryCard(_ proxy: ScrollViewProxy) -> some View {
+        DSCard {
+            VStack(alignment: .leading, spacing: DS.Space.m) {
+                documentHeader
+                DS.Hairline()
+                placeRow
+                reminderPart(proxy)
+            }
+        }
+    }
+
+    /// A short heading inside the summary card: "Unde îl pun", "Când te anunț".
+    private func summaryHeading(_ title: LocalizedStringKey) -> some View {
+        Text(title)
+            .dsFont(.captionEmphasized)
+            .foregroundStyle(DS.Palette.secondaryLabel)
+            .accessibilityAddTraits(.isHeader)
+    }
+
     // MARK: Document
 
-    private var documentCard: some View {
-        DSCard {
-            VStack(alignment: .leading, spacing: DS.Space.s) {
-                HStack(alignment: .top, spacing: DS.Space.s) {
-                    Button { DocumentPagesViewer.present(reduceMotion: reduceMotion) { isShowingPages = true } } label: {
-                        Group {
-                            if let first = pageSources.first {
-                                DocumentPageImage(source: first, maxLongEdge: 360, contentMode: .fill)
-                            } else {
-                                Image(systemName: "doc.text").font(.title).foregroundStyle(DS.Palette.secondaryLabel)
-                            }
+    private var documentHeader: some View {
+        VStack(alignment: .leading, spacing: DS.Space.s) {
+            HStack(alignment: .top, spacing: DS.Space.s) {
+                Button { DocumentPagesViewer.present(reduceMotion: reduceMotion) { isShowingPages = true } } label: {
+                    Group {
+                        if let first = pageSources.first {
+                            DocumentPageImage(source: first, maxLongEdge: 360, contentMode: .fill)
+                        } else {
+                            Image(systemName: "doc.text").font(.title).foregroundStyle(DS.Palette.secondaryLabel)
                         }
-                        .frame(width: 64, height: 84)
-                        .background(DS.Palette.fill)
-                        .clipShape(ConcentricRectangle(corners: .concentric(minimum: 8), isUniform: true))
-                        .contentShape(.rect)
                     }
-                    .buttonStyle(.dsPressable)
-                    .disabled(pageSources.isEmpty)
-                    .accessibilityLabel(Text("Vezi actul mare", comment: "VoiceOver label of the document thumbnail in the review."))
-                    .accessibilityHint(Text("Se deschide pe tot ecranul. Poți mări sau roti pagina.", comment: "VoiceOver hint of the document thumbnail."))
-
-                    VStack(alignment: .leading, spacing: DS.Space.xs) {
-                        Text(verbatim: CaptureMapping.kindTitle(review.kind))
-                            .dsFont(.title)
-                        Menu {
-                            Picker(selection: Binding(get: { review.kind }, set: { chooseKind($0) })) {
-                                ForEach(CaptureDocumentKind.allCases, id: \.self) { kind in
-                                    Text(verbatim: CaptureMapping.kindTitle(kind)).tag(kind)
-                                }
-                            } label: { Text("Ce act e") }
-                        } label: {
-                            Text("Nu e asta? Schimbă")
-                                .font(.subheadline.weight(.medium))
-                                .frame(minHeight: 44)
-                        }
-                        ForEach(review.kindAlternatives, id: \.self) { alternative in
-                            CaptureAlternativeNote(text: kindAlternativeText(alternative)) {
-                                chooseKind(alternative.value, from: alternative)
-                            }
-                            .transition(.opacity)
-                        }
-                        Text(verbatim: tierNote)
-                            .dsFont(.footnote)
-                    }
+                    .frame(width: 64, height: 84)
+                    .background(DS.Palette.fill)
+                    .clipShape(ConcentricRectangle(corners: .concentric(minimum: 8), isUniform: true))
+                    .contentShape(.rect)
                 }
-                cropChoice
+                .buttonStyle(.dsPressable)
+                .disabled(pageSources.isEmpty)
+                .accessibilityLabel(Text("Vezi actul mare", comment: "VoiceOver label of the document thumbnail in the review."))
+                .accessibilityHint(Text("Se deschide pe tot ecranul. Poți mări sau roti pagina.", comment: "VoiceOver hint of the document thumbnail."))
+
+                VStack(alignment: .leading, spacing: DS.Space.xs) {
+                    Text(verbatim: CaptureMapping.kindTitle(review.kind))
+                        .dsFont(.title)
+                    Menu {
+                        Picker(selection: Binding(get: { review.kind }, set: { chooseKind($0) })) {
+                            ForEach(CaptureDocumentKind.allCases, id: \.self) { kind in
+                                Text(verbatim: CaptureMapping.kindTitle(kind)).tag(kind)
+                            }
+                        } label: { Text("Ce act e") }
+                    } label: {
+                        Text("Nu e asta? Schimbă")
+                            .font(.subheadline.weight(.medium))
+                            .frame(minHeight: 44)
+                    }
+                    ForEach(review.kindAlternatives, id: \.self) { alternative in
+                        CaptureAlternativeNote(text: kindAlternativeText(alternative)) {
+                            chooseKind(alternative.value, from: alternative)
+                        }
+                        .transition(.opacity)
+                    }
+                    Text(verbatim: tierNote)
+                        .dsFont(.footnote)
+                }
             }
+            cropChoice
         }
     }
 
@@ -217,105 +274,158 @@ struct CaptureReviewView: View {
         }
     }
 
-    /// The back of an identity card, when only the front was read.
-    @ViewBuilder private var backPageNotice: some View {
-        if review.asksForBackPage || rereading == .pages {
+    // MARK: Notices
+
+    /// Everything the review has to say about the reading, most important first (`ReviewNotice`).
+    private var reviewNotices: [ReviewNotice] {
+        ReviewNotice.present(
+            asksToSend: asksToSendToProvider && onAnswerSending != nil,
+            filedBill: plan.filedBill,
+            samePhoto: review.duplicateAttachmentID,
+            asksForBackPage: review.asksForBackPage,
+            readingBackPage: rereading == .pages,
+            backPageError: backError ?? (rereading == nil ? readAgainError : nil),
+            resultNotices: review.result.notices,
+            cloudMessage: cloudMessage
+        )
+    }
+
+    /// One notice at a time; the others behind "Mai sunt 2 lucruri de verificat", nothing lost.
+    @ViewBuilder private var noticeArea: some View {
+        let notices = reviewNotices
+        if let first = notices.first {
             VStack(alignment: .leading, spacing: DS.Space.s) {
-                DSNotice(.info, title: "Ai și o poză cu spatele? Acolo e codul care confirmă datele.")
-                if rereading == .pages {
-                    DSDelayedProgress(label: "Citesc și spatele…")
-                        .frame(maxWidth: .infinity, minHeight: 44)
-                } else if onAddPages != nil {
-                    if CaptureSource.isCameraAvailable {
-                        DSSecondaryButton("Fotografiază spatele", systemImage: "camera") { backSource = .camera }
+                noticeView(first)
+                if notices.count > 1 {
+                    if showsEveryNotice {
+                        ForEach(notices.dropFirst()) { notice in
+                            noticeView(notice)
+                                .transition(.opacity)
+                        }
+                    } else {
+                        Button {
+                            withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { showsEveryNotice = true }
+                        } label: {
+                            Label {
+                                Text("Mai sunt \(notices.count - 1) lucruri de verificat", comment: "Opens the review's other notices. The number is how many more there are.")
+                            } icon: {
+                                Image(systemName: "chevron.down")
+                            }
+                            .font(.subheadline.weight(.medium))
+                            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                            .contentShape(.rect)
+                        }
+                        .buttonStyle(.borderless)
                     }
-                    DSSecondaryButton("Alege din poze", systemImage: "photo.on.rectangle") { backSource = .photos }
-                }
-                if let message = backError ?? (rereading == nil ? readAgainError : nil) {
-                    DSNotice(.error, title: "Nu am putut citi spatele", message: LocalizedStringKey(message))
                 }
             }
             .transition(.opacity)
         }
     }
 
-    @ViewBuilder private var notices: some View {
-        backPageNotice
-        if let filed = plan.filedBill {
+    @ViewBuilder private func noticeView(_ notice: ReviewNotice) -> some View {
+        switch notice {
+        case .askToSend:
+            sendQuestion
+        case .alreadyFiled(let filed):
             // A bill already in the binder: the same photo, or another photo of the same bill.
             DSFiledPaperNotice(filed: filed, paper: .bill, onOpen: {
                 onClose(.dismissed)
                 AppNavigator.shared.open(.historyEntry(filed.entryID))
             }, onAnother: { review.isAnotherBill = true })
-        } else if let duplicate = review.duplicateAttachmentID {
-            DSNotice(.info, title: "Ai mai adăugat poza asta", message: "Dacă salvezi, o pun la locul ales mai jos, împreună cu ce am citit.", actionTitle: "Vezi unde e acum") {
+        case .samePhoto(let duplicate):
+            DSNotice(.info, title: "Ai mai adăugat poza asta", message: "Dacă salvezi, o pun la locul ales, împreună cu ce am citit.", actionTitle: "Vezi unde e acum") {
                 onClose(.dismissed)
                 AppNavigator.shared.open(.document(duplicate))
             }
+        case .backPage(let isReading, let error):
+            backPageNotice(isReading: isReading, error: error)
+        case .checkNumbers:
+            DSNotice(.warning, title: "Verifică numărul și datele", message: "Codul de jos al actului nu s-a citit sigur.")
+        case .cloudFailed(let message):
+            DSNotice(.warning, title: "\(cloudProvider.name) nu a citit actul", message: LocalizedStringKey(message))
+        case .hardToRead:
+            DSNotice(.info, title: "Poza e greu de citit", message: "O poză nouă, dreaptă și fără reflexii, ajută.")
+        case .pagesTruncated(let read):
+            DSNotice(.info, title: "Am citit primele \(read) pagini", message: "E un document lung. Se păstrează tot, cu toate paginile.")
         }
-        ForEach(Array(review.result.notices.enumerated()), id: \.offset) { _, notice in
-            switch notice {
-            case .littleTextRecognized:
-                DSNotice(.info, title: "Poza e greu de citit", message: "O poză nouă, dreaptă și fără reflexii, ajută.")
-            case .pagesTruncated(let read, _):
-                DSNotice(.info, title: "Am citit primele \(read) pagini", message: "E un document lung. Se păstrează tot, cu toate paginile.")
-            case .machineReadableZoneUnverified:
-                DSNotice(.warning, title: "Verifică numărul și datele", message: "Codul de jos al actului nu s-a citit sigur.")
-            default:
-                EmptyView()
+    }
+
+    /// The back of an identity card, when only the front was read.
+    private func backPageNotice(isReading: Bool, error: String?) -> some View {
+        VStack(alignment: .leading, spacing: DS.Space.s) {
+            DSNotice(.info, title: "Ai și o poză cu spatele? Acolo e codul care confirmă datele.")
+            if isReading {
+                DSDelayedProgress(label: "Citesc și spatele…")
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            } else if onAddPages != nil {
+                if CaptureSource.isCameraAvailable {
+                    DSSecondaryButton("Fotografiază spatele", systemImage: "camera") { backSource = .camera }
+                }
+                DSSecondaryButton("Alege din poze", systemImage: "photo.on.rectangle") { backSource = .photos }
+            }
+            if let error {
+                DSNotice(.error, title: "Nu am putut citi spatele", message: LocalizedStringKey(error))
             }
         }
-        if let cloudMessage {
-            DSNotice(.warning, title: "\(cloudProvider.name) nu a citit actul", message: LocalizedStringKey(cloudMessage))
-        }
-        if asksToSendToProvider, let onAnswerSending {
-            // An identity document's photo never leaves the phone by itself: one question, for this document.
+    }
+
+    /// An identity document's photo never leaves the phone by itself: one question, for this document.
+    @ViewBuilder private var sendQuestion: some View {
+        if let onAnswerSending {
             VStack(alignment: .leading, spacing: DS.Space.s) {
                 DSNotice(.info, title: "Trimit poza la \(cloudProvider.name)?",
                          message: "Nu sunt sigur ce am citit. \(cloudProvider.name) poate citi actul mai bine, cu cheia ta. Fără un da, poza rămâne pe telefon.")
                 DSSecondaryButton("Trimite poza", systemImage: "sparkles") { onAnswerSending(true) }
                 DSSecondaryButton("Nu, rămâne pe telefon", systemImage: "iphone") { onAnswerSending(false) }
-                if let policy = cloudProvider.dataPolicyURL {
-                    Link(destination: policy) {
-                        Text("Cum folosește \(cloudProvider.name) ce trimiți", comment: "Link to the AI provider's data-use terms.")
-                            .frame(minHeight: 44, alignment: .leading)
-                    }
-                    .dsFont(.footnote)
-                }
+                dataPolicyLink
             }
-            .transition(.opacity)
         }
-        // A bank card, or a page that may be one, is read only on the phone: no button, and
-        // one plain line so the person isn't left wondering where it went.
-        if onReadWithCloud != nil, CaptureRunner.hasCloudKey, !review.usedCloudModel, !review.providerMayRead {
-            Text("Cardurile bancare se citesc doar pe telefon.", comment: "Capture review: why a bank card can't be read by the AI provider.")
-                .dsFont(.footnote)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        // Offered whenever a provider is set up, whatever the phone read: a confident
-        // reading can be wrong too, and only a second opinion can tell.
-        if let onReadWithCloud, CaptureRunner.hasCloudKey, !review.usedCloudModel, !asksToSendToProvider, review.providerMayRead {
-            if rereading == .cloud {
-                DSDelayedProgress(label: "Citesc cu \(cloudProvider.shortName)…")
-                    .frame(maxWidth: .infinity, minHeight: 44)
-            } else {
-                DSSecondaryButton("Citește mai bine cu \(cloudProvider.shortName)", systemImage: "sparkles", action: onReadWithCloud)
-                    .disabled(rereading != nil)
-            }
-            VStack(alignment: .leading, spacing: DS.Space.xxs) {
-                if review.kind.isPersonalDocument {
-                    Text("Poza actului se trimite la \(cloudProvider.name), cu cheia ta.")
-                } else {
-                    Text("Prima pagină se trimite la \(cloudProvider.name), cu cheia ta.")
-                }
-                if let policy = cloudProvider.dataPolicyURL {
-                    Link(destination: policy) {
-                        Text("Cum folosește \(cloudProvider.name) ce trimiți", comment: "Link to the AI provider's data-use terms.")
-                            .frame(minHeight: 44, alignment: .leading)
-                    }
-                }
+    }
+
+    /// "Cum folosește Gemini ce trimiți", when the provider publishes its terms.
+    @ViewBuilder private var dataPolicyLink: some View {
+        if let policy = cloudProvider.dataPolicyURL {
+            Link(destination: policy) {
+                Text("Cum folosește \(cloudProvider.name) ce trimiți", comment: "Link to the AI provider's data-use terms.")
+                    .frame(minHeight: 44, alignment: .leading)
             }
             .dsFont(.footnote)
+        }
+    }
+
+    /// Under the values, where a wrong one is seen: a second opinion from the person's AI
+    /// provider, or why a bank card has none. Offered whenever a provider is set up, whatever
+    /// the phone read: a confident reading can be wrong too.
+    @ViewBuilder private var readingOffer: some View {
+        if let onReadWithCloud, CaptureRunner.hasCloudKey, !review.usedCloudModel, !asksToSendToProvider {
+            if !review.providerMayRead {
+                // A bank card, or a page that may be one, is read only on the phone: one plain
+                // line so the person isn't left wondering where the button went.
+                Text("Cardurile bancare se citesc doar pe telefon.", comment: "Capture review: why a bank card can't be read by the AI provider.")
+                    .dsFont(.footnote)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                VStack(alignment: .leading, spacing: DS.Space.xs) {
+                    if rereading == .cloud {
+                        DSDelayedProgress(label: "Citesc cu \(cloudProvider.shortName)…")
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                    } else {
+                        DSSecondaryButton("Citește mai bine cu \(cloudProvider.shortName)", systemImage: "sparkles", action: onReadWithCloud)
+                            .disabled(rereading != nil)
+                    }
+                    Group {
+                        if review.kind.isPersonalDocument {
+                            Text("Poza actului se trimite la \(cloudProvider.name), cu cheia ta.")
+                        } else {
+                            Text("Prima pagină se trimite la \(cloudProvider.name), cu cheia ta.")
+                        }
+                    }
+                    .dsFont(.footnote)
+                    .fixedSize(horizontal: false, vertical: true)
+                    dataPolicyLink
+                }
+            }
         }
     }
 
@@ -338,6 +448,8 @@ struct CaptureReviewView: View {
                     ForEach(fields) { field in
                         if let index = review.fields.firstIndex(where: { $0.id == field.id }) {
                             CaptureFieldEditor(field: $review.fields[index], kind: review.kind)
+                                // The summary's "Schimbă ziua" scrolls here.
+                                .id(field.key)
                         }
                     }
                     let addable = review.addableKeys
@@ -384,36 +496,33 @@ struct CaptureReviewView: View {
 
     // MARK: Destination
 
-    private var destinationSection: some View {
-        VStack(alignment: .leading, spacing: DS.Space.s) {
-            DSSectionHeader("Unde îl pun")
-            DSCard {
-                VStack(alignment: .leading, spacing: DS.Space.s) {
-                    Button { isPickingDestination = true } label: {
-                        DSListRow(
-                            title: Text(verbatim: destinationTitle),
-                            subtitle: Text(verbatim: destinationSubtitle),
-                            systemImage: destinationSymbol,
-                            showsChevron: true,
-                            trailing: { Text("Alege alta") }
-                        )
-                    }
-                    .buttonStyle(.plain)
-                    if let check = review.placeCheck {
-                        VStack(alignment: .leading, spacing: DS.Space.xxs) {
-                            Label("Verifică", systemImage: "exclamationmark.circle.fill")
-                                .font(.system(.caption, weight: .semibold))
-                                .foregroundStyle(DSStatus.soon.textColor)
-                            Text(placeCheckText(check))
-                                .dsFont(.footnote)
-                        }
-                        .accessibilityElement(children: .combine)
-                        .transition(.opacity)
-                    }
-                    if case .newAsset(let key) = review.destination {
-                        DSTextField(newAssetNameTitle(key), text: $review.newAssetName, isRequired: true)
-                    }
+    /// "Unde îl pun", in the summary card: the place, tapped to choose another.
+    private var placeRow: some View {
+        VStack(alignment: .leading, spacing: DS.Space.xs) {
+            summaryHeading("Unde îl pun")
+            Button { isPickingDestination = true } label: {
+                DSListRow(
+                    title: Text(verbatim: destinationTitle),
+                    subtitle: Text(verbatim: destinationSubtitle),
+                    systemImage: destinationSymbol,
+                    showsChevron: true,
+                    trailing: { Text("Alege alta") }
+                )
+            }
+            .buttonStyle(.plain)
+            if let check = review.placeCheck {
+                VStack(alignment: .leading, spacing: DS.Space.xxs) {
+                    Label("Verifică", systemImage: "exclamationmark.circle.fill")
+                        .font(.system(.caption, weight: .semibold))
+                        .foregroundStyle(DSStatus.soon.textColor)
+                    Text(placeCheckText(check))
+                        .dsFont(.footnote)
                 }
+                .accessibilityElement(children: .combine)
+                .transition(.opacity)
+            }
+            if case .newAsset(let key) = review.destination {
+                DSTextField(newAssetNameTitle(key), text: $review.newAssetName, isRequired: true)
             }
         }
     }
@@ -508,36 +617,52 @@ struct CaptureReviewView: View {
 
     // MARK: Reminder
 
-    @ViewBuilder private var reminderSection: some View {
+    /// The value whose day the reminder follows (an expiry, a due date), when the review shows
+    /// it: "Schimbă ziua" scrolls to it.
+    private var reminderDayField: CaptureFieldKey? {
+        guard let key = review.kind.profile.deadlineField, review.visibleFields.contains(where: { $0.key == key }) else { return nil }
+        return key
+    }
+
+    /// "Când te anunț", in the summary card: the reminder saving sets, the day it follows a tap
+    /// away, and for a bill whether to be reminded to pay it.
+    @ViewBuilder private func reminderPart(_ proxy: ScrollViewProxy) -> some View {
         let text = CaptureReminderPreview.text(for: review, templates: templatesByKey, assets: assets, today: CalendarDay(Date()))
         let directDebit = review.directDebitStatement(assets: assets)
         if text != nil || review.kind.profile.isBill || directDebit != nil {
+            DS.Hairline()
             VStack(alignment: .leading, spacing: DS.Space.s) {
-                DSSectionHeader("Când te anunț")
-                DSCard {
-                    VStack(alignment: .leading, spacing: DS.Space.s) {
-                        if let directDebit {
-                            // What the bill says, offered: turned on only by the person.
-                            DSCheckRow(title: Text("Plătesc prin debit direct"),
-                                       subtitle: Text("Pe factură scrie: „\(Self.shortened(directDebit))”. Dacă e așa, nu îți mai amintesc s-o plătești."),
-                                       isOn: review.turnsOnDirectDebit) {
-                                withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { review.turnsOnDirectDebit.toggle() }
+                summaryHeading("Când te anunț")
+                if let text {
+                    if let key = reminderDayField {
+                        Button {
+                            withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) {
+                                proxy.scrollTo(key, anchor: .center)
                             }
+                        } label: {
+                            DSListRow(title: Text(verbatim: text), systemImage: "bell", trailing: { Text("Schimbă ziua") })
                         }
-                        if review.kind.profile.isBill, review.reminderDay != nil, !review.paysByDirectDebit(assets: assets) {
-                            DSCheckRow(title: Text("Amintește-mi să o plătesc"), isOn: review.remindsToPay) {
-                                review.remindsToPay.toggle()
-                            }
-                        }
-                        if let text {
-                            Label { Text(verbatim: text).dsFont(.body) } icon: {
-                                Image(systemName: "bell").foregroundStyle(DS.Palette.accent)
-                            }
-                        }
-                        Text("Poți schimba după, pe pagina termenului.")
-                            .dsFont(.footnote)
+                        .buttonStyle(.plain)
+                        .accessibilityHint(Text("Arată ziua de pe act, ca s-o poți schimba.", comment: "VoiceOver hint of the review's reminder line."))
+                    } else {
+                        DSListRow(title: Text(verbatim: text), systemImage: "bell", trailing: { EmptyView() })
                     }
                 }
+                if let directDebit {
+                    // What the bill says, offered: turned on only by the person.
+                    DSCheckRow(title: Text("Plătesc prin debit direct"),
+                               subtitle: Text("Pe factură scrie: „\(Self.shortened(directDebit))”. Dacă e așa, nu îți mai amintesc s-o plătești."),
+                               isOn: review.turnsOnDirectDebit) {
+                        withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { review.turnsOnDirectDebit.toggle() }
+                    }
+                }
+                if review.kind.profile.isBill, review.reminderDay != nil, !review.paysByDirectDebit(assets: assets) {
+                    DSCheckRow(title: Text("Amintește-mi să o plătesc"), isOn: review.remindsToPay) {
+                        review.remindsToPay.toggle()
+                    }
+                }
+                Text("Poți schimba după, pe pagina termenului.")
+                    .dsFont(.footnote)
             }
         }
     }
@@ -835,12 +960,17 @@ private struct CaptureAlternativeNote: View {
     }
 }
 
-/// "Where it goes": an existing section, a new one, or nowhere in particular.
+/// "Where it goes": a section the document fits, any other one, a new one, or nowhere in
+/// particular. What fits comes first (`CaptureDestinations`); "Altă secțiune…" lists them all.
+/// A new section is made by `AddSectionFlow`, the one way to make one, and the document goes
+/// into it.
 private struct CaptureDestinationPicker: View {
     @Binding var destination: CaptureReview.Destination
     @Binding var newAssetName: String
     let templates: [CategoryTemplate]
     let assets: [Asset]
+    /// The sections that fit the document, and the category a new one starts with.
+    let offer: CaptureDestinations.Offer
     /// An identity document can go to a new household member.
     var offersNewHolder = false
     /// A bill or a contract: a home stands for its subscription there, or a new one.
@@ -848,6 +978,11 @@ private struct CaptureDestinationPicker: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var isPickingNewCategory = false
+    @State private var isShowingEverything = false
+    /// The section being made, started from the category the document fits or the catalog.
+    @State private var newSection: AddSectionRequest?
+    /// A section was made: the picker closes once the flow's sheet has gone.
+    @State private var closesAfterNewSection = false
 
     var body: some View {
         NavigationStack {
@@ -859,26 +994,32 @@ private struct CaptureDestinationPicker: View {
                                subtitle: String(localized: "Actele stau grupate pe persoane."), symbol: "person.crop.circle.badge.plus")
                     }
                 }
-                ForEach(templates.filter { template in assets.contains { $0.templateKey == template.key } }) { template in
+                if let fitting = offer.fitting {
+                    sections(of: assets.filter { fitting.contains($0.id) })
                     Section {
-                        ForEach(assets.filter { $0.templateKey == template.key }) { asset in
-                            choice(.asset(asset.id), title: asset.name, subtitle: subtitle(for: asset), symbol: asset.symbolOverride ?? template.symbol)
+                        if let key = offer.newSectionKey, let template = templates.first(where: { $0.key == key }) {
+                            newSectionRow(title: String(localized: "Secțiune nouă în „\(template.name)”", comment: "Makes a new section of the category the document fits."),
+                                          subtitle: String(localized: "Completezi ce trebuie, apoi pun actul acolo."),
+                                          symbol: template.symbol, request: AddSectionRequest(templateKey: key))
                         }
-                    } header: {
-                        Text(verbatim: template.name).textCase(nil)
+                        Button { isShowingEverything = true } label: {
+                            DSListRow("Altă secțiune…", subtitle: "Toate secțiunile din dosar.", systemImage: "folder", showsChevron: true)
+                        }
+                        .buttonStyle(.plain)
                     }
-                }
-                Section {
-                    Button { isPickingNewCategory = true } label: {
-                        DSListRow("Secțiune nouă", subtitle: "Alege tipul, apoi scrii un nume.", systemImage: "folder.badge.plus", showsChevron: true)
-                    }
-                    .buttonStyle(.plain)
+                } else {
+                    everything
                 }
             }
             .navigationTitle("Unde îl pun")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Închide") { dismiss() } }
+            }
+            .navigationDestination(isPresented: $isShowingEverything) {
+                List { everything }
+                    .navigationTitle("Toate secțiunile")
+                    .navigationBarTitleDisplayMode(.inline)
             }
             .navigationDestination(isPresented: $isPickingNewCategory) {
                 List(templates.filter { $0.behavior.role != .holder }) { template in
@@ -888,6 +1029,53 @@ private struct CaptureDestinationPicker: View {
                 .navigationBarTitleDisplayMode(.inline)
             }
         }
+        .sheet(isPresented: Binding(get: { newSection != nil }, set: { if !$0 { newSection = nil } }), onDismiss: {
+            // Waits for the flow's sheet to have gone before this one closes.
+            if closesAfterNewSection { dismiss() }
+        }) {
+            if let newSection {
+                AddSectionFlow(request: newSection) { asset in
+                    destination = .asset(asset.id)
+                    closesAfterNewSection = true
+                }
+            }
+        }
+    }
+
+    /// Every section, by category, and a new one from the catalog.
+    @ViewBuilder private var everything: some View {
+        sections(of: assets)
+        Section {
+            newSectionRow(title: String(localized: "Secțiune nouă"), subtitle: String(localized: "Alegi ce fel de secțiune, apoi pun actul acolo."),
+                          symbol: "folder.badge.plus", request: .topLevel)
+        }
+    }
+
+    /// The sections given, grouped by category, in the categories' order.
+    @ViewBuilder private func sections(of shown: [Asset]) -> some View {
+        ForEach(templates.filter { template in shown.contains { $0.templateKey == template.key } }) { template in
+            Section {
+                ForEach(shown.filter { $0.templateKey == template.key }) { asset in
+                    choice(.asset(asset.id), title: asset.name, subtitle: subtitle(for: asset), symbol: asset.symbolOverride ?? template.symbol)
+                }
+            } header: {
+                Text(verbatim: template.name).textCase(nil)
+            }
+        }
+    }
+
+    /// "Secțiune nouă": `AddSectionFlow`, or, switched off, the first version's list of categories.
+    private func newSectionRow(title: String, subtitle: String, symbol: String, request: AddSectionRequest) -> some View {
+        Button {
+            if CaptureDestinations.makesSectionFromAName {
+                isPickingNewCategory = true
+            } else {
+                newSection = request
+            }
+        } label: {
+            DSListRow(title: Text(verbatim: title), subtitle: Text(verbatim: subtitle), systemImage: symbol, showsChevron: true) { EmptyView() }
+        }
+        .buttonStyle(.plain)
     }
 
     /// What the asset's category does.

@@ -239,7 +239,9 @@ struct PocketView: View {
 }
 
 /// On a document that has no picture yet: "Adaugă poza actului", front and
-/// centre. The photo goes through capture, which fills in what it reads.
+/// centre, as one card the whole of which is the action (a main button inside the
+/// scrolling page would sit at the end of nothing). The photo goes through capture,
+/// which fills in what it reads.
 struct DocumentPhotoPrompt: View {
     let asset: Asset
     @Binding var toast: DSToast?
@@ -248,25 +250,17 @@ struct DocumentPhotoPrompt: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        DSCard {
-            VStack(alignment: .leading, spacing: DS.Space.s) {
-                HStack(alignment: .top, spacing: DS.Space.s) {
-                    DSIconWell(systemImage: "camera.fill", tint: DS.Palette.accent)
-                    VStack(alignment: .leading, spacing: DS.Space.xxs) {
-                        Text("Nu are încă poza actului", comment: "Prompt on a document page without a picture.")
-                            .dsFont(.headline)
-                        Text("Cu poza la îndemână nu mai cauți actul prin casă. Ce citesc din ea completez aici.", comment: "Why to add a picture of a document.")
-                            .dsFont(.subheadline)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                DSPrimaryButton("Adaugă poza actului", systemImage: "camera.fill") {
-                    errorMessage = nil
-                    isChoosingSource = true
-                }
-                if let errorMessage {
-                    DSNotice(.error, title: "Nu s-a deschis", message: LocalizedStringKey(errorMessage))
-                }
+        VStack(alignment: .leading, spacing: DS.Space.s) {
+            DSActionCard(
+                "Adaugă poza actului",
+                subtitle: "Cu poza la îndemână nu mai cauți actul prin casă. Ce citesc din ea completez aici.",
+                systemImage: "camera.fill"
+            ) {
+                errorMessage = nil
+                isChoosingSource = true
+            }
+            if let errorMessage {
+                DSNotice(.error, title: "Nu s-a deschis", message: LocalizedStringKey(errorMessage))
             }
         }
         .photoFirstCapture(

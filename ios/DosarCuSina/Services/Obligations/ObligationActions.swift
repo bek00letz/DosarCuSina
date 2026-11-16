@@ -426,7 +426,7 @@ public final class ObligationActions {
     }
 }
 
-extension DosarSchemaV15.Obligation {
+extension Obligation {
     /// A deadline the person wrote themselves ("Alt termen"), not one of its category's usual
     /// ones: its name and importance are theirs to change (`ObligationActions.rename`,
     /// `setImportance`). A category's deadline keeps the name and kind its blueprint gives.

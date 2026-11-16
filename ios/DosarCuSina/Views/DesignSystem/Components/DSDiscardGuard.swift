@@ -8,17 +8,25 @@ extension View {
     /// person is asked whether to discard their changes, the way Mail and Calendar do.
     /// Put a `DSCancelButton()` in the sheet's toolbar: it asks the same question.
     ///
-    /// Apply this to the sheet's root view, inside the sheet.
-    func dsDiscardGuard(hasChanges: Bool) -> some View {
-        modifier(DSDiscardGuardModifier(hasChanges: hasChanges))
+    /// Apply this to the sheet's root view, inside the sheet. `message` says what closing
+    /// loses and what stays, when that is more than the changes ("Actul rămâne în De verificat.").
+    func dsDiscardGuard(hasChanges: Bool, message: Text? = nil) -> some View {
+        modifier(DSDiscardGuardModifier(hasChanges: hasChanges, message: message))
     }
 }
 
 /// A Cancel button for editing sheets. Closes right away when nothing changed,
 /// otherwise asks before discarding (needs `.dsDiscardGuard(hasChanges:)` on the sheet).
 struct DSCancelButton: View {
+    /// What the button says, when closing keeps something for later ("Mai târziu").
+    var title: Text?
+
     @Environment(\.dsAttemptDismiss) private var attemptDismiss
     @Environment(\.dismiss) private var dismiss
+
+    init(_ title: Text? = nil) {
+        self.title = title
+    }
 
     var body: some View {
         Button(role: .cancel) {
@@ -28,7 +36,7 @@ struct DSCancelButton: View {
                 dismiss()
             }
         } label: {
-            Text("Anulează", comment: "Button that closes an editing sheet.")
+            title ?? Text("Anulează", comment: "Button that closes an editing sheet.")
         }
     }
 }
@@ -52,6 +60,7 @@ extension EnvironmentValues {
 
 private struct DSDiscardGuardModifier: ViewModifier {
     let hasChanges: Bool
+    let message: Text?
 
     @Environment(\.dismiss) private var dismiss
     @State private var isConfirming = false
@@ -88,7 +97,7 @@ private struct DSDiscardGuardModifier: ViewModifier {
                     Text("Continuă editarea", comment: "Button that keeps the sheet open.")
                 }
             } message: {
-                Text("Ce ai completat până acum nu se va salva.", comment: "Explains what discarding unsaved changes means.")
+                message ?? Text("Ce ai completat până acum nu se va salva.", comment: "Explains what discarding unsaved changes means.")
             }
             .sensoryFeedback(.warning, trigger: isConfirming) { _, new in new }
     }
