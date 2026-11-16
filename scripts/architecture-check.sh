@@ -289,8 +289,12 @@ rule stack-in-tab-root "$app" - '-' - \
 # height and text size. A main action written inside a ScrollView's braces sits at the end of
 # scrolling content, out of sight; a bottom inset that draws buttons or the bar itself is a
 # second pinned bar. The pass sees what is written inside the braces, not a property they name.
+# A pocket's card (DSPocketCard) is always part of a scrolling page, so a DSPrimaryButton inside
+# its braces counts too, wherever the card is written. A primary button in a struct that some
+# ScrollView names is not followed: a card at the top of a page and an empty state's action do
+# that rightly, and braces can't tell them from the end of the content.
 rule main-action-in-scroll '^ios/(DosarCuSina|DosarCuSinaShare)/' "$design_system" '-' - \
-    "Pin a screen's or a sheet's main action with .dsPinnedAction { DSPrimaryButton(…) }, with note: for what is said above it and secondary: for the actions under it. Inside the ScrollView it is lost at the end of the content."
+    "Pin a screen's or a sheet's main action with .dsPinnedAction { DSPrimaryButton(…) }, with note: for what is said above it and secondary: for the actions under it. Inside the ScrollView it is lost at the end of the content; in a pocket's card, add with DSSecondaryButton like every pocket."
 rule hand-pinned-action "$app" '^ios/Shared/DSBottomBar\.swift$' '-' - \
     'Pin actions with .dsPinnedAction (note: and secondary: for what goes with them), the one bar, which keeps its height, material and keyboard behaviour everywhere.'
 
@@ -346,13 +350,16 @@ scan() {
         }
         FILENAME == rules_file { inc[$1] = $2; exc[$1] = $3; next }
         FILENAME == map_file { path_of[$2] = $1; next }
-        FNR == 1 { path = path_of[FILENAME]; depth = 0; scroll_at = -1; inset_at = -1 }
+        FNR == 1 { path = path_of[FILENAME]; depth = 0; scroll_at = -1; inset_at = -1; pocket_at = -1 }
         {
             code = code_of($0)
             if (code == "") next
-            if (scroll_at < 0 && code ~ /(^|[^A-Za-z0-9_])ScrollView[[:space:]]*(\([^)]*\))?[[:space:]]*\{/) {
-                scroll_at = depth
-            } else if (scroll_at >= 0 && code ~ /(^|[^A-Za-z0-9_])DSPrimaryButton[[:space:]]*\(/ && covers("main-action-in-scroll")) {
+            opens_scroll = scroll_at < 0 && code ~ /(^|[^A-Za-z0-9_])ScrollView[[:space:]]*(\([^)]*\))?[[:space:]]*\{/
+            if (opens_scroll) scroll_at = depth
+            opens_pocket = pocket_at < 0 && code ~ /(^|[^A-Za-z0-9_])DSPocketCard[[:space:]]*\(.*\{[[:space:]]*$/
+            if (opens_pocket) pocket_at = depth
+            if (((scroll_at >= 0 && !opens_scroll) || (pocket_at >= 0 && !opens_pocket)) \
+                && code ~ /(^|[^A-Za-z0-9_])DSPrimaryButton[[:space:]]*\(/ && covers("main-action-in-scroll")) {
                 print path "\tmain-action-in-scroll\t" FNR
             }
             if (code ~ /safeAreaInset\(edge: *\.bottom/) {
@@ -364,6 +371,7 @@ scan() {
             opened = gsub(/\{/, "{", code); closed = gsub(/\}/, "}", code)
             depth += opened - closed
             if (scroll_at >= 0 && depth <= scroll_at) scroll_at = -1
+            if (pocket_at >= 0 && depth <= pocket_at) pocket_at = -1
             if (inset_at >= 0 && depth <= inset_at) inset_at = -1
         }
     ' "$rules" "$map" $files
@@ -417,7 +425,14 @@ if [[ $mode == self-test ]]; then
     failures=0
     ids=$(cut -f1 "$rules")
     for rule_id in $ids; do
-        for kind in fail pass; do
+        # A rule that sees a mistake in more than one place has a failing fixture for each:
+        # <rule>.fail.swift, then <rule>.fail-<what>.swift, each of which must break it alone.
+        cases="fail"
+        for extra in "$fixtures_dir/$rule_id".fail-*.swift; do
+            [[ -f $extra ]] || continue
+            extra=${extra##*/}; extra=${extra#"$rule_id".}; cases="$cases ${extra%.swift}"
+        done
+        for kind in $cases pass; do
             fixture="$fixtures_dir/$rule_id.$kind.swift"
             if [[ ! -f $fixture ]]; then
                 echo "  missing fixture $fixture" >&2
@@ -433,7 +448,7 @@ if [[ $mode == self-test ]]; then
                 printf '%s\t%s\n' "ios/DosarCuSina/Views/Shell/AppShell.swift" "$fixtures_dir/stack-in-tab-root.shell.swift" >>"$map"
             fi
             found=$(scan "$map" | cut -f2 | sort -u)
-            if [[ $kind == fail ]] && ! grep -qx -- "$rule_id" <<<"$found"; then
+            if [[ $kind == fail* ]] && ! grep -qx -- "$rule_id" <<<"$found"; then
                 echo "  $fixture should break $rule_id, and doesn't" >&2
                 failures=$((failures + 1))
             elif [[ $kind == pass && -n $found ]]; then

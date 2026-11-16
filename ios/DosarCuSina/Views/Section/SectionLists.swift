@@ -71,6 +71,12 @@ struct ObligationListScreen: View {
     @State private var saveRequest: ReminderSaveRequest?
     @State private var addedCount = 0
 
+    /// Off: the list doesn't offer the category's usual deadlines as rows of their own ("Poți
+    /// adăuga", each with its own date sheet, `FirstDateSheet`), since the one deadline form
+    /// offers them; "Adaugă un termen" opens that form. Kept as the way back until the owner
+    /// has used the form from here; remove it with the owner's OK.
+    nonisolated static let offersSuggestionRows = false
+
     init(asset: Asset) {
         self.asset = asset
         let key = asset.templateKey
@@ -78,8 +84,8 @@ struct ObligationListScreen: View {
     }
 
     var body: some View {
-        let obligations = (asset.obligations ?? []).filter { $0.status == .active || $0.status == .paused }.sorted { $0.dueDay < $1.dueDay }
-        let suggestions = unusedBlueprints
+        let obligations = UpcomingPocket.listed(asset)
+        let suggestions = Self.offersSuggestionRows ? unusedBlueprints : []
         List {
             Section {
                 if obligations.isEmpty {
@@ -109,8 +115,14 @@ struct ObligationListScreen: View {
                 Button {
                     isAddingCustom = true
                 } label: {
-                    Label { Text("Alt termen", comment: "Adds an obligation that isn't in the suggestions.") } icon: { Image(systemName: "plus") }
-                        .frame(minHeight: 44)
+                    Group {
+                        if Self.offersSuggestionRows {
+                            Label { Text("Alt termen", comment: "Adds an obligation that isn't in the suggestions.") } icon: { Image(systemName: "plus") }
+                        } else {
+                            Label { Text(verbatim: PocketAddition.deadline.title) } icon: { Image(systemName: PocketAddition.deadline.systemImage) }
+                        }
+                    }
+                    .frame(minHeight: 44)
                 }
             }
         }
@@ -122,7 +134,8 @@ struct ObligationListScreen: View {
         }
         .sheet(isPresented: $isAddingCustom) {
             NavigationStack {
-                DeadlineForm(assetID: asset.id, startsWithOwn: true) { _ in
+                // The one form: the category's usual deadlines this section doesn't have yet, and one of the person's own.
+                DeadlineForm(assetID: asset.id, startsWithOwn: Self.offersSuggestionRows) { _ in
                     isAddingCustom = false
                     addedCount += 1
                 }
@@ -328,9 +341,9 @@ struct DocumentListScreen: View {
     @Query private var templates: [CategoryTemplate]
 
     var body: some View {
-        let documentKeys = Set(templates.filter { $0.behavior.role == .personalDocument }.map(\.key))
-        let personal = (asset.children ?? []).filter { documentKeys.contains($0.templateKey) }.sorted { $0.name < $1.name }
-        let papers = (asset.attachments ?? []).sorted { $0.createdAt > $1.createdAt }
+        // The pocket's own rule: a visit's invoice or a bill opens from its record in Istoric.
+        let personal = SectionPapers.personal(asset, templates: templates).sorted { $0.name < $1.name }
+        let papers = SectionPapers.listed(asset)
         List {
             if !personal.isEmpty {
                 Section {
@@ -340,14 +353,14 @@ struct DocumentListScreen: View {
                 }
             }
             Section {
-                if papers.filter({ !$0.isArchived }).isEmpty {
+                if papers.isEmpty {
                     Text("Niciun document scanat.", comment: "Empty list of scanned documents.").dsFont(.subheadline)
                 }
-                ForEach(papers.filter { !$0.isArchived }) { DocumentRowLink(item: .paper($0)) }
+                ForEach(papers) { DocumentRowLink(item: .paper($0)) }
             } header: {
                 Text("Documente", comment: "Header: scanned documents.")
             }
-            let archived = papers.filter(\.isArchived)
+            let archived = SectionPapers.archived(asset)
             if !archived.isEmpty {
                 Section {
                     ForEach(archived) { DocumentRowLink(item: .paper($0)) }

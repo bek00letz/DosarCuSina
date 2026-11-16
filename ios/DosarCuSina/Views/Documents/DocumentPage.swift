@@ -68,9 +68,9 @@ private struct PersonalDocumentContent: View {
                 SecretFieldsCard(asset: document, definition: definition)
                 // The category's other pockets (when it must be renewed, Date importante):
                 // its documents are the picture above and the older ones below.
-                ForEach(definition.pockets.filter { $0 != .documents }, id: \.self) { pocket in
-                    PocketView(pocket: pocket, asset: document, definition: definition, toast: $toast, error: $error)
-                }
+                // Like any page's, an empty pocket folds into "Adaugă…" (`SectionPocketList`).
+                SectionPocketList(asset: document, definition: definition, pockets: definition.pockets.filter { $0 != .documents },
+                                  toast: $toast, error: $error) { EmptyView() }
                 OlderPicturesCard(pictures: DocumentPageFacts.olderPictures(of: document))
                 DSSecondaryButton(Text("Șterge actul", comment: "Deletes a personal document from its page."), systemImage: "trash", role: .destructive) {
                     isConfirmingDelete = true

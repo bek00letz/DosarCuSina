@@ -63,6 +63,43 @@ struct PersonalDocumentDraft: Equatable {
     }
 }
 
+/// Whose a typed-in document is: a household member already in the binder, or someone
+/// new, made with the document in the same step.
+enum PersonalDocumentHolder {
+    case existing(Asset)
+    case new(name: String)
+
+    /// What "Al cui e?" chose.
+    enum Choice: Hashable {
+        case member(UUID)
+        case someoneNew
+    }
+
+    var name: String {
+        switch self {
+        case .existing(let holder): holder.name
+        case .new(let name): name.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+    }
+
+    /// The household's people a document can be filed under (`CategoryBehavior.Role.holder`), by name.
+    static func members(in assets: [Asset], templates: [CategoryTemplate]) -> [Asset] {
+        let holderKeys = templates.keys(playing: .holder)
+        return assets.filter { holderKeys.contains($0.templateKey) }
+    }
+
+    /// The holder a choice names, or nil while it names nobody yet (no member chosen, a new
+    /// person without a name).
+    static func chosen(_ choice: Choice?, newName: String, among members: [Asset]) -> PersonalDocumentHolder? {
+        switch choice {
+        case .member(let id): members.first { $0.id == id }.map(PersonalDocumentHolder.existing)
+        case .someoneNew:
+            newName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : .new(name: newName)
+        case nil: nil
+        }
+    }
+}
+
 enum PersonalDocumentError: LocalizedError, Equatable {
     case missingType
     case missingTemplate
@@ -80,13 +117,10 @@ enum PersonalDocumentError: LocalizedError, Equatable {
 @MainActor
 enum PersonalDocumentFiling {
     /// The deadlines the document would start with: the template's own, with
-    /// first dates from the expiry. Ones without a date are left for later.
+    /// first dates from the expiry. Ones without a date are left for later, by the add flow's
+    /// own rule (`PlannedObligation.startsSelected`).
     static func planned(_ draft: PersonalDocumentDraft, template: CategoryTemplate, actions: AssetActions) -> [PlannedObligation] {
-        actions.plannedObligations(for: template, values: draft.values).map { plan in
-            var plan = plan
-            plan.isSelected = plan.isSelected && plan.firstDue != nil
-            return plan
-        }
+        actions.plannedObligations(for: template, values: draft.values)
     }
 
     /// The last day the document is valid: the expiry typed, or for a type dated by its
@@ -131,6 +165,33 @@ enum PersonalDocumentFiling {
                 parent: holder,
                 isExample: holder.isExample
             )
+        }
+    }
+
+    /// Creates the document under `holder`: one already in the binder, or a new person made
+    /// with it, as one step (a failure leaves neither behind).
+    @discardableResult
+    static func save(_ draft: PersonalDocumentDraft, holder: PersonalDocumentHolder, context: ModelContext,
+                     calendar: Calendar = .dosar, now: @escaping () -> Date = { Date() }) throws -> Asset {
+        switch holder {
+        case .existing(let member):
+            return try save(draft, holder: member, context: context, calendar: calendar, now: now)
+        case .new:
+            guard draft.type != nil else { throw PersonalDocumentError.missingType }
+            let store = TemplateStore(context: context)
+            guard let template = try store.template(withRole: .personalDocument), let people = try store.template(withRole: .holder) else {
+                throw PersonalDocumentError.missingTemplate
+            }
+            let actions = AssetActions(context: context, calendar: calendar, now: now)
+            return try UnitOfWork.perform(in: context, now: now()) {
+                try actions.create(
+                    name: draft.name(holder: holder.name),
+                    template: template,
+                    values: draft.values,
+                    obligations: planned(draft, template: template, actions: actions),
+                    newParent: AssetActions.NewParent(name: holder.name, template: people)
+                )
+            }
         }
     }
 }

@@ -20,6 +20,17 @@ struct ExampleForm: View {
     }
 }
 
+struct ExamplePocket: View {
+    var body: some View {
+        DSPocketCard(String(localized: "Istoric", comment: "Section pocket")) {
+            Text("Nimic notat încă.")
+        } footer: {
+            DSSecondaryButton(verbatim: "Am fost la service", systemImage: "wrench.and.screwdriver") { add() }
+        }
+        DSPrimaryButton("După card, nu în el") { call() }
+    }
+}
+
 struct ExampleHero: View {
     var body: some View {
         VStack {

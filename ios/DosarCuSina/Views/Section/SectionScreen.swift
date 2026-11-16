@@ -99,14 +99,8 @@ private struct SectionContent: View {
                 }
                 SecretFieldsCard(asset: asset, definition: definition)
                 // The situations this section offers sit under what comes up next, or under the hero.
-                if !definition.pockets.contains(.upcoming) {
+                SectionPocketList(asset: asset, definition: definition, pockets: definition.pockets, toast: $toast, error: $error) {
                     SituationsCard(assetID: asset.id, definition: definition)
-                }
-                ForEach(definition.pockets, id: \.self) { pocket in
-                    PocketView(pocket: pocket, asset: asset, definition: definition, toast: $toast, error: $error)
-                    if pocket == .upcoming {
-                        SituationsCard(assetID: asset.id, definition: definition)
-                    }
                 }
                 deleteButton
             }
@@ -210,6 +204,100 @@ private struct SectionContent: View {
     }
 }
 
+/// A page's pockets, by one rule (`SectionPageLayout`): each that holds something in its usual
+/// place, in the one global order; the empty ones folded into one "Adaugă…" menu; Bani only
+/// once there is money. Whatever is added, from a pocket's own button or the menu, opens its
+/// own flow over the page, for this section, so the person never leaves it.
+struct SectionPocketList<UnderUpcoming: View>: View {
+    let asset: Asset
+    let definition: TemplateDefinition
+    let pockets: [SectionPocket]
+    @Binding var toast: DSToast?
+    @Binding var error: UserFacingError?
+    /// Shown under Urmează, or first when Urmează isn't shown (the situations).
+    @ViewBuilder var underUpcoming: UnderUpcoming
+
+    @Environment(\.modelContext) private var context
+    @Environment(ShellRouter.self) private var router
+    @Query private var templates: [CategoryTemplate]
+
+    @State private var isAddingDeadline = false
+    @State private var isChoosingPhoto = false
+    @State private var isAddingPerson = false
+    @State private var addsKeyFact = false
+
+    init(asset: Asset, definition: TemplateDefinition, pockets: [SectionPocket], toast: Binding<DSToast?>, error: Binding<UserFacingError?>,
+         @ViewBuilder underUpcoming: () -> UnderUpcoming) {
+        self.asset = asset
+        self.definition = definition
+        self.pockets = pockets
+        _toast = toast
+        _error = error
+        self.underUpcoming = underUpcoming()
+    }
+
+    var body: some View {
+        let contents = PocketContents(asset: asset, definition: definition, templates: templates,
+                                      providers: ProviderDirectory(context: context).providers(for: asset))
+        let layout = contents.layout(pockets: pockets, revealed: addsKeyFact ? [.keyFacts] : [])
+        VStack(alignment: .leading, spacing: DS.Space.xl) {
+            if !layout.shown.contains(.upcoming) { underUpcoming }
+            ForEach(layout.shown, id: \.self) { pocket in
+                PocketView(pocket: pocket, asset: asset, definition: definition, toast: $toast, error: $error, addsKeyFact: $addsKeyFact, add: add)
+                    .transition(.opacity)
+                if pocket == .upcoming { underUpcoming }
+            }
+            PocketAdditionsMenu(additions: layout.additions, add: add)
+        }
+        // A pocket that comes to hold something takes its place with the page's spring.
+        .dsAnimation(value: layout.shown)
+        .sheet(isPresented: $isAddingDeadline) {
+            NavigationStack {
+                DeadlineForm(assetID: asset.id) { message in
+                    isAddingDeadline = false
+                    toast = DSToast(title: message, actionTitle: nil, action: nil)
+                }
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
+                }
+            }
+        }
+        .sheet(isPresented: $isAddingPerson) {
+            ProviderEditSheet(provider: nil, linkTo: asset)
+        }
+        .photoFirstCapture(
+            isPresented: $isChoosingPhoto,
+            title: Text("Adaugă un act", comment: "Title of the photo source choice for a paper added from a section page."),
+            assetID: asset.id
+        ) { filed in
+            toast = filed
+        } onError: { message in
+            toast = DSToast(title: LocalizedStringResource(stringLiteral: message), systemImage: "exclamationmark.triangle.fill",
+                            tint: DSStatus.overdue.color, actionTitle: nil, feedback: .error)
+        }
+    }
+
+    /// Opens what the addition adds, for this section, over the page.
+    private func add(_ addition: PocketAddition) {
+        switch addition {
+        case .deadline:
+            isAddingDeadline = true
+        case .child(_, let templateKey):
+            router.present(.addSection(AddSectionRequest(parentID: asset.id, templateKey: templateKey)))
+        case .personalDocument:
+            router.present(.addPersonalDocument(holderID: asset.id))
+        case .paper:
+            isChoosingPhoto = true
+        case .visit:
+            router.present(.addVisit(asset.id))
+        case .person:
+            isAddingPerson = true
+        case .keyFact:
+            addsKeyFact = true
+        }
+    }
+}
+
 /// One pocket of a section page.
 struct PocketView: View {
     let pocket: SectionPocket
@@ -217,23 +305,25 @@ struct PocketView: View {
     let definition: TemplateDefinition
     @Binding var toast: DSToast?
     @Binding var error: UserFacingError?
+    @Binding var addsKeyFact: Bool
+    let add: (PocketAddition) -> Void
 
     var body: some View {
         switch pocket {
         case .upcoming:
-            UpcomingPocket(asset: asset)
+            UpcomingPocket(asset: asset, add: add)
         case .tenants, .products, .subscriptions, .plants:
-            ChildrenPocket(asset: asset, pocket: pocket)
+            ChildrenPocket(asset: asset, pocket: pocket, add: add)
         case .documents:
-            DocumentsPocket(asset: asset)
+            DocumentsPocket(asset: asset, add: add)
         case .history:
-            HistoryPocket(asset: asset, definition: definition)
+            HistoryPocket(asset: asset, definition: definition, add: add)
         case .people:
-            PeoplePocket(asset: asset)
+            PeoplePocket(asset: asset, add: add)
         case .money:
             MoneyPocket(asset: asset, definition: definition)
         case .keyFacts:
-            KeyFactsPocket(asset: asset, definition: definition, toast: $toast, error: $error)
+            KeyFactsPocket(asset: asset, definition: definition, toast: $toast, error: $error, addsRow: $addsKeyFact)
         }
     }
 }

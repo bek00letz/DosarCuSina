@@ -10,17 +10,21 @@ struct KeyFactsPocket: View {
     let definition: TemplateDefinition
     @Binding var toast: DSToast?
     @Binding var error: UserFacingError?
+    /// On while the person adds a first row from the page's "Adaugă…": the pocket shows
+    /// with a new row open, and goes back into the menu if they leave it empty.
+    @Binding var addsRow: Bool
 
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) private var openURL
     @Environment(BiometricVaultManager.self) private var vault
     @Query private var templates: [CategoryTemplate]
 
-    init(asset: Asset, definition: TemplateDefinition, toast: Binding<DSToast?>, error: Binding<UserFacingError?>) {
+    init(asset: Asset, definition: TemplateDefinition, toast: Binding<DSToast?>, error: Binding<UserFacingError?>, addsRow: Binding<Bool> = .constant(false)) {
         self.asset = asset
         self.definition = definition
         _toast = toast
         _error = error
+        _addsRow = addsRow
         let key = asset.templateKey
         _templates = Query(filter: #Predicate<CategoryTemplate> { $0.key == key })
     }
@@ -53,13 +57,18 @@ struct KeyFactsPocket: View {
             }
         } footer: {
             if editing == nil {
-                DSSecondaryButton("Adaugă un rând", systemImage: "plus") {
+                PocketAddButton(addition: .keyFact) { _ in
                     editing = CustomFact(label: "", value: "")
                 }
-                .padding(.top, DS.Space.s)
             }
         }
         .sensoryFeedback(.success, trigger: copiedCount)
+        .onAppear {
+            if addsRow, editing == nil { editing = CustomFact(label: "", value: "") }
+        }
+        .onChange(of: editing) { _, now in
+            if now == nil { addsRow = false }
+        }
     }
 
     @ViewBuilder

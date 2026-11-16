@@ -3,29 +3,91 @@ import SwiftData
 
 // MARK: - Urmează
 
-/// The next few obligations of the asset; each opens its reminder screen.
+/// The next few obligations of the asset; each opens its reminder screen. "Vezi tot" lists
+/// every one, paused ones too; "Adaugă un termen" opens the one deadline form, over the page.
 struct UpcomingPocket: View {
     let asset: Asset
+    let add: (PocketAddition) -> Void
+
+    /// Every deadline the section's list shows: the active ones and those paused (a bill
+    /// while the bank pays it), soonest first. Whether the pocket shows at all reads it too.
+    static func listed(_ asset: Asset) -> [Obligation] {
+        (asset.obligations ?? []).filter { $0.status == .active || $0.status == .paused }.sorted { $0.dueDay < $1.dueDay }
+    }
 
     var body: some View {
         let obligations = asset.activeObligations
+        let shown = obligations.prefix(SectionPocket.upcomingLimit)
+        let listed = Self.listed(asset).count
         DSPocketCard(SectionPocket.upcoming.title, count: obligations.isEmpty ? nil : obligations.count) {
-            if obligations.isEmpty {
+            if listed == 0 {
                 PocketEmptyLine(text: String(localized: "Niciun termen. Adaugă unul ca să îți amintim la timp.", comment: "Empty Urmează pocket."))
             }
-            ForEach(Array(obligations.prefix(SectionPocket.upcomingLimit).enumerated()), id: \.element.id) { index, obligation in
+            ForEach(Array(shown.enumerated()), id: \.element.id) { index, obligation in
                 if index > 0 { DSRowSeparator() }
                 NavigationLink(value: AppRoute.obligation(obligation.id)) {
                     ObligationRow(obligation: obligation)
                 }
                 .buttonStyle(.dsPressable)
             }
-        } footer: {
-            DSRowSeparator()
-            NavigationLink(value: SectionListRoute.obligations(asset.id)) {
-                DSSeeAllRow(title: obligations.isEmpty ? "Adaugă un termen" : "Vezi tot și adaugă", count: nil)
+            if listed > shown.count {
+                if !shown.isEmpty { DSRowSeparator() }
+                NavigationLink(value: SectionListRoute.obligations(asset.id)) {
+                    DSSeeAllRow(count: listed)
+                }
+                .buttonStyle(.dsPressable)
             }
-            .buttonStyle(.dsPressable)
+        } footer: {
+            PocketAddButton(addition: .deadline, add: add)
+        }
+    }
+}
+
+/// A pocket's own add button, under its rows: the same words and flow as the page's menu.
+struct PocketAddButton: View {
+    let addition: PocketAddition
+    let add: (PocketAddition) -> Void
+
+    var body: some View {
+        DSSecondaryButton(verbatim: addition.title, systemImage: addition.systemImage) {
+            add(addition)
+        }
+        .padding(.top, DS.Space.s)
+    }
+}
+
+/// The page's one row for its empty pockets: "Adaugă…", a menu naming what can be added
+/// there, each under the pocket it goes in. A pocket comes back in its usual place as soon
+/// as it holds something.
+struct PocketAdditionsMenu: View {
+    let additions: [PocketAddition]
+    let add: (PocketAddition) -> Void
+
+    var body: some View {
+        if !additions.isEmpty {
+            DSCard(padding: DS.Space.m) {
+                Menu {
+                    ForEach(additions) { addition in
+                        Button {
+                            add(addition)
+                        } label: {
+                            Label {
+                                Text(verbatim: addition.title)
+                                Text(verbatim: addition.pocket.title)
+                            } icon: {
+                                Image(systemName: addition.systemImage)
+                            }
+                        }
+                    }
+                } label: {
+                    DSListRow(
+                        title: Text("Adaugă…", comment: "Row on a section page whose menu adds to its empty parts: a deadline, a document, a visit…"),
+                        systemImage: "plus"
+                    ) { EmptyView() }
+                }
+                .buttonStyle(.dsPressable)
+                .accessibilityHint(Text(verbatim: additions.map(\.pocket.title).formatted(.list(type: .or).locale(.dosarDefault))))
+            }
         }
     }
 }
@@ -64,31 +126,37 @@ struct PocketEmptyLine: View {
 struct ChildrenPocket: View {
     let asset: Asset
     let pocket: SectionPocket
+    let add: (PocketAddition) -> Void
 
-    @Environment(ShellRouter.self) private var router
     @Query(sort: \CategoryTemplate.homeOrder) private var templates: [CategoryTemplate]
 
-    /// The categories this pocket gathers, the built-in one first.
-    private var childTemplates: [CategoryTemplate] {
-        templates.filter { $0.behavior.parentPocket == pocket }.sorted { $0.isBuiltIn && !$1.isBuiltIn }
-    }
-
-    var body: some View {
-        let kinds = childTemplates
-        let keys = Set(kinds.map(\.key))
-        let childKey = kinds.first?.key ?? ""
-        let children = (asset.children ?? []).filter { keys.contains($0.templateKey) }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
-        let definition = kinds.first?.definition
-        // Sections that have boxes of their own on the binder (plants) show on a parent only once
-        // the household keeps them: their category is on the binder, or this parent holds some.
-        if children.isEmpty, kinds.allSatisfy({ $0.behavior.hasSectionBoxes && !$0.isOnHome }) {
-            EmptyView()
-        } else {
-            card(children: children, childKey: childKey, definition: definition)
+    /// What a child pocket gathers on a page: the categories it gathers (the built-in one first),
+    /// what is filed under the page, the category a new one is made in, and whether the pocket is
+    /// offered at all.
+    struct Contents {
+        var kinds: [CategoryTemplate]
+        var children: [Asset]
+        var childKey: String? { kinds.first?.key }
+        /// Sections that have boxes of their own on the binder (plants) show on a parent only once
+        /// the household keeps them: their category is on the binder, or this parent holds some.
+        var isOffered: Bool {
+            !children.isEmpty || !kinds.allSatisfy { $0.behavior.hasSectionBoxes && !$0.isOnHome }
         }
     }
 
-    private func card(children: [Asset], childKey: String, definition: TemplateDefinition?) -> some View {
+    @MainActor
+    static func contents(of asset: Asset, pocket: SectionPocket, templates: [CategoryTemplate]) -> Contents {
+        let kinds = templates.filter { $0.behavior.parentPocket == pocket }.sorted { $0.isBuiltIn && !$1.isBuiltIn }
+        let keys = Set(kinds.map(\.key))
+        let children = (asset.children ?? []).filter { keys.contains($0.templateKey) }
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        return Contents(kinds: kinds, children: children)
+    }
+
+    var body: some View {
+        let contents = Self.contents(of: asset, pocket: pocket, templates: templates)
+        let children = contents.children
+        let definition = contents.kinds.first?.definition
         DSPocketCard(pocket.title, count: children.isEmpty ? nil : children.count) {
             if children.isEmpty {
                 PocketEmptyLine(text: emptyText)
@@ -100,7 +168,7 @@ struct ChildrenPocket: View {
                 }
                 .buttonStyle(.dsPressable)
             }
-            if children.count > 3 {
+            if children.count > 3, let childKey = contents.childKey {
                 DSRowSeparator()
                 NavigationLink(value: SectionListRoute.children(asset.id, templateKey: childKey)) {
                     DSSeeAllRow(count: children.count)
@@ -108,10 +176,9 @@ struct ChildrenPocket: View {
                 .buttonStyle(.dsPressable)
             }
         } footer: {
-            DSSecondaryButton(verbatim: addTitle, systemImage: "plus") {
-                router.present(.addSection(AddSectionRequest(parentID: asset.id, templateKey: childKey)))
+            if let childKey = contents.childKey {
+                PocketAddButton(addition: .child(pocket, templateKey: childKey), add: add)
             }
-            .padding(.top, DS.Space.s)
         }
     }
 
@@ -121,15 +188,6 @@ struct ChildrenPocket: View {
         case .products: String(localized: "Niciun produs. Adaugă aragazul sau centrala și ții minte garanția.", comment: "Empty Produse pocket.")
         case .plants: String(localized: "Nicio plantă trecută aici. Adaug-o și îți amintim de udat.", comment: "Empty Plante pocket on a home's page.")
         default: String(localized: "Niciun abonament trecut aici.", comment: "Empty Abonamente pocket.")
-        }
-    }
-
-    private var addTitle: String {
-        switch pocket {
-        case .tenants: String(localized: "Adaugă un chiriaș", comment: "Button in the Chiriași pocket.")
-        case .products: String(localized: "Adaugă un produs", comment: "Button in the Produse pocket.")
-        case .plants: String(localized: "Adaugă o plantă", comment: "Button in the Plante pocket of a home's page.")
-        default: String(localized: "Adaugă un abonament", comment: "Button in the Abonamente pocket.")
         }
     }
 }
@@ -198,10 +256,11 @@ enum ChildSummary {
 // MARK: - Acte
 
 /// Documents: personal documents filed under this asset (a person's ID, passport),
-/// then scanned papers, each with the date it is valid until when there is one.
+/// then the section's papers (`SectionPapers`: not a visit's or a bill's, which open from
+/// their record in Istoric), each with the date it is valid until when there is one.
 struct DocumentsPocket: View {
     let asset: Asset
-    @Environment(ShellRouter.self) private var router
+    let add: (PocketAddition) -> Void
     @Environment(BiometricVaultManager.self) private var vault
     @Query private var templates: [CategoryTemplate]
 
@@ -216,40 +275,38 @@ struct DocumentsPocket: View {
     }
 
     var body: some View {
-        let personal = (asset.children ?? []).filter { behavior($0.templateKey).role == .personalDocument }
-            .sorted { expiry($0) < expiry($1) }
-        let papers = (asset.attachments ?? []).filter { !$0.isArchived }.sorted { $0.createdAt > $1.createdAt }
+        let personal = SectionPapers.personal(asset, templates: templates).sorted { expiry($0) < expiry($1) }
+        let papers = SectionPapers.listed(asset)
+        let archived = SectionPapers.archived(asset).count
         let rows: [DocumentRowItem] = personal.map { .personal($0) } + papers.map { .paper($0) }
+        let isHolder = behavior(asset.templateKey).role == .holder
         // A person's own documents are all listed, each one tap from its page; papers
-        // follow, a few at a time like any pocket's.
-        let shown = DocumentsPocket.shownCount(personal: personal.count, papers: papers.count, isHolder: behavior(asset.templateKey).role == .holder)
+        // follow, a few at a time like any pocket's. Those kept for reference are behind "Vezi tot".
+        let shown = DocumentsPocket.shownCount(personal: personal.count, papers: papers.count, isHolder: isHolder)
         DSPocketCard(SectionPocket.documents.title, count: rows.isEmpty ? nil : rows.count) {
-            if rows.isEmpty {
+            if rows.isEmpty, archived == 0 {
                 PocketEmptyLine(text: String(localized: "Niciun document. Scanează polița, factura sau certificatul și le găsești aici.", comment: "Empty Acte pocket."))
             }
             ForEach(Array(rows.prefix(shown).enumerated()), id: \.element.id) { index, row in
                 if index > 0 { DSRowSeparator() }
                 DocumentRowLink(item: row, showsPicture: showsPicture(row))
             }
-            if rows.count > shown {
-                DSRowSeparator()
+            if rows.count > shown || archived > 0 {
+                if !rows.isEmpty { DSRowSeparator() }
                 NavigationLink(value: SectionListRoute.documents(asset.id)) {
-                    DSSeeAllRow(count: rows.count)
+                    DSSeeAllRow(count: rows.count + archived)
                 }
                 .buttonStyle(.dsPressable)
             }
         } footer: {
-            VStack(spacing: DS.Space.s) {
-                if behavior(asset.templateKey).role == .holder {
-                    DSSecondaryButton("Adaugă un act", systemImage: "plus") {
-                        router.present(.addPersonalDocument(holderID: asset.id))
-                    }
+            VStack(spacing: 0) {
+                // A person adds one of their own documents; any section a photo of a paper, filed
+                // here through capture without leaving the page.
+                if isHolder {
+                    PocketAddButton(addition: .personalDocument, add: add)
                 }
-                DSSecondaryButton("Scanează un document", systemImage: "doc.viewfinder") {
-                    router.open(.intake)
-                }
+                PocketAddButton(addition: .paper(besidePersonal: isHolder), add: add)
             }
-            .padding(.top, DS.Space.s)
         }
     }
 }
@@ -402,7 +459,7 @@ extension CalendarDay {
 struct HistoryPocket: View {
     let asset: Asset
     let definition: TemplateDefinition
-    @Environment(ShellRouter.self) private var router
+    let add: (PocketAddition) -> Void
 
     var body: some View {
         let lines = HistoryLines.make(asset: asset, definition: definition)
@@ -425,10 +482,8 @@ struct HistoryPocket: View {
                 .buttonStyle(.dsPressable)
             }
         } footer: {
-            DSPrimaryButton(verbatim: definition.behavior.visitWording.title, systemImage: "wrench.and.screwdriver.fill") {
-                router.present(.addVisit(asset.id))
-            }
-            .padding(.top, DS.Space.s)
+            // A pocket's button, like every other pocket's: the page has no one main action.
+            PocketAddButton(addition: .visit(title: definition.behavior.visitWording.title), add: add)
         }
     }
 }
@@ -469,8 +524,8 @@ struct HistoryLines {
 /// People and firms who look after the asset or worked on it.
 struct PeoplePocket: View {
     let asset: Asset
+    let add: (PocketAddition) -> Void
     @Environment(\.modelContext) private var context
-    @State private var isAdding = false
 
     var body: some View {
         let people = ProviderDirectory(context: context).providers(for: asset)
@@ -490,13 +545,7 @@ struct PeoplePocket: View {
                 .buttonStyle(.dsPressable)
             }
         } footer: {
-            DSSecondaryButton("Adaugă o persoană", systemImage: "person.badge.plus") {
-                isAdding = true
-            }
-            .padding(.top, DS.Space.s)
-        }
-        .sheet(isPresented: $isAdding) {
-            ProviderEditSheet(provider: nil, linkTo: asset)
+            PocketAddButton(addition: .person, add: add)
         }
     }
 }
@@ -508,15 +557,36 @@ struct MoneyPocket: View {
     let asset: Asset
     let definition: TemplateDefinition
 
+    /// What the pocket lists, read once: whether it shows at all reads it too (`PocketContents`).
+    struct Facts {
+        var summary: MoneySummary
+        var price: Money?
+        var monthly: Money?
+        var trend: BillTrend?
+
+        /// Nothing to say: no cost noted, no price, no subscription amount.
+        var isEmpty: Bool { summary.allTime.isEmpty && price == nil && monthly == nil && trend == nil }
+
+        @MainActor
+        static func make(asset: Asset, definition: TemplateDefinition, now: Date = Date()) -> Facts {
+            let isSubscription = definition.behavior.role == .subscription
+            return Facts(
+                summary: MoneySummary.make(entries: (asset.history ?? []).map { ($0.occurredAt, $0.effectiveCost) }, now: now),
+                price: AssetFacts.purchase(asset.values, template: definition).price,
+                // A fixed price per month; a contract billed by use shows its bills instead.
+                monthly: isSubscription ? SubscriptionMath.monthlyEquivalent(asset.values, usingLastBill: false) : nil,
+                trend: isSubscription ? BillHistory.trend(BillHistory.bills(of: asset), today: CalendarDay(now)) : nil
+            )
+        }
+    }
+
     var body: some View {
-        let summary = MoneySummary.make(entries: (asset.history ?? []).map { ($0.occurredAt, $0.effectiveCost) }, now: Date())
-        let purchase = AssetFacts.purchase(asset.values, template: definition)
-        let isSubscription = definition.behavior.role == .subscription
-        // A fixed price per month; a contract billed by use shows its bills instead.
-        let monthly = isSubscription ? SubscriptionMath.monthlyEquivalent(asset.values, usingLastBill: false) : nil
-        let trend = isSubscription ? BillHistory.trend(BillHistory.bills(of: asset), today: CalendarDay(Date())) : nil
+        let facts = Facts.make(asset: asset, definition: definition)
+        let summary = facts.summary
+        let monthly = facts.monthly
+        let trend = facts.trend
         DSPocketCard(SectionPocket.money.title) {
-            if summary.allTime.isEmpty && purchase.price == nil && monthly == nil && trend == nil {
+            if facts.isEmpty {
                 PocketEmptyLine(text: String(localized: "Nicio sumă notată încă. Când notezi o lucrare cu preț, apare aici.", comment: "Empty Bani pocket."))
             }
             if let monthly {
@@ -541,7 +611,7 @@ struct MoneyPocket: View {
             if !summary.allTime.isEmpty {
                 DSReadOnlyValueRow(label: Text("De când îl ai", comment: "Money row: spent in total."), value: Text(verbatim: summary.allTime.formatted()))
             }
-            if let price = purchase.price {
+            if let price = facts.price {
                 DSReadOnlyValueRow(label: Text("Preț de cumpărare", comment: "Money row: purchase price."), value: Text(verbatim: price.formattedCompact()))
             }
         }

@@ -25,15 +25,16 @@ enum ShellSheet: Identifiable, Hashable, Sendable {
     case settings(SettingsSection?)
     case addVisit(UUID)
     case addSection(AddSectionRequest)
-    /// A new document for a household member: photo first, or typed in.
-    case addPersonalDocument(holderID: UUID)
+    /// A new document for a household member: photo first, or typed in. Without a holder (the
+    /// Acte box), the photo names them and "Scriu eu" asks whose it is.
+    case addPersonalDocument(holderID: UUID?)
 
     var id: String {
         switch self {
         case .settings(let section): "settings.\(section?.rawValue ?? "")"
         case .addVisit(let id): "visit.\(id.uuidString)"
         case .addSection(let request): "section.\(request.parentID?.uuidString ?? "")\(request.templateKey ?? "")"
-        case .addPersonalDocument(let holderID): "personalDocument.\(holderID.uuidString)"
+        case .addPersonalDocument(let holderID): "personalDocument.\(holderID?.uuidString ?? "")"
         }
     }
 }

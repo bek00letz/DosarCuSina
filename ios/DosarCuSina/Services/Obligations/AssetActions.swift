@@ -26,6 +26,9 @@ public struct PlannedObligation: Hashable, Sendable, Identifiable {
     /// Nil when the person still has to pick it.
     public var firstDue: CalendarDay?
     public var isSelected: Bool
+    /// Whether its first date had to be asked when it was planned: nothing the section says
+    /// works it out (the current ITP's expiry). Such a deadline starts unticked.
+    public let asksFirstDate: Bool
 
     public var id: String { blueprint.key }
 
@@ -33,6 +36,17 @@ public struct PlannedObligation: Hashable, Sendable, Identifiable {
         self.blueprint = blueprint
         self.firstDue = firstDue
         self.isSelected = isSelected
+        self.asksFirstDate = firstDue == nil
+    }
+
+    /// Ticked at first: a deadline the category suggests, once its first date is worked out
+    /// (from a field, an interval after today, its next fixed date). One whose date must be
+    /// asked starts unticked, so making a section never stops on dates: it can be added later
+    /// from the section's page, or straight from a photo of the paper. The person may still
+    /// tick it, and then give its date. The one rule for every category, by the blueprint's
+    /// `firstDue`, never by a category.
+    public static func startsSelected(_ blueprint: ObligationBlueprint, firstDue: CalendarDay?) -> Bool {
+        blueprint.isSuggested && firstDue != nil
     }
 }
 
@@ -63,11 +77,9 @@ public final class AssetActions {
         let today = CalendarDay(now(), calendar: calendar)
         let values = values.applyingRules(of: definition, previous: nil, calendar: calendar)
         return definition.blueprints.filter { $0.appliesWhen?.isMet(by: values) ?? true }.map { blueprint in
-            PlannedObligation(
-                blueprint: blueprint,
-                firstDue: RecurrenceEngine.firstDue(for: blueprint, values: values, today: today, calendar: calendar),
-                isSelected: blueprint.isSuggested
-            )
+            let firstDue = RecurrenceEngine.firstDue(for: blueprint, values: values, today: today, calendar: calendar)
+            return PlannedObligation(blueprint: blueprint, firstDue: firstDue,
+                                     isSelected: PlannedObligation.startsSelected(blueprint, firstDue: firstDue))
         }
     }
 

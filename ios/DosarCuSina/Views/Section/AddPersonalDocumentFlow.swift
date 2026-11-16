@@ -1,12 +1,13 @@
 import SwiftUI
 import SwiftData
 
-/// Adding a document for a household member who is already chosen: a photo
-/// first (the capture flow reads the type, the fields and the expiry and files
-/// it under them), or "Scriu eu" on one screen. Either way it lands on the
-/// document's own page.
+/// Adding a household member's document: a photo first (the capture flow reads the type,
+/// the fields and the expiry and files it under them), or "Scriu eu" on one screen. With
+/// the member already chosen (their page, a checklist) it is filed under them; without one
+/// (the Acte box) the photo names them, making the person when they aren't in the binder
+/// yet, and "Scriu eu" asks "Al cui e?" first. Either way it lands on the document's own page.
 struct AddPersonalDocumentFlow: View {
-    let holderID: UUID
+    let holderID: UUID?
     /// Called after the document is saved, with its id, once the sheet is closing.
     let onCreated: (UUID) -> Void
 
@@ -21,25 +22,23 @@ struct AddPersonalDocumentFlow: View {
     @State private var draft = PersonalDocumentDraft()
     @State private var errorMessage: String?
 
-    init(holderID: UUID, onCreated: @escaping (UUID) -> Void) {
+    init(holderID: UUID?, onCreated: @escaping (UUID) -> Void) {
         self.holderID = holderID
         self.onCreated = onCreated
-        let id = holderID
+        let id = holderID ?? UUID()
         _matches = Query(filter: #Predicate<Asset> { $0.id == id })
     }
 
     var body: some View {
         Group {
-            if let holder = matches.first {
-                if let capture {
-                    CaptureFlowView(input: capture) { result in finishCapture(result, holder: holder) }
-                        .transition(.opacity)
-                } else {
-                    start(holder)
-                        .transition(.opacity)
-                }
-            } else {
+            if holderID != nil, matches.first == nil {
                 NavigationStack { MissingRecordView() }
+            } else if let capture {
+                CaptureFlowView(input: capture) { result in finishCapture(result) }
+                    .transition(.opacity)
+            } else {
+                start(matches.first)
+                    .transition(.opacity)
             }
         }
         .dsAnimation(value: capture?.id)
@@ -48,13 +47,15 @@ struct AddPersonalDocumentFlow: View {
 
     // MARK: Start
 
-    private func start(_ holder: Asset) -> some View {
+    private func start(_ holder: Asset?) -> some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: DS.Space.s) {
-                    Text("Pentru \(holder.name)", comment: "Who a new document is for, at the top of the add-document sheet.")
-                        .dsFont(.title)
-                        .padding(.bottom, DS.Space.xs)
+                    if let holder {
+                        Text("Pentru \(holder.name)", comment: "Who a new document is for, at the top of the add-document sheet.")
+                            .dsFont(.title)
+                            .padding(.bottom, DS.Space.xs)
+                    }
                     if CaptureSource.isCameraAvailable {
                         DSActionCard("Fotografiază", subtitle: "Fotografiezi actul, iar eu completez ce act e, datele și când expiră.", systemImage: "camera.fill") {
                             source = .camera
@@ -81,14 +82,22 @@ struct AddPersonalDocumentFlow: View {
                 ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
             }
             .navigationDestination(isPresented: $isTyping) {
-                PersonalDocumentForm(holder: holder, draft: $draft) { document in
-                    dismiss()
-                    onCreated(document.id)
+                if let holder {
+                    PersonalDocumentForm(holder: .existing(holder), draft: $draft) { document in
+                        dismiss()
+                        onCreated(document.id)
+                    }
+                } else {
+                    // Whose it is comes first; a photo says it by itself.
+                    HolderStep(draft: $draft) { document in
+                        dismiss()
+                        onCreated(document.id)
+                    }
                 }
             }
             .captureSourcePicker($source) { payload in
                 errorMessage = nil
-                capture = CaptureFlowInput(payload: payload, preferredAssetID: holder.id, filesAsPersonalDocument: true)
+                capture = CaptureFlowInput(payload: payload, preferredAssetID: holder?.id, filesAsPersonalDocument: true)
             } onError: { error in
                 errorMessage = SaveFailure.message(for: error, formKept: false)
             }
@@ -97,7 +106,7 @@ struct AddPersonalDocumentFlow: View {
 
     // MARK: Capture
 
-    private func finishCapture(_ result: CaptureFlowResult, holder: Asset) {
+    private func finishCapture(_ result: CaptureFlowResult) {
         switch result {
         case .filed(let toast, let assetID):
             dismiss()
@@ -112,13 +121,79 @@ struct AddPersonalDocumentFlow: View {
     }
 }
 
+// MARK: - Al cui e?
+
+/// Whose a typed-in document is, before its form: one of the household's people, or
+/// someone new, made with the document in one step.
+private struct HolderStep: View {
+    @Binding var draft: PersonalDocumentDraft
+    let onSaved: (Asset) -> Void
+
+    @Query(sort: \Asset.name) private var assets: [Asset]
+    @Query private var templates: [CategoryTemplate]
+    @State private var choice: PersonalDocumentHolder.Choice?
+    @State private var newName = ""
+    @State private var reveals = false
+    @State private var isWriting = false
+
+    var body: some View {
+        let members = PersonalDocumentHolder.members(in: assets, templates: templates)
+        let chosen = PersonalDocumentHolder.chosen(choice ?? (members.isEmpty ? .someoneNew : nil), newName: newName, among: members)
+        ScrollView {
+            VStack(alignment: .leading, spacing: DS.Space.s) {
+                DSCard {
+                    VStack(spacing: 0) {
+                        ForEach(members) { member in
+                            DSCheckRow(title: Text(verbatim: member.name), isOn: choice == .member(member.id)) {
+                                choice = .member(member.id)
+                            }
+                            DSRowSeparator()
+                        }
+                        DSCheckRow(title: Text("Altcineva", comment: "Whose document: someone not in the binder yet."),
+                                   isOn: choice == .someoneNew || members.isEmpty) {
+                            choice = .someoneNew
+                        } detail: {
+                            DSTextField("Nume și prenume", text: $newName, prompt: "Manole Corina", isRequired: true,
+                                        footnote: "Îl adaug în dosar odată cu actul.")
+                        }
+                    }
+                }
+                if reveals, chosen == nil, choice != .someoneNew, !members.isEmpty {
+                    Text("Alege al cui e actul.", comment: "Error when continuing without choosing whose a document is.")
+                        .dsFont(.footnote)
+                        .foregroundStyle(DSStatus.overdue.textColor)
+                }
+            }
+            .padding(DS.Space.m)
+            .frame(maxWidth: 640)
+            .frame(maxWidth: .infinity)
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .background(DS.Palette.background)
+        .environment(\.dsRevealsValidation, reveals)
+        .navigationTitle(Text("Al cui e?", comment: "Title of the step that asks whose a typed-in document is."))
+        .navigationBarTitleDisplayMode(.inline)
+        .dsPinnedAction {
+            DSPrimaryButton("Continuă") {
+                guard chosen != nil else { reveals = true; return }
+                isWriting = true
+            }
+        }
+        .navigationDestination(isPresented: $isWriting) {
+            if let chosen {
+                PersonalDocumentForm(holder: chosen, draft: $draft, onSaved: onSaved)
+            }
+        }
+    }
+}
+
 // MARK: - Scriu eu
 
 /// One screen: what the document is (with its variant, only where there are
 /// real ones), the name it gets by itself, the expiry with its reminder in
 /// plain words, and "Salvează".
 private struct PersonalDocumentForm: View {
-    let holder: Asset
+    let holder: PersonalDocumentHolder
     @Binding var draft: PersonalDocumentDraft
     let onSaved: (Asset) -> Void
 
@@ -134,7 +209,7 @@ private struct PersonalDocumentForm: View {
     /// A document for an example person asks "Păstrezi … ca a ta?" first.
     @State private var exampleQuestion: ExampleSectionQuestion?
 
-    init(holder: Asset, draft: Binding<PersonalDocumentDraft>, onSaved: @escaping (Asset) -> Void) {
+    init(holder: PersonalDocumentHolder, draft: Binding<PersonalDocumentDraft>, onSaved: @escaping (Asset) -> Void) {
         self.holder = holder
         self._draft = draft
         self.onSaved = onSaved

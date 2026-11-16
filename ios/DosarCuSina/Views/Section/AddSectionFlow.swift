@@ -375,6 +375,13 @@ private struct ObligationsStep: View {
                     }
                     .dsAnimation(value: model.planned.map(\.isSelected))
                 }
+                // Those whose date must be asked start unticked (`PlannedObligation.startsSelected`).
+                if model.offersDatesForLater {
+                    Text("Pe cele care cer o dată le poți adăuga și mai târziu, din pagina secțiunii sau dintr-o poză a actului.",
+                         comment: "Under the deadlines offered when adding a section: the unticked ones can be added later.")
+                        .dsFont(.footnote)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
             .padding(DS.Space.m)
             .frame(maxWidth: 640)
