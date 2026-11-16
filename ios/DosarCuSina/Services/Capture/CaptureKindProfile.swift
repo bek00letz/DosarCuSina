@@ -456,7 +456,7 @@ struct CaptureKindProfile: Sendable {
             documentKind: .report, documentType: nil, trade: .doctor,
             expectedKeys: [.provider, .issueDate],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: true, identifierKeys: [],
-            name: "Rezultat medical", noun: Noun(.on, "buletinul de analize", the: "buletinul de analize", .masculine), titleRule: .fixed("Rezultat analize"),
+            name: "Buletin de analize", noun: Noun(.on, "buletinul de analize", the: "buletinul de analize", .masculine), titleRule: .fixed("Buletin de analize"),
             modelDescription: "medical test result", sectionName: .fixed("Sănătate")
         ),
         other,

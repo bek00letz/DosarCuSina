@@ -2215,6 +2215,9 @@
     "Bujii" : {
 
     },
+    "Buletin de analize" : {
+
+    },
     "Buletin, pașaport, permis, cu reînnoirea din timp." : {
       "comment" : "Category summary"
     },
@@ -7056,12 +7059,6 @@
     },
     "Rezolvat" : {
       "comment" : "Status of an obligation that has been completed."
-    },
-    "Rezultat analize" : {
-
-    },
-    "Rezultat medical" : {
-
     },
     "Rezultatele" : {
       "comment" : "Am rezolvat: the results of yearly tests."
