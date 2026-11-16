@@ -32,8 +32,9 @@ struct HistoryEntryShape: Equatable {
 
     /// Above the rows of what was done.
     var itemsHeader: String
-    /// Above who did it.
-    var providerHeader: String
+    /// Above who did it; nil when the record names no one (a note): nothing that makes one
+    /// adds a person, so its page has no place for one.
+    var providerHeader: String?
     /// Before the number printed on its paper: „Factura nr.” for a bill.
     var reference: Reference
     var rating: Rating
@@ -130,7 +131,7 @@ struct HistoryEntryShape: Equatable {
             return HistoryEntryShape(itemsHeader: HistoryEntryWording.whatTheBillHolds, providerHeader: HistoryEntryWording.paidTo,
                                      reference: .invoice, rating: .never, ratingHeader: HistoryEntryWording.howItWent)
         case .note:
-            return HistoryEntryShape(itemsHeader: HistoryEntryWording.whatWasNoted, providerHeader: HistoryEntryWording.whoGaveIt,
+            return HistoryEntryShape(itemsHeader: HistoryEntryWording.whatWasNoted, providerHeader: nil,
                                      reference: .number, rating: .never, ratingHeader: HistoryEntryWording.howItWent)
         }
     }

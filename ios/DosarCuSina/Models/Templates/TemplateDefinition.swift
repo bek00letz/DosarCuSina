@@ -58,8 +58,9 @@ public enum SectionNoun: String, Codable, Sendable, CaseIterable {
 /// păstrezi” for a car). A new section's name before anything is typed, and the name it gets
 /// when the person leaves it empty, are this (`AddSectionModel.suggestedName`), never the
 /// category's name. A built-in declares it (`CategoryBehavior.singular`, with no default); a
-/// category of one's own is named as one thing already („Barca, Rulota, Pianul”), so its own
-/// is its name (`ofOwnCategory(named:)`). Part of the `.dosar` contract:
+/// category of one's own is named as one thing already („Barca, Rulota, Pianul”), so its
+/// sections take its name (`TemplateDefinition.sectionName`) and no gender is guessed for it:
+/// what agrees with a section's gender is only ever said of a built-in's. Part of the `.dosar` contract:
 /// `{"name": "Mașina", "gender": "feminine"}`.
 public struct SectionSingular: Codable, Hashable, Sendable {
     /// One section, with its article, as a name in the binder: „Mașina”, „Actul”.
@@ -69,15 +70,6 @@ public struct SectionSingular: Codable, Hashable, Sendable {
     public init(_ name: String, _ gender: GrammaticalGender) {
         self.name = name
         self.gender = gender
-    }
-
-    /// A category of one's own: its name, which the form asks as one thing, and the gender its
-    /// first word's ending gives („Barca”, „Categorie” are feminine; „Pianul”, „Câinele” not).
-    public static func ofOwnCategory(named name: String) -> SectionSingular {
-        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        let first = RomanianText.fold(trimmed.split(separator: " ").first.map(String.init) ?? trimmed)
-        let feminine = first.hasSuffix("a") || first.hasSuffix("ie")
-        return SectionSingular(trimmed, feminine ? .feminine : .masculineOrNeuter)
     }
 }
 
@@ -173,7 +165,7 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
     public var shortlistOrder: Int?
     /// What one of its sections is called („Mașina”) and that noun's gender. Every built-in
     /// declares it (there is no default); nil for a category of one's own, whose sections take
-    /// its name (`TemplateDefinition.sectionSingular`).
+    /// its name (`TemplateDefinition.sectionName`).
     public var singular: SectionSingular?
 
     public init(box: Box = .perSection, listing: Listing = .plain, role: Role? = nil, parentPocket: SectionPocket? = nil, addedOnlyUnderParent: Bool = false,
@@ -304,10 +296,10 @@ public struct TemplateDefinition: Hashable, Sendable, Codable, Identifiable {
     public var allFields: [FieldDefinition] { sections.flatMap(\.fields) }
 
     /// What one of its sections is called: what a built-in declares, else (a category of one's
-    /// own, or a built-in stored before catalogs declared it) one thing named as the category.
-    public var sectionSingular: SectionSingular {
-        if let singular = behavior.singular, !singular.name.isEmpty { return singular }
-        return .ofOwnCategory(named: name)
+    /// own, named as one thing already) the category's name.
+    public var sectionName: String {
+        if let singular = behavior.singular, !singular.name.isEmpty { return singular.name }
+        return name.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     public func field(_ key: String) -> FieldDefinition? {
