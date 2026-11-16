@@ -140,9 +140,9 @@ enum AddSectionWording {
     static var essentialsTitle: String { String(localized: "Ce trebuie știut", comment: "Title of the essentials step.") }
     static var name: String { String(localized: "Nume") }
 
-    /// Under the name, with an example that fits the category: „Cum îi spui acasă, de exemplu „Golful”.”
+    /// Under the name, with an example that fits the category: „Cum vrei să apară în dosar, de exemplu „Golful”.”
     static func nameFootnote(example: String) -> String {
-        String(localized: "Cum îi spui acasă, de exemplu „\(example)”.",
+        String(localized: "Cum vrei să apară în dosar, de exemplu „\(example)”.",
                comment: "Add form, under a new section's name: an example of a name that fits its category, such as „Golful” for a car.")
     }
 
@@ -158,28 +158,28 @@ enum AddSectionWording {
     static func nameExample(for behavior: CategoryBehavior) -> String? {
         switch behavior.role {
         case .personalDocument?:
-            return String(localized: "Buletinul", comment: "Example name of a new personal document, in „Cum îi spui acasă, de exemplu …”.")
+            return String(localized: "Buletinul", comment: "Example name of a new personal document, in „Cum vrei să apară în dosar, de exemplu …”.")
         case .holder?:
-            return String(localized: "Mama", comment: "Example name of a new person documents are filed under, in „Cum îi spui acasă, de exemplu …”.")
+            return String(localized: "Mama", comment: "Example name of a new person documents are filed under, in „Cum vrei să apară în dosar, de exemplu …”.")
         case .subscription?:
-            return String(localized: "Internetul", comment: "Example name of a new subscription, in „Cum îi spui acasă, de exemplu …”.")
+            return String(localized: "Internetul", comment: "Example name of a new subscription, in „Cum vrei să apară în dosar, de exemplu …”.")
         case .home?, .vehicle?, nil:
             break
         }
         switch behavior.sectionNoun {
         case .car?:
-            return String(localized: "Golful", comment: "Example name of a new car, in „Cum îi spui acasă, de exemplu …”.")
+            return String(localized: "Golful", comment: "Example name of a new car, in „Cum vrei să apară în dosar, de exemplu …”.")
         case .home?:
-            return String(localized: "Apartamentul", comment: "Example name of a new home, in „Cum îi spui acasă, de exemplu …”.")
+            return String(localized: "Apartamentul", comment: "Example name of a new home, in „Cum vrei să apară în dosar, de exemplu …”.")
         case .pet?:
             // PawPaw: the owner's grey tabby.
-            return String(localized: "PawPaw", comment: "Example name of a new pet, in „Cum îi spui acasă, de exemplu …”.")
+            return String(localized: "PawPaw", comment: "Example name of a new pet, in „Cum vrei să apară în dosar, de exemplu …”.")
         case .bike?:
-            return String(localized: "Bicicleta de oraș", comment: "Example name of a new bike, in „Cum îi spui acasă, de exemplu …”.")
+            return String(localized: "Bicicleta de oraș", comment: "Example name of a new bike, in „Cum vrei să apară în dosar, de exemplu …”.")
         case .plant?:
-            return String(localized: "Ficusul din sufragerie", comment: "Example name of a new plant, in „Cum îi spui acasă, de exemplu …”.")
+            return String(localized: "Ficusul din sufragerie", comment: "Example name of a new plant, in „Cum vrei să apară în dosar, de exemplu …”.")
         case .espressoMachine?:
-            return String(localized: "Espressorul din bucătărie", comment: "Example name of a new espresso machine, in „Cum îi spui acasă, de exemplu …”.")
+            return String(localized: "Espressorul din bucătărie", comment: "Example name of a new espresso machine, in „Cum vrei să apară în dosar, de exemplu …”.")
         case nil:
             return nil
         }

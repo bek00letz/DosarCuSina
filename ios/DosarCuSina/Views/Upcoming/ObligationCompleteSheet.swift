@@ -139,16 +139,19 @@ struct ObligationCompleteSheet: View {
                 } else if let document {
                     let next = CaptureFiler.nextDay(in: document)
                     // A photo kept only on request (a bank card, a page with a card's number) isn't promised here.
-                    let message: String = if let next, shape.newEnd == nil {
+                    // A paper that carries no date (an invoice, a receipt) says only that it was read.
+                    let message: String? = if let next, shape.newEnd == nil {
                         CompletionWording.nextDeadline(DueWording.date(next, today: CalendarDay(Date())))
                     } else if next != nil, let newEnd = shape.newEnd {
                         newEnd.filledFromPhoto
+                    } else if !paper.readsADate {
+                        nil
                     } else if document.photoIsOnRequest {
                         paper.noDateWords
                     } else {
                         paper.noDateKeptWords
                     }
-                    DSNotice(.success, title: LocalizedStringKey(paper.readWords), message: LocalizedStringKey(message))
+                    DSNotice(.success, title: LocalizedStringKey(paper.readWords), message: message.map { LocalizedStringKey($0) })
                     Button(CompletionWording.anotherPhoto) { isChoosingSource = true }
                         .frame(minHeight: DS.Control.minimumHitTarget)
                 } else {

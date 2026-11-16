@@ -162,7 +162,8 @@ struct CopyMatrixTests {
             if let cost = shape.cost { asks.append(cost.words) }
             if let paper = shape.paper {
                 asks.append("\(paper.headerWords) (\(paper.purposeWords)) — \(paper.actionWords): \(paper.exampleWords) "
-                            + "[\(paper.readingWords) / \(paper.readWords) / \(paper.unreadWords) / \(paper.noDateKeptWords)]")
+                            + "[\(paper.readingWords) / \(paper.readWords) / \(paper.unreadWords)"
+                            + (paper.readsADate ? " / \(paper.noDateKeptWords)]" : "]"))
             }
             if let newEnd = shape.newEnd { asks.append("\(newEnd.label) — \(CompletionWording.newEndFootnote)") }
             if let note = shape.note { asks.append("\(CompletionWording.note) — \(note.prompt)") }
@@ -296,6 +297,9 @@ struct CopyMatrixTests {
         for kind in CompletionKind.allCases {
             guard let paper = kind.shape.paper else { continue }
             let (object, subject) = Self.pronouns(paper.gender)
+            // „Rezultatele nu s-au citit”, „Factura nu s-a citit”.
+            let unread = RomanianText.fold(paper.unreadWords)
+            #expect(unread.contains(paper.gender == .plural ? "s-au" : "s-a "), "\(kind): „\(paper.unreadWords)”")
             for sentence in [paper.purposeWords, paper.noDateWords, paper.noDateKeptWords] {
                 let words = RomanianText.fold(sentence).split { !$0.isLetter }.map(String.init)
                 for (index, word) in words.enumerated() {

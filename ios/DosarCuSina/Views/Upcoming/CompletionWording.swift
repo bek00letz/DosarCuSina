@@ -106,7 +106,21 @@ extension CompletionShape.Paper {
 
     /// When it couldn't be read: „Raportul ITP nu s-a citit”.
     var unreadWords: String {
-        String(localized: "\(name) nu s-a citit", comment: "Am rezolvat: the paper's photo couldn't be read. The argument is the paper's name, e.g. „Raportul ITP”.")
+        switch gender {
+        case .masculine, .feminine:
+            String(localized: "\(name) nu s-a citit", comment: "Am rezolvat: the paper's photo couldn't be read. The argument is the paper's name, e.g. „Raportul ITP”.")
+        case .plural:
+            String(localized: "\(name) nu s-au citit", comment: "Am rezolvat: the photo of papers named by a plural noun couldn't be read, e.g. „Rezultatele”.")
+        }
+    }
+
+    /// Whether the paper carries a date the sheet looks for (the next one, a new expiry or
+    /// end): only then does reading it say that none was found.
+    var readsADate: Bool {
+        switch use {
+        case .nextDate, .expiry, .end: true
+        case .keep, .history, .logged: false
+        }
     }
 
     /// Read, with no new date on it, its photo kept only on request: „Nu am găsit o dată nouă pe el.”
