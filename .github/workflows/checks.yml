@@ -2,9 +2,10 @@
 #   architecture-check  the rules in AGENTS.md (scripts/architecture-check.sh), the same
 #                       script the pre-commit hook runs
 #   build-and-test      builds the app with its widgets and share extension, runs
-#                       DosarCuSinaTests and checks every counted string has plural
-#                       forms (scripts/plural-check.py), through tests/run_tests.sh
-#                       like a local run
+#                       DosarCuSinaTests, checks every string is in its String Catalog
+#                       and nothing else is (scripts/catalog-check.py) and every counted
+#                       string has plural forms (scripts/plural-check.py), through
+#                       tests/run_tests.sh like a local run
 #   release-build       builds the same targets in the Release configuration, the one
 #                       TestFlight and the App Store get
 # The privacy check has its own workflow (privacy-check.yml).
@@ -41,6 +42,7 @@ jobs:
         run: |
           scripts/architecture-check.sh --self-test
           python3 scripts/plural-check.py --self-test
+          python3 scripts/catalog-check.py --self-test
 
       - name: Check the code
         env:
