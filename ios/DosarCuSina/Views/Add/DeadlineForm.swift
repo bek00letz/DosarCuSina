@@ -90,7 +90,8 @@ struct DeadlineForm: View {
                                         .dsFont(.subheadline)
                                 }
                                 DS.Hairline()
-                                DSReminderTimeField(minuteOfDay: $reminderMinute, usualMinuteOfDay: preferences.reminderMinuteOfDay)
+                                // Optional: one row with the general time until the person opens it.
+                                DSReminderTimeField(minuteOfDay: $reminderMinute, usualMinuteOfDay: preferences.reminderMinuteOfDay, startsCollapsed: true)
                             }
                         }
                     }
@@ -226,6 +227,14 @@ enum DeadlineChoice {
             }
         }
 
+        /// The answer a deadline's kind is, for the four kinds the answers give; nil for any
+        /// other (a deadline from an older backup with no category's blueprint), whose kind
+        /// "Editează" then leaves as it is.
+        init?(kind: ObligationKind) {
+            guard let answer = Self.allCases.first(where: { $0.kind == kind }) else { return nil }
+            self = answer
+        }
+
         var title: String {
             switch self {
             case .legal: String(localized: "Obligatoriu prin lege", comment: "How important a deadline is.")
@@ -263,5 +272,24 @@ enum DeadlineChoice {
     /// The reminders a deadline of this importance gets: its kind's default profile.
     static func reminders(for importance: Importance) -> ReminderProfile {
         importance.kind.defaultProfile
+    }
+
+    /// A deadline's reminders once its importance moves it from kind `old` to `new`: what the
+    /// person can't set (how serious it is, how many days late is still calm) is the new kind's;
+    /// the leads and the follow-up the new kind's only while they are still the old kind's own,
+    /// else the person's, as they set them. The travel margin stays. The one rule, for
+    /// `ObligationActions.setImportance` and for the edit sheet while it is open.
+    static func reminders(_ profile: ReminderProfile, from old: ObligationKind, to new: ObligationKind) -> ReminderProfile {
+        guard old != new else { return profile }
+        let was = old.defaultProfile
+        let becomes = new.defaultProfile
+        let isTheKinds = profile.leadDays == was.leadDays && profile.followUpAfterLapse == was.followUpAfterLapse
+        return ReminderProfile(
+            leadDays: isTheKinds ? becomes.leadDays : profile.leadDays,
+            consequence: becomes.consequence,
+            graceDays: becomes.graceDays,
+            followUpAfterLapse: isTheKinds ? becomes.followUpAfterLapse : profile.followUpAfterLapse,
+            travelMarginDays: profile.travelMarginDays
+        )
     }
 }
