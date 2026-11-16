@@ -183,16 +183,20 @@ public struct TemplateStore {
     }
 
     /// Creates a category of the person's own from the few plain questions it answers
-    /// (`CategorySwitches`): its pockets, its box, a counter and a service deadline.
+    /// (`CategorySwitches`): its pockets, what its sections belong to, a counter and a service
+    /// deadline, and one box for its sections or one each (its grouping, `setGrouping`).
     @discardableResult
     public func createCustom(name: String, symbol: String, switches: CategorySwitches, tint: TemplateTint = .gray, isSensitive: Bool = false) throws -> CategoryTemplate {
         var definition = switches.definition(key: TemplateDefinition.newCustomKey(), name: name, symbol: symbol, tint: tint)
         definition.isSensitiveByDefault = isSensitive
         let order = ((try all()).map(\.homeOrder).max() ?? -1) + 1
-        let template = CategoryTemplate(definition: definition, isBuiltIn: false, homeOrder: order)
-        context.insert(template)
-        try save()
-        return template
+        return try UnitOfWork.perform(in: context) {
+            let template = CategoryTemplate(definition: definition, isBuiltIn: false, homeOrder: order)
+            context.insert(template)
+            if template.grouping != switches.grouping { try setGrouping(template, switches.grouping) }
+            try save()
+            return template
+        }
     }
 
     /// The deadlines a change of switches touches: the service deadlines a switch turns off
@@ -241,7 +245,10 @@ public struct TemplateStore {
     /// hides, and comes back with what it had. With `changingDeadlines`, in the same step,
     /// the service deadlines a switch turned off are paused, the paused ones it turned back
     /// on run again, and running ones (and those resumed) count by the new interval from
-    /// their next cycle; their due day stays (`effects(of:on:)`).
+    /// their next cycle; their due day stays (`effects(of:on:)`). Its grouping is the one a
+    /// box's menu sets (`setGrouping`). A section filed under one that no longer plays the part
+    /// the category belongs to (it said "O mașină", now "Nimic" or "O locuință") stands on its
+    /// own again, in its category's box, so nothing is left where no page lists it.
     @discardableResult
     public func editCustom(_ template: CategoryTemplate, name: String, symbol: String, switches: CategorySwitches, changingDeadlines: Bool) throws -> UndoReceipt {
         guard !template.isBuiltIn else { throw TemplateStoreError.builtInBehaviourIsFixed }
@@ -251,6 +258,9 @@ public struct TemplateStore {
             definition.name = name
             definition.symbol = symbol
             template.apply(definition)
+            takeBoxAsGrouping(template)
+            if template.grouping != switches.grouping { try setGrouping(template, switches.grouping) }
+            try standOnTheirOwnWhereNoLongerBelonging(template)
             let rules = Self.serviceRules(of: definition)
             let actions = ObligationActions(context: context)
             for obligation in effects.pausing { try actions.pause(obligation) }
@@ -261,6 +271,32 @@ public struct TemplateStore {
             }
             try save()
         }.receipt
+    }
+
+    /// A category of one's own an earlier version made with one box of its own for the whole
+    /// category (`CategoryBehavior.Box.wholeCategory`, "O cutie pentru toate" before it was the
+    /// grouping): its box becomes one per section, grouped, which looks the same, so the one
+    /// choice of one box is the grouping (`CategorySwitches.grouping`). A grouping already chosen
+    /// stays. Run by `OwnCategoryBoxesStep` and by `editCustom`; a built-in keeps the catalog's box.
+    /// Changes nothing anyone sees, and saves nothing itself.
+    @discardableResult
+    func takeBoxAsGrouping(_ template: CategoryTemplate) -> Bool {
+        guard !template.isBuiltIn, template.behavior.box == .wholeCategory else { return false }
+        template.behavior.box = .perSection
+        if template.chosenGrouping == nil { template.chosenGrouping = .grouped }
+        return true
+    }
+
+    /// The sections of `template` filed under one whose category doesn't play the part it may
+    /// belong to, taken out to stand on their own. Saves nothing itself.
+    private func standOnTheirOwnWhereNoLongerBelonging(_ template: CategoryTemplate) throws {
+        let key = template.key
+        let sections = try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.templateKey == key }))
+        let parents = try template.behavior.mayBelongTo.map { try keys(playing: $0) } ?? []
+        for section in sections {
+            guard let parent = section.parent, !parents.contains(parent.templateKey) else { continue }
+            section.parent = nil
+        }
     }
 
     /// Changes which pockets a category shows.

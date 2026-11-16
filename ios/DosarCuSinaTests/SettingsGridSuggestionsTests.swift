@@ -186,7 +186,7 @@ struct SettingsGridSuggestionsTests {
         let note = try #require(AttentionModel.suggestionNote(count: center.suggestions.count, topics: center.suggestionTopics))
         #expect(note.opens == .suggestions)
         #expect(note.title == "O sugestie pentru dosar")
-        #expect(note.detail == "Ce stă într-o locuință. Nu schimb nimic fără tine.")
+        #expect(note.detail == "Ce ține de altă secțiune. Nu schimb nimic fără tine.")
         #expect(!note.detail.contains("Ferigă"), "The note names nothing a locked section wouldn't")
         #expect(note.expectedDay == nil)
 

@@ -239,13 +239,13 @@ struct SectionPocketList<UnderUpcoming: View>: View {
     var body: some View {
         let contents = PocketContents(asset: asset, definition: definition, templates: templates,
                                       providers: ProviderDirectory(context: context).providers(for: asset))
-        let layout = contents.layout(pockets: pockets, revealed: addsKeyFact ? [.keyFacts] : [])
+        let layout = contents.layout(pockets: pockets, revealed: addsKeyFact ? [.listed(.keyFacts)] : [])
         VStack(alignment: .leading, spacing: DS.Space.xl) {
-            if !layout.shown.contains(.upcoming) { underUpcoming }
+            if !layout.shown.contains(.listed(.upcoming)) { underUpcoming }
             ForEach(layout.shown, id: \.self) { pocket in
                 PocketView(pocket: pocket, asset: asset, definition: definition, toast: $toast, error: $error, addsKeyFact: $addsKeyFact, add: add)
                     .transition(.opacity)
-                if pocket == .upcoming { underUpcoming }
+                if pocket == .listed(.upcoming) { underUpcoming }
             }
             PocketAdditionsMenu(additions: layout.additions, add: add)
         }
@@ -300,7 +300,7 @@ struct SectionPocketList<UnderUpcoming: View>: View {
 
 /// One pocket of a section page.
 struct PocketView: View {
-    let pocket: SectionPocket
+    let pocket: PagePocket
     let asset: Asset
     let definition: TemplateDefinition
     @Binding var toast: DSToast?
@@ -310,19 +310,19 @@ struct PocketView: View {
 
     var body: some View {
         switch pocket {
-        case .upcoming:
+        case .listed(.upcoming):
             UpcomingPocket(asset: asset, add: add)
-        case .tenants, .products, .subscriptions, .plants:
+        case .category, .listed(.tenants), .listed(.products), .listed(.subscriptions), .listed(.plants):
             ChildrenPocket(asset: asset, pocket: pocket, add: add)
-        case .documents:
+        case .listed(.documents):
             DocumentsPocket(asset: asset, add: add)
-        case .history:
+        case .listed(.history):
             HistoryPocket(asset: asset, definition: definition, add: add)
-        case .people:
+        case .listed(.people):
             PeoplePocket(asset: asset, add: add)
-        case .money:
+        case .listed(.money):
             MoneyPocket(asset: asset, definition: definition)
-        case .keyFacts:
+        case .listed(.keyFacts):
             KeyFactsPocket(asset: asset, definition: definition, toast: $toast, error: $error, addsRow: $addsKeyFact)
         }
     }

@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 /// What a category of the person's own is, asked the same way when it is made
 /// ("Altceva…") and when it is changed later (Setări › Categoriile tale): its name, its
@@ -8,11 +9,15 @@ struct CustomCategoryForm: View {
     /// Said under the questions, such as what happens to what was kept when one is turned off.
     var footnote: Text?
 
+    /// The categories in the binder, for what „Ține de…” offers (`CategorySwitches.belongingChoices`).
+    @Query private var templates: [CategoryTemplate]
+
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Space.xl) {
             DSTextField("Cum se numește", text: $draft.name, prompt: "Barca, Rulota, Pianul", isRequired: true)
             CustomSymbolPicker(symbol: $draft.symbol)
             questions
+            belonging
             boxes
             if let footnote {
                 footnote
@@ -109,6 +114,9 @@ struct CustomCategoryForm: View {
         case .engineHours?: parts.append(String(localized: "Revizii după ore", comment: "Summary of a category of one's own: a service by engine hours."))
         case nil: break
         }
+        if let role = switches.belongsTo {
+            parts.append(String(localized: "Ține de: \(BelongingWording.option(role).lowercased(with: .dosarDefault))", comment: "Summary of a category of one's own: what its sections belong to (o mașină)."))
+        }
         if parts.isEmpty { return String(localized: "Termene și date importante", comment: "Summary of a category of one's own that keeps nothing more.") }
         return parts.joined(separator: " · ")
     }
@@ -144,8 +152,56 @@ struct CustomCategoryForm: View {
         }
     }
 
+    // MARK: Ține de…
+
+    /// What its sections belong to: nothing, or one of the parts some category in the binder
+    /// plays (a home, a car, a person), never a category's name. Choosing one starts them in one
+    /// box, as plants do, so a section filed under a car still shows on the binder; the box
+    /// choice right under it can be changed.
+    private var belonging: some View {
+        let choices = CategorySwitches.belongingChoices(among: templates, current: draft.switches.belongsTo)
+        return VStack(alignment: .leading, spacing: DS.Space.xs) {
+            DSSectionHeader("Ține de…")
+            DSCard {
+                VStack(spacing: 0) {
+                    DSCheckRow(
+                        title: Text("Nimic", comment: "„Ține de…” choice of a category of one's own: its sections stand on their own."),
+                        isOn: draft.switches.belongsTo == nil,
+                        action: { draft.switches.belongsTo = nil }
+                    )
+                    .padding(.vertical, DS.Space.xs)
+                    ForEach(choices, id: \.self) { role in
+                        DSRowSeparator()
+                        DSCheckRow(
+                            title: Text(verbatim: BelongingWording.option(role)),
+                            isOn: draft.switches.belongsTo == role,
+                            action: { belong(to: role) }
+                        )
+                        .padding(.vertical, DS.Space.xs)
+                    }
+                }
+            }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel(Text("Ține de", comment: "VoiceOver label of the choice of what a category's sections belong to."))
+            Text("Fiecare apare și pe pagina celei de care ține și se adaugă și de acolo.", comment: "Explains „Ține de…”: each section shows on the page of the home, car or person it belongs to, and can be added from there.")
+                .dsFont(.footnote)
+                .foregroundStyle(DS.Palette.secondaryLabel)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .sensoryFeedback(.selection, trigger: draft.switches.belongsTo)
+    }
+
+    private func belong(to role: CategoryBehavior.Role) {
+        guard draft.switches.belongsTo != role else { return }
+        // From nothing to a part: one box for them all, as plants start.
+        if draft.switches.belongsTo == nil { draft.switches.grouping = .grouped }
+        draft.switches.belongsTo = role
+    }
+
     // MARK: Boxes
 
+    /// One box or one each: the category's grouping, the same choice a box's menu, the category's
+    /// page and Setări › Ecranul Dosar make (`CategorySwitches.grouping`).
     private var boxes: some View {
         VStack(alignment: .leading, spacing: DS.Space.xs) {
             DSSectionHeader("Pe ecranul Dosar")
@@ -154,16 +210,16 @@ struct CustomCategoryForm: View {
                     DSCheckRow(
                         title: Text("Câte o cutie pentru fiecare", comment: "Boxes choice: one box per section."),
                         subtitle: Text("Ca la mașini: fiecare are cutia ei.", comment: "Explains one box per section."),
-                        isOn: draft.switches.boxes == .perSection,
-                        action: { draft.switches.boxes = .perSection }
+                        isOn: draft.switches.grouping == .separate,
+                        action: { draft.switches.grouping = .separate }
                     )
                     .padding(.vertical, DS.Space.xs)
                     DSRowSeparator()
                     DSCheckRow(
-                        title: Text("O cutie pentru toate", comment: "Boxes choice: one box for the whole category."),
-                        subtitle: Text("Ca la Garanții: toate stau la un loc.", comment: "Explains one box for the category."),
-                        isOn: draft.switches.boxes == .oneForAll,
-                        action: { draft.switches.boxes = .oneForAll }
+                        title: Text("O cutie pentru toate", comment: "Boxes choice: one box for all of a category's sections, wherever they are filed."),
+                        subtitle: Text("Ca la plante: toate stau la un loc.", comment: "Explains one box for all of a category's sections."),
+                        isOn: draft.switches.grouping == .grouped,
+                        action: { draft.switches.grouping = .grouped }
                     )
                     .padding(.vertical, DS.Space.xs)
                 }

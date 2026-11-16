@@ -555,7 +555,7 @@ struct CustomCategorySettings: View {
                     } label: {
                         DSListRow(
                             title: Text(verbatim: template.name),
-                            subtitle: Text(verbatim: CustomCategoryForm.summary(of: CategorySwitches(reading: template.definition))),
+                            subtitle: Text(verbatim: CustomCategoryForm.summary(of: CategorySwitches(reading: template))),
                             systemImage: template.symbol,
                             tint: template.tintColor,
                             showsChevron: true

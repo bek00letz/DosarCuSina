@@ -244,8 +244,15 @@ final class BinderLayoutStore {
     func setGrouping(_ template: CategoryTemplate, _ grouping: BoxGrouping, assets: [Asset], context: ModelContext) throws {
         let members = BinderLayout.sectionBoxes(of: template.key, assets: assets.map(BinderLayout.AssetInfo.init))
         try TemplateStore(context: context).setGrouping(template, grouping)
+        keepOrder(of: template.key, members: members, grouped: grouping == .grouped)
+    }
+
+    /// This device's order kept around a category whose grouping just changed: from here, or from
+    /// a category of one's own's „O cutie pentru toate” in its edit sheet (`TemplateStore.editCustom`).
+    /// `members` are its sections' boxes as they were before, in the order they showed.
+    func keepOrder(of key: String, members: [BinderBoxID], grouped: Bool) {
         guard !saved.isEmpty else { return }
-        saved = BinderLayout.regrouped(saved, category: template.key, members: members, grouped: grouping == .grouped)
+        saved = BinderLayout.regrouped(saved, category: key, members: members, grouped: grouped)
         persist()
     }
 

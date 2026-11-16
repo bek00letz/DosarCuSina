@@ -45,6 +45,7 @@ struct DataRepairs {
         DayYearsStep(),
         EstimatedBillReadingsStep(),
         SectionsIntoTheirHomeStep(),
+        OwnCategoryBoxesStep(),
     ]
 
     static func step(_ id: DataRepairStepID) -> any DataRepairStep {
@@ -117,6 +118,7 @@ enum DataRepairStepID: String, CaseIterable, Sendable, Hashable {
     case dayYears = "day-years"
     case estimatedBillReadings = "estimated-bill-readings"
     case sectionsIntoTheirHome = "sections-into-their-home"
+    case ownCategoryBoxes = "own-category-boxes"
 }
 
 /// One thing a repair would change, in plain words, with what applying it needs.

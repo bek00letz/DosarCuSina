@@ -12,14 +12,49 @@ enum PocketFill: Equatable, Sendable {
     case notOffered
 }
 
+/// One pocket of a page: one its category lists (`SectionPocket`), or the sections of a category
+/// that belongs to the part this page plays and has no pocket of the catalog's (a category of
+/// one's own that says "Ține de… O mașină", on every car's page), named after that category
+/// (`CategoryBehavior.hasPocketOfItsOwn`). The page's one order: the listed pockets in theirs,
+/// the categories' pockets right after the catalog's own pockets of sections filed under it
+/// (tenants, products, subscriptions, plants), before Acte.
+enum PagePocket: Hashable, Sendable {
+    case listed(SectionPocket)
+    /// A category's own pocket: its key, and its name, the pocket's title.
+    case category(key: String, name: String)
+
+    var title: String {
+        switch self {
+        case .listed(let pocket): pocket.title
+        case .category(_, let name): name
+        }
+    }
+
+    /// The listed pocket, if it is one.
+    var listedPocket: SectionPocket? {
+        if case .listed(let pocket) = self { return pocket }
+        return nil
+    }
+
+    /// The pockets of a page, in the one order: `listed` (in the global order) with the
+    /// categories' own pockets (`categories`, in their binder order) after the last pocket of
+    /// sections filed under it.
+    static func ordered(listed: [SectionPocket], categories: [PagePocket]) -> [PagePocket] {
+        let pockets = SectionPocket.ordered(listed)
+        let split = pockets.firstIndex { $0 > .plants } ?? pockets.endIndex
+        return pockets[..<split].map(PagePocket.listed) + categories + pockets[split...].map(PagePocket.listed)
+    }
+}
+
 /// Something a page can add to one of its pockets. The one list behind both a pocket's own
 /// button and the page's "Adaugă…" menu, so they read and do the same; each opens its own
 /// flow in place, over the page (`SectionPocketList`).
 enum PocketAddition: Hashable, Identifiable, Sendable {
     /// A deadline, in the one deadline form (`DeadlineForm`): its category's usual ones or one of the person's own.
     case deadline
-    /// A section filed under this one (a tenant, a product, a subscription, a plant).
-    case child(SectionPocket, templateKey: String)
+    /// A section filed under this one (a tenant, a product, a subscription, a plant, one of a
+    /// category of one's own that belongs here).
+    case child(PagePocket, templateKey: String)
     /// A household member's own document (photo first, or typed in).
     case personalDocument
     /// A photo of a paper for this section, through capture (`photoFirstCapture`). Beside a
@@ -35,7 +70,7 @@ enum PocketAddition: Hashable, Identifiable, Sendable {
     var id: String {
         switch self {
         case .deadline: "deadline"
-        case .child(let pocket, let key): "child.\(pocket.rawValue).\(key)"
+        case .child(let pocket, let key): "child.\(pocket.listedPocket?.rawValue ?? "category").\(key)"
         case .personalDocument: "personalDocument"
         case .paper: "paper"
         case .visit: "visit"
@@ -45,15 +80,22 @@ enum PocketAddition: Hashable, Identifiable, Sendable {
     }
 
     /// The pocket it adds to, named under it in the menu.
-    var pocket: SectionPocket {
+    var pocket: PagePocket {
         switch self {
-        case .deadline: .upcoming
+        case .deadline: .listed(.upcoming)
         case .child(let pocket, _): pocket
-        case .personalDocument, .paper: .documents
-        case .visit: .history
-        case .person: .people
-        case .keyFact: .keyFacts
+        case .personalDocument, .paper: .listed(.documents)
+        case .visit: .listed(.history)
+        case .person: .listed(.people)
+        case .keyFact: .listed(.keyFacts)
         }
+    }
+
+    /// What the menu says under it: the pocket it goes in, unless its title names it already
+    /// („Adaugă în „Anvelope””).
+    var menuDetail: String? {
+        if case .child(.category, _) = self { return nil }
+        return pocket.title
     }
 
     var title: String {
@@ -71,11 +113,12 @@ enum PocketAddition: Hashable, Identifiable, Sendable {
         }
     }
 
-    private static func childTitle(_ pocket: SectionPocket) -> String {
+    private static func childTitle(_ pocket: PagePocket) -> String {
         switch pocket {
-        case .tenants: String(localized: "Adaugă un chiriaș", comment: "Button in the Chiriași pocket.")
-        case .products: String(localized: "Adaugă un produs", comment: "Button in the Produse pocket.")
-        case .plants: String(localized: "Adaugă o plantă", comment: "Button in the Plante pocket of a home's page.")
+        case .listed(.tenants): String(localized: "Adaugă un chiriaș", comment: "Button in the Chiriași pocket.")
+        case .listed(.products): String(localized: "Adaugă un produs", comment: "Button in the Produse pocket.")
+        case .listed(.plants): String(localized: "Adaugă o plantă", comment: "Button in the Plante pocket of a home's page.")
+        case .category(_, let name): String(localized: "Adaugă în „\(name)”", comment: "Button in the pocket of a category of one's own on its parent's page (a car's Anvelope): adds a section of it here.")
         default: String(localized: "Adaugă un abonament", comment: "Button in the Abonamente pocket.")
         }
     }
@@ -98,7 +141,7 @@ enum PocketAddition: Hashable, Identifiable, Sendable {
 /// card but folds into the page's one "Adaugă…" menu, by what it adds; Bani, which adds
 /// nothing itself, shows only once there is money.
 struct SectionPageLayout: Equatable, Sendable {
-    var shown: [SectionPocket]
+    var shown: [PagePocket]
     var additions: [PocketAddition]
 
     /// On: empty pockets fold into "Adaugă…". Off: every pocket the category lists shows,
@@ -109,15 +152,16 @@ struct SectionPageLayout: Equatable, Sendable {
     /// - Parameters:
     ///   - revealed: pockets shown although empty, because the person is adding to them right
     ///     there (a first row under Date importante).
+    ///   - pockets: the page's pockets in its one order (`PagePocket.ordered`).
     static func make(
-        pockets: [SectionPocket],
-        revealed: Set<SectionPocket> = [],
+        pockets: [PagePocket],
+        revealed: Set<PagePocket> = [],
         folds: Bool = foldsEmptyPockets,
-        fill: (SectionPocket) -> PocketFill,
-        addition: (SectionPocket) -> PocketAddition?
+        fill: (PagePocket) -> PocketFill,
+        addition: (PagePocket) -> PocketAddition?
     ) -> SectionPageLayout {
         var layout = SectionPageLayout(shown: [], additions: [])
-        for pocket in SectionPocket.ordered(pockets) {
+        for pocket in pockets {
             switch fill(pocket) {
             case .filled:
                 layout.shown.append(pocket)
@@ -150,50 +194,67 @@ struct PocketContents {
 
     private var isHolder: Bool { definition.behavior.role == .holder }
 
-    func fill(_ pocket: SectionPocket) -> PocketFill {
+    /// The categories whose sections belong to the part this page plays and show here in a pocket
+    /// named after them (`CategoryBehavior.hasPocketOfItsOwn`: a category of one's own that says
+    /// "Ține de… O mașină", on a car's page), in the binder's order.
+    var categoryPockets: [PagePocket] {
+        guard let role = definition.behavior.role else { return [] }
+        return templates
+            .filter { $0.behavior.hasPocketOfItsOwn && $0.behavior.mayBelongTo == role }
+            .sorted { ($0.homeOrder, $0.key) < ($1.homeOrder, $1.key) }
+            .map { PagePocket.category(key: $0.key, name: $0.name) }
+    }
+
+    /// The page's pockets in its one order: what the category lists, with the categories' own.
+    func pockets(listing listed: [SectionPocket]) -> [PagePocket] {
+        PagePocket.ordered(listed: listed, categories: categoryPockets)
+    }
+
+    func fill(_ pocket: PagePocket) -> PocketFill {
         switch pocket {
-        case .upcoming:
+        case .listed(.upcoming):
             return UpcomingPocket.listed(asset).isEmpty ? .empty : .filled
-        case .tenants, .products, .subscriptions, .plants:
+        case .category, .listed(.tenants), .listed(.products), .listed(.subscriptions), .listed(.plants):
             let children = ChildrenPocket.contents(of: asset, pocket: pocket, templates: templates)
             if !children.children.isEmpty { return .filled }
             return children.isOffered ? .empty : .notOffered
-        case .documents:
+        case .listed(.documents):
             return SectionPapers.isEmpty(asset, templates: templates) ? .empty : .filled
-        case .history:
+        case .listed(.history):
             return (asset.history ?? []).isEmpty ? .empty : .filled
-        case .people:
+        case .listed(.people):
             return providers.isEmpty ? .empty : .filled
-        case .money:
+        case .listed(.money):
             return MoneyPocket.Facts.make(asset: asset, definition: definition).isEmpty ? .empty : .filled
-        case .keyFacts:
+        case .listed(.keyFacts):
             return AssetFacts.factRows(asset.values, customFacts: asset.customFacts, template: definition).isEmpty ? .empty : .filled
         }
     }
 
     /// What the pocket's own button adds, which is also what the page's menu offers for it.
-    func addition(_ pocket: SectionPocket) -> PocketAddition? {
+    func addition(_ pocket: PagePocket) -> PocketAddition? {
         switch pocket {
-        case .upcoming:
+        case .listed(.upcoming):
             return .deadline
-        case .tenants, .products, .subscriptions, .plants:
+        case .category, .listed(.tenants), .listed(.products), .listed(.subscriptions), .listed(.plants):
             guard let key = ChildrenPocket.contents(of: asset, pocket: pocket, templates: templates).childKey else { return nil }
             return .child(pocket, templateKey: key)
-        case .documents:
+        case .listed(.documents):
             return isHolder ? .personalDocument : .paper(besidePersonal: false)
-        case .history:
+        case .listed(.history):
             return .visit(title: definition.behavior.visitWording.title)
-        case .people:
+        case .listed(.people):
             return .person
-        case .money:
+        case .listed(.money):
             return nil
-        case .keyFacts:
+        case .listed(.keyFacts):
             return .keyFact
         }
     }
 
-    func layout(pockets: [SectionPocket], revealed: Set<SectionPocket> = [], folds: Bool = SectionPageLayout.foldsEmptyPockets) -> SectionPageLayout {
-        SectionPageLayout.make(pockets: pockets, revealed: revealed, folds: folds, fill: { fill($0) }, addition: { addition($0) })
+    /// The page's layout, from the pockets its category lists (`listed`) and the categories' own.
+    func layout(pockets listed: [SectionPocket], revealed: Set<PagePocket> = [], folds: Bool = SectionPageLayout.foldsEmptyPockets) -> SectionPageLayout {
+        SectionPageLayout.make(pockets: pockets(listing: listed), revealed: revealed, folds: folds, fill: { fill($0) }, addition: { addition($0) })
     }
 }
 

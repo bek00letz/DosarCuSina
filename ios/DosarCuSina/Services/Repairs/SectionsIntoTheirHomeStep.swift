@@ -3,17 +3,19 @@ import SwiftData
 
 // MARK: - Plants kept on their own before they could stand in a home
 
-/// Before catalog 17 a plant couldn't be filed under a home, so every plant stands on its own.
-/// A section of a category that goes under the household's only home by itself
-/// (`CategoryBehavior.goesUnderTheOnlyOne`, plants), standing on its own, is offered to move under
-/// that home, where its page lists it; it stays in its category's box. It asks, because it
-/// changes where the section is listed. With several homes nothing is guessed: one note says to
-/// move them with "Mută la…". With none, there is nothing to offer. Examples are left as they are.
+/// Before catalog 17 a plant couldn't be filed under a home, so every plant stands on its own; a
+/// category of one's own that now says what it belongs to ("Ține de…": a home, a car, a person)
+/// has its sections on their own too. A section of a category that goes under the household's
+/// only section of the part it may belong to by itself (`CategoryBehavior.goesUnderTheOnlyOne`),
+/// standing on its own, is offered to move under that one, where its page lists it; it stays in
+/// its category's box. It asks, because it changes where the section is listed. With several
+/// nothing is guessed: one note says to move them with "Mută la…". With none, there is nothing
+/// to offer. Examples are left as they are. Its words are the part's (`BelongingWording`).
 /// Nothing was saved wrongly, so its findings are suggestions (`isSuggestion`): one calm note in
 /// Urmează's "Din timp", never the repair list or its prompt. Its id and the answers kept by it stay.
 struct SectionsIntoTheirHomeStep: DataRepairStep {
     static let id = DataRepairStepID.sectionsIntoTheirHome
-    var title: String { String(localized: "Ce stă într-o locuință", comment: "Repair group: plants that can be filed under the household's home.") }
+    var title: String { String(localized: "Ce ține de altă secțiune", comment: "Repair group: sections (plants, a category of one's own) that can be filed under the household's only home, car or person.") }
     var isSuggestion: Bool { true }
     var applyTitle: String { String(localized: "Mută", comment: "Applies a suggestion that files a section (a plant) under the household's home.") }
 
@@ -40,13 +42,13 @@ struct SectionsIntoTheirHomeStep: DataRepairStep {
 
     func findings(_ scan: inout DataRepairScan) throws -> [DataRepairFinding] {
         try Self.candidates(in: scan.context).flatMap { found -> [DataRepairFinding] in
+            let role = found.category.behavior.mayBelongTo ?? .home
             guard found.parents.count == 1, let home = found.parents.first else {
                 // Several homes: which one is the person's to say.
                 return [DataRepairFinding(
                     id: "\(Self.id.rawValue):\(found.category.key):several",
                     step: Self.id,
-                    message: String(localized: "„\(found.category.name)” pot sta acum și într-o locuință. Ai mai multe, așa că le muți tu, din pagina fiecăreia, cu „Mută la…”.",
-                                    comment: "Repair note: a category's sections (plants) can now be filed under a home; with several homes the person moves each with 'Mută la…'."),
+                    message: BelongingWording.severalNote(role, category: found.category.name),
                     subject: .intoHome(assetID: nil, homeID: nil),
                     isFixable: false
                 )]
@@ -55,8 +57,7 @@ struct SectionsIntoTheirHomeStep: DataRepairStep {
                 DataRepairFinding(
                     id: "\(Self.id.rawValue):\(section.id.uuidString):\(home.id.uuidString)",
                     step: Self.id,
-                    message: String(localized: "Trec „\(section.name)” la „\(home.name)”? Apare pe pagina locuinței și rămâne în „\(found.category.name)”.",
-                                    comment: "Repair: file a section standing on its own (a plant) under the household's only home; it stays in its category's box."),
+                    message: BelongingWording.moveSuggestion(role, section: section.name, parent: home.name, category: found.category.name),
                     subject: .intoHome(assetID: section.id, homeID: home.id)
                 )
             }
@@ -70,6 +71,7 @@ struct SectionsIntoTheirHomeStep: DataRepairStep {
         })
         // Checked again: still on its own, and the home still the only one.
         for found in try Self.candidates(in: context) {
+            let role = found.category.behavior.mayBelongTo ?? .home
             guard found.parents.count == 1, let home = found.parents.first else { continue }
             for section in found.sections where approved.contains(section.id) && AssetActions.canFile(section, under: home) {
                 section.parent = home

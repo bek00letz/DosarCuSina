@@ -40,6 +40,10 @@ struct MoveAssetSheet: View {
     private var offersStandalone: Bool { AssetActions.offersStandalone(for: asset) }
     /// The category it stands in on its own: "Abonamente", "Plante".
     private var categoryName: String { categories.first { $0.key == asset.templateKey }?.name ?? "" }
+    /// The part it may belong to (a home, a car, a person), for the words of standing on its own.
+    private var belongsTo: CategoryBehavior.Role {
+        categories.first { $0.key == asset.templateKey }?.behavior.mayBelongTo ?? .home
+    }
 
     /// The holder's name the document would move to, for the rename offer.
     private var newHolderName: String? {
@@ -100,7 +104,7 @@ struct MoveAssetSheet: View {
                         if offersStandalone {
                             if !destinations.isEmpty { DSRowSeparator() }
                             DSCheckRow(
-                                title: Text("În „\(categoryName)”, fără locuință", comment: "Move option: a subscription or a plant stands on its own, in its category's box (Abonamente, Plante)."),
+                                title: Text(verbatim: BelongingWording.standingAlone(belongsTo, in: categoryName)),
                                 isOn: choice == .standalone
                             ) {
                                 choice = .standalone
