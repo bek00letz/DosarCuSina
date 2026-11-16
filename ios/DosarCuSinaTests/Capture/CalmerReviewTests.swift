@@ -294,10 +294,11 @@ struct VisitEndingTests {
         let before = try UndoReceiptTests.database(house.context)
         let receipt = try await UndoReceiptTests.Step.fileAVisitWithANewPhoto.run(in: house)
 
-        let toast = VisitEnding.toast(receipt)
+        let words = try #require(VisitKind.service.shape).toast
+        let toast = VisitEnding.toast(receipt, saying: words)
         #expect(String(localized: toast.title) == "Vizita e în istoric.")
         #expect(toast.offersAction, "Anulează, from Istoric as from capture and „Scriu eu”")
-        guard case .visitSaved(let fromCapture) = CaptureFlowResult.visit(receipt: receipt) else { Issue.record("A visit"); return }
+        guard case .visitSaved(let fromCapture) = CaptureFlowResult.visit(receipt: receipt, saying: words) else { Issue.record("A visit"); return }
         #expect(String(localized: fromCapture.title) == String(localized: toast.title), "One toast for every way in")
 
         try #require(toast.receipt).undo()
