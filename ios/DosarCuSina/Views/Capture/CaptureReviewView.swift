@@ -1,6 +1,9 @@
 import SwiftData
 import SwiftUI
 
+/// The review's words: its kind's (`CaptureKindProfile`) and every kind's (`CaptureReviewWording`).
+private typealias Words = CaptureReviewWording
+
 /// What is being read again while the review stays on screen.
 enum CaptureReread: Hashable, Sendable {
     /// The pages the person added (the back of a card), read with the others.
@@ -105,23 +108,23 @@ struct CaptureReviewView: View {
             }
         }
         .dsPinnedAction {
-            DSPrimaryButton("Salvează", systemImage: "checkmark") {
+            DSPrimaryButton(verbatim: Words.save, systemImage: "checkmark") {
                 requestSave()
             }
             .disabled(isSaving)
         } note: {
             if let errorMessage {
-                DSNotice(.error, title: "Nu s-a salvat", message: LocalizedStringKey(errorMessage))
+                DSNotice(.error, title: Text(verbatim: Words.notSaved), message: Text(verbatim: errorMessage))
             }
         }
         .background(DS.Palette.background)
-        .navigationTitle("Verifică actul")
+        .navigationTitle(Words.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 // From De verificat, closing keeps the item there for later: the button says so.
                 if onRemoveFromInbox != nil {
-                    DSCancelButton(Text("Mai târziu", comment: "Closes the review of something shared; it stays in De verificat."))
+                    DSCancelButton(Text(verbatim: Words.later))
                 } else {
                     DSCancelButton()
                 }
@@ -130,7 +133,7 @@ struct CaptureReviewView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(role: .destructive, action: onRemoveFromInbox) {
                         Label {
-                            Text("Șterge din De verificat", comment: "Takes something shared out of De verificat, from its review.")
+                            Text(verbatim: Words.removeFromInbox)
                         } icon: {
                             Image(systemName: "trash")
                         }
@@ -144,6 +147,7 @@ struct CaptureReviewView: View {
         .reminderPermissionGate($saveRequest)
         .sheet(isPresented: $isPickingDestination) {
             CaptureDestinationPicker(
+                title: review.kind.profile.noun.wherePutWords,
                 destination: Binding(get: { review.destination }, set: { review.choosePlace($0) }),
                 newAssetName: $review.newAssetName, templates: templates, assets: assets,
                 offer: CaptureDestinations.offer(for: review, assets: assets),
@@ -158,7 +162,7 @@ struct CaptureReviewView: View {
             backError = nil
             onAddPages?(payload)
         }, onError: { _ in
-            backError = String(localized: "Poza nu s-a putut deschide. Încearcă din nou.")
+            backError = Words.photoDidNotOpen
         })
         .task(id: review.documentID) { await loadPages() }
         .task(id: review.result.id) { await explainCloudFailure() }
@@ -171,7 +175,7 @@ struct CaptureReviewView: View {
     /// What "Renunță la modificări" loses, from De verificat: the item itself stays.
     private var discardMessage: Text? {
         guard onRemoveFromInbox != nil else { return nil }
-        return Text("Ce ai schimbat nu se salvează. Actul rămâne în De verificat.", comment: "Closing the review of something shared, after changes.")
+        return Text(verbatim: Words.discardFromInbox)
     }
 
     // MARK: Summary
@@ -189,9 +193,9 @@ struct CaptureReviewView: View {
         }
     }
 
-    /// A short heading inside the summary card: "Unde îl pun", "Când te anunț".
-    private func summaryHeading(_ title: LocalizedStringKey) -> some View {
-        Text(title)
+    /// A short heading inside the summary card: "Unde o pun", "Când te anunț".
+    private func summaryHeading(_ title: String) -> some View {
+        Text(verbatim: title)
             .dsFont(.captionEmphasized)
             .foregroundStyle(DS.Palette.secondaryLabel)
             .accessibilityAddTraits(.isHeader)
@@ -217,8 +221,8 @@ struct CaptureReviewView: View {
                 }
                 .buttonStyle(.dsPressable)
                 .disabled(pageSources.isEmpty)
-                .accessibilityLabel(Text("Vezi actul mare", comment: "VoiceOver label of the document thumbnail in the review."))
-                .accessibilityHint(Text("Se deschide pe tot ecranul. Poți mări sau roti pagina.", comment: "VoiceOver hint of the document thumbnail."))
+                .accessibilityLabel(Text(verbatim: Words.seeLarge))
+                .accessibilityHint(Text(verbatim: Words.seeLargeHint))
 
                 VStack(alignment: .leading, spacing: DS.Space.xs) {
                     Text(verbatim: CaptureMapping.kindTitle(review.kind))
@@ -228,9 +232,9 @@ struct CaptureReviewView: View {
                             ForEach(CaptureDocumentKind.allCases, id: \.self) { kind in
                                 Text(verbatim: CaptureMapping.kindTitle(kind)).tag(kind)
                             }
-                        } label: { Text("Ce act e") }
+                        } label: { Text(verbatim: Words.whatKind) }
                     } label: {
-                        Text("Nu e asta? Schimbă")
+                        Text(verbatim: Words.notThis)
                             .font(.subheadline.weight(.medium))
                             .frame(minHeight: 44)
                     }
@@ -258,19 +262,19 @@ struct CaptureReviewView: View {
     private func kindAlternativeText(_ alternative: CaptureAlternative<CaptureDocumentKind>) -> String {
         let kind = CaptureMapping.kindTitle(alternative.value)
         return switch alternative.source {
-        case .phone: String(localized: "Pe telefon părea: \(kind)", comment: "The kind the phone read, beside the AI provider's.")
-        case .cloudModel: CaptureAlternativeNote.readBy(cloudProvider, value: kind)
-        case .checked: String(localized: "Codul de jos al actului arată: \(kind)", comment: "The kind the checked machine-readable zone shows.")
+        case .phone: Words.phoneSawKind(kind)
+        case .cloudModel: Words.readBy(cloudProvider, value: kind)
+        case .checked: Words.checkedKind(kind)
         }
     }
 
     private var tierNote: String {
         if review.usedCloudModel {
-            return String(localized: "Citit și cu \(cloudProvider.shortName), cu cheia ta.", comment: "The AI provider read the document too. The argument is the provider's short name.")
+            return Words.readWithProvider(cloudProvider.shortName)
         }
         switch review.mainTier {
-        case .onDeviceModel?: return String(localized: "Citit pe telefon, cu Apple Intelligence.")
-        default: return String(localized: "Citit pe telefon. Nimic n-a plecat de aici.")
+        case .onDeviceModel?: return Words.readWithAppleIntelligence
+        default: return Words.readOnPhone
         }
     }
 
@@ -307,7 +311,7 @@ struct CaptureReviewView: View {
                             withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { showsEveryNotice = true }
                         } label: {
                             Label {
-                                Text("Mai sunt \(notices.count - 1) observații", comment: "Opens the review's other notices. The number is how many more there are, with Romanian plural forms (Mai e o observație).")
+                                Text(verbatim: Words.moreNotices(notices.count - 1))
                             } icon: {
                                 Image(systemName: "chevron.down")
                             }
@@ -334,38 +338,39 @@ struct CaptureReviewView: View {
                 AppNavigator.shared.open(.historyEntry(filed.entryID))
             }, onAnother: { review.isAnotherBill = true })
         case .samePhoto(let duplicate):
-            DSNotice(.info, title: "Ai mai adăugat poza asta", message: "Dacă salvezi, o pun la locul ales, împreună cu ce am citit.", actionTitle: "Vezi unde e acum") {
+            DSNotice(.info, title: Text(verbatim: Words.samePhoto), message: Text(verbatim: Words.samePhotoMessage),
+                     actionTitle: Text(verbatim: Words.seeWhereItIs)) {
                 onClose(.dismissed)
                 AppNavigator.shared.open(.document(duplicate))
             }
         case .backPage(let isReading, let error):
             backPageNotice(isReading: isReading, error: error)
         case .checkNumbers:
-            DSNotice(.warning, title: "Verifică numărul și datele", message: "Codul de jos al actului nu s-a citit sigur.")
+            DSNotice(.warning, title: Text(verbatim: Words.checkNumbers), message: Text(verbatim: Words.checkNumbersMessage))
         case .cloudFailed(let message):
-            DSNotice(.warning, title: "\(cloudProvider.name) nu a citit actul", message: LocalizedStringKey(message))
+            DSNotice(.warning, title: Text(verbatim: Words.providerDidNotRead(cloudProvider.name)), message: Text(verbatim: message))
         case .hardToRead:
-            DSNotice(.info, title: "Poza e greu de citit", message: "O poză nouă, dreaptă și fără reflexii, ajută.")
+            DSNotice(.info, title: Text(verbatim: Words.hardToRead), message: Text(verbatim: Words.hardToReadMessage))
         case .pagesTruncated(let read):
-            DSNotice(.info, title: "Am citit primele \(read) pagini", message: "E un document lung. Se păstrează tot, cu toate paginile.")
+            DSNotice(.info, title: Text(verbatim: Words.firstPagesRead(read)), message: Text(verbatim: Words.longDocument))
         }
     }
 
     /// The back of an identity card, when only the front was read.
     private func backPageNotice(isReading: Bool, error: String?) -> some View {
         VStack(alignment: .leading, spacing: DS.Space.s) {
-            DSNotice(.info, title: "Ai și o poză cu spatele? Acolo e codul care confirmă datele.")
+            DSNotice(.info, title: Text(verbatim: Words.backPage))
             if isReading {
-                DSDelayedProgress(label: "Citesc și spatele…")
+                DSDelayedProgress(label: LocalizedStringKey(Words.readingBack))
                     .frame(maxWidth: .infinity, minHeight: 44)
             } else if onAddPages != nil {
                 if CaptureSource.isCameraAvailable {
-                    DSSecondaryButton("Fotografiază spatele", systemImage: "camera") { backSource = .camera }
+                    DSSecondaryButton(verbatim: Words.photographBack, systemImage: "camera") { backSource = .camera }
                 }
-                DSSecondaryButton("Alege din poze", systemImage: "photo.on.rectangle") { backSource = .photos }
+                DSSecondaryButton(verbatim: Words.choosePhotos, systemImage: "photo.on.rectangle") { backSource = .photos }
             }
             if let error {
-                DSNotice(.error, title: "Nu am putut citi spatele", message: LocalizedStringKey(error))
+                DSNotice(.error, title: Text(verbatim: Words.backNotRead), message: Text(verbatim: error))
             }
         }
     }
@@ -374,10 +379,10 @@ struct CaptureReviewView: View {
     @ViewBuilder private var sendQuestion: some View {
         if let onAnswerSending {
             VStack(alignment: .leading, spacing: DS.Space.s) {
-                DSNotice(.info, title: "Trimit poza la \(cloudProvider.name)?",
-                         message: "Nu sunt sigur ce am citit. \(cloudProvider.name) poate citi actul mai bine, cu cheia ta. Fără un da, poza rămâne pe telefon.")
-                DSSecondaryButton("Trimite poza", systemImage: "sparkles") { onAnswerSending(true) }
-                DSSecondaryButton("Nu, rămâne pe telefon", systemImage: "iphone") { onAnswerSending(false) }
+                DSNotice(.info, title: Text(verbatim: Words.sendPhotoQuestion(cloudProvider.name)),
+                         message: Text(verbatim: Words.sendPhotoMessage(cloudProvider.name)))
+                DSSecondaryButton(verbatim: Words.sendPhoto, systemImage: "sparkles") { onAnswerSending(true) }
+                DSSecondaryButton(verbatim: Words.keepOnPhone, systemImage: "iphone") { onAnswerSending(false) }
                 dataPolicyLink
             }
         }
@@ -387,7 +392,7 @@ struct CaptureReviewView: View {
     @ViewBuilder private var dataPolicyLink: some View {
         if let policy = cloudProvider.dataPolicyURL {
             Link(destination: policy) {
-                Text("Cum folosește \(cloudProvider.name) ce trimiți", comment: "Link to the AI provider's data-use terms.")
+                Text(verbatim: Words.dataPolicy(cloudProvider.name))
                     .frame(minHeight: 44, alignment: .leading)
             }
             .dsFont(.footnote)
@@ -402,27 +407,21 @@ struct CaptureReviewView: View {
             if !review.providerMayRead {
                 // A bank card, or a page that may be one, is read only on the phone: one plain
                 // line so the person isn't left wondering where the button went.
-                Text("Cardurile bancare se citesc doar pe telefon.", comment: "Capture review: why a bank card can't be read by the AI provider.")
+                Text(verbatim: Words.cardsStayOnPhone)
                     .dsFont(.footnote)
                     .fixedSize(horizontal: false, vertical: true)
             } else {
                 VStack(alignment: .leading, spacing: DS.Space.xs) {
                     if rereading == .cloud {
-                        DSDelayedProgress(label: "Citesc cu \(cloudProvider.shortName)…")
+                        DSDelayedProgress(label: LocalizedStringKey(Words.readingWith(cloudProvider.shortName)))
                             .frame(maxWidth: .infinity, minHeight: 44)
                     } else {
-                        DSSecondaryButton("Citește mai bine cu \(cloudProvider.shortName)", systemImage: "sparkles", action: onReadWithCloud)
+                        DSSecondaryButton(verbatim: Words.readBetter(cloudProvider.shortName), systemImage: "sparkles", action: onReadWithCloud)
                             .disabled(rereading != nil)
                     }
-                    Group {
-                        if review.kind.isPersonalDocument {
-                            Text("Poza actului se trimite la \(cloudProvider.name), cu cheia ta.")
-                        } else {
-                            Text("Prima pagină se trimite la \(cloudProvider.name), cu cheia ta.")
-                        }
-                    }
-                    .dsFont(.footnote)
-                    .fixedSize(horizontal: false, vertical: true)
+                    Text(verbatim: review.kind.profile.sentToProviderWords(cloudProvider.name))
+                        .dsFont(.footnote)
+                        .fixedSize(horizontal: false, vertical: true)
                     dataPolicyLink
                 }
             }
@@ -436,13 +435,14 @@ struct CaptureReviewView: View {
 
     @ViewBuilder private var fieldsSection: some View {
         VStack(alignment: .leading, spacing: DS.Space.s) {
-            DSSectionHeader("Ce am citit", subtitle: review.visibleFields.contains(where: \.needsCheck) ? "Verifică ce e marcat." : nil)
+            DSSectionHeader(LocalizedStringKey(Words.whatWasRead),
+                            subtitle: review.visibleFields.contains(where: \.needsCheck) ? LocalizedStringKey(Words.checkMarked) : nil)
             DSCard {
                 VStack(alignment: .leading, spacing: DS.Space.m) {
-                    DSTextField("Numele actului", text: $review.title)
+                    DSTextField(LocalizedStringKey(Words.documentName), text: $review.title)
                     let fields = review.visibleFields
                     if fields.isEmpty {
-                        Text("Nu am găsit date pe act. Îl păstrez oricum, cu numele de mai sus.")
+                        Text(verbatim: review.kind.profile.noun.nothingReadWords)
                             .dsFont(.subheadline)
                     }
                     ForEach(fields) { field in
@@ -455,13 +455,13 @@ struct CaptureReviewView: View {
                     let addable = review.addableKeys
                     if !addable.isEmpty {
                         VStack(alignment: .leading, spacing: 0) {
-                            Text("Nu am găsit pe act:")
+                            Text(verbatim: Words.notFound)
                                 .dsFont(.footnote)
                             ForEach(addable, id: \.self) { key in
                                 Button {
                                     withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { review.addField(key) }
                                 } label: {
-                                    Label("Adaugă: \(CaptureMapping.label(for: key))", systemImage: "plus.circle")
+                                    Label(Words.add(CaptureMapping.label(for: key)), systemImage: "plus.circle")
                                         .font(.subheadline.weight(.medium))
                                         .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                                         .contentShape(.rect)
@@ -475,7 +475,7 @@ struct CaptureReviewView: View {
                     }
                     // A policy's class is the person's, never the car's: say where it goes, or why it doesn't.
                     if let bonusMalus = CaptureFilingPlan.bonusMalus(for: review, people: Policyholders.people(in: assets, templates: templatesByKey)) {
-                        Text(bonusMalusText(bonusMalus))
+                        Text(verbatim: Words.bonusMalus(bonusMalus))
                             .dsFont(.footnote)
                             .fixedSize(horizontal: false, vertical: true)
                             .transition(.opacity)
@@ -496,122 +496,35 @@ struct CaptureReviewView: View {
 
     // MARK: Destination
 
-    /// "Unde îl pun", in the summary card: the place, tapped to choose another.
+    /// "Unde o pun", in the summary card: the place, tapped to choose another.
     private var placeRow: some View {
-        VStack(alignment: .leading, spacing: DS.Space.xs) {
-            summaryHeading("Unde îl pun")
+        let place = CaptureReviewPlace(review: review, assets: assets, templates: templatesByKey)
+        return VStack(alignment: .leading, spacing: DS.Space.xs) {
+            summaryHeading(review.kind.profile.noun.wherePutWords)
             Button { isPickingDestination = true } label: {
                 DSListRow(
-                    title: Text(verbatim: destinationTitle),
-                    subtitle: Text(verbatim: destinationSubtitle),
-                    systemImage: destinationSymbol,
+                    title: Text(verbatim: place.title),
+                    subtitle: Text(verbatim: place.subtitle),
+                    systemImage: place.systemImage,
                     showsChevron: true,
-                    trailing: { Text("Alege alta") }
+                    trailing: { Text(verbatim: Words.chooseAnother) }
                 )
             }
             .buttonStyle(.plain)
             if let check = review.placeCheck {
                 VStack(alignment: .leading, spacing: DS.Space.xxs) {
-                    Label("Verifică", systemImage: "exclamationmark.circle.fill")
+                    Label(Words.check, systemImage: "exclamationmark.circle.fill")
                         .font(.system(.caption, weight: .semibold))
                         .foregroundStyle(DSStatus.soon.textColor)
-                    Text(placeCheckText(check))
+                    Text(verbatim: Words.placeCheck(check))
                         .dsFont(.footnote)
                 }
                 .accessibilityElement(children: .combine)
                 .transition(.opacity)
             }
-            if case .newAsset(let key) = review.destination {
-                DSTextField(newAssetNameTitle(key), text: $review.newAssetName, isRequired: true)
+            if let newNameTitle = place.newNameTitle {
+                DSTextField(LocalizedStringKey(newNameTitle), text: $review.newAssetName, isRequired: true)
             }
-        }
-    }
-
-    /// A printed line, kept short enough to read in a row: cut at a word, with "…".
-    static func shortened(_ text: String, limit: Int = 90) -> String {
-        guard text.count > limit else { return text }
-        let cut = text.prefix(limit)
-        let atWord = cut.lastIndex(of: " ").map { cut[..<$0] } ?? cut
-        return atWord.trimmingCharacters(in: .whitespacesAndNewlines.union(.punctuationCharacters)) + "…"
-    }
-
-    /// Where a policy's bonus-malus class goes, in a line under what was read.
-    private func bonusMalusText(_ choice: CaptureFilingPlan.BonusMalus) -> LocalizedStringKey {
-        switch choice {
-        case .keep(_, _, let name): "Clasa bonus-malus o păstrez la \(name): e a celui asigurat, nu a mașinii."
-        case .noPolicyholder: "Clasa bonus-malus n-o păstrez: pe poliță nu scrie cine e asiguratul."
-        case .notInHousehold(let name): "Clasa bonus-malus n-o păstrez: \(name) nu e printre persoanele din dosar. Adaugă persoana și citește polița din nou."
-        }
-    }
-
-    /// Why the home was chosen without being sure: the supply address only partly agrees.
-    private func placeCheckText(_ check: SubscriptionMatcher.HouseCheck) -> LocalizedStringKey {
-        switch check {
-        case .addressPartlyAgrees: "Adresa locului de consum seamănă cu cea a locuinței, dar nu e chiar aceeași."
-        case .addressDiffers: "Adresa locului de consum nu e cea a locuinței."
-        }
-    }
-
-    /// The part the category `key` plays (a person, a subscription, a home), if any.
-    private func role(of key: String) -> CategoryBehavior.Role? {
-        templatesByKey[key]?.behavior.role
-    }
-
-    private var filesUnderSubscription: Bool { review.kind.profile.filing == .subscription }
-
-    private func newAssetNameTitle(_ key: String) -> LocalizedStringKey {
-        switch role(of: key) {
-        case .holder?: "Numele persoanei"
-        case .subscription?: "Numele abonamentului"
-        case .home? where filesUnderSubscription: "Numele locuinței"
-        default: "Numele secțiunii noi"
-        }
-    }
-
-    private var destinationTitle: String {
-        switch review.destination {
-        case .none: return String(localized: "Doar păstrez actul")
-        case .asset(let id): return assets.first { $0.id == id }?.name ?? String(localized: "Secțiune ștearsă")
-        case .newAsset(let key) where role(of: key) == .holder:
-            return String(localized: "Persoană nouă: \(review.newAssetName)")
-        case .newAsset(let key) where role(of: key) == .subscription:
-            return String(localized: "Abonament nou: \(review.newAssetName)")
-        case .newAsset(let key): return String(localized: "Secțiune nouă în \(templatesByKey[key]?.name ?? key)")
-        }
-    }
-
-    private var destinationSubtitle: String {
-        switch review.destination {
-        case .none: return String(localized: "Îl găsești în Caută.")
-        case .asset(let id):
-            guard let asset = assets.first(where: { $0.id == id }) else { return "" }
-            if role(of: asset.templateKey) == .holder { return String(localized: "Actul stă la actele acestei persoane.") }
-            if filesUnderSubscription {
-                if let subscription = review.existingSubscription(assets: assets), subscription.id != asset.id {
-                    return String(localized: "La abonamentul „\(subscription.name)”")
-                }
-                if role(of: asset.templateKey) == .home {
-                    return String(localized: "Abonament nou aici: \(CaptureFiler.subscriptionName(review))")
-                }
-                if let parent = asset.parent { return String(localized: "Abonament la \(parent.name)") }
-            }
-            return templatesByKey[asset.templateKey]?.name ?? ""
-        case .newAsset(let key) where role(of: key) == .holder:
-            return String(localized: "Se adaugă în Acte când salvezi.")
-        case .newAsset(let key) where role(of: key) == .home && filesUnderSubscription:
-            return String(localized: "Se creează când salvezi, cu abonamentul „\(CaptureFiler.subscriptionName(review))”.")
-        case .newAsset: return String(localized: "Se creează când salvezi.")
-        }
-    }
-
-    private var destinationSymbol: String {
-        switch review.destination {
-        case .none: return "tray"
-        case .asset(let id):
-            let asset = assets.first { $0.id == id }
-            return asset?.symbolOverride ?? asset.flatMap { templatesByKey[$0.templateKey]?.symbol } ?? "folder"
-        case .newAsset(let key) where role(of: key) == .holder: return "person.crop.circle.badge.plus"
-        case .newAsset(let key): return templatesByKey[key]?.symbol ?? "folder.badge.plus"
         }
     }
 
@@ -632,7 +545,7 @@ struct CaptureReviewView: View {
         if text != nil || review.kind.profile.isBill || directDebit != nil {
             DS.Hairline()
             VStack(alignment: .leading, spacing: DS.Space.s) {
-                summaryHeading("Când te anunț")
+                summaryHeading(Words.whenHeading)
                 if let text {
                     if let key = reminderDayField {
                         Button {
@@ -640,28 +553,28 @@ struct CaptureReviewView: View {
                                 proxy.scrollTo(key, anchor: .center)
                             }
                         } label: {
-                            DSListRow(title: Text(verbatim: text), systemImage: "bell", trailing: { Text("Schimbă ziua") })
+                            DSListRow(title: Text(verbatim: text), systemImage: "bell", trailing: { Text(verbatim: Words.changeDay) })
                         }
                         .buttonStyle(.plain)
-                        .accessibilityHint(Text("Arată ziua de pe act, ca s-o poți schimba.", comment: "VoiceOver hint of the review's reminder line."))
+                        .accessibilityHint(Text(verbatim: Words.changeDayHint))
                     } else {
                         DSListRow(title: Text(verbatim: text), systemImage: "bell", trailing: { EmptyView() })
                     }
                 }
                 if let directDebit {
-                    // What the bill says, offered: turned on only by the person.
-                    DSCheckRow(title: Text("Plătesc prin debit direct"),
-                               subtitle: Text("Pe factură scrie: „\(Self.shortened(directDebit))”. Dacă e așa, nu îți mai amintesc s-o plătești."),
+                    // What the paper says, offered: turned on only by the person.
+                    DSCheckRow(title: Text(verbatim: Words.directDebit),
+                               subtitle: Text(verbatim: review.kind.profile.noun.directDebitWords(Words.shortened(directDebit))),
                                isOn: review.turnsOnDirectDebit) {
                         withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { review.turnsOnDirectDebit.toggle() }
                     }
                 }
                 if review.kind.profile.isBill, review.reminderDay != nil, !review.paysByDirectDebit(assets: assets) {
-                    DSCheckRow(title: Text("Amintește-mi să o plătesc"), isOn: review.remindsToPay) {
+                    DSCheckRow(title: Text(verbatim: review.kind.profile.noun.remindToPayWords), isOn: review.remindsToPay) {
                         review.remindsToPay.toggle()
                     }
                 }
-                Text("Poți schimba după, pe pagina termenului.")
+                Text(verbatim: Words.changeLater)
                     .dsFont(.footnote)
             }
         }
@@ -725,15 +638,13 @@ struct CaptureReviewView: View {
         return Group {
             if !croppable.isEmpty {
                 DSAdaptiveStack(spacing: DS.Space.s) {
-                    Text(showsCrop
-                         ? String(localized: "Am păstrat doar actul, fără ce e în jur.", comment: "The review: the document was cut out of its photo.")
-                         : String(localized: "Se păstrează poza întreagă.", comment: "The review: the whole photo is kept, not the cut-out."))
+                    Text(verbatim: showsCrop ? Words.cropped : Words.wholePhotoKept)
                         .dsFont(.footnote)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     if showsCrop {
-                        DSCompactButton("Folosește poza întreagă", systemImage: "photo") { chooseWholePhoto(true, on: croppable) }
+                        DSCompactButton(verbatim: Words.useWholePhoto, systemImage: "photo") { chooseWholePhoto(true, on: croppable) }
                     } else {
-                        DSCompactButton("Doar actul", systemImage: "crop") { chooseWholePhoto(false, on: croppable) }
+                        DSCompactButton(verbatim: Words.onlyDocument, systemImage: "crop") { chooseWholePhoto(false, on: croppable) }
                     }
                 }
                 .transition(.opacity)
@@ -776,7 +687,7 @@ private struct CaptureFieldEditor: View {
         VStack(alignment: .leading, spacing: DS.Space.xxs) {
             editor
             if field.needsCheck {
-                Label("Verifică", systemImage: "exclamationmark.circle.fill")
+                Label(Words.check, systemImage: "exclamationmark.circle.fill")
                     .font(.system(.caption, weight: .semibold))
                     .foregroundStyle(DSStatus.soon.textColor)
             }
@@ -791,7 +702,7 @@ private struct CaptureFieldEditor: View {
                 Text(source)
                     .dsFont(.footnote)
                     .lineLimit(2)
-                    .accessibilityLabel(Text("Citit din: \(String(source.characters))"))
+                    .accessibilityLabel(Text(verbatim: Words.readFrom(String(source.characters))))
             }
         }
     }
@@ -800,16 +711,10 @@ private struct CaptureFieldEditor: View {
     private func alternativeText(_ alternative: CaptureAlternative<CaptureValue>) -> String {
         let value = CaptureMapping.displayText(alternative.value)
         return switch alternative.source {
-        case .phone:
-            String(localized: "Pe telefon am citit: \(value)", comment: "The phone's value, beside the AI provider's.")
-        case .cloudModel:
-            CaptureAlternativeNote.readBy(AIProviderSettings.standard.provider, value: value)
-        case .checked(machineReadable: true) where kind.profile.hasMachineReadableBack:
-            String(localized: "Pe spatele actului scrie: \(value)", comment: "What the machine-readable zone on the back of the card says.")
-        case .checked(machineReadable: true):
-            String(localized: "În codul de jos al actului scrie: \(value)", comment: "What the machine-readable zone says.")
-        case .checked:
-            String(localized: "Pe act scrie: \(value)", comment: "A value that passed its own check digit, beside a different one.")
+        case .phone: Words.phoneRead(value)
+        case .cloudModel: Words.readBy(AIProviderSettings.standard.provider, value: value)
+        case .checked(machineReadable: true): kind.profile.machineReadableWords(value)
+        case .checked: kind.profile.noun.printedWords(value)
         }
     }
 
@@ -887,7 +792,7 @@ private struct CaptureFieldEditor: View {
     /// The bit of the document the value came from, with the value highlighted.
     private var sourceText: AttributedString? {
         guard let source = field.sourceText?.trimmingCharacters(in: .whitespacesAndNewlines), !source.isEmpty else { return nil }
-        var attributed = AttributedString(String(localized: "Din act: „\(source)”"))
+        var attributed = AttributedString(Words.fromDocument(source))
         let needle = Self.text(of: field.value)
         if !needle.isEmpty, let range = attributed.range(of: needle, options: [.caseInsensitive, .diacriticInsensitive]) {
             attributed[range].backgroundColor = DS.Palette.accent.opacity(0.18)
@@ -940,23 +845,13 @@ private struct CaptureAlternativeNote: View {
 
     private var button: some View {
         Button(action: onUse) {
-            Text("Folosește-l", comment: "Applies a value another reader read instead of the one shown.")
+            Text(verbatim: Words.use)
                 .font(.subheadline.weight(.semibold))
                 .frame(minHeight: 44)
                 .contentShape(.rect)
         }
         .buttonStyle(.borderless)
-        .accessibilityLabel(Text("Folosește: \(text)", comment: "VoiceOver label of the button that applies another reader's value."))
-    }
-
-    /// "Gemini a citit: …", in the provider's own name.
-    static func readBy(_ provider: AIProvider, value: String) -> String {
-        switch provider {
-        case .openAICompatible:
-            String(localized: "Modelul tău a citit: \(value)", comment: "The value the person's own AI model read.")
-        default:
-            String(localized: "\(provider.shortName) a citit: \(value)", comment: "The value the AI provider read. The first argument is the provider's short name.")
-        }
+        .accessibilityLabel(Text(verbatim: Words.useThis(text)))
     }
 }
 
@@ -965,6 +860,8 @@ private struct CaptureAlternativeNote: View {
 /// A new section is made by `AddSectionFlow`, the one way to make one, and the document goes
 /// into it.
 private struct CaptureDestinationPicker: View {
+    /// "Unde o pun", agreeing with the paper's noun (`CaptureKindProfile.Noun.wherePutWords`).
+    let title: String
     @Binding var destination: CaptureReview.Destination
     @Binding var newAssetName: String
     let templates: [CategoryTemplate]
@@ -988,22 +885,22 @@ private struct CaptureDestinationPicker: View {
         NavigationStack {
             List {
                 Section {
-                    choice(.none, title: String(localized: "Doar păstrez actul"), subtitle: String(localized: "Fără secțiune; îl găsești în Caută."), symbol: "tray")
+                    choice(.none, title: Words.keepOnly, subtitle: Words.keepOnlySubtitle, systemImage: "tray")
                     if offersNewHolder, let holders = templates.first(where: { $0.behavior.role == .holder }) {
-                        choice(.newAsset(templateKey: holders.key), title: String(localized: "Persoană nouă"),
-                               subtitle: String(localized: "Actele stau grupate pe persoane."), symbol: "person.crop.circle.badge.plus")
+                        choice(.newAsset(templateKey: holders.key), title: Words.newPersonChoice,
+                               subtitle: Words.groupedByPerson, systemImage: "person.crop.circle.badge.plus")
                     }
                 }
                 if let fitting = offer.fitting {
                     sections(of: assets.filter { fitting.contains($0.id) })
                     Section {
                         if let key = offer.newSectionKey, let template = templates.first(where: { $0.key == key }) {
-                            newSectionRow(title: String(localized: "Secțiune nouă în „\(template.name)”", comment: "Makes a new section of the category the document fits."),
-                                          subtitle: String(localized: "Completezi ce trebuie, apoi pun actul acolo."),
-                                          symbol: template.symbol, request: AddSectionRequest(templateKey: key))
+                            newSectionRow(title: Words.newSectionChoice(in: template.name), subtitle: Words.thenFiled,
+                                          systemImage: template.symbol, request: AddSectionRequest(templateKey: key))
                         }
                         Button { isShowingEverything = true } label: {
-                            DSListRow("Altă secțiune…", subtitle: "Toate secțiunile din dosar.", systemImage: "folder", showsChevron: true)
+                            DSListRow(title: Text(verbatim: Words.otherSection), subtitle: Text(verbatim: Words.everySectionSubtitle),
+                                      systemImage: "folder", showsChevron: true) { EmptyView() }
                         }
                         .buttonStyle(.plain)
                     }
@@ -1011,21 +908,21 @@ private struct CaptureDestinationPicker: View {
                     everything
                 }
             }
-            .navigationTitle("Unde îl pun")
+            .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Închide") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button(Words.close) { dismiss() } }
             }
             .navigationDestination(isPresented: $isShowingEverything) {
                 List { everything }
-                    .navigationTitle("Toate secțiunile")
+                    .navigationTitle(Words.everySection)
                     .navigationBarTitleDisplayMode(.inline)
             }
             .navigationDestination(isPresented: $isPickingNewCategory) {
                 List(templates.filter { $0.behavior.role != .holder }) { template in
-                    choice(.newAsset(templateKey: template.key), title: template.name, subtitle: template.summary, symbol: template.symbol)
+                    choice(.newAsset(templateKey: template.key), title: template.name, subtitle: template.summary, systemImage: template.symbol)
                 }
-                .navigationTitle("Ce fel de secțiune")
+                .navigationTitle(Words.whatSection)
                 .navigationBarTitleDisplayMode(.inline)
             }
         }
@@ -1046,8 +943,8 @@ private struct CaptureDestinationPicker: View {
     @ViewBuilder private var everything: some View {
         sections(of: assets)
         Section {
-            newSectionRow(title: String(localized: "Secțiune nouă"), subtitle: String(localized: "Alegi ce fel de secțiune, apoi pun actul acolo."),
-                          symbol: "folder.badge.plus", request: .topLevel)
+            newSectionRow(title: Words.newSectionPlain, subtitle: Words.chooseCategoryFirst,
+                          systemImage: "folder.badge.plus", request: .topLevel)
         }
     }
 
@@ -1056,7 +953,7 @@ private struct CaptureDestinationPicker: View {
         ForEach(templates.filter { template in shown.contains { $0.templateKey == template.key } }) { template in
             Section {
                 ForEach(shown.filter { $0.templateKey == template.key }) { asset in
-                    choice(.asset(asset.id), title: asset.name, subtitle: subtitle(for: asset), symbol: asset.symbolOverride ?? template.symbol)
+                    choice(.asset(asset.id), title: asset.name, subtitle: subtitle(for: asset), systemImage: asset.symbolOverride ?? template.symbol)
                 }
             } header: {
                 Text(verbatim: template.name).textCase(nil)
@@ -1065,7 +962,7 @@ private struct CaptureDestinationPicker: View {
     }
 
     /// "Secțiune nouă": `AddSectionFlow`, or, switched off, the first version's list of categories.
-    private func newSectionRow(title: String, subtitle: String, symbol: String, request: AddSectionRequest) -> some View {
+    private func newSectionRow(title: String, subtitle: String, systemImage symbol: String, request: AddSectionRequest) -> some View {
         Button {
             if CaptureDestinations.makesSectionFromAName {
                 isPickingNewCategory = true
@@ -1086,16 +983,16 @@ private struct CaptureDestinationPicker: View {
     /// What choosing an asset means: an example is marked; for a bill, a home holds its
     /// subscription and a subscription says whose it is.
     private func subtitle(for asset: Asset) -> String? {
-        if asset.isExample { return String(localized: "Exemplu") }
+        if asset.isExample { return Words.example }
         guard filesUnderSubscription else { return nil }
         if behavior(of: asset).role == .home {
-            return String(localized: "La abonamentul de aici, sau unul nou", comment: "Destination picker: a bill filed under a home goes to its subscription there.")
+            return Words.homeHoldsSubscription
         }
         if behavior(of: asset).role == .subscription, let parent = asset.parent { return parent.name }
         return nil
     }
 
-    private func choice(_ value: CaptureReview.Destination, title: String, subtitle: String?, symbol: String) -> some View {
+    private func choice(_ value: CaptureReview.Destination, title: String, subtitle: String?, systemImage symbol: String) -> some View {
         Button {
             destination = value
             dismiss()
@@ -1106,7 +1003,7 @@ private struct CaptureDestinationPicker: View {
                 systemImage: symbol,
                 trailing: {
                     if destination == value {
-                        Image(systemName: "checkmark").foregroundStyle(DS.Palette.accent).accessibilityLabel(Text("Ales"))
+                        Image(systemName: "checkmark").foregroundStyle(DS.Palette.accent).accessibilityLabel(Text(verbatim: Words.chosen))
                     }
                 }
             )
