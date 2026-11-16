@@ -279,6 +279,23 @@ rule guessed-pause '^ios/(DosarCuSina|DosarCuSinaWidgets|DosarCuSinaShare|Shared
     '(Task\.sleep|asyncAfter|Thread\.sleep|usleep|\.delay|scheduledTimer|Timer\.publish)[[:space:]]*\(.*[^A-Za-z0-9_][0-9]' - \
     "Wait for the event this needs (a dismissal, a layout, an answer, an animation's completion), never a set time. A pause that only lets motion finish comes from DS.Motion; a debounce, a backoff before a retry, or how long something stays, is a named duration that says why."
 
+# One meaning per word (docs/COPY_GUIDE.md, "Words with one meaning"). Three words are one
+# thing each, and each has one home in code: "Anulează" takes back the step just taken, only
+# on the undo toast (DSToast); "Gata" marks a deadline done, from the kind's completion wording
+# (CompletionShape.actionTitle) and the widget's button; "De verificat" is the share inbox, its
+# header in Adaugă. A sheet is left with "Renunță" (DSCancelButton) and closed with "Închide";
+# an editor saves with "Salvează". Only a whole literal is checked: a sentence that uses the
+# word in its own meaning ("Gata. Următoarea scadență e pe…") isn't the button.
+rule anuleaza-outside-undo "$app" '^ios/DosarCuSina/Views/DesignSystem/Components/DSUndoToast\.swift$' \
+    '"Anulează"' - \
+    '„Anulează” only takes back the step just taken, on the undo toast (DSToast.undo with its receipt). To leave a sheet or a flow without saving, use DSCancelButton ("Renunță"); a dialog'"'"'s cancel is "Renunță" or what it keeps ("Păstrează").'
+rule gata-outside-done "$app" '^ios/DosarCuSina/Views/Upcoming/CompletionWording\.swift$|^ios/DosarCuSinaWidgets/UpcomingWidget\.swift$' \
+    '"Gata"' - \
+    '„Gata” only marks a deadline done: its words come from the kind (CompletionShape.actionTitle, menuTitle) and the way in is CompletionEntry. To close a sheet or a page say "Închide"; an editor that keeps what was typed says "Salvează".'
+rule de-verificat-outside-inbox "$app" '^ios/DosarCuSina/Views/Add/AddRoot\.swift$' \
+    '"(Date )?[Dd]e verificat"' - \
+    '„De verificat” is only the share inbox in Adaugă. The repair list is „De corectat”; a readiness check worth a look is „Merită o privire”.'
+
 # Checked in its own pass below: tab roots are the views AppShell puts inside
 # NavigationStack(path:), and their body must not start another stack.
 rule stack-in-tab-root "$app" - '-' - \
