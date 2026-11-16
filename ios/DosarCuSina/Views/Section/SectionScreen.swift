@@ -314,21 +314,24 @@ struct PocketView: View {
     let add: (PocketAddition) -> Void
 
     var body: some View {
+        // The one place a pocket's empty line is read: the pocket's own words, Istoric's and
+        // Oameni's in the words of the category's visits (`PagePocket.emptyLine`).
+        let empty = pocket.emptyLine(visits: definition.behavior.visit)
         switch pocket {
         case .listed(.upcoming):
-            UpcomingPocket(asset: asset, add: add)
+            UpcomingPocket(asset: asset, empty: empty, add: add)
         case .category, .listed(.tenants), .listed(.products), .listed(.subscriptions), .listed(.plants):
-            ChildrenPocket(asset: asset, pocket: pocket, add: add)
+            ChildrenPocket(asset: asset, pocket: pocket, empty: empty, add: add)
         case .listed(.documents):
-            DocumentsPocket(asset: asset, add: add)
+            DocumentsPocket(asset: asset, empty: empty, add: add)
         case .listed(.history):
-            HistoryPocket(asset: asset, definition: definition, add: add)
+            HistoryPocket(asset: asset, definition: definition, empty: empty, add: add)
         case .listed(.people):
-            PeoplePocket(asset: asset, add: add)
+            PeoplePocket(asset: asset, empty: empty, add: add)
         case .listed(.money):
-            MoneyPocket(asset: asset, definition: definition)
+            MoneyPocket(asset: asset, definition: definition, empty: empty)
         case .listed(.keyFacts):
-            KeyFactsPocket(asset: asset, definition: definition, toast: $toast, error: $error, addsRow: $addsKeyFact)
+            KeyFactsPocket(asset: asset, definition: definition, empty: empty, toast: $toast, error: $error, addsRow: $addsKeyFact)
         }
     }
 }

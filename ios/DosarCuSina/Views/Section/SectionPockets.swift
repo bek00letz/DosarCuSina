@@ -7,6 +7,8 @@ import SwiftData
 /// every one, paused ones too; "Adaugă un termen" opens the one deadline form, over the page.
 struct UpcomingPocket: View {
     let asset: Asset
+    /// Its line while it holds nothing (`PagePocket.emptyLine`).
+    let empty: String
     let add: (PocketAddition) -> Void
 
     /// Every deadline the section's list shows: the active ones and those paused (a bill
@@ -21,7 +23,7 @@ struct UpcomingPocket: View {
         let listed = Self.listed(asset).count
         DSPocketCard(SectionPocket.upcoming.title, count: obligations.isEmpty ? nil : obligations.count) {
             if listed == 0 {
-                PocketEmptyLine(text: String(localized: "Niciun termen. Adaugă unul ca să îți amintim la timp.", comment: "Empty Urmează pocket."))
+                PocketEmptyLine(text: empty)
             }
             ForEach(Array(shown.enumerated()), id: \.element.id) { index, obligation in
                 if index > 0 { DSRowSeparator() }
@@ -81,7 +83,7 @@ struct PocketAdditionsMenu: View {
                     }
                 } label: {
                     DSListRow(
-                        title: Text("Adaugă…", comment: "Row on a section page whose menu adds to its empty parts: a deadline, a document, a visit…"),
+                        title: Text(verbatim: PocketWording.addMenu),
                         systemImage: "plus"
                     ) { EmptyView() }
                 }
@@ -128,6 +130,8 @@ struct PocketEmptyLine: View {
 struct ChildrenPocket: View {
     let asset: Asset
     let pocket: PagePocket
+    /// Its line while it holds nothing (`PagePocket.emptyLine`).
+    let empty: String
     let add: (PocketAddition) -> Void
 
     @Query(sort: \CategoryTemplate.homeOrder) private var templates: [CategoryTemplate]
@@ -166,7 +170,7 @@ struct ChildrenPocket: View {
         let definition = contents.kinds.first?.definition
         DSPocketCard(pocket.title, count: children.isEmpty ? nil : children.count) {
             if children.isEmpty {
-                PocketEmptyLine(text: emptyText)
+                PocketEmptyLine(text: empty)
             }
             ForEach(Array(children.prefix(3).enumerated()), id: \.element.id) { index, child in
                 if index > 0 { DSRowSeparator() }
@@ -186,16 +190,6 @@ struct ChildrenPocket: View {
             if let childKey = contents.childKey {
                 PocketAddButton(addition: .child(pocket, templateKey: childKey), add: add)
             }
-        }
-    }
-
-    private var emptyText: String {
-        switch pocket {
-        case .listed(.tenants): String(localized: "Niciun chiriaș. Adaugă contractul și îți spunem când se termină.", comment: "Empty Chiriași pocket.")
-        case .listed(.products): String(localized: "Niciun produs. Adaugă aragazul sau centrala și ții minte garanția.", comment: "Empty Produse pocket.")
-        case .listed(.plants): String(localized: "Nicio plantă trecută aici. Adaug-o și îți amintim de udat.", comment: "Empty Plante pocket on a home's page.")
-        case .category(_, let name): String(localized: "Nimic din „\(name)” trecut aici.", comment: "Empty pocket of a category of one's own on its parent's page (a car's Anvelope).")
-        default: String(localized: "Niciun abonament trecut aici.", comment: "Empty Abonamente pocket.")
         }
     }
 }
@@ -253,9 +247,9 @@ enum ChildSummary {
         let expiry = AssetFacts.expiry(values, template: definition)
         let warranty = AssetFacts.purchase(values, template: definition).warrantyUntil
         if let expiry {
-            parts.append(String(localized: "până la \(DosarFormat.day(expiry, locale: locale))", comment: "Child summary: valid or contracted until a date."))
+            parts.append(PocketWording.until(DosarFormat.day(expiry, locale: locale)))
         } else if let warranty {
-            parts.append(String(localized: "garanție până la \(DosarFormat.day(warranty, locale: locale))", comment: "Child summary: warranty until a date."))
+            parts.append(PocketWording.warrantyUntil(DosarFormat.day(warranty, locale: locale)))
         }
         return Result(line: parts.isEmpty ? nil : parts.joined(separator: " · "), endDay: expiry ?? warranty)
     }
@@ -268,6 +262,8 @@ enum ChildSummary {
 /// their record in Istoric), each with the date it is valid until when there is one.
 struct DocumentsPocket: View {
     let asset: Asset
+    /// Its line while it holds nothing (`PagePocket.emptyLine`).
+    let empty: String
     let add: (PocketAddition) -> Void
     @Environment(BiometricVaultManager.self) private var vault
     @Query private var templates: [CategoryTemplate]
@@ -293,7 +289,7 @@ struct DocumentsPocket: View {
         let shown = DocumentsPocket.shownCount(personal: personal.count, papers: papers.count, isHolder: isHolder)
         DSPocketCard(SectionPocket.documents.title, count: rows.isEmpty ? nil : rows.count) {
             if rows.isEmpty, archived == 0 {
-                PocketEmptyLine(text: String(localized: "Niciun document. Scanează polița, factura sau certificatul și le găsești aici.", comment: "Empty Acte pocket."))
+                PocketEmptyLine(text: empty)
             }
             ForEach(Array(rows.prefix(shown).enumerated()), id: \.element.id) { index, row in
                 if index > 0 { DSRowSeparator() }
@@ -310,10 +306,9 @@ struct DocumentsPocket: View {
             VStack(spacing: 0) {
                 // A person adds one of their own documents; any section a photo of a paper, filed
                 // here through capture without leaving the page.
-                if isHolder {
-                    PocketAddButton(addition: .personalDocument, add: add)
+                ForEach(PocketAddition.documentButtons(isHolder: isHolder)) { addition in
+                    PocketAddButton(addition: addition, add: add)
                 }
-                PocketAddButton(addition: .paper(besidePersonal: isHolder), add: add)
             }
         }
     }
@@ -413,45 +408,12 @@ extension Attachment {
     /// it was filed: last year's policy keeps last year's end), else the date printed on it.
     var validityLine: String? {
         if let day = validUntilDay {
-            return String(localized: "Valabil până la \(DosarFormat.day(day))", comment: "Document row: valid until.")
+            return PocketWording.validUntil(DosarFormat.day(day))
         }
         if let documentDay {
-            return String(localized: "Din \(DosarFormat.day(documentDay))", comment: "Document row: the date on the document.")
+            return PocketWording.dated(DosarFormat.day(documentDay))
         }
         return nil
-    }
-}
-
-extension DocumentKind {
-    var title: String {
-        switch self {
-        case .invoice: String(localized: "Factură")
-        case .receipt: String(localized: "Bon")
-        case .policy: String(localized: "Poliță")
-        case .contract: String(localized: "Contract")
-        case .certificate: String(localized: "Certificat")
-        case .report: String(localized: "Raport")
-        case .identity: String(localized: "Act de identitate")
-        case .warranty: String(localized: "Certificat de garanție")
-        case .manual: String(localized: "Manual")
-        case .prescription: String(localized: "Rețetă")
-        case .photo: String(localized: "Poză")
-        case .other: String(localized: "Document")
-        }
-    }
-
-    var systemImage: String {
-        switch self {
-        case .invoice, .receipt: "doc.text"
-        case .policy, .contract: "doc.richtext"
-        case .certificate, .warranty: "checkmark.seal"
-        case .report: "doc.plaintext"
-        case .identity: "person.text.rectangle"
-        case .manual: "book"
-        case .prescription: "cross.case"
-        case .photo: "photo"
-        case .other: "doc"
-        }
     }
 }
 
@@ -467,13 +429,15 @@ extension CalendarDay {
 struct HistoryPocket: View {
     let asset: Asset
     let definition: TemplateDefinition
+    /// Its line while it holds nothing, in the words of the category's visits (`PagePocket.emptyLine`).
+    let empty: String
     let add: (PocketAddition) -> Void
 
     var body: some View {
         let lines = HistoryLines.make(asset: asset, definition: definition)
         DSPocketCard(SectionPocket.history.title) {
             if lines.isEmpty {
-                PocketEmptyLine(text: String(localized: "Nimic notat încă. Când se face ceva, notează aici: ce, cât a costat și cine a lucrat.", comment: "Empty Istoric pocket."))
+                PocketEmptyLine(text: empty)
             }
             ForEach(Array(lines.prefix(3).enumerated()), id: \.element.id) { index, line in
                 if index > 0 { DSRowSeparator() }
@@ -532,6 +496,8 @@ struct HistoryLines {
 /// People and firms who look after the asset or worked on it.
 struct PeoplePocket: View {
     let asset: Asset
+    /// Its line while no one is in it, in the words of the category's visits (`PagePocket.emptyLine`).
+    let empty: String
     let add: (PocketAddition) -> Void
     @Environment(\.modelContext) private var context
 
@@ -539,7 +505,7 @@ struct PeoplePocket: View {
         let people = ProviderDirectory(context: context).providers(for: asset)
         DSPocketCard(SectionPocket.people.title, count: people.isEmpty ? nil : people.count) {
             if people.isEmpty {
-                PocketEmptyLine(text: String(localized: "Nimeni încă. Adaugă mecanicul, instalatorul sau medicul și îi suni de aici.", comment: "Empty Oameni pocket."))
+                PocketEmptyLine(text: empty)
             }
             ForEach(Array(people.prefix(3).enumerated()), id: \.element.id) { index, provider in
                 if index > 0 { DSRowSeparator() }
@@ -564,6 +530,8 @@ struct PeoplePocket: View {
 struct MoneyPocket: View {
     let asset: Asset
     let definition: TemplateDefinition
+    /// Its line while it holds nothing (`PagePocket.emptyLine`).
+    let empty: String
 
     /// What the pocket lists, read once: whether it shows at all reads it too (`PocketContents`).
     struct Facts {
@@ -595,13 +563,13 @@ struct MoneyPocket: View {
         let trend = facts.trend
         DSPocketCard(SectionPocket.money.title) {
             if facts.isEmpty {
-                PocketEmptyLine(text: String(localized: "Nicio sumă notată încă. Când notezi o lucrare cu preț, apare aici.", comment: "Empty Bani pocket."))
+                PocketEmptyLine(text: empty)
             }
             if let monthly {
-                DSReadOnlyValueRow(label: Text("Pe lună", comment: "Money row: monthly equivalent of a subscription."), value: Text(verbatim: monthly.formattedCompact()))
+                DSReadOnlyValueRow(label: Text(verbatim: PocketWording.monthly), value: Text(verbatim: monthly.formattedCompact()))
             }
             if let trend, let amount = trend.last.amount {
-                DSReadOnlyValueRow(label: Text("Ultima factură", comment: "Money row: a subscription's newest bill."), value: Text(verbatim: amount.formattedCompact()))
+                DSReadOnlyValueRow(label: Text(verbatim: PocketWording.lastBill), value: Text(verbatim: amount.formattedCompact()))
                 if let sentence = BillHistory.changeSentence(trend) {
                     Text(verbatim: sentence)
                         .dsFont(.subheadline)
@@ -609,18 +577,18 @@ struct MoneyPocket: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 if !trend.averageLastYear.isEmpty {
-                    DSReadOnlyValueRow(label: Text("În medie, pe factură", comment: "Money row: a subscription's average bill over the last year."),
+                    DSReadOnlyValueRow(label: Text(verbatim: PocketWording.averageBill),
                                        value: Text(verbatim: MoneyTotals(trend.averageLastYear).formatted()))
                 }
             }
             if !summary.lastTwelveMonths.isEmpty {
-                DSReadOnlyValueRow(label: Text("În ultimul an", comment: "Money row: spent in the last 12 months."), value: Text(verbatim: summary.lastTwelveMonths.formatted()))
+                DSReadOnlyValueRow(label: Text(verbatim: PocketWording.lastYear), value: Text(verbatim: summary.lastTwelveMonths.formatted()))
             }
             if !summary.allTime.isEmpty {
-                DSReadOnlyValueRow(label: Text("De când îl ai", comment: "Money row: spent in total."), value: Text(verbatim: summary.allTime.formatted()))
+                DSReadOnlyValueRow(label: Text(verbatim: PocketWording.allTime), value: Text(verbatim: summary.allTime.formatted()))
             }
             if let price = facts.price {
-                DSReadOnlyValueRow(label: Text("Preț de cumpărare", comment: "Money row: purchase price."), value: Text(verbatim: price.formattedCompact()))
+                DSReadOnlyValueRow(label: Text(verbatim: PocketWording.purchasePrice), value: Text(verbatim: price.formattedCompact()))
             }
         }
     }
