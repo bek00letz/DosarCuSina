@@ -163,9 +163,11 @@ struct VisitKindsTests {
         #expect(CalendarDay(entry.occurredAt, calendar: .bucharest) == CalendarDay("2026-10-30"))
         #expect(orchid.history?.count == 1)
 
-        // Its page's "Schimbă nota" keeps its title in step.
-        try history.setNote(entry, "Înflorește.")
+        // Its page's "Schimbă nota" keeps its title in step, and its own Anulează puts both back.
+        let edited = try history.setNote(entry, "Înflorește.")
         #expect(entry.title == "Înflorește.")
+        try edited.undo()
+        #expect(entry.title == "Are un boboc nou.")
 
         #expect(throws: HistoryNoteError.self) { try history.addNote(on: orchid, "   ") }
         try note.receipt.undo()
@@ -179,6 +181,9 @@ struct VisitKindsTests {
         let context = try makeContext()
         let ana = section(BuiltInTemplates.Key.health, named: "Ana", in: context)
         try context.save()
+        // Sănătate starts locked; filing into it would ask for Face ID first.
+        let store = TemplateStore(context: context)
+        try store.setSensitive(try #require(try store.template(forKey: BuiltInTemplates.Key.health)), false, lowering: try await faceIDConfirmed())
         let health = try form(BuiltInTemplates.health)
         var draft = VisitDraft(date: noon("2026-10-30"))
         #expect(draft.satisfies(health), "Nothing else is needed")
