@@ -1,9 +1,9 @@
 import Foundation
 
 /// The few plain questions a category of the person's own answers ("Are acte", "Are facturi
-/// și contracte", "Are revizii" and how often, what its sections belong to, one box or one per
-/// section), read from and written to the category's own data: its pockets, its behaviour, a
-/// counter field and a service blueprint, and the household's choice of one box for its sections
+/// și contracte", "Are revizii sau lucrări" and how often, what its sections belong to, one box or one per
+/// section), read from and written to the category's own data: its pockets, its behaviour (its
+/// visits' kind among it, `visit(for:)`), a counter field and a service blueprint, and the household's choice of one box for its sections
 /// (`CategoryTemplate.chosenGrouping`, the same choice a box's menu makes). Nothing stores the
 /// switches themselves, so there is one source of truth and a custom category behaves exactly
 /// like a built-in with the same data.
@@ -63,7 +63,8 @@ public struct CategorySwitches: Hashable, Sendable {
     /// Its sections keep ongoing contracts with their bills (the Abonamente pocket), and bills
     /// and contracts read from a photo can be filed under them, as under a home.
     public var hasBills: Bool
-    /// Its sections have a regular service; nil for none.
+    /// Its sections have a regular service or job, logged as visits ("Are revizii sau lucrări");
+    /// nil for none, and then no visits either (`visit(for:)`).
     public var service: Service?
     /// What its sections belong to ("Ține de…": a home, a car, a person), or nil for nothing. A
     /// section filed under one shows on its page, in a pocket named after the category
@@ -129,6 +130,19 @@ public struct CategorySwitches: Hashable, Sendable {
         self.grouping = grouping
     }
 
+    /// The visits a category of one's own gets: none without „Are revizii sau lucrări”; with it, a
+    /// service where a counter is kept (kilometres, engine hours: a machine looked after by how
+    /// much it is used, as a car is, so the form asks the counter and the parts), and a job done
+    /// by someone where it goes by time (a piano, a boiler). The one rule: the switches write it,
+    /// and `OwnCategoryVisitsStep` gives it to a category an earlier version made.
+    public static func visit(for service: Service?) -> VisitKind {
+        switch service?.counter {
+        case nil: .none
+        case .time: .job
+        case .kilometres, .engineHours: .service
+        }
+    }
+
     /// What „Ține de…” offers among `templates`: every part that holds sections (a home, a car, a
     /// person) some category in the binder plays, in the one order (`Role.parents`), and the one
     /// `current` says even when none plays it now. Never a category's name or key.
@@ -175,6 +189,11 @@ public struct CategorySwitches: Hashable, Sendable {
             result.behavior.goesUnderTheOnlyOne = belongsTo != nil
         }
 
+        if service?.counter != current.service?.counter {
+            // Turned on or off, or counted another way: the visits it gets follow. How often alone
+            // leaves them as they are.
+            result.behavior.visit = Self.visit(for: service)
+        }
         if service != current.service {
             if let service, let old = current.service, old.counter == service.counter,
                let index = result.blueprints.firstIndex(where: { $0.key == Self.serviceBlueprintKey(service.counter) }) {
@@ -196,7 +215,7 @@ public struct CategorySwitches: Hashable, Sendable {
 
     /// A new category of the person's own with these answers.
     public func definition(key: String, name: String, symbol: String, tint: TemplateTint) -> TemplateDefinition {
-        let base = TemplateDefinition(key: key, name: name, symbol: symbol, tint: tint, sections: [], pockets: Self.basePockets)
+        let base = TemplateDefinition(key: key, name: name, symbol: symbol, tint: tint, sections: [], pockets: Self.basePockets, behavior: .standard)
         return applied(to: base)
     }
 

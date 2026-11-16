@@ -233,7 +233,7 @@ struct VisitDraftTests {
             field(.total, ron(1_000)),
             field(.provider, .text("Service Exemplu SRL")),
             field(.issueDate, day("2026-10-30")),
-        ], document: .pending(id: UUID(), claim: UUID())), components: components, calendar: .bucharest)
+        ], document: .pending(id: UUID(), claim: UUID())), form: .car, calendar: .bucharest)
 
         #expect(draft.ticked == ["brakes.padsFront", "engine.oil"])
         #expect(draft.parts["engine.oil"]?.cost == 420, "Oil and its filter add up on one row")
@@ -286,10 +286,10 @@ struct VisitDraftTests {
     }
 
     @Test func wordingFollowsTheKindOfSection() {
-        #expect(BuiltInTemplates.vehicle.behavior.visitWording.trade == .mechanic)
-        #expect(BuiltInTemplates.pet.behavior.visitWording.title == "Am fost la veterinar")
-        #expect(BuiltInTemplates.home.behavior.visitWording.kind == .repair)
-        #expect(CategoryBehavior.standard.visitWording.trade == .other)
+        #expect(BuiltInTemplates.vehicle.behavior.visit.shape?.provider?.trade == .mechanic)
+        #expect(BuiltInTemplates.pet.behavior.visit.shape?.title == "Am fost la veterinar")
+        #expect(BuiltInTemplates.home.behavior.visit.shape?.historyKind == .repair)
+        #expect(CategoryBehavior.standard.visit.shape == nil, "No visits until a category says")
     }
 }
 

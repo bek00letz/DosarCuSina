@@ -58,32 +58,6 @@ public enum BuiltInTemplates {
         ReminderProfile(leadDays: leadDays, consequence: consequence, graceDays: grace, followUpAfterLapse: followUp, travelMarginDays: travelMargin)
     }
 
-    // MARK: Visits
-
-    /// How each kind of built-in words a visit ("Am fost la service"). A category that
-    /// names none, such as any of the person's own, reads as `VisitWording.standard`.
-    enum Visits {
-        static var service: VisitWording {
-            VisitWording(title: String(localized: "Am fost la service"), checklistTitle: String(localized: "Ce s-a făcut"),
-                         providerTitle: String(localized: "Service-ul"), kind: .maintenance, trade: .mechanic)
-        }
-
-        static var vet: VisitWording {
-            VisitWording(title: String(localized: "Am fost la veterinar"), checklistTitle: String(localized: "Ce i s-a făcut"),
-                         providerTitle: String(localized: "Veterinarul"), kind: .visit, trade: .vet)
-        }
-
-        static var tradesperson: VisitWording {
-            VisitWording(title: String(localized: "Am chemat un meseriaș"), checklistTitle: String(localized: "Ce a lucrat"),
-                         providerTitle: String(localized: "Meseriașul"), kind: .repair, trade: .handyman)
-        }
-
-        static var doctor: VisitWording {
-            VisitWording(title: String(localized: "Am fost la medic"), checklistTitle: String(localized: "Ce s-a făcut"),
-                         providerTitle: String(localized: "Medicul"), kind: .visit, trade: .doctor)
-        }
-    }
-
     // MARK: Mainstays
 
     public static var vehicle: TemplateDefinition {
@@ -148,7 +122,7 @@ public enum BuiltInTemplates {
             ],
             components: BuiltInComponents.vehicle,
             pockets: [.upcoming, .documents, .history, .people, .money, .keyFacts],
-            behavior: CategoryBehavior(role: .vehicle, sectionNoun: .car, visit: Visits.service,
+            behavior: CategoryBehavior(role: .vehicle, sectionNoun: .car, visit: .service,
                                        offerTitle: String(localized: "Mașină", comment: "Add-section option."), shortlistOrder: 1)
         )
     }
@@ -216,7 +190,7 @@ public enum BuiltInTemplates {
             ],
             components: BuiltInComponents.home,
             pockets: [.upcoming, .tenants, .products, .subscriptions, .plants, .documents, .history, .people, .money, .keyFacts],
-            behavior: CategoryBehavior(role: .home, sectionNoun: .home, visit: Visits.tradesperson,
+            behavior: CategoryBehavior(role: .home, sectionNoun: .home, visit: .job,
                                        offerTitle: String(localized: "Casă sau apartament", comment: "Add-section option."), shortlistOrder: 2)
         )
     }
@@ -299,7 +273,7 @@ public enum BuiltInTemplates {
                                     note: String(localized: "Programările durează. Pentru pașaport, multe țări cer 6 luni de valabilitate.")),
             ],
             pockets: [.upcoming, .documents, .keyFacts],
-            behavior: CategoryBehavior(box: .wholeCategory, listing: .byHolder, role: .personalDocument,
+            behavior: CategoryBehavior(box: .wholeCategory, listing: .byHolder, role: .personalDocument, visit: .none,
                                        offerTitle: String(localized: "Un act (buletin, pașaport, permis)", comment: "Add-section option."))
         )
     }
@@ -363,7 +337,7 @@ public enum BuiltInTemplates {
             ],
             components: BuiltInComponents.pet,
             pockets: [.upcoming, .documents, .history, .people, .money, .keyFacts],
-            behavior: CategoryBehavior(sectionNoun: .pet, visit: Visits.vet,
+            behavior: CategoryBehavior(sectionNoun: .pet, visit: .vet,
                                        offerTitle: String(localized: "Animal de companie", comment: "Add-section option."), shortlistOrder: 3)
         )
     }
@@ -403,7 +377,7 @@ public enum BuiltInTemplates {
                                     reminders: profile([30, 7], .financial), isSuggested: false),
             ],
             pockets: [.upcoming, .documents, .history, .people, .keyFacts],
-            behavior: CategoryBehavior(visit: Visits.doctor)
+            behavior: CategoryBehavior(visit: .doctor)
         )
     }
 
@@ -444,7 +418,7 @@ public enum BuiltInTemplates {
                                     note: String(localized: "Funcționează totul bine? Acum mai poți reclama gratuit un defect.")),
             ],
             pockets: [.upcoming, .documents, .history, .money, .keyFacts],
-            behavior: CategoryBehavior(box: .wholeCategory, listing: .byWarranty, parentPocket: .products,
+            behavior: CategoryBehavior(box: .wholeCategory, listing: .byWarranty, parentPocket: .products, visit: .repair,
                                        offerTitle: String(localized: "Produs cu garanție", comment: "Add-section option."), shortlistOrder: 5)
         )
     }
@@ -530,7 +504,7 @@ public enum BuiltInTemplates {
             ],
             pockets: [.upcoming, .documents, .history, .money, .keyFacts],
             behavior: CategoryBehavior(box: .wholeCategory, listing: .byMonthlyCost, role: .subscription, parentPocket: .subscriptions,
-                                       mayBelongTo: .home, offerTitle: String(localized: "Abonament", comment: "Add-section option."), shortlistOrder: 6)
+                                       mayBelongTo: .home, visit: .none, offerTitle: String(localized: "Abonament", comment: "Add-section option."), shortlistOrder: 6)
         )
     }
 
@@ -548,7 +522,8 @@ public enum BuiltInTemplates {
                 ]),
                 PurchaseFields.section(prefix: "other"),
             ],
-            pockets: SectionPocket.standard
+            pockets: SectionPocket.standard,
+            behavior: CategoryBehavior(visit: .job)
         )
     }
 
@@ -587,7 +562,7 @@ public enum BuiltInTemplates {
             ],
             components: BuiltInComponents.bike,
             pockets: [.upcoming, .history, .people, .money, .keyFacts],
-            behavior: CategoryBehavior(sectionNoun: .bike, visit: Visits.service)
+            behavior: CategoryBehavior(sectionNoun: .bike, visit: .service)
         )
     }
 
@@ -619,7 +594,7 @@ public enum BuiltInTemplates {
             pockets: [.upcoming, .history, .keyFacts],
             // One "Plante" box for all of them; each may stand in a home, on its page, or on its own.
             behavior: CategoryBehavior(parentPocket: .plants, defaultGrouping: .grouped, sectionNoun: .plant,
-                                       mayBelongTo: .home, goesUnderTheOnlyOne: true)
+                                       mayBelongTo: .home, goesUnderTheOnlyOne: true, visit: .note)
         )
     }
 
@@ -653,7 +628,7 @@ public enum BuiltInTemplates {
                                     note: String(localized: "Timp să vorbiți despre prelungire sau să cauți alt chiriaș.")),
             ],
             pockets: [.upcoming, .documents, .people, .money, .keyFacts],
-            behavior: CategoryBehavior(box: .insideOther, parentPocket: .tenants, addedOnlyUnderParent: true)
+            behavior: CategoryBehavior(box: .insideOther, parentPocket: .tenants, addedOnlyUnderParent: true, visit: .none)
         )
     }
 
@@ -675,7 +650,7 @@ public enum BuiltInTemplates {
                 ]),
             ],
             pockets: [.upcoming, .documents, .keyFacts],
-            behavior: CategoryBehavior(box: .insideOther, role: .holder,
+            behavior: CategoryBehavior(box: .insideOther, role: .holder, visit: .none,
                                        offerTitle: String(localized: "Actele unei persoane", comment: "Add-section option."), shortlistOrder: 4)
         )
     }
@@ -709,7 +684,7 @@ public enum BuiltInTemplates {
             ],
             components: BuiltInComponents.espresso,
             pockets: [.upcoming, .history, .money, .keyFacts],
-            behavior: CategoryBehavior(sectionNoun: .espressoMachine)
+            behavior: CategoryBehavior(sectionNoun: .espressoMachine, visit: .upkeep)
         )
     }
 }

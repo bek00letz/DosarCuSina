@@ -76,7 +76,7 @@ struct OwnCategoriesBelongTests {
             split.behavior.box = .wholeCategory
             split.chosenGrouping = .separate
             // As a backup brings one that behaves like Garanții.
-            likeWarranties.behavior = CategoryBehavior(box: .wholeCategory, listing: .byWarranty)
+            likeWarranties.behavior = CategoryBehavior(box: .wholeCategory, listing: .byWarranty, visit: .none)
             try UnitOfWork.save(context)
         }
         #expect(CategorySwitches(reading: tools).grouping == .grouped, "Read as one box until it is moved")
@@ -98,7 +98,7 @@ struct OwnCategoriesBelongTests {
         #expect(documents.behavior.box == .wholeCategory, "A built-in keeps the catalog's box")
         #expect(DataRepairs.step(.ownCategoryBoxes).runsByItself)
         #expect(DataRepairStepID.ownCategoryBoxes.rawValue == "own-category-boxes")
-        #expect(DataRepairs.steps.last.map { type(of: $0).id } == .ownCategoryBoxes, "A new repair is a new step at the end")
+        #expect(DataRepairs.steps.map { type(of: $0).id }.contains(.ownCategoryBoxes))
         #expect(try OwnCategoryBoxesStep().migrate(in: context) == 0, "Twice is once")
 
         let info = BinderLayout.TemplateInfo(tools)

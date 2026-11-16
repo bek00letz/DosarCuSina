@@ -189,6 +189,7 @@ public final class HistoryActions {
         totalCost: Money? = nil,
         odometer: Double? = nil,
         provider: Provider? = nil,
+        note: String? = nil,
         reference: String? = nil,
         documents: [DocumentDraft] = [],
         rating: Int? = nil,
@@ -218,6 +219,7 @@ public final class HistoryActions {
             let entry = entryToWrite(replacing: earlier, kind: kind, title: title ?? Self.visitTitle(for: items), on: date, in: asset)
             entry.metricReading = odometer
             entry.totalCost = totalCost
+            entry.note = note.flatMap { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0 }
             entry.reference = reference
             entry.rating = rating.map { min(max($0, 1), 5) }
             entry.isExample = isExample
@@ -252,14 +254,42 @@ public final class HistoryActions {
 
     /// Writes the note of a record in Istoric ("Adaugă o notă" after a chore's "Gata", or from
     /// the record's page), or clears it with nil or blank text. Undoable: the receipt takes back
-    /// only the note.
+    /// only the note. A record that is a note (`addNote`) keeps its first line as its title.
     @discardableResult
     public func setNote(_ entry: HistoryEntry, _ note: String?) throws -> UndoReceipt {
         let text = note?.trimmingCharacters(in: .whitespacesAndNewlines)
         return try UnitOfWork.performUndoable(in: context, now: now()) {
             entry.note = (text?.isEmpty ?? true) ? nil : text
+            if entry.kind == .note, let text, let title = Self.noteTitle(text) { entry.title = title }
             try save()
         }.receipt
+    }
+
+    /// A dated note of its own in a section's Istoric ("Adaugă o notă" on a plant's page, whose
+    /// category takes notes instead of visits, `VisitKind.note`): a record of kind `.note`, its
+    /// first line its title, the whole text its note, on `day`. Undoable: the receipt takes it
+    /// back. Blank text writes nothing and throws.
+    @discardableResult
+    public func addNote(on asset: Asset, _ note: String, occurredAt day: Date? = nil) throws -> Undoable<HistoryEntry> {
+        let text = note.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let title = Self.noteTitle(text) else { throw HistoryNoteError.empty }
+        // Every question first, before anything is written (`StepQuestion`).
+        let isExample = try ExampleOwnership.requireReal(asset)
+        let date = day ?? now()
+        return try UnitOfWork.performUndoable(in: context, now: now()) {
+            let entry = entryToWrite(replacing: nil, kind: .note, title: title, on: date, in: asset)
+            entry.note = text
+            entry.isExample = isExample
+            try save()
+            return entry
+        }
+    }
+
+    /// A note's title: its first line that says something; nil for blank text.
+    static func noteTitle(_ text: String) -> String? {
+        text.split(whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .first { !$0.isEmpty }
     }
 
     /// Rates the job 1–5, or clears the rating with nil. The providers' ratings follow.
@@ -321,4 +351,10 @@ extension HouseholdMutations {
             item.supplier = draft.supplier
         }
     }
+}
+
+/// Why a note wasn't kept.
+enum HistoryNoteError: Error {
+    /// It says nothing: the sheet's button waits for words.
+    case empty
 }

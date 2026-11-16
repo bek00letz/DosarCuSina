@@ -217,7 +217,7 @@ struct InvoiceFiledAgainTests {
         let result = CaptureResult(kind: .serviceInvoice, kindConfidence: 0.9, fields: fields, suggestions: [], reminder: nil,
                                    recognizedText: "", barcodes: [], document: .kept(attachmentID: UUID()), notices: [])
         draft.isAnotherInvoice = true
-        draft.apply(result, components: [])
+        draft.apply(result, form: .car)
         #expect(draft.reference == "SRV 0000001")
         #expect(!draft.isAnotherInvoice, "Another invoice asks again")
     }

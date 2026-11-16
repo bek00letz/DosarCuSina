@@ -554,7 +554,7 @@ extension CategoryTemplate: UndoableRecord {
     }
     public var recordKey: String { key }
     public static func blank() -> Self {
-        Self(definition: TemplateDefinition(key: "", name: "", symbol: "square.grid.2x2", tint: .gray, sections: []), isBuiltIn: false, homeOrder: 0)
+        Self(definition: TemplateDefinition(key: "", name: "", symbol: "square.grid.2x2", tint: .gray, sections: [], behavior: .standard), isBuiltIn: false, homeOrder: 0)
     }
     public static func find(_ key: String, in context: ModelContext) -> Self? {
         context.first(#Predicate<CategoryTemplate> { $0.key == key }) as? Self

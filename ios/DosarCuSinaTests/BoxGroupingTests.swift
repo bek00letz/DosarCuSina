@@ -24,13 +24,13 @@ struct BoxGroupingTests {
     // MARK: The choice
 
     @Test func groupingIsOfferedFromTwoSectionsAndTheWayBackAlways() {
-        let cars = CategoryBehavior()
+        let cars = CategoryBehavior(visit: .service)
         #expect(BoxGrouping.offer(for: cars, now: .separate, sections: 1) == nil, "One car has nothing to group")
         #expect(BoxGrouping.offer(for: cars, now: .separate, sections: 2) == .grouped)
         #expect(BoxGrouping.offer(for: cars, now: .grouped, sections: 1) == .separate)
         #expect(BoxGrouping.offer(for: cars, now: .grouped, sections: 5) == .separate)
-        #expect(BoxGrouping.offer(for: CategoryBehavior(box: .wholeCategory), now: .separate, sections: 5) == nil, "Acte has one box already")
-        #expect(BoxGrouping.offer(for: CategoryBehavior(box: .insideOther), now: .separate, sections: 5) == nil, "Tenants have none")
+        #expect(BoxGrouping.offer(for: CategoryBehavior(box: .wholeCategory, visit: .none), now: .separate, sections: 5) == nil, "Acte has one box already")
+        #expect(BoxGrouping.offer(for: CategoryBehavior(box: .insideOther, visit: .none), now: .separate, sections: 5) == nil, "Tenants have none")
     }
 
     @Test func theCatalogSaysWhereEachStartsAndThePersonsChoiceWins() throws {

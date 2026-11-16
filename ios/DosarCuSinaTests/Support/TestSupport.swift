@@ -134,3 +134,8 @@ extension AttachmentActions {
         return attachment
     }
 }
+
+extension VisitForm {
+    /// A car's visit form: the service, with the vehicle's parts and kilometres.
+    @MainActor static var car: VisitForm { make(for: BuiltInTemplates.vehicle)! }
+}

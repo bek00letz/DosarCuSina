@@ -24,7 +24,7 @@ struct CustomSectionDraft: Equatable {
     /// The category it describes, as it would be saved.
     func definition(key: String) -> TemplateDefinition {
         if CustomSectionStep.offersPocketList {
-            return TemplateDefinition(key: key, name: name, symbol: symbol, tint: Self.tint, sections: [], pockets: Array(pockets))
+            return TemplateDefinition(key: key, name: name, symbol: symbol, tint: Self.tint, sections: [], pockets: Array(pockets), behavior: .standard)
         }
         return switches.definition(key: key, name: name, symbol: symbol, tint: Self.tint)
     }

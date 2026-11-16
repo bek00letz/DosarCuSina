@@ -225,6 +225,8 @@ struct SectionPocketList<UnderUpcoming: View>: View {
     @State private var isChoosingPhoto = false
     @State private var isAddingPerson = false
     @State private var addsKeyFact = false
+    /// A dated note being written in Istoric (a plant's "Adaugă o notă").
+    @State private var noteRequest: HistoryNoteRequest?
 
     init(asset: Asset, definition: TemplateDefinition, pockets: [SectionPocket], toast: Binding<DSToast?>, error: Binding<UserFacingError?>,
          @ViewBuilder underUpcoming: () -> UnderUpcoming) {
@@ -265,6 +267,7 @@ struct SectionPocketList<UnderUpcoming: View>: View {
         .sheet(isPresented: $isAddingPerson) {
             ProviderEditSheet(provider: nil, linkTo: asset)
         }
+        .historyNoteSheet($noteRequest, toast: $toast)
         .photoFirstCapture(
             isPresented: $isChoosingPhoto,
             title: Text("Adaugă un act", comment: "Title of the photo source choice for a paper added from a section page."),
@@ -290,6 +293,8 @@ struct SectionPocketList<UnderUpcoming: View>: View {
             isChoosingPhoto = true
         case .visit:
             router.present(.addVisit(asset.id))
+        case .note:
+            noteRequest = HistoryNoteRequest(newNoteOn: asset.id)
         case .person:
             isAddingPerson = true
         case .keyFact:

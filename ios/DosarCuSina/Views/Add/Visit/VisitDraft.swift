@@ -1,8 +1,9 @@
 import Foundation
 import SwiftData
 
-/// A visit being filled in: the ticked checklist rows, anything else done,
-/// the date, the counter, the total and who did it. Turns into exactly one
+/// A visit being filled in: the ticked checklist rows, anything else done, a note, the date,
+/// the counter, the total and who did it. Its form (`VisitForm`, by the category's visit kind)
+/// says which of these are asked; saving keeps only those (`filing`), in exactly one
 /// `HistoryActions.recordVisit` call.
 struct VisitDraft: Equatable {
     struct Part: Equatable {
@@ -35,6 +36,8 @@ struct VisitDraft: Equatable {
     var odometerEstimate: Double?
     var total: Decimal?
     var currency: String = Money.defaultCurrency
+    /// What it was for, or what was fixed (`VisitShape.note`).
+    var note: String = ""
     var provider: ProviderChoice = .none
     var rating: Int?
     /// The captured invoice, filed with the visit: new pages, or a copy the binder already
@@ -64,8 +67,31 @@ struct VisitDraft: Equatable {
         self.date = date
     }
 
-    var isEmpty: Bool {
-        ticked.isEmpty && extras.allSatisfy { $0.name.trimmingCharacters(in: .whitespaces).isEmpty } && total == nil && document == nil
+    /// Whether anything was filled in, so leaving the form asks first.
+    var hasContent: Bool {
+        !ticked.isEmpty || hasRows || total != nil || document != nil || hasNote
+    }
+
+    private var hasRows: Bool { extras.contains { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty } }
+    private var hasNote: Bool { !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+    /// Whether `field` is filled in.
+    func fills(_ field: VisitShape.Field) -> Bool {
+        switch field {
+        case .paper: document != nil
+        case .work: !ticked.isEmpty || hasRows
+        case .note: hasNote
+        case .counter: odometer != nil
+        case .cost: total != nil
+        case .provider: provider != .none
+        }
+    }
+
+    /// Whether the form can save: any one of what its kind requires is filled in, or the kind
+    /// requires nothing (a doctor's visit saves with its day alone).
+    func satisfies(_ form: VisitForm) -> Bool {
+        guard let requirement = form.shape.requirement else { return true }
+        return requirement.fields.contains { form.fields.contains($0) && fills($0) }
     }
 
     func isTicked(_ key: String) -> Bool { ticked.contains(key) }
@@ -109,14 +135,51 @@ struct VisitDraft: Equatable {
         return costs.isEmpty ? nil : costs.reduce(0, +)
     }
 
-    // MARK: From an invoice
+    // MARK: To the filer
 
-    /// Fills the draft from a captured invoice: ticks the rows its lines match,
-    /// with their costs; lines the catalog doesn't know become "Altceva" rows;
-    /// labour and the total, the date and the provider's name fill in when empty.
-    mutating func apply(_ result: CaptureResult, components: [ComponentDefinition], calendar: Calendar = .dosar) {
+    /// The visit saving files, from the draft as it stands: only what the form asks, so a value
+    /// its kind doesn't ask (a doctor's counter, a repair's parts) is never written.
+    @MainActor
+    func filing(on asset: Asset, form: VisitForm, provider: CaptureFiler.Visit.ProviderChoice) -> CaptureFiler.Visit {
+        let asks = form.fields
+        let checklist = asks.contains(.work) && form.hasChecklist
+            ? checklistItems.map { item in form.shape.asksBrand ? item : HistoryActions.ChecklistItem(componentKey: item.componentKey, cost: item.cost) }
+            : []
+        let extras = asks.contains(.work) ? extraItems : []
+        return CaptureFiler.Visit(
+            asset: asset,
+            kind: form.shape.historyKind,
+            title: form.entryTitle(for: checklist.map { item in form.components.first { $0.key == item.componentKey }?.name ?? item.componentKey } + extras.map(\.name)),
+            occurredAt: date,
+            checklist: checklist,
+            extraItems: extras,
+            totalCost: totalMoney,
+            odometer: asks.contains(.counter) ? odometer : nil,
+            odometerSource: odometerSource,
+            provider: asks.contains(.provider) ? provider : .none,
+            rating: asks.contains(.provider) ? rating : nil,
+            note: asks.contains(.note) && hasNote ? note.trimmingCharacters(in: .whitespacesAndNewlines) : nil,
+            document: asks.contains(.paper) ? document : nil,
+            documentTitle: documentTitle,
+            documentText: documentText,
+            reference: reference,
+            isAnotherInvoice: isAnotherInvoice,
+            paper: form.shape.paper ?? .invoice,
+            keepsPhoto: keepsPhoto
+        )
+    }
+
+    // MARK: From a paper
+
+    /// Fills the draft from a captured paper, as its form asks: ticks the rows its lines match,
+    /// with their costs; lines the catalog doesn't know become rows of one's own ("Altceva");
+    /// the total, the date, the counter and the provider's name fill in when empty. What the
+    /// form doesn't ask is left out: a doctor's visit takes the day, the total and who.
+    mutating func apply(_ result: CaptureResult, form: VisitForm, calendar: Calendar = .dosar) {
         let fields = Dictionary(result.fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
-        for line in fields[.lineItems]?.lineItems ?? [] {
+        let asks = form.fields
+        let components = form.components
+        for line in asks.contains(.work) ? fields[.lineItems]?.lineItems ?? [] : [] {
             let cost = line.amount?.amount
             if let currency = line.amount?.currency { self.currency = currency }
             let key = line.componentKey.flatMap { key in components.contains { $0.key == key } ? key : nil }
@@ -139,14 +202,14 @@ struct VisitDraft: Equatable {
         if let day = (fields[.issueDate] ?? fields[.purchaseDate])?.day {
             self.date = day.noonDate(in: calendar)
         }
-        if odometer == nil, case .metric(let value, _)? = fields[.odometer] {
+        if asks.contains(.counter), odometer == nil, case .metric(let value, _)? = fields[.odometer] {
             odometer = NSDecimalNumber(decimal: value).doubleValue
             odometerSource = .document
         }
-        if provider == .none, let name = fields[.provider]?.text, !name.isEmpty {
+        if asks.contains(.provider), provider == .none, let name = fields[.provider]?.text, !name.isEmpty {
             provider = .new(name)
         }
-        if let document = result.document {
+        if asks.contains(.paper), let document = result.document {
             if document != self.document {
                 isAnotherInvoice = false
                 keepsPhotoOnRequest = false

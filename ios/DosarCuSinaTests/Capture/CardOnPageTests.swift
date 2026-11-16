@@ -126,7 +126,7 @@ struct CardOnPageTests {
         let store = CaptureDocumentStore()
         let invoice = try await withPages(try await read(Self.receipt), in: store, seed: 52)
         var draft = VisitDraft(date: Self.referenceDate)
-        draft.apply(invoice, components: [])
+        draft.apply(invoice, form: .car)
         #expect(draft.photoOnRequestKind == invoice.kind)
         #expect(!draft.keepsPhoto, "Off by default")
         draft.keepsPhotoOnRequest = true
@@ -134,7 +134,7 @@ struct CardOnPageTests {
 
         // Another invoice asks again; one without a card number keeps its photo.
         let plain = try await withPages(try await read("SERVICE EXEMPLU S.R.L.\nFACTURĂ\nTotal 120,00 lei"), in: store, seed: 53)
-        draft.apply(plain, components: [])
+        draft.apply(plain, form: .car)
         #expect(draft.photoOnRequestKind == nil)
         #expect(!draft.keepsPhotoOnRequest)
         #expect(draft.keepsPhoto)

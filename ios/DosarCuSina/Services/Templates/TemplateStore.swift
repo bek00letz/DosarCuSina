@@ -163,7 +163,8 @@ public struct TemplateStore {
             tint: tint,
             isSensitiveByDefault: isSensitive,
             sections: sections,
-            blueprints: blueprints
+            blueprints: blueprints,
+            behavior: .standard
         )
         let order = ((try all()).map(\.homeOrder).max() ?? -1) + 1
         let template = CategoryTemplate(definition: definition, isBuiltIn: false, homeOrder: order)
@@ -283,10 +284,13 @@ public struct TemplateStore {
     @discardableResult
     func takeBoxAsGrouping(_ template: CategoryTemplate) -> Bool {
         guard !template.isBuiltIn, template.behavior.box == .wholeCategory else { return false }
-        // What the switches write, besides the box: a home's part for bills, nothing else.
+        // What the switches write, besides the box: a home's part for bills, and the visits its
+        // service gives (`CategorySwitches.visit(for:)`), nothing else.
         var besidesTheBox = template.behavior
         besidesTheBox.box = .perSection
         if besidesTheBox.role == .home { besidesTheBox.role = nil }
+        let service = CategorySwitches(reading: template.definition, grouping: template.grouping).service
+        if besidesTheBox.visit == CategorySwitches.visit(for: service) { besidesTheBox.visit = .none }
         guard besidesTheBox == .standard else { return false }
         template.behavior.box = .perSection
         if template.chosenGrouping == nil { template.chosenGrouping = .grouped }

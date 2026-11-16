@@ -59,7 +59,7 @@ struct CategoryOffersAndVisitsTests {
         let offers = try store.sectionOffers()
         #expect(offers.shortlist.last?.key == boats.key)
         #expect(SectionOffers.title(for: boats) == "Barcă")
-        #expect(CategoryBehavior(offerTitle: "").offerTitle(name: "Bărci") == "Bărci", "An empty title shows the name")
+        #expect(CategoryBehavior(visit: .none, offerTitle: "").offerTitle(name: "Bărci") == "Bărci", "An empty title shows the name")
     }
 
     @Test("Adding a document asks whose it is from the people documents are filed under")
@@ -91,79 +91,116 @@ struct CategoryOffersAndVisitsTests {
         #expect(try store.keys(playing: .subscription) == [BuiltInTemplates.Key.subscription, lines.key])
     }
 
-    // MARK: Visit wording
+    // MARK: Visit kinds
 
-    @Test("Each built-in words its visits as it did when code chose the wording")
-    func builtInVisitWording() throws {
-        let service = VisitWording(title: "Am fost la service", checklistTitle: "Ce s-a făcut", providerTitle: "Service-ul",
-                                   kind: .maintenance, trade: .mechanic)
-        let plain = VisitWording(title: "Am făcut o lucrare", checklistTitle: "Ce s-a făcut", providerTitle: "Cine a lucrat",
-                                 kind: .repair, trade: .other)
-        let expected: [String: VisitWording] = [
-            BuiltInTemplates.Key.vehicle: service,
-            BuiltInTemplates.Key.bike: service,
-            BuiltInTemplates.Key.pet: VisitWording(title: "Am fost la veterinar", checklistTitle: "Ce i s-a făcut", providerTitle: "Veterinarul",
-                                                   kind: .visit, trade: .vet),
-            BuiltInTemplates.Key.home: VisitWording(title: "Am chemat un meseriaș", checklistTitle: "Ce a lucrat", providerTitle: "Meseriașul",
-                                                    kind: .repair, trade: .handyman),
-            BuiltInTemplates.Key.health: VisitWording(title: "Am fost la medic", checklistTitle: "Ce s-a făcut", providerTitle: "Medicul",
-                                                      kind: .visit, trade: .doctor),
+    @Test("Each built-in states its visits; the page's button and the form read the same kind")
+    func builtInVisitKinds() throws {
+        let expected: [String: VisitKind] = [
+            BuiltInTemplates.Key.vehicle: .service, BuiltInTemplates.Key.bike: .service,
+            BuiltInTemplates.Key.home: .job, BuiltInTemplates.Key.other: .job,
+            BuiltInTemplates.Key.purchase: .repair, BuiltInTemplates.Key.espresso: .upkeep,
+            BuiltInTemplates.Key.health: .doctor, BuiltInTemplates.Key.pet: .vet,
+            BuiltInTemplates.Key.plants: .note,
+            BuiltInTemplates.Key.subscription: .none, BuiltInTemplates.Key.documents: .none,
+            BuiltInTemplates.Key.member: .none, BuiltInTemplates.Key.tenancy: .none,
         ]
-        #expect(VisitWording.standard == plain)
+        #expect(Set(expected.keys) == Set(BuiltInTemplates.all.map(\.key)), "Every built-in is named here")
         let store = TemplateStore(context: try makeContext())
         for definition in BuiltInTemplates.all {
+            #expect(definition.behavior.visit == expected[definition.key], "\(definition.key)")
             let installed = try #require(try store.template(forKey: definition.key))
-            #expect(installed.behavior.visitWording == (expected[definition.key] ?? plain), "\(definition.key)")
-            #expect(installed.definition.behavior.visitWording == installed.behavior.visitWording, "The page's button reads like the flow")
+            #expect(installed.behavior.visit == definition.behavior.visit, "\(definition.key) is installed with its kind")
         }
     }
 
-    @Test("A category of one's own words its visits plainly, whatever it keeps")
-    func customVisitWording() throws {
+    @Test("A category of one's own logs visits only with „Are revizii sau lucrări”: a job by time, a service by a counter")
+    func customVisitKinds() throws {
         let store = TemplateStore(context: try makeContext())
-        let service = CategorySwitches.Service(.engineHours, every: 100)
-        for switches in [CategorySwitches.defaults, CategorySwitches(hasBills: true), CategorySwitches(service: service)] {
+        let cases: [(CategorySwitches, VisitKind)] = [
+            (.defaults, .none),
+            (CategorySwitches(hasBills: true), .none),
+            (CategorySwitches(service: .init(.time)), .job),
+            (CategorySwitches(service: .init(.kilometres)), .service),
+            (CategorySwitches(service: .init(.engineHours, every: 100)), .service),
+        ]
+        for (switches, kind) in cases {
             let made = try store.createCustom(name: "Bărci", symbol: "sailboat.fill", switches: switches)
-            #expect(made.behavior.visit == nil)
-            #expect(made.behavior.visitWording == .standard)
-            #expect(made.behavior.visitWording.title == "Am făcut o lucrare")
-            #expect(made.behavior.visitWording.providerTitle == "Cine a lucrat")
+            #expect(made.behavior.visit == kind, "\(switches)")
+            #expect(made.behavior.visit.offersVisit == (switches.service != nil))
+            // Turning the switch off takes the visits away; on again by kilometres gives a service.
+            var off = switches
+            off.service = nil
+            #expect(off.applied(to: made.definition).behavior.visit == .none)
+            var byKilometres = switches
+            byKilometres.service = .init(.kilometres)
+            #expect(byKilometres.applied(to: made.definition).behavior.visit == .service)
+            // Applying what it answers changes nothing.
+            #expect(CategorySwitches(reading: made).applied(to: made.definition) == made.definition)
         }
+        // How often alone leaves a stated kind as it is.
+        var definition = CategorySwitches(service: .init(.time)).definition(key: "custom.pian", name: "Pian", symbol: "pianokeys", tint: .gray)
+        definition.behavior.visit = .repair
+        #expect(CategorySwitches(service: .init(.time, every: 6)).applied(to: definition).behavior.visit == .repair)
     }
 
-    @Test("Visit wording is kept with the category and read back; what can't be read is the plain one")
-    func visitWordingIsStoredAndTolerant() throws {
+    @Test("The kind is kept with the category and read back; an older or newer value reads by one rule")
+    func visitKindIsStoredAndTolerant() throws {
         let behavior = BuiltInTemplates.pet.behavior
         let data = try JSONEncoder().encode(behavior)
+        #expect(String(decoding: data, as: UTF8.self).contains(#""visit":"vet""#), "Stored as its kind's name")
         #expect(try JSONDecoder().decode(CategoryBehavior.self, from: data) == behavior)
 
         let fromBefore = Data(#"{"box":"perSection"}"#.utf8)
-        #expect(try JSONDecoder().decode(CategoryBehavior.self, from: fromBefore).visitWording == .standard)
+        #expect(try JSONDecoder().decode(CategoryBehavior.self, from: fromBefore).visit == .none, "No kind stated: no visits")
 
-        let fromNewer = Data(#"{"visit":{"title":"Am fost la atelier","kind":"overhaul","trade":"shipwright"}}"#.utf8)
-        let read = try JSONDecoder().decode(CategoryBehavior.self, from: fromNewer).visitWording
-        #expect(read.title == "Am fost la atelier")
-        #expect(read.checklistTitle == VisitWording.standard.checklistTitle)
-        #expect(read.kind == .repair && read.trade == .other)
+        let fromNewer = Data(#"{"visit":"overhaul"}"#.utf8)
+        #expect(try JSONDecoder().decode(CategoryBehavior.self, from: fromNewer).visit == .job, "A newer kind reads as a job done, which hides nothing")
+
+        // The earlier form, an object of words, reads as the kind its trade names.
+        let words: [(String, VisitKind)] = [("mechanic", .service), ("vet", .vet), ("doctor", .doctor), ("handyman", .job), ("shipwright", .job)]
+        for (trade, kind) in words {
+            let earlier = Data(#"{"visit":{"title":"Am fost","kind":"visit","trade":"\#(trade)"}}"#.utf8)
+            #expect(try JSONDecoder().decode(CategoryBehavior.self, from: earlier).visit == kind, "\(trade)")
+        }
+    }
+
+    @Test("A category of one's own an earlier version made with a service gets its switch's visits, by itself")
+    func ownCategoryVisitsStep() throws {
+        let context = try makeContext()
+        let store = TemplateStore(context: context)
+        let boats = try store.createCustom(name: "Bărci", symbol: "sailboat.fill", switches: CategorySwitches(service: .init(.engineHours)))
+        let notes = try store.createCustom(name: "Caiete", symbol: "book", switches: .defaults)
+        let stated = try store.createCustom(name: "Unelte", symbol: "hammer", switches: CategorySwitches(service: .init(.time)))
+        boats.behavior.visit = .none   // as an earlier version stored it: no kind
+        stated.behavior.visit = .repair
+        try context.save()
+
+        #expect(try OwnCategoryVisitsStep().migrate(in: context) == 1)
+        #expect(boats.behavior.visit == .service)
+        #expect(notes.behavior.visit == .none, "Without the switch, no visits")
+        #expect(stated.behavior.visit == .repair, "A kind already stated stays")
+        #expect(try OwnCategoryVisitsStep().migrate(in: context) == 0, "Twice is once")
+        #expect(DataRepairs.step(.ownCategoryVisits).runsByItself)
+        #expect(DataRepairs.steps.last.map { type(of: $0).id } == .ownCategoryVisits, "A new repair is a new step at the end")
     }
 
     // MARK: The catalog upgrade
 
-    @Test("An install from catalog 14 gets the visit wording and the offers, and keeps its preferences")
+    @Test("An install from catalog 14 gets the visit kinds and the offers, and keeps its preferences")
     func catalogUpgrade() throws {
         let context = ModelContext(try makeInMemoryContainer())
         let store = TemplateStore(context: context)
         let before = BuiltInTemplates.all.map { definition -> TemplateDefinition in
             var older = definition
             older.version = 14
-            older.behavior.visit = nil
+            older.behavior.visit = .none
             older.behavior.offerTitle = nil
             older.behavior.shortlistOrder = nil
             return older
         }
         try store.installBuiltIns(catalog: before)
         let vehicle = try #require(try store.template(forKey: BuiltInTemplates.Key.vehicle))
-        #expect(vehicle.behavior.visit == nil)
+        #expect(vehicle.behavior.visit == .none)
         #expect(try store.sectionOffers().shortlist.isEmpty)
         try store.setOnHome(vehicle, false)
 
@@ -174,7 +211,7 @@ struct CategoryOffersAndVisitsTests {
             #expect(installed.builtInVersion == TemplateDefinition.builtInCatalogVersion)
             #expect(installed.behavior == definition.behavior)
         }
-        #expect(vehicle.behavior.visitWording.title == "Am fost la service")
+        #expect(vehicle.behavior.visit.shape?.title == "Am fost la service")
         #expect(try store.sectionOffers().shortlist.count == 6)
         #expect(vehicle.isOnHome == false, "Preferences survive the upgrade")
         #expect(try store.installBuiltIns() == false, "Upgraded once")

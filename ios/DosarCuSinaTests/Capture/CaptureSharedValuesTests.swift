@@ -45,7 +45,7 @@ struct CaptureSharedValuesTests {
         calendar.timeZone = try #require(TimeZone(identifier: zone))
         var draft = VisitDraft(date: noon("2026-11-02"))
         let issued = CaptureField(key: .issueDate, value: .day(day), confidence: 0.9, sourceText: nil, tier: .heuristic)
-        draft.apply(Self.result([issued]), components: [], calendar: calendar)
+        draft.apply(Self.result([issued]), form: .car, calendar: calendar)
         #expect(CalendarDay(draft.date, calendar: calendar) == day, "A visit's day is the invoice's, wherever the phone is")
     }
 
