@@ -6,6 +6,11 @@ public enum ObligationActionError: LocalizedError, Equatable {
     case notActive
     /// The blueprint needs a date the person has to enter.
     case missingFirstDueDate(blueprintKey: String)
+    /// Only a deadline of the person's own can be renamed or have its importance changed: a
+    /// category's keeps the name and kind its blueprint gives (`Obligation.isPersonsOwn`).
+    case notPersonsOwn
+    /// A deadline needs a name.
+    case missingTitle
 
     public var errorDescription: String? {
         switch self {
@@ -13,6 +18,11 @@ public enum ObligationActionError: LocalizedError, Equatable {
             return String(localized: "Obligația e pusă pe pauză sau încheiată. Reactiveaz-o mai întâi.")
         case .missingFirstDueDate:
             return String(localized: "Alege data la care e scadentă prima dată.")
+        case .notPersonsOwn:
+            return String(localized: "Numele și cât de important e vin din categoria lui, așa că rămân cum sunt.",
+                          comment: "Error: a category's deadline can't be renamed or have its importance changed.")
+        case .missingTitle:
+            return String(localized: "Scrie ce trebuie făcut, apoi salvează.", comment: "Error: a deadline's name was left empty.")
         }
     }
 }
@@ -268,6 +278,76 @@ public final class ObligationActions {
     }
 
 
+    /// A new name for a deadline of the person's own ("Udat plantele" for "Udat palntele").
+    /// Undoable. A category's deadline keeps its blueprint's name (`notPersonsOwn`). What it
+    /// closed before keeps the name it had then, in Istoric.
+    ///
+    /// `startedFrom` is the name the editor opened with: a name changed meanwhile on another
+    /// device stays when this edit left it as it was (`ThreeWay`).
+    @discardableResult
+    func rename(_ obligation: Obligation, to title: String, startedFrom start: String? = nil) throws -> UndoReceipt {
+        guard obligation.isPersonsOwn else { throw ObligationActionError.notPersonsOwn }
+        let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !title.isEmpty else { throw ObligationActionError.missingTitle }
+        return try UnitOfWork.performUndoable(in: context, now: now()) {
+            let kept = ThreeWay.value(title, over: obligation.title, startedFrom: start ?? obligation.title)
+            if kept != obligation.title { obligation.title = kept }
+            try save()
+        }.receipt
+    }
+
+    /// How important a deadline of the person's own is ("Cât de important e"), which is its kind:
+    /// what closing it asks, how urgent it gets and its consequence. Its reminders follow the
+    /// new kind only where the person hadn't set them (`DeadlineChoice.reminders(_:from:to:)`).
+    /// Undoable. A category's deadline keeps its blueprint's kind (`notPersonsOwn`).
+    ///
+    /// `startedFrom` is the importance the editor opened with (`DeadlineChoice.Importance(kind:)`):
+    /// one changed meanwhile on another device stays when this edit left it as it was (`ThreeWay`).
+    @discardableResult
+    func setImportance(_ obligation: Obligation, _ importance: DeadlineChoice.Importance,
+                              startedFrom start: DeadlineChoice.Importance? = nil) throws -> UndoReceipt {
+        guard obligation.isPersonsOwn else { throw ObligationActionError.notPersonsOwn }
+        return try UnitOfWork.performUndoable(in: context, now: now()) {
+            let stored = DeadlineChoice.Importance(kind: obligation.kind)
+            let kept = ThreeWay.value(Optional(importance), over: stored, startedFrom: start ?? stored)
+            if let kept, kept.kind != obligation.kind {
+                let previous = obligation.kind
+                obligation.kind = kept.kind
+                let reminders = DeadlineChoice.reminders(obligation.reminders, from: previous, to: kept.kind)
+                if reminders != obligation.reminders { obligation.reminders = reminders }
+            }
+            try save()
+        }.receipt
+    }
+
+    /// "Editează" on a deadline's page: its name and importance (a deadline of the person's own),
+    /// its due day, how it repeats, its reminders and its reminder time, saved as one undoable
+    /// step. Each part goes through its own action above, inside one unit, and only the parts
+    /// the person changed from what the sheet opened with (`start`) are written, each laid over
+    /// what is stored now (`ThreeWay`): a part changed meanwhile on another device and left
+    /// alone here stays. Nil when nothing was changed.
+    @discardableResult
+    func edit(_ obligation: Obligation, to edited: DeadlineEdit, startedFrom start: DeadlineEdit) throws -> UndoReceipt? {
+        guard edited != start else { return nil }
+        let renames = edited.title != start.title
+        let changesImportance = edited.importance != nil && edited.importance != start.importance
+        if (renames || changesImportance) && !obligation.isPersonsOwn { throw ObligationActionError.notPersonsOwn }
+        if renames && edited.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { throw ObligationActionError.missingTitle }
+        return try UnitOfWork.performUndoable(in: context, now: now()) {
+            if renames { try rename(obligation, to: edited.title, startedFrom: start.title) }
+            // Before the reminders: a new importance moves the reminders the person hadn't set,
+            // and the sheet's reminders, moved by the same rule, are laid over them.
+            if changesImportance, let importance = edited.importance { try setImportance(obligation, importance, startedFrom: start.importance) }
+            if edited.dueDay != start.dueDay { try reschedule(obligation, to: edited.dueDay) }
+            if edited.recurrence != start.recurrence { try setRecurrence(obligation, edited.recurrence, startedFrom: start.recurrence) }
+            if edited.reminders != start.reminders { try setReminders(obligation, edited.reminders, startedFrom: start.reminders) }
+            if edited.reminderMinuteOfDay != start.reminderMinuteOfDay {
+                try setReminderTime(obligation, minuteOfDay: edited.reminderMinuteOfDay, startedFrom: start.reminderMinuteOfDay)
+            }
+            try save()
+        }.receipt
+    }
+
     /// Puts the obligation away for good, keeping it and its history. Undoable, like `pause`.
     @discardableResult
     public func archive(_ obligation: Obligation) throws -> UndoReceipt {
@@ -347,6 +427,11 @@ public final class ObligationActions {
 }
 
 extension DosarSchemaV15.Obligation {
+    /// A deadline the person wrote themselves ("Alt termen"), not one of its category's usual
+    /// ones: its name and importance are theirs to change (`ObligationActions.rename`,
+    /// `setImportance`). A category's deadline keeps the name and kind its blueprint gives.
+    public var isPersonsOwn: Bool { blueprintKey == nil }
+
     /// The counter unit for metric-based obligations, such as kilometres.
     public var metricUnit: MeasurementUnit? {
         if case .metric(_, let unit, _) = recurrence { return unit }

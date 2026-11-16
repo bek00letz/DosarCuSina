@@ -54,14 +54,58 @@ struct DSRepeatField: View {
 
 /// "Ora amintirii": the general reminder time from Settings ("Ora obișnuită (09:00)"), or a
 /// time of this deadline's own. Nil is the general time, so a change in Settings reaches it.
+///
+/// `startsCollapsed`: while it is the general time, the field is one row ("Ora amintirii ·
+/// Ora obișnuită (09:00)", *Schimbă*) that opens to the two choices; a time of its own shows
+/// them from the start. The deadline form and the deadline's "Editează" use it so.
 struct DSReminderTimeField: View {
     @Binding var minuteOfDay: Int?
     /// The general time from Settings, shown on the first choice.
     let usualMinuteOfDay: Int
 
     @Environment(\.calendar) private var calendar
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isOpen: Bool
+
+    init(minuteOfDay: Binding<Int?>, usualMinuteOfDay: Int, startsCollapsed: Bool = false) {
+        self._minuteOfDay = minuteOfDay
+        self.usualMinuteOfDay = usualMinuteOfDay
+        self._isOpen = State(initialValue: !startsCollapsed || minuteOfDay.wrappedValue != nil)
+    }
 
     var body: some View {
+        VStack(alignment: .leading, spacing: DS.Space.xs) {
+            if isOpen {
+                choices
+                    .transition(.opacity)
+            } else {
+                collapsed
+                    .transition(.opacity)
+            }
+        }
+        .animation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion), value: isOpen)
+    }
+
+    /// One row while it is the general time: what it is, and *Schimbă*.
+    private var collapsed: some View {
+        let usual = ReminderWording.time(nil, usual: usualMinuteOfDay, calendar: calendar)
+        return Button { isOpen = true } label: {
+            DSListRow(title: Text("Ora amintirii", comment: "A deadline's reminder time: the general one, or its own."),
+                      subtitle: Text(verbatim: usual), systemImage: "clock") {
+                Text("Schimbă", comment: "Opens the reminder time choices of a deadline.")
+                    .foregroundStyle(DS.Palette.accent)
+            }
+            .contentShape(.rect)
+        }
+        .buttonStyle(.dsPressable)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("Ora amintirii"))
+        .accessibilityValue(Text(verbatim: usual))
+        .accessibilityHint(Text("Alege o oră doar pentru acest termen.", comment: "VoiceOver hint of the collapsed reminder time row."))
+        .accessibilityAddTraits(.isButton)
+    }
+
+    private var choices: some View {
         VStack(alignment: .leading, spacing: DS.Space.xs) {
             Text("Ora amintirii", comment: "A deadline's reminder time: the general one, or its own.")
                 .dsFont(.captionEmphasized)

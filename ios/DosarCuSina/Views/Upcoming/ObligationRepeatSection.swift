@@ -1,6 +1,9 @@
 import SwiftData
 import SwiftUI
 
+/// Kept, switched off (`ObligationPage.editsInOneSheet`), as the way back: how it repeats is in
+/// the deadline's one "Editează" (`DeadlineEditSheet`) now.
+///
 /// "Cum se repetă" on a deadline's page: how it repeats, in words, and, for a deadline that
 /// repeats every so many days, weeks, months or years (or not at all), "Schimbă cum se
 /// repetă". A rule on fixed dates, by a counter or by law is shown in words only: its
