@@ -45,7 +45,7 @@ extension DS {
 
         /// How long a short confirmation stays before it goes by itself, when
         /// nothing else is waiting on it. Unused while the share sheet's confirmation
-        /// stays until "Gata" (`ShareConfirmation.closesByItself`); kept as its way back.
+        /// stays until "Închide" (`ShareConfirmation.closesByItself`); kept as its way back.
         static let confirmationDwell: Duration = .seconds(2.5)
 
         /// The animation to use given the person's Reduce Motion setting.

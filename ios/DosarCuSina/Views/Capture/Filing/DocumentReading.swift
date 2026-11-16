@@ -6,7 +6,7 @@ import SwiftData
 /// back being added, read again by the one engine (`CaptureEngine`) as the document's own
 /// kind, and what was read put into the edit form by the filer's rule
 /// (`CaptureFiler.values`, `CaptureFiler.merging`). Nothing is saved here: the form keeps
-/// it until "Gata", which saves it through `AssetActions.editDocument`.
+/// it until "Salvează", which saves it through `AssetActions.editDocument`.
 ///
 /// It reads on the phone only (Apple's model when there is one), never with the person's
 /// AI provider: the person asked to read a document they keep, not to send it.

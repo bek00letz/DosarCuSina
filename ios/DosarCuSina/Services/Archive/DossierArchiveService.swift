@@ -23,15 +23,15 @@ public enum ArchiveError: LocalizedError, Equatable {
     public var errorDescription: String? {
         switch self {
         case .notADossier:
-            return String(localized: "Fișierul nu e o arhivă Dosar cu Șină.")
+            return String(localized: "Fișierul nu e o copie de siguranță Dosar cu Șină. Alege fișierul .dosar făcut din Setări.", comment: "Backup: the chosen file isn't a backup.")
         case .unsupportedVersion:
-            return String(localized: "Arhiva a fost făcută de o versiune mai nouă a aplicației. Actualizează aplicația și încearcă din nou.")
+            return String(localized: "Copia de siguranță a fost făcută de o versiune mai nouă a aplicației. Actualizează aplicația și încearcă din nou.", comment: "Backup: made by a newer version.")
         case .missingFile(let path):
-            return String(localized: "Arhiva e incompletă: lipsește \(path).")
+            return String(localized: "Copia de siguranță e incompletă: lipsește \(path). Fă copia din nou și încearcă iar.", comment: "Backup: a file is missing from it.")
         case .checksumMismatch(let path), .unreadableFile(let path):
-            return String(localized: "Fișierul \(path) din arhivă e deteriorat.")
+            return String(localized: "Fișierul \(path) din copia de siguranță e deteriorat. Fă copia din nou și încearcă iar.", comment: "Backup: one file inside it is damaged. The argument is its path.")
         case .unlistedFile(let path):
-            return String(localized: "Arhiva conține un fișier neașteptat: \(path).")
+            return String(localized: "Copia de siguranță conține un fișier neașteptat: \(path). Fă copia din nou din aplicație.", comment: "Backup: a file it doesn't list.")
         case .brokenReference(let path):
             return String(localized: "Datele din \(path) nu se potrivesc între ele.")
         case .needsPassword:

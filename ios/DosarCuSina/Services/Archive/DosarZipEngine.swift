@@ -148,17 +148,17 @@ public enum DosarZipEngine {
         public var errorDescription: String? {
             switch self {
             case .invalidZipArchive, .endOfCentralDirectoryNotFound:
-                return String(localized: "Fișierul nu e o arhivă validă.")
+                return String(localized: "Fișierul nu e o copie de siguranță întreagă. Fă copia din nou și încearcă iar.", comment: "Backup: the file isn't a readable backup.")
             case .unsupportedCompressionMethod:
-                return String(localized: "Arhiva folosește un tip de compresie pe care aplicația nu îl citește.")
+                return String(localized: "Copia de siguranță e scrisă într-un fel pe care aplicația nu îl citește. Actualizează aplicația și încearcă din nou.", comment: "Backup: compressed in a way the app can't read.")
             case .crcMismatch(let path, _, _), .fileCorrupted(let path):
-                return String(localized: "Fișierul \(path) din arhivă e deteriorat.")
+                return String(localized: "Fișierul \(path) din copia de siguranță e deteriorat. Fă copia din nou și încearcă iar.", comment: "Backup: one file inside it is damaged. The argument is its path.")
             case .unsafeEntryPath(let path):
-                return String(localized: "Arhiva conține un nume de fișier nepermis: \(path).")
+                return String(localized: "Copia de siguranță conține un nume de fișier nepermis: \(path). Fă copia din nou din aplicație.", comment: "Backup: a file name inside it isn't allowed.")
             case .duplicateEntry(let path):
-                return String(localized: "Arhiva conține de două ori fișierul \(path).")
+                return String(localized: "Copia de siguranță conține de două ori fișierul \(path). Fă copia din nou din aplicație.", comment: "Backup: a file appears twice inside it.")
             case .sizeLimitExceeded:
-                return String(localized: "Arhiva e prea mare pentru a fi deschisă pe acest dispozitiv.")
+                return String(localized: "Copia de siguranță e prea mare pentru a fi deschisă pe acest telefon.", comment: "Backup: too large to open.")
             case .tooManyFilesToWrite:
                 return String(localized: "Dosarul are prea multe fișiere pentru o singură copie. Șterge documentele de care nu mai ai nevoie, apoi încearcă din nou.", comment: "Backup: more files than one backup can hold.")
             case .tooLargeToWrite:
@@ -166,7 +166,7 @@ public enum DosarZipEngine {
             case .fileTooLargeToWrite:
                 return String(localized: "Un document e prea mare pentru o copie. Scoate-l din dosar și păstrează-l în altă parte, apoi încearcă din nou.", comment: "Backup: one file is too large for a backup.")
             case .zlibError:
-                return String(localized: "Arhiva nu a putut fi dezarhivată.")
+                return String(localized: "Copia de siguranță nu s-a putut deschide. Fișierul pare deteriorat; fă copia din nou și încearcă iar.", comment: "Backup: its contents couldn't be unpacked.")
             }
         }
     }

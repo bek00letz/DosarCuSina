@@ -48,6 +48,8 @@ struct StoreRecoveryView: View {
             Button(role: .destructive, action: startFresh) {
                 Text("Pornește cu un dosar gol", comment: "Starts with an empty database.")
             }
+            // Named, so the system doesn't add its own "Anulează", which is only the undo toast's.
+            Button(role: .cancel) {} label: { Text("Renunță", comment: "Closes the question without starting fresh.") }
         } message: {
             Text("Dosarul de acum nu se șterge: rămâne deoparte pe telefon, neatins. Aplicația pornește goală; dacă ai o copie de siguranță, o pui înapoi din Setări.", comment: "What starting with an empty database does.")
         }

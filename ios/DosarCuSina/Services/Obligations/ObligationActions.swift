@@ -169,7 +169,7 @@ public final class ObligationActions {
         }.receipt
     }
 
-    /// Brings a snoozed obligation back now ("Anulează amânarea"). Undoable.
+    /// Brings a snoozed obligation back now ("Nu mai amâna"). Undoable.
     @discardableResult
     public func clearSnooze(_ obligation: Obligation) throws -> UndoReceipt {
         try UnitOfWork.performUndoable(in: context, now: now()) {

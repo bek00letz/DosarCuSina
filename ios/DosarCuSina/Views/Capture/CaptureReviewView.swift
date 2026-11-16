@@ -75,7 +75,7 @@ struct CaptureReviewView: View {
     /// The person added something to an example section: "Păstrezi … ca al tău?".
     @State private var exampleQuestion: ExampleSectionQuestion?
     @State private var readingQuestion: LowerReadingQuestion?
-    /// The person opened the notices behind the first one ("Mai sunt 2 lucruri de verificat").
+    /// The person opened the notices behind the first one ("Mai sunt 2 observații").
     @State private var showsEveryNotice = false
 
     private var templatesByKey: [String: CategoryTemplate] {
@@ -290,7 +290,7 @@ struct CaptureReviewView: View {
         )
     }
 
-    /// One notice at a time; the others behind "Mai sunt 2 lucruri de verificat", nothing lost.
+    /// One notice at a time; the others behind "Mai sunt 2 observații", nothing lost.
     @ViewBuilder private var noticeArea: some View {
         let notices = reviewNotices
         if let first = notices.first {
@@ -307,7 +307,7 @@ struct CaptureReviewView: View {
                             withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { showsEveryNotice = true }
                         } label: {
                             Label {
-                                Text("Mai sunt \(notices.count - 1) lucruri de verificat", comment: "Opens the review's other notices. The number is how many more there are.")
+                                Text("Mai sunt \(notices.count - 1) observații", comment: "Opens the review's other notices. The number is how many more there are, with Romanian plural forms (Mai e o observație).")
                             } icon: {
                                 Image(systemName: "chevron.down")
                             }

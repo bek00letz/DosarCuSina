@@ -28,7 +28,7 @@ private struct DSReadingPromptModifier: ViewModifier {
                 ForEach(question.answers, id: \.self) { answer in
                     Button(answer.title) { onAnswer(answer) }
                 }
-                Button("Anulează", role: .cancel) {}
+                Button("Renunță", role: .cancel) {}
             } message: { question in
                 Text(verbatim: question.explanation)
             }

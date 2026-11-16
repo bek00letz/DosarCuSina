@@ -340,7 +340,7 @@ struct ProviderEditSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(action: save) { Text("Gata", comment: "Closes an editor and keeps what was typed.") }
+                    Button(action: save) { Text("Salvează", comment: "Saves what was typed in an editor and closes it.") }
                 }
             }
             .userErrorAlert($error)

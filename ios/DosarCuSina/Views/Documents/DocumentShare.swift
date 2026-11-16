@@ -186,7 +186,7 @@ struct DocumentShareSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button { dismiss() } label: { Text("Anulează", comment: "Cancels.") }
+                    Button { dismiss() } label: { Text("Renunță", comment: "Closes the share choices without sending anything.") }
                 }
             }
         }

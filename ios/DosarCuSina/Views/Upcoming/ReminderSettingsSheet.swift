@@ -170,7 +170,7 @@ struct ReminderSettingsSheet: View {
             .navigationTitle("Când te anunț")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) { Button("Gata", action: onClose) }
+                ToolbarItem(placement: .confirmationAction) { Button(action: onClose) { Text("Închide", comment: "Closes the reminders sheet; each choice is already saved.") } }
             }
             // "Altă zi…" is a page inside this sheet, with a back button, not a sheet on
             // top of it: back adds nothing, "Adaugă" adds the day and comes back.

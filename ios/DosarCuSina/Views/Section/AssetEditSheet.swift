@@ -3,7 +3,7 @@ import SwiftData
 import PhotosUI
 
 /// Edits a section's name, photo and fields with the design-system controls.
-/// "Gata" saves and closes; swiping down with changes asks first, so a draft is
+/// "Salvează" saves and closes; swiping down with changes asks first, so a draft is
 /// never lost by accident.
 struct AssetEditSheet: View {
     let asset: Asset
@@ -84,7 +84,7 @@ struct AssetEditSheet: View {
                 ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
                 ToolbarItem(placement: .confirmationAction) {
                     Button { save() } label: {
-                        Text("Gata", comment: "Closes an editor and keeps what was typed.")
+                        Text("Salvează", comment: "Saves what was typed in an editor and closes it.")
                     }
                     .keyboardShortcut(.return, modifiers: .command)
                 }
