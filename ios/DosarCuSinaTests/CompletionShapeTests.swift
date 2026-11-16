@@ -3,9 +3,10 @@ import SwiftData
 import Testing
 @testable import DosarCuSina
 
-/// What completing a deadline asks is its kind's (`CompletionShape`): a chore is one tap with
-/// a note after it, the others ask only what they need, every one files through the same
-/// actions, and outside the app every kind still completes in one step.
+/// What completing a deadline asks is its blueprint's (`CompletionKind`, its `CompletionShape`),
+/// or for a deadline of one's own its kind's (`CompletionKind.own`): a chore is one tap with a
+/// note after it, the others ask only what they need, every one files through the same actions,
+/// and outside the app every kind still completes in one step.
 @MainActor
 @Suite("What completing asks, by kind")
 struct CompletionShapeTests {
@@ -21,26 +22,62 @@ struct CompletionShapeTests {
     // MARK: Each kind's shape
 
     @Test func aChoreAsksNothing() {
-        let chore = ObligationKind.routine.completion
+        let chore = CompletionKind.own(.routine).shape
         #expect(chore == .oneTap)
         #expect(chore.isOneTap)
         #expect(chore.offersNoteAfter)
         #expect(!chore.asksDate && chore.cost == nil && chore.paper == nil)
     }
 
-    @Test func everyOtherKindAsksWhatItNeeds() {
-        #expect(ObligationKind.maintenance.completion == CompletionShape(cost: .cost, paper: .invoice, asksReading: true))
-        #expect(ObligationKind.payment.completion == CompletionShape(cost: .paid, paper: .bill))
-        #expect(ObligationKind.renewal.completion == CompletionShape(paper: .newDocument, asksNewExpiry: true))
-        #expect(ObligationKind.legal.completion == CompletionShape(cost: .cost, paper: .certificate))
-        #expect(ObligationKind.insurance.completion == CompletionShape(cost: .cost, paper: .policy))
-        #expect(ObligationKind.tax.completion == CompletionShape(cost: .paid, paper: .receipt))
-        #expect(ObligationKind.health.completion == CompletionShape(cost: .cost, paper: .result, asksNote: true))
+    @Test func aDeadlineOfOnesOwnAsksWhatItsKindNeeds() {
+        let service = CompletionKind.own(.maintenance).shape
+        #expect(service.cost == .cost && service.paper?.use == .history && service.counter == .section)
+        let bill = CompletionKind.own(.payment).shape
+        #expect(bill.cost == .paid && bill.paper?.use == .logged)
+        let renewal = CompletionKind.own(.renewal).shape
+        #expect(renewal.paper?.use == .expiry && renewal.newEnd == .expires && renewal.cost == nil)
+        #expect(CompletionKind.own(.legal).shape.paper?.use == .nextDate)
+        #expect(CompletionKind.own(.insurance) == .policy)
+        let tax = CompletionKind.own(.tax).shape
+        #expect(tax.cost == .paid && tax.paper?.use == .keep)
+        let health = CompletionKind.own(.health).shape
+        #expect(health.cost == .cost && health.paper != nil && health.asksNote)
         for kind in ObligationKind.allCases where kind != .routine {
-            #expect(!kind.completion.isOneTap, "\(kind) opens the sheet")
-            #expect(kind.completion.asksDate, "\(kind) asks when")
-            #expect(!kind.completion.offersNoteAfter)
+            let shape = CompletionKind.own(kind).shape
+            #expect(!shape.isOneTap, "\(kind) opens the sheet")
+            #expect(shape.asksDate, "\(kind) asks when")
+            #expect(!shape.offersNoteAfter)
         }
+    }
+
+    @Test("Every built-in deadline states what completing it asks, and a stored one reads it back")
+    func everyBuiltInStatesItsCompletion() throws {
+        let context = try makeContext()
+        let store = TemplateStore(context: context)
+        for builtIn in BuiltInTemplates.all {
+            for blueprint in builtIn.blueprints {
+                #expect(blueprint.completion != nil, "\(builtIn.key) \(blueprint.key)")
+            }
+            let installed = try #require(try store.template(forKey: builtIn.key))
+            #expect(installed.definition.blueprints.map(\.completion) == builtIn.blueprints.map(\.completion), "\(builtIn.key): kept as stated")
+        }
+        for blueprint in HouseholdRules.blueprints { #expect(blueprint.completion != nil, "\(blueprint.key)") }
+    }
+
+    @Test("A deadline completes as its blueprint states, not as its kind")
+    func aBlueprintsStatementWins() throws {
+        let context = try makeContext()
+        let golf = try car(context)
+        let template = try #require(try TemplateStore(context: context).template(forKey: golf.templateKey)).definition
+        let itp = try ObligationActions(context: context, calendar: calendar, now: { noon(self.today) })
+            .create(title: "ITP", kind: .legal, dueDay: CalendarDay("2026-11-10"), for: golf)
+        itp.blueprintKey = BuiltInBlueprints.vehicleITP
+        #expect(itp.completionKind(template: template) == .itp, "The ITP report, not a legal deadline's proof")
+        #expect(itp.completion(template: template).paper?.gender == .masculine)
+        itp.blueprintKey = nil
+        #expect(itp.completionKind(template: template) == .ownLegal, "With no blueprint, as one of one's own")
+        itp.blueprintKey = "vehicle.gone"
+        #expect(itp.completionKind(template: template) == .ownLegal, "A blueprint the category no longer has")
     }
 
     @Test("A value the kind doesn't ask is never filed, whatever the draft holds", arguments: ObligationKind.allCases)
@@ -52,7 +89,7 @@ struct CompletionShapeTests {
         var draft = CompletionDraft(date: noon("2026-11-05"), amount: 120, note: "  O notă  ", reading: 101_000,
                                     newExpiry: noon("2036-11-05"))
         draft.document = nil
-        let shape = kind.completion
+        let shape = deadline.completion(in: context)
         let completion = draft.completion(of: deadline, shape: shape, counter: counter, calendar: calendar, now: noon(today))
 
         #expect((completion.cost != nil) == (shape.cost != nil))
@@ -157,7 +194,7 @@ struct CompletionShapeTests {
         #expect(counter.unit == .kilometres)
 
         let draft = CompletionDraft(date: noon(today), amount: 450, reading: 101_500)
-        let outcome = try await filer(context).file(.completion(draft.completion(of: oil, shape: oil.kind.completion, counter: counter,
+        let outcome = try await filer(context).file(.completion(draft.completion(of: oil, shape: oil.completion(in: context), counter: counter,
                                                                                  calendar: calendar, now: noon(today))))
         let entry = try #require(outcome.completion)
         #expect(entry.metricReading == 101_500)
@@ -178,7 +215,7 @@ struct CompletionShapeTests {
             .complete(oil, on: noon("2026-10-15"), metricReading: 100_000)
         let counter = ObligationActions.counter(completing: oil, template: BuiltInTemplates.definition(for: golf.templateKey))
         let draft = CompletionDraft(date: noon(today), reading: 90_000)
-        let completion = draft.completion(of: oil, shape: oil.kind.completion, counter: counter, calendar: calendar, now: noon(today))
+        let completion = draft.completion(of: oil, shape: oil.completion(in: context), counter: counter, calendar: calendar, now: noon(today))
 
         await #expect(throws: LowerReadingQuestion.self) { _ = try await filer(context).file(.completion(completion)) }
         #expect(oil.history.count == 1, "Nothing written while it asks")
@@ -190,7 +227,7 @@ struct CompletionShapeTests {
             .create(title: "Vaccin anual", kind: .health, dueDay: CalendarDay("2026-11-10"), for: nil,
                     recurrence: .interval(.years(1), anchor: .completion))
         let draft = CompletionDraft(date: noon(today), note: "Totul e în regulă. Rapel peste un an.")
-        let outcome = try await filer(context).file(.completion(draft.completion(of: vaccine, shape: vaccine.kind.completion, counter: nil,
+        let outcome = try await filer(context).file(.completion(draft.completion(of: vaccine, shape: vaccine.completion(in: context), counter: nil,
                                                                                  calendar: calendar, now: noon(today))))
         #expect(outcome.completion?.note == "Totul e în regulă. Rapel peste un an.")
     }
@@ -211,9 +248,9 @@ struct CompletionShapeTests {
     @Test func aRenewalTakesTheNewExpiryTyped() async throws {
         let context = try makeContext()
         let (asset, renewal) = try passport(context, expiry: "2026-12-01")
-        #expect(renewal.kind.completion.asksNewExpiry)
+        #expect(renewal.completion(in: context).asksNewExpiry)
         let draft = CompletionDraft(date: noon(today), newExpiry: noon("2036-11-20"))
-        _ = try await filer(context).file(.completion(draft.completion(of: renewal, shape: renewal.kind.completion, counter: nil,
+        _ = try await filer(context).file(.completion(draft.completion(of: renewal, shape: renewal.completion(in: context), counter: nil,
                                                                        calendar: calendar, now: noon(today))))
         #expect(asset.value("document.expiry") == .date(CalendarDay("2036-11-20")))
         #expect(renewal.dueDay == CalendarDay("2036-11-20"), "The deadline follows the new expiry")
@@ -231,7 +268,7 @@ struct CompletionShapeTests {
         draft.document = newPassport
 
         let outcome = try await filer(context, store: store).file(.completion(draft.completion(
-            of: renewal, shape: renewal.kind.completion, counter: nil, calendar: calendar, now: noon(today))))
+            of: renewal, shape: renewal.completion(in: context), counter: nil, calendar: calendar, now: noon(today))))
         let filed = try #require(outcome.attachment, "The new document is kept")
         #expect(filed.asset?.id == asset.id)
         #expect(asset.value("document.expiry") == .date(CalendarDay("2036-11-20")), "Its expiry, read off the photo")

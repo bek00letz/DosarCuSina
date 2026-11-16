@@ -33,17 +33,26 @@ public struct Money: Hashable, Sendable, Codable {
         return NSDecimalNumber(decimal: rounded).stringValue
     }
 
-    /// Localized display such as `1.234,50 RON`.
+    /// Localized display such as `1.234,50 lei`.
     public func formatted(locale: Locale = .dosarDefault) -> String {
-        amount.formatted(.currency(code: currency).locale(locale))
+        written(fractionDigits: 2, locale: locale)
     }
 
-    /// Display without decimals when the amount is whole, such as `350 RON`.
+    /// Display without decimals when the amount is whole, such as `350 lei`.
     public func formattedCompact(locale: Locale = .dosarDefault) -> String {
         let isWhole = amount == amount.rounded(scale: 0)
-        let style = Decimal.FormatStyle.Currency(code: currency, locale: locale)
-            .precision(.fractionLength(isWhole ? 0 : 2))
-        return amount.formatted(style)
+        return written(fractionDigits: isWhole ? 0 : 2, locale: locale)
+    }
+
+    /// The one way an amount is written: in lei for the leu, as docs/COPY_GUIDE.md says
+    /// („1.250,50 lei”, never „RON”), with the number and its unit kept on one line; any other
+    /// currency by its code („1.250,50 EUR”).
+    private func written(fractionDigits: Int, locale: Locale) -> String {
+        guard currency == Money.defaultCurrency else {
+            return amount.formatted(Decimal.FormatStyle.Currency(code: currency, locale: locale).precision(.fractionLength(fractionDigits)))
+        }
+        let number = amount.formatted(Decimal.FormatStyle(locale: locale).precision(.fractionLength(fractionDigits)))
+        return String(localized: "\(number)\u{00A0}lei", comment: "An amount of money in lei, e.g. „1.250,50 lei”. Keep the no-break space.")
     }
 
     // MARK: Codable

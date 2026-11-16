@@ -1,10 +1,13 @@
 import Foundation
 
-/// What closing a deadline in the app asks, by its kind: the one place that says it. A chore
-/// asks nothing ("Gata" marks it done today, a note offered after); a payment asks what was
-/// paid and the bill; a renewal the new document and when it expires; and so on. Read by every
-/// screen that completes a deadline (the deadline's page, Urmează) and by what saving keeps
-/// (`CompletionDraft`), so a value a kind doesn't ask is never written.
+/// What closing a deadline in the app asks: the day, the money and how it is asked, the paper
+/// and its name, a new end date, a note, a counter. Each deadline's blueprint states which
+/// (`ObligationBlueprint.completion`, a `CompletionKind`), and each kind is described once
+/// (`CompletionKind.shape`): a chore asks nothing ("Gata" marks it done today, a note offered
+/// after); a bill asks what was paid and the bill; an ITP the fee and the ITP report; a renewed
+/// document the new one and when it expires; and so on. Read by every screen that completes a
+/// deadline (the deadline's page, Urmează) and by what saving keeps (`CompletionDraft`), so a
+/// value a kind doesn't ask is never written.
 ///
 /// Outside the app (a reminder's button, the widget's *Gata*, Siri) every kind completes in
 /// one step, as before (`IntentEngine`): nothing there can ask.
@@ -17,24 +20,80 @@ public struct CompletionShape: Hashable, Sendable {
         case paid
     }
 
-    /// The paper a completion keeps, which says how the sheet asks for it. Every one is read by
-    /// the same capture and filed by the same filer (`CaptureFiler.Completion`): a bill on its
-    /// subscription as a bill, a new document's date as the next deadline.
-    public enum Paper: String, Hashable, Sendable, CaseIterable {
-        /// A service's or a firm's invoice for the job.
-        case invoice
-        /// The bill being paid.
-        case bill
-        /// The renewed document itself (an identity card, a passport, a contract).
-        case newDocument
-        /// The new insurance policy.
-        case policy
-        /// What proves a legal check was done (an ITP report, a gas check, a rovinietă).
-        case certificate
-        /// The receipt or the proof of payment of a tax.
-        case receipt
-        /// A medical result, a prescription or the vaccination booklet.
-        case result
+    /// Which counter a completion asks, where the section keeps one.
+    public enum Counter: Hashable, Sendable {
+        /// The section's own counter (a car's kilometres, a bike's), whatever the deadline
+        /// counts on: work on a vehicle is logged with its reading.
+        case section
+        /// Only the counter the deadline counts on (descaling every 300 cafele), for work done
+        /// at home: one that repeats by time asks none.
+        case countedOn
+    }
+
+    /// The paper a completion keeps, by its name: „Raportul ITP”, „Polița nouă”, „Carnetul de
+    /// sănătate”. Every one is read by the same capture and filed by the same filer
+    /// (`CaptureFiler.Completion`): a bill on its subscription as a bill, a paper's date as the
+    /// next deadline. Its sentences agree with its noun (`gender`), so „Îl păstrez” never
+    /// follows „Chitanța” (`CompletionWording`).
+    public struct Paper: Hashable, Sendable {
+        /// Which pronoun the paper's noun takes: „îl” and „el” (a report, a card, a contract),
+        /// „o” and „ea” (a bill, a policy, a receipt), „le” and „ele” (the results).
+        public enum Gender: String, Hashable, Sendable, CaseIterable {
+            case masculine
+            case feminine
+            case plural
+        }
+
+        /// What the photo is for, said under the paper's name.
+        public enum Use: String, Hashable, Sendable, CaseIterable {
+            /// Kept in the binder: „Opțional. O păstrez în dosar.”
+            case keep
+            /// Kept with the job in Istoric: „Opțional. O păstrez în istoric.”
+            case history
+            /// The bill, logged in Istoric as a bill: „Opțional. O trec în istoric.”
+            case logged
+            /// Its next date becomes the deadline's: „Opțional. Din el iau data următoare.”
+            case nextDate
+            /// The day the new one expires: „Opțional. Din el iau data la care expiră.”
+            case expiry
+            /// The day the new one ends: „Opțional. Din el iau data la care se termină.”
+            case end
+        }
+
+        /// Its name, the header above the photo: „Raportul ITP”.
+        public var name: String
+        public var gender: Gender
+        public var use: Use
+        /// The card that asks for the photo: „Fotografiază raportul ITP”.
+        public var action: String
+        /// Under the card, which paper is meant: „Cel primit la stație, cu data următoarei inspecții.”
+        public var example: String
+
+        public init(name: String, gender: Gender, use: Use, action: String, example: String) {
+            self.name = name
+            self.gender = gender
+            self.use = use
+            self.action = action
+            self.example = example
+        }
+    }
+
+    /// The new end date a completion asks, typed or read off the paper.
+    public enum NewEnd: Hashable, Sendable {
+        /// A document's or a kit's new expiry: „Expiră pe”.
+        case expires
+        /// A contract's new end: „Se termină pe”.
+        case ends
+    }
+
+    /// A note, in the kind's words.
+    public struct Note: Hashable, Sendable {
+        /// Its example: „Ce a spus medicul, ce urmează.”
+        public var prompt: String
+
+        public init(prompt: String) {
+            self.prompt = prompt
+        }
     }
 
     /// The day it was done ("Când"), today unless the person says otherwise.
@@ -43,73 +102,49 @@ public struct CompletionShape: Hashable, Sendable {
     public var cost: Cost?
     /// The paper it keeps; nil when none is asked for.
     public var paper: Paper?
-    /// The day the renewed document expires, read from its photo or typed.
-    public var asksNewExpiry: Bool
-    /// A note, in the sheet ("Ce a spus medicul").
-    public var asksNote: Bool
-    /// The section's counter (a car's kilometres), where it has one.
-    public var asksReading: Bool
+    /// The new end date it asks; nil when none.
+    public var newEnd: NewEnd?
+    /// The note it asks in the sheet; nil when none.
+    public var note: Note?
+    /// The counter it asks, where the section has one; nil when none.
+    public var counter: Counter?
 
-    public init(asksDate: Bool = true, cost: Cost? = nil, paper: Paper? = nil, asksNewExpiry: Bool = false,
-                asksNote: Bool = false, asksReading: Bool = false) {
+    public init(asksDate: Bool = true, cost: Cost? = nil, paper: Paper? = nil, newEnd: NewEnd? = nil,
+                note: Note? = nil, counter: Counter? = nil) {
         self.asksDate = asksDate
         self.cost = cost
         self.paper = paper
-        self.asksNewExpiry = asksNewExpiry
-        self.asksNote = asksNote
-        self.asksReading = asksReading
+        self.newEnd = newEnd
+        self.note = note
+        self.counter = counter
     }
 
     /// Nothing to ask: done today in one tap.
     public static let oneTap = CompletionShape(asksDate: false)
 
+    /// Whether it asks the day the renewed thing expires or ends.
+    public var asksNewExpiry: Bool { newEnd != nil }
+    /// Whether it asks a note in the sheet.
+    public var asksNote: Bool { note != nil }
+    /// Whether it asks a counter.
+    public var asksReading: Bool { counter != nil }
+
     /// Whether completing asks nothing: "Gata" marks it done today, no sheet, and its toast
     /// offers a note for that completion ("Adaugă o notă").
     public var isOneTap: Bool {
-        !asksDate && cost == nil && paper == nil && !asksNewExpiry && !asksNote && !asksReading
+        !asksDate && cost == nil && paper == nil && newEnd == nil && note == nil && counter == nil
     }
 
     /// Whether the toast of a completion offers a note after it.
     public var offersNoteAfter: Bool { isOneTap }
 
-    /// The way back: off, every kind asks what "Am rezolvat" asked before (when, the cost, a
-    /// photo of the new document), until the owner has used the shapes. Remove with
-    /// `everyKindBefore` once the owner agrees.
+    /// The first way back: off, every deadline asks what "Am rezolvat" asked before the shapes
+    /// (when, the cost, a photo of the new document). Remove with `everyKindBefore` once the
+    /// owner agrees.
     static let asksByKind = true
 
-    /// What "Am rezolvat" asked of every kind before the shapes.
-    static let everyKindBefore = CompletionShape(cost: .cost, paper: .newDocument)
-}
-
-extension ObligationKind {
-    /// What completing a deadline of this kind asks in the app. See `CompletionShape`.
-    public var completion: CompletionShape {
-        guard CompletionShape.asksByKind else { return CompletionShape.everyKindBefore }
-        return switch self {
-        // A chore: "Doar să nu uit". Done today, in one tap.
-        case .routine:
-            .oneTap
-        // Upkeep: when, what it cost, the service's invoice, and the counter where the section has one.
-        case .maintenance:
-            CompletionShape(cost: .cost, paper: .invoice, asksReading: true)
-        // A bill: what was paid and the bill itself, filed as a bill.
-        case .payment:
-            CompletionShape(cost: .paid, paper: .bill)
-        // A document that expires: the new one, and when it expires.
-        case .renewal:
-            CompletionShape(paper: .newDocument, asksNewExpiry: true)
-        // A legal check (ITP, gas installation, rovinietă): when, its fee, and the proof.
-        case .legal:
-            CompletionShape(cost: .cost, paper: .certificate)
-        // Insurance: the new policy, whose dates and numbers fill the section, and its price.
-        case .insurance:
-            CompletionShape(cost: .cost, paper: .policy)
-        // A tax: what was paid and the receipt.
-        case .tax:
-            CompletionShape(cost: .paid, paper: .receipt)
-        // Health: when, a note on how it went, the result; a vet or a dentist costs.
-        case .health:
-            CompletionShape(cost: .cost, paper: .result, asksNote: true)
-        }
+    /// What "Am rezolvat" asked of every deadline before the shapes.
+    static var everyKindBefore: CompletionShape {
+        CompletionShape(cost: .cost, paper: CompletionKind.newDocument.shape.paper)
     }
 }

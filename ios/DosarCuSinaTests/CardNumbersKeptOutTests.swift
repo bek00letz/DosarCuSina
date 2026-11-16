@@ -115,7 +115,7 @@ struct CardNumbersKeptOutTests {
             sections: [FieldSection(key: "boat.main", title: "Barcă", fields: [
                 FieldDefinition(key: "boat.code", label: "Cod \(number)", type: .text),
             ])],
-            blueprints: [ObligationBlueprint(key: "boat.engine", title: "Service \(number)", kind: .maintenance, recurrence: .interval(.years(1), anchor: .dueDate))],
+            blueprints: [ObligationBlueprint(key: "boat.engine", title: "Service \(number)", kind: .maintenance, completion: .ownService, recurrence: .interval(.years(1), anchor: .dueDate))],
             behavior: .standard
         ), isBuiltIn: false, homeOrder: 50)
         context.insert(lake)

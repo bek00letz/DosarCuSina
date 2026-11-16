@@ -16,12 +16,16 @@ public enum HouseholdRules {
             key: rentalDeclarationKey,
             title: String(localized: "Declarația unică pentru chirii"),
             kind: .tax,
+            completion: .rentalDeclaration,
             recurrence: .fixedDates([MonthDay(month: 5, day: 25)]),
             firstDue: .nextFixedDate,
             reminders: ReminderProfile(leadDays: [30, 7], consequence: .legal, graceDays: 0, followUpAfterLapse: true),
             note: String(localized: "Venitul din chirii se declară la ANAF până pe 25 mai.")
         )
     }
+
+    /// Every household deadline's blueprint: what a deadline with no section was made from.
+    public static var blueprints: [ObligationBlueprint] { [rentalDeclaration] }
 
     /// Creates or removes household obligations to match the assets. Doesn't save;
     /// callers fold it into their own single save. Returns whether anything changed.

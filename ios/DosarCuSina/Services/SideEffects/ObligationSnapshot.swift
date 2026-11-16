@@ -32,6 +32,8 @@ public struct ObligationSnapshot: Hashable, Sendable, Identifiable {
     /// fired before it never had a chance: `ReminderPlanner` makes up for them with one
     /// catch-up reminder. Nil when unknown (no catch-up).
     public var cycleKnownSince: Date?
+    /// What completing it asks in the app, as its blueprint states (`Obligation.completionKind`).
+    public var completion: CompletionKind
 
     public init(
         id: UUID = UUID(),
@@ -50,7 +52,8 @@ public struct ObligationSnapshot: Hashable, Sendable, Identifiable {
         tint: TemplateTint = .gray,
         isSensitive: Bool = false,
         isExample: Bool = false,
-        cycleKnownSince: Date? = nil
+        cycleKnownSince: Date? = nil,
+        completion: CompletionKind? = nil
     ) {
         self.id = id
         self.title = title
@@ -69,6 +72,8 @@ public struct ObligationSnapshot: Hashable, Sendable, Identifiable {
         self.isSensitive = isSensitive
         self.isExample = isExample
         self.cycleKnownSince = cycleKnownSince
+        // A snapshot made by hand (a test, a preview) is a deadline of one's own.
+        self.completion = completion ?? .own(kind)
     }
 }
 
@@ -121,7 +126,8 @@ extension ObligationSnapshot {
                 tint: asset?.tintOverride ?? template?.tint ?? .gray,
                 isSensitive: template?.isSensitive ?? false,
                 isExample: obligation.isExample,
-                cycleKnownSince: obligation.cycleKnownSince
+                cycleKnownSince: obligation.cycleKnownSince,
+                completion: obligation.completionKind(template: template?.definition)
             )
         }
     }

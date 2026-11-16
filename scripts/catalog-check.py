@@ -10,7 +10,15 @@ fails for:
 
 - a string in the code that its catalog doesn't list (text added without it);
 - an entry no code uses any more (Xcode would mark it stale), unless the entry is
-  managed by hand ("extractionState": "manual": a key the code looks up at run time).
+  managed by hand ("extractionState": "manual": a key the code looks up at run time);
+- a catalog not written the way Xcode writes it, so that building in Xcode never changes
+  the file: Xcode's own sync (xcrun xcstringstool sync), no string that only a #Preview
+  uses (Xcode leaves those out), the entries in Xcode's order (Finder's order,
+  localizedStandardCompare, in English: scripts/xcode-catalog-order.swift) and no newline
+  at the end. It needs Xcode's tools and is skipped without them.
+
+A development build and a release build must find the same strings, or each would
+rewrite the catalog the other wrote: the release build's job runs this check too.
 
     scripts/catalog-check.py <DerivedData>                   # after a build (tests/run_tests.sh runs it)
     scripts/catalog-check.py <DerivedData> --sync            # bring the catalogs up to date, as Xcode does
@@ -18,8 +26,9 @@ fails for:
     scripts/catalog-check.py --self-test                     # the check against built-in examples
 
 --sync runs Xcode's own tool (xcrun xcstringstool sync) on each catalog with the
-strings of the targets that compile it, after taking out what no code uses, so the
-catalogs come out exactly as Xcode writes them. It never changes wording: a new
+strings of the targets that compile it, after taking out what no code uses, and puts
+the entries in Xcode's order, so the catalogs come out exactly as Xcode's build writes
+them (checked against a build in the Xcode app). It never changes wording: a new
 entry's text is its key, and every entry already there keeps its forms.
 """
 import json
@@ -32,13 +41,97 @@ import tempfile
 from string_catalogs import catalog_path, catalogs, load_catalog, relative_source, stringsdata, TARGETS
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ORDER_HELPER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "xcode-catalog-order.swift")
 MANUAL = "manual"
 SHOWN = 40
+PREVIEW = "#Preview"
 
 
-def used_strings(derived_data, root):
+class Sources:
+    """The lines of the Swift files strings come from, read once."""
+
+    def __init__(self):
+        self.lines = {}
+
+    def in_preview(self, data, entry):
+        """Whether `entry` was found in a #Preview, which Xcode leaves out of the catalog:
+        the compiler places a preview's strings on the line of its #Preview macro."""
+        source = data.get("source")
+        line = entry.get("location", {}).get("startingLine")
+        if not source or not line:
+            return False
+        if source not in self.lines:
+            try:
+                self.lines[source] = open(source, encoding="utf-8").read().split("\n")
+            except OSError:
+                self.lines[source] = []
+        lines = self.lines[source]
+        return 0 < line <= len(lines) and lines[line - 1].lstrip().startswith(PREVIEW)
+
+
+# --- The form Xcode writes ----------------------------------------------------
+
+def parse_catalog(text):
+    """A catalog's text as (lines before the entries, [(key, lines)], lines after), read
+    line by line so each entry keeps exactly the text it has."""
+    lines = text.split("\n")
+    start = lines.index('  "strings" : {')
+    end = next(i for i in range(start + 1, len(lines)) if lines[i] in ("  },", "  }"))
+    blocks = []
+    for line in lines[start + 1:end]:
+        if line.startswith('    "'):
+            key, _ = json.JSONDecoder().raw_decode(line, 4)
+            blocks.append((key, [line]))
+        else:
+            blocks[-1][1].append(line)
+    return lines[:start + 1], blocks, lines[end:]
+
+
+def render_catalog(head, blocks, tail):
+    """The catalog's text from its parts, as Xcode writes it: an entry with nothing in it
+    as an empty pair of lines, commas between entries, no newline at the end."""
+    body = []
+    for index, (key, lines) in enumerate(blocks):
+        lines = [line.rstrip(",") if n == len(lines) - 1 else line for n, line in enumerate(lines)]
+        if len(lines) == 1 and lines[0].endswith("{}"):
+            lines = [lines[0][:-1], "", "    }"]
+        if index < len(blocks) - 1:
+            lines[-1] += ","
+        body += lines
+    return "\n".join(head + body + tail).rstrip("\n")
+
+
+_order_binary = None
+
+
+def xcode_order(keys):
+    """`keys` in the order Xcode writes a catalog's entries, by Foundation's own comparison."""
+    global _order_binary
+    if _order_binary is None:
+        scratch = tempfile.mkdtemp()
+        _order_binary = os.path.join(scratch, "order")
+        subprocess.run(["xcrun", "swiftc", "-O", ORDER_HELPER, "-o", _order_binary], check=True)
+    lines = "\n".join(json.dumps(key, ensure_ascii=False) for key in keys) + "\n"
+    out = subprocess.run([_order_binary], input=lines, capture_output=True, text=True, check=True).stdout
+    return [json.loads(line) for line in out.splitlines() if line]
+
+
+def xcode_form(text, without=()):
+    """`text` as Xcode writes it, leaving out the entries named in `without`."""
+    head, blocks, tail = parse_catalog(text)
+    by_key = {key: lines for key, lines in blocks if key not in without}
+    return render_catalog(head, [(key, by_key[key]) for key in xcode_order(list(by_key))], tail)
+
+
+def has_xcode_tools():
+    return shutil.which("xcrun") is not None
+
+
+def used_strings(derived_data, root, sources=None):
     """What the code uses, as ({catalog: {key: "file:line"}}, {catalog: {path of each
-    .stringsdata with that catalog's table}}, the targets seen)."""
+    .stringsdata with that catalog's table}}, the targets seen). A string only a #Preview
+    uses isn't used: Xcode leaves it out."""
+    sources = sources or Sources()
     used = {path: {} for path in catalogs(root)}
     files = {path: set() for path in catalogs(root)}
     seen = set()
@@ -51,6 +144,8 @@ def used_strings(derived_data, root):
                 continue
             files.setdefault(catalog, set()).add(path)
             for entry in entries:
+                if sources.in_preview(data, entry):
+                    continue
                 line = entry.get("location", {}).get("startingLine", "?")
                 used.setdefault(catalog, {}).setdefault(entry["key"], f"{source}:{line}")
     return used, files, seen
@@ -96,30 +191,32 @@ def write_catalog(path, document):
 
 def sync(derived_data, root, destination=None):
     """Brings every catalog up to date: adds what the code uses, takes out what no
-    code uses (keeping entries managed by hand), through Xcode's own tool. Writes
-    in place, or into `destination` at the same relative paths. Returns the
-    (added, removed) counts by catalog."""
-    if shutil.which("xcrun") is None:
-        raise RuntimeError("--sync needs Xcode's command-line tools (xcrun xcstringstool).")
-    used, files, _ = used_strings(derived_data, root)
+    code uses (keeping entries managed by hand), through Xcode's own tool, and writes
+    it in the form Xcode writes. Writes in place, or into `destination` at the same
+    relative paths. Returns the (added, removed) counts by catalog."""
+    if not has_xcode_tools():
+        raise RuntimeError("--sync needs Xcode's command-line tools (xcrun xcstringstool, xcrun swiftc).")
+    sources = Sources()
+    used, files, _ = used_strings(derived_data, root, sources)
     counts = {}
     for catalog, table in sorted(catalogs(root).items()):
         keys = used.get(catalog, {})
-        document = json.load(open(catalog, encoding="utf-8"))
-        entries = document.get("strings", {})
+        text = open(catalog, encoding="utf-8").read()
+        entries = json.loads(text).get("strings", {})
         removed = unused(entries, keys)
         added = [key for key in keys if key not in entries]
-        for key in removed:
-            del entries[key]
         target = catalog if destination is None else os.path.join(destination, os.path.relpath(catalog, root))
         os.makedirs(os.path.dirname(target), exist_ok=True)
-        write_catalog(target, document)
+        head, blocks, tail = parse_catalog(text)
+        with open(target, "w", encoding="utf-8") as file:
+            file.write(render_catalog(head, [(key, lines) for key, lines in blocks if key not in removed], tail))
         with tempfile.TemporaryDirectory() as scratch:
-            # Only this catalog's table, from only the targets that compile it.
+            # Only this catalog's table, from only the targets that compile it, without
+            # what only a #Preview uses.
             inputs = []
             for index, path in enumerate(sorted(files.get(catalog, ()))):
                 data = json.load(open(path, encoding="utf-8"))
-                data["tables"] = {table: data["tables"][table]}
+                data["tables"] = {table: [entry for entry in data["tables"][table] if not sources.in_preview(data, entry)]}
                 inputs.append(os.path.join(scratch, f"{index}.stringsdata"))
                 with open(inputs[-1], "w", encoding="utf-8") as file:
                     json.dump(data, file, ensure_ascii=False)
@@ -127,12 +224,30 @@ def sync(derived_data, root, destination=None):
             for path in inputs:
                 command += ["--stringsdata", path]
             subprocess.run(command, check=True)
-        left = [key for key, entry in json.load(open(target, encoding="utf-8")).get("strings", {}).items()
+        synced = open(target, encoding="utf-8").read()
+        left = [key for key, entry in json.loads(synced).get("strings", {}).items()
                 if entry.get("extractionState") == "stale"]
         if left:
             raise RuntimeError(f"xcstringstool kept {len(left)} stale entries in {target} the check counts as used, such as \"{left[0]}\".")
+        with open(target, "w", encoding="utf-8") as file:
+            file.write(xcode_form(synced))
         counts[os.path.relpath(catalog, root)] = (len(added), len(removed))
     return counts
+
+
+def form_problems(derived_data, root):
+    """The catalogs not written as Xcode writes them, from this build's strings."""
+    if not has_xcode_tools():
+        return []
+    problems = []
+    with tempfile.TemporaryDirectory() as scratch:
+        sync(derived_data, root, scratch)
+        for catalog in sorted(catalogs(root)):
+            name = os.path.relpath(catalog, root)
+            if open(catalog, encoding="utf-8").read() != open(os.path.join(scratch, name), encoding="utf-8").read():
+                problems.append(f"{name} isn't written the way Xcode writes it (its entries' order, their comments, its spacing): "
+                                "building in Xcode would change it.")
+    return problems
 
 
 def self_test():
@@ -196,7 +311,30 @@ def self_test():
         case("a target left unbuilt fails", 1,
              lambda: shutil.rmtree(os.path.join(derived, "DosarCuSinaWidgets.build")))
 
-        if shutil.which("xcrun"):
+        if has_xcode_tools():
+            # Xcode's order: „ before %, numbers by value, case and accents aside; no newline at the end.
+            reset()
+            catalog(app, {"Salvează": {}, "10 zile": {}, "2 zile": {}, "„%@”": {}, "%@": {}, "adaugă": {}, "Ă": {}})
+            ordered = list(json.loads(xcode_form(open(os.path.join(root, app), encoding="utf-8").read()))["strings"])
+            if ordered != ["„%@”", "%@", "2 zile", "10 zile", "Ă", "adaugă", "Salvează"] \
+                    or xcode_form(open(os.path.join(root, app), encoding="utf-8").read()).endswith("\n"):
+                print(f"  self-test: Xcode's order: got {ordered}", file=sys.stderr)
+                failures += 1
+            # A string only a #Preview uses is left out, as Xcode leaves it out.
+            reset()
+            with open(source, "w") as file:
+                file.write("Text(\"Salvează\")\n#Preview {\n    Text(\"Doar aici\")\n}\n")
+            folder = os.path.join(derived, "DosarCuSina.build/Objects-normal/arm64")
+            with open(os.path.join(folder, "X.stringsdata"), "w") as file:
+                at = lambda line: {"startingColumn": 1, "startingLine": line, "startingOffset": 0}
+                json.dump({"source": source, "version": 1, "tables": {
+                    "Localizable": [{"key": "Salvează", "location": at(1)}, {"key": "Doar aici", "location": at(2)}],
+                    "Shared": [{"key": "Închide", "location": at(1)}]}}, file)
+            if check(os.path.join(root, "DD"), root):
+                print("  self-test: a string only a #Preview uses still counts as used", file=sys.stderr)
+                failures += 1
+            with open(source, "w") as file:
+                file.write("")
             reset()
             code("DosarCuSina", {"Localizable": ["Salvează", "%lld zile"], "Shared": ["Închide"]})
             plural = {"localizations": {"ro": {"variations": {"plural": {"one": {"stringUnit": {"state": "translated", "value": "o zi"}}}}}}}
@@ -230,7 +368,10 @@ def main(argv):
         return 2
     problems = check(argv[0], ROOT)
     if not problems:
-        print("Catalog check passed: every string in the code is in its String Catalog, and nothing else is.")
+        problems = form_problems(argv[0], ROOT)
+    if not problems:
+        print("Catalog check passed: every string in the code is in its String Catalog, nothing else is, "
+              "and each is written the way Xcode writes it.")
         return 0
     print("String Catalogs out of step with the code:", file=sys.stderr)
     for line in problems:

@@ -160,8 +160,11 @@
     "Atinge notificarea ca să continui. Te așteaptă în aplicație, la De verificat." : {
       "comment" : "Share sheet: a notice is on its way."
     },
-    "Deschide Dosar cu Șină ca să continui. Te așteaptă la De verificat." : {
-      "comment" : "Share sheet: no notice, notifications aren't allowed."
+    "azi" : {
+      "comment" : "When: due today."
+    },
+    "depășit de %@" : {
+      "comment" : "When: late past its grace, by a duration such as '3 zile'."
     },
     "Deschide aplicația ca să le pui la locul lor." : {
       "comment" : "Body of the notice after a share of several documents."
@@ -169,8 +172,23 @@
     "Deschide aplicația ca să-l pui la locul lui." : {
       "comment" : "Body of the notice after a share of one document."
     },
+    "Deschide Dosar cu Șină ca să continui. Te așteaptă la De verificat." : {
+      "comment" : "Share sheet: no notice, notifications aren't allowed."
+    },
     "Fișierul e prea mare" : {
       "comment" : "Share sheet: a file or the share is too large."
+    },
+    "în %@" : {
+      "comment" : "In a duration such as '5 zile' or '2 luni și 3 săptămâni'. A duration of one ('o lună', 'un an') is joined: 'într-o lună'."
+    },
+    "Închide" : {
+      "comment" : "Share sheet: closes the confirmation; what was shared is already in the app."
+    },
+    "întârziat cu %@" : {
+      "comment" : "When: late, but within the accepted grace, by a duration such as '2 zile'."
+    },
+    "mâine" : {
+      "comment" : "When: due tomorrow."
     },
     "Nu pot primi asta" : {
       "comment" : "Share sheet: nothing it can read."
@@ -195,24 +213,6 @@
     },
     "Trimite actele câte unul, sau ca poze în loc de un PDF mare." : {
       "comment" : "Share sheet: what to do with a file that is too large."
-    },
-    "azi" : {
-      "comment" : "When: due today."
-    },
-    "depășit de %@" : {
-      "comment" : "When: late past its grace, by a duration such as '3 zile'."
-    },
-    "mâine" : {
-      "comment" : "When: due tomorrow."
-    },
-    "Închide" : {
-      "comment" : "Share sheet: closes the confirmation; what was shared is already in the app."
-    },
-    "în %@" : {
-      "comment" : "In a duration such as '5 zile' or '2 luni și 3 săptămâni'. A duration of one ('o lună', 'un an') is joined: 'într-o lună'."
-    },
-    "întârziat cu %@" : {
-      "comment" : "When: late, but within the accepted grace, by a duration such as '2 zile'."
     }
   },
   "version" : "1.0"

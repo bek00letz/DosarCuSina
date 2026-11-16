@@ -128,12 +128,14 @@ public final class ObligationActions {
         let unit: MeasurementUnit
     }
 
-    static func counter(completing obligation: Obligation, template: TemplateDefinition?) -> Counter? {
+    static func counter(completing obligation: Obligation, template: TemplateDefinition?,
+                        asks: CompletionShape.Counter = .section) -> Counter? {
         let own = template.flatMap(HouseholdMutations.heroMetricField(of:))
         if let unit = obligation.metricUnit {
             return Counter(title: own.flatMap { $0.unit == unit ? $0.label : nil } ?? unit.label, unit: unit)
         }
-        guard obligation.asset != nil, let own, let unit = own.unit else { return nil }
+        // Work done at home asks only the counter it counts on: one that repeats by time asks none.
+        guard asks == .section, obligation.asset != nil, let own, let unit = own.unit else { return nil }
         return Counter(title: own.label, unit: unit)
     }
 

@@ -103,14 +103,14 @@ struct RecurrenceEngineTests {
         var values = FieldValues()
         values["document.expiry"] = .date(CalendarDay("2027-06-01"))
         let today = CalendarDay("2026-11-02")
-        let renew = ObligationBlueprint(key: "r", title: "R", kind: .renewal, recurrence: .none, firstDue: .field(key: "document.expiry", offsetDays: -30))
+        let renew = ObligationBlueprint(key: "r", title: "R", kind: .renewal, completion: .newDocument, recurrence: .none, firstDue: .field(key: "document.expiry", offsetDays: -30))
         #expect(RecurrenceEngine.firstDue(for: renew, values: values, today: today, calendar: calendar) == CalendarDay("2027-05-02"))
         #expect(RecurrenceEngine.firstDue(for: renew, values: FieldValues(), today: today, calendar: calendar) == nil)
 
-        let tax = ObligationBlueprint(key: "t", title: "T", kind: .tax, recurrence: .fixedDates([MonthDay(month: 3, day: 31), MonthDay(month: 9, day: 30)]), firstDue: .nextFixedDate)
+        let tax = ObligationBlueprint(key: "t", title: "T", kind: .tax, completion: .ownTax, recurrence: .fixedDates([MonthDay(month: 3, day: 31), MonthDay(month: 9, day: 30)]), firstDue: .nextFixedDate)
         #expect(RecurrenceEngine.firstDue(for: tax, values: values, today: today, calendar: calendar) == CalendarDay("2027-03-31"))
 
-        let ask = ObligationBlueprint(key: "a", title: "A", kind: .legal, recurrence: .legal(.vehicleITP), firstDue: .ask)
+        let ask = ObligationBlueprint(key: "a", title: "A", kind: .legal, completion: .itp, recurrence: .legal(.vehicleITP), firstDue: .ask)
         #expect(RecurrenceEngine.firstDue(for: ask, values: values, today: today, calendar: calendar) == nil)
     }
 

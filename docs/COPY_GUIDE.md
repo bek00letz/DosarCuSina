@@ -26,7 +26,9 @@ Each of these means one thing everywhere: the app, the widgets, the share sheet,
 | **Reparație** | Something bought, taken to be fixed. | *Am dus la reparat*, *Ce s-a reparat*, *Salvează reparația*. | A job on a home. |
 | **Revizie** | A machine's regular upkeep: a car's (*Revizie periodică*), an espresso machine's. | *Am făcut o revizie*, *Salvează revizia*, *Are revizii sau lucrări*. | A doctor's check-up („control”). |
 
-Words a shaped screen says (the visit form) come from its kind's description, never from the screen; [COPY_MATRIX.md](COPY_MATRIX.md) lists them for every category. Words about vehicles („km”, „kilometraj”, „piese”, „marcă”, „ulei”, „bord”) appear only in a vehicle's kind.
+Words a shaped screen says (the visit form, „Am rezolvat”, the deadline form, a section page's pockets, adding a section, the capture review, a record's page in Istoric) come from its kind's description, never from the screen; [COPY_MATRIX.md](COPY_MATRIX.md) lists them for every category. Words about vehicles („km”, „kilometraj”, „piese”, „marcă”, „ulei”, „bord”) appear only in a vehicle's kind, a doctor's and a vet's („medic”, „veterinar”, „vaccin”, „analize”, „rețetă”) only in health and pets.
+
+A paper is named for what it is: *Raportul ITP*, *Polița nouă*, *Carnetul de sănătate*, *Procesul-verbal*, *Rezultatele*, not „dovada” or „actul” where the deadline knows which. What is said about it agrees with its noun: „O păstrez în dosar.” for *Chitanța*, „Îl păstrez în dosar.” for *Rezultatul*, „Le păstrez în dosar.” for *Rezultatele*, „Din el iau data următoare.” for *Raportul ITP*. Work done at home asks no service's invoice.
 
 ## Basics
 
@@ -41,7 +43,7 @@ Words a shaped screen says (the visit form) come from its kind's description, ne
 
 - Romanian quotes: „așa”. Apostrophe: ’. En dash for ranges and asides: 9–17, 2 – 3 zile. Ellipsis character: … (not three dots), only for things still in progress („Se încarcă…”) and for a menu item that asks something before anything is done („Am rezolvat…”, „Altă zi…”).
 - Diacritics always: ș and ț with comma below (not ş/ţ with cedilla), ă, â, î.
-- Numbers, money and dates go through format styles so they follow the locale: 1.250,50 lei, 14 noiembrie 2026. Never build them with `String(format:)`.
+- Numbers, money and dates go through format styles so they follow the locale: 1.250,50 lei, 14 noiembrie 2026. Money in lei is written „lei”, never „RON” (`Money.formatted`). Never build them with `String(format:)`.
 - Plurals go through the String Catalog. Romanian has three forms: „o zi”, „2 zile”, „20 de zile”. A count of one is a word („o lună”, „un an”, „un document”), two and up are digits. „În” before a duration joins „o” and „un”: „într-o lună”, „într-un an” (`DurationWording.inside`). Never write `count == 1 ? … : …` by hand.
 
 ## Errors

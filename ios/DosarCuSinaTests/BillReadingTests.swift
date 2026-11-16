@@ -597,9 +597,9 @@ struct BillReadingTests {
         let context = try makeContext()
         let (gas, reminder) = try gasWithReminder(context)
         let store = CaptureDocumentStore()
-        let shape = reminder.kind.completion
+        let shape = reminder.completion(in: context)
         #expect(shape.cost == .paid)
-        #expect(shape.paper == .bill)
+        #expect(shape.paper == CompletionKind.bill.shape.paper, "The bill, logged as a bill")
         var draft = CompletionDraft(date: noon(today))
         draft.amount = 245
         draft.document = bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20", number: "EXM 0000001",

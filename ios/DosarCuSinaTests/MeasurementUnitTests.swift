@@ -114,7 +114,7 @@ struct MeasurementUnitTests {
             sections: [FieldSection(key: "boiler", title: "Centrală", fields: [
                 FieldDefinition(key: "boiler.index", label: "Index", type: .metric, role: .heroMetric, unit: gas),
             ])],
-            blueprints: [ObligationBlueprint(key: "boiler.check", title: "Verificare", kind: .maintenance,
+            blueprints: [ObligationBlueprint(key: "boiler.check", title: "Verificare", kind: .maintenance, completion: .ownService,
                                              recurrence: .metric(every: 500, unit: gas, fallback: .years(1)))]
         )
         // As an earlier version stored them: labels, not keys.

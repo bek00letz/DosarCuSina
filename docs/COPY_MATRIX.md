@@ -1,8 +1,8 @@
 # Copy matrix
 
-What each shaped screen says to each category, generated from the kinds' descriptions: the visit form from `VisitShape` laid over the category (`VisitForm`), „Gata” and „Am rezolvat” from `CompletionShape`. Every built-in category is here, and one category of one's own per combination of its switches. Reviews walk every category through it.
+What each shaped screen says to each category, generated from the kinds' descriptions: the visit form from `VisitShape` laid over the category (`VisitForm`), „Gata” and „Am rezolvat” from each deadline's `CompletionKind`, the deadline form and a record's page in Istoric (`HistoryEntryShape`), a section page's pockets, adding a section, and the capture review by document kind (`CaptureKindProfile`). Every built-in category is here, and one category of one's own per combination of its switches. Reviews walk every category through it.
 
-Don't edit it by hand: `CopyMatrixTests` writes it and fails when it is out of date. To bring it up to date, run `TEST_RUNNER_COPY_MATRIX_WRITE=1 ./tests/run_tests.sh` and commit the diff. Sample values: 3 rows, 1.250 RON, 3 mai 2027.
+Don't edit it by hand: `CopyMatrixTests` writes it and fails when it is out of date. To bring it up to date, run `TEST_RUNNER_COPY_MATRIX_WRITE=1 ./tests/run_tests.sh` and commit the diff. Sample values: 3 rows, 1.250 lei, 3 mai 2027.
 
 ## The visit form
 
@@ -35,7 +35,7 @@ Don't edit it by hand: `CopyMatrixTests` writes it and fails when it is out of d
 | A ticked row asks | Cât a costat, Marcă sau cod (Opțional) · Ultima dată: martie 2026 |
 | Rows of one's own | Altceva — Ce nu e în listă. · Ce s-a făcut, Cât a costat · Adaugă altceva |
 | The counter | Kilometraj — Cifra gri e doar o estimare. Scrie cifra de la bord, dacă o știi. |
-| What it cost | Total plătit — Piesele adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Total plătit — Piesele adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Who did it | Service-ul — Nume / Altcineva, „Service Exemplu SRL” — Cum a lucrat? |
 | Before it can save | Bifează ce s-a făcut sau scrie totalul ca să poți salva. |
 | The button | Salvează vizita |
@@ -57,7 +57,7 @@ Don't edit it by hand: `CopyMatrixTests` writes it and fails when it is out of d
 | Its rows | Încălzire: Centrală termică, Revizie centrală, Calorifere · Instalații sanitare: Robinete și baterii, Boiler electric, Rezervor și WC, Filtru de apă · Gaze: Detector de gaz · Bucătărie: Hotă, Aragaz · Climatizare: Filtre aer condiționat · Electric: Tablou electric · Tâmplărie: Garnituri geamuri |
 | A ticked row asks | Cât a costat · Ultima dată: martie 2026 |
 | Rows of one's own | Altceva — Ce nu e în listă. · Ce s-a lucrat, Cât a costat · Adaugă altceva |
-| What it cost | Cât a costat — Rândurile adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Cât a costat — Rândurile adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Who did it | Cine a lucrat — Nume / Altcineva, „Instalator Exemplu SRL” — Cum a lucrat? |
 | Before it can save | Bifează ce s-a lucrat sau scrie cât a costat ca să poți salva. |
 | The button | Salvează lucrarea |
@@ -83,7 +83,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Its rows | Vaccinuri: Vaccin antirabic, Vaccin anual · Paraziți: Deparazitare internă, Deparazitare externă · Îngrijire: Detartraj, Toaletaj · Tratamente: Tratament |
 | A ticked row asks | Cât a costat · Ultima dată: martie 2026 |
 | Rows of one's own | Altceva — Ce nu e în listă. · Ce i s-a făcut, Cât a costat · Adaugă altceva |
-| What it cost | Cât a costat — Dacă ai plătit ceva. — Rândurile adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Cât a costat — Dacă ai plătit ceva. — Rândurile adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Who did it | Veterinarul — Nume / Altcineva, „Cabinet Veterinar Exemplu” — Cum a fost? |
 | Before it can save | (saves with its day alone) |
 | The button | Salvează vizita |
@@ -102,7 +102,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Not read | Hârtia nu s-a citit — Încearcă o poză mai clară. Poți scrie și de mână. |
 | Already in the binder | (only the same document, said nothing) |
 | A note | Pentru ce — Un control, o durere, o trimitere… |
-| What it cost | Cât a costat — Dacă ai plătit ceva. — Rândurile adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Cât a costat — Dacă ai plătit ceva. — Rândurile adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Who did it | Medicul sau clinica — Nume / Altcineva, „Clinica Exemplu” — Cum a fost? |
 | Before it can save | (saves with its day alone) |
 | The button | Salvează vizita |
@@ -122,7 +122,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Already in the binder | Factura e deja în dosar |
 | A note | Ce s-a reparat — Ecranul, bateria, un buton… |
 | The warranty, under the date | Era în garanție, până pe 3 mai 2027. / Garanția se terminase pe 3 mai 2027. |
-| What it cost | Cât a costat — Lasă gol dacă a fost gratuită. — Rândurile adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Cât a costat — Lasă gol dacă a fost gratuită. — Rândurile adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Who did it | Cine a reparat — Nume / Altcineva, „Atelier Exemplu SRL” — Cum a lucrat? |
 | Before it can save | Scrie ce s-a reparat sau cât a costat ca să poți salva. |
 | The button | Salvează reparația |
@@ -145,7 +145,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Not read | Factura nu s-a citit — Încearcă o poză mai clară. Poți scrie și de mână. |
 | Already in the binder | Factura e deja în dosar |
 | Rows of one's own | Ce s-a lucrat — Câte un rând pentru fiecare lucrare. Prețul e opțional. · Ce s-a lucrat, Cât a costat · Adaugă un rând |
-| What it cost | Cât a costat — Rândurile adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Cât a costat — Rândurile adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Who did it | Cine a lucrat — Nume / Altcineva, „Instalator Exemplu SRL” — Cum a lucrat? |
 | Before it can save | Scrie ce s-a lucrat sau cât a costat ca să poți salva. |
 | The button | Salvează lucrarea |
@@ -168,7 +168,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | A ticked row asks | Cât a costat, Marcă sau cod (Opțional) · Ultima dată: martie 2026 |
 | Rows of one's own | Altceva — Ce nu e în listă. · Ce s-a făcut, Cât a costat · Adaugă altceva |
 | The counter | Kilometri parcurși — Cifra gri e doar o estimare. Scrie cifra de la bord, dacă o știi. |
-| What it cost | Total plătit — Piesele adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Total plătit — Piesele adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Who did it | Service-ul — Nume / Altcineva, „Service Exemplu SRL” — Cum a lucrat? |
 | Before it can save | Bifează ce s-a făcut sau scrie totalul ca să poți salva. |
 | The button | Salvează vizita |
@@ -196,7 +196,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Its rows | Întreținere: Decalcifiere, Garnitură grup, Filtru de apă |
 | A ticked row asks | Cât a costat · Ultima dată: martie 2026 |
 | Rows of one's own | Altceva — Ce nu e în listă. · Ce s-a făcut, Cât a costat · Adaugă altceva |
-| What it cost | Cât a costat — Dacă a costat ceva. — Rândurile adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Cât a costat — Dacă a costat ceva. — Rândurile adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Before it can save | Bifează ce s-a făcut ca să poți salva. |
 | The button | Salvează revizia |
 | The toast | Revizia e în istoric. Anulează |
@@ -218,7 +218,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Not read | Factura nu s-a citit — Încearcă o poză mai clară. Poți scrie și de mână. |
 | Already in the binder | Factura e deja în dosar |
 | Rows of one's own | Ce s-a lucrat — Câte un rând pentru fiecare lucrare. Prețul e opțional. · Ce s-a lucrat, Cât a costat · Adaugă un rând |
-| What it cost | Cât a costat — Rândurile adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Cât a costat — Rândurile adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Who did it | Cine a lucrat — Nume / Altcineva, „Instalator Exemplu SRL” — Cum a lucrat? |
 | Before it can save | Scrie ce s-a lucrat sau cât a costat ca să poți salva. |
 | The button | Salvează lucrarea |
@@ -238,7 +238,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Already in the binder | Factura e deja în dosar |
 | Rows of one's own | Ce s-a făcut — Câte un rând pentru fiecare lucrare. Prețul e opțional. · Ce s-a făcut, Cât a costat · Adaugă un rând |
 | The counter | Kilometraj — Cifra gri e doar o estimare. Scrie cifra de la bord, dacă o știi. |
-| What it cost | Total plătit — Piesele adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Total plătit — Piesele adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Who did it | Service-ul — Nume / Altcineva, „Service Exemplu SRL” — Cum a lucrat? |
 | Before it can save | Scrie ce s-a făcut sau totalul ca să poți salva. |
 | The button | Salvează vizita |
@@ -258,7 +258,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Already in the binder | Factura e deja în dosar |
 | Rows of one's own | Ce s-a făcut — Câte un rând pentru fiecare lucrare. Prețul e opțional. · Ce s-a făcut, Cât a costat · Adaugă un rând |
 | The counter | Ore de motor — Cifra gri e doar o estimare. Scrie cifra de la bord, dacă o știi. |
-| What it cost | Total plătit — Piesele adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Total plătit — Piesele adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Who did it | Service-ul — Nume / Altcineva, „Service Exemplu SRL” — Cum a lucrat? |
 | Before it can save | Scrie ce s-a făcut sau totalul ca să poți salva. |
 | The button | Salvează vizita |
@@ -281,7 +281,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Not read | Factura nu s-a citit — Încearcă o poză mai clară. Poți scrie și de mână. |
 | Already in the binder | Factura e deja în dosar |
 | Rows of one's own | Ce s-a lucrat — Câte un rând pentru fiecare lucrare. Prețul e opțional. · Ce s-a lucrat, Cât a costat · Adaugă un rând |
-| What it cost | Cât a costat — Rândurile adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Cât a costat — Rândurile adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Who did it | Cine a lucrat — Nume / Altcineva, „Instalator Exemplu SRL” — Cum a lucrat? |
 | Before it can save | Scrie ce s-a lucrat sau cât a costat ca să poți salva. |
 | The button | Salvează lucrarea |
@@ -301,7 +301,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Already in the binder | Factura e deja în dosar |
 | Rows of one's own | Ce s-a făcut — Câte un rând pentru fiecare lucrare. Prețul e opțional. · Ce s-a făcut, Cât a costat · Adaugă un rând |
 | The counter | Kilometraj — Cifra gri e doar o estimare. Scrie cifra de la bord, dacă o știi. |
-| What it cost | Total plătit — Piesele adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Total plătit — Piesele adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Who did it | Service-ul — Nume / Altcineva, „Service Exemplu SRL” — Cum a lucrat? |
 | Before it can save | Scrie ce s-a făcut sau totalul ca să poți salva. |
 | The button | Salvează vizita |
@@ -321,7 +321,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Already in the binder | Factura e deja în dosar |
 | Rows of one's own | Ce s-a făcut — Câte un rând pentru fiecare lucrare. Prețul e opțional. · Ce s-a făcut, Cât a costat · Adaugă un rând |
 | The counter | Ore de motor — Cifra gri e doar o estimare. Scrie cifra de la bord, dacă o știi. |
-| What it cost | Total plătit — Piesele adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Total plătit — Piesele adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Who did it | Service-ul — Nume / Altcineva, „Service Exemplu SRL” — Cum a lucrat? |
 | Before it can save | Scrie ce s-a făcut sau totalul ca să poți salva. |
 | The button | Salvează vizita |
@@ -344,7 +344,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Not read | Factura nu s-a citit — Încearcă o poză mai clară. Poți scrie și de mână. |
 | Already in the binder | Factura e deja în dosar |
 | Rows of one's own | Ce s-a lucrat — Câte un rând pentru fiecare lucrare. Prețul e opțional. · Ce s-a lucrat, Cât a costat · Adaugă un rând |
-| What it cost | Cât a costat — Rândurile adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Cât a costat — Rândurile adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Who did it | Cine a lucrat — Nume / Altcineva, „Instalator Exemplu SRL” — Cum a lucrat? |
 | Before it can save | Scrie ce s-a lucrat sau cât a costat ca să poți salva. |
 | The button | Salvează lucrarea |
@@ -364,7 +364,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Already in the binder | Factura e deja în dosar |
 | Rows of one's own | Ce s-a făcut — Câte un rând pentru fiecare lucrare. Prețul e opțional. · Ce s-a făcut, Cât a costat · Adaugă un rând |
 | The counter | Kilometraj — Cifra gri e doar o estimare. Scrie cifra de la bord, dacă o știi. |
-| What it cost | Total plătit — Piesele adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Total plătit — Piesele adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Who did it | Service-ul — Nume / Altcineva, „Service Exemplu SRL” — Cum a lucrat? |
 | Before it can save | Scrie ce s-a făcut sau totalul ca să poți salva. |
 | The button | Salvează vizita |
@@ -384,7 +384,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Already in the binder | Factura e deja în dosar |
 | Rows of one's own | Ce s-a făcut — Câte un rând pentru fiecare lucrare. Prețul e opțional. · Ce s-a făcut, Cât a costat · Adaugă un rând |
 | The counter | Ore de motor — Cifra gri e doar o estimare. Scrie cifra de la bord, dacă o știi. |
-| What it cost | Total plătit — Piesele adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Total plătit — Piesele adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Who did it | Service-ul — Nume / Altcineva, „Service Exemplu SRL” — Cum a lucrat? |
 | Before it can save | Scrie ce s-a făcut sau totalul ca să poți salva. |
 | The button | Salvează vizita |
@@ -407,7 +407,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Not read | Factura nu s-a citit — Încearcă o poză mai clară. Poți scrie și de mână. |
 | Already in the binder | Factura e deja în dosar |
 | Rows of one's own | Ce s-a lucrat — Câte un rând pentru fiecare lucrare. Prețul e opțional. · Ce s-a lucrat, Cât a costat · Adaugă un rând |
-| What it cost | Cât a costat — Rândurile adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Cât a costat — Rândurile adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Who did it | Cine a lucrat — Nume / Altcineva, „Instalator Exemplu SRL” — Cum a lucrat? |
 | Before it can save | Scrie ce s-a lucrat sau cât a costat ca să poți salva. |
 | The button | Salvează lucrarea |
@@ -427,7 +427,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Already in the binder | Factura e deja în dosar |
 | Rows of one's own | Ce s-a făcut — Câte un rând pentru fiecare lucrare. Prețul e opțional. · Ce s-a făcut, Cât a costat · Adaugă un rând |
 | The counter | Kilometraj — Cifra gri e doar o estimare. Scrie cifra de la bord, dacă o știi. |
-| What it cost | Total plătit — Piesele adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Total plătit — Piesele adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Who did it | Service-ul — Nume / Altcineva, „Service Exemplu SRL” — Cum a lucrat? |
 | Before it can save | Scrie ce s-a făcut sau totalul ca să poți salva. |
 | The button | Salvează vizita |
@@ -447,7 +447,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Already in the binder | Factura e deja în dosar |
 | Rows of one's own | Ce s-a făcut — Câte un rând pentru fiecare lucrare. Prețul e opțional. · Ce s-a făcut, Cât a costat · Adaugă un rând |
 | The counter | Ore de motor — Cifra gri e doar o estimare. Scrie cifra de la bord, dacă o știi. |
-| What it cost | Total plătit — Piesele adună 1.250 RON. Lasă gol dacă ăsta e totalul. |
+| What it cost | Total plătit — Piesele adună 1.250 lei. Lasă gol dacă ăsta e totalul. |
 | Who did it | Service-ul — Nume / Altcineva, „Service Exemplu SRL” — Cum a lucrat? |
 | Before it can save | Scrie ce s-a făcut sau totalul ca să poți salva. |
 | The button | Salvează vizita |
@@ -455,170 +455,1768 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 
 ## „Gata” and „Am rezolvat”
 
+### What every deadline shares
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Am rezolvat: ITP |
+| Where the photo comes from | Alege din poze · Din Fișiere · Renunță · Alege altă poză |
+| Not read | Încearcă o poză mai clară, de aproape și fără umbre. |
+| A bill read | Am citit factura — O trec în istoricul „Gaze”. |
+| Read, with its next date | Următorul termen: 3 mai 2027. |
+| What it cost last time | Data trecută: 1.250 lei. |
+| The button | Salvează |
+| Not saved | Nu s-a salvat · Poza nu s-a putut deschide. Încearcă din nou. |
+| The toast | ITP: gata. Următorul termen e pe 3 mai 2027. / ITP: gata. Anulează |
+
+### The household's own (`HouseholdRules`)
+
+| Where | Words |
+| :--- | :--- |
+| Declarația unică pentru chirii (`rentalDeclaration`) | Am rezolvat / Am rezolvat… — Când; Cât ai plătit; Recipisa (Opțional. O păstrez în dosar.) — Fotografiază recipisa: Dovada că ai depus declarația, din Spațiul Privat Virtual. [Citesc recipisa… / Am citit recipisa / Recipisa nu s-a citit] |
+
 ### Mașini (`vehicle`)
 
 | Where | Words |
 | :--- | :--- |
-| ITP (legal) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Dovada (Opțional. Din ea iau data următoare.) — Fotografiază dovada: Raportul, certificatul sau chitanța. |
-| RCA (insurance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Polița nouă (Opțional. Din ea iau data următoare.) — Fotografiază polița: Din ea iau numărul, asigurătorul și data. |
-| Rovinietă (legal) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Dovada (Opțional. Din ea iau data următoare.) — Fotografiază dovada: Raportul, certificatul sau chitanța. |
-| Revizie periodică (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat.; the counter |
-| Schimb de anvelope (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat.; the counter |
-| CASCO (insurance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Polița nouă (Opțional. Din ea iau data următoare.) — Fotografiază polița: Din ea iau numărul, asigurătorul și data. |
-| Trusă medicală și stingător (legal) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Dovada (Opțional. Din ea iau data următoare.) — Fotografiază dovada: Raportul, certificatul sau chitanța. |
+| ITP (`itp`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Raportul ITP (Opțional. Din el iau data următoare.) — Fotografiază raportul ITP: Cel primit la stație, cu data următoarei inspecții. [Citesc raportul ITP… / Am citit raportul ITP / Raportul ITP nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.] |
+| RCA (`policy`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Polița nouă (Opțional. Din ea iau data următoare.) — Fotografiază polița nouă: Din ea iau numărul, asigurătorul și data. [Citesc polița nouă… / Am citit polița nouă / Polița nouă nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
+| Rovinietă (`vignette`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Rovinieta (Opțional. Din ea iau data următoare.) — Fotografiază rovinieta: Chitanța sau confirmarea primită pe e-mail. [Citesc rovinieta… / Am citit rovinieta / Rovinieta nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
+| Revizie periodică (`vehicleService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service-ul care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometraj |
+| Schimb de anvelope (`tyreChange`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la vulcanizare. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometraj |
+| CASCO (`policy`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Polița nouă (Opțional. Din ea iau data următoare.) — Fotografiază polița nouă: Din ea iau numărul, asigurătorul și data. [Citesc polița nouă… / Am citit polița nouă / Polița nouă nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
+| Trusă medicală și stingător (`safetyKit`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Expiră pe — De aici încep să-ți amintesc din nou. |
 
 ### Locuințe (`home`)
 
 | Where | Words |
 | :--- | :--- |
-| Verificare centrală (VTP) (legal) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Dovada (Opțional. Din ea iau data următoare.) — Fotografiază dovada: Raportul, certificatul sau chitanța. |
-| Verificare instalație de gaze (legal) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Dovada (Opțional. Din ea iau data următoare.) — Fotografiază dovada: Raportul, certificatul sau chitanța. |
-| Revizie instalație de gaze (legal) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Dovada (Opțional. Din ea iau data următoare.) — Fotografiază dovada: Raportul, certificatul sau chitanța. |
-| Asigurare obligatorie (PAD) (insurance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Polița nouă (Opțional. Din ea iau data următoare.) — Fotografiază polița: Din ea iau numărul, asigurătorul și data. |
-| Asigurare facultativă (insurance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Polița nouă (Opțional. Din ea iau data următoare.) — Fotografiază polița: Din ea iau numărul, asigurătorul și data. |
-| Impozit pe clădire (tax) | Am rezolvat / Am rezolvat… — Când; Cât ai plătit; Chitanța (Opțional. Îl păstrez în dosar.) — Fotografiază chitanța: Sau dovada plății din aplicația băncii. |
-| Curățare coș de fum (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat. |
+| Verificare centrală (VTP) (`boilerCheck`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Procesul-verbal (Opțional. Din el iau data următoare.) — Fotografiază procesul-verbal: De la firma autorizată ISCIR care a verificat centrala. [Citesc procesul-verbal… / Am citit procesul-verbal / Procesul-verbal nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.] |
+| Verificare instalație de gaze (`gasCheck`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Procesul-verbal (Opțional. Din el iau data următoare.) — Fotografiază procesul-verbal: De la firma autorizată care a verificat instalația. [Citesc procesul-verbal… / Am citit procesul-verbal / Procesul-verbal nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.] |
+| Revizie instalație de gaze (`gasCheck`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Procesul-verbal (Opțional. Din el iau data următoare.) — Fotografiază procesul-verbal: De la firma autorizată care a verificat instalația. [Citesc procesul-verbal… / Am citit procesul-verbal / Procesul-verbal nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.] |
+| Asigurare obligatorie (PAD) (`policy`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Polița nouă (Opțional. Din ea iau data următoare.) — Fotografiază polița nouă: Din ea iau numărul, asigurătorul și data. [Citesc polița nouă… / Am citit polița nouă / Polița nouă nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
+| Asigurare facultativă (`policy`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Polița nouă (Opțional. Din ea iau data următoare.) — Fotografiază polița nouă: Din ea iau numărul, asigurătorul și data. [Citesc polița nouă… / Am citit polița nouă / Polița nouă nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
+| Impozit pe clădire (`buildingTax`) | Am rezolvat / Am rezolvat… — Când; Cât ai plătit; Chitanța (Opțional. O păstrez în dosar.) — Fotografiază chitanța: Sau dovada plății din aplicația băncii. [Citesc chitanța… / Am citit chitanța / Chitanța nu s-a citit] |
+| Curățare coș de fum (`chimneySweep`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la firma care a curățat coșul. [Citesc factura… / Am citit factura / Factura nu s-a citit] |
 
 ### Acte (`documents`)
 
 | Where | Words |
 | :--- | :--- |
-| Reînnoire (renewal) | Am rezolvat / Am rezolvat… — Când; Actul nou (Opțional. Din el iau data la care expiră.) — Fotografiază actul nou: Partea cu data la care expiră.; the new expiry |
+| Reînnoire (`newDocument`) | Am rezolvat / Am rezolvat… — Când; Actul nou (Opțional. Din el iau data la care expiră.) — Fotografiază actul nou: Partea cu data la care expiră. [Citesc actul nou… / Am citit actul nou / Actul nou nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.]; Expiră pe — De aici încep să-ți amintesc din nou. |
 
 ### Animale (`pet`)
 
 | Where | Words |
 | :--- | :--- |
-| Vaccin antirabic (legal) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Dovada (Opțional. Din ea iau data următoare.) — Fotografiază dovada: Raportul, certificatul sau chitanța. |
-| Vaccin anual (health) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Rezultatul (Opțional. Îl păstrez în dosar.) — Fotografiază rezultatul: Analizele, rețeta sau carnetul de vaccinări.; a note |
-| Deparazitare internă (health) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Rezultatul (Opțional. Îl păstrez în dosar.) — Fotografiază rezultatul: Analizele, rețeta sau carnetul de vaccinări.; a note |
-| Deparazitare externă (health) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Rezultatul (Opțional. Îl păstrez în dosar.) — Fotografiază rezultatul: Analizele, rețeta sau carnetul de vaccinări.; a note |
-| Toaletaj (routine) | Gata / Gata — nothing: done today, „Adaugă o notă” after |
+| Vaccin antirabic (`petVaccine`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Carnetul de sănătate (Opțional. Din el iau data următoare.) — Fotografiază carnetul: Pagina cu vaccinul și data rapelului. [Citesc carnetul de sănătate… / Am citit carnetul de sănătate / Carnetul de sănătate nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.] |
+| Vaccin anual (`petVaccine`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Carnetul de sănătate (Opțional. Din el iau data următoare.) — Fotografiază carnetul: Pagina cu vaccinul și data rapelului. [Citesc carnetul de sănătate… / Am citit carnetul de sănătate / Carnetul de sănătate nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.] |
+| Deparazitare internă (`doneAtHome`) | Am rezolvat / Am rezolvat… — Când; Cât a costat |
+| Deparazitare externă (`doneAtHome`) | Am rezolvat / Am rezolvat… — Când; Cât a costat |
+| Toaletaj (`chore`) | Gata / Gata — nothing: done today, „Adaugă o notă” after |
 
 ### Sănătate (`health`)
 
 | Where | Words |
 | :--- | :--- |
-| Analize anuale (health) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Rezultatul (Opțional. Îl păstrez în dosar.) — Fotografiază rezultatul: Analizele, rețeta sau carnetul de vaccinări.; a note |
-| Control stomatologic (health) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Rezultatul (Opțional. Îl păstrez în dosar.) — Fotografiază rezultatul: Analizele, rețeta sau carnetul de vaccinări.; a note |
-| Rapel antitetanos (health) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Rezultatul (Opțional. Îl păstrez în dosar.) — Fotografiază rezultatul: Analizele, rețeta sau carnetul de vaccinări.; a note |
-| Vaccin antigripal (health) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Rezultatul (Opțional. Îl păstrez în dosar.) — Fotografiază rezultatul: Analizele, rețeta sau carnetul de vaccinări.; a note |
-| Card european de sănătate (renewal) | Am rezolvat / Am rezolvat… — Când; Actul nou (Opțional. Din el iau data la care expiră.) — Fotografiază actul nou: Partea cu data la care expiră.; the new expiry |
+| Analize anuale (`checkup`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Rezultatele (Opțional. Le păstrez în dosar.) — Fotografiază rezultatele: Buletinul de analize, de la laborator. [Citesc rezultatele… / Am citit rezultatele / Rezultatele nu s-au citit]; Notă — Ce a spus medicul, ce urmează. |
+| Control stomatologic (`dentist`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Notă — Ce s-a făcut, ce urmează. |
+| Rapel antitetanos (`vaccine`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Adeverința de vaccinare (Opțional. O păstrez în dosar.) — Fotografiază adeverința: Sau pagina din carnetul de vaccinări. [Citesc adeverința de vaccinare… / Am citit adeverința de vaccinare / Adeverința de vaccinare nu s-a citit] |
+| Vaccin antigripal (`vaccine`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Adeverința de vaccinare (Opțional. O păstrez în dosar.) — Fotografiază adeverința: Sau pagina din carnetul de vaccinări. [Citesc adeverința de vaccinare… / Am citit adeverința de vaccinare / Adeverința de vaccinare nu s-a citit] |
+| Card european de sănătate (`newHealthCard`) | Am rezolvat / Am rezolvat… — Când; Cardul nou (Opțional. Din el iau data la care expiră.) — Fotografiază cardul nou: Fața, cu data la care expiră. [Citesc cardul nou… / Am citit cardul nou / Cardul nou nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.]; Expiră pe — De aici încep să-ți amintesc din nou. |
 
 ### Garanții (`purchase`)
 
 | Where | Words |
 | :--- | :--- |
-| Garanția se termină (renewal) | Am rezolvat / Am rezolvat… — Când; Actul nou (Opțional. Din el iau data la care expiră.) — Fotografiază actul nou: Partea cu data la care expiră.; the new expiry |
+| Garanția se termină (`acknowledged`) | Gata / Gata — nothing: done today, „Adaugă o notă” after |
 
 ### Abonamente (`subscription`)
 
 | Where | Words |
 | :--- | :--- |
-| Reînnoire anuală (payment) | Am rezolvat / Am rezolvat… — Când; Cât ai plătit; Factura (Opțional. O trec în istoric.) — Fotografiază factura: Cea pe care ai plătit-o. |
-| Se termină contractul (renewal) | Am rezolvat / Am rezolvat… — Când; Actul nou (Opțional. Din el iau data la care expiră.) — Fotografiază actul nou: Partea cu data la care expiră.; the new expiry |
-| Se termină perioada minimă (renewal) | Am rezolvat / Am rezolvat… — Când; Actul nou (Opțional. Din el iau data la care expiră.) — Fotografiază actul nou: Partea cu data la care expiră.; the new expiry |
-| Factura de plătit (payment) | Am rezolvat / Am rezolvat… — Când; Cât ai plătit; Factura (Opțional. O trec în istoric.) — Fotografiază factura: Cea pe care ai plătit-o. |
+| Reînnoire anuală (`bill`) | Am rezolvat / Am rezolvat… — Când; Cât ai plătit; Factura (Opțional. O trec în istoric.) — Fotografiază factura: Cea pe care ai plătit-o. [Citesc factura… / Am citit factura / Factura nu s-a citit] |
+| Se termină contractul (`newContract`) | Am rezolvat / Am rezolvat… — Când; Contractul nou (Opțional. Din el iau data la care se termină.) — Fotografiază contractul nou: Pagina cu perioada contractului. [Citesc contractul nou… / Am citit contractul nou / Contractul nou nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.]; Se termină pe — De aici încep să-ți amintesc din nou. |
+| Se termină perioada minimă (`acknowledged`) | Gata / Gata — nothing: done today, „Adaugă o notă” after |
+| Factura de plătit (`bill`) | Am rezolvat / Am rezolvat… — Când; Cât ai plătit; Factura (Opțional. O trec în istoric.) — Fotografiază factura: Cea pe care ai plătit-o. [Citesc factura… / Am citit factura / Factura nu s-a citit] |
 
 ### Biciclete (`bike`)
 
 | Where | Words |
 | :--- | :--- |
-| Curățare și ungere lanț (routine) | Gata / Gata — nothing: done today, „Adaugă o notă” after |
-| Verificare plăcuțe de frână (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat.; the counter |
-| Schimb lanț (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat.; the counter |
-| Service suspensie (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat.; the counter |
+| Curățare și ungere lanț (`chore`) | Gata / Gata — nothing: done today, „Adaugă o notă” after |
+| Verificare plăcuțe de frână (`bikeService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service, dacă ai dus-o acolo. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometri parcurși |
+| Schimb lanț (`bikeService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service, dacă ai dus-o acolo. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometri parcurși |
+| Service suspensie (`bikeService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service, dacă ai dus-o acolo. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometri parcurși |
 
 ### Plante (`plants`)
 
 | Where | Words |
 | :--- | :--- |
-| Udat (routine) | Gata / Gata — nothing: done today, „Adaugă o notă” after |
-| Fertilizat (routine) | Gata / Gata — nothing: done today, „Adaugă o notă” after |
-| Schimbat ghiveciul (routine) | Gata / Gata — nothing: done today, „Adaugă o notă” after |
+| Udat (`chore`) | Gata / Gata — nothing: done today, „Adaugă o notă” after |
+| Fertilizat (`chore`) | Gata / Gata — nothing: done today, „Adaugă o notă” after |
+| Schimbat ghiveciul (`chore`) | Gata / Gata — nothing: done today, „Adaugă o notă” after |
 
 ### Chiriași (`tenancy`)
 
 | Where | Words |
 | :--- | :--- |
-| Se termină contractul de închiriere (renewal) | Am rezolvat / Am rezolvat… — Când; Actul nou (Opțional. Din el iau data la care expiră.) — Fotografiază actul nou: Partea cu data la care expiră.; the new expiry |
+| Se termină contractul de închiriere (`newLease`) | Am rezolvat / Am rezolvat… — Când; Contractul nou (Opțional. Din el iau data la care se termină.) — Fotografiază contractul nou: Pagina cu perioada închirierii. [Citesc contractul nou… / Am citit contractul nou / Contractul nou nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.]; Se termină pe — De aici încep să-ți amintesc din nou. |
 
 ### Espressoare (`espresso`)
 
 | Where | Words |
 | :--- | :--- |
-| Curățare grup (routine) | Gata / Gata — nothing: done today, „Adaugă o notă” after |
-| Decalcifiere (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat.; the counter |
-| Schimb filtru de apă (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat.; the counter |
+| Curățare grup (`chore`) | Gata / Gata — nothing: done today, „Adaugă o notă” after |
+| Decalcifiere (`doneAtHome`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Cafele făcute |
+| Schimb filtru de apă (`doneAtHome`) | Am rezolvat / Am rezolvat… — Când; Cât a costat |
 
 ### A ta: cu acte, fără facturi, revizii după timp
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat. |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit] |
 
 ### A ta: cu acte, fără facturi, revizii după kilometri
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat.; the counter |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometraj |
 
 ### A ta: cu acte, fără facturi, revizii după ore
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat.; the counter |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Ore de motor |
 
 ### A ta: cu acte, cu facturi, revizii după timp
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat. |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit] |
 
 ### A ta: cu acte, cu facturi, revizii după kilometri
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat.; the counter |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometraj |
 
 ### A ta: cu acte, cu facturi, revizii după ore
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat.; the counter |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Ore de motor |
 
 ### A ta: fără acte, fără facturi, revizii după timp
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat. |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit] |
 
 ### A ta: fără acte, fără facturi, revizii după kilometri
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat.; the counter |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometraj |
 
 ### A ta: fără acte, fără facturi, revizii după ore
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat.; the counter |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Ore de motor |
 
 ### A ta: fără acte, cu facturi, revizii după timp
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat. |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit] |
 
 ### A ta: fără acte, cu facturi, revizii după kilometri
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat.; the counter |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometraj |
 
 ### A ta: fără acte, cu facturi, revizii după ore
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (maintenance) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service sau de la cel care a lucrat.; the counter |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Ore de motor |
+
+## Adding a deadline
+
+### What every category shares
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Un termen |
+| Which deadline | Ce termen |
+| A deadline of one's own | Alt termen — Scrii tu ce e. |
+| Its fields | Ce trebuie făcut („O verificare, o plată, o programare”) · Cât de important e: Obligatoriu prin lege, Ține de bani, Ține de sănătate, Doar să nu uit · Se repetă |
+| When | Când e termenul — Data |
+| The button | Salvează termenul |
+| Not saved | Nu s-a salvat |
+| Saved | Am adăugat ITP. Te anunț cu o lună și cu 7 zile înainte și în ziua termenului. |
+
+### Mașini (`vehicle`)
+
+| Where | Words |
+| :--- | :--- |
+| ITP | Fără ITP valabil, înmatricularea se suspendă. — Te anunț cu o lună și cu 7 zile înainte. |
+| RCA | Cere oferte cu o lună înainte, prețurile diferă mult. — Te anunț cu o lună și cu 7 zile înainte și în ziua termenului. |
+| Rovinietă | Te anunț cu 7 zile înainte și în ziua termenului. |
+| Revizie periodică | Te anunț cu 14 zile și cu o zi înainte. |
+| Schimb de anvelope | Te anunț cu 14 zile înainte. |
+| CASCO | Te anunț cu o lună și cu 7 zile înainte și în ziua termenului. |
+| Trusă medicală și stingător | Data expirării e pe ambalaj. — Te anunț cu 14 zile înainte și în ziua termenului. |
+
+### Locuințe (`home`)
+
+| Where | Words |
+| :--- | :--- |
+| Verificare centrală (VTP) | Obligatorie la cel mult 2 ani, făcută de o firmă autorizată ISCIR. — Te anunț cu o lună și cu 7 zile înainte. |
+| Verificare instalație de gaze | Te anunț cu o lună și cu 7 zile înainte. |
+| Revizie instalație de gaze | Te anunț cu 2 luni și cu o lună înainte. |
+| Asigurare obligatorie (PAD) | Te anunț cu o lună și cu 7 zile înainte și în ziua termenului. |
+| Asigurare facultativă | Te anunț cu o lună și cu 7 zile înainte și în ziua termenului. |
+| Impozit pe clădire | Plata integrală până la 31 martie poate aduce o reducere. — Te anunț cu 14 zile și cu o zi înainte. |
+| Curățare coș de fum | Te anunț cu 14 zile înainte și în ziua termenului. |
+
+### Acte (`documents`)
+
+| Where | Words |
+| :--- | :--- |
+| Reînnoire | Programările durează. Pentru pașaport, multe țări cer 6 luni de valabilitate. — Te anunț cu 3 luni și cu o lună înainte. |
+
+### Animale (`pet`)
+
+| Where | Words |
+| :--- | :--- |
+| Vaccin antirabic | Obligatoriu și cerut la trecerea graniței. — Te anunț cu o zi înainte. |
+| Vaccin anual | Te anunț cu o zi înainte. |
+| Deparazitare internă | Te anunț cu o zi înainte și în ziua termenului. |
+| Deparazitare externă | Te anunț cu o zi înainte și în ziua termenului. |
+| Toaletaj | Te anunț cu 2 zile înainte. |
+
+### Sănătate (`health`)
+
+| Where | Words |
+| :--- | :--- |
+| Analize anuale | Te anunț cu 14 zile înainte și în ziua termenului. |
+| Control stomatologic | Te anunț cu 7 zile înainte și în ziua termenului. |
+| Rapel antitetanos | Te anunț cu o lună înainte și în ziua termenului. |
+| Vaccin antigripal | Te anunț cu 7 zile înainte și în ziua termenului. |
+| Card european de sănătate | Te anunț cu o lună și cu 7 zile înainte. |
+
+### Garanții (`purchase`)
+
+| Where | Words |
+| :--- | :--- |
+| Garanția se termină | Funcționează totul bine? Acum mai poți reclama gratuit un defect. — Te anunț cu o lună înainte. |
+
+### Abonamente (`subscription`)
+
+| Where | Words |
+| :--- | :--- |
+| Reînnoire anuală | Decide dacă îl mai vrei înainte să se plătească singur. — Te anunț cu 14 zile înainte. |
+| Se termină contractul | De obicei prețul crește după. E momentul să ceri o ofertă mai bună. — Te anunț cu o lună înainte. |
+| Se termină perioada minimă | De regulă, de la această dată poți renunța fără penalități, anunțând cu cel mult o lună înainte. E cel mai bun moment să ceri o ofertă mai bună. — Te anunț cu o lună înainte și în ziua termenului. |
+| Factura de plătit | Data vine de pe ultima factură citită. — Te anunț cu 2 zile înainte și în ziua termenului. |
+
+### Altele (`other`)
+
+No usual deadlines: only „Alt termen”.
+
+### Biciclete (`bike`)
+
+| Where | Words |
+| :--- | :--- |
+| Curățare și ungere lanț | Te anunț în ziua termenului. |
+| Verificare plăcuțe de frână | Te anunț cu 3 zile înainte și în ziua termenului. |
+| Schimb lanț | Te anunț cu 7 zile înainte și în ziua termenului. |
+| Service suspensie | Te anunț cu 7 zile înainte. |
+
+### Plante (`plants`)
+
+| Where | Words |
+| :--- | :--- |
+| Udat | Te anunț în ziua termenului. |
+| Fertilizat | Te anunț în ziua termenului. |
+| Schimbat ghiveciul | Te anunț cu 7 zile înainte. |
+
+### Chiriași (`tenancy`)
+
+| Where | Words |
+| :--- | :--- |
+| Se termină contractul de închiriere | Timp să vorbiți despre prelungire sau să cauți alt chiriaș. — Te anunț cu 2 luni înainte. |
+
+### Membri ai familiei (`member`)
+
+No usual deadlines: only „Alt termen”.
+
+### Espressoare (`espresso`)
+
+| Where | Words |
+| :--- | :--- |
+| Curățare grup | Te anunț în ziua termenului. |
+| Decalcifiere | Te anunț cu 3 zile înainte și în ziua termenului. |
+| Schimb filtru de apă | Te anunț cu 3 zile înainte și în ziua termenului. |
+
+### A ta: cu acte, fără facturi, fără revizii
+
+No usual deadlines: only „Alt termen”.
+
+### A ta: cu acte, fără facturi, revizii după timp
+
+| Where | Words |
+| :--- | :--- |
+| Revizie periodică | O dată la 12 luni. — Te anunț cu 14 zile și cu o zi înainte. |
+
+### A ta: cu acte, fără facturi, revizii după kilometri
+
+| Where | Words |
+| :--- | :--- |
+| Revizie periodică | La 10,000 de km sau o dată pe an, ce vine întâi. — Te anunț cu 14 zile și cu o zi înainte. |
+
+### A ta: cu acte, fără facturi, revizii după ore
+
+| Where | Words |
+| :--- | :--- |
+| Revizie periodică | La 100 de ore de motor sau o dată pe an, ce vine întâi. — Te anunț cu 14 zile și cu o zi înainte. |
+
+### A ta: cu acte, cu facturi, fără revizii
+
+No usual deadlines: only „Alt termen”.
+
+### A ta: cu acte, cu facturi, revizii după timp
+
+| Where | Words |
+| :--- | :--- |
+| Revizie periodică | O dată la 12 luni. — Te anunț cu 14 zile și cu o zi înainte. |
+
+### A ta: cu acte, cu facturi, revizii după kilometri
+
+| Where | Words |
+| :--- | :--- |
+| Revizie periodică | La 10,000 de km sau o dată pe an, ce vine întâi. — Te anunț cu 14 zile și cu o zi înainte. |
+
+### A ta: cu acte, cu facturi, revizii după ore
+
+| Where | Words |
+| :--- | :--- |
+| Revizie periodică | La 100 de ore de motor sau o dată pe an, ce vine întâi. — Te anunț cu 14 zile și cu o zi înainte. |
+
+### A ta: fără acte, fără facturi, fără revizii
+
+No usual deadlines: only „Alt termen”.
+
+### A ta: fără acte, fără facturi, revizii după timp
+
+| Where | Words |
+| :--- | :--- |
+| Revizie periodică | O dată la 12 luni. — Te anunț cu 14 zile și cu o zi înainte. |
+
+### A ta: fără acte, fără facturi, revizii după kilometri
+
+| Where | Words |
+| :--- | :--- |
+| Revizie periodică | La 10,000 de km sau o dată pe an, ce vine întâi. — Te anunț cu 14 zile și cu o zi înainte. |
+
+### A ta: fără acte, fără facturi, revizii după ore
+
+| Where | Words |
+| :--- | :--- |
+| Revizie periodică | La 100 de ore de motor sau o dată pe an, ce vine întâi. — Te anunț cu 14 zile și cu o zi înainte. |
+
+### A ta: fără acte, cu facturi, fără revizii
+
+No usual deadlines: only „Alt termen”.
+
+### A ta: fără acte, cu facturi, revizii după timp
+
+| Where | Words |
+| :--- | :--- |
+| Revizie periodică | O dată la 12 luni. — Te anunț cu 14 zile și cu o zi înainte. |
+
+### A ta: fără acte, cu facturi, revizii după kilometri
+
+| Where | Words |
+| :--- | :--- |
+| Revizie periodică | La 10,000 de km sau o dată pe an, ce vine întâi. — Te anunț cu 14 zile și cu o zi înainte. |
+
+### A ta: fără acte, cu facturi, revizii după ore
+
+| Where | Words |
+| :--- | :--- |
+| Revizie periodică | La 100 de ore de motor sau o dată pe an, ce vine întâi. — Te anunț cu 14 zile și cu o zi înainte. |
+
+## A record in Istoric
+
+### What every record shares
+
+| Where | Words |
+| :--- | :--- |
+| Notes | Note · Schimbă nota · Adaugă o notă |
+| Under the stars, when someone did it | Nota intră în stelele celui care a lucrat. |
+| Deleting | Șterge din istoric — Ștergi „Revizie” din istoric? Șterge / Păstrează |
+| What deleting does | Termenul revine la 3 mai 2027, ca și cum nu l-ai fi rezolvat. Se șterge și citirea de 45.724 km notată aici. Ce ai atașat rămâne în dosar. |
+
+### Mașini (`vehicle`)
+
+| Where | Words |
+| :--- | :--- |
+| Vizită la service (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? · Nr. 0001 · deleting: Piesele și prețurile notate aici se șterg de pe acest telefon. |
+| ITP (`inspection`) | Ce s-a verificat · Cine a verificat · Cum a fost (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| RCA (`payment`) | Ce cuprinde · Cui ai plătit · no rating · Factura nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Rovinietă (`inspection`) | Ce s-a verificat · Cine a verificat · Cum a fost (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Revizie periodică (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Schimb de anvelope (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| CASCO (`payment`) | Ce cuprinde · Cui ai plătit · no rating · Factura nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Trusă medicală și stingător (`inspection`) | Ce s-a verificat · Cine a verificat · Cum a fost (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### Locuințe (`home`)
+
+| Where | Words |
+| :--- | :--- |
+| Lucrare (`repair`) | Ce s-a lucrat · Cine a lucrat · Cum a lucrat? · Nr. 0001 · deleting: Ce ai notat aici se șterge de pe acest telefon. |
+| Verificare centrală (VTP) (`inspection`) | Ce s-a verificat · Cine a verificat · Cum a fost (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Verificare instalație de gaze (`inspection`) | Ce s-a verificat · Cine a verificat · Cum a fost (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Revizie instalație de gaze (`inspection`) | Ce s-a verificat · Cine a verificat · Cum a fost (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Asigurare obligatorie (PAD) (`payment`) | Ce cuprinde · Cui ai plătit · no rating · Factura nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Asigurare facultativă (`payment`) | Ce cuprinde · Cui ai plătit · no rating · Factura nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Impozit pe clădire (`payment`) | Ce cuprinde · Cui ai plătit · no rating · Factura nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Curățare coș de fum (`maintenance`) | Ce s-a lucrat · Cine a lucrat · Cum a lucrat? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### Acte (`documents`)
+
+| Where | Words |
+| :--- | :--- |
+| Reînnoire (`note`) | Ce s-a făcut · Cine a lucrat · no rating · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### Animale (`pet`)
+
+| Where | Words |
+| :--- | :--- |
+| Vizită la veterinar (`visit`) | Ce i s-a făcut · Veterinarul · Cum a fost? · Nr. 0001 · deleting: Ce ai notat aici se șterge de pe acest telefon. |
+| Vaccin antirabic (`inspection`) | Ce s-a verificat · Cine a verificat · Cum a fost (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Vaccin anual (`treatment`) | Ce i s-a făcut · Veterinarul · Cum a fost? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Deparazitare internă (`treatment`) | Ce i s-a făcut · Veterinarul · Cum a fost? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Deparazitare externă (`treatment`) | Ce i s-a făcut · Veterinarul · Cum a fost? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Toaletaj (`maintenance`) | Ce i s-a făcut · Veterinarul · Cum a fost? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### Sănătate (`health`)
+
+| Where | Words |
+| :--- | :--- |
+| Vizită la medic (`visit`) | Ce s-a făcut · Medicul sau clinica · Cum a fost? · Nr. 0001 · deleting: Ce ai notat aici se șterge de pe acest telefon. |
+| Analize anuale (`treatment`) | Ce s-a făcut · Medicul sau clinica · Cum a fost? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Control stomatologic (`treatment`) | Ce s-a făcut · Medicul sau clinica · Cum a fost? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Rapel antitetanos (`treatment`) | Ce s-a făcut · Medicul sau clinica · Cum a fost? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Vaccin antigripal (`treatment`) | Ce s-a făcut · Medicul sau clinica · Cum a fost? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Card european de sănătate (`note`) | Ce s-a făcut · Cine a lucrat · no rating · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### Garanții (`purchase`)
+
+| Where | Words |
+| :--- | :--- |
+| Reparație (`repair`) | Ce s-a reparat · Cine a reparat · Cum a lucrat? · Nr. 0001 · deleting: Ce ai notat aici se șterge de pe acest telefon. |
+| Garanția se termină (`note`) | Ce s-a făcut · Cine a lucrat · no rating · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### Abonamente (`subscription`)
+
+| Where | Words |
+| :--- | :--- |
+| Reînnoire anuală (`payment`) | Ce cuprinde · Cui ai plătit · no rating · Factura nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Se termină contractul (`note`) | Ce s-a făcut · Cine a lucrat · no rating · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Se termină perioada minimă (`note`) | Ce s-a făcut · Cine a lucrat · no rating · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Factura de plătit (`payment`) | Ce cuprinde · Cui ai plătit · no rating · Factura nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### Altele (`other`)
+
+| Where | Words |
+| :--- | :--- |
+| Lucrare (`repair`) | Ce s-a lucrat · Cine a lucrat · Cum a lucrat? · Nr. 0001 · deleting: Ce ai notat aici se șterge de pe acest telefon. |
+
+### Biciclete (`bike`)
+
+| Where | Words |
+| :--- | :--- |
+| Vizită la service (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? · Nr. 0001 · deleting: Piesele și prețurile notate aici se șterg de pe acest telefon. |
+| Curățare și ungere lanț (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Verificare plăcuțe de frână (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Schimb lanț (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Service suspensie (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### Plante (`plants`)
+
+| Where | Words |
+| :--- | :--- |
+| Notă (`note`) | Ce s-a făcut · Cine a lucrat · no rating · Nr. 0001 · deleting: Ce ai notat aici se șterge de pe acest telefon. |
+| Udat (`maintenance`) | Ce s-a făcut · Cine a lucrat · Cum a fost (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Fertilizat (`maintenance`) | Ce s-a făcut · Cine a lucrat · Cum a fost (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Schimbat ghiveciul (`maintenance`) | Ce s-a făcut · Cine a lucrat · Cum a fost (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### Chiriași (`tenancy`)
+
+| Where | Words |
+| :--- | :--- |
+| Se termină contractul de închiriere (`note`) | Ce s-a făcut · Cine a lucrat · no rating · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### Espressoare (`espresso`)
+
+| Where | Words |
+| :--- | :--- |
+| Revizie (`maintenance`) | Ce s-a făcut · Cine a lucrat · Cum a fost · Nr. 0001 · deleting: Ce ai notat aici se șterge de pe acest telefon. |
+| Curățare grup (`maintenance`) | Ce s-a făcut · Cine a lucrat · Cum a fost (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Decalcifiere (`maintenance`) | Ce s-a făcut · Cine a lucrat · Cum a fost (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+| Schimb filtru de apă (`maintenance`) | Ce s-a făcut · Cine a lucrat · Cum a fost (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### A ta: cu acte, fără facturi, revizii după timp
+
+| Where | Words |
+| :--- | :--- |
+| Lucrare (`repair`) | Ce s-a lucrat · Cine a lucrat · Cum a lucrat? · Nr. 0001 · deleting: Ce ai notat aici se șterge de pe acest telefon. |
+| Revizie periodică (`maintenance`) | Ce s-a lucrat · Cine a lucrat · Cum a lucrat? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### A ta: cu acte, fără facturi, revizii după kilometri
+
+| Where | Words |
+| :--- | :--- |
+| Vizită la service (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? · Nr. 0001 · deleting: Piesele și prețurile notate aici se șterg de pe acest telefon. |
+| Revizie periodică (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### A ta: cu acte, fără facturi, revizii după ore
+
+| Where | Words |
+| :--- | :--- |
+| Vizită la service (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? · Nr. 0001 · deleting: Piesele și prețurile notate aici se șterg de pe acest telefon. |
+| Revizie periodică (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### A ta: cu acte, cu facturi, revizii după timp
+
+| Where | Words |
+| :--- | :--- |
+| Lucrare (`repair`) | Ce s-a lucrat · Cine a lucrat · Cum a lucrat? · Nr. 0001 · deleting: Ce ai notat aici se șterge de pe acest telefon. |
+| Revizie periodică (`maintenance`) | Ce s-a lucrat · Cine a lucrat · Cum a lucrat? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### A ta: cu acte, cu facturi, revizii după kilometri
+
+| Where | Words |
+| :--- | :--- |
+| Vizită la service (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? · Nr. 0001 · deleting: Piesele și prețurile notate aici se șterg de pe acest telefon. |
+| Revizie periodică (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### A ta: cu acte, cu facturi, revizii după ore
+
+| Where | Words |
+| :--- | :--- |
+| Vizită la service (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? · Nr. 0001 · deleting: Piesele și prețurile notate aici se șterg de pe acest telefon. |
+| Revizie periodică (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### A ta: fără acte, fără facturi, revizii după timp
+
+| Where | Words |
+| :--- | :--- |
+| Lucrare (`repair`) | Ce s-a lucrat · Cine a lucrat · Cum a lucrat? · Nr. 0001 · deleting: Ce ai notat aici se șterge de pe acest telefon. |
+| Revizie periodică (`maintenance`) | Ce s-a lucrat · Cine a lucrat · Cum a lucrat? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### A ta: fără acte, fără facturi, revizii după kilometri
+
+| Where | Words |
+| :--- | :--- |
+| Vizită la service (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? · Nr. 0001 · deleting: Piesele și prețurile notate aici se șterg de pe acest telefon. |
+| Revizie periodică (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### A ta: fără acte, fără facturi, revizii după ore
+
+| Where | Words |
+| :--- | :--- |
+| Vizită la service (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? · Nr. 0001 · deleting: Piesele și prețurile notate aici se șterg de pe acest telefon. |
+| Revizie periodică (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### A ta: fără acte, cu facturi, revizii după timp
+
+| Where | Words |
+| :--- | :--- |
+| Lucrare (`repair`) | Ce s-a lucrat · Cine a lucrat · Cum a lucrat? · Nr. 0001 · deleting: Ce ai notat aici se șterge de pe acest telefon. |
+| Revizie periodică (`maintenance`) | Ce s-a lucrat · Cine a lucrat · Cum a lucrat? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### A ta: fără acte, cu facturi, revizii după kilometri
+
+| Where | Words |
+| :--- | :--- |
+| Vizită la service (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? · Nr. 0001 · deleting: Piesele și prețurile notate aici se șterg de pe acest telefon. |
+| Revizie periodică (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+### A ta: fără acte, cu facturi, revizii după ore
+
+| Where | Words |
+| :--- | :--- |
+| Vizită la service (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? · Nr. 0001 · deleting: Piesele și prețurile notate aici se șterg de pe acest telefon. |
+| Revizie periodică (`maintenance`) | Ce s-a făcut · Service-ul · Cum a lucrat? (only when someone did it) · Nr. 0001 · deleting: Termenul rămâne cum e acum. |
+
+## The section page's pockets
+
+What a section's page says in its pockets and its „Adaugă…” menu while it holds nothing yet: each pocket's line from `SectionPocket.emptyLine` (Istoric's and Oameni's from the category's visit kind, `VisitKind.pocketWords`), what it adds from `PocketAddition.title`. An empty pocket folds into „Adaugă…” (`SectionPageLayout.foldsEmptyPockets`); its line shows with the way back, or while the person adds to it right there.
+
+### What every page shares
+
+| Where | Words |
+| :--- | :--- |
+| The menu's row | Adaugă… |
+| A pocket named after a category of one's own (a car's „Anvelope”) | Nimic din „Anvelope” trecut aici. — Adaugă în „Anvelope” |
+| A section filed under the page | până la 3 mai 2027 / garanție până la 3 mai 2027 |
+| A paper in Acte | Valabil până la 3 mai 2027 / Din 3 mai 2027 |
+| A paper with no title of its own | Factură, Bon, Poliță, Contract, Certificat, Raport, Act de identitate, Certificat de garanție, Manual, Rețetă, Poză, Document |
+| Bani's rows | Pe lună · Ultima factură · În medie, pe factură · În ultimul an · De când îl ai · Preț de cumpărare |
+
+### Mașini (`vehicle`)
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `service` |
+| Its pockets, in order | Urmează · Acte · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Acte, empty | Niciun document. Scanează polița, factura sau certificatul și le găsești aici. — Adaugă un act |
+| Istoric, empty | Nimic notat încă. După fiecare service, notează aici ce s-a făcut, cât a costat și cine a lucrat. — Am fost la service |
+| Oameni, empty | Nimeni încă. Adaugă service-ul sau mecanicul și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### Locuințe (`home`)
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `job` |
+| Its pockets, in order | Urmează · Chiriași · Produse · Abonamente · Plante · Acte · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un chiriaș (Chiriași) · Adaugă un produs (Produse) · Adaugă un abonament (Abonamente) · Adaugă un act (Acte) · Am chemat un meseriaș (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Chiriași, empty | Niciun chiriaș. Adaugă contractul și îți spunem când se termină. — Adaugă un chiriaș |
+| Produse, empty | Niciun produs. Adaugă aragazul sau centrala și ții minte garanția. — Adaugă un produs |
+| Abonamente, empty | Niciun abonament trecut aici. — Adaugă un abonament |
+| Plante, empty (not offered until the household keeps them) | Nicio plantă trecută aici. Adaug-o și îți amintim de udat. — Adaugă o plantă |
+| Acte, empty | Niciun document. Scanează polița, factura sau certificatul și le găsești aici. — Adaugă un act |
+| Istoric, empty | Nimic notat încă. Când vine un meseriaș, notează aici ce a lucrat, cât a costat și cine a fost. — Am chemat un meseriaș |
+| Oameni, empty | Nimeni încă. Adaugă meseriașii la care apelezi și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### Acte (`documents`)
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `none` |
+| Its pockets, in order | Urmează · Acte · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Acte, empty | Niciun document. Scanează polița, factura sau certificatul și le găsești aici. — Adaugă un act |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### Animale (`pet`)
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `vet` |
+| Its pockets, in order | Urmează · Acte · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Am fost la veterinar (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Acte, empty | Niciun document. Scanează polița, factura sau certificatul și le găsești aici. — Adaugă un act |
+| Istoric, empty | Nicio vizită notată încă. După o vizită la veterinar, notează aici ce i s-a făcut, la cine și fișa sau rețeta. — Am fost la veterinar |
+| Oameni, empty | Nimeni încă. Adaugă veterinarul și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### Sănătate (`health`)
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `doctor` |
+| Its pockets, in order | Urmează · Acte · Istoric · Oameni · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Am fost la medic (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Acte, empty | Niciun document. Scanează polița, factura sau certificatul și le găsești aici. — Adaugă un act |
+| Istoric, empty | Nicio vizită notată încă. După o vizită la medic, notează aici la cine, pentru ce și rețeta sau analizele. — Am fost la medic |
+| Oameni, empty | Nimeni încă. Adaugă medicul de familie sau clinica și ai numărul la îndemână. — Adaugă o persoană |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### Garanții (`purchase`)
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `repair` |
+| Its pockets, in order | Urmează · Acte · Istoric · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Am dus la reparat (Istoric) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Acte, empty | Niciun document. Scanează polița, factura sau certificatul și le găsești aici. — Adaugă un act |
+| Istoric, empty | Nicio reparație notată încă. După una, notează aici ce s-a reparat, unde și cât a costat. — Am dus la reparat |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### Abonamente (`subscription`)
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `none` |
+| Its pockets, in order | Urmează · Acte · Istoric · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Acte, empty | Niciun document. Scanează polița, factura sau certificatul și le găsești aici. — Adaugă un act |
+| Istoric, empty (not drawn until it holds something) | Nimic în istoric încă. Aici apare ce rezolvi la termen, cu data și cât a costat. |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### Altele (`other`)
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `job` |
+| Its pockets, in order | Urmează · Acte · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Am chemat un meseriaș (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Acte, empty | Niciun document. Scanează polița, factura sau certificatul și le găsești aici. — Adaugă un act |
+| Istoric, empty | Nimic notat încă. Când vine un meseriaș, notează aici ce a lucrat, cât a costat și cine a fost. — Am chemat un meseriaș |
+| Oameni, empty | Nimeni încă. Adaugă meseriașii la care apelezi și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### Biciclete (`bike`)
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `service` |
+| Its pockets, in order | Urmează · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Istoric, empty | Nimic notat încă. După fiecare service, notează aici ce s-a făcut, cât a costat și cine a lucrat. — Am fost la service |
+| Oameni, empty | Nimeni încă. Adaugă service-ul sau mecanicul și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### Plante (`plants`)
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `note` |
+| Its pockets, in order | Urmează · Istoric · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă o notă (Istoric) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Istoric, empty | Nimic notat încă. Notează aici ce observi, cu data: un boboc nou, o mutare la lumină. — Adaugă o notă |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### Chiriași (`tenancy`)
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `none` |
+| Its pockets, in order | Urmează · Acte · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Acte, empty | Niciun document. Scanează polița, factura sau certificatul și le găsești aici. — Adaugă un act |
+| Oameni, empty | Nimeni încă. Adaugă pe cine suni când e nevoie și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### Membri ai familiei (`member`)
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `none` |
+| Its pockets, in order | Urmează · Acte · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Acte, empty | Niciun document. Scanează polița, factura sau certificatul și le găsești aici. — Adaugă un act / Scanează un document |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### Espressoare (`espresso`)
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `upkeep` |
+| Its pockets, in order | Urmează · Istoric · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Am făcut o revizie (Istoric) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Istoric, empty | Nicio revizie notată încă. După una, notează aici ce s-a făcut și cât a costat, dacă a costat. — Am făcut o revizie |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### A ta: cu acte, fără facturi, fără revizii
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `none` |
+| Its pockets, in order | Urmează · Acte · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Acte, empty | Niciun document. Scanează polița, factura sau certificatul și le găsești aici. — Adaugă un act |
+| Istoric, empty (not drawn until it holds something) | Nimic în istoric încă. Aici apare ce rezolvi la termen, cu data și cât a costat. |
+| Oameni, empty | Nimeni încă. Adaugă pe cine suni când e nevoie și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### A ta: cu acte, fără facturi, revizii după timp
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `job` |
+| Its pockets, in order | Urmează · Acte · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Am chemat un meseriaș (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Acte, empty | Niciun document. Scanează polița, factura sau certificatul și le găsești aici. — Adaugă un act |
+| Istoric, empty | Nimic notat încă. Când vine un meseriaș, notează aici ce a lucrat, cât a costat și cine a fost. — Am chemat un meseriaș |
+| Oameni, empty | Nimeni încă. Adaugă meseriașii la care apelezi și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### A ta: cu acte, fără facturi, revizii după kilometri
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `service` |
+| Its pockets, in order | Urmează · Acte · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Acte, empty | Niciun document. Scanează polița, factura sau certificatul și le găsești aici. — Adaugă un act |
+| Istoric, empty | Nimic notat încă. După fiecare service, notează aici ce s-a făcut, cât a costat și cine a lucrat. — Am fost la service |
+| Oameni, empty | Nimeni încă. Adaugă service-ul sau mecanicul și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### A ta: cu acte, fără facturi, revizii după ore
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `service` |
+| Its pockets, in order | Urmează · Acte · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Acte, empty | Niciun document. Scanează polița, factura sau certificatul și le găsești aici. — Adaugă un act |
+| Istoric, empty | Nimic notat încă. După fiecare service, notează aici ce s-a făcut, cât a costat și cine a lucrat. — Am fost la service |
+| Oameni, empty | Nimeni încă. Adaugă service-ul sau mecanicul și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### A ta: cu acte, cu facturi, fără revizii
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `none` |
+| Its pockets, in order | Urmează · Abonamente · Acte · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un abonament (Abonamente) · Adaugă un act (Acte) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Abonamente, empty | Niciun abonament trecut aici. — Adaugă un abonament |
+| Acte, empty | Niciun document. Scanează polița, factura sau certificatul și le găsești aici. — Adaugă un act |
+| Istoric, empty (not drawn until it holds something) | Nimic în istoric încă. Aici apare ce rezolvi la termen, cu data și cât a costat. |
+| Oameni, empty | Nimeni încă. Adaugă pe cine suni când e nevoie și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### A ta: cu acte, cu facturi, revizii după timp
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `job` |
+| Its pockets, in order | Urmează · Abonamente · Acte · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un abonament (Abonamente) · Adaugă un act (Acte) · Am chemat un meseriaș (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Abonamente, empty | Niciun abonament trecut aici. — Adaugă un abonament |
+| Acte, empty | Niciun document. Scanează polița, factura sau certificatul și le găsești aici. — Adaugă un act |
+| Istoric, empty | Nimic notat încă. Când vine un meseriaș, notează aici ce a lucrat, cât a costat și cine a fost. — Am chemat un meseriaș |
+| Oameni, empty | Nimeni încă. Adaugă meseriașii la care apelezi și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### A ta: cu acte, cu facturi, revizii după kilometri
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `service` |
+| Its pockets, in order | Urmează · Abonamente · Acte · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un abonament (Abonamente) · Adaugă un act (Acte) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Abonamente, empty | Niciun abonament trecut aici. — Adaugă un abonament |
+| Acte, empty | Niciun document. Scanează polița, factura sau certificatul și le găsești aici. — Adaugă un act |
+| Istoric, empty | Nimic notat încă. După fiecare service, notează aici ce s-a făcut, cât a costat și cine a lucrat. — Am fost la service |
+| Oameni, empty | Nimeni încă. Adaugă service-ul sau mecanicul și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### A ta: cu acte, cu facturi, revizii după ore
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `service` |
+| Its pockets, in order | Urmează · Abonamente · Acte · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un abonament (Abonamente) · Adaugă un act (Acte) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Abonamente, empty | Niciun abonament trecut aici. — Adaugă un abonament |
+| Acte, empty | Niciun document. Scanează polița, factura sau certificatul și le găsești aici. — Adaugă un act |
+| Istoric, empty | Nimic notat încă. După fiecare service, notează aici ce s-a făcut, cât a costat și cine a lucrat. — Am fost la service |
+| Oameni, empty | Nimeni încă. Adaugă service-ul sau mecanicul și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### A ta: fără acte, fără facturi, fără revizii
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `none` |
+| Its pockets, in order | Urmează · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Istoric, empty (not drawn until it holds something) | Nimic în istoric încă. Aici apare ce rezolvi la termen, cu data și cât a costat. |
+| Oameni, empty | Nimeni încă. Adaugă pe cine suni când e nevoie și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### A ta: fără acte, fără facturi, revizii după timp
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `job` |
+| Its pockets, in order | Urmează · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Am chemat un meseriaș (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Istoric, empty | Nimic notat încă. Când vine un meseriaș, notează aici ce a lucrat, cât a costat și cine a fost. — Am chemat un meseriaș |
+| Oameni, empty | Nimeni încă. Adaugă meseriașii la care apelezi și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### A ta: fără acte, fără facturi, revizii după kilometri
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `service` |
+| Its pockets, in order | Urmează · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Istoric, empty | Nimic notat încă. După fiecare service, notează aici ce s-a făcut, cât a costat și cine a lucrat. — Am fost la service |
+| Oameni, empty | Nimeni încă. Adaugă service-ul sau mecanicul și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### A ta: fără acte, fără facturi, revizii după ore
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `service` |
+| Its pockets, in order | Urmează · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Istoric, empty | Nimic notat încă. După fiecare service, notează aici ce s-a făcut, cât a costat și cine a lucrat. — Am fost la service |
+| Oameni, empty | Nimeni încă. Adaugă service-ul sau mecanicul și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### A ta: fără acte, cu facturi, fără revizii
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `none` |
+| Its pockets, in order | Urmează · Abonamente · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un abonament (Abonamente) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Abonamente, empty | Niciun abonament trecut aici. — Adaugă un abonament |
+| Istoric, empty (not drawn until it holds something) | Nimic în istoric încă. Aici apare ce rezolvi la termen, cu data și cât a costat. |
+| Oameni, empty | Nimeni încă. Adaugă pe cine suni când e nevoie și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### A ta: fără acte, cu facturi, revizii după timp
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `job` |
+| Its pockets, in order | Urmează · Abonamente · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un abonament (Abonamente) · Am chemat un meseriaș (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Abonamente, empty | Niciun abonament trecut aici. — Adaugă un abonament |
+| Istoric, empty | Nimic notat încă. Când vine un meseriaș, notează aici ce a lucrat, cât a costat și cine a fost. — Am chemat un meseriaș |
+| Oameni, empty | Nimeni încă. Adaugă meseriașii la care apelezi și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### A ta: fără acte, cu facturi, revizii după kilometri
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `service` |
+| Its pockets, in order | Urmează · Abonamente · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un abonament (Abonamente) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Abonamente, empty | Niciun abonament trecut aici. — Adaugă un abonament |
+| Istoric, empty | Nimic notat încă. După fiecare service, notează aici ce s-a făcut, cât a costat și cine a lucrat. — Am fost la service |
+| Oameni, empty | Nimeni încă. Adaugă service-ul sau mecanicul și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+### A ta: fără acte, cu facturi, revizii după ore
+
+| Where | Words |
+| :--- | :--- |
+| Its visits | `service` |
+| Its pockets, in order | Urmează · Abonamente · Istoric · Oameni · Bani · Date importante |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un abonament (Abonamente) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| Urmează, empty | Niciun termen. Adaugă unul ca să îți amintim la timp. — Adaugă un termen |
+| Abonamente, empty | Niciun abonament trecut aici. — Adaugă un abonament |
+| Istoric, empty | Nimic notat încă. După fiecare service, notează aici ce s-a făcut, cât a costat și cine a lucrat. — Am fost la service |
+| Oameni, empty | Nimeni încă. Adaugă service-ul sau mecanicul și ai numărul la îndemână. — Adaugă o persoană |
+| Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
+| Date importante, empty | Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
+
+## Adding a section
+
+### What every category shares
+
+| Where | Words |
+| :--- | :--- |
+| The catalog's title | Ce adaugi? |
+| Its groups | Cele mai des folosite · Alte categorii |
+| A category of one's own | Altceva… — Îi dai tu un nume și alegi ce ține minte. |
+| Its step (its questions are `CustomCategoryForm`'s) | Categorie nouă — Continuă |
+| The first version's step (off, `CustomSectionStep.offersPocketList`) | Cum se numește, „Barca, Rulota, Pianul” · Ce ține minte: Urmează: Termene, cu amintiri din timp. · Acte: Poze și PDF-uri cu actele și facturile. · Istoric: Ce s-a făcut, când și cât a costat. · Oameni: Cine are grijă de el, cu telefonul lui. · Bani: Cât ai cheltuit pe el. · Date importante: Coduri, numere și tot ce cauți des. · Produse: Lucruri cumpărate, cu garanția lor. · Abonamente: Ce plătești lunar sau anual. |
+| The essentials' title | Ce trebuie știut |
+| The deadlines' title | Termene — Alege ce vrei să-ți amintim. Datele le poți schimba oricând. |
+| A ticked deadline asks | Următoarea dată |
+| Finishing without a category | Alege mai întâi ce vrei să adaugi. |
+
+### Mașini (`vehicle`)
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Mașină — ITP, RCA, rovinietă și revizii, cu kilometrajul la zi. · in „Cele mai des folosite” |
+| The essentials' header | Mașini |
+| The name, before anything is typed | Nume, „Mașini” |
+| Under the name | Cum vrei să apară în dosar, de exemplu „Golful”. |
+| What it asks | Număr de înmatriculare · Marcă · Model · An de fabricație · Kilometraj |
+| The essentials' button | Continuă |
+| A deadline: ITP | Te anunț cu o lună și cu 7 zile înainte. / Fără ITP valabil, înmatricularea se suspendă. — (unticked, its date asked) |
+| A deadline: RCA | Te anunț cu o lună și cu 7 zile înainte și în ziua termenului. / Cere oferte cu o lună înainte, prețurile diferă mult. — (unticked, its date asked) |
+| A deadline: Rovinietă | Te anunț cu 7 zile înainte și în ziua termenului. — (unticked, its date asked) |
+| A deadline: Revizie periodică | Te anunț cu 14 zile și cu o zi înainte. — (ticked) |
+| A deadline: Schimb de anvelope | Te anunț cu 14 zile înainte. — (ticked) |
+| A deadline: CASCO | Te anunț cu o lună și cu 7 zile înainte și în ziua termenului. — (unticked, its date asked) |
+| A deadline: Trusă medicală și stingător | Te anunț cu 14 zile înainte și în ziua termenului. / Data expirării e pe ambalaj. — (unticked, its date asked) |
+| Under the deadlines | Pe cele care cer o dată le poți adăuga și mai târziu, din pagina secțiunii sau dintr-o poză a actului. |
+| The deadlines' button | Adaugă în dosar |
+
+### Locuințe (`home`)
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Casă sau apartament — Centrală, gaze, asigurare, impozit și contoare. · in „Cele mai des folosite” |
+| The essentials' header | Locuințe |
+| The name, before anything is typed | Nume, „Locuințe” |
+| Under the name | Cum vrei să apară în dosar, de exemplu „Apartamentul”. |
+| What it asks | Adresă |
+| The essentials' button | Continuă |
+| A deadline: Verificare centrală (VTP) | Te anunț cu o lună și cu 7 zile înainte. / Obligatorie la cel mult 2 ani, făcută de o firmă autorizată ISCIR. — (unticked, its date asked) |
+| A deadline: Verificare instalație de gaze | Te anunț cu o lună și cu 7 zile înainte. — (unticked, its date asked) |
+| A deadline: Revizie instalație de gaze | Te anunț cu 2 luni și cu o lună înainte. — (unticked, its date asked) |
+| A deadline: Asigurare obligatorie (PAD) | Te anunț cu o lună și cu 7 zile înainte și în ziua termenului. — (unticked, its date asked) |
+| A deadline: Asigurare facultativă | Te anunț cu o lună și cu 7 zile înainte și în ziua termenului. — (unticked, its date asked) |
+| A deadline: Impozit pe clădire | Te anunț cu 14 zile și cu o zi înainte. / Plata integrală până la 31 martie poate aduce o reducere. — (ticked) |
+| A deadline: Curățare coș de fum | Te anunț cu 14 zile înainte și în ziua termenului. — (unticked, its date asked) |
+| Under the deadlines | Pe cele care cer o dată le poți adăuga și mai târziu, din pagina secțiunii sau dintr-o poză a actului. |
+| The deadlines' button | Adaugă în dosar |
+
+### Acte (`documents`)
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Un act (buletin, pașaport, permis) — Buletin, pașaport, permis, cu reînnoirea din timp. · in „Alte categorii” |
+| The essentials' header | Acte |
+| The name, before anything is typed | Nume, „Acte” |
+| Under the name | Cum vrei să apară în dosar, de exemplu „Buletinul”. |
+| What it asks | Tip · Valabil până la |
+| Whose it is (added on its own, with people in the binder) | Al cui este — Actele stau grupate pe persoane. |
+| The essentials' button | Continuă |
+| A deadline: Reînnoire | Te anunț cu 3 luni și cu o lună înainte. / Programările durează. Pentru pașaport, multe țări cer 6 luni de valabilitate. — (unticked, its date asked) |
+| Under the deadlines | Pe cele care cer o dată le poți adăuga și mai târziu, din pagina secțiunii sau dintr-o poză a actului. |
+| The deadlines' button | Adaugă în dosar |
+
+### Animale (`pet`)
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Animal de companie — Vaccinuri, deparazitări, greutate și veterinar. · in „Cele mai des folosite” |
+| The essentials' header | Animale |
+| The name, before anything is typed | Nume, „Animale” |
+| Under the name | Cum vrei să apară în dosar, de exemplu „PawPaw”. |
+| What it asks | Specie · Data nașterii |
+| The essentials' button | Continuă |
+| A deadline: Vaccin antirabic | Te anunț cu o zi înainte. / Obligatoriu și cerut la trecerea graniței. — (unticked, its date asked) |
+| A deadline: Vaccin anual | Te anunț cu o zi înainte. — (unticked, its date asked) |
+| A deadline: Deparazitare internă | Te anunț cu o zi înainte și în ziua termenului. — (ticked) |
+| A deadline: Deparazitare externă | Te anunț cu o zi înainte și în ziua termenului. — (ticked) |
+| A deadline: Toaletaj | Te anunț cu 2 zile înainte. — (unticked) |
+| Under the deadlines | Pe cele care cer o dată le poți adăuga și mai târziu, din pagina secțiunii sau dintr-o poză a actului. |
+| The deadlines' button | Adaugă în dosar |
+
+### Sănătate (`health`)
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Sănătate — Analize, controale, vaccinuri și date de urgență. · in „Alte categorii” |
+| The essentials' header | Sănătate |
+| The name, before anything is typed | Nume, „Sănătate” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | (nothing) — Restul detaliilor le completezi oricând din pagina secțiunii, cu Editează. |
+| The essentials' button | Continuă |
+| A deadline: Analize anuale | Te anunț cu 14 zile înainte și în ziua termenului. — (ticked) |
+| A deadline: Control stomatologic | Te anunț cu 7 zile înainte și în ziua termenului. — (ticked) |
+| A deadline: Rapel antitetanos | Te anunț cu o lună înainte și în ziua termenului. — (unticked, its date asked) |
+| A deadline: Vaccin antigripal | Te anunț cu 7 zile înainte și în ziua termenului. — (unticked) |
+| A deadline: Card european de sănătate | Te anunț cu o lună și cu 7 zile înainte. — (unticked, its date asked) |
+| Under the deadlines | Pe cele care cer o dată le poți adăuga și mai târziu, din pagina secțiunii. |
+| The deadlines' button | Adaugă în dosar |
+
+### Garanții (`purchase`)
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Produs cu garanție — Ce ai cumpărat, cât a costat și până când e în garanție. · in „Cele mai des folosite” |
+| The essentials' header | Garanții |
+| The name, before anything is typed | Nume, „Garanții” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | Magazin · Data cumpărării · Preț |
+| The essentials' button | Continuă |
+| A deadline: Garanția se termină | Te anunț cu o lună înainte. / Funcționează totul bine? Acum mai poți reclama gratuit un defect. — (unticked, its date asked) |
+| Under the deadlines | Pe cele care cer o dată le poți adăuga și mai târziu, din pagina secțiunii sau dintr-o poză a actului. |
+| The deadlines' button | Adaugă în dosar |
+
+### Abonamente (`subscription`)
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Abonament — Telefon, internet, gaz și curent: facturile și contractele lor. · in „Cele mai des folosite” |
+| The essentials' header | Abonamente |
+| The name, before anything is typed | Nume, „Abonamente” |
+| Under the name | Cum vrei să apară în dosar, de exemplu „Internetul”. |
+| What it asks | Furnizor · Preț · Se plătește |
+| Where it goes (added on its own, with some in the binder) | Locuința — Apare și pe pagina locuinței. Poți schimba oricând, cu „Mută la…”. |
+| The essentials' button | Continuă |
+| A deadline: Reînnoire anuală | Te anunț cu 14 zile înainte. / Decide dacă îl mai vrei înainte să se plătească singur. — (offered only when Se plătește is „Anual”) |
+| A deadline: Se termină contractul | Te anunț cu o lună înainte. / De obicei prețul crește după. E momentul să ceri o ofertă mai bună. — (unticked, its date asked) |
+| A deadline: Se termină perioada minimă | Te anunț cu o lună înainte și în ziua termenului. / De regulă, de la această dată poți renunța fără penalități, anunțând cu cel mult o lună înainte. E cel mai bun moment să ceri o ofertă mai bună. — (unticked, its date asked) |
+| A deadline: Factura de plătit | Te anunț cu 2 zile înainte și în ziua termenului. / Data vine de pe ultima factură citită. — (unticked, its date asked) |
+| Under the deadlines | Pe cele care cer o dată le poți adăuga și mai târziu, din pagina secțiunii sau dintr-o poză a actului. |
+| The deadlines' button | Adaugă în dosar |
+
+### Altele (`other`)
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Altele — Orice altceva, cu scadențele tale. · in „Alte categorii” |
+| The essentials' header | Altele |
+| The name, before anything is typed | Nume, „Altele” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | (nothing) — Restul detaliilor le completezi oricând din pagina secțiunii, cu Editează. |
+| The essentials' button | Adaugă în dosar |
+
+### Biciclete (`bike`)
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Biciclete — Lanț, frâne și service, după kilometri. · in „Alte categorii” |
+| The essentials' header | Biciclete |
+| The name, before anything is typed | Nume, „Biciclete” |
+| Under the name | Cum vrei să apară în dosar, de exemplu „Bicicleta de oraș”. |
+| What it asks | Marcă · Kilometri parcurși |
+| The essentials' button | Continuă |
+| A deadline: Curățare și ungere lanț | Te anunț în ziua termenului. — (ticked) |
+| A deadline: Verificare plăcuțe de frână | Te anunț cu 3 zile înainte și în ziua termenului. — (ticked) |
+| A deadline: Schimb lanț | Te anunț cu 7 zile înainte și în ziua termenului. — (ticked) |
+| A deadline: Service suspensie | Te anunț cu 7 zile înainte. — (unticked) |
+| The deadlines' button | Adaugă în dosar |
+
+### Plante (`plants`)
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Plante — Udat, fertilizat și schimbat ghiveciul. · in „Alte categorii” |
+| The essentials' header | Plante |
+| The name, before anything is typed | Nume, „Plante” |
+| Under the name | Cum vrei să apară în dosar, de exemplu „Ficusul din sufragerie”. |
+| What it asks | Specie |
+| Where it goes (added on its own, with some in the binder) | Locuința — Apare și pe pagina locuinței. Poți schimba oricând, cu „Mută la…”. |
+| The essentials' button | Continuă |
+| A deadline: Udat | Te anunț în ziua termenului. — (ticked) |
+| A deadline: Fertilizat | Te anunț în ziua termenului. — (ticked) |
+| A deadline: Schimbat ghiveciul | Te anunț cu 7 zile înainte. — (unticked) |
+| The deadlines' button | Adaugă în dosar |
+
+### Chiriași (`tenancy`)
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Chiriași — Contractul, chiria, garanția și indexurile la mutare. · (not offered: added from its parent section's page) |
+| The essentials' header | Chiriași |
+| The name, before anything is typed | Nume, „Chiriași” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | Început contract · Sfârșit contract · Chirie lunară |
+| The essentials' button | Continuă |
+| A deadline: Se termină contractul de închiriere | Te anunț cu 2 luni înainte. / Timp să vorbiți despre prelungire sau să cauți alt chiriaș. — (unticked, its date asked) |
+| Under the deadlines | Pe cele care cer o dată le poți adăuga și mai târziu, din pagina secțiunii. |
+| The deadlines' button | Adaugă în dosar |
+
+### Membri ai familiei (`member`)
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Actele unei persoane — Cui aparțin actele. · in „Cele mai des folosite” |
+| The essentials' header | Membri ai familiei |
+| The name, before anything is typed | Nume, „Membri ai familiei” |
+| Under the name | Cum vrei să apară în dosar, de exemplu „Mama”. |
+| What it asks | (nothing) — Restul detaliilor le completezi oricând din pagina secțiunii, cu Editează. |
+| The essentials' button | Adaugă în dosar |
+
+### Espressoare (`espresso`)
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Espressoare — Curățare, decalcifiere și filtre, după numărul de cafele. · in „Alte categorii” |
+| The essentials' header | Espressoare |
+| The name, before anything is typed | Nume, „Espressoare” |
+| Under the name | Cum vrei să apară în dosar, de exemplu „Espressorul din bucătărie”. |
+| What it asks | Marcă |
+| The essentials' button | Continuă |
+| A deadline: Curățare grup | Te anunț în ziua termenului. — (ticked) |
+| A deadline: Decalcifiere | Te anunț cu 3 zile înainte și în ziua termenului. — (ticked) |
+| A deadline: Schimb filtru de apă | Te anunț cu 3 zile înainte și în ziua termenului. — (ticked) |
+| The deadlines' button | Adaugă în dosar |
+
+### A ta: cu acte, fără facturi, fără revizii
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Categorie · in „Alte categorii” |
+| The essentials' header | Categorie |
+| The name, before anything is typed | Nume, „Categorie” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | (nothing) — Restul detaliilor le completezi oricând din pagina secțiunii, cu Editează. |
+| The essentials' button | Adaugă în dosar |
+
+### A ta: cu acte, fără facturi, revizii după timp
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Categorie · in „Alte categorii” |
+| The essentials' header | Categorie |
+| The name, before anything is typed | Nume, „Categorie” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | (nothing) — Restul detaliilor le completezi oricând din pagina secțiunii, cu Editează. |
+| The essentials' button | Continuă |
+| A deadline: Revizie periodică | Te anunț cu 14 zile și cu o zi înainte. / O dată la 12 luni. — (ticked) |
+| The deadlines' button | Adaugă în dosar |
+
+### A ta: cu acte, fără facturi, revizii după kilometri
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Categorie · in „Alte categorii” |
+| The essentials' header | Categorie |
+| The name, before anything is typed | Nume, „Categorie” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | Kilometraj |
+| The essentials' button | Continuă |
+| A deadline: Revizie periodică | Te anunț cu 14 zile și cu o zi înainte. / La 10,000 de km sau o dată pe an, ce vine întâi. — (ticked) |
+| The deadlines' button | Adaugă în dosar |
+
+### A ta: cu acte, fără facturi, revizii după ore
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Categorie · in „Alte categorii” |
+| The essentials' header | Categorie |
+| The name, before anything is typed | Nume, „Categorie” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | Ore de motor |
+| The essentials' button | Continuă |
+| A deadline: Revizie periodică | Te anunț cu 14 zile și cu o zi înainte. / La 100 de ore de motor sau o dată pe an, ce vine întâi. — (ticked) |
+| The deadlines' button | Adaugă în dosar |
+
+### A ta: cu acte, cu facturi, fără revizii
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Categorie · in „Alte categorii” |
+| The essentials' header | Categorie |
+| The name, before anything is typed | Nume, „Categorie” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | (nothing) — Restul detaliilor le completezi oricând din pagina secțiunii, cu Editează. |
+| The essentials' button | Adaugă în dosar |
+
+### A ta: cu acte, cu facturi, revizii după timp
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Categorie · in „Alte categorii” |
+| The essentials' header | Categorie |
+| The name, before anything is typed | Nume, „Categorie” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | (nothing) — Restul detaliilor le completezi oricând din pagina secțiunii, cu Editează. |
+| The essentials' button | Continuă |
+| A deadline: Revizie periodică | Te anunț cu 14 zile și cu o zi înainte. / O dată la 12 luni. — (ticked) |
+| The deadlines' button | Adaugă în dosar |
+
+### A ta: cu acte, cu facturi, revizii după kilometri
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Categorie · in „Alte categorii” |
+| The essentials' header | Categorie |
+| The name, before anything is typed | Nume, „Categorie” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | Kilometraj |
+| The essentials' button | Continuă |
+| A deadline: Revizie periodică | Te anunț cu 14 zile și cu o zi înainte. / La 10,000 de km sau o dată pe an, ce vine întâi. — (ticked) |
+| The deadlines' button | Adaugă în dosar |
+
+### A ta: cu acte, cu facturi, revizii după ore
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Categorie · in „Alte categorii” |
+| The essentials' header | Categorie |
+| The name, before anything is typed | Nume, „Categorie” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | Ore de motor |
+| The essentials' button | Continuă |
+| A deadline: Revizie periodică | Te anunț cu 14 zile și cu o zi înainte. / La 100 de ore de motor sau o dată pe an, ce vine întâi. — (ticked) |
+| The deadlines' button | Adaugă în dosar |
+
+### A ta: fără acte, fără facturi, fără revizii
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Categorie · in „Alte categorii” |
+| The essentials' header | Categorie |
+| The name, before anything is typed | Nume, „Categorie” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | (nothing) — Restul detaliilor le completezi oricând din pagina secțiunii, cu Editează. |
+| The essentials' button | Adaugă în dosar |
+
+### A ta: fără acte, fără facturi, revizii după timp
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Categorie · in „Alte categorii” |
+| The essentials' header | Categorie |
+| The name, before anything is typed | Nume, „Categorie” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | (nothing) — Restul detaliilor le completezi oricând din pagina secțiunii, cu Editează. |
+| The essentials' button | Continuă |
+| A deadline: Revizie periodică | Te anunț cu 14 zile și cu o zi înainte. / O dată la 12 luni. — (ticked) |
+| The deadlines' button | Adaugă în dosar |
+
+### A ta: fără acte, fără facturi, revizii după kilometri
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Categorie · in „Alte categorii” |
+| The essentials' header | Categorie |
+| The name, before anything is typed | Nume, „Categorie” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | Kilometraj |
+| The essentials' button | Continuă |
+| A deadline: Revizie periodică | Te anunț cu 14 zile și cu o zi înainte. / La 10,000 de km sau o dată pe an, ce vine întâi. — (ticked) |
+| The deadlines' button | Adaugă în dosar |
+
+### A ta: fără acte, fără facturi, revizii după ore
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Categorie · in „Alte categorii” |
+| The essentials' header | Categorie |
+| The name, before anything is typed | Nume, „Categorie” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | Ore de motor |
+| The essentials' button | Continuă |
+| A deadline: Revizie periodică | Te anunț cu 14 zile și cu o zi înainte. / La 100 de ore de motor sau o dată pe an, ce vine întâi. — (ticked) |
+| The deadlines' button | Adaugă în dosar |
+
+### A ta: fără acte, cu facturi, fără revizii
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Categorie · in „Alte categorii” |
+| The essentials' header | Categorie |
+| The name, before anything is typed | Nume, „Categorie” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | (nothing) — Restul detaliilor le completezi oricând din pagina secțiunii, cu Editează. |
+| The essentials' button | Adaugă în dosar |
+
+### A ta: fără acte, cu facturi, revizii după timp
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Categorie · in „Alte categorii” |
+| The essentials' header | Categorie |
+| The name, before anything is typed | Nume, „Categorie” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | (nothing) — Restul detaliilor le completezi oricând din pagina secțiunii, cu Editează. |
+| The essentials' button | Continuă |
+| A deadline: Revizie periodică | Te anunț cu 14 zile și cu o zi înainte. / O dată la 12 luni. — (ticked) |
+| The deadlines' button | Adaugă în dosar |
+
+### A ta: fără acte, cu facturi, revizii după kilometri
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Categorie · in „Alte categorii” |
+| The essentials' header | Categorie |
+| The name, before anything is typed | Nume, „Categorie” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | Kilometraj |
+| The essentials' button | Continuă |
+| A deadline: Revizie periodică | Te anunț cu 14 zile și cu o zi înainte. / La 10,000 de km sau o dată pe an, ce vine întâi. — (ticked) |
+| The deadlines' button | Adaugă în dosar |
+
+### A ta: fără acte, cu facturi, revizii după ore
+
+| Where | Words |
+| :--- | :--- |
+| Its option in the catalog | Categorie · in „Alte categorii” |
+| The essentials' header | Categorie |
+| The name, before anything is typed | Nume, „Categorie” |
+| Under the name | Cum vrei să apară în dosar. |
+| What it asks | Ore de motor |
+| The essentials' button | Continuă |
+| A deadline: Revizie periodică | Te anunț cu 14 zile și cu o zi înainte. / La 100 de ore de motor sau o dată pe an, ce vine întâi. — (ticked) |
+| The deadlines' button | Adaugă în dosar |
+
+## The capture review
+
+What the review says to each kind of document, from the kind's description (`CaptureKindProfile`: its title, its noun and the pronoun it takes, what its day means) and what saving does (`CaptureFilingPlan`, said by `CaptureReminderPreview`). Samples: nothing in the binder, read on 2 noiembrie 2026, its day on 10 iunie 2027 or, passed, 10 mai 2026.
+
+### What every kind shares
+
+| Where | Words |
+| :--- | :--- |
+| The screen | Verifică actul · Salvează · Nu s-a salvat |
+| From De verificat | Mai târziu · Șterge din De verificat · Ce ai schimbat nu se salvează. Actul rămâne în De verificat. |
+| The thumbnail (VoiceOver) | Vezi actul mare — Se deschide pe tot ecranul. Poți mări sau roti pagina. |
+| Its kind | Nu e asta? Schimbă · Ce act e · Pe telefon părea: Pașaport · Codul de jos al actului arată: Pașaport |
+| How it was read | Citit pe telefon. Nimic n-a plecat de aici. / Citit pe telefon, cu Apple Intelligence. / Citit și cu Gemini, cu cheia ta. |
+| The photo's frame | Am păstrat doar actul, fără ce e în jur. Folosește poza întreagă / Se păstrează poza întreagă. Doar actul |
+| Where it goes | Alege alta · Verifică: Adresa locului de consum seamănă cu cea a locuinței, dar nu e chiar aceeași. / Adresa locului de consum nu e cea a locuinței. |
+| Kept in no section | Doar păstrez actul — Îl găsești în Caută. |
+| Filed under a section | Actul stă la actele acestei persoane. / La abonamentul „Gaze Apartament” / Abonament nou aici: Gaze Apartament / Abonament la Apartament |
+| A new section | Persoană nouă: Exemplu Ion — Se adaugă în Acte când salvezi. / Abonament nou: Gaze Apartament / Secțiune nouă în Mașini — Se creează când salvezi. / Se creează când salvezi, cu abonamentul „Gaze Apartament”. |
+| A new section's name | Numele persoanei / Numele abonamentului / Numele locuinței / Numele secțiunii noi |
+| A section that has gone | Secțiune ștearsă |
+| The place picker | Doar păstrez actul — Fără secțiune; îl găsești în Caută. · Persoană nouă — Actele stau grupate pe persoane. · Secțiune nouă în „Mașini” — Completezi ce trebuie, apoi pun actul acolo. · Altă secțiune… — Toate secțiunile din dosar. |
+| The place picker, every section | Toate secțiunile · Secțiune nouă — Alegi ce fel de secțiune, apoi pun actul acolo. · Ce fel de secțiune · Exemplu · La abonamentul de aici, sau unul nou · Ales · Închide |
+| When it reminds | Când te anunț · Schimbă ziua (Arată ziua de pe act, ca s-o poți schimba.) · Poți schimba după, pe pagina termenului. |
+| More notices | Mai e o observație / Mai sunt 2 observații |
+| The same photo | Ai mai adăugat poza asta — Dacă salvezi, o pun la locul ales, împreună cu ce am citit. Vezi unde e acum |
+| The card's back | Fotografiază spatele · Alege din poze · Citesc și spatele… · Nu am putut citi spatele · Poza nu s-a putut deschide. Încearcă din nou. |
+| The code didn't read | Verifică numărul și datele — Codul de jos al actului nu s-a citit sigur. |
+| The provider didn't read it | Google Gemini nu a citit actul |
+| Hard to read | Poza e greu de citit — O poză nouă, dreaptă și fără reflexii, ajută. |
+| A long PDF | Am citit primele 10 pagini — E un document lung. Se păstrează tot, cu toate paginile. |
+| Sending the photo | Trimit poza la Google Gemini? Nu sunt sigur ce am citit. Google Gemini poate citi actul mai bine, cu cheia ta. Fără un da, poza rămâne pe telefon. · Trimite poza / Nu, rămâne pe telefon · Cum folosește Google Gemini ce trimiți |
+| Reading it again | Citește mai bine cu Gemini · Citesc cu Gemini… |
+| What was read | Ce am citit — Verifică ce e marcat. · Numele actului · Nu am găsit pe act: Adaugă: Total |
+| Where a value came from | Din act: „Total de plată 245,30” (Citit din: Total de plată 245,30) |
+| Another reader's value | Pe telefon am citit: 123456 / Gemini a citit: 123456 / Modelul tău a citit: 123456 · Folosește-l (Folosește: Pe telefon am citit: 123456) |
+
+### Pașaport (`passport`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Pașaport |
+| Where it goes: the summary's heading and the picker's title | Unde îl pun |
+| Where it goes, with nothing in the binder | Secțiune nouă în Acte — Se creează când salvezi. — field „Numele secțiunii noi” |
+| What its day means | Expiră pe 3 mai 2027. |
+| When it reminds, its day to come | Expiră pe 10 iunie 2027. Bun de călătorit până pe 10 decembrie. Te anunț cu 3 luni înainte de ultima zi bună de călătorit și în ziua aceea. |
+| Its place not chosen yet | Expiră pe 10 iunie 2027. Alege unde îl pui ca să te anunț din timp. |
+| Its day passed | Expiră pe 10 mai. Bun de călătorit până pe 10 noiembrie 2025. Te anunț cu 3 luni înainte de ultima zi bună de călătorit și în ziua aceea. |
+| Nothing read off it | Nu am găsit date pe pașaport. Îl păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe pașaport scrie: 123456 |
+| What its machine-readable code says | În codul de jos al actului scrie: 123456 |
+| Under „Citește mai bine” | Poza actului se trimite la Google Gemini, cu cheia ta. |
+
+### Carte de identitate (`identityCard`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Carte de identitate |
+| Where it goes: the summary's heading and the picker's title | Unde o pun |
+| Where it goes, with nothing in the binder | Secțiune nouă în Acte — Se creează când salvezi. — field „Numele secțiunii noi” |
+| What its day means | Expiră pe 3 mai 2027. |
+| When it reminds, its day to come | Expiră pe 10 iunie 2027. Te anunț cu 3 luni și cu o lună înainte. |
+| Its place not chosen yet | Expiră pe 10 iunie 2027. Alege unde o pui ca să te anunț din timp. |
+| Its day passed | Expiră pe 10 mai. Te anunț cu 3 luni și cu o lună înainte. |
+| Nothing read off it | Nu am găsit date pe cartea de identitate. O păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe cartea de identitate scrie: 123456 |
+| What its machine-readable code says | Pe spatele actului scrie: 123456 |
+| Its back | Ai și o poză cu spatele? Acolo e codul care confirmă datele. |
+| Under „Citește mai bine” | Poza actului se trimite la Google Gemini, cu cheia ta. |
+
+### Permis de conducere (`drivingLicence`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Permis de conducere |
+| Where it goes: the summary's heading and the picker's title | Unde îl pun |
+| Where it goes, with nothing in the binder | Secțiune nouă în Acte — Se creează când salvezi. — field „Numele secțiunii noi” |
+| What its day means | Expiră pe 3 mai 2027. |
+| When it reminds, its day to come | Expiră pe 10 iunie 2027. Te anunț cu 2 luni și cu o lună înainte. |
+| Its place not chosen yet | Expiră pe 10 iunie 2027. Alege unde îl pui ca să te anunț din timp. |
+| Its day passed | Expiră pe 10 mai. Te anunț cu 2 luni și cu o lună înainte. |
+| Nothing read off it | Nu am găsit date pe permisul de conducere. Îl păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe permisul de conducere scrie: 123456 |
+| What its machine-readable code says | În codul de jos al actului scrie: 123456 |
+| Under „Citește mai bine” | Poza actului se trimite la Google Gemini, cu cheia ta. |
+
+### Cazier (`criminalRecord`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Cazier |
+| Where it goes: the summary's heading and the picker's title | Unde îl pun |
+| Where it goes, with nothing in the binder | Secțiune nouă în Acte — Se creează când salvezi. — field „Numele secțiunii noi” |
+| What its day means | Expiră pe 3 mai 2027. |
+| When it reminds, its day to come | Expiră pe 10 iunie 2027. Te anunț cu 7 zile înainte și în ziua termenului. |
+| Its place not chosen yet | Expiră pe 10 iunie 2027. Alege unde îl pui ca să te anunț din timp. |
+| Its day passed | Expiră pe 10 mai. Data a trecut, așa că nu îți mai amintesc. |
+| Nothing read off it | Nu am găsit date pe cazier. Îl păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe cazier scrie: 123456 |
+| Under „Citește mai bine” | Poza actului se trimite la Google Gemini, cu cheia ta. |
+
+### Card european de sănătate (`healthInsuranceCard`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Card european de sănătate |
+| Where it goes: the summary's heading and the picker's title | Unde îl pun |
+| Where it goes, with nothing in the binder | Secțiune nouă în Acte — Se creează când salvezi. — field „Numele secțiunii noi” |
+| What its day means | Expiră pe 3 mai 2027. |
+| When it reminds, its day to come | Expiră pe 10 iunie 2027. Te anunț cu o lună și cu 7 zile înainte. |
+| Its place not chosen yet | Expiră pe 10 iunie 2027. Alege unde îl pui ca să te anunț din timp. |
+| Its day passed | Expiră pe 10 mai. Data a trecut, așa că nu îți mai amintesc. |
+| Nothing read off it | Nu am găsit date pe cardul de sănătate. Îl păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe cardul de sănătate scrie: 123456 |
+| Under „Citește mai bine” | Poza actului se trimite la Google Gemini, cu cheia ta. |
+
+### Card bancar (`bankCard`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Card bancar |
+| Where it goes: the summary's heading and the picker's title | Unde îl pun |
+| Where it goes, with nothing in the binder | Secțiune nouă în Acte — Se creează când salvezi. — field „Numele secțiunii noi” |
+| What its day means | Expiră pe 3 mai 2027. |
+| When it reminds, its day to come | Expiră pe 10 iunie 2027. Te anunț cu o lună înainte și în ziua termenului. |
+| Its place not chosen yet | Expiră pe 10 iunie 2027. Alege unde îl pui ca să te anunț din timp. |
+| Its day passed | Expiră pe 10 mai. Data a trecut, așa că nu îți mai amintesc. |
+| Nothing read off it | Nu am găsit date pe cardul bancar. Îl păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe cardul bancar scrie: 123456 |
+| Under „Citește mai bine” | Cardurile bancare se citesc doar pe telefon. |
+
+### Carte verde (`greenCard`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Carte verde |
+| Where it goes: the summary's heading and the picker's title | Unde o pun |
+| Where it goes, with nothing in the binder | Secțiune nouă în Acte — Se creează când salvezi. — field „Numele secțiunii noi” |
+| What its day means | Expiră pe 3 mai 2027. |
+| When it reminds, its day to come | Expiră pe 10 iunie 2027. Te anunț cu o lună și cu 7 zile înainte. |
+| Its place not chosen yet | Expiră pe 10 iunie 2027. Alege unde o pui ca să te anunț din timp. |
+| Its day passed | Expiră pe 10 mai. Te anunț cu o lună și cu 7 zile înainte. |
+| Nothing read off it | Nu am găsit date pe cartea verde. O păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe cartea verde scrie: 123456 |
+| Under „Citește mai bine” | Poza actului se trimite la Google Gemini, cu cheia ta. |
+
+### Semnătură electronică (`electronicSignature`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Semnătură electronică |
+| Where it goes: the summary's heading and the picker's title | Unde o pun |
+| Where it goes, with nothing in the binder | Secțiune nouă în Acte — Se creează când salvezi. — field „Numele secțiunii noi” |
+| What its day means | Expiră pe 3 mai 2027. |
+| When it reminds, its day to come | Expiră pe 10 iunie 2027. Te anunț cu o lună și cu 7 zile înainte. |
+| Its place not chosen yet | Expiră pe 10 iunie 2027. Alege unde o pui ca să te anunț din timp. |
+| Its day passed | Expiră pe 10 mai. Data a trecut, așa că nu îți mai amintesc. |
+| Nothing read off it | Nu am găsit date pe semnătura electronică. O păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe semnătura electronică scrie: 123456 |
+| Under „Citește mai bine” | Poza actului se trimite la Google Gemini, cu cheia ta. |
+
+### Talon (certificat de înmatriculare) (`vehicleRegistration`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Talon (certificat de înmatriculare) |
+| Where it goes: the summary's heading and the picker's title | Unde îl pun |
+| Where it goes, with nothing in the binder | Secțiune nouă în Mașini — Se creează când salvezi. — field „Numele secțiunii noi” |
+| When it reminds | (sets no deadline: no reminder line) |
+| Nothing read off it | Nu am găsit date pe talon. Îl păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe talon scrie: 123456 |
+| Under „Citește mai bine” | Prima pagină se trimite la Google Gemini, cu cheia ta. |
+
+### Poliță RCA (`rcaPolicy`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Poliță RCA |
+| Where it goes: the summary's heading and the picker's title | Unde o pun |
+| Where it goes, with nothing in the binder | Secțiune nouă în Mașini — Se creează când salvezi. — field „Numele secțiunii noi” |
+| What its day means | Expiră pe 3 mai 2027. |
+| When it reminds, its day to come | Expiră pe 10 iunie 2027. Te anunț cu o lună și cu 7 zile înainte și în ziua termenului. |
+| Its place not chosen yet | Expiră pe 10 iunie 2027. Alege unde o pui ca să te anunț din timp. |
+| Its day passed | Expiră pe 10 mai. Data a trecut, așa că nu îți mai amintesc. |
+| Its bonus-malus class | Clasa bonus-malus o păstrez la Exemplu Ion: e a celui asigurat, nu a mașinii. / Clasa bonus-malus n-o păstrez: pe poliță nu scrie cine e asiguratul. / Clasa bonus-malus n-o păstrez: Exemplu Ion nu e printre persoanele din dosar. Adaugă persoana și citește polița din nou. |
+| Nothing read off it | Nu am găsit date pe poliță. O păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe poliță scrie: 123456 |
+| Under „Citește mai bine” | Prima pagină se trimite la Google Gemini, cu cheia ta. |
+
+### Poliță de asigurare (`insurancePolicy`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Poliță de asigurare |
+| Where it goes: the summary's heading and the picker's title | Unde o pun |
+| Where it goes, with nothing in the binder | Secțiune nouă în Locuințe — Se creează când salvezi. — field „Numele secțiunii noi” |
+| What its day means | Expiră pe 3 mai 2027. |
+| When it reminds, its day to come | Expiră pe 10 iunie 2027. Te anunț cu o lună și cu 7 zile înainte și în ziua termenului. |
+| Its place not chosen yet | Expiră pe 10 iunie 2027. Alege unde o pui ca să te anunț din timp. |
+| Its day passed | Expiră pe 10 mai. Data a trecut, așa că nu îți mai amintesc. |
+| Its bonus-malus class | Clasa bonus-malus o păstrez la Exemplu Ion: e a celui asigurat, nu a mașinii. / Clasa bonus-malus n-o păstrez: pe poliță nu scrie cine e asiguratul. / Clasa bonus-malus n-o păstrez: Exemplu Ion nu e printre persoanele din dosar. Adaugă persoana și citește polița din nou. |
+| Nothing read off it | Nu am găsit date pe poliță. O păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe poliță scrie: 123456 |
+| Under „Citește mai bine” | Prima pagină se trimite la Google Gemini, cu cheia ta. |
+
+### Factură de utilități (`utilityInvoice`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Factură de utilități |
+| Where it goes: the summary's heading and the picker's title | Unde o pun |
+| Where it goes, with nothing in the binder | Abonament nou: Gaz – ENGIE Romania S.A. — Se creează când salvezi. — field „Numele abonamentului” |
+| What its day means | De plătit până pe 3 mai 2027. |
+| When it reminds, its day to come | De plătit până pe 10 iunie 2027. Te anunț cu 2 zile înainte și în ziua termenului. |
+| Its place not chosen yet | De plătit până pe 10 iunie 2027. Alege abonamentul ei ca să îți amintesc s-o plătești. |
+| Its day passed | De plătit până pe 10 mai. Data a trecut, așa că nu îți mai amintesc. |
+| Reminded to pay it | Amintește-mi să o plătesc |
+| The bank pays it | Plătesc prin debit direct — Pe factură scrie: „Plata se face prin debit direct.”. Dacă e așa, nu îți mai amintesc să plătești facturile. |
+| Its meter index | Indexul 12.345 m³ se trece la „Gaze Apartament”. / Indexul estimat 12.345 m³ se trece la „Gaze Apartament”. Se socotește până vine citirea reală. / Indexul 12.345 m³ e deja trecut la „Gaze Apartament”. / Indexul nu-l trec: nu știu dacă e de gaz, de curent sau de apă. |
+| Nothing read off it | Nu am găsit date pe factură. O păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe factură scrie: 123456 |
+| Under „Citește mai bine” | Prima pagină se trimite la Google Gemini, cu cheia ta. |
+
+### Contract sau act adițional (`contract`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Contract sau act adițional |
+| Where it goes: the summary's heading and the picker's title | Unde îl pun |
+| Where it goes, with nothing in the binder | Abonament nou: Gaz – ENGIE Romania S.A. — Se creează când salvezi. — field „Numele abonamentului” |
+| What its day means | Perioada minimă se termină pe 3 mai 2027. De atunci poți, de regulă, renunța fără penalități. |
+| When it reminds, its day to come | Perioada minimă se termină pe 10 iunie 2027. De atunci poți, de regulă, renunța fără penalități. Te anunț cu o lună înainte și în ziua termenului. |
+| Its place not chosen yet | Perioada minimă se termină pe 10 iunie 2027. De atunci poți, de regulă, renunța fără penalități. Alege unde îl pui ca să te anunț din timp. |
+| Its day passed | Perioada minimă s-a terminat pe 10 mai. De regulă, poți renunța oricând, anunțând cu cel mult o lună înainte. |
+| The bank pays it | Plătesc prin debit direct — Pe contract scrie: „Plata se face prin debit direct.”. Dacă e așa, nu îți mai amintesc să plătești facturile. |
+| Its meter index | Indexul 12.345 m³ se trece la „Gaze Apartament”. / Indexul estimat 12.345 m³ se trece la „Gaze Apartament”. Se socotește până vine citirea reală. / Indexul 12.345 m³ e deja trecut la „Gaze Apartament”. / Indexul nu-l trec: nu știu dacă e de gaz, de curent sau de apă. |
+| Nothing read off it | Nu am găsit date pe contract. Îl păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe contract scrie: 123456 |
+| Under „Citește mai bine” | Prima pagină se trimite la Google Gemini, cu cheia ta. |
+
+### Factură de service (`serviceInvoice`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Factură de service |
+| Where it goes: the summary's heading and the picker's title | Unde o pun |
+| Where it goes, with nothing in the binder | Secțiune nouă în Mașini — Se creează când salvezi. — field „Numele secțiunii noi” |
+| When it reminds | (sets no deadline: no reminder line) |
+| Nothing read off it | Nu am găsit date pe factură. O păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe factură scrie: 123456 |
+| Under „Citește mai bine” | Prima pagină se trimite la Google Gemini, cu cheia ta. |
+
+### Bon fiscal (`fiscalReceipt`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Bon fiscal |
+| Where it goes: the summary's heading and the picker's title | Unde îl pun |
+| Where it goes, with nothing in the binder | Secțiune nouă în Garanții — Se creează când salvezi. — field „Numele secțiunii noi” |
+| What its day means | Garanția se termină pe 3 mai 2027. |
+| When it reminds, its day to come | Garanția se termină pe 10 iunie 2027. Te anunț cu o lună înainte. |
+| Its place not chosen yet | Garanția se termină pe 10 iunie 2027. Alege unde îl pui ca să te anunț din timp. |
+| Its day passed | Garanția se termină pe 10 mai. Data a trecut, așa că nu îți mai amintesc. |
+| Nothing read off it | Nu am găsit date pe bon. Îl păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe bon scrie: 123456 |
+| Under „Citește mai bine” | Prima pagină se trimite la Google Gemini, cu cheia ta. |
+
+### Certificat de garanție (`warrantyCertificate`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Certificat de garanție |
+| Where it goes: the summary's heading and the picker's title | Unde îl pun |
+| Where it goes, with nothing in the binder | Secțiune nouă în Garanții — Se creează când salvezi. — field „Numele secțiunii noi” |
+| What its day means | Garanția se termină pe 3 mai 2027. |
+| When it reminds, its day to come | Garanția se termină pe 10 iunie 2027. Te anunț cu o lună înainte. |
+| Its place not chosen yet | Garanția se termină pe 10 iunie 2027. Alege unde îl pui ca să te anunț din timp. |
+| Its day passed | Garanția se termină pe 10 mai. Data a trecut, așa că nu îți mai amintesc. |
+| Nothing read off it | Nu am găsit date pe certificat. Îl păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe certificat scrie: 123456 |
+| Under „Citește mai bine” | Prima pagină se trimite la Google Gemini, cu cheia ta. |
+
+### Raport ITP (`itpReport`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Raport ITP |
+| Where it goes: the summary's heading and the picker's title | Unde îl pun |
+| Where it goes, with nothing in the binder | Secțiune nouă în Mașini — Se creează când salvezi. — field „Numele secțiunii noi” |
+| What its day means | ITP-ul e valabil până pe 3 mai 2027. |
+| When it reminds, its day to come | ITP-ul e valabil până pe 10 iunie 2027. Te anunț cu o lună și cu 7 zile înainte. |
+| Its place not chosen yet | ITP-ul e valabil până pe 10 iunie 2027. Alege unde îl pui ca să te anunț din timp. |
+| Its day passed | ITP-ul e valabil până pe 10 mai. Data a trecut, așa că nu îți mai amintesc. |
+| Nothing read off it | Nu am găsit date pe raport. Îl păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe raport scrie: 123456 |
+| Under „Citește mai bine” | Prima pagină se trimite la Google Gemini, cu cheia ta. |
+
+### Fișă de la veterinar (`veterinaryRecord`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Fișă de la veterinar |
+| Where it goes: the summary's heading and the picker's title | Unde o pun |
+| Where it goes, with nothing in the binder | Secțiune nouă în Animale — Se creează când salvezi. — field „Numele secțiunii noi” |
+| What its day means | Următoarea doză e pe 3 mai 2027. |
+| When it reminds, its day to come | Următoarea doză e pe 10 iunie 2027. Te anunț cu o zi înainte. |
+| Its place not chosen yet | Următoarea doză e pe 10 iunie 2027. Alege unde o pui ca să te anunț din timp. |
+| Its day passed | Următoarea doză e pe 10 mai. Data a trecut, așa că nu îți mai amintesc. |
+| Nothing read off it | Nu am găsit date pe fișă. O păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe fișă scrie: 123456 |
+| Under „Citește mai bine” | Prima pagină se trimite la Google Gemini, cu cheia ta. |
+
+### Rezultat medical (`medicalResult`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Rezultat medical |
+| Where it goes: the summary's heading and the picker's title | Unde îl pun |
+| Where it goes, with nothing in the binder | Secțiune nouă în Sănătate — Se creează când salvezi. — field „Numele secțiunii noi” |
+| When it reminds | (sets no deadline: no reminder line) |
+| Nothing read off it | Nu am găsit date pe rezultat. Îl păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe rezultat scrie: 123456 |
+| Under „Citește mai bine” | Prima pagină se trimite la Google Gemini, cu cheia ta. |
+
+### Alt document (`other`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Alt document |
+| Where it goes: the summary's heading and the picker's title | Unde îl pun |
+| Where it goes, with nothing in the binder | Doar păstrez actul — Îl găsești în Caută. |
+| When it reminds | (sets no deadline: no reminder line) |
+| Nothing read off it | Nu am găsit date pe document. Îl păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe document scrie: 123456 |
+| Under „Citește mai bine” | Prima pagină se trimite la Google Gemini, cu cheia ta. |

@@ -36,6 +36,39 @@ struct CaptureKindProfile: Sendable {
         case product
     }
 
+    /// What the day a document's deadline follows means, said once per kind by the review
+    /// (`CaptureReminderPreview`): an ITP report's expiry is the day its inspection stops being
+    /// valid, a bill's due date the day to pay it by.
+    enum DayMeaning: Sendable, CaseIterable {
+        /// „Expiră pe 12 august 2031.”: an identity document, a policy.
+        case expires
+        /// „ITP-ul e valabil până pe …”: an inspection report.
+        case inspectionValidUntil
+        /// „De plătit până pe …”: a bill.
+        case payBy
+        /// „Perioada minimă se termină pe …”: a contract.
+        case minimumPeriodEnds
+        /// „Garanția se termină pe …”: a receipt, a warranty certificate.
+        case warrantyEnds
+        /// „Următoarea doză e pe …”: a vet's record.
+        case nextDose
+    }
+
+    /// The paper's noun as the review's sentences use it: after „pe” („Pe factură scrie”,
+    /// „Nu am găsit date pe cartea de identitate”), and which pronoun it takes, so „O păstrez”
+    /// never follows a contract (`CompletionShape.Paper.Gender`, the one list of genders).
+    struct Noun: Sendable {
+        /// After „pe”: „factură”, „contract”, „cartea de identitate”.
+        let afterPe: LocalizedStringResource
+        /// „O pun” for a bill or a policy, „îl pun” for a contract or a report.
+        let gender: CompletionShape.Paper.Gender
+
+        init(_ afterPe: LocalizedStringResource, _ gender: CompletionShape.Paper.Gender) {
+            self.afterPe = afterPe
+            self.gender = gender
+        }
+    }
+
     let kind: CaptureDocumentKind
     /// The built-in category a document of this kind is filed in, when it has one. For a
     /// policy, the category follows its cover (`deadline(cover:hasVehicle:)`).
@@ -50,6 +83,9 @@ struct CaptureKindProfile: Sendable {
     let defaultCover: String?
     /// The field whose day the deadline follows: an expiry, a due date, the next dose.
     let deadlineField: CaptureFieldKey?
+    /// What that day means, as the review says it ("Expiră pe", "De plătit până pe"); nil
+    /// exactly when there is no such field (`ReviewCopyRulesTests`).
+    let dayMeaning: DayMeaning?
     /// The fields that date the document itself, first found wins.
     let documentDateFields: [CaptureFieldKey]
     /// How the filed document is kept.
@@ -72,6 +108,9 @@ struct CaptureKindProfile: Sendable {
     let identifierKeys: [CaptureFieldKey]
     /// What the kind is called, in a few words, for the review's header.
     let name: LocalizedStringResource
+    /// How the review names the paper inside a sentence, and the pronoun its noun takes
+    /// („Unde o pun” for a bill, „Unde îl pun” for a contract).
+    let noun: Noun
     let titleRule: TitleRule
     /// What the language models are told this kind is.
     let modelDescription: String
@@ -218,6 +257,14 @@ struct CaptureKindProfile: Sendable {
         return (templateKey, blueprintKey)
     }
 
+    /// Whether a photo of some kind of document sets this deadline of this category (an ITP
+    /// report the car's ITP, a policy the deadline of its cover): what "Adaugă o secțiune" says
+    /// a deadline left for later can come from (`AddSectionForm.laterNote(for:)`).
+    static func photoSetsDeadline(_ blueprintKey: String, inCategory templateKey: String) -> Bool {
+        if coverDeadlines.values.contains(where: { $0.templateKey == templateKey && $0.blueprintKey == blueprintKey }) { return true }
+        return all.contains { $0.templateKey == templateKey && $0.blueprintKey == blueprintKey }
+    }
+
     /// The category it is filed in, its cover taken into account.
     func filedTemplateKey(cover: String?) -> String? {
         deadline(cover: cover)?.templateKey ?? templateKey
@@ -254,133 +301,143 @@ struct CaptureKindProfile: Sendable {
     private static let issuedOn: [CaptureFieldKey] = [.issueDate, .startDate, .purchaseDate]
 
     static let all: [CaptureKindProfile] = [
-        identity(.passport, type: DocumentType.passport, name: "Pașaport", model: "passport data page", isIdentityDocument: true),
-        identity(.identityCard, type: DocumentType.idCard, name: "Carte de identitate", model: "identity card", isIdentityDocument: true,
-                 hasMachineReadableBack: true),
-        identity(.drivingLicence, type: DocumentType.drivingLicence, name: "Permis de conducere", model: "EU driving licence", isIdentityDocument: true),
-        identity(.criminalRecord, type: DocumentType.criminalRecord, name: "Cazier",
+        identity(.passport, type: DocumentType.passport, name: "Pașaport", noun: Noun("pașaport", .masculine),
+                 model: "passport data page", isIdentityDocument: true),
+        identity(.identityCard, type: DocumentType.idCard, name: "Carte de identitate", noun: Noun("cartea de identitate", .feminine),
+                 model: "identity card", isIdentityDocument: true, hasMachineReadableBack: true),
+        identity(.drivingLicence, type: DocumentType.drivingLicence, name: "Permis de conducere", noun: Noun("permisul de conducere", .masculine),
+                 model: "EU driving licence", isIdentityDocument: true),
+        identity(.criminalRecord, type: DocumentType.criminalRecord, name: "Cazier", noun: Noun("cazier", .masculine),
                  model: "Romanian criminal record certificate (certificat de cazier judiciar, fiscal or auto)"),
-        identity(.healthInsuranceCard, type: DocumentType.euHealthCard, name: "Card european de sănătate", model: "European health insurance card"),
-        identity(.bankCard, type: DocumentType.bankCard, name: "Card bancar",
+        identity(.healthInsuranceCard, type: DocumentType.euHealthCard, name: "Card european de sănătate", noun: Noun("cardul de sănătate", .masculine),
+                 model: "European health insurance card"),
+        identity(.bankCard, type: DocumentType.bankCard, name: "Card bancar", noun: Noun("cardul bancar", .masculine),
                  model: "bank card (debit or credit); never copy its full number, only its last four digits", photoIsOptIn: true,
                  cardNumberCues: bankCardCues),
-        identity(.greenCard, type: DocumentType.greenCard, name: "Carte verde",
+        identity(.greenCard, type: DocumentType.greenCard, name: "Carte verde", noun: Noun("cartea verde", .feminine),
                  model: "green card (international motor insurance card, carte verde), not the RCA policy itself"),
-        identity(.electronicSignature, type: DocumentType.eSignature, name: "Semnătură electronică",
+        identity(.electronicSignature, type: DocumentType.eSignature, name: "Semnătură electronică", noun: Noun("semnătura electronică", .feminine),
                  model: "qualified electronic signature certificate (certificat calificat de semnătură electronică)"),
         CaptureKindProfile(
             kind: .vehicleRegistration, templateKey: BuiltInTemplates.Key.vehicle, filing: .newSection, blueprintKey: nil,
-            readsCover: false, defaultCover: nil, deadlineField: nil, documentDateFields: issuedOn,
+            readsCover: false, defaultCover: nil, deadlineField: nil, dayMeaning: nil, documentDateFields: issuedOn,
             documentKind: .identity, documentType: nil, trade: nil,
             expectedKeys: [.licensePlate, .vin, .civNumber, .make, .model, .firstRegistrationDate],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: [.licensePlate, .vin],
-            name: "Talon (certificat de înmatriculare)", titleRule: .fixed("Certificat de înmatriculare"), modelDescription: "vehicle registration certificate", sectionName: .vehicle,
+            name: "Talon (certificat de înmatriculare)", noun: Noun("talon", .masculine), titleRule: .fixed("Certificat de înmatriculare"),
+            modelDescription: "vehicle registration certificate", sectionName: .vehicle,
             labels: registrationLabels
         ),
         CaptureKindProfile(
             kind: .rcaPolicy, templateKey: BuiltInTemplates.Key.vehicle, filing: .intoSection, blueprintKey: nil,
-            readsCover: true, defaultCover: InsuranceCover.rca, deadlineField: .expiryDate, documentDateFields: issuedOn,
+            readsCover: true, defaultCover: InsuranceCover.rca, deadlineField: .expiryDate, dayMeaning: .expires, documentDateFields: issuedOn,
             documentKind: .policy, documentType: nil, trade: .insurer,
             expectedKeys: [.provider, .providerTaxID, .policyNumber, .coverageType, .startDate, .expiryDate, .total, .claimsPhone, .licensePlate, .vin, .bonusMalusClass,
                            .policyholder],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: true, identifierKeys: [.licensePlate, .vin],
-            name: "Poliță RCA", titleRule: .nameAndYear, modelDescription: "compulsory motor insurance (RCA) policy", sectionName: .vehicle,
+            name: "Poliță RCA", noun: Noun("poliță", .feminine), titleRule: .nameAndYear,
+            modelDescription: "compulsory motor insurance (RCA) policy", sectionName: .vehicle,
             labels: policyLabels
         ),
         CaptureKindProfile(
             kind: .insurancePolicy, templateKey: nil, filing: .intoSection, blueprintKey: nil,
-            readsCover: true, defaultCover: nil, deadlineField: .expiryDate, documentDateFields: issuedOn,
+            readsCover: true, defaultCover: nil, deadlineField: .expiryDate, dayMeaning: .expires, documentDateFields: issuedOn,
             documentKind: .policy, documentType: nil, trade: .insurer,
             expectedKeys: [.provider, .providerTaxID, .policyNumber, .coverageType, .startDate, .expiryDate, .total, .claimsPhone, .licensePlate,
                            .policyholder],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: [.licensePlate, .vin],
-            name: "Poliță de asigurare", titleRule: .name, modelDescription: "insurance policy (CASCO, home or other)",
+            name: "Poliță de asigurare", noun: Noun("poliță", .feminine), titleRule: .name, modelDescription: "insurance policy (CASCO, home or other)",
             labels: policyLabels
         ),
         CaptureKindProfile(
             kind: .utilityInvoice, templateKey: BuiltInTemplates.Key.subscription, filing: .subscription, blueprintKey: SubscriptionFields.billBlueprint,
-            readsCover: false, defaultCover: nil, deadlineField: .dueDate, documentDateFields: issuedOn,
+            readsCover: false, defaultCover: nil, deadlineField: .dueDate, dayMeaning: .payBy, documentDateFields: issuedOn,
             documentKind: .invoice, documentType: nil, trade: nil,
             expectedKeys: [.provider, .serviceKind, .invoiceNumber, .issueDate, .dueDate, .total, .clientCode, .contractNumber, .podCode, .clcCode,
                            .phoneNumber, .meterIndex, .meterReading, .supplyAddress, .directDebit],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: true, identifierKeys: subscriptionCodes,
-            name: "Factură de utilități", titleRule: .wordAndProvider("Factură"), modelDescription: "utility, internet, TV or phone bill", isBill: true, sectionName: .subscription,
+            name: "Factură de utilități", noun: Noun("factură", .feminine), titleRule: .wordAndProvider("Factură"),
+            modelDescription: "utility, internet, TV or phone bill", isBill: true, sectionName: .subscription,
             labels: billLabels, readsPaymentCode: true, meterReadingCues: billReadingCues
         ),
         CaptureKindProfile(
             kind: .contract, templateKey: BuiltInTemplates.Key.subscription, filing: .subscription, blueprintKey: SubscriptionFields.minimumEndsBlueprint,
-            readsCover: false, defaultCover: nil, deadlineField: .minimumPeriodEnd, documentDateFields: issuedOn,
+            readsCover: false, defaultCover: nil, deadlineField: .minimumPeriodEnd, dayMeaning: .minimumPeriodEnds, documentDateFields: issuedOn,
             documentKind: .contract, documentType: nil, trade: nil,
             expectedKeys: [.provider, .serviceKind, .contractNumber, .clientCode, .startDate, .minimumMonths, .minimumPeriodEnd, .monthlyPrice,
                            .phoneNumber, .podCode, .clcCode, .supplyAddress],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: subscriptionCodes,
-            name: "Contract sau act adițional", titleRule: .wordAndProvider("Contract"),
+            name: "Contract sau act adițional", noun: Noun("contract", .masculine), titleRule: .wordAndProvider("Contract"),
             modelDescription: "contract or addendum for gas, electricity, water, internet, TV or a mobile plan", sectionName: .subscription,
             labels: contractLabels
         ),
         CaptureKindProfile(
             kind: .serviceInvoice, templateKey: BuiltInTemplates.Key.vehicle, filing: .intoSection, blueprintKey: nil,
-            readsCover: false, defaultCover: nil, deadlineField: nil, documentDateFields: issuedOn,
+            readsCover: false, defaultCover: nil, deadlineField: nil, dayMeaning: nil, documentDateFields: issuedOn,
             documentKind: .invoice, documentType: nil, trade: .mechanic,
             expectedKeys: [.provider, .providerTaxID, .invoiceNumber, .issueDate, .total, .licensePlate, .vin, .odometer, .lineItems],
             carriesLineItems: true, opensVisitFlow: true, logsHistory: true, identifierKeys: [.licensePlate, .vin],
-            name: "Factură de service", titleRule: .wordAndProvider("Factură"), modelDescription: "car service invoice", sectionName: .vehicle,
+            name: "Factură de service", noun: Noun("factură", .feminine), titleRule: .wordAndProvider("Factură"),
+            modelDescription: "car service invoice", sectionName: .vehicle,
             readsPaymentCode: true
         ),
         CaptureKindProfile(
             kind: .fiscalReceipt, templateKey: BuiltInTemplates.Key.purchase, filing: .newSection, blueprintKey: BuiltInBlueprints.warrantyEnds,
-            readsCover: false, defaultCover: nil, deadlineField: .warrantyUntil, documentDateFields: issuedOn,
+            readsCover: false, defaultCover: nil, deadlineField: .warrantyUntil, dayMeaning: .warrantyEnds, documentDateFields: issuedOn,
             documentKind: .receipt, documentType: nil, trade: nil,
             expectedKeys: [.retailer, .purchaseDate, .purchasePrice, .productName, .serialNumber, .warrantyMonths, .warrantyUntil, .lineItems],
             carriesLineItems: true, opensVisitFlow: false, logsHistory: false, identifierKeys: [.serialNumber],
-            name: "Bon fiscal", titleRule: .product, modelDescription: "fiscal receipt",
+            name: "Bon fiscal", noun: Noun("bon", .masculine), titleRule: .product, modelDescription: "fiscal receipt",
             labels: purchaseLabels
         ),
         CaptureKindProfile(
             kind: .warrantyCertificate, templateKey: BuiltInTemplates.Key.purchase, filing: .newSection, blueprintKey: BuiltInBlueprints.warrantyEnds,
-            readsCover: false, defaultCover: nil, deadlineField: .warrantyUntil, documentDateFields: issuedOn,
+            readsCover: false, defaultCover: nil, deadlineField: .warrantyUntil, dayMeaning: .warrantyEnds, documentDateFields: issuedOn,
             documentKind: .warranty, documentType: nil, trade: nil,
             expectedKeys: [.retailer, .productName, .serialNumber, .purchaseDate, .warrantyMonths, .warrantyUntil],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: [.serialNumber],
-            name: "Certificat de garanție", titleRule: .product, modelDescription: "warranty certificate",
+            name: "Certificat de garanție", noun: Noun("certificat", .masculine), titleRule: .product, modelDescription: "warranty certificate",
             labels: purchaseLabels
         ),
         CaptureKindProfile(
             kind: .itpReport, templateKey: BuiltInTemplates.Key.vehicle, filing: .intoSection, blueprintKey: BuiltInBlueprints.vehicleITP,
-            readsCover: false, defaultCover: nil, deadlineField: .expiryDate, documentDateFields: issuedOn,
+            readsCover: false, defaultCover: nil, deadlineField: .expiryDate, dayMeaning: .inspectionValidUntil, documentDateFields: issuedOn,
             documentKind: .report, documentType: nil, trade: .inspectionStation,
             expectedKeys: [.provider, .licensePlate, .vin, .issueDate, .expiryDate, .odometer],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: true, identifierKeys: [.licensePlate, .vin],
-            name: "Raport ITP", titleRule: .name, modelDescription: "periodic technical inspection (ITP) report", sectionName: .vehicle,
+            name: "Raport ITP", noun: Noun("raport", .masculine), titleRule: .name,
+            modelDescription: "periodic technical inspection (ITP) report", sectionName: .vehicle,
             labels: inspectionLabels
         ),
         CaptureKindProfile(
             kind: .veterinaryRecord, templateKey: BuiltInTemplates.Key.pet, filing: .intoSection, blueprintKey: BuiltInBlueprints.petVaccine,
-            readsCover: false, defaultCover: nil, deadlineField: .nextDoseDate, documentDateFields: issuedOn,
+            readsCover: false, defaultCover: nil, deadlineField: .nextDoseDate, dayMeaning: .nextDose, documentDateFields: issuedOn,
             documentKind: .report, documentType: nil, trade: .vet,
             expectedKeys: [.provider, .petName, .microchip, .vaccineName, .issueDate, .nextDoseDate],
             carriesLineItems: true, opensVisitFlow: true, logsHistory: true, identifierKeys: [.microchip, .petName],
-            name: "Fișă de la veterinar", titleRule: .fixed("Fișă veterinar"), modelDescription: "veterinary record", sectionName: .pet,
+            name: "Fișă de la veterinar", noun: Noun("fișă", .feminine), titleRule: .fixed("Fișă veterinar"),
+            modelDescription: "veterinary record", sectionName: .pet,
             labels: veterinaryLabels
         ),
         CaptureKindProfile(
             kind: .medicalResult, templateKey: BuiltInTemplates.Key.health, filing: .intoSection, blueprintKey: nil,
-            readsCover: false, defaultCover: nil, deadlineField: nil, documentDateFields: issuedOn,
+            readsCover: false, defaultCover: nil, deadlineField: nil, dayMeaning: nil, documentDateFields: issuedOn,
             documentKind: .report, documentType: nil, trade: .doctor,
             expectedKeys: [.provider, .issueDate],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: true, identifierKeys: [],
-            name: "Rezultat medical", titleRule: .fixed("Rezultat analize"), modelDescription: "medical test result", sectionName: .fixed("Sănătate")
+            name: "Rezultat medical", noun: Noun("rezultat", .masculine), titleRule: .fixed("Rezultat analize"),
+            modelDescription: "medical test result", sectionName: .fixed("Sănătate")
         ),
         other,
     ]
 
     static let other = CaptureKindProfile(
         kind: .other, templateKey: nil, filing: .keepOnly, blueprintKey: nil,
-        readsCover: false, defaultCover: nil, deadlineField: nil, documentDateFields: issuedOn,
+        readsCover: false, defaultCover: nil, deadlineField: nil, dayMeaning: nil, documentDateFields: issuedOn,
         documentKind: .other, documentType: nil, trade: nil,
         expectedKeys: [.provider, .documentNumber, .invoiceNumber, .issueDate, .dueDate, .expiryDate, .total],
         carriesLineItems: true, opensVisitFlow: false, logsHistory: false, identifierKeys: [],
-        name: "Alt document", titleRule: .fixed("Document"), modelDescription: "household document",
+        name: "Alt document", noun: Noun("document", .masculine), titleRule: .fixed("Document"), modelDescription: "household document",
         readsPaymentCode: true
     )
 
@@ -540,7 +597,7 @@ struct CaptureKindProfile: Sendable {
     /// bank card, a green card, an electronic signature), read with its templates and
     /// renewed by its expiry. Its read text is
     /// kept like an identity document's: never searched.
-    private static func identity(_ kind: CaptureDocumentKind, type: String, name: LocalizedStringResource, model: String,
+    private static func identity(_ kind: CaptureDocumentKind, type: String, name: LocalizedStringResource, noun: Noun, model: String,
                                  photoIsOptIn: Bool = false, isIdentityDocument: Bool = false,
                                  hasMachineReadableBack: Bool = false, cardNumberCues: CardNumberCues? = nil) -> CaptureKindProfile {
         var expected = IdentityTemplates.orderedFieldKeys(for: kind)
@@ -549,11 +606,11 @@ struct CaptureKindProfile: Sendable {
         if !expected.contains(.expiryDate) { expected.append(.expiryDate) }
         var profile = CaptureKindProfile(
             kind: kind, templateKey: BuiltInTemplates.Key.documents, filing: .newSection, blueprintKey: BuiltInBlueprints.documentRenew,
-            readsCover: false, defaultCover: nil, deadlineField: .expiryDate, documentDateFields: issuedOn,
+            readsCover: false, defaultCover: nil, deadlineField: .expiryDate, dayMeaning: .expires, documentDateFields: issuedOn,
             documentKind: .identity, documentType: type, trade: nil,
             expectedKeys: expected,
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: [.documentNumber],
-            name: name, titleRule: .name, modelDescription: model, sectionName: .holder
+            name: name, noun: noun, titleRule: .name, modelDescription: model, sectionName: .holder
         )
         profile.photoIsOptIn = photoIsOptIn
         profile.isIdentityDocument = isIdentityDocument

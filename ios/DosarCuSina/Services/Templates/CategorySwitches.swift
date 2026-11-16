@@ -263,6 +263,7 @@ public struct CategorySwitches: Hashable, Sendable {
             key: serviceBlueprintKey(service.counter),
             title: String(localized: "Revizie periodică", comment: "Service deadline of a category of one's own."),
             kind: .maintenance,
+            completion: .ownService,
             recurrence: recurrence,
             firstDue: .afterInterval(firstDue),
             reminders: ReminderProfile(leadDays: [14, 1], consequence: .comfort, graceDays: 30),

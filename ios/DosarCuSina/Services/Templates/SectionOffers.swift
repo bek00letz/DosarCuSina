@@ -13,14 +13,28 @@ public struct SectionOffers {
     /// "Alte categorii": everything else that can be added on its own.
     public var others: [CategoryTemplate]
 
+    /// Where a category is offered.
+    public enum Group: Hashable, Sendable {
+        case shortlist
+        case others
+    }
+
     public init(_ templates: [CategoryTemplate]) {
         let offered = templates
-            .filter { !$0.behavior.addedOnlyUnderParent }
+            .filter { Self.group(of: $0.behavior) != nil }
             .sorted { ($0.homeOrder, $0.createdAt) < ($1.homeOrder, $1.createdAt) }
         shortlist = offered
-            .filter { $0.behavior.shortlistOrder != nil }
+            .filter { Self.group(of: $0.behavior) == .shortlist }
             .sorted { ($0.behavior.shortlistOrder ?? 0, $0.homeOrder) < ($1.behavior.shortlistOrder ?? 0, $1.homeOrder) }
-        others = offered.filter { $0.behavior.shortlistOrder == nil }
+        others = offered.filter { Self.group(of: $0.behavior) == .others }
+    }
+
+    /// The one rule for where a category is offered, from what it declares: among the ones most
+    /// households start with when it has a place there (`shortlistOrder`), else with the others;
+    /// nil when its sections are only added under another section (a tenancy, from its home).
+    public static func group(of behavior: CategoryBehavior) -> Group? {
+        guard !behavior.addedOnlyUnderParent else { return nil }
+        return behavior.shortlistOrder == nil ? .others : .shortlist
     }
 
     /// Every category that can be added on its own, in the order it is offered: the shortlist,
