@@ -470,7 +470,7 @@ private struct GalleryChips: View {
             }
             GallerySection(title: "Alegere multiplă") {
                 DSCard {
-                    DSMultiChoiceField("Paraziți vizați", selection: $picked, options: ["Căpușe", "Purici", "Flebotomi", "Viermi intestinali", "Acarieni"]) { $0 }
+                    DSMultiChoiceField(galleryWords("Paraziți vizați"), selection: $picked, options: ["Căpușe", "Purici", "Flebotomi", "Viermi intestinali", "Acarieni"]) { $0 }
                 }
             }
         }
@@ -517,10 +517,10 @@ private struct GalleryStatus: View {
 private struct GalleryHeaders: View {
     var body: some View {
         GalleryPage {
-            DSSectionHeader("Scadențe apropiate", count: 4, actionTitle: "Vezi tot") {}
+            DSSectionHeader(galleryWords("Scadențe apropiate"), count: 4, actionTitle: galleryWords("Vezi tot")) {}
             DSSectionHeader(verbatim: "VW Golf 2018", count: 2)
             HStack(spacing: DS.Space.s) {
-                DSMetricTile("În 30 de zile", systemImage: "calendar", footnote: Text(verbatim: "3 plăți")) {
+                DSMetricTile(galleryWords("În 30 de zile"), systemImage: "calendar", footnote: Text(verbatim: "3 plăți")) {
                     Text(1_480, format: .currency(code: "RON"))
                 }
                 DSMetricTile("Kilometraj", systemImage: "gauge.with.dots.needle.bottom.50percent", tint: .blue) {
@@ -538,22 +538,22 @@ private struct GalleryStates: View {
         GalleryPage {
             DSCard {
                 DSEmptyState(
-                    "Nicio mașină încă",
+                    galleryWords("Nicio mașină încă"),
                     systemImage: "car.fill",
-                    message: "Adaugă mașina și îți amintim de ITP, RCA și rovinietă la timp.",
-                    actionTitle: "Adaugă o mașină"
+                    message: galleryWords("Adaugă mașina și îți amintim de ITP, RCA și rovinietă la timp."),
+                    actionTitle: galleryWords("Adaugă o mașină")
                 ) {}
             }
             DSCard {
                 DSErrorState(
-                    "Copia de siguranță nu s-a deschis",
-                    message: "Fișierul pare incomplet. Exportă-l din nou pe telefonul vechi și încearcă iar."
+                    galleryWords("Copia de siguranță nu s-a deschis"),
+                    message: galleryWords("Fișierul pare incomplet. Exportă-l din nou pe telefonul vechi și încearcă iar.")
                 ) {}
             }
-            DSNotice(.info, title: "Mementourile sunt oprite", message: "Pornește notificările ca să afli la timp de scadențe.", actionTitle: "Deschide Setări") {}
-            DSNotice(.warning, title: "Pașaportul expiră în 5 luni", message: "Multe țări din afara UE cer cel puțin 6 luni de valabilitate.")
-            DSNotice(.error, title: "Nu am putut salva", message: "Spațiul de pe telefon e plin. Eliberează puțin spațiu și încearcă din nou.")
-            DSNotice(.success, title: "Copia de siguranță e gata")
+            DSNotice(.info, title: galleryWords("Mementourile sunt oprite"), message: galleryWords("Pornește notificările ca să afli la timp de scadențe."), actionTitle: galleryWords("Deschide Setări")) {}
+            DSNotice(.warning, title: galleryWords("Pașaportul expiră în 5 luni"), message: galleryWords("Multe țări din afara UE cer cel puțin 6 luni de valabilitate."))
+            DSNotice(.error, title: galleryWords("Nu am putut salva"), message: galleryWords("Spațiul de pe telefon e plin. Eliberează puțin spațiu și încearcă din nou."))
+            DSNotice(.success, title: galleryWords("Copia de siguranță e gata"))
             GallerySection(title: "Factura e deja în dosar", note: "DSFiledPaperNotice: în verificare, în formularul vizitei și la „Am rezolvat”. „E altă factură” apare doar când potrivirea nu e sigură.") {
                 DSFiledPaperNotice(filed: Self.filed(.number), paper: .bill, onOpen: {}, onAnother: {})
                 DSFiledPaperNotice(filed: Self.filed(.numberOnly), paper: .invoice, onOpen: {}, onAnother: {})
@@ -600,13 +600,13 @@ private struct GalleryFeedback: View {
                 DSCard {
                     VStack(spacing: DS.Space.s) {
                         Button {
-                            toast = DSToast(title: "ITP marcat ca rezolvat", action: {})
+                            toast = DSToast(title: galleryResource("ITP marcat ca rezolvat"), action: {})
                         } label: {
                             Text(verbatim: "Marchează ITP ca rezolvat").frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.borderedProminent).buttonBorderShape(.capsule).controlSize(.large)
                         Button {
-                            toast = DSToast(title: "Am șters „VW Golf 2018”.", systemImage: "trash.fill", tint: DS.Palette.secondaryLabel,
+                            toast = DSToast(title: galleryResource("Am șters „VW Golf 2018”."), systemImage: "trash.fill", tint: DS.Palette.secondaryLabel,
                                             action: {}, duration: DSToast.deletionDuration)
                         } label: {
                             Text(verbatim: "Șterge „VW Golf 2018”").frame(maxWidth: .infinity)
@@ -614,7 +614,7 @@ private struct GalleryFeedback: View {
                         .buttonStyle(.bordered).buttonBorderShape(.capsule).controlSize(.large)
                         // A toast with a next step: a chore's "Gata" offers a note (`DSToast.offer`).
                         Button {
-                            var chore = DSToast(title: "Udat: gata.", action: {}, duration: DSToast.offerDuration)
+                            var chore = DSToast(title: galleryResource("Udat: gata."), action: {}, duration: DSToast.offerDuration)
                             chore.offer = DSToast.Offer(title: Text(verbatim: "Adaugă o notă")) { _ in }
                             toast = chore
                         } label: {
@@ -716,14 +716,14 @@ private struct GalleryFields: View {
 
     var body: some View {
         GalleryPage {
-            DSToggleField("Arată toate problemele", isOn: $revealAll, footnote: "Așa arată formularul după ce apeși Salvează.")
+            DSToggleField(galleryWords("Arată toate problemele"), isOn: $revealAll, footnote: galleryWords("Așa arată formularul după ce apeși Salvează."))
 
             GallerySection(title: "Mașină") {
                 DSCard {
                     VStack(spacing: DS.Space.m) {
                         DSTextField("Număr de înmatriculare", text: $plate, kind: .plate, isRequired: true, formatter: { $0.uppercased() })
                         DSTextField("Serie de șasiu (VIN)", text: $vin, kind: .vin, validator: { value in
-                            value.count == 17 ? .valid : .invalid("Seria de șasiu are 17 caractere. Ai scris \(value.count).")
+                            value.count == 17 ? .valid : .invalid(galleryResource("Seria de șasiu are 17 caractere. Ai scris \(value.count)."))
                         })
                         DSMetricField("Kilometraj", value: $odometer, unit: .kilometres)
                         DSChoiceField("Combustibil", selection: $fuel, options: ["Benzină", "Motorină", "Hibrid", "Electric", "GPL"]) { $0 }
@@ -734,10 +734,10 @@ private struct GalleryFields: View {
             GallerySection(title: "Bani și date") {
                 DSCard {
                     VStack(spacing: DS.Space.m) {
-                        DSMoneyField("Cost estimat", amount: $amount, currencyCode: $currency)
+                        DSMoneyField(galleryWords("Cost estimat"), amount: $amount, currencyCode: $currency)
                         DSDateField("Data cumpărării", date: $date)
-                        DSExpiryDateField("Pașaport valabil până la", date: $expiry, urgencyRule: GallerySample.passport, footnote: "Bun de călătorit până cu 6 luni înainte să expire. Te anunț cu 3 luni înainte de ziua aceea.")
-                        DSToggleField("Mementouri", isOn: $reminders, systemImage: "bell.fill")
+                        DSExpiryDateField(galleryWords("Pașaport valabil până la"), date: $expiry, urgencyRule: GallerySample.passport, footnote: galleryWords("Bun de călătorit până cu 6 luni înainte să expire. Te anunț cu 3 luni înainte de ziua aceea."))
+                        DSToggleField(galleryWords("Mementouri"), isOn: $reminders, systemImage: "bell.fill")
                     }
                 }
             }
@@ -755,13 +755,13 @@ private struct GalleryFields: View {
                 DSCard {
                     VStack(spacing: DS.Space.m) {
                         DSTextField("Microcip", text: $microchip, kind: .microchip)
-                        DSSecretField("PIN pentru semnare", value: $pin, footnote: "Rămâne ascuns; îl vezi doar după Face ID.")
-                        DSTextField("IBAN", text: $iban, kind: .iban)
+                        DSSecretField(galleryWords("PIN pentru semnare"), value: $pin, footnote: galleryWords("Rămâne ascuns; îl vezi doar după Face ID."))
+                        DSTextField(galleryWords("IBAN"), text: $iban, kind: .iban)
                         DSTextField("Telefon", text: $phone, kind: .phone)
                         DSTextField("E-mail", text: $email, kind: .email)
-                        DSTextField("Link de anulare", text: $url, kind: .url)
+                        DSTextField(galleryWords("Link de anulare"), text: $url, kind: .url)
                         DSTextField("Adresă", text: $address, kind: .address)
-                        DSTextField("Note", text: $notes, kind: .longText, footnote: "Orice vrei să ții minte despre acest activ.")
+                        DSTextField("Note", text: $notes, kind: .longText, footnote: galleryWords("Orice vrei să ții minte despre acest activ."))
                     }
                 }
             }
@@ -799,7 +799,7 @@ private struct GalleryEditSheet: View {
     var body: some View {
         NavigationStack {
             GalleryPage {
-                DSTextField("Denumire", text: $name, prompt: "VW Golf 2018")
+                DSTextField(galleryWords("Denumire"), text: $name, prompt: galleryWords("VW Golf 2018"))
             }
             .navigationTitle(Text(verbatim: "Activ nou"))
             .navigationBarTitleDisplayMode(.inline)
@@ -854,4 +854,16 @@ private enum GallerySample {
         return rule.urgency(of: today.adding(days: days), today: today)
     }
 }
+/// The gallery's sample words, shown as written and kept out of the String Catalog: the gallery
+/// is built only in development, so words of its own would make a development build's catalog
+/// differ from a release build's (scripts/catalog-check.py checks both).
+private func galleryWords(_ text: String) -> LocalizedStringKey {
+    LocalizedStringKey(text)
+}
+
+/// The same, where a component takes a resource (a toast, a field's message).
+private func galleryResource(_ text: String) -> LocalizedStringResource {
+    LocalizedStringResource(String.LocalizationValue(text))
+}
+
 #endif
