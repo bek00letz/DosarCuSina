@@ -23,6 +23,10 @@ public struct SectionOffers {
         others = offered.filter { $0.behavior.shortlistOrder == nil }
     }
 
+    /// Every category that can be added on its own, in the order it is offered: the shortlist,
+    /// then the others. The binder's add box names from it (`BinderLayout.addBoxNames`).
+    public var inOrder: [CategoryTemplate] { shortlist + others }
+
     /// The option's title: one thing, not the category ("Mașină", not "Mașini").
     public static func title(for template: CategoryTemplate) -> String {
         template.behavior.offerTitle(name: template.name)

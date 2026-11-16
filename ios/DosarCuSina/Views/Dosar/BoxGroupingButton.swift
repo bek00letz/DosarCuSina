@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// What grouping a category's boxes offers, in the same words wherever it is offered: a box's
-/// press-and-hold menu, the category's page and Setări › Pe ecranul Dosar.
+/// press-and-hold menu (and VoiceOver's actions) and Setări › Ecranul Dosar.
 extension BoxGrouping {
     /// The offer that leads to this choice: "Grupează într-o singură cutie", "Arată fiecare separat".
     var offerTitle: Text {

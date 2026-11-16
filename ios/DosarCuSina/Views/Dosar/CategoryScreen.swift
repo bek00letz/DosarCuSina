@@ -36,35 +36,11 @@ private struct CategoryContent: View {
     @Environment(\.modelContext) private var context
     @Environment(ShellRouter.self) private var router
     @Query(sort: \Asset.name) private var assets: [Asset]
-    @State private var layout = BinderLayoutStore.shared
-    @State private var error: UserFacingError?
 
+    /// One box or one each is arranged where the boxes are: a box's press-and-hold menu and
+    /// Setări › Ecranul Dosar (`BoxGrouping.offer`), not on the page the box opens.
     var body: some View {
-        let mine = assets.filter { $0.templateKey == template.key }
-        let offer = template.groupingOffer(sections: mine.count)
-        content(mine)
-            .toolbar {
-                if let offer {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Menu {
-                            BoxGroupingButton(offer: offer) { setGrouping(offer) }
-                        } label: {
-                            Label { Text("Mai multe", comment: "Toolbar menu with more actions for a category's page.") } icon: { Image(systemName: "ellipsis.circle") }
-                        }
-                    }
-                }
-            }
-            .sensoryFeedback(.selection, trigger: template.grouping)
-            .userErrorAlert($error)
-    }
-
-    /// One box on the binder for the category's sections, or one each again.
-    private func setGrouping(_ grouping: BoxGrouping) {
-        do {
-            try layout.setGrouping(template, grouping, assets: assets, context: context)
-        } catch {
-            self.error = UserFacingError(error)
-        }
+        content(assets.filter { $0.templateKey == template.key })
     }
 
     private func content(_ mine: [Asset]) -> some View {

@@ -29,14 +29,21 @@ public enum AppRoute: Hashable, Sendable, Codable {
     case readiness(ReadinessRoute)
 }
 
+/// A place in Settings a link can open (`dosarcusina://settings/<section>`). Raw values are link
+/// text and never change; each lands on its page (`SettingsPage(section)`).
 public enum SettingsSection: String, Hashable, Sendable, Codable, CaseIterable {
     case notifications
+    /// Protecție: Face ID for the app and for categories, and the iPhone's search.
     case privacy
+    /// Ecranul Dosar: which categories show, their boxes, the person's own categories.
     case categories
+    /// iCloud și copii: sync, backups and the space documents take.
     case backup
     case examples
     /// The repair list: data an earlier version saved wrongly, waiting for an OK.
     case repairs
+    /// Citire cu AI: the optional service that reads documents better.
+    case ai
     case about
 }
 

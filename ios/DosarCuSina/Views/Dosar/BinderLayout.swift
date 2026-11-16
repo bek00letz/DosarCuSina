@@ -47,15 +47,18 @@ enum BinderBoxID: Hashable, Sendable {
 /// Which boxes the Dosar grid shows and in what order. Pure, so it is tested.
 ///
 /// What each category gets is its own data (`CategoryBehavior.box`), never its key:
-/// - a category with many small records (Acte, Garanții, Abonamente) gets one box;
+/// - a category with many small records (Acte, Garanții, Abonamente) gets one box, once it
+///   holds something (`holds`: a person's documents' box holds the people too);
 /// - every other category on the home screen gets one box per top-level asset, or, when its
 ///   sections are grouped (`CategoryTemplate.groupsSections`: the person's choice, else the
 ///   catalog's, as for plants), one box for all of them, wherever they are filed, once it has any;
 /// - a category that lives inside another (tenancies in a home, people in Acte) gets
 ///   none. Anything filed under another asset lives inside its parent.
-/// - Agenda comes last. The order follows the categories' home order until the
-///   person rearranges the boxes; then their order wins and new boxes slot in
-///   next to their neighbours.
+/// - Agenda comes last, once it holds someone.
+/// - A category with nothing yet has no box: it is folded into the add box, which names it
+///   (`addBoxNames`), so the binder still shows what it can hold. The order follows the
+///   categories' home order until the person rearranges the boxes; then their order wins and
+///   new boxes slot in next to their neighbours.
 enum BinderLayout {
     struct TemplateInfo: Hashable, Sendable {
         var key: String
@@ -64,6 +67,45 @@ enum BinderLayout {
         var box: CategoryBehavior.Box = .perSection
         /// Its sections share one box (`CategoryTemplate.groupsSections`).
         var groupsSections = false
+        /// The part it plays (`CategoryBehavior.role`): a personal-documents box holds the people.
+        var role: CategoryBehavior.Role?
+        /// Its name, as the add box writes it ("Garanții").
+        var name = ""
+    }
+
+    /// Whether `category`'s one box holds `asset`: its own sections, and, for the box of personal
+    /// documents (Acte), the people they are filed under. The one rule the grid's boxes and their
+    /// lines read.
+    static func holds(_ category: TemplateInfo, assetOf assetCategory: TemplateInfo?, assetKey: String) -> Bool {
+        assetKey == category.key || (category.role == .personalDocument && assetCategory?.role == .holder)
+    }
+
+    /// Whether a category has anything on the binder yet, by `holds`.
+    static func holdsAnything(_ category: TemplateInfo, templates: [String: TemplateInfo], assets: [AssetInfo]) -> Bool {
+        assets.contains { holds(category, assetOf: templates[$0.templateKey], assetKey: $0.templateKey) }
+    }
+
+    /// The most the add box names before it says there is more ("…").
+    static let addBoxNameLimit = 4
+
+    /// What the add box names: the categories on the binder that have no box yet, only those
+    /// "Adaugă o secțiune" offers (`offered`, from `SectionOffers`): first the boxes folded into it
+    /// (a whole category's: Acte, Garanții, Abonamente), where the binder would show them, then
+    /// the rest in the order they are offered; at most `addBoxNameLimit`, and whether there are
+    /// more. A category without a box of its own (tenants, people) is never named: its sections
+    /// live inside another. Empty once everything has a box.
+    static func addBoxNames(offered: [TemplateInfo], templates: [TemplateInfo], assets: [AssetInfo]) -> (names: [String], more: Bool) {
+        let byKey = Dictionary(templates.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
+        let waiting = offered.filter { $0.isOnHome && $0.box != .insideOther && !holdsAnything($0, templates: byKey, assets: assets) }
+        let folded = waiting.filter { $0.box == .wholeCategory }.sorted { $0.homeOrder < $1.homeOrder }
+        let ordered = folded + waiting.filter { $0.box != .wholeCategory }
+        return (ordered.prefix(addBoxNameLimit).map(\.name), ordered.count > addBoxNameLimit)
+    }
+
+    /// The add box's line under its title: „Acte, Garanții, Abonamente, Mașini…”; nil with nothing to name.
+    static func addBoxLine(_ names: (names: [String], more: Bool)) -> String? {
+        guard !names.names.isEmpty else { return nil }
+        return names.names.joined(separator: ", ") + (names.more ? "…" : "")
     }
 
     struct AssetInfo: Hashable, Sendable {
@@ -73,13 +115,15 @@ enum BinderLayout {
         var createdAt: Date
     }
 
-    static func defaultOrder(templates: [TemplateInfo], assets: [AssetInfo]) -> [BinderBoxID] {
+    static func defaultOrder(templates: [TemplateInfo], assets: [AssetInfo], hasContacts: Bool) -> [BinderBoxID] {
         var result: [BinderBoxID] = []
-        let boxes = Dictionary(templates.map { ($0.key, $0.box) }, uniquingKeysWith: { first, _ in first })
+        let byKey = Dictionary(templates.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
         let topLevel = assets.filter(\.isTopLevel).sorted { $0.createdAt < $1.createdAt }
         for template in templates.sorted(by: { $0.homeOrder < $1.homeOrder }) where template.isOnHome {
             switch template.box {
-            case .wholeCategory: result.append(.category(template.key))
+            case .wholeCategory:
+                // Folded into the add box until it holds something.
+                if holdsAnything(template, templates: byKey, assets: assets) { result.append(.category(template.key)) }
             case .perSection where template.groupsSections:
                 if assets.contains(where: { $0.templateKey == template.key }) { result.append(.category(template.key)) }
             case .perSection: result += sectionBoxes(of: template.key, assets: topLevel)
@@ -87,8 +131,8 @@ enum BinderLayout {
             }
         }
         // An asset whose category isn't installed still shows, as a standard box.
-        result += topLevel.filter { boxes[$0.templateKey] == nil }.map { .asset($0.id) }
-        result.append(.agenda)
+        result += topLevel.filter { byKey[$0.templateKey] == nil }.map { .asset($0.id) }
+        if hasContacts { result.append(.agenda) }
         return result
     }
 
@@ -194,7 +238,7 @@ final class BinderLayoutStore {
     }
 
     /// Groups a category's sections into one box, or gives each its box again, from wherever it
-    /// is offered (a box's menu, the category's page, Setări): the person's choice, kept on the
+    /// is offered (a box's menu, Setări › Ecranul Dosar): the person's choice, kept on the
     /// category (`TemplateStore.setGrouping`), and this device's order kept around it, the one box
     /// standing where the first of its sections stood (`BinderLayout.regrouped`).
     func setGrouping(_ template: CategoryTemplate, _ grouping: BoxGrouping, assets: [Asset], context: ModelContext) throws {

@@ -284,6 +284,8 @@ struct AISettings: View {
     @State private var status: AIKeyStatus?
     @State private var isTesting = false
     @State private var readsAutomatically = AIProviderSettings.standard.readsAutomaticallyWhenUnsure
+    /// "Avansat" (the model): open for a compatible service, which needs one, or a model chosen.
+    @State private var showsAdvanced = false
 
     var body: some View {
         Section {
@@ -329,17 +331,24 @@ struct AISettings: View {
                 DSTextField("Adresa serviciului", text: $baseURL, kind: .url, prompt: "https://…/v1",
                             footnote: "Pe rețeaua de acasă merge și http://, de exemplu un server LM Studio.")
             }
-            NavigationLink {
-                AIModelPicker(provider: provider, model: $model)
-            } label: {
-                LabeledContent {
-                    Text(verbatim: AIModelPicker.summary(model: model, provider: provider))
-                        .lineLimit(1)
-                        .truncationMode(.middle)
+            // Which model reads is for those who want to choose; the service's own is the default.
+            // A compatible service names its model, so there it opens by itself.
+            DisclosureGroup(isExpanded: $showsAdvanced) {
+                NavigationLink {
+                    AIModelPicker(provider: provider, model: $model)
                 } label: {
-                    Text("Model", comment: "AI setting: which model of the service reads documents.")
+                    LabeledContent {
+                        Text(verbatim: AIModelPicker.summary(model: model, provider: provider))
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    } label: {
+                        Text("Model", comment: "AI setting: which model of the service reads documents.")
+                    }
+                    .frame(minHeight: 44)
                 }
-                .frame(minHeight: 44)
+            } label: {
+                Text("Avansat", comment: "AI setting: a row that shows the advanced choices (the model).")
+                    .frame(minHeight: 44)
             }
 
             if hasKey || !provider.requiresKey {
@@ -410,6 +419,7 @@ struct AISettings: View {
         hasKey = settings.key(for: provider) != nil
         model = settings.customModel(for: provider)
         baseURL = settings.baseURLText
+        showsAdvanced = provider == .openAICompatible || !model.isEmpty
     }
 
     private func saveAndTest() {
