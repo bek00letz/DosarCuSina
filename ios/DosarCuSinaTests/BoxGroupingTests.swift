@@ -235,7 +235,7 @@ struct BoxGroupingTests {
         var scan = DataRepairScan(context: context, calendar: calendar)
         let findings = try SectionsIntoTheirHomeStep().findings(&scan)
         #expect(findings.count == 2, "One for each plant of the person's own, examples left as they are")
-        #expect(findings.allSatisfy { $0.isFixable })
+        #expect(!findings.contains { !$0.isFixable }, "Each one can be moved")
         #expect(findings.contains { $0.message == "Trec „Ferigă” la „Apartament Exemplu”? Apare pe pagina locuinței și rămâne în „Plante”." })
 
         let changed = fern.updatedAt
