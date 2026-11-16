@@ -7,7 +7,9 @@
 #                       string has plural forms (scripts/plural-check.py), through
 #                       tests/run_tests.sh like a local run
 #   release-build       builds the same targets in the Release configuration, the one
-#                       TestFlight and the App Store get
+#                       TestFlight and the App Store get, and checks its strings are the
+#                       development build's, so a build in Xcode of either leaves the
+#                       catalogs as they are
 # The privacy check has its own workflow (privacy-check.yml).
 name: Checks
 
@@ -121,3 +123,17 @@ jobs:
             -configuration Release -destination 'generic/platform=iOS' \
             -derivedDataPath "$RUNNER_TEMP/DerivedData" \
             CODE_SIGNING_ALLOWED=NO
+
+      # The release build must find the same strings as the development build, or each build
+      # in Xcode would rewrite the catalog the other wrote (a string only a #if DEBUG screen uses).
+      - name: Check the String Catalogs against the release build's strings
+        run: python3 scripts/catalog-check.py "$RUNNER_TEMP/DerivedData" --write-to "$RUNNER_TEMP/release-string-catalogs"
+
+      - name: Keep the catalogs the release build would write
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-string-catalogs
+          path: ${{ runner.temp }}/release-string-catalogs
+          retention-days: 7
+          if-no-files-found: ignore
