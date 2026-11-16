@@ -33,6 +33,8 @@ struct UpcomingRoot: View {
     @State private var snoozing: AttentionEntry?
     /// "Adaugă o notă" after a chore's "Gata".
     @State private var noteRequest: HistoryNoteRequest?
+    /// "Am rezolvat" open, for a kind that asks something (`CompletionEntry`).
+    @State private var completing: CompletionRequest?
 
     @Environment(ShellRouter.self) private var router
 
@@ -50,6 +52,7 @@ struct UpcomingRoot: View {
             }
         .dsToast($toast)
         .historyNoteSheet($noteRequest, toast: $toast)
+        .completionSheet($completing, toast: $toast)
         .task(id: changeToken) { reload() }
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in reload() }
         .onReceive(NotificationCenter.default.publisher(for: OutsideActionFailures.didChange)) { _ in reload() }
@@ -187,28 +190,29 @@ struct UpcomingRoot: View {
 
     // MARK: Rows
 
+    /// A deadline: a tap opens its page. Completing reads and does what the page's button does
+    /// for its kind (`CompletionEntry`): "Gata" for a chore, else "Am rezolvat…", which opens
+    /// the same sheet. Nothing on the left: opening the page is the tap's.
     private func row(_ entry: AttentionEntry) -> some View {
         let isLocked = vault.isLocked(sectionIsSensitive: entry.obligation.isSensitive)
+        let shape = entry.obligation.kind.completion
         return NavigationLink(value: AppRoute.obligation(entry.id)) {
             UpcomingRow(entry: entry, today: today, isLocked: isLocked)
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-            Button { complete(entry) } label: { Label("Gata", systemImage: "checkmark") }
+            Button { complete(entry) } label: { Label(shape.actionTitle, systemImage: "checkmark") }
                 .tint(DSStatus.done.color)
             Button { snoozing = entry } label: { Label("Amână", systemImage: "clock.arrow.circlepath") }
                 .tint(DSStatus.soon.color)
         }
-        .swipeActions(edge: .leading) {
-            Button { router.push(.obligation(entry.id)) } label: { Label("Editează", systemImage: "slider.horizontal.3") }
-                .tint(DS.Palette.accent)
-        }
         .contextMenu {
-            Button("Am rezolvat", systemImage: "checkmark") { complete(entry) }
+            Button(shape.menuTitle, systemImage: "checkmark") { complete(entry) }
             Button("Amână", systemImage: "clock.arrow.circlepath") { snoozing = entry }
             Button("Deschide", systemImage: "slider.horizontal.3") { router.push(.obligation(entry.id)) }
         }
-        .accessibilityAction(named: Text("Am rezolvat")) { complete(entry) }
+        .accessibilityAction(named: Text(shape.menuTitle)) { complete(entry) }
         .accessibilityAction(named: Text("Amână")) { snoozing = entry }
+        .accessibilityHint(Text("Glisează ca să-l bifezi sau să-l amâni.", comment: "VoiceOver hint of a deadline in Urmează: its swipe actions."))
     }
 
     private func soonGroup(_ group: AttentionAssetGroup) -> some View {
@@ -377,12 +381,16 @@ struct UpcomingRoot: View {
             if entry.obligation.isSensitive, vault.isLocked(sectionIsSensitive: true) {
                 guard await vault.unlock(reason: String(localized: "Deschide secțiunea protejată ca să bifezi termenul.")) == .success else { return }
             }
-            let actions = UpcomingActions(context: context)
-            guard let obligation = actions.obligation(entry.id) else { return }
+            guard let obligation = UpcomingActions(context: context).obligation(entry.id) else { return }
             do {
-                // The quick way, one step for every kind; a chore's toast offers a note.
-                toast = try actions.complete(obligation, title: obligation.title) { entryID, shown in
+                // The page's own entry: a chore is done at once and its toast offers a note;
+                // any other kind opens "Am rezolvat", which asks what the kind asks.
+                let start = try CompletionEntry(context: context).start(obligation) { entryID, shown in
                     noteRequest = HistoryNoteRequest(entryID: entryID, restoring: shown)
+                }
+                switch start {
+                case .done(let done): toast = done
+                case .asks(let request): completing = request
                 }
             } catch {
                 toast = UpcomingActions.failureToast(error)
@@ -439,7 +447,6 @@ struct UpcomingRow: View {
         .padding(.vertical, DS.Space.xxs)
         .frame(minHeight: 44)
         .accessibilityElement(children: .combine)
-        .accessibilityHint(Text("Glisează pentru Gata sau Amână."))
     }
 
     /// The tone of its urgency, the same one its badge and box use.
