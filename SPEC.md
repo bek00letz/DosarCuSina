@@ -381,7 +381,7 @@ What never reaches the index (`SearchPrivacy`): text read off a document filed i
 
 How far away something is reads in the unit a person feels, never rounded up: days under three weeks, then weeks, then months and weeks, then years and months (years only from three years). A reminder's lead reads in the unit it was chosen in: days, or whole months and years (*7 zile*, *o lună*, *6 luni*, *un an*). A count of one is a word, two and up are digits (*o zi*, *o săptămână*, *o lună*, *un an*; *2 luni*, *20 de zile*), from the plural "one" variants; "în" before a duration is joined as Romanian writes it (*într-o lună*, *într-un an*) by `DurationWording.inside`, the one way to write "in this long". `DurationWording` (`distance` and `lead`), `DayCount` and `CalendarCount` are the one way to write these, in `ios/Shared` with their plural forms in `Shared.xcstrings`, so the widget writes them the same way. When a deadline is, in a few words, is `WhenWording`: *azi*, *mâine*, *în 5 zile*, *întârziat cu o zi* (within grace), *depășit de 3 zile* (past grace), on the boxes, the badges, the widget and Siri.
 
-Every counted string has plural variations (*o zi*, *2 zile*, *20 de zile*); `scripts/plural-check.py` checks it after every build.
+Every counted string has plural variations (*o zi*, *2 zile*, *20 de zile*); `scripts/plural-check.py` checks it after every build. The String Catalogs list exactly the text the code uses; `scripts/catalog-check.py` checks it after every build.
 
 ### 4.10 Subscriptions and their bills
 
