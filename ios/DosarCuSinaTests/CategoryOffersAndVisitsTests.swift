@@ -59,7 +59,7 @@ struct CategoryOffersAndVisitsTests {
         let offers = try store.sectionOffers()
         #expect(offers.shortlist.last?.key == boats.key)
         #expect(SectionOffers.title(for: boats) == "Barcă")
-        #expect(CategoryBehavior(visit: .none, offerTitle: "").offerTitle(name: "Bărci") == "Bărci", "An empty title shows the name")
+        #expect(CategoryBehavior(visit: .none, offerTitle: "", singular: nil).offerTitle(name: "Bărci") == "Bărci", "An empty title shows the name")
     }
 
     @Test("Adding a document asks whose it is from the people documents are filed under")

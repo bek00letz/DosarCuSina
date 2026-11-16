@@ -21,7 +21,7 @@ extension CopyMatrixTests {
     static var reviewProvider: AIProvider { .gemini }
 
     /// A reading of `kind` with its deadline's day, routed the way the engine routes it.
-    static func reviewResult(_ kind: CaptureDocumentKind, day: CalendarDay?) -> CaptureResult {
+    static func reviewResult(_ kind: CaptureDocumentKind, day: CalendarDay?, bonusMalus: String? = nil) -> CaptureResult {
         var fields: [CaptureField] = []
         func add(_ key: CaptureFieldKey, _ value: CaptureValue) {
             fields.append(CaptureField(key: key, value: value, confidence: 0.9, sourceText: nil, tier: .heuristic))
@@ -29,6 +29,7 @@ extension CopyMatrixTests {
         let profile = kind.profile
         if let field = profile.deadlineField, let day { add(field, .day(day)) }
         if case .product = profile.titleRule { add(.productName, .text("Hotă Exemplu")) }
+        if let bonusMalus { add(.bonusMalusClass, .text(bonusMalus)) }
         if profile.filing == .subscription {
             add(.provider, .text("ENGIE Romania S.A."))
             add(.serviceKind, .text(ServiceKind.gas))
@@ -79,7 +80,9 @@ extension CopyMatrixTests {
         if profile.filing == .subscription, profile.allows(.directDebit) {
             rows.append(("The bank pays it", "\(CaptureReviewWording.directDebit) — \(noun.directDebitWords(reviewStatement))"))
         }
-        if profile.readsCover, profile.allows(.bonusMalusClass) {
+        // The class is said only where the policy files into a deadline that keeps who it insures (a car's RCA).
+        let plan = CaptureFilingPlan.make(for: review, templates: templates, assets: [], today: reviewToday, calendar: .bucharest)
+        if profile.readsCover, profile.allows(.bonusMalusClass), plan.blueprint?.facts?.policyholder != nil {
             rows.append(("Its bonus-malus class", [
                 CaptureReviewWording.bonusMalus(.keep(classKey: "B8", memberID: UUID(), memberName: reviewPerson)),
                 CaptureReviewWording.bonusMalus(.noPolicyholder),
@@ -143,7 +146,11 @@ extension CopyMatrixTests {
             ("What was read", "\(W.whatWasRead) — \(W.checkMarked) · \(W.documentName) · \(W.notFound) \(W.add("Total"))"),
             ("Where a value came from", "\(W.fromDocument("Total de plată 245,30")) (\(W.readFrom("Total de plată 245,30")))"),
             ("Another reader's value", "\(W.phoneRead(reviewValue)) / \(W.readBy(provider, value: reviewValue)) / \(W.readBy(.openAICompatible, value: reviewValue)) · \(W.use) (\(W.useThis(W.phoneRead(reviewValue))))"),
-        ]
+        ] + PhotoOnRequest.allCases.map { subject in
+            // `KeepPhotoChoice`, in the review, „Am rezolvat” and the visit form.
+            ("A photo kept only on request: \(subject == .bankCard ? "a bank card" : "a page with a card's number")",
+             "\(subject.header) — \(subject.keep) — \(subject.note(keepsPhoto: false)) / \(subject.note(keepsPhoto: true))")
+        }
     }
 
     /// The review's section of the matrix: the words every kind shares, then each kind's.
@@ -272,7 +279,7 @@ struct ReviewCopyRulesTests {
     @Test("A paper's sentences agree with its noun: „O pun” for a bill, „Îl pun” for a contract, for every gender")
     func sentencesAgreeWithTheirNouns() {
         for gender in CompletionShape.Paper.Gender.allCases {
-            let noun = CaptureKindProfile.Noun("act", gender)
+            let noun = CaptureKindProfile.Noun(.on, "act", the: "actul", gender)
             for sentence in Self.pronounSentences(noun) {
                 #expect(Self.agrees(sentence, with: gender), "\(gender): „\(sentence)”")
             }
@@ -298,6 +305,39 @@ struct ReviewCopyRulesTests {
         }
     }
 
+    @Test("What a paper says is written on it or in it, as its noun declares: „Pe factură scrie”, „În certificat scrie”, „Pe card scrie”")
+    func papersSayWhereTheyAreWritten() {
+        for kind in CaptureDocumentKind.allCases {
+            let noun = kind.profile.noun
+            let (opening, inside) = switch noun.surface {
+            case .on: ("Pe \(noun.onPaper) scrie", "pe \(noun.onPaper).")
+            case .inside: ("În \(noun.onPaper) scrie", "în \(noun.onPaper).")
+            }
+            #expect(noun.printedWords(CopyMatrixTests.reviewValue).hasPrefix(opening), "\(kind): „\(noun.printedWords(CopyMatrixTests.reviewValue))”")
+            #expect(noun.nothingReadWords.contains(inside), "\(kind): „\(noun.nothingReadWords)”")
+            #expect(!noun.itself.isEmpty, "\(kind): the paper itself has a name")
+        }
+        #expect(CaptureDocumentKind.electronicSignature.profile.noun.surface == .inside, "A certificate is written in")
+        #expect(CaptureDocumentKind.healthInsuranceCard.profile.noun.surface == .on, "A card is written on")
+    }
+
+    @Test("A policy's bonus-malus class is said only for a car's RCA, the deadline that keeps who it insures")
+    func bonusMalusOnlyForAVehiclesRCA() throws {
+        let context = try makeContext()
+        for kind in CaptureDocumentKind.allCases {
+            let rows = try CopyMatrixTests.reviewRows(kind, context: context)
+            let saysClass = rows.contains { $0.0 == "Its bonus-malus class" }
+            #expect(saysClass == (kind == .rcaPolicy), "\(kind)")
+        }
+        let templates = try TemplateStore(context: context).templatesByKey()
+        let home = try #require(templates[BuiltInTemplates.Key.home]?.definition.blueprints.first { $0.key == BuiltInBlueprints.homePAD })
+        let rca = try #require(templates[BuiltInTemplates.Key.vehicle]?.definition.blueprints.first { $0.key == BuiltInBlueprints.vehicleRCA })
+        let result = CopyMatrixTests.reviewResult(.rcaPolicy, day: CopyMatrixTests.reviewDayToCome, bonusMalus: "B8")
+        let review = CaptureReview(result: result, assets: [], context: context)
+        #expect(CaptureFilingPlan.bonusMalus(for: review, people: [], deadline: home) == nil, "A home's policy keeps no class")
+        #expect(CaptureFilingPlan.bonusMalus(for: review, people: [], deadline: rca) != nil, "A car's RCA says where its class goes")
+    }
+
     @Test("An ITP report says when its inspection stops being valid; a passport, when it expires")
     func daysReadAsTheirKindMeansThem() throws {
         let context = try makeContext()
@@ -306,7 +346,7 @@ struct ReviewCopyRulesTests {
         let bill = try CopyMatrixTests.reminderLine(.utilityInvoice, day: CopyMatrixTests.reviewDayToCome, placeChosen: false, context: context)
         #expect(bill.hasPrefix("De plătit până pe"), "\(bill)")
         #expect(CaptureKindProfile.DayMeaning.expires.opening("12 august 2031") == "Expiră pe 12 august 2031.")
-        #expect(CaptureDocumentKind.contract.profile.noun.directDebitWords(CopyMatrixTests.reviewStatement).hasPrefix("Pe contract scrie:"))
+        #expect(CaptureDocumentKind.contract.profile.noun.directDebitWords(CopyMatrixTests.reviewStatement).hasPrefix("În contract scrie:"))
         #expect(CaptureDocumentKind.utilityInvoice.profile.noun.directDebitWords(CopyMatrixTests.reviewStatement).hasPrefix("Pe factură scrie:"))
     }
 }

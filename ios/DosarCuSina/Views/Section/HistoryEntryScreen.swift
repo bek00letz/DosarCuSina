@@ -45,7 +45,7 @@ private struct HistoryEntryContent: View {
 
     var body: some View {
         let definition = definition
-        let shape = HistoryEntryShape.make(entry.kind, visit: definition?.behavior.visit.shape)
+        let shape = pageShape(definition)
         let people = (entry.providers ?? []).sorted { $0.name < $1.name }
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.xl) {
@@ -58,7 +58,7 @@ private struct HistoryEntryContent: View {
                             .dsFont(.subheadline, numeric: true)
                         if let reference = entry.reference?.trimmingCharacters(in: .whitespacesAndNewlines), !reference.isEmpty {
                             // The number printed on the paper this records (a bill's invoice number).
-                            Text(verbatim: shape.referenceIsInvoice ? HistoryEntryWording.invoiceNumber(reference) : HistoryEntryWording.number(reference))
+                            Text(verbatim: shape.referenceWords(reference))
                                 .dsFont(.subheadline, numeric: true)
                                 .textSelection(.enabled)
                         }
@@ -155,6 +155,17 @@ private struct HistoryEntryContent: View {
             Text(verbatim: deletionMessage(shape: shape, definition: definition))
         }
         .userErrorAlert($error)
+    }
+
+    /// The page's shape: a deadline's completion by what its completion is (its deadline's
+    /// `CompletionKind`, read now, so a record stored under an older kind reads right), anything
+    /// else by the record's kind, both over the category's visits.
+    private func pageShape(_ definition: TemplateDefinition?) -> HistoryEntryShape {
+        let visit = definition?.behavior.visit.shape
+        if entry.isCompletion, let obligation = entry.obligation {
+            return HistoryEntryShape.make(completing: obligation.completionKind(template: definition), stored: entry.kind, visit: visit)
+        }
+        return HistoryEntryShape.make(entry.kind, visit: visit)
     }
 
     /// What deleting does, as `HistoryDeletion` works it out: the deadline, the reading, the documents.

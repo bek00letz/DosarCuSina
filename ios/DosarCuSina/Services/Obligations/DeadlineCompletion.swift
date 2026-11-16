@@ -27,6 +27,14 @@ extension Obligation {
         let template = asset.flatMap { try? TemplateStore(context: context).template(forKey: $0.templateKey) }
         return completion(template: template?.definition)
     }
+
+    /// The history kind closing it writes (`HistoryKind.forCompleting`): its completion kind's
+    /// record, its category read from `context`.
+    @MainActor
+    func completionHistoryKind(in context: ModelContext) -> HistoryKind {
+        let template = asset.flatMap { try? TemplateStore(context: context).template(forKey: $0.templateKey) }
+        return HistoryKind.forCompleting(completionKind(template: template?.definition), importance: kind)
+    }
 }
 
 extension CompletionKind {

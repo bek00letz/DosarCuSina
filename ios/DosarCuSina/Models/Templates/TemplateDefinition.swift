@@ -53,6 +53,43 @@ public enum SectionNoun: String, Codable, Sendable, CaseIterable {
     case car, home, pet, bike, plant, espressoMachine
 }
 
+/// What one section of a category is called, as one thing rather than the category („Mașina”,
+/// not „Mașini”), and the gender of that noun, for the words that agree with it („Dacă o
+/// păstrezi” for a car). A new section's name before anything is typed, and the name it gets
+/// when the person leaves it empty, are this (`AddSectionModel.suggestedName`), never the
+/// category's name. A built-in declares it (`CategoryBehavior.singular`, with no default); a
+/// category of one's own is named as one thing already („Barca, Rulota, Pianul”), so its own
+/// is its name (`ofOwnCategory(named:)`). Part of the `.dosar` contract:
+/// `{"name": "Mașina", "gender": "feminine"}`.
+public struct SectionSingular: Codable, Hashable, Sendable {
+    /// One section, with its article, as a name in the binder: „Mașina”, „Actul”.
+    public var name: String
+    public var gender: GrammaticalGender
+
+    public init(_ name: String, _ gender: GrammaticalGender) {
+        self.name = name
+        self.gender = gender
+    }
+
+    /// A category of one's own: its name, which the form asks as one thing, and the gender its
+    /// first word's ending gives („Barca”, „Categorie” are feminine; „Pianul”, „Câinele” not).
+    public static func ofOwnCategory(named name: String) -> SectionSingular {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let first = RomanianText.fold(trimmed.split(separator: " ").first.map(String.init) ?? trimmed)
+        let feminine = first.hasSuffix("a") || first.hasSuffix("ie")
+        return SectionSingular(trimmed, feminine ? .feminine : .masculineOrNeuter)
+    }
+}
+
+/// Grammatical gender of the noun one section of a category is, for words that agree with it
+/// (`SectionSingular`). Raw values are part of the `.dosar` contract.
+public enum GrammaticalGender: String, Codable, Sendable, Hashable {
+    /// Mașina, locuința, persoana.
+    case feminine
+    /// Actul, abonamentul, animalul. Romanian's default for a thing.
+    case masculineOrNeuter
+}
+
 /// What a category does in the binder, as data, so a custom category can behave like
 /// Acte or Garanții and no screen asks which built-in it is. Raw values are part of the
 /// `.dosar` contract; a value from a newer version reads as the default, the one that hides
@@ -134,10 +171,14 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
     /// Its place among the ones most households start with ("Cele mai des folosite"),
     /// from 1; nil lists it with the other ready-made ones.
     public var shortlistOrder: Int?
+    /// What one of its sections is called („Mașina”) and that noun's gender. Every built-in
+    /// declares it (there is no default); nil for a category of one's own, whose sections take
+    /// its name (`TemplateDefinition.sectionSingular`).
+    public var singular: SectionSingular?
 
     public init(box: Box = .perSection, listing: Listing = .plain, role: Role? = nil, parentPocket: SectionPocket? = nil, addedOnlyUnderParent: Bool = false,
                 defaultGrouping: BoxGrouping? = nil, sectionNoun: SectionNoun? = nil, mayBelongTo: Role? = nil, goesUnderTheOnlyOne: Bool = false,
-                visit: VisitKind, offerTitle: String? = nil, shortlistOrder: Int? = nil) {
+                visit: VisitKind, offerTitle: String? = nil, shortlistOrder: Int? = nil, singular: SectionSingular?) {
         self.box = box
         self.listing = listing
         self.role = role
@@ -150,11 +191,13 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
         self.visit = visit
         self.offerTitle = offerTitle
         self.shortlistOrder = shortlistOrder
+        self.singular = singular
     }
 
     /// Any category the person makes, before its switches: a box per section, a plain list, no
-    /// visits (`CategorySwitches` gives it the kind „Are revizii sau lucrări” says).
-    public static let standard = CategoryBehavior(visit: .none)
+    /// visits (`CategorySwitches` gives it the kind „Are revizii sau lucrări” says), its sections
+    /// named after it.
+    public static let standard = CategoryBehavior(visit: .none, singular: nil)
 
     /// Whether its sections get boxes of their own on the Dosar grid.
     public var hasSectionBoxes: Bool { box == .perSection }
@@ -176,7 +219,8 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case box, listing, role, parentPocket, addedOnlyUnderParent, defaultGrouping, sectionNoun, mayBelongTo, goesUnderTheOnlyOne, visit, offerTitle, shortlistOrder
+        case box, listing, role, parentPocket, addedOnlyUnderParent, defaultGrouping, sectionNoun, mayBelongTo, goesUnderTheOnlyOne, visit, offerTitle, shortlistOrder,
+             singular
     }
 
     public init(from decoder: Decoder) throws {
@@ -193,6 +237,7 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
         visit = VisitKind(stored: (try? c.decodeIfPresent(JSONValue.self, forKey: .visit)).flatMap { $0 })
         offerTitle = (try? c.decodeIfPresent(String.self, forKey: .offerTitle)).flatMap { $0 }
         shortlistOrder = (try? c.decodeIfPresent(Int.self, forKey: .shortlistOrder)).flatMap { $0 }
+        singular = (try? c.decodeIfPresent(SectionSingular.self, forKey: .singular)).flatMap { $0 }
     }
 }
 
@@ -258,6 +303,13 @@ public struct TemplateDefinition: Hashable, Sendable, Codable, Identifiable {
 
     public var allFields: [FieldDefinition] { sections.flatMap(\.fields) }
 
+    /// What one of its sections is called: what a built-in declares, else (a category of one's
+    /// own, or a built-in stored before catalogs declared it) one thing named as the category.
+    public var sectionSingular: SectionSingular {
+        if let singular = behavior.singular, !singular.name.isEmpty { return singular }
+        return .ofOwnCategory(named: name)
+    }
+
     public func field(_ key: String) -> FieldDefinition? {
         allFields.first { $0.key == key }
     }
@@ -278,7 +330,7 @@ public struct TemplateDefinition: Hashable, Sendable, Codable, Identifiable {
 
     /// Revision of the built-in catalog. Bump it whenever a built-in definition
     /// changes so installed copies are upgraded (preferences are kept).
-    public static let builtInCatalogVersion = 20
+    public static let builtInCatalogVersion = 21
 
     public static let customKeyPrefix = "custom."
 

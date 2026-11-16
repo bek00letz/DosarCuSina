@@ -246,8 +246,47 @@
         }
       }
     },
+    "%@ %lld lei" : {
+      "comment" : "A whole amount of money in lei: the first argument is the amount as written („1.250”), the second only chooses the plural („1 leu”, „2 lei”, „20 de lei”). Keep the no-break space.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %#@lei@"
+          },
+          "substitutions" : {
+            "lei" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "lei"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "leu"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "de lei"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%@ lei" : {
-      "comment" : "An amount of money in lei, e.g. „1.250,50 lei”. Keep the no-break space."
+      "comment" : "An amount of money in lei with decimals, e.g. „1.250,50 lei”. Keep the no-break space."
     },
     "%@ lipsește, deși are citiri. Pun %@?" : {
       "comment" : "Repair: the section's counter is empty though it has readings.",

@@ -53,7 +53,7 @@ struct CopyMatrixTests {
             for hasBills in [false, true] {
                 for (service, said) in services {
                     let switches = CategorySwitches(hasDocuments: hasDocuments, hasBills: hasBills, service: service)
-                    let made = try store.createCustom(name: "Categorie", symbol: "square", switches: switches)
+                    let made = try store.createCustom(name: "Barca", symbol: "square", switches: switches)
                     let parts = [hasDocuments ? "cu acte" : "fără acte", hasBills ? "cu facturi" : "fără facturi", said]
                     result.append(Category(title: "A ta: " + parts.joined(separator: ", "), definition: made.definition))
                 }
@@ -68,6 +68,11 @@ struct CopyMatrixTests {
     static let sampleCount = 3
     static var sampleSum: String { Money(1_250, currency: "RON").formattedCompact() }
     static var sampleDay: String { DosarFormat.longDay(CalendarDay("2027-05-03")) }
+    /// Amounts in lei as the app writes them, the leu counted by the String Catalog's plurals.
+    static var sampleLei: String {
+        ["1", "2", "19", "20", "101", "1.5"].map { Money(Decimal(string: $0, locale: Locale(identifier: "en_US_POSIX")) ?? 0).formattedCompact() }
+            .joined(separator: " · ")
+    }
 
     /// What the visit form says to one category, row by row, its kind's words only (the frame
     /// every kind shares is listed once, `sharedRows`).
@@ -208,7 +213,8 @@ struct CopyMatrixTests {
 
         Don't edit it by hand: `CopyMatrixTests` writes it and fails when it is out of date. \
         To bring it up to date, run `TEST_RUNNER_COPY_MATRIX_WRITE=1 ./tests/run_tests.sh` and \
-        commit the diff. Sample values: \(sampleCount) rows, \(sampleSum), \(sampleDay).
+        commit the diff. Sample values: \(sampleCount) rows, \(sampleSum), \(sampleDay). Lei are \
+        counted: \(sampleLei).
 
         ## The visit form
 
@@ -232,13 +238,14 @@ struct CopyMatrixTests {
         out += "\n## „Gata” and „Am rezolvat”\n\n### What every deadline shares\n\n" + table(completionSharedRows) + "\n"
         out += "\n### The household's own (`HouseholdRules`)\n\n" + table(completionRows(TemplateDefinition(
             key: "household", name: "Gospodărie", summary: "", symbol: "house", tint: .gray, sections: [],
-            blueprints: HouseholdRules.blueprints, behavior: CategoryBehavior(visit: .none)))) + "\n"
+            blueprints: HouseholdRules.blueprints, behavior: CategoryBehavior(visit: .none, singular: nil)))) + "\n"
         for category in categories where !category.definition.blueprints.isEmpty {
             out += "\n### \(category.title)\n\n" + table(completionRows(category.definition)) + "\n"
         }
         out += recordsSections(categories)
         out += "\n" + (try pocketsSection(categories))
         out += "\n" + (try addSectionSection(categories))
+        out += "\n" + customCategorySection()
         out += "\n" + (try reviewSection())
         return out
     }
@@ -345,6 +352,48 @@ struct CopyMatrixTests {
             guard let form = VisitForm.make(for: category.definition), form.kind != .doctor, form.kind != .vet else { continue }
             let words = Self.tokens(Self.visitRows(form).map(\.1).joined(separator: " "))
             #expect(words.isDisjoint(with: Self.careWords), "\(category.title): \(words.intersection(Self.careWords).sorted())")
+        }
+    }
+
+    /// The sentences of a form's words: what ends in a full stop or a question mark, of three
+    /// words or more, folded.
+    static func sentences(_ text: String) -> [String] {
+        var found: [String] = []
+        var current = ""
+        for character in text {
+            current.append(character)
+            if character == "." || character == "?" {
+                let words = RomanianText.fold(current).split { !$0.isLetter }.map(String.init)
+                if words.count >= 3 { found.append(words.joined(separator: " ")) }
+                current = ""
+            }
+        }
+        return found
+    }
+
+    /// Whether two of `sentences` say the same thing: the same sentence, or the same first three words.
+    static func repeats(_ sentences: [String]) -> [String] {
+        var seen: [String: String] = [:]
+        var repeated: [String] = []
+        for sentence in sentences {
+            let opening = sentence.split(separator: " ").prefix(3).joined(separator: " ")
+            if let earlier = seen[opening] { repeated.append("„\(earlier)” and „\(sentence)”") } else { seen[opening] = sentence }
+        }
+        return repeated
+    }
+
+    @Test("No sentence is said twice on one form, nor two that open the same way („Din ea iau…” and „Din ea iau…”)")
+    func noRepeatedSentenceOnAForm() throws {
+        for category in try Self.categories() {
+            for (deadline, words) in Self.completionRows(category.definition) {
+                let repeated = Self.repeats(Self.sentences(words))
+                #expect(repeated.isEmpty, "\(category.title): \(deadline): \(repeated)")
+            }
+        }
+        for kind in CompletionKind.allCases {
+            guard let paper = kind.shape.paper else { continue }
+            let repeated = Self.repeats(Self.sentences("\(paper.purposeWords) \(paper.exampleWords)"))
+            #expect(repeated.isEmpty, "\(kind): \(repeated)")
         }
     }
 

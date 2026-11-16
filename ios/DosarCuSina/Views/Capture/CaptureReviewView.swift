@@ -474,7 +474,7 @@ struct CaptureReviewView: View {
                         CaptureLineItemsEditor(lines: $review.lineItems, currency: review.value(.total)?.money?.currency ?? Money.defaultCurrency)
                     }
                     // A policy's class is the person's, never the car's: say where it goes, or why it doesn't.
-                    if let bonusMalus = CaptureFilingPlan.bonusMalus(for: review, people: Policyholders.people(in: assets, templates: templatesByKey)) {
+                    if let bonusMalus = plan.bonusMalus {
                         Text(verbatim: Words.bonusMalus(bonusMalus))
                             .dsFont(.footnote)
                             .fixedSize(horizontal: false, vertical: true)

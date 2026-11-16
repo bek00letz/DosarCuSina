@@ -34,22 +34,47 @@ extension CopyMatrixTests {
 
     /// What a record's page says, for each kind of record a category makes: its visits (by its
     /// visit kind) and each of its deadlines' completions.
-    static func historyRows(_ definition: TemplateDefinition) -> [(String, String)] {
+    /// One kind of record a category makes: its title, its page's shape, what it is (its stored
+    /// kind, or a completion's record and the kind it is stored as) and, for a completion, the
+    /// completion its deadline declares.
+    struct RecordPage {
+        var title: String
+        var shape: HistoryEntryShape
+        var said: String
+        var completion: CompletionKind?
+    }
+
+    /// Each kind of record a category makes: its visits (by its visit kind), a note, and each of
+    /// its deadlines' completions (by the completion its blueprint declares).
+    static func recordPages(_ definition: TemplateDefinition) -> [RecordPage] {
         let visit = definition.behavior.visit.shape
-        var records: [(String, HistoryKind, Bool)] = []
-        if let visit { records.append((visit.entryTitle, visit.historyKind, false)) }
-        if definition.behavior.visit.addsNote { records.append(("Notă", .note, false)) }
-        for blueprint in definition.blueprints {
-            records.append((blueprint.title, HistoryKind.forCompleting(blueprint.kind), true))
+        var pages: [RecordPage] = []
+        if let visit {
+            pages.append(RecordPage(title: visit.entryTitle, shape: HistoryEntryShape.make(visit.historyKind, visit: visit),
+                                    said: visit.historyKind.rawValue, completion: nil))
         }
-        return records.map { title, kind, isCompletion in
-            let shape = HistoryEntryShape.make(kind, visit: visit)
+        if definition.behavior.visit.addsNote {
+            pages.append(RecordPage(title: "Notă", shape: HistoryEntryShape.make(.note, visit: visit), said: HistoryKind.note.rawValue, completion: nil))
+        }
+        for blueprint in definition.blueprints {
+            let completion = completionKind(blueprint)
+            let stored = HistoryKind.forCompleting(completion, importance: blueprint.kind)
+            pages.append(RecordPage(title: blueprint.title, shape: HistoryEntryShape.make(completing: completion, stored: stored, visit: visit),
+                                    said: "\(completion.record.rawValue)`, stored as `\(stored.rawValue)", completion: completion))
+        }
+        return pages
+    }
+
+    /// What a record's page says, for each kind of record a category makes.
+    static func historyRows(_ definition: TemplateDefinition) -> [(String, String)] {
+        recordPages(definition).map { page in
+            let shape = page.shape
+            let isCompletion = page.completion != nil
             let rated = shape.asksRating(isCompletion: isCompletion, hasSomeone: false)
             let ratedWithSomeone = shape.asksRating(isCompletion: isCompletion, hasSomeone: true)
             let rating = rated ? shape.ratingHeader : ratedWithSomeone ? "\(shape.ratingHeader) (only when someone did it)" : "no rating"
-            let reference = shape.referenceIsInvoice ? HistoryEntryWording.invoiceNumber("0001") : HistoryEntryWording.number("0001")
             let deleted = isCompletion ? HistoryEntryWording.keepsDeadline : HistoryEntryWording.removesRows(parts: shape.rowsAreParts)
-            return ("\(title) (`\(kind.rawValue)`)", "\(shape.itemsHeader) · \(shape.providerHeader) · \(rating) · \(reference) · deleting: \(deleted)")
+            return ("\(page.title) (`\(page.said)`)", "\(shape.itemsHeader) · \(shape.providerHeader) · \(rating) · \(shape.referenceWords("0001")) · deleting: \(deleted)")
         }
     }
 
@@ -110,6 +135,35 @@ struct RecordsCopyRulesTests {
         #expect(job.asksRating(isCompletion: false, hasSomeone: false), "A visit logged by hand")
         #expect(!job.asksRating(isCompletion: true, hasSomeone: false), "Watering, done with „Gata”")
         #expect(HistoryEntryShape.make(.inspection, visit: nil).asksRating(isCompletion: true, hasSomeone: true))
+    }
+
+    @Test("Each completion's page in Istoric fits what it is: a visit's provider only on a job or care, „Cui ai plătit” only where it asks what was paid, a check's words only on a check")
+    func completionPagesFitTheirKind() throws {
+        for category in try CopyMatrixTests.categories() {
+            let visitProvider = category.definition.behavior.visit.shape?.provider?.header
+            for page in CopyMatrixTests.recordPages(category.definition) {
+                guard let completion = page.completion else { continue }
+                let record = completion.record
+                let said = "\(category.title): \(page.title) (\(record))"
+                if let visitProvider, ![CompletionRecord.job, .care, .vaccination].contains(record) {
+                    #expect(page.shape.providerHeader != visitProvider, "\(said) names „\(visitProvider)”")
+                }
+                #expect((page.shape.providerHeader == HistoryEntryWording.paidTo) == (completion.shape.cost == .paid), "\(said): „\(page.shape.providerHeader)”")
+                #expect((page.shape.itemsHeader == HistoryEntryWording.whatWasChecked) == (record == .check), "\(said): „\(page.shape.itemsHeader)”")
+                if completion.shape.isOneTap {
+                    #expect(!page.shape.asksRating(isCompletion: true, hasSomeone: false), "\(said): a chore no one did asks no stars")
+                }
+            }
+        }
+    }
+
+    @Test("A completion is stored as its record's kind: a rovinietă bought, a policy paid, the kit bought")
+    func completionsAreStoredAsTheirRecord() {
+        #expect(HistoryKind.forCompleting(.vignette, importance: .legal) == .purchase)
+        #expect(HistoryKind.forCompleting(.safetyKit, importance: .legal) == .purchase)
+        #expect(HistoryKind.forCompleting(.policy, importance: .insurance) == .payment)
+        #expect(HistoryKind.forCompleting(.itp, importance: .legal) == .inspection)
+        #expect(HistoryKind.forCompleting(.petVaccine, importance: .legal) == .vaccination, "The rabies vaccine is a vaccine, not a check")
     }
 
     @Test("A visit's record speaks its category's words: a vet's „Veterinarul”, a car's parts")

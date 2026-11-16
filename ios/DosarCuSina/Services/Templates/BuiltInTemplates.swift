@@ -123,7 +123,8 @@ public enum BuiltInTemplates {
             components: BuiltInComponents.vehicle,
             pockets: [.upcoming, .documents, .history, .people, .money, .keyFacts],
             behavior: CategoryBehavior(role: .vehicle, sectionNoun: .car, visit: .service,
-                                       offerTitle: String(localized: "Mașină", comment: "Add-section option."), shortlistOrder: 1)
+                                       offerTitle: String(localized: "Mașină", comment: "Add-section option."), shortlistOrder: 1,
+                                       singular: SectionSingular(String(localized: "Mașina", comment: "One car, as a new section's name when none is typed."), .feminine))
         )
     }
 
@@ -191,7 +192,8 @@ public enum BuiltInTemplates {
             components: BuiltInComponents.home,
             pockets: [.upcoming, .tenants, .products, .subscriptions, .plants, .documents, .history, .people, .money, .keyFacts],
             behavior: CategoryBehavior(role: .home, sectionNoun: .home, visit: .job,
-                                       offerTitle: String(localized: "Casă sau apartament", comment: "Add-section option."), shortlistOrder: 2)
+                                       offerTitle: String(localized: "Casă sau apartament", comment: "Add-section option."), shortlistOrder: 2,
+                                       singular: SectionSingular(String(localized: "Locuința", comment: "One home, as a new section's name when none is typed."), .feminine))
         )
     }
 
@@ -225,7 +227,7 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: DocumentFields.expiry, label: String(localized: "Valabil până la"), type: .expiryDate, role: .expiryDate, isEssential: true,
                                     derivation: .validityAfterIssue(issueField: DocumentFields.issueDate)),
                     // What a cazier says, as printed. Sensitive: never searched, never outside the app.
-                    FieldDefinition(key: DocumentFields.recordResult, label: String(localized: "Ce scrie pe cazier"), type: .text, isSensitive: true,
+                    FieldDefinition(key: DocumentFields.recordResult, label: String(localized: "Ce scrie în cazier"), type: .text, isSensitive: true,
                                     appliesWhen: BlueprintCondition(field: DocumentType.typeFieldKey, oneOf: [DocumentType.criminalRecord])),
                     // A bank card keeps its network and its last four digits, never its whole number
                     // (`PaymentCardNumbers`), and never a PIN or a security code.
@@ -274,7 +276,8 @@ public enum BuiltInTemplates {
             ],
             pockets: [.upcoming, .documents, .keyFacts],
             behavior: CategoryBehavior(box: .wholeCategory, listing: .byHolder, role: .personalDocument, visit: .none,
-                                       offerTitle: String(localized: "Un act (buletin, pașaport, permis)", comment: "Add-section option."))
+                                       offerTitle: String(localized: "Un act (buletin, pașaport, permis)", comment: "Add-section option."),
+                                       singular: SectionSingular(String(localized: "Actul", comment: "One personal document, as a new section's name when none is typed."), .masculineOrNeuter))
         )
     }
 
@@ -338,7 +341,8 @@ public enum BuiltInTemplates {
             components: BuiltInComponents.pet,
             pockets: [.upcoming, .documents, .history, .people, .money, .keyFacts],
             behavior: CategoryBehavior(sectionNoun: .pet, visit: .vet,
-                                       offerTitle: String(localized: "Animal de companie", comment: "Add-section option."), shortlistOrder: 3)
+                                       offerTitle: String(localized: "Animal de companie", comment: "Add-section option."), shortlistOrder: 3,
+                                       singular: SectionSingular(String(localized: "Animalul", comment: "One pet, as a new section's name when none is typed."), .masculineOrNeuter))
         )
     }
 
@@ -377,7 +381,7 @@ public enum BuiltInTemplates {
                                     reminders: profile([30, 7], .financial), isSuggested: false),
             ],
             pockets: [.upcoming, .documents, .history, .people, .keyFacts],
-            behavior: CategoryBehavior(visit: .doctor)
+            behavior: CategoryBehavior(visit: .doctor, singular: SectionSingular(String(localized: "Fișa medicală", comment: "One person's health section, as a new section's name when none is typed."), .feminine))
         )
     }
 
@@ -419,7 +423,8 @@ public enum BuiltInTemplates {
             ],
             pockets: [.upcoming, .documents, .history, .money, .keyFacts],
             behavior: CategoryBehavior(box: .wholeCategory, listing: .byWarranty, parentPocket: .products, visit: .repair,
-                                       offerTitle: String(localized: "Produs cu garanție", comment: "Add-section option."), shortlistOrder: 5)
+                                       offerTitle: String(localized: "Produs cu garanție", comment: "Add-section option."), shortlistOrder: 5,
+                                       singular: SectionSingular(String(localized: "Produsul", comment: "One product with a warranty, as a new section's name when none is typed."), .masculineOrNeuter))
         )
     }
 
@@ -504,7 +509,8 @@ public enum BuiltInTemplates {
             ],
             pockets: [.upcoming, .documents, .history, .money, .keyFacts],
             behavior: CategoryBehavior(box: .wholeCategory, listing: .byMonthlyCost, role: .subscription, parentPocket: .subscriptions,
-                                       mayBelongTo: .home, visit: .none, offerTitle: String(localized: "Abonament", comment: "Add-section option."), shortlistOrder: 6)
+                                       mayBelongTo: .home, visit: .none, offerTitle: String(localized: "Abonament", comment: "Add-section option."), shortlistOrder: 6,
+                                       singular: SectionSingular(String(localized: "Abonamentul", comment: "One subscription, as a new section's name when none is typed."), .masculineOrNeuter))
         )
     }
 
@@ -523,7 +529,7 @@ public enum BuiltInTemplates {
                 PurchaseFields.section(prefix: "other"),
             ],
             pockets: SectionPocket.standard,
-            behavior: CategoryBehavior(visit: .job)
+            behavior: CategoryBehavior(visit: .job, singular: SectionSingular(String(localized: "Obiectul", comment: "One thing in Altele, as a new section's name when none is typed."), .masculineOrNeuter))
         )
     }
 
@@ -562,7 +568,7 @@ public enum BuiltInTemplates {
             ],
             components: BuiltInComponents.bike,
             pockets: [.upcoming, .history, .people, .money, .keyFacts],
-            behavior: CategoryBehavior(sectionNoun: .bike, visit: .service)
+            behavior: CategoryBehavior(sectionNoun: .bike, visit: .service, singular: SectionSingular(String(localized: "Bicicleta", comment: "One bike, as a new section's name when none is typed."), .feminine))
         )
     }
 
@@ -594,7 +600,8 @@ public enum BuiltInTemplates {
             pockets: [.upcoming, .history, .keyFacts],
             // One "Plante" box for all of them; each may stand in a home, on its page, or on its own.
             behavior: CategoryBehavior(parentPocket: .plants, defaultGrouping: .grouped, sectionNoun: .plant,
-                                       mayBelongTo: .home, goesUnderTheOnlyOne: true, visit: .note)
+                                       mayBelongTo: .home, goesUnderTheOnlyOne: true, visit: .note,
+                                       singular: SectionSingular(String(localized: "Planta", comment: "One plant, as a new section's name when none is typed."), .feminine))
         )
     }
 
@@ -628,7 +635,8 @@ public enum BuiltInTemplates {
                                     note: String(localized: "Timp să vorbiți despre prelungire sau să cauți alt chiriaș.")),
             ],
             pockets: [.upcoming, .documents, .people, .money, .keyFacts],
-            behavior: CategoryBehavior(box: .insideOther, parentPocket: .tenants, addedOnlyUnderParent: true, visit: .none)
+            behavior: CategoryBehavior(box: .insideOther, parentPocket: .tenants, addedOnlyUnderParent: true, visit: .none,
+                                       singular: SectionSingular(String(localized: "Chiriașul", comment: "One tenancy, as a new section's name when none is typed."), .masculineOrNeuter))
         )
     }
 
@@ -651,7 +659,8 @@ public enum BuiltInTemplates {
             ],
             pockets: [.upcoming, .documents, .keyFacts],
             behavior: CategoryBehavior(box: .insideOther, role: .holder, visit: .none,
-                                       offerTitle: String(localized: "Actele unei persoane", comment: "Add-section option."), shortlistOrder: 4)
+                                       offerTitle: String(localized: "Actele unei persoane", comment: "Add-section option."), shortlistOrder: 4,
+                                       singular: SectionSingular(String(localized: "Persoana", comment: "One household member, as a new section's name when none is typed."), .feminine))
         )
     }
 
@@ -684,7 +693,7 @@ public enum BuiltInTemplates {
             ],
             components: BuiltInComponents.espresso,
             pockets: [.upcoming, .history, .money, .keyFacts],
-            behavior: CategoryBehavior(sectionNoun: .espressoMachine, visit: .upkeep)
+            behavior: CategoryBehavior(sectionNoun: .espressoMachine, visit: .upkeep, singular: SectionSingular(String(localized: "Espressorul", comment: "One espresso machine, as a new section's name when none is typed."), .masculineOrNeuter))
         )
     }
 }

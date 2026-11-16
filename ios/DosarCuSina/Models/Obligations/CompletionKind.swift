@@ -148,7 +148,7 @@ public enum CompletionKind: String, Codable, Sendable, CaseIterable {
             return CompletionShape(cost: .cost, paper: CompletionShape.Paper(
                 name: String(localized: "Polița nouă"), gender: .feminine, use: .nextDate,
                 action: String(localized: "Fotografiază polița nouă", comment: "Am rezolvat: photographs the new insurance policy."),
-                example: String(localized: "Din ea iau numărul, asigurătorul și data.")))
+                example: String(localized: "Cea primită de la asigurător sau de la broker.", comment: "Am rezolvat: which paper, for a renewed insurance.")))
         case .itp:
             return CompletionShape(cost: .cost, paper: CompletionShape.Paper(
                 name: String(localized: "Raportul ITP", comment: "Am rezolvat: the ITP inspection report."), gender: .masculine, use: .nextDate,
@@ -216,5 +216,73 @@ public enum CompletionKind: String, Codable, Sendable, CaseIterable {
 
     private static var whatWasDone: String {
         String(localized: "Ce s-a făcut, ce urmează.")
+    }
+}
+
+/// What a completion is, as Istoric keeps it and shows it: a job someone did, upkeep done at
+/// home, a check, care from a doctor, a vaccine, a bill, a tax, a policy, something bought, a
+/// renewal, or an end only noted. Every completion kind states one
+/// (`CompletionKind.record`, with no default), so the history kind a completion writes
+/// (`historyKind`) and the words its page says in Istoric (`HistoryEntryShape.make(completing:visit:)`)
+/// come from the deadline's declared completion, never from its importance.
+public enum CompletionRecord: String, Sendable, CaseIterable {
+    /// Work someone did on it: a car's service, a tyre change, a chimney swept.
+    case job
+    /// Upkeep done at home, or a chore: deworming, descaling, watering.
+    case atHome
+    /// A check that leaves a report: an ITP, a boiler's or a gas installation's.
+    case check
+    /// Care from a doctor: yearly tests, a dentist.
+    case care
+    /// A vaccine, a person's or a pet's.
+    case vaccination
+    /// A bill paid.
+    case bill
+    /// A tax or a declaration paid.
+    case tax
+    /// An insurance policy renewed.
+    case policy
+    /// Something bought: a rovinietă, a new first-aid kit.
+    case purchase
+    /// A document, a card or a contract renewed.
+    case renewal
+    /// An end that was only noted: a warranty's, a minimum term's.
+    case acknowledged
+
+    /// The history kind its record is stored as (part of the `.dosar` contract).
+    public var historyKind: HistoryKind {
+        switch self {
+        case .job, .atHome: .maintenance
+        case .check: .inspection
+        case .care: .treatment
+        case .vaccination: .vaccination
+        case .bill, .tax, .policy: .payment
+        case .purchase: .purchase
+        case .renewal, .acknowledged: .note
+        }
+    }
+
+    /// The way back: off, a completion is stored as its deadline's importance gave it before
+    /// (`HistoryKind.byImportance`) and its page reads that kind alone. Remove with the owner's OK.
+    public static let decidesHistoryKind = true
+}
+
+extension CompletionKind {
+    /// What its completion is in Istoric.
+    public var record: CompletionRecord {
+        switch self {
+        case .chore, .doneAtHome: .atHome
+        case .acknowledged: .acknowledged
+        case .vehicleService, .tyreChange, .bikeService, .chimneySweep, .ownService: .job
+        case .bill: .bill
+        case .buildingTax, .rentalDeclaration, .ownTax: .tax
+        case .newDocument, .newHealthCard, .newContract, .newLease: .renewal
+        case .policy: .policy
+        // A legal deadline of one's own reads as a check, a health one as care, as before.
+        case .itp, .boilerCheck, .gasCheck, .ownLegal: .check
+        case .vignette, .safetyKit: .purchase
+        case .petVaccine, .vaccine: .vaccination
+        case .checkup, .dentist, .ownHealth: .care
+        }
     }
 }

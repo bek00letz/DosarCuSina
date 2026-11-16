@@ -2,6 +2,11 @@ import SwiftUI
 import SwiftData
 
 /// The full lists behind each pocket's "Vezi tot".
+///
+/// A shaped screen: a list's empty line is its pocket's, in the category's words
+/// (`SectionPocket.emptyLine(in:)`), and every other word is `SectionListWording`'s; the file
+/// holds no words of its own (the `text-in-shaped-screen` check), and `docs/COPY_MATRIX.md`
+/// shows them with the pockets (`CopyMatrixTests.pocketsSection`).
 struct SectionListScreen: View {
     let route: SectionListRoute
     @Query private var matches: [Asset]
@@ -86,10 +91,11 @@ struct ObligationListScreen: View {
     var body: some View {
         let obligations = UpcomingPocket.listed(asset)
         let suggestions = Self.offersSuggestionRows ? unusedBlueprints : []
+        let definition = templates.first?.definition ?? BuiltInTemplates.definition(for: asset.templateKey) ?? BuiltInTemplates.other
         List {
             Section {
                 if obligations.isEmpty {
-                    Text("Niciun termen încă.", comment: "Empty list of obligations.")
+                    Text(verbatim: SectionPocket.upcoming.emptyLine(in: definition))
                         .dsFont(.subheadline)
                 }
                 ForEach(obligations) { obligation in
@@ -98,7 +104,7 @@ struct ObligationListScreen: View {
                     }
                 }
             } header: {
-                Text("Termene", comment: "Header of the obligations list.")
+                Text(verbatim: SectionListWording.deadlines)
             }
             if !suggestions.isEmpty {
                 Section {
@@ -106,9 +112,9 @@ struct ObligationListScreen: View {
                         SuggestionRow(blueprint: blueprint, values: asset.values) { add(blueprint) }
                     }
                 } header: {
-                    Text("Poți adăuga", comment: "Header of suggested obligations.")
+                    Text(verbatim: SectionListWording.suggestions)
                 } footer: {
-                    Text("Sugestii pentru „\(asset.name)”. Le poți schimba oricând.", comment: "Footer of suggested obligations.")
+                    Text(verbatim: SectionListWording.suggestionsFor(asset.name))
                 }
             }
             Section {
@@ -117,7 +123,7 @@ struct ObligationListScreen: View {
                 } label: {
                     Group {
                         if Self.offersSuggestionRows {
-                            Label { Text("Alt termen", comment: "Adds an obligation that isn't in the suggestions.") } icon: { Image(systemName: "plus") }
+                            Label { Text(verbatim: SectionListWording.anotherDeadline) } icon: { Image(systemName: "plus") }
                         } else {
                             Label { Text(verbatim: PocketAddition.deadline.title) } icon: { Image(systemName: PocketAddition.deadline.systemImage) }
                         }
@@ -199,11 +205,11 @@ private struct SuggestionRow: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            DSCompactButton("Adaugă", action: add)
+            DSCompactButton(verbatim: SectionListWording.add, action: add)
         }
         .padding(.vertical, DS.Space.xxs)
         .accessibilityElement(children: .combine)
-        .accessibilityAction(named: Text("Adaugă", comment: "Adds a suggested obligation."), add)
+        .accessibilityAction(named: Text(verbatim: SectionListWording.add), add)
     }
 }
 
@@ -223,9 +229,10 @@ struct FirstDateSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: DS.Space.l) {
-                    Text("Când e următoarea dată pentru „\(title)”?", comment: "Question when adding an obligation that needs a date.")
+                    Text(verbatim: SectionListWording.nextDateQuestion(title))
                         .dsFont(.title)
-                    DSDateField("Data", date: $date, isRequired: true, footnote: "De exemplu, data până la care e valabil ITP-ul de acum.")
+                    DSDateField(LocalizedStringKey(SectionListWording.date), date: $date, isRequired: true,
+                                footnote: LocalizedStringKey(SectionListWording.dateFootnote))
                     Text(verbatim: ReminderWording.sentence(reminders))
                         .dsFont(.subheadline)
                 }
@@ -242,7 +249,7 @@ struct FirstDateSheet: View {
                         onSave(CalendarDay(date, calendar: calendar))
                         dismiss()
                     } label: {
-                        Text("Adaugă", comment: "Adds a suggested obligation.")
+                        Text(verbatim: SectionListWording.add)
                     }
                 }
             }
@@ -277,12 +284,12 @@ struct HistoryListScreen: View {
                         }
                     }
                 } header: {
-                    Text("Ultima dată", comment: "Header: the last time each part was done.")
+                    Text(verbatim: SectionListWording.lastTime)
                 }
             }
             Section {
                 if asset.timeline.isEmpty {
-                    Text("Nimic notat încă.", comment: "Empty history list.").dsFont(.subheadline)
+                    Text(verbatim: SectionPocket.history.emptyLine(in: definition)).dsFont(.subheadline)
                 }
                 ForEach(asset.timeline) { entry in
                     NavigationLink(value: AppRoute.historyEntry(entry.id)) {
@@ -290,7 +297,7 @@ struct HistoryListScreen: View {
                     }
                 }
             } header: {
-                Text("Tot istoricul", comment: "Header: every history entry.")
+                Text(verbatim: SectionListWording.wholeHistory)
             }
         }
         .navigationTitle(Text(SectionPocket.history.title))
@@ -324,7 +331,7 @@ struct PeopleListScreen: View {
                 ForEach(people) { provider in
                     DSCard { ProviderCard(provider: provider) }
                 }
-                DSSecondaryButton("Adaugă o persoană", systemImage: "person.badge.plus") { isAdding = true }
+                DSSecondaryButton(verbatim: PocketAddition.person.title, systemImage: PocketAddition.person.systemImage) { isAdding = true }
             }
             .padding(DS.Space.m)
         }
@@ -344,30 +351,32 @@ struct DocumentListScreen: View {
         // The pocket's own rule: a visit's invoice or a bill opens from its record in Istoric.
         let personal = SectionPapers.personal(asset, templates: templates).sorted { $0.name < $1.name }
         let papers = SectionPapers.listed(asset)
+        let definition = templates.first { $0.key == asset.templateKey }?.definition
+            ?? BuiltInTemplates.definition(for: asset.templateKey) ?? BuiltInTemplates.other
         List {
             if !personal.isEmpty {
                 Section {
                     ForEach(personal) { DocumentRowLink(item: .personal($0)) }
                 } header: {
-                    Text("Acte personale", comment: "Header: personal documents.")
+                    Text(verbatim: SectionListWording.personalDocuments)
                 }
             }
             Section {
                 if papers.isEmpty {
-                    Text("Niciun document scanat.", comment: "Empty list of scanned documents.").dsFont(.subheadline)
+                    Text(verbatim: SectionPocket.documents.emptyLine(in: definition)).dsFont(.subheadline)
                 }
                 ForEach(papers) { DocumentRowLink(item: .paper($0)) }
             } header: {
-                Text("Documente", comment: "Header: scanned documents.")
+                Text(verbatim: SectionListWording.documents)
             }
             let archived = SectionPapers.archived(asset)
             if !archived.isEmpty {
                 Section {
                     ForEach(archived) { DocumentRowLink(item: .paper($0)) }
                 } header: {
-                    Text("Arhivate", comment: "Header: documents kept for reference.")
+                    Text(verbatim: SectionListWording.archived)
                 } footer: {
-                    Text("Polițe și contracte vechi, păstrate pentru orice eventualitate.", comment: "Footer of archived documents.")
+                    Text(verbatim: SectionListWording.archivedFootnote)
                 }
             }
         }
@@ -396,7 +405,7 @@ struct ChildrenListScreen: View {
             Button {
                 router.present(.addSection(AddSectionRequest(parentID: asset.id, templateKey: templateKey)))
             } label: {
-                Label { Text("Adaugă", comment: "Adds a suggested obligation.") } icon: { Image(systemName: "plus") }
+                Label { Text(verbatim: SectionListWording.add) } icon: { Image(systemName: "plus") }
                     .frame(minHeight: 44)
             }
         }

@@ -306,7 +306,7 @@ enum DossierV2Converter {
             entryForEvent[dto.id] = entryId
             entries.append(DossierV3.HistoryEntry(
                 id: entryId, assetId: DossierV3.id(dto.assetId), obligationId: obligation.id,
-                kind: HistoryKind.forCompleting(kind).rawValue, title: dto.title, occurredAt: dto.completedDate ?? dto.dueDate,
+                kind: HistoryKind.forCompleting(.own(kind), importance: kind).rawValue, title: dto.title, occurredAt: dto.completedDate ?? dto.dueDate,
                 metricReading: dto.mileageAtEvent, totalCost: cost, note: nil, rating: nil,
                 cycleDueDate: due, nextDueDate: nil, previousStatus: ObligationStatus.active.rawValue, previousDueMetric: nil,
                 providerIds: [], isExample: false

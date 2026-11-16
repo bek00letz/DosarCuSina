@@ -11,8 +11,11 @@ import SwiftData
 // MARK: - What a kind says
 
 extension CaptureKindProfile.Noun {
-    /// The paper inside a sentence, after „pe”: „factură”, „cartea de identitate”.
-    var onPaper: String { String(localized: afterPe) }
+    /// The paper inside a sentence, after its preposition: „factură”, „cartea de identitate”.
+    var onPaper: String { String(localized: afterPreposition) }
+
+    /// The paper itself, with its article: „factura”, „contractul”.
+    var itself: String { String(localized: definite) }
 
     /// The summary card's heading and the place picker's title, agreeing with the paper's noun.
     var wherePutWords: String {
@@ -26,18 +29,28 @@ extension CaptureKindProfile.Noun {
         }
     }
 
-    /// Nothing was read off the page: it is kept all the same, under the name above.
+    /// Nothing was read off the page: it is kept all the same, under the name above. On a
+    /// paper or in it, as its noun says (`surface`).
     var nothingReadWords: String {
-        switch gender {
-        case .masculine:
+        switch (surface, gender) {
+        case (.on, .masculine):
             String(localized: "Nu am găsit date pe \(onPaper). Îl păstrez oricum, cu numele de mai sus.",
-                   comment: "Capture review: nothing read off a paper named by a masculine noun (the argument, e.g. „contract”); it is kept.")
-        case .feminine:
+                   comment: "Capture review: nothing read off a paper named by a masculine noun (the argument, e.g. „bon”); it is kept.")
+        case (.on, .feminine):
             String(localized: "Nu am găsit date pe \(onPaper). O păstrez oricum, cu numele de mai sus.",
                    comment: "Capture review: nothing read off a paper named by a feminine noun (the argument, e.g. „factură”); it is kept.")
-        case .plural:
+        case (.on, .plural):
             String(localized: "Nu am găsit date pe \(onPaper). Le păstrez oricum, cu numele de mai sus.",
                    comment: "Capture review: nothing read off papers named by a plural noun; they are kept.")
+        case (.inside, .masculine):
+            String(localized: "Nu am găsit date în \(onPaper). Îl păstrez oricum, cu numele de mai sus.",
+                   comment: "Capture review: nothing read in a paper named by a masculine noun (the argument, e.g. „contract”); it is kept.")
+        case (.inside, .feminine):
+            String(localized: "Nu am găsit date în \(onPaper). O păstrez oricum, cu numele de mai sus.",
+                   comment: "Capture review: nothing read in a paper named by a feminine noun (the argument, e.g. „poliță”); it is kept.")
+        case (.inside, .plural):
+            String(localized: "Nu am găsit date în \(onPaper). Le păstrez oricum, cu numele de mai sus.",
+                   comment: "Capture review: nothing read in papers named by a plural noun; they are kept.")
         }
     }
 
@@ -79,14 +92,27 @@ extension CaptureKindProfile.Noun {
 
     /// Under „Plătesc prin debit direct”: what the paper says, shortened, and what turning it on does.
     func directDebitWords(_ statement: String) -> String {
-        String(localized: "Pe \(onPaper) scrie: „\(statement)”. Dacă e așa, nu îți mai amintesc să plătești facturile.",
-               comment: "Capture review: a bill or a contract says the bank pays by direct debit. The first argument is the paper, e.g. „factură”; the second what it says.")
+        switch surface {
+        case .on:
+            String(localized: "Pe \(onPaper) scrie: „\(statement)”. Dacă e așa, nu îți mai amintesc să plătești facturile.",
+                   comment: "Capture review: a bill says the bank pays by direct debit. The first argument is the paper, e.g. „factură”; the second what it says.")
+        case .inside:
+            String(localized: "În \(onPaper) scrie: „\(statement)”. Dacă e așa, nu îți mai amintesc să plătești facturile.",
+                   comment: "Capture review: a contract says the bank pays by direct debit. The first argument is the paper, e.g. „contract”; the second what it says.")
+        }
     }
 
-    /// A value that passed its own check digit, beside a different one: „Pe factură scrie: …”.
+    /// A value that passed its own check digit, beside a different one: „Pe factură scrie: …”,
+    /// „În contract scrie: …”.
     func printedWords(_ value: String) -> String {
-        String(localized: "Pe \(onPaper) scrie: \(value)",
-               comment: "Capture review: a value that passed its own check digit, beside a different one. The first argument is the paper, e.g. „factură”.")
+        switch surface {
+        case .on:
+            String(localized: "Pe \(onPaper) scrie: \(value)",
+                   comment: "Capture review: a value that passed its own check digit, beside a different one. The first argument is the paper written on, e.g. „factură”.")
+        case .inside:
+            String(localized: "În \(onPaper) scrie: \(value)",
+                   comment: "Capture review: a value that passed its own check digit, beside a different one. The first argument is the paper written in, e.g. „contract”.")
+        }
     }
 }
 
@@ -402,7 +428,7 @@ enum CaptureReviewWording {
                comment: "Capture review: a policy's bonus-malus class is kept on the person it insures. The argument is their name.")
     }
     static var bonusMalusNoPolicyholder: String {
-        String(localized: "Clasa bonus-malus n-o păstrez: pe poliță nu scrie cine e asiguratul.", comment: "Capture review: a policy that doesn't say who it insures.")
+        String(localized: "Clasa bonus-malus n-o păstrez: în poliță nu scrie cine e asiguratul.", comment: "Capture review: a policy that doesn't say who it insures.")
     }
     static func bonusMalusNotInHousehold(_ name: String) -> String {
         String(localized: "Clasa bonus-malus n-o păstrez: \(name) nu e printre persoanele din dosar. Adaugă persoana și citește polița din nou.",
