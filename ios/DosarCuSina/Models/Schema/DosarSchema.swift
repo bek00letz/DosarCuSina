@@ -154,7 +154,7 @@ public enum DosarMigrationPlan: SchemaMigrationPlan {
     /// Version 15 only adds an optional value to categories (whether the person chose one box for
     /// its sections or one each); existing categories keep every value and have none, which means
     /// the catalog's choice: cars and homes one box each, as before, and plants one box together.
-    /// Nothing is guessed for anyone; the person chooses from the binder or the category's page.
+    /// Nothing is guessed for anyone; the person chooses from the binder or Settings.
     static var v14ToV15: MigrationStage { .lightweight(fromVersion: DosarSchemaV14.self, toVersion: DosarSchemaV15.self) }
 }
 

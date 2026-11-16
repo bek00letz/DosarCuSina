@@ -175,9 +175,12 @@ struct DSBox: View {
     }
 }
 
-/// The last box on the grid: a dashed outline that adds a new section.
+/// The last box on the grid: a dashed outline that adds a new section, naming under its title
+/// what it can add that has no box yet („Acte, Garanții, Abonamente, Mașini…”).
 struct DSAddBox: View {
     let title: LocalizedStringKey
+    /// What can be added, as data the caller writes (`BinderLayout.addBoxLine`); nil for none.
+    var detail: String?
 
     var body: some View {
         VStack(spacing: DS.Space.s) {
@@ -185,13 +188,24 @@ struct DSAddBox: View {
                 .font(.system(.title2, weight: .semibold))
                 .foregroundStyle(DS.Palette.accent)
                 .accessibilityHidden(true)
-            Text(title)
-                .dsFont(.headline)
-                .foregroundStyle(DS.Palette.accent)
-                .multilineTextAlignment(.center)
+            VStack(spacing: DS.Space.xxs) {
+                Text(title)
+                    .dsFont(.headline)
+                    .foregroundStyle(DS.Palette.accent)
+                    .multilineTextAlignment(.center)
+                if let detail {
+                    Text(verbatim: detail)
+                        .dsFont(.footnote)
+                        .foregroundStyle(DS.Palette.secondaryLabel)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(3)
+                        .transition(.opacity)
+                }
+            }
         }
         .padding(DS.Space.m)
         .frame(maxWidth: .infinity, minHeight: 168)
+        .accessibilityElement(children: .combine)
         .background {
             RoundedRectangle(cornerRadius: DS.Radius.card, style: .continuous)
                 .strokeBorder(DS.Palette.accent.opacity(0.55), style: StrokeStyle(lineWidth: 1.5, dash: [7, 5]))

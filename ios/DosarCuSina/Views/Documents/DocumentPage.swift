@@ -91,17 +91,8 @@ private struct PersonalDocumentContent: View {
                 }
                 .keyboardShortcut("e", modifiers: .command)
             }
-            if AssetActions.canMove(document) {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        Button { isMoving = true } label: {
-                            Label { Text("Mută la…", comment: "Menu item that files something under another parent.") } icon: { Image(systemName: "arrow.turn.up.right") }
-                        }
-                    } label: {
-                        Label { Text("Mai multe", comment: "Toolbar menu with more actions for a section.") } icon: { Image(systemName: "ellipsis.circle") }
-                    }
-                }
-            }
+            // One extra action shows as itself ("Mută la…"); several would share "Mai multe".
+            DSMoreActionsToolbar(actions: moreActions)
         }
         .sheet(isPresented: $isEditing) {
             DocumentEditSheet(document: document, definition: definition, picture: picture) { toast = $0 }
@@ -120,6 +111,13 @@ private struct PersonalDocumentContent: View {
         }
         .dsToast($toast)
         .userErrorAlert($error)
+    }
+
+    /// The page's extra actions, shown by the design system's one rule (`DSMoreActionsLayout`).
+    private var moreActions: [DSMoreAction] {
+        guard AssetActions.canMove(document) else { return [] }
+        return [DSMoreAction(id: "move", title: Text("Mută la…", comment: "Menu item that files something under another parent."),
+                             systemImage: "arrow.turn.up.right") { isMoving = true }]
     }
 
     private func delete() {

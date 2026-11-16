@@ -95,16 +95,28 @@ struct BinderLayoutTests {
     }
 
     @Test func defaultOrderFollowsHomeOrderWithCategoryBoxesAndAgendaLast() {
-        let order = BinderLayout.defaultOrder(templates: templates, assets: assets)
+        let purchase = UUID(), subscription = UUID()
+        let filled = assets + [
+            .init(id: purchase, templateKey: "purchase", isTopLevel: true, createdAt: Date(timeIntervalSince1970: 7)),
+            .init(id: subscription, templateKey: "subscription", isTopLevel: true, createdAt: Date(timeIntervalSince1970: 8)),
+        ]
+        var withDocuments = templates
+        withDocuments[2].role = .personalDocument
+        withDocuments[8].role = .holder
+        let order = BinderLayout.defaultOrder(templates: withDocuments, assets: filled, hasContacts: true)
         #expect(order == [
             .asset(car), .asset(flat), .category("documents"), .asset(cat),
             .category("purchase"), .category("subscription"), .asset(orphan), .agenda,
+        ], "Acte holds the household's people, so it has a box before any document")
+        // Empty, a category's one box and Agenda fold into the add box.
+        #expect(BinderLayout.defaultOrder(templates: templates, assets: assets, hasContacts: false) == [
+            .asset(car), .asset(flat), .asset(cat), .asset(orphan),
         ])
     }
 
     @Test func hiddenCategoriesAndNestedRecordsGetNoBox() {
         let bike = UUID()
-        let order = BinderLayout.defaultOrder(templates: templates, assets: assets + [.init(id: bike, templateKey: "bike", isTopLevel: true, createdAt: .now)])
+        let order = BinderLayout.defaultOrder(templates: templates, assets: assets + [.init(id: bike, templateKey: "bike", isTopLevel: true, createdAt: .now)], hasContacts: true)
         #expect(!order.contains(.asset(bike)))
         #expect(!order.contains(.asset(tenancy)))
         #expect(!order.contains(.asset(member)))

@@ -9,9 +9,13 @@ import SwiftData
 /// that home, where its page lists it; it stays in its category's box. It asks, because it
 /// changes where the section is listed. With several homes nothing is guessed: one note says to
 /// move them with "Mută la…". With none, there is nothing to offer. Examples are left as they are.
+/// Nothing was saved wrongly, so its findings are suggestions (`isSuggestion`): one calm note in
+/// Urmează's "Din timp", never the repair list or its prompt. Its id and the answers kept by it stay.
 struct SectionsIntoTheirHomeStep: DataRepairStep {
     static let id = DataRepairStepID.sectionsIntoTheirHome
     var title: String { String(localized: "Ce stă într-o locuință", comment: "Repair group: plants that can be filed under the household's home.") }
+    var isSuggestion: Bool { true }
+    var applyTitle: String { String(localized: "Mută", comment: "Applies a suggestion that files a section (a plant) under the household's home.") }
 
     /// A category whose sections go under the only home, its sections on their own and the
     /// homes they could go under.

@@ -20,7 +20,8 @@ struct DataRepairs {
     var calendar: Calendar = .dosar
     var ledger: DataRepairLedger = .standard
 
-    /// The registry, in the order the steps run. A new repair is a new step at the end.
+    /// The registry, in the order the steps run. A new repair is a new step at the end; a step
+    /// whose findings are suggestions rather than corrections says so (`isSuggestion`).
     static let steps: [any DataRepairStep] = [
         ChoiceKeysStep(),
         FirstVersionDeadlinesStep(),
@@ -48,6 +49,12 @@ struct DataRepairs {
 
     static func step(_ id: DataRepairStepID) -> any DataRepairStep {
         steps.first { type(of: $0).id == id }!
+    }
+
+    /// Whether a finding is a suggestion (its step's `isSuggestion`): the one rule that keeps
+    /// suggestions out of the repair list and its prompt.
+    static func isSuggestion(_ finding: DataRepairFinding) -> Bool {
+        step(finding.step).isSuggestion
     }
 
     /// Runs the steps that change nothing anyone sees, then lists what waits for the owner,
@@ -169,6 +176,14 @@ protocol DataRepairStep {
     static var id: DataRepairStepID { get }
     /// What a group of these findings is called in the list: "Kilometraj și contoare".
     var title: String { get }
+    /// Its findings are suggestions, not corrections: nothing was saved wrongly, the app can now
+    /// do better with what is there (a plant that can stand in the home). A suggestion is never in
+    /// the repair list and never announced by its prompt; it waits as one calm note in Urmează's
+    /// "Din timp" (`AttentionModel.suggestionNote`), which opens `SuggestionsScreen`.
+    var isSuggestion: Bool { get }
+    /// What applying one of its findings says on its button: "Corectează", or a suggestion's own
+    /// verb ("Mută").
+    var applyTitle: String { get }
     /// Changes only how something is stored, never what it says: runs without asking.
     var runsByItself: Bool { get }
     func runByItself(in context: ModelContext) throws
@@ -179,6 +194,8 @@ protocol DataRepairStep {
 }
 
 extension DataRepairStep {
+    var isSuggestion: Bool { false }
+    var applyTitle: String { String(localized: "Corectează", comment: "Applies one repair from the repair list.") }
     var runsByItself: Bool { false }
     func runByItself(in context: ModelContext) throws {}
     func findings(_ scan: inout DataRepairScan) throws -> [DataRepairFinding] { [] }
