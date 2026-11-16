@@ -199,8 +199,11 @@ struct CopyMatrixTests {
 
         What each shaped screen says to each category, generated from the kinds' descriptions: \
         the visit form from `VisitShape` laid over the category (`VisitForm`), „Gata” and \
-        „Am rezolvat” from `CompletionShape`. Every built-in category is here, and one category \
-        of one's own per combination of its switches. Reviews walk every category through it.
+        „Am rezolvat” from each deadline's `CompletionKind`, the deadline form and a record's \
+        page in Istoric (`HistoryEntryShape`), a section page's pockets, adding a section, and \
+        the capture review by document kind (`CaptureKindProfile`). Every built-in category is \
+        here, and one category of one's own per combination of its switches. Reviews walk every \
+        category through it.
 
         Don't edit it by hand: `CopyMatrixTests` writes it and fails when it is out of date. \
         To bring it up to date, run `TEST_RUNNER_COPY_MATRIX_WRITE=1 ./tests/run_tests.sh` and \
@@ -232,6 +235,10 @@ struct CopyMatrixTests {
         for category in categories where !category.definition.blueprints.isEmpty {
             out += "\n### \(category.title)\n\n" + table(completionRows(category.definition)) + "\n"
         }
+        out += recordsSections(categories)
+        out += "\n" + (try pocketsSection(categories))
+        out += "\n" + (try addSectionSection(categories))
+        out += "\n" + (try reviewSection())
         return out
     }
 
