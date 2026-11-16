@@ -3,7 +3,7 @@ import SwiftUI
 
 /// "Editează" on a personal document's page: correct its values, add its back when only
 /// the front is kept, or read it again. Reading puts what it found into the form and says
-/// which values changed, with "Păstrează ce era"; nothing is kept until "Gata", which saves
+/// which values changed, with "Păstrează ce era"; nothing is kept until "Salvează", which saves
 /// everything as one step the page's toast can take back (`AssetActions.editDocument`).
 /// Swiping down with changes asks first.
 struct DocumentEditSheet: View {
@@ -91,7 +91,7 @@ struct DocumentEditSheet: View {
                 ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
                 ToolbarItem(placement: .confirmationAction) {
                     Button { save() } label: {
-                        Text("Gata", comment: "Closes an editor and keeps what was typed.")
+                        Text("Salvează", comment: "Saves what was typed in an editor and closes it.")
                     }
                     .disabled(isReading)
                     .keyboardShortcut(.return, modifiers: .command)

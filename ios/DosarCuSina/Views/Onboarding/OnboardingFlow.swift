@@ -79,7 +79,7 @@ struct OnboardingFlow: View {
 
     private var motion: Animation { DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion) }
 
-    /// What the photo step shows once its capture closes: the message under "Gata" and the
+    /// What the photo step shows once its capture closes: the message under "E în dosar" and the
     /// toast that can take the filing back. Taken back, `takenBack` runs, so the step offers
     /// the photo again. Nil when nothing was saved.
     @MainActor
@@ -114,7 +114,7 @@ struct OnboardingFlow: View {
             message: "O poliță, un pașaport, o factură. Îl citesc pe telefon și îți arăt ce am găsit înainte să salvez ceva."
         ) {
             if let photoMessage {
-                DSNotice(.success, title: "Gata", message: LocalizedStringKey(String(localized: photoMessage)))
+                DSNotice(.success, title: "E în dosar", message: LocalizedStringKey(String(localized: photoMessage)))
                 DSPrimaryButton("Continuă", action: advance)
             } else {
                 if let errorMessage {

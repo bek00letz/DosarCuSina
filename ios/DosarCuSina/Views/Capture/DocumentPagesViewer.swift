@@ -34,7 +34,7 @@ struct DocumentPageEditing {
 }
 
 /// A document's pages full screen, as they are shown (cut out, turned): pinch or
-/// double-tap to zoom, swipe between pages, swipe down or "Gata" to close. A PDF page is
+/// double-tap to zoom, swipe between pages, swipe down or "Închide" to close. A PDF page is
 /// drawn again at the zoom shown, so small print stays sharp. With `editing`, "Rotește"
 /// and "Poza întreagă" / "Doar actul"; with `share`, "Trimite". Used by the capture review
 /// and the document page.
@@ -96,7 +96,7 @@ struct DocumentPagesViewer: View {
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button { close() } label: { Text("Gata", comment: "Closes the full-screen page viewer.") }
+                    Button { close() } label: { Text("Închide", comment: "Closes the full-screen page viewer.") }
                 }
             }
             .onChange(of: selection) { isZoomed = false }

@@ -3,10 +3,16 @@ import SwiftUI
 /// How "Am rezolvat" puts what a kind asks (`CompletionShape`), in the app's words.
 
 extension CompletionShape {
-    /// The deadline page's main button: "Gata" for a chore done in one tap, else "Am rezolvat",
-    /// which opens the sheet.
+    /// The deadline page's main button and Urmează's swipe: "Gata" for a chore done in one tap,
+    /// else "Am rezolvat", which opens the sheet (`CompletionEntry`).
     var actionTitle: LocalizedStringKey {
         isOneTap ? "Gata" : "Am rezolvat"
+    }
+
+    /// The same words in a menu and as VoiceOver's action: one that opens the sheet ends with
+    /// "…", since it asks something before anything is done.
+    var menuTitle: LocalizedStringKey {
+        isOneTap ? "Gata" : "Am rezolvat…"
     }
 }
 

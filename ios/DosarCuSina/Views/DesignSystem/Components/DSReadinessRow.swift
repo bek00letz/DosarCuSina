@@ -30,7 +30,7 @@ extension ReadinessStatus {
     var spokenTitle: String {
         switch self {
         case .problem: String(localized: "De rezolvat", comment: "VoiceOver: a readiness check that fails.")
-        case .warning: String(localized: "De verificat", comment: "VoiceOver: a readiness check worth a look.")
+        case .warning: String(localized: "Merită o privire", comment: "VoiceOver: a readiness check worth a look. Never „De verificat”, which is the share inbox.")
         case .missing: String(localized: "Nu e în dosar", comment: "VoiceOver: a readiness check the binder can't do yet.")
         case .ok: String(localized: "Pregătit", comment: "VoiceOver: a readiness check that is fine.")
         case .reminder: String(localized: "De luat", comment: "VoiceOver: something to bring.")

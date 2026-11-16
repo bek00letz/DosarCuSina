@@ -199,7 +199,7 @@ struct KeyFactsPocket: View {
     }
 }
 
-/// Inline editor for one of the person's own rows. Saves on "Gata". A row
+/// Inline editor for one of the person's own rows. Saves on "Salvează". A row
 /// whose label names a code ("Parolă Wi-Fi", "Cod alarmă") starts as a secret
 /// until the person sets the switch themselves.
 private struct CustomFactEditor: View {
@@ -245,7 +245,7 @@ private struct CustomFactEditor: View {
             }
             HStack(spacing: DS.Space.s) {
                 DSSecondaryButton(Text("Șterge rândul", comment: "Deletes a custom fact row."), role: .destructive, action: onDelete)
-                DSPrimaryButton(Text("Gata", comment: "Closes an editor and keeps what was typed.")) {
+                DSPrimaryButton(Text("Salvează", comment: "Saves what was typed in an editor and closes it.")) {
                     if isEmpty {
                         onCancel()
                     } else {

@@ -71,9 +71,9 @@ enum SettingsPage: String, Hashable, CaseIterable, Sendable {
         case .notifications: String(localized: "Notificări", comment: "Settings section.")
         case .protection: String(localized: "Protecție", comment: "Settings page: Face ID for the app and for categories, and the iPhone's search.")
         case .dosarScreen: String(localized: "Ecranul Dosar", comment: "Settings page: which categories show on the binder and how their boxes are arranged.")
-        case .iCloudAndBackups: String(localized: "iCloud și copii", comment: "Settings page: iCloud sync, backups and storage.")
+        case .iCloudAndBackups: String(localized: "iCloud și copii de siguranță", comment: "Settings page: iCloud sync, backups and storage.")
         case .ai: String(localized: "Citire cu AI", comment: "Settings page: the optional AI service that reads documents better.")
-        case .repairs: String(localized: "Date de verificat", comment: "Settings row that opens the repair list.")
+        case .repairs: String(localized: "De corectat", comment: "Settings row that opens the repair list.")
         case .examples: String(localized: "Exemple", comment: "Settings section.")
         case .about: String(localized: "Despre", comment: "Settings section.")
         }
@@ -150,12 +150,12 @@ enum SettingsStatus {
         return provider.name
     }
 
-    /// "Nimic de verificat", "Un lucru de verificat", "3 lucruri de verificat".
+    /// "Nimic de corectat", "Un lucru de corectat", "3 lucruri de corectat".
     static func repairs(_ count: Int) -> String {
         guard count > 0 else {
-            return String(localized: "Nimic de verificat", comment: "Settings row: the repair list is empty.")
+            return String(localized: "Nimic de corectat", comment: "Settings row: the repair list is empty.")
         }
-        return String(localized: "\(count) lucruri de verificat", comment: "Settings row: how many things wait in the repair list, with Romanian plural forms (un lucru de verificat).")
+        return String(localized: "\(count) lucruri de corectat", comment: "Settings row: how many things wait in the repair list, with Romanian plural forms (un lucru de corectat).")
     }
 
     static var examples: String {
@@ -187,7 +187,7 @@ private struct SettingsPagesScreen: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
-                        Button { dismiss() } label: { Text("Gata", comment: "Closes an editor and keeps what was typed.") }
+                        Button { dismiss() } label: { Text("Închide", comment: "Closes Settings.") }
                     }
                 }
         }

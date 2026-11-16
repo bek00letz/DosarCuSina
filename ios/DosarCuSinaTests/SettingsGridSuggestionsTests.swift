@@ -44,9 +44,9 @@ struct SettingsGridSuggestionsTests {
         #expect(SettingsPage.groups(hasExamples: false).flatMap { $0 } == SettingsPage.listed(hasExamples: false), "Every page in one group, in order")
         #expect(SettingsPage.groups(hasExamples: true).flatMap { $0 } == SettingsPage.listed(hasExamples: true))
         #expect(Set(SettingsPage.allCases.map(\.title)).count == SettingsPage.allCases.count)
-        #expect(SettingsPage.iCloudAndBackups.title == "iCloud și copii")
+        #expect(SettingsPage.iCloudAndBackups.title == "iCloud și copii de siguranță", "Backups are copii de siguranță everywhere")
         #expect(SettingsPage.ai.title == "Citire cu AI")
-        #expect(SettingsPage.repairs.title == "Date de verificat", "The repair list keeps its name")
+        #expect(SettingsPage.repairs.title == "De corectat", "The repair list: De verificat is only the share inbox")
     }
 
     @Test func eachRowSaysHowItStandsInWords() {
@@ -75,9 +75,9 @@ struct SettingsGridSuggestionsTests {
         #expect(SettingsStatus.ai(readyWith: nil) == "Oprită, citesc pe telefon")
         #expect(SettingsStatus.ai(readyWith: .gemini) == AIProvider.gemini.name)
 
-        #expect(SettingsStatus.repairs(0) == "Nimic de verificat")
-        #expect(SettingsStatus.repairs(1) == "Un lucru de verificat")
-        #expect(SettingsStatus.repairs(3) == "3 lucruri de verificat")
+        #expect(SettingsStatus.repairs(0) == "Nimic de corectat")
+        #expect(SettingsStatus.repairs(1) == "Un lucru de corectat")
+        #expect(SettingsStatus.repairs(3) == "3 lucruri de corectat")
     }
 
     // MARK: Examples, removed where they are

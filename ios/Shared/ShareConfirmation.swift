@@ -3,7 +3,7 @@ import Foundation
 /// What the share sheet's confirmation says and does, phase by phase. The share
 /// extension draws it; it lives here so the app's tests pin it.
 ///
-/// It stays until the person taps "Gata" (`closesByItself` is off): what happens next
+/// It stays until the person taps "Închide" (`closesByItself` is off): what happens next
 /// ("Atinge notificarea ca să continui…") matters too much to vanish before it is read.
 public struct ShareConfirmation: Equatable, Sendable {
     /// Where the share is.
@@ -19,16 +19,27 @@ public struct ShareConfirmation: Equatable, Sendable {
         case tooLarge
     }
 
-    /// The one button under it.
+    /// The one button under it. Neither is "Gata" or "Anulează": the share is already made when
+    /// there is something to say, so the button only closes the sheet ("Închide"), and while
+    /// copying it stops before anything arrives ("Renunță"). Those two words keep their one
+    /// meaning: marking a deadline done, taking back the step just taken (docs/COPY_GUIDE.md).
     public enum Action: Equatable, Sendable {
-        /// While copying: stop and close ("Anulează").
+        /// While copying: stop and close ("Renunță").
         case cancel
-        /// Once there is something to say: close ("Gata"), the sheet's main action.
-        case done
+        /// Once there is something to say: close the sheet ("Închide"), its main action.
+        case close
+
+        /// What the button says.
+        public var title: String {
+            switch self {
+            case .cancel: String(localized: "Renunță", table: "Shared", comment: "Share sheet: stops copying what was shared and closes.")
+            case .close: String(localized: "Închide", table: "Shared", comment: "Share sheet: closes the confirmation; what was shared is already in the app.")
+            }
+        }
     }
 
     /// The confirmation used to close by itself `DS.Motion.confirmationDwell` after a
-    /// successful share. Off: it stays until "Gata". Kept switched off as the way back
+    /// successful share. Off: it stays until "Închide". Kept switched off as the way back
     /// until the owner has seen the new one on a phone.
     public static let closesByItself = false
 
@@ -59,6 +70,6 @@ public struct ShareConfirmation: Equatable, Sendable {
             title = String(localized: "Fișierul e prea mare", table: "Shared", comment: "Share sheet: a file or the share is too large.")
             message = String(localized: "Trimite actele câte unul, sau ca poze în loc de un PDF mare.", table: "Shared", comment: "Share sheet: what to do with a file that is too large.")
         }
-        action = phase == .working ? .cancel : .done
+        action = phase == .working ? .cancel : .close
     }
 }

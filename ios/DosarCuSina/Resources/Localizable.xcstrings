@@ -291,6 +291,35 @@
         }
       }
     },
+    "%lld lucruri de corectat": {
+      "comment": "Settings row: how many things wait in the repair list, with Romanian plural forms (un lucru de corectat).",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Un lucru de corectat"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld lucruri de corectat"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de lucruri de corectat"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld lucruri de rezolvat": {
       "comment": "Readiness summary: how many checks need the person.",
       "localizations": {
@@ -313,35 +342,6 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld de lucruri de rezolvat"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "%lld lucruri de verificat": {
-      "comment": "Settings row: how many things wait in the repair list, with Romanian plural forms (un lucru de verificat).",
-      "localizations": {
-        "ro": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "Un lucru de verificat"
-                }
-              },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld lucruri de verificat"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld de lucruri de verificat"
                 }
               }
             }
@@ -719,7 +719,7 @@
       }
     },
     "Anulează": {
-      "comment": "Button that closes an editing sheet, or reverses the action a toast confirms."
+      "comment": "Toast button that takes back the step just taken. Used only there: a sheet or a flow is left with „Renunță”."
     },
     "Azi": {
       "comment": "Badge: the obligation is due today."
@@ -948,8 +948,8 @@
         }
       }
     },
-    "Mai sunt %lld lucruri de verificat": {
-      "comment": "Opens the review's other notices. The number is how many more there are.",
+    "Mai sunt %lld observații": {
+      "comment": "Opens the review's other notices. The number is how many more there are, with Romanian plural forms (Mai e o observație).",
       "localizations": {
         "ro": {
           "variations": {
@@ -957,19 +957,19 @@
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Mai e un lucru de verificat"
+                  "value": "Mai e o observație"
                 }
               },
               "few": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Mai sunt %lld lucruri de verificat"
+                  "value": "Mai sunt %lld observații"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "Mai sunt %lld de lucruri de verificat"
+                  "value": "Mai sunt %lld de observații"
                 }
               }
             }
@@ -1131,7 +1131,7 @@
       "comment": "Button on an error screen that retries the failed action."
     },
     "Închide": {
-      "comment": "VoiceOver action that dismisses a toast."
+      "comment": "Closes a sheet, a page or a viewer without doing anything else; also the VoiceOver action that dismisses a toast."
     },
     "Încă %lld sunt mai jos, la Curând.": {
       "comment": "Urmează: items that didn't fit under Acum",

@@ -10,7 +10,7 @@ import SwiftData
 public struct SectionOffers {
     /// "Cele mai des folosite".
     public var shortlist: [CategoryTemplate]
-    /// "Alte secțiuni gata făcute": everything else that can be added on its own.
+    /// "Alte categorii": everything else that can be added on its own.
     public var others: [CategoryTemplate]
 
     public init(_ templates: [CategoryTemplate]) {

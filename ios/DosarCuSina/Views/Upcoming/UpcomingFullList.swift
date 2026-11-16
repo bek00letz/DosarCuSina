@@ -45,7 +45,7 @@ struct UpcomingFullList: View {
                 ForEach(hidden) { item in
                     VStack(alignment: .leading, spacing: DS.Space.xs) {
                         row(item, today: today)
-                        Button(item.status == .paused ? "Pornește din nou" : "Anulează amânarea") { bringBack(item) }
+                        Button(item.status == .paused ? "Pornește din nou" : "Nu mai amâna") { bringBack(item) }
                             .buttonStyle(.bordered)
                             .frame(minHeight: 44)
                     }

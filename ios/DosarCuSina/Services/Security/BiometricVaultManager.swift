@@ -26,7 +26,7 @@ public struct SystemBiometricAuthenticator: BiometricAuthenticating {
     /// Device-owner authentication: Face ID or Touch ID, with the passcode as fallback.
     public func evaluate(localizedReason: String) async throws -> Bool {
         let context = LAContext()
-        context.localizedCancelTitle = String(localized: "Anulează")
+        context.localizedCancelTitle = String(localized: "Renunță", comment: "Cancel button of the Face ID prompt.")
         return try await context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: localizedReason)
     }
 }

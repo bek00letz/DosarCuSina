@@ -109,7 +109,7 @@ struct TripChecklistView: View {
         TripHeader(plan: plan, checklist: result, onChange: edit)
         if result.groups.isEmpty {
             DSEmptyState(
-                "Nimic de verificat încă",
+                "Nimic de pregătit încă",
                 systemImage: "checklist",
                 message: "Alege cine pleacă, cu ce mașină sau cu ce animal, și îți spun ce e pregătit.",
                 actionTitle: "Schimbă călătoria",

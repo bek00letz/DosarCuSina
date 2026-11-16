@@ -117,7 +117,7 @@ private struct CaptureLineItemSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(action: save) { Text("Gata", comment: "Saves the bill line.") }
+                    Button(action: save) { Text("Salvează", comment: "Saves the bill line.") }
                         .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }

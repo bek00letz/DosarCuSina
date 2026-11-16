@@ -121,7 +121,7 @@ struct AddRoot: View {
             DSActionCard("Din Fișiere", subtitle: "Un PDF sau o poză salvată pe telefon.", systemImage: "folder.fill") {
                 source = .files
             }
-            DSActionCard("Scriu eu", subtitle: "Alegi secțiunea, apoi ce adaugi: un termen, o vizită, un act.", systemImage: "square.and.pencil") {
+            DSActionCard("Scriu eu", subtitle: "Alegi secțiunea, apoi scrii un termen sau o vizită.", systemImage: "square.and.pencil") {
                 isAddingManually = true
             }
         }

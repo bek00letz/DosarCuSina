@@ -4,7 +4,7 @@ import Foundation
 /// already in the binder, values to check, a reading that didn't work, a way to read it better.
 ///
 /// The review shows one at a time, the most important first by one rule (`importance`), and the
-/// others behind "Mai sunt 2 lucruri de verificat", so nothing is lost and nothing piles up
+/// others behind "Mai sunt 2 observații" (never "de verificat", which is the share inbox), so nothing is lost and nothing piles up
 /// above what the person came to confirm.
 enum ReviewNotice: Equatable, Identifiable {
     /// "Citește automat" wants to send an identity document's photo to the AI provider: it waits
@@ -57,7 +57,7 @@ enum ReviewNotice: Equatable, Identifiable {
     }
 
     /// The notices in the order the review shows them: the first on its own, the rest behind
-    /// "Mai sunt … lucruri de verificat". Ties keep the order they came in.
+    /// "Mai sunt … observații". Ties keep the order they came in.
     static func byImportance(_ notices: [ReviewNotice]) -> [ReviewNotice] {
         notices.enumerated()
             .sorted { ($0.element.importance, -$0.offset) > ($1.element.importance, -$1.offset) }

@@ -132,7 +132,7 @@ private struct CatalogStep: View {
                 Section {
                     ForEach(offers.others) { template in row(template) }
                 } header: {
-                    Text("Alte secțiuni gata făcute", comment: "Header of the other ready-made sections.")
+                    Text("Alte categorii", comment: "Header of the other ready-made categories a new section can be of.")
                 }
             }
             Section {

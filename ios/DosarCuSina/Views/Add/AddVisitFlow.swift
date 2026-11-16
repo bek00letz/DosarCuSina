@@ -506,7 +506,7 @@ private struct VisitForm: View {
 /// "Vizita e în istoric." with "Anulează", which takes the visit, its invoice and its firm back.
 /// What changed is on the visit's entry in Istoric.
 enum VisitEnding {
-    /// The first version showed what changed ("Ce s-a schimbat", `VisitSavedView`) with "Gata"
+    /// The first version showed what changed ("Ce s-a schimbat", `VisitSavedView`) with "Închide"
     /// and "Anulează vizita", and from capture a toast with "Anulează" after it: two endings.
     /// Off; kept as a way back until the toast alone is proven. Remove it with the owner's OK.
     nonisolated static let showsWhatChanged = false
@@ -567,7 +567,7 @@ private struct VisitSavedView: View {
         }
         .background(DS.Palette.background)
         .dsPinnedAction {
-            DSPrimaryButton("Gata", action: onDone)
+            DSPrimaryButton("Închide", action: onDone)
         } secondary: {
             DSSecondaryButton("Anulează vizita", systemImage: "arrow.uturn.backward", role: .destructive, action: onUndo)
         }
