@@ -209,14 +209,19 @@
               "mayBelongTo": { "type": "string" },
               "goesUnderTheOnlyOne": { "type": "boolean" },
               "visit": {
-                "type": "object",
-                "properties": {
-                  "title": { "type": "string" },
-                  "checklistTitle": { "type": "string" },
-                  "providerTitle": { "type": "string" },
-                  "kind": { "type": "string" },
-                  "trade": { "type": "string" }
-                }
+                "oneOf": [
+                  { "type": "string" },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "title": { "type": "string" },
+                      "checklistTitle": { "type": "string" },
+                      "providerTitle": { "type": "string" },
+                      "kind": { "type": "string" },
+                      "trade": { "type": "string" }
+                    }
+                  }
+                ]
               },
               "offerTitle": { "type": "string" },
               "shortlistOrder": { "type": "integer", "minimum": 1 }

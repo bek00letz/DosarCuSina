@@ -21,6 +21,12 @@ Each of these means one thing everywhere: the app, the widgets, the share sheet,
 | **Categorie** | A kind of section (Mașini, Locuințe, Acte), built in or the person's own; what a lock protects. | *Categorii protejate*, Setări › *Ecranul Dosar*, *Alte categorii* in *Adaugă o secțiune*. | „Secțiune” for a kind („Secțiuni protejate”, „Alte secțiuni gata făcute”). |
 | **Copie de siguranță** | The one file with the whole binder (a backup); „copia” once it is named. | Setări › *iCloud și copii de siguranță*, *Fă o copie de siguranță*, *Pune înapoi o copie*, every error about one. | „Copie de rezervă”, „arhivă”, „backup”. |
 | **Arhivă** | A document put away, kept for reference. | *Mută în arhivă*, *Arhivat*, *Arhivate*. | A backup. |
+| **Vizită** | Going to someone who looks at it: the service, the doctor, the vet. | *Am fost la service*, *Am fost la medic*, *Am fost la veterinar*, *Salvează vizita*, „Vizita e în istoric.” | A tradesperson's job or a repair. |
+| **Lucrare** | A job someone did on a home, or on something of one's own that goes by time. | *Am chemat un meseriaș*, *Ce s-a lucrat*, *Salvează lucrarea*, „Lucrarea e în istoric.” | A visit. |
+| **Reparație** | Something bought, taken to be fixed. | *Am dus la reparat*, *Ce s-a reparat*, *Salvează reparația*. | A job on a home. |
+| **Revizie** | A machine's regular upkeep: a car's (*Revizie periodică*), an espresso machine's. | *Am făcut o revizie*, *Salvează revizia*, *Are revizii sau lucrări*. | A doctor's check-up („control”). |
+
+Words a shaped screen says (the visit form) come from its kind's description, never from the screen; [COPY_MATRIX.md](COPY_MATRIX.md) lists them for every category. Words about vehicles („km”, „kilometraj”, „piese”, „marcă”, „ulei”, „bord”) appear only in a vehicle's kind.
 
 ## Basics
 
