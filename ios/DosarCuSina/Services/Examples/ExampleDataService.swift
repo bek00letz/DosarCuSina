@@ -60,7 +60,9 @@ public struct ExampleDataService {
             assets.plannedObligations(for: template, values: values).map { planned in
                 var planned = planned
                 if let offset = dues[planned.blueprint.key] { planned.firstDue = day(offset) }
-                planned.isSelected = (planned.isSelected || extra.contains(planned.blueprint.key)) && planned.firstDue != nil
+                // The add flow's rule, with the example's own dates given.
+                planned.isSelected = PlannedObligation.startsSelected(planned.blueprint, firstDue: planned.firstDue)
+                    || (extra.contains(planned.blueprint.key) && planned.firstDue != nil)
                 return planned
             }
         }

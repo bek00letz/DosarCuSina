@@ -36,12 +36,8 @@ private struct CategoryContent: View {
     @Environment(\.modelContext) private var context
     @Environment(ShellRouter.self) private var router
     @Query(sort: \Asset.name) private var assets: [Asset]
-    @Query private var categories: [CategoryTemplate]
     @State private var layout = BinderLayoutStore.shared
     @State private var error: UserFacingError?
-
-    /// The category of the people documents are filed under.
-    private var holderKey: String? { categories.first { $0.behavior.role == .holder }?.key }
 
     var body: some View {
         let mine = assets.filter { $0.templateKey == template.key }
@@ -99,46 +95,45 @@ private struct CategoryContent: View {
     @ViewBuilder
     private var documents: some View {
         let groups = (try? DocumentHolders.groups(in: context, category: template.key)) ?? []
+        // One way to add, photo first: capture reads the type, names whose it is and makes the
+        // person when they aren't in the binder yet; "Scriu eu" asks whose it is.
         if groups.isEmpty {
             emptyState(
                 title: "Niciun act încă",
                 message: "Adaugă buletinul, pașaportul sau permisul. Îți spunem cu luni înainte când trebuie reînnoite.",
-                action: "Adaugă o persoană"
-            ) {
-                if let holderKey { router.present(.addSection(AddSectionRequest(templateKey: holderKey))) }
-            }
+                action: "Adaugă un act"
+            ) { addDocument() }
         }
         ForEach(groups) { group in
             VStack(alignment: .leading, spacing: DS.Space.xs) {
-                DSSectionHeader(verbatim: group.title, count: group.documents.count)
+                if group.holder == nil {
+                    DSSectionHeader(verbatim: group.title, count: group.documents.count)
+                }
                 DSCard {
                     VStack(spacing: 0) {
+                        // The person's own row opens their page; their documents follow.
                         if let holder = group.holder {
                             NavigationLink(value: AppRoute.asset(holder.id)) {
-                                DSListRow(title: Text("Vezi tot despre \(holder.name)", comment: "Row that opens a household member's page."),
-                                          systemImage: "person.crop.circle", showsChevron: true) { EmptyView() }
+                                DSListRow(title: Text(verbatim: holder.name), systemImage: "person.crop.circle", showsChevron: true) { EmptyView() }
                             }
                             .buttonStyle(.dsPressable)
                         }
-                        ForEach(group.documents) { document in
-                            DSRowSeparator()
+                        ForEach(Array(group.documents.enumerated()), id: \.element.id) { index, document in
+                            if index > 0 || group.holder != nil { DSRowSeparator() }
                             DocumentRowLink(item: .personal(document))
-                        }
-                        if let holder = group.holder {
-                            DSSecondaryButton("Adaugă un act", systemImage: "plus") {
-                                router.present(.addPersonalDocument(holderID: holder.id))
-                            }
-                            .padding(.top, DS.Space.s)
                         }
                     }
                 }
             }
         }
         if !groups.isEmpty {
-            DSSecondaryButton("Adaugă o persoană", systemImage: "person.badge.plus") {
-                if let holderKey { router.present(.addSection(AddSectionRequest(templateKey: holderKey))) }
-            }
+            DSSecondaryButton("Adaugă un act", systemImage: "plus") { addDocument() }
         }
+    }
+
+    /// A new personal document, for whoever the photo or "Scriu eu" says.
+    private func addDocument() {
+        router.present(.addPersonalDocument(holderID: nil))
     }
 
     // MARK: Garanții

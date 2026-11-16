@@ -129,10 +129,18 @@ final class AddSectionModel {
         planned = AssetActions(context: context).plannedObligations(for: definition, values: values).map { plan in
             guard let old = previous[plan.id] else { return plan }
             var merged = plan
-            merged.isSelected = old.isSelected
+            // The person's choice stays; one left unticked only because its date had to be
+            // asked is ticked once what they typed now works the date out.
+            merged.isSelected = old.isSelected || (plan.isSelected && old.asksFirstDate)
             if plan.firstDue == nil { merged.firstDue = old.firstDue }
             return merged
         }
+    }
+
+    /// Whether some deadline on offer asks for its first date, so the step says those can
+    /// be added later, or from a photo of the paper.
+    var offersDatesForLater: Bool {
+        planned.contains(where: \.asksFirstDate)
     }
 
     /// Selected obligations that still need a date from the person.

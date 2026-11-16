@@ -54,8 +54,9 @@ struct BinderFlowTests {
         model.values["vehicle.model"] = .text("Golf")
         model.planObligations(context: context)
         #expect(!model.planned.isEmpty)
-        // ITP asks for a date: until one is given, it blocks finishing.
-        #expect(model.missingDates.contains { $0.blueprint.key == "vehicle.itp" })
+        // ITP asks for a date, so it starts unticked and nothing blocks finishing; ticked, it asks.
+        #expect(model.missingDates.isEmpty)
+        #expect(model.planned.first { $0.blueprint.key == "vehicle.itp" }?.isSelected == false)
         for index in model.planned.indices where model.planned[index].firstDue == nil {
             model.planned[index].isSelected = model.planned[index].blueprint.key == "vehicle.itp"
             if model.planned[index].isSelected { model.planned[index].firstDue = CalendarDay("2027-05-01") }
