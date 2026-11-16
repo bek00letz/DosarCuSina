@@ -8,6 +8,8 @@ import SwiftData
 struct KeyFactsPocket: View {
     let asset: Asset
     let definition: TemplateDefinition
+    /// Its line while it holds nothing (`PagePocket.emptyLine`).
+    let empty: String
     @Binding var toast: DSToast?
     @Binding var error: UserFacingError?
     /// On while the person adds a first row from the page's "Adaugă…": the pocket shows
@@ -19,9 +21,11 @@ struct KeyFactsPocket: View {
     @Environment(BiometricVaultManager.self) private var vault
     @Query private var templates: [CategoryTemplate]
 
-    init(asset: Asset, definition: TemplateDefinition, toast: Binding<DSToast?>, error: Binding<UserFacingError?>, addsRow: Binding<Bool> = .constant(false)) {
+    init(asset: Asset, definition: TemplateDefinition, empty: String, toast: Binding<DSToast?>, error: Binding<UserFacingError?>,
+         addsRow: Binding<Bool> = .constant(false)) {
         self.asset = asset
         self.definition = definition
+        self.empty = empty
         _toast = toast
         _error = error
         _addsRow = addsRow
@@ -41,7 +45,7 @@ struct KeyFactsPocket: View {
         let rows = AssetFacts.factRows(asset.values, customFacts: asset.customFacts, template: definition)
         DSPocketCard(SectionPocket.keyFacts.title) {
             if rows.isEmpty && editing == nil {
-                PocketEmptyLine(text: String(localized: "Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN.", comment: "Empty Date importante pocket."))
+                PocketEmptyLine(text: empty)
             }
             ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                 if index > 0 { DSRowSeparator() }

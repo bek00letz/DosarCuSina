@@ -70,18 +70,8 @@ enum PocketAddition: Hashable, Identifiable, Sendable {
     /// A row of the person's own under Date importante.
     case keyFact
 
-    var id: String {
-        switch self {
-        case .deadline: "deadline"
-        case .child(let pocket, let key): "child.\(pocket.listedPocket?.rawValue ?? "category").\(key)"
-        case .personalDocument: "personalDocument"
-        case .paper: "paper"
-        case .visit: "visit"
-        case .note: "note"
-        case .person: "person"
-        case .keyFact: "keyFact"
-        }
-    }
+    /// Each addition is its own identity: a page offers each at most once.
+    var id: PocketAddition { self }
 
     /// The pocket it adds to, named under it in the menu.
     var pocket: PagePocket {
@@ -102,44 +92,14 @@ enum PocketAddition: Hashable, Identifiable, Sendable {
         return pocket.title
     }
 
-    var title: String {
-        switch self {
-        case .deadline: String(localized: "Adaugă un termen", comment: "Adds a deadline to a section, from its Urmează pocket or its add menu.")
-        case .child(let pocket, _): Self.childTitle(pocket)
-        case .personalDocument: String(localized: "Adaugă un act", comment: "Adds a document for a household member.")
-        case .paper(let besidePersonal):
-            besidePersonal
-                ? String(localized: "Scanează un document", comment: "Adds a photo of another paper on a person's page, beside their own documents.")
-                : String(localized: "Adaugă un act", comment: "Adds a photo of a paper to a section, from its Acte pocket or its add menu.")
-        case .visit(let kind): kind.shape?.title ?? ""
-        case .note: String(localized: "Adaugă o notă")
-        case .person: String(localized: "Adaugă o persoană", comment: "Adds someone who looks after a section.")
-        case .keyFact: String(localized: "Adaugă un rând", comment: "Adds a row of one's own under Date importante.")
-        }
+    /// What Acte's own buttons add: a person one of their own documents and, named apart, a photo
+    /// of another paper; any other section a photo of a paper. The first is what the page's menu
+    /// offers for Acte (`PocketContents.addition`).
+    static func documentButtons(isHolder: Bool) -> [PocketAddition] {
+        isHolder ? [.personalDocument, .paper(besidePersonal: true)] : [.paper(besidePersonal: false)]
     }
 
-    private static func childTitle(_ pocket: PagePocket) -> String {
-        switch pocket {
-        case .listed(.tenants): String(localized: "Adaugă un chiriaș", comment: "Button in the Chiriași pocket.")
-        case .listed(.products): String(localized: "Adaugă un produs", comment: "Button in the Produse pocket.")
-        case .listed(.plants): String(localized: "Adaugă o plantă", comment: "Button in the Plante pocket of a home's page.")
-        case .category(_, let name): String(localized: "Adaugă în „\(name)”", comment: "Button in the pocket of a category of one's own on its parent's page (a car's Anvelope): adds a section of it here.")
-        default: String(localized: "Adaugă un abonament", comment: "Button in the Abonamente pocket.")
-        }
-    }
-
-    var systemImage: String {
-        switch self {
-        case .deadline: "calendar.badge.plus"
-        case .child: "plus"
-        case .personalDocument: "person.text.rectangle"
-        case .paper: "doc.viewfinder"
-        case .visit(let kind): kind.shape?.symbol ?? "wrench.and.screwdriver"
-        case .note: "note.text.badge.plus"
-        case .person: "person.badge.plus"
-        case .keyFact: "list.bullet.rectangle"
-        }
-    }
+    // Its words and symbol are in `PocketWording.swift` (`title`, `systemImage`).
 }
 
 /// What a page draws of its pockets, by one rule for every pocket: a pocket with something
@@ -256,7 +216,7 @@ struct PocketContents {
             guard let key = ChildrenPocket.contents(of: asset, pocket: pocket, templates: templates).childKey else { return nil }
             return .child(pocket, templateKey: key)
         case .listed(.documents):
-            return isHolder ? .personalDocument : .paper(besidePersonal: false)
+            return PocketAddition.documentButtons(isHolder: isHolder).first
         case .listed(.history):
             return PocketAddition.history(of: definition.behavior)
         case .listed(.people):
@@ -266,6 +226,13 @@ struct PocketContents {
         case .listed(.keyFacts):
             return .keyFact
         }
+    }
+
+    /// What the pocket's own buttons add, under its rows: Acte's two on a person's page, else the
+    /// one the menu offers for it.
+    func buttons(_ pocket: PagePocket) -> [PocketAddition] {
+        if pocket == .listed(.documents) { return PocketAddition.documentButtons(isHolder: isHolder) }
+        return addition(pocket).map { [$0] } ?? []
     }
 
     /// The page's layout, from the pockets its category lists (`listed`) and the categories' own.
