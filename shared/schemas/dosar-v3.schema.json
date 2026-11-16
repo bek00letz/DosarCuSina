@@ -119,6 +119,7 @@
         "key": { "type": "string" },
         "title": { "type": "string" },
         "kind": { "type": "string" },
+        "completion": { "type": "string" },
         "recurrence": { "$ref": "#/$defs/recurrence" },
         "firstDue": { "$ref": "#/$defs/firstDue" },
         "reminders": { "$ref": "#/$defs/reminderProfile" },

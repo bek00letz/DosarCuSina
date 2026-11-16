@@ -110,16 +110,25 @@ Snoozed and paused items are counted, not listed. Tapping a deadline opens its p
 
 **What completing asks, by kind.** What closing a deadline asks in the app is its kind's, declared once (`ObligationKind.completion`, a `CompletionShape`), and saving keeps only that (`CompletionDraft`), through the same filer and actions for every kind:
 
-| Kind | Asks |
+What closing a deadline asks is stated by the deadline itself: every deadline of the catalog names its completion (`CompletionKind`), with the paper by its own name, and a deadline of one's own takes it from its importance. For example:
+
+| Deadline | Asks |
 | :--- | :--- |
-| Chore (*routine*, *Doar să nu uit*) | Nothing. *Gata* marks it done today, with no sheet; the toast has *Anulează* and *Adaugă o notă*, a small note on that completion in Istoric, itself undoable. |
-| Upkeep (*maintenance*) | *Când*, *Cât a costat*, the invoice, and the section's counter where it has one (a car's kilometres), which asks first when it is lower. |
-| Bill (*payment*) | *Când*, *Cât ai plătit*, the bill, filed as a bill (below, 5.4). |
-| Renewal | *Când*, the new document and *Expiră pe*, filled from its photo; the day the person leaves sets the next deadline. |
-| Legal check | *Când*, *Cât a costat*, the proof (a report, a certificate, a receipt). |
-| Insurance | *Când*, *Cât a costat*, the new policy, whose facts fill the section. |
-| Tax | *Când*, *Cât ai plătit*, the receipt. |
-| Health | *Când*, *Cât a costat*, a note, the result. |
+| A chore (*Udat*, *Curățare grup*, *Toaletaj*, *Doar să nu uit*) | Nothing. *Gata* marks it done today, with no sheet; the toast has *Anulează* and *Adaugă o notă*, a small note on that completion in Istoric, itself undoable. |
+| An end to know about (*Garanția se termină*, *Se termină perioada minimă*) | Nothing: *Gata*, as a chore. |
+| A car's service, a tyre change, a bike's service | *Când*, *Cât a costat*, the invoice („De la service-ul care a lucrat.”, „De la vulcanizare.”), and the section's counter (the kilometres), which asks first when it is lower. |
+| Work done at home (*Decalcifiere*, *Schimb filtru de apă*, a pet's deworming) | *Când*, *Cât a costat*, and the counter only where the deadline counts on it (descaling every 300 cafele); no invoice. |
+| A bill (*Factura de plătit*, *Reînnoire anuală*) | *Când*, *Cât ai plătit*, the bill, filed as a bill (below, 5.4). |
+| A renewed document or card | *Când*, *Actul nou* (*Cardul nou*) and *Expiră pe*, filled from its photo; the day the person leaves sets the next deadline. |
+| A renewed contract (a subscription's, a tenancy's) | *Când*, *Contractul nou* and *Se termină pe*. |
+| ITP, rovinietă, a boiler's or a gas installation's check | *Când*, *Cât a costat*, *Raportul ITP*, *Rovinieta*, *Procesul-verbal*. |
+| The first-aid kit and extinguisher | *Când*, *Cât a costat*, *Expiră pe* (the new ones'). |
+| Insurance | *Când*, *Cât a costat*, *Polița nouă*, whose facts fill the section. |
+| A tax, the rental income declaration | *Când*, *Cât ai plătit*, *Chitanța* (*Recipisa* for the declaration). |
+| A pet's vaccine | *Când*, *Cât a costat*, *Carnetul de sănătate* (the page with the vaccine and the booster's date). |
+| Yearly tests, the dentist, a person's vaccine | *Când*, *Cât a costat*, *Rezultatele* and a note, a note alone, *Adeverința de vaccinare*. |
+
+What the sheet says about a paper agrees with its name („O păstrez în dosar.” for *Chitanța*, „Din el iau data următoare.” for *Raportul ITP*). [docs/COPY_MATRIX.md](docs/COPY_MATRIX.md) lists every deadline of every category.
 
 Every paper is optional and read by the same capture. Urmează's row starts completing the way the page does, by one entry (`CompletionEntry`): its swipe says *Gata* for a chore and *Am rezolvat* otherwise, its menu and VoiceOver's action *Gata* or *Am rezolvat…*, and a kind that asks something opens the same sheet; a tap opens the page, and nothing else is on the row's other side. Outside the app (reminder buttons, the widget, Siri) every kind completes in one step. A record's note can be added or changed later from its page in Istoric.
 
@@ -389,7 +398,7 @@ What never reaches the index (`SearchPrivacy`): text read off a document filed i
 
 How far away something is reads in the unit a person feels, never rounded up: days under three weeks, then weeks, then months and weeks, then years and months (years only from three years). A reminder's lead reads in the unit it was chosen in: days, or whole months and years (*7 zile*, *o lună*, *6 luni*, *un an*). A count of one is a word, two and up are digits (*o zi*, *o săptămână*, *o lună*, *un an*; *2 luni*, *20 de zile*), from the plural "one" variants; "în" before a duration is joined as Romanian writes it (*într-o lună*, *într-un an*) by `DurationWording.inside`, the one way to write "in this long". `DurationWording` (`distance` and `lead`), `DayCount` and `CalendarCount` are the one way to write these, in `ios/Shared` with their plural forms in `Shared.xcstrings`, so the widget writes them the same way. When a deadline is, in a few words, is `WhenWording`: *azi*, *mâine*, *în 5 zile*, *întârziat cu o zi* (within grace), *depășit de 3 zile* (past grace), on the boxes, the badges, the widget and Siri.
 
-Every counted string has plural variations (*o zi*, *2 zile*, *20 de zile*); `scripts/plural-check.py` checks it after every build. The String Catalogs list exactly the text the code uses; `scripts/catalog-check.py` checks it after every build.
+Every counted string has plural variations (*o zi*, *2 zile*, *20 de zile*); `scripts/plural-check.py` checks it after every build. The String Catalogs list exactly the text the code uses, written the way a build in Xcode writes them (their entries in Xcode's order, nothing only a preview uses), so building never changes them; `scripts/catalog-check.py` checks it after every build, the development build's and the release build's. Money is written in lei: „1.250,50 lei”.
 
 ### 4.10 Subscriptions and their bills
 

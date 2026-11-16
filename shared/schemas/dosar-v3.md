@@ -184,7 +184,8 @@ sides, a field that is `secret` or `isSensitive` on the device stays so.
   - **`secret`:** a code kept hidden, such as an identity card's PIN. Its values are never written to an archive: writers leave them out, and readers ignore any they find and keep the ones already on the device for the same asset, in both import modes. A value sealed on the device (text starting with `sealed:v1:`) is a secret wherever it sits, so writers never write one under any field.
   - **Roles:** `identifier`, `subtitle`, `heroMetric`, `keyFact`, `documentNumber`, `holder`, `issuer`, `expiryDate`, `startDate`, `purchaseDate`, `purchasePrice`, `retailer`, `warrantyUntil`, `location`.
 - **Component:** `key`, `name`, `group`, `synonyms`.
-- **Blueprint:** `key`, `title`, `kind`, `recurrence`, `firstDue`, `reminders`, `reminderVariants`?, `appliesWhen`?, `estimatedCost`?, `isSuggested`, `note`?, `facts`?.
+- **Blueprint:** `key`, `title`, `kind`, `completion`?, `recurrence`, `firstDue`, `reminders`, `reminderVariants`?, `appliesWhen`?, `estimatedCost`?, `isSuggested`, `note`?, `facts`?.
+  - **`completion`:** what closing the deadline asks in the app, by name (`"itp"`, `"policy"`, `"bill"`, `"chore"`, `"acknowledged"`, `"doneAtHome"`, `"petVaccine"` and the rest of `CompletionKind`). Missing (a blueprint written before catalog 20) or from a newer version, the deadline completes as one of the person's own of its `kind`.
   - **`appliesWhen`:** `{"field": "subscription.cycle", "oneOf": ["billing.yearly"]}`. The blueprint is offered only when the asset's value is one of these keys.
   - **`facts`:** which of the section's fields hold this deadline's facts, by role: `{"insurer": "vehicle.cascoInsurer", "policyNumber": "vehicle.cascoPolicyNumber", "claimsPhone": "vehicle.cascoClaimsPhone"}`. A deadline's page and a claim checklist show these, so a car's CASCO never shows its RCA's policy. All keys are optional.
 
