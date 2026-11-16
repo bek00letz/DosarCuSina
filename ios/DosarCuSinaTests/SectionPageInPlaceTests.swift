@@ -149,7 +149,7 @@ struct SectionPageInPlaceTests {
         #expect(invoice.asset?.id == car.id, "Filed under the car, as before: nothing stored changes")
 
         #expect(SectionPapers.listed(car).map(\.id) == [policy.id], "The invoice is the visit's: it opens from Istoric")
-        #expect(try pocketContents(of: car, in: context).fill(.documents) == .filled)
+        #expect(try pocketContents(of: car, in: context).fill(.listed(.documents)) == .filled)
 
         // A paper valid until a day filed with a record (a policy renewed with "Am rezolvat") stays in Acte too.
         invoice.validUntil = CalendarDay("2027-06-01")
@@ -163,8 +163,8 @@ struct SectionPageInPlaceTests {
             calendar: calendar
         )
         #expect(SectionPapers.listed(other).isEmpty && SectionPapers.archived(other).isEmpty)
-        #expect(try pocketContents(of: other, in: context).fill(.documents) == .empty)
-        #expect(try pocketContents(of: other, in: context).fill(.history) == .filled)
+        #expect(try pocketContents(of: other, in: context).fill(.listed(.documents)) == .empty)
+        #expect(try pocketContents(of: other, in: context).fill(.listed(.history)) == .filled)
     }
 
     // MARK: Adding a car doesn't stop on dates
