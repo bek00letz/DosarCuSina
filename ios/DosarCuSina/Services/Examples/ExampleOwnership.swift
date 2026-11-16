@@ -33,23 +33,12 @@ public struct ExampleSectionQuestion: StepQuestion, Equatable, Sendable {
     }
 }
 
-/// Grammatical gender of the noun one section of a category is, for words that agree with it.
-public enum GrammaticalGender: String, Sendable, Hashable {
-    /// Mașina, locuința, persoana.
-    case feminine
-    /// Actul, abonamentul, animalul. Romanian's default for a thing.
-    case masculineOrNeuter
-}
-
 extension BuiltInTemplates {
-    /// The gender of one section of each built-in category: a car is "mașina", a
-    /// document "actul". A custom category reads as a thing ("al tău").
-    static let sectionGender: [String: GrammaticalGender] = [
-        Key.vehicle: .feminine, Key.home: .feminine, Key.bike: .feminine, Key.plants: .feminine, Key.member: .feminine,
-    ]
-
+    /// The gender of one section of a built-in category, as the category declares it
+    /// (`SectionSingular`): a car is „mașina”, a document „actul”. Only built-ins hold examples;
+    /// any other reads as a thing („al tău”).
     static func gender(ofSectionIn templateKey: String) -> GrammaticalGender {
-        sectionGender[templateKey] ?? .masculineOrNeuter
+        definition(for: templateKey)?.sectionSingular.gender ?? .masculineOrNeuter
     }
 }
 

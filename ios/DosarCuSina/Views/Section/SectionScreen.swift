@@ -316,7 +316,7 @@ struct PocketView: View {
     var body: some View {
         // The one place a pocket's empty line is read: the pocket's own words, Istoric's and
         // Oameni's in the words of the category's visits (`PagePocket.emptyLine`).
-        let empty = pocket.emptyLine(visits: definition.behavior.visit)
+        let empty = pocket.emptyLine(in: definition)
         switch pocket {
         case .listed(.upcoming):
             UpcomingPocket(asset: asset, empty: empty, add: add)

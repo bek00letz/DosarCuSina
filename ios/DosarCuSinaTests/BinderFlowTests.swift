@@ -43,7 +43,7 @@ struct BinderFlowTests {
         var plateOnly = FieldValues()
         plateOnly["vehicle.plate"] = .text("B-123-ABC")
         #expect(AddSectionModel.suggestedName(values: plateOnly, definition: BuiltInTemplates.vehicle) == "B-123-ABC")
-        #expect(AddSectionModel.suggestedName(values: FieldValues(), definition: BuiltInTemplates.vehicle) == BuiltInTemplates.vehicle.name)
+        #expect(AddSectionModel.suggestedName(values: FieldValues(), definition: BuiltInTemplates.vehicle) == "Mașina", "One car, never the category's „Mașini”")
     }
 
     @Test func addingACarCreatesItWithTheChosenObligations() throws {

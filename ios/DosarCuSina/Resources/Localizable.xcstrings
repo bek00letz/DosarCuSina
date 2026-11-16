@@ -162,6 +162,45 @@
         }
       }
     },
+    "%@ %lld lei" : {
+      "comment" : "A whole amount of money in lei: the first argument is the amount as written („1.250”), the second only chooses the plural („1 leu”, „2 lei”, „20 de lei”). Keep the no-break space.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %#@lei@"
+          },
+          "substitutions" : {
+            "lei" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "lei"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "leu"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "de lei"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%@ a citit: %@" : {
       "comment" : "The value the AI provider read. The first argument is the provider's short name.",
       "localizations" : {
@@ -247,7 +286,7 @@
       }
     },
     "%@ lei" : {
-      "comment" : "An amount of money in lei, e.g. „1.250,50 lei”. Keep the no-break space."
+      "comment" : "An amount of money in lei with decimals, e.g. „1.250,50 lei”. Keep the no-break space."
     },
     "%@ lipsește, deși are citiri. Pun %@?" : {
       "comment" : "Repair: the section's counter is empty though it has readings.",
@@ -1038,6 +1077,9 @@
     "Abonamente cu facturile lor, ca la o locuință: curent, internet, loc de parcare." : {
       "comment" : "Explains the bills switch."
     },
+    "Abonamentul" : {
+      "comment" : "One subscription, as a new section's name when none is typed."
+    },
     "Act" : {
       "comment" : "Neutral name of a shared document."
     },
@@ -1076,6 +1118,9 @@
     },
     "Actele, mașina și animalele, verificate pentru zilele în care pleci." : {
       "comment" : "Situation summary: trip."
+    },
+    "Actul" : {
+      "comment" : "One personal document, as a new section's name when none is typed."
     },
     "Actul de identitate al proprietarului" : {
 
@@ -1821,7 +1866,7 @@
       "comment" : "Category name"
     },
     "Animalul" : {
-
+      "comment" : "One pet, as a new section's name when none is typed."
     },
     "Anual" : {
       "comment" : "Repeat choice: every year or every few years."
@@ -2009,6 +2054,9 @@
     "Asigurător RCA" : {
 
     },
+    "Asigurătorul" : {
+      "comment" : "Istoric record: who a renewed insurance policy is with."
+    },
     "Aștept întâi dosarul tău din iCloud. Dacă e gol, poți încărca exemplele după." : {
       "comment" : "Examples refused while the person's binder may still be coming down from iCloud."
     },
@@ -2110,6 +2158,9 @@
     "Benzină" : {
 
     },
+    "Bicicleta" : {
+      "comment" : "One bike, as a new section's name when none is typed."
+    },
     "Bicicletă" : {
 
     },
@@ -2155,10 +2206,16 @@
     "Bon fiscal" : {
 
     },
+    "bonul" : {
+
+    },
     "Bucătărie" : {
 
     },
     "Bujii" : {
+
+    },
+    "Buletin de analize" : {
 
     },
     "Buletin, pașaport, permis, cu reînnoirea din timp." : {
@@ -2166,6 +2223,9 @@
     },
     "Buletinul" : {
       "comment" : "Example name of a new personal document, in „Cum vrei să apară în dosar, de exemplu …”."
+    },
+    "buletinul de analize" : {
+
     },
     "Buletinul de analize, de la laborator." : {
       "comment" : "Am rezolvat: which paper, for yearly tests."
@@ -2461,6 +2521,9 @@
     "Cazier pentru angajare" : {
 
     },
+    "cazierul" : {
+
+    },
     "Ce a lucrat" : {
 
     },
@@ -2468,7 +2531,7 @@
       "comment" : "Am rezolvat: the note's example, after tests."
     },
     "Ce acoperă" : {
-
+      "comment" : "Istoric record: what a renewed insurance policy covers."
     },
     "Ce act e" : {
       "comment" : "Capture review: the menu of document kinds."
@@ -2494,11 +2557,17 @@
     "Ce ai făcut sau ce ai observat." : {
 
     },
+    "Ce ai notat" : {
+      "comment" : "Istoric record: the rows of a note."
+    },
     "Ce ai notat aici se șterge de pe acest telefon." : {
       "comment" : "Delete confirmation for a history entry that lists no vehicle parts."
     },
     "Ce ai pe celelalte dispozitive apare aici pe rând." : {
       "comment" : "iCloud sync status detail during the first download."
+    },
+    "Ce ai plătit" : {
+      "comment" : "Istoric record: what a tax or a declaration paid for."
     },
     "Ce ai schimbat nu se salvează. Actul rămâne în De verificat." : {
       "comment" : "Closing the review of something shared, after changes."
@@ -2605,7 +2674,7 @@
     "Ce schimbi rămâne pe telefon, dar nu mai ajunge pe celelalte dispozitive. Fă loc în iCloud, apoi apasă „Încearcă din nou”." : {
       "comment" : "iCloud sync status detail: iCloud full; what happens and what to do."
     },
-    "Ce scrie pe cazier" : {
+    "Ce scrie în cazier" : {
 
     },
     "Ce termen" : {
@@ -2634,6 +2703,9 @@
     },
     "Cea pe care ai plătit-o." : {
 
+    },
+    "Cea primită de la asigurător sau de la broker." : {
+      "comment" : "Am rezolvat: which paper, for a renewed insurance."
     },
     "Cel primit la stație, cu data următoarei inspecții." : {
       "comment" : "Am rezolvat: which paper, for an ITP."
@@ -2668,10 +2740,16 @@
     "Certificat de înmatriculare" : {
 
     },
+    "certificatul de garanție" : {
+
+    },
     "Certificatul de înmatriculare (talonul)" : {
       "comment" : "Sale: the registration certificate."
     },
     "Certificatul de naștere" : {
+
+    },
+    "certificatul de semnătură electronică" : {
 
     },
     "Cetățenie" : {
@@ -2707,6 +2785,9 @@
     "Chiriași" : {
       "comment" : "Category name\nSection pocket"
     },
+    "Chiriașul" : {
+      "comment" : "One tenancy, as a new section's name when none is typed."
+    },
     "Chirie lunară" : {
 
     },
@@ -2719,6 +2800,9 @@
     "Cifra gri e doar o estimare. Scrie cifra de la bord, dacă o știi." : {
 
     },
+    "Cine a emis-o" : {
+      "comment" : "Istoric record: who issued a renewed paper named by a feminine noun."
+    },
     "Cine a lucrat" : {
       "comment" : "Header: who did the job."
     },
@@ -2730,6 +2814,12 @@
     },
     "Cine are grijă de el, cu telefonul lui." : {
       "comment" : "Pocket explanation."
+    },
+    "Cine l-a emis" : {
+      "comment" : "Istoric record: who issued a renewed paper named by a masculine noun (a document, a card, a contract)."
+    },
+    "Cine le-a emis" : {
+      "comment" : "Istoric record: who issued renewed papers named by a plural noun."
     },
     "Cine pleacă" : {
 
@@ -2803,7 +2893,7 @@
     "Clasa bonus-malus n-o păstrez: %@ nu e printre persoanele din dosar. Adaugă persoana și citește polița din nou." : {
       "comment" : "Capture review: the person a policy insures isn't in the household. The argument is the name on the policy."
     },
-    "Clasa bonus-malus n-o păstrez: pe poliță nu scrie cine e asiguratul." : {
+    "Clasa bonus-malus n-o păstrez: în poliță nu scrie cine e asiguratul." : {
       "comment" : "Capture review: a policy that doesn't say who it insures."
     },
     "Clasa bonus-malus o păstrez la %@: e a celui asigurat, nu a mașinii." : {
@@ -2939,6 +3029,9 @@
       "comment" : "Pocket explanation."
     },
     "Contractele de închiriere" : {
+
+    },
+    "contractul" : {
 
     },
     "Contractul de furnizare a gazelor" : {
@@ -3326,8 +3419,8 @@
     "de exemplu Plăcuțe frână față" : {
 
     },
-    "De exemplu, data până la care e valabil ITP-ul de acum." : {
-
+    "De exemplu, data până la care e valabil actul de acum." : {
+      "comment" : "Under the first date of a usual deadline, for any category."
     },
     "De făcut" : {
       "comment" : "Due line verb"
@@ -3539,9 +3632,6 @@
     "Din care arhivate" : {
       "comment" : "Storage row: archived documents."
     },
-    "Din ea iau numărul, asigurătorul și data." : {
-
-    },
     "Din față, din spate și din lateral, înainte să le mutați." : {
       "comment" : "Claim photo: angles of the cars."
     },
@@ -3607,6 +3697,9 @@
     },
     "Documente" : {
       "comment" : "Header: scanned documents.\nSearch group: documents.\nStorage row: all documents."
+    },
+    "documentul" : {
+
     },
     "Documentul e păstrat, dar nu îl pot arăta aici." : {
 
@@ -3831,6 +3924,9 @@
     "Espressoare" : {
       "comment" : "Category name"
     },
+    "Espressorul" : {
+      "comment" : "One espresso machine, as a new section's name when none is typed."
+    },
     "Espressorul din bucătărie" : {
       "comment" : "Example name of a new espresso machine, in „Cum vrei să apară în dosar, de exemplu …”."
     },
@@ -3940,6 +4036,9 @@
       "comment" : "Applies every suggestion of one kind."
     },
     "Fă-o din nou de aici." : {
+
+    },
+    "factura" : {
 
     },
     "Factura" : {
@@ -4123,11 +4222,17 @@
     "Firme salvate de mai multe ori" : {
       "comment" : "Repair group: the same firm kept twice."
     },
+    "fișa" : {
+
+    },
     "fișă" : {
 
     },
     "Fișă de la veterinar" : {
 
+    },
+    "Fișa medicală" : {
+      "comment" : "One person's health section, as a new section's name when none is typed."
     },
     "Fișă veterinar" : {
 
@@ -4444,6 +4549,28 @@
     },
     "În „%@”, pe cont propriu" : {
       "comment" : "Move option: a section stands on its own, in its category's box."
+    },
+    "În %@ scrie: „%@”. Dacă e așa, nu îți mai amintesc să plătești facturile." : {
+      "comment" : "Capture review: a contract says the bank pays by direct debit. The first argument is the paper, e.g. „contract”; the second what it says.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "În %1$@ scrie: „%2$@”. Dacă e așa, nu îți mai amintesc să plătești facturile."
+          }
+        }
+      }
+    },
+    "În %@ scrie: %@" : {
+      "comment" : "Capture review: a value that passed its own check digit, beside a different one. The first argument is the paper written in, e.g. „contract”.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "În %1$@ scrie: %2$@"
+          }
+        }
+      }
     },
     "În afara UE" : {
       "comment" : "Trip region: outside the EU."
@@ -5146,7 +5273,7 @@
       "comment" : "Title of a locked readiness checklist."
     },
     "Locuința" : {
-      "comment" : "Add form: the home a new section (a plant) is filed under."
+      "comment" : "Add form: the home a new section (a plant) is filed under.\nOne home, as a new section's name when none is typed."
     },
     "Locuințe" : {
       "comment" : "Category name"
@@ -5262,7 +5389,7 @@
 
     },
     "Mașina" : {
-      "comment" : "Add form: the car a new section is filed under."
+      "comment" : "Add form: the car a new section is filed under.\nOne car, as a new section's name when none is typed."
     },
     "Mașină" : {
       "comment" : "Add-section option."
@@ -5423,17 +5550,20 @@
     "Niciun chiriaș. Adaugă contractul și îți spunem când se termină." : {
       "comment" : "Empty Chiriași pocket."
     },
-    "Niciun document scanat." : {
-      "comment" : "Empty list of scanned documents."
+    "Niciun document. Scanează %@ și îl găsești aici." : {
+      "comment" : "Empty Acte pocket: the one paper its sections keep, named by a masculine noun with its article (contractul)."
     },
-    "Niciun document. Scanează polița, factura sau certificatul și le găsești aici." : {
-      "comment" : "Empty Acte pocket."
+    "Niciun document. Scanează %@ și le găsești aici." : {
+      "comment" : "Empty Acte pocket: the papers its sections keep, as a list ending in „sau” (talonul, polița sau raportul ITP).\nEmpty Acte pocket: the papers its sections keep, named by a plural noun with its article."
+    },
+    "Niciun document. Scanează %@ și o găsești aici." : {
+      "comment" : "Empty Acte pocket: the one paper its sections keep, named by a feminine noun with its article (polița)."
+    },
+    "Niciun document. Scanează un act și îl găsești aici." : {
+      "comment" : "Empty Acte pocket of a category whose sections keep no paper of their own kind."
     },
     "Niciun produs. Adaugă aragazul sau centrala și ții minte garanția." : {
       "comment" : "Empty Produse pocket."
-    },
-    "Niciun termen încă." : {
-      "comment" : "Empty list of obligations."
     },
     "Niciun termen. Adaugă unul ca să îți amintim la timp." : {
       "comment" : "Empty Urmează pocket."
@@ -5506,9 +5636,6 @@
     },
     "Nimic mai departe de o lună." : {
 
-    },
-    "Nimic notat încă." : {
-      "comment" : "Empty history list."
     },
     "Nimic notat încă. Când se face ceva, notează aici: ce, cât a costat și cine a lucrat." : {
       "comment" : "Empty Istoric pocket."
@@ -5588,8 +5715,17 @@
     "Nu ai unde să-l muți" : {
 
     },
+    "Nu am găsit date în %@. Îl păstrez oricum, cu numele de mai sus." : {
+      "comment" : "Capture review: nothing read in a paper named by a masculine noun (the argument, e.g. „contract”); it is kept."
+    },
+    "Nu am găsit date în %@. Le păstrez oricum, cu numele de mai sus." : {
+      "comment" : "Capture review: nothing read in papers named by a plural noun; they are kept."
+    },
+    "Nu am găsit date în %@. O păstrez oricum, cu numele de mai sus." : {
+      "comment" : "Capture review: nothing read in a paper named by a feminine noun (the argument, e.g. „poliță”); it is kept."
+    },
     "Nu am găsit date pe %@. Îl păstrez oricum, cu numele de mai sus." : {
-      "comment" : "Capture review: nothing read off a paper named by a masculine noun (the argument, e.g. „contract”); it is kept."
+      "comment" : "Capture review: nothing read off a paper named by a masculine noun (the argument, e.g. „bon”); it is kept."
     },
     "Nu am găsit date pe %@. Le păstrez oricum, cu numele de mai sus." : {
       "comment" : "Capture review: nothing read off papers named by a plural noun; they are kept."
@@ -5998,6 +6134,9 @@
     "Oameni" : {
       "comment" : "Search group: providers.\nSection pocket"
     },
+    "Obiectul" : {
+      "comment" : "One thing in Altele, as a new section's name when none is typed."
+    },
     "Obligația e pusă pe pauză sau încheiată. Reactiveaz-o mai întâi." : {
 
     },
@@ -6218,6 +6357,9 @@
     "Pașaport temporar" : {
 
     },
+    "pașaportul" : {
+
+    },
     "Pașaportul vechi" : {
 
     },
@@ -6274,7 +6416,7 @@
       "comment" : "Part of a repeat sentence: on a day of the year, e.g. „pe 31 martie”."
     },
     "Pe %@ scrie: „%@”. Dacă e așa, nu îți mai amintesc să plătești facturile." : {
-      "comment" : "Capture review: a bill or a contract says the bank pays by direct debit. The first argument is the paper, e.g. „factură”; the second what it says.",
+      "comment" : "Capture review: a bill says the bank pays by direct debit. The first argument is the paper, e.g. „factură”; the second what it says.",
       "localizations" : {
         "ro" : {
           "stringUnit" : {
@@ -6285,7 +6427,7 @@
       }
     },
     "Pe %@ scrie: %@" : {
-      "comment" : "Capture review: a value that passed its own check digit, beside a different one. The first argument is the paper, e.g. „factură”.",
+      "comment" : "Capture review: a value that passed its own check digit, beside a different one. The first argument is the paper written on, e.g. „factură”.",
       "localizations" : {
         "ro" : {
           "stringUnit" : {
@@ -6399,7 +6541,7 @@
 
     },
     "Persoana" : {
-      "comment" : "Add form: the person a new section is filed under."
+      "comment" : "Add form: the person a new section is filed under.\nOne household member, as a new section's name when none is typed."
     },
     "Persoană" : {
 
@@ -6442,6 +6584,9 @@
     },
     "Plăcuțe frână spate" : {
 
+    },
+    "Planta" : {
+      "comment" : "One plant, as a new section's name when none is typed."
     },
     "Plantă" : {
 
@@ -6516,6 +6661,9 @@
     },
     "Polița nouă" : {
 
+    },
+    "Polița nr. %@" : {
+      "comment" : "A renewed insurance policy's number on its history page."
     },
     "Poliță RCA" : {
 
@@ -6694,6 +6842,9 @@
     "Produse" : {
       "comment" : "Section pocket"
     },
+    "Produsul" : {
+      "comment" : "One product with a warranty, as a new section's name when none is typed."
+    },
     "Profil medical" : {
 
     },
@@ -6715,8 +6866,8 @@
     "Pui înapoi copia?" : {
       "comment" : "Import confirmation title."
     },
-    "Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN." : {
-      "comment" : "Empty Date importante pocket."
+    "Pune aici ce cauți des, un număr sau un cod. Un cod sau o parolă rămân ascunse, ca un PIN." : {
+      "comment" : "Empty Date importante pocket, the same for every category."
     },
     "Pune aici mașina, casa, actele sau pisica. Îți spunem din timp când expiră ceva și ții minte cine a reparat ce." : {
       "comment" : "Empty home message."
@@ -6770,6 +6921,9 @@
 
     },
     "Raportul de la verificarea trecută" : {
+
+    },
+    "raportul ITP" : {
 
     },
     "Raportul ITP" : {
@@ -6905,15 +7059,6 @@
     },
     "Rezolvat" : {
       "comment" : "Status of an obligation that has been completed."
-    },
-    "rezultat" : {
-
-    },
-    "Rezultat analize" : {
-
-    },
-    "Rezultat medical" : {
-
     },
     "Rezultatele" : {
       "comment" : "Am rezolvat: the results of yearly tests."
@@ -7290,9 +7435,6 @@
     "Semnat de amândoi, câte un exemplar pentru tine, pentru cumpărător și pentru primărie." : {
       "comment" : "Sale: copies of the sale contract."
     },
-    "semnătura electronică" : {
-
-    },
     "Semnătură electronică" : {
 
     },
@@ -7537,6 +7679,9 @@
 
     },
     "Talon (certificat de înmatriculare)" : {
+
+    },
+    "talonul" : {
 
     },
     "Talonul și cartea de identitate a mașinii" : {

@@ -76,7 +76,7 @@ struct OwnCategoriesBelongTests {
             split.behavior.box = .wholeCategory
             split.chosenGrouping = .separate
             // As a backup brings one that behaves like Garanții.
-            likeWarranties.behavior = CategoryBehavior(box: .wholeCategory, listing: .byWarranty, visit: .none)
+            likeWarranties.behavior = CategoryBehavior(box: .wholeCategory, listing: .byWarranty, visit: .none, singular: nil)
             try UnitOfWork.save(context)
         }
         #expect(CategorySwitches(reading: tools).grouping == .grouped, "Read as one box until it is moved")

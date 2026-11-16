@@ -46,13 +46,32 @@ public struct Money: Hashable, Sendable, Codable {
 
     /// The one way an amount is written: in lei for the leu, as docs/COPY_GUIDE.md says
     /// („1.250,50 lei”, never „RON”), with the number and its unit kept on one line; any other
-    /// currency by its code („1.250,50 EUR”).
+    /// currency by its code („1.250,50 EUR”). A whole number of lei takes the leu's plural from
+    /// the String Catalog (`wholeLei`): „1 leu”, „2 lei”, „20 de lei”; with decimals it is
+    /// always „lei” („1,50 lei”).
     private func written(fractionDigits: Int, locale: Locale) -> String {
         guard currency == Money.defaultCurrency else {
             return amount.formatted(Decimal.FormatStyle.Currency(code: currency, locale: locale).precision(.fractionLength(fractionDigits)))
         }
         let number = amount.formatted(Decimal.FormatStyle(locale: locale).precision(.fractionLength(fractionDigits)))
-        return String(localized: "\(number)\u{00A0}lei", comment: "An amount of money in lei, e.g. „1.250,50 lei”. Keep the no-break space.")
+        if fractionDigits == 0, let count = Self.count(amount) {
+            return Self.wholeLei(number, count: count)
+        }
+        return String(localized: "\(number)\u{00A0}lei", comment: "An amount of money in lei with decimals, e.g. „1.250,50 lei”. Keep the no-break space.")
+    }
+
+    /// A whole number of lei, written as `number` („1.250”): the leu's plural forms in the
+    /// String Catalog pick „leu”, „lei” or „de lei” by `count`, the amount without its sign.
+    static func wholeLei(_ number: String, count: Int) -> String {
+        String(localized: "\(number)\u{00A0}\(count) lei",
+               comment: "A whole amount of money in lei: the first argument is the amount as written („1.250”), the second only chooses the plural („1 leu”, „2 lei”, „20 de lei”). Keep the no-break space.")
+    }
+
+    /// The whole number of lei an amount is, without its sign; nil when it doesn't fit.
+    private static func count(_ amount: Decimal) -> Int? {
+        let whole = NSDecimalNumber(decimal: amount.magnitude.rounded(scale: 0))
+        guard whole.compare(NSDecimalNumber(value: Int.max)) == .orderedAscending else { return nil }
+        return whole.intValue
     }
 
     // MARK: Codable

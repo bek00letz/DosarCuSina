@@ -103,7 +103,7 @@ struct CaptureKindProfileTests {
         let context = try makeContext()
         let custom = try TemplateStore(context: context).createCustom(name: "Unelte", symbol: "hammer", pockets: [.keyFacts])
         #expect(custom.behavior == .standard)
-        custom.behavior = CategoryBehavior(box: .wholeCategory, listing: .byWarranty, visit: .none)
+        custom.behavior = CategoryBehavior(box: .wholeCategory, listing: .byWarranty, visit: .none, singular: nil)
         let order = BinderLayout.defaultOrder(
             templates: [.init(key: custom.key, homeOrder: 0, isOnHome: true, box: custom.behavior.box)],
             assets: [.init(id: UUID(), templateKey: custom.key, isTopLevel: true, createdAt: .now)],
@@ -111,7 +111,7 @@ struct CaptureKindProfileTests {
         )
         #expect(order == [.category(custom.key), .agenda], "One box for the whole category, like Garanții")
         #expect(StoredJSON.decode(CategoryBehavior.self, from: Data(#"{"box":"somethingNew","listing":"byHolder"}"#.utf8))
-                == CategoryBehavior(listing: .byHolder, visit: .none), "A value from a newer version reads as the default")
+                == CategoryBehavior(listing: .byHolder, visit: .none, singular: nil), "A value from a newer version reads as the default")
     }
 
     // MARK: The review says what saving does

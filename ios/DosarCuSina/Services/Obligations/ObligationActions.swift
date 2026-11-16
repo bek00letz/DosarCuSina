@@ -66,10 +66,12 @@ public final class ObligationActions {
         // Every question first, before anything is written (`StepQuestion`).
         let reading = plannedReading(metricReading, completing: obligation, on: completedAt)
         try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
+        // What the record is, from the deadline's completion kind: a rovinietă bought, a policy paid.
+        let historyKind = obligation.completionHistoryKind(in: context)
         return try UnitOfWork.performUndoable(in: context, now: now()) {
             let completedDay = CalendarDay(completedAt, calendar: calendar)
 
-            let entry = HistoryEntry(kind: .forCompleting(obligation.kind), title: obligation.title, occurredAt: completedAt)
+            let entry = HistoryEntry(kind: historyKind, title: obligation.title, occurredAt: completedAt)
             entry.cycleDueDay = obligation.dueDay
             entry.previousStatusRaw = obligation.statusRaw
             entry.previousDueMetric = obligation.dueMetric
@@ -145,7 +147,7 @@ public final class ObligationActions {
     /// obligation is one.
     @discardableResult
     func recordPastCompletion(of obligation: Obligation, on date: Date, cost: Money?) throws -> HistoryEntry {
-        let entry = HistoryEntry(kind: .forCompleting(obligation.kind), title: obligation.title, occurredAt: date)
+        let entry = HistoryEntry(kind: obligation.completionHistoryKind(in: context), title: obligation.title, occurredAt: date)
         entry.cycleDueDay = CalendarDay(date, calendar: calendar)
         entry.nextDueDay = obligation.dueDay
         entry.previousStatusRaw = ObligationStatus.active.rawValue

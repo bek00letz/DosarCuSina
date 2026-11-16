@@ -169,7 +169,7 @@ enum CaptureMapping {
         case .expiryDate: return String(localized: "Valabil până la")
         case .dueDate: return String(localized: "De plătit până la")
         case .issuer: return String(localized: "Emis de")
-        case .recordResult: return String(localized: "Ce scrie pe cazier")
+        case .recordResult: return String(localized: "Ce scrie în cazier")
         case .cardNetwork: return String(localized: "Tip card")
         case .cardLastFour: return String(localized: "Ultimele 4 cifre")
         case .provider: return String(localized: "Furnizor")

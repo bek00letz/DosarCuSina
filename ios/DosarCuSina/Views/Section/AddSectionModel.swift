@@ -146,7 +146,7 @@ final class AddSectionModel {
         }
         let parent = try parentSection(in: context)
         let asset = try AssetActions(context: context).create(
-            name: effectiveName.isEmpty ? category.name : effectiveName,
+            name: effectiveName.isEmpty ? category.definition.sectionSingular.name : effectiveName,
             template: category,
             values: values,
             obligations: planned,
@@ -160,7 +160,8 @@ final class AddSectionModel {
         return asset
     }
 
-    /// A name from what was typed: "Volkswagen Golf", "Pașaport", else the category.
+    /// A name from what was typed: "Volkswagen Golf", "Pașaport", else what one section of the
+    /// category is called („Mașina”, never the category's „Mașini”: `sectionSingular`).
     static func suggestedName(values: FieldValues, definition: TemplateDefinition) -> String {
         let words = definition.fields(withRole: .subtitle).compactMap { field -> String? in
             guard let value = values[field.key] else { return nil }
@@ -169,7 +170,7 @@ final class AddSectionModel {
         }
         if !words.isEmpty { return words.prefix(2).joined(separator: " ") }
         if let identifier = AssetFacts.text(.identifier, in: values, template: definition) { return identifier }
-        return definition.name
+        return definition.sectionSingular.name
     }
 }
 

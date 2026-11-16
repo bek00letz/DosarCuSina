@@ -54,17 +54,34 @@ struct CaptureKindProfile: Sendable {
         case nextDose
     }
 
-    /// The paper's noun as the review's sentences use it: after „pe” („Pe factură scrie”,
-    /// „Nu am găsit date pe cartea de identitate”), and which pronoun it takes, so „O păstrez”
-    /// never follows a contract (`CompletionShape.Paper.Gender`, the one list of genders).
+    /// The paper's noun as the review's sentences use it: what is written on it or in it
+    /// („Pe factură scrie”, „În contract scrie”, „Nu am găsit date pe cartea de identitate”),
+    /// the paper itself („Scanează factura”, a section's empty Acte), and which pronoun it takes,
+    /// so „O păstrez” never follows a contract (`CompletionShape.Paper.Gender`, the one list of
+    /// genders).
     struct Noun: Sendable {
-        /// After „pe”: „factură”, „contract”, „cartea de identitate”.
-        let afterPe: LocalizedStringResource
+        /// Whether what a paper says is written on it, like a bill or a card, or in it, like a
+        /// contract, a policy or a booklet.
+        enum Surface: Sendable, CaseIterable {
+            /// „Pe factură scrie”, „pe card”.
+            case on
+            /// „În contract scrie”, „în poliță”, „în pașaport”.
+            case inside
+        }
+
+        let surface: Surface
+        /// After its preposition: „factură”, „contract”, „cartea de identitate”.
+        let afterPreposition: LocalizedStringResource
+        /// The paper itself, with its article: „factura”, „contractul”, „raportul ITP”.
+        let definite: LocalizedStringResource
         /// „O pun” for a bill or a policy, „îl pun” for a contract or a report.
         let gender: CompletionShape.Paper.Gender
 
-        init(_ afterPe: LocalizedStringResource, _ gender: CompletionShape.Paper.Gender) {
-            self.afterPe = afterPe
+        init(_ surface: Surface, _ afterPreposition: LocalizedStringResource, the definite: LocalizedStringResource,
+             _ gender: CompletionShape.Paper.Gender) {
+            self.surface = surface
+            self.afterPreposition = afterPreposition
+            self.definite = definite
             self.gender = gender
         }
     }
@@ -257,6 +274,20 @@ struct CaptureKindProfile: Sendable {
         return (templateKey, blueprintKey)
     }
 
+    /// The papers a section of a category keeps in its Acte, as capture files them: the kinds
+    /// filed into the category (by their own category, a policy by its covers), never a bill or a
+    /// visit's invoice (they open from Istoric) nor a personal document (a section of its own).
+    /// In the registry's order, each noun once: a car's talon, policy and ITP report.
+    static func papersKept(inCategory templateKey: String) -> [Noun] {
+        var named = Set<String>()
+        return all.filter { profile in
+            guard !profile.isBill, !profile.opensVisitFlow, profile.documentType == nil else { return false }
+            return profile.templateKey == templateKey || profile.covers.contains { coverDeadlines[$0]?.templateKey == templateKey }
+        }
+        .map(\.noun)
+        .filter { named.insert(String(localized: $0.definite)).inserted }
+    }
+
     /// Whether a photo of some kind of document sets this deadline of this category (an ITP
     /// report the car's ITP, a policy the deadline of its cover): what "Adaugă o secțiune" says
     /// a deadline left for later can come from (`AddSectionForm.laterNote(for:)`).
@@ -301,22 +332,22 @@ struct CaptureKindProfile: Sendable {
     private static let issuedOn: [CaptureFieldKey] = [.issueDate, .startDate, .purchaseDate]
 
     static let all: [CaptureKindProfile] = [
-        identity(.passport, type: DocumentType.passport, name: "Pașaport", noun: Noun("pașaport", .masculine),
+        identity(.passport, type: DocumentType.passport, name: "Pașaport", noun: Noun(.inside, "pașaport", the: "pașaportul", .masculine),
                  model: "passport data page", isIdentityDocument: true),
-        identity(.identityCard, type: DocumentType.idCard, name: "Carte de identitate", noun: Noun("cartea de identitate", .feminine),
+        identity(.identityCard, type: DocumentType.idCard, name: "Carte de identitate", noun: Noun(.on, "cartea de identitate", the: "cartea de identitate", .feminine),
                  model: "identity card", isIdentityDocument: true, hasMachineReadableBack: true),
-        identity(.drivingLicence, type: DocumentType.drivingLicence, name: "Permis de conducere", noun: Noun("permisul de conducere", .masculine),
+        identity(.drivingLicence, type: DocumentType.drivingLicence, name: "Permis de conducere", noun: Noun(.on, "permisul de conducere", the: "permisul de conducere", .masculine),
                  model: "EU driving licence", isIdentityDocument: true),
-        identity(.criminalRecord, type: DocumentType.criminalRecord, name: "Cazier", noun: Noun("cazier", .masculine),
+        identity(.criminalRecord, type: DocumentType.criminalRecord, name: "Cazier", noun: Noun(.inside, "cazier", the: "cazierul", .masculine),
                  model: "Romanian criminal record certificate (certificat de cazier judiciar, fiscal or auto)"),
-        identity(.healthInsuranceCard, type: DocumentType.euHealthCard, name: "Card european de sănătate", noun: Noun("cardul de sănătate", .masculine),
+        identity(.healthInsuranceCard, type: DocumentType.euHealthCard, name: "Card european de sănătate", noun: Noun(.on, "cardul de sănătate", the: "cardul de sănătate", .masculine),
                  model: "European health insurance card"),
-        identity(.bankCard, type: DocumentType.bankCard, name: "Card bancar", noun: Noun("cardul bancar", .masculine),
+        identity(.bankCard, type: DocumentType.bankCard, name: "Card bancar", noun: Noun(.on, "cardul bancar", the: "cardul bancar", .masculine),
                  model: "bank card (debit or credit); never copy its full number, only its last four digits", photoIsOptIn: true,
                  cardNumberCues: bankCardCues),
-        identity(.greenCard, type: DocumentType.greenCard, name: "Carte verde", noun: Noun("cartea verde", .feminine),
+        identity(.greenCard, type: DocumentType.greenCard, name: "Carte verde", noun: Noun(.on, "cartea verde", the: "cartea verde", .feminine),
                  model: "green card (international motor insurance card, carte verde), not the RCA policy itself"),
-        identity(.electronicSignature, type: DocumentType.eSignature, name: "Semnătură electronică", noun: Noun("semnătura electronică", .feminine),
+        identity(.electronicSignature, type: DocumentType.eSignature, name: "Semnătură electronică", noun: Noun(.inside, "certificatul de semnătură electronică", the: "certificatul de semnătură electronică", .masculine),
                  model: "qualified electronic signature certificate (certificat calificat de semnătură electronică)"),
         CaptureKindProfile(
             kind: .vehicleRegistration, templateKey: BuiltInTemplates.Key.vehicle, filing: .newSection, blueprintKey: nil,
@@ -324,7 +355,7 @@ struct CaptureKindProfile: Sendable {
             documentKind: .identity, documentType: nil, trade: nil,
             expectedKeys: [.licensePlate, .vin, .civNumber, .make, .model, .firstRegistrationDate],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: [.licensePlate, .vin],
-            name: "Talon (certificat de înmatriculare)", noun: Noun("talon", .masculine), titleRule: .fixed("Certificat de înmatriculare"),
+            name: "Talon (certificat de înmatriculare)", noun: Noun(.inside, "talon", the: "talonul", .masculine), titleRule: .fixed("Certificat de înmatriculare"),
             modelDescription: "vehicle registration certificate", sectionName: .vehicle,
             labels: registrationLabels
         ),
@@ -335,7 +366,7 @@ struct CaptureKindProfile: Sendable {
             expectedKeys: [.provider, .providerTaxID, .policyNumber, .coverageType, .startDate, .expiryDate, .total, .claimsPhone, .licensePlate, .vin, .bonusMalusClass,
                            .policyholder],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: true, identifierKeys: [.licensePlate, .vin],
-            name: "Poliță RCA", noun: Noun("poliță", .feminine), titleRule: .nameAndYear,
+            name: "Poliță RCA", noun: Noun(.inside, "poliță", the: "polița", .feminine), titleRule: .nameAndYear,
             modelDescription: "compulsory motor insurance (RCA) policy", sectionName: .vehicle,
             labels: policyLabels
         ),
@@ -346,7 +377,7 @@ struct CaptureKindProfile: Sendable {
             expectedKeys: [.provider, .providerTaxID, .policyNumber, .coverageType, .startDate, .expiryDate, .total, .claimsPhone, .licensePlate,
                            .policyholder],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: [.licensePlate, .vin],
-            name: "Poliță de asigurare", noun: Noun("poliță", .feminine), titleRule: .name, modelDescription: "insurance policy (CASCO, home or other)",
+            name: "Poliță de asigurare", noun: Noun(.inside, "poliță", the: "polița", .feminine), titleRule: .name, modelDescription: "insurance policy (CASCO, home or other)",
             labels: policyLabels
         ),
         CaptureKindProfile(
@@ -356,7 +387,7 @@ struct CaptureKindProfile: Sendable {
             expectedKeys: [.provider, .serviceKind, .invoiceNumber, .issueDate, .dueDate, .total, .clientCode, .contractNumber, .podCode, .clcCode,
                            .phoneNumber, .meterIndex, .meterReading, .supplyAddress, .directDebit],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: true, identifierKeys: subscriptionCodes,
-            name: "Factură de utilități", noun: Noun("factură", .feminine), titleRule: .wordAndProvider("Factură"),
+            name: "Factură de utilități", noun: Noun(.on, "factură", the: "factura", .feminine), titleRule: .wordAndProvider("Factură"),
             modelDescription: "utility, internet, TV or phone bill", isBill: true, sectionName: .subscription,
             labels: billLabels, readsPaymentCode: true, meterReadingCues: billReadingCues
         ),
@@ -367,7 +398,7 @@ struct CaptureKindProfile: Sendable {
             expectedKeys: [.provider, .serviceKind, .contractNumber, .clientCode, .startDate, .minimumMonths, .minimumPeriodEnd, .monthlyPrice,
                            .phoneNumber, .podCode, .clcCode, .supplyAddress],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: subscriptionCodes,
-            name: "Contract sau act adițional", noun: Noun("contract", .masculine), titleRule: .wordAndProvider("Contract"),
+            name: "Contract sau act adițional", noun: Noun(.inside, "contract", the: "contractul", .masculine), titleRule: .wordAndProvider("Contract"),
             modelDescription: "contract or addendum for gas, electricity, water, internet, TV or a mobile plan", sectionName: .subscription,
             labels: contractLabels
         ),
@@ -377,7 +408,7 @@ struct CaptureKindProfile: Sendable {
             documentKind: .invoice, documentType: nil, trade: .mechanic,
             expectedKeys: [.provider, .providerTaxID, .invoiceNumber, .issueDate, .total, .licensePlate, .vin, .odometer, .lineItems],
             carriesLineItems: true, opensVisitFlow: true, logsHistory: true, identifierKeys: [.licensePlate, .vin],
-            name: "Factură de service", noun: Noun("factură", .feminine), titleRule: .wordAndProvider("Factură"),
+            name: "Factură de service", noun: Noun(.on, "factură", the: "factura", .feminine), titleRule: .wordAndProvider("Factură"),
             modelDescription: "car service invoice", sectionName: .vehicle,
             readsPaymentCode: true
         ),
@@ -387,7 +418,7 @@ struct CaptureKindProfile: Sendable {
             documentKind: .receipt, documentType: nil, trade: nil,
             expectedKeys: [.retailer, .purchaseDate, .purchasePrice, .productName, .serialNumber, .warrantyMonths, .warrantyUntil, .lineItems],
             carriesLineItems: true, opensVisitFlow: false, logsHistory: false, identifierKeys: [.serialNumber],
-            name: "Bon fiscal", noun: Noun("bon", .masculine), titleRule: .product, modelDescription: "fiscal receipt",
+            name: "Bon fiscal", noun: Noun(.on, "bon", the: "bonul", .masculine), titleRule: .product, modelDescription: "fiscal receipt",
             labels: purchaseLabels
         ),
         CaptureKindProfile(
@@ -396,7 +427,7 @@ struct CaptureKindProfile: Sendable {
             documentKind: .warranty, documentType: nil, trade: nil,
             expectedKeys: [.retailer, .productName, .serialNumber, .purchaseDate, .warrantyMonths, .warrantyUntil],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: [.serialNumber],
-            name: "Certificat de garanție", noun: Noun("certificat", .masculine), titleRule: .product, modelDescription: "warranty certificate",
+            name: "Certificat de garanție", noun: Noun(.inside, "certificat", the: "certificatul de garanție", .masculine), titleRule: .product, modelDescription: "warranty certificate",
             labels: purchaseLabels
         ),
         CaptureKindProfile(
@@ -405,7 +436,7 @@ struct CaptureKindProfile: Sendable {
             documentKind: .report, documentType: nil, trade: .inspectionStation,
             expectedKeys: [.provider, .licensePlate, .vin, .issueDate, .expiryDate, .odometer],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: true, identifierKeys: [.licensePlate, .vin],
-            name: "Raport ITP", noun: Noun("raport", .masculine), titleRule: .name,
+            name: "Raport ITP", noun: Noun(.inside, "raport", the: "raportul ITP", .masculine), titleRule: .name,
             modelDescription: "periodic technical inspection (ITP) report", sectionName: .vehicle,
             labels: inspectionLabels
         ),
@@ -415,7 +446,7 @@ struct CaptureKindProfile: Sendable {
             documentKind: .report, documentType: nil, trade: .vet,
             expectedKeys: [.provider, .petName, .microchip, .vaccineName, .issueDate, .nextDoseDate],
             carriesLineItems: true, opensVisitFlow: true, logsHistory: true, identifierKeys: [.microchip, .petName],
-            name: "Fișă de la veterinar", noun: Noun("fișă", .feminine), titleRule: .fixed("Fișă veterinar"),
+            name: "Fișă de la veterinar", noun: Noun(.inside, "fișă", the: "fișa", .feminine), titleRule: .fixed("Fișă veterinar"),
             modelDescription: "veterinary record", sectionName: .pet,
             labels: veterinaryLabels
         ),
@@ -425,7 +456,7 @@ struct CaptureKindProfile: Sendable {
             documentKind: .report, documentType: nil, trade: .doctor,
             expectedKeys: [.provider, .issueDate],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: true, identifierKeys: [],
-            name: "Rezultat medical", noun: Noun("rezultat", .masculine), titleRule: .fixed("Rezultat analize"),
+            name: "Buletin de analize", noun: Noun(.on, "buletinul de analize", the: "buletinul de analize", .masculine), titleRule: .fixed("Buletin de analize"),
             modelDescription: "medical test result", sectionName: .fixed("Sănătate")
         ),
         other,
@@ -437,7 +468,7 @@ struct CaptureKindProfile: Sendable {
         documentKind: .other, documentType: nil, trade: nil,
         expectedKeys: [.provider, .documentNumber, .invoiceNumber, .issueDate, .dueDate, .expiryDate, .total],
         carriesLineItems: true, opensVisitFlow: false, logsHistory: false, identifierKeys: [],
-        name: "Alt document", noun: Noun("document", .masculine), titleRule: .fixed("Document"), modelDescription: "household document",
+        name: "Alt document", noun: Noun(.on, "document", the: "documentul", .masculine), titleRule: .fixed("Document"), modelDescription: "household document",
         readsPaymentCode: true
     )
 

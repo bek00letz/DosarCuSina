@@ -210,6 +210,24 @@ struct AddSectionCopyRulesTests {
         #expect(AddSectionForm(withBills.definition(key: CustomSectionDraft.draftKey)).nameExample == nil)
     }
 
+    @Test("A new section's name, before anything is typed and when left empty, is one of it, never the category's plural")
+    func aSectionIsNamedAsOneThing() throws {
+        for category in try CopyMatrixTests.categories() {
+            let definition = category.definition
+            let prompt = AddSectionModel.suggestedName(values: FieldValues(), definition: definition)
+            #expect(prompt == definition.sectionSingular.name, "\(category.title): „\(prompt)”")
+            if definition.key.hasPrefix(TemplateDefinition.customKeyPrefix) {
+                #expect(prompt == definition.name, "\(category.title): a category of one's own is named as one thing already")
+            } else {
+                #expect(definition.behavior.singular != nil, "\(category.title) declares what one section is called")
+                #expect(prompt != definition.name, "\(category.title): „\(prompt)” is the category's own name")
+            }
+        }
+        #expect(BuiltInTemplates.purchase.sectionSingular.name == "Produsul", "An empty Garanții section is a product, not „Garanții”")
+        #expect(BuiltInTemplates.vehicle.sectionSingular.gender == .feminine)
+        #expect(BuiltInTemplates.gender(ofSectionIn: BuiltInTemplates.Key.subscription) == .masculineOrNeuter, "„Păstrezi … ca al tău?” for a subscription")
+    }
+
     @Test("A photo is offered for a deadline left for later only where a photo sets it")
     func laterNoteSaysAPhotoOnlyWhereOneSetsIt() throws {
         let context = try makeContext()

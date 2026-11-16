@@ -4,6 +4,9 @@ import Foundation
 /// (`HistoryKind`) laid over its category's visit kind (`VisitShape`), the way `VisitForm` lays
 /// a visit's shape over its category: a car's service lists „Ce s-a făcut” and „Service-ul”, a
 /// vet's visit „Ce i s-a făcut” and „Veterinarul”, a bill „Ce cuprinde factura” and no stars.
+/// A record that closed a deadline reads its deadline's completion instead
+/// (`make(completing:visit:)`, by `CompletionRecord`): a policy names „Asigurătorul”, a rovinietă
+/// what was bought, a document renewed no one's work, whatever kind the record was stored as.
 /// Read by `HistoryEntryScreen`, which holds no words of its own; `docs/COPY_MATRIX.md` shows it
 /// for every category (`CopyMatrixTests`).
 struct HistoryEntryShape: Equatable {
@@ -17,12 +20,22 @@ struct HistoryEntryShape: Equatable {
         case never
     }
 
+    /// Which paper the number printed on it belongs to, said before it.
+    enum Reference: Equatable {
+        /// „Nr. 0001”.
+        case number
+        /// „Factura nr. 0001”: a bill, a purchase.
+        case invoice
+        /// „Polița nr. 0001”.
+        case policy
+    }
+
     /// Above the rows of what was done.
     var itemsHeader: String
     /// Above who did it.
     var providerHeader: String
     /// Before the number printed on its paper: „Factura nr.” for a bill.
-    var referenceIsInvoice: Bool
+    var reference: Reference
     var rating: Rating
     /// Above the stars, in the kind's words: „Cum a lucrat?”, „Cum a fost?”.
     var ratingHeader: String
@@ -41,12 +54,59 @@ struct HistoryEntryShape: Equatable {
         return shape
     }
 
+    /// The page for a record that closed a deadline whose completion is `completion`, in a
+    /// category whose visits are `visit`: what the completion is (`CompletionRecord`), never the
+    /// kind the record was stored as, so records written before each completion stated its
+    /// record read right too. With the way back off (`CompletionRecord.decidesHistoryKind`), the
+    /// stored kind's page (`stored`).
+    static func make(completing completion: CompletionKind, stored: HistoryKind, visit: VisitShape?) -> HistoryEntryShape {
+        guard CompletionRecord.decidesHistoryKind else { return make(stored, visit: visit) }
+        switch completion.record {
+        case .job:
+            return make(.maintenance, visit: visit)
+        case .check:
+            return make(.inspection, visit: visit)
+        case .care, .vaccination:
+            return make(completion.record.historyKind, visit: visit)
+        case .bill:
+            return make(.payment, visit: visit)
+        case .purchase:
+            return make(.purchase, visit: visit)
+        case .atHome:
+            // Done at home, or by whoever: never the category's visit provider (a groomer isn't the vet).
+            return HistoryEntryShape(itemsHeader: visit?.work?.header ?? HistoryEntryWording.whatWasDone,
+                                     providerHeader: HistoryEntryWording.whoGaveIt,
+                                     reference: .number, rating: .withSomeone, ratingHeader: HistoryEntryWording.howItWent)
+        case .tax:
+            return HistoryEntryShape(itemsHeader: HistoryEntryWording.whatWasPaid, providerHeader: HistoryEntryWording.paidTo,
+                                     reference: .number, rating: .never, ratingHeader: HistoryEntryWording.howItWent)
+        case .policy:
+            return HistoryEntryShape(itemsHeader: HistoryEntryWording.whatItCovers, providerHeader: HistoryEntryWording.insurer,
+                                     reference: .policy, rating: .never, ratingHeader: HistoryEntryWording.howItWent)
+        case .renewal:
+            return HistoryEntryShape(itemsHeader: HistoryEntryWording.whatWasDone,
+                                     providerHeader: HistoryEntryWording.issuedBy(completion.shape.paper?.gender ?? .masculine),
+                                     reference: .number, rating: .never, ratingHeader: HistoryEntryWording.howItWent)
+        case .acknowledged:
+            return make(.note, visit: visit)
+        }
+    }
+
+    /// The number printed on its paper, in the words of the paper it is: „Factura nr. 0001”.
+    func referenceWords(_ number: String) -> String {
+        switch reference {
+        case .number: HistoryEntryWording.number(number)
+        case .invoice: HistoryEntryWording.invoiceNumber(number)
+        case .policy: HistoryEntryWording.policyNumber(number)
+        }
+    }
+
     private static func base(_ kind: HistoryKind, visit: VisitShape?) -> HistoryEntryShape {
         let work = visit?.work?.header
         let provider = visit?.provider
         let job = HistoryEntryShape(itemsHeader: work ?? HistoryEntryWording.whatWasDone,
                                     providerHeader: provider?.header ?? HistoryEntryWording.whoWorked,
-                                    referenceIsInvoice: false, rating: .job,
+                                    reference: .number, rating: .job,
                                     ratingHeader: provider?.rating ?? HistoryEntryWording.howItWent)
         switch kind {
         case .visit, .maintenance:
@@ -57,21 +117,21 @@ struct HistoryEntryShape: Equatable {
             return repair
         case .inspection:
             return HistoryEntryShape(itemsHeader: HistoryEntryWording.whatWasChecked, providerHeader: HistoryEntryWording.whoChecked,
-                                     referenceIsInvoice: false, rating: .withSomeone, ratingHeader: HistoryEntryWording.howItWent)
+                                     reference: .number, rating: .withSomeone, ratingHeader: HistoryEntryWording.howItWent)
         case .vaccination, .treatment:
             return HistoryEntryShape(itemsHeader: work ?? HistoryEntryWording.whatWasDone,
                                      providerHeader: provider?.header ?? HistoryEntryWording.whoGaveIt,
-                                     referenceIsInvoice: false, rating: .withSomeone,
+                                     reference: .number, rating: .withSomeone,
                                      ratingHeader: provider?.rating ?? HistoryEntryWording.howItWent)
         case .purchase:
             return HistoryEntryShape(itemsHeader: HistoryEntryWording.whatWasBought, providerHeader: HistoryEntryWording.boughtFrom,
-                                     referenceIsInvoice: true, rating: .never, ratingHeader: HistoryEntryWording.howItWent)
+                                     reference: .invoice, rating: .never, ratingHeader: HistoryEntryWording.howItWent)
         case .payment:
             return HistoryEntryShape(itemsHeader: HistoryEntryWording.whatTheBillHolds, providerHeader: HistoryEntryWording.paidTo,
-                                     referenceIsInvoice: true, rating: .never, ratingHeader: HistoryEntryWording.howItWent)
+                                     reference: .invoice, rating: .never, ratingHeader: HistoryEntryWording.howItWent)
         case .note:
-            return HistoryEntryShape(itemsHeader: HistoryEntryWording.whatWasDone, providerHeader: HistoryEntryWording.whoWorked,
-                                     referenceIsInvoice: false, rating: .never, ratingHeader: HistoryEntryWording.howItWent)
+            return HistoryEntryShape(itemsHeader: HistoryEntryWording.whatWasNoted, providerHeader: HistoryEntryWording.whoGaveIt,
+                                     reference: .number, rating: .never, ratingHeader: HistoryEntryWording.howItWent)
         }
     }
 
@@ -98,6 +158,18 @@ enum HistoryEntryWording {
     static var whoGaveIt: String { String(localized: "Cine s-a ocupat", comment: "Istoric record: who gave a vaccine or a treatment.") }
     static var boughtFrom: String { String(localized: "De unde", comment: "Istoric record: where something was bought.") }
     static var paidTo: String { String(localized: "Cui ai plătit", comment: "Istoric record: who a payment went to.") }
+    static var whatWasPaid: String { String(localized: "Ce ai plătit", comment: "Istoric record: what a tax or a declaration paid for.") }
+    static var whatItCovers: String { String(localized: "Ce acoperă", comment: "Istoric record: what a renewed insurance policy covers.") }
+    static var insurer: String { String(localized: "Asigurătorul", comment: "Istoric record: who a renewed insurance policy is with.") }
+    /// Who issued a renewed paper, agreeing with its noun: „Cine l-a emis” for „Actul nou”.
+    static func issuedBy(_ gender: CompletionShape.Paper.Gender) -> String {
+        switch gender {
+        case .masculine: String(localized: "Cine l-a emis", comment: "Istoric record: who issued a renewed paper named by a masculine noun (a document, a card, a contract).")
+        case .feminine: String(localized: "Cine a emis-o", comment: "Istoric record: who issued a renewed paper named by a feminine noun.")
+        case .plural: String(localized: "Cine le-a emis", comment: "Istoric record: who issued renewed papers named by a plural noun.")
+        }
+    }
+    static var whatWasNoted: String { String(localized: "Ce ai notat", comment: "Istoric record: the rows of a note.") }
     static var howItWent: String { String(localized: "Cum a fost") }
     static var ratingFootnote: String { String(localized: "Nota intră în stelele celui care a lucrat.", comment: "Footnote under a job rating.") }
     static var notes: String { String(localized: "Note", comment: "Header: notes.") }
@@ -109,6 +181,10 @@ enum HistoryEntryWording {
 
     static func invoiceNumber(_ reference: String) -> String {
         String(localized: "Factura nr. \(reference)", comment: "A bill's invoice number on its history page.")
+    }
+
+    static func policyNumber(_ reference: String) -> String {
+        String(localized: "Polița nr. \(reference)", comment: "A renewed insurance policy's number on its history page.")
     }
 
     static func number(_ reference: String) -> String {

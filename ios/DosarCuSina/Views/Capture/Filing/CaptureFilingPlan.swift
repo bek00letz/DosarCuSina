@@ -121,9 +121,13 @@ struct CaptureFilingPlan {
     var readingFiledBefore: UUID?
 
     /// Where `review`'s bonus-malus class goes, from the person the policy insures
-    /// (`Policyholders`): by the CNP read on it, else by name. Nil when there is no class.
+    /// (`Policyholders`): by the CNP read on it, else by name. Nil when there is no class, and
+    /// when the policy files into a deadline that keeps no policyholder (`deadline`: a car's RCA
+    /// names who it insures, `BlueprintFacts.policyholder`; a home's policy or a CASCO doesn't),
+    /// so the class is only ever said and kept for a vehicle's RCA, never by its name.
     @MainActor
-    static func bonusMalus(for review: CaptureReview, people: [Policyholders.Person]) -> BonusMalus? {
+    static func bonusMalus(for review: CaptureReview, people: [Policyholders.Person], deadline: ObligationBlueprint?) -> BonusMalus? {
+        guard deadline?.facts?.policyholder != nil else { return nil }
         guard review.kind.profile.readsCover, let classKey = BonusMalusClass.key(for: review.value(.bonusMalusClass)?.text) else { return nil }
         let name = review.value(.policyholder)?.text
         if let person = Policyholders.person(named: name, personalNumber: review.value(.policyholderPersonalNumber)?.text, among: people) {
@@ -151,7 +155,7 @@ struct CaptureFilingPlan {
         plan.day = review.reminderDay
         plan.provider = CaptureFiler.provider(of: review)
         plan.keepsPhoto = review.keepsPhoto
-        plan.bonusMalus = bonusMalus(for: review, people: Policyholders.people(in: assets, templates: templates))
+        plan.bonusMalus = bonusMalus(for: review, people: Policyholders.people(in: assets, templates: templates), deadline: plan.blueprint)
         plan.filedBill = filedBill(for: review, section: section, templates: templates, assets: assets, today: today, calendar: calendar)
         plan.readingFiledBefore = readingFiledBefore(review: review, filedBill: plan.filedBill, templates: templates, assets: assets)
         plan.meter = meter(for: review, section: section, templateKey: plan.templateKey, templates: templates, assets: assets,

@@ -9,11 +9,13 @@ import Foundation
 // MARK: - A pocket while it is empty
 
 extension SectionPocket {
-    /// The line inside the pocket while it holds nothing, on a page of a category whose visits
-    /// are `visits`: Istoric's and Oameni's in the kind's words, the others' the pocket's own.
-    /// Every pocket written.
-    func emptyLine(visits: VisitKind) -> String {
-        switch self {
+    /// The line inside the pocket while it holds nothing, on a page of the category `definition`:
+    /// Istoric's and Oameni's in the words of its visits (`VisitKind.pocketWords`), Acte's naming
+    /// the papers its sections keep (`CaptureKindProfile.papersKept(inCategory:)`), the others'
+    /// the pocket's own. Every pocket written.
+    func emptyLine(in definition: TemplateDefinition) -> String {
+        let visits = definition.behavior.visit
+        return switch self {
         case .upcoming:
             String(localized: "Niciun termen. Adaugă unul ca să îți amintim la timp.", comment: "Empty Urmează pocket.")
         case .tenants:
@@ -25,7 +27,7 @@ extension SectionPocket {
         case .plants:
             String(localized: "Nicio plantă trecută aici. Adaug-o și îți amintim de udat.", comment: "Empty Plante pocket on a home's page.")
         case .documents:
-            String(localized: "Niciun document. Scanează polița, factura sau certificatul și le găsești aici.", comment: "Empty Acte pocket.")
+            PocketWording.documentsEmpty(CaptureKindProfile.papersKept(inCategory: definition.key))
         case .history:
             visits.pocketWords.historyEmpty
         case .people:
@@ -33,8 +35,8 @@ extension SectionPocket {
         case .money:
             String(localized: "Nicio sumă notată încă. Când notezi ceva cu preț, apare aici.", comment: "Empty Bani pocket.")
         case .keyFacts:
-            String(localized: "Pune aici ce cauți des: numărul poliței, codul de client. Un cod sau o parolă rămân ascunse, ca un PIN.",
-                   comment: "Empty Date importante pocket.")
+            String(localized: "Pune aici ce cauți des, un număr sau un cod. Un cod sau o parolă rămân ascunse, ca un PIN.",
+                   comment: "Empty Date importante pocket, the same for every category.")
         }
     }
 
@@ -55,9 +57,9 @@ extension SectionPocket {
 extension PagePocket {
     /// The line inside the pocket while it holds nothing (`SectionPocket.emptyLine`); a category's
     /// own pocket names the category.
-    func emptyLine(visits: VisitKind) -> String {
+    func emptyLine(in definition: TemplateDefinition) -> String {
         switch self {
-        case .listed(let pocket): pocket.emptyLine(visits: visits)
+        case .listed(let pocket): pocket.emptyLine(in: definition)
         case .category(_, let name): PocketWording.categoryEmpty(name)
         }
     }
@@ -120,6 +122,32 @@ enum PocketWording {
     /// A button that files a section in a pocket named after its category (a car's Anvelope).
     static func addInto(_ name: String) -> String {
         String(localized: "Adaugă în „\(name)”", comment: "Button in the pocket of a category of one's own on its parent's page (a car's Anvelope): adds a section of it here.")
+    }
+
+    /// Inside Acte while it holds nothing, naming the papers the category's sections keep, up to
+    /// three („Scanează talonul, polița sau raportul ITP și le găsești aici.”), agreeing with the one
+    /// paper when there is one („Scanează contractul și îl găsești aici.”), else any paper.
+    static func documentsEmpty(_ papers: [CaptureKindProfile.Noun]) -> String {
+        guard let first = papers.first else {
+            return String(localized: "Niciun document. Scanează un act și îl găsești aici.",
+                          comment: "Empty Acte pocket of a category whose sections keep no paper of their own kind.")
+        }
+        guard papers.count > 1 else {
+            return switch first.gender {
+            case .masculine:
+                String(localized: "Niciun document. Scanează \(first.itself) și îl găsești aici.",
+                       comment: "Empty Acte pocket: the one paper its sections keep, named by a masculine noun with its article (contractul).")
+            case .feminine:
+                String(localized: "Niciun document. Scanează \(first.itself) și o găsești aici.",
+                       comment: "Empty Acte pocket: the one paper its sections keep, named by a feminine noun with its article (polița).")
+            case .plural:
+                String(localized: "Niciun document. Scanează \(first.itself) și le găsești aici.",
+                       comment: "Empty Acte pocket: the papers its sections keep, named by a plural noun with its article.")
+            }
+        }
+        let list = papers.prefix(3).map(\.itself).formatted(.list(type: .or).locale(.dosarDefault))
+        return String(localized: "Niciun document. Scanează \(list) și le găsești aici.",
+                      comment: "Empty Acte pocket: the papers its sections keep, as a list ending in „sau” (talonul, polița sau raportul ITP).")
     }
 
     /// Inside a category's own pocket while it holds nothing.

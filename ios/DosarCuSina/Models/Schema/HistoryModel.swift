@@ -19,8 +19,17 @@ public enum HistoryKind: String, Codable, CaseIterable, Sendable {
     /// Anything else worth remembering.
     case note
 
-    /// The history kind written when an obligation of `kind` is completed.
-    public static func forCompleting(_ kind: ObligationKind) -> HistoryKind {
+    /// The history kind written when a deadline is completed: its completion's record
+    /// (`CompletionRecord.historyKind`, from the kind its blueprint declares), so a rovinietă
+    /// is something bought and a policy a payment, whatever their importance. With the way back
+    /// off (`CompletionRecord.decidesHistoryKind`), the one its importance gave before.
+    public static func forCompleting(_ completion: CompletionKind, importance kind: ObligationKind) -> HistoryKind {
+        CompletionRecord.decidesHistoryKind ? completion.record.historyKind : byImportance(kind)
+    }
+
+    /// The way back: the history kind a deadline's importance (`kind`) gave its completions
+    /// before each completion kind stated its record. Remove with the owner's OK.
+    static func byImportance(_ kind: ObligationKind) -> HistoryKind {
         switch kind {
         case .legal: return .inspection
         case .tax, .insurance, .payment: return .payment

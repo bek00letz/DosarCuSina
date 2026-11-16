@@ -146,6 +146,22 @@ struct MoneyTests {
         #expect(!Money(350).formattedCompact(locale: locale).contains(","))
     }
 
+    /// Romanian counts the leu: „1 leu”, „2 lei”, „20 de lei”; with decimals it is always „lei”.
+    @Test("A whole amount of lei takes the leu's plural, from the String Catalog", arguments: [
+        ("1", "1\u{00A0}leu"), ("2", "2\u{00A0}lei"), ("19", "19\u{00A0}lei"), ("20", "20\u{00A0}de lei"),
+        ("101", "101\u{00A0}lei"), ("1250", "1.250\u{00A0}de lei"), ("1.5", "1,50\u{00A0}lei"),
+    ])
+    func leiAreCounted(amount: String, written: String) throws {
+        let money = Money(try #require(Decimal(string: amount, locale: Locale(identifier: "en_US_POSIX"))))
+        #expect(money.formattedCompact() == written)
+    }
+
+    @Test("With decimals, and in another currency, nothing is counted")
+    func decimalsAndOtherCurrencies() {
+        #expect(Money(1).formatted() == "1,00\u{00A0}lei")
+        #expect(!Money(1, currency: "EUR").formattedCompact().contains("leu"))
+    }
+
     @Test func amountStringRoundsToCents() {
         #expect(Money(Decimal(string: "12.345")!).amountString == "12.34")
         #expect(Money(Decimal(string: "12.5")!).amountString == "12.5")

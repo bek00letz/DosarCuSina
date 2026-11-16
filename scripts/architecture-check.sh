@@ -303,9 +303,9 @@ rule de-verificat-outside-inbox "$app" '^ios/DosarCuSina/Views/Add/AddRoot\.swif
 # besides a symbol's name (systemImage:, systemName:) and what is interpolated into a literal.
 # The visit form, „Am rezolvat”, the deadline form, a section page's pockets, adding a section,
 # the capture review and a record's page in Istoric.
-shaped_screens='^ios/DosarCuSina/Views/(Add/(AddVisitFlow|DeadlineForm|Visit/[A-Za-z]+)|Upcoming/ObligationCompleteSheet|Section/(SectionPocket(s|Layout)|AddSection(Flow|Model)|HistoryEntryScreen)|Capture/CaptureReviewView)\.swift$'
+shaped_screens='^ios/DosarCuSina/Views/(Add/(AddVisitFlow|DeadlineForm|Visit/[A-Za-z]+)|Upcoming/ObligationCompleteSheet|Section/(SectionPocket(s|Layout)|AddSection(Flow|Model)|HistoryEntryScreen|CustomCategoryForm|SectionLists)|Capture/(CaptureReviewView|KeepPhotoChoice))\.swift$'
 rule text-in-shaped-screen "$shaped_screens" - '-' - \
-    "A shaped screen's words come from its kind's description (VisitShape through VisitForm, CompletionKind, CaptureKindProfile, HistoryEntryShape, the category's own definition) or from the words every kind shares beside it (VisitFormWording, CompletionWording, PocketWording, CaptureReviewWording, AddSectionWording, DeadlineFormWording, HistoryEntryWording). Add the words there and draw them from it."
+    "A shaped screen's words come from its kind's description (VisitShape through VisitForm, CompletionKind, CaptureKindProfile, HistoryEntryShape, PhotoOnRequest, CategorySwitches.Counter, the category's own definition) or from the words every kind shares beside it (VisitFormWording, CompletionWording, PocketWording, SectionListWording, CaptureReviewWording, AddSectionWording, CustomCategoryWording, DeadlineFormWording, HistoryEntryWording). Add the words there and draw them from it."
 
 # Checked in its own pass below: tab roots are the views AppShell puts inside
 # NavigationStack(path:), and their body must not start another stack.

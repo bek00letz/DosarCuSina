@@ -73,7 +73,7 @@ extension CopyMatrixTests {
             let contents = PocketContents(asset: asset, definition: definition, templates: templates, providers: [])
             let entries = contents.pockets(listing: definition.pockets).map { pocket in
                 PocketEntry(pocket: pocket, fill: contents.fill(pocket),
-                            empty: pocket.emptyLine(visits: definition.behavior.visit), buttons: contents.buttons(pocket))
+                            empty: pocket.emptyLine(in: definition), buttons: contents.buttons(pocket))
             }
             let menu = contents.layout(pockets: definition.pockets, folds: true).additions
             return PocketPage(category: category, entries: entries, menu: menu)
@@ -93,6 +93,13 @@ extension CopyMatrixTests {
             ("A paper in Acte", "\(PocketWording.validUntil(day)) / \(PocketWording.dated(day))"),
             ("A paper with no title of its own", DocumentKind.allCases.map(\.title).joined(separator: ", ")),
             ("Bani's rows", money.joined(separator: " · ")),
+            ("The full lists („Vezi tot”; empty, each says its pocket's line)",
+             "\(SectionListWording.deadlines) · \(SectionListWording.lastTime) · \(SectionListWording.wholeHistory) · "
+                + "\(SectionListWording.personalDocuments) · \(SectionListWording.documents) · \(SectionListWording.archived) — "
+                + "\(SectionListWording.archivedFootnote) · \(SectionListWording.add)"),
+            ("The full list's suggestions (off, `ObligationListScreen.offersSuggestionRows`)",
+             "\(SectionListWording.suggestions) — \(SectionListWording.suggestionsFor("Golful")) · \(SectionListWording.anotherDeadline) · "
+                + "\(SectionListWording.nextDateQuestion("ITP")) \(SectionListWording.date) — \(SectionListWording.dateFootnote)"),
         ]
     }
 
@@ -188,6 +195,22 @@ struct PocketsCopyRulesTests {
                 }
             }
         }
+    }
+
+    @Test("Acte names the papers its category's sections keep, as capture files them, agreeing with one")
+    func documentsNameTheirPapers() throws {
+        for page in try pages() {
+            guard let documents = page.entries.first(where: { $0.pocket == .listed(.documents) }) else { continue }
+            let papers = CaptureKindProfile.papersKept(inCategory: page.category.definition.key)
+            #expect(documents.empty == PocketWording.documentsEmpty(papers), "\(page.category.title)")
+            for paper in papers.prefix(3) {
+                #expect(documents.empty.contains(paper.itself), "\(page.category.title): „\(documents.empty)” leaves out „\(paper.itself)”")
+            }
+        }
+        let car = CaptureKindProfile.papersKept(inCategory: BuiltInTemplates.Key.vehicle).map(\.itself)
+        #expect(car.contains("talonul") && car.contains("polița") && !car.contains("factura"), "A car keeps its talon and policy; a service's invoice is the visit's: \(car)")
+        let lines = Set(try pages().compactMap { $0.entries.first { $0.pocket == .listed(.documents) }?.empty })
+        #expect(lines.count > 1, "Not one line for every category")
     }
 
     @Test("Every visit kind says its own Istoric and Oameni")

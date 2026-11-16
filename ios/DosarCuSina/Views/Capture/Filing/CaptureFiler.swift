@@ -492,7 +492,7 @@ struct CaptureFiler {
             } else {
                 let closing = closingBlueprint(of: obligation, templates: templates)
                 try writeValues(of: review, to: asset, templates: templates, deadline: closing)
-                try keepBonusMalus(bonusMalusChoice(for: review), on: asset, deadline: closing)
+                try keepBonusMalus(bonusMalusChoice(for: review, deadline: closing), on: asset, deadline: closing)
             }
         }
 
@@ -736,9 +736,10 @@ struct CaptureFiler {
         return obligation.blueprintKey.flatMap { key in templates[asset.templateKey]?.blueprints.first { $0.key == key } }
     }
 
-    /// Where a policy's bonus-malus class goes, worked out from the household as it is now.
-    private func bonusMalusChoice(for review: CaptureReview?) -> CaptureFilingPlan.BonusMalus? {
-        review.flatMap { CaptureFilingPlan.bonusMalus(for: $0, people: Policyholders.people(in: context)) }
+    /// Where a policy's bonus-malus class goes, worked out from the household as it is now, for
+    /// the deadline the policy files into (`deadline`: only one that keeps a policyholder).
+    private func bonusMalusChoice(for review: CaptureReview?, deadline: ObligationBlueprint?) -> CaptureFilingPlan.BonusMalus? {
+        review.flatMap { CaptureFilingPlan.bonusMalus(for: $0, people: Policyholders.people(in: context), deadline: deadline) }
     }
 
     /// A policy's bonus-malus class, kept on the person it insures, and that person named
@@ -872,13 +873,29 @@ struct CaptureFiler {
             add(visit.asset)
         }
         add(keptDocument?.asset)
-        // The person whose bonus-malus class the policy brings.
-        let review: CaptureReview? = switch intent {
-        case .review(let review): review
-        case .completion(let completion): completion.document.map { CaptureReview(result: $0, assets: [], context: context) }
-        case .visit: nil
+        // The person whose bonus-malus class the policy brings, for the deadline it files into.
+        let review: CaptureReview?
+        let deadline: ObligationBlueprint?
+        switch intent {
+        case .review(let filed):
+            review = filed
+            var destinationKey: String?
+            switch filed.destination {
+            case .none: destinationKey = nil
+            case .asset(let id): destinationKey = try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.id == id })).first?.templateKey
+            case .newAsset(let key): destinationKey = key
+            }
+            deadline = destinationKey
+                .flatMap { templates[Self.filedTemplateKey(for: filed, destinationTemplateKey: $0, templates: templates)] }
+                .flatMap { filed.deadlineBlueprint(in: $0.definition) }
+        case .completion(let completion):
+            review = completion.document.map { CaptureReview(result: $0, assets: [], context: context) }
+            deadline = closingBlueprint(of: completion.obligation, templates: templates)
+        case .visit:
+            review = nil
+            deadline = nil
         }
-        if case .keep(_, let memberID, _) = bonusMalusChoice(for: review) {
+        if case .keep(_, let memberID, _) = bonusMalusChoice(for: review, deadline: deadline) {
             add(try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.id == memberID })).first)
         }
         guard keys.contains(where: { templates[$0]?.isSensitive == true }), !vault.isSessionUnlocked else { return }
