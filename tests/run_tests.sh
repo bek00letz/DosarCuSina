@@ -7,8 +7,9 @@
 #   SIMULATOR_ID=<udid> ./tests/run_tests.sh
 #
 # Building for the tests builds the app with its widgets and share extension.
-# After the tests, scripts/plural-check.py checks that every counted string the
-# build found has plural forms in its String Catalog.
+# After the tests, scripts/catalog-check.py checks that every string the build
+# found is in its String Catalog and that the catalogs keep nothing else, and
+# scripts/plural-check.py that every counted string has plural forms there.
 #
 # It never downloads runtimes or creates simulators: it picks an iPhone that is
 # already installed with the newest iOS the project supports (its deployment
@@ -16,7 +17,8 @@
 #
 # For CI:
 #   DERIVED_DATA_PATH=<dir>  keep build products there (cached between runs)
-#   RESULTS_DIR=<dir>        keep the full log and the result bundle there
+#   RESULTS_DIR=<dir>        keep the full log and the result bundle there, and up-to-date
+#                            String Catalogs (string-catalogs/) when they fell behind
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -95,10 +97,14 @@ set -e
 grep -E "failed on|error:|warning:|\*\* TEST" "$LOG" | sort -u || true
 grep -E "^✘ |^↳ " "$LOG" || true
 
-# Every counted string has plural forms. The build wrote each file's localizable
-# strings, integers marked, to DerivedData; the check reads them against the catalogs.
+# Every string is in its String Catalog, and every counted one has plural forms.
+# The build wrote each file's localizable strings, integers marked, to DerivedData;
+# the checks read them against the catalogs.
+CATALOGS=0
 PLURALS=0
 if [[ -d "$DERIVED_DATA/Build/Intermediates.noindex" ]]; then
+    python3 "$REPO_ROOT/scripts/catalog-check.py" "$DERIVED_DATA" \
+        ${RESULTS_DIR:+--write-to "$RESULTS/string-catalogs"} || CATALOGS=$?
     python3 "$REPO_ROOT/scripts/plural-check.py" "$DERIVED_DATA" || PLURALS=$?
 fi
 
@@ -106,6 +112,9 @@ if [[ $STATUS -ne 0 ]]; then
     echo "iOS tests failed (exit $STATUS)." >&2
     [[ -n "${RESULTS_DIR:-}" ]] && echo "The full log is $LOG, the result bundle $RESULT_BUNDLE." >&2
     exit "$STATUS"
+fi
+if [[ $CATALOGS -ne 0 ]]; then
+    exit "$CATALOGS"
 fi
 if [[ $PLURALS -ne 0 ]]; then
     exit "$PLURALS"
