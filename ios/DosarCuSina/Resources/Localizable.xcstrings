@@ -948,6 +948,35 @@
         }
       }
     },
+    "Mai sunt %lld lucruri de verificat": {
+      "comment": "Opens the review's other notices. The number is how many more there are.",
+      "localizations": {
+        "ro": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Mai e un lucru de verificat"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Mai sunt %lld lucruri de verificat"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Mai sunt %lld de lucruri de verificat"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Mai târziu": {
       "comment": "Status of an obligation that is not due soon."
     },

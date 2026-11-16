@@ -33,20 +33,22 @@ struct DosarHomeView: View {
     @Namespace private var zoom
 
     var body: some View {
-        ScrollView {
+        Group {
             if assets.isEmpty {
+                // Its own scrolling page, with its main action pinned under it.
                 DosarEmptyState(
                     isLoading: isLoadingExamples,
                     binderMayBeArriving: PersistenceController.shared.binderMayBeArriving,
                     addFirst: addSection,
                     loadExamples: loadExamples
                 )
-                    .padding(.horizontal, DS.Space.m)
                     .transition(.opacity)
             } else {
-                grid
-                    .padding(.horizontal, DS.Space.m)
-                    .padding(.bottom, DS.Space.xl)
+                ScrollView {
+                    grid
+                        .padding(.horizontal, DS.Space.m)
+                        .padding(.bottom, DS.Space.xl)
+                }
             }
         }
         .background(DS.Palette.background)
@@ -391,8 +393,10 @@ extension BinderLayout.TemplateInfo {
 
 // MARK: - Empty
 
-/// The first run, before anything is in the binder. While the person's binder may still be
-/// coming down from iCloud, it says so in place of the examples (`BinderArrivingNotice`).
+/// The first run, before anything is in the binder: what goes here, with "Adaugă primul
+/// lucru" pinned to the bottom edge and "Încarcă exemple" under it, so the main action shows at
+/// every text size. While the person's binder may still be coming down from iCloud, it says so
+/// in place of the examples (`BinderArrivingNotice`).
 struct DosarEmptyState: View {
     let isLoading: Bool
     var binderMayBeArriving = false
@@ -400,39 +404,46 @@ struct DosarEmptyState: View {
     let loadExamples: () -> Void
 
     var body: some View {
-        VStack(spacing: DS.Space.xl) {
-            Image(systemName: "folder.fill.badge.plus")
-                .font(.system(size: 56))
-                .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(DS.Palette.accent)
-                .padding(.top, DS.Space.xxl)
-                .accessibilityHidden(true)
-            VStack(spacing: DS.Space.xs) {
-                Text("Dosarul e gol", comment: "Empty home title.")
-                    .dsFont(.title)
-                    .multilineTextAlignment(.center)
-                    .accessibilityAddTraits(.isHeader)
-                Text("Pune aici mașina, casa, actele sau pisica. Îți spunem din timp când expiră ceva și ții minte cine a reparat ce.", comment: "Empty home message.")
-                    .dsFont(.body)
-                    .foregroundStyle(DS.Palette.secondaryLabel)
-                    .multilineTextAlignment(.center)
-            }
-            VStack(spacing: DS.Space.s) {
-                DSPrimaryButton("Adaugă primul lucru", systemImage: "plus", action: addFirst)
+        ScrollView {
+            VStack(spacing: DS.Space.xl) {
+                Image(systemName: "folder.fill.badge.plus")
+                    .font(.system(size: 56))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(DS.Palette.accent)
+                    .padding(.top, DS.Space.xxl)
+                    .accessibilityHidden(true)
+                VStack(spacing: DS.Space.xs) {
+                    Text("Dosarul e gol", comment: "Empty home title.")
+                        .dsFont(.title)
+                        .multilineTextAlignment(.center)
+                        .accessibilityAddTraits(.isHeader)
+                    Text("Pune aici mașina, casa, actele sau pisica. Îți spunem din timp când expiră ceva și ții minte cine a reparat ce.", comment: "Empty home message.")
+                        .dsFont(.body)
+                        .foregroundStyle(DS.Palette.secondaryLabel)
+                        .multilineTextAlignment(.center)
+                }
                 if binderMayBeArriving {
                     BinderArrivingNotice()
                         .transition(.opacity)
-                } else {
-                    DSSecondaryButton("Încarcă exemple", systemImage: "sparkles", action: loadExamples)
-                        .disabled(isLoading)
-                    Text("Exemplele sunt marcate și le ștergi dintr-o atingere, de la capătul dosarului.", comment: "Footnote under the load examples button.")
-                        .dsFont(.footnote)
-                        .multilineTextAlignment(.center)
                 }
             }
-            .dsAnimation(value: binderMayBeArriving)
+            .frame(maxWidth: 520)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, DS.Space.m)
+            .padding(.bottom, DS.Space.xl)
         }
-        .frame(maxWidth: 520)
-        .frame(maxWidth: .infinity)
+        .dsPinnedAction {
+            DSPrimaryButton("Adaugă primul lucru", systemImage: "plus", action: addFirst)
+        } secondary: {
+            if !binderMayBeArriving {
+                DSSecondaryButton("Încarcă exemple", systemImage: "sparkles", action: loadExamples)
+                    .disabled(isLoading)
+                Text("Exemplele sunt marcate și le ștergi dintr-o atingere, de la capătul dosarului.", comment: "Footnote under the load examples button.")
+                    .dsFont(.footnote)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+            }
+        }
+        .dsAnimation(value: binderMayBeArriving)
     }
 }

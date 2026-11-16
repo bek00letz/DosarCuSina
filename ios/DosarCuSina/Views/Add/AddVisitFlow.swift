@@ -5,7 +5,8 @@ import SwiftUI
 /// job. Big check rows grouped by the template's components, each with an
 /// optional cost and brand; the date, the counter, the total and who did it;
 /// and an invoice photo that ticks the rows by itself. One save through
-/// `CaptureFiler` (the visit and its invoice together), then a summary of what changed.
+/// `CaptureFiler` (the visit and its invoice together), then the form closes with the toast
+/// every save shows, "Vizita e în istoric." with "Anulează" (`VisitEnding`).
 struct AddVisitFlow: View {
     let assetID: UUID
     private let prefill: CaptureResult?
@@ -60,6 +61,7 @@ private struct VisitForm: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.announce) private var announce
     @Query(sort: \Provider.name) private var allProviders: [Provider]
 
     @State private var draft = VisitDraft(date: Date())
@@ -72,6 +74,8 @@ private struct VisitForm: View {
     @State private var errorMessage: String?
     @State private var newProviderName = ""
     @State private var isSaving = false
+    /// The visit is saved and the form is closing: nothing is left to lose.
+    @State private var isDone = false
     @State private var saved: HistoryEntry?
     /// What saving the visit did, for "Anulează vizita": a kept invoice goes back where it was.
     @State private var receipt: UndoReceipt?
@@ -140,7 +144,7 @@ private struct VisitForm: View {
         .toolbar {
             ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
         }
-        .dsDiscardGuard(hasChanges: !draft.isEmpty && saved == nil)
+        .dsDiscardGuard(hasChanges: !draft.isEmpty && saved == nil && !isDone)
         .confirmationDialog("Atașează factura", isPresented: $isChoosingSource, titleVisibility: .visible) {
             if CaptureSource.isCameraAvailable { Button("Fotografiază factura") { source = .camera } }
             Button("Alege din poze") { source = .photos }
@@ -420,7 +424,12 @@ private struct VisitForm: View {
                 filer.lowerReading = lowerReading
                 let outcome = try await filer.file(.visit(visit))
                 receipt = outcome.receipt
-                withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { saved = outcome.visit }
+                if VisitEnding.showsWhatChanged {
+                    withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) { saved = outcome.visit }
+                } else {
+                    // One ending, as every save: the form closes with the undo toast.
+                    close(saving: outcome.receipt)
+                }
             } catch let question as ExampleSectionQuestion {
                 exampleQuestion = question
             } catch let question as LowerReadingQuestion {
@@ -478,9 +487,39 @@ private struct VisitForm: View {
     private func finish(_ didSave: Bool) {
         if let onFinish { onFinish(didSave ? receipt : nil) } else { dismiss() }
     }
+
+    /// Closes the form once the visit is saved. Opened from capture or "Scriu eu", the screen
+    /// underneath shows the toast with the receipt; opened on its own (from Istoric), the
+    /// shell's host shows it, so "Anulează" stays once the form has gone.
+    private func close(saving receipt: UndoReceipt?) {
+        isDone = true
+        if let onFinish {
+            onFinish(receipt)
+        } else {
+            if let receipt { announce(VisitEnding.toast(receipt)) }
+            dismiss()
+        }
+    }
 }
 
-/// After saving: what changed, part by part, and a way to take it back.
+/// How the visit form ends once a visit is saved: it closes with the toast every save shows,
+/// "Vizita e în istoric." with "Anulează", which takes the visit, its invoice and its firm back.
+/// What changed is on the visit's entry in Istoric.
+enum VisitEnding {
+    /// The first version showed what changed ("Ce s-a schimbat", `VisitSavedView`) with "Gata"
+    /// and "Anulează vizita", and from capture a toast with "Anulează" after it: two endings.
+    /// Off; kept as a way back until the toast alone is proven. Remove it with the owner's OK.
+    nonisolated static let showsWhatChanged = false
+
+    /// The toast a saved visit closes with, wherever the form was opened.
+    @MainActor
+    static func toast(_ receipt: UndoReceipt) -> DSToast {
+        .undo("Vizita e în istoric.", receipt: receipt)
+    }
+}
+
+/// After saving: what changed, part by part, and a way to take it back. Switched off
+/// (`VisitEnding.showsWhatChanged`): the form closes with the undo toast instead.
 private struct VisitSavedView: View {
     let entry: HistoryEntry
     let asset: Asset

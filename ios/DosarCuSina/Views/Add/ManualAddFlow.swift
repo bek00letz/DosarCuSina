@@ -134,7 +134,7 @@ private struct ManualWhatView: View {
             CaptureFlowView(input: input) { result in
                 flow = nil
                 switch result {
-                case .filed(let toast, _), .visitSaved(let toast):
+                case .filed(let toast, _), .visitSaved(let toast), .removedFromInbox(let toast):
                     // This sheet closes: the shell shows the toast, with its "Anulează".
                     announce(toast)
                     onClose(nil)
