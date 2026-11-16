@@ -1,9 +1,15 @@
 import SwiftData
 import SwiftUI
 
-/// "Scriu eu": pick the section, then what to add to it: a deadline, a visit,
-/// or a document. Everything saves through the engine's actions.
+/// "Scriu eu": pick the section, then what to type in for it: a deadline or a visit.
+/// Everything saves through the engine's actions. A paper is added with a photo, from
+/// Adaugă's other three ways in or from the section's own page ("Adaugă un act"), never here:
+/// the label says typing, so nothing behind it asks for a photo.
 struct ManualAddFlow: View {
+    /// "Un act" used to be offered here too, and opened capture: a photo behind "Scriu eu".
+    /// Off; kept as a way back until the owner has used the flow without it.
+    nonisolated static let offersDocumentPhoto = false
+
     /// Called when the flow closes, with a confirmation to show, if anything was saved.
     let onClose: (LocalizedStringResource?) -> Void
 
@@ -107,8 +113,10 @@ private struct ManualWhatView: View {
                 DSActionCard("O vizită sau o reparație", subtitle: "Ce s-a făcut, cât a costat, cine a lucrat.", systemImage: "wrench.and.screwdriver") {
                     path.append(.visit(assetID))
                 }
-                DSActionCard("Un act", subtitle: "Poză, PDF sau scanare. Îl citesc și ți-l arăt.", systemImage: "doc.viewfinder") {
-                    isChoosingSource = true
+                if ManualAddFlow.offersDocumentPhoto {
+                    DSActionCard("Un act", subtitle: "Poză, PDF sau scanare. Îl citesc și ți-l arăt.", systemImage: "doc.viewfinder") {
+                        isChoosingSource = true
+                    }
                 }
                 if let errorMessage {
                     DSNotice(.error, title: "Nu s-a deschis", message: LocalizedStringKey(errorMessage))
