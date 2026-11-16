@@ -193,7 +193,7 @@ struct SectionPageInPlaceTests {
         }
         #expect(model.planned.first { $0.blueprint.key == "vehicle.service" }?.isSelected == true, "A date worked out by itself stays ticked")
         #expect(model.missingDates.isEmpty, "Nothing stops „Adaugă în dosar”")
-        #expect(model.offersDatesForLater, "The step says they can be added later")
+        #expect(model.laterNote != nil, "The step says they can be added later")
 
         // Ticked by the person, a row still asks its date.
         let itp = try #require(model.planned.firstIndex { $0.blueprint.key == BuiltInBlueprints.vehicleITP })

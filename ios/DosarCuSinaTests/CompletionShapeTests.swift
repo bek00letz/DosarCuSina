@@ -61,7 +61,7 @@ struct CompletionShapeTests {
             let installed = try #require(try store.template(forKey: builtIn.key))
             #expect(installed.definition.blueprints.map(\.completion) == builtIn.blueprints.map(\.completion), "\(builtIn.key): kept as stated")
         }
-        for blueprint in HouseholdRules.blueprints { #expect(blueprint.completion != nil, blueprint.key) }
+        for blueprint in HouseholdRules.blueprints { #expect(blueprint.completion != nil, "\(blueprint.key)") }
     }
 
     @Test("A deadline completes as its blueprint states, not as its kind")
