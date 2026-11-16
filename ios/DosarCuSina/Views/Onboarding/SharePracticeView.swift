@@ -81,7 +81,7 @@ struct SharePracticeView: View {
             VStack(alignment: .leading, spacing: DS.Space.m) {
                 DSStepRow(number: 1, text: Text("Apasă „Trimite factura de probă”, mai jos."))
                 DSStepRow(number: 2, text: Text("În rândul de aplicații care apare, alege Dosar cu Șină."))
-                DSStepRow(number: 3, text: Text("Apasă „Gata”. Factura ajunge în Adaugă › De verificat."))
+                DSStepRow(number: 3, text: Text("Apasă „Închide”. Factura ajunge în Adaugă › De verificat."))
             }
         }
     }
@@ -141,7 +141,7 @@ struct SharePracticeView: View {
     private var arrivedCard: some View {
         VStack(alignment: .leading, spacing: DS.Space.m) {
             DSNotice(.success, title: "A ajuns", message: "Așa faci și cu facturile adevărate: „Trimite”, apoi Dosar cu Șină. Le găsești în Adaugă › De verificat.")
-            DSPrimaryButton(isOnboarding ? "Continuă" : "Gata", action: onDone)
+            DSPrimaryButton(isOnboarding ? "Continuă" : "Închide", action: onDone)
         }
     }
 

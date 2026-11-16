@@ -8,7 +8,7 @@ import SwiftUI
 struct DataRepairsScreen: View {
     /// Which findings the page lists.
     enum Listing {
-        /// Data an earlier version saved wrongly: Setări › Date de verificat.
+        /// Data an earlier version saved wrongly: Setări › De corectat.
         case corrections
         /// What the app can now do better with what is there: Urmează › Din timp.
         case suggestions
@@ -85,7 +85,7 @@ struct DataRepairsScreen: View {
 
     private var title: Text {
         switch listing {
-        case .corrections: Text("Date de verificat", comment: "Title of the repair list.")
+        case .corrections: Text("De corectat", comment: "Title of the repair list: what an earlier version saved wrongly.")
         case .suggestions: Text("Sugestii", comment: "Title of the page of suggestions for the binder, opened from Urmează.")
         }
     }
@@ -186,7 +186,7 @@ struct DataRepairSettings: View {
                             .foregroundStyle(DS.Palette.secondaryLabel)
                     }
                 } label: {
-                    Label { Text("Date de verificat", comment: "Settings row that opens the repair list.") } icon: { Image(systemName: "wrench.and.screwdriver") }
+                    Label { Text("De corectat", comment: "Settings row that opens the repair list.") } icon: { Image(systemName: "wrench.and.screwdriver") }
                 }
                 .frame(minHeight: 44)
                 .contentShape(.rect)
@@ -202,7 +202,7 @@ struct DataRepairSettings: View {
 
 extension View {
     /// The calm prompt after launch or an import, when the repair list has a new correction:
-    /// "Am găsit date de verificat", the first thing in words, "Arată-mi" or "Mai târziu".
+    /// "Am găsit ceva de corectat", the first thing in words, "Arată-mi" or "Mai târziu".
     /// Shown only when nothing else is in front (no sheet, no lock, onboarding done), once per
     /// finding. Never for a suggestion (`DataRepairCenter.announcement` holds corrections only):
     /// those wait quietly in Urmează › Din timp.
@@ -218,7 +218,7 @@ private struct DataRepairPromptModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content.alert(
-            Text("Am găsit date de verificat", comment: "Title of the prompt that opens the repair list."),
+            Text("Am găsit ceva de corectat", comment: "Title of the prompt that opens the repair list."),
             isPresented: Binding(get: { isAllowed && !center.announcement.isEmpty }, set: { if !$0 { center.announcement = [] } })
         ) {
             Button { onShow() } label: { Text("Arată-mi", comment: "Opens the repair list from the prompt.") }

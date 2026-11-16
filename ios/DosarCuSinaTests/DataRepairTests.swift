@@ -134,7 +134,7 @@ struct DataRepairTests {
             #expect(itp.recurrence == .legal(.vehicleITP))
             #expect(itp.dueDay == CalendarDay("2027-05-01"), "The date the person has stays")
         }
-        #expect(found.first?.message == "„ITP” la VW Golf 2018 a venit dintr-o copie veche, fără regula lui. Îi pun regula obișnuită?")
+        #expect(found.first?.message == "„ITP” la VW Golf 2018 a venit dintr-o copie de siguranță veche, fără regula lui. Îi pun regula obișnuită?")
     }
 
     @Test func aFirstVersionBackupsDeadlinesAreOffered() throws {

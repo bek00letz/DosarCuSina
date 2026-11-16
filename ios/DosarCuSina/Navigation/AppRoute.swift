@@ -37,7 +37,7 @@ public enum SettingsSection: String, Hashable, Sendable, Codable, CaseIterable {
     case privacy
     /// Ecranul Dosar: which categories show, their boxes, the person's own categories.
     case categories
-    /// iCloud și copii: sync, backups and the space documents take.
+    /// iCloud și copii de siguranță: sync, backups and the space documents take.
     case backup
     case examples
     /// The repair list: data an earlier version saved wrongly, waiting for an OK.

@@ -15,8 +15,8 @@ extension View {
     }
 }
 
-/// A Cancel button for editing sheets. Closes right away when nothing changed,
-/// otherwise asks before discarding (needs `.dsDiscardGuard(hasChanges:)` on the sheet).
+/// A Cancel button for editing sheets, "Renunță" ("Anulează" is only the undo toast's).
+/// Closes right away when nothing changed, otherwise asks before discarding (needs `.dsDiscardGuard(hasChanges:)` on the sheet).
 struct DSCancelButton: View {
     /// What the button says, when closing keeps something for later ("Mai târziu").
     var title: Text?
@@ -36,7 +36,7 @@ struct DSCancelButton: View {
                 dismiss()
             }
         } label: {
-            title ?? Text("Anulează", comment: "Button that closes an editing sheet.")
+            title ?? Text("Renunță", comment: "Button that closes an editing sheet without saving.")
         }
     }
 }

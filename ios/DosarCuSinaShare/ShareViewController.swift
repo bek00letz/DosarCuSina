@@ -191,7 +191,7 @@ final class ShareModel {
 }
 
 /// The calm confirmation the person sees in the share sheet. It stays until they tap
-/// "Gata" (`ShareConfirmation.closesByItself`), so nobody misses what happens next;
+/// "Închide" (`ShareConfirmation.closesByItself`), so nobody misses what happens next;
 /// the button is pinned to the bottom, and the words scroll above it at any text size.
 struct ShareConfirmationView: View {
     let model: ShareModel
@@ -213,8 +213,8 @@ struct ShareConfirmationView: View {
         }
         .dsPinnedAction {
             switch confirmation.action {
-            case .cancel: DSSecondaryButton("Anulează", action: onDone)
-            case .done: DSPrimaryButton("Gata", action: onDone)
+            case .cancel: DSSecondaryButton(verbatim: confirmation.action.title, action: onDone)
+            case .close: DSPrimaryButton(verbatim: confirmation.action.title, action: onDone)
             }
         }
         .background(Color(uiColor: .systemGroupedBackground))

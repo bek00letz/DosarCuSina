@@ -391,7 +391,7 @@ private struct GalleryCards: View {
                     }
                 }
             }
-            GallerySection(title: "Liste de pregătire", note: "DSReadinessRow: pregătit, de verificat, de rezolvat sau lipsă, cu motivul. Tot rândul se apasă: deschide ce e acolo sau adaugă ce lipsește. Ce iei cu tine se bifează cu DSCheckRow.") {
+            GallerySection(title: "Liste de pregătire", note: "DSReadinessRow: pregătit, merită o privire, de rezolvat sau lipsă, cu motivul. Tot rândul se apasă: deschide ce e acolo sau adaugă ce lipsește. Ce iei cu tine se bifează cu DSCheckRow.") {
                 DSCard {
                     VStack(alignment: .leading, spacing: 0) {
                         DSStatusLine(text: "Un lucru de rezolvat · 2 lucruri nu sunt în dosar", tone: .alarming)
@@ -546,14 +546,14 @@ private struct GalleryStates: View {
             }
             DSCard {
                 DSErrorState(
-                    "Arhiva nu s-a putut deschide",
+                    "Copia de siguranță nu s-a deschis",
                     message: "Fișierul pare incomplet. Exportă-l din nou pe telefonul vechi și încearcă iar."
                 ) {}
             }
             DSNotice(.info, title: "Mementourile sunt oprite", message: "Pornește notificările ca să afli la timp de scadențe.", actionTitle: "Deschide Setări") {}
             DSNotice(.warning, title: "Pașaportul expiră în 5 luni", message: "Multe țări din afara UE cer cel puțin 6 luni de valabilitate.")
             DSNotice(.error, title: "Nu am putut salva", message: "Spațiul de pe telefon e plin. Eliberează puțin spațiu și încearcă din nou.")
-            DSNotice(.success, title: "Copia de rezervă e gata")
+            DSNotice(.success, title: "Copia de siguranță e gata")
             GallerySection(title: "Factura e deja în dosar", note: "DSFiledPaperNotice: în verificare, în formularul vizitei și la „Am rezolvat”. „E altă factură” apare doar când potrivirea nu e sigură.") {
                 DSFiledPaperNotice(filed: Self.filed(.number), paper: .bill, onOpen: {}, onAnother: {})
                 DSFiledPaperNotice(filed: Self.filed(.numberOnly), paper: .invoice, onOpen: {}, onAnother: {})
@@ -779,7 +779,7 @@ private struct GalleryDiscardGuard: View {
         GalleryPage {
             DSCard {
                 VStack(alignment: .leading, spacing: DS.Space.s) {
-                    Text(verbatim: "Scrie ceva în foaie, apoi încearcă s-o închizi trăgând în jos sau cu Anulează.")
+                    Text(verbatim: "Scrie ceva în foaie, apoi încearcă s-o închizi trăgând în jos sau cu Renunță.")
                         .dsFont(.subheadline)
                     Button { isEditing = true } label: { Text(verbatim: "Deschide foaia").frame(maxWidth: .infinity) }
                         .buttonStyle(.borderedProminent).buttonBorderShape(.capsule).controlSize(.large)

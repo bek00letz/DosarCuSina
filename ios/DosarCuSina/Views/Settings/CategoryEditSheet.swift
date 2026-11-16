@@ -75,6 +75,7 @@ struct CategoryEditSheet: View {
         .confirmationDialog(Text("Ștergi categoria „\(template.name)”?", comment: "Asks before deleting a category of one's own."),
                             isPresented: $isConfirmingDelete, titleVisibility: .visible) {
             Button(role: .destructive) { delete() } label: { Text("Șterge", comment: "Deletes a category of one's own.") }
+            Button(role: .cancel) {} label: { Text("Păstrează", comment: "Cancel a delete.") }
         } message: {
             Text("Se poate șterge doar o categorie fără secțiuni. Mută-le sau șterge-le mai întâi.", comment: "Explains when a category can be deleted.")
         }

@@ -43,7 +43,7 @@ struct ChoiceKeysStep: DataRepairStep {
 /// match one of its category's blueprints gets that blueprint and its rule.
 struct FirstVersionDeadlinesStep: DataRepairStep {
     static let id = DataRepairStepID.firstVersionDeadlines
-    var title: String { String(localized: "Termene din copii vechi", comment: "Repair group: deadlines imported from a first-version backup.") }
+    var title: String { String(localized: "Termene din copii de siguranță vechi", comment: "Repair group: deadlines imported from a first-version backup.") }
 
     func findings(_ scan: inout DataRepairScan) throws -> [DataRepairFinding] {
         let templates = try TemplateStore(context: scan.context).templatesByKey()
@@ -52,7 +52,7 @@ struct FirstVersionDeadlinesStep: DataRepairStep {
             return DataRepairFinding(
                 id: "\(Self.id.rawValue):\(obligation.id.uuidString):\(blueprint.key)",
                 step: Self.id,
-                message: String(localized: "„\(obligation.title)” la \(asset.name) a venit dintr-o copie veche, fără regula lui. Îi pun regula obișnuită?", comment: "Repair: a deadline from a first-version backup gets its blueprint and rule."),
+                message: String(localized: "„\(obligation.title)” la \(asset.name) a venit dintr-o copie de siguranță veche, fără regula lui. Îi pun regula obișnuită?", comment: "Repair: a deadline from a first-version backup gets its blueprint and rule."),
                 subject: .blueprint(obligationID: obligation.id, blueprintKey: blueprint.key)
             )
         }

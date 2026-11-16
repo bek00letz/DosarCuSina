@@ -202,7 +202,7 @@ private struct BackupPasswordSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button { dismiss() } label: { Text("Anulează", comment: "Cancels.") }
+                    Button { dismiss() } label: { Text("Renunță", comment: "Closes the backup sheet without making a backup.") }
                 }
             }
         }

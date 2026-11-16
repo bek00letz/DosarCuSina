@@ -2,18 +2,38 @@
 
 How the app talks. Short, plain Romanian, like a calm person who knows the rules.
 
+## Words with one meaning
+
+Each of these means one thing everywhere: the app, the widgets, the share sheet, notifications, Siri and Shortcuts, VoiceOver's labels and hints, onboarding and Settings. A word that does two jobs makes the person stop and wonder which one this is. The architecture check refuses the button words where they don't belong (`anuleaza-outside-undo`, `gata-outside-done`, `de-verificat-outside-inbox`).
+
+| Word | What it means | Where | Not |
+| :--- | :--- | :--- | :--- |
+| **Gata** | A deadline is done, now, in one tap. | A chore's button on its page and in Urmează (`CompletionShape.actionTitle`), the widget's button, Siri's answer after it („Gata, am bifat-o.”). | Closing („Închide”) or saving („Salvează”). |
+| **Am rezolvat** | Closing a deadline whose kind asks something first: it opens the sheet. „Am rezolvat…” in a menu or as VoiceOver's action (`menuTitle`). | The deadline's page, Urmează's swipe and menu (one entry, `CompletionEntry`), the reminder's button. | „Gata” for a kind that asks. |
+| **Închide** | Close a sheet, a page or a viewer; nothing else happens, because nothing is waiting to be kept. | Setări, the full-screen pages, *Când te anunț*, the share sheet once something arrived, „Scriu eu”'s list. | „Gata”. |
+| **Salvează** | Keep what was typed in a form or an editor, and close it. | Every editor's confirming button: *Editează* on a section, a document, a person or firm, a row under *Date importante*, a bill line. | „Gata”. |
+| **Renunță** | Leave a sheet, a flow or a question without doing what it offers. „Renunți la modificări?” asks first when something typed would be lost. | `DSCancelButton`, a dialog's cancel, the Face ID prompt's cancel, the share sheet while it copies. A deletion's question cancels with „Păstrează”. | „Anulează”. |
+| **Anulează** | Take back the step just taken. | Only the undo toast (`DSToast.undo`); „Anulează vizita” where the step is a visit just saved. | Cancelling anything („Renunță”), stopping a snooze („Nu mai amâna”). |
+| **De verificat** | What other apps sent, waiting to be filed: the share inbox. | Adaugă › *De verificat*, the share sheet's and the notice's „Te așteaptă la De verificat”, an item's *Șterge din De verificat*. | The repair list, a checklist, the review's notices. |
+| **De corectat** | What an earlier version saved wrongly, each with *Corectează* and *Lasă așa*: the repair list. | Setări › *De corectat* („Nimic de corectat”, „Un lucru de corectat”, „3 lucruri de corectat”), its prompt („Am găsit ceva de corectat”). | „Date de verificat”. |
+| **Verifică** | Look again at a value read off a paper. | The review: „Verifică actul”, „Verifică ce e marcat”, the *Verifică* mark beside a value; a value read again („Verifică-le mai jos”). In an error, the plain verb in its next step („Verifică dacă ai copiat-o întreagă”). | A title or a mark for anything else: a checklist's outcome is „Merită o privire”, more notices are „Mai sunt 2 observații”. |
+| **Secțiune** | One thing in the binder: a car, a home, a person, a document. | *Adaugă o secțiune*, a section's page, „Secțiunea e protejată” on one that is locked. | A kind of thing. |
+| **Categorie** | A kind of section (Mașini, Locuințe, Acte), built in or the person's own; what a lock protects. | *Categorii protejate*, Setări › *Ecranul Dosar*, *Alte categorii* in *Adaugă o secțiune*. | „Secțiune” for a kind („Secțiuni protejate”, „Alte secțiuni gata făcute”). |
+| **Copie de siguranță** | The one file with the whole binder (a backup); „copia” once it is named. | Setări › *iCloud și copii de siguranță*, *Fă o copie de siguranță*, *Pune înapoi o copie*, every error about one. | „Copie de rezervă”, „arhivă”, „backup”. |
+| **Arhivă** | A document put away, kept for reference. | *Mută în arhivă*, *Arhivat*, *Arhivate*. | A backup. |
+
 ## Basics
 
 - **Sentence case** for everything: titles, buttons, tabs, menus. „Adaugă o mașină”, not „Adaugă O Mașină”.
 - **No exclamation marks.** Not for success, not for warnings.
-- **No jargon.** Say what it does, not what it is. „Copie de rezervă”, not „arhivă .dosar”. „Cheia ta Google”, not „BYOK”. Official abbreviations people already use (ITP, RCA, CASCO, VTP) are fine.
+- **No jargon.** Say what it does, not what it is. „Copie de siguranță”, not „arhivă .dosar”. „Cheia ta Google”, not „BYOK”. Official abbreviations people already use (ITP, RCA, CASCO, VTP) are fine.
 - **Second person, singular, informal** („tu”): „Adaugă”, „Poți schimba”, „Ai scris”.
 - **Verbs on buttons**, naming the result: „Salvează”, „Marchează ca rezolvat”, „Șterge activul”. Never „OK” or „Da” when a verb fits.
 - **Short.** One idea per sentence. If a footnote needs two sentences, the screen needs a redesign.
 
 ## Punctuation and formatting
 
-- Romanian quotes: „așa”. Apostrophe: ’. En dash for ranges and asides: 9–17, 2 – 3 zile. Ellipsis character: … (not three dots), only for things still in progress („Se încarcă…”).
+- Romanian quotes: „așa”. Apostrophe: ’. En dash for ranges and asides: 9–17, 2 – 3 zile. Ellipsis character: … (not three dots), only for things still in progress („Se încarcă…”) and for a menu item that asks something before anything is done („Am rezolvat…”, „Altă zi…”).
 - Diacritics always: ș and ț with comma below (not ş/ţ with cedilla), ă, â, î.
 - Numbers, money and dates go through format styles so they follow the locale: 1.250,50 lei, 14 noiembrie 2026. Never build them with `String(format:)`.
 - Plurals go through the String Catalog. Romanian has three forms: „o zi”, „2 zile”, „20 de zile”. A count of one is a word („o lună”, „un an”, „un document”), two and up are digits. „În” before a duration joins „o” and „un”: „într-o lună”, „într-un an” (`DurationWording.inside`). Never write `count == 1 ? … : …` by hand.
@@ -24,7 +44,7 @@ Every error says **what happened** and **what to do next**, in that order. No co
 
 | Instead of | Write |
 | :--- | :--- |
-| Eroare la import. | Arhiva nu s-a putut deschide. Fișierul pare incomplet. Exportă-l din nou și încearcă iar. |
+| Eroare la import. | Copia de siguranță nu s-a deschis. Fișierul pare incomplet. Fă copia din nou și încearcă iar. |
 | Câmp invalid. | Seria de șasiu are 17 caractere. Ai scris 15. |
 | Cheie API invalidă (401). | Google nu a acceptat cheia. Verifică dacă ai copiat-o întreagă. |
 | Fără conexiune. | Nu ești conectat la internet. Scanarea locală merge în continuare. |

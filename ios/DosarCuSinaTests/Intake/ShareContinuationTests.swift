@@ -162,13 +162,17 @@ struct InboxNoticeTests {
 
 @Suite("After a share: the share sheet's confirmation")
 struct ShareConfirmationTests {
-    @Test func itStaysUntilGata() {
-        #expect(!ShareConfirmation.closesByItself, "Nobody misses what happens next: it closes only on „Gata”")
+    @Test func itStaysUntilClosed() {
+        #expect(!ShareConfirmation.closesByItself, "Nobody misses what happens next: it closes only on „Închide”")
         let saved: [ShareConfirmation.Phase] = [.saved(count: 1, next: .tapNotice), .saved(count: 2, next: .openApp), .saved(count: 1, next: .practice)]
         for phase in saved + [.unsupported, .failed, .tooLarge] {
-            #expect(ShareConfirmation(phase).action == .done, "Every outcome waits for „Gata”")
+            #expect(ShareConfirmation(phase).action == .close, "Every outcome waits for „Închide”")
         }
         #expect(ShareConfirmation(.working).action == .cancel)
+        // „Gata” marks a deadline done and „Anulează” takes back the step just taken: the share
+        // sheet only closes, or stops before anything arrives.
+        #expect(ShareConfirmation.Action.close.title == "Închide")
+        #expect(ShareConfirmation.Action.cancel.title == "Renunță")
     }
 
     @Test func itSaysWhatHappensNext() {

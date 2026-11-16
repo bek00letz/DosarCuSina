@@ -81,7 +81,7 @@ struct SettingsListScreen: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button { dismiss() } label: { Text("Gata", comment: "Closes an editor and keeps what was typed.") }
+                    Button { dismiss() } label: { Text("Închide", comment: "Closes Settings.") }
                 }
             }
         }
@@ -212,9 +212,9 @@ struct LockSettings: View {
                 .disabled(waiting)
             }
         } header: {
-            Text("Secțiuni protejate", comment: "Settings section: per-section locks.")
+            Text("Categorii protejate", comment: "Settings section: the locks, one per category.")
         } footer: {
-            Text("O secțiune protejată se deschide doar cu \(vault.biometryName), chiar dacă aplicația nu e blocată, și nu apare în căutarea iPhone-ului. Restul aplicației merge normal.", comment: "Footer of the section locks.")
+            Text("Secțiunile unei categorii protejate se deschid doar cu \(vault.biometryName), chiar dacă aplicația nu e blocată, și nu apar în căutarea iPhone-ului. Restul aplicației merge normal.", comment: "Footer of the category locks.")
         }
         .userErrorAlert($error)
     }
@@ -282,7 +282,7 @@ private struct LocksNotReadNotice: View {
                     .foregroundStyle(DSStatus.overdue.color)
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: DS.Space.xxs) {
-                    Text("Nu am putut citi ce secțiuni ai protejat", comment: "Settings notice: this device's section locks couldn't be read.")
+                    Text("Nu am putut citi ce categorii ai protejat", comment: "Settings notice: this device's category locks couldn't be read.")
                         .dsFont(.body)
                     Text("Până alegi din nou, toate secțiunile cer \(biometryName). Păstrează protecțiile, apoi oprește-le pe cele pe care nu le vrei.", comment: "Settings notice: what happens while the section locks couldn't be read, and what to do.")
                         .dsFont(.footnote)

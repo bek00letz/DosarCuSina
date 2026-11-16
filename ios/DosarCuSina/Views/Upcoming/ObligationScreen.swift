@@ -42,7 +42,8 @@ private struct ObligationPage: View {
     @Environment(AppPreferences.self) private var preferences
 
     @State private var toast: DSToast?
-    @State private var isCompleting = false
+    /// "Am rezolvat" open, for a kind that asks something (`CompletionEntry`).
+    @State private var completing: CompletionRequest?
     @State private var isSnoozing = false
     @State private var isAddingToCalendar = false
     @State private var isRescheduling = false
@@ -125,12 +126,7 @@ private struct ObligationPage: View {
         .dsAnimation(value: isLocked)
         .reminderPermissionGate($saveRequest)
         .task { await ReminderPermission.shared.refresh() }
-        .sheet(isPresented: $isCompleting) {
-            ObligationCompleteSheet(obligation: obligation) { result in
-                isCompleting = false
-                if let result { toast = result }
-            }
-        }
+        .completionSheet($completing, toast: $toast)
         .sheet(isPresented: $isAddingToCalendar) {
             CalendarEventEditor(title: obligation.title, day: obligation.dueDay, notes: obligation.asset?.name)
                 .ignoresSafeArea()
@@ -244,11 +240,12 @@ private struct ObligationPage: View {
 
     @ViewBuilder private var actions: some View {
         if obligation.status == .active {
-            // What completing asks is the kind's: a chore is done in one tap, the rest open the sheet.
+            // What completing asks is the kind's: a chore is done in one tap, the rest open the
+            // sheet, the same entry as Urmează's swipe and menu (`CompletionEntry`).
             let shape = obligation.kind.completion
             VStack(spacing: DS.Space.s) {
                 DSPrimaryButton(shape.actionTitle, systemImage: "checkmark") {
-                    if shape.isOneTap { completeNow() } else { isCompleting = true }
+                    startCompleting()
                 }
                 // A second "Gata" waits while the first one's toast shows, so a double tap
                 // never closes the next cycle too.
@@ -541,14 +538,20 @@ private struct ObligationPage: View {
         }
     }
 
-    /// A chore's "Gata": done today, no sheet; the toast takes it back or adds a note to it.
-    private func completeNow() {
+    /// "Gata" or "Am rezolvat", by the kind (`CompletionEntry`): a chore is done today, no
+    /// sheet, and the toast takes it back or adds a note to it; any other kind opens the sheet.
+    private func startCompleting() {
         do {
-            let done = try UpcomingActions(context: context).complete(obligation, title: obligation.title) { entryID, shown in
+            let start = try CompletionEntry(context: context).start(obligation) { entryID, shown in
                 noteRequest = HistoryNoteRequest(entryID: entryID, restoring: shown)
             }
-            quickToastID = done.id
-            toast = done
+            switch start {
+            case .done(let done):
+                quickToastID = done.id
+                toast = done
+            case .asks(let request):
+                completing = request
+            }
         } catch {
             toast = UpcomingActions.failureToast(error)
         }

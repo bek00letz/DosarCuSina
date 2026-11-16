@@ -7,7 +7,7 @@ struct CaptureFlowInput: Identifiable {
     let id = UUID()
     var payload: CaptureRequest.Payload
     var inboxItem: InboxItem?
-    /// The section the person started from ("Scriu eu" › a section › "Un act").
+    /// The section the person started from (its page's "Adaugă un act", a person's documents).
     var preferredAssetID: UUID?
     /// The person started from a household member's documents: whatever is read
     /// becomes one of that member's documents, even when it isn't an identity card.
