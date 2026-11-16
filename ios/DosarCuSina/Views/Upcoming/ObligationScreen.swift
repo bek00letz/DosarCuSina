@@ -23,6 +23,13 @@ struct ObligationScreen: View {
             DSEmptyState("Termenul nu mai există", systemImage: "calendar.badge.exclamationmark", message: "Poate a fost șters împreună cu secțiunea lui.")
         }
     }
+
+    /// Where the section's name in the header goes: its section's page; nil for a deadline of
+    /// the whole household, and while its section is locked (the name isn't shown then).
+    static func sectionRoute(for obligation: Obligation, isLocked: Bool) -> AppRoute? {
+        guard !isLocked, let asset = obligation.asset else { return nil }
+        return .asset(asset.id)
+    }
 }
 
 private struct ObligationPage: View {
@@ -41,6 +48,8 @@ private struct ObligationPage: View {
     @State private var isRescheduling = false
     @State private var isAddingCustomLead = false
     @State private var isEditingReminders = false
+    /// "Editează": the one sheet for its name, date, repeat and reminders.
+    @State private var isEditing = false
     @State private var saveRequest: ReminderSaveRequest?
     @State private var unlockFailed = false
     /// "Adaugă o notă" after a chore's "Gata".
@@ -57,6 +66,18 @@ private struct ObligationPage: View {
 
     private var isLocked: Bool { vault.isLocked(sectionIsSensitive: template?.isSensitive ?? false) }
 
+    /// On: one "Editează" (the toolbar's, and the schedule card's) opens one sheet for the
+    /// deadline's name, importance, date, repeat, reminders and reminder time, saved once
+    /// (`DeadlineEditSheet`). Off: the four earlier ways ("Schimbă data", "Schimbă cum se repetă",
+    /// "Schimbă când te anunț" with its "Ora amintirii"), kept as the way back until the owner
+    /// has used the sheet.
+    static let editsInOneSheet = true
+
+    /// "Editează" is offered while the deadline runs or is paused, and the section is open.
+    private var canEdit: Bool {
+        Self.editsInOneSheet && !isLocked && (obligation.status == .active || obligation.status == .paused)
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.xl) {
@@ -64,11 +85,17 @@ private struct ObligationPage: View {
                 if isLocked {
                     lockedCard
                 } else {
+                    let facts = DeadlinePageFacts.of(obligation, template: template?.definition, in: context)
                     actions
-                    lastTime
+                    lastTime(facts)
+                    policyCard(facts)
                     requirements
-                    if obligation.status == .active { ObligationRepeatSection(obligation: obligation, toast: $toast) }
-                    reminders
+                    if Self.editsInOneSheet {
+                        schedule
+                    } else {
+                        if obligation.status == .active { ObligationRepeatSection(obligation: obligation, toast: $toast) }
+                        reminders
+                    }
                     moreActions
                 }
             }
@@ -77,6 +104,22 @@ private struct ObligationPage: View {
         .background(DS.Palette.background)
         .navigationTitle(Text(verbatim: isLocked ? "" : obligation.title))
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if canEdit {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { isEditing = true } label: {
+                        Text("Editează", comment: "Toolbar button that edits a deadline: its name, date, repeat and reminders.")
+                    }
+                    .keyboardShortcut("e", modifiers: .command)
+                }
+            }
+        }
+        .sheet(isPresented: $isEditing) {
+            DeadlineEditSheet(obligation: obligation) { result in
+                isEditing = false
+                if let result { toast = result }
+            }
+        }
         .dsToast($toast)
         .historyNoteSheet($noteRequest, toast: $toast)
         .dsAnimation(value: isLocked)
@@ -123,8 +166,23 @@ private struct ObligationPage: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: DS.Space.xs) {
             HStack(spacing: DS.Space.xs) {
-                if let asset = obligation.asset, !isLocked {
-                    Text(verbatim: asset.name).dsFont(.subheadline)
+                if let asset = obligation.asset, let route = ObligationScreen.sectionRoute(for: obligation, isLocked: isLocked) {
+                    // The section's name opens the section.
+                    NavigationLink(value: route) {
+                        HStack(spacing: DS.Space.xxs) {
+                            Text(verbatim: asset.name)
+                                .dsFont(.subheadline)
+                                .foregroundStyle(DS.Palette.accent)
+                            Image(systemName: "chevron.forward")
+                                .font(.system(.caption, weight: .semibold))
+                                .foregroundStyle(DS.Palette.accent)
+                                .accessibilityHidden(true)
+                        }
+                        .frame(minHeight: DS.Control.minimumHitTarget)
+                        .contentShape(.rect)
+                    }
+                    .buttonStyle(.dsPressable)
+                    .accessibilityHint(Text("Deschide secțiunea.", comment: "VoiceOver hint of the section's name on a deadline's page."))
                 } else if obligation.asset == nil {
                     Text("Pentru toată casa").dsFont(.subheadline)
                 }
@@ -207,55 +265,61 @@ private struct ObligationPage: View {
 
     // MARK: Last time
 
-    @ViewBuilder private var lastTime: some View {
-        let last = obligation.history.first
-        // This deadline's own facts, by its blueprint's roles: CASCO's page shows CASCO's policy.
-        let facts = DeadlineFacts.of(obligation, template: template?.definition)
-        let policyNumber = facts.policyNumber
-        let claimsPhone = facts.claimsPhone
-        // The class of the person the policy insures, read from them: it is theirs, not the car's.
-        let ownerClass = facts.policyholder.flatMap { Policyholders.bonusMalus(ofPolicyholder: $0, among: Policyholders.people(in: context)) }
-        let documents = documentsOnFile
-        if last != nil || policyNumber != nil || claimsPhone != nil || ownerClass != nil || !documents.isEmpty {
+    /// *Data trecută*: the last time it was done (its day, cost, note and who did it), only
+    /// once it has been.
+    @ViewBuilder private func lastTime(_ facts: DeadlinePageFacts) -> some View {
+        if let last = facts.lastCompletion {
             VStack(alignment: .leading, spacing: DS.Space.s) {
                 DSSectionHeader("Data trecută")
+                DSCard { lastCompletion(last) }
+            }
+        }
+    }
+
+    /// This deadline's own policy (CASCO's page shows CASCO's) and the documents on file, only
+    /// what it has; a separator only between two rows.
+    @ViewBuilder private func policyCard(_ facts: DeadlinePageFacts) -> some View {
+        if facts.showsPolicyCard {
+            VStack(alignment: .leading, spacing: DS.Space.s) {
+                DSSectionHeader(verbatim: String(localized: facts.policyCardTitle))
                 DSCard {
                     VStack(alignment: .leading, spacing: DS.Space.s) {
-                        if let last {
-                            lastCompletion(last)
+                        ForEach(Array(facts.policyRows.enumerated()), id: \.element) { index, row in
+                            if index > 0 { DS.Hairline() }
+                            policyRow(row)
                         }
-                        if let policyNumber {
-                            if last != nil { DS.Hairline() }
-                            DSActionValueRow(title: Text("Număr poliță"), value: policyNumber, action: .copy)
-                        }
-                        if let claimsPhone {
-                            DS.Hairline()
-                            DSActionValueRow(title: Text("Telefon pentru daune"), value: claimsPhone, action: .call)
-                        }
-                        if let ownerClass {
-                            if last != nil || policyNumber != nil || claimsPhone != nil { DS.Hairline() }
-                            DSReadOnlyValueRow(label: Text("Clasa proprietarului", comment: "Policy page: the bonus-malus class of the person the RCA insures."),
-                                               value: Text(verbatim: ownerClass))
-                        }
-                        if !documents.isEmpty {
+                        if facts.namesDocumentsInside {
                             DS.Hairline()
                             Text("Acte în dosar").dsFont(.footnote)
-                            ForEach(documents) { document in
-                                Button { AppNavigator.shared.open(.document(document.id)) } label: {
-                                    DSListRow(
-                                        title: Text(verbatim: document.title ?? document.fileName),
-                                        subtitle: document.documentDay.map { Text(verbatim: DosarFormat.longDay($0)) },
-                                        systemImage: "doc.text",
-                                        showsChevron: true,
-                                        trailing: { EmptyView() }
-                                    )
-                                }
-                                .buttonStyle(.plain)
+                        }
+                        ForEach(facts.documents) { document in
+                            Button { AppNavigator.shared.open(.document(document.id)) } label: {
+                                DSListRow(
+                                    title: Text(verbatim: document.title ?? document.fileName),
+                                    subtitle: document.documentDay.map { Text(verbatim: DosarFormat.longDay($0)) },
+                                    systemImage: "doc.text",
+                                    showsChevron: true,
+                                    trailing: { EmptyView() }
+                                )
                             }
+                            .buttonStyle(.plain)
                         }
                     }
                 }
             }
+        }
+    }
+
+    @ViewBuilder private func policyRow(_ row: DeadlinePageFacts.PolicyRow) -> some View {
+        switch row {
+        case .policyNumber(let number):
+            DSActionValueRow(title: Text("Număr poliță"), value: number, action: .copy)
+        case .claimsPhone(let phone):
+            DSActionValueRow(title: Text("Telefon pentru daune"), value: phone, action: .call)
+        case .ownerClass(let ownerClass):
+            // The class of the person the policy insures, read from them: it is theirs, not the car's.
+            DSReadOnlyValueRow(label: Text("Clasa proprietarului", comment: "Policy page: the bonus-malus class of the person the RCA insures."),
+                               value: Text(verbatim: ownerClass))
         }
     }
 
@@ -288,14 +352,6 @@ private struct ObligationPage: View {
                 }
             }
         }
-    }
-
-    private var documentsOnFile: [Attachment] {
-        var seen = Set<UUID>()
-        let linked = (obligation.attachments ?? []) + (obligation.history.first?.attachments ?? [])
-        return linked
-            .filter { !$0.isArchived && seen.insert($0.id).inserted }
-            .sorted { ($0.documentDay ?? CalendarDay($0.createdAt), $0.createdAt) > ($1.documentDay ?? CalendarDay($1.createdAt), $1.createdAt) }
     }
 
     // MARK: Requirements
@@ -347,7 +403,37 @@ private struct ObligationPage: View {
         }
     }
 
-    /// What the deadline reminds, in words, and the way into its settings.
+    /// How it repeats and when it reminds, in one line („La fiecare 3 zile, de la data la care
+    /// l-ai făcut · Îți amintesc cu o zi înainte, la 07:30”), and "Editează" again, where the
+    /// person reads it. While it runs; the sheet is the toolbar's too.
+    @ViewBuilder private var schedule: some View {
+        if obligation.status == .active {
+            let profile = obligation.cycleReminders
+            VStack(alignment: .leading, spacing: DS.Space.s) {
+                DSSectionHeader("Cum se repetă și când te anunț")
+                ReminderPermissionNotice()
+                DSCard {
+                    VStack(alignment: .leading, spacing: DS.Space.xs) {
+                        Text(verbatim: ReminderWording.schedule(rule: obligation.recurrence, profile: profile,
+                                                                minuteOfDay: obligation.reminderMinuteOfDay, usual: preferences.reminderMinuteOfDay))
+                            .dsFont(.headline, numeric: true)
+                            .fixedSize(horizontal: false, vertical: true)
+                        if profile.followUpAfterLapse {
+                            Text(verbatim: ReminderWording.followUp).dsFont(.footnote)
+                        }
+                        DS.Hairline().padding(.vertical, DS.Space.xxs)
+                        Button { isEditing = true } label: {
+                            DSListRow("Editează termenul", subtitle: "Data, cum se repetă și când te anunț.", systemImage: "slider.horizontal.3", showsChevron: true)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+        }
+    }
+
+    /// What the deadline reminds, in words, and the way into its settings. Switched off with
+    /// the other earlier ways (`editsInOneSheet`).
     private var reminderSummary: some View {
         let profile = obligation.cycleReminders
         return VStack(alignment: .leading, spacing: DS.Space.s) {
@@ -422,11 +508,14 @@ private struct ObligationPage: View {
             if obligation.status == .active {
                 DSCard {
                     VStack(spacing: 0) {
-                        Button { isRescheduling = true } label: {
-                            DSListRow("Schimbă data", subtitle: "Dacă termenul de pe act e altul.", systemImage: "calendar", showsChevron: true)
+                        // The date is in "Editează" now; this row is the way back (`editsInOneSheet`).
+                        if !Self.editsInOneSheet {
+                            Button { isRescheduling = true } label: {
+                                DSListRow("Schimbă data", subtitle: "Dacă termenul de pe act e altul.", systemImage: "calendar", showsChevron: true)
+                            }
+                            .buttonStyle(.plain)
+                            DSRowSeparator()
                         }
-                        .buttonStyle(.plain)
-                        DSRowSeparator()
                         Button(action: pause) {
                             DSListRow("Pune pe pauză", subtitle: "Nu-ți mai amintesc de el până îl pornești din nou.", systemImage: "pause.circle")
                         }
@@ -561,7 +650,8 @@ struct CustomLeadSheet: View {
     }
 }
 
-/// A different due date, for when the document says otherwise.
+/// A different due date, for when the document says otherwise. Kept, switched off with the
+/// page's other earlier ways (`ObligationPage.editsInOneSheet`): the date is in "Editează" now.
 private struct RescheduleSheet: View {
     let current: CalendarDay
     let onClose: (CalendarDay?) -> Void

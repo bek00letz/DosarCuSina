@@ -55,7 +55,9 @@ struct ReminderSettingsForm: View {
     var onOtherDay: () -> Void = {}
     var onToggleFollowUp: () -> Void = {}
     var onRestoreUsual: () -> Void = {}
-    var onReminderTime: () -> Void = {}
+    /// "Ora amintirii" as a row that opens its page; nil leaves the row out, for a screen that
+    /// shows the time field itself (the deadline's "Editează").
+    var onReminderTime: (() -> Void)?
 
     var body: some View {
         let profile = settings.profile
@@ -88,14 +90,16 @@ struct ReminderSettingsForm: View {
                 }
             }
 
-            DSCard {
-                Button(action: onReminderTime) {
-                    DSListRow(title: Text("Ora amintirii", comment: "Reminder settings: the time of day this deadline reminds at."),
-                              subtitle: Text(verbatim: settings.timeText), systemImage: "clock", showsChevron: true, trailing: { EmptyView() })
+            if let onReminderTime {
+                DSCard {
+                    Button(action: onReminderTime) {
+                        DSListRow(title: Text("Ora amintirii", comment: "Reminder settings: the time of day this deadline reminds at."),
+                                  subtitle: Text(verbatim: settings.timeText), systemImage: "clock", showsChevron: true, trailing: { EmptyView() })
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text("Ora amintirii"))
+                    .accessibilityValue(Text(verbatim: settings.timeText))
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(Text("Ora amintirii"))
-                .accessibilityValue(Text(verbatim: settings.timeText))
             }
 
             DSCard {
@@ -129,6 +133,10 @@ struct ReminderSettingsForm: View {
     }
 }
 
+/// Kept, switched off (`ObligationPage.editsInOneSheet`), as the way back: the reminders and
+/// their time are in the deadline's one "Editează" (`DeadlineEditSheet`) now, which reuses
+/// `ReminderSettingsForm`.
+///
 /// "Schimbă când te anunț": the deadline's reminder settings, opened from its page. Each
 /// change is saved at once (after the notification explanation when it is due), as the
 /// page's settings always were, so there is nothing to discard. Going back to the usual

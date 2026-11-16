@@ -62,16 +62,22 @@ enum RepeatWording {
     /// The rule in one sentence, for every kind of rule: „La fiecare 3 zile, de la data la care
     /// l-ai făcut.”, „În fiecare an, pe 31 martie și pe 30 septembrie.”, „Nu se repetă.”
     static func sentence(_ rule: RecurrenceRule) -> String {
+        String(localized: "\(phrase(rule)).", comment: "How a deadline repeats, as a sentence: the words of the rule and a full stop.")
+    }
+
+    /// The rule in words, without the full stop, to go on in a line: „La fiecare 3 zile, de la
+    /// data la care l-ai făcut · Îți amintesc …” (`ReminderWording.schedule`).
+    static func phrase(_ rule: RecurrenceRule) -> String {
         switch rule {
         case .none:
-            return String(localized: "Nu se repetă.", comment: "How a deadline repeats: once.")
+            return String(localized: "Nu se repetă", comment: "How a deadline repeats: once.")
         case .interval(let interval, let anchor):
             let often = every(interval.every, interval.unit)
             switch anchor {
             case .dueDate:
-                return String(localized: "\(often), de la data termenului.", comment: "How a deadline repeats, counted from its due day, e.g. „În fiecare lună, de la data termenului.”")
+                return String(localized: "\(often), de la data termenului", comment: "How a deadline repeats, counted from its due day, e.g. „În fiecare lună, de la data termenului.”")
             case .completion:
-                return String(localized: "\(often), de la data la care l-ai făcut.", comment: "How a deadline repeats, counted from the day it was done, e.g. „La fiecare 3 zile, de la data la care l-ai făcut.”")
+                return String(localized: "\(often), de la data la care l-ai făcut", comment: "How a deadline repeats, counted from the day it was done, e.g. „La fiecare 3 zile, de la data la care l-ai făcut.”")
             }
         case .fixedDates(let dates):
             let days = dates.sorted().map { date in
@@ -79,21 +85,21 @@ enum RepeatWording {
                 String(localized: "pe \(DosarFormat.dayMonth(CalendarDay(year: 2000, month: date.month, day: date.day)))", comment: "Part of a repeat sentence: on a day of the year, e.g. „pe 31 martie”.")
             }
             let list = days.formatted(.list(type: .and).locale(.dosarDefault))
-            return String(localized: "În fiecare an, \(list).", comment: "A deadline due on the same days every year, e.g. „În fiecare an, pe 31 martie și pe 30 septembrie.”")
+            return String(localized: "În fiecare an, \(list)", comment: "A deadline due on the same days every year, e.g. „În fiecare an, pe 31 martie și pe 30 septembrie.”")
         case .metric(let every, let unit, let fallback):
             let counter = MeasurementUnit.written(every, in: unit)
             guard let fallback else {
-                return String(localized: "La fiecare \(counter).", comment: "A deadline due every so much of a counter, e.g. „La fiecare 10.000 km.”")
+                return String(localized: "La fiecare \(counter)", comment: "A deadline due every so much of a counter, e.g. „La fiecare 10.000 km.”")
             }
             let often = Self.midSentence(Self.every(fallback.every, fallback.unit))
-            return String(localized: "La fiecare \(counter) sau \(often), ce vine mai întâi.", comment: "A deadline due every so much of a counter or after a time, e.g. „La fiecare 10.000 km sau în fiecare an, ce vine mai întâi.”")
+            return String(localized: "La fiecare \(counter) sau \(often), ce vine mai întâi", comment: "A deadline due every so much of a counter or after a time, e.g. „La fiecare 10.000 km sau în fiecare an, ce vine mai întâi.”")
         case .legal(let legal):
             switch legal {
             case .vehicleITP:
-                return String(localized: "Cum cere legea pentru ITP, după vârsta mașinii și cum o folosești.", comment: "How the ITP repeats: by the legal rule, from the car's age and use.")
+                return String(localized: "Cum cere legea pentru ITP, după vârsta mașinii și cum o folosești", comment: "How the ITP repeats: by the legal rule, from the car's age and use.")
             }
         case .unreadable:
-            return String(localized: "Se repetă după o regulă pe care o știe o versiune mai nouă a aplicației. Actualizează aplicația ca s-o vezi.", comment: "A repeat rule written by a newer version of the app.")
+            return String(localized: "Se repetă după o regulă pe care o știe o versiune mai nouă a aplicației. Actualizează aplicația ca s-o vezi", comment: "A repeat rule written by a newer version of the app.")
         }
     }
 

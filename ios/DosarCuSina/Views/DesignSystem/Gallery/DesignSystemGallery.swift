@@ -700,6 +700,7 @@ private struct GalleryFields: View {
     @State private var contact: DSContactValue? = DSContactValue(name: "Service Auto Exemplu", phone: "0700 000 000")
     @State private var repeatChoice = RepeatChoice(frequency: .day, every: 3)
     @State private var reminderMinute: Int?
+    @State private var collapsedReminderMinute: Int?
     @State private var revealAll = false
 
     var body: some View {
@@ -734,6 +735,8 @@ private struct GalleryFields: View {
                     VStack(spacing: DS.Space.m) {
                         DSRepeatField(choice: $repeatChoice)
                         DSReminderTimeField(minuteOfDay: $reminderMinute, usualMinuteOfDay: AppPreferences.defaultReminderMinuteOfDay)
+                        DS.Hairline()
+                        DSReminderTimeField(minuteOfDay: $collapsedReminderMinute, usualMinuteOfDay: AppPreferences.defaultReminderMinuteOfDay, startsCollapsed: true)
                     }
                 }
             }
