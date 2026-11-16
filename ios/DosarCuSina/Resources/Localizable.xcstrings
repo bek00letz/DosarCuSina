@@ -1092,7 +1092,7 @@
       "comment" : "Button in the Produse pocket."
     },
     "Adaugă un rând" : {
-      "comment" : "Adds a row of one's own under Date importante."
+      "comment" : "Adds a row of one's own under Date importante.\nVisit form: adds a row of what was done."
     },
     "Adaugă un termen" : {
       "comment" : "Adds a deadline to a section, from its Urmează pocket or its add menu."
@@ -1189,6 +1189,9 @@
     },
     "Ai și o poză cu spatele? Acolo e codul care confirmă datele." : {
 
+    },
+    "Aici nu se notează vizite" : {
+      "comment" : "The visit form opened for a section whose category has none."
     },
     "Ajunge cartea de identitate, valabilă până te întorci." : {
       "comment" : "Trip region rule: inside the EU."
@@ -1383,6 +1386,35 @@
         }
       }
     },
+    "Am bifat %lld rânduri de pe hârtie. Verifică-le." : {
+      "comment" : "Visit flow: rows ticked from a doctor's or a vet's paper.",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Am bifat %lld rânduri de pe hârtie. Verifică-le."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Am bifat un rând de pe hârtie. Verifică-l."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Am bifat %lld de rânduri de pe hârtie. Verifică-le."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Am chemat un meseriaș" : {
 
     },
@@ -1394,6 +1426,9 @@
     },
     "Am citit factura" : {
 
+    },
+    "Am citit hârtia" : {
+      "comment" : "A doctor's or a vet's paper was read, its photo not kept."
     },
     "Am citit primele %lld pagini" : {
       "comment" : "Capture review: only the first pages of a long PDF were read",
@@ -1430,6 +1465,9 @@
     "Am copiat „%@”" : {
       "comment" : "Toast after copying a fact."
     },
+    "Am dus la reparat" : {
+      "comment" : "Logs a repair of something bought."
+    },
     "Am eliberat %@." : {
       "comment" : "After shrinking old scans."
     },
@@ -1437,13 +1475,16 @@
 
     },
     "Am fost la service" : {
-
+      "comment" : "Logs a visit to the service, for a car or a bike."
     },
     "Am fost la veterinar" : {
 
     },
     "Am făcut o lucrare" : {
 
+    },
+    "Am făcut o revizie" : {
+      "comment" : "Logs an espresso machine's upkeep."
     },
     "Am găsit ceva de corectat" : {
       "comment" : "Title of the prompt that opens the repair list."
@@ -1489,6 +1530,67 @@
     },
     "Am scos „%@” din De verificat." : {
 
+    },
+    "Am trecut %lld rânduri de pe factură. Verifică-le." : {
+      "comment" : "Visit flow: rows written from a scanned invoice.",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Am trecut %lld rânduri de pe factură. Verifică-le."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Am trecut un rând de pe factură. Verifică-l."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Am trecut %lld de rânduri de pe factură. Verifică-le."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Am trecut %lld rânduri de pe hârtie. Verifică-le." : {
+      "comment" : "Visit flow: rows written from a doctor's or a vet's paper.",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Am trecut %lld rânduri de pe hârtie. Verifică-le."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Am trecut un rând de pe hârtie. Verifică-l."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Am trecut %lld de rânduri de pe hârtie. Verifică-le."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Am trecut data, suma și numele de pe ea. Verifică-le." : {
+      "comment" : "Visit flow: the paper's day, total and issuer were filled in."
     },
     "Am trecut mai sus data la care expiră. Verifică-o." : {
 
@@ -1700,8 +1802,8 @@
     "Are lucruri trecute sub el, de exemplu chiriași, produse sau acte. Dacă le păstrezi, rămân în dosar fără să fie sub „%@”. Termenele, istoricul și documentele lui se șterg de pe acest telefon." : {
       "comment" : "Delete confirmation when the asset has children."
     },
-    "Are revizii" : {
-      "comment" : "Switch of a category of one's own: its sections have a regular service."
+    "Are revizii sau lucrări" : {
+      "comment" : "Switch of a category of one's own: its sections have a regular service or job, logged as visits."
     },
     "Arhivat" : {
       "comment" : "Badge on an archived document."
@@ -1763,14 +1865,38 @@
     "Atașează factura" : {
 
     },
+    "Atașează fișa sau rețeta" : {
+      "comment" : "Visit form: asks for a vet's paper."
+    },
+    "Atașează o hârtie de la medic" : {
+      "comment" : "Title of the photo source choice for a doctor's paper."
+    },
+    "Atașează o hârtie de la veterinar" : {
+      "comment" : "Title of the photo source choice for a vet's paper."
+    },
+    "Atașează rețeta sau analizele" : {
+      "comment" : "Visit form: asks for a doctor's paper."
+    },
+    "Atelier Exemplu SRL" : {
+
+    },
     "Atinge ca să copiezi." : {
       "comment" : "VoiceOver hint of a fact row."
     },
     "Atinge ca să suni." : {
       "comment" : "VoiceOver hint of a phone fact row."
     },
+    "Atinge ce i s-a făcut. Prețul e opțional." : {
+      "comment" : "Vet visit form: under the checklist."
+    },
+    "Atinge ce s-a făcut. Prețul e opțional." : {
+      "comment" : "Upkeep form: under the checklist."
+    },
     "Atinge ce s-a făcut. Prețul și marca sunt opționale." : {
 
+    },
+    "Atinge ce s-a lucrat. Prețul e opțional." : {
+      "comment" : "Job form: under the checklist."
     },
     "Auto" : {
 
@@ -1858,8 +1984,14 @@
     "Bifează" : {
 
     },
+    "Bifează ce s-a făcut ca să poți salva." : {
+      "comment" : "Upkeep form: what saving needs."
+    },
     "Bifează ce s-a făcut sau scrie totalul ca să poți salva." : {
 
+    },
+    "Bifează ce s-a lucrat sau scrie cât a costat ca să poți salva." : {
+      "comment" : "Job form: what saving needs."
     },
     "Bifează din widget o obligație din Dosar cu Șină." : {
 
@@ -1963,6 +2095,9 @@
     },
     "Ca un singur PDF" : {
       "comment" : "Share a document as one PDF file."
+    },
+    "Cabinet Veterinar Exemplu" : {
+
     },
     "Cabinet veterinar exemplu" : {
 
@@ -2185,6 +2320,9 @@
     "Ce i s-a făcut" : {
 
     },
+    "Ce i s-a făcut, la cine, fișa sau rețeta." : {
+      "comment" : "Under a vet visit's card in Scriu eu."
+    },
     "Ce nu e în listă." : {
 
     },
@@ -2197,6 +2335,9 @@
     "Ce s-a făcut" : {
       "comment" : "Header: the jobs and parts of a visit.\nReview: the lines of a bill."
     },
+    "Ce s-a făcut și cât a costat, dacă a costat." : {
+      "comment" : "Under an upkeep's card in Scriu eu."
+    },
     "Ce s-a făcut, ce urmează." : {
 
     },
@@ -2204,7 +2345,19 @@
       "comment" : "Pocket explanation."
     },
     "Ce s-a făcut, cât a costat, cine a lucrat." : {
-
+      "comment" : "Under the service visit's card in Scriu eu."
+    },
+    "Ce s-a lucrat" : {
+      "comment" : "Visit form: what a tradesperson did."
+    },
+    "Ce s-a lucrat, cine a lucrat, cât a costat." : {
+      "comment" : "Under a tradesperson's job card in Scriu eu."
+    },
+    "Ce s-a reparat" : {
+      "comment" : "Repair form: what was fixed."
+    },
+    "Ce s-a reparat, unde, cât a costat." : {
+      "comment" : "Under a repair's card in Scriu eu."
     },
     "Ce s-a schimbat" : {
 
@@ -2326,6 +2479,9 @@
     "Cine a lucrat" : {
       "comment" : "Header: who did the job."
     },
+    "Cine a reparat" : {
+      "comment" : "Repair form: who fixed it."
+    },
     "Cine are grijă de el, cu telefonul lui." : {
       "comment" : "Pocket explanation."
     },
@@ -2346,6 +2502,9 @@
     },
     "Citesc factura…" : {
 
+    },
+    "Citesc hârtia…" : {
+      "comment" : "While a doctor's or a vet's paper is read."
     },
     "Citesc și spatele…" : {
 
@@ -2402,6 +2561,9 @@
 
     },
     "Climatizare" : {
+
+    },
+    "Clinica Exemplu" : {
 
     },
     "Cod client" : {
@@ -2687,6 +2849,9 @@
     "Cum a fost" : {
 
     },
+    "Cum a fost?" : {
+      "comment" : "Rating a doctor's or a vet's visit."
+    },
     "Cum a lucrat?" : {
 
     },
@@ -2795,6 +2960,12 @@
     "Câte o cutie pentru fiecare" : {
       "comment" : "Boxes choice: one box per section."
     },
+    "Câte un rând pentru fiecare lucrare. Prețul e opțional." : {
+      "comment" : "Visit form: rows of what was done, with no checklist."
+    },
+    "Câte un rând pentru fiecare tratament. Prețul e opțional." : {
+      "comment" : "Vet visit form: rows, with no checklist."
+    },
     "Căutări recente" : {
       "comment" : "Header of recent searches."
     },
@@ -2807,8 +2978,14 @@
     "Da, schimbă-le" : {
       "comment" : "Pauses and resumes the service deadlines a category change touches."
     },
+    "Dacă a costat ceva." : {
+      "comment" : "Under an upkeep's optional cost."
+    },
     "Dacă ai deja un dosar pe alt dispozitiv, apare aici. Dacă e gol, poți încărca exemplele după." : {
       "comment" : "Shown on a new device while the person's binder may still be coming down from iCloud, in place of the examples."
+    },
+    "Dacă ai plătit ceva." : {
+      "comment" : "Under a visit's optional cost."
     },
     "Dacă alegi „Înlocuiește”, ce ai acum pe telefon se șterge și rămâne doar ce e în copie. Codurile PIN de pe acest telefon rămân." : {
       "comment" : "Warning before replacing everything with a backup."
@@ -3372,6 +3549,9 @@
     "Ecranul Dosar" : {
       "comment" : "Settings page: which categories show on the binder and how their boxes are arranged."
     },
+    "Ecranul, bateria, un buton…" : {
+      "comment" : "Example of what was repaired."
+    },
     "Editează" : {
       "comment" : "Edits one of the person's own rows.\nTitle of the edit sheet.\nToolbar button that edits a deadline: its name, date, repeat and reminders.\nToolbar button that edits a document: its values, its back, reading it again.\nToolbar button that edits a section's details."
     },
@@ -3410,6 +3590,9 @@
     },
     "Era o estimare" : {
       "comment" : "Answer to a lower reading: the earlier, higher readings were estimates (a bill's estimated index); they stay as history and count no more."
+    },
+    "Era în garanție, până pe %@." : {
+      "comment" : "Repair form: the day falls within the product's warranty."
     },
     "Espressoare" : {
       "comment" : "Category name"
@@ -3686,6 +3869,9 @@
     "Fotografiază factura" : {
 
     },
+    "Fotografiază hârtia" : {
+      "comment" : "Photo source: the camera, for a doctor's or a vet's paper."
+    },
     "Fotografiază polița" : {
 
     },
@@ -3796,6 +3982,9 @@
     "Garanția expiră" : {
 
     },
+    "Garanția se terminase pe %@." : {
+      "comment" : "Repair form: the product's warranty had ended by that day."
+    },
     "Garanția se termină" : {
 
     },
@@ -3883,6 +4072,12 @@
     "Hrană și porții" : {
 
     },
+    "Hârtia e atașată" : {
+      "comment" : "A doctor's or a vet's paper is attached to the visit."
+    },
+    "Hârtia nu s-a citit" : {
+      "comment" : "A doctor's or a vet's paper couldn't be read."
+    },
     "IBAN" : {
 
     },
@@ -3968,6 +4163,9 @@
       "comment" : "Claim photo: what of the place."
     },
     "Instalator" : {
+
+    },
+    "Instalator Exemplu SRL" : {
 
     },
     "Instalator exemplu" : {
@@ -4148,6 +4346,9 @@
     "La biroul de taxe locale, cu contractul. Altfel plătești impozit pe ea mai departe." : {
       "comment" : "After the sale: why to deregister the car."
     },
+    "La cine, pentru ce, rețeta sau analizele." : {
+      "comment" : "Under a doctor's visit card in Scriu eu."
+    },
     "La câte luni?" : {
 
     },
@@ -4324,6 +4525,9 @@
     "Lasă citirea veche" : {
       "comment" : "Answer to a lower reading: keep the earlier one, set the new one aside."
     },
+    "Lasă gol dacă a fost gratuită." : {
+      "comment" : "Under a repair's cost."
+    },
     "Lasă-le cum sunt" : {
       "comment" : "Saves the category change and leaves its deadlines as they are."
     },
@@ -4335,6 +4539,9 @@
     },
     "Le cere asigurătorul la constatare." : {
       "comment" : "Claim paper: why the car's papers."
+    },
+    "Le notezi în istoric și îți amintesc din timp, ca la mașină." : {
+      "comment" : "Explains the service switch: visits and a reminder."
     },
     "Leasing sau credit pe mașină" : {
       "comment" : "Sale: a lease or loan on the car."
@@ -4365,6 +4572,12 @@
     },
     "Locul ales nu mai există. Alege altul." : {
 
+    },
+    "Lucrare" : {
+      "comment" : "A tradesperson's job's title in Istoric when nothing done is listed."
+    },
+    "Lucrarea e în istoric." : {
+      "comment" : "Toast after a tradesperson's job is saved."
     },
     "Lucruri cumpărate, cu garanția lor." : {
       "comment" : "Pocket explanation."
@@ -4463,6 +4676,9 @@
     },
     "Medicul" : {
 
+    },
+    "Medicul sau clinica" : {
+      "comment" : "A doctor's visit: who."
     },
     "Membri ai familiei" : {
       "comment" : "Category name"
@@ -4757,6 +4973,9 @@
     },
     "Nu am găsit rânduri de bifat. Bifează de mână." : {
 
+    },
+    "Nu am găsit rânduri pe ea. Scrie-le de mână." : {
+      "comment" : "Visit flow: no rows found on the paper."
     },
     "Nu am o previzualizare" : {
 
@@ -5102,6 +5321,9 @@
     "O programare la serviciul de pașapoarte" : {
 
     },
+    "O păstrez și trec data și suma de pe ea." : {
+      "comment" : "Visit form: the invoice is kept, its day and total read."
+    },
     "O scadență" : {
       "comment" : "Box status title in a locked section"
     },
@@ -5119,9 +5341,6 @@
     },
     "O trec în istoricul „%@”." : {
       "comment" : "Am rezolvat: a photo of the bill being paid is logged in its subscription's history."
-    },
-    "O vizită sau o reparație" : {
-
     },
     "OK" : {
 
@@ -5357,6 +5576,9 @@
     "Pe lună, în total" : {
 
     },
+    "Pe pagina secțiunii găsești ce poți adăuga." : {
+      "comment" : "The visit form opened for a section whose category has none: where to go."
+    },
     "Pe pauză" : {
 
     },
@@ -5386,6 +5608,9 @@
     },
     "Pentru acest tip de act nu se păstrează spatele." : {
       "comment" : "Adding the back to a document whose type keeps no back (a bank card) was refused."
+    },
+    "Pentru ce" : {
+      "comment" : "A doctor's visit: what it was for."
     },
     "Pentru contract și la primărie." : {
       "comment" : "Sale: why the seller's ID card is needed."
@@ -5833,6 +6058,12 @@
     "Renunță la schimbări" : {
 
     },
+    "Reparația e în istoric." : {
+      "comment" : "Toast after a repair is saved."
+    },
+    "Reparație" : {
+      "comment" : "A repair's title in Istoric."
+    },
     "Restul detaliilor le completezi oricând din pagina secțiunii, cu Editează." : {
       "comment" : "Footnote when a category has no essential fields."
     },
@@ -5845,6 +6076,9 @@
     "Revizia e pe pauză la %@. O pornesc din nou?" : {
       "comment" : "A service turned back on: its paused deadlines, by section."
     },
+    "Revizia e în istoric." : {
+      "comment" : "Toast after an upkeep is saved."
+    },
     "Revizia e încă programată la %@. O pun pe pauză? O pornești din nou oricând." : {
       "comment" : "A service turned off: its running deadlines, by section."
     },
@@ -5852,7 +6086,7 @@
       "comment" : "VoiceOver label of the service counter choice."
     },
     "Revizie" : {
-
+      "comment" : "An upkeep's title in Istoric when nothing done is listed."
     },
     "Revizie anuală" : {
 
@@ -5961,6 +6195,9 @@
     "Rândul de pe factură" : {
       "comment" : "Title when editing a bill line."
     },
+    "Rândurile adună %@. Lasă gol dacă ăsta e totalul." : {
+      "comment" : "Under a visit's cost: what its rows add up to."
+    },
     "Rămâi pe telefon" : {
       "comment" : "Cancels switching iCloud accounts; the binder stays on the phone."
     },
@@ -5982,8 +6219,17 @@
     "Salvează" : {
       "comment" : "Saves the bill line.\nSaves the changes to a category.\nSaves what was typed in an editor and closes it."
     },
+    "Salvează lucrarea" : {
+      "comment" : "Saves a tradesperson's job."
+    },
     "Salvează ora" : {
 
+    },
+    "Salvează reparația" : {
+      "comment" : "Saves a repair."
+    },
+    "Salvează revizia" : {
+      "comment" : "Saves an upkeep."
     },
     "Salvează termenul" : {
 
@@ -5996,6 +6242,24 @@
     },
     "Sari peste" : {
 
+    },
+    "Sau biletul de trimitere. Bifez singur ce găsesc scris." : {
+      "comment" : "Visit form: a doctor's paper ticks what it lists."
+    },
+    "Sau biletul de trimitere. Le păstrez cu vizita." : {
+      "comment" : "Visit form: a doctor's papers are kept with the visit."
+    },
+    "Sau biletul de trimitere. Trec singur ce găsesc scris." : {
+      "comment" : "Visit form: a doctor's paper fills the rows."
+    },
+    "Sau carnetul de vaccinări. Bifez singur ce găsesc scris." : {
+      "comment" : "Visit form: a vet's paper ticks what it lists."
+    },
+    "Sau carnetul de vaccinări. Le păstrez cu vizita." : {
+      "comment" : "Visit form: a vet's papers are kept with the visit."
+    },
+    "Sau carnetul de vaccinări. Trec singur ce găsesc scris." : {
+      "comment" : "Visit form: a vet's paper fills the rows."
     },
     "Sau dovada plății din aplicația băncii." : {
 
@@ -6089,6 +6353,18 @@
     },
     "Scrie anul cu patru cifre, de exemplu 2018." : {
       "comment" : "Year field error"
+    },
+    "Scrie ce s-a făcut ca să poți salva." : {
+      "comment" : "Upkeep form: what saving needs, with no checklist."
+    },
+    "Scrie ce s-a făcut sau totalul ca să poți salva." : {
+      "comment" : "Visit form: what saving needs, with no checklist."
+    },
+    "Scrie ce s-a lucrat sau cât a costat ca să poți salva." : {
+      "comment" : "Job form: what saving needs, with no checklist."
+    },
+    "Scrie ce s-a reparat sau cât a costat ca să poți salva." : {
+      "comment" : "Repair form: what saving needs."
     },
     "Scrie ce trebuie făcut, apoi salvează." : {
       "comment" : "Error: a deadline's name was left empty."
@@ -6652,6 +6928,9 @@
     "Trebuia plătit pe %@." : {
       "comment" : "Sale check: an unpaid deadline and the day it was due."
     },
+    "Trec singur rândurile și sumele de pe ea." : {
+      "comment" : "Visit form: the invoice fills the rows."
+    },
     "Trec „%@” la „%@”? Apare pe pagina ei și rămâne în „%@”." : {
       "comment" : "Repair: file a section standing on its own under the only section it can go under.",
       "localizations" : {
@@ -6793,6 +7072,9 @@
     },
     "Un act nou" : {
       "comment" : "Title of the sheet that adds a document for a person."
+    },
+    "Un control, o durere, o trimitere…" : {
+      "comment" : "Example of what a doctor's visit was for."
     },
     "Un document e prea mare pentru o copie. Scoate-l din dosar și păstrează-l în altă parte, apoi încearcă din nou." : {
       "comment" : "Backup: one file is too large for a backup."
@@ -7056,8 +7338,20 @@
     "Vizite trecute de mai multe ori" : {
       "comment" : "Repair group: the same visit's invoice logged twice in Istoric."
     },
+    "Vizitele categoriilor tale" : {
+      "comment" : "Repair group: a category of one's own gets the visits its switch gives."
+    },
     "Vizită" : {
       "comment" : "History entry title when nothing was listed"
+    },
+    "Vizită la medic" : {
+      "comment" : "A doctor's visit's title in Istoric."
+    },
+    "Vizită la service" : {
+      "comment" : "A service visit's title in Istoric when nothing done is listed."
+    },
+    "Vizită la veterinar" : {
+      "comment" : "A vet visit's title in Istoric when nothing done is listed."
     },
     "Vreau să văd cu exemple" : {
 
@@ -7312,6 +7606,9 @@
     "Încearcă o poză mai clară. Poți bifa și de mână." : {
 
     },
+    "Încearcă o poză mai clară. Poți scrie și de mână." : {
+      "comment" : "Visit flow: the paper couldn't be read; the form can be filled by hand."
+    },
     "Încearcă un cuvânt mai scurt sau doar începutul lui." : {
       "comment" : "Hint when a search finds nothing."
     },
@@ -7434,9 +7731,6 @@
     },
     "Îți amintesc din timp de fiecare revizie." : {
 
-    },
-    "Îți amintesc din timp, ca la mașină." : {
-      "comment" : "Explains the service switch."
     },
     "Îți amintesc la %@." : {
       "comment" : "A deadline reminds at a time of its own, e.g. „Îți amintesc la 07:30.”"
