@@ -143,14 +143,14 @@ behave like a built-in one: `{"box": "wholeCategory", "listing": "byHolder", "ro
 "personalDocument"}`. All keys are optional; a missing key, or a value a reader
 doesn't know, reads as the default.
 
-- **`box`:** `perSection` (one box per top-level section, the default), `wholeCategory` (one box for the category: Acte, Garanții, Abonamente) or `insideOther` (no box: its sections live inside another).
+- **`box`:** `perSection` (one box per top-level section, the default), `wholeCategory` (one box for the category: Acte, Garanții, Abonamente) or `insideOther` (no box: its sections live inside another). A custom category's one box is the household's `boxGrouping`: readers turn an older custom `wholeCategory` whose behaviour says nothing else (beside a `home` role) into `perSection` with `boxGrouping` `grouped` when none is chosen; one that also says a `listing`, words or another part keeps it.
 - **`listing`:** what the category's page lists: `plain` (the default), `byHolder`, `byWarranty` or `byMonthlyCost`.
-- **`role`:** the part it plays for other categories: `holder` (people documents are filed under), `personalDocument`, `subscription` (ongoing contracts bills file into) or `home` (where contracts tied to an address live).
+- **`role`:** the part it plays for other categories: `holder` (people documents are filed under), `personalDocument`, `subscription` (ongoing contracts bills file into), `home` (where contracts tied to an address live) or `vehicle` (a car; from catalog 18). `home`, `vehicle` and `holder` hold sections of other categories (`mayBelongTo`).
 - **`parentPocket`:** the pocket of a parent's page its sections show in (`tenants`, `products`, `subscriptions`, `plants`).
 - **`addedOnlyUnderParent`:** its sections are only added under another section (a tenancy).
 - **`defaultGrouping`:** for a `perSection` box, whether its sections start in one box together (`grouped`, plants) or one each (`separate`, the default). The household's `boxGrouping` wins.
 - **`sectionNoun`:** what its sections are called when a box counts them: `car`, `home`, `pet`, `bike`, `plant` or `espressoMachine`. Missing or unknown, they are counted as sections.
-- **`mayBelongTo`:** a `role` whose sections its own may be filed under, or stand on their own (`home`: a subscription, a plant).
+- **`mayBelongTo`:** a `role` whose sections its own may be filed under, or stand on their own (`home`: a subscription, a plant; `home`, `vehicle` or `holder` for a custom category, its „Ține de…”). Without a `parentPocket`, they show on the parent's page in a pocket named after the category.
 - **`goesUnderTheOnlyOne`:** a new section goes under the household's only section of the `mayBelongTo` part by itself (a plant into the only home).
 - **`visit`:** how its visits read and what they are: `{"title": "Am fost la service", "checklistTitle": "Ce s-a făcut", "providerTitle": "Service-ul", "kind": "maintenance", "trade": "mechanic"}`. `kind` is a history entry's kind, `trade` a provider's. Missing, it reads as a job done: "Am făcut o lucrare", "Ce s-a făcut", "Cine a lucrat", `repair`, `other`; a missing or unknown key inside reads as that one's.
 - **`offerTitle`:** its option when adding a section, one thing rather than the category ("Mașină" for "Mașini"). Missing or empty, the category's `name`.

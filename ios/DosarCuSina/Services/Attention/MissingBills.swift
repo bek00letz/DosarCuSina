@@ -45,7 +45,7 @@ extension AttentionModel {
     }
 
     /// One note for every suggestion waiting (`DataRepairStep.isSuggestion`): how many, and what
-    /// they are about ("Ce stă într-o locuință"), never the names of what they would move, so the
+    /// they are about ("Ce ține de altă secțiune"), never the names of what they would move, so the
     /// note says nothing a locked section wouldn't. Nil with none. It opens the suggestions' page.
     public static func suggestionNote(count: Int, topics: [String]) -> AttentionNote? {
         guard count > 0 else { return nil }

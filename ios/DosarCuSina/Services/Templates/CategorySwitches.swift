@@ -1,10 +1,12 @@
 import Foundation
 
 /// The few plain questions a category of the person's own answers ("Are acte", "Are facturi
-/// și contracte", "Are revizii" and how often, one box or one per section), read from and
-/// written to the category's own data: its pockets, its behaviour, a counter field and a
-/// service blueprint. Nothing stores the switches themselves, so there is one source of truth
-/// and a custom category behaves exactly like a built-in with the same data.
+/// și contracte", "Are revizii" and how often, what its sections belong to, one box or one per
+/// section), read from and written to the category's own data: its pockets, its behaviour, a
+/// counter field and a service blueprint, and the household's choice of one box for its sections
+/// (`CategoryTemplate.chosenGrouping`, the same choice a box's menu makes). Nothing stores the
+/// switches themselves, so there is one source of truth and a custom category behaves exactly
+/// like a built-in with the same data.
 ///
 /// Each switch touches only what it owns. Pockets it doesn't own (people, money, products…),
 /// fields and blueprints the category had before stay as they are, and applying the switches
@@ -56,14 +58,6 @@ public struct CategorySwitches: Hashable, Sendable {
         }
     }
 
-    /// How the category shows on the Dosar grid.
-    public enum Boxes: Hashable, Sendable {
-        /// One box for each section: the boat, the other boat.
-        case perSection
-        /// One box for the whole category, which lists its sections.
-        case oneForAll
-    }
-
     /// Its sections keep photos and PDFs (the Acte pocket).
     public var hasDocuments: Bool
     /// Its sections keep ongoing contracts with their bills (the Abonamente pocket), and bills
@@ -71,16 +65,26 @@ public struct CategorySwitches: Hashable, Sendable {
     public var hasBills: Bool
     /// Its sections have a regular service; nil for none.
     public var service: Service?
-    public var boxes: Boxes
+    /// What its sections belong to ("Ține de…": a home, a car, a person), or nil for nothing. A
+    /// section filed under one shows on its page, in a pocket named after the category
+    /// (`CategoryBehavior.hasPocketOfItsOwn`), and goes under the household's only one by itself.
+    /// Only a part that holds sections (`CategoryBehavior.Role.holdsSections`).
+    public var belongsTo: CategoryBehavior.Role?
+    /// One box for all its sections on the Dosar grid, wherever they are filed, or one each: the
+    /// category's grouping (`CategoryTemplate.grouping`), the one choice a box's menu, the
+    /// category's page and Setări make too.
+    public var grouping: BoxGrouping
 
-    public init(hasDocuments: Bool = true, hasBills: Bool = false, service: Service? = nil, boxes: Boxes = .perSection) {
+    public init(hasDocuments: Bool = true, hasBills: Bool = false, service: Service? = nil,
+                belongsTo: CategoryBehavior.Role? = nil, grouping: BoxGrouping = .separate) {
         self.hasDocuments = hasDocuments
         self.hasBills = hasBills
         self.service = service
-        self.boxes = boxes
+        self.belongsTo = belongsTo.flatMap { $0.holdsSections ? $0 : nil }
+        self.grouping = grouping
     }
 
-    /// A sensible category with no changes: it keeps documents, one box per section.
+    /// A sensible category with no changes: it keeps documents, belongs to nothing, one box per section.
     public static let defaults = CategorySwitches()
 
     // MARK: Keys (part of the `.dosar` contract: never rename them)
@@ -103,16 +107,34 @@ public struct CategorySwitches: Hashable, Sendable {
 
     // MARK: Reading
 
-    /// The switches a category's data answers. The interval is read from the service
-    /// blueprint's own rule, so it lives in one place.
-    public init(reading definition: TemplateDefinition) {
+    /// The switches a category answers: its definition's, and the household's choice of one box
+    /// (`CategoryTemplate.grouping`). A category an earlier version made with one box of the
+    /// whole category's (`CategoryBehavior.Box.wholeCategory`, before the box became the grouping
+    /// choice; `OwnCategoryBoxesStep` turns it into that choice) answers one box too.
+    public init(reading template: CategoryTemplate) {
+        let grouping: BoxGrouping = template.behavior.box == .wholeCategory ? .grouped : template.grouping
+        self.init(reading: template.definition, grouping: grouping)
+    }
+
+    /// The switches a definition answers, with the grouping kept beside it. The interval is read
+    /// from the service blueprint's own rule, so it lives in one place.
+    public init(reading definition: TemplateDefinition, grouping: BoxGrouping) {
         hasDocuments = definition.pockets.contains(.documents)
         hasBills = definition.pockets.contains(.subscriptions)
         service = Counter.allCases.lazy.compactMap { counter -> Service? in
             guard let blueprint = definition.blueprints.first(where: { $0.key == Self.serviceBlueprintKey(counter) }) else { return nil }
             return Service(counter, every: Self.every(in: blueprint.recurrence))
         }.first
-        boxes = definition.behavior.box == .wholeCategory ? .oneForAll : .perSection
+        belongsTo = definition.behavior.mayBelongTo.flatMap { $0.holdsSections ? $0 : nil }
+        self.grouping = grouping
+    }
+
+    /// What „Ține de…” offers among `templates`: every part that holds sections (a home, a car, a
+    /// person) some category in the binder plays, in the one order (`Role.parents`), and the one
+    /// `current` says even when none plays it now. Never a category's name or key.
+    public static func belongingChoices(among templates: [CategoryTemplate], current: CategoryBehavior.Role? = nil) -> [CategoryBehavior.Role] {
+        let played = Set(templates.compactMap(\.behavior.role))
+        return CategoryBehavior.Role.parents.filter { played.contains($0) || $0 == current }
     }
 
     /// The interval a service blueprint's rule says, in its counter's unit; nil when it says none.
@@ -127,9 +149,10 @@ public struct CategorySwitches: Hashable, Sendable {
 
     // MARK: Writing
 
-    /// `definition` with these answers. Only what differs from what it answers now changes.
+    /// `definition` with these answers. Only what differs from what it answers now changes. The
+    /// grouping isn't the definition's: `TemplateStore` keeps it on the category, beside it.
     public func applied(to definition: TemplateDefinition) -> TemplateDefinition {
-        let current = CategorySwitches(reading: definition)
+        let current = CategorySwitches(reading: definition, grouping: grouping)
         var result = definition
 
         var pockets = Set(definition.pockets)
@@ -145,8 +168,11 @@ public struct CategorySwitches: Hashable, Sendable {
         }
         result.pockets = SectionPocket.ordered(pockets)
 
-        if boxes != current.boxes {
-            result.behavior.box = boxes == .oneForAll ? .wholeCategory : .perSection
+        if belongsTo != current.belongsTo {
+            // As plants: filed under a section of that part, or on its own, and under the only
+            // one by itself.
+            result.behavior.mayBelongTo = belongsTo
+            result.behavior.goesUnderTheOnlyOne = belongsTo != nil
         }
 
         if service != current.service {

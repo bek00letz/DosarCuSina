@@ -73,7 +73,7 @@ struct PocketAdditionsMenu: View {
                         } label: {
                             Label {
                                 Text(verbatim: addition.title)
-                                Text(verbatim: addition.pocket.title)
+                                if let detail = addition.menuDetail { Text(verbatim: detail) }
                             } icon: {
                                 Image(systemName: addition.systemImage)
                             }
@@ -119,13 +119,15 @@ struct PocketEmptyLine: View {
     }
 }
 
-// MARK: - Chiriași, Produse, Abonamente, Plante
+// MARK: - Chiriași, Produse, Abonamente, Plante, a category's own
 
-/// Assets filed under this one (tenants, products, subscriptions, plants), with a button that adds one.
-/// Which categories a pocket gathers is their own data (`CategoryBehavior.parentPocket`).
+/// Assets filed under this one (tenants, products, subscriptions, plants, the sections of a category
+/// of one's own that belongs here), with a button that adds one. Which categories a pocket gathers
+/// is their own data: the catalog's pocket they show in (`CategoryBehavior.parentPocket`), or, for
+/// a category's own pocket (`PagePocket.category`), that category.
 struct ChildrenPocket: View {
     let asset: Asset
-    let pocket: SectionPocket
+    let pocket: PagePocket
     let add: (PocketAddition) -> Void
 
     @Query(sort: \CategoryTemplate.homeOrder) private var templates: [CategoryTemplate]
@@ -145,8 +147,13 @@ struct ChildrenPocket: View {
     }
 
     @MainActor
-    static func contents(of asset: Asset, pocket: SectionPocket, templates: [CategoryTemplate]) -> Contents {
-        let kinds = templates.filter { $0.behavior.parentPocket == pocket }.sorted { $0.isBuiltIn && !$1.isBuiltIn }
+    static func contents(of asset: Asset, pocket: PagePocket, templates: [CategoryTemplate]) -> Contents {
+        let kinds = templates.filter { template -> Bool in
+            switch pocket {
+            case .listed(let listed): return template.behavior.parentPocket == listed
+            case .category(let key, _): return template.key == key
+            }
+        }.sorted { $0.isBuiltIn && !$1.isBuiltIn }
         let keys = Set(kinds.map(\.key))
         let children = (asset.children ?? []).filter { keys.contains($0.templateKey) }
             .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
@@ -184,9 +191,10 @@ struct ChildrenPocket: View {
 
     private var emptyText: String {
         switch pocket {
-        case .tenants: String(localized: "Niciun chiriaș. Adaugă contractul și îți spunem când se termină.", comment: "Empty Chiriași pocket.")
-        case .products: String(localized: "Niciun produs. Adaugă aragazul sau centrala și ții minte garanția.", comment: "Empty Produse pocket.")
-        case .plants: String(localized: "Nicio plantă trecută aici. Adaug-o și îți amintim de udat.", comment: "Empty Plante pocket on a home's page.")
+        case .listed(.tenants): String(localized: "Niciun chiriaș. Adaugă contractul și îți spunem când se termină.", comment: "Empty Chiriași pocket.")
+        case .listed(.products): String(localized: "Niciun produs. Adaugă aragazul sau centrala și ții minte garanția.", comment: "Empty Produse pocket.")
+        case .listed(.plants): String(localized: "Nicio plantă trecută aici. Adaug-o și îți amintim de udat.", comment: "Empty Plante pocket on a home's page.")
+        case .category(_, let name): String(localized: "Nimic din „\(name)” trecut aici.", comment: "Empty pocket of a category of one's own on its parent's page (a car's Anvelope).")
         default: String(localized: "Niciun abonament trecut aici.", comment: "Empty Abonamente pocket.")
         }
     }

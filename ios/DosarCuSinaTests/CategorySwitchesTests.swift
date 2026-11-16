@@ -86,12 +86,28 @@ struct CategorySwitchesTests {
         #expect(after.blueprints.map(\.key) == before.blueprints.map(\.key))
         #expect(after.sections == before.sections)
         #expect(after.blueprints.first?.recurrence == .metric(every: 200, unit: .engineHours, fallback: .years(1)))
-        #expect(CategorySwitches(reading: after).service == CategorySwitches.Service(.engineHours, every: 200))
+        #expect(CategorySwitches(reading: after, grouping: .separate).service == CategorySwitches.Service(.engineHours, every: 200))
     }
 
-    @Test func oneBoxForAllIsAWholeCategoryBox() {
-        #expect(definition(CategorySwitches(boxes: .oneForAll)).behavior.box == .wholeCategory)
-        #expect(definition(CategorySwitches(boxes: .perSection)).behavior.hasSectionBoxes)
+    @Test("One box for all is the grouping, never a box of the whole category's")
+    func oneBoxForAllIsTheGrouping() {
+        #expect(definition(CategorySwitches(grouping: .grouped)).behavior.hasSectionBoxes, "Its sections keep boxes of their own, grouped")
+        #expect(definition(CategorySwitches(grouping: .grouped)) == definition(CategorySwitches(grouping: .separate)), "The grouping isn't the definition's")
+    }
+
+    @Test("„Ține de…” is what plants say: may belong to a part, under the only one by itself")
+    func belongingIsMayBelongTo() {
+        for role in CategoryBehavior.Role.parents {
+            let made = definition(CategorySwitches(belongsTo: role))
+            #expect(made.behavior.mayBelongTo == role)
+            #expect(made.behavior.goesUnderTheOnlyOne)
+            #expect(made.behavior.parentPocket == nil && made.behavior.hasPocketOfItsOwn, "A pocket named after it, on the parent's page")
+            let back = CategorySwitches().applied(to: made)
+            #expect(back.behavior.mayBelongTo == nil && !back.behavior.goesUnderTheOnlyOne, "„Nimic” takes both back")
+        }
+        #expect(CategoryBehavior.Role.parents == [.home, .vehicle, .holder])
+        #expect(CategorySwitches(belongsTo: .subscription).belongsTo == nil, "Only a part that holds sections")
+        #expect(definition(.defaults).behavior.mayBelongTo == nil)
     }
 
     @Test("Every answer reads back from the data it wrote")
@@ -102,9 +118,11 @@ struct CategorySwitchesTests {
         for documents in [true, false] {
             for bills in [true, false] {
                 for service in services {
-                    for boxes in [CategorySwitches.Boxes.perSection, .oneForAll] {
-                        let switches = CategorySwitches(hasDocuments: documents, hasBills: bills, service: service, boxes: boxes)
-                        #expect(CategorySwitches(reading: definition(switches)) == switches)
+                    for belongsTo in [nil] + CategoryBehavior.Role.parents.map(Optional.some) {
+                        for grouping in BoxGrouping.allCases {
+                            let switches = CategorySwitches(hasDocuments: documents, hasBills: bills, service: service, belongsTo: belongsTo, grouping: grouping)
+                            #expect(CategorySwitches(reading: definition(switches), grouping: grouping) == switches)
+                        }
                     }
                 }
             }
@@ -117,7 +135,7 @@ struct CategorySwitchesTests {
                                        sections: [FieldSection(key: "tool", title: "Unealtă", fields: [FieldDefinition(key: "tool.serial", label: "Serie", type: .text)])],
                                        pockets: [.upcoming, .products, .keyFacts])
         for definition in BuiltInTemplates.all + [older] {
-            #expect(CategorySwitches(reading: definition).applied(to: definition) == definition, "\(definition.key)")
+            #expect(CategorySwitches(reading: definition, grouping: .separate).applied(to: definition) == definition, "\(definition.key)")
         }
     }
 
@@ -127,11 +145,12 @@ struct CategorySwitchesTests {
                                        sections: [FieldSection(key: "tool", title: "Unealtă", fields: [FieldDefinition(key: "tool.serial", label: "Serie", type: .text)])],
                                        blueprints: [ObligationBlueprint(key: "tool.check", title: "Verificare", kind: .maintenance, recurrence: .interval(.years(1), anchor: .completion))],
                                        pockets: [.upcoming, .products, .keyFacts])
-        let changed = CategorySwitches(hasDocuments: true, hasBills: true, service: CategorySwitches.Service(.kilometres), boxes: .oneForAll).applied(to: older)
+        let changed = CategorySwitches(hasDocuments: true, hasBills: true, service: CategorySwitches.Service(.kilometres), belongsTo: .vehicle, grouping: .grouped).applied(to: older)
         #expect(changed.pockets == [.upcoming, .products, .subscriptions, .documents, .keyFacts])
         #expect(changed.sections.map(\.key) == ["tool", CategorySwitches.counterSectionKey])
         #expect(changed.blueprints.map(\.key) == ["tool.check", "custom.service.kilometres"])
-        let back = CategorySwitches(reading: older).applied(to: changed)
+        #expect(changed.behavior.mayBelongTo == .vehicle && changed.behavior.role == .home)
+        let back = CategorySwitches(reading: older, grouping: .separate).applied(to: changed)
         #expect(back == older)
     }
 }
@@ -182,7 +201,7 @@ struct CustomCategoryBehaviourTests {
         let boat = try model.create(context: context)
         let category = try #require(try TemplateStore(context: context).template(forKey: boat.templateKey))
         #expect(category.isCustom)
-        #expect(CategorySwitches(reading: category.definition) == draft.switches)
+        #expect(CategorySwitches(reading: category) == draft.switches)
         #expect(boat.activeObligations.map(\.blueprintKey) == ["custom.service.engineHours"])
         let reading = try #require(boat.measurements?.first)
         #expect(reading.value == 120 && reading.unit == MeasurementUnit.engineHours.key, "The hours are a reading, like a car's kilometres")
@@ -272,7 +291,7 @@ struct CustomCategoryBehaviourTests {
 
         // "Anulează" puts the category and the deadline back as they were.
         try receipt.undo()
-        #expect(CategorySwitches(reading: boats.definition) == all)
+        #expect(CategorySwitches(reading: boats) == all)
         #expect(service.status == .active)
 
         // Off without touching deadlines, then on again: it asks to resume only what it paused.
@@ -283,7 +302,7 @@ struct CustomCategoryBehaviourTests {
         #expect(back.resuming.map(\.id) == [service.id])
         try store.editCustom(boats, name: "Bărci", symbol: "sailboat.fill", switches: all, changingDeadlines: true)
         #expect(service.status == .active)
-        #expect(CategorySwitches(reading: boats.definition) == all)
+        #expect(CategorySwitches(reading: boats) == all)
         #expect(HouseholdMutations.heroMetricValue(of: boat, template: boats.definition) == 350, "The same hours, under the same key")
     }
 
@@ -295,7 +314,7 @@ struct CustomCategoryBehaviourTests {
         let boat = try section("Barca", of: boats, values: FieldValues(), serviceKey: "custom.service.kilometres", due: "2027-05-01", context)
         let effects = try store.effects(of: CategorySwitches(service: CategorySwitches.Service(.engineHours)), on: boats)
         #expect(effects.pausing.map(\.id) == boat.activeObligations.map(\.id))
-        #expect(try store.effects(of: CategorySwitches(service: CategorySwitches.Service(.kilometres), boxes: .oneForAll), on: boats).isEmpty, "A box changes no deadline")
+        #expect(try store.effects(of: CategorySwitches(service: CategorySwitches.Service(.kilometres), belongsTo: .vehicle, grouping: .grouped), on: boats).isEmpty, "A box or a parent changes no deadline")
     }
 
     @Test("A new interval asks first, then counts from the next service; the day stays, and Anulează takes it back")
@@ -313,7 +332,7 @@ struct CustomCategoryBehaviourTests {
 
         // Left as it was: the category counts by 50 hours, this deadline still by 100.
         let kept = try store.editCustom(boats, name: "Bărci", symbol: "sailboat.fill", switches: oftener, changingDeadlines: false)
-        #expect(CategorySwitches(reading: boats.definition).service?.every == 50)
+        #expect(CategorySwitches(reading: boats).service?.every == 50)
         #expect(service.recurrence == .metric(every: 100, unit: .engineHours, fallback: .years(1)))
         try kept.undo()
 
@@ -325,7 +344,7 @@ struct CustomCategoryBehaviourTests {
 
         try receipt.undo()
         #expect(service.recurrence == .metric(every: 100, unit: .engineHours, fallback: .years(1)))
-        #expect(CategorySwitches(reading: boats.definition).service?.every == 100)
+        #expect(CategorySwitches(reading: boats).service?.every == 100)
     }
 
     @Test("A deadline turned back on takes the interval it has now")
@@ -368,14 +387,14 @@ struct CustomCategoryBehaviourTests {
         let container = try makeInMemoryContainer()
         let context = ModelContext(container)
         try TemplateStore(context: context).installBuiltIns()
-        let switches = CategorySwitches(hasDocuments: false, hasBills: true, service: CategorySwitches.Service(.engineHours), boxes: .oneForAll)
+        let switches = CategorySwitches(hasDocuments: false, hasBills: true, service: CategorySwitches.Service(.engineHours), belongsTo: .home, grouping: .grouped)
         let boats = try TemplateStore(context: context).createCustom(name: "Bărci", symbol: "sailboat.fill", switches: switches)
         let data = try DossierArchiveService(container: container, calendar: calendar).exportData(exportedAt: noon(today))
 
         let copy = try makeInMemoryContainer()
         try DossierArchiveService(container: copy, calendar: calendar).importArchive(data, mode: .replace)
         let imported = try #require(try TemplateStore(context: ModelContext(copy)).template(forKey: boats.key))
-        #expect(CategorySwitches(reading: imported.definition) == switches)
+        #expect(CategorySwitches(reading: imported) == switches)
         #expect(imported.definition == boats.definition)
     }
 }

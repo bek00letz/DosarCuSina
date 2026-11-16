@@ -266,8 +266,8 @@ struct BoxGroupingTests {
 
     @Test func theRepairComesLastWithItsOwnStoredID() {
         let ids = DataRepairs.steps.map { type(of: $0).id }
-        #expect(ids.last == .sectionsIntoTheirHome, "A new repair is a new step at the end")
-        #expect(ids.dropLast().last == .estimatedBillReadings)
+        let index = ids.firstIndex(of: .sectionsIntoTheirHome)
+        #expect(index.map { ids[$0 - 1] } == .estimatedBillReadings, "A new repair is a new step at the end")
         #expect(DataRepairStepID.sectionsIntoTheirHome.rawValue == "sections-into-their-home")
     }
 

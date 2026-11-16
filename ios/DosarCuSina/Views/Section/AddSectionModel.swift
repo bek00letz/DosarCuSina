@@ -108,18 +108,25 @@ final class AddSectionModel {
     }
 
     /// The sections the new one can be filed under when the request didn't say (the homes, for a
-    /// plant); empty when it isn't something filed under another.
+    /// plant, the cars for a category of one's own that belongs to a car); empty when it isn't
+    /// something filed under another.
     func possibleParents(in context: ModelContext) -> [Asset] {
-        guard request.parentID == nil, let template else { return [] }
-        return AssetActions.possibleParents(for: template.behavior, in: context)
+        guard request.parentID == nil, let behavior = definition?.behavior else { return [] }
+        return AssetActions.possibleParents(for: behavior, in: context)
     }
 
-    func chooseCustom(_ draft: CustomSectionDraft) {
+    /// The part the new section may belong to (a home, a car, a person), for the words of the choice.
+    var belongsTo: CategoryBehavior.Role? { definition?.behavior.mayBelongTo }
+
+    /// A category of one's own, described: like a ready-made one, a section of one that belongs to
+    /// a car goes under the household's only car by itself (`AssetActions.automaticParent`).
+    func chooseCustom(_ draft: CustomSectionDraft, in context: ModelContext? = nil) {
         template = nil
-        parentID = request.parentID
         custom = draft
         values = FieldValues()
         name = draft.name
+        let behavior = draft.definition(key: "draft").behavior
+        parentID = request.parentID ?? context.flatMap { AssetActions.automaticParent(for: behavior, in: $0)?.id }
     }
 
     /// Works out the suggested obligations from what was typed so far.

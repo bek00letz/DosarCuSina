@@ -37,36 +37,36 @@ struct SectionPageInPlaceTests {
     // MARK: Empty pockets fold
 
     @Test func emptyPocketsFoldIntoOneMenuInTheirOrderAndBaniWaitsForMoney() {
-        let filled: Set<SectionPocket> = [.history]
+        let filled: Set<PagePocket> = [.listed(.history)]
         let layout = SectionPageLayout.make(
-            pockets: [.keyFacts, .upcoming, .documents, .history, .money, .plants],
+            pockets: PagePocket.ordered(listed: [.keyFacts, .upcoming, .documents, .history, .money, .plants], categories: []),
             folds: true,
             fill: { pocket in
-                if pocket == .plants { return PocketFill.notOffered }
+                if pocket == .listed(.plants) { return PocketFill.notOffered }
                 return filled.contains(pocket) ? PocketFill.filled : PocketFill.empty
             },
             addition: { pocket in
                 switch pocket {
-                case .upcoming: PocketAddition.deadline
-                case .documents: PocketAddition.paper(besidePersonal: false)
-                case .keyFacts: PocketAddition.keyFact
+                case .listed(.upcoming): PocketAddition.deadline
+                case .listed(.documents): PocketAddition.paper(besidePersonal: false)
+                case .listed(.keyFacts): PocketAddition.keyFact
                 default: nil
                 }
             }
         )
-        #expect(layout.shown == [.history], "Only what holds something is drawn")
+        #expect(layout.shown == [.listed(.history)], "Only what holds something is drawn")
         #expect(layout.additions == [.deadline, .paper(besidePersonal: false), .keyFact], "The rest, in the pockets' own order")
-        #expect(!layout.shown.contains(.money) && !layout.additions.map(\.pocket).contains(.money), "Bani adds nothing itself: it waits for money")
-        #expect(!layout.shown.contains(.plants) && !layout.additions.map(\.pocket).contains(.plants), "A pocket not offered is neither")
+        #expect(!layout.shown.contains(.listed(.money)) && !layout.additions.map(\.pocket).contains(.listed(.money)), "Bani adds nothing itself: it waits for money")
+        #expect(!layout.shown.contains(.listed(.plants)) && !layout.additions.map(\.pocket).contains(.listed(.plants)), "A pocket not offered is neither")
 
-        let adding = SectionPageLayout.make(pockets: [.upcoming, .keyFacts], revealed: [.keyFacts], folds: true,
-                                            fill: { _ in PocketFill.empty }, addition: { $0 == .upcoming ? PocketAddition.deadline : PocketAddition.keyFact })
-        #expect(adding.shown == [.keyFacts], "A first row being added shows its pocket in its place")
+        let adding = SectionPageLayout.make(pockets: [.listed(.upcoming), .listed(.keyFacts)], revealed: [.listed(.keyFacts)], folds: true,
+                                            fill: { _ in PocketFill.empty }, addition: { $0 == .listed(.upcoming) ? PocketAddition.deadline : PocketAddition.keyFact })
+        #expect(adding.shown == [.listed(.keyFacts)], "A first row being added shows its pocket in its place")
         #expect(adding.additions == [.deadline])
 
-        let wayBack = SectionPageLayout.make(pockets: [.upcoming, .money, .plants], folds: false,
-                                             fill: { $0 == .plants ? PocketFill.notOffered : PocketFill.empty }, addition: { _ in PocketAddition.deadline })
-        #expect(wayBack.shown == [.upcoming, .money], "Switched off, every pocket shows as before")
+        let wayBack = SectionPageLayout.make(pockets: [.listed(.upcoming), .listed(.money), .listed(.plants)], folds: false,
+                                             fill: { $0 == .listed(.plants) ? PocketFill.notOffered : PocketFill.empty }, addition: { _ in PocketAddition.deadline })
+        #expect(wayBack.shown == [.listed(.upcoming), .listed(.money)], "Switched off, every pocket shows as before")
         #expect(wayBack.additions.isEmpty)
         #expect(SectionPageLayout.foldsEmptyPockets, "On, until the owner says otherwise")
     }
@@ -81,10 +81,10 @@ struct SectionPageInPlaceTests {
 
         let contents = try pocketContents(of: car, in: context)
         let layout = contents.layout(pockets: cars.definition.pockets, folds: true)
-        #expect(layout.shown == [.upcoming, .keyFacts], "Urmează and its plate under Date importante")
+        #expect(layout.shown == [.listed(.upcoming), .listed(.keyFacts)], "Urmează and its plate under Date importante")
         #expect(layout.additions == [.paper(besidePersonal: false), .visit(title: cars.behavior.visitWording.title), .person])
         #expect(layout.additions.map(\.title) == ["Adaugă un act", cars.behavior.visitWording.title, "Adaugă o persoană"])
-        #expect(!layout.additions.map(\.pocket).contains(.money), "No Bani until something cost money")
+        #expect(!layout.additions.map(\.pocket).contains(.listed(.money)), "No Bani until something cost money")
     }
 
     @Test func aNewHomeFoldsItsEmptyPocketsAndEachComesBackWhenItHoldsSomething() throws {
@@ -95,9 +95,10 @@ struct SectionPageInPlaceTests {
 
         var contents = try pocketContents(of: home, in: context)
         var layout = contents.layout(pockets: pockets, folds: true)
-        #expect(!layout.shown.contains { [.tenants, .products, .subscriptions, .documents, .history, .people, .money, .keyFacts].contains($0) },
+        #expect(!layout.shown.contains { [.tenants, .products, .subscriptions, .documents, .history, .people, .money, .keyFacts].map(PagePocket.listed).contains($0) },
                 "No empty card on a new home")
-        let offered = layout.additions.map(\.pocket)
+        let offered = layout.additions.compactMap(\.pocket.listedPocket)
+        #expect(offered.count == layout.additions.count, "No category of one's own belongs to a home here")
         #expect(offered == SectionPocket.ordered(offered), "The menu follows the pockets' order")
         for pocket in [SectionPocket.tenants, .products, .subscriptions, .documents, .history, .people, .keyFacts] {
             #expect(offered.contains(pocket), "\(pocket) is offered in the menu")
@@ -106,8 +107,8 @@ struct SectionPageInPlaceTests {
         for addition in layout.additions {
             #expect(contents.addition(addition.pocket) == addition)
         }
-        #expect(contents.addition(.money) == nil)
-        #expect(layout.additions.first { $0.pocket == .tenants } == .child(.tenants, templateKey: BuiltInTemplates.Key.tenancy))
+        #expect(contents.addition(.listed(.money)) == nil)
+        #expect(layout.additions.first { $0.pocket == .listed(.tenants) } == .child(.listed(.tenants), templateKey: BuiltInTemplates.Key.tenancy))
         let plants = try template(BuiltInTemplates.Key.plants, in: context)
         #expect(offered.contains(.plants) == !(plants.behavior.hasSectionBoxes && !plants.isOnHome), "Plants only once the household keeps them")
         let accounted = layout.shown.count + layout.additions.count + 1 /* Bani */ + (offered.contains(.plants) ? 0 : 1)
@@ -117,8 +118,8 @@ struct SectionPageInPlaceTests {
         _ = try actions(context).setCustomFacts(home, [CustomFact(label: "Număr contract apă", value: "12345")])
         contents = try pocketContents(of: home, in: context)
         layout = contents.layout(pockets: pockets, folds: true)
-        #expect(layout.shown.last == .keyFacts)
-        #expect(!layout.additions.map(\.pocket).contains(.keyFacts))
+        #expect(layout.shown.last == .listed(.keyFacts))
+        #expect(!layout.additions.map(\.pocket).contains(.listed(.keyFacts)))
     }
 
     @Test func aPersonsPageAddsTheirOwnDocument() throws {
@@ -126,7 +127,7 @@ struct SectionPageInPlaceTests {
         let people = try template(BuiltInTemplates.Key.member, in: context)
         let ana = try actions(context).create(name: "Ana", template: people, values: FieldValues())
         let contents = try pocketContents(of: ana, in: context)
-        #expect(contents.addition(.documents) == .personalDocument, "A person adds one of their own, photo first")
+        #expect(contents.addition(.listed(.documents)) == .personalDocument, "A person adds one of their own, photo first")
         #expect(PocketAddition.paper(besidePersonal: true).title != PocketAddition.personalDocument.title, "Beside it, a paper is named apart")
     }
 
@@ -148,7 +149,7 @@ struct SectionPageInPlaceTests {
         #expect(invoice.asset?.id == car.id, "Filed under the car, as before: nothing stored changes")
 
         #expect(SectionPapers.listed(car).map(\.id) == [policy.id], "The invoice is the visit's: it opens from Istoric")
-        #expect(try pocketContents(of: car, in: context).fill(.documents) == .filled)
+        #expect(try pocketContents(of: car, in: context).fill(.listed(.documents)) == .filled)
 
         // A paper valid until a day filed with a record (a policy renewed with "Am rezolvat") stays in Acte too.
         invoice.validUntil = CalendarDay("2027-06-01")
@@ -162,8 +163,8 @@ struct SectionPageInPlaceTests {
             calendar: calendar
         )
         #expect(SectionPapers.listed(other).isEmpty && SectionPapers.archived(other).isEmpty)
-        #expect(try pocketContents(of: other, in: context).fill(.documents) == .empty)
-        #expect(try pocketContents(of: other, in: context).fill(.history) == .filled)
+        #expect(try pocketContents(of: other, in: context).fill(.listed(.documents)) == .empty)
+        #expect(try pocketContents(of: other, in: context).fill(.listed(.history)) == .filled)
     }
 
     // MARK: Adding a car doesn't stop on dates

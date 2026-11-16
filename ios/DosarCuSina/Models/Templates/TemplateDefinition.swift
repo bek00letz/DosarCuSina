@@ -81,7 +81,7 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
     }
 
     /// The part a category plays for other categories.
-    public enum Role: String, Codable, Sendable {
+    public enum Role: String, Codable, Sendable, CaseIterable {
         /// A person things are filed under: their personal documents (a household member).
         case holder
         /// A personal document of a holder: an identity card, a passport.
@@ -90,6 +90,16 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
         case subscription
         /// A place the ongoing contracts tied to an address live under (a home).
         case home
+        /// A vehicle the household keeps (a car). Catalog 18.
+        case vehicle
+
+        /// The parts another category's sections can say they belong to ("Ține de…": a home, a
+        /// car, a person), in the order a category of one's own offers them. Which of them a
+        /// binder offers is what its categories play (`CategorySwitches.belongingChoices`).
+        public static let parents: [Role] = [.home, .vehicle, .holder]
+
+        /// Whether sections of other categories can be filed under a section that plays it.
+        public var holdsSections: Bool { Self.parents.contains(self) }
     }
 
     public var box: Box
@@ -106,7 +116,10 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
     public var sectionNoun: SectionNoun?
     /// Its sections may be filed under a section of the category that plays this part, or stand
     /// on their own: a subscription under a home or a phone plan alone, a plant on a home's sill
-    /// or on its own. "Mută la…" offers the sections that play it, and standing on its own.
+    /// or on its own, a category of one's own under a car ("Ține de…"). "Mută la…" offers the
+    /// sections that play it, and standing on its own. On the parent's page they show in the
+    /// catalog's pocket (`parentPocket`), else in a pocket of their own named after the category
+    /// (`hasPocketOfItsOwn`).
     public var mayBelongTo: Role?
     /// A new section goes under the household's only section of the `mayBelongTo` part by itself
     /// (the only home); with none or several it stands on its own until the person moves it.
@@ -143,6 +156,11 @@ public struct CategoryBehavior: Hashable, Sendable, Codable {
 
     /// Whether its sections get boxes of their own on the Dosar grid.
     public var hasSectionBoxes: Bool { box == .perSection }
+
+    /// Whether its sections, filed under a section of the part they may belong to, show on that
+    /// section's page in a pocket named after the category (`PagePocket.category`) rather than in
+    /// one of the catalog's (`parentPocket`): a category of one's own that says "Ține de…".
+    public var hasPocketOfItsOwn: Bool { mayBelongTo != nil && parentPocket == nil }
 
     /// Whether the person can choose between one box per section and one box for them all: only
     /// a category whose sections have boxes of their own. A category with one box (Acte) or none
@@ -261,7 +279,7 @@ public struct TemplateDefinition: Hashable, Sendable, Codable, Identifiable {
 
     /// Revision of the built-in catalog. Bump it whenever a built-in definition
     /// changes so installed copies are upgraded (preferences are kept).
-    public static let builtInCatalogVersion = 17
+    public static let builtInCatalogVersion = 18
 
     public static let customKeyPrefix = "custom."
 

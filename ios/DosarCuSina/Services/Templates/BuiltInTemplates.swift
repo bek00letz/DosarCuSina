@@ -148,7 +148,7 @@ public enum BuiltInTemplates {
             ],
             components: BuiltInComponents.vehicle,
             pockets: [.upcoming, .documents, .history, .people, .money, .keyFacts],
-            behavior: CategoryBehavior(sectionNoun: .car, visit: Visits.service,
+            behavior: CategoryBehavior(role: .vehicle, sectionNoun: .car, visit: Visits.service,
                                        offerTitle: String(localized: "Mașină", comment: "Add-section option."), shortlistOrder: 1)
         )
     }

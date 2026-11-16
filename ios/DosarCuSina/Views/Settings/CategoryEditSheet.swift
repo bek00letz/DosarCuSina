@@ -14,6 +14,8 @@ struct CategoryEditSheet: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Query private var assets: [Asset]
+    @State private var layout = BinderLayoutStore.shared
     @State private var draft: CustomSectionDraft
     private let original: CustomSectionDraft
     @State private var reveals = false
@@ -27,7 +29,7 @@ struct CategoryEditSheet: View {
         var draft = CustomSectionDraft()
         draft.name = template.name
         draft.symbol = template.symbol
-        draft.switches = CategorySwitches(reading: template.definition)
+        draft.switches = CategorySwitches(reading: template)
         self.original = draft
         _draft = State(initialValue: draft)
     }
@@ -96,8 +98,14 @@ struct CategoryEditSheet: View {
 
     private func save(changingDeadlines: Bool) {
         do {
+            let wasGrouped = template.groupsSections
+            let members = BinderLayout.sectionBoxes(of: template.key, assets: assets.map(BinderLayout.AssetInfo.init))
             let receipt = try TemplateStore(context: context).editCustom(template, name: trimmedName, symbol: draft.symbol,
                                                                           switches: draft.switches, changingDeadlines: changingDeadlines)
+            // One box or one each, chosen here as from a box's menu: this phone's order is kept around it.
+            if template.groupsSections != wasGrouped {
+                layout.keepOrder(of: template.key, members: members, grouped: template.groupsSections)
+            }
             dismiss()
             onDone(.undo("Am schimbat „\(trimmedName)”.", receipt: receipt))
         } catch {

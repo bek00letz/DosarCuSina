@@ -173,6 +173,7 @@ struct CustomSectionStep: View {
     @Bindable var model: AddSectionModel
     let next: () -> Void
     @State private var reveals = false
+    @Environment(\.modelContext) private var context
 
     /// The first version's step chose pockets one by one. Off: a category of one's own
     /// answers a few plain questions instead (`CategorySwitches`, `CustomCategoryForm`).
@@ -207,7 +208,7 @@ struct CustomSectionStep: View {
                     reveals = true
                     return
                 }
-                model.chooseCustom(custom)
+                model.chooseCustom(custom, in: context)
                 next()
             }
         }
@@ -315,18 +316,19 @@ private struct EssentialsStep: View {
         }
     }
 
-    /// The home a plant (or a subscription) stands in, from the sections of the part its category
-    /// may belong to (`CategoryBehavior.mayBelongTo`); the only one is chosen already for a plant.
-    /// "Unde stă" stays the room's field.
+    /// The section it is filed under, from the sections of the part its category may belong to
+    /// (`CategoryBehavior.mayBelongTo`): the home a plant or a subscription stands in, the car of a
+    /// category of one's own that belongs to a car; the only one is chosen already when the
+    /// category says so. In the part's words (`BelongingWording`). "Unde stă" stays a plant's room.
     @ViewBuilder
     private var placePicker: some View {
         let places = model.possibleParents(in: context)
-        if !places.isEmpty {
+        if !places.isEmpty, let role = model.belongsTo {
             DSChoiceField(
-                "Locuința",
+                LocalizedStringKey(BelongingWording.fieldTitle(role)),
                 selection: Binding(get: { model.parentID }, set: { model.parentID = $0 }),
                 options: places.map(\.id),
-                footnote: "Apare și pe pagina locuinței. Poți schimba oricând, cu „Mută la…”."
+                footnote: LocalizedStringKey(BelongingWording.fieldFootnote(role))
             ) { id in places.first { $0.id == id }?.name ?? "" }
         }
     }

@@ -381,10 +381,12 @@ struct ChildrenListScreen: View {
     let asset: Asset
     let templateKey: String
     @Environment(ShellRouter.self) private var router
+    @Query private var templates: [CategoryTemplate]
 
     var body: some View {
         let children = (asset.children ?? []).filter { $0.templateKey == templateKey }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
-        let definition = BuiltInTemplates.definition(for: templateKey)
+        // The category's own definition, a category of one's own's too.
+        let definition = templates.first { $0.key == templateKey }?.definition
         List {
             ForEach(children) { child in
                 NavigationLink(value: AppRoute.asset(child.id)) {
