@@ -257,6 +257,14 @@ struct CaptureKindProfile: Sendable {
         return (templateKey, blueprintKey)
     }
 
+    /// Whether a photo of some kind of document sets this deadline of this category (an ITP
+    /// report the car's ITP, a policy the deadline of its cover): what "Adaugă o secțiune" says
+    /// a deadline left for later can come from (`AddSectionForm.laterNote(for:)`).
+    static func photoSetsDeadline(_ blueprintKey: String, inCategory templateKey: String) -> Bool {
+        if coverDeadlines.values.contains(where: { $0.templateKey == templateKey && $0.blueprintKey == blueprintKey }) { return true }
+        return all.contains { $0.templateKey == templateKey && $0.blueprintKey == blueprintKey }
+    }
+
     /// The category it is filed in, its cover taken into account.
     func filedTemplateKey(cover: String?) -> String? {
         deadline(cover: cover)?.templateKey ?? templateKey

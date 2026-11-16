@@ -2,7 +2,9 @@ import SwiftUI
 import SwiftData
 
 /// "Adaugă o secțiune": pick a ready-made category or describe one of your own,
-/// fill in only the essentials, then choose the obligations to start with.
+/// fill in only the essentials, then choose the obligations to start with. A shaped screen:
+/// what it asks and says for a category is `AddSectionForm`'s, from what the category
+/// declares, and every word is `AddSectionWording`'s (`docs/COPY_MATRIX.md`).
 struct AddSectionFlow: View {
     let request: AddSectionRequest
     /// Called with the new asset after it is saved.
@@ -125,21 +127,21 @@ private struct CatalogStep: View {
                 Section {
                     ForEach(offers.shortlist) { template in row(template) }
                 } header: {
-                    Text("Cele mai des folosite", comment: "Header of the main ready-made sections.")
+                    Text(verbatim: AddSectionWording.shortlistHeader)
                 }
             }
             if !offers.others.isEmpty {
                 Section {
                     ForEach(offers.others) { template in row(template) }
                 } header: {
-                    Text("Alte categorii", comment: "Header of the other ready-made categories a new section can be of.")
+                    Text(verbatim: AddSectionWording.othersHeader)
                 }
             }
             Section {
                 Button(action: custom) {
                     DSListRow(
-                        title: Text("Altceva…", comment: "Creates a section of the person's own."),
-                        subtitle: Text("Îi dai tu un nume și alegi ce ține minte.", comment: "Explains the custom section option."),
+                        title: Text(verbatim: AddSectionWording.customOption),
+                        subtitle: Text(verbatim: AddSectionWording.customOptionHint),
                         systemImage: "square.and.pencil",
                         showsChevron: true
                     ) { EmptyView() }
@@ -147,17 +149,18 @@ private struct CatalogStep: View {
                 .buttonStyle(.plain)
             }
         }
-        .navigationTitle(Text("Ce adaugi?", comment: "Title of the add-section catalog."))
+        .navigationTitle(Text(verbatim: AddSectionWording.catalogTitle))
         .navigationBarTitleDisplayMode(.inline)
     }
 
     private func row(_ template: CategoryTemplate) -> some View {
-        Button {
+        let option = AddSectionForm.Option(name: template.name, summary: template.summary, behavior: template.behavior)
+        return Button {
             choose(template)
         } label: {
             DSListRow(
-                title: Text(verbatim: SectionOffers.title(for: template)),
-                subtitle: template.summary.map { Text(verbatim: $0) },
+                title: Text(verbatim: option.title),
+                subtitle: option.summary.map { Text(verbatim: $0) },
                 systemImage: template.symbol,
                 tint: template.tintColor,
                 showsChevron: true
@@ -200,10 +203,10 @@ struct CustomSectionStep: View {
         .scrollDismissesKeyboard(.interactively)
         .background(DS.Palette.background)
         .environment(\.dsRevealsValidation, reveals)
-        .navigationTitle(Text("Categorie nouă", comment: "Title of the step that describes a category of one's own."))
+        .navigationTitle(Text(verbatim: AddSectionWording.customTitle))
         .navigationBarTitleDisplayMode(.inline)
         .dsPinnedAction {
-            DSPrimaryButton("Continuă") {
+            DSPrimaryButton(verbatim: AddSectionWording.next) {
                 guard let custom = model.custom, custom.isComplete else {
                     reveals = true
                     return
@@ -217,18 +220,19 @@ struct CustomSectionStep: View {
     /// The first version's step, not shown (`offersPocketList`).
     private var pocketList: some View {
             VStack(alignment: .leading, spacing: DS.Space.xl) {
-                DSTextField("Cum se numește", text: draft.name, prompt: "Barca, Rulota, Pianul", isRequired: true)
+                DSTextField(LocalizedStringKey(AddSectionWording.customName), text: draft.name,
+                            prompt: LocalizedStringKey(AddSectionWording.customNamePrompt), isRequired: true)
                 CustomSymbolPicker(symbol: draft.symbol)
 
                 VStack(alignment: .leading, spacing: DS.Space.xs) {
-                    DSSectionHeader("Ce ține minte")
+                    DSSectionHeader(LocalizedStringKey(AddSectionWording.customKeeps))
                     DSCard {
                         VStack(spacing: 0) {
                             ForEach(Array(CustomSectionDraft.offeredPockets.enumerated()), id: \.element) { index, pocket in
                                 if index > 0 { DSRowSeparator() }
                                 DSCheckRow(
                                     title: Text(verbatim: pocket.title),
-                                    subtitle: Text(verbatim: CustomSectionDraft.explanation(for: pocket)),
+                                    subtitle: Text(verbatim: AddSectionWording.pocketExplanation(pocket)),
                                     isOn: Binding(
                                         get: { draft.wrappedValue.pockets.contains(pocket) },
                                         set: { isOn in
@@ -256,31 +260,32 @@ private struct EssentialsStep: View {
     @Query private var templates: [CategoryTemplate]
 
     var body: some View {
+        let form = model.form
         let fields = model.essentialFields
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.l) {
-                if let definition = model.definition {
+                if let definition = model.definition, let form {
                     HStack(spacing: DS.Space.s) {
                         DSIconWell(systemImage: definition.symbol, tint: definition.tint.color)
-                        Text(verbatim: definition.name).dsFont(.headline)
+                        Text(verbatim: form.header).dsFont(.headline)
                     }
                 }
                 DSTextField(
-                    "Nume",
+                    LocalizedStringKey(AddSectionWording.name),
                     text: $model.name,
                     prompt: LocalizedStringKey(model.definition.map { AddSectionModel.suggestedName(values: model.values, definition: $0) } ?? ""),
-                    footnote: "Cum îi spui acasă: „Golful”, „Apartamentul”, „PawPaw”."
+                    footnote: form.map { LocalizedStringKey($0.nameFootnote) }
                 )
                 ForEach(fields) { field in
                     FieldEditor(field: field, values: $model.values,
                                 urgencyRule: DateUrgency.rule(forField: field.key, values: model.values, definition: model.definition))
                 }
-                if model.template?.behavior.role == .personalDocument, model.request.parentID == nil {
+                if form?.asksHolder == true, model.request.parentID == nil {
                     holderPicker
                 }
                 placePicker
-                if fields.isEmpty {
-                    Text("Restul detaliilor le completezi oricând din pagina secțiunii, cu Editează.", comment: "Footnote when a category has no essential fields.")
+                if let detailsLater = form?.detailsLater {
+                    Text(verbatim: detailsLater)
                         .dsFont(.footnote)
                 }
             }
@@ -291,10 +296,10 @@ private struct EssentialsStep: View {
         .scrollDismissesKeyboard(.interactively)
         .background(DS.Palette.background)
         .environment(\.dsRevealsValidation, reveals)
-        .navigationTitle(Text("Ce trebuie știut", comment: "Title of the essentials step."))
+        .navigationTitle(Text(verbatim: AddSectionWording.essentialsTitle))
         .navigationBarTitleDisplayMode(.inline)
         .dsPinnedAction {
-            DSPrimaryButton("Continuă") {
+            DSPrimaryButton(verbatim: form?.essentialsAction(offersDeadlines: model.offersDeadlines(context: context)) ?? AddSectionWording.next) {
                 guard FieldValuesCheck.canSave(model.values, fields: fields) else { reveals = true; return }
                 next()
             }
@@ -308,10 +313,10 @@ private struct EssentialsStep: View {
         let members = assets.filter { holderKeys.contains($0.templateKey) }
         if !members.isEmpty {
             DSChoiceField(
-                "Al cui este",
+                LocalizedStringKey(AddSectionWording.holderTitle),
                 selection: Binding(get: { model.parentID }, set: { model.parentID = $0 }),
                 options: members.map(\.id),
-                footnote: "Actele stau grupate pe persoane."
+                footnote: LocalizedStringKey(AddSectionWording.holderFootnote)
             ) { id in members.first { $0.id == id }?.name ?? "" }
         }
     }
@@ -345,7 +350,7 @@ private struct ObligationsStep: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.l) {
-                Text("Alege ce vrei să-ți amintim. Datele le poți schimba oricând.", comment: "Intro of the obligations step.")
+                Text(verbatim: AddSectionWording.deadlinesIntro)
                     .dsFont(.body)
                     .foregroundStyle(DS.Palette.secondaryLabel)
                 DSCard {
@@ -354,16 +359,13 @@ private struct ObligationsStep: View {
                             if plan.id != model.planned.first?.id { DSRowSeparator() }
                             DSCheckRow(
                                 title: Text(verbatim: plan.blueprint.title),
-                                subtitle: Text(verbatim: [
-                                    ReminderWording.sentence(plan.blueprint.reminders(for: model.values)),
-                                    plan.blueprint.note,
-                                ].compactMap { $0 }.joined(separator: "\n")),
+                                subtitle: Text(verbatim: AddSectionForm.deadlineSubtitle(plan.blueprint, values: model.values)),
                                 isOn: $plan.isSelected
                             )
                             .padding(.vertical, DS.Space.xs)
                             if plan.isSelected {
                                 DSDateField(
-                                    "Următoarea dată",
+                                    LocalizedStringKey(AddSectionWording.nextDate),
                                     date: Binding(
                                         get: { plan.firstDue?.noonDate(in: calendar) },
                                         set: { plan.firstDue = $0.map { CalendarDay($0, calendar: calendar) } }
@@ -378,9 +380,8 @@ private struct ObligationsStep: View {
                     .dsAnimation(value: model.planned.map(\.isSelected))
                 }
                 // Those whose date must be asked start unticked (`PlannedObligation.startsSelected`).
-                if model.offersDatesForLater {
-                    Text("Pe cele care cer o dată le poți adăuga și mai târziu, din pagina secțiunii sau dintr-o poză a actului.",
-                         comment: "Under the deadlines offered when adding a section: the unticked ones can be added later.")
+                if let laterNote = model.laterNote {
+                    Text(verbatim: laterNote)
                         .dsFont(.footnote)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -391,10 +392,10 @@ private struct ObligationsStep: View {
         }
         .background(DS.Palette.background)
         .environment(\.dsRevealsValidation, reveals)
-        .navigationTitle(Text("Termene", comment: "Header of the obligations list."))
+        .navigationTitle(Text(verbatim: AddSectionWording.deadlinesTitle))
         .navigationBarTitleDisplayMode(.inline)
         .dsPinnedAction {
-            DSPrimaryButton("Adaugă în dosar") {
+            DSPrimaryButton(verbatim: AddSectionWording.add) {
                 guard model.missingDates.isEmpty else { reveals = true; return }
                 finish()
             }

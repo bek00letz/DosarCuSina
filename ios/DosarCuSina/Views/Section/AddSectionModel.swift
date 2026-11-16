@@ -2,60 +2,6 @@ import Foundation
 import SwiftData
 import Observation
 
-/// A category of its own, described in the "Altceva…" step and created only
-/// when the person finishes, so cancelling never leaves an empty category behind.
-struct CustomSectionDraft: Equatable {
-    var name = ""
-    var symbol = CustomSectionDraft.symbols[0]
-    /// What it keeps, as a few plain questions (`CategorySwitches`).
-    var switches = CategorySwitches.defaults
-    /// The first version's free choice of pockets. Kept, not shown, as a way back until
-    /// the switches are proven (`CustomSectionStep.offersPocketList`).
-    var pockets: Set<SectionPocket> = Set(SectionPocket.standard)
-
-    /// Whether it can be saved: it has a name, and a service says how often.
-    var isComplete: Bool {
-        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && (switches.service?.every ?? 1) > 0
-    }
-
-    /// The colour every category of one's own gets.
-    static let tint: TemplateTint = .gray
-
-    /// The category it describes, as it would be saved.
-    func definition(key: String) -> TemplateDefinition {
-        if CustomSectionStep.offersPocketList {
-            return TemplateDefinition(key: key, name: name, symbol: symbol, tint: Self.tint, sections: [], pockets: Array(pockets), behavior: .standard)
-        }
-        return switches.definition(key: key, name: name, symbol: symbol, tint: Self.tint)
-    }
-
-    /// Symbols offered for a section of one's own.
-    static let symbols = [
-        "square.grid.2x2.fill", "bicycle", "sailboat.fill", "tent.fill", "camera.fill", "guitars.fill",
-        "laptopcomputer", "tv.fill", "washer.fill", "refrigerator.fill", "leaf.fill", "tree.fill",
-        "building.2.fill", "briefcase.fill", "graduationcap.fill", "cross.case.fill", "figure.child", "dumbbell.fill",
-        "gamecontroller.fill", "key.fill", "wrench.and.screwdriver.fill", "shippingbox.fill", "gift.fill", "star.fill",
-    ]
-
-    /// Pockets a section of one's own can have, each with a one-line explanation.
-    static let offeredPockets: [SectionPocket] = [.upcoming, .documents, .history, .people, .money, .keyFacts, .products, .subscriptions]
-
-    static func explanation(for pocket: SectionPocket) -> String {
-        switch pocket {
-        case .upcoming: String(localized: "Termene, cu amintiri din timp.", comment: "Pocket explanation.")
-        case .tenants: String(localized: "Contractele chiriașilor și chiria.", comment: "Pocket explanation.")
-        case .products: String(localized: "Lucruri cumpărate, cu garanția lor.", comment: "Pocket explanation.")
-        case .subscriptions: String(localized: "Ce plătești lunar sau anual.", comment: "Pocket explanation.")
-        case .plants: String(localized: "Plantele din casă, cu udatul lor.", comment: "Pocket explanation.")
-        case .documents: String(localized: "Poze și PDF-uri cu actele și facturile.", comment: "Pocket explanation.")
-        case .history: String(localized: "Ce s-a făcut, când și cât a costat.", comment: "Pocket explanation.")
-        case .people: String(localized: "Cine are grijă de el, cu telefonul lui.", comment: "Pocket explanation.")
-        case .money: String(localized: "Cât ai cheltuit pe el.", comment: "Pocket explanation.")
-        case .keyFacts: String(localized: "Coduri, numere și tot ce cauți des.", comment: "Pocket explanation.")
-        }
-    }
-}
-
 /// The add-a-section flow's state: which category, its essential fields, and the
 /// obligations to start with. Creating goes through `AssetActions` in one save.
 @MainActor
@@ -77,12 +23,15 @@ final class AddSectionModel {
     var definition: TemplateDefinition? {
         if let template { return template.definition }
         guard let custom else { return nil }
-        return custom.definition(key: "draft")
+        return custom.definition(key: CustomSectionDraft.draftKey)
     }
+
+    /// What the flow asks and says for the chosen category (`AddSectionForm`).
+    var form: AddSectionForm? { definition.map(AddSectionForm.init) }
 
     /// The fields asked for when adding: only those marked essential.
     var essentialFields: [FieldDefinition] {
-        definition?.allFields.filter(\.isEssential) ?? []
+        form?.essentialFields ?? []
     }
 
     var hasChanges: Bool {
@@ -116,7 +65,7 @@ final class AddSectionModel {
     }
 
     /// The part the new section may belong to (a home, a car, a person), for the words of the choice.
-    var belongsTo: CategoryBehavior.Role? { definition?.behavior.mayBelongTo }
+    var belongsTo: CategoryBehavior.Role? { form?.belongsTo }
 
     /// A category of one's own, described: like a ready-made one, a section of one that belongs to
     /// a car goes under the household's only car by itself (`AssetActions.automaticParent`).
@@ -125,7 +74,7 @@ final class AddSectionModel {
         custom = draft
         values = FieldValues()
         name = draft.name
-        let behavior = draft.definition(key: "draft").behavior
+        let behavior = draft.definition(key: CustomSectionDraft.draftKey).behavior
         parentID = request.parentID ?? context.flatMap { AssetActions.automaticParent(for: behavior, in: $0)?.id }
     }
 
@@ -144,10 +93,17 @@ final class AddSectionModel {
         }
     }
 
-    /// Whether some deadline on offer asks for its first date, so the step says those can
-    /// be added later, or from a photo of the paper.
-    var offersDatesForLater: Bool {
-        planned.contains(where: \.asksFirstDate)
+    /// Whether the essentials step leads to deadlines to choose from: some deadline of the
+    /// category applies to what was typed so far. Without one, its button adds the section.
+    func offersDeadlines(context: ModelContext) -> Bool {
+        guard let definition else { return false }
+        return !AssetActions(context: context).plannedObligations(for: definition, values: values).isEmpty
+    }
+
+    /// Said under the deadlines on offer when some ask for their first date: those can be
+    /// added later, or from a photo of the paper (`AddSectionForm.laterNote(for:)`).
+    var laterNote: String? {
+        form?.laterNote(for: planned)
     }
 
     /// Selected obligations that still need a date from the person.
@@ -221,6 +177,6 @@ enum AddSectionError: LocalizedError {
     case noCategory
 
     var errorDescription: String? {
-        String(localized: "Alege mai întâi ce vrei să adaugi.", comment: "Error when finishing the add flow without a category.")
+        AddSectionWording.noCategory
     }
 }
