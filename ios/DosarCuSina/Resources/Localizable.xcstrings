@@ -275,6 +275,9 @@
     "%@ nu s-a citit" : {
       "comment" : "Am rezolvat: the paper's photo couldn't be read. The argument is the paper's name, e.g. „Raportul ITP”."
     },
+    "%@ nu s-au citit" : {
+      "comment" : "Am rezolvat: the photo of papers named by a plural noun couldn't be read, e.g. „Rezultatele”."
+    },
     "%@ pare greșit: %@, pe %@. Îl scot din citiri?" : {
       "comment" : "Repair: a reading ten times off its neighbours.",
       "localizations" : {
@@ -1866,7 +1869,7 @@
 
     },
     "Apartamentul" : {
-      "comment" : "Example name of a new home, in „Cum îi spui acasă, de exemplu …”."
+      "comment" : "Example name of a new home, in „Cum vrei să apară în dosar, de exemplu …”."
     },
     "Apasă „Editează”, sus." : {
 
@@ -2111,7 +2114,7 @@
 
     },
     "Bicicleta de oraș" : {
-      "comment" : "Example name of a new bike, in „Cum îi spui acasă, de exemplu …”."
+      "comment" : "Example name of a new bike, in „Cum vrei să apară în dosar, de exemplu …”."
     },
     "Biciclete" : {
       "comment" : "Category name"
@@ -2162,7 +2165,7 @@
       "comment" : "Category summary"
     },
     "Buletinul" : {
-      "comment" : "Example name of a new personal document, in „Cum îi spui acasă, de exemplu …”."
+      "comment" : "Example name of a new personal document, in „Cum vrei să apară în dosar, de exemplu …”."
     },
     "Buletinul de analize, de la laborator." : {
       "comment" : "Am rezolvat: which paper, for yearly tests."
@@ -3119,9 +3122,6 @@
     "Cum folosește %@ ce trimiți" : {
       "comment" : "Link to the AI provider's data-use terms."
     },
-    "Cum îi spui acasă, de exemplu „%@”." : {
-      "comment" : "Add form, under a new section's name: an example of a name that fits its category, such as „Golful” for a car."
-    },
     "Cum s-a citit indexul" : {
 
     },
@@ -3133,6 +3133,9 @@
     },
     "Cum se repetă și când te anunț" : {
 
+    },
+    "Cum vrei să apară în dosar, de exemplu „%@”." : {
+      "comment" : "Add form, under a new section's name: an example of a name that fits its category, such as „Golful” for a car."
     },
     "Cum vrei să apară în dosar." : {
       "comment" : "Add form, under a new section's name, for a category with no example name."
@@ -3829,7 +3832,7 @@
       "comment" : "Category name"
     },
     "Espressorul din bucătărie" : {
-      "comment" : "Example name of a new espresso machine, in „Cum îi spui acasă, de exemplu …”."
+      "comment" : "Example name of a new espresso machine, in „Cum vrei să apară în dosar, de exemplu …”."
     },
     "Ești conectat la alt cont iCloud" : {
       "comment" : "iCloud sync status: the phone is signed into another account than the binder synced with."
@@ -4088,7 +4091,7 @@
 
     },
     "Ficusul din sufragerie" : {
-      "comment" : "Example name of a new plant, in „Cum îi spui acasă, de exemplu …”."
+      "comment" : "Example name of a new plant, in „Cum vrei să apară în dosar, de exemplu …”."
     },
     "Fiecare apare și pe pagina celei de care ține și se adaugă și de acolo." : {
       "comment" : "Explains „Ține de…”: each section shows on the page of the home, car or person it belongs to, and can be added from there."
@@ -4313,7 +4316,7 @@
       "comment" : "Box status when a category box holds nothing yet."
     },
     "Golful" : {
-      "comment" : "Example name of a new car, in „Cum îi spui acasă, de exemplu …”."
+      "comment" : "Example name of a new car, in „Cum vrei să apară în dosar, de exemplu …”."
     },
     "GPL" : {
 
@@ -4701,7 +4704,7 @@
 
     },
     "Internetul" : {
-      "comment" : "Example name of a new subscription, in „Cum îi spui acasă, de exemplu …”."
+      "comment" : "Example name of a new subscription, in „Cum vrei să apară în dosar, de exemplu …”."
     },
     "Întoarce pagina un sfert de tură spre dreapta." : {
       "comment" : "VoiceOver hint of the turn button."
@@ -5238,7 +5241,7 @@
       "comment" : "Reminder title, due tomorrow"
     },
     "Mama" : {
-      "comment" : "Example name of a new person documents are filed under, in „Cum îi spui acasă, de exemplu …”."
+      "comment" : "Example name of a new person documents are filed under, in „Cum vrei să apară în dosar, de exemplu …”."
     },
     "Manole Corina" : {
 
@@ -6262,7 +6265,7 @@
       "comment" : "Undo pressed for a step that was already taken back."
     },
     "PawPaw" : {
-      "comment" : "Example name of a new pet, in „Cum îi spui acasă, de exemplu …”."
+      "comment" : "Example name of a new pet, in „Cum vrei să apară în dosar, de exemplu …”."
     },
     "PDF-urile rămân neatinse. Pozele vechi se păstrează, doar puțin mai mici." : {
       "comment" : "Footer of the storage section."

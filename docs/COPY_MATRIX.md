@@ -473,7 +473,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 
 | Where | Words |
 | :--- | :--- |
-| Declarația unică pentru chirii (`rentalDeclaration`) | Am rezolvat / Am rezolvat… — Când; Cât ai plătit; Recipisa (Opțional. O păstrez în dosar.) — Fotografiază recipisa: Dovada că ai depus declarația, din Spațiul Privat Virtual. [Citesc recipisa… / Am citit recipisa / Recipisa nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
+| Declarația unică pentru chirii (`rentalDeclaration`) | Am rezolvat / Am rezolvat… — Când; Cât ai plătit; Recipisa (Opțional. O păstrez în dosar.) — Fotografiază recipisa: Dovada că ai depus declarația, din Spațiul Privat Virtual. [Citesc recipisa… / Am citit recipisa / Recipisa nu s-a citit] |
 
 ### Mașini (`vehicle`)
 
@@ -482,8 +482,8 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | ITP (`itp`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Raportul ITP (Opțional. Din el iau data următoare.) — Fotografiază raportul ITP: Cel primit la stație, cu data următoarei inspecții. [Citesc raportul ITP… / Am citit raportul ITP / Raportul ITP nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.] |
 | RCA (`policy`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Polița nouă (Opțional. Din ea iau data următoare.) — Fotografiază polița nouă: Din ea iau numărul, asigurătorul și data. [Citesc polița nouă… / Am citit polița nouă / Polița nouă nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
 | Rovinietă (`vignette`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Rovinieta (Opțional. Din ea iau data următoare.) — Fotografiază rovinieta: Chitanța sau confirmarea primită pe e-mail. [Citesc rovinieta… / Am citit rovinieta / Rovinieta nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
-| Revizie periodică (`vehicleService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service-ul care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.]; Kilometraj |
-| Schimb de anvelope (`tyreChange`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la vulcanizare. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.]; Kilometraj |
+| Revizie periodică (`vehicleService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service-ul care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometraj |
+| Schimb de anvelope (`tyreChange`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la vulcanizare. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometraj |
 | CASCO (`policy`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Polița nouă (Opțional. Din ea iau data următoare.) — Fotografiază polița nouă: Din ea iau numărul, asigurătorul și data. [Citesc polița nouă… / Am citit polița nouă / Polița nouă nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
 | Trusă medicală și stingător (`safetyKit`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Expiră pe — De aici încep să-ți amintesc din nou. |
 
@@ -496,8 +496,8 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Revizie instalație de gaze (`gasCheck`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Procesul-verbal (Opțional. Din el iau data următoare.) — Fotografiază procesul-verbal: De la firma autorizată care a verificat instalația. [Citesc procesul-verbal… / Am citit procesul-verbal / Procesul-verbal nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.] |
 | Asigurare obligatorie (PAD) (`policy`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Polița nouă (Opțional. Din ea iau data următoare.) — Fotografiază polița nouă: Din ea iau numărul, asigurătorul și data. [Citesc polița nouă… / Am citit polița nouă / Polița nouă nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
 | Asigurare facultativă (`policy`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Polița nouă (Opțional. Din ea iau data următoare.) — Fotografiază polița nouă: Din ea iau numărul, asigurătorul și data. [Citesc polița nouă… / Am citit polița nouă / Polița nouă nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
-| Impozit pe clădire (`buildingTax`) | Am rezolvat / Am rezolvat… — Când; Cât ai plătit; Chitanța (Opțional. O păstrez în dosar.) — Fotografiază chitanța: Sau dovada plății din aplicația băncii. [Citesc chitanța… / Am citit chitanța / Chitanța nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
-| Curățare coș de fum (`chimneySweep`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la firma care a curățat coșul. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
+| Impozit pe clădire (`buildingTax`) | Am rezolvat / Am rezolvat… — Când; Cât ai plătit; Chitanța (Opțional. O păstrez în dosar.) — Fotografiază chitanța: Sau dovada plății din aplicația băncii. [Citesc chitanța… / Am citit chitanța / Chitanța nu s-a citit] |
+| Curățare coș de fum (`chimneySweep`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la firma care a curățat coșul. [Citesc factura… / Am citit factura / Factura nu s-a citit] |
 
 ### Acte (`documents`)
 
@@ -519,10 +519,10 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 
 | Where | Words |
 | :--- | :--- |
-| Analize anuale (`checkup`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Rezultatele (Opțional. Le păstrez în dosar.) — Fotografiază rezultatele: Buletinul de analize, de la laborator. [Citesc rezultatele… / Am citit rezultatele / Rezultatele nu s-a citit / Nu am găsit o dată nouă pe ele. Le păstrez oricum.]; Notă — Ce a spus medicul, ce urmează. |
+| Analize anuale (`checkup`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Rezultatele (Opțional. Le păstrez în dosar.) — Fotografiază rezultatele: Buletinul de analize, de la laborator. [Citesc rezultatele… / Am citit rezultatele / Rezultatele nu s-au citit]; Notă — Ce a spus medicul, ce urmează. |
 | Control stomatologic (`dentist`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Notă — Ce s-a făcut, ce urmează. |
-| Rapel antitetanos (`vaccine`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Adeverința de vaccinare (Opțional. O păstrez în dosar.) — Fotografiază adeverința: Sau pagina din carnetul de vaccinări. [Citesc adeverința de vaccinare… / Am citit adeverința de vaccinare / Adeverința de vaccinare nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
-| Vaccin antigripal (`vaccine`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Adeverința de vaccinare (Opțional. O păstrez în dosar.) — Fotografiază adeverința: Sau pagina din carnetul de vaccinări. [Citesc adeverința de vaccinare… / Am citit adeverința de vaccinare / Adeverința de vaccinare nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
+| Rapel antitetanos (`vaccine`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Adeverința de vaccinare (Opțional. O păstrez în dosar.) — Fotografiază adeverința: Sau pagina din carnetul de vaccinări. [Citesc adeverința de vaccinare… / Am citit adeverința de vaccinare / Adeverința de vaccinare nu s-a citit] |
+| Vaccin antigripal (`vaccine`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Adeverința de vaccinare (Opțional. O păstrez în dosar.) — Fotografiază adeverința: Sau pagina din carnetul de vaccinări. [Citesc adeverința de vaccinare… / Am citit adeverința de vaccinare / Adeverința de vaccinare nu s-a citit] |
 | Card european de sănătate (`newHealthCard`) | Am rezolvat / Am rezolvat… — Când; Cardul nou (Opțional. Din el iau data la care expiră.) — Fotografiază cardul nou: Fața, cu data la care expiră. [Citesc cardul nou… / Am citit cardul nou / Cardul nou nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.]; Expiră pe — De aici încep să-ți amintesc din nou. |
 
 ### Garanții (`purchase`)
@@ -535,19 +535,19 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 
 | Where | Words |
 | :--- | :--- |
-| Reînnoire anuală (`bill`) | Am rezolvat / Am rezolvat… — Când; Cât ai plătit; Factura (Opțional. O trec în istoric.) — Fotografiază factura: Cea pe care ai plătit-o. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
+| Reînnoire anuală (`bill`) | Am rezolvat / Am rezolvat… — Când; Cât ai plătit; Factura (Opțional. O trec în istoric.) — Fotografiază factura: Cea pe care ai plătit-o. [Citesc factura… / Am citit factura / Factura nu s-a citit] |
 | Se termină contractul (`newContract`) | Am rezolvat / Am rezolvat… — Când; Contractul nou (Opțional. Din el iau data la care se termină.) — Fotografiază contractul nou: Pagina cu perioada contractului. [Citesc contractul nou… / Am citit contractul nou / Contractul nou nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.]; Se termină pe — De aici încep să-ți amintesc din nou. |
 | Se termină perioada minimă (`acknowledged`) | Gata / Gata — nothing: done today, „Adaugă o notă” after |
-| Factura de plătit (`bill`) | Am rezolvat / Am rezolvat… — Când; Cât ai plătit; Factura (Opțional. O trec în istoric.) — Fotografiază factura: Cea pe care ai plătit-o. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
+| Factura de plătit (`bill`) | Am rezolvat / Am rezolvat… — Când; Cât ai plătit; Factura (Opțional. O trec în istoric.) — Fotografiază factura: Cea pe care ai plătit-o. [Citesc factura… / Am citit factura / Factura nu s-a citit] |
 
 ### Biciclete (`bike`)
 
 | Where | Words |
 | :--- | :--- |
 | Curățare și ungere lanț (`chore`) | Gata / Gata — nothing: done today, „Adaugă o notă” after |
-| Verificare plăcuțe de frână (`bikeService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service, dacă ai dus-o acolo. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.]; Kilometri parcurși |
-| Schimb lanț (`bikeService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service, dacă ai dus-o acolo. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.]; Kilometri parcurși |
-| Service suspensie (`bikeService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service, dacă ai dus-o acolo. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.]; Kilometri parcurși |
+| Verificare plăcuțe de frână (`bikeService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service, dacă ai dus-o acolo. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometri parcurși |
+| Schimb lanț (`bikeService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service, dacă ai dus-o acolo. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometri parcurși |
+| Service suspensie (`bikeService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service, dacă ai dus-o acolo. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometri parcurși |
 
 ### Plante (`plants`)
 
@@ -575,73 +575,73 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit] |
 
 ### A ta: cu acte, fără facturi, revizii după kilometri
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.]; Kilometraj |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometraj |
 
 ### A ta: cu acte, fără facturi, revizii după ore
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.]; Ore de motor |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Ore de motor |
 
 ### A ta: cu acte, cu facturi, revizii după timp
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit] |
 
 ### A ta: cu acte, cu facturi, revizii după kilometri
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.]; Kilometraj |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometraj |
 
 ### A ta: cu acte, cu facturi, revizii după ore
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.]; Ore de motor |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Ore de motor |
 
 ### A ta: fără acte, fără facturi, revizii după timp
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit] |
 
 ### A ta: fără acte, fără facturi, revizii după kilometri
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.]; Kilometraj |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometraj |
 
 ### A ta: fără acte, fără facturi, revizii după ore
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.]; Ore de motor |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Ore de motor |
 
 ### A ta: fără acte, cu facturi, revizii după timp
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit] |
 
 ### A ta: fără acte, cu facturi, revizii după kilometri
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.]; Kilometraj |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometraj |
 
 ### A ta: fără acte, cu facturi, revizii după ore
 
 | Where | Words |
 | :--- | :--- |
-| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.]; Ore de motor |
+| Revizie periodică (`ownService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la cel care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Ore de motor |
 
 ## Adding a deadline
 
@@ -1487,7 +1487,7 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | Its option in the catalog | Mașină — ITP, RCA, rovinietă și revizii, cu kilometrajul la zi. · in „Cele mai des folosite” |
 | The essentials' header | Mașini |
 | The name, before anything is typed | Nume, „Mașini” |
-| Under the name | Cum îi spui acasă, de exemplu „Golful”. |
+| Under the name | Cum vrei să apară în dosar, de exemplu „Golful”. |
 | What it asks | Număr de înmatriculare · Marcă · Model · An de fabricație · Kilometraj |
 | The essentials' button | Continuă |
 | A deadline: ITP | Te anunț cu o lună și cu 7 zile înainte. / Fără ITP valabil, înmatricularea se suspendă. — (unticked, its date asked) |
@@ -1507,7 +1507,7 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | Its option in the catalog | Casă sau apartament — Centrală, gaze, asigurare, impozit și contoare. · in „Cele mai des folosite” |
 | The essentials' header | Locuințe |
 | The name, before anything is typed | Nume, „Locuințe” |
-| Under the name | Cum îi spui acasă, de exemplu „Apartamentul”. |
+| Under the name | Cum vrei să apară în dosar, de exemplu „Apartamentul”. |
 | What it asks | Adresă |
 | The essentials' button | Continuă |
 | A deadline: Verificare centrală (VTP) | Te anunț cu o lună și cu 7 zile înainte. / Obligatorie la cel mult 2 ani, făcută de o firmă autorizată ISCIR. — (unticked, its date asked) |
@@ -1527,7 +1527,7 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | Its option in the catalog | Un act (buletin, pașaport, permis) — Buletin, pașaport, permis, cu reînnoirea din timp. · in „Alte categorii” |
 | The essentials' header | Acte |
 | The name, before anything is typed | Nume, „Acte” |
-| Under the name | Cum îi spui acasă, de exemplu „Buletinul”. |
+| Under the name | Cum vrei să apară în dosar, de exemplu „Buletinul”. |
 | What it asks | Tip · Valabil până la |
 | Whose it is (added on its own, with people in the binder) | Al cui este — Actele stau grupate pe persoane. |
 | The essentials' button | Continuă |
@@ -1542,7 +1542,7 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | Its option in the catalog | Animal de companie — Vaccinuri, deparazitări, greutate și veterinar. · in „Cele mai des folosite” |
 | The essentials' header | Animale |
 | The name, before anything is typed | Nume, „Animale” |
-| Under the name | Cum îi spui acasă, de exemplu „PawPaw”. |
+| Under the name | Cum vrei să apară în dosar, de exemplu „PawPaw”. |
 | What it asks | Specie · Data nașterii |
 | The essentials' button | Continuă |
 | A deadline: Vaccin antirabic | Te anunț cu o zi înainte. / Obligatoriu și cerut la trecerea graniței. — (unticked, its date asked) |
@@ -1592,7 +1592,7 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | Its option in the catalog | Abonament — Telefon, internet, gaz și curent: facturile și contractele lor. · in „Cele mai des folosite” |
 | The essentials' header | Abonamente |
 | The name, before anything is typed | Nume, „Abonamente” |
-| Under the name | Cum îi spui acasă, de exemplu „Internetul”. |
+| Under the name | Cum vrei să apară în dosar, de exemplu „Internetul”. |
 | What it asks | Furnizor · Preț · Se plătește |
 | Where it goes (added on its own, with some in the binder) | Locuința — Apare și pe pagina locuinței. Poți schimba oricând, cu „Mută la…”. |
 | The essentials' button | Continuă |
@@ -1621,7 +1621,7 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | Its option in the catalog | Biciclete — Lanț, frâne și service, după kilometri. · in „Alte categorii” |
 | The essentials' header | Biciclete |
 | The name, before anything is typed | Nume, „Biciclete” |
-| Under the name | Cum îi spui acasă, de exemplu „Bicicleta de oraș”. |
+| Under the name | Cum vrei să apară în dosar, de exemplu „Bicicleta de oraș”. |
 | What it asks | Marcă · Kilometri parcurși |
 | The essentials' button | Continuă |
 | A deadline: Curățare și ungere lanț | Te anunț în ziua termenului. — (ticked) |
@@ -1637,7 +1637,7 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | Its option in the catalog | Plante — Udat, fertilizat și schimbat ghiveciul. · in „Alte categorii” |
 | The essentials' header | Plante |
 | The name, before anything is typed | Nume, „Plante” |
-| Under the name | Cum îi spui acasă, de exemplu „Ficusul din sufragerie”. |
+| Under the name | Cum vrei să apară în dosar, de exemplu „Ficusul din sufragerie”. |
 | What it asks | Specie |
 | Where it goes (added on its own, with some in the binder) | Locuința — Apare și pe pagina locuinței. Poți schimba oricând, cu „Mută la…”. |
 | The essentials' button | Continuă |
@@ -1667,7 +1667,7 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | Its option in the catalog | Actele unei persoane — Cui aparțin actele. · in „Cele mai des folosite” |
 | The essentials' header | Membri ai familiei |
 | The name, before anything is typed | Nume, „Membri ai familiei” |
-| Under the name | Cum îi spui acasă, de exemplu „Mama”. |
+| Under the name | Cum vrei să apară în dosar, de exemplu „Mama”. |
 | What it asks | (nothing) — Restul detaliilor le completezi oricând din pagina secțiunii, cu Editează. |
 | The essentials' button | Adaugă în dosar |
 
@@ -1678,7 +1678,7 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | Its option in the catalog | Espressoare — Curățare, decalcifiere și filtre, după numărul de cafele. · in „Alte categorii” |
 | The essentials' header | Espressoare |
 | The name, before anything is typed | Nume, „Espressoare” |
-| Under the name | Cum îi spui acasă, de exemplu „Espressorul din bucătărie”. |
+| Under the name | Cum vrei să apară în dosar, de exemplu „Espressorul din bucătărie”. |
 | What it asks | Marcă |
 | The essentials' button | Continuă |
 | A deadline: Curățare grup | Te anunț în ziua termenului. — (ticked) |
