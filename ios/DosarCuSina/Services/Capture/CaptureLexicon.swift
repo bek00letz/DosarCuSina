@@ -81,7 +81,7 @@ enum CaptureLexicon {
     /// (`IdentitySignals.hasIdentityWords`).
     static let identityWords = [
         "carte de identitate", "carte electronica de identitate", "identity card", "carte d'identite",
-        "pasaport", "passport", "passeport", "permis de conducere", "driving licence", "permis de conduire",
+        "pasaport", "passport", "passeport", "permis de sedere", "residence permit", "permis de conducere", "driving licence", "permis de conduire",
         "cod numeric personal", "data nasterii", "date of birth", "locul nasterii", "place of birth", "cetatenie",
         "cazier", "card european de asigurari", "european health insurance card", "asigurari sociale de sanatate",
         "international motor insurance card", "carte internationala de asigurare",

@@ -58,11 +58,12 @@ struct RememberedWordsTests {
 
         var plan = TripPlan(start: CalendarDay("2027-07-12"), end: CalendarDay("2027-07-20"), region: .europeanUnion, destination: "Grecia")
         store.save(plan)
-        #expect(store.load(today: today)?.destination == "Grecia")
+        #expect(store.load(today: today).first?.destination == "Grecia")
 
         plan.destination = "Grecia, card \(visa)"
         store.save(plan)
-        let kept = try #require(store.load(today: today), "The trip itself is still kept")
+        #expect(store.load(today: today).count == 1, "The same trip, changed")
+        let kept = try #require(store.load(today: today).first, "The trip itself is still kept")
         #expect(kept.destination.isEmpty)
         #expect(kept.end == plan.end)
         let stored = try #require(defaults.data(forKey: TripPlanStore.key))
@@ -73,13 +74,15 @@ struct RememberedWordsTests {
         let suite = "readiness.tests.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        let written = TripPlan(start: CalendarDay("2027-07-12"), end: CalendarDay("2027-07-20"), region: .outsideEU, destination: "CNP \(cnp)")
-        defaults.set(try JSONEncoder().encode(written), forKey: TripPlanStore.key)
+        // The one trip an earlier version kept, where it kept it, without an id.
+        let written = #"{"start":"2027-07-12","end":"2027-07-20","region":"outsideEU","destination":"CNP \#(cnp)","travellers":[],"vehicles":[],"pets":[]}"#
+        defaults.set(Data(written.utf8), forKey: TripPlanStore.singleTripKey)
         nonisolated(unsafe) let unsafeDefaults = defaults
         let store = TripPlanStore(defaults: { unsafeDefaults })
 
-        #expect(store.load(today: CalendarDay("2027-07-01"))?.destination == "")
+        #expect(store.load(today: CalendarDay("2027-07-01")).map(\.destination) == [""])
         let stored = try #require(defaults.data(forKey: TripPlanStore.key))
         #expect(!String(decoding: stored, as: UTF8.self).contains(cnp), "Written again without it")
+        #expect(defaults.data(forKey: TripPlanStore.singleTripKey) == nil, "Nor left where it was")
     }
 }

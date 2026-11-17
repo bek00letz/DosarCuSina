@@ -277,8 +277,9 @@ Built-in option keys:
 | :--- | :--- |
 | `vehicle.fuel` | `fuel.petrol`, `fuel.diesel`, `fuel.hybrid`, `fuel.plugInHybrid`, `fuel.electric`, `fuel.lpg` |
 | `vehicle.usage` | `vehicleUse.personal`, `vehicleUse.commercial` |
-| `document.type` | `documentType.idCard`, `documentType.passport`, `documentType.drivingLicence`, `documentType.euHealthCard`, `documentType.nationalHealthCard`, `documentType.greenCard`, `documentType.bankCard`, `documentType.eSignature`, `documentType.criminalRecord`, `documentType.other` |
+| `document.type` | `documentType.idCard`, `documentType.passport`, `documentType.residencePermit`, `documentType.drivingLicence`, `documentType.euHealthCard`, `documentType.nationalHealthCard`, `documentType.greenCard`, `documentType.bankCard`, `documentType.eSignature`, `documentType.criminalRecord`, `documentType.other` |
 | `document.cardNetwork` | `cardNetwork.visa`, `cardNetwork.mastercard`, `cardNetwork.maestro`, `cardNetwork.amex`, `cardNetwork.other` |
+| `member.citizenship` | `country.` and the country's ISO 3166-1 two-letter code (`country.RO`, `country.MD`), or `country.stateless` |
 | `pet.species` | `species.cat`, `species.dog`, `species.other` |
 | `health.bloodType` | `bloodType.0Positive`, `bloodType.0Negative`, `bloodType.aPositive`, `bloodType.aNegative`, `bloodType.bPositive`, `bloodType.bNegative`, `bloodType.abPositive`, `bloodType.abNegative` |
 | `subscription.cycle` | `billing.monthly`, `billing.quarterly`, `billing.yearly` |
