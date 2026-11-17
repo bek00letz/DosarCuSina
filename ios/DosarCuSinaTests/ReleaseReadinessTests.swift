@@ -207,8 +207,11 @@ struct ReleaseReadinessTests {
         #expect(pictures.contains { $0.lastPathComponent == "AppIcon-1024.png" }, "The 1024 pt icon the App Store shows")
         for picture in pictures {
             let source = try #require(CGImageSourceCreateWithURL(picture as CFURL, nil))
+            // ImageIO leaves out "has alpha" for a picture without an alpha channel.
             let properties = try #require(CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any])
-            #expect(properties[kCGImagePropertyHasAlpha] as? Bool == false, "\(picture.lastPathComponent) has an alpha channel: save it without one")
+            let image = try #require(CGImageSourceCreateImageAtIndex(source, 0, nil))
+            let opaque: [CGImageAlphaInfo] = [.none, .noneSkipFirst, .noneSkipLast]
+            #expect(properties[kCGImagePropertyHasAlpha] as? Bool != true && opaque.contains(image.alphaInfo), "\(picture.lastPathComponent) has an alpha channel: save it without one")
         }
     }
 
