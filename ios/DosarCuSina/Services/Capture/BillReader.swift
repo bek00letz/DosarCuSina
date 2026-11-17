@@ -26,9 +26,11 @@ enum BillReader {
     static let shortestPaymentCode = 6
 
     /// The fields a bill prints under its own labels. `window` decides the century of
-    /// two-digit years.
-    static func fields(in text: CaptureText, window: DateWindow = .aroundToday) -> [CaptureField] {
-        let layout = Self.layout(of: text)
+    /// two-digit years; `labels` is the table the analyzer reads with (`CaptureKindProfile.labelTable`:
+    /// the bill's own rows, after what was learned of its issuer).
+    static func fields(in text: CaptureText, window: DateWindow = .aroundToday,
+                       labels: [(CaptureFieldKey, [String])] = CaptureDocumentKind.utilityInvoice.profile.labels) -> [CaptureField] {
+        let layout = Self.layout(of: text, labels: labels)
         var fields: [CaptureField] = []
 
         let issued = layout.day(for: .issueDate, window: window)
@@ -49,8 +51,9 @@ enum BillReader {
     }
 
     /// The bill's own labels on a page: its kind's table (`CaptureKindProfile.billLabels`).
-    static func layout(of text: CaptureText) -> LabelledLayout<CaptureFieldKey> {
-        LabelledLayout(text: text, words: CaptureDocumentKind.utilityInvoice.profile.labels)
+    static func layout(of text: CaptureText,
+                       labels: [(CaptureFieldKey, [String])] = CaptureDocumentKind.utilityInvoice.profile.labels) -> LabelledLayout<CaptureFieldKey> {
+        LabelledLayout(text: text, words: labels)
     }
 
     // MARK: - Dates

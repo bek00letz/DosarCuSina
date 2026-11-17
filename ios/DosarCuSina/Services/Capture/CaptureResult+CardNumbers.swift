@@ -43,7 +43,8 @@ extension CaptureResult {
                     referenceDate: source.referenceDate,
                     modelFields: source.modelFields.map { $0.withoutCardNumbers(strict: strict, keeping: kept) },
                     aiFields: source.aiFields.map { $0.map { $0.withoutCardNumbers(strict: strict, keeping: kept) } },
-                    isSinglePhoto: source.isSinglePhoto
+                    isSinglePhoto: source.isSinglePhoto,
+                    lessons: source.lessons
                 )
             },
             showedCardNumber: showed

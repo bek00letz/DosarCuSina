@@ -113,10 +113,15 @@ struct DocumentCamera: UIViewControllerRepresentable {
 
 /// Runs capture on what was picked. On-device only, unless the person's AI provider
 /// reads this document too (on a tap, or by itself after a weak reading when they chose so).
+/// The phone's readers are told what was learned from papers the person saved before
+/// (`IssuerLessons.book`), read from the binder as the reading starts.
 enum CaptureRunner {
+    @MainActor
     static func run(_ payload: CaptureRequest.Payload, useCloudModel: Bool = false, ownerID: UUID? = nil) async throws -> CaptureResult {
         let engine = CaptureEngine.standard()
-        return try await engine.capture(CaptureRequest(payload, options: CaptureOptions(useCloudModel: useCloudModel, ownerID: ownerID?.uuidString)))
+        let lessons = IssuerLessons.book(in: PersistenceController.shared.container)
+        return try await engine.capture(CaptureRequest(payload, options: CaptureOptions(useCloudModel: useCloudModel, ownerID: ownerID?.uuidString,
+                                                                                        lessons: lessons)))
     }
 
     /// Whether the person set up an AI provider with their own key (Settings).

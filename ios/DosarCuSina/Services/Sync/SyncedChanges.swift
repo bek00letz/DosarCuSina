@@ -103,7 +103,8 @@ final class SyncedChanges: ContainerHolder {
     }
 
     /// The app's own steps that make two devices' binders one: records that share an id joined
-    /// into one (`RecordsMeet`), one copy of each built-in category
+    /// into one (`RecordsMeet`), no lesson of capture's that another contradicts
+    /// (`IssuerLessons.settle`), one copy of each built-in category
     /// (`TemplateStore.installBuiltIns`), one copy of each household deadline
     /// (`HouseholdRules.reconcile`, which removes nothing while the binder is still arriving).
     /// Each chooses the same records on every device, so their results meet without a conflict.
@@ -112,6 +113,9 @@ final class SyncedChanges: ContainerHolder {
         let context = container.mainContext
         PersistenceLog.attempt("Joining records that share an id after a synced change") {
             _ = try RecordsMeet.join(in: context)
+        }
+        PersistenceLog.attempt("Settling what capture learned after a synced change") {
+            _ = try IssuerLessons.settle(in: context)
         }
         PersistenceLog.attempt("Settling the built-in categories after a synced change") {
             _ = try TemplateStore(context: context).installBuiltIns()

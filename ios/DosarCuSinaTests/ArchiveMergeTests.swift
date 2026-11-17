@@ -183,6 +183,13 @@ struct ArchiveMergeTests {
             oldInvoice.asset = boat
             oldInvoice.supersededBy = invoice
 
+            // What capture learned of a firm's bills: its words and layout, nothing of the household's.
+            let lesson = IssuerLesson(CaptureLesson(issuer: IssuerKey(rawValue: "cui:12345674"), kind: .utilityInvoice, field: .dueDate,
+                                                    label: "Ultima zi de plată"), issuerName: "ENGIE Romania S.A.")
+            context.insert(lesson)
+            lesson.createdAt = then
+            lesson.updatedAt = then
+
             // Every change time and creation time set, long enough ago.
             for template in try context.fetch(FetchDescriptor<CategoryTemplate>()) {
                 template.createdAt = then

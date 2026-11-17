@@ -18,11 +18,13 @@ public enum DossierV3 {
         public static let providers = "data/providers.json"
         public static let measurements = "data/measurements.json"
         public static let attachments = "data/attachments.json"
+        /// What capture learned of each issuer's papers; missing in archives from before database version 16.
+        public static let issuerLessons = "data/issuer_lessons.json"
         public static let vaultPrefix = "vault/"
         public static let photosPrefix = "vault/photos/"
         public static let opis = "opis.pdf"
 
-        public static let dataFiles = [templates, assets, obligations, history, serviceItems, providers, measurements, attachments]
+        public static let dataFiles = [templates, assets, obligations, history, serviceItems, providers, measurements, attachments, issuerLessons]
     }
 
     public struct Manifest: Codable, Hashable, Sendable {
@@ -44,6 +46,8 @@ public enum DossierV3 {
             public var providers: Int
             public var measurements: Int
             public var attachments: Int
+            /// Missing in archives from before database version 16.
+            public var issuerLessons: Int? = nil
         }
     }
 
@@ -187,6 +191,22 @@ public enum DossierV3 {
         public var taxID: String?
     }
 
+    /// One thing capture learned of an issuer's papers (`IssuerLesson`): an issuer's words and
+    /// layout, never the person's.
+    public struct IssuerLesson: Codable, Hashable, Sendable {
+        public var id: String
+        /// `cui:` and its CUI, or `name:` and its name compared the one way.
+        public var issuerKey: String
+        public var issuerName: String
+        /// `CaptureDocumentKind` raw value.
+        public var kind: String
+        /// `CaptureFieldKey` raw value.
+        public var field: String
+        public var label: String
+        public var createdAt: Date
+        public var updatedAt: Date
+    }
+
     public struct Measurement: Codable, Hashable, Sendable {
         public var id: String
         public var assetId: String?
@@ -264,6 +284,8 @@ public enum DossierV3 {
         public var providers: [Provider]
         public var measurements: [Measurement]
         public var attachments: [Attachment]
+        /// None in archives from before database version 16.
+        public var issuerLessons: [IssuerLesson] = []
         /// The documents' and photos' files by archive path (`vault/…`), each read only when
         /// it is written into the database.
         public var files: ArchiveFiles
@@ -354,6 +376,7 @@ public enum DossierV3 {
         "Provider": ["contactIdentifier", "copyID"],
         "AttachmentPage": ["id", "copyID"],
         "CategoryTemplate": ["copyID"],
+        "IssuerLesson": ["copyID"],
     ]
     static func id(_ uuid: UUID?) -> String? { uuid.map(id) }
 }
