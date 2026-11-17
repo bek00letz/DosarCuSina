@@ -2338,7 +2338,7 @@ What a subscription says by what it is (`ServiceKind.Service`): the group it is 
 | Where | Words |
 | :--- | :--- |
 | Its group | Utilități |
-| Its codes (edit form, review) | Cod loc de consum gaze (CLC) („Poate apărea și ca POD gaz. E pe factura de gaz.”) · Cod client · Număr contract |
+| Its codes (edit form, review) | Cod loc de consum gaze (CLC) („Poate apărea și ca POD gaz. E pe factura de gaze.”) · Cod client · Număr contract |
 | Where a new one goes | Under the home it supplies |
 
 ### Curent (`service.electricity`)
