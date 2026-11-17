@@ -173,7 +173,7 @@ public struct BillWatchSnapshot: Hashable, Sendable, Identifiable {
                 cycle: SubscriptionFields.cycle(of: values),
                 bills: BillHistory.bills(of: asset, calendar: calendar),
                 // Locked when its category is, or the section it is filed under.
-                isSensitive: [asset.templateKey, asset.parent?.templateKey].compactMap { $0 }.contains { templates[$0]?.isSensitive == true },
+                isSensitive: [asset, asset.parent].compactMap { $0 }.contains { $0.isSensitive(among: templates) },
                 isExample: asset.isExample
             )
         }

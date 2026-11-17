@@ -9,7 +9,8 @@
 #   release-build       builds the same targets in the Release configuration, the one
 #                       TestFlight and the App Store get, and checks its strings are the
 #                       development build's, so a build in Xcode of either leaves the
-#                       catalogs as they are
+#                       catalogs as they are, and checks the bundle the way App Store
+#                       Connect will (scripts/bundle-check.sh)
 # The privacy check has its own workflow (privacy-check.yml).
 name: Checks
 
@@ -123,6 +124,12 @@ jobs:
             -configuration Release -destination 'generic/platform=iOS' \
             -derivedDataPath "$RUNNER_TEMP/DerivedData" \
             CODE_SIGNING_ALLOWED=NO
+
+      # What App Store Connect checks at upload: the privacy manifests, the permissions' words,
+      # the export-compliance answer, one version everywhere, and background modes that follow
+      # whether release builds sync.
+      - name: Check the release bundle for App Store Connect
+        run: scripts/bundle-check.sh "$RUNNER_TEMP/DerivedData/Build/Products/Release-iphoneos/DosarCuSina.app"
 
       # The release build must find the same strings as the development build, or each build
       # in Xcode would rewrite the catalog the other wrote (a string only a #if DEBUG screen uses).
