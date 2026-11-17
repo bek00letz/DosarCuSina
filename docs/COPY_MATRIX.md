@@ -2,7 +2,7 @@
 
 What each shaped screen says to each category, generated from the kinds' descriptions: the visit form from `VisitShape` laid over the category (`VisitForm`), „Gata” and „Am rezolvat” from each deadline's `CompletionKind`, the deadline form and a record's page in Istoric (`HistoryEntryShape`), a section page's pockets, adding a section, the capture review by document kind (`CaptureKindProfile`), and „Pleci din țară” by citizenship (`TravelRules`). Every built-in category is here, and one category of one's own per combination of its switches. Reviews walk every category through it.
 
-Don't edit it by hand: `CopyMatrixTests` writes it and fails when it is out of date. To bring it up to date, run `TEST_RUNNER_COPY_MATRIX_WRITE=1 ./tests/run_tests.sh` and commit the diff. Sample values: 3 rows, 1.250 de lei, 3 mai 2027. Lei are counted: 1 leu · 2 lei · 19 lei · 20 de lei · 101 lei · 1,50 lei. So are counted units: 1 1 cafele · 2 2 cafele · 20 20 cafele · 1.250 1,250 cafele · 1 1 luni · 24 24 luni · 10.000 km.
+Don't edit it by hand: `CopyMatrixTests` writes it and fails when it is out of date. To bring it up to date, run `TEST_RUNNER_COPY_MATRIX_WRITE=1 ./tests/run_tests.sh` and commit the diff. Sample values: 3 rows, 1.250 de lei, 3 mai 2027. Lei are counted: 1 leu · 2 lei · 19 lei · 20 de lei · 101 lei · 1,50 lei. So are counted units: 1 cafea · 2 cafele · 20 de cafele · 1.250 de cafele · 1 lună · 24 de luni · 10.000 km.
 
 ## The visit form
 
@@ -758,8 +758,8 @@ No usual deadlines: only „Alt termen”.
 
 | Where | Words |
 | :--- | :--- |
-| Curățare grup | Te anunț în ziua termenului. — on its page: La fiecare 100 100 cafele sau la fiecare 2 săptămâni, ce vine mai întâi. |
-| Decalcifiere | Te anunț cu 3 zile înainte și în ziua termenului. — on its page: La fiecare 300 300 cafele sau la fiecare 2 luni, ce vine mai întâi. |
+| Curățare grup | Te anunț în ziua termenului. — on its page: La fiecare 100 de cafele sau la fiecare 2 săptămâni, ce vine mai întâi. |
+| Decalcifiere | Te anunț cu 3 zile înainte și în ziua termenului. — on its page: La fiecare 300 de cafele sau la fiecare 2 luni, ce vine mai întâi. |
 | Schimb filtru de apă | Te anunț cu 3 zile înainte și în ziua termenului. — on its page: La fiecare 2 luni, de la data la care l-ai făcut. |
 
 ### A ta: cu acte, fără facturi, fără revizii
@@ -2011,7 +2011,7 @@ What the review says to each kind of document, from the kind's description (`Cap
 | What its day means | Expiră pe 3 mai 2027. |
 | When it reminds, its day to come | Expiră pe 10 iunie 2027. Te anunț cu 3 luni și cu 45 de zile înainte. |
 | Its place not chosen yet | Expiră pe 10 iunie 2027. Alege unde îl pui ca să te anunț din timp. |
-| Its day passed | Expiră pe 10 mai. Te anunț cu 3 luni și cu 45 de zile înainte. |
+| Its day passed | A expirat pe 10 mai. Data a trecut, așa că termenul apare de acum în Urmează. |
 | Nothing read off it | Nu am găsit date pe permisul de ședere. Îl păstrez oricum, cu numele de mai sus. |
 | A value that passed its check digit | Pe permisul de ședere scrie: 123456 |
 | What its machine-readable code says | Pe spatele actului scrie: 123456 |
