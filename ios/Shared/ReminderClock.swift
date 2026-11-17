@@ -33,7 +33,7 @@ enum ReminderClock {
             guard let change = calendar.timeZone.nextDaylightSavingTimeTransition(after: after), change <= yearOn else { return nil }
             let day = CalendarDay(change, calendar: calendar)
             let moment = day.moment(atMinute: minute, in: calendar)
-            let shown = minuteOfDay(of: moment, calendar: calendar)
+            let shown = Self.minuteOfDay(of: moment, calendar: calendar)
             if shown != minute, CalendarDay(moment, calendar: calendar) == day {
                 return (day, shown)
             }
