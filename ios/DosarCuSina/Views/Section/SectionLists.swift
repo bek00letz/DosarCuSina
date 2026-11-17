@@ -352,7 +352,7 @@ struct DocumentListScreen: View {
 
     var body: some View {
         // The pocket's own rule: a visit's invoice or a bill opens from its record in Istoric.
-        let personal = SectionPapers.personal(asset, templates: templates).sorted { $0.name < $1.name }
+        let personal = DocumentPageFacts.currentFirst(SectionPapers.personal(asset, templates: templates)) { $0.name < $1.name }
         let papers = SectionPapers.listed(asset)
         let definition = templates.first { $0.key == asset.templateKey }?.definition
             ?? BuiltInTemplates.definition(for: asset.templateKey) ?? BuiltInTemplates.other

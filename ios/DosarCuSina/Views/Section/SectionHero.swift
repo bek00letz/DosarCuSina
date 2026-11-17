@@ -213,11 +213,11 @@ struct SectionHero: View {
         let documentTemplates = Dictionary(templates.filter { $0.behavior.role == .personalDocument }.map { ($0.key, $0.definition) },
                                            uniquingKeysWith: { first, _ in first })
         // One replaced by a new one is expired already: never the next to expire.
-        let next = (asset.children ?? []).filter { !$0.wasReplaced }
-            .compactMap { child in documentTemplates[child.templateKey].flatMap { AssetFacts.expiry(child.values, template: $0) }.map { (child, $0) } }
-            .min { $0.1 < $1.1 }
+        let next = DocumentPageFacts.nextToExpire(asset.children ?? []) { child in
+            documentTemplates[child.templateKey].flatMap { AssetFacts.expiry(child.values, template: $0) }
+        }
         if let next {
-            ExpiryLine(label: String(localized: "Următorul act care expiră: \(next.0.name)", comment: "Hero of a person: the next document to expire."), day: next.1, rule: DateUrgency.rule(for: next.1, on: next.0))
+            ExpiryLine(label: String(localized: "Următorul act care expiră: \(next.document.name)", comment: "Hero of a person: the next document to expire."), day: next.day, rule: DateUrgency.rule(for: next.day, on: next.document))
         } else {
             Text("Niciun act cu dată de expirare încă.", comment: "Hero of a person with no documents.")
                 .dsFont(.subheadline)

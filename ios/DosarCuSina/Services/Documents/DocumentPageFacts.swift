@@ -128,11 +128,30 @@ enum DocumentPageFacts {
                 && other.values[DocumentType.typeFieldKey]?.textValue == type && !other.wasReplaced
         }
     }
+
+    /// A holder's documents in the order every list of them shows: the ones still current
+    /// first, by `order`; those replaced by a new one after them, by the same order, as
+    /// history. Never sorted among the current ones by a date that no longer counts.
+    static func currentFirst(_ documents: [Asset], by order: (Asset, Asset) -> Bool) -> [Asset] {
+        let sorted = documents.sorted(by: order)
+        return sorted.filter { !$0.wasReplaced } + sorted.filter(\.wasReplaced)
+    }
+
+    /// The next of `documents` to expire, by `expiry`: never one replaced by a new one, which
+    /// is expired already whatever its date says.
+    static func nextToExpire(_ documents: [Asset], expiry: (Asset) -> CalendarDay?) -> (document: Asset, day: CalendarDay)? {
+        documents.filter { !$0.wasReplaced }
+            .compactMap { document in expiry(document).map { (document: document, day: $0) } }
+            .min { $0.day < $1.day }
+    }
 }
 
 extension Asset {
     /// Whether it was replaced by a new one (`DocumentPageFacts.replacement(of:)`): expired,
-    /// whatever its date says.
+    /// whatever its date says, and no longer its holder's current document. The one answer
+    /// every reader that picks, counts or orders documents reads: the readiness checks through
+    /// `ReadinessAsset.wasReplaced`, the person's hero through `DocumentPageFacts.nextToExpire`,
+    /// every list of documents through `DocumentPageFacts.currentFirst`.
     @MainActor var wasReplaced: Bool {
         DocumentPageFacts.replacement(of: self) != nil
     }
