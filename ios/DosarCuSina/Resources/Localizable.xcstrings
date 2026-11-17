@@ -1213,6 +1213,9 @@
     "Actele fiecărei persoane, la un loc." : {
       "comment" : "Category summary of the people documents are filed under."
     },
+    "Actele pentru cumpărător, ce anulezi după și ce mai ai de achitat." : {
+      "comment" : "Situation summary: selling the car."
+    },
     "Actele și termenele rămân în dosar. Se șterge doar planul călătoriei." : {
       "comment" : "What forgetting a trip removes."
     },
@@ -1349,13 +1352,16 @@
       "comment" : "Button in the Abonamente pocket."
     },
     "Adaugă un act" : {
-      "comment" : "Adds a document for a household member.\nAdds a photo of a paper to a section, from its Acte pocket or its add menu.\nTitle of the photo source choice for a paper added from a section page."
-    },
-    "Adaugă un act, o mașină sau o factură și îți spun din timp ce urmează." : {
-
+      "comment" : "Adds one of a household member's own documents, in the two-button layout kept switched off."
     },
     "Adaugă un chiriaș" : {
       "comment" : "Button in the Chiriași pocket."
+    },
+    "Adaugă un document" : {
+      "comment" : "Adds a document to a section, photo first, from its Acte pocket or its add menu. Never „act”: a document can be a diploma, which isn't an act."
+    },
+    "Adaugă un document, o mașină sau o factură și îți spun din timp ce urmează." : {
+
     },
     "Adaugă un produs" : {
       "comment" : "Button in the Produse pocket."
@@ -2272,9 +2278,6 @@
     "Bani" : {
       "comment" : "Section pocket"
     },
-    "Bani de plătit înainte" : {
-      "comment" : "Sale group: money owed before selling."
-    },
     "Barca, Rulota, Pianul" : {
 
     },
@@ -2763,12 +2766,6 @@
     },
     "Ce asigurare folosești" : {
 
-    },
-    "Ce cere cumpărătorul" : {
-      "comment" : "Sale group: documents a buyer asks for."
-    },
-    "Ce cere cumpărătorul, ce anulezi după și ce mai ai de plătit." : {
-      "comment" : "Situation summary: selling the car."
     },
     "Ce cere țara pentru animale" : {
       "comment" : "Trip reminder: rules for pets outside the EU."
@@ -3518,6 +3515,9 @@
     "Dacă întârzii, pot veni penalități sau bani pierduți." : {
       "comment" : "Why a financial deadline matters"
     },
+    "Dacă le ai, arată cumpărătorului cum a fost îngrijită mașina." : {
+      "comment" : "Sale check: no service invoices filed on the car, which are optional."
+    },
     "Dacă mașina e încă în leasing sau garanție la bancă, o vinzi doar după ce e achitată." : {
       "comment" : "Sale: a car under a lease or pledge."
     },
@@ -3613,6 +3613,9 @@
     },
     "Datele tale stau pe telefonul tău" : {
       "comment" : "About: privacy headline."
+    },
+    "De achitat înainte" : {
+      "comment" : "Sale group: what must be paid before selling."
     },
     "De aici încep să-ți amintesc din nou." : {
 
@@ -4021,8 +4024,8 @@
     "Dovada scopului șederii (contract de muncă, adeverință de student)" : {
       "comment" : "What renewing a residence permit asks: proof of why one stays."
     },
-    "După ce o semnați amândoi. Dacă nu vă înțelegeți, sună la poliție." : {
-      "comment" : "Claim photo: the signed joint report."
+    "După ce o semnați amândoi. Dacă nu vă înțelegeți, mergi la Poliție." : {
+      "comment" : "Claim photo: the signed joint report. Without agreement the drivers go to the police station; a call to 112 is only for injuries."
     },
     "După kilometri" : {
       "comment" : "Service choice: by kilometres."
@@ -4211,6 +4214,9 @@
     "Eu" : {
       "comment" : "Example household member"
     },
+    "Eu văd ce document e. Pentru un act care expiră, îți amintesc la timp." : {
+      "comment" : "Under „Fotografiază” on a person's „Adaugă un document”: capture tells an act with an expiry from another paper."
+    },
     "Exemple" : {
       "comment" : "Settings section."
     },
@@ -4306,9 +4312,6 @@
     },
     "Fă o poză poliței, ca s-o ai la îndemână." : {
       "comment" : "Claim check: no policy filed."
-    },
-    "Fă poze facturilor pe care le ai." : {
-      "comment" : "Sale check: no invoices filed on the car."
     },
     "Fă-le pe toate" : {
       "comment" : "Applies every suggestion of one kind."
@@ -4476,7 +4479,7 @@
     "Fără contor, de obicei o dată pe an: un pian, o centrală." : {
       "comment" : "Service choice explained: by time."
     },
-    "Fără ele nu îți putem aminti de ITP, RCA sau acte. Le pornești din Setările telefonului." : {
+    "Fără ele nu îți pot aminti de ITP, RCA sau acte. Le pornești din Setările telefonului." : {
       "comment" : "Explains why notifications matter."
     },
     "Fără ITP valabil, înmatricularea se suspendă." : {
@@ -4515,8 +4518,8 @@
     "Fiecare avarie" : {
       "comment" : "Claim photo: each damage."
     },
-    "Fiecare cameră afectată" : {
-      "comment" : "Claim photo: the rooms."
+    "Fiecare zonă afectată" : {
+      "comment" : "Claim photo: each damaged area of the home (a room, a wall, the roof, the stairs)."
     },
     "Filtre" : {
 
@@ -5151,7 +5154,7 @@
 
     },
     "Întâi de departe, apoi avariile de aproape." : {
-      "comment" : "Claim photo: how to photograph rooms."
+      "comment" : "Claim photo: how to photograph each damaged area."
     },
     "Întârziat" : {
       "comment" : "Status of an obligation whose due date has passed."
@@ -5550,6 +5553,9 @@
     },
     "Le notezi în istoric și îți amintesc din timp, ca la mașină." : {
       "comment" : "Explains the service switch: visits and a reminder."
+    },
+    "Le-ai oprit din Setări, pe acest telefon. Termenele rămân oricum aici, în Urmează." : {
+      "comment" : "Notice where reminders are set up while the app's „Notificări” switch is off."
     },
     "Leasing sau credit pe mașină" : {
       "comment" : "Sale: a lease or loan on the car."
@@ -5968,13 +5974,10 @@
       "comment" : "Header: notes."
     },
     "Notificări" : {
-      "comment" : "Settings section."
+      "comment" : "Setting: whether this phone gets the app's reminders, badge and notices.\nSettings section."
     },
     "Notificările sunt oprite" : {
-      "comment" : "Notification status."
-    },
-    "Notificările sunt pornite" : {
-      "comment" : "Notification status."
+      "comment" : "Notice where reminders are set up: notifications are off, on the phone or in the app's Settings.\nNotification status."
     },
     "Nr. %@" : {
       "comment" : "The number of the paper a history entry records."
@@ -6375,6 +6378,9 @@
     "O poză cu actul, făcută mai demult." : {
 
     },
+    "O poză cu documentul, făcută mai demult." : {
+      "comment" : "Under „Din poze” on a person's „Adaugă un document”."
+    },
     "O poză nouă, dreaptă și fără reflexii, ajută." : {
       "comment" : "Capture review: what helps a photo hard to read."
     },
@@ -6441,8 +6447,14 @@
     "Oprite din Setările telefonului" : {
       "comment" : "Settings row: notifications are off in the phone's settings."
     },
+    "Oprite pe acest telefon" : {
+      "comment" : "Settings row: notifications are turned off with the app's own „Notificări” switch."
+    },
+    "Oprite pe acest telefon. Termenele rămân în Urmează." : {
+      "comment" : "Under Settings' „Notificări” switch, off: no reminders, no badge, no notices."
+    },
     "Opțional" : {
-
+      "comment" : "VoiceOver, and beside the title: a readiness check for something worth having but never required."
     },
     "Opțional. Din ea iau data la care expiră." : {
       "comment" : "Am rezolvat: the new expiry is read off a paper named by a feminine noun."
@@ -6733,6 +6745,9 @@
     "Pe %@. Prima dată în dosar." : {
 
     },
+    "Pe acest telefon îți amintesc la timp de termene." : {
+      "comment" : "Under Settings' „Notificări” switch, on."
+    },
     "Pe cele care cer o dată le poți adăuga și mai târziu, din pagina secțiunii sau dintr-o poză a actului." : {
       "comment" : "Under the deadlines offered when adding a section: the unticked ones can be added later."
     },
@@ -6787,11 +6802,17 @@
     "Pentru contract și la primărie." : {
       "comment" : "Sale: why the seller's ID card is needed."
     },
+    "Pentru cumpărător" : {
+      "comment" : "Sale group: the documents and papers for the buyer."
+    },
     "Pentru mașina ta, oricine e de vină." : {
       "comment" : "Claim: when CASCO is the policy to use."
     },
     "Pentru toată casa" : {
 
+    },
+    "Pentru un act: alegi ce act e și până când e valabil." : {
+      "comment" : "Under „Scriu eu” on a person's „Adaugă un document”: typing in is for one of their own acts (an identity card, a passport)."
     },
     "Perioada minimă" : {
 
@@ -7003,6 +7024,9 @@
     },
     "Pornește sincronizarea…" : {
       "comment" : "iCloud sync status while sync starts."
+    },
+    "Pornește-le" : {
+      "comment" : "Button on the notice: turns the app's „Notificări” switch back on."
     },
     "Pornești cu un dosar gol?" : {
       "comment" : "Confirmation before starting with an empty database."
@@ -7496,7 +7520,7 @@
 
     },
     "Scanează un document" : {
-      "comment" : "Adds a photo of another paper on a person's page, beside their own documents."
+      "comment" : "Adds a photo of another paper on a person's page, beside their own documents, in the two-button layout kept switched off."
     },
     "Schimb de anvelope" : {
 
@@ -8057,7 +8081,7 @@
 
     },
     "Te ajută dacă ai nevoie de un medic în UE. Adaugă-l dacă îl ai." : {
-      "comment" : "Trip check: no European health card in the binder."
+      "comment" : "Trip check: no European health card in the binder, which is optional."
     },
     "Te anunț %@." : {
       "comment" : "Reminder sentence: when it reminds, e.g. „Te anunț cu o lună și cu 7 zile înainte și în ziua termenului.”"
@@ -8457,8 +8481,11 @@
     "Un document e prea mare pentru o copie. Scoate-l din dosar și păstrează-l în altă parte, apoi încearcă din nou." : {
       "comment" : "Backup: one file is too large for a backup."
     },
+    "Un document nou" : {
+      "comment" : "Title of the sheet that adds any document for a person, from their page."
+    },
     "Un istoric complet crește încrederea și prețul. Adaugă reviziile pe care le știi." : {
-      "comment" : "Sale check: no service history."
+      "comment" : "Sale check: no service history, which is optional."
     },
     "Un link care începe cu https." : {
       "comment" : "VoiceOver hint for a web link field."
@@ -8468,6 +8495,9 @@
     },
     "Un PDF" : {
 
+    },
+    "Un PDF sau o poză păstrată în Fișiere." : {
+      "comment" : "Under „Din Fișiere” when adding a document for a person."
     },
     "Un PDF sau o poză salvată pe telefon." : {
 

@@ -165,6 +165,6 @@ enum IssuerWording {
         guard count > 0 else {
             return String(localized: "Nimic încă", comment: "Settings row: capture hasn't learned anything from saved papers yet.")
         }
-        return String(localized: "De la \(count) firme", comment: "Settings row: how many issuers capture learned from, with Romanian plural forms (de la o firmă, de la 2 firme, de la 20 de firme).")
+        return String(localized: "De la \(count) firme", locale: .dosarDefault, comment: "Settings row: how many issuers capture learned from, with Romanian plural forms (de la o firmă, de la 2 firme, de la 20 de firme).")
     }
 }

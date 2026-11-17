@@ -20,10 +20,10 @@ enum RepeatWording {
     static func every(_ count: Int, _ unit: RecurrenceInterval.Unit) -> String {
         let n = max(1, count)
         switch unit {
-        case .day: return String(localized: "La fiecare \(n) zile", comment: "How often a deadline repeats, in days. Plural forms: În fiecare zi, La fiecare 3 zile, La fiecare 20 de zile.")
-        case .week: return String(localized: "La fiecare \(n) săptămâni", comment: "How often a deadline repeats, in weeks. Plural forms: În fiecare săptămână, La fiecare 3 săptămâni, La fiecare 20 de săptămâni.")
-        case .month: return String(localized: "La fiecare \(n) luni", comment: "How often a deadline repeats, in months. Plural forms: În fiecare lună, La fiecare 3 luni, La fiecare 20 de luni.")
-        case .year: return String(localized: "La fiecare \(n) ani", comment: "How often a deadline repeats, in years. Plural forms: În fiecare an, La fiecare 2 ani, La fiecare 20 de ani.")
+        case .day: return String(localized: "La fiecare \(n) zile", locale: .dosarDefault, comment: "How often a deadline repeats, in days. Plural forms: În fiecare zi, La fiecare 3 zile, La fiecare 20 de zile.")
+        case .week: return String(localized: "La fiecare \(n) săptămâni", locale: .dosarDefault, comment: "How often a deadline repeats, in weeks. Plural forms: În fiecare săptămână, La fiecare 3 săptămâni, La fiecare 20 de săptămâni.")
+        case .month: return String(localized: "La fiecare \(n) luni", locale: .dosarDefault, comment: "How often a deadline repeats, in months. Plural forms: În fiecare lună, La fiecare 3 luni, La fiecare 20 de luni.")
+        case .year: return String(localized: "La fiecare \(n) ani", locale: .dosarDefault, comment: "How often a deadline repeats, in years. Plural forms: În fiecare an, La fiecare 2 ani, La fiecare 20 de ani.")
         }
     }
 

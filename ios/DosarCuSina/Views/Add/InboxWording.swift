@@ -40,7 +40,7 @@ enum InboxWording {
     ) -> Row {
         let received = received(item.receivedAt, now: now, calendar: calendar)
         let pageCount = preview?.pageCount ?? (item.payload == .images ? item.files.count : 1)
-        let pages = pageCount > 1 ? String(localized: "\(pageCount) pagini", comment: "How many pages a document shared from another app has: „3 pagini”. Only shown for two or more.") : nil
+        let pages = pageCount > 1 ? String(localized: "\(pageCount) pagini", locale: .dosarDefault, comment: "How many pages a document shared from another app has: „3 pagini”. Only shown for two or more.") : nil
         let isClosed = !isSessionUnlocked && !lockedCategories.isEmpty
 
         if isClosed, let key = preview?.categoryKey, lockedCategories.contains(key) {

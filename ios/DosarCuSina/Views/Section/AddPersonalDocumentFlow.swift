@@ -1,14 +1,70 @@
 import SwiftUI
 import SwiftData
 
+/// How a document added for a household member is filed, and so what its sheet says.
+enum HolderDocumentFiling: Hashable, Sendable {
+    /// Whatever the photo is becomes one of their own documents (a checklist's missing
+    /// passport, the Acte box).
+    case personalDocument
+    /// Capture decides, from their page's one „Adaugă un document”: one of their own documents
+    /// (`CaptureKindProfile.isPersonalDocument`) becomes its own section, with reminders; any
+    /// other paper (a diploma, a contract) is kept on their page.
+    case captureDecides
+
+    /// The sheet's title.
+    var title: String {
+        switch self {
+        case .personalDocument: String(localized: "Un act nou", comment: "Title of the sheet that adds a document for a person.")
+        case .captureDecides: String(localized: "Un document nou", comment: "Title of the sheet that adds any document for a person, from their page.")
+        }
+    }
+
+    /// Under „Fotografiază”: what happens with the photo.
+    var cameraDetail: String {
+        switch self {
+        case .personalDocument:
+            String(localized: "Fotografiezi actul, iar eu completez ce act e, datele și când expiră.")
+        case .captureDecides:
+            String(localized: "Eu văd ce document e. Pentru un act care expiră, îți amintesc la timp.",
+                   comment: "Under „Fotografiază” on a person's „Adaugă un document”: capture tells an act with an expiry from another paper.")
+        }
+    }
+
+    /// Under „Din poze”.
+    var photosDetail: String {
+        switch self {
+        case .personalDocument: String(localized: "O poză cu actul, făcută mai demult.")
+        case .captureDecides: String(localized: "O poză cu documentul, făcută mai demult.", comment: "Under „Din poze” on a person's „Adaugă un document”.")
+        }
+    }
+
+    /// Under „Din Fișiere”: the same for both.
+    var filesDetail: String {
+        String(localized: "Un PDF sau o poză păstrată în Fișiere.", comment: "Under „Din Fișiere” when adding a document for a person.")
+    }
+
+    /// Under „Scriu eu”, which types one of their own documents in by hand.
+    var typingDetail: String {
+        switch self {
+        case .personalDocument: String(localized: "Alegi ce act e și până când e valabil.")
+        case .captureDecides:
+            String(localized: "Pentru un act: alegi ce act e și până când e valabil.",
+                   comment: "Under „Scriu eu” on a person's „Adaugă un document”: typing in is for one of their own acts (an identity card, a passport).")
+        }
+    }
+}
+
 /// Adding a household member's document: a photo first (the capture flow reads the type,
 /// the fields and the expiry and files it under them), or "Scriu eu" on one screen. With
 /// the member already chosen (their page, a checklist) it is filed under them; without one
 /// (the Acte box) the photo names them, making the person when they aren't in the binder
-/// yet, and "Scriu eu" asks "Al cui e?" first. Either way it lands on the document's own page.
+/// yet, and "Scriu eu" asks "Al cui e?" first. A personal document lands on its own page;
+/// from their page's „Adaugă un document” (`HolderDocumentFiling.captureDecides`) any other
+/// paper stays on theirs.
 struct AddPersonalDocumentFlow: View {
     let holderID: UUID?
-    /// Called after the document is saved, with its id, once the sheet is closing.
+    let filing: HolderDocumentFiling
+    /// Called after a document of their own is saved, with its id, once the sheet is closing.
     let onCreated: (UUID) -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -22,8 +78,9 @@ struct AddPersonalDocumentFlow: View {
     @State private var draft = PersonalDocumentDraft()
     @State private var errorMessage: String?
 
-    init(holderID: UUID?, onCreated: @escaping (UUID) -> Void) {
+    init(holderID: UUID?, filing: HolderDocumentFiling = .personalDocument, onCreated: @escaping (UUID) -> Void) {
         self.holderID = holderID
+        self.filing = filing
         self.onCreated = onCreated
         let id = holderID ?? UUID()
         _matches = Query(filter: #Predicate<Asset> { $0.id == id })
@@ -57,14 +114,17 @@ struct AddPersonalDocumentFlow: View {
                             .padding(.bottom, DS.Space.xs)
                     }
                     if CaptureSource.isCameraAvailable {
-                        DSActionCard("Fotografiază", subtitle: "Fotografiezi actul, iar eu completez ce act e, datele și când expiră.", systemImage: "camera.fill") {
+                        DSActionCard("Fotografiază", subtitle: Text(verbatim: filing.cameraDetail), systemImage: "camera.fill") {
                             source = .camera
                         }
                     }
-                    DSActionCard("Din poze", subtitle: "O poză cu actul, făcută mai demult.", systemImage: "photo.on.rectangle") {
+                    DSActionCard("Din poze", subtitle: Text(verbatim: filing.photosDetail), systemImage: "photo.on.rectangle") {
                         source = .photos
                     }
-                    DSActionCard("Scriu eu", subtitle: "Alegi ce act e și până când e valabil.", systemImage: "square.and.pencil") {
+                    DSActionCard("Din Fișiere", subtitle: Text(verbatim: filing.filesDetail), systemImage: "folder") {
+                        source = .files
+                    }
+                    DSActionCard("Scriu eu", subtitle: Text(verbatim: filing.typingDetail), systemImage: "square.and.pencil") {
                         isTyping = true
                     }
                     if let errorMessage {
@@ -76,7 +136,7 @@ struct AddPersonalDocumentFlow: View {
                 .frame(maxWidth: .infinity)
             }
             .background(DS.Palette.background)
-            .navigationTitle(Text("Un act nou", comment: "Title of the sheet that adds a document for a person."))
+            .navigationTitle(Text(verbatim: filing.title))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
@@ -97,7 +157,7 @@ struct AddPersonalDocumentFlow: View {
             }
             .captureSourcePicker($source) { payload in
                 errorMessage = nil
-                capture = CaptureFlowInput(payload: payload, preferredAssetID: holder?.id, filesAsPersonalDocument: true)
+                capture = CaptureFlowInput(payload: payload, preferredAssetID: holder?.id, fromPersonsDocuments: filing)
             } onError: { error in
                 errorMessage = SaveFailure.message(for: error, formKept: false)
             }
@@ -111,7 +171,8 @@ struct AddPersonalDocumentFlow: View {
         case .filed(let toast, let assetID):
             dismiss()
             announce(toast)
-            if let assetID { onCreated(assetID) }
+            // A paper kept on the person's own page leaves them where they are.
+            if let assetID, assetID != holderID { onCreated(assetID) }
         case .visitSaved(let toast), .removedFromInbox(let toast):
             dismiss()
             announce(toast)

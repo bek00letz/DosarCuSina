@@ -55,10 +55,16 @@ enum PocketAddition: Hashable, Identifiable, Sendable {
     /// A section filed under this one (a tenant, a product, a subscription, a plant, one of a
     /// category of one's own that belongs here).
     case child(PagePocket, templateKey: String)
-    /// A household member's own document (photo first, or typed in).
+    /// Any document of a household member's, photo first (`AddPersonalDocumentFlow` with
+    /// `HolderDocumentFiling.captureDecides`): capture decides whether it is one of their own
+    /// documents (`CaptureKindProfile.isPersonalDocument`: its own section, with reminders) or
+    /// another paper kept on their page; „Scriu eu” types one of their own in by hand.
+    case document
+    /// A household member's own document (photo first, or typed in). Offered only by the
+    /// two-button layout kept as the way back (`PocketAddition.offersOneDocumentButton`).
     case personalDocument
     /// A photo of a paper for this section, through capture (`photoFirstCapture`). Beside a
-    /// person's own documents it is named apart from them.
+    /// person's own documents (the way back's second button) it is named apart from them.
     case paper(besidePersonal: Bool)
     /// A visit of the category's kind, in its words (`VisitShape.title`): a service, a job, a
     /// repair, a doctor's or a vet's visit.
@@ -78,7 +84,7 @@ enum PocketAddition: Hashable, Identifiable, Sendable {
         switch self {
         case .deadline: .listed(.upcoming)
         case .child(let pocket, _): pocket
-        case .personalDocument, .paper: .listed(.documents)
+        case .document, .personalDocument, .paper: .listed(.documents)
         case .visit, .note: .listed(.history)
         case .person: .listed(.people)
         case .keyFact: .listed(.keyFacts)
@@ -92,11 +98,18 @@ enum PocketAddition: Hashable, Identifiable, Sendable {
         return pocket.title
     }
 
-    /// What Acte's own buttons add: a person one of their own documents and, named apart, a photo
-    /// of another paper; any other section a photo of a paper. The first is what the page's menu
-    /// offers for Acte (`PocketContents.addition`).
-    static func documentButtons(isHolder: Bool) -> [PocketAddition] {
-        isHolder ? [.personalDocument, .paper(besidePersonal: true)] : [.paper(besidePersonal: false)]
+    /// On: a person's Acte has one button, „Adaugă un document”, and capture decides what the
+    /// paper is (`document`). Off: the two buttons it replaced, „Adaugă un act” for one of their
+    /// own documents and „Scanează un document” for another paper; kept as the way back until
+    /// the owner has seen the one button on a phone.
+    static let offersOneDocumentButton = true
+
+    /// What Acte's own buttons add: a person any document of theirs, one button; any other
+    /// section a photo of a paper. The first is what the page's menu offers for Acte
+    /// (`PocketContents.addition`).
+    static func documentButtons(isHolder: Bool, oneButton: Bool = offersOneDocumentButton) -> [PocketAddition] {
+        guard isHolder else { return [.paper(besidePersonal: false)] }
+        return oneButton ? [.document] : [.personalDocument, .paper(besidePersonal: true)]
     }
 
     // Its words and symbol are in `PocketWording.swift` (`title`, `systemImage`).
@@ -228,7 +241,7 @@ struct PocketContents {
         }
     }
 
-    /// What the pocket's own buttons add, under its rows: Acte's two on a person's page, else the
+    /// What the pocket's own buttons add, under its rows: Acte's (`PocketAddition.documentButtons`), else the
     /// one the menu offers for it.
     func buttons(_ pocket: PagePocket) -> [PocketAddition] {
         if pocket == .listed(.documents) { return PocketAddition.documentButtons(isHolder: isHolder) }

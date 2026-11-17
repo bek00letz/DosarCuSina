@@ -77,12 +77,13 @@ extension PocketAddition {
             pocket.addsSectionTitle ?? PocketWording.addInto(pocket.title)
         case .child(.category(_, let name), _):
             PocketWording.addInto(name)
+        case .document, .paper(besidePersonal: false):
+            PocketWording.addDocument
         case .personalDocument:
-            String(localized: "Adaugă un act", comment: "Adds a document for a household member.")
-        case .paper(let besidePersonal):
-            besidePersonal
-                ? String(localized: "Scanează un document", comment: "Adds a photo of another paper on a person's page, beside their own documents.")
-                : String(localized: "Adaugă un act", comment: "Adds a photo of a paper to a section, from its Acte pocket or its add menu.")
+            // The way back's first button (`PocketAddition.offersOneDocumentButton`), as it was.
+            String(localized: "Adaugă un act", comment: "Adds one of a household member's own documents, in the two-button layout kept switched off.")
+        case .paper(besidePersonal: true):
+            String(localized: "Scanează un document", comment: "Adds a photo of another paper on a person's page, beside their own documents, in the two-button layout kept switched off.")
         case .visit(let kind):
             // Offered only where the kind has visits (`history(of:)`); the copy matrix checks no
             // addition is left without words.
@@ -101,6 +102,7 @@ extension PocketAddition {
         switch self {
         case .deadline: "calendar.badge.plus"
         case .child: "plus"
+        case .document: "doc.badge.plus"
         case .personalDocument: "person.text.rectangle"
         case .paper: "doc.viewfinder"
         case .visit(let kind): kind.shape?.symbol ?? "wrench.and.screwdriver"
@@ -117,6 +119,12 @@ enum PocketWording {
     /// The page's one row for its empty pockets.
     static var addMenu: String {
         String(localized: "Adaugă…", comment: "Row on a section page whose menu adds to its empty parts: a deadline, a document, a visit…")
+    }
+
+    /// Acte's button and menu item, on every page: any paper, photo first. „Document” and not
+    /// „act”: a document can be an act (a passport), and also what isn't one (a diploma).
+    static var addDocument: String {
+        String(localized: "Adaugă un document", comment: "Adds a document to a section, photo first, from its Acte pocket or its add menu. Never „act”: a document can be a diploma, which isn't an act.")
     }
 
     /// A button that files a section in a pocket named after its category (a car's Anvelope).

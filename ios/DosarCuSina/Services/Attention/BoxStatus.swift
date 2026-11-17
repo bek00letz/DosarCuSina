@@ -67,13 +67,13 @@ public struct BoxStatus: Hashable, Sendable {
     /// "20 de secțiuni" for a category without words of its own.
     public static func count(_ count: Int, of noun: SectionNoun?) -> String {
         switch noun {
-        case .car: String(localized: "\(count) mașini", comment: "How many cars a box holds.")
-        case .home: String(localized: "\(count) locuințe", comment: "How many homes a box holds.")
-        case .pet: String(localized: "\(count) animale", comment: "How many pets a box holds.")
-        case .bike: String(localized: "\(count) biciclete", comment: "How many bikes a box holds.")
-        case .plant: String(localized: "\(count) plante", comment: "How many plants a box holds.")
-        case .espressoMachine: String(localized: "\(count) espressoare", comment: "How many espresso machines a box holds.")
-        case nil: String(localized: "\(count) secțiuni", comment: "How many sections a box holds, for a category without words of its own.")
+        case .car: String(localized: "\(count) mașini", locale: .dosarDefault, comment: "How many cars a box holds.")
+        case .home: String(localized: "\(count) locuințe", locale: .dosarDefault, comment: "How many homes a box holds.")
+        case .pet: String(localized: "\(count) animale", locale: .dosarDefault, comment: "How many pets a box holds.")
+        case .bike: String(localized: "\(count) biciclete", locale: .dosarDefault, comment: "How many bikes a box holds.")
+        case .plant: String(localized: "\(count) plante", locale: .dosarDefault, comment: "How many plants a box holds.")
+        case .espressoMachine: String(localized: "\(count) espressoare", locale: .dosarDefault, comment: "How many espresso machines a box holds.")
+        case nil: String(localized: "\(count) secțiuni", locale: .dosarDefault, comment: "How many sections a box holds, for a category without words of its own.")
         }
     }
 }

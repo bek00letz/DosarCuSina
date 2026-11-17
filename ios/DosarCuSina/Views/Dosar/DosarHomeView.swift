@@ -375,7 +375,7 @@ struct BinderBoxes {
                 photo: nil,
                 statusText: providerCount == 0
                     ? String(localized: "Nimeni încă", comment: "Agenda box when no people are saved.")
-                    : String(localized: "\(providerCount) contacte", comment: "Agenda box: how many people and firms are saved."),
+                    : String(localized: "\(providerCount) contacte", locale: .dosarDefault, comment: "Agenda box: how many people and firms are saved."),
                 tone: .neutral,
                 isExample: false,
                 isLocked: false

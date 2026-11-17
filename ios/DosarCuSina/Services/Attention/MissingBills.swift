@@ -49,7 +49,7 @@ extension AttentionModel {
     /// note says nothing a locked section wouldn't. Nil with none. It opens the suggestions' page.
     public static func suggestionNote(count: Int, topics: [String]) -> AttentionNote? {
         guard count > 0 else { return nil }
-        let title = String(localized: "\(count) sugestii pentru dosar", comment: "Urmează, Din timp: how many suggestions wait for the binder, with Romanian plural forms (O sugestie pentru dosar).")
+        let title = String(localized: "\(count) sugestii pentru dosar", locale: .dosarDefault, comment: "Urmează, Din timp: how many suggestions wait for the binder, with Romanian plural forms (O sugestie pentru dosar).")
         let about = topics.formatted(.list(type: .and).locale(.dosarDefault))
         let promise = String(localized: "Nu schimb nimic fără tine.", comment: "Repair prompt: nothing changes without the owner.")
         let detail = about.isEmpty ? promise : about + ". " + promise
@@ -94,7 +94,7 @@ extension AttentionModel {
         }
         let months = monthsApart(cycle)
         return String(localized: "Factura de la \(from) n-a venit, o dată la \(months) luni",
-                      comment: "A bill that hasn't come. The first argument is the provider; by how many months its bills come apart, without the number: one „Factura de la ENGIE n-a venit luna asta”, more „Factura de la ENGIE n-a venit încă”.")
+                      locale: .dosarDefault, comment: "A bill that hasn't come. The first argument is the provider; by how many months its bills come apart, without the number: one „Factura de la ENGIE n-a venit luna asta”, more „Factura de la ENGIE n-a venit încă”.")
     }
 
     /// How many months a cycle's bills come apart: a month's or a year's in months. A cycle of

@@ -98,9 +98,12 @@ enum SettingsPage: String, Hashable, CaseIterable, Sendable {
 
 /// What each row of Settings says about its page, in a few plain words. Pure, so it is tested.
 enum SettingsStatus {
-    /// "Pornite, la 09:00", "Oprite", "Nu ai ales încă".
-    static func notifications(_ authorization: ReminderAuthorization, minuteOfDay: Int) -> String {
+    /// "Pornite, la 09:00", "Oprite pe acest telefon" (the app's own switch, `notificationsOn`),
+    /// "Oprite din Setările telefonului", "Nu ai ales încă".
+    static func notifications(_ authorization: ReminderAuthorization, minuteOfDay: Int, isOn: Bool = true) -> String {
         switch authorization {
+        case .authorized where !isOn:
+            String(localized: "Oprite pe acest telefon", comment: "Settings row: notifications are turned off with the app's own „Notificări” switch.")
         case .authorized:
             String(localized: "Pornite, la \(DosarFormat.time(minuteOfDay: minuteOfDay))", comment: "Settings row: notifications are on, and the usual reminder time.")
         case .denied:
@@ -122,7 +125,7 @@ enum SettingsStatus {
         guard lockedCategories > 0 else {
             return String(localized: "Oprită", comment: "Settings row: no lock is on.")
         }
-        let categories = String(localized: "\(lockedCategories) categorii", comment: "A number of categories, with Romanian plural forms (o categorie).")
+        let categories = String(localized: "\(lockedCategories) categorii", locale: .dosarDefault, comment: "A number of categories, with Romanian plural forms (o categorie).")
         return String(localized: "\(biometryName) pentru \(categories)", comment: "Settings row: Face ID for some categories, e.g. 'Face ID pentru 2 categorii'.")
     }
 
@@ -131,7 +134,7 @@ enum SettingsStatus {
         guard hiddenCategories > 0 else {
             return String(localized: "Toate categoriile se văd", comment: "Settings row: every category shows on the binder.")
         }
-        return String(localized: "\(hiddenCategories) categorii ascunse", comment: "Settings row: how many categories are hidden from the binder, with Romanian plural forms (o categorie ascunsă).")
+        return String(localized: "\(hiddenCategories) categorii ascunse", locale: .dosarDefault, comment: "Settings row: how many categories are hidden from the binder, with Romanian plural forms (o categorie ascunsă).")
     }
 
     /// How sync is going in its own words ("Totul e sincronizat"), else where the binder is kept.
@@ -158,7 +161,7 @@ enum SettingsStatus {
         guard count > 0 else {
             return String(localized: "Nimic de corectat", comment: "Settings row: the repair list is empty.")
         }
-        return String(localized: "\(count) lucruri de corectat", comment: "Settings row: how many things wait in the repair list, with Romanian plural forms (un lucru de corectat).")
+        return String(localized: "\(count) lucruri de corectat", locale: .dosarDefault, comment: "Settings row: how many things wait in the repair list, with Romanian plural forms (un lucru de corectat).")
     }
 
     static var examples: String {
@@ -242,7 +245,8 @@ private struct SettingsRoot: View {
     private func status(of page: SettingsPage) -> String {
         switch page {
         case .notifications:
-            return SettingsStatus.notifications(sideEffects?.reminderAuthorization ?? .notDetermined, minuteOfDay: preferences.reminderMinuteOfDay)
+            return SettingsStatus.notifications(sideEffects?.reminderAuthorization ?? .notDetermined, minuteOfDay: preferences.reminderMinuteOfDay,
+                                                isOn: preferences.notificationsOn)
         case .protection:
             return SettingsStatus.protection(
                 appLock: preferences.appLockEnabled,

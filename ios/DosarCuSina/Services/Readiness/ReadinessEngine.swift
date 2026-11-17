@@ -289,16 +289,16 @@ extension ReadinessEngine {
             profile.obligations[BuiltInBlueprints.healthEUCard].map { (until: $0.due, action: ReadinessAction.open(.obligation($0.id))) }
         }
         guard let best = (fromCards + fromProfiles).max(by: { $0.until < $1.until }) else {
-            return ReadinessItem(id: id, status: .missing, title: title,
-                                 detail: String(localized: "Te ajută dacă ai nevoie de un medic în UE. Adaugă-l dacă îl ai.", comment: "Trip check: no European health card in the binder."),
+            return ReadinessItem(id: id, status: .missing, need: .optional, title: title,
+                                 detail: String(localized: "Te ajută dacă ai nevoie de un medic în UE. Adaugă-l dacă îl ai.", comment: "Trip check: no European health card in the binder, which is optional."),
                                  action: addDocument(for: traveller))
         }
         if DueDayValidity.covers(through: end, due: best.until) {
-            return ReadinessItem(id: id, status: .ok, title: title,
+            return ReadinessItem(id: id, status: .ok, need: .optional, title: title,
                                  detail: String(localized: "Valabil până pe \(DosarFormat.longDay(best.until)).", comment: "Readiness: a deadline valid until a day."),
                                  action: best.action)
         }
-        return ReadinessItem(id: id, status: .warning, title: title,
+        return ReadinessItem(id: id, status: .warning, need: .optional, title: title,
                              detail: String(localized: "Expiră pe \(DosarFormat.longDay(best.until)), înainte să te întorci. Cere altul de la casa de asigurări de sănătate.", comment: "Trip check: the European health card ends before the end of the trip."),
                              action: best.action)
     }
@@ -507,17 +507,20 @@ extension ReadinessEngine {
                                      asset: car, blueprintKey: rcaKey))
         }
 
+        // What shows how the car was looked after helps the sale; the buyer can't ask for it.
         buyer.append(ReadinessItem(
-            id: "sale.history", status: car.historyCount > 0 ? .ok : .warning, title: String(localized: "Istoric de service"),
+            id: "sale.history", status: car.historyCount > 0 ? .ok : .missing, need: .optional, title: String(localized: "Istoric de service"),
             detail: car.historyCount > 0
-                ? String(localized: "\(car.historyCount) intrări de arătat cumpărătorului.", comment: "Readiness: how many history entries a buyer can be shown.")
-                : String(localized: "Un istoric complet crește încrederea și prețul. Adaugă reviziile pe care le știi.", comment: "Sale check: no service history."),
+                ? String(localized: "\(car.historyCount) intrări de arătat cumpărătorului.", locale: .dosarDefault, comment: "Readiness: how many history entries a buyer can be shown.")
+                : String(localized: "Un istoric complet crește încrederea și prețul. Adaugă reviziile pe care le știi.", comment: "Sale check: no service history, which is optional."),
             action: .open(.asset(car.id))
         ))
         let hasInvoices = car.documentKinds.contains(.invoice)
         buyer.append(ReadinessItem(
-            id: "sale.invoices", status: hasInvoices ? .ok : .warning, title: String(localized: "Facturi de service"),
-            detail: hasInvoices ? String(localized: "Sunt facturi în dosar.") : String(localized: "Fă poze facturilor pe care le ai.", comment: "Sale check: no invoices filed on the car."),
+            id: "sale.invoices", status: hasInvoices ? .ok : .missing, need: .optional, title: String(localized: "Facturi de service"),
+            detail: hasInvoices
+                ? String(localized: "Sunt facturi în dosar.")
+                : String(localized: "Dacă le ai, arată cumpărătorului cum a fost îngrijită mașina.", comment: "Sale check: no service invoices filed on the car, which are optional."),
             action: hasInvoices ? .open(.asset(car.id)) : .addDocument(assetID: car.id)
         ))
         buyer.append(reminder("sale.contract", String(localized: "Contractul de vânzare-cumpărare", comment: "Sale: the sale contract."),
@@ -556,8 +559,8 @@ extension ReadinessEngine {
                               String(localized: "Dacă mașina e încă în leasing sau garanție la bancă, o vinzi doar după ce e achitată.", comment: "Sale: a car under a lease or pledge.")))
 
         return [
-            ReadinessGroup(id: "sale.buyer", title: String(localized: "Ce cere cumpărătorul", comment: "Sale group: documents a buyer asks for."), symbol: "doc.text.fill", items: buyer),
-            ReadinessGroup(id: "sale.money", title: String(localized: "Bani de plătit înainte", comment: "Sale group: money owed before selling."), symbol: "banknote.fill", items: money),
+            ReadinessGroup(id: "sale.buyer", title: String(localized: "Pentru cumpărător", comment: "Sale group: the documents and papers for the buyer."), symbol: "doc.text.fill", items: buyer),
+            ReadinessGroup(id: "sale.money", title: String(localized: "De achitat înainte", comment: "Sale group: what must be paid before selling."), symbol: "banknote.fill", items: money),
             ReadinessGroup(id: "sale.after", title: String(localized: "După vânzare", comment: "Sale group: what to cancel or move after the sale."), symbol: "checklist", items: after),
         ]
     }
@@ -645,7 +648,7 @@ extension ReadinessEngine {
         }
         let hasPolicy = asset.documentKinds.contains(.policy)
         policyItems.append(ReadinessItem(
-            id: "claim.policyDocument", status: hasPolicy ? .ok : .missing, title: String(localized: "Polița"),
+            id: "claim.policyDocument", status: hasPolicy ? .ok : .missing, need: .optional, title: String(localized: "Polița"),
             detail: hasPolicy ? String(localized: "E în dosar, cu poză.", comment: "Claim check: the policy is filed.") : String(localized: "Fă o poză poliței, ca s-o ai la îndemână.", comment: "Claim check: no policy filed."),
             action: hasPolicy ? .open(.asset(asset.id)) : .addDocument(assetID: asset.id)
         ))
@@ -663,7 +666,7 @@ extension ReadinessEngine {
                 reminder("claim.photo.otherDriver", String(localized: "Actele celuilalt șofer", comment: "Claim photo: the other driver's papers."),
                          String(localized: "Talonul, permisul și polița RCA, dacă e și altă mașină.", comment: "Claim photo: which papers of the other driver.")),
                 reminder("claim.photo.report", String(localized: "Constatarea amiabilă", comment: "Claim photo: the joint accident report."),
-                         String(localized: "După ce o semnați amândoi. Dacă nu vă înțelegeți, sună la poliție.", comment: "Claim photo: the signed joint report.")),
+                         String(localized: "După ce o semnați amândoi. Dacă nu vă înțelegeți, mergi la Poliție.", comment: "Claim photo: the signed joint report. Without agreement the drivers go to the police station; a call to 112 is only for injuries.")),
             ]
             papers = [
                 reminder("claim.paper.driver", String(localized: "Permisul de conducere și cartea de identitate", comment: "Claim paper: the driver's papers."),
@@ -675,8 +678,8 @@ extension ReadinessEngine {
             ]
         } else {
             photos = [
-                reminder("claim.photo.rooms", String(localized: "Fiecare cameră afectată", comment: "Claim photo: the rooms."),
-                         String(localized: "Întâi de departe, apoi avariile de aproape.", comment: "Claim photo: how to photograph rooms.")),
+                reminder("claim.photo.rooms", String(localized: "Fiecare zonă afectată", comment: "Claim photo: each damaged area of the home (a room, a wall, the roof, the stairs)."),
+                         String(localized: "Întâi de departe, apoi avariile de aproape.", comment: "Claim photo: how to photograph each damaged area.")),
                 reminder("claim.photo.source", String(localized: "De unde a pornit", comment: "Claim photo: the cause."),
                          String(localized: "Țeava, acoperișul, geamul sau peretele.", comment: "Claim photo: what the cause can be.")),
                 reminder("claim.photo.goods", String(localized: "Lucrurile stricate", comment: "Claim photo: damaged belongings."),

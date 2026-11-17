@@ -267,7 +267,7 @@ private struct GalleryButtons: View {
                 DSCard {
                     VStack(spacing: DS.Space.s) {
                         DSPrimaryButton(verbatim: "Salvează", systemImage: "checkmark") {}
-                        DSSecondaryButton(verbatim: "Adaugă un act", systemImage: "plus") {}
+                        DSSecondaryButton(verbatim: "Adaugă un document", systemImage: "plus") {}
                         DSSecondaryButton(verbatim: "Șterge din istoric", systemImage: "trash", role: .destructive) {}
                     }
                 }
@@ -391,7 +391,7 @@ private struct GalleryCards: View {
                     }
                 }
             }
-            GallerySection(title: "Liste de pregătire", note: "DSReadinessRow: pregătit, merită o privire, de rezolvat sau lipsă, cu motivul. Tot rândul se apasă: deschide ce e acolo sau adaugă ce lipsește. Ce iei cu tine se bifează cu DSCheckRow.") {
+            GallerySection(title: "Liste de pregătire", note: "DSReadinessRow: pregătit, merită o privire, de rezolvat, lipsă sau opțional, cu motivul. Ce e opțional are ton neutru și „Opțional” lângă titlu. Tot rândul se apasă: deschide ce e acolo sau adaugă ce lipsește. Ce iei cu tine se bifează cu DSCheckRow.") {
                 DSCard {
                     VStack(alignment: .leading, spacing: 0) {
                         DSStatusLine(text: "Un lucru de rezolvat · 2 lucruri nu sunt în dosar", tone: .alarming)
@@ -403,7 +403,11 @@ private struct GalleryCards: View {
                         DSRowSeparator()
                         DSReadinessRow(status: .warning, title: Text(verbatim: "Rovinietă"), detail: Text(verbatim: "Expiră pe 15 iulie, cât ești plecat.")) {}
                         DSRowSeparator()
-                        DSReadinessRow(status: .missing, title: Text(verbatim: "Card european de sănătate"), detail: Text(verbatim: "Nu e în dosar."),
+                        DSReadinessRow(status: .missing, title: Text(verbatim: "ITP"), detail: Text(verbatim: "Nu e în dosar."),
+                                       actionTitle: Text(verbatim: "Adaugă")) {}
+                        DSRowSeparator()
+                        DSReadinessRow(status: .suggested, title: Text(verbatim: "Card european de sănătate"),
+                                       detail: Text(verbatim: "Te ajută dacă ai nevoie de un medic în UE. Adaugă-l dacă îl ai."),
                                        actionTitle: Text(verbatim: "Adaugă")) {}
                         DSRowSeparator()
                         DSCheckRow(title: Text(verbatim: "Constatarea amiabilă"), subtitle: Text(verbatim: "După ce o semnați amândoi."), isOn: $cabinFilter)
