@@ -103,6 +103,13 @@ Newest first. Copy this template:
 
 Never write security findings, crash traces or local paths here. See [SECURITY.md](../SECURITY.md).
 
+### 2026-11-17 — owner (with Claude) — `claude/reminders-and-time`
+- **Did:** reminders, repeats and routes, each at its cause. One reminder per moment for a deadline (`ReminderPlanner.Purpose`); a time skipped in spring comes at the first minute after the gap, and the time pickers say so (`CalendarDay.moment`, `ReminderClock.springForward`); a pass when the day, the time zone or the clock changes, reading the calendar as it starts (`SideEffectsCoordinator.timeChanges`); a repeat counted from its due dates and done late moves past the day it was done, except a payment's or a tax's (`ObligationKind.missedCyclesStayOwed`); a route never lands under a screen's own sheet (`dsSheet`, `dsFullScreenCover`, `dsPresents`, `ShellSheetQueue.arrive`, the new `sheet-outside-router` check); the notification question in *Editează* only when reminders change; the plural check widened, with four strings moved to catalog plurals.
+- **Tests:** `ReminderMomentsTests` and `RoutesOverSheetsTests` (new), `DeadlineEditTests`, the updated recurring-deadline tests; the architecture check and its self-test locally. The suite on GitHub.
+- **Left open:** not tried on a phone: a notification tapped over an open sheet, a flight across time zones, a reminder at 03:30 on 28 March. Alerts and confirmation dialogs aren't sheets and still aren't known to the router (De verificat's landing reads them from UIKit, `InboxLanding.isShowingSomethingOverTheTabs`).
+- **Next:** check the three on a phone.
+- **Decisions:** „Reminders, repeats and routes, at their causes” (2026-11-17), which replaces one rule of „Recurring deadlines, checked end to end”.
+
 ### 2026-11-16 — owner (with Claude) — `claude/note-who-and-gender`
 - **Did:** a note's page in Istoric (and a deadline closed with one tap, as „Garanția se termină”) names no one: `HistoryEntryShape.providerHeader` is nil for it, since nothing that makes one adds a person. A category of one's own no longer has a gender guessed from its name: its sections take its name (`TemplateDefinition.sectionName`), and only a built-in's declared gender is ever read (the examples' question).
 - **Tests:** `pagesNamingNoOneHoldNoOne`, `ownCategoryNamesItsSections`; the matrix shows „names no one” for notes. Run on GitHub.
