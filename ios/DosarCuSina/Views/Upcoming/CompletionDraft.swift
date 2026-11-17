@@ -23,11 +23,21 @@ struct CompletionDraft {
             || !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    /// What is wrong with the new end the sheet asks, said under its field: a day that isn't
+    /// after today goes nowhere (`ObligationActions.continues`), so saving waits until the
+    /// person picks another. Nil when the shape asks none, none is filled in, or it is fine.
+    func newDayProblem(shape: CompletionShape, calendar: Calendar = .dosar, now: Date = Date()) -> String? {
+        guard shape.asksNewExpiry, let newExpiry else { return nil }
+        let day = CalendarDay(newExpiry, calendar: calendar)
+        return ObligationActions.continues(on: day, after: CalendarDay(now, calendar: calendar)) ? nil : CompletionWording.newDayHasPassed
+    }
+
     /// What saving files, for `obligation`, as its kind asks it. The date is today when the
     /// kind doesn't ask one. `counter` is the counter the sheet asked for, if any
-    /// (`ObligationActions.counter`): a reading is kept only on one.
+    /// (`ObligationActions.counter`): a reading is kept only on one. `cycle` is the one the
+    /// person saw when the sheet opened: closed meanwhile, nothing is filed.
     func completion(of obligation: Obligation, shape: CompletionShape, counter: ObligationActions.Counter?,
-                    calendar: Calendar = .dosar, now: Date = Date()) -> CaptureFiler.Completion {
+                    cycle: CalendarDay? = nil, calendar: Calendar = .dosar, now: Date = Date()) -> CaptureFiler.Completion {
         let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
         return CaptureFiler.Completion(
             obligation: obligation,
@@ -38,7 +48,8 @@ struct CompletionDraft {
             note: shape.asksNote && !trimmed.isEmpty ? trimmed : nil,
             metricReading: shape.asksReading && counter != nil ? reading : nil,
             keepsPhotoOnRequest: keepsPhotoOnRequest,
-            isAnotherBill: isAnotherBill
+            isAnotherBill: isAnotherBill,
+            cycle: cycle
         )
     }
 }

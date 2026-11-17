@@ -387,8 +387,9 @@ struct UpcomingRoot: View {
             guard let obligation = UpcomingActions(context: context).obligation(entry.id) else { return }
             do {
                 // The page's own entry: a chore is done at once and its toast offers a note;
-                // any other kind opens "Am rezolvat", which asks what the kind asks.
-                let start = try CompletionEntry(context: context).start(obligation) { entryID, shown in
+                // any other kind opens "Am rezolvat", which asks what the kind asks. Only for the
+                // cycle this row showed: a second activation closes nothing more.
+                let start = try CompletionEntry(context: context).start(obligation, cycle: entry.obligation.dueDay) { entryID, shown in
                     noteRequest = HistoryNoteRequest(entryID: entryID, restoring: shown)
                 }
                 switch start {
@@ -396,7 +397,7 @@ struct UpcomingRoot: View {
                 case .asks(let request): completing = request
                 }
             } catch {
-                toast = UpcomingActions.failureToast(error)
+                if let failure = UpcomingActions.quietFailureToast(error) { toast = failure }
             }
         }
     }

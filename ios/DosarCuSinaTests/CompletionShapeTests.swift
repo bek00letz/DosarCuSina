@@ -232,47 +232,42 @@ struct CompletionShapeTests {
         #expect(outcome.completion?.note == "Totul e în regulă. Rapel peste un an.")
     }
 
-    // MARK: A renewal: the new document and its expiry
+    // MARK: A renewal of one's own: the new paper and its expiry
+    // (A personal document renewed is a new document of its own: `CompletionsAndRenewalsTests`.)
 
-    private func passport(_ context: ModelContext, expiry: String) throws -> (Asset, Obligation) {
-        let template = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.documents))
-        let actions = AssetActions(context: context, calendar: calendar, now: { noon("2026-10-01") })
-        var values = FieldValues()
-        values["document.type"] = .text("Pașaport")
-        values["document.expiry"] = .date(CalendarDay(expiry))
-        let asset = try actions.create(name: "Pașaport", template: template, values: values,
-                                       obligations: actions.plannedObligations(for: template, values: values))
-        return (asset, try #require(asset.activeObligations.first))
+    private func renewalOfOnesOwn(_ context: ModelContext) throws -> Obligation {
+        try ObligationActions(context: context, calendar: calendar, now: { noon(self.today) })
+            .create(title: "Abonament sală", kind: .renewal, dueDay: CalendarDay("2026-12-01"), for: nil)
     }
 
     @Test func aRenewalTakesTheNewExpiryTyped() async throws {
         let context = try makeContext()
-        let (asset, renewal) = try passport(context, expiry: "2026-12-01")
+        let renewal = try renewalOfOnesOwn(context)
         #expect(renewal.completion(in: context).asksNewExpiry)
         let draft = CompletionDraft(date: noon(today), newExpiry: noon("2036-11-20"))
-        _ = try await filer(context).file(.completion(draft.completion(of: renewal, shape: renewal.completion(in: context), counter: nil,
-                                                                       calendar: calendar, now: noon(today))))
-        #expect(asset.value("document.expiry") == .date(CalendarDay("2036-11-20")))
-        #expect(renewal.dueDay == CalendarDay("2036-11-20"), "The deadline follows the new expiry")
+        let outcome = try await filer(context).file(.completion(draft.completion(of: renewal, shape: renewal.completion(in: context), counter: nil,
+                                                                                 calendar: calendar, now: noon(today))))
+        #expect(renewal.dueDay == CalendarDay("2036-11-20"), "The deadline goes on from the new expiry")
+        #expect(renewal.status == .active)
+        #expect(outcome.completion != nil, "Recorded in Istoric")
     }
 
     @Test func aRenewalStillFilesTheNewDocument() async throws {
         let context = try makeContext()
-        let (asset, renewal) = try passport(context, expiry: "2026-12-01")
+        let renewal = try renewalOfOnesOwn(context)
         let store = CaptureDocumentStore()
-        let stored = try await store.store(.init(pages: [CaptureDocumentStoreTests.page(width: 800, height: 1100, seed: 91)], kind: .passport))
-        let newPassport = CaptureResult(kind: .passport, kindConfidence: 0.95, fields: [
+        let stored = try await store.store(.init(pages: [CaptureDocumentStoreTests.page(width: 800, height: 1100, seed: 91)], kind: .other))
+        let paper = CaptureResult(kind: .other, kindConfidence: 0.95, fields: [
             CaptureField(key: .expiryDate, value: .day(CalendarDay("2036-11-20")), confidence: 0.9, tier: .heuristic),
-        ], suggestions: [], reminder: nil, recognizedText: "PAȘAPORT", barcodes: [], document: stored.ref, notices: [])
+        ], suggestions: [], reminder: nil, recognizedText: "ABONAMENT", barcodes: [], document: stored.ref, notices: [])
         var draft = CompletionDraft(date: noon(today))
-        draft.document = newPassport
+        draft.document = paper
 
         let outcome = try await filer(context, store: store).file(.completion(draft.completion(
             of: renewal, shape: renewal.completion(in: context), counter: nil, calendar: calendar, now: noon(today))))
-        let filed = try #require(outcome.attachment, "The new document is kept")
-        #expect(filed.asset?.id == asset.id)
-        #expect(asset.value("document.expiry") == .date(CalendarDay("2036-11-20")), "Its expiry, read off the photo")
-        #expect(renewal.dueDay == CalendarDay("2036-11-20"))
+        let filed = try #require(outcome.attachment, "The new paper is kept")
+        #expect(filed.obligation?.id == renewal.id)
+        #expect(renewal.dueDay == CalendarDay("2036-11-20"), "Its expiry, read off the photo")
         #expect(outcome.receipt?.canUndo == true)
     }
 

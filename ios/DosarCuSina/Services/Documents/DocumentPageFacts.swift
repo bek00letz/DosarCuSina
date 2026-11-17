@@ -96,6 +96,46 @@ enum DocumentPageFacts {
     static func copyKind(isPersonalDocument: Bool, isLockedCategory: Bool) -> Clipboard.Kind {
         isPersonalDocument || isLockedCategory ? .personal : .ordinary
     }
+
+    // MARK: Replaced by a new one
+
+    /// What a section replaced by a new one says (`CompletionShape.Replacement`): one of its
+    /// deadlines whose closing replaces it ("Am rezolvat" on a personal document's renewal,
+    /// declared by its completion kind) was closed, and that deadline isn't open again (an
+    /// expiry typed in later makes a new one). Nil for any other section. Its page shows it
+    /// expired and offers the new one and deleting it; a person's next document to expire
+    /// leaves it out.
+    static func replacement(of section: Asset) -> CompletionShape.Replacement? {
+        let deadlines = section.obligations ?? []
+        let closed = deadlines.filter { $0.status == .done }
+        guard !closed.isEmpty, let context = section.modelContext else { return nil }
+        for deadline in closed {
+            guard let replacement = deadline.completion(in: context).replacement else { continue }
+            let openAgain = deadlines.contains { $0.blueprintKey == deadline.blueprintKey && ($0.status == .active || $0.status == .paused) }
+            if !openAgain { return replacement }
+        }
+        return nil
+    }
+
+    /// Whether the new one is already in the binder: another section of the same category and
+    /// type under the same holder, made after this one and not replaced itself. "Adaugă actul
+    /// nou" is offered only until then.
+    static func hasSuccessor(_ section: Asset) -> Bool {
+        guard let holder = section.parent else { return false }
+        let type = section.values[DocumentType.typeFieldKey]?.textValue
+        return (holder.children ?? []).contains { other in
+            other.id != section.id && other.templateKey == section.templateKey && other.createdAt > section.createdAt
+                && other.values[DocumentType.typeFieldKey]?.textValue == type && !other.wasReplaced
+        }
+    }
+}
+
+extension Asset {
+    /// Whether it was replaced by a new one (`DocumentPageFacts.replacement(of:)`): expired,
+    /// whatever its date says.
+    @MainActor var wasReplaced: Bool {
+        DocumentPageFacts.replacement(of: self) != nil
+    }
 }
 
 extension Attachment {

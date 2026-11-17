@@ -253,7 +253,7 @@ public enum BuiltInTemplates {
                 ]),
             ],
             blueprints: [
-                ObligationBlueprint(key: BuiltInBlueprints.documentRenew, title: String(localized: "Reînnoire"), kind: .renewal, completion: .newDocument, recurrence: .none,
+                ObligationBlueprint(key: BuiltInBlueprints.documentRenew, title: String(localized: "Reînnoire"), kind: .renewal, completion: .documentReplaced, recurrence: .none,
                                     firstDue: .field(key: DocumentFields.expiry, offsetDays: 0),
                                     reminders: profile([90, 30], .legal),
                                     reminderVariants: ReminderProfileVariants(field: "document.type", variants: [

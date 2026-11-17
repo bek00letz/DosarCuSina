@@ -79,6 +79,11 @@ struct DSStatusBadge: View {
         )
     }
 
+    /// "Expirat", whatever its date says: a document replaced by a new one (`Asset.wasReplaced`).
+    static var replaced: DSStatusBadge {
+        DSStatusBadge(.overdue, text: Text("Expirat", comment: "Badge: a document replaced by a new one, expired whatever its printed date."))
+    }
+
     var body: some View {
         HStack(spacing: DS.Space.xxs) {
             Image(systemName: status.systemImage)

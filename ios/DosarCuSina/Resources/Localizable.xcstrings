@@ -1273,6 +1273,9 @@
     "Adaugă" : {
       "comment" : "Adds a suggested obligation.\nReadiness row: adds what is missing.\nTab: scan or add something."
     },
+    "Adaugă actul nou" : {
+      "comment" : "A renewed personal document's page: adds the new document for the same person."
+    },
     "Adaugă altceva" : {
 
     },
@@ -1453,6 +1456,9 @@
     "Ai pus o cheie pentru %@" : {
       "comment" : "AI setting: a key is saved for the chosen service."
     },
+    "Ai reînnoit actul" : {
+      "comment" : "A renewed personal document's page: the card that offers the new one."
+    },
     "Ai și o poză cu spatele? Acolo e codul care confirmă datele." : {
       "comment" : "Capture review: asks for the back of an identity card."
     },
@@ -1530,6 +1536,9 @@
     },
     "Alege o poză a spatelui. Un PDF rămâne act separat." : {
       "comment" : "A PDF was picked as a document's back."
+    },
+    "Alege o zi de după azi. Data aceasta a trecut deja." : {
+      "comment" : "Under a new expiry or end date that isn't after today: pick a later day."
     },
     "Alege un model" : {
       "comment" : "AI setting: no model chosen yet for a custom service."
@@ -2880,6 +2889,9 @@
     },
     "Cea primită de la asigurător sau de la broker." : {
       "comment" : "Am rezolvat: which paper, for a renewed insurance."
+    },
+    "Cel nou are altă serie și alt număr: adaugă-l ca act nou, cu poza lui. Pe acesta îl poți păstra sau șterge." : {
+      "comment" : "A renewed personal document's page: why the new one is added on its own."
     },
     "Cel primit la stație, cu data următoarei inspecții." : {
       "comment" : "Am rezolvat: which paper, for an ITP."
@@ -4274,6 +4286,9 @@
     "Expiră pe %@." : {
       "comment" : "Capture review: the day a document or a policy expires."
     },
+    "Expirat" : {
+      "comment" : "Badge: a document replaced by a new one, expired whatever its printed date."
+    },
     "Expirat de %@" : {
       "comment" : "Badge: a document expired this long ago, e.g. '5 zile' or '3 ani'."
     },
@@ -5056,6 +5071,9 @@
     },
     "Încerc din nou singur. Ce schimbi rămâne pe telefon între timp." : {
       "comment" : "iCloud sync status detail: iCloud busy; what happens."
+    },
+    "Închid termenul și trec actul acesta ca expirat. Actul nou are altă serie și alt număr, așa că îl adaugi separat, cu poza lui." : {
+      "comment" : "Am rezolvat on a personal document: what saving does, and that the new document is added on its own."
     },
     "Închide" : {
       "comment" : "Closes Settings.\nCloses the full-screen page viewer.\nCloses the reminders sheet; each choice is already saved."
@@ -7897,6 +7915,9 @@
     "Șterge actul" : {
       "comment" : "Deletes a personal document from its page."
     },
+    "Șterge actul vechi" : {
+      "comment" : "A renewed personal document's page: deletes the old document."
+    },
     "Șterge călătoria" : {
       "comment" : "Forgets a kept trip and its checklist."
     },
@@ -8126,6 +8147,9 @@
     },
     "termenul" : {
 
+    },
+    "Termenul a fost bifat între timp, dintr-o notificare, din widget sau de pe alt dispozitiv. N-am salvat nimic, iar următorul termen a rămas cum era." : {
+      "comment" : "Error: the deadline was closed elsewhere while the person was closing it; nothing was saved."
     },
     "Termenul de acum rămâne pe %@. Regula nouă se aplică după ce îl bifezi." : {
       "comment" : "Under the repeat control on a deadline's page: the current due day stays."
@@ -8662,6 +8686,9 @@
     },
     "Veterinarul" : {
 
+    },
+    "Vezi actul" : {
+      "comment" : "Toast after closing a personal document's renewal: opens the document's page."
     },
     "Vezi actul mare" : {
       "comment" : "VoiceOver label of the document thumbnail in the review."
