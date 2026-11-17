@@ -105,12 +105,14 @@ enum DocumentPageFacts {
     /// expiry typed in later makes a new one). Nil for any other section. Its page shows it
     /// expired and offers the new one and deleting it; a person's next document to expire
     /// leaves it out.
+    /// A deadline that renews one of the holder's own documents (the European health card on a
+    /// health file, `Replacement.Replaces.holdersDocument`) never makes its section replaced.
     static func replacement(of section: Asset) -> CompletionShape.Replacement? {
         let deadlines = section.obligations ?? []
         let closed = deadlines.filter { $0.status == .done }
         guard !closed.isEmpty, let context = section.modelContext else { return nil }
         for deadline in closed {
-            guard let replacement = deadline.completion(in: context).replacement else { continue }
+            guard let replacement = deadline.completion(in: context).replacement, replacement.replacesItsSection else { continue }
             let openAgain = deadlines.contains { $0.blueprintKey == deadline.blueprintKey && ($0.status == .active || $0.status == .paused) }
             if !openAgain { return replacement }
         }
@@ -125,6 +127,23 @@ enum DocumentPageFacts {
         let type = section.values[DocumentType.typeFieldKey]?.textValue
         return (holder.children ?? []).contains { other in
             other.id != section.id && other.templateKey == section.templateKey && other.createdAt > section.createdAt
+                && other.values[DocumentType.typeFieldKey]?.textValue == type && !other.wasReplaced
+        }
+    }
+
+    /// Whether the new one is already in the binder, for the deadline `closed` whose closing
+    /// replaced `replacement`: for the section itself, `hasSuccessor(_:)`; for one of the holder's
+    /// own documents (the health card on a health file), a document of that type among the holder's,
+    /// made after the deadline was closed and not replaced itself.
+    @MainActor
+    static func hasSuccessor(of replacement: CompletionShape.Replacement, closing closed: Obligation) -> Bool {
+        guard let section = closed.asset else { return false }
+        guard let type = replacement.holdersDocumentType else { return hasSuccessor(section) }
+        guard let holder = section.parent, let context = section.modelContext,
+              let templates = try? TemplateStore(context: context).templatesByKey() else { return false }
+        let closedAt = closed.history.first?.occurredAt ?? section.createdAt
+        return (holder.children ?? []).contains { other in
+            templates.plays(.personalDocument, other.templateKey) && other.createdAt > closedAt
                 && other.values[DocumentType.typeFieldKey]?.textValue == type && !other.wasReplaced
         }
     }

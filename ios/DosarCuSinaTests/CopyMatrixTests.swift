@@ -182,8 +182,11 @@ struct CopyMatrixTests {
             if let note = shape.note { asks.append("\(CompletionWording.note) — \(note.prompt)") }
             if let counter = counterTitle(blueprint, in: definition) { asks.append(counter) }
             if let replacement = shape.replacement {
+                // A personal document is the section replaced: deleted with its undo, shown expired.
+                // A health file's card is one of the holder's documents: only the new one is offered.
+                let offers = [replacement.add, replacement.delete].compactMap { $0 }.joined(separator: " · ")
                 asks.append("\(replacement.inSheet) Once closed: „\(replacement.title)” — \(replacement.message) "
-                            + "[\(replacement.add) · \(replacement.delete)] · the toast's \(replacement.open) · the badge Expirat")
+                            + "[\(offers)] · the toast's \(replacement.open)" + (replacement.replacesItsSection ? " · the badge Expirat" : ""))
             }
             return ("\(blueprint.title) (`\(kind.rawValue)`)", "\(shape.actionWords) / \(shape.menuWords) — " + asks.joined(separator: "; "))
         }

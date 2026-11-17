@@ -3,13 +3,15 @@ import SwiftData
 
 /// What a deadline's page lists under its actions, each card only when it has something:
 /// *Data trecută*, the last time it was done (its day, cost, note and who did it), and the
-/// policy card, this deadline's own policy facts (number, claims phone, the policyholder's
-/// class) and the documents on file. A chore shows neither until it has one; a card never
-/// opens with a separator.
+/// policy card, this deadline's own policy facts (number, insured sum, claims phone, the
+/// policyholder's class) and the documents on file. A chore shows neither until it has one; a
+/// card never opens with a separator.
 struct DeadlinePageFacts {
     /// A policy fact, in the order the card lists them.
     enum PolicyRow: Hashable {
         case policyNumber(String)
+        /// The sum the policy insures for, written with `Money`.
+        case insuredSum(Money)
         case claimsPhone(String)
         /// The bonus-malus class of the person the policy insures, read from them.
         case ownerClass(String)
@@ -22,21 +24,23 @@ struct DeadlinePageFacts {
     /// Documents filed with the deadline or with its last completion, newest first.
     let documents: [Attachment]
 
-    init(lastCompletion: HistoryEntry?, policyNumber: String?, claimsPhone: String?, ownerClass: String?, documents: [Attachment]) {
+    init(lastCompletion: HistoryEntry?, policyNumber: String?, insuredSum: Money? = nil, claimsPhone: String?, ownerClass: String?,
+         documents: [Attachment]) {
         self.lastCompletion = lastCompletion
-        self.policyRows = [policyNumber.map(PolicyRow.policyNumber), claimsPhone.map(PolicyRow.claimsPhone), ownerClass.map(PolicyRow.ownerClass)]
+        self.policyRows = [policyNumber.map(PolicyRow.policyNumber), insuredSum.map(PolicyRow.insuredSum), claimsPhone.map(PolicyRow.claimsPhone),
+                           ownerClass.map(PolicyRow.ownerClass)]
             .compactMap { $0 }
         self.documents = documents
     }
 
     /// The facts of `obligation`, by its blueprint's roles (`DeadlineFacts`): CASCO's page shows
-    /// CASCO's policy, a car's RCA the class of the person it insures.
+    /// CASCO's policy and the sum it insures, a car's RCA the class of the person it insures.
     @MainActor
     static func of(_ obligation: Obligation, template: TemplateDefinition?, in context: ModelContext) -> DeadlinePageFacts {
         let facts = DeadlineFacts.of(obligation, template: template)
         let ownerClass = facts.policyholder.flatMap { Policyholders.bonusMalus(ofPolicyholder: $0, among: Policyholders.people(in: context)) }
-        return DeadlinePageFacts(lastCompletion: obligation.history.first, policyNumber: facts.policyNumber, claimsPhone: facts.claimsPhone,
-                                 ownerClass: ownerClass, documents: documentsOnFile(obligation))
+        return DeadlinePageFacts(lastCompletion: obligation.history.first, policyNumber: facts.policyNumber, insuredSum: facts.insuredSum,
+                                 claimsPhone: facts.claimsPhone, ownerClass: ownerClass, documents: documentsOnFile(obligation))
     }
 
     /// The documents filed with the deadline, and with the last time it was done, each once,

@@ -193,6 +193,63 @@ struct CompletionsAndRenewalsTests {
         #expect(DocumentPageFacts.hasSuccessor(old), "The new passport is in the binder")
     }
 
+    // MARK: 2b. A health file's European health card is renewed like a personal document
+
+    @Test("The health card's deadline on a health file states a replacement of one of the holder's documents")
+    func theHealthCardStatesItsReplacement() throws {
+        let card = try #require(BuiltInTemplates.health.blueprints.first { $0.key == BuiltInBlueprints.healthEUCard })
+        #expect(card.completion == .newHealthCard && !card.recurrence.repeats, "Declared in the catalog: a new card is a new upload")
+        let shape = CompletionKind.newHealthCard.shape
+        #expect(shape.newEnd == nil && shape.paper == nil && shape.asksDate && !shape.isOneTap)
+        #expect(shape.replacement?.replaces == .holdersDocument(documentType: DocumentType.euHealthCard))
+        #expect(shape.replacesDocument && !shape.replacesSection, "The health file itself is never replaced")
+        #expect(shape.replacement?.delete == nil, "Nothing of the health file's own to delete")
+        #expect(CompletionKind.allCases.filter { $0.shape.replacesDocument } == [.documentReplaced, .newHealthCard])
+        // The card as a personal document closes the same way, by its category's one renewal.
+        #expect(BuiltInTemplates.documents.blueprints.first { $0.key == BuiltInBlueprints.documentRenew }?.completion == .documentReplaced)
+    }
+
+    @Test("„Am rezolvat” on a health file's health card closes it, whatever its repeat, and offers the new card until it is in the binder")
+    func theHealthCardIsClosedAndTheNewOneOffered() async throws {
+        let context = try makeContext()
+        let holder = try section(context, BuiltInTemplates.Key.member, name: "Ana Popescu", values: FieldValues())
+        let health = try section(context, BuiltInTemplates.Key.health, name: "Fișa medicală", values: FieldValues(), parent: holder)
+        let template = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.health))
+        let blueprint = try #require(template.blueprints.first { $0.key == BuiltInBlueprints.healthEUCard })
+        let card = try actions(context).create(from: blueprint, for: health, firstDue: CalendarDay("2026-12-01"))
+        // As an earlier catalog made it: repeating every two years.
+        card.recurrence = .interval(.years(2), anchor: .completion)
+        try UnitOfWork.save(context)
+
+        let plan = TripPlan(start: CalendarDay("2026-11-20"), end: CalendarDay("2026-11-27"), region: .europeanUnion,
+                            travellers: [.member(holder.id)], vehicles: [])
+        func tripCheck() throws -> ReadinessItem? {
+            ReadinessEngine.check(.trip(plan), assets: try ReadinessAsset.fetchAll(in: context, calendar: calendar), calendar: calendar)[id: "trip.ehic.\(holder.id)"]
+        }
+        #expect(try tripCheck()?.action == .open(.obligation(card.id)), "Before: the health file's deadline counts")
+
+        let outcome = try await file(CompletionDraft(date: noon(today)), closing: card, in: context, cycle: card.dueDay)
+        #expect(outcome.completion != nil, "Recorded in Istoric")
+        #expect(card.status == .done && outcome.nextDue == nil, "Closed: the new card reminds of its own")
+        #expect(!health.wasReplaced && DocumentPageFacts.replacement(of: health) == nil, "The health file is never shown expired")
+        let replacement = try #require(card.completion(in: context).replacement)
+        #expect(!DocumentPageFacts.hasSuccessor(of: replacement, closing: card), "„Adaugă cardul nou” is offered")
+        let missing = try #require(try tripCheck())
+        #expect(missing.need == .optional && missing.status != .ok, "The trip lists the card as optional, still to add")
+
+        var values = FieldValues()
+        values[DocumentType.typeFieldKey] = .text(DocumentType.euHealthCard)
+        values[DocumentFields.expiry] = .date(CalendarDay("2031-11-01"))
+        let newCard = try section(context, BuiltInTemplates.Key.documents, name: "Card european de sănătate", values: values,
+                                  parent: holder, at: "2026-11-18")
+        #expect(DocumentPageFacts.hasSuccessor(of: replacement, closing: card), "The new card is in the binder")
+        let found = try #require(try tripCheck())
+        #expect(found.status == .ok && found.need == .optional && found.action == .open(.asset(newCard.id)))
+
+        try #require(outcome.receipt).undo()
+        #expect(card.status == .active, "Anulează opens it again")
+    }
+
     // MARK: 3. A new day before today
 
     @Test("A new end before today, or today, is refused under its field; a later one is fine")

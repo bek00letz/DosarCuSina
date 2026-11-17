@@ -94,6 +94,7 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: VehicleFields.cascoInsurer, label: String(localized: "Asigurător CASCO"), type: .text),
                     FieldDefinition(key: VehicleFields.cascoPolicyNumber, label: String(localized: "Număr poliță CASCO"), type: .text, role: .keyFact),
                     FieldDefinition(key: VehicleFields.cascoClaimsPhone, label: String(localized: "Telefon daune CASCO"), type: .phone, role: .keyFact),
+                    FieldDefinition(key: VehicleFields.cascoInsuredSum, label: String(localized: "Sumă asigurată CASCO"), type: .money),
                 ]),
                 PurchaseFields.section(prefix: "vehicle"),
             ],
@@ -116,7 +117,7 @@ public enum BuiltInTemplates {
                 ObligationBlueprint(key: BuiltInBlueprints.vehicleCASCO, title: String(localized: "CASCO"), kind: .insurance, completion: .policy, recurrence: .interval(.years(1), anchor: .dueDate), firstDue: .ask,
                                     reminders: profile([30, 7, 0], .financial), isSuggested: false,
                                     facts: BlueprintFacts(insurer: VehicleFields.cascoInsurer, policyNumber: VehicleFields.cascoPolicyNumber,
-                                                          claimsPhone: VehicleFields.cascoClaimsPhone)),
+                                                          claimsPhone: VehicleFields.cascoClaimsPhone, insuredSum: VehicleFields.cascoInsuredSum)),
                 ObligationBlueprint(key: "vehicle.kit", title: String(localized: "Trusă medicală și stingător"), kind: .legal, completion: .safetyKit, recurrence: .none, firstDue: .ask,
                                     reminders: profile([14, 0], .legal), isSuggested: false, note: String(localized: "Data expirării e pe ambalaj.")),
             ],
@@ -154,10 +155,12 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: HomeFields.insurer, label: String(localized: "Asigurător PAD"), type: .text, role: .issuer),
                     FieldDefinition(key: HomeFields.policyNumber, label: String(localized: "Număr poliță PAD"), type: .text, role: .keyFact),
                     FieldDefinition(key: HomeFields.claimsPhone, label: String(localized: "Telefon daune PAD"), type: .phone, role: .keyFact),
-                    // The optional policy is separate from PAD: its own insurer, policy and claims line.
+                    FieldDefinition(key: HomeFields.insuredSum, label: String(localized: "Sumă asigurată PAD"), type: .money),
+                    // The optional policy is separate from PAD: its own insurer, policy, claims line and sum.
                     FieldDefinition(key: HomeFields.optionalInsurer, label: String(localized: "Asigurător facultativă"), type: .text),
                     FieldDefinition(key: HomeFields.optionalPolicyNumber, label: String(localized: "Număr poliță facultativă"), type: .text, role: .keyFact),
                     FieldDefinition(key: HomeFields.optionalClaimsPhone, label: String(localized: "Telefon daune facultativă"), type: .phone, role: .keyFact),
+                    FieldDefinition(key: HomeFields.optionalInsuredSum, label: String(localized: "Sumă asigurată facultativă"), type: .money),
                 ]),
                 FieldSection(key: "home.heating", title: String(localized: "Centrală termică"), fields: [
                     FieldDefinition(key: "home.boilerModel", label: String(localized: "Model"), type: .text),
@@ -176,13 +179,14 @@ public enum BuiltInTemplates {
                 ObligationBlueprint(key: BuiltInBlueprints.homePAD, title: String(localized: "Asigurare obligatorie (PAD)"), kind: .insurance, completion: .policy, recurrence: .interval(.years(1), anchor: .dueDate), firstDue: .ask,
                                     reminders: profile([30, 7, 0], .legal),
                                     estimatedCost: ron(130),
-                                    facts: BlueprintFacts(insurer: HomeFields.insurer, policyNumber: HomeFields.policyNumber, claimsPhone: HomeFields.claimsPhone)),
+                                    facts: BlueprintFacts(insurer: HomeFields.insurer, policyNumber: HomeFields.policyNumber, claimsPhone: HomeFields.claimsPhone,
+                                                          insuredSum: HomeFields.insuredSum)),
                 // An optional policy on top of PAD: renewed yearly, like CASCO for a car.
                 ObligationBlueprint(key: BuiltInBlueprints.homeInsurance, title: String(localized: "Asigurare facultativă"), kind: .insurance, completion: .policy,
                                     recurrence: .interval(.years(1), anchor: .dueDate), firstDue: .ask,
                                     reminders: profile([30, 7, 0], .financial), isSuggested: false,
                                     facts: BlueprintFacts(insurer: HomeFields.optionalInsurer, policyNumber: HomeFields.optionalPolicyNumber,
-                                                          claimsPhone: HomeFields.optionalClaimsPhone)),
+                                                          claimsPhone: HomeFields.optionalClaimsPhone, insuredSum: HomeFields.optionalInsuredSum)),
                 ObligationBlueprint(key: "home.buildingTax", title: String(localized: "Impozit pe clădire"), kind: .tax, completion: .buildingTax,
                                     recurrence: .fixedDates([MonthDay(month: 3, day: 31), MonthDay(month: 9, day: 30)]), firstDue: .nextFixedDate,
                                     reminders: profile([14, 1], .financial), note: String(localized: "Plata integrală până la 31 martie poate aduce o reducere.")),
@@ -379,7 +383,9 @@ public enum BuiltInTemplates {
                 ObligationBlueprint(key: "health.flu", title: String(localized: "Vaccin antigripal"), kind: .health, completion: .vaccine, recurrence: .fixedDates([MonthDay(month: 10, day: 15)]),
                                     firstDue: .nextFixedDate,
                                     reminders: profile([7, 0], .health, grace: 30), isSuggested: false),
-                ObligationBlueprint(key: BuiltInBlueprints.healthEUCard, title: String(localized: "Card european de sănătate"), kind: .renewal, completion: .newHealthCard, recurrence: .interval(.years(2), anchor: .completion),
+                // A new card has another number, like a passport: closing it closes the deadline
+                // and the new card is added to the person's documents, which remind of it.
+                ObligationBlueprint(key: BuiltInBlueprints.healthEUCard, title: String(localized: "Card european de sănătate"), kind: .renewal, completion: .newHealthCard, recurrence: .none,
                                     firstDue: .ask,
                                     reminders: profile([30, 7], .financial), isSuggested: false),
             ],

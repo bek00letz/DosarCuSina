@@ -100,6 +100,9 @@ public final class ObligationActions {
         try HouseholdMutations.askAboutReading(reading, answer: lowerReading)
         // What the record is, from the deadline's completion kind: a rovinietă bought, a policy paid.
         let historyKind = obligation.completionHistoryKind(in: context)
+        // A deadline whose closing replaces a document with a new one (a passport, a health
+        // file's health card) closes, whatever its repeat: the new one reminds of its own.
+        let replacesDocument = obligation.completion(in: context).replacesDocument
         return try UnitOfWork.performUndoable(in: context, now: now()) {
             let completedDay = CalendarDay(completedAt, calendar: calendar)
 
@@ -123,7 +126,7 @@ public final class ObligationActions {
             }
 
             let recurrenceContext = HouseholdMutations.recurrenceContext(for: obligation, currentMetric: metricReading, calendar: calendar)
-            let next = RecurrenceEngine.nextDue(
+            let next = replacesDocument ? nil : RecurrenceEngine.nextDue(
                 after: obligation.dueDay,
                 completedOn: completedDay,
                 rule: obligation.recurrence,

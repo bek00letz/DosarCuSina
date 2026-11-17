@@ -107,12 +107,23 @@ public struct CompletionShape: Hashable, Sendable {
         }
     }
 
-    /// A section that closing replaces with a new one of its own (a personal document: a new
-    /// identity card or passport has another series and number, so it is a new upload, never a
-    /// new date on the old one). Closing asks no new end; the deadline closes, the section's
-    /// page shows it expired (`Asset.wasReplaced`) and offers the new one and deleting this
-    /// one, in these words, which `docs/COPY_MATRIX.md` lists.
+    /// A document that closing replaces with a new one (a new identity card, passport or
+    /// European health card has another series and number, so it is a new upload, never a new
+    /// date on the old one). Closing asks no new end and closes the deadline, whatever its repeat
+    /// (`ObligationActions.complete`); the page holding the card (`DocumentReplacementCard`)
+    /// offers the new one, in these words, which `docs/COPY_MATRIX.md` lists.
     public struct Replacement: Hashable, Sendable {
+        /// What the deadline renews.
+        public enum Replaces: Hashable, Sendable {
+            /// The section itself, a personal document: its page shows it expired
+            /// (`Asset.wasReplaced`) and offers deleting it, in `delete`'s words.
+            case thisSection(delete: String)
+            /// A personal document of the section's person, of `documentType`, that the section
+            /// only reminds about (the European health card on a health file): the new one is
+            /// added to their documents and the section stays as it is, never shown expired.
+            case holdersDocument(documentType: String)
+        }
+
         /// In "Am rezolvat", under what it asks: what saving does and where the new one goes.
         public var inSheet: String
         /// The card's title on the section's page and the deadline's, once it is closed.
@@ -121,18 +132,34 @@ public struct CompletionShape: Hashable, Sendable {
         public var message: String
         /// Adds the new one, for the same holder.
         public var add: String
-        /// Deletes this one, with its undo.
-        public var delete: String
-        /// The toast's offer after closing it: opens this section's page.
+        /// The toast's offer after closing it: opens the page that holds the card (the
+        /// document's for `thisSection`, the deadline's for `holdersDocument`).
         public var open: String
+        public var replaces: Replaces
 
-        public init(inSheet: String, title: String, message: String, add: String, delete: String, open: String) {
+        public init(inSheet: String, title: String, message: String, add: String, open: String, replaces: Replaces) {
             self.inSheet = inSheet
             self.title = title
             self.message = message
             self.add = add
-            self.delete = delete
             self.open = open
+            self.replaces = replaces
+        }
+
+        /// Deletes the old one, with its undo: only a section that is the document itself.
+        public var delete: String? {
+            if case .thisSection(let delete) = replaces { return delete }
+            return nil
+        }
+
+        /// Whether the section itself is the document replaced (`Asset.wasReplaced`).
+        public var replacesItsSection: Bool { delete != nil }
+
+        /// The type of the document that replaces it, when it is one of the holder's own
+        /// documents and not the section (`holdersDocument`).
+        public var holdersDocumentType: String? {
+            if case .holdersDocument(let type) = replaces { return type }
+            return nil
         }
     }
 
@@ -148,7 +175,7 @@ public struct CompletionShape: Hashable, Sendable {
     public var note: Note?
     /// The counter it asks, where the section has one; nil when none.
     public var counter: Counter?
-    /// The section closing it replaces with a new one; nil for every other kind.
+    /// The document closing it replaces with a new one; nil for every other kind.
     public var replacement: Replacement?
 
     public init(asksDate: Bool = true, cost: Cost? = nil, paper: Paper? = nil, newEnd: NewEnd? = nil,
@@ -171,8 +198,11 @@ public struct CompletionShape: Hashable, Sendable {
     public var asksNote: Bool { note != nil }
     /// Whether it asks a counter.
     public var asksReading: Bool { counter != nil }
-    /// Whether closing it replaces its section with a new one (`Replacement`).
-    public var replacesSection: Bool { replacement != nil }
+    /// Whether closing it replaces a document with a new one (`Replacement`): it closes the
+    /// deadline, whatever its repeat, and offers the new one.
+    public var replacesDocument: Bool { replacement != nil }
+    /// Whether closing it replaces its section itself, a personal document (`Asset.wasReplaced`).
+    public var replacesSection: Bool { replacement?.replacesItsSection ?? false }
 
     /// Whether completing asks nothing: "Gata" marks it done today, no sheet, and its toast
     /// offers a note for that completion ("Adaugă o notă").

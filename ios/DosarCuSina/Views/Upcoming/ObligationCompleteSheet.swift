@@ -112,7 +112,7 @@ struct ObligationCompleteSheet: View {
 
     /// When, what it cost, the counter, the new end and the note: each only when the kind asks it.
     @ViewBuilder private var detailsCard: some View {
-        if shape.asksDate || shape.cost != nil || counter != nil || shape.asksNewExpiry || shape.asksNote || shape.replacesSection {
+        if shape.asksDate || shape.cost != nil || counter != nil || shape.asksNewExpiry || shape.asksNote || shape.replacesDocument {
             DSCard {
                 VStack(alignment: .leading, spacing: DS.Space.m) {
                     if shape.asksDate {
@@ -135,7 +135,7 @@ struct ObligationCompleteSheet: View {
                         DSTextField(LocalizedStringKey(CompletionWording.note), text: $draft.note, kind: .longText, prompt: LocalizedStringKey(note.prompt))
                     }
                     if let replacement = shape.replacement {
-                        // What saving does to a personal document, and where its new one goes.
+                        // What saving does to the document it renews, and where its new one goes.
                         Text(verbatim: replacement.inSheet)
                             .dsFont(.footnote)
                             .foregroundStyle(DS.Palette.secondaryLabel)
@@ -259,7 +259,11 @@ struct ObligationCompleteSheet: View {
         let title = obligation.title
         let completion = completion()
         let replacement = shape.replacement
-        let documentID = obligation.asset?.id
+        // The page that offers the new one: the replaced document's own, or the deadline's for
+        // one of the holder's documents (a health file's health card).
+        let offerRoute: AppRoute? = replacement.flatMap { replacement in
+            replacement.replacesItsSection ? obligation.asset.map { AppRoute.asset($0.id) } : AppRoute.obligation(obligation.id)
+        }
         Task {
             do {
                 var filer = CaptureFiler(context: context)
@@ -269,10 +273,10 @@ struct ObligationCompleteSheet: View {
                     CompletionWording.done(title, next: DueWording.date($0, today: CalendarDay(Date())))
                 } ?? CompletionWording.done(title)
                 var toast: DSToast = outcome.receipt.map { .undo(message, receipt: $0) } ?? DSToast(title: message, actionTitle: nil)
-                if let replacement, let documentID {
-                    // A personal document renewed: its page offers the new one and deleting the old one.
+                if let replacement, let offerRoute {
+                    // A document renewed: the page that offers the new one (and deleting the old one).
                     toast.offer = DSToast.Offer(title: Text(verbatim: replacement.open)) { _ in
-                        AppNavigator.shared.open(.asset(documentID))
+                        AppNavigator.shared.open(offerRoute)
                     }
                     toast.duration = DSToast.offerDuration
                 }
