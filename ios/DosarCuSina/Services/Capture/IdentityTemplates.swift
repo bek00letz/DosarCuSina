@@ -89,6 +89,10 @@ struct IdentityTemplate: Sendable {
     /// or the older one), so filing sets it and the variant's fields, such as the
     /// PIN codes, appear without asking.
     var documentVariant: String? = nil
+    /// The document codes its machine-readable zone begins with (ICAO Doc 9303: "P" for a
+    /// passport, "I" for an identity card, "IR" for a residence permit), so a page whose zone
+    /// is read is this kind of document (`IdentityTemplates.kind(forZone:)`).
+    var machineReadableCodes: [String] = []
 
     /// The label table `LabelledLayout` reads with: each field's labels, then the others.
     var labelTable: [(IdentityLabelKey, [LabelWording])] {
@@ -113,7 +117,7 @@ enum IdentityLabelKey: Hashable, Sendable {
 enum IdentityTemplates {
 
     static let all: [IdentityTemplate] = [
-        electronicIdentityCard, identityCard, passport, drivingLicence,
+        electronicIdentityCard, identityCard, passport, residencePermit, drivingLicence,
         criminalRecordJudicial, criminalRecordFiscal, criminalRecordDriving,
         europeanHealthCard,
         bankCard, debitCard, creditCard,
@@ -193,7 +197,8 @@ enum IdentityTemplates {
             "semnatura", "holder's signature", "signature", "domiciliu", "address", "loc nastere", "locul nasterii", "place of birth",
         ].map(LabelWording.words),
         agreements: issuedFromFourteen,
-        documentVariant: DocumentType.Variant.idCardElectronic
+        documentVariant: DocumentType.Variant.idCardElectronic,
+        machineReadableCodes: ["I"]
     )
 
     /// The older identity card: trilingual labels, "SERIA XT NR 123456" at the top,
@@ -219,7 +224,8 @@ enum IdentityTemplates {
             "address", "romania", "roumanie", "carte de identitate", "identity card", "carte d'identite",
         ].map(LabelWording.words),
         agreements: issuedFromFourteen,
-        documentVariant: DocumentType.Variant.idCardWithoutChip
+        documentVariant: DocumentType.Variant.idCardWithoutChip,
+        machineReadableCodes: ["I"]
     )
 
     /// The passport data page: bilingual labels with values under them, and a TD3 zone.
@@ -247,7 +253,45 @@ enum IdentityTemplates {
             "tip / type", "tip", "type", "cod tara / code", "cod tara", "code", "locul nasterii / place of birth", "locul nasterii",
             "place of birth", "semnatura titularului", "semnatura", "signature", "pasaport", "passport", "romania",
         ].map(LabelWording.words),
-        agreements: identityDates
+        agreements: identityDates,
+        machineReadableCodes: ["P"]
+    )
+
+    /// The residence permit (permis de ședere) Romania gives a citizen of a country outside
+    /// the EU, in the EU's uniform format (Regulation (EC) No 1030/2002): a card with
+    /// bilingual labels and the value under them, the holder's citizenship, birth date and
+    /// CNP, the permit's number and validity, and a TD1 zone whose document code is "IR". The
+    /// Romanian card's exact layout couldn't be checked against a specimen, so these are the
+    /// wordings the format prints, in Romanian and in English; the zone, checked by its digits,
+    /// wins wherever it is read. Its citizenship is the holder's, never Romania's.
+    static let residencePermit = IdentityTemplate(
+        id: "ro.residencePermit",
+        kind: .residencePermit,
+        signals: [("permis de sedere", 6), ("residence permit", 5), ("permis de sedere temporara", 6), ("permis de sedere pe termen lung", 6),
+                  ("tipul permisului", 3), ("type of permit", 3), ("inspectoratul general pentru imigrari", 4)],
+        distinctive: ["permis de sedere", "residence permit", "tipul permisului", "type of permit"],
+        machineReadableFormats: [.td1],
+        fields: [
+            .init(.surname, ["nume / surname", "nume/surname", "nume", "surname"], .name),
+            .init(.givenNames, ["prenume / given names", "prenume/given names", "prenume", "given names"], .name),
+            .init(.nationality, ["cetatenie / nationality", "cetatenie/nationality", "cetatenie", "nationality"], .country),
+            .init(.sex, ["sex / sex", "sex/sex", "sex"], .sex),
+            .init(.birthDate, ["data nasterii / date of birth", "data nasterii", "date of birth"], .date),
+            personalNumberLabel,
+            .init(.documentNumber, ["nr. document / document no", "nr. document", "document no", "nr. permis", "permit no"],
+                  .documentNumber(pattern: #"\b([A-Z]{1,3}\d{6,9})\b"#)),
+            .init(.expiryDate, ["valabil pana la / valid until", "valabil pana la", "valid until", "data expirarii", "date of expiry"], .date),
+            .init(.issueDate, ["locul si data eliberarii / place and date of issue", "locul si data eliberarii", "place and date of issue",
+                               "data eliberarii", "date of issue"], .date),
+            .init(.issuer, ["emis de / issued by", "emis de", "issued by", "autoritatea emitenta", "issuing authority"], .text),
+        ],
+        otherLabels: [
+            "permis de sedere", "residence permit", "tipul permisului / type of permit", "tipul permisului", "type of permit",
+            "observatii / remarks", "observatii", "remarks", "domiciliu / address", "domiciliu", "adresa", "address",
+            "locul nasterii", "place of birth", "semnatura titularului", "semnatura", "signature", "romania",
+        ].map(LabelWording.words),
+        agreements: identityDates,
+        machineReadableCodes: ["IR"]
     )
 
     /// The EU driving licence: numbered fields, the value after the number. On Romanian
@@ -502,6 +546,17 @@ enum IdentityTemplates {
         // Ties keep the first listed.
         let best = candidates.map(score).max() ?? 0
         return candidates.first { score($0) == best }
+    }
+
+    /// The kind of document a machine-readable zone names: the template whose document code
+    /// the zone's begins with, the longest code first (a residence permit's "IR" before an
+    /// identity card's "I"), among the templates that print that zone's format. A zone no
+    /// template names is a passport's when its code begins with "P", else an identity card's.
+    static func kind(forZone mrz: MRZParser.Result) -> CaptureDocumentKind {
+        let named = all.filter { $0.machineReadableFormats.contains(mrz.format) }.flatMap { template in
+            template.machineReadableCodes.filter { mrz.documentCode.hasPrefix($0) }.map { (kind: template.kind, length: $0.count) }
+        }
+        return named.max { $0.length < $1.length }?.kind ?? (mrz.isPassport ? .passport : .identityCard)
     }
 
     /// Kind-level classifier signals, from every template of each kind.

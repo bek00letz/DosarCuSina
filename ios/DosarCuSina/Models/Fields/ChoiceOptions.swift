@@ -113,6 +113,9 @@ public enum FuelType {
 public enum DocumentType {
     public static let idCard = "documentType.idCard"
     public static let passport = "documentType.passport"
+    /// The residence permit (permis de ședere) Romania gives a citizen of a country outside
+    /// the EU who lives here: with their passport, what they travel with and come back on.
+    public static let residencePermit = "documentType.residencePermit"
     public static let drivingLicence = "documentType.drivingLicence"
     public static let euHealthCard = "documentType.euHealthCard"
     /// The national health insurance card (cardul național de asigurări sociale de sănătate).
@@ -127,6 +130,7 @@ public enum DocumentType {
         [
             option(idCard, "Carte de identitate", ["Buletin", "CI", "ID card"]),
             option(passport, "Pașaport", ["Pasaport", "Passport"]),
+            option(residencePermit, "Permis de ședere", ["Permis de sedere", "Residence permit", "Permis de ședere temporară", "Permis de ședere pe termen lung"]),
             option(drivingLicence, "Permis de conducere", ["Permis", "Driving licence"]),
             option(euHealthCard, "Card european de sănătate", ["CEASS", "EHIC", "Card european de asigurări sociale de sănătate"]),
             option(nationalHealthCard, "Card național de sănătate", ["Card de sănătate", "Cardul de sănătate", "Card național de asigurări sociale de sănătate"]),
@@ -199,13 +203,14 @@ public enum DocumentType {
     // MARK: Sides
 
     /// The types printed on both sides, whose back is worth keeping beside the front: an
-    /// identity card (the code that confirms its data), a driving licence (its categories),
-    /// the health cards; and "Alt document", which the person knows. Data, read by the document
-    /// page's "Adaugă spatele".
+    /// identity card (the code that confirms its data), a residence permit (its zone, the
+    /// holder's citizenship and address), a driving licence (its categories), the health
+    /// cards; and "Alt document", which the person knows. Data, read by the document page's
+    /// "Adaugă spatele".
     ///
     /// Never a bank card: its back shows the security code, which the binder never keeps.
     /// A passport's and a cazier's pages are pages, not a back.
-    public static let keepsBackSide: Set<String> = [idCard, drivingLicence, euHealthCard, nationalHealthCard, other]
+    public static let keepsBackSide: Set<String> = [idCard, residencePermit, drivingLicence, euHealthCard, nationalHealthCard, other]
 
     /// Whether a document of this type (its key, or a label stored by an earlier version)
     /// has a back worth adding. A document with no type yet counts as "Alt document".
@@ -494,10 +499,15 @@ public enum InsuranceCover {
     /// first: a CASCO policy that quotes the RCA rules is still CASCO.
     static let words: [(cover: String, names: [String])] = [
         (casco, ["casco"]),
-        (pad, ["pad", "paid", "asigurare obligatorie a locuintei", "asigurarea obligatorie a locuintelor"]),
+        (pad, ["pad", "paid", "asigurare obligatorie a locuintei", "asigurarea obligatorie a locuintei", "asigurarea obligatorie a locuintelor"]),
         (rca, ["rca", "raspundere civila auto", "raspunderii civile auto"]),
         (home, ["asigurare facultativa", "locuinta", "locuintei", "bunuri", "imobil"]),
     ]
+
+    /// The insurer that issues every policy of a cover, when the law names one, as its id in
+    /// `RomanianInsuranceCatalog`: a PAD is always PAID's (Legea 260/2008), whichever insurer
+    /// sold it, so the seller named on the page ("prin: …") is never taken for it.
+    static let soleInsurers: [String: String] = [pad: "paid"]
 
     /// The cover a policy's text names, among `covers`, matching whole words ("pad" never
     /// matches "padding" or "Padina"), or nil when it names none.

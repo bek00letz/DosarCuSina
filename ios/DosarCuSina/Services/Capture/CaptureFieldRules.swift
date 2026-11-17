@@ -17,8 +17,9 @@ extension CaptureDocumentKind {
     /// whatever a model reads into it.
     static let subscriptionKeys: Set<CaptureFieldKey> = [.supplyAddress, .directDebit, .meterReading]
 
-    /// Fields only a policy carries: who it insures and their bonus-malus class.
-    static let policyholderKeys: Set<CaptureFieldKey> = [.policyholder, .policyholderPersonalNumber, .bonusMalusClass]
+    /// Fields only a policy carries: who it insures and their bonus-malus class, the sum it
+    /// insures for and where the home it insures is.
+    static let policyKeys: Set<CaptureFieldKey> = [.policyholder, .policyholderPersonalNumber, .bonusMalusClass, .insuredSum, .insuredAddress]
 
     /// Fields only personal documents carry: what a cazier says, a bank card's network and
     /// last four digits.
@@ -72,15 +73,15 @@ extension CaptureKindProfile {
     ///   zone gives when its templates have one, its holder and its variant: a bank card has
     ///   no CNP, a cazier no total, an identity card no line items;
     /// - any other kind keeps what belongs to no other family: never a person's own data
-    ///   or a personal document's; lines only when it lists what was done or bought; who a
-    ///   policy insures only on a policy; the supply address and direct debit only on a
+    ///   or a personal document's; lines only when it lists what was done or bought; who and
+    ///   what a policy insures only on a policy; the supply address and direct debit only on a
     ///   subscription's paper; and one number of its own (`numberKey`: a policy's is its
     ///   policy number, never a second "Serie și număr" beside it).
     func allows(_ key: CaptureFieldKey) -> Bool {
         if expectedKeys.contains(key) { return true }
         if documentType != nil { return personalDocumentFields.contains(key) }
         if key == .lineItems { return carriesLineItems }
-        if CaptureDocumentKind.policyholderKeys.contains(key) { return readsCover }
+        if CaptureDocumentKind.policyKeys.contains(key) { return readsCover }
         if key == .documentNumber { return numberKey == .documentNumber }
         if CaptureDocumentKind.subscriptionKeys.contains(key) { return filing == .subscription }
         return !CaptureDocumentKind.personalKeys.contains(key) && !CaptureDocumentKind.personalDocumentKeys.contains(key)

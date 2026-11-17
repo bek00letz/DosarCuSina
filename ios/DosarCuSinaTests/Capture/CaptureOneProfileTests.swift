@@ -124,9 +124,9 @@ struct CaptureOneProfileTests {
         for kind in CaptureDocumentKind.allCases {
             let profile = kind.profile
             #expect(profile.isBill == (kind == .utilityInvoice), "\(kind)")
-            #expect(profile.isIdentityDocument == [.passport, .identityCard, .drivingLicence].contains(kind), "\(kind)")
+            #expect(profile.isIdentityDocument == [.passport, .identityCard, .residencePermit, .drivingLicence].contains(kind), "\(kind)")
             #expect(profile.essentialKeys.isEmpty != profile.isIdentityDocument, "\(kind): an identity document is judged by its essentials")
-            #expect(profile.hasMachineReadableBack == (kind == .identityCard), "\(kind)")
+            #expect(profile.hasMachineReadableBack == [.identityCard, .residencePermit].contains(kind), "\(kind): a card whose zone is on its back")
             #expect(profile.readsPaymentCode == [.utilityInvoice, .serviceInvoice, .other].contains(kind), "\(kind)")
             #expect(kind.isIdentityDocument == profile.isIdentityDocument)
             #expect(kind.essentialKeys == profile.essentialKeys)

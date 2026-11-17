@@ -56,6 +56,11 @@ public enum ObligationRequirements {
                 return [item("oldID", String(localized: "Cartea de identitate veche")),
                         item("birth", String(localized: "Certificatul de naștere")),
                         item("home", String(localized: "Actul locuinței (contract sau extras de carte funciară)"))]
+            case DocumentType.residencePermit?:
+                return [item("passport", String(localized: "Pașaportul, valabil", comment: "What renewing a residence permit asks: a valid passport.")),
+                        item("home", String(localized: "Actul locuinței (contract de închiriere sau de proprietate)", comment: "What renewing a residence permit asks: proof of where one lives.")),
+                        item("purpose", String(localized: "Dovada scopului șederii (contract de muncă, adeverință de student)", comment: "What renewing a residence permit asks: proof of why one stays.")),
+                        item("insurance", String(localized: "Dovada asigurării de sănătate", comment: "What renewing a residence permit asks: health insurance."))]
             case DocumentType.drivingLicence?:
                 return [item("oldLicence", String(localized: "Permisul vechi")),
                         item("medical", String(localized: "Avizul medical")),
