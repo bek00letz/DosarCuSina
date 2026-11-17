@@ -1,6 +1,6 @@
 # Copy matrix
 
-What each shaped screen says to each category, generated from the kinds' descriptions: the visit form from `VisitShape` laid over the category (`VisitForm`), „Gata” and „Am rezolvat” from each deadline's `CompletionKind`, the deadline form and a record's page in Istoric (`HistoryEntryShape`), a section page's pockets, adding a section, and the capture review by document kind (`CaptureKindProfile`). Every built-in category is here, and one category of one's own per combination of its switches. Reviews walk every category through it.
+What each shaped screen says to each category, generated from the kinds' descriptions: the visit form from `VisitShape` laid over the category (`VisitForm`), „Gata” and „Am rezolvat” from each deadline's `CompletionKind`, the deadline form and a record's page in Istoric (`HistoryEntryShape`), a section page's pockets, adding a section, the capture review by document kind (`CaptureKindProfile`), and Abonamente by service (`ServiceKind`). Every built-in category is here, and one category of one's own per combination of its switches. Reviews walk every category through it.
 
 Don't edit it by hand: `CopyMatrixTests` writes it and fails when it is out of date. To bring it up to date, run `TEST_RUNNER_COPY_MATRIX_WRITE=1 ./tests/run_tests.sh` and commit the diff. Sample values: 3 rows, 1.250 de lei, 3 mai 2027. Lei are counted: 1 leu · 2 lei · 19 lei · 20 de lei · 101 lei · 1,50 lei.
 
@@ -2247,3 +2247,96 @@ What the review says to each kind of document, from the kind's description (`Cap
 | Nothing read off it | Nu am găsit date pe document. Îl păstrez oricum, cu numele de mai sus. |
 | A value that passed its check digit | Pe document scrie: 123456 |
 | Under „Citește mai bine” | Prima pagină se trimite la Google Gemini, cu cheia ta. |
+
+## Abonamente by service
+
+What a subscription says by what it is (`ServiceKind.Service`): the group it is listed under, which the person can change in its edit form; the codes its papers are identified by, the only ones its edit form shows and the review offers (`SubscriptionCode`). A subscription whose service isn't chosen yet is asked „Cod client” and „Număr contract”.
+
+### What every subscription shares
+
+| Where | Words |
+| :--- | :--- |
+| The groups of Abonamente, in order | Utilități · Internet și telefon · Transport · Aplicații și streaming · Altele |
+| Moving one to another group | Grup în Abonamente — Se alege după serviciu. Îl poți muta în alt grup. |
+| „Se plătește” | Săptămânal · Lunar · Trimestrial · Anual |
+| A bill that hasn't come, by cycle | Factura de la ENGIE n-a venit săptămâna asta / Factura de la ENGIE n-a venit luna asta / Factura de la ENGIE n-a venit încă / Factura de la ENGIE n-a venit încă |
+
+### Gaz (`service.gas`)
+
+| Where | Words |
+| :--- | :--- |
+| Its group | Utilități |
+| Its codes (edit form, review) | Cod loc de consum gaze (CLC) („Poate apărea și ca POD gaz. E pe factura de gaz.”) · Cod client · Număr contract |
+| Where a new one goes | Under the home it supplies |
+
+### Curent (`service.electricity`)
+
+| Where | Words |
+| :--- | :--- |
+| Its group | Utilități |
+| Its codes (edit form, review) | Cod loc de consum (POD) („Începe cu RO. E pe factura de curent.”) · Cod client · Număr contract |
+| Where a new one goes | Under the home it supplies |
+
+### Apă (`service.water`)
+
+| Where | Words |
+| :--- | :--- |
+| Its group | Utilități |
+| Its codes (edit form, review) | Cod loc de consum („E pe factură, lângă codul de client.”) · Cod client · Număr contract |
+| Where a new one goes | Under the home it supplies |
+
+### Căldură (`service.heating`)
+
+| Where | Words |
+| :--- | :--- |
+| Its group | Utilități |
+| Its codes (edit form, review) | Cod loc de consum („E pe factură, lângă codul de client.”) · Cod client · Număr contract |
+| Where a new one goes | Under the home it supplies |
+
+### Salubritate (`service.sanitation`)
+
+| Where | Words |
+| :--- | :--- |
+| Its group | Utilități |
+| Its codes (edit form, review) | Cod client · Număr contract |
+| Where a new one goes | Under the home it supplies |
+
+### Internet și TV (`service.internetTV`)
+
+| Where | Words |
+| :--- | :--- |
+| Its group | Internet și telefon |
+| Its codes (edit form, review) | Cod client · Număr contract · Cont de facturare („E pe factură, uneori în locul codului de client.”) |
+| Where a new one goes | Under the home it supplies |
+
+### Telefon mobil (`service.mobile`)
+
+| Where | Words |
+| :--- | :--- |
+| Its group | Internet și telefon |
+| Its codes (edit form, review) | Număr de telefon · Cod client · Număr contract · Cont de facturare („E pe factură, uneori în locul codului de client.”) |
+| Where a new one goes | On its own, in Abonamente |
+
+### Transport (`service.transport`)
+
+| Where | Words |
+| :--- | :--- |
+| Its group | Transport |
+| Its codes (edit form, review) | Cod client · Număr contract |
+| Where a new one goes | On its own, in Abonamente |
+
+### Aplicație sau streaming (`service.streaming`)
+
+| Where | Words |
+| :--- | :--- |
+| Its group | Aplicații și streaming |
+| Its codes (edit form, review) | None |
+| Where a new one goes | On its own, in Abonamente |
+
+### Alt abonament (`service.other`)
+
+| Where | Words |
+| :--- | :--- |
+| Its group | Altele |
+| Its codes (edit form, review) | Cod client · Număr contract |
+| Where a new one goes | On its own, in Abonamente |

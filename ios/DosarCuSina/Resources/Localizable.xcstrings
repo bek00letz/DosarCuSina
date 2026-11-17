@@ -1500,7 +1500,7 @@
       "comment" : "Header of the other ready-made categories a new section can be of."
     },
     "Altele" : {
-      "comment" : "Category name"
+      "comment" : "Category name\nSubscription group: anything else."
     },
     "Am adăugat %@. %@" : {
       "localizations" : {
@@ -1940,6 +1940,12 @@
     "Aplicația vede doar persoana pe care o alegi." : {
 
     },
+    "Aplicație sau streaming" : {
+
+    },
+    "Aplicații și streaming" : {
+      "comment" : "Subscription group: apps, streaming, online storage."
+    },
     "Aragaz" : {
 
     },
@@ -2304,6 +2310,9 @@
 
     },
     "Câine" : {
+
+    },
+    "Căldură" : {
 
     },
     "Calorifere" : {
@@ -2920,6 +2929,9 @@
     "Cod de plată" : {
 
     },
+    "Cod loc de consum" : {
+
+    },
     "Cod loc de consum (POD)" : {
 
     },
@@ -2994,6 +3006,9 @@
     },
     "Constatarea amiabilă sau procesul-verbal de la poliție" : {
       "comment" : "Claim paper: the accident report."
+    },
+    "Cont de facturare" : {
+
     },
     "Contabil" : {
 
@@ -3853,7 +3868,10 @@
         }
       }
     },
-    "E pe factura de gaz." : {
+    "E pe factură, lângă codul de client." : {
+
+    },
+    "E pe factură, uneori în locul codului de client." : {
 
     },
     "E pe poliță sau pe site-ul asigurătorului. Adaugă-l ca să suni dintr-o atingere." : {
@@ -4070,6 +4088,9 @@
     },
     "Factura de la %@ n-a venit luna asta" : {
       "comment" : "A monthly bill that hasn't come. The argument is the provider."
+    },
+    "Factura de la %@ n-a venit săptămâna asta" : {
+      "comment" : "A weekly bill that hasn't come. The argument is the provider."
     },
     "Factura de plătit" : {
 
@@ -4442,6 +4463,9 @@
 
     },
     "Greutate" : {
+
+    },
+    "Grup în Abonamente" : {
 
     },
     "Grupa sanguină" : {
@@ -4838,6 +4862,9 @@
     },
     "Internet fibră" : {
 
+    },
+    "Internet și telefon" : {
+      "comment" : "Subscription group: internet, TV, mobile."
     },
     "Internet și TV" : {
 
@@ -6645,6 +6672,9 @@
     "Poate a fost șters împreună cu secțiunea lui." : {
 
     },
+    "Poate apărea și ca POD gaz. E pe factura de gaz." : {
+
+    },
     "polița" : {
       "comment" : "After the sale: a policy without a name."
     },
@@ -7108,6 +7138,9 @@
     "S-a stricat pe drum sau vine de la o versiune mai nouă a aplicației. Trimite-l din nou din aplicația din care a venit." : {
 
     },
+    "Salubritate" : {
+
+    },
     "Salvat în %@." : {
 
     },
@@ -7328,6 +7361,9 @@
       "comment" : "iCloud sync status during the first download on this phone."
     },
     "Se aduce dosarul tău din iCloud…" : {
+
+    },
+    "Se alege după serviciu. Îl poți muta în alt grup." : {
 
     },
     "Se citește…" : {
@@ -7926,6 +7962,9 @@
     "Transmisie" : {
 
     },
+    "Transport" : {
+      "comment" : "Subscription group: public transport passes, parking."
+    },
     "Tratament" : {
 
     },
@@ -8186,7 +8225,7 @@
       "comment" : "Section pocket\nTab: what comes up next."
     },
     "Utilități" : {
-
+      "comment" : "Subscription group: electricity, gas, water, heating, sanitation."
     },
     "Vaccin" : {
 
