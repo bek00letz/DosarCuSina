@@ -49,9 +49,21 @@ struct MeasurementUnitTests {
         #expect(MeasurementUnit.gigacalories.label == "Gcal")
         #expect(MeasurementUnit.months.label == "luni")
         #expect(MeasurementUnit.shots.label == "cafele")
-        #expect(MeasurementUnit.written(45_724, in: .kilometres) == "45.724 km")
-        #expect(MeasurementUnit.written(12.5, in: .cubicMetres) == "12,5 m³")
+        #expect(MeasurementUnit.written(45_724, in: .kilometres) == "45.724\u{00A0}km")
+        #expect(MeasurementUnit.written(12.5, in: .cubicMetres) == "12,5\u{00A0}m³")
         #expect(MeasurementUnit.written(3, in: nil) == "3")
+    }
+
+    /// A counted word takes Romanian's plural forms from the String Catalog, as the leu does:
+    /// „de” before it from 20 on, and the number kept on one line with it.
+    @Test("Coffees and months are counted: „1 cafea”, „2 cafele”, „20 de cafele”", arguments: [
+        (1.0, MeasurementUnit.shots, "1\u{00A0}cafea"), (2, .shots, "2\u{00A0}cafele"), (19, .shots, "19\u{00A0}cafele"),
+        (20, .shots, "20\u{00A0}de\u{00A0}cafele"), (101, .shots, "101\u{00A0}cafele"), (1_250, .shots, "1.250\u{00A0}de\u{00A0}cafele"),
+        (1, .months, "1\u{00A0}lună"), (12, .months, "12\u{00A0}luni"), (24, .months, "24\u{00A0}de\u{00A0}luni"), (1.5, .months, "1,5\u{00A0}luni"),
+        (10_000, .kilometres, "10.000\u{00A0}km"),
+    ])
+    func countedUnitsAreCounted(value: Double, unit: MeasurementUnit, written: String) {
+        #expect(MeasurementUnit.written(value, in: unit) == written)
     }
 
     @Test func aUnitOfThePersonsOwnStaysAsWritten() throws {

@@ -41,6 +41,9 @@ extension DS {
         /// The label of a compact button beside a row. With the large control
         /// size's padding the button is at least 44 pt.
         static let compactLabel: CGFloat = 30
+        /// The smallest height of a bar that floats over the content (the toast): its 44 pt
+        /// button with a little room above and below. It grows with its words.
+        static let floatingBar: CGFloat = minimumHitTarget + 2 * DS.Space.xxs
     }
 }
 
@@ -55,6 +58,9 @@ extension DS {
         static let control: CGFloat = 12
         /// Small badges that are not capsules.
         static let badge: CGFloat = 8
+        /// A bar that floats over the content (the toast): half its smallest height, so a bar of
+        /// one line is a capsule and a taller one, at a large text size, keeps the same corners.
+        static let floatingBar: CGFloat = DS.Control.floatingBar / 2
 
         /// The radius a child needs to stay concentric with its container:
         /// inner = outer − padding, never below `minimum`.

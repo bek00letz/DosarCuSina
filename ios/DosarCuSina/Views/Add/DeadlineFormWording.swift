@@ -21,8 +21,11 @@ enum DeadlineFormWording {
     static var save: String { String(localized: "Salvează termenul") }
     static var notSaved: String { String(localized: "Nu s-a salvat") }
 
-    /// The confirmation once it is saved, with how it will remind.
+    /// The confirmation once it is saved, with how it will remind: „Am adăugat termenul „Udat”.”
+    /// The deadline's title is the person's or its category's words, quoted, so it reads as a
+    /// name whatever it is („ITP”, „Udat”, „Schimb filtru de apă”).
     static func added(_ deadline: String, reminders: String) -> LocalizedStringResource {
-        "Am adăugat \(deadline). \(reminders)"
+        LocalizedStringResource("Am adăugat termenul „\(deadline)”. \(reminders)",
+                                comment: "Deadline form: saved. The first argument is the deadline's title, the second how it reminds („Te anunț cu 7 zile înainte.”).")
     }
 }

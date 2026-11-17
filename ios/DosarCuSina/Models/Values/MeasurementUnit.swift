@@ -77,12 +77,42 @@ public struct MeasurementUnit: Hashable, Sendable, Codable, CustomStringConverti
 
     public var description: String { label }
 
-    /// A number with its unit, as the app writes it: "45.724 km", "12,5 m³"; the number
-    /// alone when there is no unit.
+    /// A number with its unit, as the app writes it: "45.724 km", "12,5 m³", "1.250 de cafele";
+    /// the number alone when there is no unit. The one way a number and its unit are written
+    /// (`after(_:value:)`).
     public static func written(_ value: Double, in unit: MeasurementUnit?, fractionDigits: ClosedRange<Int> = 0...1) -> String {
         let number = RomanianNumber.format(Decimal(value), fractionDigits: fractionDigits)
         guard let unit else { return number }
-        return "\(number) \(unit.label)"
+        return unit.after(number, value: value)
+    }
+
+    /// `number`, already written („1.250”), followed by this unit, kept on one line with a
+    /// no-break space: a symbol as it is („45.724 km”, „12,5 m³”); a counted word („cafele”,
+    /// „luni”) counted as Romanian counts it, from the String Catalog's plural forms, like the leu
+    /// in `Money`: „1 cafea”, „2 cafele”, „19 cafele”, „20 de cafele”, „101 cafele”,
+    /// „1.250 de cafele”, with „de” before the unit from 20 on. A value with decimals takes the
+    /// word as after 2 („1,5 luni”). `value` only chooses the form.
+    public func after(_ number: String, value: Double) -> String {
+        let count = Self.wholeCount(value)
+        switch key {
+        case "shots":
+            guard let count else { return "\(number)\u{00A0}\(label)" }
+            return String(localized: "\(number)\u{00A0}\(count) cafele",
+                          comment: "A number of coffees an espresso machine made: the first argument is the number as written („1.250”), the second only chooses the plural („1 cafea”, „2 cafele”, „20 de cafele”). Keep the no-break spaces.")
+        case "months":
+            guard let count else { return "\(number)\u{00A0}\(label)" }
+            return String(localized: "\(number)\u{00A0}\(count) luni",
+                          comment: "A number of months: the first argument is the number as written („24”), the second only chooses the plural („1 lună”, „2 luni”, „24 de luni”). Keep the no-break spaces.")
+        default:
+            return "\(number)\u{00A0}\(label)"
+        }
+    }
+
+    /// The whole number `value` is, without its sign, when it has no decimals and fits.
+    private static func wholeCount(_ value: Double) -> Int? {
+        let magnitude = abs(value)
+        guard magnitude.rounded() == magnitude, magnitude < Double(Int.max) else { return nil }
+        return Int(magnitude)
     }
 
     /// Every spelling of a catalog unit read as it: the key, the label (also in the app's

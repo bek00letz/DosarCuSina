@@ -77,7 +77,7 @@ private struct CategoryContent: View {
         if groups.isEmpty {
             emptyState(
                 title: "Niciun act încă",
-                message: "Adaugă buletinul, pașaportul sau permisul. Îți spunem cu luni înainte când trebuie reînnoite.",
+                message: "Adaugă buletinul, pașaportul sau permisul. Îți spun cu luni înainte când trebuie reînnoite.",
                 action: "Adaugă un act"
             ) { addDocument() }
         }
@@ -143,7 +143,7 @@ private struct CategoryContent: View {
         if items.isEmpty {
             emptyState(
                 title: "Niciun abonament încă",
-                message: "Adaugă telefonul, internetul sau streamingul. Vezi cât plătești pe lună și îți amintim înainte de reînnoire.",
+                message: "Adaugă telefonul, internetul sau streamingul. Vezi cât plătești pe lună și îți amintesc înainte de reînnoire.",
                 action: "Adaugă un abonament"
             ) { addTopLevel() }
         } else {

@@ -70,7 +70,7 @@ struct FieldFormatterTests {
 
     @Test func displayUsesUnitsAndRomanianFormatting() {
         let locale = Locale(identifier: "ro_RO")
-        #expect(FieldFormatter.display(.number(142_500), as: .metric, unit: .kilometres, locale: locale) == "142.500 km")
+        #expect(FieldFormatter.display(.number(142_500), as: .metric, unit: .kilometres, locale: locale) == "142.500\u{00A0}km")
         #expect(FieldFormatter.display(.bool(true), as: .toggle, locale: locale) == "Da")
         #expect(FieldFormatter.display(.text("RO49AAAA1B31007593840000"), as: .iban, locale: locale) == "RO49 AAAA 1B31 0075 9384 0000")
     }
@@ -148,8 +148,8 @@ struct MoneyTests {
 
     /// Romanian counts the leu: „1 leu”, „2 lei”, „20 de lei”; with decimals it is always „lei”.
     @Test("A whole amount of lei takes the leu's plural, from the String Catalog", arguments: [
-        ("1", "1\u{00A0}leu"), ("2", "2\u{00A0}lei"), ("19", "19\u{00A0}lei"), ("20", "20\u{00A0}de lei"),
-        ("101", "101\u{00A0}lei"), ("1250", "1.250\u{00A0}de lei"), ("1.5", "1,50\u{00A0}lei"),
+        ("1", "1\u{00A0}leu"), ("2", "2\u{00A0}lei"), ("19", "19\u{00A0}lei"), ("20", "20\u{00A0}de\u{00A0}lei"),
+        ("101", "101\u{00A0}lei"), ("1250", "1.250\u{00A0}de\u{00A0}lei"), ("1.5", "1,50\u{00A0}lei"),
     ])
     func leiAreCounted(amount: String, written: String) throws {
         let money = Money(try #require(Decimal(string: amount, locale: Locale(identifier: "en_US_POSIX"))))

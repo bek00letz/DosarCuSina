@@ -144,7 +144,10 @@ struct CaptureKindProfileTests {
         let templates = try TemplateStore(context: context).templatesByKey()
         let plan = CaptureFilingPlan.make(for: review, templates: templates, assets: [], today: Self.today, calendar: .bucharest)
         let preview = CaptureReminderPreview.text(for: review, plan: plan, today: Self.today)
-        #expect((preview?.contains("Te anunț") ?? false) == plan.schedulesReminder, "\(kind): \(preview ?? "no line")")
+        // A day still to come says when it reminds; a day already passed says the deadline shows
+        // in Urmează, since no reminder can come before it.
+        let saysADeadline = preview.map { $0.contains("Te anunț") || $0.contains(ReminderWording.alreadyLate) } ?? false
+        #expect(saysADeadline == plan.schedulesReminder, "\(kind): \(preview ?? "no line")")
         guard review.destination != .none else {
             #expect(!plan.schedulesReminder)
             return

@@ -62,7 +62,7 @@ struct DataRepairTests {
             #expect(wrong.value == 45_724)
             #expect(car.value("vehicle.odometer") == .number(45_724))
         }
-        #expect(found.map(\.message) == ["Kilometrajul la VW Golf 2018 pare greșit: 457 km. Corectez la 45.724?"])
+        #expect(found.map(\.message) == ["Kilometrajul la VW Golf 2018 pare greșit: 457\u{00A0}km. Corectez la 45.724?"])
         #expect(try repairs(context).detect().isEmpty, "The hero value is right too, so nothing else is offered")
     }
 
@@ -115,7 +115,7 @@ struct DataRepairTests {
         let found = try applyTwice(.heroFromReadings, in: context) {
             #expect(car.value("vehicle.odometer") == .number(45_724))
         }
-        #expect(found.first?.message == "Kilometrajul la VW Golf 2018 pare greșit: 457 km. Corectez la 45.724?")
+        #expect(found.first?.message == "Kilometrajul la VW Golf 2018 pare greșit: 457\u{00A0}km. Corectez la 45.724?")
     }
 
     // MARK: Deadlines
@@ -219,6 +219,50 @@ struct DataRepairTests {
         try center.refresh(in: context, announce: true)
         #expect(center.announcement.isEmpty, "Said once")
         #expect(center.pending.count == 1, "Still in the list")
+    }
+
+    // MARK: Service notes
+
+    @Test("A service deadline's note an earlier version copied from its rule is offered for removal; the person's own stays")
+    func aServiceRuleKeptAsANoteIsOffered() throws {
+        let context = try makeContext()
+        func deadline(_ notes: String?, counter: CategorySwitches.Counter) -> Obligation {
+            let obligation = Obligation(title: "Revizie periodică", kind: .maintenance, dueDay: CalendarDay("2027-05-03"))
+            obligation.blueprintKey = CategorySwitches.serviceBlueprintKey(counter)
+            obligation.notes = notes
+            context.insert(obligation)
+            return obligation
+        }
+        // Written with a phone's region: the digits grouped by a comma.
+        let copied = deadline("La 10,000 de km sau o dată pe an, ce vine întâi.", counter: .kilometres)
+        let hours = deadline("La 100 de ore de motor sau o dată pe an, ce vine întâi.", counter: .engineHours)
+        let monthly = deadline("O dată la 12 luni.", counter: .time)
+        let own = deadline("Uleiul de la Service Exemplu SRL.", counter: .kilometres)
+        let changed = deadline("La 10.000 de km sau o dată pe an, ce vine întâi. Și filtrul.", counter: .kilometres)
+        try context.save()
+
+        let found = try applyTwice(.serviceNotes, in: context) {
+            #expect(copied.notes == nil)
+            #expect(hours.notes == nil)
+            #expect(monthly.notes == nil)
+            #expect(own.notes == "Uleiul de la Service Exemplu SRL.", "A note the person wrote stays")
+            #expect(changed.notes?.hasSuffix("Și filtrul.") == true, "A note the person changed stays")
+        }
+        #expect(found.count == 3)
+    }
+
+    @Test("A service of one's own says its rule where it is offered, written the app's way, and a new deadline keeps no copy of it")
+    func aServiceSaysItsRuleWhenShown() throws {
+        let context = try makeContext()
+        let store = TemplateStore(context: context)
+        let boats = try store.createCustom(name: "Barca", symbol: "sailboat.fill", switches: CategorySwitches(service: .init(.kilometres, every: 10_000)))
+        let blueprint = try #require(boats.definition.blueprints.first { CategorySwitches.isServiceBlueprint($0.key) })
+        #expect(blueprint.note == nil, "Nothing is stored")
+        #expect(blueprint.shownNote == "La fiecare 10.000\u{00A0}km sau în fiecare an, ce vine mai întâi.")
+        #expect(blueprint.deadlineNote == nil)
+        var stored = blueprint
+        stored.note = "La 10,000 de km sau o dată pe an, ce vine întâi."
+        #expect(stored.shownNote == blueprint.shownNote, "A note an earlier version stored is never shown")
     }
 
     @Test func everyStepHasItsOwnStoredID() {

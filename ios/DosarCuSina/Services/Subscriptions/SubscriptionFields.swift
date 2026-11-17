@@ -121,7 +121,7 @@ public enum SubscriptionCode: String, CaseIterable, Hashable, Sendable {
     public var footnote: String? {
         switch self {
         case .pod: String(localized: "Începe cu RO. E pe factura de curent.")
-        case .clc: String(localized: "Poate apărea și ca POD gaz. E pe factura de gaz.")
+        case .clc: String(localized: "Poate apărea și ca POD gaz. E pe factura de gaze.")
         case .placeCode: String(localized: "E pe factură, lângă codul de client.")
         case .account: String(localized: "E pe factură, uneori în locul codului de client.")
         case .clientCode, .contractNumber, .phoneNumber: nil

@@ -434,7 +434,7 @@ struct EstimatedReadingTests {
         var scan = DataRepairScan(context: context, calendar: .bucharest)
         let findings = try EstimatedBillReadingsStep().findings(&scan)
         #expect(findings.count == 1, "Only the bill that says its index was estimated")
-        #expect(findings.first?.message.contains("10.300 m³") == true)
+        #expect(findings.first?.message.contains("10.300\u{00A0}m³") == true)
         try DataRepairs(context: context, calendar: .bucharest).apply(findings)
         #expect(readings(of: gas).map(\.basis) == [nil, .estimated])
         var again = DataRepairScan(context: context, calendar: .bucharest)

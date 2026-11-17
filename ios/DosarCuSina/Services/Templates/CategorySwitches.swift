@@ -239,25 +239,22 @@ public struct CategorySwitches: Hashable, Sendable {
 
     /// The service deadline it suggests, like a car's "Revizie periodică": by its counter or
     /// once a year, whichever comes first (or every so many months, for one by time),
-    /// reminded two weeks and a day before, with a month's grace.
+    /// reminded two weeks and a day before, with a month's grace. It stores no note: what is
+    /// said under it is its rule, worked out each time it is shown (`ObligationBlueprint.shownNote`).
     public static func serviceBlueprint(_ service: Service) -> ObligationBlueprint {
         let every = service.every
         let recurrence: RecurrenceRule
         let firstDue: RecurrenceInterval
-        let note: String
         switch service.counter {
         case .time:
             recurrence = .interval(interval(months: every), anchor: .completion)
             firstDue = interval(months: every)
-            note = String(localized: "O dată la \(every) luni.", comment: "Note of the service deadline of a category of one's own: every so many months.")
         case .kilometres:
             recurrence = .metric(every: Double(every), unit: .kilometres, fallback: .years(1))
             firstDue = .years(1)
-            note = String(localized: "La \(every) km sau o dată pe an, ce vine întâi.", comment: "Note of the service deadline of a category of one's own: every so many kilometres.")
         case .engineHours:
             recurrence = .metric(every: Double(every), unit: .engineHours, fallback: .years(1))
             firstDue = .years(1)
-            note = String(localized: "La \(every) ore de motor sau o dată pe an, ce vine întâi.", comment: "Note of the service deadline of a category of one's own: every so many engine hours.")
         }
         return ObligationBlueprint(
             key: serviceBlueprintKey(service.counter),
@@ -266,8 +263,26 @@ public struct CategorySwitches: Hashable, Sendable {
             completion: .ownService,
             recurrence: recurrence,
             firstDue: .afterInterval(firstDue),
-            reminders: ReminderProfile(leadDays: [14, 1], consequence: .comfort, graceDays: 30),
-            note: note
+            reminders: ReminderProfile(leadDays: [14, 1], consequence: .comfort, graceDays: 30)
         )
+    }
+}
+
+extension ObligationBlueprint {
+    /// What is said under it where it is offered (*Adaugă o secțiune*, the deadline form, a
+    /// section's suggestions). A service of a category of one's own says its rule, worked out
+    /// from it each time (`RepeatWording.sentence`), so it follows a change of how often and is
+    /// written the app's way whatever the phone's region („La fiecare 10.000 km sau în fiecare
+    /// an, ce vine mai întâi.”); a note an earlier version stored on it is never shown. Any other
+    /// blueprint says its note.
+    public var shownNote: String? {
+        CategorySwitches.isServiceBlueprint(key) ? RepeatWording.sentence(recurrence) : note
+    }
+
+    /// The note a deadline made from it keeps: its note, never a service's rule, which the
+    /// deadline's page already says (*Se repetă*) and which would stop being true once how
+    /// often changes (`ServiceNotesStep` takes away the ones earlier versions kept).
+    public var deadlineNote: String? {
+        CategorySwitches.isServiceBlueprint(key) ? nil : note
     }
 }

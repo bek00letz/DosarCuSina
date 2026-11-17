@@ -69,6 +69,14 @@ struct CopyMatrixTests {
     static var sampleSum: String { Money(1_250, currency: "RON").formattedCompact() }
     static var sampleDay: String { DosarFormat.longDay(CalendarDay("2027-05-03")) }
     /// Amounts in lei as the app writes them, the leu counted by the String Catalog's plurals.
+    /// Numbers with their units as the app writes them (`MeasurementUnit.written`): a counted word
+    /// by the String Catalog's plurals, a symbol as it is.
+    static var sampleUnits: String {
+        [(1.0, MeasurementUnit.shots), (2, .shots), (20, .shots), (1_250, .shots), (1, .months), (24, .months), (10_000, .kilometres)]
+            .map { MeasurementUnit.written($0.0, in: $0.1) }
+            .joined(separator: " · ")
+    }
+
     static var sampleLei: String {
         ["1", "2", "19", "20", "101", "1.5"].map { Money(Decimal(string: $0, locale: Locale(identifier: "en_US_POSIX")) ?? 0).formattedCompact() }
             .joined(separator: " · ")
@@ -107,7 +115,7 @@ struct CopyMatrixTests {
             rows.append(("The warranty, under the date", "\(VisitFormWording.underWarranty(until: sampleDay)) / \(VisitFormWording.warrantyEnded(on: sampleDay))"))
         }
         if let counter = form.counterField {
-            rows.append(("The counter", "\(counter.label) — \(VisitFormWording.estimate)"))
+            rows.append(("The counter", "\(counter.label) — \(form.estimateNote ?? "")"))
         }
         rows.append(("What it cost", [shape.costLabel, shape.costHint, form.sumNote(sampleSum)].compactMap { $0 }.joined(separator: " — ")))
         if let provider = shape.provider {
@@ -215,7 +223,7 @@ struct CopyMatrixTests {
         Don't edit it by hand: `CopyMatrixTests` writes it and fails when it is out of date. \
         To bring it up to date, run `TEST_RUNNER_COPY_MATRIX_WRITE=1 ./tests/run_tests.sh` and \
         commit the diff. Sample values: \(sampleCount) rows, \(sampleSum), \(sampleDay). Lei are \
-        counted: \(sampleLei).
+        counted: \(sampleLei). So are counted units: \(sampleUnits).
 
         ## The visit form
 
@@ -271,6 +279,49 @@ struct CopyMatrixTests {
 
     /// Words about vehicles: a car's or a bike's parts, kilometres and dashboard.
     static let vehicleWords: Set<String> = ["km", "kilometraj", "kilometri", "kilometrajul", "piese", "piesele", "piesa", "marca", "ulei", "bord"]
+
+    /// Problems with how numbers are written in `text`: digits grouped with a comma („10,000”,
+    /// the phone's region instead of the app's), and a number of 20 or more (Romanian's „other”
+    /// plural: 20–99, 100, 120, 1.250…) followed by a counted word without „de” („24 luni”).
+    /// A unit's symbol („10.000 km”) and a day's month („20 mai”) take none.
+    static func numberProblems(in text: String) -> [String] {
+        let months: Set<String> = ["ianuarie", "februarie", "martie", "aprilie", "mai", "iunie", "iulie", "august", "septembrie",
+                                   "octombrie", "noiembrie", "decembrie", "ian", "feb", "mar", "apr", "iun", "iul", "aug", "sept", "oct", "nov", "dec"]
+        let symbols = Set(MeasurementUnit.catalog.filter { $0 != .shots && $0 != .months }.map { $0.label.lowercased() })
+        var problems: [String] = []
+        let whole = NSRange(text.startIndex..., in: text)
+        func snippet(_ range: NSRange) -> String {
+            let around = NSRange(location: max(0, range.location - 24), length: min(range.length + 40, (text as NSString).length - max(0, range.location - 24)))
+            return (text as NSString).substring(with: around)
+        }
+        let grouped = try! NSRegularExpression(pattern: #"(?<![\d.])\d{1,3}(?:,\d{3})+(?![\d,])"#)
+        for match in grouped.matches(in: text, range: whole) {
+            problems.append("grouped with a comma: „\(snippet(match.range))”")
+        }
+        let counted = try! NSRegularExpression(pattern: #"(?<![\d.,])(\d{1,3}(?:\.\d{3})+|\d+)[  ]+(\p{L}[\p{L}³²/]*)"#)
+        for match in counted.matches(in: text, range: whole) {
+            let digits = (text as NSString).substring(with: match.range(at: 1)).replacingOccurrences(of: ".", with: "")
+            let word = (text as NSString).substring(with: match.range(at: 2)).lowercased()
+            // A year („în 2027”) counts nothing.
+            let isYear = digits.count == 4 && !(text as NSString).substring(with: match.range(at: 1)).contains(".")
+            guard let number = Int(digits), number != 0, !isYear else { continue }
+            let takesDe = number % 100 == 0 || number % 100 >= 20
+            if takesDe, word != "de", !months.contains(word), !symbols.contains(word) {
+                problems.append("no „de”: „\(snippet(match.range))”")
+            }
+        }
+        return problems
+    }
+
+    @Test("Numbers are written the app's way: grouped with a dot, and „de” before a counted word from 20 on")
+    func numbersAreWrittenTheAppsWay() throws {
+        let problems = Self.numberProblems(in: try Self.matrix())
+        #expect(problems.isEmpty, "\(problems)")
+        // The rule itself, on what it must catch and let through.
+        #expect(Self.numberProblems(in: "La 10,000 de km").count == 1)
+        #expect(Self.numberProblems(in: "La fiecare 300 cafele · 24 luni").count == 2)
+        #expect(Self.numberProblems(in: "La fiecare 300 de cafele · 24 de luni · 10.000 km · 20 mai · 3 zile · 101 lei · 1.234,567 m³").isEmpty)
+    }
 
     @Test("Vehicle words are only in a kind about vehicles")
     func vehicleWordsStayWithVehicles() throws {
