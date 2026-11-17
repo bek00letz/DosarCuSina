@@ -13,7 +13,7 @@ struct LockedSectionsEverywhereTests {
     let calendar = Calendar.bucharest
 
     /// Counts the Face ID prompts a request asked for, and answers them as told.
-    final class Prompts {
+    @MainActor final class Prompts {
         var answer: UnlockResult
         var count = 0
         init(_ answer: UnlockResult) { self.answer = answer }
