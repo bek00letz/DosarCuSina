@@ -201,9 +201,8 @@ struct DocumentShareSheet: View {
     }
 
     private var picturesTitle: Text {
-        choice.pages.indices(pageCount: request.pages.count).count > 1
-            ? Text("Ca poze", comment: "Share a document's pages as pictures.")
-            : Text("Ca poză", comment: "Share one page of a document as a picture.")
+        let count = choice.pages.indices(pageCount: request.pages.count).count
+        return Text("Ca \(count) poze", comment: "Share a document's pages as pictures. Plural variations without the number: one „Ca poză”, several „Ca poze”.")
     }
 
     /// Face ID first for a locked category, then the files, then the share sheet.

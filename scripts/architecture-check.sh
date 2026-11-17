@@ -108,9 +108,14 @@ rule format-string "$app" - \
     'String\(format:' - \
     'Use Money.formatted, CalendarDay, or .formatted(...) with Locale.dosarDefault. Machine text such as a hash or an ISO day goes through MachineText.'
 
+# A count compared with one or two that picks one of two wordings ("== 1 ?", "> 1 ?", "< 2 ?"), on
+# one line or with the "?" and ":" on the lines after it. Saying something only for several (a
+# wording or nothing: nil, "", Text(verbatim: "")) is not a plural, so the other branch must be
+# words too.
+words='("[^"]|Text\( *"|String\( *localized|LocalizedStringKey|NSLocalizedString)'
 rule hand-written-plural "$app" - \
-    '(==|!=) *1 *\? *("|Text\(|String\(localized|LocalizedStringKey|NSLocalizedString)' - \
-    'Counts use plural variations in the String Catalog (1 zi, 2 zile, 20 de zile), never a choice between two strings.'
+    "(==|!=|<=?|>=?) *[12] *\\? *$words.* +: *$words" - \
+    'Counts use plural variations in the String Catalog (1 zi, 2 zile, 20 de zile), never a choice between two strings. A wording that leaves out the number for one ("un act", "le pui la locul lor") is a plural variation too.'
 
 # Screens, widgets and Siri draw an urgency; they never work one out from a number of days.
 rule urgency-threshold '^ios/(DosarCuSina/(Views|Intents)|DosarCuSinaWidgets)/' - \
@@ -347,17 +352,25 @@ scan() {
             next
         }
         FILENAME == map_file { path_of[$2] = $1; next }
-        FNR == 1 { path = path_of[FILENAME]; looking = 0; root_struct = 0 }
+        FNR == 1 { path = path_of[FILENAME]; looking = 0; root_struct = 0; statement = ""; split("", found) }
         {
             code = code_of($0)
             if (code == "") next
+            # A line that starts with "?" or ":" goes on with the ternary above it: the rules see
+            # the whole statement, and a finding is reported once, on its first line.
+            if (statement != "" && code ~ /^[[:space:]]*[?:]/) {
+                statement = statement " " code
+            } else {
+                statement = code; starts = FNR; split("", found)
+            }
             for (i = 1; i <= n; i++) {
-                if (pat[i] == "-") continue
+                if (pat[i] == "-" || (i in found)) continue
                 if (path !~ inc[i]) continue
                 if (exc[i] != "-" && path ~ exc[i]) continue
-                if (code !~ pat[i]) continue
-                if (unless[i] != "-" && code ~ unless[i]) continue
-                print path "\t" id[i] "\t" FNR
+                if (statement !~ pat[i]) continue
+                if (unless[i] != "-" && statement ~ unless[i]) continue
+                found[i] = 1
+                print path "\t" id[i] "\t" starts
             }
         }
     ' "$rules" "$map" $files
