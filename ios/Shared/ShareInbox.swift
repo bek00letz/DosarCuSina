@@ -174,7 +174,81 @@ public struct ShareInbox: Sendable {
 
     /// What a shared file is, from its name's extension ("Factura.PDF" is a PDF).
     public static func kind(ofFile url: URL) -> IncomingKind? {
-        UTType(filenameExtension: url.pathExtension).flatMap(kind(of:))
+        type(ofFile: url).flatMap(kind(of:))
+    }
+
+    /// The type a file says it is: the type its folder keeps for it (Files knows a file's
+    /// type even without an extension), else its name's extension. Nil when neither says.
+    public static func type(ofFile url: URL) -> UTType? {
+        if let kept = try? url.resourceValues(forKeys: [.contentTypeKey]).contentType, !saysNothing(kept) { return kept }
+        guard !url.pathExtension.isEmpty else { return nil }
+        return UTType(filenameExtension: url.pathExtension)
+    }
+
+    /// The type a sender declares that the inbox takes, among the types it registered (in the
+    /// sender's own order, best first): a PDF before a picture, a picture before text. A
+    /// bundle (a Live Photo's) is a folder, not a page, and is never taken as a picture.
+    public static func declaredType(among identifiers: [String]) -> UTType? {
+        let types = identifiers.compactMap { UTType($0) }.filter { !$0.conforms(to: .directory) }
+        for wanted in [UTType.pdf, .image, .plainText] {
+            if let type = types.first(where: { $0.conforms(to: wanted) }) { return type }
+        }
+        return nil
+    }
+
+    /// Whether a type says nothing about what the file is: plain data, or a type with no name
+    /// (a "dyn." one, for an extension no app claims). Only the file itself can tell then
+    /// (`type(sniffing:)`).
+    public static func saysNothing(_ type: UTType) -> Bool {
+        type.isDynamic || type == .data || type == .item || type == .content
+    }
+
+    /// What to do with a file of a type, before copying it: take it as what it is, look at its
+    /// first bytes when its type says nothing, or leave it (a ZIP, a Word document), so a file
+    /// the inbox can't take is never downloaded only to be refused.
+    public enum Verdict: Sendable, Hashable {
+        case take(IncomingKind)
+        case look
+        case leave
+    }
+
+    /// The verdict for a file of `type` (nil: nothing says what it is).
+    public static func verdict(for type: UTType?) -> Verdict {
+        guard let type, !saysNothing(type) else { return .look }
+        return kind(of: type).map(Verdict.take) ?? .leave
+    }
+
+    /// How many first bytes `type(sniffing:)` reads.
+    public static let headerLength = 1024
+
+    /// What a file is by its first bytes, for a file whose type says nothing: a PDF (its
+    /// header may follow a little leading junk, as the format allows), a JPEG, PNG, HEIC, GIF,
+    /// TIFF or WebP picture. Nil for anything else: text is never guessed from bytes.
+    public static func type(sniffing header: Data) -> UTType? {
+        let bytes = [UInt8](header.prefix(headerLength))
+        func starts(_ signature: some Sequence<UInt8>, at offset: Int = 0) -> Bool {
+            let signature = Array(signature)
+            return bytes.count >= offset + signature.count && Array(bytes[offset ..< offset + signature.count]) == signature
+        }
+        if starts([0xFF, 0xD8, 0xFF]) { return .jpeg }
+        if starts([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]) { return .png }
+        if starts("GIF87a".utf8) || starts("GIF89a".utf8) { return .gif }
+        if starts([0x49, 0x49, 0x2A, 0x00]) || starts([0x4D, 0x4D, 0x00, 0x2A]) { return .tiff }
+        if starts("RIFF".utf8), starts("WEBP".utf8, at: 8) { return .webP }
+        if starts("ftyp".utf8, at: 4), bytes.count >= 12 {
+            let brand = String(decoding: bytes[8 ..< 12], as: UTF8.self)
+            if ["heic", "heix", "hevc", "hevx", "heim", "heis"].contains(brand) { return .heic }
+            if ["mif1", "msf1"].contains(brand) { return .heif }
+        }
+        if Data(bytes).range(of: Data("%PDF-".utf8)) != nil { return .pdf }
+        return nil
+    }
+
+    /// The first bytes of a file (`headerLength`), or nil when it can't be read.
+    static func header(of url: URL) -> Data? {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
+        defer { try? handle.close() }
+        return try? handle.read(upToCount: headerLength)
     }
 
     /// One inbox item to make from a share: its payload and which attachments go in it.
@@ -221,6 +295,73 @@ public struct ShareInbox: Sendable {
         guard bytes <= maxFileBytes, sharedSoFar + bytes <= maxShareBytes else { throw InboxError.tooLarge }
     }
 
+    /// How many bytes the next file may have: the per-file limit, or what is left of the share's.
+    public static func room(sharedSoFar: Int) -> Int {
+        max(0, min(maxFileBytes, maxShareBytes - sharedSoFar))
+    }
+
+    /// How much of a file is read at a time while copying or fingerprinting it.
+    static let chunkLength = 1 << 20
+
+    /// Copies `source` to `target` a piece at a time, so a large file never sits in memory
+    /// whole (a share extension has little memory), and stops with `tooLarge` once it passes
+    /// `limit` bytes. A size the file states is checked before anything is read, so a large
+    /// file in iCloud isn't downloaded only to be refused. Nothing is left at `target` when it
+    /// fails. Returns the bytes copied.
+    @discardableResult
+    public static func copyStreaming(from source: URL, to target: URL, limit: Int) throws -> Int {
+        if let stated = try? source.resourceValues(forKeys: [.fileSizeKey]).fileSize, stated > limit {
+            throw InboxError.tooLarge
+        }
+        let input = try FileHandle(forReadingFrom: source)
+        defer { try? input.close() }
+        guard FileManager.default.createFile(atPath: target.path(), contents: nil, attributes: protection) else {
+            throw CocoaError(.fileWriteUnknown)
+        }
+        do {
+            let output = try FileHandle(forWritingTo: target)
+            defer { try? output.close() }
+            var total = 0
+            while true {
+                let chunk = try autoreleasepool { try input.read(upToCount: chunkLength) }
+                guard let chunk, !chunk.isEmpty else { break }
+                total += chunk.count
+                guard total <= limit else { throw InboxError.tooLarge }
+                try output.write(contentsOf: chunk)
+            }
+            try output.synchronize()
+            return total
+        } catch {
+            try? FileManager.default.removeItem(at: target)
+            throw error
+        }
+    }
+
+    /// Copies a file where it lives (in Files, iCloud Drive or another app's storage) with
+    /// coordinated reading (`NSFileCoordinator`), which first brings down a file whose
+    /// contents are still in the cloud, then streams it (`copyStreaming`). It waits while the
+    /// file downloads, so it never runs on the main thread.
+    @discardableResult
+    public static func coordinatedCopy(of source: URL, to target: URL, limit: Int) throws -> Int {
+        if let stated = try? source.resourceValues(forKeys: [.fileSizeKey]).fileSize, stated > limit {
+            throw InboxError.tooLarge
+        }
+        var coordination: NSError?
+        var copied: Result<Int, any Error> = .failure(CocoaError(.fileReadUnknown))
+        NSFileCoordinator(filePresenter: nil).coordinate(readingItemAt: source, options: [], error: &coordination) { readable in
+            copied = Result { try copyStreaming(from: readable, to: target, limit: limit) }
+        }
+        if let coordination { throw coordination }
+        return try copied.get()
+    }
+
+    /// Whether a file's contents are still only in iCloud, not on the phone.
+    public static func isWaitingInCloud(_ url: URL) -> Bool {
+        guard let values = try? url.resourceValues(forKeys: [.isUbiquitousItemKey, .ubiquitousItemDownloadingStatusKey]),
+              values.isUbiquitousItem == true else { return false }
+        return values.ubiquitousItemDownloadingStatus == .notDownloaded
+    }
+
     /// The size of a staged file, for the share's running total.
     public static func byteCount(of name: String, in staging: URL) -> Int {
         (try? staging.appending(path: name).resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
@@ -234,16 +375,45 @@ public struct ShareInbox: Sendable {
         return folder
     }
 
-    /// Copies a file into a staging folder under a safe name. Returns the name used.
+    /// Copies a file into a staging folder under a safe name, a piece at a time
+    /// (`copyStreaming`). Returns the name used.
     @discardableResult
     public func stage(copyOf source: URL, into staging: URL, index: Int, sharedSoFar: Int = 0) throws -> String {
-        let size = (try? source.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
-        try Self.checkRoom(for: size, sharedSoFar: sharedSoFar)
         let name = Self.safeName(index: index, extension: source.pathExtension)
-        let target = staging.appending(path: name)
-        try FileManager.default.copyItem(at: source, to: target)
-        Self.protect(target)
+        try Self.copyStreaming(from: source, to: staging.appending(path: name), limit: Self.room(sharedSoFar: sharedSoFar))
         return name
+    }
+
+    /// Moves a file the share already received (`ShareReceiving`) into a staging folder under
+    /// a safe name. Both are in the inbox, so nothing is copied again. Returns the name used.
+    @discardableResult
+    public func stage(received file: URL, into staging: URL, index: Int) throws -> String {
+        let name = Self.safeName(index: index, extension: file.pathExtension)
+        try FileManager.default.moveItem(at: file, to: staging.appending(path: name))
+        return name
+    }
+
+    /// What a file the share received is, once it is in the inbox: what its sender declared
+    /// (`declared`), else its first bytes, else the type its name or link gave (`hint`). A file
+    /// known by its bytes takes that type's extension, so the app reads it as what it is.
+    /// Returns nil, and removes the file, when it is nothing the inbox takes.
+    public func settle(received file: URL, declared: IncomingKind?, hint: UTType?) -> (file: URL, kind: IncomingKind)? {
+        if let declared { return (file, declared) }
+        let sniffed = Self.header(of: file).flatMap(Self.type(sniffing:))
+        guard let type = sniffed ?? hint, let kind = Self.kind(of: type) else {
+            try? FileManager.default.removeItem(at: file)
+            return nil
+        }
+        guard let sniffed, let ext = sniffed.preferredFilenameExtension,
+              UTType(filenameExtension: file.pathExtension)?.conforms(to: sniffed) != true else { return (file, kind) }
+        let renamed = file.deletingPathExtension().appendingPathExtension(ext)
+        do {
+            try FileManager.default.moveItem(at: file, to: renamed)
+            return (renamed, kind)
+        } catch {
+            // Read by its payload in the app either way; only the extension stays as it was.
+            return (file, kind)
+        }
     }
 
     /// Writes bytes into a staging folder. Returns the name used.
@@ -294,7 +464,8 @@ public struct ShareInbox: Sendable {
     /// exact bytes back within the hour is the practice.
     public func expectPractice(fileAt url: URL, now: Date = Date()) throws {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true, attributes: Self.protection)
-        let marker = PracticeMarker(sha256: Self.fingerprint(of: try Data(contentsOf: url)), expiresAt: now.addingTimeInterval(Self.practiceWindow))
+        guard let fingerprint = Self.fingerprint(ofFileAt: url) else { throw CocoaError(.fileReadUnknown) }
+        let marker = PracticeMarker(sha256: fingerprint, expiresAt: now.addingTimeInterval(Self.practiceWindow))
         try Self.encoder.encode(marker).write(to: directory.appending(path: Self.practiceMarkerName), options: [.atomic, .completeFileProtection])
     }
 
@@ -304,13 +475,37 @@ public struct ShareInbox: Sendable {
               let marker = try? Self.decoder.decode(PracticeMarker.self, from: data),
               marker.expiresAt > now else { return false }
         return files.contains { name in
-            (try? Data(contentsOf: staging.appending(path: name))).map(Self.fingerprint) == marker.sha256
+            Self.fingerprint(ofFileAt: staging.appending(path: name)) == marker.sha256
         }
     }
 
     static func fingerprint(of data: Data) -> String {
+        hex(SHA256.hash(data: data))
+    }
+
+    /// A file's fingerprint, read a piece at a time so a large one never sits in memory
+    /// whole. Nil when it can't be read.
+    static func fingerprint(ofFileAt url: URL) -> String? {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
+        defer { try? handle.close() }
+        var hasher = SHA256()
+        while true {
+            let chunk: Data?
+            do {
+                chunk = try autoreleasepool { try handle.read(upToCount: chunkLength) }
+            } catch {
+                return nil
+            }
+            // No more to read: nil (or nothing) at the end of the file.
+            guard let chunk, !chunk.isEmpty else { break }
+            hasher.update(data: chunk)
+        }
+        return hex(hasher.finalize())
+    }
+
+    private static func hex(_ digest: SHA256.Digest) -> String {
         let hex = Array("0123456789abcdef")
-        return SHA256.hash(data: data).map { byte in "\(hex[Int(byte >> 4)])\(hex[Int(byte & 0x0f)])" }.joined()
+        return digest.map { byte in "\(hex[Int(byte >> 4)])\(hex[Int(byte & 0x0f)])" }.joined()
     }
 
     // MARK: Reading (app)
