@@ -80,13 +80,15 @@ public final class ArchiveFileSink: ArchiveByteSink {
 ///
 /// Both sides stream: the writer takes one file at a time and never keeps what it wrote,
 /// the reader reads the directory and then one file at a time, in pieces. Both read the
-/// same `Limits`, so whatever this app can write, it can read back.
+/// same `Limits`, so whatever this app can write, it can read back. The reader checks its
+/// whole directory against them (every file's size, all of them together, each file's place)
+/// before it hands out a byte, so a summary refuses what an import would.
 public enum DosarZipEngine {
 
     /// What an archive may hold, read by the writer and the reader alike: an archive this
     /// app writes is one it reads back, on any phone that runs it. Memory doesn't grow with
     /// the archive, since nothing holds it whole; the limits keep each file's size known
-    /// before it is read.
+    /// before it is read, and what all of them take once unpacked on the phone.
     public struct Limits: Sendable, Equatable {
         /// Files in one archive.
         public var maxEntries: Int
@@ -100,6 +102,9 @@ public enum DosarZipEngine {
         public var expansionAllowance: Int
         /// Bytes of the whole archive.
         public var maxArchiveBytes: Int
+        /// Bytes of every file together, as they are once read back: what bringing it in
+        /// writes to the phone.
+        public var maxUnpackedBytes: Int
 
         public init(
             maxEntries: Int,
@@ -107,7 +112,8 @@ public enum DosarZipEngine {
             maxPathBytes: Int = 1_024,
             maxExpansion: Int = 200,
             expansionAllowance: Int = 1 << 20,
-            maxArchiveBytes: Int = Int(UInt32.max) - 1
+            maxArchiveBytes: Int = Int(UInt32.max) - 1,
+            maxUnpackedBytes: Int = 8 << 30
         ) {
             self.maxEntries = maxEntries
             self.maxEntryBytes = maxEntryBytes
@@ -115,11 +121,14 @@ public enum DosarZipEngine {
             self.maxExpansion = maxExpansion
             self.expansionAllowance = expansionAllowance
             self.maxArchiveBytes = maxArchiveBytes
+            self.maxUnpackedBytes = maxUnpackedBytes
         }
 
         /// The one set the app uses both ways: as many files as a plain zip can count (65 535
         /// marks a ZIP64 archive, which no writer here makes), 128 MB per file, a file at most
-        /// 200 times its compressed size past its first megabyte, and a plain zip's 4 GB.
+        /// 200 times its compressed size past its first megabyte, a plain zip's 4 GB, and 8 GB
+        /// of files once unpacked: twice the archive's own bound, which a binder of photos and
+        /// papers (stored as they are) never comes near.
         public static let standard = Limits(maxEntries: Int(UInt16.max) - 1, maxEntryBytes: 128 << 20)
 
         /// Whether a file of `size` bytes kept as `stored` bytes may be read back.
@@ -137,6 +146,10 @@ public enum DosarZipEngine {
         case unsafeEntryPath(path: String)
         case duplicateEntry(path: String)
         case sizeLimitExceeded
+        /// Its files together would take more than `maxUnpackedBytes` once unpacked.
+        case unpacksTooLarge
+        /// Two files claim the same bytes of the archive, or one runs into the directory.
+        case overlappingEntries
         /// More files than one archive holds.
         case tooManyFilesToWrite
         /// More bytes than one archive holds.
@@ -159,6 +172,10 @@ public enum DosarZipEngine {
                 return String(localized: "Copia de siguranță conține de două ori fișierul \(path). Fă copia din nou din aplicație.", comment: "Backup: a file appears twice inside it.")
             case .sizeLimitExceeded:
                 return String(localized: "Copia de siguranță e prea mare pentru a fi deschisă pe acest telefon.", comment: "Backup: too large to open.")
+            case .unpacksTooLarge:
+                return String(localized: "Copia de siguranță ar ocupa prea mult loc pe telefon odată deschisă. Fă copia din nou din aplicație și încearcă iar.", comment: "Backup: its files together would take too much room once unpacked.")
+            case .overlappingEntries:
+                return String(localized: "Copia de siguranță nu e scrisă cum o scrie aplicația: fișierele din ea se suprapun. Fă copia din nou din aplicație și încearcă iar.", comment: "Backup: files inside it overlap, so it wasn't written by the app.")
             case .tooManyFilesToWrite:
                 return String(localized: "Dosarul are prea multe fișiere pentru o singură copie. Șterge documentele de care nu mai ai nevoie, apoi încearcă din nou.", comment: "Backup: more files than one backup can hold.")
             case .tooLargeToWrite:
@@ -331,6 +348,8 @@ public enum DosarZipEngine {
         private var paths: Set<String> = []
         private var offset = 0
         private var directoryBytes = 0
+        /// Bytes of every file written so far, as they are read back.
+        private var unpackedBytes = 0
         private var finished = false
 
         public init(sink: ArchiveByteSink, limits: Limits = .standard) {
@@ -349,6 +368,8 @@ public enum DosarZipEngine {
             guard !paths.contains(path) else { throw ZipError.duplicateEntry(path: path) }
             guard records.count < limits.maxEntries else { throw ZipError.tooManyFilesToWrite }
             guard data.count <= limits.maxEntryBytes else { throw ZipError.fileTooLargeToWrite(path: path) }
+            // What the reader would unpack in all stays within what it unpacks.
+            guard unpackedBytes + data.count <= limits.maxUnpackedBytes else { throw ZipError.tooLargeToWrite }
 
             let crc = computeCRC32(data)
             let compressed = try deflateRaw(data)
@@ -382,6 +403,7 @@ public enum DosarZipEngine {
 
             offset += entryBytes
             directoryBytes += recordBytes
+            unpackedBytes += data.count
             paths.insert(path)
             records.append(record)
         }
@@ -438,6 +460,8 @@ public enum DosarZipEngine {
             public let size: Int
             public let modifiedDate: Date
             let localHeaderOffset: Int
+            /// Where the next file's bytes (or the directory) begin: this one's never reach past it.
+            let spanEnd: Int
         }
 
         /// The archive's files, in the directory's order (folders left out).
@@ -476,8 +500,17 @@ public enum DosarZipEngine {
             guard totalEntries <= limits.maxEntries else { throw ZipError.sizeLimitExceeded }
 
             var cursor = PieceCursor(source: source, start: directoryOffset, end: directoryOffset + directorySize)
-            var items: [Item] = []
-            var index: [String: Int] = [:]
+            /// Each file as the directory describes it, before its place is checked.
+            struct Listed {
+                let path: String, method: UInt16, crc: UInt32, compressedSize: Int, size: Int, modifiedDate: Date
+                let localHeaderOffset: Int
+                /// The least the file takes: its header, its name and its data.
+                let leastEnd: Int
+                let isFolder: Bool
+            }
+            var listed: [Listed] = []
+            var seen: Set<String> = []
+            var unpacked = 0
             for _ in 0..<totalEntries {
                 let fixed = try cursor.take(46)
                 guard fixed.readUInt32LE(at: 0) == 0x02014b50 else { throw ZipError.invalidZipArchive }
@@ -496,19 +529,45 @@ public enum DosarZipEngine {
                 try cursor.skip(extraLength + commentLength)
                 let path = String(data: nameData, encoding: .utf8) ?? String(decoding: nameData, as: UTF8.self)
                 guard isSafeEntryPath(path) else { throw ZipError.unsafeEntryPath(path: path) }
-                if path.hasSuffix("/") { continue } // A folder.
-                guard index[path] == nil else { throw ZipError.duplicateEntry(path: path) }
-                guard uncompressedSize <= limits.maxEntryBytes else { throw ZipError.sizeLimitExceeded }
-                if method == 0 {
-                    guard compressedSize == uncompressedSize else { throw ZipError.fileCorrupted(path: path) }
-                } else {
-                    guard limits.admitsExpansion(stored: compressedSize, size: uncompressedSize) else { throw ZipError.sizeLimitExceeded }
-                }
                 guard localHeaderOffset < directoryOffset else { throw ZipError.invalidZipArchive }
-                index[path] = items.count
-                items.append(Item(
+                let leastEnd = localHeaderOffset + 30 + nameLength + compressedSize
+                let isFolder = path.hasSuffix("/")
+                if !isFolder {
+                    guard seen.insert(path).inserted else { throw ZipError.duplicateEntry(path: path) }
+                    guard uncompressedSize <= limits.maxEntryBytes else { throw ZipError.sizeLimitExceeded }
+                    if method == 0 {
+                        guard compressedSize == uncompressedSize else { throw ZipError.fileCorrupted(path: path) }
+                    } else {
+                        guard limits.admitsExpansion(stored: compressedSize, size: uncompressedSize) else { throw ZipError.sizeLimitExceeded }
+                    }
+                    unpacked += uncompressedSize
+                    guard unpacked <= limits.maxUnpackedBytes else { throw ZipError.unpacksTooLarge }
+                }
+                listed.append(Listed(
                     path: path, method: method, crc: crc, compressedSize: compressedSize, size: uncompressedSize,
-                    modifiedDate: date(fromDosTime: dosTime, date: dosDate), localHeaderOffset: localHeaderOffset
+                    modifiedDate: date(fromDosTime: dosTime, date: dosDate), localHeaderOffset: localHeaderOffset,
+                    leastEnd: leastEnd, isFolder: isFolder
+                ))
+            }
+
+            // Every file, folders too, keeps to its own bytes: in the order they lie in the
+            // archive, each begins where the one before it has ended, and the last ends before
+            // the directory. A file's bytes are read only up to where the next one begins.
+            let byPlace = listed.indices.sorted { listed[$0].localHeaderOffset < listed[$1].localHeaderOffset }
+            var spanEnds = [Int](repeating: directoryOffset, count: listed.count)
+            for (position, current) in byPlace.enumerated() {
+                let end = position + 1 < byPlace.count ? listed[byPlace[position + 1]].localHeaderOffset : directoryOffset
+                guard listed[current].leastEnd <= end else { throw ZipError.overlappingEntries }
+                spanEnds[current] = end
+            }
+
+            var items: [Item] = []
+            var index: [String: Int] = [:]
+            for (position, entry) in listed.enumerated() where !entry.isFolder {
+                index[entry.path] = items.count
+                items.append(Item(
+                    path: entry.path, method: entry.method, crc: entry.crc, compressedSize: entry.compressedSize, size: entry.size,
+                    modifiedDate: entry.modifiedDate, localHeaderOffset: entry.localHeaderOffset, spanEnd: spanEnds[position]
                 ))
             }
             self.items = items
@@ -534,6 +593,8 @@ public enum DosarZipEngine {
             guard header.readUInt32LE(at: 0) == 0x04034b50 else { throw ZipError.invalidZipArchive }
             let dataStart = item.localHeaderOffset + 30 + Int(header.readUInt16LE(at: 26)) + Int(header.readUInt16LE(at: 28))
             guard dataStart + item.compressedSize <= source.size else { throw ZipError.invalidZipArchive }
+            // Its own header may say more than the directory did: still never into the next file.
+            guard dataStart + item.compressedSize <= item.spanEnd else { throw ZipError.overlappingEntries }
 
             var tally = Tally(size: item.size)
             var cursor = PieceCursor(source: source, start: dataStart, end: dataStart + item.compressedSize)

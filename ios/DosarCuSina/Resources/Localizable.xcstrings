@@ -3070,6 +3070,9 @@
     "Copia de siguranță a fost făcută de o versiune mai nouă a aplicației. Actualizează aplicația și încearcă din nou." : {
       "comment" : "Backup: made by a newer version."
     },
+    "Copia de siguranță ar ocupa prea mult loc pe telefon odată deschisă. Fă copia din nou din aplicație și încearcă iar." : {
+      "comment" : "Backup: its files together would take too much room once unpacked."
+    },
     "Copia de siguranță conține de două ori fișierul %@. Fă copia din nou din aplicație." : {
       "comment" : "Backup: a file appears twice inside it."
     },
@@ -3087,6 +3090,9 @@
     },
     "Copia de siguranță e scrisă într-un fel pe care aplicația nu îl citește. Actualizează aplicația și încearcă din nou." : {
       "comment" : "Backup: compressed in a way the app can't read."
+    },
+    "Copia de siguranță nu e scrisă cum o scrie aplicația: fișierele din ea se suprapun. Fă copia din nou din aplicație și încearcă iar." : {
+      "comment" : "Backup: files inside it overlap, so it wasn't written by the app."
     },
     "Copia de siguranță nu s-a putut deschide. Fișierul pare deteriorat; fă copia din nou și încearcă iar." : {
       "comment" : "Backup: its contents couldn't be unpacked."
