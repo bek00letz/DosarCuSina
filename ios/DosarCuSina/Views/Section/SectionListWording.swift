@@ -34,7 +34,16 @@ enum SectionListWording {
     static var personalDocuments: String { String(localized: "Acte personale", comment: "Header: personal documents.") }
     static var documents: String { String(localized: "Documente", comment: "Header: scanned documents.") }
     static var archived: String { String(localized: "Arhivate", comment: "Header: documents kept for reference.") }
-    static var archivedFootnote: String {
-        String(localized: "Polițe și contracte vechi, păstrate pentru orice eventualitate.", comment: "Footer of archived documents.")
+    /// Under the archived papers, naming the papers the category's sections keep, up to three
+    /// („Acte vechi, ca talonul, polița sau raportul ITP, păstrate…”), as Acte's empty line does
+    /// (`CaptureKindProfile.papersKept(inCategory:)`); any paper when it keeps none of its own.
+    static func archivedFootnote(_ papers: [CaptureKindProfile.Noun]) -> String {
+        guard !papers.isEmpty else {
+            return String(localized: "Acte vechi, păstrate pentru orice eventualitate.",
+                          comment: "Footer of archived documents, in a category whose sections keep no paper of their own kind.")
+        }
+        let list = papers.prefix(3).map(\.itself).formatted(.list(type: .or).locale(.dosarDefault))
+        return String(localized: "Acte vechi, ca \(list), păstrate pentru orice eventualitate.",
+                      comment: "Footer of archived documents: the papers the category's sections keep, as a list ending in „sau” (talonul, polița sau raportul ITP).")
     }
 }

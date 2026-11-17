@@ -55,6 +55,20 @@ struct RepeatAndReminderTimeTests {
         #expect(RepeatChoice(frequency: .day, every: 500).everyRange.upperBound == 500, "A larger number a rule has stays offered")
     }
 
+    @Test("„+” and „−” step further as the number grows, landing on round numbers, inside the range")
+    func stepsGrowWithTheNumber() {
+        let days = RepeatChoice(frequency: .day, every: 1).everyRange
+        func up(_ value: Int) -> Int { RepeatChoice.stepped(value, up: true, in: days) }
+        func down(_ value: Int) -> Int { RepeatChoice.stepped(value, up: false, in: days) }
+        #expect([1, 9, 10, 12, 55, 60, 170, 180, 360].map(up) == [2, 10, 15, 15, 60, 70, 180, 210, 365])
+        #expect([2, 10, 12, 15, 60, 70, 180, 210, 365].map(down) == [1, 9, 10, 10, 55, 60, 170, 180, 360])
+        #expect(up(365) == 365 && down(1) == 1, "Never past the range")
+        var value = 1
+        var steps = 0
+        while value < days.upperBound { value = up(value); steps += 1 }
+        #expect(steps < 40, "A year of days is a few dozen steps away, not 364: \(steps)")
+    }
+
     // MARK: Words
 
     @Test(arguments: [

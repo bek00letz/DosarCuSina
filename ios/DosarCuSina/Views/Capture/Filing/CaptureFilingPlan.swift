@@ -105,7 +105,7 @@ struct CaptureFilingPlan {
             case .alreadyKept(let reading, let subscription):
                 String(localized: "Indexul \(reading.written) e deja trecut la „\(subscription)”.", comment: "Capture review: the same bill was filed before, its index is already there.")
             case .unknownService:
-                String(localized: "Indexul nu-l trec: nu știu dacă e de gaz, de curent sau de apă.", comment: "Capture review: the subscription's service isn't known, so the index isn't recorded.")
+                String(localized: "Indexul nu-l trec: nu știu dacă e de gaze, de curent sau de apă.", comment: "Capture review: the subscription's service isn't known, so the index isn't recorded.")
             }
         }
     }

@@ -54,6 +54,10 @@ extension CopyMatrixTests {
                 let buttons = entry.buttons.map(\.title).joined(separator: " / ")
                 rows.append((place, buttons.isEmpty ? entry.empty : "\(entry.empty) — \(buttons)"))
             }
+            if entries.contains(where: { $0.pocket == .listed(.documents) }) {
+                let papers = CaptureKindProfile.papersKept(inCategory: category.definition.key)
+                rows.append(("Acte's full list, under the archived", "\(SectionListWording.archived) — \(SectionListWording.archivedFootnote(papers))"))
+            }
             return rows
         }
 
@@ -90,13 +94,13 @@ extension CopyMatrixTests {
             ("A pocket named after a category of one's own (a car's „Anvelope”)",
              "\(PocketWording.categoryEmpty("Anvelope")) — \(PocketWording.addInto("Anvelope"))"),
             ("A section filed under the page", "\(PocketWording.until(day)) / \(PocketWording.warrantyUntil(day))"),
-            ("A paper in Acte", "\(PocketWording.validUntil(day)) / \(PocketWording.dated(day))"),
+            ("A paper in Acte", "\(PocketWording.expires(day)) / \(PocketWording.expired(day)) / \(PocketWording.dated(day))"),
             ("A paper with no title of its own", DocumentKind.allCases.map(\.title).joined(separator: ", ")),
             ("Bani's rows", money.joined(separator: " · ")),
             ("The full lists („Vezi tot”; empty, each says its pocket's line)",
              "\(SectionListWording.deadlines) · \(SectionListWording.lastTime) · \(SectionListWording.wholeHistory) · "
-                + "\(SectionListWording.personalDocuments) · \(SectionListWording.documents) · \(SectionListWording.archived) — "
-                + "\(SectionListWording.archivedFootnote) · \(SectionListWording.add)"),
+                + "\(SectionListWording.personalDocuments) · \(SectionListWording.documents) · \(SectionListWording.archived) "
+                + "(its line under it is the category's) · \(SectionListWording.add)"),
             ("The full list's suggestions (off, `ObligationListScreen.offersSuggestionRows`)",
              "\(SectionListWording.suggestions) — \(SectionListWording.suggestionsFor("Golful")) · \(SectionListWording.anotherDeadline) · "
                 + "\(SectionListWording.nextDateQuestion("ITP")) \(SectionListWording.date) — \(SectionListWording.dateFootnote)"),

@@ -205,7 +205,7 @@ public enum ReminderPlanner {
         let choices = [fireDate(day: dayBefore, minuteOfDay: minuteOfDay, calendar: calendar), runsOut.addingTimeInterval(-30 * 60)]
         guard let fire = choices.first(where: { $0 > now && $0 < runsOut }) else { return nil }
         let title = String(localized: "Deschide Dosar cu Șină o clipă", comment: "Reminder title when the phone can't hold every reminder: opening the app plans the next ones")
-        let body = String(localized: "Ca să-ți amintim în continuare de termene, deschide aplicația.", comment: "Reminder body when the phone can't hold every reminder")
+        let body = String(localized: "Ca să-ți amintesc în continuare de termene, deschide aplicația.", comment: "Reminder body when the phone can't hold every reminder")
         return PlannedReminder(
             identifier: continueIdentifier,
             obligationId: nil,
