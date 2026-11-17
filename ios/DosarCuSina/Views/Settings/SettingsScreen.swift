@@ -770,7 +770,7 @@ enum AboutWording {
     /// chose. The services are named from `AIProvider`, so a new one is never left out.
     static var privacy: String {
         String(
-            localized: "Fără cont, fără reclame, fără urmărire. Copia de siguranță o faci tu, când vrei. Internetul îl folosim doar dacă pui cheia ta de la un serviciu AI (\(AIProvider.everyServiceInASentence)). Atunci actele citite cu el ajung la acel serviciu.",
+            localized: "Fără cont, fără reclame, fără urmărire. Copia de siguranță o faci tu, când vrei. Internetul îl folosesc doar dacă pui cheia ta de la un serviciu AI (\(AIProvider.everyServiceInASentence)). Atunci actele citite cu el ajung la acel serviciu.",
             comment: "About: privacy explanation. The argument lists the AI services, such as „Google Gemini, OpenAI, Anthropic Claude sau unul compatibil”."
         )
     }
@@ -788,6 +788,15 @@ struct AboutSettings: View {
                     .dsFont(.footnote)
             }
             .padding(.vertical, DS.Space.xs)
+            // The pages App Store Connect links to too, from `PublicPages`.
+            Link(destination: PublicPages.privacyPolicy) {
+                Text("Politica de confidențialitate", comment: "About: opens the privacy policy on the app's website.")
+                    .frame(minHeight: DS.Control.minimumHitTarget)
+            }
+            Link(destination: PublicPages.help) {
+                Text("Ajutor", comment: "About: opens the help page on the app's website: common questions, asking for help, reporting a problem.")
+                    .frame(minHeight: DS.Control.minimumHitTarget)
+            }
             #if DEBUG
             Button {
                 isShowingGallery = true

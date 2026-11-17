@@ -1474,6 +1474,9 @@
     "Aici nu se notează vizite" : {
       "comment" : "The visit form opened for a section whose category has none."
     },
+    "Ajutor" : {
+      "comment" : "About: opens the help page on the app's website: common questions, asking for help, reporting a problem."
+    },
     "Al cui e?" : {
       "comment" : "Title of the step that asks whose a typed-in document is."
     },
@@ -4473,7 +4476,7 @@
     "Fără cip" : {
 
     },
-    "Fără cont, fără reclame, fără urmărire. Copia de siguranță o faci tu, când vrei. Internetul îl folosim doar dacă pui cheia ta de la un serviciu AI (%@). Atunci actele citite cu el ajung la acel serviciu." : {
+    "Fără cont, fără reclame, fără urmărire. Copia de siguranță o faci tu, când vrei. Internetul îl folosesc doar dacă pui cheia ta de la un serviciu AI (%@). Atunci actele citite cu el ajung la acel serviciu." : {
       "comment" : "About: privacy explanation. The argument lists the AI services, such as „Google Gemini, OpenAI, Anthropic Claude sau unul compatibil”."
     },
     "Fără contor, de obicei o dată pe an: un pian, o centrală." : {
@@ -7012,6 +7015,9 @@
     },
     "Polițe fără termen" : {
       "comment" : "Repair group: home policies kept without their deadline."
+    },
+    "Politica de confidențialitate" : {
+      "comment" : "About: opens the privacy policy on the app's website."
     },
     "Pornește cu un dosar gol" : {
       "comment" : "Starts with an empty database."
