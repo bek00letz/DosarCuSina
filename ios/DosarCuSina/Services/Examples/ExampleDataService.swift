@@ -210,6 +210,7 @@ public struct ExampleDataService {
         if let template = templates[BuiltInTemplates.Key.subscription] {
             var values = FieldValues()
             values["subscription.provider"] = .text("Digi")
+            values[SubscriptionFields.service] = .text(ServiceKind.internetTV)
             values["subscription.price"] = .money(Money(45))
             values["subscription.cycle"] = .text(BillingCycle.monthly)
             values["subscription.contractEnd"] = .date(day(40))
@@ -217,6 +218,7 @@ public struct ExampleDataService {
 
             var storage = FieldValues()
             storage["subscription.provider"] = .text(String(localized: "Serviciu exemplu"))
+            storage[SubscriptionFields.service] = .text(ServiceKind.streaming)
             storage["subscription.price"] = .money(Money(Decimal(string: "29.99") ?? 30, currency: "EUR"))
             storage["subscription.cycle"] = .text(BillingCycle.yearly)
             storage["subscription.renewalDate"] = .date(day(18))

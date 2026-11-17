@@ -47,7 +47,9 @@ enum CaptureLexicon {
             "adresa locului de consum", "adresa loc de consum", "adresa loc consum", "adresa locului de livrare",
             "adresa de livrare", "adresa punctului de consum", "adresa punct de consum", "adresa punct consum",
             "adresa de consum", "adresa locului de furnizare", "adresa de furnizare", "adresa de instalare",
-            "adresa instalarii", "adresa de prestare", "adresa prestarii serviciului", "adresa serviciului",
+            "adresa instalarii", "adresa instalare", "adresa de instalare a serviciului", "adresa de instalare a serviciilor",
+            "locatia de instalare", "locatie instalare", "locul instalarii",
+            "adresa de prestare", "adresa prestarii serviciului", "adresa serviciului",
             "locul de consum", "loc de consum", "loc consum", "punctul de consum", "punct de consum",
         ]),
         (.other, [

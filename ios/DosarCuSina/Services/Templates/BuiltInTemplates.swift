@@ -428,10 +428,10 @@ public enum BuiltInTemplates {
         )
     }
 
-    /// An ongoing contract: who provides it and what for, a price per billing cycle,
-    /// the identifiers its bills carry, the minimum period and how it is paid. Gas,
-    /// electricity, water and fixed internet or TV are filed under the home they
-    /// supply; a mobile plan stands on its own. Bills and contracts read by capture
+    /// An ongoing contract: who provides it and what for, the group it is listed in, a price
+    /// per billing cycle (a week to a year), the identifiers its service's bills carry, the
+    /// minimum period and how it is paid. Utilities and fixed internet or TV are filed under
+    /// the home they supply; a mobile plan stands on its own. Bills and contracts read by capture
     /// find their subscription by these identifiers (`SubscriptionMatcher`).
     /// Reminds about yearly renewals, the end of the minimum period, contract ends
     /// and each bill's due date, never about monthly charges paid by direct debit.
@@ -447,6 +447,10 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: "subscription.provider", label: String(localized: "Furnizor"), type: .text, role: .subtitle, isEssential: true,
                                     placeholder: "ENGIE Romania S.A."),
                     FieldDefinition(key: SubscriptionFields.service, label: String(localized: "Serviciu"), type: .choice, options: ServiceKind.options),
+                    // Its service's group until the person moves it; kept as its own value.
+                    FieldDefinition(key: SubscriptionFields.group, label: String(localized: "Grup în Abonamente"), type: .choice, options: SubscriptionGroup.options,
+                                    derivation: .serviceGroup(serviceField: SubscriptionFields.service),
+                                    footnote: String(localized: "Se alege după serviciu. Îl poți muta în alt grup.")),
                     FieldDefinition(key: "subscription.price", label: String(localized: "Preț"), type: .money, role: .heroMetric, isEssential: true),
                     FieldDefinition(key: "subscription.cycle", label: String(localized: "Se plătește"), type: .choice, isEssential: true,
                                     options: BillingCycle.options, defaultValue: .text(BillingCycle.monthly)),
@@ -454,21 +458,9 @@ public enum BuiltInTemplates {
                     FieldDefinition(key: "subscription.contractEnd", label: String(localized: "Contract până la"), type: .expiryDate, role: .expiryDate),
                     FieldDefinition(key: "subscription.cancelUrl", label: String(localized: "Unde anulezi"), type: .url),
                 ]),
-                // What the provider's bills and letters quote, one tap to copy.
-                FieldSection(key: "subscription.identifiers", title: String(localized: "Coduri"), fields: [
-                    FieldDefinition(key: SubscriptionFields.clientCode, label: String(localized: "Cod client"), type: .text, role: .keyFact),
-                    FieldDefinition(key: SubscriptionFields.contractNumber, label: String(localized: "Număr contract"), type: .text, role: .keyFact),
-                    FieldDefinition(key: SubscriptionFields.pod, label: String(localized: "Cod loc de consum (POD)"), type: .text, role: .keyFact,
-                                    appliesWhen: BlueprintCondition(field: SubscriptionFields.service, oneOf: [ServiceKind.electricity]),
-                                    footnote: String(localized: "Începe cu RO. E pe factura de curent.")),
-                    FieldDefinition(key: SubscriptionFields.clc, label: String(localized: "Cod loc de consum gaze (CLC)"), type: .text, role: .keyFact,
-                                    appliesWhen: BlueprintCondition(field: SubscriptionFields.service, oneOf: [ServiceKind.gas]),
-                                    footnote: String(localized: "E pe factura de gaz.")),
-                    // The person's own number: copied into forms, never called, so it is text, not a phone.
-                    FieldDefinition(key: SubscriptionFields.phoneNumber, label: String(localized: "Număr de telefon"), type: .text, role: .keyFact,
-                                    placeholder: "0700 000 000",
-                                    appliesWhen: BlueprintCondition(field: SubscriptionFields.service, oneOf: [ServiceKind.mobile])),
-                ]),
+                // What the provider's bills and letters quote, one tap to copy: only the codes
+                // its service has (`ServiceKind.Service.codes`, `SubscriptionCode`).
+                FieldSection(key: "subscription.identifiers", title: String(localized: "Coduri"), fields: SubscriptionCode.allCases.map(subscriptionCodeField)),
                 FieldSection(key: "subscription.term", title: String(localized: "Perioada minimă"), fields: [
                     FieldDefinition(key: SubscriptionFields.startDate, label: String(localized: "Început contract"), type: .date, role: .startDate),
                     FieldDefinition(key: SubscriptionFields.minimumMonths, label: String(localized: "Perioadă minimă"), type: .number, unit: .months,
@@ -512,6 +504,14 @@ public enum BuiltInTemplates {
                                        mayBelongTo: .home, visit: .none, offerTitle: String(localized: "Abonament", comment: "Add-section option."), shortlistOrder: 6,
                                        singular: SectionSingular(String(localized: "Abonamentul", comment: "One subscription, as a new section's name when none is typed."), .masculineOrNeuter))
         )
+    }
+
+    /// One code's field on a subscription, shown only for the services that have it.
+    private static func subscriptionCodeField(_ code: SubscriptionCode) -> FieldDefinition {
+        // The person's own number: copied into forms, never called, so it is text, not a phone.
+        FieldDefinition(key: code.fieldKey, label: code.label, type: .text, role: .keyFact,
+                        placeholder: code == .phoneNumber ? "0700 000 000" : nil,
+                        appliesWhen: code.fieldCondition, footnote: code.footnote)
     }
 
     public static var other: TemplateDefinition {

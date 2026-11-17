@@ -48,6 +48,8 @@ enum CaptureMapping {
         .cardLastFour: [DocumentFields.cardLastFour],
         .podCode: [HomeFields.pod, SubscriptionFields.pod],
         .clcCode: [HomeFields.clc, SubscriptionFields.clc],
+        .placeCode: [SubscriptionFields.placeCode],
+        .account: [SubscriptionFields.account],
         .clientCode: [SubscriptionFields.clientCode],
         .contractNumber: [SubscriptionFields.contractNumber],
         .phoneNumber: [SubscriptionFields.phoneNumber],
@@ -191,14 +193,12 @@ enum CaptureMapping {
         case .model: return String(localized: "Model")
         case .firstRegistrationDate: return String(localized: "Prima înmatriculare")
         case .odometer: return String(localized: "Kilometraj")
-        case .clientCode: return String(localized: "Cod client")
-        case .podCode: return String(localized: "Cod loc de consum (POD)")
-        case .clcCode: return String(localized: "Cod loc de consum gaze (CLC)")
+        case .clientCode, .podCode, .clcCode, .placeCode, .account, .contractNumber, .phoneNumber:
+            // The codes are called what the subscription's page calls them.
+            return SubscriptionCode(captureKey: key)?.label ?? key.rawValue
         case .meterIndex: return String(localized: "Index contor")
         case .meterReading: return String(localized: "Cum s-a citit indexul")
         case .serviceKind: return String(localized: "Serviciu")
-        case .contractNumber: return String(localized: "Număr contract")
-        case .phoneNumber: return String(localized: "Număr de telefon")
         case .minimumMonths: return String(localized: "Perioadă minimă (luni)")
         case .minimumPeriodEnd: return String(localized: "Perioada minimă se termină")
         case .monthlyPrice: return String(localized: "Preț pe lună")

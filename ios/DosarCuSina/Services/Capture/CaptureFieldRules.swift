@@ -86,6 +86,14 @@ extension CaptureKindProfile {
         return !CaptureDocumentKind.personalKeys.contains(key) && !CaptureDocumentKind.personalDocumentKeys.contains(key)
     }
 
+    /// A subscription's paper keeps only the codes its service has, after every reader
+    /// (`SubscriptionCode.keeping`): an internet contract carries no POD. Any other kind, or a
+    /// paper whose service isn't known, keeps what it read.
+    func keepingServiceCodes(_ fields: [CaptureField]) -> [CaptureField] {
+        guard filing == .subscription else { return fields }
+        return SubscriptionCode.keeping(fields, service: fields.first { $0.key == .serviceKind }?.value.text)
+    }
+
     /// What a personal document keeps besides what it is asked: what its templates read, its
     /// machine-readable zone's values when its templates read one, its holder and variant.
     private var personalDocumentFields: Set<CaptureFieldKey> {

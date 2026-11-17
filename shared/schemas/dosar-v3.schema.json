@@ -93,7 +93,7 @@
                   "key": { "type": "string" },
                   "label": { "type": "string" },
                   "aliases": { "type": "array", "items": { "type": "string" } },
-                  "appliesWhen": { "type": "object", "required": ["field", "oneOf"], "properties": { "field": { "type": "string" }, "oneOf": { "type": "array", "items": { "type": "string" } } } }
+                  "appliesWhen": { "type": "object", "required": ["field", "oneOf"], "properties": { "field": { "type": "string" }, "oneOf": { "type": "array", "items": { "type": "string" } }, "orWhenEmpty": { "type": "boolean" } } }
                 }
               },
               { "type": "string", "description": "Older definitions: the text is both key and label." }
@@ -106,9 +106,9 @@
         "derivation": {
           "type": "object",
           "required": ["type"],
-          "properties": { "type": { "const": "addMonths" }, "date": { "type": "string" }, "months": { "type": "string" } }
+          "properties": { "type": { "enum": ["addMonths", "validityAfterIssue", "serviceGroup"] }, "date": { "type": "string" }, "months": { "type": "string" }, "service": { "type": "string" } }
         },
-        "appliesWhen": { "type": "object", "required": ["field", "oneOf"], "properties": { "field": { "type": "string" }, "oneOf": { "type": "array", "items": { "type": "string" } } } },
+        "appliesWhen": { "type": "object", "required": ["field", "oneOf"], "properties": { "field": { "type": "string" }, "oneOf": { "type": "array", "items": { "type": "string" } }, "orWhenEmpty": { "type": "boolean" } } },
         "footnote": { "type": "string" }
       }
     },
@@ -138,7 +138,7 @@
         "appliesWhen": {
           "type": "object",
           "required": ["field", "oneOf"],
-          "properties": { "field": { "type": "string" }, "oneOf": { "type": "array", "items": { "type": "string" } } }
+          "properties": { "field": { "type": "string" }, "oneOf": { "type": "array", "items": { "type": "string" } }, "orWhenEmpty": { "type": "boolean" } }
         },
         "estimatedCost": { "$ref": "#/$defs/money" },
         "isSuggested": { "type": "boolean" },

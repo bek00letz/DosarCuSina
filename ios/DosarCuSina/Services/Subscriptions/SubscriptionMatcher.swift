@@ -6,16 +6,18 @@ import Foundation
 ///
 /// Pure: plain values in, a decision out, so every rule is pinned by tests.
 ///
-/// - The codes decide first. A POD, a CLC or a phone number names one consumption
-///   point or one line; a contract number names one contract; a client code can cover
-///   several contracts with one provider. A subscription whose own POD, CLC or phone
-///   number differs from the document's is never the one.
+/// - The codes decide first, only those the service has (`ServiceKind.Service.codes`). A
+///   POD, a CLC, a water or heating place code or a phone number names one consumption
+///   point or one line; a contract number names one contract; a client code or a billing
+///   account can cover several contracts with one provider. A subscription whose own
+///   consumption point or phone number differs from the document's is never the one.
 /// - Without a code, the provider (and the service, when both are known) decides, but
 ///   only inside one house: two homes with ENGIE gas never merge. The house is the one
 ///   whose own codes the document prints, else the one at the supply address it prints
 ///   (`house(at:among:)`), else the only home there is.
-/// - A new subscription for gas, electricity, water or fixed internet and TV goes under
-///   its house; a mobile plan or anything else stands on its own. When the house can't
+/// - A new subscription for a service supplied at an address (`ServiceKind.isTiedToHome`:
+///   utilities, fixed internet and TV) goes under its house; a mobile plan or anything
+///   else stands on its own. When the house can't
 ///   be told, nothing is guessed: the person picks.
 public enum SubscriptionMatcher {
 
@@ -58,10 +60,15 @@ public enum SubscriptionMatcher {
         /// billing address.
         public var supplyAddress: String?
 
+        /// Only the codes the service has are kept (`ServiceKind.Service.codes`): a code the
+        /// service doesn't have never finds or tells apart a contract.
         public init(provider: String?, service: String?, codes: [Code: String], isBill: Bool, supplyAddress: String? = nil) {
             self.provider = provider
             self.service = service
-            self.codes = codes.filter { !SubscriptionMatcher.normalized($0.value, as: $0.key).isEmpty }
+            let carried = ServiceKind.service(service).map { Set($0.codes) }
+            self.codes = codes.filter { code, value in
+                !SubscriptionMatcher.normalized(value, as: code).isEmpty && (carried?.contains(code) ?? true)
+            }
             self.isBill = isBill
             self.supplyAddress = supplyAddress
         }
@@ -69,48 +76,15 @@ public enum SubscriptionMatcher {
         /// Whether the contract is supplied at an address and so belongs under a home.
         public var isTiedToHome: Bool {
             if let service { return ServiceKind.isTiedToHome(service) }
-            if codes[.pod] != nil || codes[.clc] != nil { return true }
+            if codes.keys.contains(where: { $0.family == .consumptionPoint }) { return true }
             if codes[.phoneNumber] != nil { return false }
             return isBill
         }
     }
 
-    /// The codes a document can print, in the order they identify a contract.
-    public enum Code: String, CaseIterable, Hashable, Sendable {
-        case pod, clc, phoneNumber, contractNumber, clientCode
-
-        /// The subscription field that keeps it.
-        public var fieldKey: String {
-            switch self {
-            case .pod: SubscriptionFields.pod
-            case .clc: SubscriptionFields.clc
-            case .phoneNumber: SubscriptionFields.phoneNumber
-            case .contractNumber: SubscriptionFields.contractNumber
-            case .clientCode: SubscriptionFields.clientCode
-            }
-        }
-
-        /// A home's own field for the same code, when homes keep it.
-        var homeFieldKeys: [String] {
-            switch self {
-            case .pod: ["home.pod"]
-            case .clc: ["home.clc"]
-            case .clientCode: ["home.waterCode"]
-            case .phoneNumber, .contractNumber: []
-            }
-        }
-
-        /// Names one consumption point or one line: a different one is a different contract.
-        var namesOnePoint: Bool { self == .pod || self == .clc || self == .phoneNumber }
-
-        var weight: Int {
-            switch self {
-            case .pod, .clc, .phoneNumber: 100
-            case .contractNumber: 50
-            case .clientCode: 20
-            }
-        }
-    }
+    /// The codes a document can print, declared once (`SubscriptionCode`): which a service
+    /// has, the field that keeps each, and how much an agreeing one says.
+    public typealias Code = SubscriptionCode
 
     public enum Decision: Hashable, Sendable {
         /// The document belongs to this subscription.

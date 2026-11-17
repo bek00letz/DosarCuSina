@@ -301,9 +301,13 @@ struct CaptureReview: Identifiable {
         let expected = kind.expectedKeys.reduce(into: [CaptureFieldKey]()) { list, key in
             if !list.contains(key) { list.append(key) }
         }
+        // A contract's or a bill's codes: only those its service has (`ServiceKind.codes(of:)`),
+        // so an internet contract is never asked for a POD.
+        let codes = ServiceKind.codes(of: value(.serviceKind)?.text)
         return expected.filter { key in
             !present.contains(key) && kind.allows(key) && key != .lineItems && key != .serviceKind
                 && CaptureMapping.isShownInReview(key, among: present.union([key]))
+                && (SubscriptionCode(captureKey: key).map(codes.contains) ?? true)
         }
     }
 
@@ -391,13 +395,13 @@ struct CaptureReview: Identifiable {
     }
 
     static func subscriptionReading(kind: CaptureDocumentKind, values: [CaptureFieldKey: CaptureValue]) -> SubscriptionMatcher.Reading {
-        let codes: [SubscriptionMatcher.Code: CaptureFieldKey] = [
-            .pod: .podCode, .clc: .clcCode, .phoneNumber: .phoneNumber, .contractNumber: .contractNumber, .clientCode: .clientCode,
-        ]
+        let codes = SubscriptionCode.allCases.reduce(into: [SubscriptionCode: String]()) { codes, code in
+            codes[code] = values[code.captureKey]?.text
+        }
         return SubscriptionMatcher.Reading(
             provider: values[.provider]?.text,
             service: values[.serviceKind]?.text,
-            codes: codes.compactMapValues { values[$0]?.text },
+            codes: codes,
             isBill: kind.profile.isBill,
             supplyAddress: values[.supplyAddress]?.text
         )

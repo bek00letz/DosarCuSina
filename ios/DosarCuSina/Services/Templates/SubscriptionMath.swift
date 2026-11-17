@@ -8,10 +8,22 @@ public enum SubscriptionMath {
     /// A contract billed by use (gas, electricity) has no fixed price: with
     /// `usingLastBill`, its last bill stands in for it.
     public static func monthlyEquivalent(_ values: FieldValues, usingLastBill: Bool = true) -> Money? {
-        guard let price = values["subscription.price"]?.moneyValue
-                ?? (usingLastBill ? values["subscription.lastBill"]?.moneyValue : nil) else { return nil }
-        let months = Decimal(BillingCycle.months(values["subscription.cycle"]?.textValue))
-        return Money((price.amount / months).rounded(scale: 2), currency: price.currency)
+        guard let price = values[SubscriptionFields.price]?.moneyValue
+                ?? (usingLastBill ? values[SubscriptionFields.lastBill]?.moneyValue : nil) else { return nil }
+        return monthly(price, every: SubscriptionFields.cycle(of: values))
+    }
+
+    /// What `price`, paid once every `cycle`, comes to a month: a year is twelve months, and
+    /// a year has 52 weeks and 365 days, so a weekly price is 52 of them over twelve months.
+    public static func monthly(_ price: Money, every cycle: RecurrenceInterval) -> Money {
+        let every = Decimal(cycle.every)
+        let perMonth: Decimal = switch cycle.unit {
+        case .day: price.amount * 365 / (12 * every)
+        case .week: price.amount * 52 / (12 * every)
+        case .month: price.amount / every
+        case .year: price.amount / (12 * every)
+        }
+        return Money(perMonth.rounded(scale: 2), currency: price.currency)
     }
 
     public static func monthlyTotal<S: Sequence>(_ subscriptions: S) -> MoneyTotals where S.Element == FieldValues {

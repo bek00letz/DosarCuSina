@@ -57,8 +57,8 @@ extension AttentionModel {
     }
 
     /// The bills that haven't come when they usually do. Only for subscriptions billed on
-    /// a rhythm (utilities and phone plans, monthly unless they say otherwise) that have
-    /// had a bill before; examples never. Comfort only: oldest expected first.
+    /// a rhythm (utilities and phone plans, weekly to yearly, monthly unless they say
+    /// otherwise) that have had a bill before; examples never. Comfort only: oldest expected first.
     public static func missingBills(
         _ subscriptions: [BillWatchSnapshot],
         now: Date = Date(),
@@ -69,7 +69,7 @@ extension AttentionModel {
         return subscriptions
             .filter { !$0.isExample && ServiceKind.sendsRegularBills($0.service) }
             .compactMap { subscription -> (note: AttentionNote, day: CalendarDay)? in
-                guard let missing = BillHistory.missing(subscription.bills, cycleMonths: subscription.cycleMonths, today: today, calendar: calendar) else { return nil }
+                guard let missing = BillHistory.missing(subscription.bills, cycle: subscription.cycle, today: today, calendar: calendar) else { return nil }
                 let last = DosarFormat.dayMonth(missing.lastDay, locale: locale)
                 let lastLine = String(localized: "Ultima a venit pe \(last).", comment: "When a subscription's last bill came.")
                 guard !subscription.isSensitive else {
@@ -77,13 +77,24 @@ extension AttentionModel {
                                           detail: lastLine, expectedDay: missing.expectedDay), missing.expectedDay)
                 }
                 let from = subscription.provider.map(SubscriptionMatcher.shortProviderName) ?? subscription.name
-                let title = missing.cycleMonths == 1
-                    ? String(localized: "Factura de la \(from) n-a venit luna asta", comment: "A monthly bill that hasn't come. The argument is the provider.")
-                    : String(localized: "Factura de la \(from) n-a venit încă", comment: "A bill that hasn't come. The argument is the provider.")
+                let title = missingTitle(from: from, cycle: missing.cycle)
                 let place = [subscription.name, subscription.placeName].compactMap { $0 }.joined(separator: " · ")
                 return (AttentionNote(opens: .section(subscription.id), title: title, detail: place + ". " + lastLine, expectedDay: missing.expectedDay), missing.expectedDay)
             }
             .sorted { $0.day < $1.day }
             .map(\.note)
+    }
+
+    /// What a missing bill's note says, by how often the bills come: „luna asta” for a monthly
+    /// bill, „săptămâna asta” for a weekly one, „încă” for any other.
+    static func missingTitle(from: String, cycle: RecurrenceInterval) -> String {
+        switch (cycle.unit, cycle.every) {
+        case (.month, 1):
+            String(localized: "Factura de la \(from) n-a venit luna asta", comment: "A monthly bill that hasn't come. The argument is the provider.")
+        case (.week, 1):
+            String(localized: "Factura de la \(from) n-a venit săptămâna asta", comment: "A weekly bill that hasn't come. The argument is the provider.")
+        default:
+            String(localized: "Factura de la \(from) n-a venit încă", comment: "A bill that hasn't come. The argument is the provider.")
+        }
     }
 }
