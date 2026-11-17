@@ -165,7 +165,7 @@ struct ShareConfirmationTests {
     @Test func itStaysUntilClosed() {
         #expect(!ShareConfirmation.closesByItself, "Nobody misses what happens next: it closes only on „Închide”")
         let saved: [ShareConfirmation.Phase] = [.saved(count: 1, next: .tapNotice), .saved(count: 2, next: .openApp), .saved(count: 1, next: .practice)]
-        for phase in saved + [.unsupported, .failed, .tooLarge] {
+        for phase in saved + [.unsupported] + ShareFailure.allCases.map(ShareConfirmation.Phase.failed) {
             #expect(ShareConfirmation(phase).action == .close, "Every outcome waits for „Închide”")
         }
         #expect(ShareConfirmation(.working).action == .cancel)
@@ -184,7 +184,7 @@ struct ShareConfirmationTests {
         #expect(open.message == "Deschide Dosar cu Șină ca să continui. Te așteaptă la De verificat.")
         #expect(ShareConfirmation(.saved(count: 1, next: .practice)).message == "Te întorci în aplicație și vezi unde a ajuns.")
         #expect(ShareConfirmation(.working).message == nil)
-        #expect(ShareConfirmation(.tooLarge).message == "Trimite actele câte unul, sau ca poze în loc de un PDF mare.")
+        #expect(ShareConfirmation(.failed(.tooLarge)).message == "Trimite actele câte unul, sau ca poze în loc de un PDF mare.")
     }
 }
 
