@@ -157,11 +157,17 @@
         }
       }
     },
+    "Aplicația din care l-ai trimis nu mi-a dat voie să-l citesc. Salvează-l întâi în Fișiere, apoi trimite-l de acolo." : {
+      "comment" : "Share sheet: what to do when the file can't be read."
+    },
     "Atinge notificarea ca să continui. Te așteaptă în aplicație, la De verificat." : {
       "comment" : "Share sheet: a notice is on its way."
     },
     "azi" : {
       "comment" : "When: due today."
+    },
+    "Ca să-l descarc, telefonul are nevoie de internet. Conectează-te, apoi trimite-l din nou." : {
+      "comment" : "Share sheet: downloading the file needs the internet."
     },
     "depășit de %@" : {
       "comment" : "When: late past its grace, by a duration such as '3 zile'."
@@ -208,8 +214,20 @@
     "Deschide Dosar cu Șină ca să continui. Te așteaptă la De verificat." : {
       "comment" : "Share sheet: no notice, notifications aren't allowed."
     },
+    "Deschide Dosar cu Șină o dată, apoi trimite-l din nou." : {
+      "comment" : "Share sheet: what to do when the shared folder isn't available."
+    },
+    "Fă loc din Configurări › General › Spațiu iPhone, apoi trimite-l din nou." : {
+      "comment" : "Share sheet: where to free up space. The path names the iPhone's own Settings screens."
+    },
+    "Fișierul e încă în iCloud" : {
+      "comment" : "Share sheet: the file is in iCloud and couldn't be downloaded."
+    },
     "Fișierul e prea mare" : {
       "comment" : "Share sheet: a file or the share is too large."
+    },
+    "Fișierul nu s-a putut copia. Încearcă din nou din aplicația din care l-ai trimis." : {
+      "comment" : "Share sheet: the copy failed for a reason the phone didn't name."
     },
     "în %@" : {
       "comment" : "In a duration such as '5 zile' or '2 luni și 3 săptămâni'. A duration of one ('o lună', 'un an') is joined: 'într-o lună'."
@@ -222,6 +240,18 @@
     },
     "mâine" : {
       "comment" : "When: due tomorrow."
+    },
+    "Nu am unde să pun fișierul" : {
+      "comment" : "Share sheet: the app's shared folder isn't available."
+    },
+    "Nu l-am putut descărca acum. Deschide-l o dată în Fișiere, apoi trimite-l din nou." : {
+      "comment" : "Share sheet: what to do with a file still in iCloud."
+    },
+    "Nu mai e loc pe telefon" : {
+      "comment" : "Share sheet: the phone is out of space."
+    },
+    "Nu pot deschide fișierul" : {
+      "comment" : "Share sheet: the sending app didn't allow reading the file."
     },
     "Nu pot primi asta" : {
       "comment" : "Share sheet: nothing it can read."
@@ -242,7 +272,7 @@
       "comment" : "Share sheet: the practice invoice, sent from inside the app."
     },
     "Telefonul nu mi-a dat fișierul. Încearcă din nou din aplicația din care l-ai trimis." : {
-      "comment" : "Share sheet: what to do after a failed copy."
+      "comment" : "Share sheet: the sending app handed over nothing."
     },
     "Trimite actele câte unul, sau ca poze în loc de un PDF mare." : {
       "comment" : "Share sheet: what to do with a file that is too large."
