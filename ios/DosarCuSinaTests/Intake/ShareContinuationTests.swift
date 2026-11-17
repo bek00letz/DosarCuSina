@@ -124,7 +124,7 @@ struct InboxNoticeTests {
             inboxNotices: notices,
             waitingInboxItems: { Set(inbox.waitingItems().map(\.id)) },
             preferences: AppPreferences(defaults: defaults),
-            calendar: .bucharest,
+            calendar: { .bucharest },
             now: { noon("2026-11-09") }
         )
         await coordinator.reconcileNow()

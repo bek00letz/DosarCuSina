@@ -46,6 +46,8 @@ public enum ReminderPlanner {
     public static let lapseSuffix = "lapse"
     /// Identifier suffix of the one reminder for warnings that passed before the deadline was known.
     public static let catchUpSuffix = "catchup"
+    /// Identifier suffix of the reminder on the day a snooze ends: `obligation.<uuid>.snooze`.
+    public static let snoozeSuffix = "snooze"
     /// Prefix of a lead's suffix: `d` for days before the due day, `t` for days before a
     /// travel cut-off (never read back as a due day, so a button acts only on the cycle it carries).
     static func leadSuffix(_ days: Int, travel: Bool) -> String { "\(travel ? "t" : "d")\(days)" }
@@ -90,7 +92,25 @@ public enum ReminderPlanner {
         return result
     }
 
-    /// Every reminder one obligation wants pending, in no particular order.
+    /// What a reminder of one deadline is for. When two fall at the same moment (a snooze that
+    /// ends on a lead's day or on the day after the due day, the catch-up on a lead's day, two
+    /// leads on one day), the plan keeps one, the first in this order, so a moment is never
+    /// planned twice and the one kept is always the same.
+    enum Purpose: Int, Comparable {
+        /// A lead before the due day (or before a travel cut-off): the cycle's own plan.
+        case lead
+        /// The one follow-up the day after the due day.
+        case followUp
+        /// The one catch-up for warnings that passed before the deadline was known.
+        case catchUp
+        /// The day a snooze ends.
+        case snooze
+
+        static func < (a: Purpose, b: Purpose) -> Bool { a.rawValue < b.rawValue }
+    }
+
+    /// Every reminder one obligation wants pending, one per moment (`Purpose`), in no
+    /// particular order.
     static func candidates(
         for obligation: ObligationSnapshot,
         now: Date,
@@ -98,13 +118,19 @@ public enum ReminderPlanner {
         defaultMinuteOfDay: Int,
         locale: Locale
     ) -> [PlannedReminder] {
-        var result: [PlannedReminder] = []
+        var atMoment: [Date: (purpose: Purpose, reminder: PlannedReminder)] = [:]
         let minute = obligation.reminderMinuteOfDay ?? defaultMinuteOfDay
         let snoozedUntil = obligation.snoozeEnds(after: now, calendar: calendar)
         let profile = obligation.reminders
         let cutoff = profile.urgencyRule.travelCutoff(before: obligation.dueDay, calendar: calendar)
-        func make(_ day: CalendarDay, _ fire: Date, _ suffix: String) -> PlannedReminder {
-            reminder(for: obligation, on: day, fireDate: fire, identifierSuffix: suffix, calendar: calendar, locale: locale)
+        func add(_ purpose: Purpose, _ day: CalendarDay, _ fire: Date, _ suffix: String) {
+            // Two of one purpose (two leads on one day): the one whose identifier sorts first.
+            if let kept = atMoment[fire],
+               kept.purpose < purpose || (kept.purpose == purpose && kept.reminder.identifier <= identifier(obligationId: obligation.id, suffix: suffix)) {
+                return
+            }
+            let made = reminder(for: obligation, on: day, fireDate: fire, identifierSuffix: suffix, calendar: calendar, locale: locale)
+            atMoment[fire] = (purpose, made)
         }
 
         for offset in profile.leadDays {
@@ -112,11 +138,11 @@ public enum ReminderPlanner {
             let fire = fireDate(day: day, minuteOfDay: minute, calendar: calendar)
             guard fire > now else { continue }
             if let snoozedUntil, fire < snoozedUntil { continue }
-            result.append(make(day, fire, leadSuffix(offset, travel: cutoff != nil)))
+            add(.lead, day, fire, leadSuffix(offset, travel: cutoff != nil))
         }
 
         if snoozedUntil == nil, let (day, fire) = catchUp(for: obligation, minuteOfDay: minute, calendar: calendar), fire > now {
-            result.append(make(day, fire, catchUpSuffix))
+            add(.catchUp, day, fire, catchUpSuffix)
         }
 
         // "Follow up after it lapses": one reminder the day after the due date,
@@ -125,17 +151,17 @@ public enum ReminderPlanner {
             let day = obligation.dueDay.adding(days: 1, calendar: calendar)
             let fire = fireDate(day: day, minuteOfDay: minute, calendar: calendar)
             if fire > now, snoozedUntil.map({ fire >= $0 }) ?? true {
-                result.append(make(day, fire, lapseSuffix))
+                add(.followUp, day, fire, lapseSuffix)
             }
         }
 
         if snoozedUntil != nil, let day = obligation.snoozedUntil {
             let fire = fireDate(day: day, minuteOfDay: minute, calendar: calendar)
             if fire > now {
-                result.append(make(day, fire, "snooze"))
+                add(.snooze, day, fire, snoozeSuffix)
             }
         }
-        return result
+        return atMoment.values.map(\.reminder)
     }
 
     /// The one catch-up reminder for a deadline whose warnings (lead days before

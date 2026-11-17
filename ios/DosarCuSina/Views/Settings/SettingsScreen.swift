@@ -146,7 +146,12 @@ struct NotificationSettings: View {
         } header: {
             Text("Notificări", comment: "Settings section.")
         } footer: {
-            Text("Amintirile vin la ora asta, dacă un termen nu are ora lui.", comment: "Footer of the reminder time setting.")
+            VStack(alignment: .leading, spacing: DS.Space.xs) {
+                Text("Amintirile vin la ora asta, dacă un termen nu are ora lui.", comment: "Footer of the reminder time setting.")
+                if let note = ReminderWording.springForward(preferences.reminderMinuteOfDay) {
+                    Text(verbatim: note)
+                }
+            }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { sideEffects?.setNeedsReconcile(allowPermissionPrompt: false) }

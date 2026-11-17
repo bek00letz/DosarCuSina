@@ -6490,6 +6490,9 @@
         }
       }
     },
+    "Pe %@, când se trece la ora de vară, îți amintesc la %@." : {
+      "comment" : "Under a reminder time the clocks skip on the morning summer time starts (03:30 when 03:00 becomes 04:00): the day, and the time its reminders come at instead."
+    },
     "Pe %@. Înainte: %@." : {
       "localizations" : {
         "ro" : {

@@ -109,6 +109,17 @@ enum ReminderWording {
         return DosarFormat.time(minuteOfDay: minuteOfDay, calendar: calendar)
     }
 
+    /// Under a reminder time the clocks skip on one day of the next year: „Pe 28 martie, când
+    /// se trece la ora de vară, îți amintesc la 04:00.” The time is the one that day's reminders
+    /// come at (`ReminderClock.springForward`); nil when the time exists every day.
+    static func springForward(_ minuteOfDay: Int, now: Date = Date(), calendar: Calendar = .dosar) -> String? {
+        guard let skipped = ReminderClock.springForward(minuteOfDay: minuteOfDay, after: now, calendar: calendar) else { return nil }
+        let day = DosarFormat.dayMonth(skipped.day)
+        let time = DosarFormat.time(minuteOfDay: skipped.remindsAt, calendar: calendar)
+        return String(localized: "Pe \(day), când se trece la ora de vară, îți amintesc la \(time).",
+                      comment: "Under a reminder time the clocks skip on the morning summer time starts (03:30 when 03:00 becomes 04:00): the day, and the time its reminders come at instead.")
+    }
+
     /// "Îți amintesc la 07:30." or "Îți amintesc la ora obișnuită, 09:00.": the time in a
     /// sentence, on the deadline's page and after it changes.
     static func atTime(_ minuteOfDay: Int?, usual: Int, calendar: Calendar = .dosar) -> String {

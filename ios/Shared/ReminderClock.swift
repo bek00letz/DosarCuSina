@@ -18,4 +18,27 @@ enum ReminderClock {
         let parts = calendar.dateComponents([.hour, .minute], from: moment)
         return clamped((parts.hour ?? 0) * 60 + (parts.minute ?? 0))
     }
+
+    /// The next day within a year when the clocks skip `minuteOfDay` (the morning summer time
+    /// starts: 03:30 doesn't exist in Romania when 03:00 becomes 04:00), with the time a reminder
+    /// set for it comes at that day: the first minute after the gap, by the one rule
+    /// (`CalendarDay.moment(atMinute:in:)`). Nil when the time exists every day of the next year
+    /// in the calendar's time zone.
+    static func springForward(minuteOfDay: Int, after now: Date, calendar: Calendar = .dosar) -> (day: CalendarDay, remindsAt: Int)? {
+        let minute = clamped(minuteOfDay)
+        guard let yearOn = calendar.date(byAdding: .year, value: 1, to: now) else { return nil }
+        var after = now
+        // A time zone moves its clocks at most a few times a year.
+        for _ in 0..<4 {
+            guard let change = calendar.timeZone.nextDaylightSavingTimeTransition(after: after), change <= yearOn else { return nil }
+            let day = CalendarDay(change, calendar: calendar)
+            let moment = day.moment(atMinute: minute, in: calendar)
+            let shown = minuteOfDay(of: moment, calendar: calendar)
+            if shown != minute, CalendarDay(moment, calendar: calendar) == day {
+                return (day, shown)
+            }
+            after = change
+        }
+        return nil
+    }
 }
