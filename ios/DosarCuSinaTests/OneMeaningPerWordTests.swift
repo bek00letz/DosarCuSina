@@ -67,7 +67,7 @@ struct OneMeaningPerWordTests {
         let watering = try ObligationActions(context: context)
             .create(title: "Udat", kind: .routine, dueDay: CalendarDay(Date()), for: nil, recurrence: .interval(.days(7), anchor: .completion))
 
-        let start = try CompletionEntry(context: context).start(watering) { _, _ in }
+        let start = try CompletionEntry(context: context).start(watering, cycle: watering.dueDay) { _, _ in }
 
         guard case .done(let toast) = start else {
             Issue.record("A chore is done in one tap")
@@ -85,7 +85,7 @@ struct OneMeaningPerWordTests {
             .create(title: "Termen", kind: kind, dueDay: CalendarDay(Date()), for: nil)
         let due = deadline.dueDay
 
-        let start = try CompletionEntry(context: context).start(deadline) { _, _ in }
+        let start = try CompletionEntry(context: context).start(deadline, cycle: deadline.dueDay) { _, _ in }
 
         guard case .asks(let request) = start else {
             Issue.record("\(kind) asks before it is done")

@@ -34,8 +34,14 @@ public enum CompletionKind: String, Codable, Sendable, CaseIterable {
     case rentalDeclaration
     /// A tax of one's own: what was paid and the receipt.
     case ownTax
-    /// A personal document renewed: the new one and when it expires.
+    /// Something renewed with a new end (a renewal of one's own): the new paper and when it
+    /// expires, the deadline going on from that day.
     case newDocument
+    /// A personal document (an identity card, a passport, a licence) renewed: a new one has
+    /// another series and number, so it is a document of its own, added on its own. Closing asks
+    /// no new expiry: the deadline closes, the old one shows as expired, and its page offers the
+    /// new one and deleting the old one (`CompletionShape.Replacement`).
+    case documentReplaced
     /// The European health card renewed: the new card and when it expires.
     case newHealthCard
     /// A subscription's contract renewed: the new contract and when it ends.
@@ -133,6 +139,16 @@ public enum CompletionKind: String, Codable, Sendable, CaseIterable {
                 name: String(localized: "Actul nou"), gender: .masculine, use: .expiry,
                 action: String(localized: "Fotografiază actul nou"),
                 example: String(localized: "Partea cu data la care expiră.")), newEnd: .expires)
+        case .documentReplaced:
+            return CompletionShape(cost: .cost, replacement: CompletionShape.Replacement(
+                inSheet: String(localized: "Închid termenul și trec actul acesta ca expirat. Actul nou are altă serie și alt număr, așa că îl adaugi separat, cu poza lui.",
+                                comment: "Am rezolvat on a personal document: what saving does, and that the new document is added on its own."),
+                title: String(localized: "Ai reînnoit actul", comment: "A renewed personal document's page: the card that offers the new one."),
+                message: String(localized: "Cel nou are altă serie și alt număr: adaugă-l ca act nou, cu poza lui. Pe acesta îl poți păstra sau șterge.",
+                                comment: "A renewed personal document's page: why the new one is added on its own."),
+                add: String(localized: "Adaugă actul nou", comment: "A renewed personal document's page: adds the new document for the same person."),
+                delete: String(localized: "Șterge actul vechi", comment: "A renewed personal document's page: deletes the old document."),
+                open: String(localized: "Vezi actul", comment: "Toast after closing a personal document's renewal: opens the document's page.")))
         case .newHealthCard:
             return CompletionShape(paper: CompletionShape.Paper(
                 name: String(localized: "Cardul nou", comment: "Am rezolvat: the new European health card."), gender: .masculine, use: .expiry,
@@ -277,7 +293,7 @@ extension CompletionKind {
         case .vehicleService, .tyreChange, .bikeService, .chimneySweep, .ownService: .job
         case .bill: .bill
         case .buildingTax, .rentalDeclaration, .ownTax: .tax
-        case .newDocument, .newHealthCard, .newContract, .newLease: .renewal
+        case .newDocument, .documentReplaced, .newHealthCard, .newContract, .newLease: .renewal
         case .policy: .policy
         // A legal deadline of one's own reads as a check, a health one as care, as before.
         case .itp, .boilerCheck, .gasCheck, .ownLegal: .check

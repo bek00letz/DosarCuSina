@@ -7,6 +7,11 @@ import SwiftUI
 /// takes it back or adds a note; any other kind opens "Am rezolvat" (`ObligationCompleteSheet`),
 /// which asks what the kind asks: the day, the cost, the paper. From outside the app (reminder
 /// buttons, the widget, Siri) a deadline is closed by `IntentEngine.perform` instead.
+///
+/// Every start carries the cycle the person saw (the due day on the row or the page), as
+/// `IntentEngine` does: a second activation (VoiceOver twice, a swipe and the menu) or a sheet
+/// left open while a reminder closed the cycle files nothing against the next one
+/// (`ObligationActionError.cycleClosed`, thrown by `ObligationActions.complete`).
 @MainActor
 struct CompletionEntry {
     let context: ModelContext
@@ -19,19 +24,23 @@ struct CompletionEntry {
         case asks(CompletionRequest)
     }
 
-    /// Starts completing `obligation` the way its kind says. A chore's toast offers
-    /// "Adaugă o notă", which hands `addNote` the completion's entry and the toast.
-    func start(_ obligation: Obligation, addNote: @escaping @MainActor (UUID, DSToast) -> Void) throws -> Start {
+    /// Starts completing `obligation` at `cycle`, the due day the person saw, the way its kind
+    /// says. A chore's toast offers "Adaugă o notă", which hands `addNote` the completion's
+    /// entry and the toast. Throws `cycleClosed` when that cycle was closed meanwhile.
+    func start(_ obligation: Obligation, cycle: CalendarDay, addNote: @escaping @MainActor (UUID, DSToast) -> Void) throws -> Start {
         guard obligation.completion(in: context).isOneTap else {
-            return .asks(CompletionRequest(obligationID: obligation.id))
+            try ObligationActions(context: context).requireOpen(obligation, cycle: cycle)
+            return .asks(CompletionRequest(obligationID: obligation.id, cycle: cycle))
         }
-        return .done(try UpcomingActions(context: context).complete(obligation, title: obligation.title, addNote: addNote))
+        return .done(try UpcomingActions(context: context).complete(obligation, title: obligation.title, cycle: cycle, addNote: addNote))
     }
 }
 
-/// "Am rezolvat" waiting to open for one deadline.
+/// "Am rezolvat" waiting to open for one deadline, at the cycle the person saw.
 struct CompletionRequest: Identifiable, Equatable {
     let obligationID: UUID
+    /// The due day the person saw when they asked: the sheet files only against it.
+    let cycle: CalendarDay
     var id: UUID { obligationID }
 }
 
@@ -51,7 +60,7 @@ private struct CompletionSheetModifier: ViewModifier {
     func body(content: Content) -> some View {
         content.dsSheet(item: $request) { request in
             if let obligation = UpcomingActions(context: context).obligation(request.obligationID) {
-                ObligationCompleteSheet(obligation: obligation) { result in
+                ObligationCompleteSheet(obligation: obligation, cycle: request.cycle) { result in
                     self.request = nil
                     if let result { toast = result }
                 }

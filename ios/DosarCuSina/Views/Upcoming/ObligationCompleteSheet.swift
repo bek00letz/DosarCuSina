@@ -15,6 +15,9 @@ import SwiftUI
 /// (`text-in-shaped-screen`).
 struct ObligationCompleteSheet: View {
     let obligation: Obligation
+    /// The cycle the person saw when they asked: the sheet files only against it, and says so
+    /// when it was closed meanwhile (a reminder, the widget, another device).
+    let cycle: CalendarDay
     let onClose: (DSToast?) -> Void
 
     @Environment(\.modelContext) private var context
@@ -48,6 +51,17 @@ struct ObligationCompleteSheet: View {
         return filled
     }
 
+    /// The cycle the sheet opened for was closed meanwhile, here on this phone (a reminder's
+    /// button, the widget): saving would file nothing. One closed on another device is found
+    /// when saving (`ObligationActions.requireOpen`).
+    private var isClosedMeanwhile: Bool {
+        // While this sheet's own save runs, the deadline moving is its own doing.
+        !isSaving && (obligation.status != .active || obligation.dueDay != cycle)
+    }
+
+    /// What is wrong with the new end typed, under its field (`CompletionDraft.newDayProblem`).
+    private var newDayProblem: String? { draft.newDayProblem(shape: shape) }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -63,9 +77,11 @@ struct ObligationCompleteSheet: View {
             .background(DS.Palette.background)
             .dsPinnedAction {
                 DSPrimaryButton(verbatim: CompletionWording.save, systemImage: "checkmark") { save() }
-                    .disabled(isSaving || isReading || (shape.asksDate && draft.date == nil))
+                    .disabled(isSaving || isReading || (shape.asksDate && draft.date == nil) || newDayProblem != nil || isClosedMeanwhile)
             } note: {
-                if let errorMessage {
+                if isClosedMeanwhile {
+                    DSNotice(.warning, title: LocalizedStringKey(CompletionWording.notSaved), message: LocalizedStringKey(CompletionWording.closedMeanwhile))
+                } else if let errorMessage {
                     DSNotice(.error, title: LocalizedStringKey(CompletionWording.notSaved), message: LocalizedStringKey(errorMessage))
                 }
             }
@@ -96,7 +112,7 @@ struct ObligationCompleteSheet: View {
 
     /// When, what it cost, the counter, the new end and the note: each only when the kind asks it.
     @ViewBuilder private var detailsCard: some View {
-        if shape.asksDate || shape.cost != nil || counter != nil || shape.asksNewExpiry || shape.asksNote {
+        if shape.asksDate || shape.cost != nil || counter != nil || shape.asksNewExpiry || shape.asksNote || shape.replacesSection {
             DSCard {
                 VStack(alignment: .leading, spacing: DS.Space.m) {
                     if shape.asksDate {
@@ -109,11 +125,21 @@ struct ObligationCompleteSheet: View {
                         DSMetricField(LocalizedStringKey(counter.title), value: $draft.reading, unit: counter.unit)
                     }
                     if let newEnd = shape.newEnd {
+                        // A day that isn't after today goes nowhere: the field says so, and saving waits.
                         DSExpiryDateField(LocalizedStringKey(newEnd.label), date: $draft.newExpiry, urgencyRule: obligation.reminders.urgencyRule,
-                                          footnote: LocalizedStringKey(CompletionWording.newEndFootnote))
+                                          footnote: LocalizedStringKey(CompletionWording.newEndFootnote)) { _ in
+                            newDayProblem.map { DSValidation.invalid(LocalizedStringResource(stringLiteral: $0)) } ?? .valid
+                        }
                     }
                     if let note = shape.note {
                         DSTextField(LocalizedStringKey(CompletionWording.note), text: $draft.note, kind: .longText, prompt: LocalizedStringKey(note.prompt))
+                    }
+                    if let replacement = shape.replacement {
+                        // What saving does to a personal document, and where its new one goes.
+                        Text(verbatim: replacement.inSheet)
+                            .dsFont(.footnote)
+                            .foregroundStyle(DS.Palette.secondaryLabel)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }
@@ -137,12 +163,15 @@ struct ObligationCompleteSheet: View {
                     Button(CompletionWording.anotherPhoto) { isChoosingSource = true }
                         .frame(minHeight: DS.Control.minimumHitTarget)
                 } else if let document {
-                    let next = CaptureFiler.nextDay(in: document)
+                    let read = CaptureFiler.nextDay(in: document)
+                    // Only a date after today and after this cycle becomes the next deadline
+                    // (`CaptureFiler.newDay`); an older one is no new date.
+                    let next = CaptureFiler.paperDay(in: document, closing: obligation, today: CalendarDay(Date()))
                     // A photo kept only on request (a bank card, a page with a card's number) isn't promised here.
                     // A paper that carries no date (an invoice, a receipt) says only that it was read.
                     let message: String? = if let next, shape.newEnd == nil {
                         CompletionWording.nextDeadline(DueWording.date(next, today: CalendarDay(Date())))
-                    } else if next != nil, let newEnd = shape.newEnd {
+                    } else if read != nil, let newEnd = shape.newEnd {
                         newEnd.filledFromPhoto
                     } else if !paper.readsADate {
                         nil
@@ -199,7 +228,7 @@ struct ObligationCompleteSheet: View {
 
     /// What saving files, from the sheet as it stands: only what the kind asks.
     private func completion() -> CaptureFiler.Completion {
-        filled.completion(of: obligation, shape: shape, counter: counter)
+        filled.completion(of: obligation, shape: shape, counter: counter, cycle: cycle)
     }
 
     /// A paper just read: a new photo asks again whether it is another bill, and what it says
@@ -224,11 +253,13 @@ struct ObligationCompleteSheet: View {
 
     private func save(lowerReading: LowerReadingAnswer? = nil) {
         // One filing at a time: a second tap before the button shows it is busy files nothing.
-        guard !isSaving, !shape.asksDate || draft.date != nil else { return }
+        guard !isSaving, !shape.asksDate || draft.date != nil, newDayProblem == nil, !isClosedMeanwhile else { return }
         isSaving = true
         errorMessage = nil
         let title = obligation.title
         let completion = completion()
+        let replacement = shape.replacement
+        let documentID = obligation.asset?.id
         Task {
             do {
                 var filer = CaptureFiler(context: context)
@@ -237,7 +268,14 @@ struct ObligationCompleteSheet: View {
                 let message = outcome.nextDue.map {
                     CompletionWording.done(title, next: DueWording.date($0, today: CalendarDay(Date())))
                 } ?? CompletionWording.done(title)
-                let toast: DSToast = outcome.receipt.map { .undo(message, receipt: $0) } ?? DSToast(title: message, actionTitle: nil)
+                var toast: DSToast = outcome.receipt.map { .undo(message, receipt: $0) } ?? DSToast(title: message, actionTitle: nil)
+                if let replacement, let documentID {
+                    // A personal document renewed: its page offers the new one and deleting the old one.
+                    toast.offer = DSToast.Offer(title: Text(verbatim: replacement.open)) { _ in
+                        AppNavigator.shared.open(.asset(documentID))
+                    }
+                    toast.duration = DSToast.offerDuration
+                }
                 session.close()
                 onClose(toast)
             } catch let question as ExampleSectionQuestion {

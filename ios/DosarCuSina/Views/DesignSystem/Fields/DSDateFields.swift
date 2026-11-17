@@ -54,6 +54,9 @@ struct DSExpiryDateField: View {
     var urgencyRule: UrgencyRule = .noReminders
     var isRequired: Bool = false
     var footnote: LocalizedStringKey?
+    /// What is wrong with the date picked, said under the field at once (a picker has no
+    /// "leaving the field"); nil checks nothing.
+    var validator: ((Date) -> DSValidation)?
 
     @Environment(\.dsRevealsValidation) private var revealsValidation
     @Environment(\.calendar) private var calendar
@@ -63,20 +66,27 @@ struct DSExpiryDateField: View {
         date: Binding<Date?>,
         urgencyRule: UrgencyRule = .noReminders,
         isRequired: Bool = false,
-        footnote: LocalizedStringKey? = nil
+        footnote: LocalizedStringKey? = nil,
+        validator: ((Date) -> DSValidation)? = nil
     ) {
         self.title = title
         self._date = date
         self.urgencyRule = urgencyRule
         self.isRequired = isRequired
         self.footnote = footnote
+        self.validator = validator
+    }
+
+    private var validation: DSValidation {
+        guard let date else { return isRequired && revealsValidation ? .requiredMissing : .valid }
+        return validator?(date) ?? .valid
     }
 
     var body: some View {
         DSFieldContainer(
             title: Text(title),
             isFocused: false,
-            validation: date == nil && isRequired && revealsValidation ? .requiredMissing : .valid,
+            validation: validation,
             footnote: footnote.map { Text($0) }
         ) {
             DSDateInput(title: title, date: $date, range: nil) {
@@ -91,6 +101,7 @@ struct DSExpiryDateField: View {
                 }
             }
         }
+        .dsValidationFeedback(validation)
     }
 }
 

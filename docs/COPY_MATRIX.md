@@ -467,6 +467,8 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | What it cost last time | Data trecută: 1.250 de lei. |
 | The button | Salvează |
 | Not saved | Nu s-a salvat · Poza nu s-a putut deschide. Încearcă din nou. |
+| A new end before today, under its field | Alege o zi de după azi. Data aceasta a trecut deja. |
+| Closed meanwhile (a reminder, the widget, another device) | Nu s-a salvat — Termenul a fost bifat între timp, dintr-o notificare, din widget sau de pe alt dispozitiv. N-am salvat nimic, iar următorul termen a rămas cum era. |
 | The toast | ITP: gata. Următorul termen e pe 3 mai 2027. / ITP: gata. Anulează |
 
 ### The household's own (`HouseholdRules`)
@@ -503,7 +505,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 
 | Where | Words |
 | :--- | :--- |
-| Reînnoire (`newDocument`) | Am rezolvat / Am rezolvat… — Când; Actul nou (Opțional. Din el iau data la care expiră.) — Fotografiază actul nou: Partea cu data la care expiră. [Citesc actul nou… / Am citit actul nou / Actul nou nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.]; Expiră pe — De aici încep să-ți amintesc din nou. |
+| Reînnoire (`documentReplaced`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Închid termenul și trec actul acesta ca expirat. Actul nou are altă serie și alt număr, așa că îl adaugi separat, cu poza lui. Once closed: „Ai reînnoit actul” — Cel nou are altă serie și alt număr: adaugă-l ca act nou, cu poza lui. Pe acesta îl poți păstra sau șterge. [Adaugă actul nou · Șterge actul vechi] · the toast's Vezi actul · the badge Expirat |
 
 ### Animale (`pet`)
 

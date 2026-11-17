@@ -67,9 +67,26 @@ struct VisitDraft: Equatable {
         self.date = date
     }
 
-    /// Whether anything was filled in, so leaving the form asks first.
+    /// Whether anything was filled in, so leaving the form asks first: the draft differs from
+    /// a new one of the same day in any value it holds (a row ticked, a counter typed, a
+    /// provider chosen, a rating, a paper), compared whole, so a value added to the draft
+    /// later counts by itself (`VisitDiscardGuardTests`). Only what holds nothing is left out first
+    /// (`content`): the counter's greyed estimate, a part, a row or a note left blank.
     var hasContent: Bool {
-        !ticked.isEmpty || hasRows || total != nil || document != nil || hasNote
+        content != VisitDraft(date: date).content
+    }
+
+    /// The draft without what holds nothing the person gave: the estimate is a placeholder,
+    /// never saved; a part with no cost and no brand, a row with no name and no cost and a
+    /// note of spaces are empty; where the counter came from says nothing without one.
+    private var content: VisitDraft {
+        var content = self
+        content.odometerEstimate = nil
+        content.parts = parts.filter { $0.value != Part() }
+        content.extras = extras.filter { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || $0.cost != nil }
+        content.note = note.trimmingCharacters(in: .whitespacesAndNewlines)
+        if odometer == nil { content.odometerSource = .person }
+        return content
     }
 
     private var hasRows: Bool { extras.contains { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty } }
