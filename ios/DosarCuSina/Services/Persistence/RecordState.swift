@@ -540,6 +540,24 @@ extension Provider: UndoableRecord {
     }
 }
 
+extension IssuerLesson: UndoableRecord {
+    public static var storedProperties: [StoredProperty<IssuerLesson>] {
+        [
+            .attribute("id", \.id), .attribute("copyID", \.copyID), .attribute("issuerKey", \.issuerKey),
+            .attribute("issuerName", \.issuerName), .attribute("kindRaw", \.kindRaw), .attribute("fieldKey", \.fieldKey),
+            .attribute("label", \.label), .attribute("createdAt", \.createdAt), .attribute("updatedAt", \.updatedAt),
+        ]
+    }
+    public var recordKey: String { id.uuidString }
+    public static func blank() -> Self {
+        Self(CaptureLesson(issuer: IssuerKey(rawValue: ""), kind: .other, field: CaptureFieldKey(rawValue: ""), label: ""), issuerName: "")
+    }
+    public static func find(_ key: String, in context: ModelContext) -> Self? {
+        guard let id = UUID(uuidString: key) else { return nil }
+        return context.first(#Predicate<IssuerLesson> { $0.id == id }) as? Self
+    }
+}
+
 extension CategoryTemplate: UndoableRecord {
     public static var storedProperties: [StoredProperty<CategoryTemplate>] {
         [

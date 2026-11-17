@@ -18,6 +18,10 @@ import SwiftData
 /// What takes time happens before the unit opens: Face ID for a locked section the
 /// filing writes into or moves a document out of, and the pages from capture's store.
 /// Side effects (reminders, widgets) follow every save through `SideEffectsCoordinator`.
+///
+/// A review the person saved also teaches the phone's own reader what its issuer prints where
+/// (`CaptureLessonLearner`), worked out before the unit opens and kept in it (`IssuerLessons.record`):
+/// the paper and its lessons are kept together, and "Anulează" takes both back.
 @MainActor
 struct CaptureFiler {
     let context: ModelContext
@@ -272,19 +276,30 @@ struct CaptureFiler {
         }
         // Every question the person must answer is asked before anything is written.
         try askFirst(for: intent, document: document)
+        let lessons = Self.lessons(taughtBy: intent)
         // From here nothing waits: one step, everything or nothing.
         let filing = try UnitOfWork.performUndoable(in: context, now: now()) {
+            let outcome: Outcome
             switch intent {
-            case .review(let review): try fileReview(review, document: document, pictures: pictures)
-            case .completion(let completion): try fileCompletion(completion, document: document)
-            case .visit(let visit): try fileVisit(visit, document: document)
+            case .review(let review): outcome = try fileReview(review, document: document, pictures: pictures)
+            case .completion(let completion): outcome = try fileCompletion(completion, document: document)
+            case .visit(let visit): outcome = try fileVisit(visit, document: document)
             }
+            if let lessons { try IssuerLessons(context: context, now: now).record(lessons) }
+            return outcome
         }
         var outcome = filing.value
         outcome.receipt = filing.receipt
         // Kept: this capture's hold on its pages ends (they're in the binder now).
         if let ref { await store.release(ref) }
         return outcome
+    }
+
+    /// What filing `intent` teaches the phone's own reader: only a review's, whose every value the
+    /// person saw before saving, compared with what the phone read of the same page.
+    static func lessons(taughtBy intent: Intent) -> CaptureLessonLearner.Outcome? {
+        guard case .review(let review) = intent, let source = review.result.source else { return nil }
+        return CaptureLessonLearner.lessons(from: source, saved: .init(kind: review.kind, values: review.valuesByKey))
     }
 
     /// The document an intent files, if any.

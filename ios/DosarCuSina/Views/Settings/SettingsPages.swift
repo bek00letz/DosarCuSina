@@ -29,6 +29,7 @@ enum SettingsPage: String, Hashable, CaseIterable, Sendable {
     case dosarScreen
     case iCloudAndBackups
     case ai
+    case learned
     case repairs
     case examples
     case about
@@ -61,7 +62,7 @@ enum SettingsPage: String, Hashable, CaseIterable, Sendable {
     /// reading, what waits, and the app.
     static func groups(hasExamples: Bool) -> [[SettingsPage]] {
         let listed = Set(listed(hasExamples: hasExamples))
-        return [[.notifications, .protection], [.dosarScreen, .iCloudAndBackups], [.ai], [.repairs, .examples], [.about]]
+        return [[.notifications, .protection], [.dosarScreen, .iCloudAndBackups], [.ai, .learned], [.repairs, .examples], [.about]]
             .map { $0.filter(listed.contains) }
             .filter { !$0.isEmpty }
     }
@@ -73,6 +74,7 @@ enum SettingsPage: String, Hashable, CaseIterable, Sendable {
         case .dosarScreen: String(localized: "Ecranul Dosar", comment: "Settings page: which categories show on the binder and how their boxes are arranged.")
         case .iCloudAndBackups: String(localized: "iCloud și copii de siguranță", comment: "Settings page: iCloud sync, backups and storage.")
         case .ai: String(localized: "Citire cu AI", comment: "Settings page: the optional AI service that reads documents better.")
+        case .learned: String(localized: "Ce am învățat", comment: "Settings page and section: what capture learned from the papers the person saved, by issuer.")
         case .repairs: String(localized: "De corectat", comment: "Settings row that opens the repair list.")
         case .examples: String(localized: "Exemple", comment: "Settings section.")
         case .about: String(localized: "Despre", comment: "Settings section.")
@@ -86,6 +88,7 @@ enum SettingsPage: String, Hashable, CaseIterable, Sendable {
         case .dosarScreen: "square.grid.2x2"
         case .iCloudAndBackups: "icloud"
         case .ai: "text.viewfinder"
+        case .learned: "graduationcap"
         case .repairs: "wrench.and.screwdriver"
         case .examples: "sparkles"
         case .about: "info.circle"
@@ -204,6 +207,7 @@ private struct SettingsRoot: View {
     @Environment(BiometricVaultManager.self) private var vault
     @Query private var templates: [CategoryTemplate]
     @Query(filter: #Predicate<Asset> { $0.isExample }) private var examples: [Asset]
+    @Query private var lessons: [IssuerLesson]
     @State private var repairs = DataRepairCenter.shared
     /// The AI service isn't observed (its key lives in the Keychain): read when the list shows.
     @State private var aiProvider: AIProvider?
@@ -252,6 +256,8 @@ private struct SettingsRoot: View {
             return SettingsStatus.iCloud(sync: persistence.sync, health: persistence.health, isStopping: persistence.isStoppingSync)
         case .ai:
             return SettingsStatus.ai(readyWith: aiProvider)
+        case .learned:
+            return IssuerWording.status(issuers: IssuerLessons.issuers(lessons).count)
         case .repairs:
             return SettingsStatus.repairs(repairs.pending.count)
         case .examples:
@@ -299,6 +305,8 @@ private struct SettingsPageView: View {
             }
         case .ai:
             List { AISettings() }
+        case .learned:
+            List { LearnedIssuersSettings(toast: $toast) }
         case .repairs:
             DataRepairsScreen()
         case .examples:

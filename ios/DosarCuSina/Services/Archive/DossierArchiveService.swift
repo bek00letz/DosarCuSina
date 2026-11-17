@@ -167,6 +167,7 @@ public enum DossierArchiveReader {
             providers: try decode([DossierV3.Provider].self, DossierV3.Path.providers),
             measurements: try decode([DossierV3.Measurement].self, DossierV3.Path.measurements),
             attachments: try decode([DossierV3.Attachment].self, DossierV3.Path.attachments),
+            issuerLessons: try decode([DossierV3.IssuerLesson].self, DossierV3.Path.issuerLessons),
             files: checked.vault
         )
         try validateReferences(package)

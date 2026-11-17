@@ -34,6 +34,8 @@ public struct CaptureAnalyzer: Sendable {
         public let hasMachineReadableZone: Bool
         /// The text for people: each printed label followed by its value, columns kept together.
         public let readableText: String
+        /// Who issued it, as the page names them (`IssuerKey.read`): whose lessons it was read with.
+        public let issuer: IssuerKey?
     }
 
     let specializedParsers: [any CaptureSpecializedParser]
@@ -43,6 +45,9 @@ public struct CaptureAnalyzer: Sendable {
     /// The kinds' profiles whose label tables the readers are told: the registry, unless a
     /// test gives a table another wording (`reading(labelsOf:)`).
     private(set) var profiles: [CaptureKindProfile] = CaptureKindProfile.all
+    /// What capture learned from what the person saved, told to the readers for a page of an
+    /// issuer it was learned of (`LessonBook.teaching`). None unless the caller gives them.
+    private(set) var lessons: LessonBook = .empty
 
     public init(
         specializedParsers: [any CaptureSpecializedParser] = [],
@@ -59,6 +64,18 @@ public struct CaptureAnalyzer: Sendable {
     func reading(labelsOf profiles: [CaptureKindProfile]) -> CaptureAnalyzer {
         var analyzer = self
         analyzer.profiles = profiles
+        return analyzer
+    }
+
+    /// The analyzer as the app reads with it: every input, the share inbox's included.
+    public static func standard(componentResolver: any CaptureComponentResolving = CatalogComponentResolver()) -> CaptureAnalyzer {
+        CaptureAnalyzer(specializedParsers: [UtilityInvoiceParser()], componentResolver: componentResolver)
+    }
+
+    /// The same analyzer, its readers told `book`'s lessons for the issuer a page names.
+    func learning(_ book: LessonBook) -> CaptureAnalyzer {
+        var analyzer = self
+        analyzer.lessons = book
         return analyzer
     }
 
@@ -146,8 +163,10 @@ public struct CaptureAnalyzer: Sendable {
         let template = IdentityTemplates.template(for: kind, text: text, machineReadableFormat: mrz?.format)
         if template != nil { text = lines }
         // Every reader below is told the kind's own labels (`CaptureKindProfile.labels`), and
-        // what every document prints the same way where the kind has no row of its own.
-        let profile = self.profile(of: kind)
+        // what every document prints the same way where the kind has no row of its own; before
+        // them, what was learned of the issuer the page names (`LessonBook.teaching`).
+        let issuer = IssuerKey.read(in: text)
+        let profile = lessons.teaching(self.profile(of: kind), issuer: issuer)
         switch kind {
         case .passport, .identityCard, .residencePermit, .drivingLicence, .criminalRecord, .healthInsuranceCard, .bankCard, .greenCard, .electronicSignature:
             // Printed labels, read with the document's template. The MRZ (when on the
@@ -174,7 +193,7 @@ public struct CaptureAnalyzer: Sendable {
             // provider the same way; the issuer, the number and the total as on any invoice.
             addIssuer(text, profile: profile, into: &fields)
             addInvoiceNumberAndTotal(text, profile: profile, into: &fields)
-            fields.add(BillReader.fields(in: text, window: years))
+            fields.add(BillReader.fields(in: text, window: years, labels: profile.labelTable))
             // The bill's own issue-date wordings are its layout's; when they find none, the
             // date as every document labels it.
             if fields.day(.issueDate) == nil {
@@ -237,7 +256,7 @@ public struct CaptureAnalyzer: Sendable {
         }
         return Analysis(
             text: text, kind: kind, kindConfidence: kindConfidence, kindEvidence: kindEvidence, fields: fields.fields, notices: notices,
-            hasMachineReadableZone: mrz != nil, readableText: readable.joined(separator: "\n")
+            hasMachineReadableZone: mrz != nil, readableText: readable.joined(separator: "\n"), issuer: issuer
         )
     }
 
