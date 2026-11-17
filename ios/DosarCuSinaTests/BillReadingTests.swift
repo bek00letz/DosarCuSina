@@ -540,7 +540,7 @@ struct BillReadingTests {
     /// A gas subscription under the home with its "Factura de plătit", made by hand, and no bill yet.
     private func gasWithReminder(_ context: ModelContext) throws -> (gas: Asset, reminder: Obligation) {
         let house = try home(context)
-        let templates = try TemplateStore(context: context)
+        let templates = TemplateStore(context: context)
         let template = try #require(try templates.template(forKey: BuiltInTemplates.Key.subscription))
         var values = FieldValues()
         values[SubscriptionFields.provider] = .text("ENGIE Romania S.A.")

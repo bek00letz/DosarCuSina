@@ -365,7 +365,6 @@ struct CopyMatrixTests {
     @Test("A paper's sentences agree with its noun: „O păstrez” for „Chitanța”, „Îl păstrez” for „Raportul”")
     func papersAgreeWithTheirNouns() {
         let subjects: Set<String> = ["el", "ea", "ele"]
-        let objects: Set<String> = ["il", "o", "le"]
         for kind in CompletionKind.allCases {
             guard let paper = kind.shape.paper else { continue }
             let (object, subject) = Self.pronouns(paper.gender)
