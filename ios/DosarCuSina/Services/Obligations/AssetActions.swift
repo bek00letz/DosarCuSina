@@ -468,14 +468,18 @@ enum HouseholdMutations {
         if case .interval(let interval, .dueDate) = obligation.recurrence {
             seriesDay = RecurrenceEngine.seriesStart(current: obligation.dueDay, completions: steps, interval: interval, calendar: calendar).day
         }
-        guard let asset = obligation.asset else { return RecurrenceContext(currentMetric: currentMetric, seriesDayOfMonth: seriesDay) }
+        let owed = obligation.kind.missedCyclesStayOwed
+        guard let asset = obligation.asset else {
+            return RecurrenceContext(currentMetric: currentMetric, seriesDayOfMonth: seriesDay, missedCyclesStayOwed: owed)
+        }
         let series = readingSeries(of: asset, unit: obligation.metricUnit)
         let readings = series.readings
         return RecurrenceContext(
             assetValues: asset.values,
             readings: readings,
             currentMetric: currentMetric ?? readings.last?.metric ?? self.currentMetric(of: asset),
-            seriesDayOfMonth: seriesDay
+            seriesDayOfMonth: seriesDay,
+            missedCyclesStayOwed: owed
         )
     }
 

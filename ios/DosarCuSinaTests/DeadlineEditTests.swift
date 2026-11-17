@@ -48,6 +48,35 @@ struct DeadlineEditTests {
         #expect(plants.kind == .routine)
     }
 
+    @Test func onlyAnEditThatAddsOrChangesRemindersExplainsTheNotificationQuestion() throws {
+        let context = try makeContext()
+        let actions = ObligationActions(context: context, calendar: calendar, now: { noon("2026-11-10") })
+        let plants = try ownChore(actions)
+        let start = DeadlineEdit(plants)
+
+        var renamed = start
+        renamed.title = "Udat plantele"
+        renamed.dueDay = CalendarDay("2026-11-14")
+        renamed.recurrence = .interval(.days(3), anchor: .completion)
+        #expect(!renamed.changesReminders(from: start), "A new name, day or repeat keeps the reminders the person has")
+
+        var newLead = start
+        newLead.reminders = newLead.reminders.withLeadDays(start.reminders.leadDays + [3])
+        #expect(newLead.changesReminders(from: start))
+
+        var newTime = start
+        newTime.reminderMinuteOfDay = 7 * 60
+        #expect(newTime.changesReminders(from: start))
+
+        var followUp = start
+        followUp.reminders.followUpAfterLapse.toggle()
+        #expect(followUp.changesReminders(from: start))
+
+        var important = start
+        important.choose(.health)
+        #expect(important.changesReminders(from: start), "A new importance moves the leads")
+    }
+
     @Test func anEditThatChangedNothingSavesNothing() throws {
         let context = try makeContext()
         let actions = ObligationActions(context: context, calendar: calendar, now: { noon("2026-11-10") })

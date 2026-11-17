@@ -190,7 +190,9 @@ struct DeadlineEditSheet: View {
         guard draft.canSave, due != nil else { reveals = true; return }
         guard draft != start else { onClose(nil); return }
         isSaving = true
-        // The first save that reminds explains the notification question first.
+        // The first save that adds or changes reminders explains the notification question
+        // first; an edit that leaves them as they were saves at once.
+        guard draft.changesReminders(from: start) else { return commit() }
         saveRequest = ReminderSaveRequest { commit() }
     }
 

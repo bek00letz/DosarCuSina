@@ -67,7 +67,7 @@ struct OnboardingFlow: View {
         } onError: { error in
             errorMessage = SaveFailure.message(for: error, formKept: true)
         }
-        .sheet(item: $flow) { input in
+        .dsSheet(item: $flow) { input in
             CaptureFlowView(input: input) { result in
                 flow = nil
                 guard let filed = Self.photoFiled(result, takenBack: { withAnimation(motion) { photoMessage = nil } }) else { return }

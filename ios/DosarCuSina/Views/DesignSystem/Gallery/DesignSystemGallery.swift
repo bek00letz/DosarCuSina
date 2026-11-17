@@ -789,7 +789,7 @@ private struct GalleryDiscardGuard: View {
                 }
             }
         }
-        .sheet(isPresented: $isEditing) {
+        .dsSheet(isPresented: $isEditing) {
             GalleryEditSheet()
         }
     }

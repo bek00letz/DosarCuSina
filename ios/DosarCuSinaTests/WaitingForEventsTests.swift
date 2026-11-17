@@ -216,7 +216,7 @@ struct WaitingForEventsTests {
             notificationClient: center,
             widgetWriter: WidgetSnapshotWriter(directory: directory),
             preferences: AppPreferences(defaults: defaults),
-            calendar: .bucharest,
+            calendar: { .bucharest },
             now: { noon("2026-11-02") }
         )
     }

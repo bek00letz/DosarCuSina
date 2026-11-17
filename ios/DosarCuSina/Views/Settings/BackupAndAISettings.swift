@@ -77,13 +77,13 @@ private struct BackupSection: View {
             .frame(minHeight: 44)
         }
         .disabled(flow.work != nil)
-        .sheet(isPresented: $isChoosingPassword, onDismiss: startChosenExport) {
+        .dsSheet(isPresented: $isChoosingPassword, onDismiss: startChosenExport) {
             BackupPasswordSheet { password in
                 exportChoice = password.map(ExportChoice.protected) ?? .plain
                 isChoosingPassword = false
             }
         }
-        .sheet(item: Binding(get: { flow.exportURL.map(ShareItem.init) }, set: { if $0 == nil { flow.finishSharing() } })) { item in
+        .dsSheet(item: Binding(get: { flow.exportURL.map(ShareItem.init) }, set: { if $0 == nil { flow.finishSharing() } })) { item in
             SystemShareSheet(urls: [item.url]) { _ in flow.finishSharing() }
                 .ignoresSafeArea()
         }
@@ -114,6 +114,7 @@ private struct BackupSection: View {
             case .failure(let failure): flow.error = UserFacingError(failure)
             }
         }
+        .dsPresents($isPickingFile)
         .alert(
             Text("Copia are parolă", comment: "Title of the prompt for a backup's password."),
             isPresented: Binding(get: { flow.lockedFile != nil }, set: { if !$0 { flow.lockedFile = nil } }),

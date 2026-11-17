@@ -2381,17 +2381,50 @@
     "Bune pentru WhatsApp sau mesaje." : {
       "comment" : "Why someone sends a document as pictures."
     },
+    "Ca %lld poze" : {
+      "comment" : "Share a document's pages as pictures. Plural variations without the number: one „Ca poză”, several „Ca poze”.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ca %#@pages@"
+          },
+          "substitutions" : {
+            "pages" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "poze"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "poză"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "poze"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Ca la mașini: fiecare are cutia ei." : {
       "comment" : "Explains one box per section."
     },
     "Ca la plante: toate stau la un loc." : {
       "comment" : "Explains one box for all of a category's sections."
-    },
-    "Ca poză" : {
-      "comment" : "Share one page of a document as a picture."
-    },
-    "Ca poze" : {
-      "comment" : "Share a document's pages as pictures."
     },
     "Ca să te anunț, pornește-le din Setări › Dosar cu Șină › Notificări. Termenele rămân oricum aici, în Urmează." : {
 
@@ -4265,11 +4298,44 @@
     "Factură %@" : {
 
     },
-    "Factura de la %@ n-a venit încă" : {
-      "comment" : "A bill that hasn't come. The argument is the provider."
-    },
-    "Factura de la %@ n-a venit luna asta" : {
-      "comment" : "A monthly bill that hasn't come. The argument is the provider."
+    "Factura de la %@ n-a venit, o dată la %lld luni" : {
+      "comment" : "A bill that hasn't come. The first argument is the provider; by how many months its bills come apart, without the number: one „Factura de la ENGIE n-a venit luna asta”, more „Factura de la ENGIE n-a venit încă”.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Factura de la %1$@ n-a venit %#@cycle@"
+          },
+          "substitutions" : {
+            "cycle" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "încă"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "luna asta"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "încă"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Factura de plătit" : {
 
@@ -5538,9 +5604,6 @@
     "mâine" : {
       "comment" : "Due: tomorrow"
     },
-    "Mâine" : {
-      "comment" : "Snooze until tomorrow"
-    },
     "Mâine e ultima zi bună de călătorit: %@" : {
       "comment" : "Reminder title the day before a document stops being good for travel"
     },
@@ -6609,6 +6672,9 @@
         }
       }
     },
+    "Pe %@, când se trece la ora de vară, îți amintesc la %@." : {
+      "comment" : "Under a reminder time the clocks skip on the morning summer time starts (03:30 when 03:00 becomes 04:00): the day, and the time its reminders come at instead."
+    },
     "Pe %@. Înainte: %@." : {
       "localizations" : {
         "ro" : {
@@ -6733,8 +6799,34 @@
     "Personală" : {
 
     },
-    "Peste %@" : {
-      "comment" : "Snooze for a length such as '3 zile' or '14 zile'"
+    "Peste %lld zile" : {
+      "comment" : "Snooze for a number of days, with Romanian plural forms: one „Mâine”, „Peste 3 zile”, „Peste 20 de zile”.",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Peste %lld zile"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Mâine"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Peste %lld de zile"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Piese și lucrări" : {
       "comment" : "Search group: components."

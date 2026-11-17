@@ -52,7 +52,7 @@ struct LockedSectionsEverywhereTests {
             notificationClient: FakeNotificationCenter(status: .authorized),
             widgetWriter: WidgetSnapshotWriter(directory: folder),
             preferences: AppPreferences(defaults: defaults),
-            calendar: calendar,
+            calendar: { calendar },
             now: { now }
         )
         return Household(container: container, car: car, itp: itp, coordinator: coordinator,

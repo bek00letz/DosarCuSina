@@ -172,11 +172,44 @@
     "depășit de %@" : {
       "comment" : "When: late past its grace, by a duration such as '3 zile'."
     },
-    "Deschide aplicația ca să le pui la locul lor." : {
-      "comment" : "Body of the notice after a share of several documents."
-    },
-    "Deschide aplicația ca să-l pui la locul lui." : {
-      "comment" : "Body of the notice after a share of one document."
+    "Deschide aplicația ca să pui cele %lld acte la locul lor." : {
+      "comment" : "Body of the notice after a share. Plural variations without the number: one „Deschide aplicația ca să-l pui la locul lui.”, several „Deschide aplicația ca să le pui la locul lor.”",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deschide aplicația ca %#@documents@"
+          },
+          "substitutions" : {
+            "documents" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "să le pui la locul lor."
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "să-l pui la locul lui."
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "să le pui la locul lor."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Deschide Dosar cu Șină ca să continui. Te așteaptă la De verificat." : {
       "comment" : "Share sheet: no notice, notifications aren't allowed."

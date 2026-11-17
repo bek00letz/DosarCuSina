@@ -91,7 +91,7 @@ struct AssetEditSheet: View {
             }
             .userErrorAlert($error)
             .sensoryFeedback(.success, trigger: savedCount)
-            .sheet(isPresented: $isMoving) {
+            .dsSheet(isPresented: $isMoving) {
                 MoveAssetSheet(asset: asset) { moved in
                     followName(from: moved.previousName)
                     let renamed = asset.name
