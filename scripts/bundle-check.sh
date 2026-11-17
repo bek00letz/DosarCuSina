@@ -36,6 +36,13 @@ for part in "$app" "$app/PlugIns/DosarCuSinaWidgets.appex" "$app/PlugIns/DosarCu
     fi
 done
 
+# An entitlements file is the build's input, never a file the app ships.
+for part in "$app" "$app/PlugIns/DosarCuSinaWidgets.appex" "$app/PlugIns/DosarCuSinaShare.appex"; do
+    if [ -n "$(find "$part" -maxdepth 1 -name '*.entitlements' 2>/dev/null)" ]; then
+        fail "$(basename "$part") carries an entitlements file as a resource"
+    fi
+done
+
 for key in NSCameraUsageDescription NSFaceIDUsageDescription NSPhotoLibraryAddUsageDescription; do
     [ -n "$(value "$app" "$key")" ] || fail "the app has no $key: set INFOPLIST_KEY_$key in the app target"
 done
