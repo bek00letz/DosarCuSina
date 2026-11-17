@@ -12,6 +12,8 @@ import Foundation
 public enum CaptureDocumentKind: String, Codable, Sendable, CaseIterable {
     case passport
     case identityCard
+    /// A residence permit (permis de ședere) of a citizen of a country outside the EU.
+    case residencePermit
     case drivingLicence
     /// A criminal record certificate: judiciar, fiscal or auto (`DocumentType.Variant`).
     case criminalRecord

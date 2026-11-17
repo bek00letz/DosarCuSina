@@ -284,7 +284,8 @@ struct UpcomingRoot: View {
     /// done, or with a swipe.
     private func unsavedRow(_ failure: OutsideActionFailures.Failure) -> some View {
         let obligation = snapshots.first { $0.id == failure.obligationId }
-        let isLocked = vault.isLocked(sectionIsSensitive: obligation?.isSensitive ?? false)
+        // A deadline no longer in the list names nothing.
+        let isLocked = vault.isLocked(sectionIsSensitive: obligation?.isSensitive ?? true)
         let name = isLocked ? String(localized: "O scadență protejată") : (obligation?.title ?? "")
         let title: String
         switch failure.action {
@@ -378,9 +379,11 @@ struct UpcomingRoot: View {
 
     private func complete(_ entry: AttentionEntry) {
         Task {
-            if entry.obligation.isSensitive, vault.isLocked(sectionIsSensitive: true) {
-                guard await vault.unlock(reason: String(localized: "Deschide secțiunea protejată ca să bifezi termenul.")) == .success else { return }
-            }
+            // Closing a locked category's deadline asks for Face ID first; „Amână” never does
+            // (`DeadlineChange`, the rule every way in reads).
+            let confirmed = await vault.confirmClosing(inLockedCategory: entry.obligation.isSensitive,
+                                                       reason: String(localized: "Deschide secțiunea protejată ca să bifezi termenul."))
+            guard confirmed == .success else { return }
             guard let obligation = UpcomingActions(context: context).obligation(entry.id) else { return }
             do {
                 // The page's own entry: a chore is done at once and its toast offers a note;

@@ -35,7 +35,7 @@ struct KeyFactsPocket: View {
 
     /// Anything copied from a locked section, or a sensitive row, is personal.
     private func clipboardKind(for row: FactRow) -> Clipboard.Kind {
-        row.isSensitive || templates.first?.isSensitive == true ? .personal : .ordinary
+        row.isSensitive || asset.isSensitive(template: templates.first) ? .personal : .ordinary
     }
     /// The custom row being edited, or a new one.
     @State private var editing: CustomFact?
