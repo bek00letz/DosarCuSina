@@ -59,8 +59,11 @@ struct AddSectionForm: Equatable {
     /// The part it may be filed under (a home, a car, a person), for the choice of where it goes.
     var belongsTo: CategoryBehavior.Role? { definition.behavior.mayBelongTo }
 
-    /// Under the fields when it asks none.
-    var detailsLater: String? { essentialFields.isEmpty ? AddSectionWording.detailsLater : nil }
+    /// Under the fields when it asks none: where the details go, when it keeps some; nothing
+    /// when it keeps none.
+    var detailsLater: String? {
+        essentialFields.isEmpty && !definition.allFields.isEmpty ? AddSectionWording.detailsLater : nil
+    }
 
     /// The essentials' button: on to the deadlines when there are some to offer, else it adds.
     func essentialsAction(offersDeadlines: Bool) -> String {
@@ -71,7 +74,7 @@ struct AddSectionForm: Equatable {
 
     /// Under a deadline's title: when it reminds, then the category's note on it.
     static func deadlineSubtitle(_ blueprint: ObligationBlueprint, values: FieldValues) -> String {
-        [ReminderWording.sentence(blueprint.reminders(for: values)), blueprint.note]
+        [ReminderWording.sentence(blueprint.reminders(for: values)), blueprint.shownNote]
             .compactMap { $0 }
             .filter { !$0.isEmpty }
             .joined(separator: AddSectionWording.lineBreak)
@@ -188,14 +191,15 @@ enum AddSectionWording {
     static var holderTitle: String { String(localized: "Al cui este") }
     static var holderFootnote: String { String(localized: "Actele stau grupate pe persoane.") }
     static var detailsLater: String {
-        String(localized: "Restul detaliilor le completezi oricând din pagina secțiunii, cu Editează.", comment: "Footnote when a category has no essential fields.")
+        String(localized: "Detaliile le completezi oricând din pagina secțiunii, cu Editează.",
+               comment: "Footnote when adding a section asks no field of a category that keeps some: none was asked, so „the details”, never „the rest”.")
     }
 
     // MARK: The deadlines
 
     static var deadlinesTitle: String { String(localized: "Termene", comment: "Header of the obligations list.") }
     static var deadlinesIntro: String {
-        String(localized: "Alege ce vrei să-ți amintim. Datele le poți schimba oricând.", comment: "Intro of the obligations step.")
+        String(localized: "Alege ce vrei să-ți amintesc. Datele le poți schimba oricând.", comment: "Intro of the obligations step.")
     }
     static var nextDate: String { String(localized: "Următoarea dată") }
     static var datesLaterOrFromAPhoto: String {

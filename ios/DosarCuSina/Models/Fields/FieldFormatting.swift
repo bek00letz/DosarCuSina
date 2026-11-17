@@ -182,7 +182,7 @@ public enum FieldFormatter {
             return number.formatted(.number.grouping(.never).precision(.fractionLength(0)).locale(locale))
         case .number(let number):
             let formatted = number.formatted(.number.locale(locale).precision(.fractionLength(0...2)))
-            if let unit { return "\(formatted) \(unit.label)" }
+            if let unit { return unit.after(formatted, value: number) }
             return formatted
         case .money(let money):
             return money.formatted(locale: locale)

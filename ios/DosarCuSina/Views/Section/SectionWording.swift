@@ -23,9 +23,9 @@ enum AgeWording {
 enum ComponentLine {
     static func detail(_ occurrence: ComponentOccurrence, unit: MeasurementUnit?, locale: Locale = .dosarDefault, calendar: Calendar = .dosar) -> String {
         var parts: [String] = []
-        if let since = occurrence.metricSince, let unit = unit?.label {
-            let distance = since.formatted(.number.locale(locale).precision(.fractionLength(0)))
-            parts.append(String(localized: "acum \(distance) \(unit)", comment: "How far the counter has moved since a job, e.g. 'acum 18.200 km'."))
+        if let since = occurrence.metricSince, let unit {
+            let distance = MeasurementUnit.written(since, in: unit, fractionDigits: 0...0)
+            parts.append(String(localized: "acum \(distance)", comment: "How far the counter has moved since a job, e.g. 'acum 18.200 km', 'acum 300 de cafele'."))
         }
         parts.append(DosarFormat.day(occurrence.date, locale: locale, calendar: calendar))
         if let cost = occurrence.cost {

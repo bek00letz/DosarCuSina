@@ -56,13 +56,15 @@ public enum BelongingWording {
         }
     }
 
-    /// With several, the note that says to move them one by one.
+    /// With several, the note that says to move them one by one. It names the sections of the
+    /// category, never the category as if it were their plural, so it reads the same for a
+    /// category named as one thing („Barca”) and as many („Plante”).
     public static func severalNote(_ role: CategoryBehavior.Role, category: String) -> String {
         switch role {
-        case .home: String(localized: "„\(category)” pot sta acum și într-o locuință. Ai mai multe, așa că le muți tu, din pagina fiecăreia, cu „Mută la…”.", comment: "Repair note: a category's sections (plants) can now be filed under a home; with several homes the person moves each with 'Mută la…'.")
-        case .vehicle: String(localized: "„\(category)” pot sta acum și la o mașină. Ai mai multe, așa că le muți tu, din pagina fiecăreia, cu „Mută la…”.", comment: "Repair note: a category's sections can now be filed under a car; with several cars the person moves each with 'Mută la…'.")
-        case .holder: String(localized: "„\(category)” pot sta acum și la o persoană. Ai mai multe, așa că le muți tu, din pagina fiecăreia, cu „Mută la…”.", comment: "Repair note: a category's sections can now be filed under a person; with several people the person moves each with 'Mută la…'.")
-        case .personalDocument, .subscription: String(localized: "„\(category)” pot sta acum și în altă secțiune. Le muți tu, din pagina fiecăreia, cu „Mută la…”.", comment: "Repair note: a category's sections can now be filed under another section.")
+        case .home: String(localized: "Secțiunile din „\(category)” pot sta acum și într-o locuință. Pentru că ai mai multe locuințe, le muți tu, din pagina fiecărei secțiuni, cu „Mută la…”.", comment: "Repair note: a category's sections (plants) can now be filed under a home; with several homes the person moves each with 'Mută la…'. The argument is the category's name, as it is: one thing or many.")
+        case .vehicle: String(localized: "Secțiunile din „\(category)” pot sta acum și la o mașină. Pentru că ai mai multe mașini, le muți tu, din pagina fiecărei secțiuni, cu „Mută la…”.", comment: "Repair note: a category's sections can now be filed under a car; with several cars the person moves each with 'Mută la…'. The argument is the category's name, as it is: one thing or many.")
+        case .holder: String(localized: "Secțiunile din „\(category)” pot sta acum și la o persoană. Pentru că ai mai multe persoane, le muți tu, din pagina fiecărei secțiuni, cu „Mută la…”.", comment: "Repair note: a category's sections can now be filed under a person; with several people the person moves each with 'Mută la…'. The argument is the category's name, as it is: one thing or many.")
+        case .personalDocument, .subscription: String(localized: "Secțiunile din „\(category)” pot sta acum și în altă secțiune. Le muți tu, din pagina fiecăreia, cu „Mută la…”.", comment: "Repair note: a category's sections can now be filed under another section. The argument is the category's name, as it is: one thing or many.")
         }
     }
 }

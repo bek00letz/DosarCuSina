@@ -403,11 +403,14 @@ struct DosarEmptyState: View {
     let addFirst: () -> Void
     let loadExamples: () -> Void
 
+    /// The symbol's size, growing and shrinking with the text size like the title under it.
+    @ScaledMetric(relativeTo: .largeTitle) private var symbolSize: CGFloat = 56
+
     var body: some View {
         ScrollView {
             VStack(spacing: DS.Space.xl) {
                 Image(systemName: "folder.fill.badge.plus")
-                    .font(.system(size: 56))
+                    .font(.system(size: symbolSize))
                     .symbolRenderingMode(.hierarchical)
                     .foregroundStyle(DS.Palette.accent)
                     .padding(.top, DS.Space.xxl)
@@ -417,7 +420,7 @@ struct DosarEmptyState: View {
                         .dsFont(.title)
                         .multilineTextAlignment(.center)
                         .accessibilityAddTraits(.isHeader)
-                    Text("Pune aici mașina, casa, actele sau pisica. Îți spunem din timp când expiră ceva și ții minte cine a reparat ce.", comment: "Empty home message.")
+                    Text("Pune aici mașina, casa, actele sau pisica. Îți spun din timp când expiră ceva și ții minte cine a reparat ce.", comment: "Empty home message.")
                         .dsFont(.body)
                         .foregroundStyle(DS.Palette.secondaryLabel)
                         .multilineTextAlignment(.center)

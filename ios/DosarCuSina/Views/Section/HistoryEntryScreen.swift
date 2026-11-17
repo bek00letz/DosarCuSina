@@ -162,10 +162,11 @@ private struct HistoryEntryContent: View {
     /// else by the record's kind, both over the category's visits.
     private func pageShape(_ definition: TemplateDefinition?) -> HistoryEntryShape {
         let visit = definition?.behavior.visit.shape
+        let listsParts = VisitForm.listsParts(definition)
         if entry.isCompletion, let obligation = entry.obligation {
-            return HistoryEntryShape.make(completing: obligation.completionKind(template: definition), stored: entry.kind, visit: visit)
+            return HistoryEntryShape.make(completing: obligation.completionKind(template: definition), stored: entry.kind, visit: visit, listsParts: listsParts)
         }
-        return HistoryEntryShape.make(entry.kind, visit: visit)
+        return HistoryEntryShape.make(entry.kind, visit: visit, listsParts: listsParts)
     }
 
     /// What deleting does, as `HistoryDeletion` works it out: the deadline, the reading, the documents.

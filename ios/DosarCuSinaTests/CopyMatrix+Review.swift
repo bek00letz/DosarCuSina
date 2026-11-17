@@ -299,9 +299,12 @@ struct ReviewCopyRulesTests {
         }
         for kind in CaptureDocumentKind.allCases {
             let title = words(kind.profile.title)
-            // „cartea de identitate” is „Carte de identitate” with its article; „talon” is in „Talon (…)”.
-            let named = words(kind.profile.noun.onPaper).contains { noun in title.contains { noun.hasPrefix($0) || $0.hasPrefix(noun) } }
-            #expect(named, "\(kind): „\(kind.profile.noun.onPaper)” for „\(kind.profile.title)”")
+            // The noun the pronouns agree with is the one the title is: its head word, with its
+            // article („cartea” for „Carte de identitate”, „talonul” for „Talon (…)”), is the
+            // title's own, so „îl” never follows a title in the feminine.
+            let head = words(kind.profile.noun.itself).first ?? ""
+            let named = title.contains { head.hasPrefix($0) || $0.hasPrefix(head) }
+            #expect(named, "\(kind): „\(kind.profile.noun.itself)” for „\(kind.profile.title)”")
         }
     }
 
@@ -348,5 +351,26 @@ struct ReviewCopyRulesTests {
         #expect(CaptureKindProfile.DayMeaning.expires.opening("12 august 2031") == "Expiră pe 12 august 2031.")
         #expect(CaptureDocumentKind.contract.profile.noun.directDebitWords(CopyMatrixTests.reviewStatement).hasPrefix("În contract scrie:"))
         #expect(CaptureDocumentKind.utilityInvoice.profile.noun.directDebitWords(CopyMatrixTests.reviewStatement).hasPrefix("Pe factură scrie:"))
+    }
+
+    @Test("A day already passed is said as passed, and promises no reminder before it")
+    func aPassedDayIsSaidAsPassed() throws {
+        let context = try makeContext()
+        let passed = DueWording.date(CopyMatrixTests.reviewDayPassed, today: CopyMatrixTests.reviewToday)
+        for kind in CaptureDocumentKind.allCases {
+            guard let meaning = kind.profile.dayMeaning else { continue }
+            let line = try CopyMatrixTests.reminderLine(kind, day: CopyMatrixTests.reviewDayPassed, context: context)
+            #expect(!line.contains("Te anunț"), "\(kind): „\(line)”")
+            #expect(!line.hasPrefix(meaning.opening(passed)), "\(kind): „\(line)” opens as if the day were to come")
+            #expect(line.hasPrefix(meaning.passedOpening(passed)) || line.hasPrefix("A fost valabil"), "\(kind): „\(line)”")
+        }
+    }
+
+    @Test("What a paper says about its direct debit is quoted once, with one full stop")
+    func aQuoteEndsWithOneFullStop() {
+        for kind in CaptureDocumentKind.allCases {
+            let words = kind.profile.noun.directDebitWords(CopyMatrixTests.reviewStatement)
+            #expect(!words.contains(".”."), "\(kind): „\(words)”")
+        }
     }
 }

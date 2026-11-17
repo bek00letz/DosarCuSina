@@ -30,7 +30,7 @@ Words a shaped screen says (the visit form, „Am rezolvat”, the deadline form
 
 A paper is named for what it is: *Raportul ITP*, *Polița nouă*, *Carnetul de sănătate*, *Procesul-verbal*, *Rezultatele*, not „dovada” or „actul” where the deadline knows which. What is said about it agrees with its noun: „O păstrez în dosar.” for *Chitanța*, „Îl păstrez în dosar.” for *Rezultatul*, „Le păstrez în dosar.” for *Rezultatele*, „Din el iau data următoare.” for *Raportul ITP*. Work done at home asks no service's invoice. What a paper says is on it or in it, as its noun says: „Pe factură scrie”, „Pe card scrie”, „În contract scrie”, „În poliță scrie”, „În certificat scrie”, never „pe” before a booklet, a contract or a certificate. No two sentences on one form open the same way: the purpose says what the photo is for („Din ea iau data următoare.”), the example which paper („Cea primită de la asigurător sau de la broker.”).
 
-A new section is named as one thing, never as its category: „Mașina”, „Produsul”, „Fișa medicală”, not „Mașini”, „Garanții”, „Sănătate”. A section's Acte names the papers its category keeps („Scanează talonul, polița sau raportul ITP și le găsești aici.”), not a list that fits only some. A completion's page in Istoric speaks of what it was: a policy names *Asigurătorul*, a tax *Cui ai plătit*, upkeep at home *Cine s-a ocupat*, never the vet or the service for a chore.
+A new section is named as one thing, never as its category: „Mașina”, „Produsul”, „Fișa medicală”, not „Mașini”, „Garanții”, „Sănătate”. A section's Acte names the papers its category keeps („Scanează talonul, polița sau raportul ITP și le găsești aici.”), not a list that fits only some. A completion's page in Istoric speaks of what it was: a policy names *Asigurătorul*, a tax *Cui ai plătit*, upkeep at home *Cine s-a ocupat*, never the vet or the service for a chore. Who a renewed paper comes from is said as the paper declares it (`CompletionShape.Paper.origin`): a document is issued („Cine l-a emis”), a contract or a lease signed („Cu cine l-ai semnat”). A paper's line in Acte agrees with any paper: „Expiră pe…”, „A expirat pe…”, never „Valabil până la” under „Polița”.
 
 ## Basics
 
@@ -38,6 +38,9 @@ A new section is named as one thing, never as its category: „Mașina”, „Pr
 - **No exclamation marks.** Not for success, not for warnings.
 - **No jargon.** Say what it does, not what it is. „Copie de siguranță”, not „arhivă .dosar”. „Cheia ta Google”, not „BYOK”. Official abbreviations people already use (ITP, RCA, CASCO, VTP) are fine.
 - **Second person, singular, informal** („tu”): „Adaugă”, „Poți schimba”, „Ai scris”.
+- **The app speaks as one, „eu”**: „Te anunț”, „Îți amintesc”, „O păstrez”, „Bifez singur”. Never „noi” („îți amintim”, „îți spunem”), in an empty line or anywhere else.
+- **Words that agree with a gender** („Dacă o păstrezi”) are said only of what declares one (a built-in's `CategoryBehavior.singular`, a paper's noun). A category of one's own has none, so what every section's page says is worded without one: *Bani*'s total is „În total”, never „De când îl ai”; a category's name is never treated as a plural („Secțiunile din „Barca”…”).
+- **A day already passed is said as passed**: „A expirat pe 10 mai.”, „Era de plătit până pe…”, and never promises a reminder before it („Te anunț … înainte”); it says what happens instead („Data a trecut, așa că termenul apare de acum în Urmează.”).
 - **Verbs on buttons**, naming the result: „Salvează”, „Marchează ca rezolvat”, „Șterge activul”. Never „OK” or „Da” when a verb fits.
 - **Short.** One idea per sentence. If a footnote needs two sentences, the screen needs a redesign.
 
@@ -46,6 +49,8 @@ A new section is named as one thing, never as its category: „Mașina”, „Pr
 - Romanian quotes: „așa”. Apostrophe: ’. En dash for ranges and asides: 9–17, 2 – 3 zile. Ellipsis character: … (not three dots), only for things still in progress („Se încarcă…”) and for a menu item that asks something before anything is done („Am rezolvat…”, „Altă zi…”).
 - Diacritics always: ș and ț with comma below (not ş/ţ with cedilla), ă, â, î.
 - Numbers, money and dates go through format styles so they follow the locale: 1.250,50 lei, 14 noiembrie 2026. Money in lei is written in lei, never „RON” (`Money.formatted`), and a whole number of lei is counted as Romanian counts it, from the String Catalog's plural forms: „1 leu”, „2 lei”, „19 lei”, „20 de lei”, „101 lei”, „1.250 de lei”; with decimals it is always „lei” („1,50 lei”). Never build them with `String(format:)`.
+- A number is written the app's way whatever the phone's region („10.000”, never „10,000”): `RomanianNumber.format`, `MeasurementUnit.written`, `Money`, never an integer put straight into a sentence that is kept (a `String(localized:)` formats with the phone's region). A number and its unit stay on one line, with a no-break space („45.724 km”, „20 de lei”, between „de” and the unit too). A unit's symbol follows the number as it is („10.000 km”, „12,5 m³”); a counted word is counted like the leu, from the String Catalog's plural forms (`MeasurementUnit.written`): „1 cafea”, „2 cafele”, „20 de cafele”, „1.250 de cafele”, „24 de luni”. From 20 on, „de” always stands between a number and what it counts; `scripts/plural-check.py` fails a catalog entry whose „other” form leaves it out, and `CopyMatrixTests` a matrix that shows one.
+- What can be worked out is said when it is shown, never stored as words: a service's note is its rule (`ObligationBlueprint.shownNote`), so it follows an edit and the app's number format.
 - Plurals go through the String Catalog. Romanian has three forms: „o zi”, „2 zile”, „20 de zile”. A count of one is a word („o lună”, „un an”, „un document”), two and up are digits. „În” before a duration joins „o” and „un”: „într-o lună”, „într-un an” (`DurationWording.inside`). Never write `count == 1 ? … : …` by hand.
 
 ## Errors
@@ -66,7 +71,7 @@ Field messages appear under the field, after the person leaves it. Write them as
 Say what will live here and offer the one action that fills it.
 
 - Title: what's missing, plainly. „Nicio mașină încă”.
-- Message: why it's worth adding, in one sentence. „Adaugă mașina și îți amintim de ITP, RCA și rovinietă la timp.”
+- Message: why it's worth adding, in one sentence. „Adaugă mașina și îți amintesc de ITP, RCA și rovinietă la timp.”
 - Button: the action. „Adaugă o mașină”.
 
 ## Confirmations

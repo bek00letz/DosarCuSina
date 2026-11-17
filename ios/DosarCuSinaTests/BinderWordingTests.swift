@@ -41,7 +41,7 @@ struct BinderWordingTests {
             cost: Money(420), partBrandOrCode: nil, supplierName: nil, providerNames: [], providerIds: []
         )
         let line = ComponentLine.detail(occurrence, unit: .kilometres, locale: ro, calendar: calendar)
-        #expect(line.hasPrefix("acum 18.200 km · 14 mar. 2025 · 420"))
+        #expect(line.hasPrefix("acum 18.200\u{00A0}km · 14 mar. 2025 · 420"))
         #expect(line.contains("RON") || line.contains("lei"))
     }
 
