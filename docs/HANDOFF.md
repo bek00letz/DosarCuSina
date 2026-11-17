@@ -103,6 +103,13 @@ Newest first. Copy this template:
 
 Never write security findings, crash traces or local paths here. See [SECURITY.md](../SECURITY.md).
 
+### 2026-11-17 — owner (with Claude) — `claude/imports-and-arrival`
+- **Did:** values from backups and other devices are held where they are read: a repeat (a hundred years at most, the stepper too), a counter's step, a category's place (`CategoryOrder`), a reminder's time (also when it fires), a pace projected centuries away (estimated by time), a protected archive with more chunks than can be counted (refused). A category of one's own takes no `singular` from a backup; an unknown gender keeps the name. Archives: a total unpacked cap (8 GB) and overlapping files refused, both ways, before anything is read; a backup left in the temporary folder goes at launch (exports now wait in an `export-…` folder of their own). "Înlocuiește tot" replaces in place, keeping each record's copy. Arrival: a relaunch mid first download still waits; a syncing store waits for this launch's first download; one rule for who made a change (`PersistenceController.cameFromAnotherDevice`). The share notice stays while the inbox can't be read.
+- **Tests:** `ValuesFromOutsideTests`, two new arrival tests in `SyncAccountAndContainersTests`, `theNoticeStaysWhileTheInboxCantBeRead`; run on GitHub's runner. Locally only the architecture check.
+- **Way back:** `DossierImporter.deleteEverything` (unused: "Înlocuiește tot" as it was).
+- **Needs two real devices:** a copy deleted on one device whose children another device made and this one never saw (a section's cascade, `AssetModel`); "Înlocuiește tot" with sync on, seen from the other device; a relaunch during a first download.
+- **Next:** check the two new archive messages and a backup's share sheet on a phone.
+
 ### 2026-11-16 — owner (with Claude) — `claude/note-who-and-gender`
 - **Did:** a note's page in Istoric (and a deadline closed with one tap, as „Garanția se termină”) names no one: `HistoryEntryShape.providerHeader` is nil for it, since nothing that makes one adds a person. A category of one's own no longer has a gender guessed from its name: its sections take its name (`TemplateDefinition.sectionName`), and only a built-in's declared gender is ever read (the examples' question).
 - **Tests:** `pagesNamingNoOneHoldNoOne`, `ownCategoryNamesItsSections`; the matrix shows „names no one” for notes. Run on GitHub.
