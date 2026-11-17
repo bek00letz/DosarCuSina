@@ -31,7 +31,7 @@ struct InboxOlderNamesTests {
         #expect(masked != "Extras \(Self.card).pdf")
 
         // Only looking leaves the file as it is.
-        #expect(inbox.waitingItems().first?.originalName == masked)
+        #expect(inbox.waitingItems()?.first?.originalName == masked)
         #expect(String(decoding: try Data(contentsOf: manifest), as: UTF8.self).contains(Self.card))
 
         // Reading the inbox writes it again, masked, keeping the rest.

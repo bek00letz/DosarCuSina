@@ -80,7 +80,7 @@ public final class SideEffectsCoordinator: ContainerHolder {
         notificationClient: any NotificationCenterClient = SystemNotificationCenterClient(),
         widgetWriter: WidgetSnapshotWriter = WidgetSnapshotWriter(),
         inboxNotices: any InboxNoticeCenter = SystemInboxNoticeCenter(),
-        waitingInboxItems: @escaping @MainActor () -> Set<UUID>? = { ShareInbox.shared().map { Set($0.waitingItems().map(\.id)) } },
+        waitingInboxItems: @escaping @MainActor () -> Set<UUID>? = { ShareInbox.shared()?.waitingItems().map { Set($0.map(\.id)) } },
         preferences: AppPreferences = .shared,
         calendar: Calendar = .dosar,
         now: @escaping () -> Date = { Date() }
