@@ -125,10 +125,11 @@ public enum SubscriptionMatcher {
 
     /// Why the house a decision chose is worth a look ("Verifică").
     public enum HouseCheck: Hashable, Sendable {
-        /// The supply address only partly agrees with the home's: nothing differs, but
-        /// something is missing or nearly the same, or another home is close too.
+        /// The address the paper names (where it is supplied, the home it insures) only partly
+        /// agrees with the home's: nothing differs, but something is missing or nearly the same,
+        /// or another home is close too.
         case addressPartlyAgrees
-        /// The only home is at another address than the one the bill is supplied at.
+        /// The only home is at another address than the one the paper names.
         case addressDiffers
     }
 
@@ -168,6 +169,17 @@ public enum SubscriptionMatcher {
         return nil
     }
 
+    /// The home a paper's address names (a bill's supply address, a policy's insured home):
+    /// the one at that address (`house(at:among:)`), else the only home, marked when it is at
+    /// another address. Nil when there are several homes and the address can't tell them apart.
+    public static func home(at address: String?, among homes: [Home]) -> (id: UUID, check: HouseCheck?)? {
+        if let found = house(at: address, among: homes) { return found }
+        guard homes.count == 1 else { return nil }
+        let named = address.flatMap(PostalAddress.init), kept = homes[0].address.flatMap(PostalAddress.init)
+        if let named, let kept, named.agreement(with: kept) == .different { return (homes[0].id, .addressDiffers) }
+        return (homes[0].id, nil)
+    }
+
     /// `match`, with what the person should check about the house it chose.
     public static func place(_ reading: Reading, subscriptions: [Subscription], homes: [Home], within: UUID? = nil) -> Placement {
         let candidates = within.map { parent in subscriptions.filter { $0.parentID == parent } } ?? subscriptions
@@ -191,15 +203,9 @@ public enum SubscriptionMatcher {
         } else if reading.isTiedToHome {
             if let named = homeNamed(by: reading, among: homes) {
                 house = named
-            } else if let found = Self.house(at: reading.supplyAddress, among: homes) {
+            } else if let found = Self.home(at: reading.supplyAddress, among: homes) {
                 house = found.id
                 check = found.check
-            } else if homes.count == 1 {
-                house = homes[0].id
-                // The only home, but the bill is supplied somewhere else: worth a look.
-                let supplied = reading.supplyAddress.flatMap(PostalAddress.init)
-                let kept = homes[0].address.flatMap(PostalAddress.init)
-                if let supplied, let kept, supplied.agreement(with: kept) == .different { check = .addressDiffers }
             } else {
                 house = nil
             }

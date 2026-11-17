@@ -170,7 +170,8 @@ public struct PostalAddress: Hashable, Sendable {
         for word in ["sector", "sectorul", "sect"] { table[word] = .sector }
         for word in ["jud", "judet", "judetul"] { table[word] = .county }
         for word in ["cp"] { table[word] = .postalCode }
-        for word in ["loc", "localitatea", "mun", "municipiul", "oras", "orasul", "com", "comuna", "sat", "satul"] { table[word] = .locality }
+        // "UAT" (unitatea administrativ-teritorială) names the town or commune too, as a policy prints it.
+        for word in ["loc", "localitatea", "mun", "municipiul", "oras", "orasul", "com", "comuna", "sat", "satul", "uat"] { table[word] = .locality }
         return table
     }()
 
