@@ -57,7 +57,8 @@ struct DocumentReading {
             try Self.payload(pages: existing, original: original, adding: adding)
         }.value
         let options = CaptureOptions(useOnDeviceModel: true, useCloudModel: false, storeDocument: !adding.isEmpty,
-                                     ownerID: document.id.uuidString, referenceDate: referenceDate)
+                                     ownerID: document.id.uuidString, referenceDate: referenceDate,
+                                     lessons: IssuerLessons.book(in: context.container))
         var result = try await engine.capture(CaptureRequest(payload, options: options))
 
         // The added page, as capture prepared it; the pages already kept stay as they are.

@@ -68,11 +68,15 @@ struct DossierImporter {
         let serviceItems = try importServiceItems(&result, entries: entries, providers: providers)
         let measurements = try importMeasurements(&result, assets: assets)
         try importAttachments(&result, assets: assets, obligations: obligations, entries: entries, serviceItems: serviceItems, measurements: measurements, providers: providers)
+        try importIssuerLessons(&result)
         if mode == .replace { try removeWhatTheArchiveLacks() }
         // The app's own step inside the import's writer, which gives no change times: what it
         // changes keeps the time it had (the archive's, or the phone's), and the deadline it
         // makes has the time it was made, as at launch (`ChangeOrigin.app`).
         try HouseholdRules.reconcile(in: context, today: CalendarDay(now, calendar: calendar), calendar: calendar)
+        // What capture learned, as the binder and the backup learned it together: a label the two
+        // give two different values goes (`IssuerLessons.settle`'s rule, inside the import's step).
+        try IssuerLessons.dropContradicted(in: context)
         return result
     }
 
@@ -137,6 +141,7 @@ struct DossierImporter {
         func remove<T: PersistentModel>(_ type: T.Type) throws {
             for item in try context.fetch(FetchDescriptor<T>()) where !kept.contains(item) { context.delete(item) }
         }
+        try remove(IssuerLesson.self)
         try remove(Attachment.self)
         try remove(MeasurementLog.self)
         try remove(ServiceItem.self)
@@ -512,6 +517,31 @@ struct DossierImporter {
             log.asset = uuid(dto.assetId).flatMap { assets[$0] }
         }
         return map
+    }
+
+    /// What capture learned of each issuer's papers. A lesson whose label isn't shaped like one
+    /// (`CaptureLessonLearner.isLabelShaped`: a few words, no digits) stays out, whatever the
+    /// backup says.
+    private func importIssuerLessons(_ result: inout ArchiveImportResult) throws {
+        var map = try existing(IssuerLesson.self, id: \.id)
+        for dto in package.issuerLessons where CaptureLessonLearner.isLabelShaped(dto.label) {
+            guard let id = uuid(dto.id), !dto.issuerKey.isEmpty, !dto.kind.isEmpty, !dto.field.isEmpty else {
+                throw ArchiveError.brokenReference(DossierV3.Path.issuerLessons)
+            }
+            let lesson = CaptureLesson(issuer: IssuerKey(rawValue: dto.issuerKey), kind: .other, field: CaptureFieldKey(rawValue: dto.field), label: dto.label)
+            guard let record = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
+                IssuerLesson(lesson, issuerName: dto.issuerName)
+            }) else { continue }
+            record.id = id
+            record.issuerKey = dto.issuerKey
+            record.issuerName = dto.issuerName
+            // Kept as the archive has it: a kind from a newer build stays, unread.
+            record.kindRaw = dto.kind
+            record.fieldKey = dto.field
+            record.label = dto.label
+            record.createdAt = clamped(dto.createdAt)
+            record.updatedAt = changeTime(dto.updatedAt)
+        }
     }
 
     private func importAttachments(

@@ -39,7 +39,7 @@ struct SettingsGridSuggestionsTests {
     }
 
     @Test func theListIsShortAndShowsExamplesOnlyWhileThereAreSome() {
-        #expect(SettingsPage.listed(hasExamples: false) == [.notifications, .protection, .dosarScreen, .iCloudAndBackups, .ai, .repairs, .about])
+        #expect(SettingsPage.listed(hasExamples: false) == [.notifications, .protection, .dosarScreen, .iCloudAndBackups, .ai, .learned, .repairs, .about])
         #expect(SettingsPage.listed(hasExamples: true).contains(.examples))
         #expect(SettingsPage.groups(hasExamples: false).flatMap { $0 } == SettingsPage.listed(hasExamples: false), "Every page in one group, in order")
         #expect(SettingsPage.groups(hasExamples: true).flatMap { $0 } == SettingsPage.listed(hasExamples: true))
