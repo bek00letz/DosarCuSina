@@ -175,7 +175,7 @@ struct LockedSectionsEverywhereTests {
         let request = OutsideRequest(obligationId: home.itp.id, cycle: CalendarDay("2026-12-05"), action: .complete, surface: surface)
 
         // Face ID not given (or, on a widget, not possible): nothing closes.
-        let refused = Prompts(.cancel)
+        let refused = Prompts(.cancelled)
         let navigator = AppNavigator(isAppLocked: { false })
         let outcome = await send(request, to: home, prompts: refused, navigator: navigator, now: now)
         #expect(home.itp.status == .active)
@@ -204,7 +204,7 @@ struct LockedSectionsEverywhereTests {
     func anOpenCategorysDeadlineClosesWithoutAsking(surface: OutsideSurface) async throws {
         let now = noon("2026-12-03")
         let home = try await household(locked: false, now: now)
-        let prompts = Prompts(.cancel)
+        let prompts = Prompts(.cancelled)
         await send(OutsideRequest(obligationId: home.itp.id, cycle: CalendarDay("2026-12-05"), action: .complete, surface: surface),
                    to: home, prompts: prompts, now: now)
         #expect(prompts.count == 0)
@@ -215,7 +215,7 @@ struct LockedSectionsEverywhereTests {
     @Test func snoozingALockedDeadlineFromTheLockScreenAsksNothing() async throws {
         let now = noon("2026-12-03")
         let home = try await household(locked: true, now: now)
-        let prompts = Prompts(.cancel)
+        let prompts = Prompts(.cancelled)
         let request = OutsideRequest(obligationId: home.itp.id, cycle: CalendarDay("2026-12-05"), action: .snooze(days: 3), surface: .notification)
         #expect(try !IntentEngine.asksFaceID(request, in: home.container.mainContext))
         await send(request, to: home, prompts: prompts, now: now)
