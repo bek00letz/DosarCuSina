@@ -707,6 +707,7 @@ private struct GalleryFields: View {
     @State private var date: Date?
     @State private var expiry: Date? = Calendar.dosar.date(byAdding: .day, value: 120, to: .now)
     @State private var fuel: String? = "Benzină"
+    @State private var citizenship: String? = Citizenship.romania
     @State private var reminders = true
     @State private var contact: DSContactValue? = DSContactValue(name: "Service Auto Exemplu", phone: "0700 000 000")
     @State private var repeatChoice = RepeatChoice(frequency: .day, every: 3)
@@ -727,6 +728,8 @@ private struct GalleryFields: View {
                         })
                         DSMetricField("Kilometraj", value: $odometer, unit: .kilometres)
                         DSChoiceField("Combustibil", selection: $fuel, options: ["Benzină", "Motorină", "Hibrid", "Electric", "GPL"]) { $0 }
+                        // A long list opens with search.
+                        DSChoiceField("Cetățenie", selection: $citizenship, options: Citizenship.options.map(\.key)) { Citizenship.label(for: $0) ?? $0 }
                         DSContactField("Mecanic", contact: $contact)
                     }
                 }

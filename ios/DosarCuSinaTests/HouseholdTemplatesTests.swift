@@ -100,8 +100,8 @@ struct HouseholdTemplatesTests {
         let me = try #require(try context.fetch(FetchDescriptor<Asset>()).first { $0.templateKey == BuiltInTemplates.Key.member })
         let documents = (me.children ?? []).filter { $0.templateKey == BuiltInTemplates.Key.documents }
         #expect(Set(documents.map(\.name)) == ["Pașaport", "Carte de identitate"])
-        #expect(BuiltInTemplates.member.allFields.map(\.key) == [MemberFields.bonusMalus],
-                "Members are a name and their bonus-malus class; their documents are filed under them, never as fields")
+        #expect(BuiltInTemplates.member.allFields.map(\.key) == [MemberFields.citizenship, MemberFields.bonusMalus],
+                "Members are a name, their citizenship and their bonus-malus class; their documents are filed under them, never as fields")
 
         let loose = try AssetActions(context: context).create(name: "Permis", template: try template(BuiltInTemplates.Key.documents, in: context), values: FieldValues())
         let groups = try DocumentHolders.groups(in: context)
