@@ -84,10 +84,15 @@ components, no `\`, and no `:`.
 Writers and readers keep to the same limits, so whatever a writer makes, a
 reader on the same platform takes. The iOS app writes and reads at most
 65 534 entries, 128 MB per entry once read back, entry names of up to 1 024
-bytes, and a compressed (DEFLATE) entry at most 200 times its stored size
-once it is past 1 MiB; there is no other limit on the whole archive. Its
+bytes, a compressed (DEFLATE) entry at most 200 times its stored size
+once it is past 1 MiB, and 8 GiB for every entry together once read back. Its
 writer stores an entry as it is rather than compress it beyond that, and
 refuses a household that would break a limit before handing out any file.
+Each entry's bytes (its local header, name and data) are its own: a reader
+refuses an archive whose central directory places two entries on the same
+bytes, or one past the start of the next, or into the central directory. A
+reader checks the whole central directory against these limits before it
+reads any entry.
 
 Archives are plain ZIP, never ZIP64: fewer than 65 535 entries and 4 GB
 (65 535 entries, or a size or offset of all ones, marks a ZIP64 archive). A
@@ -155,7 +160,7 @@ doesn't know, reads as the default.
 - **`visit`:** what its visits are, which says what the visit form asks and in which words: `"service"` (a car's or a bike's service), `"job"` (a tradesperson's job), `"repair"` (something bought, repaired), `"upkeep"` (an espresso machine's), `"doctor"`, `"vet"`, `"note"` (no visits: Istoric takes a dated note, as for a plant) or `"none"` (no visits). Missing, it reads as `"none"`; the app gives a category of one's own whose service switch is on the kind that switch gives, by itself (`"job"` by time, `"service"` by kilometres or hours). A kind from a newer version reads as `"job"`. Catalogs before 19 wrote an object of words, `{"title": "Am fost la service", "checklistTitle": …, "providerTitle": …, "kind": "maintenance", "trade": "mechanic"}`: it reads as the kind its `trade` names (`mechanic` a service, `vet`, `doctor`, anything else a job).
 - **`offerTitle`:** its option when adding a section, one thing rather than the category ("Mașină" for "Mașini"). Missing or empty, the category's `name`.
 - **`shortlistOrder`:** its place, from 1, among the categories offered first when adding a section ("Cele mai des folosite"). Missing, it is offered with the others, in the binder's order.
-- **`singular`:** what one of its sections is called, as a name, and that noun's gender, from catalog 21: `{"name": "Mașina", "gender": "feminine"}` (`gender` is `feminine` or `masculineOrNeuter`). A new section's name before anything is typed, and the name of one left unnamed. Missing (a category of one's own), its sections take the category's `name`, feminine when its first word ends in „a”, „ă” or „ie”.
+- **`singular`:** what one of its sections is called, as a name, and that noun's gender, from catalog 21: `{"name": "Mașina", "gender": "feminine"}` (`gender` is `feminine` or `masculineOrNeuter`). A new section's name before anything is typed, and the name of one left unnamed. A category of one's own has none: it is named as one thing already, so its sections take the category's `name`, and no gender is guessed for it; a reader drops a `singular` an archive gives one. A `gender` a reader doesn't know reads as `masculineOrNeuter` and keeps the `name`.
 
 Built-in keys: `vehicle`, `home`, `documents`, `pet`, `health`, `purchase`,
 `subscription`, `other`, `bike`, `plants`, `tenancy`, `member`, `espresso`.

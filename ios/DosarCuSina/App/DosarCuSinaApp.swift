@@ -18,6 +18,9 @@ struct DosarCuSinaApp: App {
     init() {
         UNUserNotificationCenter.current().delegate = Self.notificationResponder
         BackgroundRefresh.register()
+        // Backups an earlier run left in the temporary folder: one made to share when the app was
+        // closed with the share sheet open, a working copy of one being brought in.
+        BackupFiles.removeLeftovers()
         // Reminders, the badge, widgets, Spotlight and what comes from the person's other devices
         // follow the binder from where the store opens, and again whenever it opens under another
         // container: in a launch in the background too (woken by iCloud or the background

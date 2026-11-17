@@ -490,7 +490,9 @@ struct BackupFlowTests {
         await first.value
         #expect(authenticator.prompts == 1, "One prompt, one backup")
         let backup = try #require(flow.exportURL)
-        #expect(try FileManager.default.contentsOfDirectory(atPath: directory.path(percentEncoded: false)).filter { $0.hasSuffix(".dosar") }.count == 1)
+        let exports = try FileManager.default.contentsOfDirectory(atPath: backup.deletingLastPathComponent().path(percentEncoded: false))
+        #expect(exports.filter { $0.hasSuffix(".dosar") }.count == 1)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: directory.path(percentEncoded: false)).filter { $0.hasPrefix("export-") }.count == 1, "One backup, in one folder")
 
         // Import: the same.
         await flow.open(backup)

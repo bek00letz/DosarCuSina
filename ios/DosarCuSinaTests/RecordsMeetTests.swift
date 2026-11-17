@@ -186,6 +186,13 @@ struct RecordsMeetTests {
         #expect(try ModelContext(container).fetchCount(FetchDescriptor<Asset>()) == 1)
     }
 
+    @Test("A change with no author in the store's history is this phone's, for every reader of the history")
+    func oneRuleForWhoMadeAChange() {
+        #expect(!PersistenceController.cameFromAnotherDevice(author: nil))
+        #expect(!PersistenceController.cameFromAnotherDevice(author: PersistenceController.localAuthor))
+        #expect(PersistenceController.cameFromAnotherDevice(author: "NSCloudKitMirroringDelegate.import"))
+    }
+
     @Test("Launch never stops on two copies of a firm, and keeps one")
     func launchKeepsGoingWithCopies() throws {
         let container = try makeInMemoryContainer()
