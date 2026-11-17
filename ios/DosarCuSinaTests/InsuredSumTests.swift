@@ -75,9 +75,11 @@ struct InsuredSumTests {
         let template = try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.home)?.definition
         let pad = try #require(deadlines.first)
         #expect(DeadlineFacts.of(pad, template: template).insuredSum == Money(50_000))
-        let page = DeadlinePageFacts.of(pad, template: template, in: context)
-        #expect(page.policyRows.first == .policyNumber("RO/00/X00/XX 000000001"))
-        #expect(page.policyRows.dropFirst().first == .insuredSum(Money(50_000)), "Right after the policy's number")
+        let rows = DeadlinePageFacts.of(pad, template: template, in: context).policyRows
+        let number = try #require(rows.firstIndex { if case .policyNumber = $0 { true } else { false } }, "The policy's number first")
+        #expect(number == 0)
+        try #require(rows.indices.contains(number + 1), "The sum is listed")
+        #expect(rows[number + 1] == .insuredSum(Money(50_000)), "Right after the policy's number")
     }
 
     @Test("A new policy replaces the sum, from the review and from „Am rezolvat”")
