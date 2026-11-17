@@ -504,24 +504,31 @@ public enum BlueprintFactRole: String, Codable, CaseIterable, Sendable {
     /// Who the policy insures (the owner on an RCA), as a household member's name: the
     /// person whose bonus-malus class the policy's page shows (`Policyholders`).
     case policyholder
+    /// The sum the policy insures for (suma asigurată), as money: a home's policies and a car's
+    /// CASCO keep one; an RCA's limits are set by law, so it names none.
+    case insuredSum
 }
 
 /// Which of the section's fields hold the facts one deadline needs: a car's CASCO keeps
-/// its own insurer, policy number and claims phone, apart from its RCA. The deadline page,
-/// the claim checklist and capture's filing all read a deadline's facts through these
-/// roles, never by guessing from field names.
+/// its own insurer, policy number, claims phone and insured sum, apart from its RCA. The
+/// deadline page, the claim checklist and capture's filing all read a deadline's facts
+/// through these roles, never by guessing from field names.
 public struct BlueprintFacts: Hashable, Sendable, Codable {
     public var insurer: String?
     public var policyNumber: String?
     public var claimsPhone: String?
     /// Optional, so templates saved before it existed still read.
     public var policyholder: String?
+    /// A money field. Optional, so templates saved before it existed still read.
+    public var insuredSum: String?
 
-    public init(insurer: String? = nil, policyNumber: String? = nil, claimsPhone: String? = nil, policyholder: String? = nil) {
+    public init(insurer: String? = nil, policyNumber: String? = nil, claimsPhone: String? = nil, policyholder: String? = nil,
+                insuredSum: String? = nil) {
         self.insurer = insurer
         self.policyNumber = policyNumber
         self.claimsPhone = claimsPhone
         self.policyholder = policyholder
+        self.insuredSum = insuredSum
     }
 
     /// The field that holds `role`, if the deadline names one.
@@ -531,6 +538,7 @@ public struct BlueprintFacts: Hashable, Sendable, Codable {
         case .policyNumber: policyNumber
         case .claimsPhone: claimsPhone
         case .policyholder: policyholder
+        case .insuredSum: insuredSum
         }
     }
 

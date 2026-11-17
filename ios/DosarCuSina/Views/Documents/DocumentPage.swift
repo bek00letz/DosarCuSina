@@ -161,20 +161,28 @@ private struct PersonalDocumentDeletion: ViewModifier {
     }
 }
 
-/// A personal document replaced by a new one (`DocumentPageFacts.replacement(of:)`: its renewal
-/// closed with "Am rezolvat"): the new one has another series and number, so it is added as a
-/// document of its own, for the same holder (`AddPersonalDocumentFlow`, through the shell), and
-/// the old one can be deleted, with its undo. On the document's page and its deadline's page,
-/// in its completion kind's words (`CompletionShape.Replacement`). "Adaugă actul nou" goes once
-/// the new one is in the binder (`DocumentPageFacts.hasSuccessor`).
+/// A document replaced by a new one (`CompletionShape.Replacement`): the new one has another
+/// series and number, so it is added as a document of its own, for the same holder
+/// (`AddPersonalDocumentFlow`, through the shell). A personal document replaced (its renewal
+/// closed with "Am rezolvat", `DocumentPageFacts.replacement(of:)`) can then be deleted, with its
+/// undo; a health file whose European health card was renewed stays as it is, and only the new
+/// card is offered. On the document's page and its deadline's page, in its completion kind's
+/// words. The offer of the new one goes once it is in the binder (`DocumentPageFacts.hasSuccessor`).
 struct DocumentReplacementCard: View {
+    /// The section the closed deadline is on: the replaced document itself, or the health file.
     let document: Asset
     let replacement: CompletionShape.Replacement
+    /// The deadline whose closing replaced it, on the deadline's page; nil on the document's own.
+    var closed: Obligation? = nil
     /// After the old one is deleted: the screen showing it closes.
     let onDeleted: () -> Void
 
     @Environment(ShellRouter.self) private var router
     @State private var isConfirmingDelete = false
+
+    private var hasSuccessor: Bool {
+        closed.map { DocumentPageFacts.hasSuccessor(of: replacement, closing: $0) } ?? DocumentPageFacts.hasSuccessor(document)
+    }
 
     var body: some View {
         DSCard {
@@ -186,13 +194,15 @@ struct DocumentReplacementCard: View {
                     .dsFont(.subheadline)
                     .foregroundStyle(DS.Palette.secondaryLabel)
                     .fixedSize(horizontal: false, vertical: true)
-                if !DocumentPageFacts.hasSuccessor(document) {
+                if !hasSuccessor {
                     DSSecondaryButton(verbatim: replacement.add, systemImage: "plus") {
                         router.present(.addPersonalDocument(holderID: document.parent?.id))
                     }
                 }
-                DSSecondaryButton(verbatim: replacement.delete, systemImage: "trash", role: .destructive) {
-                    isConfirmingDelete = true
+                if let delete = replacement.delete {
+                    DSSecondaryButton(verbatim: delete, systemImage: "trash", role: .destructive) {
+                        isConfirmingDelete = true
+                    }
                 }
             }
         }

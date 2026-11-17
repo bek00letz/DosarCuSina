@@ -525,7 +525,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Control stomatologic (`dentist`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Notă — Ce s-a făcut, ce urmează. |
 | Rapel antitetanos (`vaccine`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Adeverința de vaccinare (Opțional. O păstrez în dosar.) — Fotografiază adeverința: Sau pagina din carnetul de vaccinări. [Citesc adeverința de vaccinare… / Am citit adeverința de vaccinare / Adeverința de vaccinare nu s-a citit] |
 | Vaccin antigripal (`vaccine`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Adeverința de vaccinare (Opțional. O păstrez în dosar.) — Fotografiază adeverința: Sau pagina din carnetul de vaccinări. [Citesc adeverința de vaccinare… / Am citit adeverința de vaccinare / Adeverința de vaccinare nu s-a citit] |
-| Card european de sănătate (`newHealthCard`) | Am rezolvat / Am rezolvat… — Când; Cardul nou (Opțional. Din el iau data la care expiră.) — Fotografiază cardul nou: Fața, cu data la care expiră. [Citesc cardul nou… / Am citit cardul nou / Cardul nou nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.]; Expiră pe — De aici încep să-ți amintesc din nou. |
+| Card european de sănătate (`newHealthCard`) | Am rezolvat / Am rezolvat… — Când; Închid termenul. Cardul nou are alt număr, așa că îl adaugi separat, la acte, cu poza lui. De acolo îți amintesc când expiră. Once closed: „Ai un card nou” — Are alt număr: adaugă-l la acte, cu poza lui, și îți amintesc de el când expiră. [Adaugă cardul nou] · the toast's Vezi termenul |
 
 ### Garanții (`purchase`)
 
@@ -708,7 +708,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Control stomatologic | Te anunț cu 7 zile înainte și în ziua termenului. — on its page: La fiecare 6 luni, de la data la care l-ai făcut. |
 | Rapel antitetanos | Te anunț cu o lună înainte și în ziua termenului. — on its page: La fiecare 10 ani, de la data la care l-ai făcut. |
 | Vaccin antigripal | Te anunț cu 7 zile înainte și în ziua termenului. — on its page: În fiecare an, pe 15 octombrie. |
-| Card european de sănătate | Te anunț cu o lună și cu 7 zile înainte. — on its page: La fiecare 2 ani, de la data la care l-ai făcut. |
+| Card european de sănătate | Te anunț cu o lună și cu 7 zile înainte. — on its page: Nu se repetă. |
 
 ### Garanții (`purchase`)
 

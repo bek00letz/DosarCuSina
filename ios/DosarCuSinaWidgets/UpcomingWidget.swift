@@ -47,8 +47,8 @@ struct UpcomingEntry: TimelineEntry {
 }
 
 struct UpcomingProvider: TimelineProvider {
-    /// Rows kept per entry; the medium widget shows the most.
-    static let rowLimit = 3
+    /// Rows kept per entry: as many as the largest family shows (`WidgetLayout`).
+    static var rowLimit: Int { WidgetLayout.rowLimit }
 
     func placeholder(in context: Context) -> UpcomingEntry { .placeholder }
 
@@ -100,6 +100,18 @@ enum WidgetTone {
     }
 }
 
+extension WidgetLayout.Family {
+    /// The layout family of a WidgetKit family; the Home Screen's small one for any other.
+    init(_ family: WidgetFamily) {
+        switch family {
+        case .accessoryInline: self = .inline
+        case .accessoryRectangular: self = .rectangular
+        case .systemMedium: self = .medium
+        default: self = .small
+        }
+    }
+}
+
 // MARK: - Views
 
 struct UpcomingWidgetView: View {
@@ -118,7 +130,10 @@ struct UpcomingWidgetView: View {
         .containerBackground(.background, for: .widget)
     }
 
-    private var rows: [WidgetRow] { entry.rows ?? [] }
+    /// The rows this family shows (`WidgetLayout`, the one place that says how many).
+    private var rows: [WidgetRow] {
+        Array((entry.rows ?? []).prefix(WidgetLayout.rows(in: WidgetLayout.Family(family))))
+    }
 
     // Lock Screen
 
@@ -156,14 +171,19 @@ struct UpcomingWidgetView: View {
 
     @ViewBuilder private var small: some View {
         if let first = rows.first {
-            VStack(alignment: .leading, spacing: 4) {
-                Image(systemName: first.symbol)
-                    .font(.title3)
-                    .foregroundStyle(.tint)
-                    .accessibilityHidden(true)
-                Text(verbatim: first.title)
-                    .font(.headline)
-                    .lineLimit(2)
+            // The section's symbol sits beside the title, as on the Lock Screen, so a full
+            // 44 pt „Gata” fits under „when” in the smallest small widget (`WidgetLayout.smallHeight`).
+            VStack(alignment: .leading, spacing: WidgetLayout.spacing) {
+                Label {
+                    Text(verbatim: first.title)
+                        .font(.headline)
+                        .lineLimit(2)
+                } icon: {
+                    Image(systemName: first.symbol)
+                        .font(.headline)
+                        .foregroundStyle(.tint)
+                        .accessibilityHidden(true)
+                }
                 if let subtitle = first.subtitle {
                     Text(verbatim: subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
@@ -187,14 +207,15 @@ struct UpcomingWidgetView: View {
         if rows.isEmpty {
             emptyState
         } else {
-            VStack(alignment: .leading, spacing: 6) {
+            // As many rows as `WidgetLayout` says, each as tall as its full 44 pt „Gata”.
+            VStack(alignment: .leading, spacing: WidgetLayout.spacing) {
                 Text("Urmează")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
                 ForEach(rows) { row in
-                    HStack(spacing: 8) {
+                    HStack(spacing: DS.Space.xs) {
                         Link(destination: row.deepLink) {
-                            HStack(spacing: 8) {
+                            HStack(spacing: DS.Space.xs) {
                                 Image(systemName: row.symbol)
                                     .foregroundStyle(.tint)
                                     .frame(width: 22)
@@ -214,25 +235,20 @@ struct UpcomingWidgetView: View {
                             doneButton(row)
                         }
                     }
-                    .frame(maxHeight: .infinity)
+                    .frame(height: WidgetLayout.rowHeight)
                 }
-                if rows.count < UpcomingProvider.rowLimit { Spacer(minLength: 0) }
+                Spacer(minLength: 0)
             }
         }
     }
 
+    /// „Gata”: a full 44 pt tall in every family, and at least as wide (`WidgetDoneLabel`).
     private func doneButton(_ row: WidgetRow) -> some View {
         Button(intent: CompleteFromWidgetIntent(obligationID: row.id, dueDay: row.dueKey)) {
-            // At least 44 pt wide, and as tall as its row lets it be: 44 pt where the row has
-            // the room (the small widget), the row's whole height beside three rows.
-            Label("Gata", systemImage: "checkmark")
-                .font(.caption.weight(.semibold))
-                .frame(minWidth: DS.Control.minimumHitTarget, maxHeight: DS.Control.minimumHitTarget)
-                .contentShape(.capsule)
+            WidgetDoneLabel(title: Text("Gata"))
         }
-        .buttonStyle(.bordered)
-        .buttonBorderShape(.capsule)
-        .tint(.accentColor)
+        .buttonStyle(.plain)
+        .foregroundStyle(.tint)
         .accessibilityLabel(Text("Marchează \(row.title) ca rezolvat"))
     }
 

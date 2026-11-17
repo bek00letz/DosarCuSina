@@ -42,7 +42,8 @@ public enum CompletionKind: String, Codable, Sendable, CaseIterable {
     /// no new expiry: the deadline closes, the old one shows as expired, and its page offers the
     /// new one and deleting the old one (`CompletionShape.Replacement`).
     case documentReplaced
-    /// The European health card renewed: the new card and when it expires.
+    /// The European health card on a health file renewed: a new card, with another number, added
+    /// to the person's documents (`CompletionShape.Replacement.Replaces.holdersDocument`).
     case newHealthCard
     /// A subscription's contract renewed: the new contract and when it ends.
     case newContract
@@ -147,13 +148,20 @@ public enum CompletionKind: String, Codable, Sendable, CaseIterable {
                 message: String(localized: "Cel nou are altă serie și alt număr: adaugă-l ca act nou, cu poza lui. Pe acesta îl poți păstra sau șterge.",
                                 comment: "A renewed personal document's page: why the new one is added on its own."),
                 add: String(localized: "Adaugă actul nou", comment: "A renewed personal document's page: adds the new document for the same person."),
-                delete: String(localized: "Șterge actul vechi", comment: "A renewed personal document's page: deletes the old document."),
-                open: String(localized: "Vezi actul", comment: "Toast after closing a personal document's renewal: opens the document's page.")))
+                open: String(localized: "Vezi actul", comment: "Toast after closing a personal document's renewal: opens the document's page."),
+                replaces: .thisSection(delete: String(localized: "Șterge actul vechi", comment: "A renewed personal document's page: deletes the old document."))))
         case .newHealthCard:
-            return CompletionShape(paper: CompletionShape.Paper(
-                name: String(localized: "Cardul nou", comment: "Am rezolvat: the new European health card."), gender: .masculine, use: .expiry,
-                action: String(localized: "Fotografiază cardul nou", comment: "Am rezolvat: photographs the new European health card."),
-                example: String(localized: "Fața, cu data la care expiră.", comment: "Am rezolvat: which side of the health card.")), newEnd: .expires)
+            // A new card has another number, like a passport: it is added to the person's
+            // documents, where it reminds when it expires; the health file stays as it is.
+            return CompletionShape(replacement: CompletionShape.Replacement(
+                inSheet: String(localized: "Închid termenul. Cardul nou are alt număr, așa că îl adaugi separat, la acte, cu poza lui. De acolo îți amintesc când expiră.",
+                                comment: "Am rezolvat on a health file's European health card: what saving does, and that the new card is added to the person's documents."),
+                title: String(localized: "Ai un card nou", comment: "A closed European health card deadline: the card that offers adding the new one."),
+                message: String(localized: "Are alt număr: adaugă-l la acte, cu poza lui, și îți amintesc de el când expiră.",
+                                comment: "A closed European health card deadline: why the new card is added to the person's documents."),
+                add: String(localized: "Adaugă cardul nou", comment: "A closed European health card deadline: adds the new card to the person's documents."),
+                open: String(localized: "Vezi termenul", comment: "Toast after closing a health file's European health card: opens the deadline's page, which offers the new card."),
+                replaces: .holdersDocument(documentType: DocumentType.euHealthCard)))
         case .newContract:
             return CompletionShape(paper: Self.contract(String(localized: "Pagina cu perioada contractului.", comment: "Am rezolvat: which page of a subscription's new contract.")),
                                    newEnd: .ends)

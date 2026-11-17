@@ -262,8 +262,9 @@ private struct ObligationPage: View {
             DSPrimaryButton("Pornește din nou", systemImage: "play.fill") { resume() }
         } else if obligation.status == .done, let document = obligation.asset,
                   let replacement = obligation.completion(template: template?.definition).replacement {
-            // A personal document renewed: the new one is a document of its own.
-            DocumentReplacementCard(document: document, replacement: replacement) { dismiss() }
+            // A document renewed (a personal document, a health file's health card): the new one
+            // is a document of its own.
+            DocumentReplacementCard(document: document, replacement: replacement, closed: obligation) { dismiss() }
         }
     }
 
@@ -318,6 +319,9 @@ private struct ObligationPage: View {
         switch row {
         case .policyNumber(let number):
             DSActionValueRow(title: Text("Număr poliță"), value: number, action: .copy)
+        case .insuredSum(let sum):
+            DSReadOnlyValueRow(label: Text("Sumă asigurată"),
+                               value: Text(verbatim: sum.formatted()))
         case .claimsPhone(let phone):
             DSActionValueRow(title: Text("Telefon pentru daune"), value: phone, action: .call)
         case .ownerClass(let ownerClass):

@@ -92,15 +92,16 @@ enum CaptureMapping {
         case .policyNumber: .policyNumber
         case .claimsPhone: .claimsPhone
         case .policyholder: .policyholder
+        case .insuredSum: .insuredSum
         default: nil
         }
     }
 
     /// The template field a capture field fills, if any. `deadline` is the blueprint the
     /// document sets in this template (`CaptureFilingPlan`):
-    /// - a policy's insurer, number and claims phone go to the fields its deadline's facts
-    ///   name, so a CASCO policy fills CASCO's and never RCA's; a policy whose deadline the
-    ///   category doesn't keep fills none of a category's policy facts;
+    /// - a policy's insurer, number, claims phone and insured sum go to the fields its deadline's
+    ///   facts name, so a CASCO policy fills CASCO's and never RCA's (an RCA keeps no sum); a policy
+    ///   whose deadline the category doesn't keep fills none of a category's policy facts;
     /// - a deadline whose day is its own (an RCA, an ITP) keeps that day off the section.
     static func fieldKey(for key: CaptureFieldKey, kind: CaptureDocumentKind, in template: TemplateDefinition, deadline: ObligationBlueprint?) -> String? {
         let profile = kind.profile

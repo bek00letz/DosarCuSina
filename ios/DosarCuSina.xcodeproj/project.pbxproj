@@ -58,6 +58,7 @@
 				Urgency.swift,
 				WidgetCompletionQueue.swift,
 				WidgetFeed.swift,
+				WidgetLayout.swift,
 			);
 			target = D05A01302C00000000000130 /* DosarCuSinaShare */;
 		};

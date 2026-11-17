@@ -1285,6 +1285,9 @@
     "Adaugă buletinul, pașaportul sau permisul. Îți spun cu luni înainte când trebuie reînnoite." : {
 
     },
+    "Adaugă cardul nou" : {
+      "comment" : "A closed European health card deadline: adds the new card to the person's documents."
+    },
     "Adaugă ce ai cumpărat, cu bonul. Când se strică, știi dacă mai e în garanție." : {
 
     },
@@ -1467,6 +1470,9 @@
     },
     "Ai și o poză cu spatele? Acolo e codul care confirmă datele." : {
       "comment" : "Capture review: asks for the back of an identity card."
+    },
+    "Ai un card nou" : {
+      "comment" : "A closed European health card deadline: the card that offers adding the new one."
     },
     "Ai văzut cum ajunge aici o factură. Datele de pe ea nu sunt reale." : {
 
@@ -2108,6 +2114,9 @@
     "Are acte" : {
       "comment" : "Switch of a category of one's own: its sections keep documents."
     },
+    "Are alt număr: adaugă-l la acte, cu poza lui, și îți amintesc de el când expiră." : {
+      "comment" : "A closed European health card deadline: why the new card is added to the person's documents."
+    },
     "Are facturi și contracte" : {
       "comment" : "Switch of a category of one's own: its sections keep subscriptions and their bills."
     },
@@ -2533,9 +2542,6 @@
     },
     "cardul de sănătate" : {
 
-    },
-    "Cardul nou" : {
-      "comment" : "Am rezolvat: the new European health card."
     },
     "Cardurile bancare se citesc doar pe telefon." : {
       "comment" : "Capture review: why a bank card can't be read by the AI provider."
@@ -4506,9 +4512,6 @@
     "Fața" : {
       "comment" : "The front of a two-sided document."
     },
-    "Fața, cu data la care expiră." : {
-      "comment" : "Am rezolvat: which side of the health card."
-    },
     "Fertilizat" : {
 
     },
@@ -4616,9 +4619,6 @@
     },
     "Fotografiază adeverința" : {
       "comment" : "Am rezolvat: photographs a vaccination certificate."
-    },
-    "Fotografiază cardul nou" : {
-      "comment" : "Am rezolvat: photographs the new European health card."
     },
     "Fotografiază carnetul" : {
       "comment" : "Am rezolvat: photographs a pet's health booklet."
@@ -5080,6 +5080,9 @@
     },
     "Închid termenul și trec actul acesta ca expirat. Actul nou are altă serie și alt număr, așa că îl adaugi separat, cu poza lui." : {
       "comment" : "Am rezolvat on a personal document: what saving does, and that the new document is added on its own."
+    },
+    "Închid termenul. Cardul nou are alt număr, așa că îl adaugi separat, la acte, cu poza lui. De acolo îți amintesc când expiră." : {
+      "comment" : "Am rezolvat on a health file's European health card: what saving does, and that the new card is added to the person's documents."
     },
     "Închide" : {
       "comment" : "Closes Settings.\nCloses the full-screen page viewer.\nCloses the reminders sheet; each choice is already saved."
@@ -8038,6 +8041,15 @@
     "Sumă asigurată" : {
 
     },
+    "Sumă asigurată CASCO" : {
+
+    },
+    "Sumă asigurată facultativă" : {
+
+    },
+    "Sumă asigurată PAD" : {
+
+    },
     "Suma nu poate fi negativă." : {
       "comment" : "Number field error: a money amount below zero."
     },
@@ -8734,6 +8746,9 @@
     },
     "Vezi factura" : {
       "comment" : "Opens the bill or invoice already in the binder."
+    },
+    "Vezi termenul" : {
+      "comment" : "Toast after closing a health file's European health card: opens the deadline's page, which offers the new card."
     },
     "Vezi tot" : {
 

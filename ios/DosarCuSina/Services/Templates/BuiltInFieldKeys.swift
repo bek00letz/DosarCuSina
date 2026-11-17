@@ -23,6 +23,8 @@ public enum VehicleFields {
     public static let cascoInsurer = "vehicle.cascoInsurer"
     public static let cascoPolicyNumber = "vehicle.cascoPolicyNumber"
     public static let cascoClaimsPhone = "vehicle.cascoClaimsPhone"
+    /// The sum the CASCO policy insures the car for. An RCA has none of its own.
+    public static let cascoInsuredSum = "vehicle.cascoInsuredSum"
 }
 
 public enum HomeFields {
@@ -34,10 +36,13 @@ public enum HomeFields {
     public static let insurer = "home.insurer"
     public static let policyNumber = "home.policyNumber"
     public static let claimsPhone = "home.claimsPhone"
+    /// The sum PAD insures the home for.
+    public static let insuredSum = "home.insuredSum"
     /// The optional (facultative) policy's, kept apart from PAD's like a car's CASCO from its RCA.
     public static let optionalInsurer = "home.optionalInsurer"
     public static let optionalPolicyNumber = "home.optionalPolicyNumber"
     public static let optionalClaimsPhone = "home.optionalClaimsPhone"
+    public static let optionalInsuredSum = "home.optionalInsuredSum"
 }
 
 public enum DocumentFields {
