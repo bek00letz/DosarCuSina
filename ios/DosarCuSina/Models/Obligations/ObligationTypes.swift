@@ -235,7 +235,8 @@ public enum ObligationStatus: String, Codable, CaseIterable, Sendable {
     }
 }
 
-/// A calendar step: `every` units of time.
+/// A calendar step: `every` units of time, from one to a hundred years' worth
+/// (`longest(in:)`), however it is made: in the app, from a backup, from another device.
 public struct RecurrenceInterval: Hashable, Sendable, Codable {
     public enum Unit: String, Codable, Sendable, CaseIterable {
         case day, week, month, year
@@ -245,8 +246,33 @@ public struct RecurrenceInterval: Hashable, Sendable, Codable {
     public var unit: Unit
 
     public init(every: Int, unit: Unit) {
-        self.every = max(1, every)
+        self.every = Self.allowed(every, in: unit)
         self.unit = unit
+    }
+
+    /// The most of a unit an interval can be: a hundred years, in that unit. Nothing that
+    /// repeats in a household waits longer, and every day worked out from it stays a day the
+    /// calendar has. The form's stepper never goes past it (`RepeatChoice.everyRange`).
+    public static func longest(in unit: Unit) -> Int {
+        switch unit {
+        case .day: 36_500
+        case .week: 5_200
+        case .month: 1_200
+        case .year: 100
+        }
+    }
+
+    /// `every` as an interval of `unit` can be: at least one, at most `longest(in:)`.
+    public static func allowed(_ every: Int, in unit: Unit) -> Int {
+        min(max(1, every), longest(in: unit))
+    }
+
+    private enum CodingKeys: String, CodingKey { case every, unit }
+
+    /// Read through `init(every:unit:)`, so a number from outside is held to the same bounds.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(every: try c.decode(Int.self, forKey: .every), unit: try c.decode(Unit.self, forKey: .unit))
     }
 
     public static func days(_ n: Int) -> RecurrenceInterval { .init(every: n, unit: .day) }
@@ -295,6 +321,17 @@ public enum RecurrenceRule: Hashable, Sendable, Codable {
     /// What a newer build wrote, as it wrote it. It behaves as one-off.
     case unreadable(JSONValue)
 
+    /// The most a counter's step can be (ten million kilometres or hours): a step read from
+    /// outside is held to `0...longestMetricStep` (`allowedMetricStep`), so what is worked out
+    /// from it stays a number.
+    public static let longestMetricStep: Double = 10_000_000
+
+    /// `every` as a counter's step can be.
+    public static func allowedMetricStep(_ every: Double) -> Double {
+        guard every.isFinite else { return longestMetricStep }
+        return min(max(every, 0), longestMetricStep)
+    }
+
     public var repeats: Bool {
         switch self {
         case .none, .unreadable: false
@@ -336,7 +373,7 @@ public enum RecurrenceRule: Hashable, Sendable, Codable {
                 guard let unit = RecurrenceInterval.Unit(rawValue: try c.decodeIfPresent(String.self, forKey: .fallbackUnit) ?? "") else { return nil }
                 fallback = RecurrenceInterval(every: every, unit: unit)
             }
-            return .metric(every: try c.decode(Double.self, forKey: .every), unit: try c.decode(MeasurementUnit.self, forKey: .unit), fallback: fallback)
+            return .metric(every: allowedMetricStep(try c.decode(Double.self, forKey: .every)), unit: try c.decode(MeasurementUnit.self, forKey: .unit), fallback: fallback)
         case "legal":
             return LegalRule(rawValue: try c.decode(String.self, forKey: .rule)).map(RecurrenceRule.legal)
         default:

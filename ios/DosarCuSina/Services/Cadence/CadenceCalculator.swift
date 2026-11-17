@@ -161,9 +161,9 @@ public final class CadenceCalculator: Sendable {
         }
         
         // Guard against Double-to-Int overflow when effectiveRate is extremely small (e.g. 1e-15)
-        // Cap calculation at a realistic maximum projection horizon (100 years = 36,500 days)
+        // Cap calculation at the longest anything repeats (`RecurrenceInterval.longest(in:)`, 100 years)
         let rawDays = ceil(remainingMetric / effectiveRate)
-        let maxProjectionDays: Double = 36500.0
+        let maxProjectionDays = Double(RecurrenceInterval.longest(in: .day))
         let daysToTarget: Int
         if rawDays.isNaN || rawDays.isInfinite || rawDays > maxProjectionDays {
             daysToTarget = Int(maxProjectionDays)

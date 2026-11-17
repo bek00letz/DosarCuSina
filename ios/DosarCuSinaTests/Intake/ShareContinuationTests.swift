@@ -64,11 +64,11 @@ struct InboxNoticeTests {
         let photos = try share(inbox, .images, name: "IMG_2041.HEIC", pages: 3)
 
         let refused = FakeInboxNoticeCenter(allowed: false)
-        #expect(await !InboxNotice.announce(waiting: inbox.waitingItems(), center: refused))
+        #expect(await !InboxNotice.announce(waiting: inbox.waitingItems() ?? [], center: refused))
         #expect(await refused.posted.isEmpty, "Never asks and never posts without permission")
 
         let allowed = FakeInboxNoticeCenter(allowed: true)
-        #expect(await InboxNotice.announce(waiting: inbox.waitingItems(), center: allowed))
+        #expect(await InboxNotice.announce(waiting: inbox.waitingItems() ?? [], center: allowed))
         let notice = try #require(await allowed.posted.first)
         // Three photos shared together are one document.
         #expect(notice.title == "Am primit 2 acte")
@@ -114,7 +114,7 @@ struct InboxNoticeTests {
         let bill = try share(inbox, .pdf, name: "Factura ENGIE.pdf")
         let policy = try share(inbox, .pdf, name: "Polita RCA.pdf")
         let notices = FakeInboxNoticeCenter(allowed: true)
-        await InboxNotice.announce(waiting: inbox.waitingItems(), center: notices)
+        await InboxNotice.announce(waiting: inbox.waitingItems() ?? [], center: notices)
 
         let defaults = try #require(UserDefaults(suiteName: "tests.\(UUID().uuidString)"))
         let coordinator = SideEffectsCoordinator(
@@ -122,7 +122,7 @@ struct InboxNoticeTests {
             notificationClient: FakeNotificationCenter(status: .authorized),
             widgetWriter: WidgetSnapshotWriter(directory: folder),
             inboxNotices: notices,
-            waitingInboxItems: { Set(inbox.waitingItems().map(\.id)) },
+            waitingInboxItems: { inbox.waitingItems().map { Set($0.map(\.id)) } },
             preferences: AppPreferences(defaults: defaults),
             calendar: { .bucharest },
             now: { noon("2026-11-09") }
@@ -146,6 +146,47 @@ struct InboxNoticeTests {
     }
 
     @MainActor
+    @Test("The notice stays while what waits can't be read, and nothing is set aside meanwhile")
+    func theNoticeStaysWhileTheInboxCantBeRead() async throws {
+        let inbox = try temporaryInbox()
+        let folder = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let bill = try share(inbox, .pdf, name: "Factura ENGIE.pdf")
+        let manifest = inbox.directory.appending(path: bill.id.uuidString.lowercased()).appending(path: ShareInbox.manifestName)
+        defer {
+            try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: manifest.path(percentEncoded: false))
+            try? FileManager.default.removeItem(at: inbox.directory)
+            try? FileManager.default.removeItem(at: folder)
+        }
+        let notices = FakeInboxNoticeCenter(allowed: true)
+        await InboxNotice.announce(waiting: inbox.waitingItems() ?? [], center: notices)
+
+        // As while the phone is locked: the manifest is there but can't be read now.
+        try FileManager.default.setAttributes([.posixPermissions: 0], ofItemAtPath: manifest.path(percentEncoded: false))
+        #expect(inbox.waitingItems() == nil, "Can't tell what waits: never read as nothing")
+        let defaults = try #require(UserDefaults(suiteName: "tests.\(UUID().uuidString)"))
+        let coordinator = SideEffectsCoordinator(
+            container: try makeInMemoryContainer(),
+            notificationClient: FakeNotificationCenter(status: .authorized),
+            widgetWriter: WidgetSnapshotWriter(directory: folder),
+            inboxNotices: notices,
+            waitingInboxItems: { inbox.waitingItems().map { Set($0.map(\.id)) } },
+            preferences: AppPreferences(defaults: defaults),
+            calendar: { .bucharest },
+            now: { noon("2026-11-09") }
+        )
+        await coordinator.reconcileNow()
+        #expect(await notices.withdrawals == 0, "The notice stays while the inbox can't be read")
+        #expect(inbox.contents().unreadable.isEmpty, "Nothing is set aside for being locked")
+
+        // Readable again: the bill still waits, as it did.
+        try FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: manifest.path(percentEncoded: false))
+        #expect(inbox.waitingItems()?.map(\.id) == [bill.id])
+        await coordinator.reconcileNow()
+        #expect(await notices.withdrawals == 0)
+    }
+
+    @MainActor
     @Test func leavingTheInboxTellsTheCoordinator() throws {
         let inbox = try temporaryInbox()
         defer { try? FileManager.default.removeItem(at: inbox.directory) }
@@ -156,7 +197,7 @@ struct InboxNoticeTests {
         defer { NotificationCenter.default.removeObserver(observer) }
         intake.remove(bill)
         #expect(heard.value)
-        #expect(inbox.waitingItems().isEmpty)
+        #expect(inbox.waitingItems()?.isEmpty == true)
     }
 }
 
@@ -501,7 +542,7 @@ struct InboxPreviewStorageTests {
         }
         let items = inbox.contents().items
         #expect(items.map(\.version) == [2, 1])
-        #expect(inbox.waitingItems().map(\.id) == items.map(\.id))
+        #expect(inbox.waitingItems()?.map(\.id) == items.map(\.id))
         #expect(inbox.unreadable().isEmpty)
         let old = try #require(items.last)
         #expect(inbox.preview(of: old) == nil, "Not read yet")

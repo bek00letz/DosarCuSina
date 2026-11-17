@@ -270,6 +270,48 @@ struct SyncAccountAndContainersTests {
         #expect(persistence.examplesMayLoad)
     }
 
+    @Test("Closed in the middle of the first download, the next launch still waits for the binder")
+    func aRelaunchDuringTheFirstDownloadStillWaits() async throws {
+        let store = Store()
+        // Sync opened once (the account is kept then), and the app was closed before the download finished.
+        let memory = InMemorySyncMemory(syncedAccount: "a")
+        let persistence = controller(store, account: Account(.signedIn(id: "a")), memory: memory)
+        #expect(persistence.sync == .checkingAccount)
+        #expect(persistence.binderMayBeArriving, "The first download never finished for the account")
+        #expect(!persistence.examplesMayLoad)
+        let local = try #require(persistence.container)
+        #expect(!CloudArrival.of(local).isWhole, "The app's own steps on what is missing wait")
+
+        await persistence.settleSync()
+        #expect(persistence.sync == .on)
+        #expect(persistence.binderMayBeArriving)
+        persistence.record(SyncEvent(kind: .download, finishedAt: noon("2026-11-11"), succeeded: true))
+        #expect(!persistence.binderMayBeArriving)
+        #expect(memory.firstDownloadFinishedFor == "a")
+        let synced = try #require(persistence.container)
+        #expect(CloudArrival.of(synced).isWhole)
+    }
+
+    @Test("A store that syncs isn't known to be whole until this launch's first download has finished")
+    func eachLaunchWaitsForItsFirstDownload() async throws {
+        let store = Store()
+        let persistence = controller(store, account: Account(.signedIn(id: "a")), memory: InMemorySyncMemory(syncedAccount: "a", firstDownloadFinishedFor: "a"))
+        #expect(!persistence.binderMayBeArriving, "This phone has the binder already")
+        await persistence.settleSync()
+        let syncing = try #require(persistence.container)
+        #expect(PersistenceController.syncs(syncing))
+        #expect(!CloudArrival.of(syncing).isWhole, "What changed elsewhere meanwhile is still to come down")
+
+        persistence.record(SyncEvent(kind: .setup, finishedAt: noon("2026-11-11"), succeeded: true))
+        #expect(!CloudArrival.of(syncing).isWhole, "Setting up brings nothing")
+        persistence.record(SyncEvent(kind: .download, finishedAt: nil, succeeded: false))
+        persistence.record(SyncEvent(kind: .download, finishedAt: noon("2026-11-11"), succeeded: false, problem: .offline))
+        #expect(!CloudArrival.of(syncing).isWhole, "A download that didn't get through says nothing")
+        persistence.record(SyncEvent(kind: .download, finishedAt: noon("2026-11-11"), succeeded: true))
+        #expect(CloudArrival.of(syncing).isWhole)
+        #expect(persistence.examplesMayLoad, "Only the first download for the account holds examples back")
+    }
+
     @Test func withoutAnAccountExamplesAreOfferedAtOnce() async {
         let store = Store()
         let persistence = controller(store, account: Account(.none), memory: InMemorySyncMemory())

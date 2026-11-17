@@ -254,11 +254,55 @@ enum BackupWording {
     }
 }
 
-/// The temporary export file is removed as soon as the share sheet closes.
+/// The files a backup step keeps while it runs, in the work directory (the temporary folder):
+/// a backup made to share waits in a folder of its own (`exportFolder`) until the share sheet
+/// closes, and a backup being brought in is a working copy (`import-…`) with its documents'
+/// files beside it. Whatever an earlier run left there (the app closed with the share sheet
+/// open, or in the middle of a step) goes at the next launch (`removeLeftovers`).
 enum BackupFiles {
+    /// How the folders and copies a backup step keeps begin.
+    private static let exportPrefix = "export-"
+    private static let importPrefix = "import-"
+
     @discardableResult
     static func remove(_ url: URL) -> Bool {
         (try? FileManager.default.removeItem(at: url)) != nil
+    }
+
+    /// A new folder, in `workDirectory`, for one backup made to share.
+    static func exportFolder(in workDirectory: URL) -> URL {
+        workDirectory.appending(path: "\(exportPrefix)\(UUID().uuidString)", directoryHint: .isDirectory)
+    }
+
+    /// A new working copy, in `workDirectory`, of a backup being brought in.
+    static func importCopy(in workDirectory: URL) -> URL {
+        workDirectory.appending(path: "\(importPrefix)\(UUID().uuidString).dosar")
+    }
+
+    /// The backup made to share at `url`, with the folder it waits in.
+    static func removeExport(_ url: URL) {
+        let folder = url.deletingLastPathComponent()
+        remove(folder.lastPathComponent.hasPrefix(exportPrefix) ? folder : url)
+    }
+
+    /// Working copies of backups being brought in, and their documents' files.
+    static func removeImportCopies(in workDirectory: URL) {
+        for name in names(in: workDirectory) where name.hasPrefix(importPrefix) && (name.hasSuffix(".dosar") || name.hasSuffix(".files")) {
+            remove(workDirectory.appending(path: name))
+        }
+    }
+
+    /// Everything a backup step of an earlier run left: backups made to share, working copies.
+    /// At launch, before any step of this run.
+    static func removeLeftovers(in workDirectory: URL = .temporaryDirectory) {
+        for name in names(in: workDirectory) where name.hasPrefix(exportPrefix) {
+            remove(workDirectory.appending(path: name))
+        }
+        removeImportCopies(in: workDirectory)
+    }
+
+    private static func names(in directory: URL) -> [String] {
+        (try? FileManager.default.contentsOfDirectory(atPath: directory.path(percentEncoded: false))) ?? []
     }
 
     /// Whether a file sits inside a folder (the app's Inbox, say).
