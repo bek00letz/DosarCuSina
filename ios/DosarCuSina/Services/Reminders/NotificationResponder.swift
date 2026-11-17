@@ -20,17 +20,20 @@ public final class NotificationResponder: NSObject, @preconcurrency UNUserNotifi
     private let navigator: AppNavigator
     private let sideEffects: @MainActor (ModelContainer) -> SideEffectsCoordinator
     private let failures: OutsideActionFailures
+    private let confirmClosing: IntentEngine.ClosingConfirmation
 
-    public init(
+    init(
         containerProvider: @escaping @MainActor () -> ModelContainer? = { PersistenceController.shared.container },
         navigator: AppNavigator = .shared,
         sideEffects: @escaping @MainActor (ModelContainer) -> SideEffectsCoordinator = { SideEffectsCoordinator.shared(for: $0) },
-        failures: OutsideActionFailures = .shared
+        failures: OutsideActionFailures = .shared,
+        confirmClosing: @escaping IntentEngine.ClosingConfirmation = IntentEngine.vaultConfirmsClosing
     ) {
         self.containerProvider = containerProvider
         self.navigator = navigator
         self.sideEffects = sideEffects
         self.failures = failures
+        self.confirmClosing = confirmClosing
     }
 
     public func userNotificationCenter(
@@ -72,7 +75,10 @@ public final class NotificationResponder: NSObject, @preconcurrency UNUserNotifi
                 surface: .notification
             )
             do {
-                try await IntentEngine.perform(request, container: containerProvider(), sideEffects: sideEffects, failures: failures, calendar: calendar)
+                let outcome = try await IntentEngine.perform(request, container: containerProvider(), sideEffects: sideEffects, failures: failures,
+                                                             confirmClosing: confirmClosing, calendar: calendar)
+                // Face ID wasn't given for a locked category's deadline: its page, to finish there.
+                if outcome == .leftForTheApp { navigator.open(.obligation(obligationId)) }
             } catch {
                 // Recorded by the engine; Urmează shows it the next time the app opens.
             }

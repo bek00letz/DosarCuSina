@@ -65,7 +65,8 @@ private struct ObligationPage: View {
         obligation.asset.flatMap { try? TemplateStore(context: context).template(forKey: $0.templateKey) }
     }
 
-    private var isLocked: Bool { vault.isLocked(sectionIsSensitive: template?.isSensitive ?? false) }
+    /// A deadline of the whole household has no section, so no lock.
+    private var isLocked: Bool { obligation.asset.map { vault.isLocked($0, template: template) } ?? false }
 
     /// On: one "Editează" (the toolbar's, and the schedule card's) opens one sheet for the
     /// deadline's name, importance, date, repeat, reminders and reminder time, saved once

@@ -38,7 +38,8 @@ struct SectionListScreen: View {
     }
 }
 
-/// Shows `content` only when the asset's category isn't locked right now.
+/// Shows `content` only when the asset's category isn't locked right now, by the one answer
+/// (`Asset.isSensitive(template:)`): a section whose category hasn't arrived yet stays closed.
 struct LockGate<Content: View>: View {
     let asset: Asset
     @ViewBuilder var content: Content
@@ -53,8 +54,10 @@ struct LockGate<Content: View>: View {
     }
 
     var body: some View {
-        if let template = templates.first, vault.isLocked(template) {
+        if vault.isLocked(asset, template: templates.first) {
             LockedSectionView(title: asset.name)
+                .navigationTitle(Text(verbatim: asset.name))
+                .navigationBarTitleDisplayMode(.inline)
         } else {
             content
         }

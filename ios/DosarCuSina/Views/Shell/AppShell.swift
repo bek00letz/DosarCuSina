@@ -81,7 +81,8 @@ struct AppShell: View {
         .intakeHandoff()
         // The next sheet waits for this one's dismissal to complete, never for a guessed pause.
         .sheet(item: $router.sheet, onDismiss: { router.sheetDidDismiss() }) { sheet in
-            sheetContent(sheet)
+            // Behind the section it writes into, however it was asked for (a link, a button).
+            RouteLockGate(sheet.lock, inSheet: true) { sheetContent(sheet) }
                 .environment(router)
                 .environment(\.screenSheet, ScreenSheetHandle(id: ShellRouter.shellSheetID, router: router))
                 .onAppear { router.sheetDidAppear() }
@@ -167,12 +168,16 @@ extension View {
     }
 }
 
-/// The screen for a pushed route.
+/// The screen for a pushed route, behind the lock the route declares (`AppRoute.lock`).
 struct RouteScreen: View {
     let route: AppRoute
     @Environment(ShellRouter.self) private var router
 
     var body: some View {
+        RouteLockGate(route.lock) { screen }
+    }
+
+    @ViewBuilder private var screen: some View {
         switch route {
         case .asset(let id): SectionScreen(assetID: id)
         case .obligation(let id): ObligationScreen(obligationID: id)

@@ -218,3 +218,48 @@ final class SectionLocks: Observable, @unchecked Sendable {
         url.deletingLastPathComponent().appending(path: url.lastPathComponent + ".section-locks.json")
     }
 }
+
+// MARK: - The one answer
+
+extension SectionLocks {
+    /// Whether a category this device has no record of yet is locked here, until its record
+    /// arrives (iCloud bringing it, an import): a built-in as the catalog says (Acte and Sănătate),
+    /// any other locked, since it can't be told whether it was. Locks fail closed.
+    static func lockedWhileUnknown(_ key: String) -> Bool {
+        BuiltInTemplates.definition(for: key)?.isSensitiveByDefault ?? true
+    }
+}
+
+extension CategoryTemplate {
+    /// Whether the sections of the category `key` are behind Face ID on this device: the one
+    /// answer for every screen and every surface, whether or not the category's record is here.
+    /// With its record (`template`), the record's lock (`isSensitive`); without it, this device's
+    /// choice for the key, else `SectionLocks.lockedWhileUnknown`, so a section whose category
+    /// hasn't arrived yet is never shown or sent outside as open. Never read a missing record as
+    /// open (the `lock-without-its-category` check).
+    static func isSensitive(key: String, template: CategoryTemplate?, in container: ModelContainer?) -> Bool {
+        if let template { return template.isSensitive }
+        let byDefault = SectionLocks.lockedWhileUnknown(key)
+        guard let container else { return byDefault }
+        return SectionLocks.of(container).isLocked(key, byDefault: byDefault)
+    }
+
+    /// The same answer, from the categories by key (`TemplateStore.templatesByKey`).
+    static func isSensitive(key: String, among templates: [String: CategoryTemplate], in container: ModelContainer?) -> Bool {
+        isSensitive(key: key, template: templates[key], in: container)
+    }
+}
+
+extension Asset {
+    /// Whether this section's category is behind Face ID on this device
+    /// (`CategoryTemplate.isSensitive(key:template:in:)`), given its category's record when the
+    /// caller has it.
+    func isSensitive(template: CategoryTemplate?) -> Bool {
+        CategoryTemplate.isSensitive(key: templateKey, template: template, in: modelContext?.container)
+    }
+
+    /// The same answer, from the categories by key.
+    func isSensitive(among templates: [String: CategoryTemplate]) -> Bool {
+        isSensitive(template: templates[templateKey])
+    }
+}

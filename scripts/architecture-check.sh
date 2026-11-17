@@ -262,6 +262,15 @@ rule unique-keys "$app" - \
     'uniqueKeysWithValues' - \
     "Two records can share an id until RecordsMeet joins them, so a dictionary must never stop the app on a repeated key. Use Dictionary(_:uniquingKeysWith:) and say which one is kept (the first, or RecordsMeet's own choice), or read the records after RecordsMeet.join."
 
+# Whether a section is locked never depends on its category's record being there: a category
+# that hasn't arrived yet (iCloud, an import) is locked by this device's choice for its key, else
+# as the catalog says, else locked (CategoryTemplate.isSensitive(key:template:in:)). Reading a
+# missing record as open (an optional lock defaulted to false, compared with true, or a vault
+# check of an optional template defaulted to false) is the way around it.
+rule lock-without-its-category "$app" - \
+    'isSensitive *[}]? *[?][?] *false|[?][.]isSensitive *(==|!=) *(true|false)|isLocked *(\([$]0\))? *[)]? *[}]? *[?][?] *false' - \
+    "Whether a section is locked never depends on its category's record being there. Use asset.isSensitive(template:) or isSensitive(among:), CategoryTemplate.isSensitive(key:template:in:), or vault.isLocked(asset, template:): a category that hasn't arrived yet stays locked."
+
 # A version's models are frozen the day the next version comes: code that names one by its
 # version (an extension, a predicate, the schema itself) silently stays with the frozen copy.
 # Only the schema, its frozen versions and the migration stages, all in Models/Schema/, name a
