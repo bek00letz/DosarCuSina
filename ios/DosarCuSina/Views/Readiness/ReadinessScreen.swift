@@ -174,7 +174,7 @@ private struct ReadinessActionsModifier: ViewModifier {
             } onError: { message in
                 toast = DSToast(title: LocalizedStringResource(stringLiteral: message), systemImage: "exclamationmark.triangle.fill", tint: DSStatus.overdue.color, actionTitle: nil, feedback: .error)
             }
-            .sheet(item: $deadline) { request in
+            .dsSheet(item: $deadline) { request in
                 NavigationStack {
                     DeadlineForm(assetID: request.assetID, startsWithBlueprint: request.blueprintKey) { message in
                         deadline = nil
@@ -185,7 +185,7 @@ private struct ReadinessActionsModifier: ViewModifier {
                     }
                 }
             }
-            .sheet(item: $editing) { request in
+            .dsSheet(item: $editing) { request in
                 SectionEditSheet(assetID: request.id) { toast = $0 }
             }
     }

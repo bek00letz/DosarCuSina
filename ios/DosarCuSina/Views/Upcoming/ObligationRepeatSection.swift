@@ -32,7 +32,7 @@ struct ObligationRepeatSection: View {
                 }
             }
         }
-        .sheet(isPresented: $isEditing) {
+        .dsSheet(isPresented: $isEditing) {
             RepeatSettingsSheet(obligation: obligation) { result in
                 isEditing = false
                 if let result { toast = result }

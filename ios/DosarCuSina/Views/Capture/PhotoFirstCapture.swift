@@ -44,7 +44,7 @@ private struct PhotoFirstCapture: ViewModifier {
             } onError: { error in
                 onError(SaveFailure.message(for: error, formKept: false))
             }
-            .sheet(item: $flow) { input in
+            .dsSheet(item: $flow) { input in
                 CaptureFlowView(input: input) { result in
                     flow = nil
                     switch result {

@@ -188,7 +188,7 @@ private struct DocumentPreview: View {
                 DSNotice(.info, title: "Nu am o previzualizare", message: "Documentul e păstrat, dar nu îl pot arăta aici.")
             }
         }
-        .fullScreenCover(item: $openPage) { page in
+        .dsFullScreenCover(item: $openPage) { page in
             DocumentPagesViewer(
                 pages: DocumentPages.sources(of: attachment),
                 startAt: page.index,

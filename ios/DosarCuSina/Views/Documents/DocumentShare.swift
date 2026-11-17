@@ -192,7 +192,7 @@ struct DocumentShareSheet: View {
         }
         .presentationDetents([.medium, .large])
         .sensoryFeedback(.success, trigger: sentCount)
-        .sheet(item: $files, onDismiss: removeFiles) { files in
+        .dsSheet(item: $files, onDismiss: removeFiles) { files in
             SystemShareSheet(urls: files.urls) { completed in
                 finished(completed)
             }

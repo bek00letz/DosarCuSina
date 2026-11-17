@@ -78,15 +78,17 @@ struct AppShell: View {
         .measuringToastInset { shellInset = $0 }
         // Above the tab bar, wherever the person is; under the sheets, which have their own.
         .dsToastHost(toasts, bottomInset: max(0, (tabInsets[router.tab] ?? shellInset) - shellInset))
-        .environment(router)
         .intakeHandoff()
         // The next sheet waits for this one's dismissal to complete, never for a guessed pause.
         .sheet(item: $router.sheet, onDismiss: { router.sheetDidDismiss() }) { sheet in
             sheetContent(sheet)
                 .environment(router)
+                .environment(\.screenSheet, ScreenSheetHandle(id: ShellRouter.shellSheetID, router: router))
                 .onAppear { router.sheetDidAppear() }
         }
-        .fullScreenCover(isPresented: Binding(get: { !preferences.hasCompletedOnboarding && !vault.isAppLocked }, set: { _ in })) {
+        // A route that comes during onboarding lands once it is over.
+        .dsFullScreenCover(isPresented: Binding(get: { !preferences.hasCompletedOnboarding && !vault.isAppLocked }, set: { _ in }),
+                           keepsRoutesWaiting: true) {
             OnboardingFlow {
                 preferences.hasCompletedOnboarding = true
             }
@@ -116,6 +118,8 @@ struct AppShell: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .background { InboxLanding.shared.didEnterBackground(navigator: navigator) }
         }
+        // Outermost, so every tab, sheet and cover here (`dsFullScreenCover` included) finds the router.
+        .environment(router)
     }
 
     @ViewBuilder

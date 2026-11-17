@@ -574,7 +574,7 @@ struct CustomCategorySettings: View {
             } footer: {
                 Text("Alege ce ține minte fiecare. Categoriile incluse în aplicație rămân cum sunt.", comment: "Footer of the person's own categories in Settings.")
             }
-            .sheet(item: $editing) { template in
+            .dsSheet(item: $editing) { template in
                 CategoryEditSheet(template: template) { done in toast = done }
             }
         }
@@ -762,7 +762,7 @@ struct AboutSettings: View {
                 Text(verbatim: "Galerie design (doar în versiunea de test)")
                     .frame(minHeight: 44)
             }
-            .sheet(isPresented: $isShowingGallery) { DesignSystemGallery() }
+            .dsSheet(isPresented: $isShowingGallery) { DesignSystemGallery() }
             #endif
             // Last, so it's easy to find: which build this phone runs, copyable.
             DSActionValueRow(title: Text("Versiunea", comment: "About: app version and build."), value: BuildInfo.current.summary, action: .copy)

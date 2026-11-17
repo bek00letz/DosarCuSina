@@ -117,6 +117,14 @@ rule hand-written-plural "$app" - \
     "(==|!=|<=?|>=?) *[12] *\\? *$words.* +: *$words" - \
     'Counts use plural variations in the String Catalog (1 zi, 2 zile, 20 de zile), never a choice between two strings. A wording that leaves out the number for one ("un act", "le pui la locul lor") is a plural variation too.'
 
+# A screen's sheet or full-screen cover is one the shell's router knows is up (dsSheet,
+# dsFullScreenCover in Navigation/ScreenSheets.swift), so a route from a notification, a widget
+# or a search result closes it, or waits while it holds unsaved work, and never lands under it.
+# The shell's own sheet ($router.sheet) is the router's.
+rule sheet-outside-router '^ios/DosarCuSina/' '^ios/DosarCuSina/Navigation/ScreenSheets\.swift$' \
+    '\.(sheet|fullScreenCover)\(' '\$router\.sheet' \
+    "Present a screen's sheet with .dsSheet or .dsFullScreenCover (a system picker with .dsPresents beside it), so the router knows it is up: a route then closes it, or waits while it holds unsaved work, and never lands under it."
+
 # Screens, widgets and Siri draw an urgency; they never work one out from a number of days.
 rule urgency-threshold '^ios/(DosarCuSina/(Views|Intents)|DosarCuSinaWidgets)/' - \
     '[dD]ays[A-Za-z]* *(<|<=|>|>=) *-?[0-9]|soonWithinDays' - \

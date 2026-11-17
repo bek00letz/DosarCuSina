@@ -71,7 +71,7 @@ struct ManualAddFlow: View {
                     }
                 }
             }
-            .sheet(isPresented: $isCreatingSection) {
+            .dsSheet(isPresented: $isCreatingSection) {
                 // The same flow as "Adaugă o secțiune" on the binder: category, details, deadlines.
                 AddSectionFlow(request: .topLevel) { asset in
                     isCreatingSection = false
@@ -143,7 +143,7 @@ private struct ManualWhatView: View {
         } onError: { error in
             errorMessage = SaveFailure.message(for: error, formKept: true)
         }
-        .sheet(item: $flow) { input in
+        .dsSheet(item: $flow) { input in
             CaptureFlowView(input: input) { result in
                 flow = nil
                 switch result {

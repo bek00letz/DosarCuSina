@@ -133,12 +133,12 @@ struct ObligationListScreen: View {
             }
         }
         .navigationTitle(Text(SectionPocket.upcoming.title))
-        .sheet(item: $datePrompt) { blueprint in
+        .dsSheet(item: $datePrompt) { blueprint in
             FirstDateSheet(title: blueprint.title, reminders: blueprint.reminders(for: asset.values)) { day in
                 create(blueprint, firstDue: day)
             }
         }
-        .sheet(isPresented: $isAddingCustom) {
+        .dsSheet(isPresented: $isAddingCustom) {
             NavigationStack {
                 // The one form: the category's usual deadlines this section doesn't have yet, and one of the person's own.
                 DeadlineForm(assetID: asset.id, startsWithOwn: Self.offersSuggestionRows) { _ in
@@ -337,7 +337,7 @@ struct PeopleListScreen: View {
         }
         .background(DS.Palette.background)
         .navigationTitle(Text(SectionPocket.people.title))
-        .sheet(isPresented: $isAdding) { ProviderEditSheet(provider: nil, linkTo: asset) }
+        .dsSheet(isPresented: $isAdding) { ProviderEditSheet(provider: nil, linkTo: asset) }
     }
 }
 

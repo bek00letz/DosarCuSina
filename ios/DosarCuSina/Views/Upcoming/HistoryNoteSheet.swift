@@ -46,7 +46,7 @@ private struct HistoryNoteSheetModifier: ViewModifier {
             .onChange(of: request?.id) { _, _ in
                 if let request { restoring = request.restoring }
             }
-            .sheet(item: $request, onDismiss: {
+            .dsSheet(item: $request, onDismiss: {
                 toast = saved ?? restoring
                 saved = nil
                 restoring = nil
