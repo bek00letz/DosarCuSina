@@ -77,22 +77,18 @@ enum IntentEngine {
         let id = request.obligationId
         var descriptor = FetchDescriptor<Obligation>(predicate: #Predicate { $0.id == id })
         descriptor.fetchLimit = 1
-        func stillOpen(_ obligation: Obligation?) -> Bool {
-            guard let obligation, obligation.status == .active, !obligation.isExample, let cycle = request.cycle else { return false }
-            return obligation.dueDay == cycle
-        }
-        let store = PersistenceController.context(in: context.container)
+        let actions = ObligationActions(context: context, calendar: calendar, now: now)
+        // The one rule for the cycle the person saw (`ObligationActions.isOpen`), the app's own too.
         guard let obligation = try context.fetch(descriptor).first,
-              stillOpen(obligation),
-              stillOpen(try store.fetch(descriptor).first),
-              let cycle = request.cycle
+              !obligation.isExample,
+              let cycle = request.cycle,
+              try actions.isOpen(obligation, cycle: cycle)
         else { return .skipped }
 
-        let actions = ObligationActions(context: context, calendar: calendar, now: now)
         switch request.action {
         case .complete:
             // Never later than now: a clock set back on the phone can't date it ahead.
-            try actions.complete(obligation, on: request.actedAt.map { min($0, now()) })
+            try actions.complete(obligation, on: request.actedAt.map { min($0, now()) }, cycle: cycle)
             return .completed(next: obligation.status == .active ? obligation.dueDay : nil)
         case .snooze(let days):
             try actions.snooze(obligation, days: days)

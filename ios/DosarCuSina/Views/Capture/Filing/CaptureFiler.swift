@@ -62,6 +62,10 @@ struct CaptureFiler {
         /// A photo of a bill that only looked like one already filed, by its day and total:
         /// the person said it is another bill ("E altă factură").
         var isAnotherBill = false
+        /// The cycle the person saw when "Am rezolvat" opened: closed meanwhile (a reminder, the
+        /// widget, another device), nothing is filed (`ObligationActionError.cycleClosed`). Nil
+        /// closes the cycle open now.
+        var cycle: CalendarDay?
     }
 
     /// A visit from the visit form, with the paper it was read from: only what its kind asks
@@ -497,10 +501,9 @@ struct CaptureFiler {
         }
 
         // 2. The deadline: the cycle closes, and the new document's date sets the next one.
-        // The day the person left wins over the one read off the document.
-        let newDay = (completion.nextDue ?? completion.document.flatMap(Self.nextDay(in:))).flatMap { $0 > today ? $0 : nil }
-        outcome.completion = try renew(obligation, to: newDay, done: true, on: completion.date, cost: completion.cost,
-                                       note: completion.note, metricReading: completion.metricReading)
+        outcome.completion = try renew(obligation, to: Self.newDay(of: completion, today: today), done: true, on: completion.date,
+                                       cost: completion.cost, note: completion.note, metricReading: completion.metricReading,
+                                       cycle: completion.cycle)
         if obligation.status == .active { outcome.nextDue = obligation.dueDay }
 
         // A bill, in its subscription's history, once.
@@ -528,6 +531,16 @@ struct CaptureFiler {
         // 5. A bill's newer copy and its meter index.
         if let bill { try finishBill(plan: bill, outcome: &outcome, readingFiledBefore: readingFiledBefore, templates: templates) }
         return outcome
+    }
+
+    /// The day "Am rezolvat" moves the deadline to: the one the person left (the sheet refuses
+    /// one that isn't after today, `CompletionDraft.newDayProblem`, and so does
+    /// `ObligationActions.complete`), else the next date read off the paper, when it is after
+    /// today (`ObligationActions.continues`); nil when neither. The sheet says the paper's next
+    /// date by this same rule.
+    static func newDay(of completion: Completion, today: CalendarDay) -> CalendarDay? {
+        if let typed = completion.nextDue { return typed }
+        return completion.document.flatMap(nextDay(in:)).flatMap { ObligationActions.continues(on: $0, after: today) ? $0 : nil }
     }
 
     /// What filing "Am rezolvat"'s photo as a bill does (its entry in Istoric, its meter
@@ -652,9 +665,16 @@ struct CaptureFiler {
         case .review(let review):
             try askFirst(for: review)
         case .completion(let completion):
+            let actions = ObligationActions(context: context, calendar: calendar, now: now)
+            // The cycle the person saw, closed meanwhile from a reminder, the widget or another
+            // device: nothing is filed against the next one.
+            try actions.requireOpen(completion.obligation, cycle: completion.cycle)
+            // A new end typed before today goes nowhere (the sheet already says so under it).
+            if let typed = completion.nextDue, !ObligationActions.continues(on: typed, after: CalendarDay(now(), calendar: calendar)) {
+                throw ObligationActionError.newDayHasPassed
+            }
             // The counter the person read, as completing records it.
-            let typed = ObligationActions(context: context, calendar: calendar, now: now)
-                .plannedReading(completion.metricReading, completing: completion.obligation, on: completion.date)
+            let typed = actions.plannedReading(completion.metricReading, completing: completion.obligation, on: completion.date)
             try HouseholdMutations.askAboutReading(typed, answer: lowerReading)
             guard let review = completionReview(completion), let asset = completion.obligation.asset else { return }
             try ExampleOwnership.requireReal(asset)
@@ -803,38 +823,44 @@ struct CaptureFiler {
 
     /// The one rule for what a new document's date does to the deadline it renews,
     /// for the review and for "Am rezolvat":
-    /// - a deadline whose date comes from a field (a document's expiry): the field takes the
-    ///   new date, and the deadline follows it;
-    /// - a repeating one: the cycle that was due closes (a completion in the history) and the
-    ///   next date is the document's;
-    /// - a one-off: it moves to the document's date.
-    /// An older date never moves a deadline back. `done` is the person's "Am rezolvat": the
-    /// cycle closes even when the document has no later date, with what the person said of it
-    /// (a note, the counter read: asked before the unit opened, `askFirst`). Returns the
+    /// - "Am rezolvat" (`done`): the cycle closes (a completion in Istoric, with what the person
+    ///   said of it: a note, the counter read, asked before the unit opened, `askFirst`) and the
+    ///   deadline goes on from the new day, repeating or not (a new kit's expiry, a renewed
+    ///   contract's end: `ObligationActions.complete(continuingOn:)`); with no new day a
+    ///   repeating one goes to its next cycle and a one-off closes;
+    /// - the review: a repeating deadline closes the cycle that was due and goes on from the
+    ///   document's date; a one-off moves to it; an older date never moves a deadline back;
+    /// - a deadline whose date comes from a field (a contract's end) has the field take the new
+    ///   date too, so the section and the deadline agree.
+    /// `cycle` is the one the person saw ("Am rezolvat"), nil for the review. Returns the
     /// completion written.
     private func renew(_ obligation: Obligation, to day: CalendarDay?, done: Bool, on date: Date?, cost: Money?,
-                       note: String? = nil, metricReading: Double? = nil) throws -> HistoryEntry? {
+                       note: String? = nil, metricReading: Double? = nil, cycle: CalendarDay? = nil) throws -> HistoryEntry? {
         let actions = ObligationActions(context: context, calendar: calendar, now: now)
         let due = obligation.dueDay
         guard done || (day.map { $0 > due } ?? false) else { return nil }
-        if let day, let asset = obligation.asset, let field = fieldDrivingDueDate(of: obligation) {
-            if asset.values[field] != .date(day) {
-                var values = asset.values
-                values[field] = .date(day)
-                try AssetActions(context: context, calendar: calendar, now: now).update(asset, name: asset.name, values: values, notes: asset.notes)
-            }
-            return nil
-        }
+        let field = fieldDrivingDueDate(of: obligation)
+        var entry: HistoryEntry?
         if done || obligation.recurrence.repeats {
-            let entry = try actions.complete(obligation, on: date, cost: cost, metricReading: metricReading, note: note,
-                                             lowerReading: lowerReading).value
-            if obligation.status == .active, let day, obligation.dueDay != day {
+            let today = CalendarDay(now(), calendar: calendar)
+            let continuing = day.flatMap { ObligationActions.continues(on: $0, after: today) ? $0 : nil }
+            entry = try actions.complete(obligation, on: date, cost: cost, metricReading: metricReading, note: note,
+                                         lowerReading: lowerReading, cycle: cycle, continuingOn: continuing).value
+            // The review's paper dated before today (an old report read now) still sets the
+            // next day, late as it is.
+            if continuing == nil, obligation.status == .active, let day, obligation.dueDay != day {
                 try actions.reschedule(obligation, to: day)
             }
-            return entry
+        } else if field == nil, let day {
+            try actions.reschedule(obligation, to: day)
         }
-        if let day { try actions.reschedule(obligation, to: day) }
-        return nil
+        if let day, let field, let asset = obligation.asset, asset.values[field] != .date(day) {
+            // The field the deadline follows takes the day too (`AssetActions.update` moves it).
+            var values = asset.values
+            values[field] = .date(day)
+            try AssetActions(context: context, calendar: calendar, now: now).update(asset, name: asset.name, values: values, notes: asset.notes)
+        }
+        return entry
     }
 
     /// The asset field a one-off obligation takes its date from (a document's expiry).

@@ -243,9 +243,11 @@ private struct ObligationPage: View {
             // What completing asks is the kind's: a chore is done in one tap, the rest open the
             // sheet, the same entry as Urmează's swipe and menu (`CompletionEntry`).
             let shape = obligation.completion(template: template?.definition)
+            // The cycle this page shows, as the person saw it when they tapped.
+            let seen = obligation.dueDay
             VStack(spacing: DS.Space.s) {
                 DSPrimaryButton(shape.actionTitle, systemImage: "checkmark") {
-                    startCompleting()
+                    startCompleting(cycle: seen)
                 }
                 // A second "Gata" waits while the first one's toast shows, so a double tap
                 // never closes the next cycle too.
@@ -257,6 +259,10 @@ private struct ObligationPage: View {
             }
         } else if obligation.status == .paused {
             DSPrimaryButton("Pornește din nou", systemImage: "play.fill") { resume() }
+        } else if obligation.status == .done, let document = obligation.asset,
+                  let replacement = obligation.completion(template: template?.definition).replacement {
+            // A personal document renewed: the new one is a document of its own.
+            DocumentReplacementCard(document: document, replacement: replacement) { dismiss() }
         }
     }
 
@@ -540,9 +546,10 @@ private struct ObligationPage: View {
 
     /// "Gata" or "Am rezolvat", by the kind (`CompletionEntry`): a chore is done today, no
     /// sheet, and the toast takes it back or adds a note to it; any other kind opens the sheet.
-    private func startCompleting() {
+    /// Only for `cycle`, the due day the page showed when the person tapped.
+    private func startCompleting(cycle: CalendarDay) {
         do {
-            let start = try CompletionEntry(context: context).start(obligation) { entryID, shown in
+            let start = try CompletionEntry(context: context).start(obligation, cycle: cycle) { entryID, shown in
                 noteRequest = HistoryNoteRequest(entryID: entryID, restoring: shown)
             }
             switch start {
@@ -553,7 +560,7 @@ private struct ObligationPage: View {
                 completing = request
             }
         } catch {
-            toast = UpcomingActions.failureToast(error)
+            if let failure = UpcomingActions.quietFailureToast(error) { toast = failure }
         }
     }
 

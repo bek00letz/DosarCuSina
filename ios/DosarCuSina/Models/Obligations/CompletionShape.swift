@@ -96,6 +96,35 @@ public struct CompletionShape: Hashable, Sendable {
         }
     }
 
+    /// A section that closing replaces with a new one of its own (a personal document: a new
+    /// identity card or passport has another series and number, so it is a new upload, never a
+    /// new date on the old one). Closing asks no new end; the deadline closes, the section's
+    /// page shows it expired (`Asset.wasReplaced`) and offers the new one and deleting this
+    /// one, in these words, which `docs/COPY_MATRIX.md` lists.
+    public struct Replacement: Hashable, Sendable {
+        /// In "Am rezolvat", under what it asks: what saving does and where the new one goes.
+        public var inSheet: String
+        /// The card's title on the section's page and the deadline's, once it is closed.
+        public var title: String
+        /// Under the title: why the new one is added on its own.
+        public var message: String
+        /// Adds the new one, for the same holder.
+        public var add: String
+        /// Deletes this one, with its undo.
+        public var delete: String
+        /// The toast's offer after closing it: opens this section's page.
+        public var open: String
+
+        public init(inSheet: String, title: String, message: String, add: String, delete: String, open: String) {
+            self.inSheet = inSheet
+            self.title = title
+            self.message = message
+            self.add = add
+            self.delete = delete
+            self.open = open
+        }
+    }
+
     /// The day it was done ("Când"), today unless the person says otherwise.
     public var asksDate: Bool
     /// What it cost, and how the question is put; nil when it isn't asked.
@@ -108,15 +137,18 @@ public struct CompletionShape: Hashable, Sendable {
     public var note: Note?
     /// The counter it asks, where the section has one; nil when none.
     public var counter: Counter?
+    /// The section closing it replaces with a new one; nil for every other kind.
+    public var replacement: Replacement?
 
     public init(asksDate: Bool = true, cost: Cost? = nil, paper: Paper? = nil, newEnd: NewEnd? = nil,
-                note: Note? = nil, counter: Counter? = nil) {
+                note: Note? = nil, counter: Counter? = nil, replacement: Replacement? = nil) {
         self.asksDate = asksDate
         self.cost = cost
         self.paper = paper
         self.newEnd = newEnd
         self.note = note
         self.counter = counter
+        self.replacement = replacement
     }
 
     /// Nothing to ask: done today in one tap.
@@ -128,11 +160,13 @@ public struct CompletionShape: Hashable, Sendable {
     public var asksNote: Bool { note != nil }
     /// Whether it asks a counter.
     public var asksReading: Bool { counter != nil }
+    /// Whether closing it replaces its section with a new one (`Replacement`).
+    public var replacesSection: Bool { replacement != nil }
 
     /// Whether completing asks nothing: "Gata" marks it done today, no sheet, and its toast
     /// offers a note for that completion ("Adaugă o notă").
     public var isOneTap: Bool {
-        !asksDate && cost == nil && paper == nil && newEnd == nil && note == nil && counter == nil
+        !asksDate && cost == nil && paper == nil && newEnd == nil && note == nil && counter == nil && replacement == nil
     }
 
     /// Whether the toast of a completion offers a note after it.

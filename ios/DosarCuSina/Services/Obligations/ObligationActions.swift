@@ -11,6 +11,12 @@ public enum ObligationActionError: LocalizedError, Equatable {
     case notPersonsOwn
     /// A deadline needs a name.
     case missingTitle
+    /// The cycle the person saw was closed meanwhile (from a reminder, the widget, Siri or
+    /// another device): nothing is filed against the next one.
+    case cycleClosed
+    /// A new day to continue on (a kit's new expiry, a contract's new end) that isn't after
+    /// today (`ObligationActions.continues(on:after:)`).
+    case newDayHasPassed
 
     public var errorDescription: String? {
         switch self {
@@ -23,6 +29,13 @@ public enum ObligationActionError: LocalizedError, Equatable {
                           comment: "Error: a category's deadline can't be renamed or have its importance changed.")
         case .missingTitle:
             return String(localized: "Scrie ce trebuie făcut, apoi salvează.", comment: "Error: a deadline's name was left empty.")
+        case .cycleClosed:
+            return String(localized: "Termenul a fost bifat între timp, dintr-o notificare, din widget sau de pe alt dispozitiv. N-am salvat nimic, iar următorul termen a rămas cum era.",
+                          comment: "Error: the deadline was closed elsewhere while the person was closing it; nothing was saved.")
+        case .newDayHasPassed:
+            // A fix, not a verdict, as a field's message: said under the date in "Am rezolvat".
+            return String(localized: "Alege o zi de după azi. Data aceasta a trecut deja.",
+                          comment: "Under a new expiry or end date that isn't after today: pick a later day.")
         }
     }
 }
@@ -49,6 +62,19 @@ public final class ObligationActions {
     /// asset's history, the same history repairs and visits go into. The receipt
     /// takes it all back ("Anulează"), the reading it recorded included; deleting an
     /// older completion from Istoric is `HistoryActions.delete`.
+    ///
+    /// - `cycle` is the cycle the person saw (the due day on the row, the page or the reminder
+    ///   they acted on): when it is no longer the open one, here or in the store (closed meanwhile
+    ///   from a reminder, the widget or another device), nothing is written and it throws
+    ///   `cycleClosed`, so a second tap never closes the next cycle. Nil: the cycle open now, for
+    ///   a step that closes whatever is due (a document filed from the review).
+    /// - `continuingOn` is a new day the deadline goes on from (a new kit's expiry, a renewed
+    ///   contract's end, the next date a paper prints): the completion is recorded and the
+    ///   deadline stays active on that day, repeating or not. It must be after today
+    ///   (`continues(on:after:)`), else it throws `newDayHasPassed`.
+    ///
+    /// The one way a deadline is closed: the app's sheet and quick "Gata", Urmează, and every
+    /// action from outside the app (`IntentEngine`) come here.
     @discardableResult
     public func complete(
         _ obligation: Obligation,
@@ -59,9 +85,15 @@ public final class ObligationActions {
         items: [LineItemDraft] = [],
         providers: [Provider] = [],
         rating: Int? = nil,
-        lowerReading: LowerReadingAnswer? = nil
+        lowerReading: LowerReadingAnswer? = nil,
+        cycle: CalendarDay? = nil,
+        continuingOn newDay: CalendarDay? = nil
     ) throws -> Undoable<HistoryEntry> {
         guard obligation.status == .active else { throw ObligationActionError.notActive }
+        try requireOpen(obligation, cycle: cycle)
+        if let newDay, !Self.continues(on: newDay, after: CalendarDay(now(), calendar: calendar)) {
+            throw ObligationActionError.newDayHasPassed
+        }
         let completedAt = date ?? now()
         // Every question first, before anything is written (`StepQuestion`).
         let reading = plannedReading(metricReading, completing: obligation, on: completedAt)
@@ -91,15 +123,18 @@ public final class ObligationActions {
             }
 
             let recurrenceContext = HouseholdMutations.recurrenceContext(for: obligation, currentMetric: metricReading, calendar: calendar)
-            if let next = RecurrenceEngine.nextDue(
+            let next = RecurrenceEngine.nextDue(
                 after: obligation.dueDay,
                 completedOn: completedDay,
                 rule: obligation.recurrence,
                 context: recurrenceContext,
                 calendar: calendar
-            ) {
-                obligation.dueDay = next.day
-                obligation.dueMetric = next.metric
+            )
+            // The new day the person gave wins over the one the rule works out; a one-off with
+            // one goes on from it instead of closing.
+            if let day = newDay ?? next?.day {
+                obligation.dueDay = day
+                if let next { obligation.dueMetric = next.metric }
                 entry.nextDueDay = obligation.dueDay
             } else {
                 obligation.status = .done
@@ -108,6 +143,38 @@ public final class ObligationActions {
             try save()
             return entry
         }
+    }
+
+    /// The one rule for a new day a completion goes on from (a kit's new expiry, a renewed
+    /// contract's end, a paper's next date): only a day after `today`. The sheet refuses an
+    /// earlier one it asks, with a note under its field (`CompletionDraft.newDayProblem`), and the
+    /// filer leaves out one read off a paper (`CaptureFiler`).
+    nonisolated static func continues(on day: CalendarDay, after today: CalendarDay) -> Bool {
+        day > today
+    }
+
+    /// Whether `cycle`, the one the person saw, is still the deadline's open one: active and due
+    /// that day, in this context and in the store as it is now. A completion from another device
+    /// lands in the store under the context (`SyncedChanges`), so both are read.
+    func isOpen(_ obligation: Obligation, cycle: CalendarDay) throws -> Bool {
+        func open(_ copy: Obligation?) -> Bool {
+            guard let copy else { return false }
+            return copy.status == .active && copy.dueDay == cycle
+        }
+        guard open(obligation) else { return false }
+        let id = obligation.id
+        var descriptor = FetchDescriptor<Obligation>(predicate: #Predicate { $0.id == id })
+        descriptor.fetchLimit = 1
+        // Gone from the store (deleted on another device): nothing left to close.
+        return open(try PersistenceController.context(in: context.container).fetch(descriptor).first)
+    }
+
+    /// Throws `cycleClosed` when `cycle` (the one the person saw) is no longer open; nothing
+    /// to check without one. Asked before a step's unit opens by a flow that completes inside
+    /// a larger step (`CaptureFiler`), and again by `complete`.
+    func requireOpen(_ obligation: Obligation, cycle: CalendarDay?) throws {
+        guard let cycle else { return }
+        guard try isOpen(obligation, cycle: cycle) else { throw ObligationActionError.cycleClosed }
     }
 
     /// The reading "Gata" records with the counter the person read (`metricReading`): on the
