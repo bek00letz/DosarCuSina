@@ -125,7 +125,7 @@ extension CopyMatrixTests {
             ("Its kind", "\(W.notThis) · \(W.whatKind) · \(W.phoneSawKind("Pașaport")) · \(W.checkedKind("Pașaport"))"),
             ("How it was read", "\(W.readOnPhone) / \(W.readWithAppleIntelligence) / \(W.readWithProvider(provider.shortName))"),
             ("The photo's frame", "\(W.cropped) \(W.useWholePhoto) / \(W.wholePhotoKept) \(W.onlyDocument)"),
-            ("Where it goes", "\(W.chooseAnother) · \(W.check): \(W.addressPartlyAgrees) / \(W.addressDiffers)"),
+            ("Where it goes", "\(W.chooseAnother) · \(W.check): \(W.addressPartlyAgrees) / \(W.addressDiffers) · a home's policy: \(W.insuredAddressPartlyAgrees) / \(W.insuredAddressDiffers)"),
             ("Kept in no section", "\(W.keepOnly) — \(W.foundInSearch)"),
             ("Filed under a section", "\(W.withPersonsDocuments) / \(W.atSubscription(reviewSubscription)) / \(W.newSubscriptionHere(reviewSubscription)) / \(W.subscriptionAt("Apartament"))"),
             ("A new section", "\(W.newPerson(reviewPerson)) — \(W.addedToDocuments) / \(W.newSubscription(reviewSubscription)) / \(W.newSection(in: "Mașini")) — \(W.madeWhenSaved) / \(W.madeWhenSaved(withSubscription: reviewSubscription))"),

@@ -54,7 +54,7 @@ struct KindLabelTablesTests {
     @Test("Labels are folded and name only what their kind carries", arguments: CaptureDocumentKind.allCases)
     func labelsAreFoldedAndBelong(kind: CaptureDocumentKind) {
         // Labels of the table that are never fields of their own: they only find a line.
-        let lineLabels: Set<CaptureFieldKey> = [.validityPeriod, .previousMeterIndex]
+        let lineLabels: Set<CaptureFieldKey> = [.validityPeriod, .previousMeterIndex, .renewedPolicy]
         for (key, wordings) in kind.profile.labels {
             #expect(!wordings.isEmpty, "\(kind): \(key) has wordings")
             for wording in wordings {

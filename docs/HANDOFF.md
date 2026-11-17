@@ -104,6 +104,13 @@ Newest first. Copy this template:
 
 Never write security findings, crash traces or local paths here. See [SECURITY.md](../SECURITY.md).
 
+### 2026-11-17 — owner (with Claude) — `claude/pad-reading`
+- **Did:** a PAD policy is read like the other policies: a digital PDF by where its lines are printed (`PDFTextLines`, a row where labels and values cross read word by word), the pool as a PAD's insurer whoever sold it (`InsuranceCover.soleInsurers`) with the tax ID from its own block, the insured sum and the home insured (new capture fields), the renewed policy's number never taken, a series joined by a hyphen ("RA-000"), "UAT" as a town; a home's policy goes to the home at that address (`SubscriptionMatcher.home(at:among:)`, shared with bills) and fills an empty home address.
+- **Tests:** `PADReadingTests` on a made-up PAD PDF built in the test (`PADPolicyFixture`); run on GitHub's runner. Locally the architecture check.
+- **Way back:** a PDF that gives no lines is read by its plain text, as before.
+- **Left open:** the insured sum is shown in the review but kept on no field of the home (its template has none); the owner's call whether to add one. Other digital PDFs (bills, contracts) are now read by their lines too: worth a look on a few real ones.
+- **Next:** read a few real bills and contracts from PDF on a phone and compare with before.
+- **Decisions:** "A PAD is read like the other policies" (2026-11-17).
 ### 2026-11-17 — owner (with Claude) — `claude/share-from-files`
 - **Did:** sharing from Files and iCloud Drive. Each item is received every way its sender offers, in order (`ShareReceiving.plan`): the file for its type, then the link to the file, read with coordinated reading so a file still in iCloud is downloaded first, and only then its bytes (they come whole into memory). Before, a typed item that failed never tried its link, and the link was copied without coordination. A file whose type says nothing is known by its first bytes; every copy streams within the room left; the practice's fingerprint streams too. A share that fails says why, one reason each (`ShareFailure`, in `ShareConfirmation`), and keeps the reason as kinds only in a share log beside the inbox (`ShareFailureLog`) and in the system log (category `share`).
 - **Way back:** `ShareModel.receivesEveryWay` (on); off runs `EarlierShareReceiving`, the earlier way, unchanged but for the new failure phase.

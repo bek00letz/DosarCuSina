@@ -209,36 +209,48 @@ public enum RomanianFieldExtractor {
     /// `ambiguous` when the amount could have been read another way ("3,750"): the field gets "Verifică".
     static func total(in text: CaptureText, labels strongTotalLabels: [String] = CaptureKindProfile.commonLabels(for: .total))
         -> (money: Money, source: String, strong: Bool, ambiguous: Bool)? {
+        if let stated = labelledAmount(in: text, labels: strongTotalLabels) {
+            return (stated.money, stated.source, true, stated.ambiguous)
+        }
         let fallbackCurrency = dominantCurrency(in: text)
-        func amountNear(_ index: Int, after labels: [String]) -> (money: Money, ambiguous: Bool)? {
-            let line = text.folded[index]
-            let labelEnd = labels.compactMap { line.range(of: $0)?.upperBound }.min() ?? line.startIndex
-            let onLine = amounts(inLine: line).filter { $0.range.lowerBound >= labelEnd }
-            if let stated = statedAmount(in: onLine) {
-                return (Money(stated.amount, currency: currency(inLine: line) ?? fallbackCurrency), stated.isAmbiguous)
-            }
-            // The value under its label, never another label's on the next line.
-            if index + 1 < text.folded.count {
-                let nextLine = text.folded[index + 1]
-                if let next = amounts(inLine: nextLine).first, standsAlone(next, inLine: nextLine) {
-                    return (Money(next.amount, currency: currency(inLine: nextLine) ?? fallbackCurrency), next.isAmbiguous)
-                }
-            }
-            return nil
-        }
-
-        for label in strongTotalLabels {
-            for index in text.lines(containing: [label]) {
-                if let found = amountNear(index, after: [label]) {
-                    return (found.money, text.original[index], true, found.ambiguous)
-                }
-            }
-        }
         for index in text.lines(containing: [plainTotalLabel]).reversed() {
             let line = text.folded[index]
             guard !notTheTotal.contains(where: { CaptureText.containsWord($0, inFolded: line) }) else { continue }
-            if let found = amountNear(index, after: [plainTotalLabel]) {
+            if let found = amount(near: index, after: [plainTotalLabel], in: text, currency: fallbackCurrency) {
                 return (found.money, text.original[index], false, found.ambiguous)
+            }
+        }
+        return nil
+    }
+
+    /// The amount one of `labels` states, the first wording found first: after it on its line,
+    /// else alone under it (a policy's premium, the sum it insures for, an invoice's total).
+    static func labelledAmount(in text: CaptureText, labels: [String]) -> (money: Money, source: String, ambiguous: Bool)? {
+        let fallbackCurrency = dominantCurrency(in: text)
+        for label in labels {
+            for index in text.lines(containing: [label]) {
+                if let found = amount(near: index, after: [label], in: text, currency: fallbackCurrency) {
+                    return (found.money, text.original[index], found.ambiguous)
+                }
+            }
+        }
+        return nil
+    }
+
+    /// The amount after one of `labels` on line `index`, else the one standing alone on the
+    /// line under it, never another label's on the next line.
+    private static func amount(near index: Int, after labels: [String], in text: CaptureText, currency fallbackCurrency: String)
+        -> (money: Money, ambiguous: Bool)? {
+        let line = text.folded[index]
+        let labelEnd = labels.compactMap { line.range(of: $0)?.upperBound }.min() ?? line.startIndex
+        let onLine = amounts(inLine: line).filter { $0.range.lowerBound >= labelEnd }
+        if let stated = statedAmount(in: onLine) {
+            return (Money(stated.amount, currency: currency(inLine: line) ?? fallbackCurrency), stated.isAmbiguous)
+        }
+        if index + 1 < text.folded.count {
+            let nextLine = text.folded[index + 1]
+            if let next = amounts(inLine: nextLine).first, standsAlone(next, inLine: nextLine) {
+                return (Money(next.amount, currency: currency(inLine: nextLine) ?? fallbackCurrency), next.isAmbiguous)
             }
         }
         return nil
@@ -299,12 +311,13 @@ public enum RomanianFieldExtractor {
     }
 
     /// The first tax ID after one of `labels` (CUI, CIF, cod fiscal: the common row of
-    /// `CaptureKindProfile`), and whether its control digit is valid.
-    static func taxID(in text: CaptureText, labels: [String] = CaptureKindProfile.commonLabels(for: .providerTaxID))
+    /// `CaptureKindProfile`), on `lines` when given (an issuer's own block), and whether its
+    /// control digit is valid.
+    static func taxID(in text: CaptureText, labels: [String] = CaptureKindProfile.commonLabels(for: .providerTaxID), lines: Range<Int>? = nil)
         -> (value: String, valid: Bool, line: Int)? {
         guard !labels.isEmpty else { return nil }
         let pattern = printed(labels) + #"\s*[:.]?\s*(ro)?\s*(\d{2,10})\b"#
-        for (index, line) in text.folded.enumerated() {
+        for (index, line) in text.folded.enumerated() where lines?.contains(index) ?? true {
             if let match = TextPattern.first(pattern, in: line), let digits = match[2] {
                 let value = (match[1] != nil ? "RO" : "") + digits
                 return (value, isValidCUI(digits), index)
@@ -433,11 +446,13 @@ public enum RomanianFieldExtractor {
 
     /// The insurance policy's series and number, as one value, wherever and however they
     /// are printed (`CompositeValue`), after one of `labels` (the policy table's row) or the
-    /// green card's header (`CompositeLabels.policy(_:)`).
+    /// green card's header, never after the policy it renews (`renewed`, its own row;
+    /// `CompositeLabels.policy(_:besides:)`).
     static func policyNumber(in text: CaptureText,
-                             labels: [String] = CaptureKindProfile.labels(for: .policyNumber, in: CaptureKindProfile.policyLabels))
+                             labels: [String] = CaptureKindProfile.labels(for: .policyNumber, in: CaptureKindProfile.policyLabels),
+                             renewed: [String] = CaptureKindProfile.labels(for: .renewedPolicy, in: CaptureKindProfile.policyLabels))
         -> CompositeValue.Found? {
-        CompositeLabels.read(.policy, labels: CompositeLabels.policy(labels), in: text)
+        CompositeLabels.read(.policy, labels: CompositeLabels.policy(labels, besides: renewed), in: text)
     }
 
     /// The vehicle identity card's (CIV) series and number, as one value, after one of `labels`
