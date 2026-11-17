@@ -311,7 +311,7 @@ struct BinderBoxes {
         case .asset(let assetID):
             guard let asset = assetsByID[assetID] else { return nil }
             let template = templatesByKey[asset.templateKey]
-            let isLocked = template.map(vault.isLocked) ?? false
+            let isLocked = vault.isLocked(asset, template: template)
             let descendants = Set(AssetActions.descendants(of: asset).map(\.id))
             let status = BoxStatus.make(forAsset: asset.id, descendants: descendants, in: snapshots)
             return BinderBox(

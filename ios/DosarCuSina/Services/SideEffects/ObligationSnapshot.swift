@@ -124,7 +124,7 @@ extension ObligationSnapshot {
                 templateKey: asset?.templateKey,
                 symbol: asset?.symbolOverride ?? template?.symbol ?? "checklist",
                 tint: asset?.tintOverride ?? template?.tint ?? .gray,
-                isSensitive: template?.isSensitive ?? false,
+                isSensitive: asset?.isSensitive(template: template) ?? false,
                 isExample: obligation.isExample,
                 cycleKnownSince: obligation.cycleKnownSince,
                 completion: obligation.completionKind(template: template?.definition)

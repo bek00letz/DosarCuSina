@@ -712,7 +712,7 @@ extension ReadinessAsset {
             let template = templates[asset.templateKey]
             return ReadinessAsset(
                 id: asset.id, name: asset.name, templateKey: asset.templateKey,
-                role: template?.behavior.role, parentId: asset.parent?.id, isSensitive: template?.isSensitive ?? false,
+                role: template?.behavior.role, parentId: asset.parent?.id, isSensitive: asset.isSensitive(template: template),
                 values: asset.values, obligations: obligations, otherObligations: others,
                 historyCount: (asset.history ?? []).count,
                 documentKinds: (asset.attachments ?? []).filter { !$0.isArchived }.map(\.kind),
