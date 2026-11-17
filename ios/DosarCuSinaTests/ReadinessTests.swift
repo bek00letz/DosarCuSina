@@ -94,11 +94,12 @@ struct ReadinessTests {
     }
 
     @Test func documentsFiledUnderNoOneTravelTogether() {
-        let card = ReadinessAsset.personalDocument(DocumentType.idCard, expires: "2029-01-01")
+        let card = ReadinessAsset.personalDocument(DocumentType.idCard, expires: "2029-01-01", nationality: "ROU")
         let candidates = ReadinessEngine.tripCandidates(in: [card])
         #expect(candidates.travellers.map(\.traveller) == [.unfiled])
         let items = trip(.everyone(start: "2026-12-20", end: "2027-01-05", region: .europeanUnion, in: [card]), [card])
-        #expect(items[id: "trip.identity.unfiled"]?.status == .ok)
+        #expect(items[id: "trip.identity.unfiled"]?.status == .ok, "Its citizenship is the one the card prints")
+        #expect(items[id: "trip.citizenship.unfiled"] == nil)
     }
 
     @Test func aTripFromAMembersPageStartsWithThem() {
@@ -344,10 +345,10 @@ struct ReadinessTests {
         let plan = TripPlan(start: CalendarDay("2027-07-12"), end: CalendarDay("2027-07-20"), region: .europeanUnion, destination: "Grecia",
                             travellers: [.member(UUID()), .unfiled])
         store.save(plan)
-        #expect(store.load(today: CalendarDay("2027-07-01")) == plan)
-        #expect(store.load(today: CalendarDay("2027-07-20")) == plan, "Kept through the last day")
-        #expect(store.load(today: CalendarDay("2027-07-21")) == nil, "Forgotten once it is over")
-        #expect(store.load(today: CalendarDay("2027-07-01")) == nil, "and not brought back")
+        #expect(store.load(today: CalendarDay("2027-07-01")) == [plan])
+        #expect(store.load(today: CalendarDay("2027-07-20")) == [plan], "Kept through the last day")
+        #expect(store.load(today: CalendarDay("2027-07-21")).isEmpty, "Forgotten once it is over")
+        #expect(store.load(today: CalendarDay("2027-07-01")).isEmpty, "and not brought back")
     }
 
     // MARK: The binder

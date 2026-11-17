@@ -369,6 +369,8 @@ struct CaptureFiler {
 
         // The policy's bonus-malus class, on the person it insures (never on the car).
         try keepBonusMalus(plan.bonusMalus, on: outcome.asset, deadline: plan.blueprint)
+        // The citizenship a personal document prints, on its holder when they have none yet.
+        try keepCitizenship(of: outcome.asset, templates: templates)
 
         // 2. The deadline, as the plan says: the section's own moves (or its cycle closes),
         // or a new one is made. A new section already made it with its other deadlines.
@@ -508,6 +510,7 @@ struct CaptureFiler {
                 let closing = closingBlueprint(of: obligation, templates: templates)
                 try writeValues(of: review, to: asset, templates: templates, deadline: closing)
                 try keepBonusMalus(bonusMalusChoice(for: review, deadline: closing), on: asset, deadline: closing)
+                try keepCitizenship(of: asset, templates: templates)
             }
         }
 
@@ -776,6 +779,20 @@ struct CaptureFiler {
             values[field] = .text(memberName)
             try actions.update(asset, name: asset.name, values: values, notes: asset.notes)
         }
+    }
+
+    /// The citizenship a personal document prints (`DocumentFields.nationality`: a passport's
+    /// or residence permit's zone, an identity card's line), kept on the person it is filed
+    /// under when they have none yet (`MemberFields.citizenship`). One the person chose, or an
+    /// earlier document gave, is never changed: a person with two keeps the one they said.
+    private func keepCitizenship(of document: Asset?, templates: [String: CategoryTemplate]) throws {
+        guard let document, templates.plays(.personalDocument, document.templateKey),
+              let holder = document.parent, templates.plays(.holder, holder.templateKey),
+              holder.values[MemberFields.citizenship]?.textValue == nil,
+              let citizenship = Citizenship.read(fromDocuments: [document.values]) else { return }
+        var values = holder.values
+        values[MemberFields.citizenship] = .text(citizenship)
+        try AssetActions(context: context, calendar: calendar, now: now).update(holder, name: holder.name, values: values, notes: holder.notes)
     }
 
     /// What a captured document's values change on a section that already exists: what

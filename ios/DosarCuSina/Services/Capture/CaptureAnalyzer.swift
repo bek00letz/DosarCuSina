@@ -165,7 +165,7 @@ public struct CaptureAnalyzer: Sendable {
         let issuer = IssuerKey.read(in: text)
         let profile = lessons.teaching(self.profile(of: kind), issuer: issuer)
         switch kind {
-        case .passport, .identityCard, .drivingLicence, .criminalRecord, .healthInsuranceCard, .bankCard, .greenCard, .electronicSignature:
+        case .passport, .identityCard, .residencePermit, .drivingLicence, .criminalRecord, .healthInsuranceCard, .bankCard, .greenCard, .electronicSignature:
             // Printed labels, read with the document's template. The MRZ (when on the
             // photo) already added checked values, which win; agreeing values reinforce.
             // A personal document is read the same way, whatever it is: a new one is a template.

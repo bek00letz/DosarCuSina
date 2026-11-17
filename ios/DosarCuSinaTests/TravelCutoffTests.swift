@@ -236,7 +236,7 @@ struct TravelCutoffTests {
     }
 
     @Test func inTheEUAnIdentityCardIsGoodUntilItExpires() {
-        let cards = [ReadinessAsset.personalDocument(DocumentType.idCard, expires: expiry.isoString)]
+        let cards = [ReadinessAsset.personalDocument(DocumentType.idCard, expires: expiry.isoString, nationality: "ROU")]
         let items = ReadinessEngine.check(
             .trip(.everyone(start: "2027-08-01", end: "2027-08-12", region: .europeanUnion, in: cards)),
             assets: cards, calendar: calendar
