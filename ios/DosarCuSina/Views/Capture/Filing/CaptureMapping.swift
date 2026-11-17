@@ -66,6 +66,11 @@ enum CaptureMapping {
         .warrantyMonths: [PurchaseFieldKeys.warrantyMonths],
     ]
 
+    /// The capture fields that say where the home a paper is about is: a bill's or a contract's
+    /// supply address, a policy's insured home. They find the home (`SubscriptionMatcher.house(at:among:)`),
+    /// and a home without an address takes it (`CaptureFiler.homeValues`); one the person wrote is never changed.
+    static let homeAddressKeys: [CaptureFieldKey] = [.supplyAddress, .insuredAddress]
+
     /// The template field role a capture field fills when the template has no specific
     /// match (`candidates`). Only roles one value can fill whatever the category: a key fact
     /// or an identifier is a field the template names, never a role guessed from the kind.
@@ -186,6 +191,8 @@ enum CaptureMapping {
         case .coverageType: return String(localized: "Ce acoperă")
         case .bonusMalusClass: return String(localized: "Clasă bonus-malus")
         case .policyholder: return String(localized: "Asigurat")
+        case .insuredSum: return String(localized: "Sumă asigurată")
+        case .insuredAddress: return String(localized: "Adresa locuinței asigurate")
         case .licensePlate: return String(localized: "Număr de înmatriculare")
         case .vin: return String(localized: "Serie de șasiu (VIN)")
         case .civNumber: return String(localized: "Serie CIV")

@@ -43,7 +43,7 @@ enum CaptureLexicon {
     /// the consumption point's codes are labels too, so their values are never read as the
     /// supply address and "cod loc de consum" never reads as "loc de consum".
     static let supplyAddressLabels: [(ContractReader.AddressLabel, [String])] = [
-        (.supply, [
+        (.place, [
             "adresa locului de consum", "adresa loc de consum", "adresa loc consum", "adresa locului de livrare",
             "adresa de livrare", "adresa punctului de consum", "adresa punct de consum", "adresa punct consum",
             "adresa de consum", "adresa locului de furnizare", "adresa de furnizare", "adresa de instalare",
@@ -52,14 +52,20 @@ enum CaptureLexicon {
             "adresa de prestare", "adresa prestarii serviciului", "adresa serviciului",
             "locul de consum", "loc de consum", "loc consum", "punctul de consum", "punct de consum",
         ]),
-        (.other, [
-            "adresa de facturare", "adresa facturare", "adresa de corespondenta", "adresa corespondenta",
-            "adresa client", "adresa clientului", "adresa titular", "adresa titularului", "adresa platitorului",
-            "adresa sediului", "sediul social", "sediul", "sediu", "domiciliul", "domiciliu",
+        (.other, holderAddressLabels + [
             "cod loc de consum", "cod loc consum", "cod punct de consum", "cod punct consum", "cod locul de consum",
             "nr loc consum", "nr. loc consum", "numar loc consum", "numar loc de consum", "id loc consum",
             "denumire loc consum", "denumire loc de consum", "tip loc consum", "tip loc de consum",
         ]),
+    ]
+
+    /// Where the person or the firm on a paper lives or is based, as a bill, a contract or a
+    /// policy labels it: never the place the paper is about (the supply address, the home a
+    /// policy insures).
+    static let holderAddressLabels = [
+        "adresa de facturare", "adresa facturare", "adresa de corespondenta", "adresa corespondenta",
+        "adresa client", "adresa clientului", "adresa titular", "adresa titularului", "adresa platitorului",
+        "adresa sediului", "sediul social", "sediul", "sediu", "domiciliul", "domiciliu",
     ]
 
     // MARK: Policies

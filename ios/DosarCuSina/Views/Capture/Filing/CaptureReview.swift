@@ -407,11 +407,17 @@ struct CaptureReview: Identifiable {
         )
     }
 
-    /// The place to check, when the supply address chose it without being sure and the
-    /// person hasn't chosen it themselves: "Verifică".
+    /// The place to check, when the address the paper names chose it without being sure and
+    /// the person hasn't chosen it themselves: "Verifică".
     var placeCheck: SubscriptionMatcher.HouseCheck? {
         guard !placeConfirmed, destination == suggested.destination else { return nil }
         return suggested.placeCheck
+    }
+
+    /// Which address chose the place: the one this kind of paper names for its home (a bill's
+    /// supply address, a policy's insured home), for the words of `placeCheck`.
+    var placeAddressKey: CaptureFieldKey {
+        CaptureMapping.homeAddressKeys.first { kind.expectedKeys.contains($0) } ?? .supplyAddress
     }
 
     /// The person chose where the document goes, from the list: their choice, nothing to check.
@@ -559,7 +565,24 @@ struct CaptureReview: Identifiable {
             case .undecided: return (.none, nil)
             }
         }
+        // A paper about a home (its policy): the home at the address it names.
+        if let found = homeByAddress(suggestions: suggestions, fields: fields, candidates: candidates, behaviors: behaviors) {
+            return (.asset(found.id), found.check)
+        }
         return (otherDestination(kind: kind, suggestions: suggestions, fields: fields, candidates: candidates, behaviors: behaviors), nil)
+    }
+
+    /// The home a paper filed in a home's category names by its address (a home's policy, by
+    /// the home it insures, `CaptureMapping.homeAddressKeys`), by the one rule bills follow too
+    /// (`SubscriptionMatcher.home(at:among:)`). Nil when it names none, or several homes can't be
+    /// told apart by it.
+    @MainActor
+    private static func homeByAddress(suggestions: [CaptureSuggestion], fields: [CaptureField], candidates: [Asset],
+                                      behaviors: [String: CategoryBehavior]) -> (id: UUID, check: SubscriptionMatcher.HouseCheck?)? {
+        guard let templateKey = suggestedTemplateKeys(suggestions).first, behaviors.plays(.home, templateKey),
+              let address = CaptureMapping.homeAddressKeys.lazy.compactMap({ key in fields.first { $0.key == key }?.value.text }).first else { return nil }
+        let homes = candidates.filter { $0.templateKey == templateKey }.map { SubscriptionMatcher.Home(id: $0.id, values: $0.values) }
+        return SubscriptionMatcher.home(at: address, among: homes)
     }
 
     /// Where any other document goes: by an identifier, its holder, or its category.

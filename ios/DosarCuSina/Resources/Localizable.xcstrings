@@ -1295,6 +1295,15 @@
     "Adresa de e-mail nu e completă." : {
       "comment" : "Email field error"
     },
+    "Adresa din poliță nu e cea a locuinței." : {
+      "comment" : "Capture review: the address of the home a policy insures isn't the home's."
+    },
+    "Adresa din poliță seamănă cu cea a locuinței, dar nu e chiar aceeași." : {
+      "comment" : "Capture review: the address of the home a policy insures only partly agrees with the home's."
+    },
+    "Adresa locuinței asigurate" : {
+
+    },
     "Adresa locului de consum" : {
 
     },
@@ -7779,6 +7788,9 @@
     },
     "Sugestii pentru „%@”. Le poți schimba oricând." : {
       "comment" : "Footer of suggested obligations."
+    },
+    "Sumă asigurată" : {
+
     },
     "Suma nu poate fi negativă." : {
       "comment" : "Number field error: a money amount below zero."

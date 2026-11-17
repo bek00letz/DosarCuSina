@@ -186,6 +186,11 @@ public struct CaptureFieldKey: RawRepresentable, Hashable, Codable, Sendable, Ex
     /// The policyholder's CNP, read only on the phone to find them among the household's
     /// people (`Policyholders`): never shown, filed or asked of the AI provider.
     public static let policyholderPersonalNumber: CaptureFieldKey = "policyholderPersonalNumber"
+    /// The sum a policy insures for ("Sumă asigurată: 100.000 lei"), never what it costs (the premium is `total`).
+    public static let insuredSum: CaptureFieldKey = "insuredSum"
+    /// Where the home a policy insures is ("Locuința asigurată: Adresă: …"), never its holder's
+    /// address: it finds the home among the binder's (`SubscriptionMatcher.house(at:among:)`).
+    public static let insuredAddress: CaptureFieldKey = "insuredAddress"
 
     // Vehicles
     public static let licensePlate: CaptureFieldKey = "licensePlate"

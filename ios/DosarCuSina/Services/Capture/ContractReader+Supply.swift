@@ -7,23 +7,30 @@ extension ContractReader {
 
     // MARK: - The supply address
 
-    /// What an address label names (`CaptureLexicon.supplyAddressLabels`). The payer's address
-    /// and the consumption point's codes are labels too, so their values are never read as the
-    /// supply address and "cod loc de consum" never reads as "loc de consum".
+    /// What an address label names: the place the paper is about (where a service is supplied,
+    /// `CaptureLexicon.supplyAddressLabels`; the home a policy insures, its table's row), or
+    /// another address. The payer's address and the consumption point's codes are labels too,
+    /// so their values are never read as the place and "cod loc de consum" never reads as "loc
+    /// de consum".
     enum AddressLabel: Hashable, Sendable {
-        case supply
+        case place
         case other
     }
 
-    /// The longest supply address kept, so a paragraph read after a label is never taken for one.
+    /// The longest address kept, so a paragraph read after a label is never taken for one.
     static let addressMaxLength = 160
 
-    /// Where the service is supplied: the value of a supply label that reads as an address,
-    /// with the next line when it only names the town ("Sector 3, București"). Never the
-    /// billing address: only supply labels are read.
+    /// Where the service is supplied: never the billing address (`address(_:in:labels:)`).
     static func supplyAddress(in text: CaptureText) -> CaptureField? {
-        let layout = LabelledLayout(text: text, words: CaptureLexicon.supplyAddressLabels)
-        for found in layout.allFound(for: .supply) {
+        address(.supplyAddress, in: text, labels: CaptureLexicon.supplyAddressLabels)
+    }
+
+    /// The address a paper names at one of `labels`' place wordings, as `key`: the first such
+    /// value that reads as an address, with the next line when it only names the town
+    /// ("Sector 3, București"). Only place labels are read, so another address never is.
+    static func address(_ key: CaptureFieldKey, in text: CaptureText, labels: [(AddressLabel, [String])]) -> CaptureField? {
+        let layout = LabelledLayout(text: text, words: labels)
+        for found in layout.allFound(for: .place) {
             var value = cleanedAddress(found.value)
             var source = found.source
             if let last = found.lines.last, let next = continuation(after: last, in: text, layout: layout) {
@@ -31,7 +38,7 @@ extension ContractReader {
                 source += " " + text.original[next]
             }
             guard value.count <= addressMaxLength, PostalAddress(value) != nil else { continue }
-            return CaptureField(key: .supplyAddress, value: .text(value), confidence: 0.7, sourceText: source, tier: .heuristic)
+            return CaptureField(key: key, value: .text(value), confidence: 0.7, sourceText: source, tier: .heuristic)
         }
         return nil
     }

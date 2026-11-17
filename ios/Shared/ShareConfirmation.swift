@@ -13,10 +13,8 @@ public struct ShareConfirmation: Equatable, Sendable {
         case saved(count: Int, next: InboxNotice.NextStep)
         /// Nothing it can read: not a photo, a PDF or text.
         case unsupported
-        /// The phone couldn't hand the file over, or there's no room.
-        case failed
-        /// A file, or the whole share, is bigger than the inbox accepts.
-        case tooLarge
+        /// Nothing arrived, and why (`ShareFailure`): each reason says what to do next.
+        case failed(ShareFailure)
     }
 
     /// The one button under it. Neither is "Gata" or "Anulează": the share is already made when
@@ -63,13 +61,41 @@ public struct ShareConfirmation: Equatable, Sendable {
         case .unsupported:
             title = String(localized: "Nu pot primi asta", table: "Shared", comment: "Share sheet: nothing it can read.")
             message = String(localized: "Pot primi poze, PDF-uri și text. Trimite factura sau actul ca poză sau PDF.", table: "Shared", comment: "Share sheet: what it can read.")
-        case .failed:
-            title = String(localized: "Nu s-a trimis", table: "Shared", comment: "Share sheet: the copy failed.")
-            message = String(localized: "Telefonul nu mi-a dat fișierul. Încearcă din nou din aplicația din care l-ai trimis.", table: "Shared", comment: "Share sheet: what to do after a failed copy.")
-        case .tooLarge:
-            title = String(localized: "Fișierul e prea mare", table: "Shared", comment: "Share sheet: a file or the share is too large.")
-            message = String(localized: "Trimite actele câte unul, sau ca poze în loc de un PDF mare.", table: "Shared", comment: "Share sheet: what to do with a file that is too large.")
+        case .failed(let failure):
+            let words = Self.words(for: failure)
+            title = words.title
+            message = words.message
         }
         action = phase == .working ? .cancel : .close
+    }
+
+    /// What happened and what to do next, for each reason a share fails.
+    private static func words(for failure: ShareFailure) -> (title: String, message: String) {
+        switch failure {
+        case .stillInCloud:
+            (String(localized: "Fișierul e încă în iCloud", table: "Shared", comment: "Share sheet: the file is in iCloud and couldn't be downloaded."),
+             String(localized: "Nu l-am putut descărca acum. Deschide-l o dată în Fișiere, apoi trimite-l din nou.", table: "Shared", comment: "Share sheet: what to do with a file still in iCloud."))
+        case .offline:
+            (String(localized: "Fișierul e încă în iCloud", table: "Shared", comment: "Share sheet: the file is in iCloud and couldn't be downloaded."),
+             String(localized: "Ca să-l descarc, telefonul are nevoie de internet. Conectează-te, apoi trimite-l din nou.", table: "Shared", comment: "Share sheet: downloading the file needs the internet."))
+        case .noRoom:
+            (String(localized: "Nu mai e loc pe telefon", table: "Shared", comment: "Share sheet: the phone is out of space."),
+             String(localized: "Fă loc din Configurări › General › Spațiu iPhone, apoi trimite-l din nou.", table: "Shared", comment: "Share sheet: where to free up space. The path names the iPhone's own Settings screens."))
+        case .noAccess:
+            (String(localized: "Nu pot deschide fișierul", table: "Shared", comment: "Share sheet: the sending app didn't allow reading the file."),
+             String(localized: "Aplicația din care l-ai trimis nu mi-a dat voie să-l citesc. Salvează-l întâi în Fișiere, apoi trimite-l de acolo.", table: "Shared", comment: "Share sheet: what to do when the file can't be read."))
+        case .tooLarge:
+            (String(localized: "Fișierul e prea mare", table: "Shared", comment: "Share sheet: a file or the share is too large."),
+             String(localized: "Trimite actele câte unul, sau ca poze în loc de un PDF mare.", table: "Shared", comment: "Share sheet: what to do with a file that is too large."))
+        case .notHandedOver:
+            (String(localized: "Nu s-a trimis", table: "Shared", comment: "Share sheet: the copy failed."),
+             String(localized: "Telefonul nu mi-a dat fișierul. Încearcă din nou din aplicația din care l-ai trimis.", table: "Shared", comment: "Share sheet: the sending app handed over nothing."))
+        case .inboxUnavailable:
+            (String(localized: "Nu am unde să pun fișierul", table: "Shared", comment: "Share sheet: the app's shared folder isn't available."),
+             String(localized: "Deschide Dosar cu Șină o dată, apoi trimite-l din nou.", table: "Shared", comment: "Share sheet: what to do when the shared folder isn't available."))
+        case .couldNotCopy:
+            (String(localized: "Nu s-a trimis", table: "Shared", comment: "Share sheet: the copy failed."),
+             String(localized: "Fișierul nu s-a putut copia. Încearcă din nou din aplicația din care l-ai trimis.", table: "Shared", comment: "Share sheet: the copy failed for a reason the phone didn't name."))
+        }
     }
 }

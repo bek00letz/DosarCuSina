@@ -123,7 +123,7 @@ struct ModelQuestions: Sendable {
         switch key {
         case .issueDate, .startDate, .expiryDate, .dueDate, .purchaseDate, .warrantyUntil, .nextDoseDate, .firstRegistrationDate, .birthDate,
              .minimumPeriodEnd: .date
-        case .total, .purchasePrice, .monthlyPrice: .money
+        case .total, .purchasePrice, .monthlyPrice, .insuredSum: .money
         case .warrantyMonths, .odometer, .minimumMonths: .integer
         case .meterIndex: .meterIndex
         case .meterReading: .meterReading
@@ -204,6 +204,9 @@ struct ModelQuestions: Sendable {
         case .vaccineName: "The vaccine given."
         case .bonusMalusClass: "The policyholder's bonus-malus class, as printed: B0 to B8 or M1 to M8."
         case .policyholder: "The person or company the policy insures (the owner, \"Proprietar\" or \"Asigurat\"), as printed."
+        case .insuredSum: "The sum the policy insures for (suma asigurată), never the premium the policy costs."
+        case .insuredAddress: "The address of the home the policy insures (locuința asigurată, adresa bunului asigurat), as printed. "
+            + "Never the policyholder's or the insurer's own address."
         case .lineItems: "Each part, service or labour line with its amount."
         case .surname: "The holder's surname."
         case .givenNames: "The holder's given names."
