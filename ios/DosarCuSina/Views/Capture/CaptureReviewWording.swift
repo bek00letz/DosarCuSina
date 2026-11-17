@@ -94,7 +94,7 @@ extension CaptureKindProfile.Noun {
     func directDebitWords(_ statement: String) -> String {
         // What the paper says, without its own full stop: the quote is followed by one.
         let statement = statement.trimmingCharacters(in: .whitespaces.union(CharacterSet(charactersIn: ".;,")))
-        switch surface {
+        return switch surface {
         case .on:
             String(localized: "Pe \(onPaper) scrie: „\(statement)”. Dacă e așa, nu îți mai amintesc să plătești facturile.",
                    comment: "Capture review: a bill says the bank pays by direct debit. The first argument is the paper, e.g. „factură”; the second what it says.")
