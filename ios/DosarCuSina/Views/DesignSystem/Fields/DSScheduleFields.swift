@@ -130,10 +130,19 @@ struct DSReminderTimeField: View {
                        isOn: minuteOfDay != nil) {
                 if minuteOfDay == nil { minuteOfDay = usualMinuteOfDay }
             } detail: {
-                DatePicker(selection: time, displayedComponents: .hourAndMinute) {
-                    Text("Ora", comment: "Label of the time picker for a deadline's own reminder time.")
+                VStack(alignment: .leading, spacing: DS.Space.xs) {
+                    DatePicker(selection: time, displayedComponents: .hourAndMinute) {
+                        Text("Ora", comment: "Label of the time picker for a deadline's own reminder time.")
+                    }
+                    .frame(minHeight: DS.Control.minimumHitTarget)
+                    if let minuteOfDay, let note = ReminderWording.springForward(minuteOfDay, calendar: calendar) {
+                        Text(verbatim: note)
+                            .dsFont(.footnote)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .transition(.opacity)
+                    }
                 }
-                .frame(minHeight: DS.Control.minimumHitTarget)
+                .dsAnimation(value: minuteOfDay)
             }
         }
     }

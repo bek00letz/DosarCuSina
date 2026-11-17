@@ -49,7 +49,7 @@ struct DSChoiceField<Option: Hashable>: View {
                     .buttonStyle(.dsPressable)
                     .accessibilityLabel(Text(title))
                     .accessibilityValue(accessibilityValue)
-                    .sheet(isPresented: $isChoosing) {
+                    .dsSheet(isPresented: $isChoosing) {
                         DSChoiceListSheet(title: Text(title), options: options, optionTitle: optionTitle, selection: selection,
                                           allowsNone: !isRequired) { selection = $0 }
                     }

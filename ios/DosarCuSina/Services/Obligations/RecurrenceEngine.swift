@@ -10,17 +10,24 @@ public struct RecurrenceContext: Sendable {
     /// The day of the month a series counted from its due dates keeps (31 for
     /// "the 31st"), from `RecurrenceEngine.seriesStart`. Nil uses the due day's own.
     public var seriesDayOfMonth: Int?
+    /// Every cycle is money still owed (`ObligationKind.missedCyclesStayOwed`: a month's rent, a
+    /// tax installment), so one "Gata" closes one cycle even when it was done after the next
+    /// was due. Otherwise a series counted from its due dates moves to its first day after the
+    /// day it was done.
+    public var missedCyclesStayOwed: Bool
 
     public init(
         assetValues: FieldValues = FieldValues(),
         readings: [CadenceCalculator.TelemetryReading] = [],
         currentMetric: Double? = nil,
-        seriesDayOfMonth: Int? = nil
+        seriesDayOfMonth: Int? = nil,
+        missedCyclesStayOwed: Bool = false
     ) {
         self.assetValues = assetValues
         self.readings = readings
         self.currentMetric = currentMetric
         self.seriesDayOfMonth = seriesDayOfMonth
+        self.missedCyclesStayOwed = missedCyclesStayOwed
     }
 }
 
@@ -58,14 +65,20 @@ public enum RecurrenceEngine {
             return nil
 
         case .interval(let interval, .dueDate):
-            return NextDue(day: add(interval, to: due, dayOfMonth: context.seriesDayOfMonth, calendar: calendar))
+            // One cycle at a time while each is still owed; otherwise the first after the day it was done.
+            let doneOn = context.missedCyclesStayOwed ? due : completedOn
+            return NextDue(day: nextOfSeries(after: due, doneOn: doneOn, every: interval,
+                                             dayOfMonth: context.seriesDayOfMonth, calendar: calendar))
 
         case .interval(let interval, .completion):
             return NextDue(day: add(interval, to: completedOn, calendar: calendar))
 
         case .fixedDates(let dates):
             guard !dates.isEmpty else { return nil }
-            return NextDue(day: nextFixedDate(after: due, dates: dates, calendar: calendar))
+            // The same rule: done after the next fixed date, the first one after the day it was
+            // done, unless every installment is still owed.
+            let doneOn = context.missedCyclesStayOwed ? due : max(due, completedOn)
+            return NextDue(day: nextFixedDate(after: doneOn, dates: dates, calendar: calendar))
 
         case .metric(let every, _, let fallback):
             let reading = context.currentMetric ?? context.readings.last?.metric
@@ -116,6 +129,34 @@ public enum RecurrenceEngine {
         }
     }
 
+    /// The next due day of a series counted from its due dates, once the cycle due on `due` is
+    /// done on `doneOn`: the first of its days after both (`due`, then one step at a time, on
+    /// the series' day of the month). Done early or on time it is one step on; done after one or
+    /// more of its next days have passed, those are left behind with the cycle it closed, so
+    /// "Gata" never leaves the deadline overdue the moment it is done.
+    static func nextOfSeries(after due: CalendarDay, doneOn: CalendarDay, every interval: RecurrenceInterval,
+                             dayOfMonth: Int?, calendar: Calendar = .dosar) -> CalendarDay {
+        let oneStep = add(interval, to: due, dayOfMonth: dayOfMonth, calendar: calendar)
+        guard interval.every > 0, oneStep <= doneOn else { return oneStep }
+        // Each step counted from the due day with the series' day, so a month's end never drifts.
+        let seriesDay = dayOfMonth ?? due.day
+        func step(_ count: Int) -> CalendarDay {
+            add(RecurrenceInterval(every: interval.every * count, unit: interval.unit), to: due, dayOfMonth: seriesDay, calendar: calendar)
+        }
+        // A first guess from how far it was done, then on until it is after that day.
+        let months = (doneOn.year - due.year) * 12 + (doneOn.month - due.month)
+        let behind: Int
+        switch interval.unit {
+        case .day: behind = due.days(to: doneOn, calendar: calendar) / interval.every
+        case .week: behind = due.days(to: doneOn, calendar: calendar) / (interval.every * 7)
+        case .month: behind = months / interval.every
+        case .year: behind = months / (interval.every * 12)
+        }
+        var count = max(1, behind)
+        while step(count) <= doneOn { count += 1 }
+        return step(count)
+    }
+
     // MARK: Building blocks
 
     /// `day` moved on by `interval`. Months and years land on `dayOfMonth` (the
@@ -160,16 +201,22 @@ public enum RecurrenceEngine {
         return start
     }
 
-    /// Whether `next` is one `interval` after `cycle` in a series: days and weeks exactly, months
+    /// Whether `next` is a whole number of `interval`s after `cycle` in a series (one, or more
+    /// when it was done after its next due days, `nextOfSeries`): days and weeks exactly, months
     /// and years on the series' day or the month's last day when it is shorter (31 January to
     /// 28 February, then 31 March).
     static func isStep(of interval: RecurrenceInterval, from cycle: CalendarDay, to next: CalendarDay, calendar: Calendar = .dosar) -> Bool {
+        guard interval.every > 0, cycle < next else { return false }
         switch interval.unit {
         case .day, .week:
-            return add(interval, to: cycle, calendar: calendar) == next
+            let period = interval.every * (interval.unit == .week ? 7 : 1)
+            return cycle.days(to: next, calendar: calendar) % period == 0
         case .month, .year:
+            let months = (next.year - cycle.year) * 12 + (next.month - cycle.month)
+            let period = interval.every * (interval.unit == .year ? 12 : 1)
+            guard months > 0, months % period == 0 else { return false }
             // The series' day is at least the later of the two days a clamped month shows.
-            return add(interval, to: cycle, dayOfMonth: max(cycle.day, next.day), calendar: calendar) == next
+            return cycle.adding(months: months, dayOfMonth: max(cycle.day, next.day), calendar: calendar) == next
         }
     }
 

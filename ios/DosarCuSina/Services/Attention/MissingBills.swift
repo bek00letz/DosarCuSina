@@ -85,16 +85,25 @@ extension AttentionModel {
             .map(\.note)
     }
 
-    /// What a missing bill's note says, by how often the bills come: „luna asta” for a monthly
-    /// bill, „săptămâna asta” for a weekly one, „încă” for any other.
+    /// What a missing bill's note says, by how often the bills come: „săptămâna asta” for a
+    /// weekly bill; otherwise by how many months its bills come apart, the String Catalog's
+    /// plural variations („luna asta” for a monthly bill, „încă” for a rarer one).
     static func missingTitle(from: String, cycle: RecurrenceInterval) -> String {
-        switch (cycle.unit, cycle.every) {
-        case (.month, 1):
-            String(localized: "Factura de la \(from) n-a venit luna asta", comment: "A monthly bill that hasn't come. The argument is the provider.")
-        case (.week, 1):
-            String(localized: "Factura de la \(from) n-a venit săptămâna asta", comment: "A weekly bill that hasn't come. The argument is the provider.")
-        default:
-            String(localized: "Factura de la \(from) n-a venit încă", comment: "A bill that hasn't come. The argument is the provider.")
+        if cycle.unit == .week, cycle.every == 1 {
+            return String(localized: "Factura de la \(from) n-a venit săptămâna asta", comment: "A weekly bill that hasn't come. The argument is the provider.")
+        }
+        let months = monthsApart(cycle)
+        return String(localized: "Factura de la \(from) n-a venit, o dată la \(months) luni",
+                      comment: "A bill that hasn't come. The first argument is the provider; by how many months its bills come apart, without the number: one „Factura de la ENGIE n-a venit luna asta”, more „Factura de la ENGIE n-a venit încă”.")
+    }
+
+    /// How many months a cycle's bills come apart: a month's or a year's in months. A cycle of
+    /// days or of several weeks has no whole month and counts as none, so it never says „luna asta”.
+    static func monthsApart(_ cycle: RecurrenceInterval) -> Int {
+        switch cycle.unit {
+        case .month: cycle.every
+        case .year: cycle.every * 12
+        case .day, .week: 0
         }
     }
 }
