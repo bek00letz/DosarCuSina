@@ -601,15 +601,32 @@ public final class PersistenceController {
 
     /// **The one switch for shipping sync.** Development builds (Debug) sync with CloudKit's
     /// development environment; TestFlight and App Store builds (Release) keep the binder on the
-    /// phone until this is true. Before turning it on: deploy the CloudKit schema to production in
-    /// CloudKit Console (the owner does that, once the data layout has settled), then set this to
-    /// `true` in a pull request of its own. Read only here.
-    nonisolated static let syncShipsInReleaseBuilds = false
+    /// phone until this is true. It is the build setting `DOSAR_SYNC_SHIPS_IN_RELEASE_BUILDS`
+    /// (the project's, in both configurations), compiled in as `SYNC_SHIPS_IN_RELEASE_BUILDS_YES`,
+    /// so the app's background modes follow it too (`scripts/background-modes.sh` keeps
+    /// `remote-notification` only in a build that syncs, `buildSyncs`). Before turning it on:
+    /// deploy the CloudKit schema to production in CloudKit Console (the owner does that, once the
+    /// data layout has settled), then set the setting to `YES` in a pull request of its own.
+    /// Read only here.
+    nonisolated static var syncShipsInReleaseBuilds: Bool {
+        #if SYNC_SHIPS_IN_RELEASE_BUILDS_YES
+        true
+        #else
+        false
+        #endif
+    }
 
     /// Whether this build syncs at all: a development build, or a release one once sync ships. Never
     /// the host of a test run, whose binder is the Simulator's own.
     nonisolated static var syncIsBuiltIn: Bool {
         syncIsBuiltIn(debug: isDebugBuild, shipsInRelease: syncShipsInReleaseBuilds, testHost: BuildInfo.isTestHost)
+    }
+
+    /// Whether this build is one that syncs, whoever runs it: what its Info.plist's background
+    /// modes follow (`remote-notification`, for iCloud's silent pushes). A test run's host is such
+    /// a build, though it never syncs itself.
+    nonisolated static var buildSyncs: Bool {
+        syncIsBuiltIn(debug: isDebugBuild, shipsInRelease: syncShipsInReleaseBuilds, testHost: false)
     }
 
     nonisolated static func syncIsBuiltIn(debug: Bool, shipsInRelease: Bool, testHost: Bool) -> Bool {

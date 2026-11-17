@@ -137,7 +137,7 @@
 				D05A00032C00000000000003 /* Frameworks */,
 				D05A00072C00000000000007 /* Resources */,
 				D05A01242C00000000000124 /* Embed Foundation Extensions */,
-				D05A02012C00000000000201 /* Stamp build info */,
+				D05A02012C00000000000201 /* Stamp build info and background modes */,
 			);
 			buildRules = (
 			);
@@ -322,7 +322,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		D05A02012C00000000000201 /* Stamp build info */ = {
+		D05A02012C00000000000201 /* Stamp build info and background modes */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -333,7 +333,7 @@
 			inputPaths = (
 				"$(TARGET_BUILD_DIR)/$(INFOPLIST_PATH)",
 			);
-			name = "Stamp build info";
+			name = "Stamp build info and background modes";
 			outputFileListPaths = (
 			);
 			outputPaths = (
@@ -341,7 +341,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/../scripts/stamp-build-info.sh\"\n";
+			shellScript = "set -e\n\"${SRCROOT}/../scripts/background-modes.sh\"\n\"${SRCROOT}/../scripts/stamp-build-info.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		D05A02022C00000000000202 /* Stamp build info */ = {
@@ -475,6 +475,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DOSAR_SYNC_SHIPS_IN_RELEASE_BUILDS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -538,6 +539,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DOSAR_SYNC_SHIPS_IN_RELEASE_BUILDS = NO;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -591,6 +593,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.ar.dosarcusina.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) SYNC_SHIPS_IN_RELEASE_BUILDS_$(DOSAR_SYNC_SHIPS_IN_RELEASE_BUILDS)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -628,6 +631,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.ar.dosarcusina.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) SYNC_SHIPS_IN_RELEASE_BUILDS_$(DOSAR_SYNC_SHIPS_IN_RELEASE_BUILDS)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
