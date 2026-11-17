@@ -39,9 +39,9 @@ struct DossierImporter {
     var now = Date()
     /// Every record the archive's records were written onto, or a built-in it didn't mention:
     /// what "Înlocuiește tot" keeps.
-    private let written = WrittenRecords()
+    private let kept = KeptRecords()
 
-    private final class WrittenRecords {
+    private final class KeptRecords {
         var records: Set<ObjectIdentifier> = []
         func add(_ record: AnyObject) { records.insert(ObjectIdentifier(record)) }
         func contains(_ record: AnyObject) -> Bool { records.contains(ObjectIdentifier(record)) }
@@ -135,7 +135,7 @@ struct DossierImporter {
     /// that was here is kept and was written over (`ArchiveMerge.outcome` in `.replace`).
     private func removeWhatTheArchiveLacks() throws {
         func remove<T: PersistentModel>(_ type: T.Type) throws {
-            for item in try context.fetch(FetchDescriptor<T>()) where !written.contains(item) { context.delete(item) }
+            for item in try context.fetch(FetchDescriptor<T>()) where !kept.contains(item) { context.delete(item) }
         }
         try remove(Attachment.self)
         try remove(MeasurementLog.self)
@@ -187,17 +187,17 @@ struct DossierImporter {
         switch ArchiveMerge.outcome(archive: changeTime(changedAt), here: map[key]?.updatedAt, mode: mode) {
         case .keepHere:
             result.skipped += 1
-            if let here = map[key] { written.add(here) }
+            if let here = map[key] { kept.add(here) }
             return nil
         case .update:
             result.updated += 1
-            if let here = map[key] { written.add(here) }
+            if let here = map[key] { kept.add(here) }
             return map[key]
         case .insert:
             let record = make()
             context.insert(record)
             map[key] = record
-            written.add(record)
+            kept.add(record)
             result.inserted += 1
             return record
         }
@@ -216,10 +216,10 @@ struct DossierImporter {
             let catalog = BuiltInTemplates.definition(for: dto.key)
             // A category of one's own is named as one thing already: its sections take its name,
             // whatever an archive says one of them is called (`TemplateDefinition.sectionName`).
-            let behavior = dto.behavior.map { kept -> KeptObject<CategoryBehavior> in
-                var kept = kept
-                kept.value.singular = nil
-                return kept
+            let behavior = dto.behavior.map { stored -> KeptObject<CategoryBehavior> in
+                var cleared = stored
+                cleared.value.singular = nil
+                return cleared
             }
             // A built-in is the app's, whatever the archive says; anything else is the person's own.
             let definition = catalog ?? phone.guarding(TemplateDefinition(
@@ -286,7 +286,7 @@ struct DossierImporter {
                 context.insert(template)
                 byKey[definition.key] = template
             }
-            written.add(template)
+            kept.add(template)
             try template.setLock(phone.lock(definition.key, archive: false, default: definition.isSensitiveByDefault))
             // Installed from the catalog, not changed by anyone (`ChangeTimes`).
             template.updatedAt = ChangeTime.unknown
