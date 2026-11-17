@@ -71,7 +71,6 @@ struct SectionsIntoTheirHomeStep: DataRepairStep {
         })
         // Checked again: still on its own, and the home still the only one.
         for found in try Self.candidates(in: context) {
-            let role = found.category.behavior.mayBelongTo ?? .home
             guard found.parents.count == 1, let home = found.parents.first else { continue }
             for section in found.sections where approved.contains(section.id) && AssetActions.canFile(section, under: home) {
                 section.parent = home
