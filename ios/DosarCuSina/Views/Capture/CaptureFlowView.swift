@@ -148,7 +148,7 @@ struct CaptureFlowView: View {
         let templates = (try? TemplateStore(context: context).templatesByKey()) ?? [:]
         var current: Asset? = asset
         while let node = current {
-            if templates[node.templateKey]?.isSensitive == true { return true }
+            if node.isSensitive(among: templates) { return true }
             current = node.parent
         }
         return false

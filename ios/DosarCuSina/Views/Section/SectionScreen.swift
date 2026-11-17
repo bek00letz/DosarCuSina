@@ -79,7 +79,7 @@ private struct SectionContent: View {
 
     private var sectionPage: some View {
         Group {
-            if let template, vault.isLocked(template) {
+            if vault.isLocked(asset, template: template) {
                 LockedSectionView(title: asset.name)
             } else {
                 page
