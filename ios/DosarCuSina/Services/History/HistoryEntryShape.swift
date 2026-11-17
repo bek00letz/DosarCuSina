@@ -45,13 +45,13 @@ struct HistoryEntryShape: Equatable {
     var rowsAreParts = false
 
     /// The page for a record of `kind`, in a category whose visits are `visit`.
-    static func make(_ kind: HistoryKind, visit: VisitShape?) -> HistoryEntryShape {
+    static func make(_ kind: HistoryKind, visit: VisitShape?, listsParts: Bool) -> HistoryEntryShape {
         var shape = base(kind, visit: visit)
         let isJob: Bool = switch kind {
         case .visit, .maintenance, .repair: true
         case .inspection, .purchase, .payment, .vaccination, .treatment, .note: false
         }
-        shape.rowsAreParts = isJob && visit?.sum == .parts
+        shape.rowsAreParts = isJob && listsParts
         return shape
     }
 
@@ -60,19 +60,19 @@ struct HistoryEntryShape: Equatable {
     /// kind the record was stored as, so records written before each completion stated its
     /// record read right too. With the way back off (`CompletionRecord.decidesHistoryKind`), the
     /// stored kind's page (`stored`).
-    static func make(completing completion: CompletionKind, stored: HistoryKind, visit: VisitShape?) -> HistoryEntryShape {
-        guard CompletionRecord.decidesHistoryKind else { return make(stored, visit: visit) }
+    static func make(completing completion: CompletionKind, stored: HistoryKind, visit: VisitShape?, listsParts: Bool) -> HistoryEntryShape {
+        guard CompletionRecord.decidesHistoryKind else { return make(stored, visit: visit, listsParts: listsParts) }
         switch completion.record {
         case .job:
-            return make(.maintenance, visit: visit)
+            return make(.maintenance, visit: visit, listsParts: listsParts)
         case .check:
-            return make(.inspection, visit: visit)
+            return make(.inspection, visit: visit, listsParts: listsParts)
         case .care, .vaccination:
-            return make(completion.record.historyKind, visit: visit)
+            return make(completion.record.historyKind, visit: visit, listsParts: listsParts)
         case .bill:
-            return make(.payment, visit: visit)
+            return make(.payment, visit: visit, listsParts: listsParts)
         case .purchase:
-            return make(.purchase, visit: visit)
+            return make(.purchase, visit: visit, listsParts: listsParts)
         case .atHome:
             // Done at home, or by whoever: never the category's visit provider (a groomer isn't the vet).
             return HistoryEntryShape(itemsHeader: visit?.work?.header ?? HistoryEntryWording.whatWasDone,
@@ -86,10 +86,10 @@ struct HistoryEntryShape: Equatable {
                                      reference: .policy, rating: .never, ratingHeader: HistoryEntryWording.howItWent)
         case .renewal:
             return HistoryEntryShape(itemsHeader: HistoryEntryWording.whatWasDone,
-                                     providerHeader: HistoryEntryWording.issuedBy(completion.shape.paper?.gender ?? .masculine),
+                                     providerHeader: HistoryEntryWording.from(completion.shape.paper),
                                      reference: .number, rating: .never, ratingHeader: HistoryEntryWording.howItWent)
         case .acknowledged:
-            return make(.note, visit: visit)
+            return make(.note, visit: visit, listsParts: listsParts)
         }
     }
 
@@ -162,16 +162,21 @@ enum HistoryEntryWording {
     static var whatWasPaid: String { String(localized: "Ce ai plătit", comment: "Istoric record: what a tax or a declaration paid for.") }
     static var whatItCovers: String { String(localized: "Ce acoperă", comment: "Istoric record: what a renewed insurance policy covers.") }
     static var insurer: String { String(localized: "Asigurătorul", comment: "Istoric record: who a renewed insurance policy is with.") }
-    /// Who issued a renewed paper, agreeing with its noun: „Cine l-a emis” for „Actul nou”.
-    static func issuedBy(_ gender: CompletionShape.Paper.Gender) -> String {
-        switch gender {
-        case .masculine: String(localized: "Cine l-a emis", comment: "Istoric record: who issued a renewed paper named by a masculine noun (a document, a card, a contract).")
-        case .feminine: String(localized: "Cine a emis-o", comment: "Istoric record: who issued a renewed paper named by a feminine noun.")
-        case .plural: String(localized: "Cine le-a emis", comment: "Istoric record: who issued renewed papers named by a plural noun.")
+    /// Who a renewed paper comes from, as the paper declares it (`CompletionShape.Paper.origin`)
+    /// and agreeing with its noun: „Cine l-a emis” for „Actul nou”, „Cu cine l-ai semnat” for
+    /// „Contractul nou”: a contract is signed, never issued.
+    static func from(_ paper: CompletionShape.Paper?) -> String {
+        switch (paper?.origin ?? .issued, paper?.gender ?? .masculine) {
+        case (.issued, .masculine): String(localized: "Cine l-a emis", comment: "Istoric record: who issued a renewed paper named by a masculine noun (a document, a card).")
+        case (.issued, .feminine): String(localized: "Cine a emis-o", comment: "Istoric record: who issued a renewed paper named by a feminine noun.")
+        case (.issued, .plural): String(localized: "Cine le-a emis", comment: "Istoric record: who issued renewed papers named by a plural noun.")
+        case (.signed, .masculine): String(localized: "Cu cine l-ai semnat", comment: "Istoric record: who a renewed paper named by a masculine noun was signed with (a contract, a lease).")
+        case (.signed, .feminine): String(localized: "Cu cine ai semnat-o", comment: "Istoric record: who a renewed paper named by a feminine noun was signed with.")
+        case (.signed, .plural): String(localized: "Cu cine le-ai semnat", comment: "Istoric record: who renewed papers named by a plural noun were signed with.")
         }
     }
     static var whatWasNoted: String { String(localized: "Ce ai notat", comment: "Istoric record: the rows of a note.") }
-    static var howItWent: String { String(localized: "Cum a fost") }
+    static var howItWent: String { String(localized: "Cum a fost?", comment: "Istoric record: above the stars, how it went. A question, like „Cum a lucrat?”.") }
     static var ratingFootnote: String { String(localized: "Nota intră în stelele celui care a lucrat.", comment: "Footnote under a job rating.") }
     static var notes: String { String(localized: "Note", comment: "Header: notes.") }
     static var changeNote: String { String(localized: "Schimbă nota") }

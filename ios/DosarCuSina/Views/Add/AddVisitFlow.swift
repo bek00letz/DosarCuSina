@@ -316,7 +316,7 @@ private struct VisitFormView: View {
                             set: { draft.odometer = $0; draft.odometerSource = .person }
                         ), unit: unit,
                                       footnote: draft.odometer == nil && draft.odometerEstimate != nil
-                                          ? LocalizedStringKey(VisitFormWording.estimate) : nil,
+                                          ? form.estimateNote.map { LocalizedStringKey($0) } : nil,
                                       placeholder: draft.odometerEstimate)
                     }
                     DSMoneyField(LocalizedStringKey(shape.costLabel), amount: $draft.total, currencyCode: $draft.currency,
@@ -328,8 +328,8 @@ private struct VisitFormView: View {
 
     /// Under the money field: what the rows add up to, while no total is typed; else the kind's hint.
     private var costNote: String? {
-        if draft.total == nil, let sum = draft.partsSum {
-            return form.sumNote(Money(sum, currency: draft.currency).formattedCompact())
+        if draft.total == nil, let sum = draft.partsSum, let note = form.sumNote(Money(sum, currency: draft.currency).formattedCompact()) {
+            return note
         }
         return shape.costHint
     }

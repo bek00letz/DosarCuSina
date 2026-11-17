@@ -444,7 +444,7 @@ enum HouseholdMutations {
             estimatedCost: blueprint.estimatedCost
         )
         obligation.blueprintKey = blueprint.key
-        obligation.notes = blueprint.note
+        obligation.notes = blueprint.deadlineNote
         obligation.isExample = asset.isExample
         if case .metric(let every, _, _) = blueprint.recurrence,
            let reading = currentMetric(of: asset) {

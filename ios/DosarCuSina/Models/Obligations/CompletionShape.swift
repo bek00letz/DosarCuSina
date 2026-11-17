@@ -60,6 +60,14 @@ public struct CompletionShape: Hashable, Sendable {
             case end
         }
 
+        /// How a paper comes from someone, for the words that name them on its record's page.
+        public enum Origin: String, Hashable, Sendable, CaseIterable {
+            /// Issued by an office or a firm: an identity document, a card, a report. „Cine l-a emis”.
+            case issued
+            /// Signed with someone: a contract, a lease. „Cu cine l-ai semnat”.
+            case signed
+        }
+
         /// Its name, the header above the photo: „Raportul ITP”.
         public var name: String
         public var gender: Gender
@@ -68,13 +76,16 @@ public struct CompletionShape: Hashable, Sendable {
         public var action: String
         /// Under the card, which paper is meant: „Cel primit la stație, cu data următoarei inspecții.”
         public var example: String
+        /// How it comes from someone: issued, or signed with them.
+        public var origin: Origin
 
-        public init(name: String, gender: Gender, use: Use, action: String, example: String) {
+        public init(name: String, gender: Gender, use: Use, action: String, example: String, origin: Origin = .issued) {
             self.name = name
             self.gender = gender
             self.use = use
             self.action = action
             self.example = example
+            self.origin = origin
         }
     }
 

@@ -231,6 +231,7 @@ private struct DSToastView: View {
     let onDismiss: () -> Void
 
     @State private var dragOffset: CGFloat = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
@@ -266,8 +267,8 @@ private struct DSToastView: View {
         .padding(.leading, DS.Space.m)
         .padding(.trailing, DS.Space.xs)
         .padding(.vertical, DS.Space.xxs)
-        .frame(minHeight: 52)
-        .glassEffect(.regular, in: .rect(cornerRadius: 26, style: .continuous))
+        .frame(minHeight: DS.Control.floatingBar)
+        .glassEffect(.regular, in: .rect(cornerRadius: DS.Radius.floatingBar, style: .continuous))
         .offset(y: max(dragOffset, 0))
         .gesture(
             DragGesture(minimumDistance: 8)
@@ -276,7 +277,8 @@ private struct DSToastView: View {
                     if value.translation.height > 30 {
                         onDismiss()
                     } else {
-                        withAnimation(DS.Motion.quick) { dragOffset = 0 }
+                        // Back into place with the quick spring, or a short fade with Reduce Motion.
+                        withAnimation(DS.Motion.animation(DS.Motion.quick, reduceMotion: reduceMotion)) { dragOffset = 0 }
                     }
                 }
         )
@@ -291,11 +293,14 @@ private struct DSToastView: View {
             .accessibilityHidden(true)
     }
 
+    /// The whole message at every text size: it wraps and the toast grows taller, so the next
+    /// due day it names is never cut off.
     private var title: some View {
         Text(toast.title)
             .dsFont(.subheadline)
             .foregroundStyle(DS.Palette.label)
-            .lineLimit(2)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.vertical, DS.Space.xxs)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 

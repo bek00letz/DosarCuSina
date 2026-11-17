@@ -64,7 +64,7 @@ private struct DocumentContent: View {
                     Text(verbatim: attachment.displayTitle)
                         .dsFont(.title)
                         .accessibilityAddTraits(.isHeader)
-                    Text(verbatim: [attachment.kind.title, attachment.validityLine, attachment.asset?.name].compactMap { $0 }.joined(separator: " · "))
+                    Text(verbatim: [attachment.kind.title, attachment.validityLine(), attachment.asset?.name].compactMap { $0 }.joined(separator: " · "))
                         .dsFont(.subheadline)
                     if attachment.isArchived {
                         DSStatusBadge(.later, text: Text("Arhivat", comment: "Badge on an archived document."))

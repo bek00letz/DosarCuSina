@@ -203,7 +203,7 @@ private struct SuggestionRow: View {
                 Text(verbatim: blueprint.title).dsFont(.headline)
                 Text(verbatim: ReminderWording.sentence(blueprint.reminders(for: values)))
                     .dsFont(.subheadline)
-                if let note = blueprint.note {
+                if let note = blueprint.shownNote {
                     Text(verbatim: note).dsFont(.footnote)
                 }
             }
@@ -379,7 +379,7 @@ struct DocumentListScreen: View {
                 } header: {
                     Text(verbatim: SectionListWording.archived)
                 } footer: {
-                    Text(verbatim: SectionListWording.archivedFootnote)
+                    Text(verbatim: SectionListWording.archivedFootnote(CaptureKindProfile.papersKept(inCategory: definition.key)))
                 }
             }
         }

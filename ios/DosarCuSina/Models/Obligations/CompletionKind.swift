@@ -222,7 +222,8 @@ public enum CompletionKind: String, Codable, Sendable, CaseIterable {
 
     private static func contract(_ example: String) -> CompletionShape.Paper {
         CompletionShape.Paper(name: String(localized: "Contractul nou", comment: "Am rezolvat: a renewed contract."), gender: .masculine, use: .end,
-                              action: String(localized: "Fotografiază contractul nou", comment: "Am rezolvat: photographs a renewed contract."), example: example)
+                              action: String(localized: "Fotografiază contractul nou", comment: "Am rezolvat: photographs a renewed contract."), example: example,
+                              origin: .signed)
     }
 
     private static func report(_ example: String) -> CompletionShape.Paper {

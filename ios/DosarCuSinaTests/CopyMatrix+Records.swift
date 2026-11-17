@@ -26,7 +26,9 @@ extension CopyMatrixTests {
     static func deadlineFormRows(_ definition: TemplateDefinition) -> [(String, String)] {
         definition.blueprints.map { blueprint in
             let reminds = ReminderWording.sentence(blueprint.reminders(for: FieldValues()))
-            return (blueprint.title, [blueprint.note, reminds].compactMap { $0 }.joined(separator: " — "))
+            // On its page, once added: how it repeats (`RepeatWording`).
+            let repeats = "on its page: \(RepeatWording.sentence(blueprint.recurrence))"
+            return (blueprint.title, [blueprint.shownNote, reminds, repeats].compactMap { $0 }.joined(separator: " — "))
         }
     }
 
@@ -48,18 +50,19 @@ extension CopyMatrixTests {
     /// its deadlines' completions (by the completion its blueprint declares).
     static func recordPages(_ definition: TemplateDefinition) -> [RecordPage] {
         let visit = definition.behavior.visit.shape
+        let parts = VisitForm.listsParts(definition)
         var pages: [RecordPage] = []
         if let visit {
-            pages.append(RecordPage(title: visit.entryTitle, shape: HistoryEntryShape.make(visit.historyKind, visit: visit),
+            pages.append(RecordPage(title: visit.entryTitle, shape: HistoryEntryShape.make(visit.historyKind, visit: visit, listsParts: parts),
                                     said: visit.historyKind.rawValue, completion: nil))
         }
         if definition.behavior.visit.addsNote {
-            pages.append(RecordPage(title: "Notă", shape: HistoryEntryShape.make(.note, visit: visit), said: HistoryKind.note.rawValue, completion: nil))
+            pages.append(RecordPage(title: "Notă", shape: HistoryEntryShape.make(.note, visit: visit, listsParts: parts), said: HistoryKind.note.rawValue, completion: nil))
         }
         for blueprint in definition.blueprints {
             let completion = completionKind(blueprint)
             let stored = HistoryKind.forCompleting(completion, importance: blueprint.kind)
-            pages.append(RecordPage(title: blueprint.title, shape: HistoryEntryShape.make(completing: completion, stored: stored, visit: visit),
+            pages.append(RecordPage(title: blueprint.title, shape: HistoryEntryShape.make(completing: completion, stored: stored, visit: visit, listsParts: parts),
                                     said: "\(completion.record.rawValue)`, stored as `\(stored.rawValue)", completion: completion))
         }
         return pages
@@ -129,12 +132,12 @@ struct RecordsCopyRulesTests {
     @Test("A bill, a purchase and a note ask no stars; a chore no one did neither; a job does")
     func onlyAJobAsksHowItWent() {
         for kind in [HistoryKind.payment, .purchase, .note] {
-            #expect(!HistoryEntryShape.make(kind, visit: nil).asksRating(isCompletion: false, hasSomeone: true), "\(kind)")
+            #expect(!HistoryEntryShape.make(kind, visit: nil, listsParts: false).asksRating(isCompletion: false, hasSomeone: true), "\(kind)")
         }
-        let job = HistoryEntryShape.make(.maintenance, visit: nil)
+        let job = HistoryEntryShape.make(.maintenance, visit: nil, listsParts: false)
         #expect(job.asksRating(isCompletion: false, hasSomeone: false), "A visit logged by hand")
         #expect(!job.asksRating(isCompletion: true, hasSomeone: false), "Watering, done with „Gata”")
-        #expect(HistoryEntryShape.make(.inspection, visit: nil).asksRating(isCompletion: true, hasSomeone: true))
+        #expect(HistoryEntryShape.make(.inspection, visit: nil, listsParts: false).asksRating(isCompletion: true, hasSomeone: true))
     }
 
     @Test("Each completion's page in Istoric fits what it is: a visit's provider only on a job or care, „Cui ai plătit” only where it asks what was paid, a check's words only on a check")
@@ -159,9 +162,9 @@ struct RecordsCopyRulesTests {
 
     @Test("A record's page names no one only where nothing that makes it adds a person: a note, a deadline closed with one tap and no paper")
     func pagesNamingNoOneHoldNoOne() throws {
-        #expect(HistoryEntryShape.make(.note, visit: nil).providerHeader == nil, "A note added by hand (`HistoryActions.addNote`) takes no one")
+        #expect(HistoryEntryShape.make(.note, visit: nil, listsParts: false).providerHeader == nil, "A note added by hand (`HistoryActions.addNote`) takes no one")
         for kind in HistoryKind.allCases where kind != .note {
-            #expect(HistoryEntryShape.make(kind, visit: nil).providerHeader != nil, "\(kind)")
+            #expect(HistoryEntryShape.make(kind, visit: nil, listsParts: false).providerHeader != nil, "\(kind)")
         }
         for category in try CopyMatrixTests.categories() {
             for page in CopyMatrixTests.recordPages(category.definition) {
@@ -184,10 +187,26 @@ struct RecordsCopyRulesTests {
     @Test("A visit's record speaks its category's words: a vet's „Veterinarul”, a car's parts")
     func aVisitsRecordTakesItsKindsWords() throws {
         let vet = try #require(VisitKind.vet.shape)
-        #expect(HistoryEntryShape.make(vet.historyKind, visit: vet).providerHeader == vet.provider?.header)
+        #expect(HistoryEntryShape.make(vet.historyKind, visit: vet, listsParts: false).providerHeader == vet.provider?.header)
         let service = try #require(VisitKind.service.shape)
-        #expect(HistoryEntryShape.make(service.historyKind, visit: service).rowsAreParts)
+        #expect(HistoryEntryShape.make(service.historyKind, visit: service, listsParts: VisitForm.listsParts(BuiltInTemplates.vehicle)).rowsAreParts)
         let job = try #require(VisitKind.job.shape)
-        #expect(!HistoryEntryShape.make(job.historyKind, visit: job).rowsAreParts, "A tradesperson's job lists no parts")
+        #expect(!HistoryEntryShape.make(job.historyKind, visit: job, listsParts: false).rowsAreParts, "A tradesperson's job lists no parts")
+    }
+
+    @Test("Only a category that lists parts calls its rows parts: a car's service, never a service of one's own with no checklist")
+    func onlyAChecklistOfPartsIsParts() throws {
+        #expect(VisitForm.listsParts(BuiltInTemplates.vehicle))
+        for category in try CopyMatrixTests.categories() {
+            guard let form = VisitForm.make(for: category.definition) else { continue }
+            #expect(form.rowsAreParts == (form.shape.sum == .parts && form.hasChecklist), "\(category.title)")
+            if !form.hasChecklist {
+                let note = form.sumNote(CopyMatrixTests.sampleSum) ?? ""
+                #expect(!note.hasPrefix("Piesele"), "\(category.title): „\(note)”")
+            }
+            if !form.hasChecklist && !form.hasRows {
+                #expect(form.sumNote(CopyMatrixTests.sampleSum) == nil, "\(category.title): nothing adds up on a form without rows")
+            }
+        }
     }
 }
