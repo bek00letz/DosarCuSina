@@ -490,8 +490,14 @@ public struct ShareInbox: Sendable {
         defer { try? handle.close() }
         var hasher = SHA256()
         while true {
-            guard let chunk = autoreleasepool(invoking: { try? handle.read(upToCount: chunkLength) }) else { return nil }
-            if chunk.isEmpty { break }
+            let chunk: Data?
+            do {
+                chunk = try autoreleasepool { try handle.read(upToCount: chunkLength) }
+            } catch {
+                return nil
+            }
+            // No more to read: nil (or nothing) at the end of the file.
+            guard let chunk, !chunk.isEmpty else { break }
             hasher.update(data: chunk)
         }
         return hex(hasher.finalize())
