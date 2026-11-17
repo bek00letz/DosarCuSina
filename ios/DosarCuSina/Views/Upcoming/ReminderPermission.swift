@@ -114,12 +114,24 @@ private struct ReminderPermissionExplainer: View {
     }
 }
 
-/// Shown where reminders are set up when notifications are off.
+/// Shown where reminders are set up when notifications are off: refused in the phone's
+/// Settings, or turned off with the app's own „Notificări” (`AppPreferences.notificationsOn`),
+/// which it turns back on right there.
 struct ReminderPermissionNotice: View {
     @Environment(\.openURL) private var openURL
+    @Environment(AppPreferences.self) private var preferences
 
     var body: some View {
-        if ReminderPermission.shared.status == .denied {
+        if ReminderPermission.shared.status == .authorized, !preferences.notificationsOn {
+            DSNotice(
+                .info,
+                title: Text(verbatim: NotificationSwitchWording.offTitle),
+                message: Text(verbatim: NotificationSwitchWording.offMessage),
+                actionTitle: Text(verbatim: NotificationSwitchWording.turnOn)
+            ) {
+                preferences.notificationsOn = true
+            }
+        } else if ReminderPermission.shared.status == .denied {
             DSNotice(
                 .warning,
                 title: "Notificările sunt oprite",

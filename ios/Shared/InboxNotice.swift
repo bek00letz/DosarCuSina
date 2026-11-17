@@ -9,9 +9,10 @@ import Foundation
 /// doesn't, so a flag left for the app's coordinator would only turn into a notification
 /// once the person had already opened the app, which is what the notice is for. So:
 /// - the share extension posts it (`announce`), only when the person already allowed
-///   notifications: it never asks, and never for the practice invoice;
-/// - the app's coordinator withdraws it (`follow`), on every pass, once none of the
-///   items it announced still waits (filed, dismissed or set aside);
+///   notifications and left Settings' „Notificări” on (`NotificationSwitch`): it never asks,
+///   and never for the practice invoice;
+/// - the app's coordinator withdraws it (`follow`), on every pass, once none of the items it
+///   announced still waits (filed, dismissed or set aside), or once „Notificări” is off;
 /// - nothing else posts, changes or removes it. The architecture check lets this file,
 ///   and only this file, reach the notification center outside the coordinator.
 public enum InboxNotice {
@@ -42,7 +43,7 @@ public enum InboxNotice {
 
     /// "Am primit un act", "Am primit 2 acte": the notice's title, and the share sheet's.
     public static func receivedTitle(_ count: Int) -> String {
-        String(localized: "Am primit \(count) acte", table: "Shared", comment: "After a share: how many documents arrived. One is a word: „Am primit un act”.")
+        String(localized: "Am primit \(count) acte", table: "Shared", locale: .dosarDefault, comment: "After a share: how many documents arrived. One is a word: „Am primit un act”.")
     }
 
     /// Not a count (no number in it), so one document and several are two strings of their
@@ -69,24 +70,29 @@ public enum InboxNotice {
         return notified ? .tapNotice : .openApp
     }
 
-    /// Whether the notice has done its job: none of the items it announced still waits.
-    public static func shouldWithdraw(announced: [UUID], waiting: Set<UUID>) -> Bool {
-        !announced.contains(where: waiting.contains)
+    /// Whether the notice has done its job: none of the items it announced still waits, or
+    /// notifications are off on this device.
+    public static func shouldWithdraw(announced: [UUID], waiting: Set<UUID>, notificationsOn: Bool = true) -> Bool {
+        !notificationsOn || !announced.contains(where: waiting.contains)
     }
 
     /// The share extension's side: posts the notice for what waits, replacing the one
-    /// before, when the person already allowed notifications. Returns whether it posted.
+    /// before, when the person already allowed notifications and left „Notificări” on
+    /// (`notificationsOn`, read from `NotificationSwitch`). Returns whether it posted.
     @discardableResult
-    public static func announce(waiting: [InboxItem], center: any InboxNoticeCenter) async -> Bool {
-        guard let content = content(waiting: waiting), await center.isAllowed() else { return false }
+    public static func announce(waiting: [InboxItem], center: any InboxNoticeCenter,
+                                notificationsOn: Bool = NotificationSwitch.isOn()) async -> Bool {
+        guard notificationsOn, let content = content(waiting: waiting), await center.isAllowed() else { return false }
         return await center.post(content)
     }
 
     /// The app's side, run only by `SideEffectsCoordinator`: withdraws the notice, waiting
-    /// or shown, once none of the items it announced still waits. Returns whether it did.
+    /// or shown, once none of the items it announced still waits, or once notifications are
+    /// off (`notificationsOn`, the coordinator's reading of the switch). Returns whether it did.
     @discardableResult
-    public static func follow(waiting: Set<UUID>, center: any InboxNoticeCenter) async -> Bool {
-        guard let announced = await center.announced(), shouldWithdraw(announced: announced, waiting: waiting) else { return false }
+    public static func follow(waiting: Set<UUID>, notificationsOn: Bool = true, center: any InboxNoticeCenter) async -> Bool {
+        guard let announced = await center.announced(),
+              shouldWithdraw(announced: announced, waiting: waiting, notificationsOn: notificationsOn) else { return false }
         await center.withdraw()
         return true
     }

@@ -103,6 +103,45 @@ struct InboxNoticeTests {
     }
 
     @MainActor
+    @Test func noNoticeWhileNotificationsAreOffAndTurningThemOffWithdrawsIt() async throws {
+        let inbox = try temporaryInbox()
+        let folder = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer {
+            try? FileManager.default.removeItem(at: inbox.directory)
+            try? FileManager.default.removeItem(at: folder)
+        }
+        try share(inbox, .pdf, name: "Factura ENGIE.pdf")
+        let notices = FakeInboxNoticeCenter(allowed: true)
+        #expect(await !InboxNotice.announce(waiting: inbox.waitingItems() ?? [], center: notices, notificationsOn: false))
+        #expect(await notices.posted.isEmpty, "Settings' „Notificări” is off: the share posts nothing")
+        #expect(InboxNotice.nextStep(saved: inbox.waitingItems() ?? [], notified: false) == .openApp, "The share sheet says to open the app instead")
+
+        // Posted while on; turned off, the next pass withdraws it though its item still waits.
+        #expect(await InboxNotice.announce(waiting: inbox.waitingItems() ?? [], center: notices, notificationsOn: true))
+        let defaults = try #require(UserDefaults(suiteName: "tests.\(UUID().uuidString)"))
+        let preferences = AppPreferences(defaults: defaults)
+        let coordinator = SideEffectsCoordinator(
+            container: try makeInMemoryContainer(),
+            notificationClient: FakeNotificationCenter(status: .authorized),
+            widgetWriter: WidgetSnapshotWriter(directory: folder),
+            inboxNotices: notices,
+            waitingInboxItems: { inbox.waitingItems().map { Set($0.map(\.id)) } },
+            preferences: preferences,
+            calendar: .bucharest,
+            now: { noon("2026-11-09") }
+        )
+        await coordinator.reconcileNow()
+        #expect(await notices.withdrawals == 0, "On, and its item still waits")
+        preferences.notificationsOn = false
+        await coordinator.reconcileNow()
+        #expect(await notices.withdrawals == 1)
+        let a = UUID()
+        #expect(InboxNotice.shouldWithdraw(announced: [a], waiting: [a], notificationsOn: false))
+        #expect(!InboxNotice.shouldWithdraw(announced: [a], waiting: [a]))
+    }
+
+    @MainActor
     @Test func theCoordinatorWithdrawsItOnceItsItemsAreFiledOrDismissed() async throws {
         let inbox = try temporaryInbox()
         let folder = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)

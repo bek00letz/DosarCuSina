@@ -19,6 +19,11 @@ public protocol SideEffectIndexer: AnyObject {
 /// notification posted outside it): each pass withdraws it once none of the items it
 /// announced still waits in the share inbox.
 ///
+/// Settings' „Notificări” (`AppPreferences.notificationsOn`), read once per pass, is the one
+/// switch for all of it on this device: off, the pass plans no reminder, removes the pending
+/// ones and the shown ones, clears the badge and withdraws the share's notice; on, the next
+/// pass brings them back. The widget and Spotlight follow the binder either way.
+///
 /// Triggers: every `ModelContext.didSave` (debounced), preference changes, the
 /// day changing, the share inbox changing (`ShareInbox.didChangeNotification`),
 /// `reconcileNow()` when the app becomes active, every action from
@@ -189,10 +194,11 @@ public final class SideEffectsCoordinator: ContainerHolder {
     }
 
     private func runPass(prompt: PermissionPrompt) async {
-        // The share's notice has done its job once nothing it announced still waits.
-        // Outside the database, so a store that can't be read doesn't keep it up.
+        let notifies = preferences.notificationsOn
+        // The share's notice has done its job once nothing it announced still waits, or once
+        // notifications are off. Outside the database, so a store that can't be read doesn't keep it up.
         if let waiting = waitingInboxItems() {
-            await InboxNotice.follow(waiting: waiting, center: inboxNotices)
+            await InboxNotice.follow(waiting: waiting, notificationsOn: notifies, center: inboxNotices)
         }
         guard let container else { return await settlePermissionWithoutPlan(prompt) }
         let context = PersistenceController.context(in: container)
@@ -205,12 +211,13 @@ public final class SideEffectsCoordinator: ContainerHolder {
             return await settlePermissionWithoutPlan(prompt)
         }
         let date = now()
-        let plan = ReminderPlanner.plan(outside, now: date, calendar: calendar, defaultMinuteOfDay: preferences.reminderMinuteOfDay)
-        let badge = AttentionModel.digest(outside, now: date, calendar: calendar).needsActionCount
-        let openCycles = Dictionary(
+        // Off: nothing planned, no badge, and no cycle left open, so every shown reminder goes too.
+        let plan: [PlannedReminder] = notifies ? ReminderPlanner.plan(outside, now: date, calendar: calendar, defaultMinuteOfDay: preferences.reminderMinuteOfDay) : []
+        let badge = notifies ? AttentionModel.digest(outside, now: date, calendar: calendar).needsActionCount : 0
+        let openCycles: [UUID: CalendarDay] = notifies ? Dictionary(
             outside.filter { $0.status == .active }.map { ($0.id, $0.dueDay) },
             uniquingKeysWith: { first, _ in first }
-        )
+        ) : [:]
 
         widgetWriter.write(WidgetFeed.make(from: outside, now: date, calendar: calendar))
         let outcome = await reconciler.apply(plan, badgeCount: badge, openCycles: openCycles, prompt: prompt)
