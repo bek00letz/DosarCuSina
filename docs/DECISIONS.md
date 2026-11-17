@@ -6,6 +6,15 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ---
 
+## 2026-11-17
+
+### Values from outside, and the app's own steps waiting for the whole binder
+- **Decided (owner, from the review):** a value read from a backup or another device is held to what the app can work with where it is read, once: a repeat is at most a hundred years in its unit (`RecurrenceInterval.longest(in:)`, which the form's stepper and the counter's projection read too), a counter's step at most ten million, a category's place on the binder within ±2²⁰ (`CategoryOrder`), a reminder's time within the day (`ReminderClock.clamped`, at import and when a reminder fires). A category of one's own has no `singular`, whatever a backup says; a gender a build doesn't know keeps the name.
+- **Decided (owner, from the review):** archives get a cap on every file together once unpacked (8 GB, checked by the writer and the reader alike) and refuse files whose bytes overlap, both against the whole directory before a byte is read. This replaces "the 512 MB cap on the whole archive is gone" of 2026-11-10 for what is unpacked (that cap guarded memory; this one guards the phone's storage); the archive itself stays a plain ZIP's 4 GB, which a binder of photos and papers reaches long before 8 GB unpacked, so no household that could have a backup loses it. *Alternative:* no total cap, which lets an archive of a few GB fill the phone when brought in.
+- **Decided (owner, from the review):** "Înlocuiește tot" replaces the binder in place: a record in both keeps its copy (`copyID`) with the backup's values; only what the backup doesn't have goes. Deleting everything and making it again gave every record a new copy, which another device's join could keep the old copy of and then lose. The old way stays in the importer, unused (`deleteEverything`), until this is proven on devices.
+- **Decided:** a copy from before database version 13 whose device is gone stays a copy; no device names another's, not even once the binder has all arrived. Two devices naming one copy at the same moment would decide differently and each delete the copy the other kept; a name drawn from what a copy holds can differ while an edit travels and is the same for two copies alike in everything. Nothing is lost; the person can delete one copy. *Alternative:* naming them once the binder is whole, which risks losing the record on every device.
+- **Decided:** a relaunch in the middle of the first iCloud download still waits for it (the account the binder synced with is kept when sync first opens, so it never stands for a finished download), and a store that syncs is whole only once this launch's first download has finished well. While the share inbox can't be read (the phone locked), what waits is "not known", never "nothing", so the share's notice stays.
+
 ## 2026-11-16
 
 ### What the copy matrix still showed reading wrong
