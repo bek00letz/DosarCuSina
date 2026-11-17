@@ -4,16 +4,21 @@ import Foundation
 // Fixtures for the readiness checks: made-up people, documents and cars.
 
 extension ReadinessAsset {
-    /// A household member.
-    static func member(_ name: String) -> ReadinessAsset {
-        ReadinessAsset(name: name, templateKey: BuiltInTemplates.Key.member, role: .holder)
+    /// A household member, a Romanian citizen unless said otherwise (nil: not known).
+    static func member(_ name: String, citizenship: String? = Citizenship.romania) -> ReadinessAsset {
+        var values = FieldValues()
+        if let citizenship { values[MemberFields.citizenship] = .text(citizenship) }
+        return ReadinessAsset(name: name, templateKey: BuiltInTemplates.Key.member, role: .holder, values: values)
     }
 
-    /// A personal document of `type` (`DocumentType`), expiring on `expires`, filed under `holder`.
-    static func personalDocument(_ type: String, expires: String?, holder: ReadinessAsset? = nil, isSensitive: Bool = false) -> ReadinessAsset {
+    /// A personal document of `type` (`DocumentType`), expiring on `expires`, filed under `holder`,
+    /// printing `nationality` when given ("ROU").
+    static func personalDocument(_ type: String, expires: String?, holder: ReadinessAsset? = nil, nationality: String? = nil,
+                                 isSensitive: Bool = false) -> ReadinessAsset {
         var values = FieldValues()
         values[DocumentType.typeFieldKey] = .text(type)
         if let expires { values[DocumentFields.expiry] = .date(CalendarDay(expires)) }
+        if let nationality { values[DocumentFields.nationality] = .text(nationality) }
         return ReadinessAsset(name: DocumentType.label(for: type) ?? type, templateKey: BuiltInTemplates.Key.documents,
                               role: .personalDocument, parentId: holder?.id, isSensitive: isSensitive, values: values)
     }
