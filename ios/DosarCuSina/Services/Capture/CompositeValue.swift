@@ -41,10 +41,11 @@ struct CompositeValue: Sendable, Hashable {
 
     // MARK: - Shapes
 
-    /// An insurance policy (RCA, CASCO, a home's): "RO/00/X00/XX" then up to ten digits.
-    /// Some policies print only a number.
+    /// An insurance policy (RCA, CASCO, a home's): "RO/00/X00/XX" then up to ten digits; a
+    /// PAD's series is its issuer's code, parts joined by a hyphen ("RA-000"). Some policies
+    /// print only a number.
     static let policy = CompositeValue(
-        series: #"[A-Z]{1,4}(?:/[A-Z0-9]{1,6}){0,4}"#, number: #"\d{5,12}"#, joiner: " ", requiresSeries: false,
+        series: #"[A-Z]{1,4}(?:[/-][A-Z0-9]{1,6}){0,4}"#, number: #"\d{5,12}"#, joiner: " ", requiresSeries: false,
         example: "RO/00/X00/XX 123456789"
     )
     /// An identity card: two letters and six or seven digits, written together.

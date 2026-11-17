@@ -516,7 +516,7 @@ struct CaptureReviewView: View {
                     Label(Words.check, systemImage: "exclamationmark.circle.fill")
                         .font(.system(.caption, weight: .semibold))
                         .foregroundStyle(DSStatus.soon.textColor)
-                    Text(verbatim: Words.placeCheck(check))
+                    Text(verbatim: Words.placeCheck(check, address: review.placeAddressKey))
                         .dsFont(.footnote)
                 }
                 .accessibilityElement(children: .combine)

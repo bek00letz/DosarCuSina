@@ -3,10 +3,14 @@ import Foundation
 public struct InsuranceProviderItem: Identifiable, Hashable, Sendable {
     public let id: String
     public let name: String
-    
-    public init(id: String, name: String) {
+    /// How its papers name it, folded and matched as whole words (`CaptureText.containsWord`):
+    /// its short name, and its full one when that is how it prints itself.
+    public let words: [String]
+
+    public init(id: String, name: String, words: [String]? = nil) {
         self.id = id
         self.name = name
+        self.words = words ?? [id]
     }
 }
 
@@ -21,7 +25,10 @@ public struct RomanianInsuranceCatalog: Sendable {
         InsuranceProviderItem(id: "axeria", name: "Axeria IARD"),
         InsuranceProviderItem(id: "hellas", name: "Hellas Direct"),
         InsuranceProviderItem(id: "eurolife", name: "Eurolife FFH"),
-        InsuranceProviderItem(id: "paid", name: "PAID România (PAD Locuințe)"),
+        // A PAD prints the pool's full name; "PAID" alone is its short one.
+        InsuranceProviderItem(id: "paid", name: "PAID România (PAD Locuințe)",
+                              words: ["paid", "pool-ul de asigurare impotriva dezastrelor naturale", "pool ul de asigurare impotriva dezastrelor naturale",
+                                      "poolul de asigurare impotriva dezastrelor naturale"]),
         InsuranceProviderItem(id: "other", name: "Alt Asigurător")
     ]
 }

@@ -494,10 +494,15 @@ public enum InsuranceCover {
     /// first: a CASCO policy that quotes the RCA rules is still CASCO.
     static let words: [(cover: String, names: [String])] = [
         (casco, ["casco"]),
-        (pad, ["pad", "paid", "asigurare obligatorie a locuintei", "asigurarea obligatorie a locuintelor"]),
+        (pad, ["pad", "paid", "asigurare obligatorie a locuintei", "asigurarea obligatorie a locuintei", "asigurarea obligatorie a locuintelor"]),
         (rca, ["rca", "raspundere civila auto", "raspunderii civile auto"]),
         (home, ["asigurare facultativa", "locuinta", "locuintei", "bunuri", "imobil"]),
     ]
+
+    /// The insurer that issues every policy of a cover, when the law names one, as its id in
+    /// `RomanianInsuranceCatalog`: a PAD is always PAID's (Legea 260/2008), whichever insurer
+    /// sold it, so the seller named on the page ("prin: …") is never taken for it.
+    static let soleInsurers: [String: String] = [pad: "paid"]
 
     /// The cover a policy's text names, among `covers`, matching whole words ("pad" never
     /// matches "padding" or "Padina"), or nil when it names none.

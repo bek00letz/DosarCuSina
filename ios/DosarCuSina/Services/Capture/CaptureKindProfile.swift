@@ -227,6 +227,12 @@ struct CaptureKindProfile: Sendable {
         labels(for: key, in: commonLabels)
     }
 
+    /// The addresses a policy is read with (`ContractReader.address(_:in:labels:)`): its own row
+    /// for the home it insures, and where its holder lives or a firm is based, never read as it.
+    var insuredAddressLabels: [(ContractReader.AddressLabel, [String])] {
+        [(.place, labels(for: .insuredAddress)), (.other, CaptureLexicon.holderAddressLabels)]
+    }
+
     /// Every wording of `table`'s rows for `key`, for a reader told one table of its kind
     /// (a policy's number and holder, a contract's codes).
     static func labels(for key: CaptureFieldKey, in table: [(CaptureFieldKey, [String])]) -> [String] {
@@ -374,8 +380,8 @@ struct CaptureKindProfile: Sendable {
             kind: .insurancePolicy, templateKey: nil, filing: .intoSection, blueprintKey: nil,
             readsCover: true, defaultCover: nil, deadlineField: .expiryDate, dayMeaning: .expires, documentDateFields: issuedOn,
             documentKind: .policy, documentType: nil, trade: .insurer,
-            expectedKeys: [.provider, .providerTaxID, .policyNumber, .coverageType, .startDate, .expiryDate, .total, .claimsPhone, .licensePlate,
-                           .policyholder],
+            expectedKeys: [.provider, .providerTaxID, .policyNumber, .coverageType, .startDate, .expiryDate, .total, .insuredSum, .claimsPhone,
+                           .licensePlate, .insuredAddress, .policyholder],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: [.licensePlate, .vin],
             name: "Poliță de asigurare", noun: Noun(.inside, "poliță", the: "polița", .feminine), titleRule: .name, modelDescription: "insurance policy (CASCO, home or other)",
             labels: policyLabels
@@ -524,8 +530,10 @@ struct CaptureKindProfile: Sendable {
 
     /// A policy's own labels, RCA or any other: its period of cover (both days on the line),
     /// its end when no period is printed, the line with the claims phone, the class, its
-    /// series and number (read as one value, `CompositeLabels.policy(_:)`, with the green card's
-    /// header an RCA may print), and who it insures with their CNP (`PolicyholderReader`).
+    /// series and number (read as one value, `CompositeLabels.policy(_:besides:)`, with the green
+    /// card's header an RCA may print), the policy it renews (so that number is never read as
+    /// this one's), who it insures with their CNP (`PolicyholderReader`), the sum it insures for
+    /// and where the home it insures is (`ContractReader.address(_:in:labels:)`).
     static let policyLabels: [(CaptureFieldKey, [String])] = [
         (.validityPeriod, ["valabil", "perioada", "valabilitate", "validity", "de la", "asigurare"]),
         (.expiryDate, ["pana la", "expira", "data expirarii", "valabila pana"]),
@@ -534,12 +542,17 @@ struct CaptureKindProfile: Sendable {
         (.policyNumber, ["seria si numarul politei", "seria si numarul", "seria si nr", "serie si numar", "seria/numarul", "serie/numar",
                          "seria / numarul", "serie / numar", "nr. polita", "nr polita", "numar polita", "numarul politei", "polita nr",
                          "polita seria", "polita rca seria", "serie polita", "seria", "serie"]),
+        (.renewedPolicy, ["reinnoieste pad seria", "reinnoieste polita seria", "reinnoieste polita nr", "reinnoieste polita", "reinnoieste pad",
+                          "polita anterioara seria", "polita anterioara", "polita reinnoita", "in continuarea politei"]),
         (.policyholder, ["nume/denumire proprietar", "nume / denumire proprietar", "denumire proprietar", "nume proprietar",
                          "proprietar/utilizator", "proprietar / utilizator", "proprietarul vehiculului", "proprietar", "nume asigurat",
                          "asiguratul", "asigurat", "contractant"]),
         (.policyholderPersonalNumber, ["c.u.i. / c.n.p. proprietar", "c.u.i./c.n.p. proprietar", "cui / cnp proprietar", "cui/cnp proprietar",
                                        "c.n.p. proprietar", "cnp proprietar", "c.n.p./c.u.i.", "cnp/cui", "cui/cnp", "cnp asigurat",
                                        "c.n.p. asigurat"]),
+        (.insuredSum, ["suma asigurata", "sume asigurate", "valoarea asigurata", "valoare asigurata", "suma asigurarii"]),
+        (.insuredAddress, ["adresa locuintei asigurate", "adresa locuinta asigurata", "adresa bunului asigurat", "adresa bunurilor asigurate",
+                           "adresa imobilului asigurat", "adresa riscului", "locul asigurarii", "locuinta asigurata"]),
     ]
 
     /// A contract's own labels, and the codes a bill shares with its contract (client code,
@@ -657,6 +670,9 @@ extension CaptureFieldKey {
     /// A policy's period of cover ("Valabilă de la 01.11.2026 până la 31.10.2027"): a label
     /// of its table, whose line gives the start and the end. Never a field of its own.
     static let validityPeriod: CaptureFieldKey = "validityPeriod"
+    /// The policy a policy renews ("reînnoiește PAD Seria: … Nr: …"): a label of its table, so
+    /// the number after it is never read as this policy's. Never a field of its own.
+    static let renewedPolicy: CaptureFieldKey = "renewedPolicy"
 }
 
 extension CaptureDocumentKind {

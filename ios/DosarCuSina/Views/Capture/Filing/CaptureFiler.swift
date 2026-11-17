@@ -330,6 +330,8 @@ struct CaptureFiler {
                 outcome.asset = asset
             case .values:
                 try writeValues(of: review, to: asset, templates: templates)
+                // A home's policy names where the home is.
+                try fillHomeAddress(asset, from: review, templates: templates)
                 outcome.asset = asset
             }
         case .newAsset(let templateKey):
@@ -348,7 +350,10 @@ struct CaptureFiler {
                 outcome.asset = try createSection(review, templateKey: subscriptions, name: Self.subscriptionName(review),
                                                   newParent: home, plan: plan, templates: templates)
             } else {
-                outcome.asset = try createSection(review, templateKey: templateKey, name: name, parent: nil, plan: plan, templates: templates)
+                let section = try createSection(review, templateKey: templateKey, name: name, parent: nil, plan: plan, templates: templates)
+                // A new home from its policy starts with the address the policy names.
+                try fillHomeAddress(section, from: review, templates: templates)
+                outcome.asset = section
             }
         }
 
@@ -973,19 +978,19 @@ struct CaptureFiler {
         return SubscriptionNaming.name(provider: review.value(.provider)?.text, service: review.value(.serviceKind)?.text)
     }
 
-    /// What a bill or a contract tells the home it is filed under: the address it is
-    /// supplied at, for the home's own address. Nothing for any other document.
+    /// What a paper tells the home it is about: the address it names for it (a bill's or a
+    /// contract's supply address, a policy's insured home, `CaptureMapping.homeAddressKeys`),
+    /// for the home's own address. Nothing for a paper that names none.
     static func homeValues(from review: CaptureReview, for home: TemplateDefinition) -> FieldValues {
         var values = FieldValues()
-        guard review.kind.profile.filing == .subscription, let address = review.value(.supplyAddress),
-              let key = CaptureMapping.fieldKey(for: .supplyAddress, kind: review.kind, in: home, deadline: nil),
-              let definition = home.field(key), let value = CaptureMapping.fieldValue(address, for: definition) else { return values }
-        values[key] = value
+        guard let address = CaptureMapping.homeAddressKeys.lazy.compactMap({ review.value($0) }).first,
+              let definition = home.field(HomeFields.address), let value = CaptureMapping.fieldValue(address, for: definition) else { return values }
+        values[definition.key] = value
         return values
     }
 
-    /// A home without an address takes the one its bill is supplied at, so the next bill
-    /// finds it. An address the person wrote is never changed.
+    /// A home without an address takes the one its paper names for it, so the next bill or
+    /// policy finds it. An address the person wrote is never changed.
     private func fillHomeAddress(_ home: Asset?, from review: CaptureReview, templates: [String: CategoryTemplate]) throws {
         guard let home, templates.plays(.home, home.templateKey), let template = templates[home.templateKey] else { return }
         var merged = home.values

@@ -42,14 +42,17 @@ enum CompositeLabels {
     }
 
     /// A policy's number: its row of the policy table (`labels`, `CaptureKindProfile.policyLabels`'
-    /// by default), and the green card's header an RCA printed with its green card shows.
-    static func policy(_ labels: [String]) -> [(Key, [LabelWording])] {
-        table(for: labels.map(LabelWording.words) + greenCardNumber)
+    /// by default), and the green card's header an RCA printed with its green card shows. The
+    /// policy it renews is printed with a series and a number too ("reînnoiește PAD Seria: …"):
+    /// its row (`besides`) is another field's, so that number is never this policy's.
+    static func policy(_ labels: [String], besides renewed: [String] = []) -> [(Key, [LabelWording])] {
+        table(for: labels.map(LabelWording.words) + greenCardNumber) + [(.other, renewed.map(LabelWording.words))]
     }
 
     /// A policy's number as the policy table words it.
     static var policy: [(Key, [LabelWording])] {
-        policy(CaptureKindProfile.labels(for: .policyNumber, in: CaptureKindProfile.policyLabels))
+        let rows = CaptureKindProfile.policyLabels
+        return policy(CaptureKindProfile.labels(for: .policyNumber, in: rows), besides: CaptureKindProfile.labels(for: .renewedPolicy, in: rows))
     }
 
     /// The header a green card prints over its number, the country's code, the insurer's
