@@ -11,6 +11,30 @@
 		D05A01212C00000000000121 /* DosarCuSinaShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D05A01022C00000000000102 /* DosarCuSinaShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		D05A001A2C0000000000001A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D05A00092C00000000000009 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D05A00052C00000000000005;
+			remoteInfo = DosarCuSina;
+		};
+		D05A01222C00000000000122 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D05A00092C00000000000009 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D05A01102C00000000000110;
+			remoteInfo = DosarCuSinaWidgets;
+		};
+		D05A01232C00000000000123 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D05A00092C00000000000009 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D05A01302C00000000000130;
+			remoteInfo = DosarCuSinaShare;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		D05A01242C00000000000124 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -34,23 +58,21 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		D05A01062C00000000000106 /* Exceptions for "DosarCuSinaWidgets" folder in "DosarCuSinaWidgets" target */ = {
+		D05A01062C00000000000106 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				DosarCuSinaWidgets.entitlements,
 				Info.plist,
 			);
 			target = D05A01102C00000000000110 /* DosarCuSinaWidgets */;
 		};
-		D05A01072C00000000000107 /* Exceptions for "DosarCuSinaShare" folder in "DosarCuSinaShare" target */ = {
+		D05A01072C00000000000107 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				DosarCuSinaShare.entitlements,
 				Info.plist,
 			);
 			target = D05A01302C00000000000130 /* DosarCuSinaShare */;
 		};
-		D05A01082C00000000000108 /* Exceptions for "Shared" folder in "DosarCuSinaShare" target */ = {
+		D05A01082C00000000000108 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				CompleteFromWidgetIntent.swift,
@@ -67,26 +89,12 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D05A00022C00000000000002 /* DosarCuSina */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DosarCuSina; sourceTree = "<group>"; };
 		D05A00112C00000000000011 /* DosarCuSinaTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DosarCuSinaTests; sourceTree = "<group>"; };
-		D05A01032C00000000000103 /* DosarCuSinaWidgets */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (D05A01062C00000000000106 /* Exceptions for "DosarCuSinaWidgets" folder in "DosarCuSinaWidgets" target */, ); explicitFileTypes = {}; explicitFolders = (); path = DosarCuSinaWidgets; sourceTree = "<group>"; };
-		D05A01042C00000000000104 /* DosarCuSinaShare */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (D05A01072C00000000000107 /* Exceptions for "DosarCuSinaShare" folder in "DosarCuSinaShare" target */, ); explicitFileTypes = {}; explicitFolders = (); path = DosarCuSinaShare; sourceTree = "<group>"; };
-		D05A01052C00000000000105 /* Shared */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (D05A01082C00000000000108 /* Exceptions for "Shared" folder in "DosarCuSinaShare" target */, ); explicitFileTypes = {}; explicitFolders = (); path = Shared; sourceTree = "<group>"; };
+		D05A01032C00000000000103 /* DosarCuSinaWidgets */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (D05A01062C00000000000106 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = DosarCuSinaWidgets; sourceTree = "<group>"; };
+		D05A01042C00000000000104 /* DosarCuSinaShare */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (D05A01072C00000000000107 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = DosarCuSinaShare; sourceTree = "<group>"; };
+		D05A01052C00000000000105 /* Shared */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (D05A01082C00000000000108 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Shared; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		D05A01112C00000000000111 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D05A01312C00000000000131 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		D05A00032C00000000000003 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -95,6 +103,20 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		D05A00122C00000000000012 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D05A01112C00000000000111 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D05A01312C00000000000131 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -266,30 +288,6 @@
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXContainerItemProxy section */
-		D05A001A2C0000000000001A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = D05A00092C00000000000009 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D05A00052C00000000000005;
-			remoteInfo = DosarCuSina;
-		};
-		D05A01222C00000000000122 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = D05A00092C00000000000009 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D05A01102C00000000000110;
-			remoteInfo = DosarCuSinaWidgets;
-		};
-		D05A01232C00000000000123 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = D05A00092C00000000000009 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D05A01302C00000000000130;
-			remoteInfo = DosarCuSinaShare;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		D05A00072C00000000000007 /* Resources */ = {
@@ -577,8 +575,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "SupportingFiles/DosarCuSina-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Dosar cu Șină";
-				INFOPLIST_KEY_NSFaceIDUsageDescription = "Folosim Face ID ca să deschidem doar categoriile pe care le-ai protejat, cum ar fi actele și datele medicale.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Aplicația are nevoie de acces la cameră pentru a scana facturi, chitanțe și documente.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Folosim Face ID ca să deschidem doar categoriile pe care le-ai protejat, cum ar fi actele și datele medicale.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Ca să salvezi în Poze paginile pe care le trimiți.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -615,8 +613,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "SupportingFiles/DosarCuSina-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Dosar cu Șină";
-				INFOPLIST_KEY_NSFaceIDUsageDescription = "Folosim Face ID ca să deschidem doar categoriile pe care le-ai protejat, cum ar fi actele și datele medicale.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Aplicația are nevoie de acces la cameră pentru a scana facturi, chitanțe și documente.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Folosim Face ID ca să deschidem doar categoriile pe care le-ai protejat, cum ar fi actele și datele medicale.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Ca să salvezi în Poze paginile pe care le trimiți.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
