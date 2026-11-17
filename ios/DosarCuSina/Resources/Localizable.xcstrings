@@ -3007,6 +3007,9 @@
     "Completezi ce trebuie, apoi pun actul acolo." : {
       "comment" : "Place picker: a new section is made first."
     },
+    "Confirmă că ești tu ca să bifezi termenul protejat." : {
+      "comment" : "Face ID reason before a deadline of a locked category is closed from a reminder, Siri or Shortcuts."
+    },
     "Confirmă că ești tu." : {
       "comment" : "Face ID reason when changing a lock."
     },
@@ -3573,6 +3576,9 @@
       "comment" : "Message on the app lock screen."
     },
     "Deschide Dosar cu Șină ca să bifezi." : {
+
+    },
+    "Deschide Dosar cu Șină ca să confirmi cu Face ID." : {
 
     },
     "Deschide Dosar cu Șină ca să vezi termenele." : {
@@ -7885,6 +7891,9 @@
       "comment" : "Capture review: the section's deadline is already later than the paper's day."
     },
     "Termenul e acum pe %@." : {
+
+    },
+    "Termenul e într-o categorie protejată. Deschide-l în Dosar cu Șină și confirmă cu Face ID ca să-l bifezi." : {
 
     },
     "Termenul nu mai există" : {

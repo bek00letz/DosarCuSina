@@ -76,7 +76,7 @@ struct ClaimChecklistView: View {
                 }
                 if let policy = result.policy {
                     PolicyCallCard(policy: policy, showsWhen: result.policyOptions.count == 1,
-                                   isSensitive: assets.first { $0.id == assetID }?.isSensitive ?? false)
+                                   isSensitive: assets.first { $0.id == assetID }?.isSensitive ?? true)
                 }
                 ReadinessGroupsView(groups: result.groups, ticked: $ticked) { request = $0 }
             }

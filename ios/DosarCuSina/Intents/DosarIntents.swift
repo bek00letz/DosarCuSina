@@ -47,12 +47,15 @@ enum IntentError: Error, CustomLocalizedStringResourceConvertible {
     case storeUnavailable
     case notFound
     case appLocked
+    /// A deadline of a locked category, not closed: Face ID wasn't given, or couldn't be asked.
+    case protectedDeadline
 
     var localizedStringResource: LocalizedStringResource {
         switch self {
         case .storeUnavailable: return "Datele nu pot fi deschise acum. Deschide aplicația și încearcă din nou."
         case .notFound: return "Obligația nu mai e activă. Poate ai bifat-o deja."
         case .appLocked: return "Dosar cu Șină e protejat cu Face ID. Deschide aplicația ca să vezi termenele."
+        case .protectedDeadline: return "Termenul e într-o categorie protejată. Deschide-l în Dosar cu Șină și confirmă cu Face ID ca să-l bifezi."
         }
     }
 }
@@ -101,8 +104,18 @@ public struct CompleteObligationIntent: AppIntent {
         // The cycle Siri resolved the deadline on: a shortcut run later never closes the next one.
         let request = OutsideRequest(obligationId: id, cycle: obligation.dueDay, action: .complete, surface: .shortcut)
         let container = try await MainActor.run { try IntentStore.container() }
+        // A deadline of a locked category closes only after Face ID, which the app asks
+        // (`IntentEngine.perform`, the one rule): the shortcut continues there.
+        if try await MainActor.run(body: { try IntentEngine.asksFaceID(request, in: container.mainContext) }) {
+            guard systemContext.currentMode.canContinueInForeground else { throw IntentError.protectedDeadline }
+            try await continueInForeground("Deschide Dosar cu Șină ca să confirmi cu Face ID.", alwaysConfirm: false)
+        }
         let outcome = try await IntentEngine.perform(request, container: container)
         switch outcome {
+        case .leftForTheApp:
+            // Its page, to finish there.
+            await MainActor.run { AppNavigator.shared.open(.obligation(id)) }
+            throw IntentError.protectedDeadline
         case .skipped, .snoozed:
             throw IntentError.notFound
         case .completed(let next?):

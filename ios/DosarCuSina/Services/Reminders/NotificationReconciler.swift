@@ -70,6 +70,25 @@ public protocol NotificationCenterClient: Sendable {
 /// Notification category and actions shown on reminders.
 public enum ReminderActions {
     public static let categoryIdentifier = "OBLIGATION"
+    /// A reminder about a deadline of a locked category: „Am rezolvat” opens the app, which asks
+    /// for Face ID before it closes the deadline; „Amână” works from the Lock Screen as it is.
+    public static let protectedCategoryIdentifier = "OBLIGATION_PROTECTED"
+
+    /// The category a reminder about a deadline gets.
+    public static func category(isProtected: Bool) -> String {
+        isProtected ? protectedCategoryIdentifier : categoryIdentifier
+    }
+
+    /// What „Am rezolvat” asks of the system before the app hears of it: the phone unlocked,
+    /// and for a locked category the app on screen, so it can ask for Face ID (`DeadlineChange`).
+    static func completeOptions(isProtected: Bool) -> UNNotificationActionOptions {
+        DeadlineChange.close.asksFaceID(inLockedCategory: isProtected) ? [.authenticationRequired, .foreground] : [.authenticationRequired]
+    }
+
+    /// What „Amână” asks of the system: nothing, locked category or not (`DeadlineChange`).
+    static func snoozeOptions(isProtected: Bool) -> UNNotificationActionOptions {
+        DeadlineChange.snooze.asksFaceID(inLockedCategory: isProtected) ? [.authenticationRequired, .foreground] : []
+    }
     public static let complete = "OBLIGATION_COMPLETE"
     public static let snooze = "OBLIGATION_SNOOZE_3D"
     public static let snoozeDays = 3
@@ -141,7 +160,7 @@ public struct SystemNotificationCenterClient: NotificationCenterClient {
         ]
         if let id = reminder.obligationId {
             // Only reminders about a deadline get "Am rezolvat" and "Amână".
-            content.categoryIdentifier = ReminderActions.categoryIdentifier
+            content.categoryIdentifier = ReminderActions.category(isProtected: reminder.isProtected)
             info[ReminderActions.obligationIdKey] = id.uuidString
         } else {
             content.categoryIdentifier = ""
@@ -177,24 +196,26 @@ public struct SystemNotificationCenterClient: NotificationCenterClient {
     }
 
     public func registerCategories() async {
-        let complete = UNNotificationAction(
-            identifier: ReminderActions.complete,
-            title: String(localized: "Am rezolvat", comment: "Notification action"),
-            options: [.authenticationRequired]
-        )
-        let snooze = UNNotificationAction(
-            identifier: ReminderActions.snooze,
-            title: String(localized: "Amână 3 zile", comment: "Notification action"),
-            options: []
-        )
-        let category = UNNotificationCategory(
-            identifier: ReminderActions.categoryIdentifier,
-            actions: [complete, snooze],
-            intentIdentifiers: [],
-            hiddenPreviewsBodyPlaceholder: String(localized: "Scadență", comment: "Notification preview placeholder when previews are hidden"),
-            options: []
-        )
-        center.setNotificationCategories([category])
+        let categories = [false, true].map { isProtected in
+            let complete = UNNotificationAction(
+                identifier: ReminderActions.complete,
+                title: String(localized: "Am rezolvat", comment: "Notification action"),
+                options: ReminderActions.completeOptions(isProtected: isProtected)
+            )
+            let snooze = UNNotificationAction(
+                identifier: ReminderActions.snooze,
+                title: String(localized: "Amână 3 zile", comment: "Notification action"),
+                options: ReminderActions.snoozeOptions(isProtected: isProtected)
+            )
+            return UNNotificationCategory(
+                identifier: ReminderActions.category(isProtected: isProtected),
+                actions: [complete, snooze],
+                intentIdentifiers: [],
+                hiddenPreviewsBodyPlaceholder: String(localized: "Scadență", comment: "Notification preview placeholder when previews are hidden"),
+                options: []
+            )
+        }
+        center.setNotificationCategories(Set(categories))
     }
 }
 
