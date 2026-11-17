@@ -170,24 +170,34 @@
       "comment" : "Body of the notice after a share. Plural variations without the number: one „Deschide aplicația ca să-l pui la locul lui.”, several „Deschide aplicația ca să le pui la locul lor.”",
       "localizations" : {
         "ro" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Deschide aplicația ca să le pui la locul lor."
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Deschide aplicația ca să-l pui la locul lui."
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Deschide aplicația ca să le pui la locul lor."
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deschide aplicația ca %#@documents@"
+          },
+          "substitutions" : {
+            "documents" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "să le pui la locul lor."
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "să-l pui la locul lui."
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "să le pui la locul lor."
+                    }
+                  }
                 }
               }
             }

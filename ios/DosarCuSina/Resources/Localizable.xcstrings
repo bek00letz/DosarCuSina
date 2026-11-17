@@ -2271,24 +2271,34 @@
       "comment" : "Share a document's pages as pictures. Plural variations without the number: one „Ca poză”, several „Ca poze”.",
       "localizations" : {
         "ro" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Ca poze"
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Ca poză"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Ca poze"
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ca %#@pages@"
+          },
+          "substitutions" : {
+            "pages" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "poze"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "poză"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "poze"
+                    }
+                  }
                 }
               }
             }
