@@ -40,7 +40,8 @@ public struct CaptureAnalyzer: Sendable {
 
     let specializedParsers: [any CaptureSpecializedParser]
     let componentResolver: any CaptureComponentResolving
-    let insurerNames: [(keyword: String, name: String)]
+    /// The insurers a policy's issuer is found among, by how their papers name them.
+    let insurers: [InsuranceProviderItem]
     /// The kinds' profiles whose label tables the readers are told: the registry, unless a
     /// test gives a table another wording (`reading(labelsOf:)`).
     private(set) var profiles: [CaptureKindProfile] = CaptureKindProfile.all
@@ -51,11 +52,11 @@ public struct CaptureAnalyzer: Sendable {
     public init(
         specializedParsers: [any CaptureSpecializedParser] = [],
         componentResolver: any CaptureComponentResolving = CatalogComponentResolver(),
-        insurerNames: [(keyword: String, name: String)] = CaptureAnalyzer.catalogInsurers
+        insurers: [InsuranceProviderItem] = CaptureAnalyzer.catalogInsurers
     ) {
         self.specializedParsers = specializedParsers
         self.componentResolver = componentResolver
-        self.insurerNames = insurerNames
+        self.insurers = insurers
     }
 
     /// The same analyzer, its readers told `profiles`' label tables: a wording added to a
@@ -83,12 +84,14 @@ public struct CaptureAnalyzer: Sendable {
         profiles.first { $0.kind == kind } ?? kind.profile
     }
 
-    /// Insurers from the shared Romanian catalog, keyed by a word that appears on their documents.
-    public static var catalogInsurers: [(keyword: String, name: String)] {
-        RomanianInsuranceCatalog.recommendedInsurers
-            .filter { $0.id != "other" }
-            .map { ($0.id, $0.name) }
+    /// Insurers from the shared Romanian catalog, each with the words its documents name it by.
+    public static var catalogInsurers: [InsuranceProviderItem] {
+        RomanianInsuranceCatalog.recommendedInsurers.filter { $0.id != "other" }
     }
+
+    /// How many lines under an insurer's name its own details are printed (its address, its
+    /// registration and tax ID), so the tax ID read is the insurer's, not a seller's.
+    static let insurerBlockLines = 3
 
     /// Below this classifier confidence, a provider-specific reader may claim a document
     /// of another kind; above it, the classifier's kind stands.
@@ -366,15 +369,14 @@ public struct CaptureAnalyzer: Sendable {
 
     private func addInsurance(_ text: CaptureText, profile: CaptureKindProfile, years: DateWindow, into fields: inout FieldSet) {
         let haystack = text.joinedFolded
-        if let insurer = insurerNames.first(where: { CaptureText.containsWord($0.keyword, inFolded: haystack) }) {
-            fields.add(.provider, .text(insurer.name), 0.85, nil)
-        } else {
-            addIssuer(text, profile: profile, into: &fields)
+        // The cover: an RCA policy is RCA; any other policy's is read once, as whole words.
+        // When the page names none, the review asks the person to pick it.
+        let cover = profile.defaultCover ?? InsuranceCover.read(in: haystack, among: profile.covers)
+        if let cover {
+            fields.add(.coverageType, .text(cover), 0.7, nil)
         }
-        if let taxID = RomanianFieldExtractor.taxID(in: text, labels: profile.labels(for: .providerTaxID)), taxID.valid {
-            fields.add(.providerTaxID, .text(taxID.value), 0.97, text.original[taxID.line], tier: .deterministic)
-        }
-        if let policy = RomanianFieldExtractor.policyNumber(in: text, labels: profile.labels(for: .policyNumber)) {
+        addInsurer(text, cover: cover, profile: profile, into: &fields)
+        if let policy = RomanianFieldExtractor.policyNumber(in: text, labels: profile.labels(for: .policyNumber), renewed: profile.labels(for: .renewedPolicy)) {
             fields.add(.policyNumber, .text(policy.value), policy.quality.confidence, policy.source)
         }
         if let phone = RomanianFieldExtractor.claimsPhone(in: text, labels: profile.labels(for: .claimsPhone)) {
@@ -389,17 +391,50 @@ public struct CaptureAnalyzer: Sendable {
         if let premium = RomanianFieldExtractor.total(in: text, labels: profile.labels(for: .total)) {
             fields.add(.total, .money(premium.money), Self.confidence(premium.strong ? 0.75 : 0.5, ambiguous: premium.ambiguous), premium.source)
         }
+        // What it insures for, and where the home it insures is.
+        if let sum = RomanianFieldExtractor.labelledAmount(in: text, labels: profile.labels(for: .insuredSum)) {
+            fields.add(.insuredSum, .money(sum.money), Self.confidence(0.75, ambiguous: sum.ambiguous), sum.source)
+        }
+        if let address = ContractReader.address(.insuredAddress, in: text, labels: profile.insuredAddressLabels) {
+            fields.add(address)
+        }
         if let classValue = RomanianFieldExtractor.bonusMalus(in: text, labels: profile.labels(for: .bonusMalusClass)) {
             fields.add(.bonusMalusClass, .text(classValue), 0.7, nil)
         }
         // Who it insures: the person whose class it is (`Policyholders`).
         fields.add(PolicyholderReader.fields(in: text))
-        // The cover: an RCA policy is RCA; any other policy's is read once, as whole words.
-        // When the page names none, the review asks the person to pick it.
-        if let cover = profile.defaultCover ?? InsuranceCover.read(in: haystack, among: profile.covers) {
-            fields.add(.coverageType, .text(cover), 0.7, nil)
-        }
         addVehicleIdentity(text, profile: profile, into: &fields)
+    }
+
+    /// Who issued a policy, and their tax ID: the insurer the law names for its cover (a PAD's
+    /// is PAID's, whoever sold it), else the first of the catalog's insurers the page names,
+    /// else the company printed as its issuer. The tax ID is the one printed in the insurer's
+    /// own block; one printed elsewhere counts only when no other insurer is named on the page,
+    /// where it may be theirs.
+    private func addInsurer(_ text: CaptureText, cover: String?, profile: CaptureKindProfile, into fields: inout FieldSet) {
+        let named: [(insurer: InsuranceProviderItem, line: Int)] = insurers.compactMap { insurer in
+            text.lines(containing: insurer.words).first.map { (insurer, $0) }
+        }
+        let sole = cover.flatMap { InsuranceCover.soleInsurers[$0] }.flatMap { id in insurers.first { $0.id == id } }
+        let chosen: (insurer: InsuranceProviderItem, line: Int?)? = sole.map { sole in (sole, named.first { $0.insurer.id == sole.id }?.line) }
+            ?? named.first.map { ($0.insurer, $0.line) }
+        guard let insurer = chosen else {
+            addIssuer(text, profile: profile, into: &fields)
+            if let taxID = RomanianFieldExtractor.taxID(in: text, labels: profile.labels(for: .providerTaxID)), taxID.valid {
+                fields.add(.providerTaxID, .text(taxID.value), 0.97, text.original[taxID.line], tier: .deterministic)
+            }
+            return
+        }
+        fields.add(.provider, .text(insurer.insurer.name), sole == nil ? 0.85 : 0.9, insurer.line.map { text.original[$0] })
+        let labels = profile.labels(for: .providerTaxID)
+        let ownBlock = insurer.line.flatMap { line in
+            RomanianFieldExtractor.taxID(in: text, labels: labels, lines: line..<min(text.folded.count, line + Self.insurerBlockLines + 1))
+        }
+        let othersNamed = named.contains { $0.insurer.id != insurer.insurer.id }
+        let anywhere = othersNamed ? nil : RomanianFieldExtractor.taxID(in: text, labels: labels)
+        if let taxID = [ownBlock, anywhere].compactMap({ $0 }).first(where: { $0.valid }) {
+            fields.add(.providerTaxID, .text(taxID.value), 0.97, text.original[taxID.line], tier: .deterministic)
+        }
     }
 
     private func addPurchase(_ text: CaptureText, profile: CaptureKindProfile, years: DateWindow, into fields: inout FieldSet) {

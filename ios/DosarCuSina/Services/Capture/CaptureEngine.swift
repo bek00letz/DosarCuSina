@@ -125,7 +125,7 @@ public final class CaptureEngine: Sendable {
         var readImages: [CGImage] = []
         /// How each page is shown and shared: the same cut-out and turn it was read with.
         var framings: [PageFraming] = []
-        /// Recognized lines with their positions, page by page. Empty for pasted text and a PDF's text layer.
+        /// Lines with their positions, page by page: recognized, or a digital PDF's own (`PDFTextLines`). Empty for pasted text.
         var recognized: [[RecognizedLine]] = []
         var text = ""
         var barcodes: [CaptureBarcode] = []
@@ -169,9 +169,19 @@ public final class CaptureEngine: Sendable {
                     text += (text.isEmpty ? "" : "\n") + read.text
                     barcodes += read.barcodes
                 }
-            } else if let first = rendered.first, let recognized = try? await recognizer.recognize(first) {
+            } else {
+                // A digital PDF's lines with where they sit, so a form's labels find their values
+                // as on a photo (`PDFTextLines`). Its plain text stays the reading when the
+                // lines can't be had.
+                let lines = PDFTextLines.pages(of: data, maxPages: Self.maxPDFPages)
+                if lines.contains(where: { !$0.isEmpty }) {
+                    recognized = lines
+                    text = lines.map { $0.map(\.text).joined(separator: "\n") }.joined(separator: "\n")
+                }
                 // Digital PDFs still carry payment QR codes as images.
-                barcodes += recognized.barcodes
+                if let first = rendered.first, let read = try? await recognizer.recognize(first) {
+                    barcodes += read.barcodes
+                }
             }
 
         case .text(let pasted):

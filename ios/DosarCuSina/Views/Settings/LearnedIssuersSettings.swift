@@ -44,12 +44,14 @@ struct LearnedIssuersSettings: View {
                 }
             }
         } header: {
+            // On the header, the one view of the section that stays: a modifier on the Section
+            // would reach every row (`presentation-on-section`).
             Text("Ce am învățat", comment: "Settings page and section: what capture learned from the papers the person saved, by issuer.")
+                .userErrorAlert($error)
         } footer: {
             Text("Țin minte doar cuvintele și așezarea actelor unei firme, nimic despre tine. Se sincronizează cu dosarul.",
                  comment: "Footer of what capture learned: only an issuer's words and layout are kept, and they sync with the binder.")
         }
-        .userErrorAlert($error)
     }
 
     private func forget(_ issuer: IssuerLessons.Issuer) {
