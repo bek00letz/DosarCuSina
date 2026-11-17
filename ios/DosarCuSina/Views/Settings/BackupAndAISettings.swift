@@ -41,31 +41,13 @@ private struct BackupSection: View {
         _flow = State(initialValue: BackupFlow(container: container, vault: vault))
     }
 
+    // Every sheet, alert and dialog hangs on the one row that starts it: in a List, a modifier on
+    // the Section reaches each of its rows, its header and its footer, and the copies that can't
+    // present close Settings with them (`presentation-on-section`).
     var body: some View {
         Section {
-            Button {
-                isChoosingPassword = true
-            } label: {
-                HStack {
-                    Label { Text("Fă o copie de siguranță", comment: "Exports a backup.") } icon: { Image(systemName: "square.and.arrow.up") }
-                    Spacer()
-                    if flow.work == .exporting { DSDelayedProgress(label: "Se pregătește…") }
-                }
-                .frame(minHeight: 44)
-            }
-            .disabled(flow.work != nil)
-            Button {
-                isPickingFile = true
-            } label: {
-                HStack {
-                    Label { Text("Pune înapoi o copie", comment: "Imports a backup.") } icon: { Image(systemName: "square.and.arrow.down") }
-                    Spacer()
-                    if flow.work == .reading { DSDelayedProgress(label: "Se citește…") }
-                    if flow.work == .importing { DSDelayedProgress(label: "Se pune înapoi…") }
-                }
-                .frame(minHeight: 44)
-            }
-            .disabled(flow.work != nil)
+            exportRow
+            importRow
             if let resultText = flow.resultText {
                 Label {
                     Text(verbatim: resultText)
@@ -79,6 +61,22 @@ private struct BackupSection: View {
         } footer: {
             Text("Copia e un singur fișier cu tot dosarul, inclusiv documentele. Păstreaz-o în Fișiere, pe iCloud Drive sau trimite-o pe alt telefon. Codurile PIN și rândurile secrete nu intră în copie: rămân doar pe acest telefon.", comment: "Footer of the backup section.")
         }
+    }
+
+    /// "Fă o copie de siguranță": the password sheet, then the share sheet; a backup opened from
+    /// another app; and how each step of the section ended.
+    private var exportRow: some View {
+        Button {
+            isChoosingPassword = true
+        } label: {
+            HStack {
+                Label { Text("Fă o copie de siguranță", comment: "Exports a backup.") } icon: { Image(systemName: "square.and.arrow.up") }
+                Spacer()
+                if flow.work == .exporting { DSDelayedProgress(label: "Se pregătește…") }
+            }
+            .frame(minHeight: 44)
+        }
+        .disabled(flow.work != nil)
         .sheet(isPresented: $isChoosingPassword, onDismiss: startChosenExport) {
             BackupPasswordSheet { password in
                 exportChoice = password.map(ExportChoice.protected) ?? .plain
@@ -89,6 +87,27 @@ private struct BackupSection: View {
             SystemShareSheet(urls: [item.url]) { _ in flow.finishSharing() }
                 .ignoresSafeArea()
         }
+        .task { consumeOpenedFile() }
+        .onChange(of: navigator.pendingArchiveURL) { _, _ in consumeOpenedFile() }
+        .onChange(of: vault.isAppLocked) { _, _ in consumeOpenedFile() }
+        .sensoryFeedback(.success, trigger: flow.doneCount)
+        .userErrorAlert(Binding(get: { flow.error }, set: { flow.error = $0 }))
+    }
+
+    /// "Pune înapoi o copie": the file picker, a backup's password, and how to bring it in.
+    private var importRow: some View {
+        Button {
+            isPickingFile = true
+        } label: {
+            HStack {
+                Label { Text("Pune înapoi o copie", comment: "Imports a backup.") } icon: { Image(systemName: "square.and.arrow.down") }
+                Spacer()
+                if flow.work == .reading { DSDelayedProgress(label: "Se citește…") }
+                if flow.work == .importing { DSDelayedProgress(label: "Se pune înapoi…") }
+            }
+            .frame(minHeight: 44)
+        }
+        .disabled(flow.work != nil)
         .fileImporter(isPresented: $isPickingFile, allowedContentTypes: [BackupSettings.dossierType, .zip, .data]) { result in
             switch result {
             case .success(let url): Task { await flow.open(url) }
@@ -133,11 +152,6 @@ private struct BackupSection: View {
         } message: { pending in
             Text(verbatim: BackupWording.summary(pending.summary) + " " + String(localized: "Dacă alegi „Înlocuiește”, ce ai acum pe telefon se șterge și rămâne doar ce e în copie. Codurile PIN de pe acest telefon rămân.", comment: "Warning before replacing everything with a backup."))
         }
-        .task { consumeOpenedFile() }
-        .onChange(of: navigator.pendingArchiveURL) { _, _ in consumeOpenedFile() }
-        .onChange(of: vault.isAppLocked) { _, _ in consumeOpenedFile() }
-        .sensoryFeedback(.success, trigger: flow.doneCount)
-        .userErrorAlert(Binding(get: { flow.error }, set: { flow.error = $0 }))
     }
 
     private func startChosenExport() {

@@ -325,6 +325,12 @@ rule main-action-in-scroll '^ios/(DosarCuSina|DosarCuSinaShare)/' "$design_syste
     "Pin a screen's or a sheet's main action with .dsPinnedAction { DSPrimaryButton(…) }, with note: for what is said above it and secondary: for the actions under it. Inside the ScrollView it is lost at the end of the content; in a pocket's card, add with DSSecondaryButton like every pocket."
 rule hand-pinned-action "$app" '^ios/Shared/DSBottomBar\.swift$' '-' - \
     'Pin actions with .dsPinnedAction (note: and secondary: for what goes with them), the one bar, which keeps its height, material and keyboard behaviour everywhere.'
+# A modifier on a Section or a ForEach reaches each view inside it (and a Section's header and
+# footer) one by one, so a sheet, an alert or a dialog there is presented once for each of them:
+# the copies that can't present make UIKit dismiss from the root, and Settings closed with the
+# backup's password sheet. Found by braces and parentheses (presentation-on-section, below).
+rule presentation-on-section "$app" - '-' - \
+    "Hang a sheet, alert or dialog on one view that stays while it is up: the row or button that opens it, or the section's header. On a Section or a ForEach it reaches every row inside (and the header and footer), is presented once for each, and the extra copies close the screen under it."
 
 # --- The scan ----------------------------------------------------------------
 
@@ -378,10 +384,29 @@ scan() {
         }
         FILENAME == rules_file { inc[$1] = $2; exc[$1] = $3; next }
         FILENAME == map_file { path_of[$2] = $1; next }
-        FNR == 1 { path = path_of[FILENAME]; depth = 0; scroll_at = -1; inset_at = -1; pocket_at = -1 }
+        FNR == 1 { path = path_of[FILENAME]; depth = 0; scroll_at = -1; inset_at = -1; pocket_at = -1; nesting = 0; held = 0; chained_at = -1 }
         {
             code = code_of($0)
             if (code == "") next
+            # presentation-on-section: "nesting" counts braces and parentheses, so a modifier
+            # written over several lines is read as one. A Section or ForEach that closes at the
+            # level it opened at leaves "chained_at": the lines starting with "." at that level are
+            # its modifiers, until a line that is not one.
+            if (chained_at >= 0) {
+                if (nesting < chained_at) chained_at = -1
+                else if (nesting == chained_at) {
+                    if (code ~ /^[[:space:]]*\./) {
+                        if (code ~ /^[[:space:]]*\.(sheet|dsSheet|alert|confirmationDialog|fileImporter|fileExporter|fullScreenCover|dsFullScreenCover|dsPresents|popover|inspector|userErrorAlert|documentShare|photoFirstCapture|examplePrompt|readingPrompt)[[:space:]]*[({]/ && covers("presentation-on-section")) {
+                            print path "\tpresentation-on-section\t" FNR
+                        }
+                    } else chained_at = -1
+                }
+            }
+            if (code ~ /(^|[^A-Za-z0-9_.])(Section|ForEach)[[:space:]]*(\(.*\))?[[:space:]]*\{/) {
+                held++; held_at[held] = nesting
+            }
+            nesting += gsub(/[{(]/, "&", code) - gsub(/[})]/, "&", code)
+            while (held > 0 && nesting <= held_at[held]) { chained_at = held_at[held]; held-- }
             opens_scroll = scroll_at < 0 && code ~ /(^|[^A-Za-z0-9_])ScrollView[[:space:]]*(\([^)]*\))?[[:space:]]*\{/
             if (opens_scroll) scroll_at = depth
             opens_pocket = pocket_at < 0 && code ~ /(^|[^A-Za-z0-9_])DSPocketCard[[:space:]]*\(.*\{[[:space:]]*$/
