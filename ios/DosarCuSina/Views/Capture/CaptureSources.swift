@@ -35,7 +35,7 @@ private struct CaptureSourcePickerModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .fullScreenCover(isPresented: binding(for: .camera)) {
+            .dsFullScreenCover(isPresented: binding(for: .camera)) {
                 DocumentCamera { pages in
                     source = nil
                     guard !pages.isEmpty else { return }
@@ -44,6 +44,7 @@ private struct CaptureSourcePickerModifier: ViewModifier {
                 .ignoresSafeArea()
             }
             .photosPicker(isPresented: binding(for: .photos), selection: $photoSelection, maxSelectionCount: 10, selectionBehavior: .ordered, matching: .images)
+            .dsPresents(binding(for: .photos))
             .onChange(of: photoSelection) { _, items in
                 guard !items.isEmpty else { return }
                 photoSelection = []
@@ -65,6 +66,7 @@ private struct CaptureSourcePickerModifier: ViewModifier {
                     onError(error)
                 }
             }
+            .dsPresents(binding(for: .files))
     }
 
     private func binding(for kind: CaptureSource) -> Binding<Bool> {

@@ -56,7 +56,7 @@ struct AgendaScreen: View {
         }
         .background(DS.Palette.background)
         .navigationTitle(Text("Agendă", comment: "Box with people and firms."))
-        .sheet(isPresented: $isAdding) {
+        .dsSheet(isPresented: $isAdding) {
             ProviderEditSheet(provider: nil, linkTo: nil)
         }
     }

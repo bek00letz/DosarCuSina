@@ -70,7 +70,7 @@ struct UndoEverywhereTests {
                 inboxNotices: FakeInboxNoticeCenter(allowed: false),
                 waitingInboxItems: { nil },
                 preferences: AppPreferences(defaults: defaults),
-                calendar: .bucharest,
+                calendar: { .bucharest },
                 now: { noon("2026-11-03") }
             )
             coordinator.register(SpotlightIndexer(

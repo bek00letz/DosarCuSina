@@ -447,7 +447,7 @@ struct SyncAccountAndContainersTests {
         let failures = OutsideActionFailures(suiteName: "tests.\(UUID().uuidString)")
         let center = FakeNotificationCenter(status: .authorized)
         let coordinator = SideEffectsCoordinator(container: container, notificationClient: center,
-                                                 widgetWriter: WidgetSnapshotWriter(directory: folder), calendar: calendar, now: { now })
+                                                 widgetWriter: WidgetSnapshotWriter(directory: folder), calendar: { calendar }, now: { now })
         let outcome = try await IntentEngine.perform(OutsideRequest(obligationId: id, cycle: CalendarDay("2026-12-05"), action: .complete, surface: .notification),
                                                      container: container, sideEffects: { _ in coordinator }, failures: failures, calendar: calendar, now: { now })
         #expect(outcome == .skipped, "December was closed on the other device")

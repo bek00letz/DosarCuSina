@@ -116,7 +116,7 @@ private struct ObligationPage: View {
                 }
             }
         }
-        .sheet(isPresented: $isEditing) {
+        .dsSheet(isPresented: $isEditing) {
             DeadlineEditSheet(obligation: obligation) { result in
                 isEditing = false
                 if let result { toast = result }
@@ -128,21 +128,21 @@ private struct ObligationPage: View {
         .reminderPermissionGate($saveRequest)
         .task { await ReminderPermission.shared.refresh() }
         .completionSheet($completing, toast: $toast)
-        .sheet(isPresented: $isAddingToCalendar) {
+        .dsSheet(isPresented: $isAddingToCalendar) {
             CalendarEventEditor(title: obligation.title, day: obligation.dueDay, notes: obligation.asset?.name)
                 .ignoresSafeArea()
         }
-        .sheet(isPresented: $isAddingCustomLead) {
+        .dsSheet(isPresented: $isAddingCustomLead) {
             CustomLeadSheet { days in
                 isAddingCustomLead = false
                 if let days { setLead(days, on: true) }
             }
             .presentationDetents([.medium])
         }
-        .sheet(isPresented: $isEditingReminders) {
+        .dsSheet(isPresented: $isEditingReminders) {
             ReminderSettingsSheet(obligation: obligation) { isEditingReminders = false }
         }
-        .sheet(isPresented: $isRescheduling) {
+        .dsSheet(isPresented: $isRescheduling) {
             RescheduleSheet(current: obligation.dueDay) { day in
                 isRescheduling = false
                 if let day { reschedule(to: day) }

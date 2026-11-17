@@ -38,7 +38,7 @@ struct OutsideActionsTests {
             notificationClient: center,
             widgetWriter: WidgetSnapshotWriter(directory: folder),
             preferences: AppPreferences(defaults: defaults),
-            calendar: calendar,
+            calendar: { calendar },
             now: { now }
         )
         return Household(container: container, rent: rent, center: center, coordinator: coordinator,
@@ -246,7 +246,7 @@ struct OutsideActionsTests {
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: folder) }
         let coordinator = SideEffectsCoordinator(container: container, notificationClient: FakeNotificationCenter(status: .authorized),
-                                                 widgetWriter: WidgetSnapshotWriter(directory: folder), calendar: calendar)
+                                                 widgetWriter: WidgetSnapshotWriter(directory: folder), calendar: { calendar })
         let responder = NotificationResponder(containerProvider: { container }, navigator: AppNavigator(),
                                               sideEffects: { _ in coordinator }, failures: OutsideActionFailures(suiteName: "tests.\(UUID().uuidString)"))
         await responder.handle(action: ReminderActions.complete, payload: payload, calendar: calendar)

@@ -55,4 +55,12 @@ struct DeadlineEdit: Equatable {
 
     /// It has a name.
     var canSave: Bool { !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+    /// Whether, against `start` (the deadline as the sheet opened with it), this edit adds or
+    /// changes what reminds: its leads, its follow-up, its reminder time (a new importance moves
+    /// the leads too). Only then does saving explain the notification question first; a new name,
+    /// due day or repeat keeps the reminders the person already has.
+    func changesReminders(from start: DeadlineEdit) -> Bool {
+        reminders != start.reminders || reminderMinuteOfDay != start.reminderMinuteOfDay
+    }
 }

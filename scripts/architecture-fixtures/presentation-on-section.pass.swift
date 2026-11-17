@@ -12,7 +12,7 @@ struct ExampleSettingsSection: View {
         List {
             Section {
                 Button { isChoosing = true } label: { Text("Fă o copie") }
-                    .sheet(isPresented: $isChoosing) {
+                    .dsSheet(isPresented: $isChoosing) {
                         Text("Parolă")
                     }
                 ForEach(names, id: \.self) { name in
@@ -21,7 +21,7 @@ struct ExampleSettingsSection: View {
             } header: {
                 Text("Copie de siguranță")
                     .userErrorAlert($error)
-                    .sheet(item: $isEditing) { name in Text(verbatim: name) }
+                    .dsSheet(item: $isEditing) { name in Text(verbatim: name) }
             } footer: {
                 Text("Copia e un singur fișier.")
             }

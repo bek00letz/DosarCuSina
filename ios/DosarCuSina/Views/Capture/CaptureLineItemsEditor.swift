@@ -62,7 +62,7 @@ struct CaptureLineItemsEditor: View {
             DSAdaptiveStack(spacing: DS.Space.xs) { listActions }
             .padding(.top, DS.Space.xs)
         }
-        .sheet(item: $editing) { editing in
+        .dsSheet(item: $editing) { editing in
             CaptureLineItemSheet(
                 line: editing.index.map { lines[$0] },
                 currency: currency,

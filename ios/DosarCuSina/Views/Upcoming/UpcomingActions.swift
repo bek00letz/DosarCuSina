@@ -12,12 +12,10 @@ struct UpcomingActions {
     /// Snooze lengths offered, in days.
     static let snoozeChoices: [Int] = [1, 3, 7, 14]
 
-    /// "Mâine", "Peste 3 zile", "Peste 14 zile": a length the person picks, worded
-    /// like a reminder's lead.
+    /// "Mâine", "Peste 3 zile", "Peste 14 zile": a length the person picks, in days, by the
+    /// String Catalog's plural variations (one day is "Mâine").
     static func snoozeTitle(days: Int) -> String {
-        days == 1
-            ? String(localized: "Mâine", comment: "Snooze until tomorrow")
-            : String(localized: "Peste \(DurationWording.lead(days: days))", comment: "Snooze for a length such as '3 zile' or '14 zile'")
+        String(localized: "Peste \(days) zile", comment: "Snooze for a number of days, with Romanian plural forms: one „Mâine”, „Peste 3 zile”, „Peste 20 de zile”.")
     }
 
     func obligation(_ id: UUID) -> Obligation? {

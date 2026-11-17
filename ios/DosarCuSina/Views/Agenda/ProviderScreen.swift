@@ -73,7 +73,7 @@ private struct ProviderContent: View {
                 Button { isEditing = true } label: { Text("Editează", comment: "Toolbar button that edits a section's details.") }
             }
         }
-        .sheet(isPresented: $isEditing) { ProviderEditSheet(provider: provider, linkTo: nil) }
+        .dsSheet(isPresented: $isEditing) { ProviderEditSheet(provider: provider, linkTo: nil) }
         .confirmationDialog(Text("Ștergi „\(provider.name)” din agendă?", comment: "Delete confirmation for a provider."), isPresented: $isConfirmingDelete, titleVisibility: .visible) {
             Button(role: .destructive, action: delete) { Text("Șterge", comment: "Confirm deleting.") }
             Button(role: .cancel) {} label: { Text("Păstrează", comment: "Cancel a delete.") }

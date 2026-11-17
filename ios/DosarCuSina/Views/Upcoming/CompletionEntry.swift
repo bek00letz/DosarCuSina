@@ -58,7 +58,7 @@ private struct CompletionSheetModifier: ViewModifier {
     @Environment(\.modelContext) private var context
 
     func body(content: Content) -> some View {
-        content.sheet(item: $request) { request in
+        content.dsSheet(item: $request) { request in
             if let obligation = UpcomingActions(context: context).obligation(request.obligationID) {
                 ObligationCompleteSheet(obligation: obligation, cycle: request.cycle) { result in
                     self.request = nil

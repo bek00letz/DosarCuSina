@@ -188,6 +188,17 @@ public enum ObligationKind: String, Codable, CaseIterable, Sendable {
         self = raw.flatMap(ObligationKind.init(rawValue:)) ?? .loudest
     }
 
+    /// Whether each cycle of a repeat counted from its due dates is money still owed when it is
+    /// missed: a month's rent, a tax installment. Done late, one "Gata" then closes one cycle and
+    /// the next may still be late; every other kind moves to its first due day after the day it
+    /// was done (`RecurrenceContext.missedCyclesStayOwed`), so it isn't late the moment it is done.
+    public var missedCyclesStayOwed: Bool {
+        switch self {
+        case .payment, .tax: return true
+        case .legal, .insurance, .health, .renewal, .maintenance, .routine: return false
+        }
+    }
+
     /// The profile used when a blueprint or the person doesn't give one.
     public var defaultProfile: ReminderProfile {
         switch self {
@@ -272,7 +283,9 @@ public struct RecurrenceInterval: Hashable, Sendable, Codable {
 
 /// The date a repeating obligation counts its next cycle from.
 public enum RecurrenceAnchor: String, Codable, Sendable {
-    /// From the previous due date. Every cycle is its own payment (rent, taxes, insurance).
+    /// From the previous due date, on the series' own days (rent, taxes, insurance). Done after
+    /// the next was due, it moves to the first of its days after the day it was done, unless each
+    /// cycle is money still owed (`ObligationKind.missedCyclesStayOwed`).
     case dueDate
     /// From the day it was done. Validity starts when the work happens (ITP, oil change, watering).
     case completion

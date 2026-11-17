@@ -145,7 +145,7 @@ struct CaptureReviewView: View {
         // Asks only once the person changed what the reading proposed: closing loses nothing else.
         .dsDiscardGuard(hasChanges: review.hasPersonsChanges && !isSaving, message: discardMessage)
         .reminderPermissionGate($saveRequest)
-        .sheet(isPresented: $isPickingDestination) {
+        .dsSheet(isPresented: $isPickingDestination) {
             CaptureDestinationPicker(
                 title: review.kind.profile.noun.wherePutWords,
                 destination: Binding(get: { review.destination }, set: { review.choosePlace($0) }),
@@ -155,7 +155,7 @@ struct CaptureReviewView: View {
                 filesUnderSubscription: review.kind.profile.filing == .subscription
             )
         }
-        .fullScreenCover(isPresented: $isShowingPages) {
+        .dsFullScreenCover(isPresented: $isShowingPages) {
             DocumentPagesViewer(pages: pageSources, editing: .review($review.pageChoices))
         }
         .captureSourcePicker($backSource, onPicked: { payload in
@@ -926,7 +926,7 @@ private struct CaptureDestinationPicker: View {
                 .navigationBarTitleDisplayMode(.inline)
             }
         }
-        .sheet(isPresented: Binding(get: { newSection != nil }, set: { if !$0 { newSection = nil } }), onDismiss: {
+        .dsSheet(isPresented: Binding(get: { newSection != nil }, set: { if !$0 { newSection = nil } }), onDismiss: {
             // Waits for the flow's sheet to have gone before this one closes.
             if closesAfterNewSection { dismiss() }
         }) {

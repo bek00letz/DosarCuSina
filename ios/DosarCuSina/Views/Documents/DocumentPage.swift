@@ -98,10 +98,10 @@ private struct PersonalDocumentContent: View {
             // One extra action shows as itself ("Mută la…"); several would share "Mai multe".
             DSMoreActionsToolbar(actions: moreActions)
         }
-        .sheet(isPresented: $isEditing) {
+        .dsSheet(isPresented: $isEditing) {
             DocumentEditSheet(document: document, definition: definition, picture: picture) { toast = $0 }
         }
-        .sheet(isPresented: $isMoving) {
+        .dsSheet(isPresented: $isMoving) {
             MoveAssetSheet(asset: document) { moved in
                 toast = .undo(moved.toastTitle, receipt: moved.receipt)
             }
@@ -322,7 +322,7 @@ struct DocumentPictureSection: View {
         .onChange(of: pages.count) { _, count in
             if selection >= count { selection = max(count - 1, 0) }
         }
-        .fullScreenCover(item: $openPage) { page in
+        .dsFullScreenCover(item: $openPage) { page in
             DocumentPagesViewer(
                 pages: DocumentPages.sources(of: attachment),
                 startAt: page.index,

@@ -83,6 +83,11 @@ public struct CalendarDay: Hashable, Comparable, Sendable, Codable, CustomString
     /// The one place a day becomes a moment. A day the calendar doesn't have becomes its
     /// month's last day (`onCalendar`), never rolled over into the next month: "2026-02-30" is
     /// never 2 March, wherever it is shown, counted or reminded of.
+    ///
+    /// A time the clocks skip that day (03:30 on the morning summer time starts in Romania,
+    /// when 03:00 becomes 04:00) is the first minute after the gap, 04:00, as iOS itself does
+    /// for a time that doesn't exist; a time the clocks show twice (when summer time ends) is
+    /// the first of the two. `ReminderClock.springForward` says it on the reminder time's page.
     public func moment(atMinute minuteOfDay: Int, in calendar: Calendar = .dosar) -> Date {
         onCalendar.moment(asWrittenAtMinute: minuteOfDay, in: calendar)
     }
@@ -94,9 +99,23 @@ public struct CalendarDay: Hashable, Comparable, Sendable, Codable, CustomString
         parts.year = year
         parts.month = month
         parts.day = day
-        parts.hour = minuteOfDay / 60
-        parts.minute = minuteOfDay % 60
-        return calendar.date(from: parts) ?? Date(timeIntervalSince1970: 0)
+        let hour = minuteOfDay / 60, minute = minuteOfDay % 60
+        parts.hour = hour
+        parts.minute = minute
+        guard let written = calendar.date(from: parts) else { return Date(timeIntervalSince1970: 0) }
+        // The clock on the wall shows that time on that day: the moment it shows it.
+        let shown = calendar.dateComponents([.hour, .minute], from: written)
+        if shown.hour == hour, shown.minute == minute { return written }
+        // A time the clocks skip: the first minute after the gap, never the same time an hour on
+        // (which is what `date(from:)` gives).
+        parts.hour = nil
+        parts.minute = nil
+        guard let dayStarts = calendar.date(from: parts),
+              let after = calendar.nextDate(after: dayStarts.addingTimeInterval(-1),
+                                            matching: DateComponents(hour: hour, minute: minute),
+                                            matchingPolicy: .nextTime, repeatedTimePolicy: .first, direction: .forward)
+        else { return written }
+        return after
     }
 
     /// Noon on this day in `calendar`'s time zone. Stored dates use noon so the

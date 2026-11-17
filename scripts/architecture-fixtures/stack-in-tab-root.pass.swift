@@ -4,7 +4,7 @@ struct ExampleRoot: View {
 
     var body: some View {
         List {}
-            .sheet(isPresented: $isAdding) {
+            .dsSheet(isPresented: $isAdding) {
                 // A sheet has a stack of its own; that's fine.
                 NavigationStack { AddSheet() }
             }
