@@ -28,6 +28,10 @@ enum ShellSheet: Identifiable, Hashable, Sendable {
     /// A new document for a household member: photo first, or typed in. Without a holder (the
     /// Acte box), the photo names them and "Scriu eu" asks whose it is.
     case addPersonalDocument(holderID: UUID?)
+    /// Any document of a household member's, from their page's one „Adaugă un document”: photo
+    /// first, and capture decides whether it is one of their own documents or a paper kept on
+    /// their page (`HolderDocumentFiling.captureDecides`); „Scriu eu” types one of their own.
+    case addDocument(holderID: UUID)
 
     var id: String {
         switch self {
@@ -35,6 +39,7 @@ enum ShellSheet: Identifiable, Hashable, Sendable {
         case .addVisit(let id): "visit.\(id.uuidString)"
         case .addSection(let request): "section.\(request.parentID?.uuidString ?? "")\(request.templateKey ?? "")"
         case .addPersonalDocument(let holderID): "personalDocument.\(holderID?.uuidString ?? "")"
+        case .addDocument(let holderID): "document.\(holderID.uuidString)"
         }
     }
 
@@ -47,6 +52,7 @@ enum ShellSheet: Identifiable, Hashable, Sendable {
         case .addVisit(let id): .section(id)
         case .addSection(let request): request.parentID.map(RouteLock.section) ?? .open
         case .addPersonalDocument(let holderID): holderID.map(RouteLock.section) ?? .open
+        case .addDocument(let holderID): .section(holderID)
         }
     }
 }

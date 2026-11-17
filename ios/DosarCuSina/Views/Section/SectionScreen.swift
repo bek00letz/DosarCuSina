@@ -270,7 +270,7 @@ struct SectionPocketList<UnderUpcoming: View>: View {
         .historyNoteSheet($noteRequest, toast: $toast)
         .photoFirstCapture(
             isPresented: $isChoosingPhoto,
-            title: Text("Adaugă un act", comment: "Title of the photo source choice for a paper added from a section page."),
+            title: Text(verbatim: PocketWording.addDocument),
             assetID: asset.id
         ) { filed in
             toast = filed
@@ -287,6 +287,8 @@ struct SectionPocketList<UnderUpcoming: View>: View {
             isAddingDeadline = true
         case .child(_, let templateKey):
             router.present(.addSection(AddSectionRequest(parentID: asset.id, templateKey: templateKey)))
+        case .document:
+            router.present(.addDocument(holderID: asset.id))
         case .personalDocument:
             router.present(.addPersonalDocument(holderID: asset.id))
         case .paper:

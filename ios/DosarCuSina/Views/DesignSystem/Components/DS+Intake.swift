@@ -23,6 +23,15 @@ struct DSActionCard: View {
         self.action = action
     }
 
+    /// With a line of explanation already worded (a kind's own, `HolderDocumentFiling`).
+    init(_ title: LocalizedStringKey, subtitle: Text, systemImage: String, tint: Color = DS.Palette.accent, action: @escaping () -> Void) {
+        self.title = Text(title)
+        self.subtitle = subtitle
+        self.systemImage = systemImage
+        self.tint = tint
+        self.action = action
+    }
+
     var body: some View {
         Button(action: action) {
             DSCard {

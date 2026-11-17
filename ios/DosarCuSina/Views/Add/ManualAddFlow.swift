@@ -4,7 +4,7 @@ import SwiftUI
 /// "Scriu eu": pick the section, then what to type in for it: a deadline, or a visit where its
 /// category logs them, in its kind's words (`VisitShape.title`, `startHint`).
 /// Everything saves through the engine's actions. A paper is added with a photo, from
-/// Adaugă's other three ways in or from the section's own page ("Adaugă un act"), never here:
+/// Adaugă's other three ways in or from the section's own page ("Adaugă un document"), never here:
 /// the label says typing, so nothing behind it asks for a photo.
 struct ManualAddFlow: View {
     /// "Un act" used to be offered here too, and opened capture: a photo behind "Scriu eu".

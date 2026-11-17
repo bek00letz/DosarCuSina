@@ -248,7 +248,7 @@ struct UpcomingRoot: View {
             let title = vault.isLocked(sectionIsSensitive: only.obligation.isSensitive) ? String(localized: "O scadență") : only.obligation.title
             return "\(title) · \(first)"
         }
-        let count = String(localized: "\(group.entries.count) termene", comment: "How many deadlines a section has coming up")
+        let count = String(localized: "\(group.entries.count) termene", locale: .dosarDefault, comment: "How many deadlines a section has coming up")
         return String(localized: "\(count), primul pe \(first)", comment: "Deadlines in a section, and the date of the first")
     }
 
@@ -359,7 +359,7 @@ struct UpcomingRoot: View {
                     .foregroundStyle(DS.Palette.secondaryLabel)
                     .multilineTextAlignment(.center)
             } else {
-                Text("Adaugă un act, o mașină sau o factură și îți spun din timp ce urmează.")
+                Text("Adaugă un document, o mașină sau o factură și îți spun din timp ce urmează.")
                     .dsFont(.body)
                     .foregroundStyle(DS.Palette.secondaryLabel)
                     .multilineTextAlignment(.center)
