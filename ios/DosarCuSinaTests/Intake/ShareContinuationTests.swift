@@ -128,7 +128,7 @@ struct InboxNoticeTests {
             inboxNotices: notices,
             waitingInboxItems: { inbox.waitingItems().map { Set($0.map(\.id)) } },
             preferences: preferences,
-            calendar: .bucharest,
+            calendar: { .bucharest },
             now: { noon("2026-11-09") }
         )
         await coordinator.reconcileNow()
@@ -163,7 +163,7 @@ struct InboxNoticeTests {
             inboxNotices: notices,
             waitingInboxItems: { inbox.waitingItems().map { Set($0.map(\.id)) } },
             preferences: AppPreferences(defaults: defaults),
-            calendar: .bucharest,
+            calendar: { .bucharest },
             now: { noon("2026-11-09") }
         )
         await coordinator.reconcileNow()
@@ -211,7 +211,7 @@ struct InboxNoticeTests {
             inboxNotices: notices,
             waitingInboxItems: { inbox.waitingItems().map { Set($0.map(\.id)) } },
             preferences: AppPreferences(defaults: defaults),
-            calendar: .bucharest,
+            calendar: { .bucharest },
             now: { noon("2026-11-09") }
         )
         await coordinator.reconcileNow()

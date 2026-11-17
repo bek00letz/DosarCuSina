@@ -98,20 +98,45 @@ struct RecurringDeadlinesTests {
         #expect(rent.snoozedUntil == nil && plants.snoozedUntil == nil)
     }
 
-    /// From its due day every cycle is its own (a month's rent is still owed after the one
-    /// before was paid late): one "Gata" closes one cycle. From the day it was done it is
-    /// never late again after "Gata".
-    @Test func anOverdueDeadlineClosesOneCycleAtATime() throws {
+    /// Counted from its due day and done after the next was due, a deadline moves to the first
+    /// of its days after the day it was done, so it isn't late the moment it is done. Only money
+    /// still owed for each cycle (a month's rent, a tax installment) closes one cycle at a time.
+    /// From the day it was done it is never late again after "Gata" either.
+    @Test func anOverdueDeadlineMovesPastTheDayItWasDone() throws {
         let context = try makeContext()
         let actions = ObligationActions(context: context, calendar: calendar, now: { noon("2026-11-20") })
         let bins = try actions.create(title: "Gunoiul", kind: .routine, dueDay: CalendarDay("2026-11-02"), for: nil,
                                       recurrence: .interval(.weeks(1), anchor: .dueDate))
         let plants = try actions.create(title: "Udat plantele", kind: .routine, dueDay: CalendarDay("2026-11-02"), for: nil,
                                         recurrence: .interval(.weeks(1), anchor: .completion))
+        let rent = try actions.create(title: "Chirie", kind: .payment, dueDay: CalendarDay("2026-09-05"), for: nil,
+                                      recurrence: .interval(.months(1), anchor: .dueDate))
         try actions.complete(bins)
         try actions.complete(plants)
-        #expect(bins.dueDay == CalendarDay("2026-11-09"), "The next cycle, still late")
+        try actions.complete(rent)
+        #expect(bins.dueDay == CalendarDay("2026-11-23"), "Its first Monday after the day it was done, never one already past")
+        #expect(bins.urgency(now: noon("2026-11-20"), calendar: calendar) != .overdue, "Not late the moment it is done")
         #expect(plants.dueDay == CalendarDay("2026-11-27"))
+        #expect(rent.dueDay == CalendarDay("2026-10-05"), "October's rent is still owed: one cycle at a time")
+        try actions.complete(rent)
+        try actions.complete(rent)
+        #expect(rent.dueDay == CalendarDay("2026-12-05"))
+    }
+
+    @Test func aMonthlySeriesDoneLateKeepsItsDayOfTheMonth() throws {
+        var day = "2027-01-31"
+        let context = try makeContext()
+        let actions = ObligationActions(context: context, calendar: calendar, now: { noon(day) })
+        let check = try actions.create(title: "Verificarea centralei", kind: .maintenance, dueDay: CalendarDay("2027-01-31"), for: nil,
+                                       recurrence: .interval(.months(1), anchor: .dueDate))
+        try actions.complete(check)
+        #expect(check.dueDay == CalendarDay("2027-02-28"))
+        day = "2027-04-10"
+        try actions.complete(check)
+        #expect(check.dueDay == CalendarDay("2027-04-30"), "31 March had passed: the first of its days after 10 April")
+        day = "2027-04-30"
+        try actions.complete(check)
+        #expect(check.dueDay == CalendarDay("2027-05-31"), "The late step is still one of the series, so it keeps the 31st")
     }
 
     // MARK: From outside the app

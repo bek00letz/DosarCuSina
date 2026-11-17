@@ -34,8 +34,13 @@ struct RecurrenceEngineTests {
         let rule = RecurrenceRule.fixedDates([MonthDay(month: 3, day: 31), MonthDay(month: 9, day: 30)])
         #expect(RecurrenceEngine.nextDue(after: CalendarDay("2026-03-31"), completedOn: CalendarDay("2026-03-20"), rule: rule, calendar: calendar)?.day == CalendarDay("2026-09-30"))
         #expect(RecurrenceEngine.nextDue(after: CalendarDay("2026-09-30"), completedOn: CalendarDay("2026-09-30"), rule: rule, calendar: calendar)?.day == CalendarDay("2027-03-31"))
-        // Paid very late: the next installment is still owed, so it is not skipped.
-        #expect(RecurrenceEngine.nextDue(after: CalendarDay("2026-03-31"), completedOn: CalendarDay("2026-11-01"), rule: rule, calendar: calendar)?.day == CalendarDay("2026-09-30"))
+        // Paid very late: a tax's next installment is still owed, so it is not skipped.
+        let owed = RecurrenceContext(missedCyclesStayOwed: true)
+        #expect(RecurrenceEngine.nextDue(after: CalendarDay("2026-03-31"), completedOn: CalendarDay("2026-11-01"), rule: rule, context: owed, calendar: calendar)?.day == CalendarDay("2026-09-30"))
+        // Anything else done very late moves to the first date after the day it was done.
+        #expect(RecurrenceEngine.nextDue(after: CalendarDay("2026-03-31"), completedOn: CalendarDay("2026-11-01"), rule: rule, calendar: calendar)?.day == CalendarDay("2027-03-31"))
+        #expect(RecurrenceEngine.nextDue(after: CalendarDay("2026-03-31"), completedOn: CalendarDay("2026-09-30"), rule: rule, calendar: calendar)?.day == CalendarDay("2027-03-31"),
+                "Done on the next date's own day: that one is behind it too")
     }
 
     @Test func oneOffObligationsHaveNoNextCycle() {

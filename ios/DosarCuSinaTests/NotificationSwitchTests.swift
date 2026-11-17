@@ -31,7 +31,7 @@ struct NotificationSwitchTests {
             inboxNotices: FakeInboxNoticeCenter(allowed: true),
             waitingInboxItems: { [] },
             preferences: preferences,
-            calendar: .bucharest,
+            calendar: { .bucharest },
             now: { noon("2026-11-02") }
         )
 

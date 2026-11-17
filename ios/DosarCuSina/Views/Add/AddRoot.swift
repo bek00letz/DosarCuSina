@@ -55,7 +55,7 @@ struct AddRoot: View {
         } onError: { error in
             toast = UpcomingActions.failureToast(error)
         }
-        .sheet(item: $flow) { input in
+        .dsSheet(item: $flow) { input in
             CaptureFlowView(input: input) { result in
                 flow = nil
                 show(result)
@@ -84,13 +84,13 @@ struct AddRoot: View {
         } message: { _ in
             Text("S-a stricat pe drum sau vine de la o versiune mai nouă a aplicației. Trimite-l din nou din aplicația din care a venit.")
         }
-        .sheet(isPresented: $isAddingManually) {
+        .dsSheet(isPresented: $isAddingManually) {
             ManualAddFlow { message in
                 isAddingManually = false
                 if let message { toast = DSToast(title: message, actionTitle: nil, action: nil) }
             }
         }
-        .sheet(isPresented: $isPracticingShare) {
+        .dsSheet(isPresented: $isPracticingShare) {
             NavigationStack {
                 SharePracticeView(isOnboarding: false) { isPracticingShare = false }
                     .toolbar {

@@ -156,7 +156,12 @@ struct NotificationSettings: View {
         } header: {
             Text("Notificări", comment: "Settings section.")
         } footer: {
-            Text("Amintirile vin la ora asta, dacă un termen nu are ora lui.", comment: "Footer of the reminder time setting.")
+            VStack(alignment: .leading, spacing: DS.Space.xs) {
+                Text("Amintirile vin la ora asta, dacă un termen nu are ora lui.", comment: "Footer of the reminder time setting.")
+                if let note = ReminderWording.springForward(preferences.reminderMinuteOfDay) {
+                    Text(verbatim: note)
+                }
+            }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { sideEffects?.setNeedsReconcile(allowPermissionPrompt: false) }
@@ -594,7 +599,7 @@ struct CustomCategorySettings: View {
                 // On the header, the one view of the section that stays: a modifier on the
                 // Section would reach every row (`presentation-on-section`).
                 Text("Categoriile tale", comment: "Settings section: the person's own categories.")
-                    .sheet(item: $editing) { template in
+                    .dsSheet(item: $editing) { template in
                         CategoryEditSheet(template: template) { done in toast = done }
                     }
             } footer: {
@@ -790,7 +795,7 @@ struct AboutSettings: View {
                 Text(verbatim: "Galerie design (doar în versiunea de test)")
                     .frame(minHeight: 44)
             }
-            .sheet(isPresented: $isShowingGallery) { DesignSystemGallery() }
+            .dsSheet(isPresented: $isShowingGallery) { DesignSystemGallery() }
             #endif
             // Last, so it's easy to find: which build this phone runs, copyable.
             DSActionValueRow(title: Text("Versiunea", comment: "About: app version and build."), value: BuildInfo.current.summary, action: .copy)

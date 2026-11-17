@@ -77,9 +77,10 @@ extension AttentionModel {
                                           detail: lastLine, expectedDay: missing.expectedDay), missing.expectedDay)
                 }
                 let from = subscription.provider.map(SubscriptionMatcher.shortProviderName) ?? subscription.name
-                let title = missing.cycleMonths == 1
-                    ? String(localized: "Factura de la \(from) n-a venit luna asta", comment: "A monthly bill that hasn't come. The argument is the provider.")
-                    : String(localized: "Factura de la \(from) n-a venit încă", comment: "A bill that hasn't come. The argument is the provider.")
+                // By how many months its bills come apart, the String Catalog's plural variations:
+                // a monthly bill "n-a venit luna asta", a rarer one "n-a venit încă".
+                let title = String(localized: "Factura de la \(from) n-a venit, o dată la \(missing.cycleMonths) luni",
+                                   locale: .dosarDefault, comment: "A bill that hasn't come. The first argument is the provider; by how many months its bills come apart, without the number: one „Factura de la ENGIE n-a venit luna asta”, more „Factura de la ENGIE n-a venit încă”.")
                 let place = [subscription.name, subscription.placeName].compactMap { $0 }.joined(separator: " · ")
                 return (AttentionNote(opens: .section(subscription.id), title: title, detail: place + ". " + lastLine, expectedDay: missing.expectedDay), missing.expectedDay)
             }

@@ -72,7 +72,7 @@ private struct ReminderPermissionGate: ViewModifier {
                     }
                 }
             }
-            .sheet(item: $pending) { request in
+            .dsSheet(item: $pending, keepsRoutesWaiting: true) { request in
                 ReminderPermissionExplainer {
                     pending = nil
                     request.save()

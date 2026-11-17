@@ -63,12 +63,15 @@ private struct DSDiscardGuardModifier: ViewModifier {
     let message: Text?
 
     @Environment(\.dismiss) private var dismiss
+    /// The sheet it guards, as the router knows it: a route waits while there are changes.
+    @Environment(\.screenSheet) private var screenSheet
     @State private var isConfirming = false
     @State private var actionID = UUID()
 
     func body(content: Content) -> some View {
         content
             .interactiveDismissDisabled(hasChanges)
+            .onChange(of: hasChanges, initial: true) { _, holds in screenSheet?.holdsWork(holds) }
             .background {
                 DSDismissAttemptObserver {
                     if hasChanges { isConfirming = true }

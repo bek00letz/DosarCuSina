@@ -133,9 +133,15 @@ enum ShellRouting {
     }
 }
 
-/// The shell's one sheet, and the one waiting for it to finish closing, so sheets never
-/// stack and the next opens as soon as the last is gone: when its dismissal completes,
-/// not after a guessed pause. Pure, so it is tested.
+/// Everything up over the tabs, and what waits for it: the shell's one sheet and the one waiting
+/// for it to finish closing, so sheets never stack and the next opens as soon as the last is
+/// gone (when its dismissal completes, not after a guessed pause); and the screens' own sheets
+/// (`dsSheet`, `dsFullScreenCover`, `dsPresents`), so a route never lands under one. Pure, so
+/// it is tested.
+///
+/// A route that comes while a screen's own sheet is up closes them, the top one first and each
+/// once the one above has closed, then lands; while one of them, or the shell's sheet, holds
+/// work the person hasn't saved, it waits until the person has closed them.
 struct ShellSheetQueue: Equatable, Sendable {
     /// What the shell asks to show; nil while nothing should be up (or the last is closing).
     private(set) var shown: ShellSheet?
@@ -143,9 +149,77 @@ struct ShellSheetQueue: Equatable, Sendable {
     private(set) var waiting: ShellSheet?
     /// A sheet is on screen, or still on its way off it.
     private(set) var isOnScreen = false
+    /// The shell's sheet holds work the person hasn't saved (its form's `dsDiscardGuard`).
+    private(set) var shellHoldsWork = false
+
+    /// A screen's own sheet on screen, and whether a route must wait for the person to close it.
+    struct ScreenSheet: Equatable, Sendable {
+        var id: UUID
+        /// It must be answered before anything else (the notification question before a save).
+        var waitsByItself: Bool
+        /// Its form holds changes the person hasn't saved.
+        var holdsWork = false
+
+        var keepsRoutesWaiting: Bool { waitsByItself || holdsWork }
+    }
+
+    /// The screens' own sheets on screen, the first opened first: the last is on top.
+    private(set) var screens: [ScreenSheet] = []
+    /// A route that came while something was up over the tabs; the newest wins.
+    private(set) var waitingRoute: AppRoute?
+
+    /// What a waiting route does next.
+    enum RouteStep: Equatable, Sendable {
+        /// Nothing is up any more: it lands.
+        case land(AppRoute)
+        /// Closes this screen's sheet, the top one, and waits for its dismissal to complete.
+        case close(UUID)
+        /// Something up holds unsaved work: it waits for the person to close it.
+        case wait
+    }
 
     /// Something is up, closing, or about to open.
-    var isBusy: Bool { shown != nil || waiting != nil || isOnScreen }
+    var isBusy: Bool { shown != nil || waiting != nil || isOnScreen || !screens.isEmpty || waitingRoute != nil }
+
+    /// A route arrives: it lands at once, or waits for what is up over the tabs (`RouteStep`).
+    /// The shell's own sheet doesn't hold it back unless it holds unsaved work: landing presents
+    /// the route's sheet, which closes the one on screen first.
+    mutating func arrive(_ route: AppRoute) -> RouteStep {
+        waitingRoute = route
+        return nextStep()
+    }
+
+    /// A screen's own sheet came on screen (again, after something over it closed: it keeps its place).
+    mutating func screenDidAppear(_ id: UUID, waitsByItself: Bool) {
+        guard !screens.contains(where: { $0.id == id }) else { return }
+        screens.append(ScreenSheet(id: id, waitsByItself: waitsByItself))
+    }
+
+    /// A screen's own sheet's form now holds (or no longer holds) unsaved work. A route already
+    /// waiting goes on waiting for the person: it is looked at again only when something closes.
+    mutating func screen(_ id: UUID, holdsWork: Bool) {
+        guard let index = screens.firstIndex(where: { $0.id == id }) else { return }
+        screens[index].holdsWork = holdsWork
+    }
+
+    /// The shell's sheet's form now holds (or no longer holds) unsaved work.
+    mutating func shellSheet(holdsWork: Bool) {
+        shellHoldsWork = holdsWork
+    }
+
+    /// A screen's own sheet finished closing: what a waiting route does next, if one waits.
+    mutating func screenDidDismiss(_ id: UUID) -> RouteStep? {
+        screens.removeAll { $0.id == id }
+        return waitingRoute == nil ? nil : nextStep()
+    }
+
+    private mutating func nextStep() -> RouteStep {
+        guard let route = waitingRoute else { return .wait }
+        if screens.contains(where: \.keepsRoutesWaiting) || (isOnScreen && shellHoldsWork) { return .wait }
+        if let top = screens.last { return .close(top.id) }
+        waitingRoute = nil
+        return .land(route)
+    }
 
     /// Shows `next` (nil closes). Over a sheet on screen it closes that one first and waits.
     mutating func present(_ next: ShellSheet?) {
@@ -169,13 +243,17 @@ struct ShellSheetQueue: Equatable, Sendable {
         isOnScreen = true
     }
 
-    /// The sheet finished closing, however it closed: the waiting one opens now.
-    mutating func didDismiss() {
+    /// The sheet finished closing, however it closed: the waiting one opens now, and a route
+    /// that waited for it is looked at again (`RouteStep`).
+    @discardableResult
+    mutating func didDismiss() -> RouteStep? {
         isOnScreen = false
+        shellHoldsWork = false
         if let waiting {
             shown = waiting
             self.waiting = nil
         }
+        return waitingRoute == nil ? nil : nextStep()
     }
 }
 
@@ -190,6 +268,11 @@ final class ShellRouter {
     var addPath = NavigationPath()
     var searchPath = NavigationPath()
     private var sheets = ShellSheetQueue()
+    /// How to close each screen's own sheet on screen, for a route that closes them.
+    @ObservationIgnored private var closers: [UUID: @MainActor () -> Void] = [:]
+
+    /// What the shell's own sheet tells its form (`EnvironmentValues.screenSheet`).
+    static let shellSheetID = UUID()
 
     /// The sheet over the tabs. Closing it by hand (a swipe) writes nil here.
     var sheet: ShellSheet? {
@@ -197,11 +280,47 @@ final class ShellRouter {
         set { present(newValue) }
     }
 
-    /// A sheet is up, closing or about to open: nothing else should pop up over the tabs.
+    /// A sheet is up (the shell's or a screen's own), closing or about to open, or a route waits
+    /// for one: nothing else should pop up over the tabs.
     var hasSheet: Bool { sheets.isBusy }
 
     /// Opens a route: switches tab, replaces that tab's path and presents a sheet if needed.
+    /// While a screen's own sheet is up it never pushes under it: it closes them first, or, while
+    /// one holds unsaved work, waits until the person has (`ShellSheetQueue.arrive`).
     func open(_ route: AppRoute) {
+        follow(sheets.arrive(route))
+    }
+
+    /// A screen's own sheet came on screen (`dsSheet`), with how a route closes it.
+    func screenSheetDidAppear(_ id: UUID, waitsByItself: Bool, close: @escaping @MainActor () -> Void) {
+        closers[id] = close
+        sheets.screenDidAppear(id, waitsByItself: waitsByItself)
+    }
+
+    /// A screen's own sheet finished closing: a route waiting for it goes on.
+    func screenSheetDidDismiss(_ id: UUID) {
+        closers[id] = nil
+        follow(sheets.screenDidDismiss(id))
+    }
+
+    /// A sheet's form holds (or no longer holds) unsaved work (`dsDiscardGuard`).
+    func screenSheet(_ id: UUID, holdsWork: Bool) {
+        if id == Self.shellSheetID {
+            sheets.shellSheet(holdsWork: holdsWork)
+        } else {
+            sheets.screen(id, holdsWork: holdsWork)
+        }
+    }
+
+    private func follow(_ step: ShellSheetQueue.RouteStep?) {
+        switch step {
+        case .land(let route): land(route)
+        case .close(let id): closers[id]?()
+        case .wait, nil: break
+        }
+    }
+
+    private func land(_ route: AppRoute) {
         let plan = ShellRouting.plan(for: route)
         tab = plan.tab
         var path = NavigationPath()
@@ -221,9 +340,9 @@ final class ShellRouter {
         sheets.didAppear()
     }
 
-    /// The shell's sheet finished closing (its `onDismiss`).
+    /// The shell's sheet finished closing (its `onDismiss`): a route waiting for it goes on.
     func sheetDidDismiss() {
-        sheets.didDismiss()
+        follow(sheets.didDismiss())
     }
 
     /// Pushes a screen on the current tab.

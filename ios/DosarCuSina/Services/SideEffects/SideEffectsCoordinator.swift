@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import Observation
+import UIKit
 
 /// Something else that is rebuilt from the database after every save: the Spotlight
 /// index (`SpotlightIndexer`, registered by `SideEffectsCoordinator.shared(for:)`).
@@ -25,7 +26,8 @@ public protocol SideEffectIndexer: AnyObject {
 /// pass brings them back. The widget and Spotlight follow the binder either way.
 ///
 /// Triggers: every `ModelContext.didSave` (debounced), preference changes, the
-/// day changing, the share inbox changing (`ShareInbox.didChangeNotification`),
+/// day, the time zone or the clock changing (`timeChanges`), the share inbox changing
+/// (`ShareInbox.didChangeNotification`),
 /// `reconcileNow()` when the app becomes active, every action from
 /// outside the app (`IntentEngine`) and the background refresh.
 ///
@@ -50,7 +52,10 @@ public final class SideEffectsCoordinator: ContainerHolder {
     @ObservationIgnored private let inboxNotices: any InboxNoticeCenter
     @ObservationIgnored private let waitingInboxItems: @MainActor () -> Set<UUID>?
     @ObservationIgnored private let preferences: AppPreferences
-    @ObservationIgnored private let calendar: Calendar
+    /// The calendar a pass counts days in, read as the pass starts: by default the app's
+    /// (`Calendar.dosar`), in the phone's time zone as it is then, so a pass after a move to
+    /// another time zone plans reminders, the badge and the widget there.
+    @ObservationIgnored private let calendar: () -> Calendar
     @ObservationIgnored private let now: () -> Date
     @ObservationIgnored private var indexers: [any SideEffectIndexer] = []
     @ObservationIgnored private var observers: [Task<Void, Never>] = []
@@ -87,7 +92,7 @@ public final class SideEffectsCoordinator: ContainerHolder {
         inboxNotices: any InboxNoticeCenter = SystemInboxNoticeCenter(),
         waitingInboxItems: @escaping @MainActor () -> Set<UUID>? = { ShareInbox.shared()?.waitingItems().map { Set($0.map(\.id)) } },
         preferences: AppPreferences = .shared,
-        calendar: Calendar = .dosar,
+        calendar: @escaping () -> Calendar = { .dosar },
         now: @escaping () -> Date = { Date() }
     ) {
         self.container = container
@@ -116,7 +121,11 @@ public final class SideEffectsCoordinator: ContainerHolder {
         // in-app explanation or from Settings, via `askForPermission()`.
         observers.append(listen(to: ModelContext.didSave, allowPrompt: false))
         observers.append(listen(to: AppPreferences.didChangeNotification, allowPrompt: false))
-        observers.append(listen(to: .NSCalendarDayChanged, allowPrompt: false))
+        // The day, the time zone or the clock changed: the badge, the widget's "Azi" and the
+        // reminders are worked out again in the phone's time as it is now.
+        for change in Self.timeChanges {
+            observers.append(listen(to: change, allowPrompt: false))
+        }
         observers.append(listen(to: ShareInbox.didChangeNotification, allowPrompt: false))
         // What came from the person's other devices: their reminders, badge, widgets and Spotlight too.
         observers.append(listen(to: SyncedChanges.didArrive, allowPrompt: false))
@@ -202,6 +211,8 @@ public final class SideEffectsCoordinator: ContainerHolder {
         }
         guard let container else { return await settlePermissionWithoutPlan(prompt) }
         let context = PersistenceController.context(in: container)
+        // One calendar for the whole pass, in the time zone the phone is in now.
+        let calendar = self.calendar()
         let outside: [ObligationSnapshot]
         do {
             // Example records are for exploring the app; they never notify, badge or reach widgets.
@@ -236,9 +247,21 @@ public final class SideEffectsCoordinator: ContainerHolder {
         reminderAuthorization = await reconciler.authorization(asking: prompt, somethingToRemind: false)
     }
 
+    /// What the system says when the phone's time moves under the app: midnight passed, the
+    /// time zone changed (a flight, the person's setting), or the clock was set (by hand, by the
+    /// network, summer time). Each runs the usual pass, so the badge, the widget and the
+    /// reminders count days where the phone is now, not where it was when the app last opened.
+    static let timeChanges: [Notification.Name] = [
+        .NSCalendarDayChanged,
+        .NSSystemTimeZoneDidChange,
+        UIApplication.significantTimeChangeNotification,
+    ]
+
     private func listen(to name: Notification.Name, allowPrompt: Bool) -> Task<Void, Never> {
         Task { [weak self] in
             for await _ in NotificationCenter.default.notifications(named: name).map({ _ in () }) {
+                // The phone's time zone is read afresh from now on (`Calendar.dosar` reads it each time).
+                if name == .NSSystemTimeZoneDidChange { NSTimeZone.resetSystemTimeZone() }
                 self?.setNeedsReconcile(allowPermissionPrompt: allowPrompt)
             }
         }

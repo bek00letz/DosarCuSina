@@ -133,10 +133,10 @@ private struct SectionContent: View {
                 }
             }
         }
-        .sheet(isPresented: $isEditing) {
+        .dsSheet(isPresented: $isEditing) {
             AssetEditSheet(asset: asset, definition: definition) { toast = $0 }
         }
-        .sheet(isPresented: $isMoving) {
+        .dsSheet(isPresented: $isMoving) {
             MoveAssetSheet(asset: asset) { moved in
                 toast = .undo(moved.toastTitle, receipt: moved.receipt)
             }
@@ -253,7 +253,7 @@ struct SectionPocketList<UnderUpcoming: View>: View {
         }
         // A pocket that comes to hold something takes its place with the page's spring.
         .dsAnimation(value: layout.shown)
-        .sheet(isPresented: $isAddingDeadline) {
+        .dsSheet(isPresented: $isAddingDeadline) {
             NavigationStack {
                 DeadlineForm(assetID: asset.id) { message in
                     isAddingDeadline = false
@@ -264,7 +264,7 @@ struct SectionPocketList<UnderUpcoming: View>: View {
                 }
             }
         }
-        .sheet(isPresented: $isAddingPerson) {
+        .dsSheet(isPresented: $isAddingPerson) {
             ProviderEditSheet(provider: nil, linkTo: asset)
         }
         .historyNoteSheet($noteRequest, toast: $toast)

@@ -161,10 +161,19 @@ def other_forms(entry):
     other = ro.get("variations", {}).get("plural", {}).get("other", {}).get("stringUnit", {}).get("value")
     if other is not None:
         found.append(("", other, False))
+    host = ro.get("stringUnit", {}).get("value", "")
     for name, substitution in ro.get("substitutions", {}).items():
         value = substitution.get("variations", {}).get("plural", {}).get("other", {}).get("stringUnit", {}).get("value")
-        if value is not None:
+        if value is None:
+            continue
+        # A substitution's words follow a number only where the string prints one right
+        # before it („%1$@ %#@u@”: „1.250 de cafele”). Words that stand for the count
+        # without printing it („Ca %#@pages@”: „Ca poze”) count nothing after a number,
+        # unless the words print the number themselves.
+        if re.search(r"%(?:\d+\$)?(?:@|lld|ld|d)[ \u00a0]+%#@" + re.escape(name) + "@", host):
             found.append((name, value, True))
+        elif "%" in value:
+            found.append((name, value, False))
     return found
 
 
@@ -285,6 +294,10 @@ def self_test():
              "a substitution's „de cafele” passes"),
             ({"localizations": {"ro": {"stringUnit": {"value": "%1$@ %#@u@"}, "substitutions": {"u": {"variations": {"plural": forms("cafea", "cafele", "cafele")}}}}}}, 1,
              "a substitution's „cafele” fails"),
+            ({"localizations": {"ro": {"stringUnit": {"value": "Ca %#@u@"}, "substitutions": {"u": {"variations": {"plural": forms("poză", "poze", "poze")}}}}}}, 0,
+             "words that stand for the count without printing it pass („Ca poze”)"),
+            ({"localizations": {"ro": {"stringUnit": {"value": "Ai %#@u@"}, "substitutions": {"u": {"variations": {"plural": forms("o poză", "%lld poze", "%lld poze")}}}}}}, 1,
+             "a substitution that prints the number itself still needs „de”"),
         ]
         for entry, expected, name in de_cases:
             json.dump({"strings": {"%lld x": entry}}, open(os.path.join(root, "ios/Shared/Shared.xcstrings"), "w"))
