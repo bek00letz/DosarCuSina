@@ -61,7 +61,8 @@ public enum SpotlightCatalog {
     ) throws -> [SpotlightEntry] {
         let templates = try TemplateStore.templatesByKey(in: context)
         let assets = try context.fetch(FetchDescriptor<Asset>())
-        let isLocked: (Asset?) -> Bool = { asset in asset.flatMap { templates[$0.templateKey]?.isSensitive } ?? false }
+        // One whose category hasn't arrived stays locked.
+        let inLockedCategory: (Asset) -> Bool = { $0.isSensitive(among: templates) }
         let withheld = Dictionary(
             assets.map { ($0.id, SearchPrivacy.withheldValues(of: $0, definition: templates[$0.templateKey]?.definition)) },
             uniquingKeysWith: { first, _ in first }
@@ -73,7 +74,7 @@ public enum SpotlightCatalog {
         )
         var entries: [SpotlightEntry] = []
 
-        for asset in assets where SearchPrivacy.mayShowOutside(isLocked: isLocked(asset), isExample: asset.isExample) {
+        for asset in assets where SearchPrivacy.mayShowOutside(isLocked: inLockedCategory(asset), isExample: asset.isExample) {
             guard let title = SearchPrivacy.outsideText(asset.name, withholding: withheld[asset.id] ?? [], keeping: kept[asset.id] ?? .nothing) else { continue }
             let category = templates[asset.templateKey]?.name
             entries.append(SpotlightEntry(kind: .section, route: .asset(asset.id), title: title, detail: category,
@@ -98,7 +99,7 @@ public enum SpotlightCatalog {
         let attachments = try context.fetch(FetchDescriptor<Attachment>(predicate: #Predicate { !$0.isArchived && !$0.isExample }))
         for attachment in attachments {
             let section = SearchIndexBuilder.section(of: attachment)
-            guard SearchPrivacy.mayShowOutside(isLocked: isLocked(section), isExample: attachment.isExample || section?.isExample == true) else { continue }
+            guard SearchPrivacy.mayShowOutside(isLocked: section.map(inLockedCategory) == true, isExample: attachment.isExample || section?.isExample == true) else { continue }
             let hidden = section.flatMap { withheld[$0.id] } ?? []
             let whole = section.flatMap { kept[$0.id] } ?? .nothing
             guard let title = SearchPrivacy.outsideText(attachment.displayTitle, withholding: hidden, keeping: whole) else { continue }

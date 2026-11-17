@@ -176,7 +176,8 @@ public struct SearchIndexBuilder {
     private func id(_ kind: SearchResultKind, _ uuid: UUID) -> String { "\(kind.rawValue):\(uuid.uuidString)" }
 
     private func isSensitive(_ asset: Asset?, _ templates: [String: CategoryTemplate]) -> Bool {
-        asset.flatMap { templates[$0.templateKey]?.isSensitive } ?? false
+        // A record filed under no section has no lock.
+        asset.map { $0.isSensitive(among: templates) } ?? false
     }
 
     private func assetDocument(_ asset: Asset, template: CategoryTemplate?) -> SearchDocument {
@@ -208,7 +209,7 @@ public struct SearchIndexBuilder {
         return SearchDocument(
             id: id(.asset, asset.id), kind: .asset, title: asset.name,
             subtitle: (subtitle?.isEmpty == false ? subtitle : template?.name),
-            route: .asset(asset.id), fields: fields, date: asset.updatedAt, isSensitive: template?.isSensitive ?? false
+            route: .asset(asset.id), fields: fields, date: asset.updatedAt, isSensitive: asset.isSensitive(template: template)
         )
     }
 
@@ -230,7 +231,7 @@ public struct SearchIndexBuilder {
                     SearchField(asset.name, weight: SearchField.Weight.label),
                     SearchField(([last.partBrandOrCode, last.supplierName] + last.providerNames.map(Optional.some)).compactMap { $0 }.joined(separator: " "), weight: SearchField.Weight.value),
                 ],
-                date: last.date, isSensitive: template?.isSensitive ?? false
+                date: last.date, isSensitive: asset.isSensitive(template: template)
             )
         }
     }
