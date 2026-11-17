@@ -207,8 +207,8 @@ struct CopyMatrixTests {
         the visit form from `VisitShape` laid over the category (`VisitForm`), „Gata” and \
         „Am rezolvat” from each deadline's `CompletionKind`, the deadline form and a record's \
         page in Istoric (`HistoryEntryShape`), a section page's pockets, adding a section, \
-        the capture review by document kind (`CaptureKindProfile`), and Abonamente by service \
-        (`ServiceKind`). Every built-in category is \
+        the capture review by document kind (`CaptureKindProfile`), „Pleci din țară” by \
+        citizenship (`TravelRules`), and Abonamente by service (`ServiceKind`). Every built-in category is \
         here, and one category of one's own per combination of its switches. Reviews walk every \
         category through it.
 
@@ -248,6 +248,7 @@ struct CopyMatrixTests {
         out += "\n" + (try addSectionSection(categories))
         out += "\n" + customCategorySection()
         out += "\n" + (try reviewSection())
+        out += "\n" + tripSection()
         out += "\n" + subscriptionsSection()
         return out
     }

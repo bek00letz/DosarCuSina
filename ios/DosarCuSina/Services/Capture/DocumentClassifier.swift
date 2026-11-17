@@ -40,7 +40,7 @@ public enum DocumentClassifier {
 
     public static func classify(text: CaptureText, mrz: MRZParser.Result?) -> Classification {
         if let mrz {
-            return Classification(kind: mrz.isPassport ? .passport : .identityCard, confidence: mrz.allChecksValid ? 0.98 : 0.8)
+            return Classification(kind: IdentityTemplates.kind(forZone: mrz), confidence: mrz.allChecksValid ? 0.98 : 0.8)
         }
         let haystack = text.joinedFolded
         var scores: [CaptureDocumentKind: Double] = [:]
