@@ -392,5 +392,6 @@ Types:
 | What a shaped screen says to each category | Its kind's description; [docs/COPY_MATRIX.md](docs/COPY_MATRIX.md) is generated from it (`CopyMatrixTests`), never edited by hand |
 | How the app writes | [docs/COPY_GUIDE.md](docs/COPY_GUIDE.md) |
 | The `.dosar` format | [shared/schemas/dosar-v3.md](shared/schemas/dosar-v3.md) and its fixtures |
+| What the app does with data (a new permission, something new that leaves the phone, a new way to get help) | The public pages in [site/](site/), both languages, with a new date (`PublicPages` holds their addresses) |
 | How to report a security problem | [SECURITY.md](SECURITY.md) |
 | Security findings, crash traces | Never in the repository. Collaborators: private vulnerability reporting. Owner: `private/` on their own machine. |

@@ -11,10 +11,11 @@ The app is in Romanian. It is for everyone, and built so that people who aren't 
 
 ## Privacy
 
-- Your data stays on your device. Sync through your own private iCloud is planned, not built.
+- Your data stays on your device and, where the build syncs and sync is on, in your own private iCloud database (development builds today; TestFlight and the App Store once the owner turns it on).
 - No accounts, no analytics, no tracking, no servers of ours.
-- Reading documents happens on the phone. If you add your own key for an AI provider in Settings (Google Gemini, OpenAI, Anthropic Claude, or an OpenAI-compatible service such as one on your home network), you can choose to have a single document read by it; only that document's first page is sent, only when you tap. Keys stay in the Keychain on your device.
+- Reading documents happens on the phone. If you add your own key for an AI provider in Settings (Google Gemini, OpenAI, Anthropic Claude, or an OpenAI-compatible service such as one on your home network), you can choose to have a document read by it; only that document's first page is sent, when you tap or, if you turn it on, after a weak reading on the phone (an identity document asks first). Keys stay in the Keychain on your device.
 - Identity documents, health and any section you choose can be locked with Face ID.
+- The full privacy policy, in Romanian and English: [bek00letz.github.io/DosarCuSina/confidentialitate](https://bek00letz.github.io/DosarCuSina/confidentialitate/) (see [Web pages](#web-pages)).
 
 ## Status
 
@@ -90,8 +91,22 @@ scripts/architecture-check.sh
 | `android/` | The paused Android version. |
 | `tests/` | The test runner, plus legacy and Android scripts. |
 | `docs/` | Decisions, handoff notes, copy guide, archive. |
+| `site/` | The public web pages: the privacy policy and help, in Romanian and English, published with GitHub Pages. |
 | `scripts/`, `.githooks/` | The privacy and architecture checks, the architecture exceptions and fixtures, and the hook that runs both. |
-| `.github/` | Code owners, templates, and the workflows for the checks. |
+| `.github/` | Code owners, templates, and the workflows for the checks and the web pages. |
+
+## Web pages
+
+The privacy policy and the help page the App Store links to are a small static site in [`site/`](site/): plain HTML and one stylesheet, no scripts, in Romanian with an English version of each. [.github/workflows/pages.yml](.github/workflows/pages.yml) publishes it with GitHub Pages whenever `site/` changes on `main`. The repository's Pages setting is **Source: GitHub Actions** (Settings › Pages); Pages can serve a branch only from its root or `docs/`, and `docs/` holds the project's own documents.
+
+| Page | Address |
+| :--- | :--- |
+| Politica de confidențialitate | `https://bek00letz.github.io/DosarCuSina/confidentialitate/` |
+| Ajutor | `https://bek00letz.github.io/DosarCuSina/ajutor/` |
+| Privacy policy (English) | `https://bek00letz.github.io/DosarCuSina/en/privacy/` |
+| Help (English) | `https://bek00letz.github.io/DosarCuSina/en/help/` |
+
+The app opens the first two from Settings › Despre; their addresses are written once, in `PublicPages`, and `PublicPagesTests` checks that each is a page `site/` serves and that every link inside the site leads somewhere. When what the app does with data changes (a new permission, something new that leaves the phone), change both languages of the policy in the same pull request, with a new date. To look at the pages before publishing, serve the folder under the same path, for example `mkdir -p /tmp/pages && ln -s "$PWD/site" /tmp/pages/DosarCuSina && python3 -m http.server --directory /tmp/pages`, and open `http://localhost:8000/DosarCuSina/`.
 
 ## Contributing
 
