@@ -473,9 +473,12 @@ public struct CaptureReadingSource: Sendable, Codable, Hashable {
     public let aiFields: [CaptureField]?
     /// One photo of the page: an identity card read from it alone asks for its back.
     public let isSinglePhoto: Bool
+    /// What capture had learned when it read the page (`LessonBook`): read again with the same,
+    /// and what the phone read with them is what saving it learns from (`CaptureLessonLearner`).
+    public let lessons: LessonBook
 
     public init(text: String, pages: [[RecognizedLine]], barcodes: [CaptureBarcode], referenceDate: Date,
-                modelFields: [CaptureField], aiFields: [CaptureField]?, isSinglePhoto: Bool) {
+                modelFields: [CaptureField], aiFields: [CaptureField]?, isSinglePhoto: Bool, lessons: LessonBook = .empty) {
         self.text = text
         self.pages = pages
         self.barcodes = barcodes
@@ -483,6 +486,7 @@ public struct CaptureReadingSource: Sendable, Codable, Hashable {
         self.modelFields = modelFields
         self.aiFields = aiFields
         self.isSinglePhoto = isSinglePhoto
+        self.lessons = lessons
     }
 }
 

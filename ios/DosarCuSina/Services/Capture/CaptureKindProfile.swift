@@ -151,6 +151,9 @@ struct CaptureKindProfile: Sendable {
     /// (a policy's, an invoice's, the CIV's number) is a row like any other, read as one value
     /// with the other fields' labels that start the same way (`CompositeLabels.table(for:)`).
     var labels: [(CaptureFieldKey, [String])] = []
+    /// What capture learned an issuer prints under its labels, for one read of that issuer's
+    /// paper (`LessonBook.teaching`): read before the kind's own rows. Empty in the registry.
+    var learnedLabels: [(CaptureFieldKey, [String])] = []
     /// A payment barcode on it is its payment code (a bill, a service invoice, any other paper).
     var readsPaymentCode = false
     /// An identity document (passport, identity card, driving licence): it belongs in a
@@ -216,11 +219,16 @@ struct CaptureKindProfile: Sendable {
     // MARK: Labels
 
     /// The wordings this kind prints `key` under: every row of its own table for `key`,
-    /// else the one every document shares (`commonLabels`). Empty when neither has one.
+    /// else the one every document shares (`commonLabels`), after what was learned of this
+    /// issuer (`learnedLabels`). Empty when none has one.
     func labels(for key: CaptureFieldKey) -> [String] {
         let own = Self.labels(for: key, in: labels)
-        return own.isEmpty ? Self.commonLabels(for: key) : own
+        return Self.labels(for: key, in: learnedLabels) + (own.isEmpty ? Self.commonLabels(for: key) : own)
     }
+
+    /// The kind's own table with what was learned of this issuer before it, for a reader told the
+    /// whole table (`BillReader`).
+    var labelTable: [(CaptureFieldKey, [String])] { learnedLabels + labels }
 
     /// The wordings every document prints `key` under, whatever its kind.
     static func commonLabels(for key: CaptureFieldKey) -> [String] {

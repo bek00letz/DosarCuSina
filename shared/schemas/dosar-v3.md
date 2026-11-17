@@ -24,14 +24,16 @@ plain ZIP file (DEFLATE or STORE entries) with JSON inside, readable with
 | `data/providers.json` | People and businesses, with trades and the assets they look after. |
 | `data/measurements.json` | Meter readings, lab values, weights, odometer readings. |
 | `data/attachments.json` | Document metadata. |
+| `data/issuer_lessons.json` | What capture learned of each issuer's papers: the label it prints a value under. |
 | `vault/<id>.<ext>` | An attachment's original file. |
 | `vault/<id>/page-<n>.heic` | Scanned pages of an attachment, from 1. |
 | `vault/<id>/thumbnail.heic` | An attachment's thumbnail. |
 | `vault/photos/<assetId>.jpg` | An asset's photo. |
 | `opis.pdf` | Optional printable table of contents. |
 
-Every `data/*.json` file is a JSON array. Writers always write all eight data
-files, even when empty. Readers treat a missing data file as an empty array.
+Every `data/*.json` file is a JSON array. Writers always write all nine data
+files, even when empty. Readers treat a missing data file as an empty array:
+archives from before `data/issuer_lessons.json` have none.
 
 ## Value conventions
 
@@ -115,7 +117,8 @@ export time is `manifest.exportedAt`).
   "platform": "iOS",
   "exportedAt": "2026-03-02T08:00:00Z",
   "counts": { "templates": 2, "assets": 2, "obligations": 2, "historyEntries": 2,
-              "serviceItems": 1, "providers": 2, "measurements": 1, "attachments": 3 },
+              "serviceItems": 1, "providers": 2, "measurements": 1, "attachments": 3,
+              "issuerLessons": 1 },
   "checksums": { "data/assets.json": "e720…" }
 }
 ```
@@ -337,6 +340,17 @@ diacritics, and words joined by `-`.
 - **Trades:** `mechanic`, `tyreShop`, `inspectionStation`, `bodyShop`, `plumber`, `electrician`, `gasTechnician`, `boilerTechnician`, `hvacTechnician`, `handyman`, `vet`, `doctor`, `dentist`, `insuranceAgent`, `insurer`, `accountant`, `tenant`, `emergencyContact`, `other`. Any other string is kept as written.
 - **Rating:** the shown rating is the average of the job ratings in `history.json`, or `manualRating` when no job is rated.
 - **`taxID`:** the firm's tax ID (CUI), digits only, without `RO`. Two firms with the same `taxID` are the same firm.
+
+### Issuer lesson (`data/issuer_lessons.json`)
+
+`id`, `issuerKey`, `issuerName`, `kind`, `field`, `label`, `createdAt`, `updatedAt`.
+
+- **What it is:** an issuer prints the value `field` (a capture field key, `dueDate`) of a paper of `kind` (a capture kind, `utilityInvoice`) under `label`, as printed („Ultima zi de plată”). Learned from what the person saved, never from a model's answer; it holds only an issuer's words and layout.
+- **`issuerKey`:** `cui:` and the issuer's CUI (digits only, without `RO`), or `name:` and its name in capitals, letters and digits only.
+- **`label`:** one to four words, no digits. A reader leaves out a lesson whose label isn't so.
+- **`id`:** the lesson's own, the same for the same issuer, kind, field and label (a name-based UUID), so two devices that learn the same lesson have one record.
+- Two lessons that give one label of one issuer's `kind` to two fields contradict each other; a reader keeps neither.
+- `manifest.counts.issuerLessons` is missing in archives from before it.
 
 ### Measurement (`data/measurements.json`)
 

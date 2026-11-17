@@ -344,6 +344,23 @@
         }
       }
     },
+    "issuerLessonsFile": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "issuerKey", "issuerName", "kind", "field", "label", "createdAt", "updatedAt"],
+        "properties": {
+          "id": { "$ref": "#/$defs/uuid" },
+          "issuerKey": { "type": "string", "pattern": "^(cui:[1-9][0-9]{1,9}|name:[^\\s]+)$" },
+          "issuerName": { "type": "string" },
+          "kind": { "type": "string" },
+          "field": { "type": "string" },
+          "label": { "type": "string", "pattern": "^[^0-9]+$", "description": "One to four words, as printed, with no digits." },
+          "createdAt": { "$ref": "#/$defs/timestamp" },
+          "updatedAt": { "$ref": "#/$defs/timestamp" }
+        }
+      }
+    },
     "measurementsFile": {
       "type": "array",
       "items": {
