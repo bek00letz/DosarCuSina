@@ -19,8 +19,10 @@ struct DocumentShareRequest: Identifiable, Sendable {
     init(attachment: Attachment, context: ModelContext) {
         pages = DocumentPages.sources(of: attachment)
         name = DocumentShareFiles.name(for: attachment)
-        let template = attachment.asset.flatMap { asset in (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil }
-        isFromLockedCategory = template?.isSensitive ?? false
+        // A document filed under no section has no lock.
+        isFromLockedCategory = attachment.asset.map { asset in
+            asset.isSensitive(template: (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil)
+        } ?? false
         isPDF = pages.first?.isPDF ?? false
         needsCare = DocumentType.isSharedWithCare(attachment.asset?.values[DocumentType.typeFieldKey]?.textValue)
     }

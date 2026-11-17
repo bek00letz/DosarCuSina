@@ -207,8 +207,7 @@ private struct ProviderContent: View {
     // MARK: Actions
 
     private func isHidden(_ asset: Asset) -> Bool {
-        guard let template = try? TemplateStore(context: context).template(forKey: asset.templateKey) else { return false }
-        return vault.isLocked(template)
+        vault.isLocked(asset, template: (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil)
     }
 
     private func rate(_ value: Int?) {
