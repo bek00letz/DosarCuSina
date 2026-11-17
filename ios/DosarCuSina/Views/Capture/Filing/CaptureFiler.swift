@@ -535,12 +535,19 @@ struct CaptureFiler {
 
     /// The day "Am rezolvat" moves the deadline to: the one the person left (the sheet refuses
     /// one that isn't after today, `CompletionDraft.newDayProblem`, and so does
-    /// `ObligationActions.complete`), else the next date read off the paper, when it is after
-    /// today (`ObligationActions.continues`); nil when neither. The sheet says the paper's next
-    /// date by this same rule.
+    /// `ObligationActions.complete`), else the next date read off the paper (`paperDay`); nil
+    /// when neither. The sheet says the paper's next date by this same rule.
     static func newDay(of completion: Completion, today: CalendarDay) -> CalendarDay? {
         if let typed = completion.nextDue { return typed }
-        return completion.document.flatMap(nextDay(in:)).flatMap { ObligationActions.continues(on: $0, after: today) ? $0 : nil }
+        return completion.document.flatMap { paperDay(in: $0, closing: completion.obligation, today: today) }
+    }
+
+    /// The next date a paper brought to "Am rezolvat" gives its deadline: only one after today
+    /// (`ObligationActions.continues`) and after the cycle being closed. A paper dated on that
+    /// cycle's own day (a bill's due day, as it is paid) is the cycle itself, not a new one.
+    static func paperDay(in document: CaptureResult, closing obligation: Obligation, today: CalendarDay) -> CalendarDay? {
+        guard let day = nextDay(in: document), day > obligation.dueDay, ObligationActions.continues(on: day, after: today) else { return nil }
+        return day
     }
 
     /// What filing "Am rezolvat"'s photo as a bill does (its entry in Istoric, its meter

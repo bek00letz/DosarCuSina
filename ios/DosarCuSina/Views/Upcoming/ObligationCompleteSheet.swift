@@ -164,9 +164,9 @@ struct ObligationCompleteSheet: View {
                         .frame(minHeight: DS.Control.minimumHitTarget)
                 } else if let document {
                     let read = CaptureFiler.nextDay(in: document)
-                    // Only a date after today becomes the next deadline (`CaptureFiler.newDay`); an
-                    // older one is no new date.
-                    let next = read.flatMap { ObligationActions.continues(on: $0, after: CalendarDay(Date())) ? $0 : nil }
+                    // Only a date after today and after this cycle becomes the next deadline
+                    // (`CaptureFiler.newDay`); an older one is no new date.
+                    let next = CaptureFiler.paperDay(in: document, closing: obligation, today: CalendarDay(Date()))
                     // A photo kept only on request (a bank card, a page with a card's number) isn't promised here.
                     // A paper that carries no date (an invoice, a receipt) says only that it was read.
                     let message: String? = if let next, shape.newEnd == nil {
