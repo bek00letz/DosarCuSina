@@ -96,7 +96,7 @@ struct CaptureReview: Identifiable {
     /// request (`photoIsOnRequest`, "Păstrează și poza"). Off until they turn it on.
     var keepsPhotoOnRequest = false
     /// The person confirmed that the bank pays this subscription by direct debit, as the
-    /// bill says ("Plătesc prin debit direct"). Never on until they turn it on.
+    /// bill says ("Se plătește prin debit direct"). Never on until they turn it on.
     var turnsOnDirectDebit = false
     /// The person said this bill isn't the one the binder already has with the same day and
     /// total ("E altă factură"): it is filed as a new bill. A bill known by its number, or the
@@ -470,7 +470,7 @@ struct CaptureReview: Identifiable {
 
     /// What the bill prints about direct debit ("Factura se achită prin debit direct"), when
     /// it says it is paid so and its subscription doesn't know yet: the review offers to turn
-    /// "Plătesc prin debit direct" on. Never turned on by itself.
+    /// "Se plătește prin debit direct" on. Never turned on by itself.
     @MainActor
     func directDebitStatement(assets: [Asset]) -> String? {
         guard kind.profile.filing == .subscription, kind.allows(.directDebit),

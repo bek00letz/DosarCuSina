@@ -540,7 +540,7 @@ private struct GalleryStates: View {
                 DSEmptyState(
                     galleryWords("Nicio mașină încă"),
                     systemImage: "car.fill",
-                    message: galleryWords("Adaugă mașina și îți amintim de ITP, RCA și rovinietă la timp."),
+                    message: galleryWords("Adaugă mașina și îți amintesc de ITP, RCA și rovinietă la timp."),
                     actionTitle: galleryWords("Adaugă o mașină")
                 ) {}
             }

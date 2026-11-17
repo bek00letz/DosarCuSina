@@ -223,8 +223,12 @@ struct UpcomingWidgetView: View {
 
     private func doneButton(_ row: WidgetRow) -> some View {
         Button(intent: CompleteFromWidgetIntent(obligationID: row.id, dueDay: row.dueKey)) {
+            // At least 44 pt wide, and as tall as its row lets it be: 44 pt where the row has
+            // the room (the small widget), the row's whole height beside three rows.
             Label("Gata", systemImage: "checkmark")
                 .font(.caption.weight(.semibold))
+                .frame(minWidth: DS.Control.minimumHitTarget, maxHeight: DS.Control.minimumHitTarget)
+                .contentShape(.capsule)
         }
         .buttonStyle(.bordered)
         .buttonBorderShape(.capsule)

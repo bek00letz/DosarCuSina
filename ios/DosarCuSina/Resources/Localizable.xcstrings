@@ -191,7 +191,7 @@
                   "other" : {
                     "stringUnit" : {
                       "state" : "translated",
-                      "value" : "de lei"
+                      "value" : "de lei"
                     }
                   }
                 }
@@ -414,19 +414,19 @@
               "few" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld amânate sau pe pauză"
+                  "value" : "%lld termene amânate sau pe pauză"
                 }
               },
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Unul amânat sau pe pauză"
+                  "value" : "Un termen amânat sau pe pauză"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld amânate sau pe pauză"
+                  "value" : "%lld de termene amânate sau pe pauză"
                 }
               }
             }
@@ -4660,19 +4660,19 @@
               "few" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Încă %lld sunt mai jos, la Curând."
+                  "value" : "Încă %lld termene sunt mai jos, la Curând."
                 }
               },
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Încă unul e mai jos, la Curând."
+                  "value" : "Încă un termen e mai jos, la Curând."
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Încă %lld sunt mai jos, la Curând."
+                  "value" : "Încă %lld de termene sunt mai jos, la Curând."
                 }
               }
             }

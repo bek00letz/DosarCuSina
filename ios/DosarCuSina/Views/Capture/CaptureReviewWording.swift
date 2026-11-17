@@ -90,8 +90,10 @@ extension CaptureKindProfile.Noun {
         }
     }
 
-    /// Under „Plătesc prin debit direct”: what the paper says, shortened, and what turning it on does.
+    /// Under „Se plătește prin debit direct”: what the paper says, shortened, and what turning it on does.
     func directDebitWords(_ statement: String) -> String {
+        // What the paper says, without its own full stop: the quote is followed by one.
+        let statement = statement.trimmingCharacters(in: .whitespaces.union(CharacterSet(charactersIn: ".;,")))
         switch surface {
         case .on:
             String(localized: "Pe \(onPaper) scrie: „\(statement)”. Dacă e așa, nu îți mai amintesc să plătești facturile.",
@@ -154,6 +156,25 @@ extension CaptureKindProfile.DayMeaning {
             String(localized: "Următoarea doză e pe \(date).", comment: "Capture review: the day a pet's next vaccine dose is due.")
         }
     }
+
+    /// The same opening for a day already passed, in words for a passed day: „A expirat pe 10 mai.”
+    func passedOpening(_ date: String) -> String {
+        switch self {
+        case .expires:
+            String(localized: "A expirat pe \(date).", comment: "Capture review: the day a document or a policy expired, already passed.")
+        case .inspectionValidUntil:
+            String(localized: "ITP-ul a fost valabil până pe \(date).", comment: "Capture review: the last day an inspection report kept the car's ITP valid, already passed.")
+        case .payBy:
+            String(localized: "Era de plătit până pe \(date).", comment: "Capture review: the day a bill was to be paid by, already passed.")
+        case .minimumPeriodEnds:
+            String(localized: "Perioada minimă s-a terminat pe \(date). De atunci poți, de regulă, renunța fără penalități.",
+                   comment: "Capture review: the day a contract's minimum period ended, already passed.")
+        case .warrantyEnds:
+            String(localized: "Garanția s-a terminat pe \(date).", comment: "Capture review: the day a purchase's warranty ended, already passed.")
+        case .nextDose:
+            String(localized: "Următoarea doză era pe \(date).", comment: "Capture review: the day a pet's next vaccine dose was due, already passed.")
+        }
+    }
 }
 
 // MARK: - The reminder line
@@ -173,13 +194,17 @@ enum CaptureReminderPreview {
         let profile = review.kind.profile
         guard let day = plan.day, let meaning = profile.dayMeaning else { return nil }
         let date = DueWording.date(day, today: today)
+        let passed = day < today
         // Not printed: the document's rule gives it (a cazier judiciar, six months from its issue).
         let opening = review.validityEnd == day
             ? ReminderWording.validityOpening(day, months: review.validityMonths ?? 0, today: today)
-            : meaning.opening(date)
+            : passed ? meaning.passedOpening(date) : meaning.opening(date)
         if let deadline = plan.deadline {
             let travel = ReminderWording.travelLine(expiring: day, profile: deadline.reminders, today: today)
-            return [opening, travel, ReminderWording.sentence(deadline.reminders)].compactMap { $0 }.joined(separator: " ")
+            // A day already passed: no reminder can come before it, so the line says what happens
+            // instead (the deadline shows as late in Urmează), never „Te anunț … înainte”.
+            let when = passed ? ReminderWording.alreadyLate : ReminderWording.sentence(deadline.reminders)
+            return [opening, travel, when].compactMap { $0 }.joined(separator: " ")
         }
         switch plan.quiet {
         case .notWanted?:
@@ -192,8 +217,8 @@ enum CaptureReminderPreview {
         case .dayPassed?:
             if meaning == .minimumPeriodEnds {
                 // The minimum period is over: nothing to remind about, but worth knowing.
-                return String(localized: "Perioada minimă s-a terminat pe \(date). De regulă, poți renunța oricând, anunțând cu cel mult o lună înainte.",
-                              comment: "Capture review: a contract whose minimum period is over.")
+                return opening + " " + String(localized: "Contractul se încheie la cel mult o lună după ce anunți.",
+                                              comment: "Capture review: a contract whose minimum period is over ends at most a month after the notice to leave.")
             }
             return opening + " " + String(localized: "Data a trecut, așa că nu îți mai amintesc.", comment: "Capture review: the paper's day has passed.")
         case .alreadyLater(let later)?:
@@ -329,7 +354,7 @@ enum CaptureReviewWording {
     static var changeDayHint: String {
         String(localized: "Arată ziua de pe act, ca s-o poți schimba.", comment: "VoiceOver hint of the review's reminder line.")
     }
-    static var directDebit: String { String(localized: "Plătesc prin debit direct", comment: "Capture review: the bank pays this subscription's bills.") }
+    static var directDebit: String { String(localized: "Se plătește prin debit direct", comment: "Capture review: the bank pays this subscription's bills. Said of the bills, like „Se plătește prin debit direct, așa că nu îți amintesc.”") }
     static var changeLater: String { String(localized: "Poți schimba după, pe pagina termenului.", comment: "Capture review: under the reminder.") }
 
     // The notices

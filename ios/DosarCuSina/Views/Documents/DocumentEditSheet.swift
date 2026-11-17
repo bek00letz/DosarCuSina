@@ -132,20 +132,24 @@ struct DocumentEditSheet: View {
             DSSectionHeader("Poza actului")
             DSCard {
                 VStack(alignment: .leading, spacing: DS.Space.m) {
-                    HStack(alignment: .top, spacing: DS.Space.s) {
-                        ForEach(pages) { page in
-                            VStack(spacing: DS.Space.xxs) {
-                                DocumentPageImage(source: page, maxLongEdge: 480)
-                                    .frame(height: 72)
-                                    .clipShape(.rect(cornerRadius: DS.Radius.badge, style: .continuous))
-                                    .dsHairlineBorder(RoundedRectangle(cornerRadius: DS.Radius.badge, style: .continuous))
-                                Text(verbatim: names?[safe: page.index] ?? String(localized: "Pagina \(page.index + 1)", comment: "A page's number under its picture."))
-                                    .dsFont(.footnote)
+                    // However many pages it has, they scroll sideways and never push the card wider.
+                    ScrollView(.horizontal) {
+                        HStack(alignment: .top, spacing: DS.Space.s) {
+                            ForEach(pages) { page in
+                                VStack(spacing: DS.Space.xxs) {
+                                    DocumentPageImage(source: page, maxLongEdge: 480)
+                                        .frame(height: 72)
+                                        .clipShape(.rect(cornerRadius: DS.Radius.badge, style: .continuous))
+                                        .dsHairlineBorder(RoundedRectangle(cornerRadius: DS.Radius.badge, style: .continuous))
+                                    Text(verbatim: names?[safe: page.index] ?? String(localized: "Pagina \(page.index + 1)", comment: "A page's number under its picture."))
+                                        .dsFont(.footnote)
+                                }
+                                .accessibilityElement(children: .combine)
                             }
-                            .accessibilityElement(children: .combine)
                         }
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .scrollIndicators(.hidden)
+                    .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
 
                     if addedPages == nil, DocumentPageFacts.canAddBack(values, picture: picture) {
                         DSSecondaryButton("Adaugă spatele", systemImage: "rectangle.on.rectangle") { isChoosingBackSource = true }

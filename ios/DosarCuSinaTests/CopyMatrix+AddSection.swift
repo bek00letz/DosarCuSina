@@ -55,7 +55,7 @@ extension CopyMatrixTests {
         rows.append(AddSectionRow(place: "The name, before anything is typed", words: "\(AddSectionWording.name), „\(prompt)”", isCategoryOwn: true))
         rows.append(AddSectionRow(place: "Under the name", words: form.nameFootnote, isCategoryOwn: false))
         if form.essentialFields.isEmpty {
-            rows.append(AddSectionRow(place: "What it asks", words: "(nothing) — \(form.detailsLater ?? "")", isCategoryOwn: false))
+            rows.append(AddSectionRow(place: "What it asks", words: ["(nothing)", form.detailsLater].compactMap { $0 }.joined(separator: " — "), isCategoryOwn: false))
         } else {
             rows.append(AddSectionRow(place: "What it asks", words: form.essentialFields.map(\.label).joined(separator: " · "), isCategoryOwn: true))
         }

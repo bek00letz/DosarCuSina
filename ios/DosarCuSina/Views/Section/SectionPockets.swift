@@ -369,7 +369,7 @@ struct DocumentRowLink: View {
             NavigationLink(value: AppRoute.document(attachment.id)) {
                 DSListRow(
                     title: Text(verbatim: attachment.displayTitle),
-                    subtitle: attachment.validityLine.map { Text(verbatim: $0) },
+                    subtitle: attachment.validityLine().map { Text(verbatim: $0) },
                     systemImage: attachment.kind.systemImage,
                     showsChevron: true
                 ) {
@@ -404,11 +404,13 @@ extension Attachment {
         return obligation?.dueDay
     }
 
-    /// "Valabil până la …" for a paper that is valid until a day (a policy, as read when
-    /// it was filed: last year's policy keeps last year's end), else the date printed on it.
-    var validityLine: String? {
+    /// "Expiră pe …" for a paper that is valid until a day (a policy, as read when it was
+    /// filed: last year's policy keeps last year's end), "A expirat pe …" once that day has
+    /// passed, else the date printed on it.
+    func validityLine(today: CalendarDay = CalendarDay(Date())) -> String? {
         if let day = validUntilDay {
-            return PocketWording.validUntil(DosarFormat.day(day))
+            let date = DosarFormat.day(day)
+            return day < today ? PocketWording.expired(date) : PocketWording.expires(date)
         }
         if let documentDay {
             return PocketWording.dated(DosarFormat.day(documentDay))

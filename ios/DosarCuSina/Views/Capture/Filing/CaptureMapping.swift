@@ -254,7 +254,9 @@ enum CaptureMapping {
             return DosarFormat.longDay(day)
         case .money(let amount): return amount.formattedCompact()
         case .number(let number): return NSDecimalNumber(decimal: number).stringValue
-        case .metric(let number, let unit): return "\(NSDecimalNumber(decimal: number).stringValue) \(unit.label)"
+        case .metric(let number, let unit):
+            // A measurement as the app writes one: „45.724 km”, „1.250 de cafele”.
+            return unit.after(RomanianNumber.format(number, fractionDigits: 0...3), value: NSDecimalNumber(decimal: number).doubleValue)
         case .lineItems(let items): return items.map(\.description).joined(separator: ", ")
         }
     }

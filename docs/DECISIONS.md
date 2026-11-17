@@ -6,6 +6,15 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ---
 
+## 2026-11-17
+
+### Numbers, agreement and passed days in the app's words
+- **Decided:** a number with its unit is written one way (`MeasurementUnit.written`, `after(_:value:)`): a symbol as it is („10.000 km”), a counted word counted like the leu from the String Catalog's plurals („1 cafea”, „2 cafele”, „20 de cafele”, „24 de luni”), on one line with a no-break space, „de” and the unit included (in `Money` too). *Why:* „La fiecare 300 cafele” and „24 luni” read wrong, and a number put straight into a `String(localized:)` takes the phone's region („10,000”). *Rules that catch the class:* `scripts/plural-check.py` fails a catalog entry whose „other” form counts without „de”; `CopyMatrixTests` fails a matrix with digits grouped by a comma or a number of 20 or more before a counted word without „de”.
+- **Decided:** a service of a category of one's own stores no note; where it is offered it says its rule, worked out each time (`ObligationBlueprint.shownNote`), and a deadline made from it keeps no copy (`deadlineNote`): the deadline's page says how it repeats. Copies earlier versions kept are offered for removal (`ServiceNotesStep`, asking first); a note the person wrote or changed stays. *Why:* the stored note was written with the phone's region and stopped being true once how often changed. *Alternative:* rewriting the stored notes with the right digits; still wrong after the next change of interval.
+- **Decided:** the app speaks as one („Îți amintesc”, never „îți amintim”), in every empty line; words that agree with a gender are said only of what declares one, so *Bani*'s total is „În total” on every page, a category's name is never treated as a plural, and a paper's line in Acte is „Expiră pe…” / „A expirat pe…”. The electronic signature's sentences agree with its title („Unde o pun”, „În certificat scrie”), and the noun-and-title rule now checks the noun's head word.
+- **Decided:** a day already passed is said in passed words and never promises a reminder before it; a deadline made for it says it shows in Urmează. Who a renewed paper comes from is declared with the paper (`CompletionShape.Paper.origin`): a contract or a lease is signed („Cu cine l-ai semnat”), a document issued.
+- **Decided:** catalog 22, for the built-ins' words that changed (the minimum period's note, the people category's summary, „gaze”, „Se plătește prin debit direct”).
+
 ## 2026-11-16
 
 ### What the copy matrix still showed reading wrong

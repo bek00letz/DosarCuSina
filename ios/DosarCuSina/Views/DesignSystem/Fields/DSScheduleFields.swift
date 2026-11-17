@@ -21,11 +21,21 @@ struct DSRepeatField: View {
             }
             if let unit = choice.frequency.unit {
                 VStack(alignment: .leading, spacing: DS.Space.xs) {
-                    Stepper(value: $choice.every, in: choice.everyRange) {
-                        Text(verbatim: RepeatWording.every(choice.every, unit))
-                            .dsFont(.headline, numeric: true)
-                    }
+                    // Steps that grow with the number (`RepeatChoice.stepped`), for a tap, a held
+                    // press and a VoiceOver swipe alike. VoiceOver reads what it is, then its value once.
+                    let range = choice.everyRange
+                    Stepper(
+                        label: {
+                            Text(verbatim: RepeatWording.every(choice.every, unit))
+                                .dsFont(.headline, numeric: true)
+                        },
+                        onIncrement: choice.every < range.upperBound
+                            ? { choice.every = RepeatChoice.stepped(choice.every, up: true, in: range) } : nil,
+                        onDecrement: choice.every > range.lowerBound
+                            ? { choice.every = RepeatChoice.stepped(choice.every, up: false, in: range) } : nil
+                    )
                     .frame(minHeight: DS.Control.minimumHitTarget)
+                    .accessibilityLabel(Text("Cât de des", comment: "VoiceOver: the label of the stepper that sets how often a deadline repeats; its value says it, e.g. „La fiecare 3 zile”."))
                     .accessibilityValue(Text(verbatim: RepeatWording.every(choice.every, unit)))
                     DS.Hairline()
                     ForEach(RepeatWording.anchors, id: \.self) { anchor in

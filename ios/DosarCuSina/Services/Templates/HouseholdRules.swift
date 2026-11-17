@@ -76,7 +76,7 @@ public enum HouseholdRules {
         let obligation = Obligation(title: blueprint.title, kind: blueprint.kind, dueDay: due, recurrence: blueprint.recurrence,
                                     reminders: blueprint.reminders)
         obligation.blueprintKey = blueprint.key
-        obligation.notes = blueprint.note
+        obligation.notes = blueprint.deadlineNote
         obligation.isExample = isExample
         context.insert(obligation)
         return true

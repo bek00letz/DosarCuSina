@@ -6,7 +6,9 @@ compiler knows which interpolations are integers: when it builds the app, it
 writes every localizable string of each Swift file to a .stringsdata file, with
 an integer interpolation as %lld. This check reads those files after a build
 and fails for any key with an integer that its catalog doesn't give plural
-variations, so "\\(count) lucrări" can't ship as "20 lucrări".
+variations, so "\\(count) lucrări" can't ship as "20 lucrări"; and fails for any
+catalog entry whose "other" form, the one for 20 and more, counts without „de” between
+the number and what it counts („20 de zile”, a substitution's „de cafele”).
 
     scripts/plural-check.py <DerivedData>    # after a build (tests/run_tests.sh runs it)
     scripts/plural-check.py --self-test      # the check against built-in examples
@@ -20,7 +22,7 @@ import re
 import sys
 import tempfile
 
-from string_catalogs import catalog_path, load_catalog, relative_source, stringsdata
+from string_catalogs import catalog_path, catalogs, load_catalog, relative_source, stringsdata
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -45,11 +47,53 @@ def not_counts(root):
     return keys
 
 
+# In a counted string's "other" form (20 de zile, 1.250 de cafele: Romanian's 20-99, 100,
+# 120 and on), the number and what it counts: a placeholder followed by a word, or a
+# substitution's own words, which follow the number they count.
+NUMBER_THEN_WORD = re.compile(r"%(?:\d+\$)?(?:lld|ld|d|arg)[ \u00a0]+([^\W\d_][\w-]*)")
+SUBSTITUTION_WORD = re.compile(r"^[ \u00a0]*([^\W\d_][\w-]*)")
+
+
+def other_forms(entry):
+    """The source language's "other" plural forms of a catalog entry, as (where, its words, whether
+    the words follow a number): the string's own, and each substitution's."""
+    ro = entry.get("localizations", {}).get("ro", {})
+    found = []
+    other = ro.get("variations", {}).get("plural", {}).get("other", {}).get("stringUnit", {}).get("value")
+    if other is not None:
+        found.append(("", other, False))
+    for name, substitution in ro.get("substitutions", {}).items():
+        value = substitution.get("variations", {}).get("plural", {}).get("other", {}).get("stringUnit", {}).get("value")
+        if value is not None:
+            found.append((name, value, True))
+    return found
+
+
+def missing_de(root):
+    """Counted strings whose "other" form counts without „de”: „20 zile”, „1.250 cafele”.
+    Returns the problems found, as lines to print."""
+    problems = []
+    for path in sorted(catalogs(root)):
+        for key, entry in load_catalog(path).items():
+            for name, words, follows_number in other_forms(entry):
+                if follows_number and "%" not in words:
+                    match = SUBSTITUTION_WORD.match(words)
+                    word = match.group(1) if match else None
+                else:
+                    match = NUMBER_THEN_WORD.search(words)
+                    word = match.group(1) if match else None
+                if word is not None and word != "de":
+                    where = os.path.relpath(path, root)
+                    part = f" (its „{name}”)" if name else ""
+                    problems.append(f"{where}: \"{key}\"{part} counts 20 and more as „{words}”: put „de” between the number and „{word}”.")
+    return problems
+
+
 def check(derived_data, root):
     """Returns the problems found, as lines to print."""
     allowed = not_counts(root)
     cache = {}
-    problems = set()
+    problems = set(missing_de(root))
     seen_files = 0
     for path, target, data in stringsdata(derived_data):
         seen_files += 1
@@ -102,10 +146,27 @@ def self_test():
             if len(found) != expected:
                 print(f"  self-test: {name}: expected {expected} problem(s), got {found}", file=sys.stderr)
                 failures += 1
+        # „de” in the "other" form, from 20 on: the string's own and a substitution's.
+        def forms(one, few, other):
+            return {"one": {"stringUnit": {"value": one}}, "few": {"stringUnit": {"value": few}}, "other": {"stringUnit": {"value": other}}}
+        de_cases = [
+            ({"localizations": {"ro": {"variations": {"plural": forms("o zi", "%lld zile", "%lld de zile")}}}}, 0, "„20 de zile” passes"),
+            ({"localizations": {"ro": {"variations": {"plural": forms("o zi", "%lld zile", "%lld zile")}}}}, 1, "„20 zile” fails"),
+            ({"localizations": {"ro": {"stringUnit": {"value": "%1$@ %#@u@"}, "substitutions": {"u": {"variations": {"plural": forms("cafea", "cafele", "de cafele")}}}}}}, 0,
+             "a substitution's „de cafele” passes"),
+            ({"localizations": {"ro": {"stringUnit": {"value": "%1$@ %#@u@"}, "substitutions": {"u": {"variations": {"plural": forms("cafea", "cafele", "cafele")}}}}}}, 1,
+             "a substitution's „cafele” fails"),
+        ]
+        for entry, expected, name in de_cases:
+            json.dump({"strings": {"%lld x": entry}}, open(os.path.join(root, "ios/Shared/Shared.xcstrings"), "w"))
+            found = missing_de(root)
+            if len(found) != expected:
+                print(f"  self-test: {name}: expected {expected} problem(s), got {found}", file=sys.stderr)
+                failures += 1
         if failures:
             print("Plural check self-test failed.", file=sys.stderr)
             return 1
-        print(f"Plural check self-test passed ({len(cases)} cases).")
+        print(f"Plural check self-test passed ({len(cases) + len(de_cases)} cases).")
         return 0
 
 
@@ -117,7 +178,7 @@ def main(argv):
         return 2
     problems = check(argv[0], ROOT)
     if problems:
-        print("Counted strings without plural forms (1 zi, 2 zile, 20 de zile):", file=sys.stderr)
+        print("Counted strings without plural forms, or without „de” from 20 on (1 zi, 2 zile, 20 de zile):", file=sys.stderr)
         for line in problems:
             print("  " + line, file=sys.stderr)
         print("Add plural variations (one, few, other) to the catalog entry, or list the key in scripts/not-counts.txt if it isn't a count.", file=sys.stderr)

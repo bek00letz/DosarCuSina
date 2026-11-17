@@ -86,12 +86,31 @@ struct VisitForm: Equatable {
         return hasChecklist ? requirement.withChecklist : requirement.otherwise
     }
 
-    /// Under the money field when the rows add up and no total is typed.
-    func sumNote(_ sum: String) -> String {
-        switch shape.sum {
-        case .parts: VisitFormWording.partsAddUp(sum)
-        case .rows: VisitFormWording.rowsAddUp(sum)
-        }
+    /// Whether what it lists are a vehicle's parts: a service's rows, ticked on the category's
+    /// checklist of parts. A category of one's own whose service lists none writes plain rows.
+    /// The one rule for „Piesele…” on the form and on the record's page (`HistoryEntryShape`).
+    var rowsAreParts: Bool { shape.sum == .parts && hasChecklist }
+
+    /// Under the money field when the rows add up and no total is typed; nil for a form with no
+    /// rows to add up (a doctor's visit).
+    func sumNote(_ sum: String) -> String? {
+        guard hasChecklist || hasRows else { return nil }
+        return rowsAreParts ? VisitFormWording.partsAddUp(sum) : VisitFormWording.rowsAddUp(sum)
+    }
+
+    /// Under the counter while it shows only an estimate, in the words of what the counter
+    /// counts („Scrie kilometrajul”, „Scrie orele de pe contor”), never a dashboard's for a
+    /// counter that has none.
+    var estimateNote: String? {
+        guard let counterField else { return nil }
+        return VisitFormWording.estimate(for: MeasurementKind.forUnit(counterField.unit))
+    }
+
+    /// Whether a category's visits list parts: its visit form's rule (`rowsAreParts`), for the
+    /// record's page in Istoric.
+    @MainActor
+    static func listsParts(_ definition: TemplateDefinition?) -> Bool {
+        definition.flatMap(make(for:))?.rowsAreParts ?? false
     }
 
     /// What the paper's reading did, said under its notice: how many rows it ticked or wrote.
@@ -151,7 +170,17 @@ enum VisitFormWording {
     static var cancel: String { String(localized: "Renunță") }
     static var notSaved: String { String(localized: "Nu s-a salvat") }
     static var photoDidNotOpen: String { String(localized: "Poza nu s-a putut deschide. Încearcă din nou.") }
-    static var estimate: String { String(localized: "Cifra gri e doar o estimare. Scrie cifra de la bord, dacă o știi.") }
+    /// Under a counter that shows only an estimate, in what the counter counts.
+    static func estimate(for kind: MeasurementKind) -> String {
+        switch kind {
+        case .odometer:
+            String(localized: "Cifra gri e doar o estimare. Scrie kilometrajul, dacă îl știi.", comment: "Visit form: the kilometres shown are an estimate.")
+        case .engineHours:
+            String(localized: "Cifra gri e doar o estimare. Scrie orele de pe contor, dacă le știi.", comment: "Visit form: the engine hours shown are an estimate.")
+        default:
+            String(localized: "Cifra gri e doar o estimare. Scrie cifra de pe contor, dacă o știi.", comment: "Visit form: the counter shown is an estimate.")
+        }
+    }
     static var sectionGone: String { String(localized: "Secțiunea nu mai există") }
     static var sectionGoneMessage: String { String(localized: "Poate a fost ștearsă. Închide și alege alta.") }
     static var noVisits: String { String(localized: "Aici nu se notează vizite", comment: "The visit form opened for a section whose category has none.") }
@@ -162,9 +191,11 @@ enum VisitFormWording {
 
     static func lastDone(_ date: String) -> String { String(localized: "Ultima dată: \(date)") }
     static func rating(_ value: String) -> String { String(localized: "Notă \(value) din 5") }
-    static func partsAddUp(_ sum: String) -> String { String(localized: "Piesele adună \(sum). Lasă gol dacă ăsta e totalul.") }
+    static func partsAddUp(_ sum: String) -> String {
+        String(localized: "Piesele adună \(sum). Dacă e totalul, lasă câmpul gol.", comment: "Under a service's cost: what its parts add up to, kept as the total while nothing is typed.")
+    }
     static func rowsAddUp(_ sum: String) -> String {
-        String(localized: "Rândurile adună \(sum). Lasă gol dacă ăsta e totalul.", comment: "Under a visit's cost: what its rows add up to.")
+        String(localized: "Rândurile adună \(sum). Dacă e totalul, lasă câmpul gol.", comment: "Under a visit's cost: what its rows add up to, kept as the total while nothing is typed.")
     }
     static func underWarranty(until date: String) -> String {
         String(localized: "Era în garanție, până pe \(date).", comment: "Repair form: the day falls within the product's warranty.")

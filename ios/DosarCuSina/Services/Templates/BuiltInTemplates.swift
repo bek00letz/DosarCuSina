@@ -439,7 +439,7 @@ public enum BuiltInTemplates {
         TemplateDefinition(
             key: Key.subscription,
             name: String(localized: "Abonamente", comment: "Category name"),
-            summary: String(localized: "Telefon, internet, gaz și curent: facturile și contractele lor.", comment: "Category summary"),
+            summary: String(localized: "Telefon, internet, gaze și curent: facturile și contractele lor.", comment: "Category summary"),
             symbol: "creditcard.fill",
             tint: .purple,
             sections: [
@@ -463,7 +463,7 @@ public enum BuiltInTemplates {
                                     footnote: String(localized: "Începe cu RO. E pe factura de curent.")),
                     FieldDefinition(key: SubscriptionFields.clc, label: String(localized: "Cod loc de consum gaze (CLC)"), type: .text, role: .keyFact,
                                     appliesWhen: BlueprintCondition(field: SubscriptionFields.service, oneOf: [ServiceKind.gas]),
-                                    footnote: String(localized: "E pe factura de gaz.")),
+                                    footnote: String(localized: "E pe factura de gaze.")),
                     // The person's own number: copied into forms, never called, so it is text, not a phone.
                     FieldDefinition(key: SubscriptionFields.phoneNumber, label: String(localized: "Număr de telefon"), type: .text, role: .keyFact,
                                     placeholder: "0700 000 000",
@@ -478,7 +478,7 @@ public enum BuiltInTemplates {
                                     derivation: .addMonths(dateField: SubscriptionFields.startDate, monthsField: SubscriptionFields.minimumMonths)),
                 ]),
                 FieldSection(key: "subscription.payment", title: String(localized: "Plată"), fields: [
-                    FieldDefinition(key: SubscriptionFields.directDebit, label: String(localized: "Plătesc prin debit direct"), type: .toggle,
+                    FieldDefinition(key: SubscriptionFields.directDebit, label: String(localized: "Se plătește prin debit direct"), type: .toggle,
                                     footnote: String(localized: "Banca plătește singură facturile, așa că nu îți mai amintesc să le plătești.")),
                     FieldDefinition(key: SubscriptionFields.lastBill, label: String(localized: "Ultima factură"), type: .money),
                     FieldDefinition(key: "subscription.card", label: String(localized: "Card (ultimele 4 cifre)"), type: .text, isSensitive: true),
@@ -501,7 +501,7 @@ public enum BuiltInTemplates {
                 ObligationBlueprint(key: SubscriptionFields.minimumEndsBlueprint, title: String(localized: "Se termină perioada minimă"), kind: .renewal, completion: .acknowledged, recurrence: .none,
                                     firstDue: .field(key: SubscriptionFields.minimumUntil, offsetDays: 0),
                                     reminders: profile([30, 0], .financial, followUp: false),
-                                    note: String(localized: "De regulă, de la această dată poți renunța fără penalități, anunțând cu cel mult o lună înainte. E cel mai bun moment să ceri o ofertă mai bună.")),
+                                    note: String(localized: "De regulă, de la această dată poți renunța fără penalități, iar contractul se încheie la cel mult o lună după ce anunți. E cel mai bun moment să ceri o ofertă mai bună.")),
                 // One per subscription: each bill read moves it to that bill's own due date.
                 ObligationBlueprint(key: SubscriptionFields.billBlueprint, title: String(localized: "Factura de plătit"), kind: .payment, completion: .bill, recurrence: .none,
                                     firstDue: .ask, isSuggested: false,
@@ -646,7 +646,7 @@ public enum BuiltInTemplates {
         TemplateDefinition(
             key: Key.member,
             name: String(localized: "Membri ai familiei", comment: "Category name"),
-            summary: String(localized: "Cui aparțin actele.", comment: "Category summary"),
+            summary: String(localized: "Actele fiecărei persoane, la un loc.", comment: "Category summary of the people documents are filed under."),
             symbol: "person.crop.circle",
             tint: .indigo,
             isOnHomeByDefault: false,

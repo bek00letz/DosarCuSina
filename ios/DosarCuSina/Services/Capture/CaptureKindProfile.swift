@@ -347,7 +347,7 @@ struct CaptureKindProfile: Sendable {
                  cardNumberCues: bankCardCues),
         identity(.greenCard, type: DocumentType.greenCard, name: "Carte verde", noun: Noun(.on, "cartea verde", the: "cartea verde", .feminine),
                  model: "green card (international motor insurance card, carte verde), not the RCA policy itself"),
-        identity(.electronicSignature, type: DocumentType.eSignature, name: "Semnătură electronică", noun: Noun(.inside, "certificatul de semnătură electronică", the: "certificatul de semnătură electronică", .masculine),
+        identity(.electronicSignature, type: DocumentType.eSignature, name: "Semnătură electronică", noun: Noun(.inside, "certificat", the: "semnătura electronică", .feminine),
                  model: "qualified electronic signature certificate (certificat calificat de semnătură electronică)"),
         CaptureKindProfile(
             kind: .vehicleRegistration, templateKey: BuiltInTemplates.Key.vehicle, filing: .newSection, blueprintKey: nil,
