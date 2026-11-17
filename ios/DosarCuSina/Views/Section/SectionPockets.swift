@@ -337,7 +337,7 @@ extension DocumentsPocket {
     private func showsPicture(_ row: DocumentRowItem) -> Bool {
         guard case .personal(let document) = row else { return false }
         let template = templates.first { $0.key == document.templateKey }
-        return !(template.map { vault.isLocked($0) } ?? false) && DocumentPageFacts.showsPicture(in: document.values)
+        return !vault.isLocked(document, template: template) && DocumentPageFacts.showsPicture(in: document.values)
     }
 }
 

@@ -37,6 +37,46 @@ enum ShellSheet: Identifiable, Hashable, Sendable {
         case .addPersonalDocument(let holderID): "personalDocument.\(holderID?.uuidString ?? "")"
         }
     }
+
+    /// The section the sheet writes into, behind its lock: a visit into its section, a section
+    /// or a document under its parent or holder. A new top-level section or a document with no
+    /// holder yet reveals nothing, so it opens as it is.
+    var lock: RouteLock {
+        switch self {
+        case .settings: .open
+        case .addVisit(let id): .section(id)
+        case .addSection(let request): request.parentID.map(RouteLock.section) ?? .open
+        case .addPersonalDocument(let holderID): holderID.map(RouteLock.section) ?? .open
+        }
+    }
+}
+
+/// What a route or a sheet shows or writes, as far as the section locks go. Every route
+/// (`AppRoute.lock`) and every sheet (`ShellSheet.lock`) declares it in a switch of its own, so a
+/// new one can't leave it out, and the shell draws each through `RouteLockGate`, wherever it
+/// came from: a tap, a reminder, a widget, a `dosarcusina://` link, a search result.
+enum RouteLock: Hashable, Sendable {
+    /// Nothing of one section: a tab, Settings, the people and firms.
+    case open
+    /// Shows or writes into this section: drawn only while its category is open, by the one answer
+    /// (`Asset.isSensitive(template:)`), and a locked state with Face ID until then.
+    case section(UUID)
+    /// One record of a section, or what several sections hold: its screen finds the section by the
+    /// same answer and draws a locked state of its own that names nothing of it (a deadline's page
+    /// keeps its due day, a checklist says it reads protected data, a firm's page leaves the
+    /// locked sections out).
+    case drawnByItsScreen
+}
+
+extension AppRoute {
+    /// The lock the route's screen opens behind (`RouteLock`).
+    var lock: RouteLock {
+        switch self {
+        case .home, .upcoming, .search, .intake, .settings, .agenda: .open
+        case .asset(let id), .addVisit(let id): .section(id)
+        case .obligation, .historyEntry, .document, .provider, .category, .readiness: .drawnByItsScreen
+        }
+    }
 }
 
 /// Where a route lands: a tab, the screens pushed on it, and maybe a sheet on top.
@@ -44,6 +84,10 @@ struct ShellRoutePlan: Equatable, Sendable {
     var tab: AppTab
     var path: [AppRoute]
     var sheet: ShellSheet?
+
+    /// Every lock the plan opens behind, the pushed screens' and the sheet's, in order: what
+    /// the shell checks before it draws them.
+    var locks: [RouteLock] { path.map(\.lock) + (sheet.map { [$0.lock] } ?? []) }
 }
 
 /// The one mapping from an `AppRoute` (a notification, a widget, a `dosarcusina://`

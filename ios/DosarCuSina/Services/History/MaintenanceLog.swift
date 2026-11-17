@@ -190,8 +190,10 @@ public enum MaintenanceLog {
         let dueMetric = both(current, last.metricSince).flatMap { current, since in typical.metric.map { current + $0 - since } }
             ?? both(last.metricAtTime, typical.metric).map { $0 + $1 }
 
-        if let dueMetric, let rate = monthlyRate(readings), let current {
-            let days = Int(((dueMetric - current) / rate * 30).rounded())
+        // A pace that puts the job further away than anything repeats (`RecurrenceInterval.longest(in:)`)
+        // says nothing honest: the estimate goes by time instead.
+        if let dueMetric, let rate = monthlyRate(readings), let current,
+           let days = Self.days(((dueMetric - current) / rate * 30).rounded()) {
             return NextEstimate(day: today.adding(days: max(0, days), calendar: calendar), metric: dueMetric, basis: .distance, sampleCount: typical.sampleCount)
         }
         if let days = typical.days {
@@ -208,6 +210,14 @@ public enum MaintenanceLog {
             latest[key] = max(latest[key] ?? .distantPast, item.occurredAt)
         }
         return latest.sorted { $0.value > $1.value }.map(\.key)
+    }
+
+    /// A number of days worked out from a pace, when it is a whole number no further than the
+    /// longest anything repeats; nil otherwise (not a number, or centuries away).
+    static func days(_ value: Double) -> Int? {
+        let longest = RecurrenceInterval.longest(in: .day)
+        guard value.isFinite, abs(value) <= Double(longest) else { return nil }
+        return Int(value)
     }
 
     static func median(_ values: [Double]) -> Double? {

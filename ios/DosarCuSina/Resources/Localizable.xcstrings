@@ -2992,6 +2992,9 @@
     "Completezi ce trebuie, apoi pun actul acolo." : {
       "comment" : "Place picker: a new section is made first."
     },
+    "Confirmă că ești tu ca să bifezi termenul protejat." : {
+      "comment" : "Face ID reason before a deadline of a locked category is closed from a reminder, Siri or Shortcuts."
+    },
     "Confirmă că ești tu." : {
       "comment" : "Face ID reason when changing a lock."
     },
@@ -3079,6 +3082,9 @@
     "Copia de siguranță a fost făcută de o versiune mai nouă a aplicației. Actualizează aplicația și încearcă din nou." : {
       "comment" : "Backup: made by a newer version."
     },
+    "Copia de siguranță ar ocupa prea mult loc pe telefon odată deschisă. Fă copia din nou din aplicație și încearcă iar." : {
+      "comment" : "Backup: its files together would take too much room once unpacked."
+    },
     "Copia de siguranță conține de două ori fișierul %@. Fă copia din nou din aplicație." : {
       "comment" : "Backup: a file appears twice inside it."
     },
@@ -3096,6 +3102,9 @@
     },
     "Copia de siguranță e scrisă într-un fel pe care aplicația nu îl citește. Actualizează aplicația și încearcă din nou." : {
       "comment" : "Backup: compressed in a way the app can't read."
+    },
+    "Copia de siguranță nu e scrisă cum o scrie aplicația: fișierele din ea se suprapun. Fă copia din nou din aplicație și încearcă iar." : {
+      "comment" : "Backup: files inside it overlap, so it wasn't written by the app."
     },
     "Copia de siguranță nu s-a putut deschide. Fișierul pare deteriorat; fă copia din nou și încearcă iar." : {
       "comment" : "Backup: its contents couldn't be unpacked."
@@ -3552,6 +3561,9 @@
       "comment" : "Message on the app lock screen."
     },
     "Deschide Dosar cu Șină ca să bifezi." : {
+
+    },
+    "Deschide Dosar cu Șină ca să confirmi cu Face ID." : {
 
     },
     "Deschide Dosar cu Șină ca să vezi termenele." : {
@@ -7822,6 +7834,9 @@
       "comment" : "Capture review: the section's deadline is already later than the paper's day."
     },
     "Termenul e acum pe %@." : {
+
+    },
+    "Termenul e într-o categorie protejată. Deschide-l în Dosar cu Șină și confirmă cu Face ID ca să-l bifezi." : {
 
     },
     "Termenul nu mai există" : {

@@ -13,12 +13,30 @@ public enum OutsideSurface: String, Codable, CaseIterable, Sendable {
     /// Siri and Shortcuts show a failure right away; a reminder or a widget can't,
     /// so their failures wait in Urmează for the next time the app opens.
     var answersInPlace: Bool { self == .shortcut }
+
+    /// Whether the surface can ask for Face ID before it closes a deadline of a locked category:
+    /// a reminder's „Am rezolvat” opens the app for it, Siri and Shortcuts continue in the app; a
+    /// widget runs in the background, so it leaves such a deadline for the app.
+    var canAskFaceID: Bool {
+        switch self {
+        case .notification, .shortcut: true
+        case .widget: false
+        }
+    }
 }
 
 /// What a person can do to a deadline without opening the app.
 public enum OutsideAction: Hashable, Sendable, Codable {
     case complete
     case snooze(days: Int)
+
+    /// What it does to the deadline, for the lock's one rule (`DeadlineChange`).
+    var change: DeadlineChange {
+        switch self {
+        case .complete: .close
+        case .snooze: .snooze
+        }
+    }
 }
 
 /// One action from outside the app, for the cycle the person saw.
@@ -51,6 +69,12 @@ public struct OutsideRequest: Hashable, Sendable {
 /// re-plans reminders, clears reminders already shown for a closed cycle and
 /// rewrites the widget snapshot. A failure is never dropped: Siri says it, and a
 /// reminder or widget tap that couldn't be saved is shown in Urmează.
+///
+/// A deadline of a category locked on this device follows one rule, the same as Urmează's
+/// (`DeadlineChange`): „Amână” goes through as it is, even from the Lock Screen; closing it asks
+/// for Face ID or the passcode first (`BiometricVaultManager.confirmClosing`), and a surface that
+/// can't ask (`OutsideSurface.canAskFaceID`), or a person who doesn't confirm, changes nothing
+/// and leaves it for the app.
 @MainActor
 enum IntentEngine {
     enum Outcome: Equatable {
@@ -60,17 +84,51 @@ enum IntentEngine {
         case snoozed(until: CalendarDay)
         /// That cycle is already closed, the deadline is paused, an example or gone. Nothing changed.
         case skipped
+        /// A deadline of a locked category, and closing it wasn't confirmed with Face ID (or the
+        /// surface couldn't ask). Nothing changed; it waits in the app.
+        case leftForTheApp
+    }
+
+    /// Asks Face ID before a deadline of a locked category is closed from outside the app.
+    typealias ClosingConfirmation = @MainActor (_ reason: String) async -> UnlockResult
+
+    /// The vault's one session: Face ID or the passcode, once, if it isn't open already.
+    static let vaultConfirmsClosing: ClosingConfirmation = { reason in
+        await BiometricVaultManager.shared.confirmClosing(inLockedCategory: true, reason: reason)
+    }
+
+    /// Whether this request, as the store is now, asks for Face ID before it is made: closing a
+    /// deadline whose category is locked on this device (`DeadlineChange.asksFaceID`), by the
+    /// one answer for a section's lock (`Asset.isSensitive(template:)`).
+    static func asksFaceID(_ request: OutsideRequest, in context: ModelContext) throws -> Bool {
+        let id = request.obligationId
+        var descriptor = FetchDescriptor<Obligation>(predicate: #Predicate { $0.id == id })
+        descriptor.fetchLimit = 1
+        // Nothing is asked for a cycle that has gone: the request changes nothing anyway.
+        guard let obligation = try context.fetch(descriptor).first, obligation.status == .active,
+              let cycle = request.cycle, obligation.dueDay == cycle else { return false }
+        return asksFaceID(request.action, for: obligation, in: context)
+    }
+
+    private static func asksFaceID(_ action: OutsideAction, for obligation: Obligation, in context: ModelContext) -> Bool {
+        // A deadline of the whole household has no section, so no lock.
+        guard let asset = obligation.asset else { return false }
+        let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
+        return action.change.asksFaceID(inLockedCategory: asset.isSensitive(template: template))
     }
 
     /// Applies one request and saves. Throws only when saving fails.
     ///
     /// The cycle is checked against the store as it is now as well as against the context: a
     /// completion from another device lands in the store under the context (`SyncedChanges`), so
-    /// an old reminder's "Am rezolvat" never closes the next cycle a second time.
+    /// an old reminder's "Am rezolvat" never closes the next cycle a second time. Closing a
+    /// deadline of a locked category needs `closingConfirmed` (Face ID, asked by `perform`);
+    /// without it nothing changes (`.leftForTheApp`).
     @discardableResult
     static func apply(
         _ request: OutsideRequest,
         in context: ModelContext,
+        closingConfirmed: Bool = false,
         calendar: Calendar = .dosar,
         now: @escaping () -> Date = { Date() }
     ) throws -> Outcome {
@@ -84,6 +142,7 @@ enum IntentEngine {
               let cycle = request.cycle,
               try actions.isOpen(obligation, cycle: cycle)
         else { return .skipped }
+        if !closingConfirmed, asksFaceID(request.action, for: obligation, in: context) { return .leftForTheApp }
 
         switch request.action {
         case .complete:
@@ -98,13 +157,17 @@ enum IntentEngine {
 
     /// Applies one request, then re-plans reminders and the widget snapshot through
     /// the app's coordinator, whether it worked or not. A failure is recorded for
-    /// Urmează (unless the surface answers in place) and thrown.
+    /// Urmează (unless the surface answers in place) and thrown. Closing a deadline of a locked
+    /// category asks `confirmClosing` first, where the surface can ask; when it isn't confirmed,
+    /// nothing changes, the deadline waits in Urmează (unless the surface answers in place) and
+    /// the outcome says so (`.leftForTheApp`).
     @discardableResult
     static func perform(
         _ request: OutsideRequest,
         container: ModelContainer?,
         sideEffects: (ModelContainer) -> SideEffectsCoordinator = { SideEffectsCoordinator.shared(for: $0) },
         failures: OutsideActionFailures = .shared,
+        confirmClosing: ClosingConfirmation = vaultConfirmsClosing,
         calendar: Calendar = .dosar,
         now: @escaping () -> Date = { Date() }
     ) async throws -> Outcome {
@@ -114,12 +177,20 @@ enum IntentEngine {
         }
         let outcome: Outcome
         do {
-            outcome = try apply(request, in: container.mainContext, calendar: calendar, now: now)
+            var confirmed = false
+            if request.surface.canAskFaceID, try asksFaceID(request, in: container.mainContext) {
+                // The deadline is looked up again after the answer, as it is then.
+                let reason = String(localized: "Confirmă că ești tu ca să bifezi termenul protejat.",
+                                    comment: "Face ID reason before a deadline of a locked category is closed from a reminder, Siri or Shortcuts.")
+                confirmed = await confirmClosing(reason) == .success
+            }
+            outcome = try apply(request, in: container.mainContext, closingConfirmed: confirmed, calendar: calendar, now: now)
         } catch {
             if !request.surface.answersInPlace { failures.record(request, at: now()) }
             await sideEffects(container).reconcileNow(allowPermissionPrompt: false)
             throw error
         }
+        if outcome == .leftForTheApp, !request.surface.answersInPlace { failures.record(request, at: now()) }
         await sideEffects(container).reconcileNow(allowPermissionPrompt: false)
         return outcome
     }
@@ -146,7 +217,12 @@ enum IntentEngine {
             let request = OutsideRequest(obligationId: item.obligationId, cycle: CalendarDay(isoString: item.dueDay), action: .complete, surface: .widget,
                                          actedAt: item.requestedAt)
             do {
-                if case .completed = try apply(request, in: context, calendar: calendar, now: now) { completed += 1 }
+                switch try apply(request, in: context, calendar: calendar, now: now) {
+                case .completed: completed += 1
+                // A locked category's deadline isn't closed without Face ID: it waits in Urmează.
+                case .leftForTheApp: failures.record(request, at: item.requestedAt)
+                case .snoozed, .skipped: break
+                }
                 handled.append(item)
             } catch {
                 failures.record(request, at: item.requestedAt)

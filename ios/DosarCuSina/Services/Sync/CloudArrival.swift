@@ -12,9 +12,13 @@ import Synchronization
 /// while the binder may still be on its way: the first download for the account hasn't finished
 /// on this phone (`PersistenceController.binderMayBeArriving`, from the sync events and what the
 /// phone remembers, `SyncHealthTracker`), or a download from iCloud is under way (a later batch).
-/// `PersistenceController` tells it both as it follows the mirroring's events (`SyncEvent`); a
-/// container it doesn't run, a test's, is always whole. Joining two copies of a record waits too
-/// (`RecordsMeet`): what is still on its way may point at the copy that would go. When it
+/// A container that syncs starts out not known to be whole (`awaitFirstDownload`): what changed
+/// on the person's other devices while this one was closed comes in this launch's first
+/// download, so it is whole once that download has finished, not before the mirroring's first
+/// report. `PersistenceController` tells it all of this as it opens the store and follows the
+/// mirroring's events (`SyncEvent`); a container it doesn't run, a test's, is always whole.
+/// Joining two copies of a record waits too (`RecordsMeet`): what is still on its way may point
+/// at the copy that would go. When it
 /// becomes whole it says so (`didBecomeWhole`), and `SyncedChanges` settles again. Read from any
 /// thread (a backup brought in off the main thread asks too).
 final class CloudArrival: Sendable {
@@ -27,8 +31,10 @@ final class CloudArrival: Sendable {
         /// Setting up the mirroring, or a download, is under way.
         var settingUp = false
         var downloading = false
+        /// The store opened to sync and no download has finished since: not known yet.
+        var awaitingThisLaunch = false
 
-        var isWhole: Bool { !firstDownloadPending && !settingUp && !downloading }
+        var isWhole: Bool { !firstDownloadPending && !settingUp && !downloading && !awaitingThisLaunch }
     }
 
     /// One container's arrival, kept while the container lives.
@@ -40,7 +46,7 @@ final class CloudArrival: Sendable {
     private static let arrivals = Mutex<[ObjectIdentifier: Entry]>([:])
 
     /// The arrival of `container`'s binder; one per container. A container opened again starts
-    /// again, whole until it is told otherwise.
+    /// again, whole until it is told otherwise (a container that syncs is told at once).
     static func of(_ container: ModelContainer) -> CloudArrival {
         arrivals.withLock { arrivals in
             let key = ObjectIdentifier(container)
@@ -64,13 +70,22 @@ final class CloudArrival: Sendable {
         of(container).change(in: container) { $0.firstDownloadPending = pending }
     }
 
-    /// Follows one of the mirroring's events for `container`.
+    /// `container` opened to sync: not known to be whole until a download finishes in it.
+    static func awaitFirstDownload(in container: ModelContainer) {
+        of(container).change(in: container) { $0.awaitingThisLaunch = true }
+    }
+
+    /// Follows one of the mirroring's events for `container`. A download that finished well
+    /// brought what was waiting in iCloud; one that failed (offline, iCloud busy) says nothing
+    /// about it, and the next one is waited for.
     static func follow(_ event: SyncEvent, in container: ModelContainer) {
         of(container).change(in: container) { state in
             let running = event.finishedAt == nil
             switch event.kind {
             case .setup: state.settingUp = running
-            case .download: state.downloading = running
+            case .download:
+                state.downloading = running
+                if !running, event.succeeded { state.awaitingThisLaunch = false }
             case .upload: break
             }
         }

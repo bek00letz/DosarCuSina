@@ -58,16 +58,19 @@ struct ManualAddFlow: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Închide") { onClose(nil) } }
             }
             .navigationDestination(for: ManualStep.self) { step in
-                switch step {
-                case .what(let id):
-                    ManualWhatView(assetID: id, path: $path, onClose: onClose)
-                case .deadline(let id):
-                    DeadlineForm(assetID: id) { message in onClose(message) }
-                case .visit(let id):
-                    AddVisitFlow(assetID: id, prefill: nil) { toast in
-                        // This sheet closes: the shell shows the toast, with its "Anulează".
-                        if let toast { announce(toast) }
-                        onClose(nil)
+                // Each step writes into its section: drawn only while its category is open.
+                SectionIDLockGate(assetID: step.assetID) {
+                    switch step {
+                    case .what(let id):
+                        ManualWhatView(assetID: id, path: $path, onClose: onClose)
+                    case .deadline(let id):
+                        DeadlineForm(assetID: id) { message in onClose(message) }
+                    case .visit(let id):
+                        AddVisitFlow(assetID: id, prefill: nil) { toast in
+                            // This sheet closes: the shell shows the toast, with its "Anulează".
+                            if let toast { announce(toast) }
+                            onClose(nil)
+                        }
                     }
                 }
             }
@@ -86,6 +89,13 @@ enum ManualStep: Hashable {
     case what(UUID)
     case deadline(UUID)
     case visit(UUID)
+
+    /// The section the step writes into.
+    var assetID: UUID {
+        switch self {
+        case .what(let id), .deadline(let id), .visit(let id): id
+        }
+    }
 }
 
 /// What to add to the chosen section.
