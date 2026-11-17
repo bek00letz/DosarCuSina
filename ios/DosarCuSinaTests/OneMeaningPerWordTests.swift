@@ -26,7 +26,7 @@ struct OneMeaningPerWordTests {
 
     @Test func aReadinessCheckWorthALookIsNotTheInbox() {
         #expect(ReadinessStatus.warning.spokenTitle == "Merită o privire")
-        for status in [ReadinessStatus.problem, .warning, .missing, .ok, .reminder] {
+        for status in ReadinessStatus.allCases {
             #expect(status.spokenTitle != "De verificat", "\(status) reads like the share inbox")
         }
     }

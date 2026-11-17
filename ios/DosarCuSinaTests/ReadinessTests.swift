@@ -54,7 +54,9 @@ struct ReadinessTests {
         #expect(items[id: "trip.identity.\(ana.id)"]?.status == .ok)
         #expect(items[id: "trip.identity.\(ana.id)"]?.title == DocumentType.label(for: DocumentType.idCard))
         #expect(items[id: "trip.passport.\(ana.id)"] == nil, "Inside the EU the passport's cut-off doesn't matter")
-        #expect(items[id: "trip.ehic.\(ana.id)"]?.status == .warning, "The health card ends mid-trip")
+        let card = items[id: "trip.ehic.\(ana.id)"]
+        #expect(card?.status == .suggested, "The health card ends mid-trip, and it is optional: an invitation, never a warning")
+        #expect(card?.need == .optional)
     }
 
     @Test func anExpiredIDCardInsideTheEU() {
@@ -287,11 +289,53 @@ struct ReadinessTests {
         let items = result.items
         #expect(items[id: "sale.\(VehicleFields.vin)"]?.status == .missing)
         #expect(items[id: "sale.\(VehicleFields.civ)"]?.action == .editSection(assetID: car.id))
-        #expect(items[id: "sale.history"]?.status == .warning)
+        #expect(items[id: "sale.history"]?.status == .suggested, "A service history helps the sale; the buyer can't ask for it")
         #expect(items[id: "sale.itp"]?.status == .problem, "The buyer can't register it without a valid ITP")
         #expect(items[id: "sale.rca"]?.status == .ok)
         #expect(items[id: "sale.invoices"]?.action == .addDocument(assetID: car.id))
+        #expect(items[id: "sale.invoices"]?.status == .suggested, "Service invoices are optional for a sale")
         #expect(result.groups.map(\.id) == ["sale.buyer", "sale.money", "sale.after"])
+        #expect(result.groups.map(\.title) == ["Pentru cumpărător", "De achitat înainte", "După vânzare"])
+    }
+
+    // MARK: Optional checks
+
+    @Test func anOptionalCheckIsAnInvitationWhateverItsRuleFound() {
+        for found in ReadinessStatus.allCases {
+            let item = ReadinessItem(id: "x", status: found, need: .optional, title: "X", detail: "")
+            switch found {
+            case .ok, .reminder: #expect(item.status == found, "Ready stays ready, something to bring stays to bring")
+            default: #expect(item.status == .suggested, "\(found) on an optional check reads as an invitation")
+            }
+            #expect(ReadinessItem(id: "x", status: found, title: "X", detail: "").status == found, "A required check keeps what its rule found")
+        }
+        #expect(!ReadinessStatus.suggested.needsAttention)
+        #expect(ReadinessStatus.suggested.caption == "Opțional")
+        #expect(ReadinessStatus.allCases.filter { $0.caption != nil } == [.suggested], "Only an invitation says so beside its title")
+        #expect(DSStatus(readiness: .suggested) == nil, "An invitation draws no status colour")
+    }
+
+    @Test func optionalChecksNeverCountAsMissingOrNeedingThePerson() {
+        // Everything a buyer needs is there; the history and the invoices aren't.
+        var values = FieldValues()
+        values[VehicleFields.vin] = .text("WVWZZZ1KZAW000001")
+        values[VehicleFields.civ] = .text("A000001")
+        let car = ReadinessAsset.car(values: values, dues: [BuiltInBlueprints.vehicleITP: "2027-10-01", BuiltInBlueprints.vehicleRCA: "2027-03-01"])
+        let result = ReadinessEngine.checklist(.sellingVehicle(assetId: car.id), assets: [car], today: CalendarDay("2026-11-03"), calendar: calendar)
+        #expect(result.items.filter { $0.need == .optional }.map(\.id).sorted() == ["sale.history", "sale.invoices"])
+        #expect(result.items.filter { $0.need == .optional }.allSatisfy { $0.status == .suggested })
+        #expect(result.missingCount == 0)
+        #expect(result.attentionCount == 0)
+        #expect(result.isAllReady, "What is optional never keeps a checklist from being ready")
+        // Invitations come after what the situation asks for.
+        let buyer = result.groups.first { $0.id == "sale.buyer" }?.items.map(\.status) ?? []
+        #expect(buyer == buyer.sorted(), "\(buyer)")
+
+        // A claim's policy photo is optional; its number and claims phone aren't.
+        let claim = ReadinessEngine.checklist(.insuranceClaim(assetId: car.id), assets: [car], today: CalendarDay("2026-11-03"), calendar: calendar)
+        #expect(claim.items[id: "claim.policyDocument"]?.need == .optional)
+        #expect(claim.items[id: "claim.policyDocument"]?.status == .suggested)
+        #expect(claim.items[id: "claim.phone"]?.status == .missing)
     }
 
     @Test func afterTheSaleThePoliciesAreCancelledAndWhatIsOwedIsPaid() {

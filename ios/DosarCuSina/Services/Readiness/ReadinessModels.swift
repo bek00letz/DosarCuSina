@@ -30,7 +30,7 @@ public enum ReadinessSituation: String, CaseIterable, Hashable, Sendable, Codabl
     public var summary: String {
         switch self {
         case .trip: String(localized: "Actele, mașina și animalele, verificate pentru zilele în care pleci.", comment: "Situation summary: trip.")
-        case .sale: String(localized: "Ce cere cumpărătorul, ce anulezi după și ce mai ai de plătit.", comment: "Situation summary: selling the car.")
+        case .sale: String(localized: "Actele pentru cumpărător, ce anulezi după și ce mai ai de achitat.", comment: "Situation summary: selling the car.")
         case .claim: String(localized: "Numărul poliței, telefonul de daune și ce fotografiezi.", comment: "Situation summary: insurance claim.")
         }
     }
@@ -232,8 +232,11 @@ public enum ReadinessStatus: Int, Hashable, Sendable, Comparable, CaseIterable {
     /// Fine but worth a look (a vignette that ends during the trip).
     case warning = 2
     case ok = 3
+    /// Something optional that isn't in the binder or isn't current (`ReadinessNeed.optional`):
+    /// an invitation in a neutral tone, never counted as missing or as needing the person.
+    case suggested = 4
     /// Something to do or bring that the binder can't check: ticked off by hand.
-    case reminder = 4
+    case reminder = 5
 
     public static func < (lhs: ReadinessStatus, rhs: ReadinessStatus) -> Bool { lhs.rawValue < rhs.rawValue }
 
@@ -263,20 +266,42 @@ public enum ReadinessAction: Hashable, Sendable {
     }
 }
 
+/// Whether a situation asks for something, or only invites it: the buyer needs a valid ITP,
+/// service invoices are a plus. Declared by each check (`ReadinessItem.need`), for every
+/// situation alike, so an optional check never reads as a missing requirement.
+public enum ReadinessNeed: Hashable, Sendable {
+    /// The situation can't go well without it.
+    case required
+    /// Worth having, never required: a car's service history and invoices for a sale, the
+    /// European health card for a trip, a photo of the policy for a claim.
+    case optional
+}
+
 public struct ReadinessItem: Hashable, Sendable, Identifiable {
     public var id: String
+    /// How it came out. An optional check that isn't ready is `suggested`, whatever its rule
+    /// found, so its tone is neutral and it is never counted as missing.
     public var status: ReadinessStatus
+    public var need: ReadinessNeed
     public var title: String
-    /// Why, in plain words.
+    /// Why, in plain words. An optional check that isn't ready says what it would add.
     public var detail: String
     public var action: ReadinessAction?
 
-    public init(id: String, status: ReadinessStatus, title: String, detail: String, action: ReadinessAction? = nil) {
+    public init(id: String, status: ReadinessStatus, need: ReadinessNeed = .required, title: String, detail: String, action: ReadinessAction? = nil) {
         self.id = id
-        self.status = status
+        self.status = Self.status(status, need: need)
+        self.need = need
         self.title = title
         self.detail = detail
         self.action = action
+    }
+
+    /// The one rule for an optional check: ready stays ready and something to bring stays
+    /// something to bring; anything else its rule found is an invitation (`suggested`).
+    static func status(_ found: ReadinessStatus, need: ReadinessNeed) -> ReadinessStatus {
+        guard need == .optional else { return found }
+        return found == .ok || found == .reminder ? found : .suggested
     }
 }
 
