@@ -362,10 +362,13 @@ struct ZipEngineTests {
         #expect(try DosarZipEngine.unpackArchive(stored, limits: wary).first?.data == Data(count: 10_000))
     }
 
-    @Test func noTotalCapButTheFormatsOwn() throws {
+    @Test func aLargeBinderFitsEveryLimit() throws {
         // What used to stop a large binder from coming back (512 MB in all) is gone: past
-        // 600 MB of pages in 5 000 files is within every limit, both ways.
+        // 600 MB of pages in 5 000 files is within every limit, both ways, and what all the
+        // files take once unpacked is bounded well past the archive's own 4 GB.
         let limits = DosarZipEngine.Limits.standard
+        #expect(limits.maxUnpackedBytes == 8 << 30)
+        #expect(5_000 * (120 << 10) < limits.maxUnpackedBytes)
         #expect(limits.maxEntries == 65_534, "As many files as a plain zip counts")
         #expect(5_000 * (120 << 10) > 512 << 20)
         #expect(limits.maxEntries >= 5_000 && limits.maxEntryBytes >= 120 << 10)

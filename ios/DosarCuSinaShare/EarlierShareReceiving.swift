@@ -55,7 +55,7 @@ enum EarlierShareReceiving {
             return tooLarge ? .failed(.tooLarge) : (failed ? .failed(.couldNotCopy) : .unsupported)
         }
         AppGroup.postInboxDidChange()
-        let notified = await InboxNotice.announce(waiting: inbox.waitingItems(), center: SystemInboxNoticeCenter())
+        let notified = await InboxNotice.announce(waiting: inbox.waitingItems() ?? [], center: SystemInboxNoticeCenter())
         return .saved(count: saved.count, next: InboxNotice.nextStep(saved: saved, notified: notified))
     }
 

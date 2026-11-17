@@ -20,6 +20,24 @@ public enum TemplateStoreError: LocalizedError, Equatable {
     }
 }
 
+/// A category's place on the binder (`CategoryTemplate.homeOrder`), as one rule wherever a place
+/// is read from outside (a backup) or a new one is given: within `-farthest...farthest`, so the
+/// place after the last is always a number. A household has a few dozen categories at most.
+enum CategoryOrder {
+    /// The furthest a place goes, either way.
+    static let farthest = 1 << 20
+
+    /// `order` as a place can be.
+    static func place(_ order: Int) -> Int {
+        min(max(order, -farthest), farthest)
+    }
+
+    /// The place after every one of `orders`: a new category goes last.
+    static func after(_ orders: some Sequence<Int>) -> Int {
+        place(orders.max() ?? -1) + 1
+    }
+}
+
 /// The single place that creates, upgrades, orders and deletes category templates.
 @MainActor
 public struct TemplateStore {
@@ -65,7 +83,7 @@ public struct TemplateStore {
             byKey[template.key] = template
         }
         changed = try retireOldBuiltIns(byKey: &byKey) || changed
-        var nextOrder = (existing.map(\.homeOrder).max() ?? -1) + 1
+        var nextOrder = CategoryOrder.after(existing.map(\.homeOrder))
         for definition in catalog {
             if let installed = byKey[definition.key] {
                 // A built-in is always the app's own definition: a newer catalog
@@ -166,7 +184,7 @@ public struct TemplateStore {
             blueprints: blueprints,
             behavior: .standard
         )
-        let order = ((try all()).map(\.homeOrder).max() ?? -1) + 1
+        let order = CategoryOrder.after(try all().map(\.homeOrder))
         let template = CategoryTemplate(definition: definition, isBuiltIn: false, homeOrder: order)
         context.insert(template)
         try save()
@@ -190,7 +208,7 @@ public struct TemplateStore {
     public func createCustom(name: String, symbol: String, switches: CategorySwitches, tint: TemplateTint = .gray, isSensitive: Bool = false) throws -> CategoryTemplate {
         var definition = switches.definition(key: TemplateDefinition.newCustomKey(), name: name, symbol: symbol, tint: tint)
         definition.isSensitiveByDefault = isSensitive
-        let order = ((try all()).map(\.homeOrder).max() ?? -1) + 1
+        let order = CategoryOrder.after(try all().map(\.homeOrder))
         return try UnitOfWork.perform(in: context) {
             let template = CategoryTemplate(definition: definition, isBuiltIn: false, homeOrder: order)
             context.insert(template)

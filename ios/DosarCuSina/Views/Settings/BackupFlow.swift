@@ -116,20 +116,24 @@ final class BackupFlow {
         let reason = String(localized: "Fă o copie de siguranță a dosarului.", comment: "Face ID reason before exporting a backup.")
         guard await confirmWholeBinder(reason) else { return }
         work = .exporting
+        // A folder of its own, so a copy left by an app closed with the share sheet open is found
+        // and removed at the next launch (`BackupFiles.removeLeftovers`).
+        let folder = BackupFiles.exportFolder(in: workDirectory)
         do {
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
             let service = DossierArchiveService(container: container)
-            let directory = workDirectory
             exportURL = try await keptGoing(String(localized: "Se face copia…", comment: "Subtitle of the system's progress while a backup is made."), stopped: .making) { run in
-                try await service.export(to: directory, password: password, run: run)
+                try await service.export(to: folder, password: password, run: run)
             }
         } catch {
+            BackupFiles.remove(folder)
             self.error = UserFacingError(error, doing: String(localized: "Copia nu s-a făcut", comment: "Title of an export error."))
         }
     }
 
-    /// The share sheet closed: the temporary file goes.
+    /// The share sheet closed: the temporary file goes, with its folder.
     func finishSharing() {
-        if let exportURL { BackupFiles.remove(exportURL) }
+        if let exportURL { BackupFiles.removeExport(exportURL) }
         exportURL = nil
     }
 
@@ -227,10 +231,7 @@ final class BackupFlow {
 
     /// Working copies of backups the person walked away from, and their files.
     private func removeLeftoverCopies() {
-        let names = (try? FileManager.default.contentsOfDirectory(atPath: workDirectory.path(percentEncoded: false))) ?? []
-        for name in names where name.hasPrefix("import-") && (name.hasSuffix(".dosar") || name.hasSuffix(".files")) {
-            BackupFiles.remove(workDirectory.appending(path: name))
-        }
+        BackupFiles.removeImportCopies(in: workDirectory)
         pending = nil
         lockedFile = nil
     }
@@ -266,7 +267,7 @@ final class BackupFlow {
     private func takeCopy(of url: URL) throws -> URL {
         let accessing = url.startAccessingSecurityScopedResource()
         defer { if accessing { url.stopAccessingSecurityScopedResource() } }
-        let copy = workDirectory.appending(path: "import-\(UUID().uuidString).dosar")
+        let copy = BackupFiles.importCopy(in: workDirectory)
         let fileManager = FileManager.default
         defer { if BackupFiles.isInside(url, inbox) { BackupFiles.remove(url) } }
         try fileManager.copyItem(at: url, to: copy)

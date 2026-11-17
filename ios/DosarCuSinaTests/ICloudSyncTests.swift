@@ -44,9 +44,26 @@ struct ICloudSyncTests {
         #expect(PersistenceController.choice(builtIn: builtIn, wanted: wanted, holdsExamples: examples) == expected)
     }
 
-    @Test func theAppCanBeWokenForChangesFromICloud() throws {
+    @Test("The app asks to be woken for iCloud's changes exactly when its build syncs")
+    func theAppCanBeWokenForChangesFromICloud() throws {
         let modes = try #require(Bundle.main.infoDictionary?["UIBackgroundModes"] as? [String])
-        #expect(modes.contains("remote-notification"))
+        #expect(modes.contains("remote-notification") == PersistenceController.buildSyncs, "scripts/background-modes.sh keeps the mode only in a build that syncs")
+        #expect(modes.contains("fetch") && modes.contains("processing"), "Reminders' refresh and backups keep their own modes")
+    }
+
+    /// The switch is a build setting the code and the Info.plist both read; every configuration
+    /// says the same, and the code was compiled with it.
+    @Test("Shipping sync to release builds is one build setting, the same in every configuration")
+    func theSwitchIsOneSetting() throws {
+        let project = try String(contentsOf: ReleaseReadinessTests.ios.appending(path: "DosarCuSina.xcodeproj/project.pbxproj"), encoding: .utf8)
+        let values = project.split(separator: "\n").compactMap { line -> String? in
+            let parts = line.trimmingCharacters(in: .whitespaces).split(separator: " = ")
+            guard parts.count == 2, parts[0] == "DOSAR_SYNC_SHIPS_IN_RELEASE_BUILDS" else { return nil }
+            return String(parts[1].dropLast())
+        }
+        #expect(values.count == 2, "The project's Debug and Release configurations set it")
+        #expect(Set(values) == [PersistenceController.syncShipsInReleaseBuilds ? "YES" : "NO"], "Every configuration says what the code was compiled with: \(values)")
+        #expect(project.contains("SYNC_SHIPS_IN_RELEASE_BUILDS_$(DOSAR_SYNC_SHIPS_IN_RELEASE_BUILDS)"), "The app is compiled with the setting")
     }
 
     // MARK: Opening the store

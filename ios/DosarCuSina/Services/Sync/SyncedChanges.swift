@@ -132,7 +132,7 @@ final class SyncedChanges: ContainerHolder {
         if let token { descriptor.predicate = #Predicate { $0.token > token } }
         let transactions = try context.fetchHistory(descriptor)
         var changes = SearchChanges()
-        for transaction in transactions where transaction.author != PersistenceController.localAuthor {
+        for transaction in transactions where PersistenceController.cameFromAnotherDevice(author: transaction.author) {
             for change in transaction.changes {
                 switch change {
                 case .insert, .update: changes.changed.insert(change.changedPersistentIdentifier)

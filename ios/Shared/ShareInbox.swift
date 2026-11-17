@@ -514,20 +514,22 @@ public struct ShareInbox: Sendable {
 
     /// Every committed item, newest first. A folder that can't be read (a damaged
     /// manifest, a missing file, a newer format) is moved aside the first time it
-    /// is seen and listed under `unreadable`, so it is never skipped silently.
+    /// is seen and listed under `unreadable`, so it is never skipped silently. One that can't
+    /// be read just now (the phone is locked) is left as it is, for a later read.
     ///
     /// The app reads the inbox here, so this is where a manifest an earlier version wrote is
     /// tidied, once: a name it kept whole is written again masked (`maskStoredName`).
     public func contents(now: Date = Date()) -> Contents {
-        let fileManager = FileManager.default
-        let names = (try? fileManager.contentsOfDirectory(atPath: directory.path())) ?? []
         var items: [InboxItem] = []
-        for name in names where !name.hasPrefix(".") {
-            if let item = readItem(named: name) {
+        for name in (try? folderNames()) ?? [] {
+            switch read(named: name) {
+            case .item(let item):
                 maskStoredName(of: item)
                 items.append(item)
-            } else {
+            case .damaged:
                 setAside(name, now: now)
+            case .notNow:
+                continue
             }
         }
         return Contents(items: items.sorted { $0.receivedAt > $1.receivedAt }, unreadable: unreadable())
@@ -540,26 +542,70 @@ public struct ShareInbox: Sendable {
 
     /// The items waiting now, newest first, read without changing anything: an item that
     /// can't be opened is left where it is for the app to set aside. For the share
-    /// extension's notice and the app's coordinator, which only look.
-    public func waitingItems() -> [InboxItem] {
-        let names = (try? FileManager.default.contentsOfDirectory(atPath: directory.path())) ?? []
-        return names.filter { !$0.hasPrefix(".") }.compactMap(readItem(named:)).sorted { $0.receivedAt > $1.receivedAt }
+    /// extension's notice and the app's coordinator, which only look. Nil when what waits
+    /// can't be told just now (the phone is locked, and its files with it): never read as
+    /// nothing waiting, so the share's notice stays until it can be told (`InboxNotice.follow`).
+    public func waitingItems() -> [InboxItem]? {
+        guard let names = try? folderNames() else { return nil }
+        var items: [InboxItem] = []
+        for name in names {
+            switch read(named: name) {
+            case .item(let item): items.append(item)
+            case .damaged: continue
+            case .notNow: return nil
+            }
+        }
+        return items.sorted { $0.receivedAt > $1.receivedAt }
     }
 
     /// Posted in the app's own process whenever what waits in the inbox changes (an item
     /// arrived, was filed or dismissed), so the coordinator can follow the inbox notice.
     public static let didChangeNotification = Notification.Name("ShareInbox.didChange")
 
-    private func readItem(named name: String) -> InboxItem? {
+    /// One committed folder, read: its item, a folder that can't be opened, or one that can't
+    /// be read just now.
+    private enum FolderRead {
+        case item(InboxItem)
+        case damaged
+        /// The phone is locked and the manifest with it: nothing is known about it yet.
+        case notNow
+    }
+
+    /// The committed folders' names; throws only when the inbox can't be read just now. An
+    /// inbox not made yet holds nothing.
+    private func folderNames() throws -> [String] {
+        do {
+            return try FileManager.default.contentsOfDirectory(atPath: directory.path()).filter { !$0.hasPrefix(".") }
+        } catch let error as CocoaError where Self.isNotNow(error) {
+            throw error
+        } catch {
+            return []
+        }
+    }
+
+    /// Whether a read failed only because the file can't be read now (the phone's files are
+    /// locked), not because it is missing or damaged.
+    private static func isNotNow(_ error: CocoaError) -> Bool {
+        error.code == .fileReadNoPermission
+    }
+
+    private func read(named name: String) -> FolderRead {
         let folder = directory.appending(path: name, directoryHint: .isDirectory)
-        guard let data = try? Data(contentsOf: folder.appending(path: Self.manifestName)),
-              let item = try? Self.decoder.decode(InboxItem.self, from: data),
+        let data: Data
+        do {
+            data = try Data(contentsOf: folder.appending(path: Self.manifestName))
+        } catch let error as CocoaError where Self.isNotNow(error) {
+            return .notNow
+        } catch {
+            return .damaged
+        }
+        guard let item = try? Self.decoder.decode(InboxItem.self, from: data),
               item.version <= InboxItem.currentVersion,
               folder.lastPathComponent == item.id.uuidString.lowercased(),
               !item.files.isEmpty,
               item.files.allSatisfy({ FileManager.default.fileExists(atPath: folder.appending(path: $0).path()) })
-        else { return nil }
-        return item
+        else { return .damaged }
+        return .item(item)
     }
 
     /// The name a manifest keeps on disk, as written.

@@ -451,6 +451,9 @@ public final class PersistenceController {
             return
         }
         if let old = container { retire(old) }
+        // What changed on the other devices meanwhile comes in this launch's first download: the
+        // app's own steps on what is missing wait for it (`CloudArrival`).
+        if syncs { CloudArrival.awaitFirstDownload(in: fresh) }
         state = .ready(fresh)
         sync = newState
         health = nil
@@ -494,17 +497,30 @@ public final class PersistenceController {
     }
 
     /// Whether the person's binder may still be on its way: sync is wanted and this phone never
-    /// finished a first download for the account.
+    /// finished a first download for the account. The account the binder synced with is kept
+    /// the moment sync first opens, before anything has come down, so it says nothing about
+    /// whether the download finished: an app closed in the middle of it is still waiting for it
+    /// at the next launch (`firstDownloadPending`).
     private func followArrival() {
         let arriving: Bool
         switch sync {
         case .on: arriving = tracker?.firstDownloadFinished == false
-        case .checkingAccount: arriving = memory.firstDownloadFinishedFor == nil && memory.syncedAccount == nil
+        case .checkingAccount: arriving = Self.firstDownloadPending(memory: memory, signedIn: lastAccount)
         default: arriving = false
         }
         if arriving != binderMayBeArriving { binderMayBeArriving = arriving }
         // The app's own steps on what is missing read it there, from any thread (`CloudArrival`).
         if let container { CloudArrival.firstDownload(pending: arriving, in: container) }
+    }
+
+    /// Whether the first download for the binder's account hasn't finished on this phone, while
+    /// iCloud is still asked which account it is: the account the phone said last, else the one
+    /// the binder synced with. Before it ever synced, whether any first download finished.
+    nonisolated static func firstDownloadPending(memory: SyncMemory, signedIn: ICloudAccount) -> Bool {
+        var account = memory.syncedAccount
+        if case .signedIn(let id?) = signedIn { account = id }
+        guard let account else { return memory.firstDownloadFinishedFor == nil }
+        return memory.firstDownloadFinishedFor != account
     }
 
     // MARK: What iCloud reports
@@ -601,15 +617,32 @@ public final class PersistenceController {
 
     /// **The one switch for shipping sync.** Development builds (Debug) sync with CloudKit's
     /// development environment; TestFlight and App Store builds (Release) keep the binder on the
-    /// phone until this is true. Before turning it on: deploy the CloudKit schema to production in
-    /// CloudKit Console (the owner does that, once the data layout has settled), then set this to
-    /// `true` in a pull request of its own. Read only here.
-    nonisolated static let syncShipsInReleaseBuilds = false
+    /// phone until this is true. It is the build setting `DOSAR_SYNC_SHIPS_IN_RELEASE_BUILDS`
+    /// (the project's, in both configurations), compiled in as `SYNC_SHIPS_IN_RELEASE_BUILDS_YES`,
+    /// so the app's background modes follow it too (`scripts/background-modes.sh` keeps
+    /// `remote-notification` only in a build that syncs, `buildSyncs`). Before turning it on:
+    /// deploy the CloudKit schema to production in CloudKit Console (the owner does that, once the
+    /// data layout has settled), then set the setting to `YES` in a pull request of its own.
+    /// Read only here.
+    nonisolated static var syncShipsInReleaseBuilds: Bool {
+        #if SYNC_SHIPS_IN_RELEASE_BUILDS_YES
+        true
+        #else
+        false
+        #endif
+    }
 
     /// Whether this build syncs at all: a development build, or a release one once sync ships. Never
     /// the host of a test run, whose binder is the Simulator's own.
     nonisolated static var syncIsBuiltIn: Bool {
         syncIsBuiltIn(debug: isDebugBuild, shipsInRelease: syncShipsInReleaseBuilds, testHost: BuildInfo.isTestHost)
+    }
+
+    /// Whether this build is one that syncs, whoever runs it: what its Info.plist's background
+    /// modes follow (`remote-notification`, for iCloud's silent pushes). A test run's host is such
+    /// a build, though it never syncs itself.
+    nonisolated static var buildSyncs: Bool {
+        syncIsBuiltIn(debug: isDebugBuild, shipsInRelease: syncShipsInReleaseBuilds, testHost: false)
     }
 
     nonisolated static func syncIsBuiltIn(debug: Bool, shipsInRelease: Bool, testHost: Bool) -> Bool {
@@ -662,6 +695,15 @@ public final class PersistenceController {
 
     /// Who made a change saved on this phone, in the store's history: the app itself.
     public nonisolated static let localAuthor = "app"
+
+    /// Whether a change in the store's history came from another device: the one rule every
+    /// reader of the history follows (`SyncedChanges`, `RecordsMeet`). iCloud's mirroring signs
+    /// every change it brings in; a change with no author was made on this phone, by an upgrade
+    /// of the store or by a build from before the app signed its own (`localAuthor`).
+    public nonisolated static func cameFromAnotherDevice(author: String?) -> Bool {
+        guard let author else { return false }
+        return author != localAuthor
+    }
 
     // MARK: Contexts
 

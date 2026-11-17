@@ -124,7 +124,7 @@ final class ShareModel {
         AppGroup.postInboxDidChange()
         // A quiet notice the person can tap to continue, only if they already allow
         // notifications; the extension never asks (`InboxNotice`).
-        let notified = await InboxNotice.announce(waiting: inbox.waitingItems(), center: SystemInboxNoticeCenter())
+        let notified = await InboxNotice.announce(waiting: inbox.waitingItems() ?? [], center: SystemInboxNoticeCenter())
         return .saved(count: saved.count, next: InboxNotice.nextStep(saved: saved, notified: notified))
     }
 
