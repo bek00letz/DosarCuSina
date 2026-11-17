@@ -290,7 +290,7 @@ struct DocumentsPocket: View {
     }
 
     var body: some View {
-        let personal = SectionPapers.personal(asset, templates: templates).sorted { expiry($0) < expiry($1) }
+        let personal = DocumentPageFacts.currentFirst(SectionPapers.personal(asset, templates: templates)) { expiry($0) < expiry($1) }
         let papers = SectionPapers.listed(asset)
         let archived = SectionPapers.archived(asset).count
         let rows: [DocumentRowItem] = personal.map { .personal($0) } + papers.map { .paper($0) }

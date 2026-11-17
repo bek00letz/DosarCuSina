@@ -403,6 +403,9 @@ public struct ReadinessAsset: Hashable, Sendable {
     public var parentId: UUID?
     /// Its category asks for Face ID.
     public var isSensitive: Bool
+    /// A personal document replaced by a new one (`Asset.wasReplaced`): expired, whatever
+    /// its date says, and never picked for a check.
+    public var wasReplaced: Bool
     public var values: FieldValues
     /// Active obligations by blueprint key: due day and the last time it was done.
     public var obligations: [String: ReadinessObligation]
@@ -422,6 +425,7 @@ public struct ReadinessAsset: Hashable, Sendable {
         role: CategoryBehavior.Role? = nil,
         parentId: UUID? = nil,
         isSensitive: Bool = false,
+        wasReplaced: Bool = false,
         values: FieldValues = FieldValues(),
         obligations: [String: ReadinessObligation] = [:],
         otherObligations: [ReadinessObligation] = [],
@@ -435,12 +439,19 @@ public struct ReadinessAsset: Hashable, Sendable {
         self.role = role
         self.parentId = parentId
         self.isSensitive = isSensitive
+        self.wasReplaced = wasReplaced
         self.values = values
         self.obligations = obligations
         self.otherObligations = otherObligations
         self.historyCount = historyCount
         self.documentKinds = documentKinds
         self.facts = facts
+    }
+
+    /// A personal document that is still its holder's current one: the only kind a check
+    /// picks (`ReadinessEngine.documents(of:in:)`).
+    public var isCurrentDocument: Bool {
+        role == .personalDocument && !wasReplaced
     }
 
     /// Every active obligation, the category's and the person's own.

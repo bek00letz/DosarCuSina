@@ -5,7 +5,8 @@ import SwiftData
 public struct HolderGroup: Identifiable {
     /// The member they belong to; nil for documents not filed under anyone yet.
     public var holder: Asset?
-    /// Personal documents (ID card, passport, licence…), soonest expiry first.
+    /// Personal documents (ID card, passport, licence…), soonest expiry first; those replaced
+    /// by a new one after them (`DocumentPageFacts.currentFirst`).
     public var documents: [Asset]
 
     public var id: String { holder?.id.uuidString ?? "unassigned" }
@@ -32,11 +33,11 @@ public enum DocumentHolders {
             expiryDefinition.flatMap { AssetFacts.expiry(asset.values, template: $0) } ?? CalendarDay(year: 9999, month: 12, day: 31)
         }
         var groups = members.map { member in
-            HolderGroup(holder: member, documents: documents.filter { $0.parent?.id == member.id }.sorted { expiry($0) < expiry($1) })
+            HolderGroup(holder: member, documents: DocumentPageFacts.currentFirst(documents.filter { $0.parent?.id == member.id }) { expiry($0) < expiry($1) })
         }
         let unassigned = documents.filter { document in !members.contains { $0.id == document.parent?.id } }
         if !unassigned.isEmpty {
-            groups.append(HolderGroup(holder: nil, documents: unassigned.sorted { expiry($0) < expiry($1) }))
+            groups.append(HolderGroup(holder: nil, documents: DocumentPageFacts.currentFirst(unassigned) { expiry($0) < expiry($1) }))
         }
         return groups
     }

@@ -51,10 +51,12 @@ public enum ReadinessEngine {
     static func isVehicle(_ asset: ReadinessAsset) -> Bool { asset.templateKey == BuiltInTemplates.Key.vehicle }
     static func isPet(_ asset: ReadinessAsset) -> Bool { asset.templateKey == BuiltInTemplates.Key.pet }
 
-    /// The personal documents of one type (`DocumentType`), read by their type field.
+    /// The personal documents of one type (`DocumentType`), read by their type field: only
+    /// those still current (`ReadinessAsset.isCurrentDocument`), never one replaced by a new
+    /// one, whatever its printed date says. Every check that picks a document picks it here.
     static func documents(of type: String, in assets: [ReadinessAsset]) -> [ReadinessAsset] {
         assets.filter {
-            $0.role == .personalDocument
+            $0.isCurrentDocument
                 && $0.values[DocumentType.typeFieldKey]?.textValue.flatMap({ DocumentType.options.option(for: $0)?.key }) == type
         }
     }
@@ -110,7 +112,8 @@ extension ReadinessEngine {
     public static func tripCandidates(in assets: [ReadinessAsset]) -> TripCandidates {
         let holders = assets.filter { $0.role == .holder }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
         var travellers = holders.map { TripCandidates.Traveller(traveller: .member($0.id), name: $0.name) }
-        if !unfiledDocuments(in: assets).isEmpty {
+        // Documents filed under no one travel only while one of them is still current.
+        if unfiledDocuments(in: assets).contains(where: \.isCurrentDocument) {
             travellers.append(TripCandidates.Traveller(
                 traveller: .unfiled,
                 name: String(localized: "Acte fără titular", comment: "Trip: personal documents not filed under any person, chosen as one traveller.")
@@ -135,6 +138,9 @@ extension ReadinessEngine {
         return assets.filter { $0.role == .personalDocument && !($0.parentId.map(holders.contains) ?? false) }
     }
 
+    /// Every personal document filed for the traveller, those replaced by a new one included:
+    /// what a document says of its holder (their citizenship) outlives it. A check picks
+    /// among them with `documents(of:in:)`, which keeps only the current ones.
     static func personalDocuments(of traveller: TripTraveller, in assets: [ReadinessAsset]) -> [ReadinessAsset] {
         switch traveller {
         case .member(let id): assets.filter { $0.role == .personalDocument && $0.parentId == id }
@@ -735,7 +741,7 @@ extension ReadinessAsset {
             return ReadinessAsset(
                 id: asset.id, name: asset.name, templateKey: asset.templateKey,
                 role: template?.behavior.role, parentId: asset.parent?.id, isSensitive: asset.isSensitive(template: template),
-                values: asset.values, obligations: obligations, otherObligations: others,
+                wasReplaced: asset.wasReplaced, values: asset.values, obligations: obligations, otherObligations: others,
                 historyCount: (asset.history ?? []).count,
                 documentKinds: (asset.attachments ?? []).filter { !$0.isArchived }.map(\.kind),
                 facts: template.map { ReadinessFacts.of($0.definition) } ?? []
