@@ -217,11 +217,13 @@ struct LockSettings: View {
                 .disabled(waiting)
             }
         } header: {
+            // On the header, the one view of the section that stays: a modifier on the Section
+            // would reach every row (`presentation-on-section`).
             Text("Categorii protejate", comment: "Settings section: the locks, one per category.")
+                .userErrorAlert($error)
         } footer: {
             Text("Secțiunile unei categorii protejate se deschid doar cu \(vault.biometryName), chiar dacă aplicația nu e blocată, și nu apar în căutarea iPhone-ului. Restul aplicației merge normal.", comment: "Footer of the category locks.")
         }
-        .userErrorAlert($error)
     }
 
     private func setAppLock(_ isOn: Bool) {
@@ -345,16 +347,12 @@ struct ICloudSyncSettings: View {
     @State private var isConfirmingSwitch = false
     @State private var isSwitching = false
     @State private var keptCopies: [URL] = []
-    @State private var copyToDelete: URL?
     @State private var error: UserFacingError?
 
     var body: some View {
         if persistence.sync != .notInThisBuild {
             Section {
-                Toggle(isOn: Binding(get: { preferences.syncsWithICloud }, set: set)) {
-                    Text("Sincronizează cu iCloud", comment: "Setting: sync the binder with the person's own iCloud.")
-                }
-                .frame(minHeight: DS.Control.minimumHitTarget)
+                syncToggle
                 if let status = SyncWording.status(sync: persistence.sync, health: persistence.health, isStopping: persistence.isStoppingSync) {
                     SyncStatusRow(status: status)
                     switch status.action {
@@ -375,35 +373,39 @@ struct ICloudSyncSettings: View {
                             .frame(minHeight: DS.Control.minimumHitTarget)
                         }
                         .disabled(isSwitching)
+                        .confirmationDialog(Text("Treci pe contul acesta?", comment: "Confirmation title before syncing with another iCloud account."), isPresented: $isConfirmingSwitch, titleVisibility: .visible) {
+                            Button(action: switchAccount) { Text("Păstrează o copie și treci", comment: "Keeps a copy of the binder, then syncs with the iCloud account on the phone.") }
+                            Button(role: .cancel) {} label: { Text("Rămâi pe telefon", comment: "Cancels switching iCloud accounts; the binder stays on the phone.") }
+                        } message: {
+                            Text("Pe telefon apare dosarul din contul acesta. Dosarul de acum rămâne într-o copie, pe care o poți adăuga apoi de aici.", comment: "Confirmation message before syncing with another iCloud account.")
+                        }
                     case nil:
                         EmptyView()
                     }
                 }
                 ForEach(keptCopies, id: \.self) { copy in
-                    KeptCopyRow(copy: copy, bringBack: { navigator.open(copy) }, delete: { copyToDelete = copy })
+                    KeptCopyRow(copy: copy, bringBack: { navigator.open(copy) }) {
+                        KeptCopies.remove(copy)
+                        keptCopies = KeptCopies.all()
+                    }
                 }
             } footer: {
                 Text(SyncWording.footer(for: persistence.sync))
             }
-            .onAppear { keptCopies = KeptCopies.all() }
-            .onChange(of: scenePhase) { _, phase in if phase == .active { keptCopies = KeptCopies.all() } }
-            .confirmationDialog(Text("Treci pe contul acesta?", comment: "Confirmation title before syncing with another iCloud account."), isPresented: $isConfirmingSwitch, titleVisibility: .visible) {
-                Button(action: switchAccount) { Text("Păstrează o copie și treci", comment: "Keeps a copy of the binder, then syncs with the iCloud account on the phone.") }
-                Button(role: .cancel) {} label: { Text("Rămâi pe telefon", comment: "Cancels switching iCloud accounts; the binder stays on the phone.") }
-            } message: {
-                Text("Pe telefon apare dosarul din contul acesta. Dosarul de acum rămâne într-o copie, pe care o poți adăuga apoi de aici.", comment: "Confirmation message before syncing with another iCloud account.")
-            }
-            .confirmationDialog(Text("Ștergi copia?", comment: "Confirmation title before deleting a copy kept before switching iCloud accounts."), isPresented: Binding(get: { copyToDelete != nil }, set: { if !$0 { copyToDelete = nil } }), titleVisibility: .visible) {
-                Button(role: .destructive) {
-                    if let copyToDelete { KeptCopies.remove(copyToDelete) }
-                    keptCopies = KeptCopies.all()
-                } label: { Text("Șterge copia", comment: "Deletes a copy kept before switching iCloud accounts.") }
-                Button(role: .cancel) {} label: { Text("Păstrează", comment: "Cancel a delete.") }
-            } message: {
-                Text("Copia se șterge de pe telefon și nu mai poate fi adăugată înapoi.", comment: "Confirmation message before deleting a kept copy.")
-            }
-            .userErrorAlert($error)
         }
+    }
+
+    /// The switch, the one row that is always there, holds what is for the whole section: a
+    /// modifier on the Section would reach every row (`presentation-on-section`). A dialog hangs
+    /// on the row that asks it.
+    private var syncToggle: some View {
+        Toggle(isOn: Binding(get: { preferences.syncsWithICloud }, set: set)) {
+            Text("Sincronizează cu iCloud", comment: "Setting: sync the binder with the person's own iCloud.")
+        }
+        .frame(minHeight: DS.Control.minimumHitTarget)
+        .onAppear { keptCopies = KeptCopies.all() }
+        .onChange(of: scenePhase) { _, phase in if phase == .active { keptCopies = KeptCopies.all() } }
+        .userErrorAlert($error)
     }
 
     private func set(_ isOn: Bool) {
@@ -459,12 +461,14 @@ private struct SyncStatusRow: View {
 }
 
 /// A copy of the binder kept before switching iCloud accounts: brought in through the backup
-/// screen ("Adaugă" keeps what is here), or deleted. Each action is a row of its own, so each
-/// has the whole row as its target.
+/// screen ("Adaugă" keeps what is here), or deleted after asking. Each action is a row of its
+/// own, so each has the whole row as its target; the question hangs on the row that asks it.
 private struct KeptCopyRow: View {
     let copy: URL
     let bringBack: () -> Void
+    /// Deletes the copy, once the person said so.
     let delete: () -> Void
+    @State private var isConfirmingDelete = false
 
     var body: some View {
         Label {
@@ -477,9 +481,19 @@ private struct KeptCopyRow: View {
             Text("Adaugă copia în dosar", comment: "Brings a copy kept before switching iCloud accounts into the binder.")
                 .frame(minHeight: DS.Control.minimumHitTarget)
         }
-        Button(role: .destructive, action: delete) {
+        Button(role: .destructive) {
+            isConfirmingDelete = true
+        } label: {
             Text("Șterge copia", comment: "Deletes a copy kept before switching iCloud accounts.")
                 .frame(minHeight: DS.Control.minimumHitTarget)
+        }
+        .confirmationDialog(Text("Ștergi copia?", comment: "Confirmation title before deleting a copy kept before switching iCloud accounts."), isPresented: $isConfirmingDelete, titleVisibility: .visible) {
+            Button(role: .destructive, action: delete) {
+                Text("Șterge copia", comment: "Deletes a copy kept before switching iCloud accounts.")
+            }
+            Button(role: .cancel) {} label: { Text("Păstrează", comment: "Cancel a delete.") }
+        } message: {
+            Text("Copia se șterge de pe telefon și nu mai poate fi adăugată înapoi.", comment: "Confirmation message before deleting a kept copy.")
         }
     }
 }
@@ -517,11 +531,13 @@ struct SectionVisibilitySettings: View {
             }
             .disabled(layout.saved.isEmpty)
         } header: {
+            // On the header, the one view of the section that stays: a modifier on the Section
+            // would reach every row (`presentation-on-section`).
             Text("Pe ecranul Dosar", comment: "Settings section: which categories show on home.")
+                .userErrorAlert($error)
         } footer: {
             Text("Ce ascunzi de aici nu se șterge; îl găsești în Caută.", comment: "Footer of the home visibility settings.")
         }
-        .userErrorAlert($error)
     }
 
     private func setOnHome(_ template: CategoryTemplate, _ isOn: Bool) {
@@ -570,12 +586,14 @@ struct CustomCategorySettings: View {
                     .accessibilityHint(Text("Schimbă ce ține minte categoria.", comment: "VoiceOver hint of a category of one's own in Settings."))
                 }
             } header: {
+                // On the header, the one view of the section that stays: a modifier on the
+                // Section would reach every row (`presentation-on-section`).
                 Text("Categoriile tale", comment: "Settings section: the person's own categories.")
+                    .dsSheet(item: $editing) { template in
+                        CategoryEditSheet(template: template) { done in toast = done }
+                    }
             } footer: {
                 Text("Alege ce ține minte fiecare. Categoriile incluse în aplicație rămân cum sunt.", comment: "Footer of the person's own categories in Settings.")
-            }
-            .dsSheet(item: $editing) { template in
-                CategoryEditSheet(template: template) { done in toast = done }
             }
         }
     }
@@ -613,7 +631,11 @@ struct ExampleSettings: View {
                 }
             }
         } header: {
+            // On the header, the one view of the section that stays: a modifier on the Section
+            // would reach every row (`presentation-on-section`).
             Text("Exemple", comment: "Settings section.")
+                .sensoryFeedback(.success, trigger: doneCount)
+                .userErrorAlert($error)
         } footer: {
             if persistence.binderMayBeArriving {
                 Text("Exemplele așteaptă dosarul tău din iCloud. Dacă e gol, le poți încărca după.", comment: "Footer of the examples setting while the person's binder may still be coming down from iCloud.")
@@ -621,8 +643,6 @@ struct ExampleSettings: View {
                 Text("Exemplele arată cum arată un dosar plin. Sunt marcate „Exemplu”, nu trimit amintiri și pleacă dintr-o atingere. Ce ai adăugat tu rămâne.", comment: "Footer of the examples setting.")
             }
         }
-        .sensoryFeedback(.success, trigger: doneCount)
-        .userErrorAlert($error)
     }
 
     private func load() {
@@ -685,6 +705,12 @@ struct StorageSettings: View {
                         Text("Micșorează pozele mai vechi de un an", comment: "Shrinks old scanned pages.")
                             .frame(minHeight: 44)
                     }
+                    .confirmationDialog(Text("Micșorezi pozele vechi?", comment: "Confirmation title."), isPresented: $isConfirmingCompaction, titleVisibility: .visible) {
+                        Button(action: compact) { Text("Micșorează", comment: "Confirms shrinking old scans.") }
+                        Button(role: .cancel) {} label: { Text("Nu acum", comment: "Cancels an optional action.") }
+                    } message: {
+                        Text("Paginile scanate de peste un an devin mai mici. Se citesc la fel de bine.", comment: "Explains shrinking old scans.")
+                    }
                 }
                 if let freedBytes {
                     Text("Am eliberat \(ByteCountFormatStyle(style: .file, locale: .dosarDefault).format(Int64(freedBytes))).", comment: "After shrinking old scans.")
@@ -695,18 +721,15 @@ struct StorageSettings: View {
                     .frame(maxWidth: .infinity, minHeight: 44)
             }
         } header: {
+            // On the header, the one view of the section that stays: a modifier on the Section
+            // would reach every row, so the report would be read and an error shown once per row
+            // (`presentation-on-section`).
             Text("Spațiu ocupat", comment: "Settings section.")
+                .task { refresh() }
+                .userErrorAlert($error)
         } footer: {
             Text("PDF-urile rămân neatinse. Pozele vechi se păstrează, doar puțin mai mici.", comment: "Footer of the storage section.")
         }
-        .task { refresh() }
-        .confirmationDialog(Text("Micșorezi pozele vechi?", comment: "Confirmation title."), isPresented: $isConfirmingCompaction, titleVisibility: .visible) {
-            Button(action: compact) { Text("Micșorează", comment: "Confirms shrinking old scans.") }
-            Button(role: .cancel) {} label: { Text("Nu acum", comment: "Cancels an optional action.") }
-        } message: {
-            Text("Paginile scanate de peste un an devin mai mici. Se citesc la fel de bine.", comment: "Explains shrinking old scans.")
-        }
-        .userErrorAlert($error)
     }
 
     private func refresh() {

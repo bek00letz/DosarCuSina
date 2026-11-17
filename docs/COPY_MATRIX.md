@@ -1926,7 +1926,7 @@ What the review says to each kind of document, from the kind's description (`Cap
 | Its kind | Nu e asta? Schimbă · Ce act e · Pe telefon părea: Pașaport · Codul de jos al actului arată: Pașaport |
 | How it was read | Citit pe telefon. Nimic n-a plecat de aici. / Citit pe telefon, cu Apple Intelligence. / Citit și cu Gemini, cu cheia ta. |
 | The photo's frame | Am păstrat doar actul, fără ce e în jur. Folosește poza întreagă / Se păstrează poza întreagă. Doar actul |
-| Where it goes | Alege alta · Verifică: Adresa locului de consum seamănă cu cea a locuinței, dar nu e chiar aceeași. / Adresa locului de consum nu e cea a locuinței. |
+| Where it goes | Alege alta · Verifică: Adresa locului de consum seamănă cu cea a locuinței, dar nu e chiar aceeași. / Adresa locului de consum nu e cea a locuinței. · a home's policy: Adresa din poliță seamănă cu cea a locuinței, dar nu e chiar aceeași. / Adresa din poliță nu e cea a locuinței. |
 | Kept in no section | Doar păstrez actul — Îl găsești în Caută. |
 | Filed under a section | Actul stă la actele acestei persoane. / La abonamentul „Gaze Apartament” / Abonament nou aici: Gaze Apartament / Abonament la Apartament |
 | A new section | Persoană nouă: Exemplu Ion — Se adaugă în Acte când salvezi. / Abonament nou: Gaze Apartament / Secțiune nouă în Mașini — Se creează când salvezi. / Se creează când salvezi, cu abonamentul „Gaze Apartament”. |

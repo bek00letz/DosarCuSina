@@ -440,6 +440,13 @@ enum CaptureReviewWording {
     static var addressDiffers: String {
         String(localized: "Adresa locului de consum nu e cea a locuinței.", comment: "Capture review: the supply address isn't the home's.")
     }
+    static var insuredAddressPartlyAgrees: String {
+        String(localized: "Adresa din poliță seamănă cu cea a locuinței, dar nu e chiar aceeași.",
+               comment: "Capture review: the address of the home a policy insures only partly agrees with the home's.")
+    }
+    static var insuredAddressDiffers: String {
+        String(localized: "Adresa din poliță nu e cea a locuinței.", comment: "Capture review: the address of the home a policy insures isn't the home's.")
+    }
 
     /// Where a policy's bonus-malus class goes, in a line under what was read.
     static func bonusMalus(_ choice: CaptureFilingPlan.BonusMalus) -> String {
@@ -450,11 +457,14 @@ enum CaptureReviewWording {
         }
     }
 
-    /// Why the home was chosen without being sure: the supply address only partly agrees.
-    static func placeCheck(_ check: SubscriptionMatcher.HouseCheck) -> String {
-        switch check {
-        case .addressPartlyAgrees: addressPartlyAgrees
-        case .addressDiffers: addressDiffers
+    /// Why the home was chosen without being sure: the address the paper names for it (`address`:
+    /// a bill's supply address, a policy's insured home) only partly agrees, or isn't the home's.
+    static func placeCheck(_ check: SubscriptionMatcher.HouseCheck, address: CaptureFieldKey) -> String {
+        switch (check, address == .insuredAddress) {
+        case (.addressPartlyAgrees, false): addressPartlyAgrees
+        case (.addressDiffers, false): addressDiffers
+        case (.addressPartlyAgrees, true): insuredAddressPartlyAgrees
+        case (.addressDiffers, true): insuredAddressDiffers
         }
     }
 
