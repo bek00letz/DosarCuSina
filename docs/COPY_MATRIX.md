@@ -1,6 +1,6 @@
 # Copy matrix
 
-What each shaped screen says to each category, generated from the kinds' descriptions: the visit form from `VisitShape` laid over the category (`VisitForm`), „Gata” and „Am rezolvat” from each deadline's `CompletionKind`, the deadline form and a record's page in Istoric (`HistoryEntryShape`), a section page's pockets, adding a section, and the capture review by document kind (`CaptureKindProfile`). Every built-in category is here, and one category of one's own per combination of its switches. Reviews walk every category through it.
+What each shaped screen says to each category, generated from the kinds' descriptions: the visit form from `VisitShape` laid over the category (`VisitForm`), „Gata” and „Am rezolvat” from each deadline's `CompletionKind`, the deadline form and a record's page in Istoric (`HistoryEntryShape`), a section page's pockets, adding a section, the capture review by document kind (`CaptureKindProfile`), and „Pleci din țară” by citizenship (`TravelRules`). Every built-in category is here, and one category of one's own per combination of its switches. Reviews walk every category through it.
 
 Don't edit it by hand: `CopyMatrixTests` writes it and fails when it is out of date. To bring it up to date, run `TEST_RUNNER_COPY_MATRIX_WRITE=1 ./tests/run_tests.sh` and commit the diff. Sample values: 3 rows, 1.250 de lei, 3 mai 2027. Lei are counted: 1 leu · 2 lei · 19 lei · 20 de lei · 101 lei · 1,50 lei.
 
@@ -1983,6 +1983,23 @@ What the review says to each kind of document, from the kind's description (`Cap
 | Its back | Ai și o poză cu spatele? Acolo e codul care confirmă datele. |
 | Under „Citește mai bine” | Poza actului se trimite la Google Gemini, cu cheia ta. |
 
+### Permis de ședere (`residencePermit`)
+
+| Where | Words |
+| :--- | :--- |
+| Its title | Permis de ședere |
+| Where it goes: the summary's heading and the picker's title | Unde îl pun |
+| Where it goes, with nothing in the binder | Secțiune nouă în Acte — Se creează când salvezi. — field „Numele secțiunii noi” |
+| What its day means | Expiră pe 3 mai 2027. |
+| When it reminds, its day to come | Expiră pe 10 iunie 2027. Te anunț cu 3 luni și cu 45 de zile înainte. |
+| Its place not chosen yet | Expiră pe 10 iunie 2027. Alege unde îl pui ca să te anunț din timp. |
+| Its day passed | Expiră pe 10 mai. Te anunț cu 3 luni și cu 45 de zile înainte. |
+| Nothing read off it | Nu am găsit date pe permisul de ședere. Îl păstrez oricum, cu numele de mai sus. |
+| A value that passed its check digit | Pe permisul de ședere scrie: 123456 |
+| What its machine-readable code says | Pe spatele actului scrie: 123456 |
+| Its back | Ai și o poză cu spatele? Acolo e codul care confirmă datele. |
+| Under „Citește mai bine” | Poza actului se trimite la Google Gemini, cu cheia ta. |
+
 ### Permis de conducere (`drivingLicence`)
 
 | Where | Words |
@@ -2247,3 +2264,40 @@ What the review says to each kind of document, from the kind's description (`Cap
 | Nothing read off it | Nu am găsit date pe document. Îl păstrez oricum, cu numele de mai sus. |
 | A value that passed its check digit | Pe document scrie: 123456 |
 | Under „Citește mai bine” | Prima pagină se trimite la Google Gemini, cu cheia ta. |
+
+## Pleci din țară
+
+What the trip check asks of each traveller, by the group their citizenship falls in (`Citizenship.Group`: read from the person, else from their documents; never assumed) and where they go, from `TravelRules` and `TravelWording`. Sample day: 3 mai 2027.
+
+### `freeMovement`
+
+| Where | Words |
+| :--- | :--- |
+| În Uniunea Europeană („Cetățenilor UE le ajunge cartea de identitate sau pașaportul, valabile până te întorci.”) | Carte de identitate sau pașaport — Nu sunt în dosar. Adaugă unul dintre ele cu o poză și verific până când e valabil. · Card european de sănătate |
+| În afara UE („Ai nevoie de pașaport, bun de călătorit până te întorci.”) | Pașaport — Nu e în dosar. În afara UE ai nevoie de pașaport. Adaugă-l cu o poză și verific până când e bun. · Viza pentru țara în care mergi — Unele țări cer viză sau o autorizație de călătorie, după cetățenie. Verifică ce cere țara înainte de plecare. |
+
+### `thirdCountry`
+
+| Where | Words |
+| :--- | :--- |
+| În Uniunea Europeană („Cetățenilor UE le ajunge cartea de identitate sau pașaportul, valabile până te întorci.”) | Pașaport — Nu e în dosar. Fără cetățenie europeană, ai nevoie de pașaport și în UE. Adaugă-l cu o poză și verific până când e valabil. · Permis de ședere — Nu e în dosar. Fără el nu poți intra înapoi în țară. Adaugă-l cu o poză și verific până când e valabil. · Card european de sănătate |
+| În afara UE („Ai nevoie de pașaport, bun de călătorit până te întorci.”) | Pașaport — Nu e în dosar. În afara UE ai nevoie de pașaport. Adaugă-l cu o poză și verific până când e bun. · Permis de ședere — Nu e în dosar. Fără el nu poți intra înapoi în țară. Adaugă-l cu o poză și verific până când e valabil. · Viza pentru țara în care mergi — Unele țări cer viză sau o autorizație de călătorie, după cetățenie. Verifică ce cere țara înainte de plecare. |
+
+### `unknown`
+
+| Where | Words |
+| :--- | :--- |
+| În Uniunea Europeană („Cetățenilor UE le ajunge cartea de identitate sau pașaportul, valabile până te întorci.”) | Cetățenia — Spune-mi ce cetățenie are, ca să știu ce acte îi trebuie. · Card european de sănătate |
+| În afara UE („Ai nevoie de pașaport, bun de călătorit până te întorci.”) | Cetățenia — Spune-mi ce cetățenie are, ca să știu ce acte îi trebuie. · Pașaport — Nu e în dosar. În afara UE ai nevoie de pașaport. Adaugă-l cu o poză și verific până când e bun. · Viza pentru țara în care mergi — Unele țări cer viză sau o autorizație de călătorie, după cetățenie. Verifică ce cere țara înainte de plecare. |
+
+### What each need says
+
+| Where | Words |
+| :--- | :--- |
+| `identity` · Carte de identitate | Valabilă până pe 3 mai 2027. Ajunge pentru toată UE. / Expiră pe 3 mai 2027, înainte să te întorci. Fă-ți alta sau ia un pașaport valabil. |
+| `identity` · Pașaport | Valabil până pe 3 mai 2027. În UE ajunge și pașaportul. / Valabil până pe 3 mai 2027. Ia-l pe el: cartea de identitate nu mai e valabilă la întoarcere. / Expiră pe 3 mai 2027, înainte să te întorci. Fă-ți altul sau ia o carte de identitate valabilă. |
+| `passport` · Pașaport | Valabil până pe 3 mai 2027. / Expiră pe 3 mai 2027, înainte să te întorci. Fă-ți altul înainte de plecare. |
+| `passport` (travel cut-off) · Pașaport | Bun de călătorit până pe 3 mai 2027, după ce te întorci. / Bun de călătorit doar până pe 3 mai 2027. Expiră pe 3 mai 2027, iar multe țări nu primesc un pașaport atât de aproape de expirare. Fă-ți altul înainte de plecare. |
+| `residencePermit` · Permis de ședere | Valabil până pe 3 mai 2027. Ia-l cu tine: îți trebuie ca să intri înapoi în țară. / Expiră pe 3 mai 2027, înainte să te întorci. Cere prelungirea cu cel puțin 30 de zile înainte să expire. |
+| A document with no expiry | Nu știu până când e valabil. Adaugă data de expirare. |
+| Documents filed under no one, no citizenship | Cetățenia — Nu știu ce cetățenie are titularul. Mută actele la persoana lor și spune-mi ce cetățenie are. |
