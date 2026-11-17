@@ -1,0 +1,37 @@
+name: Ajutor sau o problemă
+description: O întrebare despre aplicație sau ceva care nu merge cum te aștepți. A question about the app, or something that doesn't work as expected.
+title: "Ajutor: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Ce scrii aici e public.** Nu pune nume, numere de acte, CNP, numere de înmatriculare, poze cu acte sau alte date personale. Dacă ai nevoie de un exemplu, folosește unul inventat, ca B-123-ABC.
+
+        **Ai găsit o problemă de securitate?** Nu o scrie aici: raporteaz-o privat, ca în [SECURITY.md](https://github.com/bek00letz/DosarCuSina/blob/main/SECURITY.md).
+
+        *What you write here is public: no personal details. Security problems are reported privately, as SECURITY.md explains. English is fine too.*
+  - type: textarea
+    id: question
+    attributes:
+      label: Ce s-a întâmplat sau ce vrei să afli
+      description: Pentru o problemă, spune ce ai făcut, pas cu pas, ce s-a întâmplat și ce te așteptai să se întâmple.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versiunea aplicației
+      description: Din Setări › Despre › Versiunea (o poți copia de acolo).
+      placeholder: 1.0 (build 180)
+  - type: input
+    id: device
+    attributes:
+      label: Telefonul și versiunea iOS
+      placeholder: iPhone 16, iOS 26.1
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Înainte să trimiți
+      options:
+        - label: Nu am pus date personale, numere de acte sau poze cu acte.
+          required: true
