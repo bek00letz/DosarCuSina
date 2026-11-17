@@ -98,11 +98,11 @@ public struct MeasurementUnit: Hashable, Sendable, Codable, CustomStringConverti
         case "shots":
             guard let count else { return "\(number)\u{00A0}\(label)" }
             return String(localized: "\(number)\u{00A0}\(count) cafele",
-                          comment: "A number of coffees an espresso machine made: the first argument is the number as written („1.250”), the second only chooses the plural („1 cafea”, „2 cafele”, „20 de cafele”). Keep the no-break spaces.")
+                          locale: .dosarDefault, comment: "A number of coffees an espresso machine made: the first argument is the number as written („1.250”), the second only chooses the plural („1 cafea”, „2 cafele”, „20 de cafele”). Keep the no-break spaces.")
         case "months":
             guard let count else { return "\(number)\u{00A0}\(label)" }
             return String(localized: "\(number)\u{00A0}\(count) luni",
-                          comment: "A number of months: the first argument is the number as written („24”), the second only chooses the plural („1 lună”, „2 luni”, „24 de luni”). Keep the no-break spaces.")
+                          locale: .dosarDefault, comment: "A number of months: the first argument is the number as written („24”), the second only chooses the plural („1 lună”, „2 luni”, „24 de luni”). Keep the no-break spaces.")
         default:
             return "\(number)\u{00A0}\(label)"
         }

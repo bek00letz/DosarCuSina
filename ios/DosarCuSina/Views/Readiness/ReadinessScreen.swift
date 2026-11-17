@@ -79,12 +79,12 @@ struct ReadinessSummaryLine: View {
         case (0, 0):
             return String(localized: "Totul e pregătit", comment: "Readiness summary: nothing needs the person.")
         case (_, 0):
-            return String(localized: "\(attention) lucruri de rezolvat", comment: "Readiness summary: how many checks need the person.")
+            return String(localized: "\(attention) lucruri de rezolvat", locale: .dosarDefault, comment: "Readiness summary: how many checks need the person.")
         case (0, _):
-            return String(localized: "\(missing) lucruri nu sunt în dosar", comment: "Readiness summary: how many things aren't in the binder.")
+            return String(localized: "\(missing) lucruri nu sunt în dosar", locale: .dosarDefault, comment: "Readiness summary: how many things aren't in the binder.")
         default:
-            return String(localized: "\(attention) lucruri de rezolvat", comment: "Readiness summary: how many checks need the person.")
-                + " · " + String(localized: "\(missing) lucruri nu sunt în dosar", comment: "Readiness summary: how many things aren't in the binder.")
+            return String(localized: "\(attention) lucruri de rezolvat", locale: .dosarDefault, comment: "Readiness summary: how many checks need the person.")
+                + " · " + String(localized: "\(missing) lucruri nu sunt în dosar", locale: .dosarDefault, comment: "Readiness summary: how many things aren't in the binder.")
         }
     }
 }

@@ -242,7 +242,7 @@ public final class HistoryActions {
         switch names.count {
         case 0: return String(localized: "Vizită", comment: "History entry title when nothing was listed")
         case 1...2: return names.joined(separator: ", ")
-        default: return String(localized: "Revizie: \(names.count) lucrări", comment: "History entry title for a visit with many jobs")
+        default: return String(localized: "Revizie: \(names.count) lucrări", locale: .dosarDefault, comment: "History entry title for a visit with many jobs")
         }
     }
 

@@ -141,7 +141,7 @@ struct DocumentEditSheet: View {
                                         .frame(height: 72)
                                         .clipShape(.rect(cornerRadius: DS.Radius.badge, style: .continuous))
                                         .dsHairlineBorder(RoundedRectangle(cornerRadius: DS.Radius.badge, style: .continuous))
-                                    Text(verbatim: names?[safe: page.index] ?? String(localized: "Pagina \(page.index + 1)", comment: "A page's number under its picture."))
+                                    Text(verbatim: names?[safe: page.index] ?? String(localized: "Pagina \(page.index + 1)", locale: .dosarDefault, comment: "A page's number under its picture."))
                                         .dsFont(.footnote)
                                 }
                                 .accessibilityElement(children: .combine)

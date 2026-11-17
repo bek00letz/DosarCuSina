@@ -49,7 +49,7 @@ extension AttentionModel {
     /// note says nothing a locked section wouldn't. Nil with none. It opens the suggestions' page.
     public static func suggestionNote(count: Int, topics: [String]) -> AttentionNote? {
         guard count > 0 else { return nil }
-        let title = String(localized: "\(count) sugestii pentru dosar", comment: "Urmează, Din timp: how many suggestions wait for the binder, with Romanian plural forms (O sugestie pentru dosar).")
+        let title = String(localized: "\(count) sugestii pentru dosar", locale: .dosarDefault, comment: "Urmează, Din timp: how many suggestions wait for the binder, with Romanian plural forms (O sugestie pentru dosar).")
         let about = topics.formatted(.list(type: .and).locale(.dosarDefault))
         let promise = String(localized: "Nu schimb nimic fără tine.", comment: "Repair prompt: nothing changes without the owner.")
         let detail = about.isEmpty ? promise : about + ". " + promise
