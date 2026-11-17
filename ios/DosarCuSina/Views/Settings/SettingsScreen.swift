@@ -61,6 +61,7 @@ struct SettingsListScreen: View {
                     DataRepairSettings(isShowingList: $showsRepairs).id(SettingsSection.repairs)
                     StorageSettings()
                     AISettings()
+                    LearnedIssuersSettings(toast: $toast)
                     AboutSettings().id(SettingsSection.about)
                 }
                 // The sheet opens already at the section, with no visible scroll: as soon as the list

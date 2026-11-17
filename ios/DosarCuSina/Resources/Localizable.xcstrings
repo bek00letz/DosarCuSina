@@ -444,6 +444,17 @@
         }
       }
     },
+    "%@: „%@”" : {
+      "comment" : "Settings: a value and the label an issuer prints it under, e.g. 'Data scadenței: „Ultima zi de plată”'.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: „%2$@”"
+          }
+        }
+      }
+    },
     "%@: %@" : {
       "comment" : "Reminder title: due in a duration such as 'În 7 zile' or 'Într-o lună', then the obligation.",
       "localizations" : {
@@ -1899,6 +1910,9 @@
     "Am trecut mai sus data la care se termină. Verifică-o." : {
       "comment" : "Am rezolvat: the new contract's end was read off its photo."
     },
+    "Am uitat ce știam despre „%@”." : {
+      "comment" : "Toast after forgetting what was learned of an issuer's papers."
+    },
     "Amână" : {
 
     },
@@ -2439,6 +2453,9 @@
     "Când o versiune mai veche a salvat ceva greșit, îl găsești aici. Nu schimb nimic fără tine." : {
       "comment" : "Footer of the repair list setting."
     },
+    "Când salvezi un act pe care nu l-am citit întreg, țin minte unde scrie fiecare valoare pe actele firmei care l-a emis. Pe următorul îl citesc singur, pe telefon." : {
+      "comment" : "Settings: nothing learned from saved papers yet, and what learning does."
+    },
     "Când te anunț" : {
       "comment" : "Capture review: the summary card's heading over the reminder."
     },
@@ -2695,6 +2712,9 @@
     },
     "Ce am citit" : {
       "comment" : "Capture review: the section of values read."
+    },
+    "Ce am învățat" : {
+      "comment" : "Settings page and section: what capture learned from the papers the person saved, by issuer."
     },
     "Ce ascunzi de aici nu se șterge; îl găsești în Caută." : {
       "comment" : "Footer of the home visibility settings."
@@ -3579,6 +3599,35 @@
     "De făcut" : {
       "comment" : "Due line verb"
     },
+    "De la %lld firme" : {
+      "comment" : "Settings row: how many issuers capture learned from, with Romanian plural forms (de la o firmă, de la 2 firme, de la 20 de firme).",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "De la %lld firme"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "De la o firmă"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "De la %lld de firme"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "De la cel care a lucrat." : {
       "comment" : "Am rezolvat: which invoice, for a service of one's own."
     },
@@ -4405,6 +4454,12 @@
     },
     "Filtru de habitaclu" : {
 
+    },
+    "Firma cu CUI %@" : {
+      "comment" : "Settings: an issuer capture learned of, known only by its tax ID."
+    },
+    "Firmă fără nume" : {
+      "comment" : "Settings: an issuer capture learned of whose name wasn't saved."
     },
     "Firme salvate de mai multe ori" : {
       "comment" : "Repair group: the same firm kept twice."
@@ -5788,6 +5843,9 @@
     },
     "Nimic în istoric încă. Aici apare ce rezolvi la termen, cu data și cât a costat." : {
       "comment" : "Empty Istoric pocket of a category with no visits (a subscription, a category of one's own without upkeep)."
+    },
+    "Nimic încă" : {
+      "comment" : "Settings row: capture hasn't learned anything from saved papers yet."
     },
     "Nimic mai departe de o lună." : {
 
@@ -8013,6 +8071,9 @@
     "Timp să vorbiți despre prelungire sau să cauți alt chiriaș." : {
 
     },
+    "Țin minte doar cuvintele și așezarea actelor unei firme, nimic despre tine. Se sincronizează cu dosarul." : {
+      "comment" : "Footer of what capture learned: only an issuer's words and layout are kept, and they sync with the binder."
+    },
     "Ține de" : {
       "comment" : "VoiceOver label of the choice of what a category's sections belong to."
     },
@@ -8220,6 +8281,12 @@
     },
     "Udat, fertilizat și schimbat ghiveciul." : {
       "comment" : "Category summary"
+    },
+    "Uită" : {
+      "comment" : "Swipe action: forget what was learned of an issuer's papers."
+    },
+    "Uită ce am învățat" : {
+      "comment" : "Menu: forget what was learned of an issuer's papers."
     },
     "Ulei cutie de viteze" : {
 

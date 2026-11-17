@@ -21,9 +21,9 @@ struct DaysStoredAsDaysTests {
             "Obligation.createdAt", "Obligation.updatedAt", "Obligation.cycleKnownAt", "HistoryEntry.occurredAt", "HistoryEntry.updatedAt",
             "ServiceItem.updatedAt", "MeasurementLog.recordedAt", "MeasurementLog.updatedAt",
             "Attachment.compactedAt", "Attachment.createdAt", "Attachment.updatedAt",
-            "Provider.createdAt", "Provider.updatedAt",
+            "Provider.createdAt", "Provider.updatedAt", "IssuerLesson.createdAt", "IssuerLesson.updatedAt",
         ]
-        let stored = Set(Schema(versionedSchema: DosarSchemaV15.self).entities.flatMap { entity in
+        let stored = Set(Schema(versionedSchema: DosarSchemaV16.self).entities.flatMap { entity in
             entity.attributes.filter { $0.valueType == Date.self || $0.valueType == Date?.self }.map { "\(entity.name).\($0.name)" }
         })
         #expect(stored == moments)
