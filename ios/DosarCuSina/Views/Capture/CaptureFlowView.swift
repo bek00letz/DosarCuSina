@@ -7,22 +7,25 @@ struct CaptureFlowInput: Identifiable {
     let id = UUID()
     var payload: CaptureRequest.Payload
     var inboxItem: InboxItem?
-    /// The section the person started from (its page's "Adaugă un act", a person's documents).
+    /// The section the person started from (its page's "Adaugă un document", a person's documents).
     var preferredAssetID: UUID?
-    /// The person started from a household member's documents: whatever is read
-    /// becomes one of that member's documents, even when it isn't an identity card.
-    var filesAsPersonalDocument = false
+    /// The person started from a household member's documents (`AddPersonalDocumentFlow`), and
+    /// how what is read is filed there; nil when they started anywhere else.
+    var fromPersonsDocuments: HolderDocumentFiling?
+    /// Whatever is read becomes one of that member's documents, even when it isn't an
+    /// identity card. From their page's „Adaugă un document”, capture decides instead.
+    var filesAsPersonalDocument: Bool { fromPersonsDocuments == .personalDocument }
     /// The reading and its pages. It lives as long as this input: when the screen that
     /// presents the capture lets go of it (the sheet closed or swiped down), any reading
     /// still running stops and the pages are let go.
     let session: CaptureSession
 
     @MainActor
-    init(payload: CaptureRequest.Payload, inboxItem: InboxItem? = nil, preferredAssetID: UUID? = nil, filesAsPersonalDocument: Bool = false) {
+    init(payload: CaptureRequest.Payload, inboxItem: InboxItem? = nil, preferredAssetID: UUID? = nil, fromPersonsDocuments: HolderDocumentFiling? = nil) {
         self.payload = payload
         self.inboxItem = inboxItem
         self.preferredAssetID = preferredAssetID
-        self.filesAsPersonalDocument = filesAsPersonalDocument
+        self.fromPersonsDocuments = fromPersonsDocuments
         self.session = CaptureSession(payload: payload, ownerID: preferredAssetID)
     }
 }
@@ -143,7 +146,7 @@ struct CaptureFlowView: View {
 
     /// The capture started from a person's documents or a locked section.
     private var headsForProtectedPlace: Bool {
-        guard !input.filesAsPersonalDocument else { return true }
+        guard input.fromPersonsDocuments == nil else { return true }
         guard let id = input.preferredAssetID, let asset = assets.first(where: { $0.id == id }) else { return false }
         let templates = (try? TemplateStore(context: context).templatesByKey()) ?? [:]
         var current: Asset? = asset

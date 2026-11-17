@@ -143,7 +143,7 @@ struct VisitForm: Equatable {
         case 1...2: return names.joined(separator: ", ")
         default:
             return shape.sum == .parts
-                ? String(localized: "Revizie: \(names.count) lucrări", comment: "History entry title for a visit with many jobs")
+                ? String(localized: "Revizie: \(names.count) lucrări", locale: .dosarDefault, comment: "History entry title for a visit with many jobs")
                 : shape.entryTitle
         }
     }

@@ -95,6 +95,11 @@ extension CopyMatrixTests {
              "\(PocketWording.categoryEmpty("Anvelope")) — \(PocketWording.addInto("Anvelope"))"),
             ("A section filed under the page", "\(PocketWording.until(day)) / \(PocketWording.warrantyUntil(day))"),
             ("A paper in Acte", "\(PocketWording.expires(day)) / \(PocketWording.expired(day)) / \(PocketWording.dated(day))"),
+            ("A person's „\(PocketAddition.document.title)” (capture decides; a checklist's or the Acte box's files an act)",
+             [HolderDocumentFiling.captureDecides, .personalDocument].map { filing in
+                 "\(filing.title): Fotografiază — \(filing.cameraDetail) · Din poze — \(filing.photosDetail) · "
+                     + "Din Fișiere — \(filing.filesDetail) · Scriu eu — \(filing.typingDetail)"
+             }.joined(separator: " / ")),
             ("A paper with no title of its own", DocumentKind.allCases.map(\.title).joined(separator: ", ")),
             ("Bani's rows", money.joined(separator: " · ")),
             ("The full lists („Vezi tot”; empty, each says its pocket's line)",

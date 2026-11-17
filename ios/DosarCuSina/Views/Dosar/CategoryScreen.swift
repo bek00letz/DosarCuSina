@@ -77,7 +77,7 @@ private struct CategoryContent: View {
             emptyState(
                 title: "Niciun act încă",
                 message: "Adaugă buletinul, pașaportul sau permisul. Îți spun cu luni înainte când trebuie reînnoite.",
-                action: "Adaugă un act"
+                action: "Adaugă un document"
             ) { addDocument() }
         }
         ForEach(groups) { group in
@@ -103,7 +103,7 @@ private struct CategoryContent: View {
             }
         }
         if !groups.isEmpty {
-            DSSecondaryButton("Adaugă un act", systemImage: "plus") { addDocument() }
+            DSSecondaryButton(verbatim: PocketWording.addDocument, systemImage: "plus") { addDocument() }
         }
     }
 

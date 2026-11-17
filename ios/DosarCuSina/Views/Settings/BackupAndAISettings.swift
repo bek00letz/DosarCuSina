@@ -236,7 +236,7 @@ struct BackupPasswordRule {
 
     var passwordValidation: DSValidation {
         guard !password.isEmpty, password.count < ArchiveEncryption.minimumPasswordLength else { return .valid }
-        return .invalid(LocalizedStringResource("Parola are cel puțin \(ArchiveEncryption.minimumPasswordLength) caractere.", comment: "A backup password is too short."))
+        return .invalid(LocalizedStringResource("Parola are cel puțin \(ArchiveEncryption.minimumPasswordLength) caractere.", locale: .dosarDefault, comment: "A backup password is too short."))
     }
 
     var repeatValidation: DSValidation {
@@ -254,17 +254,17 @@ private struct ShareItem: Identifiable {
 enum BackupWording {
     static func summary(_ summary: ArchiveSummary, locale: Locale = .dosarDefault) -> String {
         let counts = [
-            String(localized: "\(summary.counts.assets) secțiuni", comment: "A number of sections, with Romanian plural forms."),
-            String(localized: "\(summary.counts.obligations) termene", comment: "A number of obligations, with Romanian plural forms."),
+            String(localized: "\(summary.counts.assets) secțiuni", locale: .dosarDefault, comment: "A number of sections, with Romanian plural forms."),
+            String(localized: "\(summary.counts.obligations) termene", locale: .dosarDefault, comment: "A number of obligations, with Romanian plural forms."),
             StorageWording.documents(summary.counts.attachments),
         ].formatted(.list(type: .and).locale(locale))
         return String(localized: "Copia e din \(DosarFormat.day(summary.exportedAt, locale: locale)) și are \(counts).", comment: "Backup summary before importing.")
     }
 
     static func result(_ result: ArchiveImportResult) -> String {
-        let done = String(localized: "Copia e pusă înapoi. Noi: \(result.inserted). Actualizate: \(result.updated).", comment: "After importing a backup.")
+        let done = String(localized: "Copia e pusă înapoi. Noi: \(result.inserted). Actualizate: \(result.updated).", locale: .dosarDefault, comment: "After importing a backup.")
         guard result.movedToTop > 0 else { return done }
-        return done + " " + String(localized: "\(result.movedToTop) secțiuni nu și-au găsit locul din copie și sunt acum direct în dosar.", comment: "After importing a backup: sections whose parent couldn't be used, with Romanian plural forms.")
+        return done + " " + String(localized: "\(result.movedToTop) secțiuni nu și-au găsit locul din copie și sunt acum direct în dosar.", locale: .dosarDefault, comment: "After importing a backup: sections whose parent couldn't be used, with Romanian plural forms.")
     }
 }
 

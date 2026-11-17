@@ -360,7 +360,7 @@ enum CaptureReviewWording {
     // The notices
     static func moreNotices(_ count: Int) -> String {
         String(localized: "Mai sunt \(count) observații",
-               comment: "Opens the review's other notices. The number is how many more there are, with Romanian plural forms (Mai e o observație).")
+               locale: .dosarDefault, comment: "Opens the review's other notices. The number is how many more there are, with Romanian plural forms (Mai e o observație).")
     }
     static var samePhoto: String { String(localized: "Ai mai adăugat poza asta", comment: "Capture review: the same photo was added before.") }
     static var samePhotoMessage: String {
@@ -386,7 +386,7 @@ enum CaptureReviewWording {
         String(localized: "O poză nouă, dreaptă și fără reflexii, ajută.", comment: "Capture review: what helps a photo hard to read.")
     }
     static func firstPagesRead(_ count: Int) -> String {
-        String(localized: "Am citit primele \(count) pagini", comment: "Capture review: only the first pages of a long PDF were read, with Romanian plural forms.")
+        String(localized: "Am citit primele \(count) pagini", locale: .dosarDefault, comment: "Capture review: only the first pages of a long PDF were read, with Romanian plural forms.")
     }
     static var longDocument: String {
         String(localized: "E un document lung. Se păstrează tot, cu toate paginile.", comment: "Capture review: a long PDF is kept whole.")

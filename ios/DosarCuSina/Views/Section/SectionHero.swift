@@ -316,7 +316,7 @@ enum HeroFacts {
     /// "Autocitire între 15 și 20 ale lunii", from the home template's meter-reading days.
     static func meterWindow(_ values: FieldValues) -> String? {
         guard let from = values["home.meterReadFrom"]?.numberValue, let to = values["home.meterReadTo"]?.numberValue else { return nil }
-        return String(localized: "Autocitire între \(Int(from)) și \(Int(to)) ale lunii", comment: "Home hero: the days of the month when meters are read.")
+        return String(localized: "Autocitire între \(Int(from)) și \(Int(to)) ale lunii", locale: .dosarDefault, comment: "Home hero: the days of the month when meters are read.")
     }
 }
 

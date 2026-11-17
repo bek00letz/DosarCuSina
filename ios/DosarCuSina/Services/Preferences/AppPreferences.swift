@@ -1,14 +1,15 @@
 import Foundation
 import Observation
 
-/// Settings that belong to this device, not to the household data: when to
+/// Settings that belong to this device, not to the household data: whether and when to
 /// remind, whether the whole app is locked, whether onboarding was seen.
 /// Which sections are locked is this device's choice too, kept beside the store
 /// (`SectionLocks`, read through `CategoryTemplate.isSensitive`); the two locks are independent.
 @MainActor
 @Observable
 public final class AppPreferences {
-    public static let shared = AppPreferences()
+    /// The app's own: its switch for notifications is kept where the share extension reads it too.
+    public static let shared = AppPreferences(groupDefaults: NotificationSwitch.store)
 
     /// Posted after any preference changes, so side effects can be recomputed.
     public nonisolated static let didChangeNotification = Notification.Name("DosarCuSina.preferencesDidChange")
@@ -24,6 +25,18 @@ public final class AppPreferences {
     }
 
     @ObservationIgnored private let defaults: UserDefaults
+    /// Where what the app's extensions read too is kept (`NotificationSwitch`).
+    @ObservationIgnored private let groupDefaults: UserDefaults
+
+    /// „Notificări”: this device sends its reminders, the app badge and the share's notice. Off
+    /// stops them all at once; on brings them back (`SideEffectsCoordinator`, the one that acts
+    /// on it). iOS's own permission is apart from it. Default on.
+    public var notificationsOn: Bool {
+        didSet {
+            NotificationSwitch.set(notificationsOn, in: groupDefaults)
+            NotificationCenter.default.post(name: Self.didChangeNotification, object: nil)
+        }
+    }
 
     /// Minutes after midnight for reminders, unless an obligation sets its own. Default 09:00.
     public var reminderMinuteOfDay: Int {
@@ -62,8 +75,12 @@ public final class AppPreferences {
         didSet { store(syncsWithICloud, Key.syncsWithICloud) }
     }
 
-    public init(defaults: UserDefaults = .standard) {
+    /// - Parameter groupDefaults: where the switch for notifications is kept; `defaults` when
+    ///   nil (a test's own suite).
+    public init(defaults: UserDefaults = .standard, groupDefaults: UserDefaults? = nil) {
         self.defaults = defaults
+        self.groupDefaults = groupDefaults ?? defaults
+        self.notificationsOn = NotificationSwitch.isOn(in: groupDefaults ?? defaults)
         let minute = defaults.object(forKey: Key.reminderMinuteOfDay) as? Int
         self.reminderMinuteOfDay = minute.map(ReminderClock.clamped) ?? Self.defaultReminderMinuteOfDay
         self.appLockEnabled = defaults.bool(forKey: Key.appLockEnabled)

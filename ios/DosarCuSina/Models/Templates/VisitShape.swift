@@ -470,16 +470,16 @@ extension VisitShape.Paper {
     /// Rows ticked off it.
     public func ticked(_ count: Int) -> String {
         switch self {
-        case .invoice: String(localized: "Am bifat \(count) rânduri de pe factură. Verifică-le.", comment: "Visit flow: rows ticked from a scanned invoice")
-        case .medical, .veterinary: String(localized: "Am bifat \(count) rânduri de pe hârtie. Verifică-le.", comment: "Visit flow: rows ticked from a doctor's or a vet's paper.")
+        case .invoice: String(localized: "Am bifat \(count) rânduri de pe factură. Verifică-le.", locale: .dosarDefault, comment: "Visit flow: rows ticked from a scanned invoice")
+        case .medical, .veterinary: String(localized: "Am bifat \(count) rânduri de pe hârtie. Verifică-le.", locale: .dosarDefault, comment: "Visit flow: rows ticked from a doctor's or a vet's paper.")
         }
     }
 
     /// Rows written off it.
     public func written(_ count: Int) -> String {
         switch self {
-        case .invoice: String(localized: "Am trecut \(count) rânduri de pe factură. Verifică-le.", comment: "Visit flow: rows written from a scanned invoice.")
-        case .medical, .veterinary: String(localized: "Am trecut \(count) rânduri de pe hârtie. Verifică-le.", comment: "Visit flow: rows written from a doctor's or a vet's paper.")
+        case .invoice: String(localized: "Am trecut \(count) rânduri de pe factură. Verifică-le.", locale: .dosarDefault, comment: "Visit flow: rows written from a scanned invoice.")
+        case .medical, .veterinary: String(localized: "Am trecut \(count) rânduri de pe hârtie. Verifică-le.", locale: .dosarDefault, comment: "Visit flow: rows written from a doctor's or a vet's paper.")
         }
     }
 

@@ -15,7 +15,7 @@ struct UpcomingActions {
     /// "Mâine", "Peste 3 zile", "Peste 14 zile": a length the person picks, in days, by the
     /// String Catalog's plural variations (one day is "Mâine").
     static func snoozeTitle(days: Int) -> String {
-        String(localized: "Peste \(days) zile", comment: "Snooze for a number of days, with Romanian plural forms: one „Mâine”, „Peste 3 zile”, „Peste 20 de zile”.")
+        String(localized: "Peste \(days) zile", locale: .dosarDefault, comment: "Snooze for a number of days, with Romanian plural forms: one „Mâine”, „Peste 3 zile”, „Peste 20 de zile”.")
     }
 
     func obligation(_ id: UUID) -> Obligation? {

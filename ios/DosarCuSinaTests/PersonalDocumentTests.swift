@@ -172,6 +172,32 @@ struct PersonalDocumentTests {
         #expect(document.name == "Document – Manole Corina")
     }
 
+    @Test func fromAPersonsPageCaptureDecidesWhatADocumentIs() throws {
+        let (context, corina) = try setup()
+        let templates = try TemplateStore(context: context).templatesByKey()
+        // „Adaugă un document” on their page: capture decides, nothing is forced.
+        let input = CaptureFlowInput(payload: .text("Diplomă"), preferredAssetID: corina.id, fromPersonsDocuments: .captureDecides)
+        #expect(!input.filesAsPersonalDocument)
+        #expect(CaptureFlowInput(payload: .text("Pașaport"), preferredAssetID: corina.id, fromPersonsDocuments: .personalDocument).filesAsPersonalDocument)
+
+        func review(_ kind: CaptureDocumentKind) -> CaptureReview {
+            var review = CaptureReview(
+                result: CaptureResult(kind: kind, kindConfidence: 0.9, fields: [], suggestions: [], reminder: nil,
+                                      recognizedText: "", barcodes: [], document: nil, notices: []),
+                assets: [corina], context: context
+            )
+            review.destination = .asset(corina.id)
+            review.filesAsPersonalDocument = input.filesAsPersonalDocument
+            return review
+        }
+        // One of their own documents becomes its own section, with reminders.
+        #expect(CaptureDocumentKind.passport.isPersonalDocument)
+        #expect(CaptureFiler.filedTemplateKey(for: review(.passport), destinationTemplateKey: BuiltInTemplates.Key.member, templates: templates) == BuiltInTemplates.Key.documents)
+        // Any other paper (a diploma) is kept on their page.
+        #expect(!CaptureDocumentKind.other.isPersonalDocument)
+        #expect(CaptureFiler.filedTemplateKey(for: review(.other), destinationTemplateKey: BuiltInTemplates.Key.member, templates: templates) == BuiltInTemplates.Key.member)
+    }
+
     @Test func aPhotographedElectronicCardKnowsItsVariantSoItsPINRowsAppear() async throws {
         let (context, corina) = try setup()
         var review = CaptureReview(

@@ -135,6 +135,11 @@ struct AppShell: View {
                 // Land on the document's own page, over the person it was added for.
                 router.push(.asset(documentID))
             }
+        case .addDocument(let holderID):
+            AddPersonalDocumentFlow(holderID: holderID, filing: .captureDecides) { documentID in
+                // One of their own documents opens its page; a paper kept on theirs stays there.
+                router.push(.asset(documentID))
+            }
         case .addSection(let request):
             AddSectionFlow(request: request) { asset in
                 // A new top-level section opens right away; a child shows up in its parent's pocket.

@@ -83,7 +83,7 @@ struct SectionPageInPlaceTests {
         let layout = contents.layout(pockets: cars.definition.pockets, folds: true)
         #expect(layout.shown == [.listed(.upcoming), .listed(.keyFacts)], "Urmează and its plate under Date importante")
         #expect(layout.additions == [.paper(besidePersonal: false), .visit(cars.behavior.visit), .person])
-        #expect(layout.additions.map(\.title) == ["Adaugă un act", "Am fost la service", "Adaugă o persoană"])
+        #expect(layout.additions.map(\.title) == ["Adaugă un document", "Am fost la service", "Adaugă o persoană"])
         #expect(!layout.additions.map(\.pocket).contains(.listed(.money)), "No Bani until something cost money")
     }
 
@@ -127,8 +127,18 @@ struct SectionPageInPlaceTests {
         let people = try template(BuiltInTemplates.Key.member, in: context)
         let ana = try actions(context).create(name: "Ana", template: people, values: FieldValues())
         let contents = try pocketContents(of: ana, in: context)
-        #expect(contents.addition(.listed(.documents)) == .personalDocument, "A person adds one of their own, photo first")
+        #expect(contents.addition(.listed(.documents)) == .document, "A person adds any document, photo first; capture decides what it is")
+        #expect(contents.buttons(.listed(.documents)) == [.document], "One button on a person's Acte")
+        #expect(PocketAddition.document.title == "Adaugă un document")
+        #expect(PocketAddition.paper(besidePersonal: false).title == PocketAddition.document.title, "Every Acte says „Adaugă un document”")
+        #expect(ShellSheet.addDocument(holderID: ana.id).lock == .section(ana.id), "It opens behind the person's lock")
+        #expect(ShellSheet.addDocument(holderID: ana.id).id != ShellSheet.addPersonalDocument(holderID: ana.id).id)
+
+        // The way back: the two buttons it replaced, still named apart.
+        let wayBack = PocketAddition.documentButtons(isHolder: true, oneButton: false)
+        #expect(wayBack == [.personalDocument, .paper(besidePersonal: true)])
         #expect(PocketAddition.paper(besidePersonal: true).title != PocketAddition.personalDocument.title, "Beside it, a paper is named apart")
+        #expect(PocketAddition.documentButtons(isHolder: false, oneButton: false) == [.paper(besidePersonal: false)], "Any other page has one either way")
     }
 
     // MARK: Each paper once

@@ -64,7 +64,7 @@ public struct Money: Hashable, Sendable, Codable {
     /// String Catalog pick „leu”, „lei” or „de lei” by `count`, the amount without its sign.
     static func wholeLei(_ number: String, count: Int) -> String {
         String(localized: "\(number)\u{00A0}\(count) lei",
-               comment: "A whole amount of money in lei: the first argument is the amount as written („1.250”), the second only chooses the plural („1 leu”, „2 lei”, „20 de lei”). Keep the no-break space.")
+               locale: .dosarDefault, comment: "A whole amount of money in lei: the first argument is the amount as written („1.250”), the second only chooses the plural („1 leu”, „2 lei”, „20 de lei”). Keep the no-break space.")
     }
 
     /// The whole number of lei an amount is, without its sign; nil when it doesn't fit.

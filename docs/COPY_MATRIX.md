@@ -1,6 +1,6 @@
 # Copy matrix
 
-What each shaped screen says to each category, generated from the kinds' descriptions: the visit form from `VisitShape` laid over the category (`VisitForm`), „Gata” and „Am rezolvat” from each deadline's `CompletionKind`, the deadline form and a record's page in Istoric (`HistoryEntryShape`), a section page's pockets, adding a section, the capture review by document kind (`CaptureKindProfile`), and „Pleci din țară” by citizenship (`TravelRules`). Every built-in category is here, and one category of one's own per combination of its switches. Reviews walk every category through it.
+What each shaped screen says to each category, generated from the kinds' descriptions: the visit form from `VisitShape` laid over the category (`VisitForm`), „Gata” and „Am rezolvat” from each deadline's `CompletionKind`, the deadline form and a record's page in Istoric (`HistoryEntryShape`), a section page's pockets, adding a section, the capture review by document kind (`CaptureKindProfile`), „Pleci din țară” by citizenship (`TravelRules`), and „Vinzi mașina” and „Ai avut o daună” (`ReadinessEngine`). Every built-in category is here, and one category of one's own per combination of its switches. Reviews walk every category through it.
 
 Don't edit it by hand: `CopyMatrixTests` writes it and fails when it is out of date. To bring it up to date, run `TEST_RUNNER_COPY_MATRIX_WRITE=1 ./tests/run_tests.sh` and commit the diff. Sample values: 3 rows, 1.250 de lei, 3 mai 2027. Lei are counted: 1 leu · 2 lei · 19 lei · 20 de lei · 101 lei · 1,50 lei. So are counted units: 1 cafea · 2 cafele · 20 de cafele · 1.250 de cafele · 1 lună · 24 de luni · 10.000 km.
 
@@ -1069,6 +1069,7 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | A pocket named after a category of one's own (a car's „Anvelope”) | Nimic din „Anvelope” trecut aici. — Adaugă în „Anvelope” |
 | A section filed under the page | până la 3 mai 2027 / garanție până la 3 mai 2027 |
 | A paper in Acte | Expiră pe 3 mai 2027 / A expirat pe 3 mai 2027 / Din 3 mai 2027 |
+| A person's „Adaugă un document” (capture decides; a checklist's or the Acte box's files an act) | Un document nou: Fotografiază — Eu văd ce document e. Pentru un act care expiră, îți amintesc la timp. · Din poze — O poză cu documentul, făcută mai demult. · Din Fișiere — Un PDF sau o poză păstrată în Fișiere. · Scriu eu — Pentru un act: alegi ce act e și până când e valabil. / Un act nou: Fotografiază — Fotografiezi actul, iar eu completez ce act e, datele și când expiră. · Din poze — O poză cu actul, făcută mai demult. · Din Fișiere — Un PDF sau o poză păstrată în Fișiere. · Scriu eu — Alegi ce act e și până când e valabil. |
 | A paper with no title of its own | Factură, Bon, Poliță, Contract, Certificat, Raport, Act de identitate, Certificat de garanție, Manual, Rețetă, Poză, Document |
 | Bani's rows | Pe lună · Ultima factură · În medie, pe factură · În ultimul an · În total · Preț de cumpărare |
 | The full lists („Vezi tot”; empty, each says its pocket's line) | Termene · Ultima dată · Tot istoricul · Acte personale · Documente · Arhivate (its line under it is the category's) · Adaugă |
@@ -1080,9 +1081,9 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | :--- | :--- |
 | Its visits | `service` |
 | Its pockets, in order | Urmează · Acte · Istoric · Oameni · Bani · Date importante |
-| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un document (Acte) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
 | Urmează, empty | Niciun termen. Adaugă unul și îți amintesc la timp. — Adaugă un termen |
-| Acte, empty | Niciun document. Scanează talonul, polița sau raportul ITP și le găsești aici. — Adaugă un act |
+| Acte, empty | Niciun document. Scanează talonul, polița sau raportul ITP și le găsești aici. — Adaugă un document |
 | Istoric, empty | Nimic notat încă. După fiecare service, notează aici ce s-a făcut, cât a costat și cine a lucrat. — Am fost la service |
 | Oameni, empty | Nimeni încă. Adaugă service-ul sau mecanicul și ai numărul la îndemână. — Adaugă o persoană |
 | Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
@@ -1095,13 +1096,13 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | :--- | :--- |
 | Its visits | `job` |
 | Its pockets, in order | Urmează · Chiriași · Produse · Abonamente · Plante · Acte · Istoric · Oameni · Bani · Date importante |
-| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un chiriaș (Chiriași) · Adaugă un produs (Produse) · Adaugă un abonament (Abonamente) · Adaugă un act (Acte) · Am chemat un meseriaș (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un chiriaș (Chiriași) · Adaugă un produs (Produse) · Adaugă un abonament (Abonamente) · Adaugă un document (Acte) · Am chemat un meseriaș (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
 | Urmează, empty | Niciun termen. Adaugă unul și îți amintesc la timp. — Adaugă un termen |
 | Chiriași, empty | Niciun chiriaș. Adaugă contractul și îți spun când se termină. — Adaugă un chiriaș |
 | Produse, empty | Niciun produs. Adaugă aragazul sau centrala și ții minte garanția. — Adaugă un produs |
 | Abonamente, empty | Niciun abonament trecut aici. — Adaugă un abonament |
 | Plante, empty (not offered until the household keeps them) | Nicio plantă trecută aici. Adaug-o și îți amintesc de udat. — Adaugă o plantă |
-| Acte, empty | Niciun document. Scanează polița și o găsești aici. — Adaugă un act |
+| Acte, empty | Niciun document. Scanează polița și o găsești aici. — Adaugă un document |
 | Istoric, empty | Nimic notat încă. Când vine un meseriaș, notează aici ce a lucrat, cât a costat și cine a fost. — Am chemat un meseriaș |
 | Oameni, empty | Nimeni încă. Adaugă meseriașii la care apelezi și ai numărul la îndemână. — Adaugă o persoană |
 | Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
@@ -1114,9 +1115,9 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | :--- | :--- |
 | Its visits | `none` |
 | Its pockets, in order | Urmează · Acte · Date importante |
-| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Adaugă un rând (Date importante) |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un document (Acte) · Adaugă un rând (Date importante) |
 | Urmează, empty | Niciun termen. Adaugă unul și îți amintesc la timp. — Adaugă un termen |
-| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un act |
+| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un document |
 | Date importante, empty | Pune aici ce cauți des, un număr sau un cod. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
 | Acte's full list, under the archived | Arhivate — Acte vechi, păstrate pentru orice eventualitate. |
 
@@ -1126,9 +1127,9 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | :--- | :--- |
 | Its visits | `vet` |
 | Its pockets, in order | Urmează · Acte · Istoric · Oameni · Bani · Date importante |
-| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Am fost la veterinar (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un document (Acte) · Am fost la veterinar (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
 | Urmează, empty | Niciun termen. Adaugă unul și îți amintesc la timp. — Adaugă un termen |
-| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un act |
+| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un document |
 | Istoric, empty | Nicio vizită notată încă. După o vizită la veterinar, notează aici ce i s-a făcut, la cine și fișa sau rețeta. — Am fost la veterinar |
 | Oameni, empty | Nimeni încă. Adaugă veterinarul și ai numărul la îndemână. — Adaugă o persoană |
 | Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
@@ -1141,9 +1142,9 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | :--- | :--- |
 | Its visits | `doctor` |
 | Its pockets, in order | Urmează · Acte · Istoric · Oameni · Date importante |
-| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Am fost la medic (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un document (Acte) · Am fost la medic (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
 | Urmează, empty | Niciun termen. Adaugă unul și îți amintesc la timp. — Adaugă un termen |
-| Acte, empty | Niciun document. Scanează buletinul de analize și îl găsești aici. — Adaugă un act |
+| Acte, empty | Niciun document. Scanează buletinul de analize și îl găsești aici. — Adaugă un document |
 | Istoric, empty | Nicio vizită notată încă. După o vizită la medic, notează aici la cine, pentru ce și rețeta sau analizele. — Am fost la medic |
 | Oameni, empty | Nimeni încă. Adaugă medicul de familie sau clinica și ai numărul la îndemână. — Adaugă o persoană |
 | Date importante, empty | Pune aici ce cauți des, un număr sau un cod. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
@@ -1155,9 +1156,9 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | :--- | :--- |
 | Its visits | `repair` |
 | Its pockets, in order | Urmează · Acte · Istoric · Bani · Date importante |
-| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Am dus la reparat (Istoric) · Adaugă un rând (Date importante) |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un document (Acte) · Am dus la reparat (Istoric) · Adaugă un rând (Date importante) |
 | Urmează, empty | Niciun termen. Adaugă unul și îți amintesc la timp. — Adaugă un termen |
-| Acte, empty | Niciun document. Scanează bonul sau certificatul de garanție și le găsești aici. — Adaugă un act |
+| Acte, empty | Niciun document. Scanează bonul sau certificatul de garanție și le găsești aici. — Adaugă un document |
 | Istoric, empty | Nicio reparație notată încă. După una, notează aici ce s-a reparat, unde și cât a costat. — Am dus la reparat |
 | Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
 | Date importante, empty | Pune aici ce cauți des, un număr sau un cod. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
@@ -1169,9 +1170,9 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | :--- | :--- |
 | Its visits | `none` |
 | Its pockets, in order | Urmează · Acte · Istoric · Bani · Date importante |
-| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Adaugă un rând (Date importante) |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un document (Acte) · Adaugă un rând (Date importante) |
 | Urmează, empty | Niciun termen. Adaugă unul și îți amintesc la timp. — Adaugă un termen |
-| Acte, empty | Niciun document. Scanează contractul și îl găsești aici. — Adaugă un act |
+| Acte, empty | Niciun document. Scanează contractul și îl găsești aici. — Adaugă un document |
 | Istoric, empty (not drawn until it holds something) | Nimic în istoric încă. Aici apare ce rezolvi la termen, cu data și cât a costat. |
 | Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
 | Date importante, empty | Pune aici ce cauți des, un număr sau un cod. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
@@ -1183,9 +1184,9 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | :--- | :--- |
 | Its visits | `job` |
 | Its pockets, in order | Urmează · Acte · Istoric · Oameni · Bani · Date importante |
-| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Am chemat un meseriaș (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un document (Acte) · Am chemat un meseriaș (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
 | Urmează, empty | Niciun termen. Adaugă unul și îți amintesc la timp. — Adaugă un termen |
-| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un act |
+| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un document |
 | Istoric, empty | Nimic notat încă. Când vine un meseriaș, notează aici ce a lucrat, cât a costat și cine a fost. — Am chemat un meseriaș |
 | Oameni, empty | Nimeni încă. Adaugă meseriașii la care apelezi și ai numărul la îndemână. — Adaugă o persoană |
 | Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
@@ -1222,9 +1223,9 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | :--- | :--- |
 | Its visits | `none` |
 | Its pockets, in order | Urmează · Acte · Oameni · Bani · Date importante |
-| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un document (Acte) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
 | Urmează, empty | Niciun termen. Adaugă unul și îți amintesc la timp. — Adaugă un termen |
-| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un act |
+| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un document |
 | Oameni, empty | Nimeni încă. Adaugă pe cine suni când e nevoie și ai numărul la îndemână. — Adaugă o persoană |
 | Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
 | Date importante, empty | Pune aici ce cauți des, un număr sau un cod. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
@@ -1236,9 +1237,9 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | :--- | :--- |
 | Its visits | `none` |
 | Its pockets, in order | Urmează · Acte · Date importante |
-| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Adaugă un rând (Date importante) |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un document (Acte) · Adaugă un rând (Date importante) |
 | Urmează, empty | Niciun termen. Adaugă unul și îți amintesc la timp. — Adaugă un termen |
-| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un act / Scanează un document |
+| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un document |
 | Date importante, empty | Pune aici ce cauți des, un număr sau un cod. Un cod sau o parolă rămân ascunse, ca un PIN. — Adaugă un rând |
 | Acte's full list, under the archived | Arhivate — Acte vechi, păstrate pentru orice eventualitate. |
 
@@ -1260,9 +1261,9 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | :--- | :--- |
 | Its visits | `none` |
 | Its pockets, in order | Urmează · Acte · Istoric · Oameni · Bani · Date importante |
-| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un document (Acte) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
 | Urmează, empty | Niciun termen. Adaugă unul și îți amintesc la timp. — Adaugă un termen |
-| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un act |
+| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un document |
 | Istoric, empty (not drawn until it holds something) | Nimic în istoric încă. Aici apare ce rezolvi la termen, cu data și cât a costat. |
 | Oameni, empty | Nimeni încă. Adaugă pe cine suni când e nevoie și ai numărul la îndemână. — Adaugă o persoană |
 | Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
@@ -1275,9 +1276,9 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | :--- | :--- |
 | Its visits | `job` |
 | Its pockets, in order | Urmează · Acte · Istoric · Oameni · Bani · Date importante |
-| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Am chemat un meseriaș (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un document (Acte) · Am chemat un meseriaș (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
 | Urmează, empty | Niciun termen. Adaugă unul și îți amintesc la timp. — Adaugă un termen |
-| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un act |
+| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un document |
 | Istoric, empty | Nimic notat încă. Când vine un meseriaș, notează aici ce a lucrat, cât a costat și cine a fost. — Am chemat un meseriaș |
 | Oameni, empty | Nimeni încă. Adaugă meseriașii la care apelezi și ai numărul la îndemână. — Adaugă o persoană |
 | Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
@@ -1290,9 +1291,9 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | :--- | :--- |
 | Its visits | `service` |
 | Its pockets, in order | Urmează · Acte · Istoric · Oameni · Bani · Date importante |
-| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un document (Acte) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
 | Urmează, empty | Niciun termen. Adaugă unul și îți amintesc la timp. — Adaugă un termen |
-| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un act |
+| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un document |
 | Istoric, empty | Nimic notat încă. După fiecare service, notează aici ce s-a făcut, cât a costat și cine a lucrat. — Am fost la service |
 | Oameni, empty | Nimeni încă. Adaugă service-ul sau mecanicul și ai numărul la îndemână. — Adaugă o persoană |
 | Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
@@ -1305,9 +1306,9 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | :--- | :--- |
 | Its visits | `service` |
 | Its pockets, in order | Urmează · Acte · Istoric · Oameni · Bani · Date importante |
-| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un act (Acte) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un document (Acte) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
 | Urmează, empty | Niciun termen. Adaugă unul și îți amintesc la timp. — Adaugă un termen |
-| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un act |
+| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un document |
 | Istoric, empty | Nimic notat încă. După fiecare service, notează aici ce s-a făcut, cât a costat și cine a lucrat. — Am fost la service |
 | Oameni, empty | Nimeni încă. Adaugă service-ul sau mecanicul și ai numărul la îndemână. — Adaugă o persoană |
 | Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
@@ -1320,10 +1321,10 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | :--- | :--- |
 | Its visits | `none` |
 | Its pockets, in order | Urmează · Abonamente · Acte · Istoric · Oameni · Bani · Date importante |
-| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un abonament (Abonamente) · Adaugă un act (Acte) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un abonament (Abonamente) · Adaugă un document (Acte) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
 | Urmează, empty | Niciun termen. Adaugă unul și îți amintesc la timp. — Adaugă un termen |
 | Abonamente, empty | Niciun abonament trecut aici. — Adaugă un abonament |
-| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un act |
+| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un document |
 | Istoric, empty (not drawn until it holds something) | Nimic în istoric încă. Aici apare ce rezolvi la termen, cu data și cât a costat. |
 | Oameni, empty | Nimeni încă. Adaugă pe cine suni când e nevoie și ai numărul la îndemână. — Adaugă o persoană |
 | Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
@@ -1336,10 +1337,10 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | :--- | :--- |
 | Its visits | `job` |
 | Its pockets, in order | Urmează · Abonamente · Acte · Istoric · Oameni · Bani · Date importante |
-| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un abonament (Abonamente) · Adaugă un act (Acte) · Am chemat un meseriaș (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un abonament (Abonamente) · Adaugă un document (Acte) · Am chemat un meseriaș (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
 | Urmează, empty | Niciun termen. Adaugă unul și îți amintesc la timp. — Adaugă un termen |
 | Abonamente, empty | Niciun abonament trecut aici. — Adaugă un abonament |
-| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un act |
+| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un document |
 | Istoric, empty | Nimic notat încă. Când vine un meseriaș, notează aici ce a lucrat, cât a costat și cine a fost. — Am chemat un meseriaș |
 | Oameni, empty | Nimeni încă. Adaugă meseriașii la care apelezi și ai numărul la îndemână. — Adaugă o persoană |
 | Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
@@ -1352,10 +1353,10 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | :--- | :--- |
 | Its visits | `service` |
 | Its pockets, in order | Urmează · Abonamente · Acte · Istoric · Oameni · Bani · Date importante |
-| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un abonament (Abonamente) · Adaugă un act (Acte) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un abonament (Abonamente) · Adaugă un document (Acte) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
 | Urmează, empty | Niciun termen. Adaugă unul și îți amintesc la timp. — Adaugă un termen |
 | Abonamente, empty | Niciun abonament trecut aici. — Adaugă un abonament |
-| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un act |
+| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un document |
 | Istoric, empty | Nimic notat încă. După fiecare service, notează aici ce s-a făcut, cât a costat și cine a lucrat. — Am fost la service |
 | Oameni, empty | Nimeni încă. Adaugă service-ul sau mecanicul și ai numărul la îndemână. — Adaugă o persoană |
 | Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
@@ -1368,10 +1369,10 @@ What a section's page says in its pockets and its „Adaugă…” menu while it
 | :--- | :--- |
 | Its visits | `service` |
 | Its pockets, in order | Urmează · Abonamente · Acte · Istoric · Oameni · Bani · Date importante |
-| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un abonament (Abonamente) · Adaugă un act (Acte) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
+| „Adaugă…” on an empty page | Adaugă un termen (Urmează) · Adaugă un abonament (Abonamente) · Adaugă un document (Acte) · Am fost la service (Istoric) · Adaugă o persoană (Oameni) · Adaugă un rând (Date importante) |
 | Urmează, empty | Niciun termen. Adaugă unul și îți amintesc la timp. — Adaugă un termen |
 | Abonamente, empty | Niciun abonament trecut aici. — Adaugă un abonament |
-| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un act |
+| Acte, empty | Niciun document. Scanează un act și îl găsești aici. — Adaugă un document |
 | Istoric, empty | Nimic notat încă. După fiecare service, notează aici ce s-a făcut, cât a costat și cine a lucrat. — Am fost la service |
 | Oameni, empty | Nimeni încă. Adaugă service-ul sau mecanicul și ai numărul la îndemână. — Adaugă o persoană |
 | Bani, empty (not drawn until it holds something) | Nicio sumă notată încă. Când notezi ceva cu preț, apare aici. |
@@ -2321,3 +2322,47 @@ What the trip check asks of each traveller, by the group their citizenship falls
 | `residencePermit` · Permis de ședere | Valabil până pe 3 mai 2027. Ia-l cu tine: îți trebuie ca să intri înapoi în țară. / Expiră pe 3 mai 2027, înainte să te întorci. Cere prelungirea cu cel puțin 30 de zile înainte să expire. |
 | A document with no expiry | Nu știu până când e valabil. Adaugă data de expirare. |
 | Documents filed under no one, no citizenship | Cetățenia — Nu știu ce cetățenie are titularul. Mută actele la persoana lor și spune-mi ce cetățenie are. |
+
+## Vinzi mașina și Ai avut o daună
+
+Every check of each checklist, group by group, from `ReadinessEngine`, with its outcome in brackets (an optional check, `ReadinessNeed.optional`, reads „Opțional”). Sample day: 3 mai 2027.
+
+### Vinzi mașina · nothing in the binder
+
+| Where | Words |
+| :--- | :--- |
+| Pentru cumpărător | Cartea de identitate a vehiculului (CIV) (Nu e în dosar) — Adaugă-o înainte de vânzare. O găsești pe talon. · Serie de șasiu (VIN) (Nu e în dosar) — Adaugă-o înainte de vânzare. O găsești pe talon. · ITP (Nu e în dosar) — Nu e în dosar. Cumpărătorul are nevoie de ITP valabil ca să înmatriculeze mașina. · RCA (Nu e în dosar) — Nu e în dosar. Cumpărătorul poate cere să-l vadă. · Istoric de service (Opțional) — Un istoric complet crește încrederea și prețul. Adaugă reviziile pe care le știi. · Facturi de service (Opțional) — Dacă le ai, arată cumpărătorului cum a fost îngrijită mașina. · Certificatul de înmatriculare (talonul) — Originalul îl dai cumpărătorului. · Contractul de vânzare-cumpărare — Semnat de amândoi, câte un exemplar pentru tine, pentru cumpărător și pentru primărie. · Cartea ta de identitate — Pentru contract și la primărie. |
+| De achitat înainte | Impozitul pe mașină, plătit pe tot anul — Primăria îți dă certificatul fiscal pentru vânzare doar fără datorii. · Amenzile neplătite — Tot pentru certificatul fiscal. Le vezi pe ghiseul.ro. · Leasing sau credit pe mașină — Dacă mașina e încă în leasing sau garanție la bancă, o vinzi doar după ce e achitată. |
+| După vânzare | Scoate mașina de pe numele tău la primărie — La biroul de taxe locale, cu contractul. Altfel plătești impozit pe ea mai departe. |
+
+### Vinzi mașina · everything in the binder
+
+| Where | Words |
+| :--- | :--- |
+| Pentru cumpărător | Cartea de identitate a vehiculului (CIV) (Pregătit) — Seria e în dosar. Originalul îl dai cumpărătorului. · Serie de șasiu (VIN) (Pregătit) — E în dosar, pentru contract. · ITP (Pregătit) — Valabil până pe 10 ianuarie 2028. Cumpărătorul are nevoie de el ca să înmatriculeze mașina. · RCA (Pregătit) — Valabil până pe 10 ianuarie 2028. Nu trece la cumpărător: el își face polița lui. · Istoric de service (Pregătit) — 3 intrări de arătat cumpărătorului. · Facturi de service (Pregătit) — Sunt facturi în dosar. · Certificatul de înmatriculare (talonul) — Originalul îl dai cumpărătorului. · Contractul de vânzare-cumpărare — Semnat de amândoi, câte un exemplar pentru tine, pentru cumpărător și pentru primărie. · Cartea ta de identitate — Pentru contract și la primărie. |
+| De achitat înainte | Impozitul pe mașină, plătit pe tot anul — Primăria îți dă certificatul fiscal pentru vânzare doar fără datorii. · Amenzile neplătite — Tot pentru certificatul fiscal. Le vezi pe ghiseul.ro. · Leasing sau credit pe mașină — Dacă mașina e încă în leasing sau garanție la bancă, o vinzi doar după ce e achitată. |
+| După vânzare | Scoate mașina de pe numele tău la primărie — La biroul de taxe locale, cu contractul. Altfel plătești impozit pe ea mai departe. · Reziliază RCA — Cu contractul de vânzare, la asigurător. Primești înapoi banii pe lunile rămase. |
+
+### Ai avut o daună · a car, nothing in the binder
+
+| Where | Words |
+| :--- | :--- |
+| Polița | Număr poliță (Nu e în dosar) — Îl cere asigurătorul la primul telefon. E scris pe poliță. · Telefon pentru daune (Nu e în dosar) — E pe poliță sau pe site-ul asigurătorului. Adaugă-l ca să suni dintr-o atingere. · Valabilitatea poliței (Nu e în dosar) — Nu știu până când e valabilă. Adaugă termenul poliței. · Polița (Opțional) — Fă o poză poliței, ca s-o ai la îndemână. |
+| Ce fotografiezi | Mașinile, cu numerele la vedere — Din față, din spate și din lateral, înainte să le mutați. · Fiecare avarie — De aproape și de departe, ca să se vadă unde e. · Locul — Indicatoare, marcaje, urme pe carosabil. · Actele celuilalt șofer — Talonul, permisul și polița RCA, dacă e și altă mașină. · Constatarea amiabilă — După ce o semnați amândoi. Dacă nu vă înțelegeți, mergi la Poliție. |
+| Acte de avut la îndemână | Permisul de conducere și cartea de identitate — Ale celui care conducea. · Talonul și cartea de identitate a mașinii — Le cere asigurătorul la constatare. · Constatarea amiabilă sau procesul-verbal de la poliție — Originalul, nu doar poza. |
+
+### Ai avut o daună · a car, everything in the binder
+
+| Where | Words |
+| :--- | :--- |
+| Polița | Valabilitatea poliței (Pregătit) — Valabilă până pe 10 ianuarie 2028. · Polița (Pregătit) — E în dosar, cu poză. |
+| Ce fotografiezi | Mașinile, cu numerele la vedere — Din față, din spate și din lateral, înainte să le mutați. · Fiecare avarie — De aproape și de departe, ca să se vadă unde e. · Locul — Indicatoare, marcaje, urme pe carosabil. · Actele celuilalt șofer — Talonul, permisul și polița RCA, dacă e și altă mașină. · Constatarea amiabilă — După ce o semnați amândoi. Dacă nu vă înțelegeți, mergi la Poliție. |
+| Acte de avut la îndemână | Permisul de conducere și cartea de identitate — Ale celui care conducea. · Talonul și cartea de identitate a mașinii — Le cere asigurătorul la constatare. · Constatarea amiabilă sau procesul-verbal de la poliție — Originalul, nu doar poza. |
+
+### Ai avut o daună · a home, nothing in the binder
+
+| Where | Words |
+| :--- | :--- |
+| Polița | Număr poliță (Nu e în dosar) — Îl cere asigurătorul la primul telefon. E scris pe poliță. · Telefon pentru daune (Nu e în dosar) — E pe poliță sau pe site-ul asigurătorului. Adaugă-l ca să suni dintr-o atingere. · Valabilitatea poliței (Nu e în dosar) — Nu știu până când e valabilă. Adaugă termenul poliței. · Polița (Opțional) — Fă o poză poliței, ca s-o ai la îndemână. |
+| Ce fotografiezi | Fiecare zonă afectată — Întâi de departe, apoi avariile de aproape. · De unde a pornit — Țeava, acoperișul, geamul sau peretele. · Lucrurile stricate — Înainte să arunci ceva, cu bonurile dacă le ai. |
+| Acte de avut la îndemână | Cartea de identitate — A celui care are polița. · Actul de proprietate — Contractul sau extrasul de carte funciară. · Procesul-verbal, dacă a venit cineva — De la pompieri, poliție sau administratorul blocului. |

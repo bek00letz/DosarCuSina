@@ -96,6 +96,10 @@ struct SettingsListScreen: View {
 
 // MARK: - Notificări
 
+/// iOS's permission first: undecided, „Pornește notificările” asks it; refused, how to turn it
+/// on in the phone's Settings; allowed, the app's own switch „Notificări”, this device's choice
+/// (`AppPreferences.notificationsOn`): off stops every reminder, the badge and the share's
+/// notice at once, on brings them back.
 struct NotificationSettings: View {
     @Environment(\.sideEffects) private var sideEffects
     @Environment(\.openURL) private var openURL
@@ -107,11 +111,14 @@ struct NotificationSettings: View {
         Section {
             switch sideEffects?.reminderAuthorization ?? .notDetermined {
             case .authorized:
-                Label {
-                    Text("Notificările sunt pornite", comment: "Notification status.")
-                } icon: {
-                    Image(systemName: "checkmark.circle.fill").foregroundStyle(DSStatus.done.color)
+                Toggle(isOn: $preferences.notificationsOn) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Notificări", comment: "Setting: whether this phone gets the app's reminders, badge and notices.")
+                        Text(verbatim: NotificationSwitchWording.footnote(isOn: preferences.notificationsOn))
+                            .dsFont(.footnote)
+                    }
                 }
+                .frame(minHeight: 44)
             case .denied:
                 VStack(alignment: .leading, spacing: DS.Space.xs) {
                     Label {
@@ -119,7 +126,7 @@ struct NotificationSettings: View {
                     } icon: {
                         Image(systemName: "exclamationmark.circle.fill").foregroundStyle(DSStatus.overdue.color)
                     }
-                    Text("Fără ele nu îți putem aminti de ITP, RCA sau acte. Le pornești din Setările telefonului.", comment: "Explains why notifications matter.")
+                    Text("Fără ele nu îți pot aminti de ITP, RCA sau acte. Le pornești din Setările telefonului.", comment: "Explains why notifications matter.")
                         .dsFont(.footnote)
                 }
                 Button {
@@ -144,6 +151,8 @@ struct NotificationSettings: View {
                 Text("Ora amintirilor", comment: "Setting: default reminder time.")
             }
             .frame(minHeight: 44)
+            // While the app's switch is off there is nothing to time.
+            .disabled(sideEffects?.reminderAuthorization == .authorized && !preferences.notificationsOn)
         } header: {
             Text("Notificări", comment: "Settings section.")
         } footer: {
@@ -749,7 +758,7 @@ struct StorageSettings: View {
 
 enum StorageWording {
     static func documents(_ count: Int) -> String {
-        String(localized: "\(count) documente", comment: "A number of documents, with Romanian plural forms.")
+        String(localized: "\(count) documente", locale: .dosarDefault, comment: "A number of documents, with Romanian plural forms.")
     }
 }
 

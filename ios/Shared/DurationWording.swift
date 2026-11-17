@@ -8,7 +8,7 @@ import Foundation
 public enum DayCount {
     public static func phrase(_ count: Int) -> String {
         let n = abs(count)
-        return String(localized: "\(n) zile", table: "Shared", comment: "A number of days, with Romanian plural forms: o zi, 2 zile, 20 de zile.")
+        return String(localized: "\(n) zile", table: "Shared", locale: .dosarDefault, comment: "A number of days, with Romanian plural forms: o zi, 2 zile, 20 de zile.")
     }
 }
 
@@ -16,17 +16,17 @@ public enum DayCount {
 public enum CalendarCount {
     public static func years(_ count: Int) -> String {
         let n = abs(count)
-        return String(localized: "\(n) ani", table: "Shared", comment: "A number of years, with Romanian plural forms.")
+        return String(localized: "\(n) ani", table: "Shared", locale: .dosarDefault, comment: "A number of years, with Romanian plural forms.")
     }
 
     public static func months(_ count: Int) -> String {
         let n = abs(count)
-        return String(localized: "\(n) luni", table: "Shared", comment: "A number of months, with Romanian plural forms.")
+        return String(localized: "\(n) luni", table: "Shared", locale: .dosarDefault, comment: "A number of months, with Romanian plural forms.")
     }
 
     public static func weeks(_ count: Int) -> String {
         let n = abs(count)
-        return String(localized: "\(n) săptămâni", table: "Shared", comment: "A number of weeks, with Romanian plural forms.")
+        return String(localized: "\(n) săptămâni", table: "Shared", locale: .dosarDefault, comment: "A number of weeks, with Romanian plural forms.")
     }
 }
 
