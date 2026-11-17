@@ -140,17 +140,38 @@ public struct ReminderProfileVariants: Hashable, Sendable, Codable {
 }
 
 /// A blueprint condition on an asset value: `{"field": "subscription.cycle", "oneOf": ["billing.yearly"]}`.
+/// With `orWhenEmpty` it is met while the value isn't given yet too: a subscription's client
+/// code shows before its service is chosen, since any contract has one.
 public struct BlueprintCondition: Hashable, Sendable, Codable {
     public var field: String
     public var oneOf: [String]
+    /// Met while `field` holds nothing, as well. Written only when true.
+    public var orWhenEmpty: Bool
 
-    public init(field: String, oneOf: [String]) {
+    public init(field: String, oneOf: [String], orWhenEmpty: Bool = false) {
         self.field = field
         self.oneOf = oneOf
+        self.orWhenEmpty = orWhenEmpty
+    }
+
+    private enum CodingKeys: String, CodingKey { case field, oneOf, orWhenEmpty }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        field = try c.decode(String.self, forKey: .field)
+        oneOf = try c.decode([String].self, forKey: .oneOf)
+        orWhenEmpty = try c.decodeIfPresent(Bool.self, forKey: .orWhenEmpty) ?? false
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(field, forKey: .field)
+        try c.encode(oneOf, forKey: .oneOf)
+        if orWhenEmpty { try c.encode(true, forKey: .orWhenEmpty) }
     }
 
     public func isMet(by values: FieldValues) -> Bool {
-        guard let value = values[field] else { return false }
+        guard let value = values[field] else { return orWhenEmpty }
         switch value {
         case .text(let text): return oneOf.contains(text)
         case .choices(let items): return items.contains(where: oneOf.contains)

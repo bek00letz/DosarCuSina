@@ -1,8 +1,8 @@
 import Foundation
 
-/// The providers whose bills the phone knows by name (gas, electricity, internet, TV and
-/// phone), as data: the words that name each on its documents, and the name the binder
-/// keeps. A new provider is a new row, never new reading code.
+/// The providers whose bills and contracts the phone knows by name (gas, electricity,
+/// internet, TV and phone), as data: the words that name each on its documents, and the
+/// name the binder keeps. A new provider is a new row, never new reading code.
 ///
 /// A name printed on the page is what lets `UtilityInvoiceParser` claim a bill (with the
 /// classifier's agreement, or when it isn't sure); everything else on the bill is read the
@@ -43,6 +43,7 @@ enum UtilityProviders {
         Provider(name: "E.ON Energie", signatures: [Signature("e.on"), Signature("eon energie"), Signature("eon")]),
         Provider(name: "Vodafone Romania", signatures: [Signature("vodafone")]),
         Provider(name: "Orange Romania", signatures: [Signature("orange")]),
+        Provider(name: "Telekom Romania", signatures: [Signature("telekom")]),
     ]
 
     /// The known provider a page names, if any. Names match as whole words in folded text,

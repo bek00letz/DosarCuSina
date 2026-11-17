@@ -240,8 +240,11 @@ public enum FieldDerivation: Hashable, Sendable, Codable {
     /// have a documented validity (`DocumentType.validityMonthsAfterIssue`: a cazier
     /// judiciar, six months).
     case validityAfterIssue(issueField: String)
+    /// The group a subscription is listed under (`SubscriptionGroup`), from its service: the
+    /// person's own choice stays until the service changes.
+    case serviceGroup(serviceField: String)
 
-    private enum CodingKeys: String, CodingKey { case type, date, months }
+    private enum CodingKeys: String, CodingKey { case type, date, months, service }
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -250,6 +253,8 @@ public enum FieldDerivation: Hashable, Sendable, Codable {
             self = .addMonths(dateField: try c.decode(String.self, forKey: .date), monthsField: try c.decode(String.self, forKey: .months))
         case "validityAfterIssue":
             self = .validityAfterIssue(issueField: try c.decode(String.self, forKey: .date))
+        case "serviceGroup":
+            self = .serviceGroup(serviceField: try c.decode(String.self, forKey: .service))
         default:
             throw DecodingError.dataCorruptedError(forKey: .type, in: c, debugDescription: "Unknown derivation")
         }
@@ -265,6 +270,9 @@ public enum FieldDerivation: Hashable, Sendable, Codable {
         case .validityAfterIssue(let issue):
             try c.encode("validityAfterIssue", forKey: .type)
             try c.encode(issue, forKey: .date)
+        case .serviceGroup(let service):
+            try c.encode("serviceGroup", forKey: .type)
+            try c.encode(service, forKey: .service)
         }
     }
 
@@ -273,6 +281,7 @@ public enum FieldDerivation: Hashable, Sendable, Codable {
         switch self {
         case .addMonths(let date, let months): return [date, months]
         case .validityAfterIssue(let issue): return [issue, DocumentType.typeFieldKey, DocumentType.variantFieldKey]
+        case .serviceGroup(let service): return [service]
         }
     }
 
@@ -286,6 +295,9 @@ public enum FieldDerivation: Hashable, Sendable, Codable {
                   let until = DocumentType.validUntil(issued: issued, type: values[DocumentType.typeFieldKey]?.textValue,
                                                       variant: values[DocumentType.variantFieldKey]?.textValue, calendar: calendar) else { return nil }
             return .date(until)
+        case .serviceGroup(let serviceField):
+            let service = values[serviceField]?.textValue.flatMap { ServiceKind.options.option(for: $0)?.key }
+            return .text(SubscriptionGroup.of(service: service).rawValue)
         }
     }
 }

@@ -57,8 +57,8 @@ extension AttentionModel {
     }
 
     /// The bills that haven't come when they usually do. Only for subscriptions billed on
-    /// a rhythm (utilities and phone plans, monthly unless they say otherwise) that have
-    /// had a bill before; examples never. Comfort only: oldest expected first.
+    /// a rhythm (utilities and phone plans, weekly to yearly, monthly unless they say
+    /// otherwise) that have had a bill before; examples never. Comfort only: oldest expected first.
     public static func missingBills(
         _ subscriptions: [BillWatchSnapshot],
         now: Date = Date(),
@@ -69,7 +69,7 @@ extension AttentionModel {
         return subscriptions
             .filter { !$0.isExample && ServiceKind.sendsRegularBills($0.service) }
             .compactMap { subscription -> (note: AttentionNote, day: CalendarDay)? in
-                guard let missing = BillHistory.missing(subscription.bills, cycleMonths: subscription.cycleMonths, today: today, calendar: calendar) else { return nil }
+                guard let missing = BillHistory.missing(subscription.bills, cycle: subscription.cycle, today: today, calendar: calendar) else { return nil }
                 let last = DosarFormat.dayMonth(missing.lastDay, locale: locale)
                 let lastLine = String(localized: "Ultima a venit pe \(last).", comment: "When a subscription's last bill came.")
                 guard !subscription.isSensitive else {
@@ -77,14 +77,33 @@ extension AttentionModel {
                                           detail: lastLine, expectedDay: missing.expectedDay), missing.expectedDay)
                 }
                 let from = subscription.provider.map(SubscriptionMatcher.shortProviderName) ?? subscription.name
-                // By how many months its bills come apart, the String Catalog's plural variations:
-                // a monthly bill "n-a venit luna asta", a rarer one "n-a venit încă".
-                let title = String(localized: "Factura de la \(from) n-a venit, o dată la \(missing.cycleMonths) luni",
-                                   locale: .dosarDefault, comment: "A bill that hasn't come. The first argument is the provider; by how many months its bills come apart, without the number: one „Factura de la ENGIE n-a venit luna asta”, more „Factura de la ENGIE n-a venit încă”.")
+                let title = missingTitle(from: from, cycle: missing.cycle)
                 let place = [subscription.name, subscription.placeName].compactMap { $0 }.joined(separator: " · ")
                 return (AttentionNote(opens: .section(subscription.id), title: title, detail: place + ". " + lastLine, expectedDay: missing.expectedDay), missing.expectedDay)
             }
             .sorted { $0.day < $1.day }
             .map(\.note)
+    }
+
+    /// What a missing bill's note says, by how often the bills come: „săptămâna asta” for a
+    /// weekly bill; otherwise by how many months its bills come apart, the String Catalog's
+    /// plural variations („luna asta” for a monthly bill, „încă” for a rarer one).
+    static func missingTitle(from: String, cycle: RecurrenceInterval) -> String {
+        if cycle.unit == .week, cycle.every == 1 {
+            return String(localized: "Factura de la \(from) n-a venit săptămâna asta", comment: "A weekly bill that hasn't come. The argument is the provider.")
+        }
+        let months = monthsApart(cycle)
+        return String(localized: "Factura de la \(from) n-a venit, o dată la \(months) luni",
+                      locale: .dosarDefault, comment: "A bill that hasn't come. The first argument is the provider; by how many months its bills come apart, without the number: one „Factura de la ENGIE n-a venit luna asta”, more „Factura de la ENGIE n-a venit încă”.")
+    }
+
+    /// How many months a cycle's bills come apart: a month's or a year's in months. A cycle of
+    /// days or of several weeks has no whole month and counts as none, so it never says „luna asta”.
+    static func monthsApart(_ cycle: RecurrenceInterval) -> Int {
+        switch cycle.unit {
+        case .month: cycle.every
+        case .year: cycle.every * 12
+        case .day, .week: 0
+        }
     }
 }

@@ -1,10 +1,12 @@
 import Foundation
 
 /// Reads what ties a bill or a contract to its ongoing service: what the service is,
-/// the codes that identify it (client code, contract number, POD, CLC, the phone
-/// number of a mobile plan), where it is supplied and whether the bank pays it by direct
-/// debit, and, on a contract, its terms (the start, the minimum period and its end, the
-/// monthly price).
+/// the codes that identify it (client code, contract number, billing account, POD, CLC, a
+/// water or heating place code, the phone number of a mobile plan), where it is supplied or
+/// installed and whether the bank pays it by direct debit, and, on a contract or its EU
+/// summary („Fișa de sinteză”), its terms (the start, the minimum period and its end, the
+/// monthly price). Which of the codes a paper keeps is its service's
+/// (`SubscriptionCode.keeping`, after every reader).
 ///
 /// The labels are data, the contract's table (`CaptureKindProfile.contractLabels`) read with `LabelledLayout`, so a new wording is a
 /// new row, not new reading code. Pure: plain text in, fields out.
@@ -20,7 +22,11 @@ enum ContractReader {
         if let (day, source) = layout.day(for: .startDate, window: window) {
             fields.append(field(.startDate, .day(day), 0.7, source))
         }
-        if let found = layout.found(for: .minimumMonths) {
+        // The first place a minimum period is printed with its length ("Perioada minimă: 24 de
+        // luni"; under the summary's "Durata, reînnoirea și încetarea contractului", the row
+        // "Internet 24 luni"), else the first place it is named.
+        let periods = layout.allFound(for: .minimumMonths)
+        if let found = periods.first(where: { months(in: $0.folded) != nil }) ?? periods.first {
             if let months = months(in: found.folded) {
                 fields.append(field(.minimumMonths, .number(Decimal(months)), 0.7, found.source))
             }
@@ -36,12 +42,27 @@ enum ContractReader {
         if let (day, source) = layout.day(for: .minimumPeriodEnd, window: window) {
             fields.append(field(.minimumPeriodEnd, .day(day), 0.75, source))
         }
-        if let found = layout.found(for: .monthlyPrice),
-           let amount = RomanianFieldExtractor.amounts(inLine: found.folded).first(where: { $0.amount > 0 }) {
-            let currency = RomanianFieldExtractor.currency(inLine: found.folded) ?? RomanianFieldExtractor.dominantCurrency(in: text)
-            fields.append(field(.monthlyPrice, .money(Money(amount.amount, currency: currency)), 0.65, found.source))
+        if let price = monthlyPrice(in: text, layout: layout) {
+            fields.append(price)
         }
         return fields
+    }
+
+    /// The monthly price: an amount with its currency on a price label's own line, before or
+    /// after the label ("6,10 euro/lună taxa de abonament"), else the first amount in its value.
+    /// A line that only gives a discount ("50% reducere la taxa lunară") is never the price.
+    static func monthlyPrice(in text: CaptureText, layout: LabelledLayout<CaptureFieldKey>) -> CaptureField? {
+        for found in layout.allFound(for: .monthlyPrice) {
+            let line = text.folded[found.label.line]
+            if line.contains("%") { continue }
+            let onLine = RomanianFieldExtractor.amounts(inLine: line).filter { $0.amount > 0 && $0.hasCurrency }
+            let amount = onLine.first ?? RomanianFieldExtractor.amounts(inLine: found.folded).first(where: { $0.amount > 0 })
+            guard let amount else { continue }
+            let currency = RomanianFieldExtractor.currency(inLine: onLine.isEmpty ? found.folded : line)
+                ?? RomanianFieldExtractor.dominantCurrency(in: text)
+            return field(.monthlyPrice, .money(Money(amount.amount, currency: currency)), 0.65, found.source)
+        }
+        return nil
     }
 
     /// The codes a bill or a contract quotes, and what the service is.
@@ -55,11 +76,25 @@ enum ContractReader {
         if let found = layout.found(for: .clientCode), let number = code(in: found.value) {
             fields.append(field(.clientCode, .text(number), 0.7, found.source))
         }
-        if let pod = podCode(in: text, layout: layout) {
+        if let found = layout.found(for: .account), let number = code(in: found.value) {
+            fields.append(field(.account, .text(number), 0.7, found.source))
+        }
+        // The consumption point: a POD or a CLC by its label or its shape; a code under the
+        // generic "cod loc de consum" is one of them when it is written like one, else a place
+        // code, which the service names later (`SubscriptionCode.keeping`).
+        var place = layout.found(for: .placeCode).flatMap { found in code(in: found.value).map { (value: $0, source: found.source) } }
+        let clc = clcCode(in: text, layout: layout)
+        var pod = podCode(in: text, layout: layout)
+        if let found = pod, found.value == clc?.value { pod = nil }
+        if let point = place, point.value == pod?.value || point.value == clc?.value { place = nil }
+        if let pod {
             fields.append(field(.podCode, .text(pod.value), 0.75, pod.source))
         }
-        if let clc = clcCode(in: text, layout: layout) {
+        if let clc {
             fields.append(field(.clcCode, .text(clc.value), 0.75, clc.source))
+        }
+        if let place {
+            fields.append(field(.placeCode, .text(place.value), 0.7, place.source))
         }
         if let found = layout.found(for: .phoneNumber), let phone = RomanianFieldExtractor.phones(inLine: found.folded).first(where: isMobileNumber) {
             fields.append(field(.phoneNumber, .text(displayPhone(phone)), 0.75, found.source))
@@ -166,13 +201,20 @@ enum ContractReader {
 
     /// Words that name each service, weighted, in folded text.
     static let serviceSignals: [(service: String, words: [(String, Int)])] = [
-        (ServiceKind.gas, [("gaze naturale", 3), ("gaz natural", 3), ("furnizare gaze", 3), ("cod loc de consum (clc)", 2), ("mc gaz", 2), ("consum gaz", 2)]),
+        (ServiceKind.gas, [("gaze naturale", 3), ("gaz natural", 3), ("furnizare gaze", 3), ("cod loc de consum (clc)", 2), ("mc gaz", 2), ("consum gaz", 2),
+                           ("pod gaz", 2)]),
         (ServiceKind.electricity, [("energie electrica", 3), ("energie activa", 3), ("energiei electrice", 3), ("kwh", 2), ("certificate verzi", 2)]),
         (ServiceKind.water, [("apa potabila", 3), ("apa rece", 2), ("canalizare", 3), ("apa-canal", 3), ("apa canal", 3), ("apa nova", 3), ("apavital", 3)]),
+        (ServiceKind.heating, [("energie termica", 3), ("agent termic", 3), ("termoficare", 3), ("gcal", 2), ("incalzire", 2), ("apa calda", 1)]),
+        (ServiceKind.sanitation, [("salubrizare", 3), ("salubritate", 3), ("colectare deseuri", 3), ("deseuri", 2), ("gunoi", 2)]),
         (ServiceKind.mobile, [("telefonie mobila", 3), ("abonament mobil", 3), ("date mobile", 2), ("trafic date", 2), ("minute nationale", 2),
                               ("roaming", 2), ("msisdn", 2), ("cartela sim", 2), ("convorbiri", 1), ("sms", 1)]),
-        (ServiceKind.internetTV, [("internet fix", 3), ("fibra optica", 3), ("televiziune", 3), ("cablu tv", 3), ("internet", 2),
-                                  ("canale tv", 2), ("decodor", 2), ("router", 1), ("tv", 1)]),
+        (ServiceKind.internetTV, [("internet fix", 3), ("fibra optica", 3), ("televiziune", 3), ("cablu tv", 3), ("tv prin cablu", 3),
+                                  ("televiziune prin cablu", 3), ("tv box", 2), ("telefonie fixa", 3), ("internet", 2),
+                                  ("canale tv", 2), ("canale hd", 2), ("decodor", 2), ("set-top box", 2), ("router", 1), ("tv", 1)]),
+        (ServiceKind.transport, [("abonament de transport", 3), ("transport public", 3), ("titlu de calatorie", 3), ("abonament metrou", 3),
+                                 ("abonament parcare", 3), ("legitimatie de calatorie", 3)]),
+        (ServiceKind.streaming, [("streaming", 3), ("aplicatie", 1), ("stocare in cloud", 3), ("abonament premium", 1)]),
     ]
 
     /// What the service is: the codes first (a CLC means gas, a POD electricity, a mobile

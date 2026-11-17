@@ -401,8 +401,8 @@ struct CaptureKindProfile: Sendable {
             kind: .utilityInvoice, templateKey: BuiltInTemplates.Key.subscription, filing: .subscription, blueprintKey: SubscriptionFields.billBlueprint,
             readsCover: false, defaultCover: nil, deadlineField: .dueDate, dayMeaning: .payBy, documentDateFields: issuedOn,
             documentKind: .invoice, documentType: nil, trade: nil,
-            expectedKeys: [.provider, .serviceKind, .invoiceNumber, .issueDate, .dueDate, .total, .clientCode, .contractNumber, .podCode, .clcCode,
-                           .phoneNumber, .meterIndex, .meterReading, .supplyAddress, .directDebit],
+            expectedKeys: [.provider, .serviceKind, .invoiceNumber, .issueDate, .dueDate, .total, .clientCode, .contractNumber, .account, .podCode, .clcCode,
+                           .placeCode, .phoneNumber, .meterIndex, .meterReading, .supplyAddress, .directDebit],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: true, identifierKeys: subscriptionCodes,
             name: "Factură de utilități", noun: Noun(.on, "factură", the: "factura", .feminine), titleRule: .wordAndProvider("Factură"),
             modelDescription: "utility, internet, TV or phone bill", isBill: true, sectionName: .subscription,
@@ -412,11 +412,12 @@ struct CaptureKindProfile: Sendable {
             kind: .contract, templateKey: BuiltInTemplates.Key.subscription, filing: .subscription, blueprintKey: SubscriptionFields.minimumEndsBlueprint,
             readsCover: false, defaultCover: nil, deadlineField: .minimumPeriodEnd, dayMeaning: .minimumPeriodEnds, documentDateFields: issuedOn,
             documentKind: .contract, documentType: nil, trade: nil,
-            expectedKeys: [.provider, .serviceKind, .contractNumber, .clientCode, .startDate, .minimumMonths, .minimumPeriodEnd, .monthlyPrice,
-                           .phoneNumber, .podCode, .clcCode, .supplyAddress],
+            expectedKeys: [.provider, .serviceKind, .contractNumber, .clientCode, .account, .startDate, .minimumMonths, .minimumPeriodEnd, .monthlyPrice,
+                           .phoneNumber, .podCode, .clcCode, .placeCode, .supplyAddress],
             carriesLineItems: false, opensVisitFlow: false, logsHistory: false, identifierKeys: subscriptionCodes,
             name: "Contract sau act adițional", noun: Noun(.inside, "contract", the: "contractul", .masculine), titleRule: .wordAndProvider("Contract"),
-            modelDescription: "contract or addendum for gas, electricity, water, internet, TV or a mobile plan", sectionName: .subscription,
+            modelDescription: "contract, addendum or contract summary (fișă de sinteză) for a utility, internet, TV, a phone plan or another subscription",
+            sectionName: .subscription,
             labels: contractLabels
         ),
         CaptureKindProfile(
@@ -567,28 +568,38 @@ struct CaptureKindProfile: Sendable {
     ]
 
     /// A contract's own labels, and the codes a bill shares with its contract (client code,
-    /// contract number, POD, CLC, the phone number of a plan), matched as whole words and
-    /// read as one layout by `ContractReader`. Longer wordings win, so "contract de
-    /// abonament nr" is a number, never a price.
+    /// contract number, billing account, POD, CLC, a place code, the phone number of a plan),
+    /// matched as whole words and read as one layout by `ContractReader`. Longer wordings win,
+    /// so "contract de abonament nr" is a number, never a price. A consumption point printed
+    /// under the generic "cod loc de consum" is a place code, which the paper's service then
+    /// names (`SubscriptionCode.keeping`: a gas bill's is its CLC). The headings of the EU
+    /// contract summary („Fișa de sinteză”, the same for every provider) are rows too: its
+    /// date, its services, its price and its duration.
     static let contractLabels: [(CaptureFieldKey, [String])] = [
         (.contractNumber, ["numar contract", "nr. contract", "nr contract", "contract nr", "contractul nr", "numarul contractului",
                            "contract de furnizare nr", "contract de abonament nr", "contract de prestari servicii nr",
                            "act aditional nr", "nr. contractului", "contract numarul"]),
         (.startDate, ["data intrarii in vigoare", "intra in vigoare la", "intra in vigoare", "data inceperii", "data incheierii",
-                      "incheiat la data de", "incheiat astazi", "data semnarii", "data activarii", "incepand cu data de", "data de inceput"]),
+                      "incheiat la data de", "incheiat astazi", "data semnarii", "data activarii", "incepand cu data de", "data de inceput",
+                      "data instalarii", "data activarii serviciului", "din data de", "din data"]),
         (.minimumMonths, ["perioada minima", "perioada contractuala", "durata minima", "durata contractului", "perioada initiala",
-                          "perioada determinata", "durata minima a contractului"]),
+                          "perioada determinata", "durata minima a contractului", "perioada minima contractuala",
+                          "durata, reinnoirea si incetarea contractului"]),
         (.minimumPeriodEnd, ["perioada minima se incheie", "sfarsitul perioadei minime", "data de sfarsit a perioadei minime",
                              "perioada minima expira", "finalul perioadei minime"]),
         (.monthlyPrice, ["abonament lunar", "abonamentul lunar", "pret lunar", "pretul lunar", "tarif lunar", "cost lunar",
-                         "valoare lunara", "pretul abonamentului", "tarif abonament", "pret abonament"]),
-        (.clientCode, ["cod client", "cod abonat", "cont client", "numar client", "nr. client", "client nr", "client id",
-                       "cod incasare", "cod de incasare", "cont facturare", "cont de facturare", "cod partener", "numar partener",
+                         "valoare lunara", "pretul abonamentului", "tarif abonament", "pret abonament",
+                         "taxa de abonament", "taxa lunara de abonament", "taxa abonament", "abonament/luna"]),
+        (.clientCode, ["cod client", "cod abonat", "numar client", "nr. client", "client nr", "client id",
+                       "cod incasare", "cod de incasare", "cod partener", "numar partener",
                        "cod client apa", "cod apa", "apa canal cod client", "apa canal cod", "apa nova cod client", "apa nova cod"]),
+        (.account, ["cont client", "cont facturare", "cont de facturare", "numar cont client", "cont de client", "billing account"]),
         (.podCode, ["pod", "cod pod", "codul pod", "punct de delimitare", "punct de delimitare pod", "cod punct de delimitare",
                     "punctul de delimitare", "loc consum"]),
-        (.clcCode, ["clc", "cod clc", "cod loc consum", "cod loc consum (clc)", "cod loc de consum (clc)",
-                    "loc consum gaze"]),
+        (.clcCode, ["clc", "cod clc", "cod loc consum (clc)", "cod loc de consum (clc)", "loc consum gaze",
+                    "pod gaz", "cod pod gaz", "pod gaze", "cod pod gaze"]),
+        (.placeCode, ["cod loc de consum", "cod loc consum", "cod punct de consum", "cod punct consum", "cod locul de consum",
+                      "id loc consum", "nr. loc consum", "numar loc consum", "numar loc de consum"]),
         (.phoneNumber, ["numar de telefon", "nr. de telefon", "numar telefon", "nr. telefon", "nr telefon", "msisdn", "numarul de telefon"]),
     ]
 
@@ -646,7 +657,7 @@ struct CaptureKindProfile: Sendable {
     static let identityEssentials: [CaptureFieldKey] = [.surname, .documentNumber, .expiryDate]
 
     /// The codes that find a bill's or a contract's subscription, most specific first.
-    static let subscriptionCodes: [CaptureFieldKey] = [.podCode, .clcCode, .phoneNumber, .contractNumber, .clientCode]
+    static let subscriptionCodes: [CaptureFieldKey] = [.podCode, .clcCode, .placeCode, .phoneNumber, .contractNumber, .account, .clientCode]
 
     /// A personal document of its holder (an identity document, a cazier, a health card, a
     /// bank card, a green card, an electronic signature), read with its templates and

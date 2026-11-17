@@ -370,7 +370,7 @@ public final class CaptureEngine: Sendable {
             settled = settle(source, as: kind, analysis: nil)
         } else {
             // A result made by hand has no text to read again: what it has, as this kind allows.
-            settled = Settled(fields: CompositeValue.reconcile(result.fields, kind: kind).filter { kind.allows($0.key) },
+            settled = Settled(fields: kind.profile.keepingServiceCodes(CompositeValue.reconcile(result.fields, kind: kind).filter { kind.allows($0.key) }),
                               alternatives: result.fieldAlternatives.filter { kind.allows($0.key) }, notices: [])
         }
         let structural = result.notices.filter { $0 != .valueFailedCheck && $0 != .identityBackMissing }
@@ -433,7 +433,7 @@ public final class CaptureEngine: Sendable {
         if !resolved.dropped.isEmpty || resolved.fields.contains(where: { field in
             fields.contains { $0.key == field.key && $0.value == field.value && $0.confidence > field.confidence }
         }) { failedCheck = true }
-        fields = Self.derived(resolved.fields).filter { kind.allows($0.key) }.compactMap { field in
+        fields = kind.profile.keepingServiceCodes(Self.derived(resolved.fields).filter { kind.allows($0.key) }).compactMap { field in
             // Lines that aren't lines (prose, zero amounts) go, whichever reader read them.
             guard case .lineItems(let items) = field.value else { return field }
             let real = CaptureDocumentKind.realLineItems(items)

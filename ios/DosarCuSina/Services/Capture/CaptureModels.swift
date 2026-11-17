@@ -206,6 +206,11 @@ public struct CaptureFieldKey: RawRepresentable, Hashable, Codable, Sendable, Ex
     public static let clientCode: CaptureFieldKey = "clientCode"
     public static let podCode: CaptureFieldKey = "podCode"
     public static let clcCode: CaptureFieldKey = "clcCode"
+    /// A water or heating consumption point's code ("Cod loc de consum"), when the paper's
+    /// service names its place that way rather than by a POD or a CLC.
+    public static let placeCode: CaptureFieldKey = "placeCode"
+    /// The billing account a telecom provider bills under ("Cont de facturare").
+    public static let account: CaptureFieldKey = "account"
     public static let meterIndex: CaptureFieldKey = "meterIndex"
     /// How the bill says its index was taken, as a `ReadingBasis` key: "estimated" (an index
     /// the provider estimated) or "read" (read by the distributor or the customer, or a

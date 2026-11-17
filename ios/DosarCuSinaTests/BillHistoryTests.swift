@@ -48,30 +48,30 @@ struct BillHistoryTests {
     @Test func aMonthlyBillWellPastItsUsualDayIsMissing() throws {
         // The last bill came a month and three weeks ago: this month's is well past due.
         let late = [bill(monthsAgo(3, plusDays: -21)), bill(monthsAgo(2, plusDays: -21)), bill(monthsAgo(1, plusDays: -21))]
-        let missing = try #require(BillHistory.missing(late, cycleMonths: 1, today: today, calendar: calendar))
+        let missing = try #require(BillHistory.missing(late, cycle: .months(1), today: today, calendar: calendar))
         #expect(missing.lastDay == monthsAgo(1, plusDays: -21))
 
         // It came five days ago: nothing to say yet.
-        #expect(BillHistory.missing([bill(today.adding(days: -5, calendar: calendar))], cycleMonths: 1, today: today, calendar: calendar) == nil)
+        #expect(BillHistory.missing([bill(today.adding(days: -5, calendar: calendar))], cycle: .months(1), today: today, calendar: calendar) == nil)
         // A few days past a month is within the grace.
-        #expect(BillHistory.missing([bill(monthsAgo(1, plusDays: -5))], cycleMonths: 1, today: today, calendar: calendar) == nil)
+        #expect(BillHistory.missing([bill(monthsAgo(1, plusDays: -5))], cycle: .months(1), today: today, calendar: calendar) == nil)
         // No bill yet: the binder doesn't know when one comes.
-        #expect(BillHistory.missing([], cycleMonths: 1, today: today, calendar: calendar) == nil)
+        #expect(BillHistory.missing([], cycle: .months(1), today: today, calendar: calendar) == nil)
     }
 
     @Test func aProviderThatAlwaysBillsLateIsGivenItsUsualDelay() {
         // Its bills came twelve days past the month before: that is this provider's habit.
         let usual = [bill(monthsAgo(3, plusDays: -12 * 2)), bill(monthsAgo(2, plusDays: -12)), bill(monthsAgo(1, plusDays: -12))]
-        let lateButUsual = BillHistory.missing(usual, cycleMonths: 1, today: today, calendar: calendar)
+        let lateButUsual = BillHistory.missing(usual, cycle: .months(1), today: today, calendar: calendar)
         #expect(lateButUsual == nil, "Twelve days late is this provider's habit")
     }
 
     @Test func afterTwoMissedCyclesItStopsSayingSo() {
-        #expect(BillHistory.missing([bill(monthsAgo(2, plusDays: -15))], cycleMonths: 1, today: today, calendar: calendar) != nil)
-        #expect(BillHistory.missing([bill(monthsAgo(3, plusDays: -1))], cycleMonths: 1, today: today, calendar: calendar) == nil,
+        #expect(BillHistory.missing([bill(monthsAgo(2, plusDays: -15))], cycle: .months(1), today: today, calendar: calendar) != nil)
+        #expect(BillHistory.missing([bill(monthsAgo(3, plusDays: -1))], cycle: .months(1), today: today, calendar: calendar) == nil,
                 "Likely ended or moved to email")
-        #expect(BillHistory.missing([bill(monthsAgo(3, plusDays: -20))], cycleMonths: 3, today: today, calendar: calendar) == nil, "A quarterly bill twenty days late is within its grace")
-        #expect(BillHistory.missing([bill(monthsAgo(4, plusDays: -5))], cycleMonths: 3, today: today, calendar: calendar) != nil)
+        #expect(BillHistory.missing([bill(monthsAgo(3, plusDays: -20))], cycle: .months(3), today: today, calendar: calendar) == nil, "A quarterly bill twenty days late is within its grace")
+        #expect(BillHistory.missing([bill(monthsAgo(4, plusDays: -5))], cycle: .months(3), today: today, calendar: calendar) != nil)
     }
 
     @Test func theNoteIsCalmAndOnlyForBilledServices() throws {
@@ -89,7 +89,7 @@ struct BillHistoryTests {
         #expect(notes.first { $0.assetId == locked.id }?.title == "O factură n-a venit încă", "A locked section names nothing")
 
         var quarterly = gas
-        quarterly.cycleMonths = 3
+        quarterly.cycle = .months(3)
         quarterly.bills = [bill(monthsAgo(4, plusDays: -5))]
         #expect(AttentionModel.missingBills([quarterly], now: today.noonDate(in: calendar), calendar: calendar).first?.title
                 == "Factura de la ENGIE n-a venit încă")

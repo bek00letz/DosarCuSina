@@ -31,7 +31,8 @@ public struct MissingBill: Hashable, Sendable {
     public var lastDay: CalendarDay
     /// When this one was expected.
     public var expectedDay: CalendarDay
-    public var cycleMonths: Int
+    /// How often the bills come: a week, a month, three months, a year.
+    public var cycle: RecurrenceInterval
 }
 
 /// Pure questions about a subscription's bills: the trend of the amounts and whether
@@ -70,14 +71,27 @@ public enum BillHistory {
 
     // MARK: The missing bill
 
-    /// How many days past its usual day a bill may come before it is worth a note:
-    /// ten for a monthly bill, longer for longer cycles.
-    static func graceDays(cycleMonths: Int) -> Int {
-        min(10 * max(cycleMonths, 1), 30)
+    /// How many days a cycle lasts, roughly, for how late a bill may come: a week is 7, a
+    /// month 30, a year 365.
+    static func roughDays(_ cycle: RecurrenceInterval) -> Int {
+        let unit = switch cycle.unit {
+        case .day: 1
+        case .week: 7
+        case .month: 30
+        case .year: 365
+        }
+        return unit * max(cycle.every, 1)
+    }
+
+    /// How many days past its usual day a bill may come before it is worth a note: a third
+    /// of its cycle, so ten for a monthly bill and three for a weekly one, at most thirty.
+    static func graceDays(cycle: RecurrenceInterval) -> Int {
+        min((roughDays(cycle) + 2) / 3, 30)
     }
 
     /// The most a bill has come late before, counted in days past one cycle after the
-    /// previous one, so a provider that always bills a few days late isn't flagged.
+    /// previous one, so a provider that always bills a few days late isn't flagged: at
+    /// most half its cycle, and never more than this.
     static let usualLatenessCap = 15
 
     /// After this many cycles without a bill, the note stops: the contract has likely
@@ -85,21 +99,21 @@ public enum BillHistory {
     static let cyclesToKeepSaying = 2
 
     /// The bill that should have come by now and hasn't, if any.
-    public static func missing(_ bills: [BillRecord], cycleMonths: Int, today: CalendarDay, calendar: Calendar = .dosar) -> MissingBill? {
-        let months = max(cycleMonths, 1)
+    public static func missing(_ bills: [BillRecord], cycle: RecurrenceInterval, today: CalendarDay, calendar: Calendar = .dosar) -> MissingBill? {
         let days = Set(bills.map(\.day)).sorted()
         guard let last = days.last else { return nil }
         func cycleAfter(_ day: CalendarDay, _ cycles: Int = 1) -> CalendarDay {
-            RecurrenceEngine.add(.months(months * cycles), to: day, calendar: calendar)
+            RecurrenceEngine.add(RecurrenceInterval(every: cycle.every * cycles, unit: cycle.unit), to: day, calendar: calendar)
         }
+        let latenessCap = min(usualLatenessCap, roughDays(cycle) / 2)
         let usualLateness = zip(days, days.dropFirst())
             .map { previous, next in cycleAfter(previous).days(to: next, calendar: calendar) }
-            .max().map { min(max($0, 0), usualLatenessCap) } ?? 0
+            .max().map { min(max($0, 0), latenessCap) } ?? 0
         let expected = cycleAfter(last)
         let late = expected.days(to: today, calendar: calendar)
-        guard late > graceDays(cycleMonths: months) + usualLateness else { return nil }
+        guard late > graceDays(cycle: cycle) + usualLateness else { return nil }
         guard today < cycleAfter(last, cyclesToKeepSaying + 1) else { return nil }
-        return MissingBill(lastDay: last, expectedDay: expected, cycleMonths: months)
+        return MissingBill(lastDay: last, expectedDay: expected, cycle: cycle)
     }
 
     // MARK: From the binder
@@ -122,19 +136,20 @@ public struct BillWatchSnapshot: Hashable, Sendable, Identifiable {
     /// Where it is filed: the home, for a gas or electricity contract.
     public var placeName: String?
     public var service: String?
-    public var cycleMonths: Int
+    /// How often its bills come (`SubscriptionFields.cycle(of:)`).
+    public var cycle: RecurrenceInterval
     public var bills: [BillRecord]
     public var isSensitive: Bool
     public var isExample: Bool
 
     public init(id: UUID = UUID(), name: String, provider: String? = nil, placeName: String? = nil, service: String?,
-                cycleMonths: Int = 1, bills: [BillRecord], isSensitive: Bool = false, isExample: Bool = false) {
+                cycle: RecurrenceInterval = .months(1), bills: [BillRecord], isSensitive: Bool = false, isExample: Bool = false) {
         self.id = id
         self.name = name
         self.provider = provider
         self.placeName = placeName
         self.service = service
-        self.cycleMonths = cycleMonths
+        self.cycle = cycle
         self.bills = bills
         self.isSensitive = isSensitive
         self.isExample = isExample
@@ -155,7 +170,7 @@ public struct BillWatchSnapshot: Hashable, Sendable, Identifiable {
                 provider: values[SubscriptionFields.provider]?.textValue,
                 placeName: asset.parent?.name,
                 service: SubscriptionFields.service(of: values),
-                cycleMonths: BillingCycle.months(values[SubscriptionFields.cycle]?.textValue),
+                cycle: SubscriptionFields.cycle(of: values),
                 bills: BillHistory.bills(of: asset, calendar: calendar),
                 // Locked when its category is, or the section it is filed under.
                 isSensitive: [asset, asset.parent].compactMap { $0 }.contains { $0.isSensitive(among: templates) },

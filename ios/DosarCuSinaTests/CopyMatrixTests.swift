@@ -222,8 +222,8 @@ struct CopyMatrixTests {
         „Am rezolvat” from each deadline's `CompletionKind`, the deadline form and a record's \
         page in Istoric (`HistoryEntryShape`), a section page's pockets, adding a section, \
         the capture review by document kind (`CaptureKindProfile`), „Pleci din țară” by \
-        citizenship (`TravelRules`), and „Vinzi mașina” and „Ai avut o daună” (`ReadinessEngine`). \
-        Every built-in category is \
+        citizenship (`TravelRules`), „Vinzi mașina” and „Ai avut o daună” (`ReadinessEngine`), \
+        and Abonamente by service (`ServiceKind`). Every built-in category is \
         here, and one category of one's own per combination of its switches. Reviews walk every \
         category through it.
 
@@ -265,6 +265,7 @@ struct CopyMatrixTests {
         out += "\n" + (try reviewSection())
         out += "\n" + tripSection()
         out += "\n" + situationsSection()
+        out += "\n" + subscriptionsSection()
         return out
     }
 

@@ -19,7 +19,9 @@ public enum DocumentClassifier {
         .insurancePolicy: [("polita", 2), ("asigurare", 1), ("casco", 3), ("pad", 1), ("paid", 1), ("asigurator", 1), ("prima de asigurare", 2), ("suma asigurata", 2), ("franciza", 2)],
         .utilityInvoice: [("energie electrica", 3), ("gaze naturale", 3), ("cod client", 2), ("cod loc de consum", 3), ("pod", 1), ("index", 1), ("kwh", 2), ("consum", 1), ("abonament", 1), ("apa rece", 2), ("canalizare", 2)],
         // A contract names itself; the minimum period and its length are what set it apart from a bill.
+        // The EU contract summary („Fișa de sinteză”) is a contract's own page.
         .contract: [("contract de furnizare", 5), ("contract de abonament", 5), ("contract de prestari servicii", 4),
+                    ("fisa de sinteza", 5), ("incetarea contractului", 2),
                     ("act aditional", 5), ("perioada minima", 4), ("perioada contractuala", 3), ("durata contractului", 3),
                     ("durata minima", 3), ("perioada initiala", 2), ("perioada determinata", 2), ("conditii generale", 1),
                     ("abonament lunar", 1), ("se incheie", 1), ("partile", 1)],

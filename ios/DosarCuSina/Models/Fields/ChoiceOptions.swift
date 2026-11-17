@@ -356,78 +356,204 @@ public enum BloodType {
     }
 }
 
+/// How often a subscription is paid. Stored by key; what one cycle lasts is `interval(_:)`,
+/// the one rule the monthly cost (`SubscriptionMath`) and the missing bill (`BillHistory`) read.
 public enum BillingCycle {
+    public static let weekly = "billing.weekly"
     public static let monthly = "billing.monthly"
     public static let quarterly = "billing.quarterly"
     public static let yearly = "billing.yearly"
 
     public static var options: [ChoiceOption] {
         [
+            option(weekly, "Săptămânal", ["Săptămânală", "Weekly"]),
             option(monthly, "Lunar", ["Lunară", "Monthly"]),
             option(quarterly, "Trimestrial", ["Trimestrială", "Quarterly"]),
             option(yearly, "Anual", ["Anuală", "Yearly", "Annual"]),
         ]
     }
 
-    /// How many months one cycle lasts; monthly when unknown.
-    public static func months(_ key: String?) -> Int {
+    /// How long one cycle lasts: a week, a month, three months or a year; a month when unknown.
+    public static func interval(_ key: String?) -> RecurrenceInterval {
         switch key.flatMap({ options.option(for: $0)?.key }) {
-        case yearly: return 12
-        case quarterly: return 3
-        default: return 1
+        case weekly: return .weeks(1)
+        case quarterly: return .months(3)
+        case yearly: return .years(1)
+        default: return .months(1)
         }
     }
 }
 
-/// What an ongoing contract is for. Gas, electricity, water and fixed internet or TV
-/// are tied to an address, so they live under the home they supply; a mobile plan
-/// lives in Abonamente, like a streaming service. Capture names the service with
-/// these same keys (`CaptureFieldKey.serviceKind`).
+/// Where a subscription is listed in Abonamente: what it is, grouped. Each service declares
+/// its group (`ServiceKind.Service.group`); the person can move one to another group, and that
+/// choice is the subscription's own value (`SubscriptionFields.group`), so a newer catalog never
+/// moves it. Keys are stored: never rename them. The groups are listed in this order.
+public enum SubscriptionGroup: String, CaseIterable, Hashable, Sendable {
+    case utilities = "subscriptionGroup.utilities"
+    case internetAndPhone = "subscriptionGroup.internetAndPhone"
+    case transport = "subscriptionGroup.transport"
+    case appsAndStreaming = "subscriptionGroup.appsAndStreaming"
+    case other = "subscriptionGroup.other"
+
+    /// The group's name, as its heading in Abonamente and its choice in the edit form.
+    public var label: String {
+        switch self {
+        case .utilities: String(localized: "Utilități", comment: "Subscription group: electricity, gas, water, heating, sanitation.")
+        case .internetAndPhone: String(localized: "Internet și telefon", comment: "Subscription group: internet, TV, mobile.")
+        case .transport: String(localized: "Transport", comment: "Subscription group: public transport passes, parking.")
+        case .appsAndStreaming: String(localized: "Aplicații și streaming", comment: "Subscription group: apps, streaming, online storage.")
+        case .other: String(localized: "Altele", comment: "Subscription group: anything else.")
+        }
+    }
+
+    public static var options: [ChoiceOption] {
+        allCases.map { ChoiceOption(key: $0.rawValue, label: $0.label) }
+    }
+
+    /// The group a stored or typed value names, if any.
+    public init?(stored text: String?) {
+        guard let key = text.flatMap({ Self.options.option(for: $0)?.key }) else { return nil }
+        self.init(rawValue: key)
+    }
+
+    /// The group of what a service is (`ServiceKind.Service.group`); Altele when it isn't known.
+    public static func of(service key: String?) -> SubscriptionGroup {
+        ServiceKind.service(key)?.group ?? .other
+    }
+
+    /// Where a subscription is listed: the group it was put in (by the person, or when it was
+    /// saved), else its service's, else Altele.
+    public static func of(_ values: FieldValues) -> SubscriptionGroup {
+        SubscriptionGroup(stored: values[SubscriptionFields.group]?.textValue) ?? of(service: SubscriptionFields.service(of: values))
+    }
+
+    /// One group's subscriptions, as listed.
+    public struct Listed<Item>: Identifiable {
+        public let group: SubscriptionGroup
+        public let items: [Item]
+        public var id: SubscriptionGroup { group }
+    }
+
+    /// `items` under their groups, in the groups' order, each keeping the order it came in;
+    /// a group with nothing in it is left out.
+    public static func grouping<Item>(_ items: [Item], values: (Item) -> FieldValues) -> [Listed<Item>] {
+        let placed = items.map { (group: of(values($0)), item: $0) }
+        return allCases.compactMap { group in
+            let members = placed.filter { $0.group == group }.map(\.item)
+            return members.isEmpty ? nil : Listed(group: group, items: members)
+        }
+    }
+}
+
+/// What an ongoing contract is for, declared once per service as data (`Service`): its name,
+/// the group it is listed in, the codes its bills and contracts are identified by (only those
+/// are read, shown and asked), whether it is supplied at an address (the contract then lives
+/// under the home it supplies), whether it bills on a rhythm the binder can expect, and what its
+/// meter measures. Capture names the service with these same keys (`CaptureFieldKey.serviceKind`).
+/// Keys are stored: never rename them.
 public enum ServiceKind {
     public static let gas = "service.gas"
     public static let electricity = "service.electricity"
     public static let water = "service.water"
+    public static let heating = "service.heating"
+    public static let sanitation = "service.sanitation"
     public static let internetTV = "service.internetTV"
     public static let mobile = "service.mobile"
+    public static let transport = "service.transport"
+    public static let streaming = "service.streaming"
     public static let other = "service.other"
 
-    public static let all = [gas, electricity, water, internetTV, mobile, other]
+    /// One service, declared once.
+    public struct Service: Sendable {
+        public let key: String
+        /// Its name, in a few words: "Gaz".
+        public let label: String
+        /// Other ways it is written: older text, what people type.
+        public let aliases: [String]
+        public let group: SubscriptionGroup
+        /// The codes its papers are identified by, most specific first (`SubscriptionCode`).
+        public let codes: [SubscriptionCode]
+        /// Supplied at an address: the contract belongs to the home, and each home has its own.
+        public let isTiedToHome: Bool
+        /// Billed on a rhythm the binder can expect: one bill per billing cycle.
+        public let sendsRegularBills: Bool
+        /// What its meter measures, for the index its bills print; its unit is the kind's own
+        /// (`MeasurementKind.defaultUnit`). Nil without a meter, or none known.
+        public let meter: MeasurementKind?
+        /// What a language model is told it is.
+        public let modelDescription: String
+    }
+
+    /// Every service, in the order they are offered.
+    public static var services: [Service] {
+        let utility: [SubscriptionCode] = [.clientCode, .contractNumber]
+        return [
+            Service(key: gas, label: String(localized: "Gaz"), aliases: ["Gaze", "Gaze naturale"], group: .utilities,
+                    codes: [.clc] + utility, isTiedToHome: true, sendsRegularBills: true, meter: .gas, modelDescription: "natural gas"),
+            Service(key: electricity, label: String(localized: "Curent"), aliases: ["Energie electrică", "Electricitate"], group: .utilities,
+                    codes: [.pod] + utility, isTiedToHome: true, sendsRegularBills: true, meter: .electricity, modelDescription: "electricity"),
+            Service(key: water, label: String(localized: "Apă"), aliases: ["Apă și canal", "Apă-canal"], group: .utilities,
+                    codes: [.placeCode] + utility, isTiedToHome: true, sendsRegularBills: true, meter: .coldWater, modelDescription: "water and sewerage"),
+            Service(key: heating, label: String(localized: "Căldură"), aliases: ["Încălzire", "Termoficare", "Energie termică", "Agent termic"], group: .utilities,
+                    codes: [.placeCode] + utility, isTiedToHome: true, sendsRegularBills: true, meter: nil, modelDescription: "district heating and hot water"),
+            Service(key: sanitation, label: String(localized: "Salubritate"), aliases: ["Salubrizare", "Gunoi", "Colectare deșeuri"], group: .utilities,
+                    codes: utility, isTiedToHome: true, sendsRegularBills: true, meter: nil, modelDescription: "waste collection"),
+            Service(key: internetTV, label: String(localized: "Internet și TV"), aliases: ["Internet", "Televiziune", "TV", "Cablu", "Telefonie fixă"], group: .internetAndPhone,
+                    codes: utility + [.account], isTiedToHome: true, sendsRegularBills: true, meter: nil, modelDescription: "fixed internet, TV or landline"),
+            Service(key: mobile, label: String(localized: "Telefon mobil"), aliases: ["Mobil", "Abonament mobil", "Telefonie mobilă"], group: .internetAndPhone,
+                    codes: [.phoneNumber] + utility + [.account], isTiedToHome: false, sendsRegularBills: true, meter: nil, modelDescription: "mobile phone plan"),
+            Service(key: transport, label: String(localized: "Transport"), aliases: ["Abonament transport", "Transport public", "Metrou", "Parcare"], group: .transport,
+                    codes: utility, isTiedToHome: false, sendsRegularBills: false, meter: nil, modelDescription: "public transport pass or parking"),
+            Service(key: streaming, label: String(localized: "Aplicație sau streaming"), aliases: ["Streaming", "Aplicație", "Aplicații"], group: .appsAndStreaming,
+                    codes: [], isTiedToHome: false, sendsRegularBills: false, meter: nil, modelDescription: "app, streaming or online storage"),
+            Service(key: other, label: String(localized: "Alt abonament"), aliases: ["Altul", "Altceva"], group: .other,
+                    codes: utility, isTiedToHome: false, sendsRegularBills: false, meter: nil, modelDescription: "something else"),
+        ]
+    }
+
+    public static var all: [String] { services.map(\.key) }
 
     public static var options: [ChoiceOption] {
-        [
-            option(gas, "Gaz", ["Gaze", "Gaze naturale"]),
-            option(electricity, "Curent", ["Energie electrică", "Electricitate"]),
-            option(water, "Apă", ["Apă și canal", "Apă-canal"]),
-            option(internetTV, "Internet și TV", ["Internet", "Televiziune", "TV", "Cablu"]),
-            option(mobile, "Telefon mobil", ["Mobil", "Abonament mobil", "Telefonie mobilă"]),
-            option(other, "Alt abonament", ["Altul", "Altceva"]),
-        ]
+        services.map { ChoiceOption(key: $0.key, label: $0.label, aliases: $0.aliases) }
+    }
+
+    /// The service a stored key or older text names.
+    public static func service(_ key: String?) -> Service? {
+        guard let key = key.flatMap({ options.option(for: $0)?.key }) else { return nil }
+        return services.first { $0.key == key }
     }
 
     /// Supplied at an address: the contract belongs to the home, and each home has its own.
     public static func isTiedToHome(_ key: String?) -> Bool {
-        [gas, electricity, water, internetTV].contains(key ?? "")
+        service(key)?.isTiedToHome ?? false
     }
 
     /// Billed on a rhythm the binder can expect: one bill per billing cycle.
     public static func sendsRegularBills(_ key: String?) -> Bool {
-        isTiedToHome(key) || key == mobile
+        service(key)?.sendsRegularBills ?? false
     }
 
     /// The service's name, in a few words: "Gaz".
     public static func label(for key: String?) -> String? {
-        key.flatMap { options.option(for: $0)?.label }
+        service(key)?.label
     }
 
     /// What the meter of a service measures, for the index its bills print: gas, electricity
-    /// or (cold) water. Its unit is the kind's own (`MeasurementKind.defaultUnit`): m³ for gas
-    /// and water, kWh for electricity. Nil for a service without a meter, or none known.
+    /// or (cold) water. Nil for a service without a meter, or none known.
     public static func meterKind(for key: String?) -> MeasurementKind? {
-        guard let key else { return nil }
-        return meters[key]
+        service(key)?.meter
     }
 
-    private static let meters: [String: MeasurementKind] = [gas: .gas, electricity: .electricity, water: .coldWater]
+    /// The codes a service's papers are identified by. A subscription whose service isn't
+    /// chosen yet is asked what any contract has (`other`'s: a client code, a contract number).
+    public static func codes(of key: String?) -> [SubscriptionCode] {
+        (service(key) ?? service(other))?.codes ?? []
+    }
+
+    /// The services whose papers carry `code`.
+    public static func keys(carrying code: SubscriptionCode) -> [String] {
+        services.filter { $0.codes.contains(code) }.map(\.key)
+    }
 }
 
 /// What an insurance policy covers. Capture reads it once from the page
