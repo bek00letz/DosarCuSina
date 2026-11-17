@@ -62,7 +62,7 @@ struct DeadlineForm: View {
                         VStack(alignment: .leading, spacing: DS.Space.xs) {
                             ForEach(Array(blueprints.enumerated()), id: \.element.key) { index, blueprint in
                                 if index > 0 { DS.Hairline() }
-                                DSCheckRow(title: Text(verbatim: blueprint.title), subtitle: blueprint.note.map { Text(verbatim: $0) },
+                                DSCheckRow(title: Text(verbatim: blueprint.title), subtitle: blueprint.shownNote.map { Text(verbatim: $0) },
                                            isOn: choice == .blueprint(blueprint.key)) {
                                     select(.blueprint(blueprint.key), blueprint: blueprint, asset: asset)
                                 }

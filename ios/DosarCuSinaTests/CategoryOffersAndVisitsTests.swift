@@ -181,7 +181,8 @@ struct CategoryOffersAndVisitsTests {
         #expect(stated.behavior.visit == .repair, "A kind already stated stays")
         #expect(try OwnCategoryVisitsStep().migrate(in: context) == 0, "Twice is once")
         #expect(DataRepairs.step(.ownCategoryVisits).runsByItself)
-        #expect(DataRepairs.steps.last.map { type(of: $0).id } == .ownCategoryVisits, "A new repair is a new step at the end")
+        let order = DataRepairs.steps.map { type(of: $0).id }
+        #expect((order.firstIndex(of: .ownCategoryVisits) ?? 0) > (order.firstIndex(of: .ownCategoryBoxes) ?? 0), "A new repair is a new step at the end")
     }
 
     // MARK: The catalog upgrade

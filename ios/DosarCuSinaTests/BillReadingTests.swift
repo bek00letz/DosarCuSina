@@ -144,8 +144,8 @@ struct BillReadingTests {
         _ = try home(context)
         let planned = try plan(bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20"), context)
         let meter = try #require(planned.meter)
-        #expect(meter.sentence == "Indexul 12.345 m³ se trece la „Gaz – ENGIE Romania S.A.”.")
-        #expect(CaptureFilingPlan.Meter.unknownService.sentence == "Indexul nu-l trec: nu știu dacă e de gaz, de curent sau de apă.")
+        #expect(meter.sentence == "Indexul 12.345\u{00A0}m³ se trece la „Gaz – ENGIE Romania S.A.”.")
+        #expect(CaptureFilingPlan.Meter.unknownService.sentence == "Indexul nu-l trec: nu știu dacă e de gaze, de curent sau de apă.")
     }
 
     @Test func anIndexGoesNowhereWithoutAMeter() throws {
@@ -276,7 +276,7 @@ struct BillReadingTests {
         let planned = try #require(try plan(again, context).meter)
         let reading = try #require(planned.reading)
         #expect(planned == .alreadyKept(reading, subscription: gas.name))
-        #expect(planned.sentence == "Indexul 12.345 m³ e deja trecut la „\(gas.name)”.")
+        #expect(planned.sentence == "Indexul 12.345\u{00A0}m³ e deja trecut la „\(gas.name)”.")
         let second = try await save(again, context)
         #expect(second.asset?.id == gas.id)
         #expect(readings(of: gas).count == 1, "Not recorded twice")
@@ -709,7 +709,7 @@ struct BillReadingTests {
         let last = try #require(SubscriptionMeter.last(on: power, calendar: .bucharest))
         #expect(last == SubscriptionMeter.Last(value: 4_350, unit: .kilowattHours, day: CalendarDay("2026-10-05"), isFromDocument: false),
                 "The service's unit only")
-        #expect(last.written == "4.350 kWh")
-        #expect(SubscriptionMeter.written(1_234.567, in: .cubicMetres) == "1.234,567 m³", "A meter's decimals are kept")
+        #expect(last.written == "4.350\u{00A0}kWh")
+        #expect(SubscriptionMeter.written(1_234.567, in: .cubicMetres) == "1.234,567\u{00A0}m³", "A meter's decimals are kept")
     }
 }

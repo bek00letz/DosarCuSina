@@ -83,18 +83,6 @@
     "„%@” păstrează un număr de card întreg. Păstrez doar ultimele patru cifre?" : {
       "comment" : "Repair: a whole bank card number kept in a section's, a firm's or a category's text."
     },
-    "„%@” pot sta acum și în altă secțiune. Le muți tu, din pagina fiecăreia, cu „Mută la…”." : {
-      "comment" : "Repair note: a category's sections can now be filed under another section."
-    },
-    "„%@” pot sta acum și într-o locuință. Ai mai multe, așa că le muți tu, din pagina fiecăreia, cu „Mută la…”." : {
-      "comment" : "Repair note: a category's sections (plants) can now be filed under a home; with several homes the person moves each with 'Mută la…'."
-    },
-    "„%@” pot sta acum și la o mașină. Ai mai multe, așa că le muți tu, din pagina fiecăreia, cu „Mută la…”." : {
-      "comment" : "Repair note: a category's sections can now be filed under a car; with several cars the person moves each with 'Mută la…'."
-    },
-    "„%@” pot sta acum și la o persoană. Ai mai multe, așa că le muți tu, din pagina fiecăreia, cu „Mută la…”." : {
-      "comment" : "Repair note: a category's sections can now be filed under a person; with several people the person moves each with 'Mută la…'."
-    },
     "%@" : {
 
     },
@@ -162,6 +150,45 @@
         }
       }
     },
+    "%@ %lld cafele" : {
+      "comment" : "A number of coffees an espresso machine made: the first argument is the number as written („1.250”), the second only chooses the plural („1 cafea”, „2 cafele”, „20 de cafele”). Keep the no-break spaces.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %#@u@"
+          },
+          "substitutions" : {
+            "u" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "cafele"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "cafea"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "de cafele"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%@ %lld lei" : {
       "comment" : "A whole amount of money in lei: the first argument is the amount as written („1.250”), the second only chooses the plural („1 leu”, „2 lei”, „20 de lei”). Keep the no-break space.",
       "localizations" : {
@@ -191,7 +218,46 @@
                   "other" : {
                     "stringUnit" : {
                       "state" : "translated",
-                      "value" : "de lei"
+                      "value" : "de lei"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ %lld luni" : {
+      "comment" : "A number of months: the first argument is the number as written („24”), the second only chooses the plural („1 lună”, „2 luni”, „24 de luni”). Keep the no-break spaces.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %#@u@"
+          },
+          "substitutions" : {
+            "u" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "luni"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "lună"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "de luni"
                     }
                   }
                 }
@@ -425,19 +491,19 @@
               "few" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld amânate sau pe pauză"
+                  "value" : "%lld termene amânate sau pe pauză"
                 }
               },
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Unul amânat sau pe pauză"
+                  "value" : "Un termen amânat sau pe pauză"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld amânate sau pe pauză"
+                  "value" : "%lld de termene amânate sau pe pauză"
                 }
               }
             }
@@ -1050,7 +1116,10 @@
       "comment" : "Bank card row: it expired, month/year as on the card."
     },
     "A expirat pe %@" : {
-      "comment" : "A passport's line once it has expired"
+      "comment" : "A passport's line once it has expired\nDocument row: the day a paper stopped being valid, passed."
+    },
+    "A expirat pe %@." : {
+      "comment" : "Capture review: the day a document or a policy expired, already passed.\nUnder an expiry date already passed."
     },
     "A expirat pe %@. Ai nevoie de ea până la graniță. O cumperi online sau la benzinărie." : {
       "comment" : "Trip check: the vignette has ended before the trip starts."
@@ -1067,8 +1136,22 @@
     "A fost bun de călătorit până pe %@" : {
       "comment" : "A passport past its last day good for travel, before it expires"
     },
+    "A fost bun de călătorit până pe %@." : {
+      "comment" : "A passport's last day good for travel, six months before it expires, already passed"
+    },
     "A fost șters sau mutat. Găsești restul în Dosar." : {
 
+    },
+    "A fost valabil până pe %@, la %@ de la eliberare." : {
+      "comment" : "Capture review: a document's validity worked out from its issue date, already passed, e.g. „la 6 luni de la eliberare”.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "A fost valabil până pe %1$@, la %2$@ de la eliberare."
+          }
+        }
+      }
     },
     "Abonament" : {
       "comment" : "Add-section option."
@@ -1118,8 +1201,17 @@
     "Acte personale" : {
       "comment" : "Header: personal documents."
     },
+    "Acte vechi, ca %@, păstrate pentru orice eventualitate." : {
+      "comment" : "Footer of archived documents: the papers the category's sections keep, as a list ending in „sau” (talonul, polița sau raportul ITP)."
+    },
+    "Acte vechi, păstrate pentru orice eventualitate." : {
+      "comment" : "Footer of archived documents, in a category whose sections keep no paper of their own kind."
+    },
     "Actele celuilalt șofer" : {
       "comment" : "Claim photo: the other driver's papers."
+    },
+    "Actele fiecărei persoane, la un loc." : {
+      "comment" : "Category summary of the people documents are filed under."
     },
     "Actele și termenele rămân în dosar. Se șterge doar planul călătoriei." : {
       "comment" : "What forgetting a trip removes."
@@ -1170,18 +1262,7 @@
 
     },
     "acum %@" : {
-      "comment" : "Due: this long ago"
-    },
-    "acum %@ %@" : {
-      "comment" : "How far the counter has moved since a job, e.g. 'acum 18.200 km'.",
-      "localizations" : {
-        "ro" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "acum %1$@ %2$@"
-          }
-        }
-      }
+      "comment" : "Due: this long ago\nHow far the counter has moved since a job, e.g. 'acum 18.200 km', 'acum 300 de cafele'."
     },
     "Acum e la „%@”." : {
       "comment" : "Where the item is filed now, in the move sheet."
@@ -1195,7 +1276,7 @@
     "Adaugă altceva" : {
 
     },
-    "Adaugă buletinul, pașaportul sau permisul. Îți spunem cu luni înainte când trebuie reînnoite." : {
+    "Adaugă buletinul, pașaportul sau permisul. Îți spun cu luni înainte când trebuie reînnoite." : {
 
     },
     "Adaugă ce ai cumpărat, cu bonul. Când se strică, știi dacă mai e în garanție." : {
@@ -1258,7 +1339,7 @@
     "Adaugă spatele" : {
       "comment" : "Title of the photo source choice for a document's back."
     },
-    "Adaugă telefonul, internetul sau streamingul. Vezi cât plătești pe lună și îți amintim înainte de reînnoire." : {
+    "Adaugă telefonul, internetul sau streamingul. Vezi cât plătești pe lună și îți amintesc înainte de reînnoire." : {
 
     },
     "Adaugă un abonament" : {
@@ -1423,7 +1504,7 @@
     "Alege ce ține minte fiecare. Categoriile incluse în aplicație rămân cum sunt." : {
       "comment" : "Footer of the person's own categories in Settings."
     },
-    "Alege ce vrei să-ți amintim. Datele le poți schimba oricând." : {
+    "Alege ce vrei să-ți amintesc. Datele le poți schimba oricând." : {
       "comment" : "Intro of the obligations step."
     },
     "Alege cine pleacă, cu ce mașină sau cu ce animal, și îți spun ce e pregătit." : {
@@ -1531,18 +1612,19 @@
     "Altele" : {
       "comment" : "Category name"
     },
-    "Am adăugat %@. %@" : {
+    "Am adăugat spatele actului" : {
+      "comment" : "Toast after saving a document's edit with its back."
+    },
+    "Am adăugat termenul „%@”. %@" : {
+      "comment" : "Deadline form: saved. The first argument is the deadline's title, the second how it reminds („Te anunț cu 7 zile înainte.”).",
       "localizations" : {
         "ro" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Am adăugat %1$@. %2$@"
+            "value" : "Am adăugat termenul „%1$@”. %2$@"
           }
         }
       }
-    },
-    "Am adăugat spatele actului" : {
-      "comment" : "Toast after saving a document's edit with its back."
     },
     "Am adus ce ai pe celelalte dispozitive. Ce schimbi aici apare și acolo." : {
 
@@ -2314,11 +2396,11 @@
     "Ca să te anunț, pornește-le din Setări › Dosar cu Șină › Notificări. Termenele rămân oricum aici, în Urmează." : {
 
     },
+    "Ca să-ți amintesc în continuare de termene, deschide aplicația." : {
+      "comment" : "Reminder body when the phone can't hold every reminder"
+    },
     "Ca să-ți amintesc la timp, iPhone-ul te întreabă acum o singură dată dacă am voie să-ți trimit notificări. Alege „Permite”." : {
 
-    },
-    "Ca să-ți amintim în continuare de termene, deschide aplicația." : {
-      "comment" : "Reminder body when the phone can't hold every reminder"
     },
     "Ca un singur PDF" : {
       "comment" : "Share a document as one PDF file."
@@ -2463,6 +2545,9 @@
     },
     "Cât ai plătit" : {
 
+    },
+    "Cât de des" : {
+      "comment" : "VoiceOver: the label of the stepper that sets how often a deadline repeats; its value says it, e.g. „La fiecare 3 zile”."
     },
     "Cât de important e" : {
 
@@ -2796,9 +2881,6 @@
     "Certificatul de naștere" : {
 
     },
-    "certificatul de semnătură electronică" : {
-
-    },
     "Cetățenia" : {
       "comment" : "Title of the sheet that asks a person's citizenship.\nTrip check: a traveller's citizenship, not known yet."
     },
@@ -2853,8 +2935,14 @@
     "Chitanța sau confirmarea primită pe e-mail." : {
       "comment" : "Am rezolvat: which paper, for a road vignette."
     },
-    "Cifra gri e doar o estimare. Scrie cifra de la bord, dacă o știi." : {
-
+    "Cifra gri e doar o estimare. Scrie cifra de pe contor, dacă o știi." : {
+      "comment" : "Visit form: the counter shown is an estimate."
+    },
+    "Cifra gri e doar o estimare. Scrie kilometrajul, dacă îl știi." : {
+      "comment" : "Visit form: the kilometres shown are an estimate."
+    },
+    "Cifra gri e doar o estimare. Scrie orele de pe contor, dacă le știi." : {
+      "comment" : "Visit form: the engine hours shown are an estimate."
     },
     "Cine a emis-o" : {
       "comment" : "Istoric record: who issued a renewed paper named by a feminine noun."
@@ -2872,7 +2960,7 @@
       "comment" : "Pocket explanation."
     },
     "Cine l-a emis" : {
-      "comment" : "Istoric record: who issued a renewed paper named by a masculine noun (a document, a card, a contract)."
+      "comment" : "Istoric record: who issued a renewed paper named by a masculine noun (a document, a card)."
     },
     "Cine le-a emis" : {
       "comment" : "Istoric record: who issued renewed papers named by a plural noun."
@@ -3105,6 +3193,9 @@
     "Contractul sau extrasul de carte funciară." : {
       "comment" : "Claim paper: which property paper."
     },
+    "Contractul se încheie la cel mult o lună după ce anunți." : {
+      "comment" : "Capture review: a contract whose minimum period is over ends at most a month after the notice to leave."
+    },
     "Contractul, chiria, garanția și indexurile la mutare." : {
       "comment" : "Category summary"
     },
@@ -3238,6 +3329,15 @@
     "Cu %@ mai puțin decât cea dinainte." : {
       "comment" : "A bill compared with the one before it."
     },
+    "Cu cine ai semnat-o" : {
+      "comment" : "Istoric record: who a renewed paper named by a feminine noun was signed with."
+    },
+    "Cu cine l-ai semnat" : {
+      "comment" : "Istoric record: who a renewed paper named by a masculine noun was signed with (a contract, a lease)."
+    },
+    "Cu cine le-ai semnat" : {
+      "comment" : "Istoric record: who renewed papers named by a plural noun were signed with."
+    },
     "Cu contractul de vânzare, la asigurător. Primești înapoi banii pe lunile rămase." : {
       "comment" : "After the sale: cancelling a policy returns the unused months."
     },
@@ -3256,20 +3356,14 @@
     "Cui ai plătit" : {
       "comment" : "Istoric record: who a payment went to."
     },
-    "Cui aparțin actele." : {
-      "comment" : "Category summary"
-    },
     "CUI furnizor" : {
 
     },
     "Cum" : {
 
     },
-    "Cum a fost" : {
-
-    },
     "Cum a fost?" : {
-      "comment" : "Rating a doctor's or a vet's visit."
+      "comment" : "Istoric record: above the stars, how it went. A question, like „Cum a lucrat?”.\nRating a doctor's or a vet's visit."
     },
     "Cum a lucrat?" : {
 
@@ -3397,6 +3491,9 @@
     "Data a trecut, așa că nu îți mai amintesc." : {
       "comment" : "Capture review: the paper's day has passed."
     },
+    "Data a trecut, așa că termenul apare de acum în Urmează." : {
+      "comment" : "Under a day already passed: the deadline is made late, and shows in Urmează as such, instead of reminders before it."
+    },
     "Data cumpărării" : {
 
     },
@@ -3462,9 +3559,6 @@
     },
     "De aproape și de departe, ca să se vadă unde e." : {
       "comment" : "Claim photo: how to photograph damage."
-    },
-    "De când îl ai" : {
-      "comment" : "Money row: spent in total."
     },
     "De corectat" : {
       "comment" : "Settings row that opens the repair list.\nTitle of the repair list: what an earlier version saved wrongly."
@@ -3570,7 +3664,7 @@
     "De plătit până pe %@. Se plătește prin debit direct, așa că nu îți amintesc." : {
       "comment" : "Capture review: a bill the bank pays by direct debit sets no reminder."
     },
-    "De regulă, de la această dată poți renunța fără penalități, anunțând cu cel mult o lună înainte. E cel mai bun moment să ceri o ofertă mai bună." : {
+    "De regulă, de la această dată poți renunța fără penalități, iar contractul se încheie la cel mult o lună după ce anunți. E cel mai bun moment să ceri o ofertă mai bună." : {
 
     },
     "De rezolvat" : {
@@ -3710,6 +3804,9 @@
     },
     "Detalii" : {
 
+    },
+    "Detaliile le completezi oricând din pagina secțiunii, cu Editează." : {
+      "comment" : "Footnote when adding a section asks no field of a category that keeps some: none was asked, so „the details”, never „the rest”."
     },
     "Detartraj" : {
 
@@ -3944,7 +4041,7 @@
         }
       }
     },
-    "E pe factura de gaz." : {
+    "E pe factura de gaze." : {
 
     },
     "E pe poliță sau pe site-ul asigurătorului. Adaugă-l ca să suni dintr-o atingere." : {
@@ -4018,6 +4115,9 @@
     "Emis de" : {
 
     },
+    "Era de plătit până pe %@." : {
+      "comment" : "Capture review: the day a bill was to be paid by, already passed."
+    },
     "Era în garanție, până pe %@." : {
       "comment" : "Repair form: the day falls within the product's warranty."
     },
@@ -4088,7 +4188,7 @@
 
     },
     "Expiră pe %@" : {
-      "comment" : "A passport's expiry, on its page"
+      "comment" : "A passport's expiry, on its page\nDocument row: the day a paper stops being valid, still to come."
     },
     "Expiră pe %@, cât ești plecat. Cumpără alta pentru drumul înapoi, online sau la benzinărie." : {
       "comment" : "Trip check: the vignette ends during the trip."
@@ -4481,6 +4581,9 @@
     "Garanția expiră" : {
 
     },
+    "Garanția s-a terminat pe %@." : {
+      "comment" : "Capture review: the day a purchase's warranty ended, already passed."
+    },
     "Garanția se termină" : {
 
     },
@@ -4745,6 +4848,9 @@
     "În rândul de aplicații, trage cu degetul spre stânga până la capăt." : {
 
     },
+    "În total" : {
+      "comment" : "Money row: spent in total, since the section is in the binder. Agrees with no noun, so it fits every section."
+    },
     "în ultima zi bună de călătorit" : {
       "comment" : "Part of a deadline's schedule line: on the last day a passport is good for travel."
     },
@@ -4781,19 +4887,19 @@
               "few" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Încă %lld sunt mai jos, la Curând."
+                  "value" : "Încă %lld termene sunt mai jos, la Curând."
                 }
               },
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Încă unul e mai jos, la Curând."
+                  "value" : "Încă un termen e mai jos, la Curând."
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Încă %lld sunt mai jos, la Curând."
+                  "value" : "Încă %lld de termene sunt mai jos, la Curând."
                 }
               }
             }
@@ -4906,7 +5012,7 @@
         }
       }
     },
-    "Indexul nu-l trec: nu știu dacă e de gaz, de curent sau de apă." : {
+    "Indexul nu-l trec: nu știu dacă e de gaze, de curent sau de apă." : {
       "comment" : "Capture review: the subscription's service isn't known, so the index isn't recorded."
     },
     "Indexuri estimate" : {
@@ -5012,6 +5118,9 @@
     "ITP" : {
 
     },
+    "ITP-ul a fost valabil până pe %@." : {
+      "comment" : "Capture review: the last day an inspection report kept the car's ITP valid, already passed."
+    },
     "ITP-ul e valabil până pe %@." : {
       "comment" : "Capture review: the last day an inspection report keeps the car's ITP valid."
     },
@@ -5103,6 +5212,17 @@
         }
       }
     },
+    "La %@, notița de la „%@” spune doar cât de des se face: „%@”. O scot? Asta se vede oricum la Se repetă, mereu la zi." : {
+      "comment" : "Repair: a service deadline of a category of one's own keeps its rule as a note, written by an earlier version. The first argument is the section, the second the deadline, the third the note.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "La %1$@, notița de la „%2$@” spune doar cât de des se face: „%3$@”. O scot? Asta se vede oricum la Se repetă, mereu la zi."
+          }
+        }
+      }
+    },
     "La %@, numărul %@ e de pe polița CASCO, dar stă la RCA. Îl mut la CASCO, cu asigurătorul și telefonul de daune?" : {
       "comment" : "Repair: a CASCO policy's facts kept in a car's RCA fields.",
       "localizations" : {
@@ -5132,64 +5252,6 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "La %1$@, numărul poliței %2$@ e doar seria „%3$@”. Îl completez cu „%4$@”, de pe polița din dosar?"
-          }
-        }
-      }
-    },
-    "La %lld km sau o dată pe an, ce vine întâi." : {
-      "comment" : "Note of the service deadline of a category of one's own: every so many kilometres.",
-      "localizations" : {
-        "ro" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "La %lld km sau o dată pe an, ce vine întâi."
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "La un kilometru sau o dată pe an, ce vine întâi."
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "La %lld de km sau o dată pe an, ce vine întâi."
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "La %lld ore de motor sau o dată pe an, ce vine întâi." : {
-      "comment" : "Note of the service deadline of a category of one's own: every so many engine hours.",
-      "localizations" : {
-        "ro" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "La %lld ore de motor sau o dată pe an, ce vine întâi."
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "La o oră de motor sau o dată pe an, ce vine întâi."
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "La %lld de ore de motor sau o dată pe an, ce vine întâi."
-                }
-              }
-            }
           }
         }
       }
@@ -5635,7 +5697,7 @@
     "Nicio lucrare notată încă." : {
       "comment" : "Provider with no jobs."
     },
-    "Nicio plantă trecută aici. Adaug-o și îți amintim de udat." : {
+    "Nicio plantă trecută aici. Adaug-o și îți amintesc de udat." : {
       "comment" : "Empty Plante pocket on a home's page."
     },
     "Nicio reparație notată încă. După una, notează aici ce s-a reparat, unde și cât a costat." : {
@@ -5668,7 +5730,7 @@
     "Niciun act încă" : {
 
     },
-    "Niciun chiriaș. Adaugă contractul și îți spunem când se termină." : {
+    "Niciun chiriaș. Adaugă contractul și îți spun când se termină." : {
       "comment" : "Empty Chiriași pocket."
     },
     "Niciun document. Scanează %@ și îl găsești aici." : {
@@ -5686,7 +5748,7 @@
     "Niciun produs. Adaugă aragazul sau centrala și ții minte garanția." : {
       "comment" : "Empty Produse pocket."
     },
-    "Niciun termen. Adaugă unul ca să îți amintim la timp." : {
+    "Niciun termen. Adaugă unul și îți amintesc la timp." : {
       "comment" : "Empty Urmează pocket."
     },
     "Niciuna" : {
@@ -6172,35 +6234,6 @@
     "O cutie pentru toate" : {
       "comment" : "Boxes choice: one box for all of a category's sections, wherever they are filed."
     },
-    "O dată la %lld luni." : {
-      "comment" : "Note of the service deadline of a category of one's own: every so many months.",
-      "localizations" : {
-        "ro" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "O dată la %lld luni."
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "O dată pe lună."
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "O dată la %lld de luni."
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "O factură n-a venit încă" : {
       "comment" : "A missing bill, in a locked section."
     },
@@ -6658,8 +6691,8 @@
     "Perioadă minimă (luni)" : {
 
     },
-    "Perioada minimă s-a terminat pe %@. De regulă, poți renunța oricând, anunțând cu cel mult o lună înainte." : {
-      "comment" : "Capture review: a contract whose minimum period is over."
+    "Perioada minimă s-a terminat pe %@. De atunci poți, de regulă, renunța fără penalități." : {
+      "comment" : "Capture review: the day a contract's minimum period ended, already passed."
     },
     "Perioada minimă se termină" : {
 
@@ -6706,8 +6739,8 @@
     "Piese și lucrări" : {
       "comment" : "Search group: components."
     },
-    "Piesele adună %@. Lasă gol dacă ăsta e totalul." : {
-
+    "Piesele adună %@. Dacă e totalul, lasă câmpul gol." : {
+      "comment" : "Under a service's cost: what its parts add up to, kept as the total while nothing is typed."
     },
     "Piesele și prețurile notate aici se șterg de pe acest telefon." : {
       "comment" : "Delete confirmation for a history entry."
@@ -6750,9 +6783,6 @@
     },
     "Plata prin debit direct" : {
 
-    },
-    "Plătesc prin debit direct" : {
-      "comment" : "Capture review: the bank pays this subscription's bills."
     },
     "Pleacă doar ce e marcat „Exemplu”. Poți anula." : {
       "comment" : "VoiceOver hint of the binder's button that removes the examples."
@@ -6821,9 +6851,6 @@
     },
     "Polițe fără termen" : {
       "comment" : "Repair group: home policies kept without their deadline."
-    },
-    "Polițe și contracte vechi, păstrate pentru orice eventualitate." : {
-      "comment" : "Footer of archived documents."
     },
     "Pornește cu un dosar gol" : {
       "comment" : "Starts with an empty database."
@@ -7014,7 +7041,7 @@
     "Pune aici ce cauți des, un număr sau un cod. Un cod sau o parolă rămân ascunse, ca un PIN." : {
       "comment" : "Empty Date importante pocket, the same for every category."
     },
-    "Pune aici mașina, casa, actele sau pisica. Îți spunem din timp când expiră ceva și ții minte cine a reparat ce." : {
+    "Pune aici mașina, casa, actele sau pisica. Îți spun din timp când expiră ceva și ții minte cine a reparat ce." : {
       "comment" : "Empty home message."
     },
     "Pune casetele în ordinea de la început" : {
@@ -7050,8 +7077,8 @@
     "Rândul de pe factură" : {
       "comment" : "Title when editing a bill line."
     },
-    "Rândurile adună %@. Lasă gol dacă ăsta e totalul." : {
-      "comment" : "Under a visit's cost: what its rows add up to."
+    "Rândurile adună %@. Dacă e totalul, lasă câmpul gol." : {
+      "comment" : "Under a visit's cost: what its rows add up to, kept as the total while nothing is typed."
     },
     "Rapel antitetanos" : {
 
@@ -7125,9 +7152,6 @@
     "Republica Democratică Congo" : {
       "comment" : "A citizenship: the Democratic Republic of the Congo."
     },
-    "Restul detaliilor le completezi oricând din pagina secțiunii, cu Editează." : {
-      "comment" : "Footnote when a category has no essential fields."
-    },
     "Rețetă" : {
 
     },
@@ -7192,6 +7216,9 @@
           }
         }
       }
+    },
+    "Revizii" : {
+      "comment" : "Repair group: service deadlines of a category of one's own that keep their rule as a note."
     },
     "Revizii după kilometri" : {
       "comment" : "Summary of a category of one's own: a service by kilometres."
@@ -7502,6 +7529,9 @@
     "Se plătește" : {
 
     },
+    "Se plătește prin debit direct" : {
+      "comment" : "Capture review: the bank pays this subscription's bills. Said of the bills, like „Se plătește prin debit direct, așa că nu îți amintesc.”"
+    },
     "Se poate șterge doar o categorie fără secțiuni. Mută-le sau șterge-le mai întâi." : {
       "comment" : "Explains when a category can be deleted."
     },
@@ -7580,11 +7610,26 @@
     "Secțiuni" : {
       "comment" : "Search group: assets."
     },
+    "Secțiunile din „%@” pot sta acum și în altă secțiune. Le muți tu, din pagina fiecăreia, cu „Mută la…”." : {
+      "comment" : "Repair note: a category's sections can now be filed under another section. The argument is the category's name, as it is: one thing or many."
+    },
+    "Secțiunile din „%@” pot sta acum și într-o locuință. Pentru că ai mai multe locuințe, le muți tu, din pagina fiecărei secțiuni, cu „Mută la…”." : {
+      "comment" : "Repair note: a category's sections (plants) can now be filed under a home; with several homes the person moves each with 'Mută la…'. The argument is the category's name, as it is: one thing or many."
+    },
+    "Secțiunile din „%@” pot sta acum și la o mașină. Pentru că ai mai multe mașini, le muți tu, din pagina fiecărei secțiuni, cu „Mută la…”." : {
+      "comment" : "Repair note: a category's sections can now be filed under a car; with several cars the person moves each with 'Mută la…'. The argument is the category's name, as it is: one thing or many."
+    },
+    "Secțiunile din „%@” pot sta acum și la o persoană. Pentru că ai mai multe persoane, le muți tu, din pagina fiecărei secțiuni, cu „Mută la…”." : {
+      "comment" : "Repair note: a category's sections can now be filed under a person; with several people the person moves each with 'Mută la…'. The argument is the category's name, as it is: one thing or many."
+    },
     "Secțiunile unei categorii protejate se deschid doar cu %@, chiar dacă aplicația nu e blocată, și nu apar în căutarea iPhone-ului. Restul aplicației merge normal." : {
       "comment" : "Footer of the category locks."
     },
     "Semnat de amândoi, câte un exemplar pentru tine, pentru cumpărător și pentru primărie." : {
       "comment" : "Sale: copies of the sale contract."
+    },
+    "semnătura electronică" : {
+
     },
     "Semnătură electronică" : {
 
@@ -7924,7 +7969,7 @@
     "Telefon pentru daune" : {
 
     },
-    "Telefon, internet, gaz și curent: facturile și contractele lor." : {
+    "Telefon, internet, gaze și curent: facturile și contractele lor." : {
       "comment" : "Category summary"
     },
     "Telefonul nu mai are spațiu liber. Eliberează puțin spațiu, apoi încearcă din nou." : {
@@ -8322,6 +8367,9 @@
     },
     "Următoarea doză e pe %@." : {
       "comment" : "Capture review: the day a pet's next vaccine dose is due."
+    },
+    "Următoarea doză era pe %@." : {
+      "comment" : "Capture review: the day a pet's next vaccine dose was due, already passed."
     },
     "Următoarea reînnoire" : {
 

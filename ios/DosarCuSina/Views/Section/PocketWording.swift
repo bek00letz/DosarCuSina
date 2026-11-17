@@ -17,15 +17,15 @@ extension SectionPocket {
         let visits = definition.behavior.visit
         return switch self {
         case .upcoming:
-            String(localized: "Niciun termen. Adaugă unul ca să îți amintim la timp.", comment: "Empty Urmează pocket.")
+            String(localized: "Niciun termen. Adaugă unul și îți amintesc la timp.", comment: "Empty Urmează pocket.")
         case .tenants:
-            String(localized: "Niciun chiriaș. Adaugă contractul și îți spunem când se termină.", comment: "Empty Chiriași pocket.")
+            String(localized: "Niciun chiriaș. Adaugă contractul și îți spun când se termină.", comment: "Empty Chiriași pocket.")
         case .products:
             String(localized: "Niciun produs. Adaugă aragazul sau centrala și ții minte garanția.", comment: "Empty Produse pocket.")
         case .subscriptions:
             String(localized: "Niciun abonament trecut aici.", comment: "Empty Abonamente pocket.")
         case .plants:
-            String(localized: "Nicio plantă trecută aici. Adaug-o și îți amintim de udat.", comment: "Empty Plante pocket on a home's page.")
+            String(localized: "Nicio plantă trecută aici. Adaug-o și îți amintesc de udat.", comment: "Empty Plante pocket on a home's page.")
         case .documents:
             PocketWording.documentsEmpty(CaptureKindProfile.papersKept(inCategory: definition.key))
         case .history:
@@ -169,9 +169,15 @@ enum PocketWording {
 
     // MARK: A paper in Acte
 
-    /// Its line: valid until a day.
-    static func validUntil(_ day: String) -> String {
-        String(localized: "Valabil până la \(day)", comment: "Document row: valid until.")
+    /// Its line: the day it stops being valid, still to come. A verb, so it agrees with any
+    /// paper („Polița”, „Talonul”, „Rezultatele”).
+    static func expires(_ day: String) -> String {
+        String(localized: "Expiră pe \(day)", comment: "Document row: the day a paper stops being valid, still to come.")
+    }
+
+    /// Its line: the day it stopped being valid, passed.
+    static func expired(_ day: String) -> String {
+        String(localized: "A expirat pe \(day)", comment: "Document row: the day a paper stopped being valid, passed.")
     }
 
     /// Its line: the day printed on it.
@@ -185,7 +191,7 @@ enum PocketWording {
     static var lastBill: String { String(localized: "Ultima factură", comment: "Money row: a subscription's newest bill.") }
     static var averageBill: String { String(localized: "În medie, pe factură", comment: "Money row: a subscription's average bill over the last year.") }
     static var lastYear: String { String(localized: "În ultimul an", comment: "Money row: spent in the last 12 months.") }
-    static var allTime: String { String(localized: "De când îl ai", comment: "Money row: spent in total.") }
+    static var allTime: String { String(localized: "În total", comment: "Money row: spent in total, since the section is in the binder. Agrees with no noun, so it fits every section.") }
     static var purchasePrice: String { String(localized: "Preț de cumpărare", comment: "Money row: purchase price.") }
 }
 

@@ -69,11 +69,21 @@ enum ReminderWording {
         return String(localized: "Te anunț \(when).", comment: "Reminder sentence: when it reminds, e.g. „Te anunț cu o lună și cu 7 zile înainte și în ziua termenului.”")
     }
 
+    /// What happens with a deadline whose day has already passed, in place of when it reminds:
+    /// no reminder can come before it, and it shows as late in Urmează.
+    static var alreadyLate: String {
+        String(localized: "Data a trecut, așa că termenul apare de acum în Urmează.",
+               comment: "Under a day already passed: the deadline is made late, and shows in Urmează as such, instead of reminders before it.")
+    }
+
     /// "Bun de călătorit până pe 12 februarie 2031." for a document with a travel cut-off
     /// expiring on `day`; nil for every other document.
     static func travelLine(expiring day: CalendarDay, profile: ReminderProfile, today: CalendarDay, calendar: Calendar = .dosar) -> String? {
         guard let cutoff = profile.urgencyRule.travelCutoff(before: day, calendar: calendar) else { return nil }
-        return String(localized: "Bun de călătorit până pe \(DueWording.date(cutoff, today: today)).", comment: "A passport's last day good for travel, six months before it expires")
+        let date = DueWording.date(cutoff, today: today)
+        return cutoff < today
+            ? String(localized: "A fost bun de călătorit până pe \(date).", comment: "A passport's last day good for travel, six months before it expires, already passed")
+            : String(localized: "Bun de călătorit până pe \(date).", comment: "A passport's last day good for travel, six months before it expires")
     }
 
     /// "Expiră pe 12 august 2031. Te anunț cu 3 luni și cu o lună înainte." The line
@@ -84,8 +94,10 @@ enum ReminderWording {
     static func expiryLine(_ day: CalendarDay, profile: ReminderProfile, today: CalendarDay, validityMonths: Int? = nil,
                            calendar: Calendar = .dosar) -> String {
         let date = DueWording.date(day, today: today)
-        let opening = validityMonths.map { validityOpening(day, months: $0, today: today) } ?? String(localized: "Expiră pe \(date).")
-        return [opening, travelLine(expiring: day, profile: profile, today: today, calendar: calendar), sentence(profile)]
+        let passed = day < today
+        let opening = validityMonths.map { validityOpening(day, months: $0, today: today) }
+            ?? (passed ? String(localized: "A expirat pe \(date).", comment: "Under an expiry date already passed.") : String(localized: "Expiră pe \(date)."))
+        return [opening, travelLine(expiring: day, profile: profile, today: today, calendar: calendar), passed ? alreadyLate : sentence(profile)]
             .compactMap { $0 }
             .joined(separator: " ")
     }
@@ -95,8 +107,12 @@ enum ReminderWording {
     /// "Scriu eu" and capture's review.
     static func validityOpening(_ day: CalendarDay, months: Int, today: CalendarDay) -> String {
         let date = DueWording.date(day, today: today)
-        return String(localized: "E valabil până pe \(date), la \(CalendarCount.months(months)) de la eliberare.",
-                      comment: "Capture review: a document's validity worked out from its issue date, e.g. „la 6 luni de la eliberare”.")
+        let after = CalendarCount.months(months)
+        return day < today
+            ? String(localized: "A fost valabil până pe \(date), la \(after) de la eliberare.",
+                     comment: "Capture review: a document's validity worked out from its issue date, already passed, e.g. „la 6 luni de la eliberare”.")
+            : String(localized: "E valabil până pe \(date), la \(after) de la eliberare.",
+                     comment: "Capture review: a document's validity worked out from its issue date, e.g. „la 6 luni de la eliberare”.")
     }
 
     /// A deadline's reminder time as its row shows it: "Ora obișnuită (09:00)" for the general

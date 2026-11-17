@@ -137,6 +137,6 @@ struct BinderFlowTests {
         #expect(line.title == template.components.first?.name)
         // Digit grouping follows the phone's region; the distance is the same.
         #expect(line.detail.hasPrefix("acum 18"))
-        #expect(line.detail.contains("200 km · "))
+        #expect(line.detail.contains("200\u{00A0}km · "))
     }
 }

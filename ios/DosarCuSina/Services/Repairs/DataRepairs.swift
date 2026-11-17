@@ -47,6 +47,7 @@ struct DataRepairs {
         SectionsIntoTheirHomeStep(),
         OwnCategoryBoxesStep(),
         OwnCategoryVisitsStep(),
+        ServiceNotesStep(),
     ]
 
     static func step(_ id: DataRepairStepID) -> any DataRepairStep {
@@ -121,6 +122,7 @@ enum DataRepairStepID: String, CaseIterable, Sendable, Hashable {
     case sectionsIntoTheirHome = "sections-into-their-home"
     case ownCategoryBoxes = "own-category-boxes"
     case ownCategoryVisits = "own-category-visits"
+    case serviceNotes = "service-notes"
 }
 
 /// One thing a repair would change, in plain words, with what applying it needs.
@@ -171,6 +173,8 @@ struct DataRepairFinding: Identifiable, Hashable, Sendable {
         /// A section on its own (a plant) filed under the household's only home; both nil for the
         /// note that, with several homes, says to move them with "Mută la…".
         case intoHome(assetID: UUID?, homeID: UUID?)
+        /// A service deadline's note that is only its rule, as an earlier version copied it: it goes.
+        case serviceNote(obligationID: UUID)
     }
 }
 

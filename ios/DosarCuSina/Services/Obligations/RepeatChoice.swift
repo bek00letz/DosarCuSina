@@ -104,4 +104,28 @@ public struct RepeatChoice: Hashable, Sendable {
         guard let unit = frequency.unit else { return 1...1 }
         return 1...min(max(Self.upperBound(for: unit), every), RecurrenceInterval.longest(in: unit))
     }
+
+    /// The number „+” or „−” gives after `value` (a tap, a held press or a VoiceOver swipe), in
+    /// steps that grow with the number, so 365 days is a few dozen steps away, never 364: one
+    /// by one below 10, then by 5 below 60, by 10 below 180, by 30 beyond. A step lands on its
+    /// own multiples (12 goes up to 15 and down to 10), and stays inside `range`.
+    public static func stepped(_ value: Int, up: Bool, in range: ClosedRange<Int>) -> Int {
+        func step(at number: Int) -> Int {
+            switch number {
+            case ..<10: 1
+            case ..<60: 5
+            case ..<180: 10
+            default: 30
+            }
+        }
+        let next: Int
+        if up {
+            let size = step(at: value)
+            next = (value / size + 1) * size
+        } else {
+            let size = step(at: value - 1)
+            next = ((value - 1) / size) * size
+        }
+        return min(max(next, range.lowerBound), range.upperBound)
+    }
 }
