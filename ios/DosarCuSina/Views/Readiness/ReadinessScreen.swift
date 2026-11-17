@@ -147,6 +147,7 @@ private struct ReadinessActionsModifier: ViewModifier {
     @State private var isChoosingPhoto = false
     @State private var deadline: DeadlineRequest?
     @State private var editing: EditRequest?
+    @State private var citizenship: EditRequest?
 
     struct DeadlineRequest: Identifiable {
         var assetID: UUID
@@ -188,6 +189,9 @@ private struct ReadinessActionsModifier: ViewModifier {
             .dsSheet(item: $editing) { request in
                 SectionEditSheet(assetID: request.id) { toast = $0 }
             }
+            .dsSheet(item: $citizenship) { request in
+                CitizenshipSheet(memberID: request.id) { toast = $0 }
+            }
     }
 
     private func handle(_ action: ReadinessAction) {
@@ -203,6 +207,53 @@ private struct ReadinessActionsModifier: ViewModifier {
             deadline = DeadlineRequest(assetID: assetID, blueprintKey: blueprintKey)
         case .editSection(let assetID):
             editing = EditRequest(id: assetID)
+        case .chooseCitizenship(let holderID):
+            citizenship = EditRequest(id: holderID)
+        }
+    }
+}
+
+/// „Ce cetățenie are…?”: asked once, from the trip check, and kept on the person
+/// (`MemberFields.citizenship`), where their page shows it and lets them change it.
+private struct CitizenshipSheet: View {
+    let memberID: UUID
+    let announce: (DSToast) -> Void
+    @Query private var matches: [Asset]
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
+
+    init(memberID: UUID, announce: @escaping (DSToast) -> Void) {
+        self.memberID = memberID
+        self.announce = announce
+        let id = memberID
+        _matches = Query(filter: #Predicate<Asset> { $0.id == id })
+    }
+
+    var body: some View {
+        if let member = matches.first {
+            DSChoiceListSheet(
+                title: Text("Cetățenia", comment: "Title of the sheet that asks a person's citizenship."),
+                message: Text("Ce cetățenie are \(member.name)? De ea depind actele cu care călătorește.",
+                              comment: "Asks a household member's citizenship, from the trip check. The argument is their name."),
+                options: Citizenship.options.map(\.key),
+                optionTitle: { Citizenship.label(for: $0) ?? $0 },
+                selection: member.values[MemberFields.citizenship]?.textValue
+            ) { chosen in
+                keep(chosen, on: member)
+            }
+        } else {
+            NavigationStack { MissingRecordView() }
+        }
+    }
+
+    private func keep(_ chosen: String?, on member: Asset) {
+        guard let chosen else { return }
+        var values = member.values
+        values[MemberFields.citizenship] = .text(chosen)
+        do {
+            _ = try AssetActions(context: context).update(member, name: member.name, values: values, notes: member.notes)
+        } catch {
+            announce(.failure(error))
         }
     }
 }

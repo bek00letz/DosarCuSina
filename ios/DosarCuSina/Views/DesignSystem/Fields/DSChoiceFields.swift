@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// Pick one option from a short list, e.g. fuel type or blood group.
+/// Pick one option, e.g. fuel type or blood group: a menu for a short list, and for a long
+/// one (a country) a searchable list in a sheet (`DSChoiceListSheet`).
 /// Options come from templates, so their titles are data and shown verbatim.
 struct DSChoiceField<Option: Hashable>: View {
     let title: LocalizedStringKey
@@ -10,7 +11,11 @@ struct DSChoiceField<Option: Hashable>: View {
     var isRequired: Bool = false
     var footnote: LocalizedStringKey?
 
+    /// The most options a menu holds; a longer list opens with search.
+    static var menuLimit: Int { 24 }
+
     @Environment(\.dsRevealsValidation) private var revealsValidation
+    @State private var isChoosing = false
 
     init(
         _ title: LocalizedStringKey,
@@ -39,41 +44,61 @@ struct DSChoiceField<Option: Hashable>: View {
             validation: validation,
             footnote: footnote.map { Text($0) }
         ) {
-            Menu {
-                Picker(selection: $selection) {
-                    if !isRequired {
-                        Text("Niciuna", comment: "Choice that leaves an optional field empty.")
-                            .tag(Option?.none)
+            if options.count > Self.menuLimit {
+                Button { isChoosing = true } label: { chosen(symbol: "chevron.forward") }
+                    .buttonStyle(.dsPressable)
+                    .accessibilityLabel(Text(title))
+                    .accessibilityValue(accessibilityValue)
+                    .dsSheet(isPresented: $isChoosing) {
+                        DSChoiceListSheet(title: Text(title), options: options, optionTitle: optionTitle, selection: selection,
+                                          allowsNone: !isRequired) { selection = $0 }
                     }
-                    ForEach(options, id: \.self) { option in
-                        Text(verbatim: optionTitle(option)).tag(Option?.some(option))
+            } else {
+                Menu {
+                    Picker(selection: $selection) {
+                        if !isRequired {
+                            Text("Niciuna", comment: "Choice that leaves an optional field empty.")
+                                .tag(Option?.none)
+                        }
+                        ForEach(options, id: \.self) { option in
+                            Text(verbatim: optionTitle(option)).tag(Option?.some(option))
+                        }
+                    } label: {
+                        Text(title)
                     }
                 } label: {
-                    Text(title)
+                    chosen(symbol: "chevron.up.chevron.down")
                 }
-            } label: {
-                HStack {
-                    if let selection {
-                        Text(verbatim: optionTitle(selection))
-                            .foregroundStyle(DS.Palette.label)
-                    } else {
-                        Text("Alege", comment: "Placeholder in an empty choice field.")
-                            .foregroundStyle(DS.Palette.placeholder)
-                    }
-                    Spacer(minLength: DS.Space.xs)
-                    Image(systemName: "chevron.up.chevron.down")
-                        .imageScale(.small)
-                        .foregroundStyle(DS.Palette.secondaryLabel)
-                        .accessibilityHidden(true)
-                }
-                .frame(minHeight: DS.Control.minimumHitTarget)
-                .contentShape(.rect)
+                .accessibilityLabel(Text(title))
+                .accessibilityValue(accessibilityValue)
             }
-            .accessibilityLabel(Text(title))
-            .accessibilityValue(selection.map { Text(verbatim: optionTitle($0)) } ?? Text("Nimic ales", comment: "VoiceOver value of an empty choice field."))
         }
         .sensoryFeedback(.selection, trigger: selection)
         .dsValidationFeedback(validation)
+    }
+
+    /// What is chosen, or "Alege", with the control's symbol.
+    private func chosen(symbol: String) -> some View {
+        HStack {
+            if let selection {
+                Text(verbatim: optionTitle(selection))
+                    .foregroundStyle(DS.Palette.label)
+            } else {
+                Text("Alege", comment: "Placeholder in an empty choice field.")
+                    .foregroundStyle(DS.Palette.placeholder)
+            }
+            Spacer(minLength: DS.Space.xs)
+            Image(systemName: symbol)
+                .imageScale(.small)
+                .foregroundStyle(DS.Palette.secondaryLabel)
+                .accessibilityHidden(true)
+        }
+        .frame(minHeight: DS.Control.minimumHitTarget)
+        .contentShape(.rect)
+    }
+
+    private var accessibilityValue: Text {
+        selection.map { Text(verbatim: optionTitle($0)) } ?? Text("Nimic ales", comment: "VoiceOver value of an empty choice field.")
     }
 }
 
