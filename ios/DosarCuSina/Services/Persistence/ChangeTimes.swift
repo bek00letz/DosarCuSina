@@ -167,6 +167,7 @@ extension ServiceItem: ChangeTimed {}
 extension MeasurementLog: ChangeTimed {}
 extension Attachment: ChangeTimed {}
 extension Provider: ChangeTimed {}
+extension IssuerLesson: ChangeTimed {}
 
 extension CategoryTemplate: ChangeTimed {
     /// What the person chooses for a built-in category (its place, whether it shows, one box or one

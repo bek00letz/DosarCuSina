@@ -30,8 +30,8 @@ struct CardNumbersKeptOutTests {
     // MARK: Every stored text is listed
 
     @Test func everyStoredTextOfEveryModelIsWordsOrNeverWords() throws {
-        let schema = Schema(versionedSchema: DosarSchemaV15.self)
-        #expect(FreeText.types.count == DosarSchemaV15.models.count, "Every model says which of its texts are words")
+        let schema = Schema(versionedSchema: DosarSchemaV16.self)
+        #expect(FreeText.types.count == DosarSchemaV16.models.count, "Every model says which of its texts are words")
         let textTypes: Set<String> = ["String", "Optional<String>", "Data", "Optional<Data>", "Array<String>"]
         for entity in schema.entities {
             let type = try #require(FreeText.types.first { String(describing: $0) == entity.name }, "\(entity.name) lists its words")

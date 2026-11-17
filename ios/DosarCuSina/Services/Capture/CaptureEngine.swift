@@ -44,13 +44,18 @@ public struct CaptureOptions: Sendable {
     public var ownerID: String?
     /// "Today", for deciding the century of two-digit years. Injectable for tests.
     public var referenceDate: Date = Date()
+    /// What capture learned from what the person saved (`CaptureLessons.book`): the phone's
+    /// readers are told it for a page of an issuer it was learned of.
+    public var lessons: LessonBook = .empty
 
-    public init(useOnDeviceModel: Bool = true, useCloudModel: Bool = false, storeDocument: Bool = true, ownerID: String? = nil, referenceDate: Date = Date()) {
+    public init(useOnDeviceModel: Bool = true, useCloudModel: Bool = false, storeDocument: Bool = true, ownerID: String? = nil, referenceDate: Date = Date(),
+                lessons: LessonBook = .empty) {
         self.useOnDeviceModel = useOnDeviceModel
         self.useCloudModel = useCloudModel
         self.storeDocument = storeDocument
         self.ownerID = ownerID
         self.referenceDate = referenceDate
+        self.lessons = lessons
     }
 }
 
@@ -97,7 +102,7 @@ public final class CaptureEngine: Sendable {
     /// The engine as the app uses it, for what the share extension hands the inbox too.
     public static func standard(componentResolver: any CaptureComponentResolving = CatalogComponentResolver()) -> CaptureEngine {
         CaptureEngine(
-            analyzer: CaptureAnalyzer(specializedParsers: [UtilityInvoiceParser()], componentResolver: componentResolver),
+            analyzer: .standard(componentResolver: componentResolver),
             recognizer: VisionCaptureRecognizer(),
             onDeviceModel: OnDeviceModelExtractor(resolver: componentResolver),
             cloudModel: CloudCaptureExtractor(resolver: componentResolver),
@@ -110,6 +115,8 @@ public final class CaptureEngine: Sendable {
     public func capture(_ request: CaptureRequest) async throws -> CaptureResult {
         var notices: [CaptureNotice] = []
         let options = request.options
+        // The phone's readers, told what was learned of the issuer each page names.
+        let analyzer = self.analyzer.learning(options.lessons)
 
         // 1. Pages and text.
         /// The pages as taken: what is kept. Each is shown as its framing says.
@@ -290,7 +297,7 @@ public final class CaptureEngine: Sendable {
         if case .images(let images) = request.payload, images.count == 1 { isSinglePhoto = true }
         let source = CaptureReadingSource(
             text: text, pages: recognized, barcodes: barcodes, referenceDate: options.referenceDate,
-            modelFields: modelFields, aiFields: aiFields, isSinglePhoto: isSinglePhoto
+            modelFields: modelFields, aiFields: aiFields, isSinglePhoto: isSinglePhoto, lessons: options.lessons
         )
 
         // The kind decided: its fields, from every reader, read as that kind.
@@ -391,6 +398,8 @@ public final class CaptureEngine: Sendable {
     /// that belong on this kind of document are kept, whichever reader found them.
     func settle(_ source: CaptureReadingSource, as kind: CaptureDocumentKind, analysis: CaptureAnalyzer.Analysis?) -> Settled {
         let today = CalendarDay(source.referenceDate)
+        // Read again with the lessons it was first read with.
+        let analyzer = self.analyzer.learning(source.lessons)
         let analysis = analysis ?? (source.pages.isEmpty
             ? analyzer.analyze(text: source.text, barcodes: source.barcodes, referenceDate: source.referenceDate, as: kind)
             : analyzer.analyze(pages: source.pages, barcodes: source.barcodes, referenceDate: source.referenceDate, as: kind))

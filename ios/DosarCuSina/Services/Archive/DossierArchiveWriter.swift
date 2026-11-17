@@ -79,6 +79,7 @@ struct DossierArchiveWriter: Sendable {
         let serviceDTOs = try context.fetch(FetchDescriptor<ServiceItem>()).sorted { $0.name < $1.name }.map(Self.serviceItem)
         let providerDTOs = try context.fetch(FetchDescriptor<Provider>(sortBy: [SortDescriptor(\.createdAt)])).map(Self.provider)
         let measurementDTOs = try context.fetch(FetchDescriptor<MeasurementLog>(sortBy: [SortDescriptor(\.recordedAt)])).map(Self.measurement)
+        let lessonDTOs = try context.fetch(FetchDescriptor<IssuerLesson>()).sorted { $0.id.uuidString < $1.id.uuidString }.map(Self.issuerLesson)
         var assetOrder = FetchDescriptor<Asset>(sortBy: [SortDescriptor(\.createdAt)])
         assetOrder.propertiesToFetch = [\.id]
         let assetIDs = try context.fetch(assetOrder).map(\.id)
@@ -151,6 +152,7 @@ struct DossierArchiveWriter: Sendable {
         try add(DossierV3.Path.providers, try encoder.encode(providerDTOs))
         try add(DossierV3.Path.measurements, try encoder.encode(measurementDTOs))
         try add(DossierV3.Path.attachments, try encoder.encode(attachmentDTOs))
+        try add(DossierV3.Path.issuerLessons, try encoder.encode(lessonDTOs))
 
         let manifest = DossierV3.Manifest(
             format: DossierV3.format,
@@ -161,7 +163,7 @@ struct DossierArchiveWriter: Sendable {
             counts: .init(
                 templates: templateDTOs.count, assets: assetDTOs.count, obligations: obligationDTOs.count,
                 historyEntries: historyDTOs.count, serviceItems: serviceDTOs.count, providers: providerDTOs.count,
-                measurements: measurementDTOs.count, attachments: attachmentDTOs.count
+                measurements: measurementDTOs.count, attachments: attachmentDTOs.count, issuerLessons: lessonDTOs.count
             ),
             checksums: checksums
         )
@@ -273,6 +275,13 @@ struct DossierArchiveWriter: Sendable {
             email: provider.email, address: provider.address, notes: provider.notes, manualRating: provider.manualRating,
             wouldCallAgain: provider.wouldCallAgain, assetIds: (provider.assets ?? []).map { DossierV3.id($0.id) }.sorted(),
             isExample: provider.isExample, createdAt: provider.createdAt, updatedAt: provider.updatedAt, taxID: provider.taxID
+        )
+    }
+
+    private static func issuerLesson(_ lesson: IssuerLesson) -> DossierV3.IssuerLesson {
+        DossierV3.IssuerLesson(
+            id: DossierV3.id(lesson.id), issuerKey: lesson.issuerKey, issuerName: lesson.issuerName, kind: lesson.kindRaw,
+            field: lesson.fieldKey, label: lesson.label, createdAt: lesson.createdAt, updatedAt: lesson.updatedAt
         )
     }
 
