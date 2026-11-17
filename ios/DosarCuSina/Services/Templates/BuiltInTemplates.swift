@@ -261,6 +261,9 @@ public enum BuiltInTemplates {
                                         // three months before it, and on the day.
                                         DocumentType.passport: profile([90, 0], .legal, travelMargin: DocumentType.travelMarginDays(for: DocumentType.passport)),
                                         DocumentType.idCard: profile([90, 30], .legal),
+                                        // Its extension is asked for at least 30 days before it expires
+                                        // (OUG nr. 194/2002): three months ahead, and two weeks before that day.
+                                        DocumentType.residencePermit: profile([90, 45], .legal),
                                         DocumentType.drivingLicence: profile([60, 30], .legal),
                                         DocumentType.euHealthCard: profile([30, 7], .health),
                                         DocumentType.nationalHealthCard: profile([30, 7], .health),
@@ -651,6 +654,12 @@ public enum BuiltInTemplates {
             tint: .indigo,
             isOnHomeByDefault: false,
             sections: [
+                // Read from their passport, identity card or residence permit; the trip check's
+                // rules follow it. Sensitive, so never in search or outside the app.
+                FieldSection(key: "member.identity", title: String(localized: "Cetățenie", comment: "A household member's section: their citizenship."), fields: [
+                    FieldDefinition(key: MemberFields.citizenship, label: String(localized: "Cetățenie"), type: .choice, role: .keyFact, isSensitive: true,
+                                    options: Citizenship.options),
+                ]),
                 // The RCA class follows the driver's history, not a car's: it is the person's.
                 FieldSection(key: "member.driving", title: String(localized: "Asigurare auto"), fields: [
                     FieldDefinition(key: MemberFields.bonusMalus, label: String(localized: "Clasă bonus-malus"), type: .choice, role: .keyFact,

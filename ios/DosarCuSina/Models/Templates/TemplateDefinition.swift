@@ -71,6 +71,16 @@ public struct SectionSingular: Codable, Hashable, Sendable {
         self.name = name
         self.gender = gender
     }
+
+    private enum CodingKeys: String, CodingKey { case name, gender }
+
+    /// A gender this build doesn't know (from a newer one) reads as Romanian's default for a
+    /// thing and keeps the name; the stored text stays as written (`KeptObject`).
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        name = try c.decode(String.self, forKey: .name)
+        gender = GrammaticalGender(stored: try? c.decodeIfPresent(String.self, forKey: .gender))
+    }
 }
 
 /// Grammatical gender of the noun one section of a category is, for words that agree with it
@@ -80,6 +90,11 @@ public enum GrammaticalGender: String, Codable, Sendable, Hashable {
     case feminine
     /// Actul, abonamentul, animalul. Romanian's default for a thing.
     case masculineOrNeuter
+
+    /// A stored value: unknown or missing reads as Romanian's default for a thing.
+    public init(stored raw: String?) {
+        self = raw.flatMap(GrammaticalGender.init(rawValue:)) ?? .masculineOrNeuter
+    }
 }
 
 /// What a category does in the binder, as data, so a custom category can behave like
@@ -322,7 +337,7 @@ public struct TemplateDefinition: Hashable, Sendable, Codable, Identifiable {
 
     /// Revision of the built-in catalog. Bump it whenever a built-in definition
     /// changes so installed copies are upgraded (preferences are kept).
-    public static let builtInCatalogVersion = 21
+    public static let builtInCatalogVersion = 22
 
     public static let customKeyPrefix = "custom."
 

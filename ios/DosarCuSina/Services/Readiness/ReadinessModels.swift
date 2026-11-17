@@ -123,13 +123,16 @@ public enum TripTraveller: Hashable, Sendable, Codable {
 }
 
 /// A trip as the person describes it. Kept on this phone only while the trip is ahead
-/// (`TripPlanStore`), never in the binder.
-public struct TripPlan: Hashable, Sendable, Codable {
+/// (`TripPlanStore`, several at once), never in the binder.
+public struct TripPlan: Hashable, Sendable, Codable, Identifiable {
     public enum Region: String, Hashable, Sendable, Codable, CaseIterable {
         case europeanUnion
         case outsideEU
     }
 
+    /// Which trip it is, among those kept. A trip kept before there could be several had
+    /// none, and is given one when it is read.
+    public var id: UUID
     public var start: CalendarDay
     public var end: CalendarDay
     public var region: Region
@@ -141,6 +144,7 @@ public struct TripPlan: Hashable, Sendable, Codable {
     public var pets: Set<UUID>
 
     public init(
+        id: UUID = UUID(),
         start: CalendarDay,
         end: CalendarDay,
         region: Region,
@@ -149,6 +153,7 @@ public struct TripPlan: Hashable, Sendable, Codable {
         vehicles: Set<UUID> = [],
         pets: Set<UUID> = []
     ) {
+        self.id = id
         self.start = start
         self.end = end
         self.region = region
@@ -160,6 +165,25 @@ public struct TripPlan: Hashable, Sendable, Codable {
 
     /// Whether it can be checked: it ends on or after the day it starts.
     public var isValid: Bool { end >= start }
+
+    /// Whether it is over by `today`: it ended the day before or earlier.
+    public func isOver(by today: CalendarDay) -> Bool { end < today }
+
+    private enum CodingKeys: String, CodingKey { case id, start, end, region, destination, travellers, vehicles, pets }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            id: try c.decodeIfPresent(UUID.self, forKey: .id) ?? UUID(),
+            start: try c.decode(CalendarDay.self, forKey: .start),
+            end: try c.decode(CalendarDay.self, forKey: .end),
+            region: try c.decode(Region.self, forKey: .region),
+            destination: try c.decodeIfPresent(String.self, forKey: .destination) ?? "",
+            travellers: try c.decodeIfPresent(Set<TripTraveller>.self, forKey: .travellers) ?? [],
+            vehicles: try c.decodeIfPresent(Set<UUID>.self, forKey: .vehicles) ?? [],
+            pets: try c.decodeIfPresent(Set<UUID>.self, forKey: .pets) ?? []
+        )
+    }
 }
 
 extension TripPlan.Region {
@@ -173,7 +197,7 @@ extension TripPlan.Region {
     /// What the region asks of people's documents, in one line (the rule the checks apply).
     public var summary: String {
         switch self {
-        case .europeanUnion: String(localized: "Ajunge cartea de identitate, valabilă până te întorci.", comment: "Trip region rule: inside the EU.")
+        case .europeanUnion: String(localized: "Cetățenilor UE le ajunge cartea de identitate sau pașaportul, valabile până te întorci.", comment: "Trip region rule: inside the EU.")
         case .outsideEU: String(localized: "Ai nevoie de pașaport, bun de călătorit până te întorci.", comment: "Trip region rule: outside the EU.")
         }
     }
@@ -229,6 +253,8 @@ public enum ReadinessAction: Hashable, Sendable {
     case addDeadline(assetID: UUID, blueprintKey: String)
     /// Fill in a value the section doesn't have yet (the CIV, the pet's passport).
     case editSection(assetID: UUID)
+    /// Ask a household member's citizenship, kept on them (`MemberFields.citizenship`).
+    case chooseCitizenship(holderID: UUID)
 
     /// Whether it adds something rather than opening what is there.
     public var adds: Bool {

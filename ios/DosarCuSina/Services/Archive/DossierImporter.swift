@@ -19,7 +19,12 @@ import SwiftData
 ///   section, tint, hero or pocket, a row under Date importante, a field value, a
 ///   deadline's status, a kind) comes in raw and is kept.
 ///
-/// - examples a backup carries stay out of a binder that syncs (`keepsExamples`).
+/// - examples a backup carries stay out of a binder that syncs (`keepsExamples`);
+/// - "Înlocuiește tot" replaces the binder in place: a record that is both here and in the
+///   archive is the same record, with the archive's values, and only what the archive doesn't
+///   have goes. A record keeps the copy it is (`copyID`), so on a binder that syncs the
+///   person's other devices see it changed, never one copy gone and another made in its place
+///   (`RecordsMeet`, which would otherwise keep the old copy, then lose it).
 ///
 /// It touches only the context it is given, so a backup is written away from the
 /// main thread (`DossierArchiveService.importPackageAway`).
@@ -32,6 +37,15 @@ struct DossierImporter {
     /// other devices (`PersistenceController.syncs`).
     var keepsExamples = true
     var now = Date()
+    /// Every record the archive's records were written onto, or a built-in it didn't mention:
+    /// what "Înlocuiește tot" keeps.
+    private let kept = KeptRecords()
+
+    private final class KeptRecords {
+        var records: Set<ObjectIdentifier> = []
+        func add(_ record: AnyObject) { records.insert(ObjectIdentifier(record)) }
+        func contains(_ record: AnyObject) -> Bool { records.contains(ObjectIdentifier(record)) }
+    }
 
     private func uuid(_ raw: String?) -> UUID? { raw.flatMap(UUID.init(uuidString:)) }
 
@@ -45,7 +59,6 @@ struct DossierImporter {
     func run() throws -> ArchiveImportResult {
         var result = ArchiveImportResult()
         let phone = try PhoneKeeps.capture(in: context)
-        if mode == .replace { try deleteEverything() }
 
         let definitions = try importTemplates(&result, phone: phone)
         let assets = try importAssets(&result, definitions: definitions, phone: phone)
@@ -55,6 +68,7 @@ struct DossierImporter {
         let serviceItems = try importServiceItems(&result, entries: entries, providers: providers)
         let measurements = try importMeasurements(&result, assets: assets)
         try importAttachments(&result, assets: assets, obligations: obligations, entries: entries, serviceItems: serviceItems, measurements: measurements, providers: providers)
+        if mode == .replace { try removeWhatTheArchiveLacks() }
         // The app's own step inside the import's writer, which gives no change times: what it
         // changes keeps the time it had (the archive's, or the phone's), and the deadline it
         // makes has the time it was made, as at launch (`ChangeOrigin.app`).
@@ -116,6 +130,26 @@ struct DossierImporter {
 
     // MARK: Replace
 
+    /// "Înlocuiește tot", once every record of the archive is written: what the phone has and
+    /// the archive doesn't goes, the records that hang off others first. A record of the archive
+    /// that was here is kept and was written over (`ArchiveMerge.outcome` in `.replace`).
+    private func removeWhatTheArchiveLacks() throws {
+        func remove<T: PersistentModel>(_ type: T.Type) throws {
+            for item in try context.fetch(FetchDescriptor<T>()) where !kept.contains(item) { context.delete(item) }
+        }
+        try remove(Attachment.self)
+        try remove(MeasurementLog.self)
+        try remove(ServiceItem.self)
+        try remove(HistoryEntry.self)
+        try remove(Provider.self)
+        try remove(Obligation.self)
+        try remove(Asset.self)
+        try remove(CategoryTemplate.self)
+    }
+
+    /// How "Înlocuiește tot" worked before it replaced in place: everything deleted first, then
+    /// every record made again (with a new `copyID`). Kept, unused, until replacing in place is
+    /// proven on the person's devices; ask the owner before removing it.
     private func deleteEverything() throws {
         for item in try context.fetch(FetchDescriptor<Attachment>()) { context.delete(item) }
         for item in try context.fetch(FetchDescriptor<MeasurementLog>()) { context.delete(item) }
@@ -127,8 +161,10 @@ struct DossierImporter {
         for item in try context.fetch(FetchDescriptor<CategoryTemplate>()) { context.delete(item) }
     }
 
+    /// The phone's records of `type`, by id: the ones an archive's record is written onto, in
+    /// both modes. Copies of one id not joined yet: the first is the one written onto, and in
+    /// "Înlocuiește tot" the others go.
     private func existing<T: PersistentModel>(_ type: T.Type, id: KeyPath<T, UUID>) throws -> [UUID: T] {
-        guard mode == .merge else { return [:] }
         var map: [UUID: T] = [:]
         for item in try context.fetch(FetchDescriptor<T>()) where map[item[keyPath: id]] == nil {
             map[item[keyPath: id]] = item
@@ -140,7 +176,7 @@ struct DossierImporter {
 
     /// The record an archive's record is written onto, by the one merge rule (`ArchiveMerge`),
     /// or nil when the phone's own copy stays. A new record is made with `make` and inserted.
-    /// Every type of record comes through here, in both modes.
+    /// Every type of record comes through here, in both modes; what it returns is kept.
     private func place<Key: Hashable, Record: ChangeTimed>(
         _ key: Key,
         changedAt: Date?,
@@ -148,17 +184,20 @@ struct DossierImporter {
         _ result: inout ArchiveImportResult,
         make: () -> Record
     ) -> Record? {
-        switch ArchiveMerge.outcome(archive: changeTime(changedAt), here: map[key]?.updatedAt) {
+        switch ArchiveMerge.outcome(archive: changeTime(changedAt), here: map[key]?.updatedAt, mode: mode) {
         case .keepHere:
             result.skipped += 1
+            if let here = map[key] { kept.add(here) }
             return nil
         case .update:
             result.updated += 1
+            if let here = map[key] { kept.add(here) }
             return map[key]
         case .insert:
             let record = make()
             context.insert(record)
             map[key] = record
+            kept.add(record)
             result.inserted += 1
             return record
         }
@@ -169,13 +208,19 @@ struct DossierImporter {
     /// Imports templates and returns every definition in effect after the import, by key.
     private func importTemplates(_ result: inout ArchiveImportResult, phone: PhoneKeeps) throws -> [String: TemplateDefinition] {
         var byKey: [String: CategoryTemplate] = [:]
-        if mode == .merge {
-            for template in try context.fetch(FetchDescriptor<CategoryTemplate>()) where byKey[template.key] == nil {
-                byKey[template.key] = template
-            }
+        for template in try context.fetch(FetchDescriptor<CategoryTemplate>()) where byKey[template.key] == nil {
+            byKey[template.key] = template
         }
+        let mentioned = Set(package.templates.map(\.key))
         for dto in package.templates {
             let catalog = BuiltInTemplates.definition(for: dto.key)
+            // A category of one's own is named as one thing already: its sections take its name,
+            // whatever an archive says one of them is called (`TemplateDefinition.sectionName`).
+            let behavior = dto.behavior.map { stored -> KeptObject<CategoryBehavior> in
+                var cleared = stored
+                cleared.value.singular = nil
+                return cleared
+            }
             // A built-in is the app's, whatever the archive says; anything else is the person's own.
             let definition = catalog ?? phone.guarding(TemplateDefinition(
                 key: dto.key, name: dto.name, summary: dto.summary, symbol: dto.symbol,
@@ -183,12 +228,12 @@ struct DossierImporter {
                 isOnHomeByDefault: dto.isOnHome, isSensitiveByDefault: dto.isSensitive,
                 sections: dto.sections.items, blueprints: dto.blueprints.items, components: dto.components?.items ?? [],
                 pockets: dto.pockets.map { $0.compactMap(SectionPocket.init(rawValue:)) } ?? SectionPocket.standard,
-                behavior: dto.behavior?.value ?? .standard,
+                behavior: behavior?.value ?? .standard,
                 version: 0
             ))
             let isLocked = phone.lock(dto.key, archive: dto.isSensitive, default: catalog?.isSensitiveByDefault ?? false)
             guard let template = place(dto.key, changedAt: dto.updatedAt, in: &byKey, &result, make: {
-                let template = CategoryTemplate(definition: definition, isBuiltIn: catalog != nil, homeOrder: dto.homeOrder)
+                let template = CategoryTemplate(definition: definition, isBuiltIn: catalog != nil, homeOrder: CategoryOrder.place(dto.homeOrder))
                 template.createdAt = clamped(dto.createdAt)
                 return template
             }) else {
@@ -198,20 +243,23 @@ struct DossierImporter {
                 continue
             }
             template.isBuiltIn = catalog != nil
+            // Replaced in place, it was made when the archive's was.
+            if mode == .replace { template.createdAt = clamped(dto.createdAt) }
             template.apply(definition)
             if catalog == nil {
                 // The archive's own sections, deadlines and parts, with any this build can't read.
                 template.keptSections = dto.sections.replacingItems(definition.sections)
                 template.keptBlueprints = dto.blueprints.replacingItems(definition.blueprints)
                 template.keptComponents = (dto.components ?? KeptList()).replacingItems(definition.components)
-                template.keptBehavior = dto.behavior
+                template.keptBehavior = behavior
                 // Its tint, hero and pockets as the archive has them: one from a newer build is
                 // shown as the nearest this build knows and goes out again unchanged.
                 template.tintRaw = dto.tint
                 template.heroStyleRaw = dto.heroStyle
                 template.pocketsRaw = dto.pockets ?? SectionPocket.standard.map(\.rawValue)
             }
-            template.homeOrder = dto.homeOrder
+            // Its place as the archive has it, within the places a binder gives (`CategoryOrder`).
+            template.homeOrder = CategoryOrder.place(dto.homeOrder)
             template.isOnHome = dto.isOnHome
             // As written: a choice from a newer build goes out again unchanged.
             template.boxGroupingRaw = dto.boxGrouping
@@ -220,15 +268,28 @@ struct DossierImporter {
             try template.setLock(isLocked || template.isSensitive)
             template.updatedAt = changeTime(dto.updatedAt)
         }
-        // Built-ins the archive didn't mention.
-        var order = (byKey.values.map(\.homeOrder).max() ?? -1) + 1
-        for definition in BuiltInTemplates.all where byKey[definition.key] == nil {
-            let template = CategoryTemplate(definition: definition, isBuiltIn: true, homeOrder: order)
+        // Built-ins the archive didn't mention: added when missing, and in "Înlocuiește tot" as
+        // if just installed, on the record already here.
+        var order = CategoryOrder.after(byKey.filter { mentioned.contains($0.key) || mode == .merge }.values.map(\.homeOrder))
+        for definition in BuiltInTemplates.all where !mentioned.contains(definition.key) {
+            let template: CategoryTemplate
+            if let here = byKey[definition.key] {
+                guard mode == .replace else { continue }
+                template = here
+                template.isBuiltIn = true
+                template.apply(definition)
+                template.homeOrder = order
+                template.isOnHome = definition.isOnHomeByDefault
+                template.boxGroupingRaw = nil
+            } else {
+                template = CategoryTemplate(definition: definition, isBuiltIn: true, homeOrder: order)
+                context.insert(template)
+                byKey[definition.key] = template
+            }
+            kept.add(template)
             try template.setLock(phone.lock(definition.key, archive: false, default: definition.isSensitiveByDefault))
             // Installed from the catalog, not changed by anyone (`ChangeTimes`).
             template.updatedAt = ChangeTime.unknown
-            context.insert(template)
-            byKey[definition.key] = template
             order += 1
         }
         return byKey.mapValues(\.definition)
@@ -293,7 +354,8 @@ struct DossierImporter {
             obligation.dueMetric = dto.dueMetric
             obligation.keptReminders = dto.reminders
             obligation.remindersCustomized = dto.remindersCustomized ?? false
-            obligation.reminderMinuteOfDay = dto.reminderMinuteOfDay
+            // Within the day, as the page shows it and the reminder fires (`ReminderClock`).
+            obligation.reminderMinuteOfDay = dto.reminderMinuteOfDay.map(ReminderClock.clamped)
             // A rule from a newer build is kept as it was written (`RecurrenceRule.unreadable`), and
             // so is what it wrote inside a rule this build reads (`KeptObject`).
             obligation.keptRecurrence = dto.recurrence
@@ -320,8 +382,9 @@ struct DossierImporter {
             guard let id = uuid(dto.id) else { throw ArchiveError.brokenReference(DossierV3.Path.providers) }
             let archivedSections = dto.assetIds.compactMap { uuid($0).flatMap { assets[$0] } }
             // Both copies of a firm meet by one rule (`FirmCopies`): the newer one's details stand,
-            // and what only the other knows (a detail, a trade, a section) comes along.
-            let here = map[id].map { (details: FirmCopies.details(of: $0), sections: $0.assets ?? []) }
+            // and what only the other knows (a detail, a trade, a section) comes along. In
+            // "Înlocuiește tot" the archive's copy is the firm, whatever the phone knew.
+            let here = mode == .merge ? map[id].map { (details: FirmCopies.details(of: $0), sections: $0.assets ?? []) } : nil
             guard let provider = place(id, changedAt: dto.updatedAt, in: &map, &result, make: {
                 Provider(id: id, name: dto.name)
             }) else {
@@ -523,8 +586,8 @@ struct DossierImporter {
 /// whatever its type: the archive's copy replaces the phone's only when it changed later.
 /// A change time a record doesn't carry (an archive from before version 8 of the database,
 /// for history, line items, readings and documents) is `ChangeTime.unknown`, older than any
-/// change; on a tie the phone's own copy stays. "Înlocuiește tot" empties the phone first,
-/// so every record comes from the archive by the same rule.
+/// change; on a tie the phone's own copy stays. "Înlocuiește tot" writes the archive's copy
+/// over the phone's, whenever it changed, on the same record (`DossierImporter`).
 enum ArchiveMerge {
     enum Outcome: Equatable {
         /// Not on the phone: the archive's copy is added.
@@ -535,8 +598,9 @@ enum ArchiveMerge {
         case keepHere
     }
 
-    static func outcome(archive: Date, here: Date?) -> Outcome {
+    static func outcome(archive: Date, here: Date?, mode: ArchiveImportMode = .merge) -> Outcome {
         guard let here else { return .insert }
+        if mode == .replace { return .update }
         return archive > here ? .update : .keepHere
     }
 }

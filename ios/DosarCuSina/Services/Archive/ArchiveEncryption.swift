@@ -37,6 +37,8 @@ public enum ArchiveEncryption {
     static let noncePrefixSize = 8
     static let tagSize = 16
     static let headerSize = magic.count + 1 + 1 + 4 + saltSize + 4 + noncePrefixSize
+    /// The most chunks one archive has: a chunk's place is four bytes of its nonce.
+    static let maxChunks = Int(UInt32.max) + 1
 
     /// Passwords shorter than this are refused when exporting.
     public static let minimumPasswordLength = 8
@@ -108,6 +110,8 @@ public enum ArchiveEncryption {
         }
 
         private func seal(_ chunk: Data, isLast: Bool) throws {
+            // More chunks than a nonce can count: more than one protected archive holds.
+            guard index < maxChunks else { throw DosarZipEngine.ZipError.tooLargeToWrite }
             let box = try AES.GCM.seal(chunk, using: key, nonce: try nonce(prefix: prefix, index: index), authenticating: header + [isLast ? 1 : 0])
             index += 1
             try inner.write(box.ciphertext + box.tag)
@@ -155,6 +159,8 @@ public enum ArchiveEncryption {
             let sealedChunk = chunkSize + tagSize
             chunkCount = (body + sealedChunk - 1) / sealedChunk
             guard body - (chunkCount - 1) * sealedChunk >= tagSize else { throw Failure.damaged }
+            // More chunks than a nonce can count: larger than any protected archive can be.
+            guard chunkCount <= maxChunks else { throw DosarZipEngine.ZipError.sizeLimitExceeded }
             size = body - chunkCount * tagSize
             key = try deriveKey(password: password, salt: salt, iterations: iterations)
             _ = try chunk(chunkCount - 1)
@@ -218,8 +224,9 @@ public enum ArchiveEncryption {
     }
 
     private static func nonce(prefix: Data, index: Int) throws -> AES.GCM.Nonce {
+        guard let place = UInt32(exactly: index) else { throw Failure.damaged }
         var bytes = prefix
-        bytes.appendUInt32BE(UInt32(index))
+        bytes.appendUInt32BE(place)
         return try AES.GCM.Nonce(data: bytes)
     }
 

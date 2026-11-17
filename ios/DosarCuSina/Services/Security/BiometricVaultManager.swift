@@ -146,6 +146,12 @@ public final class BiometricVaultManager {
         isLocked(sectionIsSensitive: template.isSensitive)
     }
 
+    /// A section is closed right now, by the one answer for its category's lock, whether or not
+    /// the category's record is here (`Asset.isSensitive(template:)`).
+    func isLocked(_ asset: Asset, template: CategoryTemplate?) -> Bool {
+        isLocked(sectionIsSensitive: asset.isSensitive(template: template))
+    }
+
     // MARK: Unlock
 
     /// Asks for Face ID, Touch ID or the passcode. Calls made while a prompt is
@@ -223,6 +229,15 @@ public final class BiometricVaultManager {
     public func confirmSharing(fromLockedCategory isLocked: Bool, reason: String) async -> UnlockResult {
         guard isLocked else { return .success }
         return await authenticateForReveal(reason: reason)
+    }
+
+    /// Asks for Face ID or the passcode before a deadline of a locked category is closed
+    /// („Am rezolvat”, „Gata”), from inside the app or from outside it, when the session isn't
+    /// open; it opens the session, as opening the section would. Snoozing asks nothing
+    /// (`DeadlineChange.asksFaceID`, the one rule). A deadline of an open category closes without asking.
+    public func confirmClosing(inLockedCategory isLocked: Bool, reason: String) async -> UnlockResult {
+        guard DeadlineChange.close.asksFaceID(inLockedCategory: isLocked) else { return .success }
+        return await unlock(reason: reason)
     }
 
     /// Closes the session now.

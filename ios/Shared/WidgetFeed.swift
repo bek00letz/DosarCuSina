@@ -151,7 +151,9 @@ public enum WidgetContent {
                 dueDate: dueDay.startDate(in: calendar),
                 dueKey: dueDay.isoString,
                 deepLink: item.deepLink,
-                canComplete: !item.isSensitive
+                // A widget can't ask for Face ID: where closing asks for it, the row only opens
+                // the app (`DeadlineChange`, the one rule).
+                canComplete: !DeadlineChange.close.asksFaceID(inLockedCategory: item.isSensitive)
             )
         }
         .prefix(max(0, limit))

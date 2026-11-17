@@ -20,6 +20,10 @@ public struct PlannedReminder: Hashable, Sendable, Identifiable {
     public var fingerprint: String
     /// Where tapping the notification goes.
     public var deepLink: URL
+    /// Its deadline's category is locked on this device: „Am rezolvat” opens the app and asks for
+    /// Face ID before it closes the deadline (`DeadlineChange`), „Amână” still works where it is
+    /// (`ReminderActions.protectedCategoryIdentifier`).
+    public var isProtected: Bool = false
 
     public var id: String { identifier }
 }
@@ -196,7 +200,8 @@ public enum ReminderPlanner {
     /// The moment `minuteOfDay` minutes after midnight on `day`, in local time.
     /// Uses calendar components, so daylight-saving changes keep the wall-clock time.
     public static func fireDate(day: CalendarDay, minuteOfDay: Int, calendar: Calendar = .dosar) -> Date {
-        day.moment(atMinute: minuteOfDay, in: calendar)
+        // Within the day, as the page shows it (`ReminderClock`): never a minute of the next one.
+        day.moment(atMinute: ReminderClock.clamped(minuteOfDay), in: calendar)
     }
 
     public static func identifier(obligationId: UUID, suffix: String) -> String {
@@ -272,6 +277,7 @@ public enum ReminderPlanner {
         let isTimeSensitive = daysBefore <= 1 && obligation.reminders.consequence.allowsTimeSensitiveReminders
         let fingerprint = [
             String(Int(fireDate.timeIntervalSince1970)), obligation.dueDay.isoString, title, body, isTimeSensitive ? "ts" : "a",
+            obligation.isSensitive ? "locked" : "open",
         ].joined(separator: "|")
         return PlannedReminder(
             identifier: identifier(obligationId: obligation.id, suffix: identifierSuffix),
@@ -282,7 +288,8 @@ public enum ReminderPlanner {
             body: body,
             isTimeSensitive: isTimeSensitive,
             fingerprint: fingerprint,
-            deepLink: DeepLink.url(for: .obligation(obligation.id))
+            deepLink: DeepLink.url(for: .obligation(obligation.id)),
+            isProtected: obligation.isSensitive
         )
     }
 

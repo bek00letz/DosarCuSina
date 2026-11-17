@@ -174,81 +174,100 @@ extension ReadinessEngine {
         return nil
     }
 
+    /// A traveller's citizenship: what is kept on the member, else what their documents print
+    /// (`Citizenship.of`); for documents filed under no one, what they print. Nil when unknown.
+    static func citizenship(of traveller: TripTraveller, in assets: [ReadinessAsset]) -> String? {
+        let documents = personalDocuments(of: traveller, in: assets).map(\.values)
+        switch traveller {
+        case .member(let id): return Citizenship.of(person: assets.first { $0.id == id }?.values, documents: documents)
+        case .unfiled: return Citizenship.read(fromDocuments: documents)
+        }
+    }
+
+    /// What one traveller needs, by their citizenship and the region (`TravelRules`): the
+    /// citizenship asked first when it isn't known, each document the rules ask for, the
+    /// health card inside the EU, the visa rules outside it.
     static func travellerChecks(_ traveller: TripTraveller, plan: TripPlan, assets: [ReadinessAsset], holderCount: Int, calendar: Calendar) -> [ReadinessItem] {
         let own = personalDocuments(of: traveller, in: assets)
         let key = traveller.key
+        let group = Citizenship.group(of: citizenship(of: traveller, in: assets))
         var items: [ReadinessItem] = []
-        switch plan.region {
-        case .europeanUnion:
-            items.append(identityInsideEU(own, key: key, traveller: traveller, end: plan.end))
+        if group == .unknown {
+            items.append(citizenshipQuestion(for: traveller))
+        }
+        for requirement in TravelRules.requirements(for: group, in: plan.region) {
+            items.append(check(requirement, own: own, key: key, traveller: traveller, end: plan.end, calendar: calendar))
+        }
+        if TravelRules.checksHealthCard(in: plan.region) {
             items.append(healthCard(own, traveller: traveller, assets: assets, holderCount: holderCount, end: plan.end))
-        case .outsideEU:
-            items.append(passportOutsideEU(own, key: key, traveller: traveller, end: plan.end, calendar: calendar))
+        }
+        if TravelRules.remindsOfVisa(in: plan.region) {
+            items.append(reminder("trip.visa.\(key)", TravelWording.visaTitle, TravelWording.visaDetail))
         }
         return items
     }
 
-    /// Inside the EU a valid identity card is enough until its printed expiry; a passport
-    /// does as well, also until its printed expiry (the travel cut-off is for outside the EU).
-    static func identityInsideEU(_ own: [ReadinessAsset], key: String, traveller: TripTraveller, end: CalendarDay) -> ReadinessItem {
-        let id = "trip.identity.\(key)"
-        let cards = documents(of: DocumentType.idCard, in: own)
-        let passports = documents(of: DocumentType.passport, in: own)
-        func latest(_ list: [ReadinessAsset]) -> (ReadinessAsset, CalendarDay)? {
-            list.compactMap { document in expiry(document).map { (document, $0) } }.max { $0.1 < $1.1 }
+    /// The citizenship isn't known: a member is asked it (kept on them, so only once); for
+    /// documents filed under no one there is no one to keep it on yet.
+    static func citizenshipQuestion(for traveller: TripTraveller) -> ReadinessItem {
+        let id = "trip.citizenship.\(traveller.key)"
+        switch traveller {
+        case .member(let member):
+            return ReadinessItem(id: id, status: .missing, title: TravelWording.citizenshipTitle, detail: TravelWording.citizenshipAsked,
+                                 action: .chooseCitizenship(holderID: member))
+        case .unfiled:
+            return ReadinessItem(id: id, status: .missing, title: TravelWording.citizenshipTitle, detail: TravelWording.citizenshipOfUnfiled)
         }
-        if case let (card, until)? = latest(cards), DueDayValidity.covers(through: end, due: until) {
-            return ReadinessItem(id: id, status: .ok, title: typeTitle(DocumentType.idCard),
-                                 detail: String(localized: "Valabilă până pe \(DosarFormat.longDay(until)). Ajunge pentru toată UE.", comment: "Trip check: an ID card valid for the whole trip."),
-                                 action: .open(.asset(card.id)))
-        }
-        if case let (passport, until)? = latest(passports), DueDayValidity.covers(through: end, due: until) {
-            let why = cards.isEmpty
-                ? String(localized: "Valabil până pe \(DosarFormat.longDay(until)). În UE ajunge și pașaportul.", comment: "Trip check: no ID card, but the passport is valid inside the EU.")
-                : String(localized: "Valabil până pe \(DosarFormat.longDay(until)). Ia-l pe el: cartea de identitate nu mai e valabilă la întoarcere.", comment: "Trip check: the ID card ends before return, the passport covers the trip.")
-            return ReadinessItem(id: id, status: .ok, title: typeTitle(DocumentType.passport), detail: why, action: .open(.asset(passport.id)))
-        }
-        if case let (card, until)? = latest(cards) {
-            return ReadinessItem(id: id, status: .problem, title: typeTitle(DocumentType.idCard),
-                                 detail: String(localized: "Expiră pe \(DosarFormat.longDay(until)), înainte să te întorci. Fă-ți alta sau ia un pașaport valabil.", comment: "Trip check: the ID card expires before the end of an EU trip."),
-                                 action: .open(.asset(card.id)))
-        }
-        if let undated = (cards + passports).first {
-            return ReadinessItem(id: id, status: .missing, title: undated.name,
-                                 detail: String(localized: "Nu știu până când e valabil. Adaugă data de expirare.", comment: "Trip check: an identity document without an expiry date."),
-                                 action: .editSection(assetID: undated.id))
-        }
-        return ReadinessItem(id: id, status: .missing, title: typeTitle(DocumentType.idCard),
-                             detail: String(localized: "Nu e în dosar. Adaug-o cu o poză și verific până când e valabilă.", comment: "Trip check: no ID card in the binder."),
-                             action: addDocument(for: traveller))
     }
 
-    /// Outside the EU a passport must still be good for travel when the trip ends: its
-    /// type's margin before it expires, the same cut-off its reminders and urgency use.
-    static func passportOutsideEU(_ own: [ReadinessAsset], key: String, traveller: TripTraveller, end: CalendarDay, calendar: Calendar) -> ReadinessItem {
-        let id = "trip.passport.\(key)"
-        let passports = documents(of: DocumentType.passport, in: own)
-        let dated = passports.compactMap { passport in
-            expiry(passport).map { (passport: passport, expiry: $0, goodUntil: goodForTravelUntil(passport, expiry: $0, calendar: calendar)) }
-        }
-        if let best = dated.max(by: { $0.goodUntil < $1.goodUntil }) {
-            let title = typeTitle(DocumentType.passport)
-            if DueDayValidity.covers(through: end, due: best.goodUntil) {
-                return ReadinessItem(id: id, status: .ok, title: title,
-                                     detail: String(localized: "Bun de călătorit până pe \(DosarFormat.longDay(best.goodUntil)), după ce te întorci.", comment: "Trip check: the passport is good for travel past the end of the trip."),
-                                     action: .open(.asset(best.passport.id)))
+    /// One document of a requirement, as the check weighs it.
+    struct DatedDocument {
+        var document: ReadinessAsset
+        var type: String
+        /// Its type's place in the requirement's order: the lower, the more preferred.
+        var order: Int
+        var expiry: CalendarDay
+        /// Until when it counts: its expiry, or a passport's travel cut-off.
+        var countsUntil: CalendarDay
+    }
+
+    /// One requirement, met by any of its document types: the first type (in the rule's
+    /// order) that covers the whole trip; else the one that lasts longest, which ends too
+    /// early; else one with no expiry written down; else nothing in the binder, to add.
+    /// A passport counts until its travel cut-off where the rule says so (outside the EU),
+    /// the same cut-off its reminders and urgency use; every other document until it expires.
+    static func check(_ requirement: TravelRequirement, own: [ReadinessAsset], key: String, traveller: TripTraveller,
+                      end: CalendarDay, calendar: Calendar) -> ReadinessItem {
+        let id = "trip.\(requirement.need.rawValue).\(key)"
+        var found: [ReadinessAsset] = []
+        var dated: [DatedDocument] = []
+        for (order, type) in requirement.accepted.enumerated() {
+            for document in documents(of: type, in: own) {
+                found.append(document)
+                guard let expiry = expiry(document) else { continue }
+                let countsUntil = requirement.countsTravelCutoff ? goodForTravelUntil(document, expiry: expiry, calendar: calendar) : expiry
+                dated.append(DatedDocument(document: document, type: type, order: order, expiry: expiry, countsUntil: countsUntil))
             }
-            return ReadinessItem(id: id, status: .problem, title: title,
-                                 detail: String(localized: "Bun de călătorit doar până pe \(DosarFormat.longDay(best.goodUntil)). Expiră pe \(DosarFormat.longDay(best.expiry)), iar multe țări nu primesc un pașaport atât de aproape de expirare. Fă-ți altul înainte de plecare.", comment: "Trip check: the passport's travel cut-off falls before the end of a trip outside the EU."),
-                                 action: .open(.asset(best.passport.id)))
         }
-        if let undated = passports.first {
-            return ReadinessItem(id: id, status: .missing, title: undated.name,
-                                 detail: String(localized: "Nu știu până când e valabil. Adaugă data de expirare.", comment: "Trip check: an identity document without an expiry date."),
-                                 action: .editSection(assetID: undated.id))
+        let covering = dated.filter { DueDayValidity.covers(through: end, due: $0.countsUntil) }
+        // The most preferred type first, then the one that lasts longest.
+        if let best = covering.min(by: { ($0.order, $1.countsUntil) < ($1.order, $0.countsUntil) }) {
+            // An earlier choice is in the binder but doesn't last: say why this one is taken.
+            let instead = dated.contains { $0.order < best.order }
+            return ReadinessItem(id: id, status: .ok, title: typeTitle(best.type),
+                                 detail: TravelWording.valid(requirement, type: best.type, until: best.countsUntil, instead: instead),
+                                 action: .open(.asset(best.document.id)))
         }
-        return ReadinessItem(id: id, status: .missing, title: typeTitle(DocumentType.passport),
-                             detail: String(localized: "Nu e în dosar. În afara UE ai nevoie de pașaport. Adaugă-l cu o poză și verific până când e bun.", comment: "Trip check: no passport for a trip outside the EU."),
+        // The one that lasts longest, the most preferred type on a tie.
+        if let best = dated.min(by: { ($1.countsUntil, $0.order) < ($0.countsUntil, $1.order) }) {
+            return ReadinessItem(id: id, status: .problem, title: typeTitle(best.type),
+                                 detail: TravelWording.ends(requirement, type: best.type, expiry: best.expiry, goodUntil: best.countsUntil),
+                                 action: .open(.asset(best.document.id)))
+        }
+        if let undated = found.first {
+            return ReadinessItem(id: id, status: .missing, title: undated.name, detail: TravelWording.undated, action: .editSection(assetID: undated.id))
+        }
+        return ReadinessItem(id: id, status: .missing, title: TravelWording.title(of: requirement), detail: TravelWording.missing(requirement),
                              action: addDocument(for: traveller))
     }
 
@@ -712,7 +731,7 @@ extension ReadinessAsset {
             let template = templates[asset.templateKey]
             return ReadinessAsset(
                 id: asset.id, name: asset.name, templateKey: asset.templateKey,
-                role: template?.behavior.role, parentId: asset.parent?.id, isSensitive: template?.isSensitive ?? false,
+                role: template?.behavior.role, parentId: asset.parent?.id, isSensitive: asset.isSensitive(template: template),
                 values: asset.values, obligations: obligations, otherObligations: others,
                 historyCount: (asset.history ?? []).count,
                 documentKinds: (asset.attachments ?? []).filter { !$0.isArchived }.map(\.kind),

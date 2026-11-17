@@ -1110,6 +1110,9 @@
     "Actele celuilalt șofer" : {
       "comment" : "Claim photo: the other driver's papers."
     },
+    "Actele și termenele rămân în dosar. Se șterge doar planul călătoriei." : {
+      "comment" : "What forgetting a trip removes."
+    },
     "Actele stau grupate pe persoane." : {
       "comment" : "Place picker: under „Persoană nouă”."
     },
@@ -1136,6 +1139,9 @@
     },
     "Actul e salvat." : {
 
+    },
+    "Actul locuinței (contract de închiriere sau de proprietate)" : {
+      "comment" : "What renewing a residence permit asks: proof of where one lives."
     },
     "Actul locuinței (contract sau extras de carte funciară)" : {
 
@@ -1207,6 +1213,9 @@
     },
     "Adaugă numărul pașaportului. Fără el animalul nu trece granița." : {
       "comment" : "Trip check: no pet passport number."
+    },
+    "Adaugă o călătorie" : {
+
     },
     "Adaugă o notă" : {
       "comment" : "Toast after a chore's Gata: opens a note for that completion."
@@ -1352,9 +1361,6 @@
     "Aici nu se notează vizite" : {
       "comment" : "The visit form opened for a section whose category has none."
     },
-    "Ajunge cartea de identitate, valabilă până te întorci." : {
-      "comment" : "Trip region rule: inside the EU."
-    },
     "Al cui e?" : {
       "comment" : "Title of the step that asks whose a typed-in document is."
     },
@@ -1471,6 +1477,9 @@
     },
     "Alt termen" : {
       "comment" : "Adds an obligation that isn't in the suggestions."
+    },
+    "Altă călătorie" : {
+      "comment" : "Starts the questions for another trip."
     },
     "Altă oră" : {
       "comment" : "Reminder time choice: a time of this deadline's own."
@@ -2306,6 +2315,9 @@
     "Câine" : {
 
     },
+    "Călătoriile tale" : {
+
+    },
     "Calorifere" : {
 
     },
@@ -2374,6 +2386,9 @@
     },
     "Carte de identitate" : {
 
+    },
+    "Carte de identitate sau pașaport" : {
+      "comment" : "Trip check: an EU citizen's identity document, either one."
     },
     "Carte verde" : {
 
@@ -2495,7 +2510,7 @@
       "comment" : "Settings section: the person's own categories."
     },
     "Caută" : {
-      "comment" : "Tab: search.\nTitle of the search tab."
+      "comment" : "Search field of a long list of choices.\nTab: search.\nTitle of the search tab."
     },
     "Caută orice din dosar" : {
       "comment" : "Search empty state title."
@@ -2592,6 +2607,9 @@
     },
     "Ce cere țara pentru animale" : {
       "comment" : "Trip reminder: rules for pets outside the EU."
+    },
+    "Ce cetățenie are %@? De ea depind actele cu care călătorește." : {
+      "comment" : "Asks a household member's citizenship, from the trip check. The argument is their name."
     },
     "Ce cuprinde" : {
       "comment" : "Istoric record: the lines of a bill or a payment."
@@ -2752,8 +2770,14 @@
     "certificatul de semnătură electronică" : {
 
     },
+    "Cetățenia" : {
+      "comment" : "Title of the sheet that asks a person's citizenship.\nTrip check: a traveller's citizenship, not known yet."
+    },
     "Cetățenie" : {
-
+      "comment" : "A household member's section: their citizenship."
+    },
+    "Cetățenilor UE le ajunge cartea de identitate sau pașaportul, valabile până te întorci." : {
+      "comment" : "Trip region rule: inside the EU."
     },
     "Cheia merge. Documentele scanate vor fi citite mai bine." : {
       "comment" : "AI key test: valid."
@@ -2772,6 +2796,9 @@
     },
     "Cheile stau doar pe acest telefon. Un act ajunge la serviciul ales doar când apeși „Citește mai bine” pe el sau, dacă alegi mai sus, când telefonul nu e sigur ce a citit." : {
       "comment" : "Footer of the AI section."
+    },
+    "China" : {
+      "comment" : "A citizenship: China."
     },
     "Chiriaș" : {
 
@@ -2980,6 +3007,9 @@
     "Completezi ce trebuie, apoi pun actul acolo." : {
       "comment" : "Place picker: a new section is made first."
     },
+    "Confirmă că ești tu ca să bifezi termenul protejat." : {
+      "comment" : "Face ID reason before a deadline of a locked category is closed from a reminder, Siri or Shortcuts."
+    },
     "Confirmă că ești tu." : {
       "comment" : "Face ID reason when changing a lock."
     },
@@ -3067,6 +3097,9 @@
     "Copia de siguranță a fost făcută de o versiune mai nouă a aplicației. Actualizează aplicația și încearcă din nou." : {
       "comment" : "Backup: made by a newer version."
     },
+    "Copia de siguranță ar ocupa prea mult loc pe telefon odată deschisă. Fă copia din nou din aplicație și încearcă iar." : {
+      "comment" : "Backup: its files together would take too much room once unpacked."
+    },
     "Copia de siguranță conține de două ori fișierul %@. Fă copia din nou din aplicație." : {
       "comment" : "Backup: a file appears twice inside it."
     },
@@ -3084,6 +3117,9 @@
     },
     "Copia de siguranță e scrisă într-un fel pe care aplicația nu îl citește. Actualizează aplicația și încearcă din nou." : {
       "comment" : "Backup: compressed in a way the app can't read."
+    },
+    "Copia de siguranță nu e scrisă cum o scrie aplicația: fișierele din ea se suprapun. Fă copia din nou din aplicație și încearcă iar." : {
+      "comment" : "Backup: files inside it overlap, so it wasn't written by the app."
     },
     "Copia de siguranță nu s-a putut deschide. Fișierul pare deteriorat; fă copia din nou și încearcă iar." : {
       "comment" : "Backup: its contents couldn't be unpacked."
@@ -3542,6 +3578,9 @@
     "Deschide Dosar cu Șină ca să bifezi." : {
 
     },
+    "Deschide Dosar cu Șină ca să confirmi cu Face ID." : {
+
+    },
     "Deschide Dosar cu Șină ca să vezi termenele." : {
 
     },
@@ -3758,8 +3797,14 @@
     "Dovada" : {
 
     },
+    "Dovada asigurării de sănătate" : {
+      "comment" : "What renewing a residence permit asks: health insurance."
+    },
     "Dovada că ai depus declarația, din Spațiul Privat Virtual." : {
       "comment" : "Am rezolvat: which paper, for the rental income declaration."
+    },
+    "Dovada scopului șederii (contract de muncă, adeverință de student)" : {
+      "comment" : "What renewing a residence permit asks: proof of why one stays."
     },
     "După ce o semnați amândoi. Dacă nu vă înțelegeți, sună la poliție." : {
       "comment" : "Claim photo: the signed joint report."
@@ -3996,6 +4041,9 @@
     "Expiră pe %@, înainte să te întorci. Cere altul de la casa de asigurări de sănătate." : {
       "comment" : "Trip check: the European health card ends before the end of the trip."
     },
+    "Expiră pe %@, înainte să te întorci. Cere prelungirea cu cel puțin 30 de zile înainte să expire." : {
+      "comment" : "Trip check: the residence permit expires before the end of the trip."
+    },
     "Expiră pe %@, înainte să te întorci. Fă-l din nou cu cel puțin 21 de zile înainte de plecare." : {
       "comment" : "Trip check: the rabies vaccine ends during the trip."
     },
@@ -4004,6 +4052,12 @@
     },
     "Expiră pe %@, înainte să te întorci. Fă-ți alta sau ia un pașaport valabil." : {
       "comment" : "Trip check: the ID card expires before the end of an EU trip."
+    },
+    "Expiră pe %@, înainte să te întorci. Fă-ți altul înainte de plecare." : {
+      "comment" : "Trip check: the passport expires before the end of an EU trip, for a citizen of a country outside the EU."
+    },
+    "Expiră pe %@, înainte să te întorci. Fă-ți altul sau ia o carte de identitate valabilă." : {
+      "comment" : "Trip check: the passport, an EU citizen's only identity document, expires before the end of an EU trip."
     },
     "Expiră pe %@, înainte să te întorci. Reînnoiește-l înainte de plecare." : {
       "comment" : "Trip check: the RCA ends during the trip."
@@ -4149,6 +4203,9 @@
     },
     "Fără alergii cunoscute" : {
 
+    },
+    "Fără cetățenie (apatrid)" : {
+      "comment" : "A citizenship choice: none, stateless."
     },
     "Fără cip" : {
 
@@ -5820,9 +5877,6 @@
     "Nu e în dosar pentru cine pleacă. Adaugă permisul celui care conduce." : {
       "comment" : "Trip check: no driving licence among the people going."
     },
-    "Nu e în dosar. Adaug-o cu o poză și verific până când e valabilă." : {
-      "comment" : "Trip check: no ID card in the binder."
-    },
     "Nu e în dosar. Adaugă data ca să verific." : {
       "comment" : "Trip check: no ITP deadline."
     },
@@ -5837,6 +5891,12 @@
     },
     "Nu e în dosar. Cumpărătorul poate cere să-l vadă." : {
       "comment" : "Sale check: no RCA deadline."
+    },
+    "Nu e în dosar. Fără cetățenie europeană, ai nevoie de pașaport și în UE. Adaugă-l cu o poză și verific până când e valabil." : {
+      "comment" : "Trip check: no passport for an EU trip, for a citizen of a country outside the EU."
+    },
+    "Nu e în dosar. Fără el nu poți intra înapoi în țară. Adaugă-l cu o poză și verific până când e valabil." : {
+      "comment" : "Trip check: no residence permit in the binder."
     },
     "Nu e în dosar. Fără RCA valabil nu ai voie să ieși cu mașina." : {
       "comment" : "Trip check: no RCA deadline."
@@ -5895,11 +5955,17 @@
     "Nu știu cât timp e valabil, așa că nu îți amintesc de el." : {
       "comment" : "Footnote under the issue date of a document with no known validity, e.g. a cazier fiscal."
     },
+    "Nu știu ce cetățenie are titularul. Mută actele la persoana lor și spune-mi ce cetățenie are." : {
+      "comment" : "Trip check: documents filed under no one, with no citizenship known."
+    },
     "Nu știu până când e valabil. Adaugă data de expirare." : {
       "comment" : "Trip check: an identity document without an expiry date."
     },
     "Nu știu până când e valabilă. Adaugă termenul poliței." : {
       "comment" : "Claim check: the policy's deadline isn't in the binder."
+    },
+    "Nu sunt în dosar. Adaugă unul dintre ele cu o poză și verific până când e valabil." : {
+      "comment" : "Trip check: neither an ID card nor a passport in the binder, for an EU citizen."
     },
     "Nu sunt sigur ce am citit. %@ poate citi actul mai bine, cu cheia ta. Fără un da, poza rămâne pe telefon." : {
       "comment" : "Capture review: why the photo would be sent, and that it stays without a yes. The argument is the AI provider's name."
@@ -6283,6 +6349,9 @@
     "Paginile scanate de peste un an devin mai mici. Se citesc la fel de bine." : {
       "comment" : "Explains shrinking old scans."
     },
+    "Palestina" : {
+      "comment" : "A citizenship: Palestine."
+    },
     "Până alegi din nou, toate secțiunile cer %@. Păstrează protecțiile, apoi oprește-le pe cele pe care nu le vrei." : {
       "comment" : "Settings notice: what happens while the section locks couldn't be read, and what to do."
     },
@@ -6362,6 +6431,9 @@
     },
     "Pașaportul vechi" : {
 
+    },
+    "Pașaportul, valabil" : {
+      "comment" : "What renewing a residence permit asks: a valid passport."
     },
     "Păstrat, ascuns" : {
       "comment" : "A secret field that already holds a code."
@@ -6531,11 +6603,17 @@
     "Permis de conducere" : {
 
     },
+    "Permis de ședere" : {
+
+    },
     "permisul de conducere" : {
 
     },
     "Permisul de conducere și cartea de identitate" : {
       "comment" : "Claim paper: the driver's papers."
+    },
+    "permisul de ședere" : {
+
     },
     "Permisul vechi" : {
 
@@ -6973,6 +7051,12 @@
     },
     "Reparație" : {
       "comment" : "A repair's title in Istoric."
+    },
+    "Republica Congo" : {
+      "comment" : "A citizenship: the Republic of the Congo."
+    },
+    "Republica Democratică Congo" : {
+      "comment" : "A citizenship: the Democratic Republic of the Congo."
     },
     "Restul detaliilor le completezi oricând din pagina secțiunii, cu Editează." : {
       "comment" : "Footnote when a category has no essential fields."
@@ -7552,6 +7636,9 @@
     "Spune ce poți face cu el." : {
 
     },
+    "Spune-mi ce cetățenie are, ca să știu ce acte îi trebuie." : {
+      "comment" : "Trip check: a member's citizenship isn't known; tapping asks it."
+    },
     "Stație ITP" : {
 
     },
@@ -7569,6 +7656,9 @@
     },
     "Șterge actul" : {
       "comment" : "Deletes a personal document from its page."
+    },
+    "Șterge călătoria" : {
+      "comment" : "Forgets a kept trip and its checklist."
     },
     "Șterge categoria" : {
 
@@ -7623,6 +7713,9 @@
     },
     "Ștergi „%@”?" : {
       "comment" : "Title of the delete confirmation for a section."
+    },
+    "Ștergi călătoria?" : {
+      "comment" : "Asks before forgetting a kept trip."
     },
     "Ștergi categoria „%@”?" : {
       "comment" : "Asks before deleting a category of one's own."
@@ -7800,6 +7893,9 @@
     "Termenul e acum pe %@." : {
 
     },
+    "Termenul e într-o categorie protejată. Deschide-l în Dosar cu Șină și confirmă cu Face ID ca să-l bifezi." : {
+
+    },
     "Termenul nu mai există" : {
 
     },
@@ -7865,6 +7961,9 @@
     },
     "Toate" : {
       "comment" : "Menu with actions for every repair of one kind."
+    },
+    "Toate călătoriile" : {
+      "comment" : "Shows every kept trip."
     },
     "Toate categoriile se văd" : {
       "comment" : "Settings row: every category shows on the binder."
@@ -8124,6 +8223,9 @@
     "Unde stă" : {
 
     },
+    "Unele țări cer viză sau o autorizație de călătorie, după cetățenie. Verifică ce cere țara înainte de plecare." : {
+      "comment" : "Trip reminder: visa rules depend on the destination and the citizenship."
+    },
     "Unele țări din afara UE cer și un test de anticorpi, făcut cu luni înainte. Întreabă medicul veterinar." : {
       "comment" : "Trip reminder: rabies antibody test for some countries."
     },
@@ -8208,6 +8310,9 @@
     },
     "Valabil până pe %@. Cumpărătorul are nevoie de el ca să înmatriculeze mașina." : {
       "comment" : "Sale check: the ITP is valid."
+    },
+    "Valabil până pe %@. Ia-l cu tine: îți trebuie ca să intri înapoi în țară." : {
+      "comment" : "Trip check: the residence permit covers the trip; it is needed to come back."
     },
     "Valabil până pe %@. Ia-l pe el: cartea de identitate nu mai e valabilă la întoarcere." : {
       "comment" : "Trip check: the ID card ends before return, the passport covers the trip."
@@ -8326,6 +8431,9 @@
     },
     "Vinzi mașina" : {
       "comment" : "Situation: selling the car."
+    },
+    "Viza pentru țara în care mergi" : {
+      "comment" : "Trip reminder: look up the destination's visa rules."
     },
     "Vizită" : {
       "comment" : "History entry title when nothing was listed"
