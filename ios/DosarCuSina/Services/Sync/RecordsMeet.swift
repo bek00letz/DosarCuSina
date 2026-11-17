@@ -24,8 +24,15 @@ import SwiftData
 ///   it one, when it meets another copy: a device can't tell which of two equal copies another
 ///   device made, and two devices naming the same copy differently would decide differently.
 ///   This device made every copy the store's history doesn't show arriving from iCloud
-///   (`PersistenceController.localAuthor`). A group with a copy not yet named by its device
-///   waits until that copy's name arrives.
+///   (`PersistenceController.cameFromAnotherDevice`). A group with a copy not yet named by its
+///   device waits until that copy's name arrives, however long that is: a copy whose device
+///   is gone (or never runs version 13) stays a copy, and nothing of either is lost. No device
+///   names another's copy, not even once the binder has all arrived: no device can know that no
+///   other is naming it at the same moment, two names given at once decide differently, and
+///   then each device deletes the copy the other kept. A name drawn from what the copy holds
+///   doesn't help either: two devices may hold different versions of it while an edit travels,
+///   and two copies alike in everything would draw the same name. The copies stay until the
+///   person deletes one.
 ///
 /// It is the app's own step: what it writes gives no change time (`ChangeOrigin.restoring`),
 /// and it runs at launch, before the repair list, and with every change that arrives from
@@ -113,15 +120,15 @@ enum RecordsMeet {
         (record as? any ChangeTimed)?.updatedAt ?? ChangeTime.unknown
     }
 
-    /// The records iCloud brought: every record the store's history shows inserted by someone
-    /// else than this app. A history that can't be read names nothing as this device's own, so
-    /// no copy is ever named by a device that didn't make it.
+    /// The records iCloud brought: every record the store's history shows inserted from another
+    /// device (`PersistenceController.cameFromAnotherDevice`). A history that can't be read names
+    /// nothing as this device's own, so no copy is ever named by a device that didn't make it.
     private static func arrivedFromICloud(in context: ModelContext) throws -> Set<PersistentIdentifier> {
         guard let transactions = try? context.fetchHistory(HistoryDescriptor<DefaultHistoryTransaction>()) else {
             return Set(try UndoableRecords.ordered.flatMap { try all(of: $0, in: context) })
         }
         var arrived: Set<PersistentIdentifier> = []
-        for transaction in transactions where transaction.author != nil && transaction.author != PersistenceController.localAuthor {
+        for transaction in transactions where PersistenceController.cameFromAnotherDevice(author: transaction.author) {
             for change in transaction.changes {
                 if case .insert = change { arrived.insert(change.changedPersistentIdentifier) }
             }

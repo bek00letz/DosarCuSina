@@ -43,7 +43,7 @@ public struct RepeatChoice: Hashable, Sendable {
 
     public init(frequency: Frequency, every: Int = 1, anchor: RecurrenceAnchor? = nil) {
         self.frequency = frequency
-        self.every = max(1, every)
+        self.every = frequency.unit.map { RecurrenceInterval.allowed(every, in: $0) } ?? max(1, every)
         self.anchor = anchor ?? frequency.unit.map(Self.usualAnchor) ?? .dueDate
     }
 
@@ -98,10 +98,11 @@ public struct RepeatChoice: Hashable, Sendable {
         }
     }
 
-    /// The numbers the stepper offers, holding a larger number a rule already has.
+    /// The numbers the stepper offers, holding a larger number a rule already has, never past
+    /// the longest an interval can be (`RecurrenceInterval.longest(in:)`).
     public var everyRange: ClosedRange<Int> {
         guard let unit = frequency.unit else { return 1...1 }
-        return 1...max(Self.upperBound(for: unit), every)
+        return 1...min(max(Self.upperBound(for: unit), every), RecurrenceInterval.longest(in: unit))
     }
 
     /// The number „+” or „−” gives after `value` (a tap, a held press or a VoiceOver swipe), in
