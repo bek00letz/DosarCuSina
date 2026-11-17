@@ -708,7 +708,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Control stomatologic | Te anunț cu 7 zile înainte și în ziua termenului. — on its page: La fiecare 6 luni, de la data la care l-ai făcut. |
 | Rapel antitetanos | Te anunț cu o lună înainte și în ziua termenului. — on its page: La fiecare 10 ani, de la data la care l-ai făcut. |
 | Vaccin antigripal | Te anunț cu 7 zile înainte și în ziua termenului. — on its page: În fiecare an, pe 15 octombrie. |
-| Card european de sănătate | Te anunț cu o lună și cu 7 zile înainte. — on its page: La fiecare 2 ani, de la data la care l-ai făcut. |
+| Card european de sănătate | Te anunț cu o lună și cu 7 zile înainte. — on its page: Nu se repetă. |
 
 ### Garanții (`purchase`)
 
