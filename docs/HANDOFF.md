@@ -103,6 +103,14 @@ Newest first. Copy this template:
 
 Never write security findings, crash traces or local paths here. See [SECURITY.md](../SECURITY.md).
 
+### 2026-11-17 — owner (with Claude) — `claude/pad-reading`
+- **Did:** a PAD policy is read like the other policies: a digital PDF by where its lines are printed (`PDFTextLines`, a row where labels and values cross read word by word), the pool as a PAD's insurer whoever sold it (`InsuranceCover.soleInsurers`) with the tax ID from its own block, the insured sum and the home insured (new capture fields), the renewed policy's number never taken, a series joined by a hyphen ("RA-000"), "UAT" as a town; a home's policy goes to the home at that address (`SubscriptionMatcher.home(at:among:)`, shared with bills) and fills an empty home address.
+- **Tests:** `PADReadingTests` on a made-up PAD PDF built in the test (`PADPolicyFixture`); run on GitHub's runner. Locally the architecture check.
+- **Way back:** a PDF that gives no lines is read by its plain text, as before.
+- **Left open:** the insured sum is shown in the review but kept on no field of the home (its template has none); the owner's call whether to add one. Other digital PDFs (bills, contracts) are now read by their lines too: worth a look on a few real ones.
+- **Next:** read a few real bills and contracts from PDF on a phone and compare with before.
+- **Decisions:** "A PAD is read like the other policies" (2026-11-17).
+
 ### 2026-11-17 — owner (with Claude) — `claude/imports-and-arrival`
 - **Did:** values from backups and other devices are held where they are read: a repeat (a hundred years at most, the stepper too), a counter's step, a category's place (`CategoryOrder`), a reminder's time (also when it fires), a pace projected centuries away (estimated by time), a protected archive with more chunks than can be counted (refused). A category of one's own takes no `singular` from a backup; an unknown gender keeps the name. Archives: a total unpacked cap (8 GB) and overlapping files refused, both ways, before anything is read; a backup left in the temporary folder goes at launch (exports now wait in an `export-…` folder of their own). "Înlocuiește tot" replaces in place, keeping each record's copy. Arrival: a relaunch mid first download still waits; a syncing store waits for this launch's first download; one rule for who made a change (`PersistenceController.cameFromAnotherDevice`). The share notice stays while the inbox can't be read.
 - **Tests:** `ValuesFromOutsideTests`, two new arrival tests in `SyncAccountAndContainersTests`, `theNoticeStaysWhileTheInboxCantBeRead`; run on GitHub's runner. Locally only the architecture check.
