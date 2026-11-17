@@ -28,9 +28,12 @@ struct UpcomingActions {
     /// kind asks nothing (a chore, `CompletionShape.offersNoteAfter`) and the screen can show
     /// the note sheet, the toast also offers "Adaugă o notă", which hands `addNote` the
     /// completion's entry in Istoric and the toast, to show again if no note is saved.
-    func complete(_ obligation: Obligation, title: String, addNote: (@MainActor (UUID, DSToast) -> Void)? = nil) throws -> DSToast {
+    /// `cycle` is the due day the person saw: closed meanwhile, nothing is done
+    /// (`ObligationActionError.cycleClosed`).
+    func complete(_ obligation: Obligation, title: String, cycle: CalendarDay? = nil,
+                  addNote: (@MainActor (UUID, DSToast) -> Void)? = nil) throws -> DSToast {
         let actions = ObligationActions(context: context, calendar: calendar)
-        let done = try actions.complete(obligation)
+        let done = try actions.complete(obligation, cycle: cycle)
         let message: LocalizedStringResource
         if obligation.status == .active {
             let next = DosarFormat.longDay(obligation.dueDay)
@@ -61,5 +64,14 @@ struct UpcomingActions {
 
     static func failureToast(_ error: Error) -> DSToast {
         .failure(error)
+    }
+
+    /// The toast for a quick completion that failed, nil when there is nothing to say: the
+    /// cycle the person tapped was already closed (the second of two quick taps, whose first
+    /// toast is showing, or a row a reminder closed a moment before), so nothing was done and
+    /// the list already shows what is next.
+    static func quietFailureToast(_ error: Error) -> DSToast? {
+        if (error as? ObligationActionError) == .cycleClosed { return nil }
+        return .failure(error)
     }
 }

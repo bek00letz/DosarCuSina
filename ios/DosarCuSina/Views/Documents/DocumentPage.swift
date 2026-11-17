@@ -59,6 +59,10 @@ private struct PersonalDocumentContent: View {
         let picture = DocumentPageFacts.currentPicture(of: document)
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.xl) {
+                // Renewed with "Am rezolvat": the new one is a document of its own.
+                if let replacement = DocumentPageFacts.replacement(of: document) {
+                    DocumentReplacementCard(document: document, replacement: replacement) { dismiss() }
+                }
                 if let picture {
                     DocumentPictureSection(attachment: picture, toast: $toast)
                 } else {
@@ -102,13 +106,7 @@ private struct PersonalDocumentContent: View {
                 toast = .undo(moved.toastTitle, receipt: moved.receipt)
             }
         }
-        .confirmationDialog(Text("Ștergi „\(document.name)”?", comment: "Title of the delete confirmation for a section."),
-                            isPresented: $isConfirmingDelete, titleVisibility: .visible) {
-            Button(role: .destructive, action: delete) { Text("Șterge", comment: "Confirm deleting.") }
-            Button(role: .cancel) {} label: { Text("Păstrează", comment: "Cancel a delete.") }
-        } message: {
-            Text("Poza actului, ce ai scris despre el și reînnoirea lui se șterg de pe acest telefon.", comment: "Delete confirmation message for a personal document.")
-        }
+        .personalDocumentDeletion(document, isPresented: $isConfirmingDelete) { dismiss() }
         .dsToast($toast)
         .userErrorAlert($error)
     }
@@ -119,16 +117,86 @@ private struct PersonalDocumentContent: View {
         return [DSMoreAction(id: "move", title: Text("Mută la…", comment: "Menu item that files something under another parent."),
                              systemImage: "arrow.turn.up.right") { isMoving = true }]
     }
+}
+
+extension View {
+    /// Asks before deleting a personal document, then deletes it through `AssetActions` and
+    /// announces its undo; `onDeleted` closes the screen. The one way a personal document is
+    /// deleted from a screen: its page's „Șterge actul” and a renewed one's „Șterge actul vechi”.
+    func personalDocumentDeletion(_ document: Asset, isPresented: Binding<Bool>, onDeleted: @escaping () -> Void) -> some View {
+        modifier(PersonalDocumentDeletion(document: document, isPresented: isPresented, onDeleted: onDeleted))
+    }
+}
+
+private struct PersonalDocumentDeletion: ViewModifier {
+    let document: Asset
+    @Binding var isPresented: Bool
+    let onDeleted: () -> Void
+
+    @Environment(\.modelContext) private var context
+    @Environment(\.announce) private var announce
+    @State private var error: UserFacingError?
+
+    func body(content: Content) -> some View {
+        content
+            .confirmationDialog(Text("Ștergi „\(document.name)”?", comment: "Title of the delete confirmation for a section."),
+                                isPresented: $isPresented, titleVisibility: .visible) {
+                Button(role: .destructive, action: delete) { Text("Șterge", comment: "Confirm deleting.") }
+                Button(role: .cancel) {} label: { Text("Păstrează", comment: "Cancel a delete.") }
+            } message: {
+                Text("Poza actului, ce ai scris despre el și reînnoirea lui se șterg de pe acest telefon.", comment: "Delete confirmation message for a personal document.")
+            }
+            .userErrorAlert($error)
+    }
 
     private func delete() {
         let name = document.name
         do {
             let receipt = try AssetActions(context: context).delete(document)
             announce(.undoDeletion(LocalizedStringResource("Am șters „\(name)”.", comment: "Toast after deleting a personal document."), receipt: receipt))
-            dismiss()
+            onDeleted()
         } catch {
             self.error = UserFacingError(error)
         }
+    }
+}
+
+/// A personal document replaced by a new one (`DocumentPageFacts.replacement(of:)`: its renewal
+/// closed with "Am rezolvat"): the new one has another series and number, so it is added as a
+/// document of its own, for the same holder (`AddPersonalDocumentFlow`, through the shell), and
+/// the old one can be deleted, with its undo. On the document's page and its deadline's page,
+/// in its completion kind's words (`CompletionShape.Replacement`). "Adaugă actul nou" goes once
+/// the new one is in the binder (`DocumentPageFacts.hasSuccessor`).
+struct DocumentReplacementCard: View {
+    let document: Asset
+    let replacement: CompletionShape.Replacement
+    /// After the old one is deleted: the screen showing it closes.
+    let onDeleted: () -> Void
+
+    @Environment(ShellRouter.self) private var router
+    @State private var isConfirmingDelete = false
+
+    var body: some View {
+        DSCard {
+            VStack(alignment: .leading, spacing: DS.Space.s) {
+                Text(verbatim: replacement.title)
+                    .dsFont(.headline)
+                    .accessibilityAddTraits(.isHeader)
+                Text(verbatim: replacement.message)
+                    .dsFont(.subheadline)
+                    .foregroundStyle(DS.Palette.secondaryLabel)
+                    .fixedSize(horizontal: false, vertical: true)
+                if !DocumentPageFacts.hasSuccessor(document) {
+                    DSSecondaryButton(verbatim: replacement.add, systemImage: "plus") {
+                        router.present(.addPersonalDocument(holderID: document.parent?.id))
+                    }
+                }
+                DSSecondaryButton(verbatim: replacement.delete, systemImage: "trash", role: .destructive) {
+                    isConfirmingDelete = true
+                }
+            }
+        }
+        .personalDocumentDeletion(document, isPresented: $isConfirmingDelete, onDeleted: onDeleted)
     }
 }
 
@@ -180,13 +248,17 @@ struct DocumentValuesCard: View {
 
     /// How urgent the day it stops being valid is, by the rule of the deadline it drives.
     private func badge(_ day: CalendarDay) -> DSStatusBadge {
+        // Replaced by a new one ("Am rezolvat" on its renewal): expired, whatever its date says.
+        if document.wasReplaced { return .replaced }
         let today = CalendarDay(Date(), calendar: calendar)
         let rule = DateUrgency.rule(for: day, on: document)
         return DSStatusBadge(expiry: rule.urgency(of: day, today: today, calendar: calendar), daysRemaining: today.days(to: day, calendar: calendar))
     }
 
-    /// A passport's "Bun de călătorit până pe …" (its type's margin), under its expiry.
+    /// A passport's "Bun de călătorit până pe …" (its type's margin), under its expiry; none
+    /// once it was replaced by a new one.
     private func travelLine(_ day: CalendarDay) -> String? {
+        guard !document.wasReplaced else { return nil }
         let today = CalendarDay(Date(), calendar: calendar)
         return DueWording.travelLines(due: day, rule: DateUrgency.rule(for: day, on: document), today: today, calendar: calendar)?.dropFirst().first
     }

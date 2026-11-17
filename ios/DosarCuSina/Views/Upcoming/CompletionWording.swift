@@ -163,6 +163,11 @@ enum CompletionWording {
         String(localized: "Încearcă o poză mai clară, de aproape și fără umbre.", comment: "Am rezolvat: a paper's photo couldn't be read.")
     }
     static var billRead: String { String(localized: "Am citit factura") }
+    /// Under the new end, when it isn't after today: saving waits for another day.
+    static var newDayHasPassed: String { ObligationActionError.newDayHasPassed.errorDescription ?? "" }
+    /// Above the button, when the cycle the sheet opened for was closed meanwhile (a reminder,
+    /// the widget, another device): nothing is filed.
+    static var closedMeanwhile: String { ObligationActionError.cycleClosed.errorDescription ?? "" }
 
     /// The sheet's title: „Am rezolvat: ITP”.
     static func title(_ deadline: String) -> String {

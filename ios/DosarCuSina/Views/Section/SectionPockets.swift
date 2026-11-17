@@ -208,23 +208,34 @@ struct ChildRow: View {
             showsChevron: true
         ) {
             if let day = summary?.endDay {
-                ExpiryBadge(day: day, rule: DateUrgency.rule(for: day, on: child))
+                ExpiryBadge(day: day, rule: DateUrgency.rule(for: day, on: child), on: child)
             }
         }
     }
 }
 
 /// A small badge for an end date, shown once the deadline it drives needs the person
-/// (the same moment it joins Urmează) or once it has passed.
+/// (the same moment it joins Urmează) or once it has passed; on a section replaced by a new
+/// one, "Expirat" whatever its date (`Asset.wasReplaced`).
 struct ExpiryBadge: View {
     let day: CalendarDay
     let rule: UrgencyRule
+    /// The section the date is its own, when it is one (a document's expiry).
+    var section: Asset?
     @Environment(\.calendar) private var calendar
+
+    init(day: CalendarDay, rule: UrgencyRule, on section: Asset? = nil) {
+        self.day = day
+        self.rule = rule
+        self.section = section
+    }
 
     var body: some View {
         let today = CalendarDay(Date(), calendar: calendar)
         let urgency = rule.urgency(of: day, today: today, calendar: calendar)
-        if urgency.tone != .calm {
+        if section?.wasReplaced == true {
+            DSStatusBadge.replaced
+        } else if urgency.tone != .calm {
             DSStatusBadge(expiry: urgency, daysRemaining: today.days(to: day, calendar: calendar))
         }
     }
@@ -361,7 +372,7 @@ struct DocumentRowLink: View {
                     thumbnail: showsPicture ? DSThumbnailWell(image: picture(of: document), systemImage: "person.text.rectangle") : nil,
                     showsChevron: true
                 ) {
-                    if let day = document.value(DocumentFields.expiry)?.dateValue { ExpiryBadge(day: day, rule: DateUrgency.rule(for: day, on: document)) }
+                    if let day = document.value(DocumentFields.expiry)?.dateValue { ExpiryBadge(day: day, rule: DateUrgency.rule(for: day, on: document), on: document) }
                 }
             }
             .buttonStyle(.dsPressable)

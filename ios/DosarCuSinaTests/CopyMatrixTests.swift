@@ -181,6 +181,10 @@ struct CopyMatrixTests {
             if let newEnd = shape.newEnd { asks.append("\(newEnd.label) — \(CompletionWording.newEndFootnote)") }
             if let note = shape.note { asks.append("\(CompletionWording.note) — \(note.prompt)") }
             if let counter = counterTitle(blueprint, in: definition) { asks.append(counter) }
+            if let replacement = shape.replacement {
+                asks.append("\(replacement.inSheet) Once closed: „\(replacement.title)” — \(replacement.message) "
+                            + "[\(replacement.add) · \(replacement.delete)] · the toast's \(replacement.open) · the badge Expirat")
+            }
             return ("\(blueprint.title) (`\(kind.rawValue)`)", "\(shape.actionWords) / \(shape.menuWords) — " + asks.joined(separator: "; "))
         }
     }
@@ -196,6 +200,8 @@ struct CopyMatrixTests {
             ("What it cost last time", CompletionWording.lastCost(sampleSum)),
             ("The button", CompletionWording.save),
             ("Not saved", "\(CompletionWording.notSaved) · \(CompletionWording.photoDidNotOpen)"),
+            ("A new end before today, under its field", CompletionWording.newDayHasPassed),
+            ("Closed meanwhile (a reminder, the widget, another device)", "\(CompletionWording.notSaved) — \(CompletionWording.closedMeanwhile)"),
             ("The toast", "\(String(localized: CompletionWording.done("ITP", next: sampleDay))) / \(String(localized: CompletionWording.done("ITP"))) Anulează"),
         ]
     }

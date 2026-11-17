@@ -212,7 +212,8 @@ struct SectionHero: View {
         // The person's personal documents, each by its own category's expiry field.
         let documentTemplates = Dictionary(templates.filter { $0.behavior.role == .personalDocument }.map { ($0.key, $0.definition) },
                                            uniquingKeysWith: { first, _ in first })
-        let next = (asset.children ?? [])
+        // One replaced by a new one is expired already: never the next to expire.
+        let next = (asset.children ?? []).filter { !$0.wasReplaced }
             .compactMap { child in documentTemplates[child.templateKey].flatMap { AssetFacts.expiry(child.values, template: $0) }.map { (child, $0) } }
             .min { $0.1 < $1.1 }
         if let next {
