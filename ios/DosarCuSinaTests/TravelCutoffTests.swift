@@ -150,7 +150,8 @@ struct TravelCutoffTests {
 
         // The widget, from the snapshot the app writes: same urgency and words.
         let data = try WidgetFeed.encode(WidgetFeed.make(from: [item], now: now, calendar: calendar))
-        let rows = WidgetContent.rows(feed: try #require(WidgetFeed.decode(data)), completed: [], now: now, calendar: calendar, protectedTitle: "", limit: 8)
+        let feed = try #require(WidgetFeed.decode(data))
+        let rows = WidgetContent.rows(feed: feed, completed: [], now: now, calendar: calendar, protectedTitle: "", limit: 8)
         if expected != .later {
             let row = try #require(rows.first)
             #expect(row.urgency == expected)

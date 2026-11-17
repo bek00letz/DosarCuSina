@@ -102,6 +102,8 @@ grep -E "^✘ |^↳ " "$LOG" || true
 # the checks read them against the catalogs.
 CATALOGS=0
 PLURALS=0
+WARNINGS=0
+"$REPO_ROOT/scripts/warnings-check.sh" "$LOG" || WARNINGS=$?
 if [[ -d "$DERIVED_DATA/Build/Intermediates.noindex" ]]; then
     python3 "$REPO_ROOT/scripts/catalog-check.py" "$DERIVED_DATA" \
         ${RESULTS_DIR:+--write-to "$RESULTS/string-catalogs"} || CATALOGS=$?
@@ -118,6 +120,9 @@ if [[ $CATALOGS -ne 0 ]]; then
 fi
 if [[ $PLURALS -ne 0 ]]; then
     exit "$PLURALS"
+fi
+if [[ $WARNINGS -ne 0 ]]; then
+    exit "$WARNINGS"
 fi
 
 if [[ "$RUN_ANDROID" == true ]]; then
