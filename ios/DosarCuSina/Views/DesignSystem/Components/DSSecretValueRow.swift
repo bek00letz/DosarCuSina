@@ -27,16 +27,16 @@ struct DSSecretValueRow: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        VStack(alignment: .leading, spacing: DS.Space.xs) {
-            DSValueWithActions {
-                VStack(alignment: .leading, spacing: 2) {
-                    title.dsFont(.footnote)
-                    value
-                }
-                .accessibilityElement(children: .combine)
-            } actions: {
-                if isSet { buttons }
+        // What is said under the code takes no part in whether the buttons fit beside it.
+        DSValueWithActions {
+            VStack(alignment: .leading, spacing: 2) {
+                title.dsFont(.footnote)
+                value
             }
+            .accessibilityElement(children: .combine)
+        } actions: {
+            if isSet { buttons }
+        } below: {
             if let footnote { footnote.dsFont(.footnote) }
             if copiedNote {
                 Label {
