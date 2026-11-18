@@ -129,6 +129,8 @@ public final class PersistenceController {
     @ObservationIgnored private var systemObservers: [any NSObjectProtocol] = []
     @ObservationIgnored private var pause: SyncPause?
     @ObservationIgnored private var tracker: SyncHealthTracker?
+    /// Which of the mirroring's reports are the open container's (`SyncEventSources`).
+    @ObservationIgnored private var sources: SyncEventSources?
     @ObservationIgnored private var settling: Task<Void, Never>?
     @ObservationIgnored private var retiringSyncing = 0
     @ObservationIgnored private var syncStopWaiters: [UUID: CheckedContinuation<Bool, Never>] = [:]
@@ -439,6 +441,8 @@ public final class PersistenceController {
     /// (`SyncPause.couldNotStart`): the recovery screen is only for a store that can't open at all.
     private func reopen(syncs: Bool, as newState: SyncState) {
         let fresh: ModelContainer
+        // Before it is made: its mirroring may report setting up while it opens.
+        let askedAt = Date()
         do {
             fresh = try makeContainer(storeURL, syncs)
         } catch {
@@ -458,6 +462,7 @@ public final class PersistenceController {
         sync = newState
         health = nil
         tracker = nil
+        sources = syncs ? SyncEventSources(openedAt: askedAt) : nil
         if syncs {
             var account = memory.syncedAccount
             if case .signedIn(let id?) = lastAccount { account = id }
@@ -527,8 +532,10 @@ public final class PersistenceController {
 
     /// Takes in one of the mirroring's reports. A full iCloud stops sync on this phone until there
     /// is room (`SyncPause.iCloudFull`); iCloud saying no one is signed in asks for the account again.
+    /// A report of a container retired a moment ago is not the open one's (`SyncEventSources`).
     func record(_ event: SyncEvent) {
         guard sync == .on, let tracker else { return }
+        guard sources?.admits(event, retiredStillAround: retiringSyncing > 0) ?? true else { return }
         if let container { CloudArrival.follow(event, in: container) }
         let problem = tracker.record(event)
         if health != tracker.health { health = tracker.health }
@@ -552,7 +559,7 @@ public final class PersistenceController {
         })
         systemObservers.append(center.addObserver(forName: NSPersistentCloudKitContainer.eventChangedNotification, object: nil, queue: .main) { [weak self] note in
             guard let raw = note.userInfo?[NSPersistentCloudKitContainer.eventNotificationUserInfoKey] as? NSPersistentCloudKitContainer.Event,
-                  let event = SyncEvent(raw) else { return }
+                  let event = SyncEvent(raw, source: note.object as? NSObject) else { return }
             MainActor.assumeIsolated { self?.record(event) }
         })
     }
