@@ -263,7 +263,7 @@ struct SubscriptionsByServiceTests {
 
         // A pocket shows three, in the listing's order, each group named above its first row.
         let rows = SubscriptionGroup.firstRows(of: listing, limit: 3)
-        #expect(rows.map(\.item.0) == ["Apă", "Curent", "Gaz"])
+        #expect(rows.map { $0.item.0 } == ["Apă", "Curent", "Gaz"])
         #expect(rows.map(\.opens) == [.utilities, nil, nil])
         #expect(SubscriptionGroup.firstRows(of: listing, limit: 4).map(\.opens) == [.utilities, nil, nil, .internetAndPhone])
         // One group to tell apart: no heading under the pocket's own title.
