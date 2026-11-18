@@ -53,6 +53,13 @@ public enum SearchPrivacy {
     /// (Spotlight). Stricter than Caută, where a locked section still shows its title:
     /// outside the app a category behind Face ID shows nothing at all, whether or not
     /// it is open now, and examples never leave the app.
+    /// Whether anything of the binder may be listed outside the app at all: nothing while the
+    /// whole app is locked, in the iPhone's search (`SpotlightIndexer.showsAnything`) and in
+    /// Siri's and Shortcuts' lists (`ObligationQuery`) alike.
+    public static func outsideListsAnything(appLockEnabled: Bool) -> Bool {
+        !appLockEnabled
+    }
+
     public static func mayShowOutside(isLocked: Bool, isExample: Bool) -> Bool {
         !isLocked && !isExample
     }

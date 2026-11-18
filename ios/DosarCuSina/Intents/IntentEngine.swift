@@ -14,15 +14,19 @@ public enum OutsideSurface: String, Codable, CaseIterable, Sendable {
     /// so their failures wait in Urmează for the next time the app opens.
     var answersInPlace: Bool { self == .shortcut }
 
-    /// Whether the surface can ask for Face ID before it closes a deadline of a locked category:
-    /// a reminder's „Am rezolvat” opens the app for it, Siri and Shortcuts continue in the app; a
-    /// widget runs in the background, so it leaves such a deadline for the app.
-    var canAskFaceID: Bool {
+    /// Whether the surface can bring the app forward for what only the app can do: a reminder's
+    /// „Am rezolvat” opens it, Siri and Shortcuts continue in it; a widget runs in the background,
+    /// so it leaves such a deadline waiting in Urmează.
+    var opensTheApp: Bool {
         switch self {
         case .notification, .shortcut: true
         case .widget: false
         }
     }
+
+    /// Whether the surface can ask for Face ID before it closes a deadline of a locked category:
+    /// only in the app, so only a surface that opens it (`opensTheApp`).
+    var canAskFaceID: Bool { opensTheApp }
 }
 
 /// What a person can do to a deadline without opening the app.
@@ -75,6 +79,11 @@ public struct OutsideRequest: Hashable, Sendable {
 /// for Face ID or the passcode first (`BiometricVaultManager.confirmClosing`), and a surface that
 /// can't ask (`OutsideSurface.canAskFaceID`), or a person who doesn't confirm, changes nothing
 /// and leaves it for the app.
+///
+/// A deadline whose closing asks what nothing outside the app can ask (a new day it goes on
+/// from, a document it replaces: `CompletionShape.closesOutsideTheApp`, its completion's shape)
+/// is never closed from here: nothing changes (`.needsTheApp`), a surface that opens the app
+/// lands on its "Am rezolvat" (`AppRoute.completion`), and the widget leaves it waiting in Urmează.
 @MainActor
 enum IntentEngine {
     enum Outcome: Equatable {
@@ -87,6 +96,9 @@ enum IntentEngine {
         /// A deadline of a locked category, and closing it wasn't confirmed with Face ID (or the
         /// surface couldn't ask). Nothing changed; it waits in the app.
         case leftForTheApp
+        /// Closing it asks what only the app's "Am rezolvat" can ask: a new day, a new document
+        /// (`CompletionShape.closesOutsideTheApp`). Nothing changed.
+        case needsTheApp
     }
 
     /// Asks Face ID before a deadline of a locked category is closed from outside the app.
@@ -107,7 +119,28 @@ enum IntentEngine {
         // Nothing is asked for a cycle that has gone: the request changes nothing anyway.
         guard let obligation = try context.fetch(descriptor).first, obligation.status == .active,
               let cycle = request.cycle, obligation.dueDay == cycle else { return false }
+        // Closed only in the app's "Am rezolvat", which asks behind the section's lock.
+        guard !needsTheApp(request.action, for: obligation, in: context) else { return false }
         return asksFaceID(request.action, for: obligation, in: context)
+    }
+
+    /// Whether this request, as the store is now, can only be done in the app's "Am rezolvat":
+    /// closing a deadline whose completion asks a new day or a new document
+    /// (`CompletionShape.closesOutsideTheApp`). Siri asks it before it continues in the app.
+    static func needsTheApp(_ request: OutsideRequest, in context: ModelContext) throws -> Bool {
+        let id = request.obligationId
+        var descriptor = FetchDescriptor<Obligation>(predicate: #Predicate { $0.id == id })
+        descriptor.fetchLimit = 1
+        guard let obligation = try context.fetch(descriptor).first, obligation.status == .active,
+              let cycle = request.cycle, obligation.dueDay == cycle else { return false }
+        return needsTheApp(request.action, for: obligation, in: context)
+    }
+
+    /// The one rule: closing goes through outside the app only when its completion's shape says
+    /// so; „Amână” always does.
+    private static func needsTheApp(_ action: OutsideAction, for obligation: Obligation, in context: ModelContext) -> Bool {
+        guard case .complete = action else { return false }
+        return !obligation.completion(in: context).closesOutsideTheApp
     }
 
     private static func asksFaceID(_ action: OutsideAction, for obligation: Obligation, in context: ModelContext) -> Bool {
@@ -142,6 +175,7 @@ enum IntentEngine {
               let cycle = request.cycle,
               try actions.isOpen(obligation, cycle: cycle)
         else { return .skipped }
+        if needsTheApp(request.action, for: obligation, in: context) { return .needsTheApp }
         if !closingConfirmed, asksFaceID(request.action, for: obligation, in: context) { return .leftForTheApp }
 
         switch request.action {
@@ -191,6 +225,8 @@ enum IntentEngine {
             throw error
         }
         if outcome == .leftForTheApp, !request.surface.answersInPlace { failures.record(request, at: now()) }
+        // A surface that opens the app lands on its "Am rezolvat"; the widget's waits in Urmează.
+        if outcome == .needsTheApp, !request.surface.opensTheApp { failures.record(request, at: now()) }
         await sideEffects(container).reconcileNow(allowPermissionPrompt: false)
         return outcome
     }
@@ -219,8 +255,9 @@ enum IntentEngine {
             do {
                 switch try apply(request, in: context, calendar: calendar, now: now) {
                 case .completed: completed += 1
-                // A locked category's deadline isn't closed without Face ID: it waits in Urmează.
-                case .leftForTheApp: failures.record(request, at: item.requestedAt)
+                // A locked category's deadline isn't closed without Face ID, nor one whose closing asks
+                // a new day or a new document: it waits in Urmează.
+                case .leftForTheApp, .needsTheApp: failures.record(request, at: item.requestedAt)
                 case .snoozed, .skipped: break
                 }
                 handled.append(item)
@@ -236,10 +273,32 @@ enum IntentEngine {
     }
 }
 
-/// The app's side of `CompleteFromWidgetIntent`: complete through the engine now.
+/// The app's side of `CompleteFromWidgetIntent`: complete through the engine now, whose pass
+/// through the coordinator plans reminders again, so that deadline's pending reminders and
+/// the ones already shown go with the tap, not the next time the app opens.
 enum WidgetCompletionHandler {
     @MainActor
     static func handle(_ completion: WidgetCompletion) async {
+        await handle(completion, container: PersistenceController.shared.container)
+    }
+
+    /// - Parameter container: the binder; nil while it can't be opened yet (the phone not yet
+    ///   unlocked since it started), when the tap waits in the queue as the extension leaves it,
+    ///   for the app to apply once it opens (`IntentEngine.applyQueuedWidgetCompletions`).
+    @MainActor
+    static func handle(
+        _ completion: WidgetCompletion,
+        container: ModelContainer?,
+        queue: WidgetCompletionQueue? = .shared(),
+        sideEffects: (ModelContainer) -> SideEffectsCoordinator = { SideEffectsCoordinator.shared(for: $0) },
+        failures: OutsideActionFailures = .shared,
+        calendar: Calendar = .dosar,
+        now: @escaping () -> Date = { Date() }
+    ) async {
+        guard let container else {
+            queue?.enqueue(completion)
+            return
+        }
         let request = OutsideRequest(
             obligationId: completion.obligationId,
             cycle: CalendarDay(isoString: completion.dueDay),
@@ -248,7 +307,8 @@ enum WidgetCompletionHandler {
             actedAt: completion.requestedAt
         )
         do {
-            try await IntentEngine.perform(request, container: PersistenceController.shared.container)
+            try await IntentEngine.perform(request, container: container, sideEffects: sideEffects, failures: failures,
+                                           calendar: calendar, now: now)
         } catch {
             // Recorded by the engine; Urmează shows it the next time the app opens.
         }

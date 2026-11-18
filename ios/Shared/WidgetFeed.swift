@@ -20,7 +20,8 @@ import Foundation
 ///     "deepLink": "dosarcusina://obligation/…",
 ///     "urgency": {                  // its urgency rule, so the widget counts down
 ///       "graceDays": 0, "firstLeadDays": 30, "maxWindowDays": 30   // like the app
-///     }
+///     },
+///     "closesInTheApp": false       // closing asks a new day or a new document: no "Gata"
 ///   }]
 /// }
 /// ```
@@ -50,12 +51,18 @@ public struct WidgetFeed: Codable, Hashable, Sendable {
         /// from before it was written has none, and reads as a deadline nothing reminds
         /// about until the app rewrites it.
         public var urgency: UrgencyRule?
+        /// Closing it asks what only the app's "Am rezolvat" can ask, a new day or a new document
+        /// (`CompletionShape.closesOutsideTheApp`): the row offers no "Gata" and opens the app.
+        /// A snapshot from before it was written has none: "Gata" as before, which the app then
+        /// leaves waiting in Urmează (`IntentEngine`).
+        public var closesInTheApp: Bool?
 
         public var id: UUID { obligationId }
 
         public init(
             obligationId: UUID, assetId: UUID?, title: String, assetName: String?, symbol: String, tint: String,
-            dueDate: CalendarDay, kind: String, isSensitive: Bool, deepLink: URL, urgency: UrgencyRule?
+            dueDate: CalendarDay, kind: String, isSensitive: Bool, deepLink: URL, urgency: UrgencyRule?,
+            closesInTheApp: Bool? = nil
         ) {
             self.obligationId = obligationId
             self.assetId = assetId
@@ -68,6 +75,7 @@ public struct WidgetFeed: Codable, Hashable, Sendable {
             self.isSensitive = isSensitive
             self.deepLink = deepLink
             self.urgency = urgency
+            self.closesInTheApp = closesInTheApp
         }
     }
 
@@ -117,7 +125,8 @@ public struct WidgetRow: Hashable, Sendable, Identifiable {
     /// `yyyy-MM-dd` of the cycle shown, so a tap on "Gata" closes this cycle only.
     public var dueKey: String
     public var deepLink: URL
-    /// Protected sections never offer "Gata" outside the app.
+    /// "Gata" is offered only where closing needs nothing the widget can't do: never for a
+    /// protected section (Face ID), nor where closing asks a new day or a new document.
     public var canComplete: Bool
 }
 
@@ -151,9 +160,9 @@ public enum WidgetContent {
                 dueDate: dueDay.startDate(in: calendar),
                 dueKey: dueDay.isoString,
                 deepLink: item.deepLink,
-                // A widget can't ask for Face ID: where closing asks for it, the row only opens
-                // the app (`DeadlineChange`, the one rule).
-                canComplete: !DeadlineChange.close.asksFaceID(inLockedCategory: item.isSensitive)
+                // A widget can't ask for Face ID (`DeadlineChange`, the one rule), nor a new day or a
+                // new document: there the row only opens the app.
+                canComplete: !DeadlineChange.close.asksFaceID(inLockedCategory: item.isSensitive) && item.closesInTheApp != true
             )
         }
         .prefix(max(0, limit))

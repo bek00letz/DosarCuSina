@@ -77,8 +77,13 @@ public final class NotificationResponder: NSObject, @preconcurrency UNUserNotifi
             do {
                 let outcome = try await IntentEngine.perform(request, container: containerProvider(), sideEffects: sideEffects, failures: failures,
                                                              confirmClosing: confirmClosing, calendar: calendar)
+                switch outcome {
                 // Face ID wasn't given for a locked category's deadline: its page, to finish there.
-                if outcome == .leftForTheApp { navigator.open(.obligation(obligationId)) }
+                case .leftForTheApp: navigator.open(.obligation(obligationId))
+                // Closing asks a new day or a new document: its "Am rezolvat", for this cycle.
+                case .needsTheApp: if let cycle = payload.cycle { navigator.open(.completion(obligationId, cycle: cycle)) }
+                case .completed, .snoozed, .skipped: break
+                }
             } catch {
                 // Recorded by the engine; Urmează shows it the next time the app opens.
             }

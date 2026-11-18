@@ -61,6 +61,8 @@ struct ObligationCompleteSheet: View {
 
     /// What is wrong with the new end typed, under its field (`CompletionDraft.newDayProblem`).
     private var newDayProblem: String? { draft.newDayProblem(shape: shape) }
+    /// A completion that goes on from a new day waits for it (`CompletionDraft.lacksNewDay`).
+    private var lacksNewDay: Bool { draft.lacksNewDay(shape: shape) }
 
     var body: some View {
         NavigationStack {
@@ -77,12 +79,17 @@ struct ObligationCompleteSheet: View {
             .background(DS.Palette.background)
             .dsPinnedAction {
                 DSPrimaryButton(verbatim: CompletionWording.save, systemImage: "checkmark") { save() }
-                    .disabled(isSaving || isReading || (shape.asksDate && draft.date == nil) || newDayProblem != nil || isClosedMeanwhile)
+                    .disabled(isSaving || isReading || (shape.asksDate && draft.date == nil) || newDayProblem != nil || lacksNewDay || isClosedMeanwhile)
             } note: {
                 if isClosedMeanwhile {
                     DSNotice(.warning, title: LocalizedStringKey(CompletionWording.notSaved), message: LocalizedStringKey(CompletionWording.closedMeanwhile))
                 } else if let errorMessage {
                     DSNotice(.error, title: LocalizedStringKey(CompletionWording.notSaved), message: LocalizedStringKey(errorMessage))
+                } else if lacksNewDay, let newEnd = shape.newEnd {
+                    // Why it can't be pressed yet.
+                    Text(verbatim: newEnd.needed)
+                        .dsFont(.footnote)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .navigationTitle(Text(verbatim: CompletionWording.title(obligation.title)))
@@ -253,7 +260,7 @@ struct ObligationCompleteSheet: View {
 
     private func save(lowerReading: LowerReadingAnswer? = nil) {
         // One filing at a time: a second tap before the button shows it is busy files nothing.
-        guard !isSaving, !shape.asksDate || draft.date != nil, newDayProblem == nil, !isClosedMeanwhile else { return }
+        guard !isSaving, !shape.asksDate || draft.date != nil, newDayProblem == nil, !lacksNewDay, !isClosedMeanwhile else { return }
         isSaving = true
         errorMessage = nil
         let title = obligation.title

@@ -16,6 +16,10 @@ public enum AppRoute: Hashable, Sendable, Codable {
     case addVisit(UUID)
     /// The Agenda box: people and firms.
     case obligation(UUID)
+    /// "Am rezolvat" for one deadline, over its page, for the cycle the person saw: where a
+    /// reminder's or Siri's „Am rezolvat” lands when closing asks what only the app can ask
+    /// (`CompletionShape.closesOutsideTheApp`).
+    case completion(UUID, cycle: CalendarDay)
     case historyEntry(UUID)
     case provider(UUID)
     case document(UUID)
@@ -52,6 +56,7 @@ public enum SettingsSection: String, Hashable, Sendable, Codable, CaseIterable {
 /// - `dosarcusina://home`, `dosarcusina://upcoming` (also `radar`, from earlier builds),
 ///   `dosarcusina://search`, `dosarcusina://intake`, `dosarcusina://agenda`
 /// - `dosarcusina://asset/<uuid>`, `dosarcusina://visit/<asset uuid>`, `dosarcusina://obligation/<uuid>`, `dosarcusina://history/<uuid>`,
+///   `dosarcusina://complete/<uuid>/<yyyy-MM-dd>` ("Am rezolvat" for that cycle),
 ///   `dosarcusina://provider/<uuid>`, `dosarcusina://document/<uuid>`
 /// - `dosarcusina://category/<key>`
 /// - `dosarcusina://settings` or `dosarcusina://settings/<section>`
@@ -78,6 +83,9 @@ public enum DeepLink {
         case .obligation(let id):
             components.host = "obligation"
             components.path = "/" + id.uuidString.lowercased()
+        case .completion(let id, let cycle):
+            components.host = "complete"
+            components.path = "/" + id.uuidString.lowercased() + "/" + cycle.isoString
         case .historyEntry(let id):
             components.host = "history"
             components.path = "/" + id.uuidString.lowercased()
@@ -112,6 +120,11 @@ public enum DeepLink {
         case "visit": return argument.flatMap(UUID.init(uuidString:)).map(AppRoute.addVisit)
         case "asset": return argument.flatMap(UUID.init(uuidString:)).map(AppRoute.asset)
         case "obligation": return argument.flatMap(UUID.init(uuidString:)).map(AppRoute.obligation)
+        case "complete":
+            // A link without the cycle it was for can't say which one to close.
+            guard let id = argument.flatMap(UUID.init(uuidString:)),
+                  let cycle = url.pathComponents.dropFirst(2).first.flatMap(CalendarDay.init(isoString:)) else { return nil }
+            return .completion(id, cycle: cycle)
         case "history": return argument.flatMap(UUID.init(uuidString:)).map(AppRoute.historyEntry)
         case "provider": return argument.flatMap(UUID.init(uuidString:)).map(AppRoute.provider)
         case "document": return argument.flatMap(UUID.init(uuidString:)).map(AppRoute.document)
