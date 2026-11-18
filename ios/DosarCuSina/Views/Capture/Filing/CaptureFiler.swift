@@ -517,7 +517,7 @@ struct CaptureFiler {
                 try updateSubscription(asset, from: review, template: template)
             } else {
                 let closing = closingBlueprint(of: obligation, templates: templates)
-                try writeValues(of: review, to: asset, templates: templates, deadline: closing)
+                try writeValues(of: review, to: asset, templates: templates, deadline: closing, closing: true)
                 try keepBonusMalus(bonusMalusChoice(for: review, deadline: closing), on: asset, deadline: closing)
                 try keepCitizenship(of: asset, templates: templates)
             }
@@ -715,7 +715,7 @@ struct CaptureFiler {
                 return
             }
             let closing = closingBlueprint(of: completion.obligation, templates: templates)
-            try HouseholdMutations.askAboutReading(try valuesReading(of: review, onto: asset, templates: templates, deadline: closing),
+            try HouseholdMutations.askAboutReading(try valuesReading(of: review, onto: asset, templates: templates, deadline: closing, closing: true),
                                                    answer: lowerReading)
         case .visit(let visit):
             try ExampleOwnership.requireReal(visit.asset)
@@ -762,8 +762,8 @@ struct CaptureFiler {
     /// The reading writing a review's values onto `asset` records (the kilometres an invoice
     /// prints, dated by the document), as `writeValues` will ask `AssetActions` to save them.
     private func valuesReading(of review: CaptureReview, onto asset: Asset, templates: [String: CategoryTemplate],
-                               deadline: ObligationBlueprint? = nil) throws -> PlannedReading? {
-        guard let merged = mergedValues(of: review, onto: asset, templates: templates, deadline: deadline) else { return nil }
+                               deadline: ObligationBlueprint? = nil, closing: Bool = false) throws -> PlannedReading? {
+        guard let merged = mergedValues(of: review, onto: asset, templates: templates, deadline: deadline, closing: closing) else { return nil }
         return try AssetActions(context: context, calendar: calendar, now: now).plannedReading(
             updating: asset, to: merged, source: .document, date: review.documentDay?.noonDate(in: calendar)
         )
@@ -830,9 +830,11 @@ struct CaptureFiler {
     /// What a captured document's values change on a section that already exists: what
     /// was read replaces what was there, except a value that only differs in how it's written.
     /// `deadline` is the deadline the values belong to, when the caller knows it better than
-    /// the document does ("Am rezolvat" on a CASCO).
-    private func writeValues(of review: CaptureReview, to asset: Asset, templates: [String: CategoryTemplate], deadline: ObligationBlueprint? = nil) throws {
-        guard let merged = mergedValues(of: review, onto: asset, templates: templates, deadline: deadline) else { return }
+    /// the document does ("Am rezolvat" on a CASCO); `closing`, that the document closes it
+    /// ("Am rezolvat"), so a policy is the newer one (`newPolicy`).
+    private func writeValues(of review: CaptureReview, to asset: Asset, templates: [String: CategoryTemplate], deadline: ObligationBlueprint? = nil,
+                             closing: Bool = false) throws {
+        guard let merged = mergedValues(of: review, onto: asset, templates: templates, deadline: deadline, closing: closing) else { return }
         if merged != asset.values {
             // A reading on the document (the kilometres on an invoice) is dated by the document.
             try AssetActions(context: context, calendar: calendar, now: now).update(
@@ -842,13 +844,46 @@ struct CaptureFiler {
         }
     }
 
-    /// The section's values once a review's are written onto them (`merging`); nil when its
-    /// category isn't known.
+    /// The section's values once a review's are written onto them (`merging`), a policy's
+    /// leaving none of an earlier policy's own facts (`newPolicy`); nil when its category isn't
+    /// known. `closing`: the document closes its deadline ("Am rezolvat").
     private func mergedValues(of review: CaptureReview, onto asset: Asset, templates: [String: CategoryTemplate],
-                              deadline: ObligationBlueprint?) -> FieldValues? {
+                              deadline: ObligationBlueprint?, closing: Bool) -> FieldValues? {
         guard let template = templates[asset.templateKey] else { return nil }
-        let read = Self.values(from: review, for: template.definition, deadline: deadline ?? review.deadlineBlueprint(in: template.definition))
-        return Self.merging(read, into: asset.values)
+        let blueprint = deadline ?? review.deadlineBlueprint(in: template.definition)
+        let read = Self.values(from: review, for: template.definition, deadline: blueprint)
+        let merged = Self.merging(read, into: asset.values)
+        guard review.kind.profile.readsCover, let blueprint, let facts = blueprint.facts else { return merged }
+        // Without two numbers to compare, a policy is the newer one when it renews the deadline:
+        // "Am rezolvat" closes it, or the review's day comes after the deadline's.
+        let renews = closing || {
+            guard let day = review.reminderDay,
+                  let existing = CaptureFilingPlan.existingDeadline(blueprint, in: asset, takesUpPaused: false) else { return false }
+            return day > existing.dueDay
+        }()
+        return Self.newPolicy(read, onto: merged, kept: asset.values, facts: facts, renews: renews)
+    }
+
+    /// What a policy filed into a deadline's facts (`facts`) does to the facts the section kept
+    /// from the policy before it: when it is another policy, each fact that describes one policy
+    /// (`BlueprintFactRole.belongsToThePolicy`: its number, its sum) and that it doesn't print
+    /// (`read`) goes, so the earlier policy's never passes for this one's; who issued it, its
+    /// claims line and who it insures stay. It is another policy when it prints another number
+    /// than the one kept, compared as values are; without two numbers to compare, when it renews
+    /// the deadline (`renews`). The same policy filed again changes nothing it doesn't print.
+    static func newPolicy(_ read: FieldValues, onto merged: FieldValues, kept: FieldValues, facts: BlueprintFacts, renews: Bool) -> FieldValues {
+        let isAnother: Bool
+        if let field = facts.field(for: .policyNumber), let printed = read[field]?.textValue, let earlier = kept[field]?.textValue {
+            isAnother = RomanianText.compact(printed) != RomanianText.compact(earlier)
+        } else {
+            isAnother = renews
+        }
+        guard isAnother else { return merged }
+        var values = merged
+        for (role, field) in facts.fields where role.belongsToThePolicy && read[field] == nil {
+            values[field] = nil
+        }
+        return values
     }
 
     /// What a reading brings to values already kept: what was read replaces what was there,

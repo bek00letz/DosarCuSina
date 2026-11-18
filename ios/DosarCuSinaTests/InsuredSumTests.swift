@@ -6,7 +6,8 @@ import Testing
 /// The sum a policy insures for is one of its deadline's own facts (`BlueprintFactRole.insuredSum`),
 /// declared once for every policy that states one: a home's PAD and its optional policy, and a
 /// car's CASCO. An RCA's limits are set by law, so it keeps none. Capture fills it like the other
-/// facts, a new policy replaces it, and the deadline's page shows it as money.
+/// facts, a new policy replaces it (or leaves none when it prints none), and the deadline's page shows
+/// it as money.
 @MainActor
 @Suite("A policy's insured sum")
 struct InsuredSumTests {
@@ -31,12 +32,11 @@ struct InsuredSumTests {
 
     // MARK: Filing
 
-    private func policy(cover: String?, kind: CaptureDocumentKind = .insurancePolicy, sum: Decimal?, number: String = "RO/00/X00/XX 000000001") -> CaptureResult {
-        let expiry = CalendarDay(Calendar.current.date(byAdding: .day, value: 375, to: Date())!)
-        var fields = [
-            CaptureField(key: .expiryDate, value: .day(expiry), confidence: 0.9, tier: .heuristic),
-            CaptureField(key: .policyNumber, value: .text(number), confidence: 0.9, tier: .heuristic),
-        ]
+    private func policy(cover: String?, kind: CaptureDocumentKind = .insurancePolicy, sum: Decimal?, number: String? = "RO/00/X00/XX 000000001",
+                        endsInDays days: Int = 375) -> CaptureResult {
+        let expiry = CalendarDay(Calendar.current.date(byAdding: .day, value: days, to: Date())!)
+        var fields = [CaptureField(key: .expiryDate, value: .day(expiry), confidence: 0.9, tier: .heuristic)]
+        if let number { fields.append(CaptureField(key: .policyNumber, value: .text(number), confidence: 0.9, tier: .heuristic)) }
         if let cover { fields.append(CaptureField(key: .coverageType, value: .text(cover), confidence: 0.9, tier: .heuristic)) }
         if let sum { fields.append(CaptureField(key: .insuredSum, value: .money(Money(sum)), confidence: 0.9, tier: .heuristic)) }
         return CaptureResult(kind: kind, kindConfidence: 0.95, fields: fields, suggestions: [], reminder: nil,
@@ -96,6 +96,50 @@ struct InsuredSumTests {
 
         try await save(policy(cover: InsuranceCover.casco, sum: 52_000, number: "RO/00/X00/XX 000000003"), into: car, in: context)
         #expect(car.value(VehicleFields.cascoInsuredSum) == .money(Money(52_000)), "So does a newer policy from the review")
+    }
+
+    @Test("What describes one policy is declared once: its number and its sum; who issued it, its claims line and who it insures carry over")
+    func whatBelongsToThePolicy() {
+        #expect(BlueprintFactRole.allCases.filter(\.belongsToThePolicy) == [.policyNumber, .insuredSum])
+    }
+
+    @Test("A newer policy that prints no sum leaves none of the earlier policy's; its claims line and insurer stay")
+    func aNewerPolicyLeavesNoneOfTheEarlierSum() async throws {
+        let context = try makeContext()
+        var values = FieldValues()
+        values[VehicleFields.cascoInsuredSum] = .money(Money(60_000))
+        values[VehicleFields.cascoPolicyNumber] = .text("RO/00/X00/XX 000000001")
+        values[VehicleFields.cascoInsurer] = .text("Asigurător Exemplu S.A.")
+        values[VehicleFields.cascoClaimsPhone] = .text("0700000002")
+        let (car, deadlines) = try section(BuiltInTemplates.Key.vehicle, name: "VW Golf 2018", deadlines: [BuiltInBlueprints.vehicleCASCO],
+                                           values: values, in: context)
+        let casco = try #require(deadlines.first)
+        _ = try await CaptureFiler(context: context).file(.completion(.init(
+            obligation: casco, date: Date(), cost: nil, document: policy(cover: InsuranceCover.casco, sum: nil, number: "RO/00/X00/XX 000000002"))))
+        #expect(car.value(VehicleFields.cascoPolicyNumber) == .text("RO/00/X00/XX 000000002"))
+        #expect(car.value(VehicleFields.cascoInsuredSum) == nil, "The earlier policy's sum never passes for the new one's")
+        #expect(car.value(VehicleFields.cascoClaimsPhone) == .text("0700000002"), "The claims line carries over")
+        #expect(car.value(VehicleFields.cascoInsurer) == .text("Asigurător Exemplu S.A."), "So does who issued it")
+    }
+
+    @Test("A renewing policy that prints no number leaves none of the earlier number; the same policy read again keeps what it doesn't print")
+    func theSamePolicyKeepsItsFacts() async throws {
+        let context = try makeContext()
+        var values = FieldValues()
+        values[HomeFields.insuredSum] = .money(Money(50_000))
+        values[HomeFields.policyNumber] = .text("RO/00/X00/XX 000000001")
+        let (home, _) = try section(BuiltInTemplates.Key.home, name: "Apartament", deadlines: [BuiltInBlueprints.homePAD], values: values, in: context)
+
+        try await save(policy(cover: InsuranceCover.pad, sum: nil, number: "RO 00 X00 XX 000000001"), into: home, in: context)
+        #expect(home.value(HomeFields.insuredSum) == .money(Money(50_000)), "The same number, written another way: the same policy")
+
+        try await save(policy(cover: InsuranceCover.pad, sum: nil, number: nil, endsInDays: 10), into: home, in: context)
+        #expect(home.value(HomeFields.policyNumber) == .text("RO/00/X00/XX 000000001"), "An older paper renews nothing: nothing goes")
+        #expect(home.value(HomeFields.insuredSum) == .money(Money(50_000)))
+
+        try await save(policy(cover: InsuranceCover.pad, sum: 52_000, number: nil, endsInDays: 740), into: home, in: context)
+        #expect(home.value(HomeFields.insuredSum) == .money(Money(52_000)))
+        #expect(home.value(HomeFields.policyNumber) == nil, "A renewing policy with no number read leaves none of the earlier one's")
     }
 
     @Test("An RCA keeps no sum, even when its paper prints one")

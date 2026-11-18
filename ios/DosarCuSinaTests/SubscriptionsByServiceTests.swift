@@ -248,6 +248,40 @@ struct SubscriptionsByServiceTests {
         #expect(listed.first?.items.map(\.0) == ["Gaz", "Curent"], "In the order they came")
     }
 
+    @Test("Abonamente's page, a home's Abonamente pocket and its full list share one listing: under the groups where the category keeps them")
+    func everyListOfSubscriptionsIsGroupedOneWay() {
+        func values(_ service: String) -> FieldValues {
+            var values = FieldValues()
+            values[SubscriptionFields.service] = .text(service)
+            return values
+        }
+        let items = [("Apă", values(ServiceKind.water)), ("Internet", values(ServiceKind.internetTV)), ("Curent", values(ServiceKind.electricity)),
+                     ("Gaz", values(ServiceKind.gas))]
+        let listing = SubscriptionGroup.listing(items, in: BuiltInTemplates.subscription) { $0.1 }
+        #expect(listing.map(\.group) == [.utilities, .internetAndPhone])
+        #expect(listing.map { $0.items.map(\.0) } == [["Apă", "Curent", "Gaz"], ["Internet"]])
+
+        // A pocket shows three, in the listing's order, each group named above its first row.
+        let rows = SubscriptionGroup.firstRows(of: listing, limit: 3)
+        #expect(rows.map { $0.item.0 } == ["Apă", "Curent", "Gaz"])
+        #expect(rows.map(\.opens) == [.utilities, nil, nil])
+        #expect(SubscriptionGroup.firstRows(of: listing, limit: 4).map(\.opens) == [.utilities, nil, nil, .internetAndPhone])
+        // One group to tell apart: no heading under the pocket's own title.
+        let utilities = SubscriptionGroup.listing(Array(items.prefix(1)), in: BuiltInTemplates.subscription) { $0.1 }
+        #expect(SubscriptionGroup.firstRows(of: utilities, limit: 3).map(\.opens) == [nil])
+
+        // A category that keeps no group: one list, as it came.
+        var own = BuiltInTemplates.subscription
+        own.sections = own.sections.map { section in
+            var section = section
+            section.fields.removeAll { $0.key == SubscriptionFields.group }
+            return section
+        }
+        let plain = SubscriptionGroup.listing(items, in: own) { $0.1 }
+        #expect(plain.count == 1 && plain.first?.group == nil && plain.first?.items.map(\.0) == ["Apă", "Internet", "Curent", "Gaz"])
+        #expect(SubscriptionGroup.listing([(String, FieldValues)](), in: own) { $0.1 }.isEmpty)
+    }
+
     // MARK: Weekly
 
     @Test func aSubscriptionCanBeWeekly() throws {

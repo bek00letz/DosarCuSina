@@ -55,18 +55,34 @@ struct RepeatAndReminderTimeTests {
         #expect(RepeatChoice(frequency: .day, every: 500).everyRange.upperBound == 500, "A larger number a rule has stays offered")
     }
 
-    @Test("„+” and „−” step further as the number grows, landing on round numbers, inside the range")
-    func stepsGrowWithTheNumber() {
-        let days = RepeatChoice(frequency: .day, every: 1).everyRange
-        func up(_ value: Int) -> Int { RepeatChoice.stepped(value, up: true, in: days) }
-        func down(_ value: Int) -> Int { RepeatChoice.stepped(value, up: false, in: days) }
-        #expect([1, 9, 10, 12, 55, 60, 170, 180, 360].map(up) == [2, 10, 15, 15, 60, 70, 180, 210, 365])
-        #expect([2, 10, 12, 15, 60, 70, 180, 210, 365].map(down) == [1, 9, 10, 10, 55, 60, 170, 180, 360])
+    @Test("„+” and „−” step in the unit's own steps: whole weeks in days, then months; inside the range")
+    func stepsFollowTheUnit() {
+        func up(_ value: Int, _ unit: RecurrenceInterval.Unit = .day, in range: ClosedRange<Int>? = nil) -> Int {
+            RepeatChoice.stepped(value, up: true, unit: unit, in: range ?? RepeatChoice(frequency: .init(unit), every: 1).everyRange)
+        }
+        func down(_ value: Int, _ unit: RecurrenceInterval.Unit = .day) -> Int {
+            RepeatChoice.stepped(value, up: false, unit: unit, in: RepeatChoice(frequency: .init(unit), every: 1).everyRange)
+        }
+        #expect([1, 6, 7, 13, 14, 21, 49, 56, 60, 330, 360].map { up($0) } == [2, 7, 8, 14, 21, 28, 56, 60, 90, 360, 365])
+        #expect([2, 8, 14, 21, 28, 56, 60, 90, 365].map { down($0) } == [1, 7, 13, 14, 21, 49, 56, 60, 360])
+        #expect(up(40) == 42 && down(40) == 35, "A rule's number between two stops goes to the nearest each way")
         #expect(up(365) == 365 && down(1) == 1, "Never past the range")
-        var value = 1
-        var steps = 0
-        while value < days.upperBound { value = up(value); steps += 1 }
-        #expect(steps < 40, "A year of days is a few dozen steps away, not 364: \(steps)")
+        #expect(up(365, in: 1...500) == 500, "A larger number a rule has is a stop too")
+
+        // Every stop of a unit is reached from the one before and goes back to it.
+        for unit in [RecurrenceInterval.Unit.day, .week, .month, .year] {
+            let range = RepeatChoice(frequency: .init(unit), every: 1).everyRange
+            var value = range.lowerBound
+            var reached = [value]
+            while value < range.upperBound { value = up(value, unit); reached.append(value) }
+            #expect(reached.count < 40, "\(unit): a few dozen steps from one to the most, \(reached.count)")
+            var back = value
+            var returned = [back]
+            while back > range.lowerBound { back = down(back, unit); returned.append(back) }
+            #expect(returned == reached.reversed(), "\(unit): „−” goes back through the same stops")
+        }
+        #expect([7, 14, 21, 28].allSatisfy { RepeatChoice.ladder(for: .day).contains($0) }, "Whole weeks in days")
+        #expect(RepeatChoice.ladder(for: .week).contains(52) && RepeatChoice.ladder(for: .month).contains(18))
     }
 
     // MARK: Words

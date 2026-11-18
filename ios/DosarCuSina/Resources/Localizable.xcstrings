@@ -3201,6 +3201,9 @@
     "Coduri" : {
 
     },
+    "Coduri de abonament" : {
+      "comment" : "Repair group: a subscription's code kept under another code's name by an earlier version."
+    },
     "Coduri PIN" : {
       "comment" : "Header of the secret codes on a document page."
     },
@@ -3998,6 +4001,9 @@
     },
     "Documente" : {
       "comment" : "Header: scanned documents.\nSearch group: documents.\nStorage row: all documents."
+    },
+    "Documente reînnoite" : {
+      "comment" : "Repair group: deadlines that close when a document is replaced with a new one, kept repeating by an earlier version."
     },
     "documentul" : {
 
@@ -5322,6 +5328,28 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "La „%1$@” contează doar data de expirare. Schimb când te anunț? %2$@"
+          }
+        }
+      }
+    },
+    "La „%@”, „%@” e păstrat la „%@”, dar documentele lui din dosar îl numesc „%@”. Îl mut acolo?" : {
+      "comment" : "Repair: a subscription's code kept under another code's name by an earlier version (a billing account kept as the client code). The arguments: the subscription, the code, the field it is kept in, the field its papers say.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "La „%1$@”, „%2$@” e păstrat la „%3$@”, dar documentele lui din dosar îl numesc „%4$@”. Îl mut acolo?"
+          }
+        }
+      }
+    },
+    "La „%@”, „%@” spune că se repetă, dar se închide când îl bifezi: documentul nou are termenul lui. Opresc repetarea?" : {
+      "comment" : "Repair: a deadline that closes when its document is replaced (a European health card) still repeats, as an earlier version made it. The first argument is the section, the second the deadline.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "La „%1$@”, „%2$@” spune că se repetă, dar se închide când îl bifezi: documentul nou are termenul lui. Opresc repetarea?"
           }
         }
       }
