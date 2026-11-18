@@ -40,9 +40,11 @@ public struct IssuerKey: RawRepresentable, Hashable, Codable, Sendable, Comparab
 }
 
 /// One thing learned from what the person saved: this issuer prints this value of this kind of
-/// paper under this label. It is a reader's evidence like any other: told to the readers through
-/// the kind's label table (`LessonBook.teaching`), never read by code of its own, and
-/// `ReadingArbiter` still decides between what every reader read.
+/// paper under this label, beside it, under it in its column or after it on its line. It is a
+/// reader's evidence like any other: told to the readers as the kind's learned rows
+/// (`LessonBook.teaching`), read by `LabelledLayout`, the one layout reader, where the issuer
+/// prints the value, never by code of its own; `ReadingArbiter` still decides between what every
+/// reader read.
 public struct CaptureLesson: Hashable, Codable, Sendable {
     public let issuer: IssuerKey
     public let kind: CaptureDocumentKind
@@ -91,6 +93,15 @@ public struct LessonBook: Hashable, Codable, Sendable {
 
     public static let empty = LessonBook([])
 
+    /// How far to the right of a learned label its value may sit on its row, in line heights:
+    /// anywhere, as long as nothing stands between them ("Total de plată …… 123,45 lei").
+    static let rowReach = Double.infinity
+
+    /// What a value read at a learned label is worth: more than a label of the kind's own table
+    /// (a lesson is learned only where the kind's readers missed or misread this issuer's value),
+    /// less than a value a check proves.
+    static let readingConfidence = 0.85
+
     public var isEmpty: Bool { lessons.isEmpty }
 
     /// The lessons two of them contradict (`CaptureLesson.contradicts`): one label given to two
@@ -108,8 +119,8 @@ public struct LessonBook: Hashable, Codable, Sendable {
     }
 
     /// `profile` with what was learned of `issuer`'s papers of its kind told to its readers, for
-    /// one read: each field's learned labels before the kind's own (`CaptureKindProfile.labels(for:)`),
-    /// longer wordings first, as a label table orders them. The profile as it is for an issuer
+    /// one read (`CaptureKindProfile.learnedLabels`, read before the kind's own by position), each
+    /// field's longer wordings first, as a label table orders them. The profile as it is for an issuer
     /// nothing was learned of, or a kind that learns nothing (`learnsIssuerLabels`).
     func teaching(_ profile: CaptureKindProfile, issuer: IssuerKey?) -> CaptureKindProfile {
         guard let issuer, profile.learnsIssuerLabels else { return profile }
