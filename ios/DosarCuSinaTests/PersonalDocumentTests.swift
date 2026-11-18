@@ -16,7 +16,8 @@ struct PersonalDocumentTests {
     @Test func onlyTypesWithRealVariantsHaveThem() throws {
         #expect(DocumentType.variants(of: DocumentType.criminalRecord).map(\.label) == ["Judiciar", "Fiscal", "Auto"])
         #expect(DocumentType.variants(of: DocumentType.bankCard).count == 2)
-        #expect(DocumentType.variants(of: DocumentType.idCard).count == 2)
+        #expect(DocumentType.variants(of: DocumentType.idCard).count == 3, "Electronic, without a chip, and the simple one")
+        #expect(DocumentType.variants(of: DocumentType.residencePermit).count == 2, "A family member's residence card, a British citizen's")
         #expect(DocumentType.variants(of: DocumentType.passport).count == 2)
         #expect(DocumentType.variants(of: DocumentType.drivingLicence).isEmpty)
         #expect(DocumentType.variants(of: DocumentType.other).isEmpty)

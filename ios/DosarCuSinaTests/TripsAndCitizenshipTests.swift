@@ -166,14 +166,14 @@ struct TripsAndCitizenshipTests {
         #expect(items[id: "trip.citizenship.\(ion.id)"] == nil)
         #expect(items[id: "trip.residencePermit.\(ion.id)"]?.status == .missing, "Moldova's rules, read off his passport")
 
-        // A person with two: the free-movement one decides.
+        // A person with two: both are read, each once.
         let card = ReadinessAsset.personalDocument(DocumentType.idCard, expires: "2030-01-01", holder: ion, nationality: "Română / ROU")
-        #expect(ReadinessEngine.citizenship(of: .member(ion.id), in: [ion, passport, card]) == Citizenship.romania)
+        #expect(Set(ReadinessEngine.citizenships(of: .member(ion.id), in: [ion, passport, card])) == [Citizenship.romania, Citizenship.key("MD")])
 
-        // What is kept on the person wins over the documents.
+        // What is kept on the person is their list; the documents only stand in when none is kept.
         let stated = ReadinessAsset.member("Ion", citizenship: Citizenship.key("MD"))
         let romanianCard = ReadinessAsset.personalDocument(DocumentType.idCard, expires: "2030-01-01", holder: stated, nationality: "ROU")
-        #expect(ReadinessEngine.citizenship(of: .member(stated.id), in: [stated, romanianCard]) == Citizenship.key("MD"))
+        #expect(ReadinessEngine.citizenships(of: .member(stated.id), in: [stated, romanianCard]) == [Citizenship.key("MD")])
     }
 
     // MARK: Countries
@@ -209,7 +209,7 @@ struct TripsAndCitizenshipTests {
         #expect(Citizenship.freeMovement.allSatisfy { code in Citizenship.countries.contains { $0.code == code } })
         #expect(Set(Citizenship.countries.map(\.printedCode)).count == Citizenship.countries.count)
         let field = try #require(BuiltInTemplates.member.field(MemberFields.citizenship))
-        #expect(field.type == .choice)
+        #expect(field.type == .multiChoice, "A person can have several")
         #expect(field.options?.map(\.key) == keys)
         #expect(field.isSensitive, "Never in search or outside the app")
     }
@@ -299,7 +299,7 @@ struct TripsAndCitizenshipTests {
                              reminder: routing.reminder, recognizedText: "", barcodes: [], document: nil, notices: [])
     }
 
-    @Test("Filing a passport keeps its citizenship on its holder, never over one already kept")
+    @Test("Filing a passport adds its citizenship to its holder's, and takes none away")
     func filingKeepsTheCitizenship() async throws {
         let context = try makeContext()
         let memberTemplate = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.member))
@@ -309,10 +309,15 @@ struct TripsAndCitizenshipTests {
         let review = CaptureReview(result: passport(nationality: "MDA"), assets: [ion], context: context)
         #expect(review.destination == .asset(ion.id))
         _ = try await filer.save(review)
-        #expect(ion.values[MemberFields.citizenship] == .text(Citizenship.key("MD")))
+        #expect(Citizenship.kept(in: ion.values) == [Citizenship.key("MD")])
 
-        // A second passport, another country's: the citizenship kept stays.
+        // A second passport, another country's: both are kept.
         _ = try await filer.save(CaptureReview(result: passport(nationality: "ROU"), assets: [ion], context: context))
-        #expect(ion.values[MemberFields.citizenship] == .text(Citizenship.key("MD")), "Changed only on the person's page")
+        #expect(Set(Citizenship.kept(in: ion.values)) == [Citizenship.key("MD"), Citizenship.romania], "A person can have several")
+        #expect(ion.values[MemberFields.citizenship]?.choicesValue?.count == 2, "Kept as a list")
+
+        // The same country again adds nothing.
+        _ = try await filer.save(CaptureReview(result: passport(nationality: "MDA"), assets: [ion], context: context))
+        #expect(Citizenship.kept(in: ion.values).count == 2)
     }
 }

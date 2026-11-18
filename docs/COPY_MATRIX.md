@@ -2288,39 +2288,51 @@ What the review says to each kind of document, from the kind's description (`Cap
 
 ## Pleci din țară
 
-What the trip check asks of each traveller, by the group their citizenship falls in (`Citizenship.Group`: read from the person, else from their documents; never assumed) and where they go, from `TravelRules` and `TravelWording`. Sample day: 3 mai 2027.
+What the trip check asks of each traveller, by the group their citizenship falls in (`Citizenship.Group`: read from the person, else from their documents; never assumed; a person with several travels on the most favourable) and where they go, from `TravelRules` and `TravelWording`. Sample day: 3 mai 2027.
 
 ### `freeMovement`
 
 | Where | Words |
 | :--- | :--- |
-| În Uniunea Europeană („Cetățenilor UE le ajunge cartea de identitate sau pașaportul, valabile până te întorci.”) | Carte de identitate sau pașaport — Nu sunt în dosar. Adaugă unul dintre ele cu o poză și verific până când e valabil. · Card european de sănătate |
-| În afara UE („Ai nevoie de pașaport, bun de călătorit până te întorci.”) | Pașaport — Nu e în dosar. În afara UE ai nevoie de pașaport. Adaugă-l cu o poză și verific până când e bun. · Viza pentru țara în care mergi — Unele țări cer viză sau o autorizație de călătorie, după cetățenie. Verifică ce cere țara înainte de plecare. |
+| În UE sau în spațiul Schengen („Și Elveția, Norvegia, Islanda și Liechtenstein. Cetățenilor UE le ajunge cartea de identitate sau pașaportul, valabile până te întorci.”) | Carte de identitate sau pașaport — Nu sunt în dosar. Adaugă unul dintre ele cu o poză și verific până când e valabil. · Card european de sănătate |
+| În Moldova sau în Balcanii de Vest („Serbia, Muntenegru, Macedonia de Nord, Albania, Bosnia și Herțegovina. Cetățenilor români le ajunge cartea de identitate sau pașaportul, valabile și la 3 luni după ce te întorci.”) | Pașaport — Nu e în dosar. Pentru drumul acesta ai nevoie de pașaport. Adaugă-l cu o poză și verific până când e bun. |
+| În altă țară („Ai nevoie de pașaport, bun de călătorit până te întorci.”) | Pașaport — Nu e în dosar. Pentru drumul acesta ai nevoie de pașaport. Adaugă-l cu o poză și verific până când e bun. · Viza pentru țara în care mergi — Unele țări cer viză sau o autorizație de călătorie, după cetățenie. Verifică ce cere țara înainte de plecare. |
 
 ### `thirdCountry`
 
 | Where | Words |
 | :--- | :--- |
-| În Uniunea Europeană („Cetățenilor UE le ajunge cartea de identitate sau pașaportul, valabile până te întorci.”) | Pașaport — Nu e în dosar. Fără cetățenie europeană, ai nevoie de pașaport și în UE. Adaugă-l cu o poză și verific până când e valabil. · Permis de ședere — Nu e în dosar. Fără el nu poți intra înapoi în țară. Adaugă-l cu o poză și verific până când e valabil. · Card european de sănătate |
-| În afara UE („Ai nevoie de pașaport, bun de călătorit până te întorci.”) | Pașaport — Nu e în dosar. În afara UE ai nevoie de pașaport. Adaugă-l cu o poză și verific până când e bun. · Permis de ședere — Nu e în dosar. Fără el nu poți intra înapoi în țară. Adaugă-l cu o poză și verific până când e valabil. · Viza pentru țara în care mergi — Unele țări cer viză sau o autorizație de călătorie, după cetățenie. Verifică ce cere țara înainte de plecare. |
+| În UE sau în spațiul Schengen („Și Elveția, Norvegia, Islanda și Liechtenstein. Cetățenilor UE le ajunge cartea de identitate sau pașaportul, valabile până te întorci.”) | Pașaport — Nu e în dosar. Fără cetățenie europeană, ai nevoie de pașaport și în UE. Adaugă-l cu o poză și verific până când e valabil. · Permis de ședere — Nu e în dosar. Fără el nu poți intra înapoi în țară. Adaugă-l cu o poză și verific până când e valabil. · Card european de sănătate |
+| În Moldova sau în Balcanii de Vest („Serbia, Muntenegru, Macedonia de Nord, Albania, Bosnia și Herțegovina. Cetățenilor români le ajunge cartea de identitate sau pașaportul, valabile și la 3 luni după ce te întorci.”) | Pașaport — Nu e în dosar. Pentru drumul acesta ai nevoie de pașaport. Adaugă-l cu o poză și verific până când e bun. · Permis de ședere — Nu e în dosar. Fără el nu poți intra înapoi în țară. Adaugă-l cu o poză și verific până când e valabil. |
+| În altă țară („Ai nevoie de pașaport, bun de călătorit până te întorci.”) | Pașaport — Nu e în dosar. Pentru drumul acesta ai nevoie de pașaport. Adaugă-l cu o poză și verific până când e bun. · Permis de ședere — Nu e în dosar. Fără el nu poți intra înapoi în țară. Adaugă-l cu o poză și verific până când e valabil. · Viza pentru țara în care mergi — Unele țări cer viză sau o autorizație de călătorie, după cetățenie. Verifică ce cere țara înainte de plecare. |
 
 ### `unknown`
 
 | Where | Words |
 | :--- | :--- |
-| În Uniunea Europeană („Cetățenilor UE le ajunge cartea de identitate sau pașaportul, valabile până te întorci.”) | Cetățenia — Spune-mi ce cetățenie are, ca să știu ce acte îi trebuie. · Card european de sănătate |
-| În afara UE („Ai nevoie de pașaport, bun de călătorit până te întorci.”) | Cetățenia — Spune-mi ce cetățenie are, ca să știu ce acte îi trebuie. · Pașaport — Nu e în dosar. În afara UE ai nevoie de pașaport. Adaugă-l cu o poză și verific până când e bun. · Viza pentru țara în care mergi — Unele țări cer viză sau o autorizație de călătorie, după cetățenie. Verifică ce cere țara înainte de plecare. |
+| În UE sau în spațiul Schengen („Și Elveția, Norvegia, Islanda și Liechtenstein. Cetățenilor UE le ajunge cartea de identitate sau pașaportul, valabile până te întorci.”) | Cetățenia — Spune-mi ce cetățenie are, ca să știu ce acte îi trebuie. · Card european de sănătate |
+| În Moldova sau în Balcanii de Vest („Serbia, Muntenegru, Macedonia de Nord, Albania, Bosnia și Herțegovina. Cetățenilor români le ajunge cartea de identitate sau pașaportul, valabile și la 3 luni după ce te întorci.”) | Cetățenia — Spune-mi ce cetățenie are, ca să știu ce acte îi trebuie. · Pașaport — Nu e în dosar. Pentru drumul acesta ai nevoie de pașaport. Adaugă-l cu o poză și verific până când e bun. |
+| În altă țară („Ai nevoie de pașaport, bun de călătorit până te întorci.”) | Cetățenia — Spune-mi ce cetățenie are, ca să știu ce acte îi trebuie. · Pașaport — Nu e în dosar. Pentru drumul acesta ai nevoie de pașaport. Adaugă-l cu o poză și verific până când e bun. · Viza pentru țara în care mergi — Unele țări cer viză sau o autorizație de călătorie, după cetățenie. Verifică ce cere țara înainte de plecare. |
+
+### Where an identity card is taken
+
+| Where | Words |
+| :--- | :--- |
+| În Moldova sau în Balcanii de Vest · România | Carte de identitate sau pașaport — Nu sunt în dosar. Acolo merge oricare, dacă e valabil și la 3 luni după ce te întorci. Adaugă-l cu o poză și verific. |
 
 ### What each need says
 
 | Where | Words |
 | :--- | :--- |
-| `identity` · Carte de identitate | Valabilă până pe 3 mai 2027. Ajunge pentru toată UE. / Expiră pe 3 mai 2027, înainte să te întorci. Fă-ți alta sau ia un pașaport valabil. |
-| `identity` · Pașaport | Valabil până pe 3 mai 2027. În UE ajunge și pașaportul. / Valabil până pe 3 mai 2027. Ia-l pe el: cartea de identitate nu mai e valabilă la întoarcere. / Expiră pe 3 mai 2027, înainte să te întorci. Fă-ți altul sau ia o carte de identitate valabilă. |
-| `passport` · Pașaport | Valabil până pe 3 mai 2027. / Expiră pe 3 mai 2027, înainte să te întorci. Fă-ți altul înainte de plecare. |
-| `passport` (travel cut-off) · Pașaport | Bun de călătorit până pe 3 mai 2027, după ce te întorci. / Bun de călătorit doar până pe 3 mai 2027. Expiră pe 3 mai 2027, iar multe țări nu primesc un pașaport atât de aproape de expirare. Fă-ți altul înainte de plecare. |
-| `residencePermit` · Permis de ședere | Valabil până pe 3 mai 2027. Ia-l cu tine: îți trebuie ca să intri înapoi în țară. / Expiră pe 3 mai 2027, înainte să te întorci. Cere prelungirea cu cel puțin 30 de zile înainte să expire. |
+| `identity` · Carte de identitate | Valabilă până pe 3 mai 2027. Ajunge pentru toată UE. / Expiră pe 3 mai 2027, înainte să te întorci. Fă-ți alta sau ia un pașaport valabil. / A expirat pe 1 martie 2027. Fă-ți alta sau ia un pașaport valabil. |
+| `identity` · Pașaport | Valabil până pe 3 mai 2027. În UE ajunge și pașaportul. / Valabil până pe 3 mai 2027. Ia-l pe el: cartea de identitate nu mai e valabilă la întoarcere. / Expiră pe 3 mai 2027, înainte să te întorci. Fă-ți altul sau ia o carte de identitate valabilă. / A expirat pe 1 martie 2027. Fă-ți altul sau ia o carte de identitate valabilă. |
+| `identity` (3 months after return) · Carte de identitate | Valabilă până pe 3 mai 2027, și la 3 luni după ce te întorci, cât cer țările de acolo. / Expiră pe 3 mai 2027, la mai puțin de 3 luni după ce te întorci, iar țările de acolo o cer valabilă cel puțin atât. Fă-ți alta sau ia un pașaport valabil. / A expirat pe 1 martie 2027. Fă-ți alta sau ia un pașaport valabil. |
+| `identity` (3 months after return) · Pașaport | Valabil până pe 3 mai 2027, și la 3 luni după ce te întorci, cât cer țările de acolo. / Valabil până pe 3 mai 2027. Ia-l pe el: cartea de identitate nu mai e valabilă la 3 luni după ce te întorci. / Expiră pe 3 mai 2027, la mai puțin de 3 luni după ce te întorci, iar țările de acolo îl cer valabil cel puțin atât. Fă-ți altul sau ia o carte de identitate valabilă. / A expirat pe 1 martie 2027. Fă-ți altul sau ia o carte de identitate valabilă. |
+| `passport` · Pașaport | Valabil până pe 3 mai 2027. / Expiră pe 3 mai 2027, înainte să te întorci. Fă-ți altul înainte de plecare. / A expirat pe 1 martie 2027. Fă-ți altul înainte de plecare. |
+| `passport` (travel cut-off) · Pașaport | Bun de călătorit până pe 3 mai 2027, după ce te întorci. / Bun de călătorit doar până pe 3 mai 2027. Expiră pe 3 mai 2027, iar multe țări nu primesc un pașaport atât de aproape de expirare. Fă-ți altul înainte de plecare. / A expirat pe 1 martie 2027. Fă-ți altul înainte de plecare. |
+| `residencePermit` · Permis de ședere | Valabil până pe 3 mai 2027. Ia-l cu tine: îți trebuie ca să intri înapoi în țară. / Expiră pe 3 mai 2027, înainte să te întorci. Cere prelungirea cu cel puțin 30 de zile înainte să expire. / A expirat pe 1 martie 2027. Fără un permis valabil nu poți intra înapoi în țară. Întreabă la Imigrări ce poți face înainte de plecare. |
 | A document with no expiry | Nu știu până când e valabil. Adaugă data de expirare. |
+| The simple identity card (CIS) | Cartea de identitate simplă nu e act de călătorie: e bună doar în țară. Ia un pașaport sau fă-ți cartea electronică. |
 | Documents filed under no one, no citizenship | Cetățenia — Nu știu ce cetățenie are titularul. Mută actele la persoana lor și spune-mi ce cetățenie are. |
 
 ## Vinzi mașina și Ai avut o daună

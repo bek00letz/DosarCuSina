@@ -465,6 +465,7 @@ private struct GalleryChips: View {
     enum Filter: String, CaseIterable { case toate = "Toate", auto = "Auto", casa = "Casă", pet = "Animale", acte = "Acte", sanatate = "Sănătate" }
     @State private var filter: Filter = .toate
     @State private var picked: Set<String> = ["Căpușe"]
+    @State private var citizenships: Set<String> = [Citizenship.romania, Citizenship.key("MD")]
 
     var body: some View {
         GalleryPage {
@@ -475,6 +476,9 @@ private struct GalleryChips: View {
             GallerySection(title: "Alegere multiplă") {
                 DSCard {
                     DSMultiChoiceField(galleryWords("Paraziți vizați"), selection: $picked, options: ["Căpușe", "Purici", "Flebotomi", "Viermi intestinali", "Acarieni"]) { $0 }
+                }
+                DSCard {
+                    DSMultiChoiceField(galleryWords("Cetățenie"), selection: $citizenships, options: Citizenship.options.map(\.key)) { Citizenship.label(for: $0) ?? $0 }
                 }
             }
         }

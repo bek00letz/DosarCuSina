@@ -213,8 +213,9 @@ private struct ReadinessActionsModifier: ViewModifier {
     }
 }
 
-/// „Ce cetățenie are…?”: asked once, from the trip check, and kept on the person
-/// (`MemberFields.citizenship`), where their page shows it and lets them change it.
+/// „Ce cetățenie are…?”: asked once, from the trip check, and kept among the person's
+/// citizenships (`MemberFields.citizenship`), where their page shows them and lets them add
+/// or take one away.
 private struct CitizenshipSheet: View {
     let memberID: UUID
     let announce: (DSToast) -> Void
@@ -237,7 +238,7 @@ private struct CitizenshipSheet: View {
                               comment: "Asks a household member's citizenship, from the trip check. The argument is their name."),
                 options: Citizenship.options.map(\.key),
                 optionTitle: { Citizenship.label(for: $0) ?? $0 },
-                selection: member.values[MemberFields.citizenship]?.textValue
+                selection: Citizenship.kept(in: member.values).first
             ) { chosen in
                 keep(chosen, on: member)
             }
@@ -247,9 +248,7 @@ private struct CitizenshipSheet: View {
     }
 
     private func keep(_ chosen: String?, on member: Asset) {
-        guard let chosen else { return }
-        var values = member.values
-        values[MemberFields.citizenship] = .text(chosen)
+        guard let chosen, let values = Citizenship.keeping(Citizenship.kept(in: member.values) + [chosen], in: member.values) else { return }
         do {
             _ = try AssetActions(context: context).update(member, name: member.name, values: values, notes: member.notes)
         } catch {

@@ -6,11 +6,13 @@ import Foundation
 /// the EU (the 27 member states, the other EEA states and Switzerland). Names are written in
 /// Romanian, from the app's locale.
 ///
-/// A person's citizenship is kept on them (`MemberFields.citizenship`), read from their
-/// passport, identity card or residence permit where the document prints it
-/// (`DocumentFields.nationality`), and changed on their page. The trip check reads its rules
-/// from the group a citizenship falls in (`Citizenship.Group`, `TravelRules`), never from a
-/// country named in code.
+/// A person can have several citizenships, all kept on them as a list
+/// (`MemberFields.citizenship`, a multiple choice): every one their passport, identity card
+/// or residence permit prints (`DocumentFields.nationality`) is added as the document is
+/// filed, and the person adds or takes one away on their page. The trip check weighs each
+/// one for the trip and goes by the most favourable (`ReadinessEngine.travellerChecks`), with
+/// its rules from the group a citizenship falls in (`Citizenship.Group`, `TravelRules`), never
+/// from a country named in code.
 public enum Citizenship {
     /// One country of citizenship.
     public struct Country: Hashable, Sendable {
@@ -182,17 +184,50 @@ public enum Citizenship {
         return country.movesFreely ? .freeMovement : .thirdCountry
     }
 
-    /// A person's citizenship: what is kept on them, else what their documents say
-    /// (`DocumentFields.nationality`; a free-movement citizenship first, for a person with
-    /// two). Nil when neither says.
-    public static func of(person: FieldValues?, documents: [FieldValues]) -> String? {
-        if let kept = person?[MemberFields.citizenship]?.textValue, let key = options.option(for: kept)?.key { return key }
-        return read(fromDocuments: documents)
+    /// The citizenships kept on a person, as keys in the options' order: the list this
+    /// version keeps, or the one key an earlier version kept as text (`ChoiceKeysStep` moves it
+    /// into a list by itself). Text no option recognizes is left out.
+    public static func kept(in person: FieldValues?) -> [String] {
+        let stored: [String]
+        switch person?[MemberFields.citizenship] {
+        case .choices(let keys)?: stored = keys
+        case .text(let text)?: stored = [text]
+        default: stored = []
+        }
+        return ordered(stored.compactMap { options.option(for: $0)?.key })
     }
 
-    /// The citizenship a person's documents print: a free-movement one first, else the first.
-    public static func read(fromDocuments documents: [FieldValues]) -> String? {
-        let read = documents.compactMap { key(forNationality: $0[DocumentFields.nationality]?.textValue) }
-        return read.first { group(of: $0) == .freeMovement } ?? read.first
+    /// A person's citizenships: every one kept on them, else every one their documents print
+    /// (`DocumentFields.nationality`). Empty when neither says.
+    public static func of(person: FieldValues?, documents: [FieldValues]) -> [String] {
+        let kept = kept(in: person)
+        return kept.isEmpty ? read(fromDocuments: documents) : kept
+    }
+
+    /// Every citizenship the documents print, each once, in the options' order.
+    public static func read(fromDocuments documents: [FieldValues]) -> [String] {
+        ordered(documents.compactMap { key(forNationality: $0[DocumentFields.nationality]?.textValue) })
+    }
+
+    /// The citizenship one document prints, when it prints one.
+    public static func printed(on document: FieldValues) -> String? {
+        key(forNationality: document[DocumentFields.nationality]?.textValue)
+    }
+
+    /// The person's values with `citizenships` kept as their list, or nil when that is what
+    /// they keep already.
+    public static func keeping(_ citizenships: [String], in person: FieldValues) -> FieldValues? {
+        let list = ordered(citizenships)
+        guard !list.isEmpty, person[MemberFields.citizenship] != .choices(list) else { return nil }
+        var values = person
+        values[MemberFields.citizenship] = .choices(list)
+        return values
+    }
+
+    /// Keys once each, in the options' order (by name, „Fără cetățenie” last): how the list is
+    /// kept, so the same citizenships are always the same value.
+    static func ordered(_ keys: [String]) -> [String] {
+        let wanted = Set(keys)
+        return options.map(\.key).filter(wanted.contains)
     }
 }
