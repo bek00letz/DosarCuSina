@@ -66,11 +66,22 @@ enum FullPageScreenshot {
         }
     }
 
-    /// Whether a full page is offered at all: never while a lock covers the app or a screen
-    /// shows a locked state, and only for a scroll view with more than one screen of content.
+    /// Whether a full page is offered at all: never while something is locked right now (the
+    /// app lock is closed, or the screen shows a locked state), and only for a scroll view with
+    /// more than one screen of content.
     static func offers(cover: LockCover?, showsLockedState: Bool, viewport: Viewport?) -> Bool {
-        guard cover == nil, !showsLockedState, let viewport else { return false }
+        guard !withholds(cover), !showsLockedState, let viewport else { return false }
         return viewport.hasMoreThanShown && viewport.visible != nil
+    }
+
+    /// Whether a cover withholds a full page: only the app lock, which hides a session that is
+    /// closed. The app-switcher cover (`LockCover.privacy`) is up whenever the app isn't
+    /// active after a Face ID in the session, the screenshot editor's moment included; it hides
+    /// the app from the app switcher's picture and says nothing about what the screen in front
+    /// shows, which the person just saw unlocked. A section that is locked again draws its locked
+    /// state, which withholds the page by itself.
+    static func withholds(_ cover: LockCover?) -> Bool {
+        cover == .lock
     }
 
     /// The stretch a full page holds: the whole content when it fits in `mostScreens`, else
