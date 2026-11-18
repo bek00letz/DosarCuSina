@@ -74,9 +74,14 @@ extension Provider {
         return titles.isEmpty ? nil : titles.formatted(.list(type: .and).locale(.dosarDefault))
     }
 
-    /// "Schimb ulei · 14 mar. 2025 · 420 lei": the latest job and its price.
-    var lastJobLine: String? {
+    /// "Schimb ulei · 14 mar. 2025 · 420 lei": the latest job and its price. A job in a section
+    /// `isLocked` says is behind Face ID right now names nothing of it (`LockedWording.job`), and
+    /// keeps only its day, as the firm's page does.
+    func lastJobLine(isLocked: (Asset) -> Bool) -> String? {
         guard let last = (historyEntries ?? []).max(by: { $0.occurredAt < $1.occurredAt }) else { return nil }
+        if let section = last.asset, isLocked(section) {
+            return [LockedWording.job, DosarFormat.day(last.occurredAt)].joined(separator: " · ")
+        }
         var parts = [last.title, DosarFormat.day(last.occurredAt)]
         if !last.effectiveCost.isEmpty { parts.append(last.effectiveCost.formatted()) }
         return parts.joined(separator: " · ")
@@ -88,6 +93,8 @@ extension Provider {
 struct ProviderCard: View {
     let provider: Provider
     @Environment(\.openURL) private var openURL
+    @Environment(BiometricVaultManager.self) private var vault
+    @Query private var templates: [CategoryTemplate]
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Space.xs) {
@@ -110,7 +117,8 @@ struct ProviderCard: View {
                                 .dsFont(.caption)
                             }
                         }
-                        if let last = provider.lastJobLine {
+                        let byKey = Dictionary(templates.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
+                        if let last = provider.lastJobLine(isLocked: { vault.isLocked($0, template: byKey[$0.templateKey]) }) {
                             Text(verbatim: last).dsFont(.footnote, numeric: true)
                         }
                     }

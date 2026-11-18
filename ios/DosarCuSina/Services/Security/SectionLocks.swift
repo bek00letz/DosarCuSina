@@ -264,6 +264,42 @@ extension Asset {
     }
 }
 
+extension Obligation {
+    /// Whether this deadline's section is behind Face ID on this device, read now (the one answer,
+    /// `Asset.isSensitive(template:)`, with its category's record from `context`): what closing it
+    /// asks (`DeadlineChange`), never a copy kept from earlier, such as a snapshot read before a
+    /// lock was turned on. A deadline of the whole household has no section, so no lock.
+    func isSensitive(in context: ModelContext) -> Bool {
+        guard let asset else { return false }
+        let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
+        return asset.isSensitive(template: template)
+    }
+}
+
+extension Attachment {
+    /// Every section this document belongs to: its own, its deadline's, its record's in Istoric
+    /// (a visit's invoice, a bill), its part's and its reading's, each once.
+    var sections: [Asset] {
+        let candidates = [asset, obligation?.asset, historyEntry?.asset, serviceItem?.entry?.asset, measurement?.asset]
+        var found: [Asset] = []
+        for case let section? in candidates where !found.contains(where: { $0.id == section.id }) { found.append(section) }
+        return found
+    }
+
+    /// The lock the document's page is drawn behind, by the one answer for each section it belongs
+    /// to: a section whose category is locked if it has one (so the page is locked if any of them
+    /// is), else its first section. A document of the whole household's (a household deadline's
+    /// paper) is open; one that names nothing that can be found is `RouteLock.unknownSection`,
+    /// locked while anything of the binder is (locks fail closed).
+    func lock(among templates: [String: CategoryTemplate]) -> RouteLock {
+        let sections = sections
+        if let locked = sections.first(where: { $0.isSensitive(among: templates) }) { return .section(locked.id) }
+        if let first = sections.first { return .section(first.id) }
+        let belongsToTheHousehold = obligation != nil || historyEntry != nil
+        return belongsToTheHousehold ? .open : .unknownSection
+    }
+}
+
 // MARK: - The whole binder
 
 /// Which categories are behind Face ID on this device across the whole binder: the one answer

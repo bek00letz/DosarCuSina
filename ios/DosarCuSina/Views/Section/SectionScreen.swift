@@ -50,7 +50,6 @@ private struct SectionContent: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Environment(\.announce) private var announce
-    @Environment(BiometricVaultManager.self) private var vault
     @Query private var templates: [CategoryTemplate]
 
     @State private var isEditing = false
@@ -78,15 +77,10 @@ private struct SectionContent: View {
     }
 
     private var sectionPage: some View {
-        Group {
-            if vault.isLocked(asset, template: template) {
-                LockedSectionView(title: asset.name)
-            } else {
-                page
-            }
-        }
-        .navigationTitle(Text(verbatim: asset.name))
-        .navigationBarTitleDisplayMode(.inline)
+        // The one gate: the page and the sheets it presents live behind the section's lock.
+        LockGate(asset: asset) { page }
+            .navigationTitle(Text(verbatim: asset.name))
+            .navigationBarTitleDisplayMode(.inline)
     }
 
     private var page: some View {
