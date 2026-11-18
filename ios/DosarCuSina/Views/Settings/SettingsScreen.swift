@@ -792,6 +792,8 @@ struct AboutSettings: View {
     /// when the app comes back (the share extension writes it while the app doesn't run), and
     /// whenever the app empties it or puts it back.
     @State private var shareProblems = ShareProblems.read()
+    /// „Probleme la primire” is open: its row stays while it is, even once the list is emptied.
+    @State private var isShowingShareProblems = false
 
     var body: some View {
         Section {
@@ -811,10 +813,13 @@ struct AboutSettings: View {
                 Text("Ajutor", comment: "About: opens the help page on the app's website: common questions, asking for help, reporting a problem.")
                     .frame(minHeight: DS.Control.minimumHitTarget)
             }
-            // Only while a file shared from another app didn't arrive: fewer rows otherwise.
-            if ShareProblems.showsRow(shareProblems) {
+            // Only while a file shared from another app didn't arrive, or its page is open: fewer
+            // rows otherwise, and never a page taken away under the person.
+            if ShareProblems.showsRow(shareProblems, pageIsOpen: isShowingShareProblems) {
                 NavigationLink {
                     ShareProblemsScreen()
+                        .onAppear { isShowingShareProblems = true }
+                        .onDisappear { isShowingShareProblems = false }
                 } label: {
                     VStack(alignment: .leading, spacing: DS.Space.xxs) {
                         Text(verbatim: ShareProblemsWording.title)
@@ -844,7 +849,8 @@ struct AboutSettings: View {
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active { shareProblems = ShareProblems.read() }
                 }
-                // „Golește lista” takes the row away, and its "Anulează" brings it back.
+                // „Golește lista” takes the row away once its page closes, and its "Anulează"
+                // brings it back.
                 .onReceive(NotificationCenter.default.publisher(for: ShareFailureLog.didChangeNotification)) { _ in
                     shareProblems = ShareProblems.read()
                 }
