@@ -83,7 +83,7 @@ The screenshots are taken by UI tests, never by hand, so they can be taken again
 
 On GitHub: Actions › Screenshots › Run workflow. It also runs on a pull request that changes the household, the UI tests, the captions or the framing. The run's artifacts are `screenshots` (the raw captures, a folder per device, light and dark) and `framed-screenshots` (each framing style with its captions, at App Store Connect's pixel sizes). By default it takes the iPhone 6.9″ (iPhone 17 Pro Max, 1320 × 2868) and the iPad 13″ (iPad Pro 13-inch, 2064 × 2752).
 
-On a Mac, with a simulator that is already installed (each takes a few minutes; the status bar reads 9:41, Face ID is enrolled on the simulator):
+On a Mac, with a simulator that is already installed (each takes a few minutes; the status bar reads 9:41, Face ID is enrolled on the simulator). Each run makes its household in a store of its own; the trips the app keeps on that simulator are replaced by the screenshots' trip, so use a simulator you don't otherwise test trips on:
 
 ```sh
 scripts/app-store-screenshots.sh /tmp/screenshots "iPad Pro 13-inch (M5)"

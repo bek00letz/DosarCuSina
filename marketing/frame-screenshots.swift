@@ -106,7 +106,7 @@ func frame(_ screen: CGImage, caption: Caption, style: Style) -> CGImage? {
     let titleSize = (unit * 0.074).rounded()
     let subtitleSize = (unit * 0.040).rounded()
     var top = height * (isPad ? 0.055 : 0.065)
-    top += drawText(caption.title, size: titleSize, weight: .bold, color: style.title, tracking: -0.012, lineHeight: 1.08,
+    top += drawText(caption.title, size: titleSize, weight: .bold, color: style.title, tracking: -0.008, lineHeight: 1.08,
                     in: context, top: top, left: margin, width: width - margin * 2, canvasHeight: height)
     if let subtitle = caption.subtitle {
         top += subtitleSize * 0.55
@@ -123,7 +123,7 @@ func frame(_ screen: CGImage, caption: Caption, style: Style) -> CGImage? {
     let bezelWidth = style.bezel ? screenSize.width * (isPad ? 0.022 : 0.032) : 0
     let outer = CGSize(width: screenSize.width + bezelWidth * 2, height: screenSize.height + bezelWidth * 2)
     let available = height - top
-    let deviceTop: CGFloat = style.bleedsOffBottom ? top : top + max(0, (available - outer.height * min(1, available / outer.height)) / 2)
+    let deviceTop = top
     var fit: CGFloat = 1
     if !style.bleedsOffBottom, outer.height > available - height * 0.04 { fit = (available - height * 0.04) / outer.height }
     let outerRect = CGRect(x: (width - outer.width * fit) / 2, y: height - deviceTop - outer.height * fit, width: outer.width * fit, height: outer.height * fit)
