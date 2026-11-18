@@ -353,6 +353,8 @@ struct DSLockedState: View {
         .padding(DS.Space.xxl)
         .frame(maxWidth: 480)
         .frame(maxWidth: .infinity)
+        // A screenshot of a locked state is only what the screen shows.
+        .withholdsFullPageScreenshot()
     }
 }
 
