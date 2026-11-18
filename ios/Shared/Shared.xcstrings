@@ -277,24 +277,34 @@
       "comment" : "Share failed: what to do when the files can't be read. Plural variations without the number: one „Aplicația din care l-ai trimis nu mi-a dat voie să-l citesc. Salvează-l întâi în Fișiere, apoi trimite-l de acolo.”, several with „le”.",
       "localizations" : {
         "ro" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Aplicația din care le-ai trimis nu mi-a dat voie să le citesc. Salvează-le întâi în Fișiere, apoi trimite-le de acolo."
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Aplicația din care l-ai trimis nu mi-a dat voie să-l citesc. Salvează-l întâi în Fișiere, apoi trimite-l de acolo."
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Aplicația din care le-ai trimis nu mi-a dat voie să le citesc. Salvează-le întâi în Fișiere, apoi trimite-le de acolo."
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@files@"
+          },
+          "substitutions" : {
+            "files" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Aplicația din care le-ai trimis nu mi-a dat voie să le citesc. Salvează-le întâi în Fișiere, apoi trimite-le de acolo."
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Aplicația din care l-ai trimis nu mi-a dat voie să-l citesc. Salvează-l întâi în Fișiere, apoi trimite-l de acolo."
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Aplicația din care le-ai trimis nu mi-a dat voie să le citesc. Salvează-le întâi în Fișiere, apoi trimite-le de acolo."
+                    }
+                  }
                 }
               }
             }
@@ -312,24 +322,34 @@
       "comment" : "Share failed: downloading the files needs the internet. Plural variations without the number: one „Ca să-l descarc, telefonul are nevoie de internet. Conectează-te, apoi trimite-l din nou.”, several „Ca să le descarc, telefonul are nevoie de internet. Conectează-te, apoi trimite-le din nou.”",
       "localizations" : {
         "ro" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Ca să le descarc, telefonul are nevoie de internet. Conectează-te, apoi trimite-le din nou."
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Ca să-l descarc, telefonul are nevoie de internet. Conectează-te, apoi trimite-l din nou."
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Ca să le descarc, telefonul are nevoie de internet. Conectează-te, apoi trimite-le din nou."
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@files@"
+          },
+          "substitutions" : {
+            "files" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Ca să le descarc, telefonul are nevoie de internet. Conectează-te, apoi trimite-le din nou."
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Ca să-l descarc, telefonul are nevoie de internet. Conectează-te, apoi trimite-l din nou."
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Ca să le descarc, telefonul are nevoie de internet. Conectează-te, apoi trimite-le din nou."
+                    }
+                  }
                 }
               }
             }
@@ -341,24 +361,34 @@
       "comment" : "Share failed: the copy failed for a reason the phone didn't name. Plural variations without the number: one „Fișierul nu s-a putut copia. Încearcă din nou din aplicația din care l-ai trimis.”, several „Fișierele nu s-au putut copia. … le-ai trimis.”",
       "localizations" : {
         "ro" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Fișierele nu s-au putut copia. Încearcă din nou din aplicația din care le-ai trimis."
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Fișierul nu s-a putut copia. Încearcă din nou din aplicația din care l-ai trimis."
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Fișierele nu s-au putut copia. Încearcă din nou din aplicația din care le-ai trimis."
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@files@"
+          },
+          "substitutions" : {
+            "files" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Fișierele nu s-au putut copia. Încearcă din nou din aplicația din care le-ai trimis."
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Fișierul nu s-a putut copia. Încearcă din nou din aplicația din care l-ai trimis."
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Fișierele nu s-au putut copia. Încearcă din nou din aplicația din care le-ai trimis."
+                    }
+                  }
                 }
               }
             }
@@ -370,24 +400,34 @@
       "comment" : "Share failed: the copy failed. Plural variations without the number: one „Nu s-a trimis”, several „Nu s-au trimis”.",
       "localizations" : {
         "ro" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Nu s-au trimis"
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Nu s-a trimis"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Nu s-au trimis"
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@files@"
+          },
+          "substitutions" : {
+            "files" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Nu s-au trimis"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Nu s-a trimis"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Nu s-au trimis"
+                    }
+                  }
                 }
               }
             }
@@ -399,24 +439,34 @@
       "comment" : "Share failed: the files are in iCloud and couldn't be downloaded. Plural variations without the number: one „Fișierul e încă în iCloud”, several „Fișierele sunt încă în iCloud”.",
       "localizations" : {
         "ro" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Fișierele sunt încă în iCloud"
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Fișierul e încă în iCloud"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Fișierele sunt încă în iCloud"
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@files@"
+          },
+          "substitutions" : {
+            "files" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Fișierele sunt încă în iCloud"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Fișierul e încă în iCloud"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Fișierele sunt încă în iCloud"
+                    }
+                  }
                 }
               }
             }
@@ -428,24 +478,34 @@
       "comment" : "Share failed: the files or the share are too large. Plural variations without the number: one „Fișierul e prea mare”, several „Fișierele sunt prea mari”.",
       "localizations" : {
         "ro" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Fișierele sunt prea mari"
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Fișierul e prea mare"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Fișierele sunt prea mari"
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@files@"
+          },
+          "substitutions" : {
+            "files" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Fișierele sunt prea mari"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Fișierul e prea mare"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Fișierele sunt prea mari"
+                    }
+                  }
                 }
               }
             }
@@ -502,24 +562,34 @@
       "comment" : "Share failed: what to do when the shared folder isn't available. Plural variations without the number: one „Deschide Dosar cu Șină o dată, apoi trimite-l din nou.”, several „… apoi trimite-le din nou.”",
       "localizations" : {
         "ro" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Deschide Dosar cu Șină o dată, apoi trimite-le din nou."
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Deschide Dosar cu Șină o dată, apoi trimite-l din nou."
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Deschide Dosar cu Șină o dată, apoi trimite-le din nou."
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@files@"
+          },
+          "substitutions" : {
+            "files" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Deschide Dosar cu Șină o dată, apoi trimite-le din nou."
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Deschide Dosar cu Șină o dată, apoi trimite-l din nou."
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Deschide Dosar cu Șină o dată, apoi trimite-le din nou."
+                    }
+                  }
                 }
               }
             }
@@ -531,24 +601,34 @@
       "comment" : "Share failed: where to free up space. The path names the iPhone's own Settings screens. Plural variations without the number: one „Fă loc din Configurări › General › Spațiu iPhone, apoi trimite-l din nou.”, several „… apoi trimite-le din nou.”",
       "localizations" : {
         "ro" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Fă loc din Configurări › General › Spațiu iPhone, apoi trimite-le din nou."
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Fă loc din Configurări › General › Spațiu iPhone, apoi trimite-l din nou."
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Fă loc din Configurări › General › Spațiu iPhone, apoi trimite-le din nou."
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@files@"
+          },
+          "substitutions" : {
+            "files" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Fă loc din Configurări › General › Spațiu iPhone, apoi trimite-le din nou."
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Fă loc din Configurări › General › Spațiu iPhone, apoi trimite-l din nou."
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Fă loc din Configurări › General › Spațiu iPhone, apoi trimite-le din nou."
+                    }
+                  }
                 }
               }
             }
@@ -601,24 +681,34 @@
       "comment" : "Share failed: what to do with files still in iCloud. Plural variations without the number: one „Nu l-am putut descărca acum. Deschide-l o dată în Fișiere, apoi trimite-l din nou.”, several „Nu le-am putut descărca acum. Deschide-le o dată în Fișiere, apoi trimite-le din nou.”",
       "localizations" : {
         "ro" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Nu le-am putut descărca acum. Deschide-le o dată în Fișiere, apoi trimite-le din nou."
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Nu l-am putut descărca acum. Deschide-l o dată în Fișiere, apoi trimite-l din nou."
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Nu le-am putut descărca acum. Deschide-le o dată în Fișiere, apoi trimite-le din nou."
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@files@"
+          },
+          "substitutions" : {
+            "files" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Nu le-am putut descărca acum. Deschide-le o dată în Fișiere, apoi trimite-le din nou."
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Nu l-am putut descărca acum. Deschide-l o dată în Fișiere, apoi trimite-l din nou."
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Nu le-am putut descărca acum. Deschide-le o dată în Fișiere, apoi trimite-le din nou."
+                    }
+                  }
                 }
               }
             }
@@ -659,24 +749,34 @@
       "comment" : "Share failed: the app's shared folder isn't available. Plural variations without the number: one „Nu am unde să pun fișierul”, several „Nu am unde să pun fișierele”.",
       "localizations" : {
         "ro" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Nu am unde să pun fișierele"
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Nu am unde să pun fișierul"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Nu am unde să pun fișierele"
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@files@"
+          },
+          "substitutions" : {
+            "files" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Nu am unde să pun fișierele"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Nu am unde să pun fișierul"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Nu am unde să pun fișierele"
+                    }
+                  }
                 }
               }
             }
@@ -691,24 +791,34 @@
       "comment" : "Share failed: the sending app didn't allow reading the files. Plural variations without the number: one „Nu pot deschide fișierul”, several „Nu pot deschide fișierele”.",
       "localizations" : {
         "ro" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Nu pot deschide fișierele"
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Nu pot deschide fișierul"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Nu pot deschide fișierele"
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@files@"
+          },
+          "substitutions" : {
+            "files" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Nu pot deschide fișierele"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Nu pot deschide fișierul"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Nu pot deschide fișierele"
+                    }
+                  }
                 }
               }
             }
@@ -735,24 +845,34 @@
       "comment" : "Share failed: the sending app handed over nothing. Plural variations without the number: one „Telefonul nu mi-a dat fișierul. Încearcă din nou din aplicația din care l-ai trimis.”, several „Telefonul nu mi-a dat fișierele. … le-ai trimis.”",
       "localizations" : {
         "ro" : {
-          "variations" : {
-            "plural" : {
-              "few" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Telefonul nu mi-a dat fișierele. Încearcă din nou din aplicația din care le-ai trimis."
-                }
-              },
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Telefonul nu mi-a dat fișierul. Încearcă din nou din aplicația din care l-ai trimis."
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Telefonul nu mi-a dat fișierele. Încearcă din nou din aplicația din care le-ai trimis."
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@files@"
+          },
+          "substitutions" : {
+            "files" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Telefonul nu mi-a dat fișierele. Încearcă din nou din aplicația din care le-ai trimis."
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Telefonul nu mi-a dat fișierul. Încearcă din nou din aplicația din care l-ai trimis."
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Telefonul nu mi-a dat fișierele. Încearcă din nou din aplicația din care le-ai trimis."
+                    }
+                  }
                 }
               }
             }
