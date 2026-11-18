@@ -166,9 +166,10 @@ enum SettingsStatus {
 
     /// Despre's „Probleme la primire”: „Un fișier nu a ajuns”, „3 fișiere nu au ajuns”, counted
     /// by the files of the share log's entries (`ShareProblems.files`). The row shows only while
-    /// there are any.
+    /// there are any, or while its page is open: emptied there, it says what the page says.
     static func shareProblems(_ count: Int) -> String {
-        String(localized: "\(count) fișiere nu au ajuns", locale: .dosarDefault, comment: "Settings › Despre: how many files shared from other apps didn't arrive, with Romanian plural forms (un fișier nu a ajuns).")
+        guard count > 0 else { return ShareProblemsWording.empty }
+        return String(localized: "\(count) fișiere nu au ajuns", locale: .dosarDefault, comment: "Settings › Despre: how many files shared from other apps didn't arrive, with Romanian plural forms (un fișier nu a ajuns).")
     }
 
     static var examples: String {
