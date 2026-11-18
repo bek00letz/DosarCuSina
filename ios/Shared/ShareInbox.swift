@@ -306,11 +306,13 @@ public struct ShareInbox: Sendable {
     /// Copies `source` to `target` a piece at a time, so a large file never sits in memory
     /// whole (a share extension has little memory), and stops with `tooLarge` once it passes
     /// `limit` bytes. A size the file states is checked before anything is read, so a large
-    /// file in iCloud isn't downloaded only to be refused. Nothing is left at `target` when it
-    /// fails. Returns the bytes copied.
+    /// file in iCloud isn't downloaded only to be refused. A share stopped with „Renunță”
+    /// (`stop`) stops it between two pieces with `CancellationError`. Nothing is left at
+    /// `target` when it fails. Returns the bytes copied.
     @discardableResult
-    public static func copyStreaming(from source: URL, to target: URL, limit: Int) throws -> Int {
-        if let stated = try? source.resourceValues(forKeys: [.fileSizeKey]).fileSize, stated > limit {
+    public static func copyStreaming(from source: URL, to target: URL, limit: Int, stop: ShareCancellation? = nil) throws -> Int {
+        try stop?.check()
+        if let stated = statedSize(of: source), stated > limit {
             throw InboxError.tooLarge
         }
         let input = try FileHandle(forReadingFrom: source)
@@ -323,6 +325,7 @@ public struct ShareInbox: Sendable {
             defer { try? output.close() }
             var total = 0
             while true {
+                try stop?.check()
                 let chunk = try autoreleasepool { try input.read(upToCount: chunkLength) }
                 guard let chunk, !chunk.isEmpty else { break }
                 total += chunk.count
@@ -340,19 +343,30 @@ public struct ShareInbox: Sendable {
     /// Copies a file where it lives (in Files, iCloud Drive or another app's storage) with
     /// coordinated reading (`NSFileCoordinator`), which first brings down a file whose
     /// contents are still in the cloud, then streams it (`copyStreaming`). It waits while the
-    /// file downloads, so it never runs on the main thread.
+    /// file downloads, so it never runs on the main thread; „Renunță” (`stop`) ends the wait.
     @discardableResult
-    public static func coordinatedCopy(of source: URL, to target: URL, limit: Int) throws -> Int {
-        if let stated = try? source.resourceValues(forKeys: [.fileSizeKey]).fileSize, stated > limit {
+    public static func coordinatedCopy(of source: URL, to target: URL, limit: Int, stop: ShareCancellation? = nil) throws -> Int {
+        try stop?.check()
+        if let stated = statedSize(of: source), stated > limit {
             throw InboxError.tooLarge
         }
         var coordination: NSError?
         var copied: Result<Int, any Error> = .failure(CocoaError(.fileReadUnknown))
-        NSFileCoordinator(filePresenter: nil).coordinate(readingItemAt: source, options: [], error: &coordination) { readable in
-            copied = Result { try copyStreaming(from: readable, to: target, limit: limit) }
+        let coordinator = NSFileCoordinator(filePresenter: nil)
+        stop?.onStop { coordinator.cancel() }
+        coordinator.coordinate(readingItemAt: source, options: [], error: &coordination) { readable in
+            copied = Result { try copyStreaming(from: readable, to: target, limit: limit, stop: stop) }
         }
+        try stop?.check()
         if let coordination { throw coordination }
         return try copied.get()
+    }
+
+    /// The size a file states without being read: its own, or for a file still in iCloud the
+    /// size it will have once down. Nil when it states none.
+    static func statedSize(of url: URL) -> Int? {
+        let values = try? url.resourceValues(forKeys: [.fileSizeKey, .totalFileSizeKey])
+        return values?.fileSize ?? values?.totalFileSize
     }
 
     /// Whether a file's contents are still only in iCloud, not on the phone.
@@ -524,8 +538,11 @@ public struct ShareInbox: Sendable {
     /// be read just now (the phone is locked) is left as it is, for a later read.
     ///
     /// The app reads the inbox here, so this is where a manifest an earlier version wrote is
-    /// tidied, once: a name it kept whole is written again masked (`maskStoredName`).
+    /// tidied, once: a name it kept whole is written again masked (`maskStoredName`), and the
+    /// staging no share owns any more goes (`removeAbandonedStaging`).
     public func contents(now: Date = Date()) -> Contents {
+        // What a share ended mid-copy left behind goes as the app reads the inbox.
+        removeAbandonedStaging(now: now)
         var items: [InboxItem] = []
         for name in (try? folderNames()) ?? [] {
             switch read(named: name) {
@@ -715,14 +732,25 @@ public struct ShareInbox: Sendable {
         try FileManager.default.removeItem(at: target)
     }
 
-    /// Removes staging folders a crashed extension left behind (older than an hour).
+    /// The longest a share runs: it copies at most `maxShareBytes`, and the system ends a share
+    /// extension long before this. A staging folder no share touched for longer belongs to none.
+    public static let longestShare: TimeInterval = 3600
+
+    /// Removes the staging folders no share owns any more: those a share extension ended
+    /// mid-copy left behind (the system stopped it, the phone restarted). Only a folder untouched
+    /// for longer than a share can take (`longestShare`, from the later of when it was made and
+    /// when a file last went in), so a share running at the same moment keeps its own. Run by
+    /// every share as it starts, by the app at launch, and whenever the app reads the inbox
+    /// (`contents`). A folder that can't be looked at just now is left for the next time.
     public func removeAbandonedStaging(now: Date = Date()) {
-        let names = (try? FileManager.default.contentsOfDirectory(atPath: directory.path())) ?? []
+        let fileManager = FileManager.default
+        let names = (try? fileManager.contentsOfDirectory(atPath: directory.path())) ?? []
         for name in names where name.hasPrefix(Self.stagingPrefix) {
             let url = directory.appending(path: name)
-            let created = (try? FileManager.default.attributesOfItem(atPath: url.path())[.creationDate]) as? Date
-            if let created, now.timeIntervalSince(created) > 3600 {
-                try? FileManager.default.removeItem(at: url)
+            guard let attributes = try? fileManager.attributesOfItem(atPath: url.path()) else { continue }
+            let touched = [attributes[.creationDate], attributes[.modificationDate]].compactMap { $0 as? Date }.max()
+            if let touched, now.timeIntervalSince(touched) > Self.longestShare {
+                try? fileManager.removeItem(at: url)
             }
         }
     }

@@ -9,9 +9,15 @@ import UniformTypeIdentifiers
 ///
 /// Every copy goes into the share's own holding folder in the inbox a piece at a time
 /// (`ShareInbox.copyStreaming`), within the room the share has left (`ShareInbox.room`); the
-/// extension then sorts what arrived into items (`ShareInbox.plan`). A whole share is received
-/// by `receiveAll`, which also counts every file that didn't arrive, untried ones included. Here
-/// so the app's tests pin the plan; the extension is the only caller of `receiveAll`.
+/// share then sorts what arrived into items (`ShareInbox.plan`, `ShareDelivery`). A whole share
+/// is received by `receiveAll`, which also counts every file that didn't arrive, untried ones
+/// included. Here so the app's tests pin the plan; `ShareDelivery` is the only caller of
+/// `receiveAll`.
+///
+/// A file never comes whole into memory because of its size: one that says it is too large
+/// (its stated size, or the bytes counted as it streams) is refused at once, never asked for
+/// another way; once the share has no room left, an item isn't asked for at all; and an item's
+/// bytes are asked for only when no way had a file to give (`Way.data`).
 public enum ShareReceiving {
     /// One way of asking the sending app for an item.
     public enum Way: Hashable, Sendable {
@@ -20,7 +26,9 @@ public enum ShareReceiving {
         case file(String)
         /// The bytes for a type (`loadDataRepresentation`), for a sender that has no file. They
         /// come whole into memory, the way the sender gives them, so a file is asked for this
-        /// way last; the size is checked before they are kept.
+        /// way last, and only when the ways before it found no file to give (each said
+        /// `notHandedOver`): never for a file that is there but couldn't be copied or is too
+        /// large. The size is checked before they are kept.
         case data(String)
         /// A link to the file where it lives (Files, iCloud Drive), read with the permission the
         /// link carries and with coordinated reading, which downloads a file still in iCloud
@@ -52,15 +60,16 @@ public enum ShareReceiving {
     ///
     /// A declared PDF or picture is asked for as a file first, then through its link (the way
     /// that still works when the typed file can't be had, as for a file in iCloud Drive that
-    /// isn't on the phone), and only then as bytes, which come whole into memory. Text is
-    /// asked for as bytes first (it is short), then as a file, then through its link. An item
-    /// that declares nothing the inbox takes is looked at through its link, or through plain
-    /// data when that is all it offers (a PDF saved without an extension).
+    /// isn't on the phone), and only then as bytes, which come whole into memory. Text with no
+    /// file of its own (copied from a message) is asked for as bytes first (it is short), then
+    /// as a file; text that is a file (a .txt from Files, with its link) is a file like any
+    /// other. An item that declares nothing the inbox takes is looked at through its link, or
+    /// through plain data when that is all it offers (a PDF saved without an extension).
     public static func plan(identifiers: [String]) -> Plan? {
         let link: [Way] = identifiers.contains(UTType.fileURL.identifier) ? [.link] : []
         if let declared = ShareInbox.declaredType(among: identifiers), let kind = ShareInbox.kind(of: declared) {
-            let ways: [Way] = kind == .text
-                ? [.data(declared.identifier), .file(declared.identifier)] + link
+            let ways: [Way] = kind == .text && link.isEmpty
+                ? [.data(declared.identifier), .file(declared.identifier)]
                 : [.file(declared.identifier)] + link + [.data(declared.identifier)]
             return Plan(kind: kind, type: declared, ways: ways)
         }
@@ -86,6 +95,8 @@ public enum ShareReceiving {
         case unsupported
         /// Every way failed: the most telling reason, and each way's.
         case failed(ShareFailure, [ShareFailureLog.Attempt])
+        /// The person stopped the share („Renunță”): nothing kept, nothing logged.
+        case stopped
     }
 
     /// What one way gave.
@@ -98,14 +109,26 @@ public enum ShareReceiving {
     /// Receives one item into `holding`, as `received-<index + 1>`, within `room` bytes. On the
     /// main actor, where the share hands its items over; the copying itself runs on the
     /// system's queues and, for a link, on a queue of its own.
+    ///
+    /// With no room left, the item is refused as too large without asking its sender for
+    /// anything. A way that finds it too large ends it: no other way is asked, so its bytes
+    /// never come whole into memory. Its bytes are asked for only after every way before said
+    /// there was no file to give (`Way.data`). „Renunță” (`stop`) ends it between two ways and
+    /// between two pieces of a copy.
     @MainActor
-    public static func receive(_ provider: NSItemProvider, into holding: URL, index: Int, room: Int) async -> Outcome {
+    public static func receive(_ provider: NSItemProvider, into holding: URL, index: Int, room: Int,
+                               stop: ShareCancellation? = nil) async -> Outcome {
         guard let plan = plan(identifiers: provider.registeredTypeIdentifiers) else { return .unsupported }
+        guard room > 0 else {
+            return .failed(.tooLarge, [ShareFailureLog.Attempt(way: "room", failure: .tooLarge, domain: "none", code: 0)])
+        }
         let base = holding.appending(path: "received-\(index + 1)")
         var attempts: [ShareFailureLog.Attempt] = []
         for way in plan.ways {
+            if stop?.isStopped == true { return .stopped }
+            if case .data = way, !attempts.allSatisfy({ $0.failure == .notHandedOver }) { break }
             do {
-                guard let copy = try await copy(provider, by: way, declared: plan.type, to: base, room: room) else {
+                guard let copy = try await copy(provider, by: way, declared: plan.type, to: base, room: room, stop: stop) else {
                     attempts.append(ShareFailureLog.Attempt(way: way.logName, failure: .notHandedOver, domain: "none", code: 0))
                     continue
                 }
@@ -119,9 +142,13 @@ public enum ShareReceiving {
                     return .received(Received(file: settled.file, kind: settled.kind, bytes: bytes, name: provider.suggestedName ?? name))
                 }
             } catch {
-                attempts.append(ShareFailureLog.Attempt(way: way.logName, error: error))
+                if stop?.isStopped == true || error is CancellationError { return .stopped }
+                let attempt = ShareFailureLog.Attempt(way: way.logName, error: error)
+                attempts.append(attempt)
+                if attempt.failure == .tooLarge { break }
             }
         }
+        if stop?.isStopped == true { return .stopped }
         return .failed(ShareFailure.mostTelling(attempts.map(\.failure)) ?? .notHandedOver, attempts)
     }
 
@@ -131,6 +158,8 @@ public enum ShareReceiving {
         public var received: [Received] = []
         /// Every file that didn't: tried in vain, not one the inbox takes, or past the limit.
         public var missed = ShareFailure.Tally()
+        /// The person stopped the share („Renunță”) before every item was asked for.
+        public var stopped = false
     }
 
     /// Receives a share's items in order into `holding`, within the room the share has left
@@ -138,16 +167,22 @@ public enum ShareReceiving {
     /// arrive is counted (`Share.missed`) and kept in `inbox`'s share log as kinds only: one that
     /// failed every way, with its ways; one the inbox can't take (`unsupportedType`); and those
     /// past the limit, one entry for all of them (`overFileLimit`), which are never asked for.
+    /// „Renunță” (`stop`) ends it at once: no item after is asked for, and nothing more is logged.
     @MainActor
-    public static func receiveAll(_ providers: [NSItemProvider], into holding: URL, log inbox: ShareInbox?) async -> Share {
+    public static func receiveAll(_ providers: [NSItemProvider], into holding: URL, log inbox: ShareInbox?,
+                                  stop: ShareCancellation? = nil) async -> Share {
         var share = Share()
         var sharedBytes = 0
         for (index, provider) in providers.enumerated() {
+            guard stop?.isStopped != true else {
+                share.stopped = true
+                break
+            }
             guard share.received.count < ShareInbox.maxFiles else {
                 left(.overFileLimit, way: "limit", files: providers.count - index, in: &share, log: inbox)
                 break
             }
-            switch await receive(provider, into: holding, index: index, room: ShareInbox.room(sharedSoFar: sharedBytes)) {
+            switch await receive(provider, into: holding, index: index, room: ShareInbox.room(sharedSoFar: sharedBytes), stop: stop) {
             case .received(let item):
                 share.received.append(item)
                 sharedBytes += item.bytes
@@ -156,7 +191,10 @@ public enum ShareReceiving {
             case .failed(let failure, let attempts):
                 share.missed.add(failure)
                 ShareFailureLog.record(ShareFailureLog.Entry(at: Date(), failure: failure, attempts: attempts), in: inbox)
+            case .stopped:
+                share.stopped = true
             }
+            if share.stopped { break }
         }
         return share
     }
@@ -174,13 +212,15 @@ public enum ShareReceiving {
         return base.appendingPathExtension(ext)
     }
 
-    /// Asks for the item one way. Nil when the sender answered with nothing.
+    /// Asks for the item one way. Nil when the sender answered with nothing. „Renunță” (`stop`)
+    /// cancels what the system is fetching for it.
     @MainActor
-    private static func copy(_ provider: NSItemProvider, by way: Way, declared: UTType?, to base: URL, room: Int) async throws -> Copy? {
+    private static func copy(_ provider: NSItemProvider, by way: Way, declared: UTType?, to base: URL, room: Int,
+                             stop: ShareCancellation?) async throws -> Copy? {
         switch way {
         case .file(let identifier):
             return try await withCheckedThrowingContinuation { continuation in
-                _ = provider.loadFileRepresentation(forTypeIdentifier: identifier) { url, error in
+                let loading = provider.loadFileRepresentation(forTypeIdentifier: identifier) { url, error in
                     // The system's copy only exists while this runs, so it is copied here.
                     if let error {
                         continuation.resume(throwing: error)
@@ -193,15 +233,16 @@ public enum ShareReceiving {
                     let type = UTType(identifier)
                     let file = target(base, extension: url.pathExtension.isEmpty ? type?.preferredFilenameExtension : url.pathExtension)
                     continuation.resume(with: Result {
-                        let bytes = try ShareInbox.copyStreaming(from: url, to: file, limit: room)
+                        let bytes = try ShareInbox.copyStreaming(from: url, to: file, limit: room, stop: stop)
                         // The system names its copy itself ("PDF document.pdf"): only the sender's name counts.
                         return .copied(file: file, bytes: bytes, hint: ShareInbox.type(ofFile: url) ?? type, name: nil)
                     })
                 }
+                stop?.onStop { loading.cancel() }
             }
         case .data(let identifier):
             return try await withCheckedThrowingContinuation { continuation in
-                _ = provider.loadDataRepresentation(forTypeIdentifier: identifier) { data, error in
+                let loading = provider.loadDataRepresentation(forTypeIdentifier: identifier) { data, error in
                     if let error {
                         continuation.resume(throwing: error)
                         return
@@ -213,21 +254,23 @@ public enum ShareReceiving {
                     let type = UTType(identifier)
                     let file = target(base, extension: type?.preferredFilenameExtension)
                     continuation.resume(with: Result {
+                        try stop?.check()
                         guard data.count <= room else { throw ShareInbox.InboxError.tooLarge }
                         try data.write(to: file, options: [.atomic, .completeFileProtection])
                         return .copied(file: file, bytes: data.count, hint: type, name: nil)
                     })
                 }
+                stop?.onStop { loading.cancel() }
             }
         case .link:
             guard let url = try await link(from: provider) else { return nil }
-            return try await copy(linkedFile: url, declared: declared, to: base, room: room)
+            return try await copy(linkedFile: url, declared: declared, to: base, room: room, stop: stop)
         }
     }
 
     /// The file a link points to, copied where it lives. A file still in iCloud is downloaded
     /// first; one that can't be is told as such (`stillInCloud`), whatever error the copy gave.
-    private static func copy(linkedFile url: URL, declared: UTType?, to base: URL, room: Int) async throws -> Copy {
+    private static func copy(linkedFile url: URL, declared: UTType?, to base: URL, room: Int, stop: ShareCancellation?) async throws -> Copy {
         try await withCheckedThrowingContinuation { continuation in
             // Coordinated reading waits while the file downloads: off the main thread, and off
             // Swift's own threads, which must never wait.
@@ -241,7 +284,7 @@ public enum ShareReceiving {
                 }
                 let file = target(base, extension: url.pathExtension.isEmpty ? (declared ?? hint)?.preferredFilenameExtension : url.pathExtension)
                 do {
-                    let bytes = try ShareInbox.coordinatedCopy(of: url, to: file, limit: room)
+                    let bytes = try ShareInbox.coordinatedCopy(of: url, to: file, limit: room, stop: stop)
                     continuation.resume(returning: .copied(file: file, bytes: bytes, hint: hint, name: url.lastPathComponent))
                 } catch {
                     let failure = ShareFailure(error)
@@ -294,5 +337,48 @@ public enum ShareReceivingError: Error, CustomNSError {
         switch self {
         case .stillInCloud(let underlying): [NSUnderlyingErrorKey: underlying as NSError]
         }
+    }
+}
+
+/// „Renunță” in the share sheet: once stopped, the share asks for nothing more, every copy stops
+/// between two pieces (`check`, which throws `CancellationError`), what the system is fetching
+/// or waiting for is cancelled (`onStop`), and the share keeps nothing and posts no notice
+/// (`ShareDelivery`). Shared by the main actor, which stops it, and the queues that copy.
+public final class ShareCancellation: @unchecked Sendable {
+    private let lock = NSLock()
+    private var stopped = false
+    private var actions: [() -> Void] = []
+
+    public init() {}
+
+    /// Whether the person stopped the share.
+    public var isStopped: Bool {
+        lock.withLock { stopped }
+    }
+
+    /// Throws `CancellationError` once the share is stopped.
+    public func check() throws {
+        if isStopped { throw CancellationError() }
+    }
+
+    /// Stops the share, once: runs what was waiting to be cancelled.
+    public func stop() {
+        let waiting: [() -> Void] = lock.withLock {
+            guard !stopped else { return [] }
+            stopped = true
+            defer { actions = [] }
+            return actions
+        }
+        waiting.forEach { $0() }
+    }
+
+    /// Runs `action` when the share is stopped, or at once if it already was.
+    public func onStop(_ action: @escaping () -> Void) {
+        let runNow: Bool = lock.withLock {
+            guard !stopped else { return true }
+            actions.append(action)
+            return false
+        }
+        if runNow { action() }
     }
 }
