@@ -31,13 +31,21 @@ public struct CatalogComponentResolver: CaptureComponentResolving {
     }
 }
 
-/// Labour lines aren't parts, so they never get a component key; the history
-/// records them as the visit's labour cost instead.
+/// Labour lines aren't parts, so they never get a component key: wherever a line item is
+/// written (`HouseholdMutations.addItems`: a captured invoice's line, a row the person typed,
+/// an import), one this rule calls labour is kept as the visit's labour cost, and nothing
+/// that lists parts (Istoric's pocket, search's „Piese și lucrări”, when a part was last done)
+/// counts it. Its words are capture's (`CaptureLexicon.labourWords`).
 enum LabourLine {
-    static let phrases = ["manopera", "labour", "labor", "ore lucrate"]
-
     static func matches(_ description: String) -> Bool {
         let text = SearchText.normalize(description)
-        return phrases.contains { SearchText.containsPhrase(text, $0) }
+        return CaptureLexicon.labourWords.contains { SearchText.containsPhrase(text, $0) }
+    }
+
+    /// The names of what was done, without the labour: what a visit's title counts and names.
+    /// A visit that lists only labour keeps it, so its title still says what it was.
+    static func work(_ names: [String]) -> [String] {
+        let work = names.filter { !matches($0) }
+        return work.isEmpty ? names : work
     }
 }

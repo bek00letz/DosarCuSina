@@ -187,7 +187,8 @@ private struct SearchResultRow: View {
                     if let subtitle = result.document.subtitle, !subtitle.isEmpty {
                         Text(verbatim: subtitle).dsFont(.subheadline)
                     }
-                    if let snippet = result.snippet, snippet != result.document.title, !snippet.isEmpty {
+                    // Never what the title or subtitle already say (`SearchIndex.snippet`).
+                    if let snippet = result.snippet, !snippet.isEmpty {
                         Text(SearchHighlighter.attributed(snippet, query: query))
                             .dsFont(.footnote)
                             .lineLimit(2)

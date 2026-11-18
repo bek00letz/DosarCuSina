@@ -84,6 +84,8 @@ Nothing at the moment.
 - **Identity cards without a chip held by people who were 70 or over on 2 August 2021**: the EU keeps theirs valid until they expire; the trip check applies 2 August 2031 to everyone. Worth a rule of its own?
 - **Other EU citizens' identity cards in Moldova and the Western Balkans**: only a Romanian card is taken there today (from the foreign ministry's pages); a German or Italian citizen is asked for a passport.
 
+The three questions of the App Store screenshot run (the binder on iPad, „Copiază” beside a long travel line, a repair for labour kept as a part) were answered on 2026-11-18 and are in [DECISIONS.md](DECISIONS.md).
+
 The health file's own health-card deadline was answered on 2026-11-18 (it stays) and is in [DECISIONS.md](DECISIONS.md).
 
 The earlier ones (the IMEI rule and the four bill choices) were answered on 2026-11-03 and are in [DECISIONS.md](DECISIONS.md).
@@ -108,6 +110,13 @@ Newest first. Copy this template:
 - **Next:** the most useful next step.
 - **Decisions:** entries added to or questioned in DECISIONS.md, or "none".
 ```
+
+### 2026-11-18 — owner (with Claude) — `claude/screenshot-findings`
+- **Did:** what the App Store screenshot run found. The app icon fills its square (no drawn rounded square or outline; every size and the site's touch icon made from it; dark and tinted variants still don't exist). An invoice's labour („Manoperă”, „Mână de lucru”) is kept as the visit's labour, never a part (`LabourLine`, words in `CaptureLexicon.labourWords`, applied where every line item is written). A document's page lists each value once (`DocumentPageFacts.keyFactRows`: Date importante keeps only the person's rows there). Search's preview line never repeats the title or subtitle (`SearchIndex.snippet`). Currency menus say „lei” (`Money.currencyName`). A row of binder boxes keeps its titles on one line; on a wide screen the boxes are square, three a row when the room is taller than wide and four when wider (`DSBoxGrid`). Every sheet opens page-sized where there is room (`dsSheetSizing`). A value row's note (a passport's travel line, a badge) sits under it at full width and no longer moves „Copiază” away from the date (`DSValueWithActions`'s `below`). Visits saved before with labour as a part are offered in *De corectat* (`LabourPartsStep`).
+- **Tests:** `VisitTests`, `LabourPartsRepairTests`, `DocumentPageTests`, `SearchIndexTests`, `FieldAndMoneyTests`, `AdaptiveLayoutTests`, `ReleaseReadinessTests` (the icons are full-bleed); on GitHub only (the Mac was loaded).
+- **Left open:** not seen on a device: the binder's aligned titles and square boxes, the iPad sheets, the value rows with a note. The owner answered the three questions (square boxes, „Copiază” beside the date, the labour repair).
+- **Next:** run the screenshots again on this build, on an iPhone and an iPad in both orientations.
+- **Decisions:** „Sheets open page-sized, square boxes on wide screens, a document's page lists its values once, labour is no part” (2026-11-18).
 
 ### 2026-11-18 — owner (with Claude) — `claude/learning-safeguards`
 - **Did:** break-it findings on capture's learning and scanned PDFs. A label learned outside the kind's table only fills what the kind's table misses (`ReadingArbiter.admitsLearned`); a value's label on a two-column page is its column's or its row's, none when both read as labels; labels holding the household's values anywhere in the binder (`HouseholdValues`) or a name in the buyer's block are refused, and older ones are offered for forgetting (`PersonalLessonLabelsStep`); lessons keep their category (database version 17) and Settings hides issuers learned only from locked categories until Face ID; lessons are worked out off the main thread; a scanned PDF page with only a footer of text is read by recognition (`PDFTextCoverage`).

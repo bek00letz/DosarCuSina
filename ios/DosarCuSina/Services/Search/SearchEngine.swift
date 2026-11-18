@@ -102,6 +102,24 @@ public struct SearchIndex: Sendable {
     /// Every document in the index.
     public var documents: [SearchDocument] { entries.map(\.document) }
 
+    /// A result's preview line: the field that matched best among those that add something, for
+    /// every kind of result alike. A field the row already says, in its title or its subtitle (the
+    /// section's name under a deadline, „VW Golf · 3 martie”), is no preview, so nothing reads
+    /// twice; when every matching field is already said, there is none.
+    private static func snippet(of entry: Entry, points: [Int]) -> String? {
+        let shown = [entry.document.title, entry.document.subtitle ?? ""].map { SearchText.normalize($0).split(separator: " ") }
+        let candidates = points.indices.filter { points[$0] > 0 }.sorted { points[$0] > points[$1] || (points[$0] == points[$1] && $0 < $1) }
+        return candidates.lazy.map { (index: $0, words: entry.words[$0]) }
+            .first { field in !field.words.isEmpty && !shown.contains { Self.says($0, field.words) } }
+            .map { entry.document.fields[$0.index].text }
+    }
+
+    /// Whether `words` appear in `line` one after another, each whole.
+    private static func says(_ line: [Substring], _ words: [Substring]) -> Bool {
+        guard words.count <= line.count else { return false }
+        return (0...(line.count - words.count)).contains { start in Array(line[start..<(start + words.count)]) == words }
+    }
+
     public func search(_ query: String, limit: Int = 50, kinds: Set<SearchResultKind>? = nil) -> [SearchResult] {
         let tokens = SearchText.tokens(query)
         guard !tokens.isEmpty else { return [] }
@@ -109,7 +127,7 @@ public struct SearchIndex: Sendable {
         for entry in entries {
             if let kinds, !kinds.contains(entry.document.kind) { continue }
             var score = 0
-            var bestField: (index: Int, points: Int)?
+            var fieldPoints = [Int](repeating: 0, count: entry.words.count)
             var matchedAll = true
             for token in tokens {
                 var best = 0
@@ -120,17 +138,14 @@ public struct SearchIndex: Sendable {
                         if word == token { points = max(points, weight * 3); break }
                         if word.hasPrefix(token) { points = max(points, weight * 2) }
                     }
-                    if points > best {
-                        best = points
-                        if points > (bestField?.points ?? 0) { bestField = (index, points) }
-                    }
+                    fieldPoints[index] = max(fieldPoints[index], points)
+                    best = max(best, points)
                 }
                 if best == 0 { matchedAll = false; break }
                 score += best
             }
             guard matchedAll else { continue }
-            let snippet = bestField.map { entry.document.fields[$0.index].text }
-            results.append(SearchResult(document: entry.document, score: score, snippet: snippet))
+            results.append(SearchResult(document: entry.document, score: score, snippet: Self.snippet(of: entry, points: fieldPoints)))
         }
         return Array(results.sorted { lhs, rhs in
             if lhs.score != rhs.score { return lhs.score > rhs.score }

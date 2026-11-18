@@ -42,7 +42,7 @@ struct KeyFactsPocket: View {
     @State private var copiedCount = 0
 
     var body: some View {
-        let rows = AssetFacts.factRows(asset.values, customFacts: asset.customFacts, template: definition)
+        let rows = DocumentPageFacts.keyFactRows(of: asset, definition: definition)
         DSPocketCard(SectionPocket.keyFacts.title) {
             if rows.isEmpty && editing == nil {
                 PocketEmptyLine(text: empty)

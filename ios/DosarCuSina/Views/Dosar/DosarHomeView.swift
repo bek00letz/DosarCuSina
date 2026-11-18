@@ -44,11 +44,15 @@ struct DosarHomeView: View {
                 )
                     .transition(.opacity)
             } else {
-                ScrollView {
-                    grid
-                        .padding(.horizontal, DS.Space.m)
-                        .padding(.bottom, DS.Space.xl)
-                        .dsReadableWidth(.grid)
+                // The room the grid has decides its plan (`DSBoxGrid`), read before it is drawn.
+                GeometryReader { room in
+                    ScrollView {
+                        grid(DSBoxGrid.plan(room: room.size, isRegularWidth: horizontalSizeClass == .regular,
+                                            isAccessibilitySize: dynamicTypeSize.isAccessibilitySize))
+                            .padding(.horizontal, DS.Space.m)
+                            .padding(.bottom, DS.Space.xl)
+                            .dsReadableWidth(.grid)
+                    }
                 }
             }
         }
@@ -75,30 +79,28 @@ struct DosarHomeView: View {
 
     // MARK: Grid
 
-    private var columns: [GridItem] {
-        if dynamicTypeSize.isAccessibilitySize {
-            return [GridItem(.flexible(), spacing: DS.Space.s)]
-        }
-        if horizontalSizeClass == .regular {
-            return [GridItem(.adaptive(minimum: 220, maximum: 360), spacing: DS.Space.s)]
-        }
-        return Array(repeating: GridItem(.flexible(), spacing: DS.Space.s), count: 2)
+    /// The plan's columns (`DSBoxGrid`). The boxes of a row stand on one line at the top
+    /// (`alignment: .top`), each as tall as the row (`DSBox`), so their titles line up whatever
+    /// their status lines take.
+    private func columns(_ plan: DSBoxGrid.Plan) -> [GridItem] {
+        Array(repeating: GridItem(.flexible(), spacing: DS.Space.s, alignment: .top), count: plan.columns)
     }
 
-    private var grid: some View {
+    private func grid(_ plan: DSBoxGrid.Plan) -> some View {
         let model = BinderBoxes(templates: templates, assets: assets, providerCount: providers.count, vault: vault, context: context)
         let order = layout.order(defaults: model.defaultOrder)
         return VStack(spacing: 0) {
-            LazyVGrid(columns: columns, spacing: DS.Space.s) {
+            LazyVGrid(columns: columns(plan), spacing: DS.Space.s) {
                 ForEach(order, id: \.self) { id in
                     if let box = model.box(for: id) {
-                        boxView(box, order: order)
+                        boxView(box, order: order, squares: plan.squares)
                     }
                 }
                 // A category with nothing yet is folded in here, and named, so the binder still
                 // shows what it can hold; its box takes its place as soon as it holds something.
                 Button(action: addSection) {
                     DSAddBox(title: "Adaugă o secțiune", detail: model.addBoxLine)
+                        .dsAtLeastSquare(plan.squares)
                 }
                 .buttonStyle(.dsPressable)
                 .accessibilityHint(Text("Alegi ce vrei să ții în dosar: o mașină, o casă, un animal.", comment: "VoiceOver hint of the add-section box."))
@@ -114,7 +116,7 @@ struct DosarHomeView: View {
         .dsAnimation(value: ExampleRemoval.isOffered(assets: assets))
     }
 
-    private func boxView(_ box: BinderBox, order: [BinderBoxID]) -> some View {
+    private func boxView(_ box: BinderBox, order: [BinderBoxID], squares: Bool) -> some View {
         NavigationLink(value: BoxDestination(route: box.id.route)) {
             DSBox(
                 title: box.title,
@@ -126,6 +128,7 @@ struct DosarHomeView: View {
                 isExample: box.isExample,
                 isLocked: box.isLocked
             )
+            .dsAtLeastSquare(squares)
         }
         .buttonStyle(.dsPressable)
         .matchedTransitionSource(id: box.id.route, in: zoom)

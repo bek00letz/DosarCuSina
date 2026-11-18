@@ -216,7 +216,7 @@ struct PocketContents {
         case .listed(.money):
             return MoneyPocket.Facts.make(asset: asset, definition: definition).isEmpty ? .empty : .filled
         case .listed(.keyFacts):
-            return AssetFacts.factRows(asset.values, customFacts: asset.customFacts, template: definition).isEmpty ? .empty : .filled
+            return DocumentPageFacts.keyFactRows(of: asset, definition: definition).isEmpty ? .empty : .filled
         }
     }
 

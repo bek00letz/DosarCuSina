@@ -108,6 +108,35 @@ struct DocumentPageTests {
         #expect(rows.first { $0.key == DocumentFields.personalNumber }?.text == "1800101990006")
     }
 
+    /// A passport's „Serie și număr” was listed under „Date de pe act” and again under Date
+    /// importante. For every type of document, every value shows once: the page's own list has
+    /// it, and Date importante keeps only the person's rows. Any other page keeps its key facts.
+    @Test("A document's page lists each value once: Date importante leaves out what „Date de pe act” lists")
+    func eachValueOnce() throws {
+        let home = try household()
+        for type in DocumentType.options.map(\.key) {
+            var values = FieldValues()
+            values[DocumentType.typeFieldKey] = .text(type)
+            for field in definition.allFields where field.key != DocumentType.typeFieldKey && !field.isSecret {
+                values[field.key] = field.type == .date || field.type == .expiryDate ? FieldValue.date(CalendarDay(year: 2030, month: 1, day: 2)) : FieldValue.text("XX000000")
+            }
+            let document = try AssetActions(context: home.context).create(name: "Act exemplu", template: home.documents, values: values, parent: home.person)
+            document.customFacts = [CustomFact(label: "Unde îl țin", value: "Sertarul de sus")]
+            let listed = Set(DocumentPageFacts.rows(document.values, definition: definition).map(\.key))
+            let facts = DocumentPageFacts.keyFactRows(of: document, definition: definition)
+            #expect(facts.filter { !$0.isCustom }.allSatisfy { !listed.contains($0.id) }, "\(type): nothing twice")
+            #expect(facts.filter { !$0.isCustom }.isEmpty, "\(type): its values are the page's own list, never Date importante's")
+            #expect(facts.map(\.label) == ["Unde îl țin"], "\(type): the person's own rows stay")
+        }
+
+        let vehicle = BuiltInTemplates.definition(for: BuiltInTemplates.Key.vehicle)
+        let car = try #require(try TemplateStore(context: home.context).template(forKey: BuiltInTemplates.Key.vehicle))
+        var carValues = FieldValues()
+        for field in try #require(vehicle).keyFactFields { carValues[field.key] = .text("B-123-ABC") }
+        let golf = try AssetActions(context: home.context).create(name: "VW Golf 2018", template: car, values: carValues)
+        #expect(!DocumentPageFacts.keyFactRows(of: golf, definition: try #require(vehicle)).isEmpty, "A section's page lists its key facts in Date importante")
+    }
+
     @Test("A copy from a personal document or a locked category stays on this phone; any other is an ordinary copy")
     func copyKind() {
         #expect(DocumentPageFacts.copyKind(isPersonalDocument: true, isLockedCategory: false) == .personal)

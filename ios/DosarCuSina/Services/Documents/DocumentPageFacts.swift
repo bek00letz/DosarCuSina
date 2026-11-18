@@ -83,6 +83,23 @@ enum DocumentPageFacts {
         }
     }
 
+    /// The fields whose values a section's page shows above its pockets: on a document's page,
+    /// every one of its category's (`rows` under „Date de pe act”, the secrets in their own card;
+    /// a value that doesn't apply to its type shows nowhere), none on any other page. Its Date
+    /// importante leaves them out (`keyFactRows`), so a passport's „Serie și număr” shows once.
+    static func listedAbove(definition: TemplateDefinition) -> Set<String> {
+        guard DocumentPageLayout.opensAsDocumentPage(role: definition.behavior.role) else { return [] }
+        return Set(definition.allFields.map(\.key))
+    }
+
+    /// What a section's Date importante holds, on whichever page it shows: the template's key
+    /// facts the page doesn't list already, then the person's own rows. The pocket and whether
+    /// it shows at all read this one answer.
+    static func keyFactRows(of asset: Asset, definition: TemplateDefinition) -> [FactRow] {
+        AssetFacts.factRows(asset.values, customFacts: asset.customFacts, template: definition,
+                            leavingOut: listedAbove(definition: definition))
+    }
+
     /// The field types whose value is worth copying into a form.
     static func copiesValue(of type: FieldType) -> Bool {
         switch type {

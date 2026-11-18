@@ -238,7 +238,7 @@ public final class HistoryActions {
 
     /// "Ulei și filtru, Plăcuțe frână față" for short visits, a plain title for long ones.
     static func visitTitle(for items: [LineItemDraft]) -> String {
-        let names = items.map(\.name).filter { !$0.isEmpty }
+        let names = LabourLine.work(items.map(\.name).filter { !$0.isEmpty })
         switch names.count {
         case 0: return String(localized: "Vizită", comment: "History entry title when nothing was listed")
         case 1...2: return names.joined(separator: ", ")
@@ -331,11 +331,13 @@ extension HouseholdMutations {
         let template = entry.asset.flatMap { asset in (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil }
         let components = template?.components ?? []
         for draft in drafts {
-            let item = ServiceItem(name: draft.name, componentKey: draft.componentKey ?? ComponentCatalog.key(for: draft.name, in: components))
+            // Labour is the visit's work, never a part: no component, and what it cost is labour.
+            let isLabour = draft.componentKey == nil && LabourLine.matches(draft.name)
+            let item = ServiceItem(name: draft.name, componentKey: isLabour ? nil : draft.componentKey ?? ComponentCatalog.key(for: draft.name, in: components))
             let currency = (draft.cost ?? draft.laborCost ?? draft.partsCost)?.currency ?? Money.defaultCurrency
             item.currency = currency
-            item.costAmount = draft.cost?.amount
-            item.laborCostAmount = draft.laborCost?.amount
+            item.costAmount = isLabour && draft.laborCost == nil ? nil : draft.cost?.amount
+            item.laborCostAmount = (isLabour ? draft.laborCost ?? draft.cost : draft.laborCost)?.amount
             item.partsCostAmount = draft.partsCost?.amount
             item.group = draft.group ?? components.first { $0.key == item.componentKey }?.group
             item.partBrandOrCode = draft.partBrandOrCode
