@@ -233,6 +233,42 @@ struct ReleaseReadinessTests {
         }
     }
 
+    /// iOS draws an app icon's corners itself (and so does the Home Screen for the site's touch
+    /// icon): the picture fills the whole square, and anything drawn along its edge (a rounded
+    /// square, an outline) shows as a second edge inside the system's. Along the outer band, where
+    /// only the background lies, no pixel stands apart from its neighbour.
+    @Test("The app icons are full-bleed: nothing is drawn along the edge the system rounds")
+    func iconsAreFullBleed() throws {
+        let set = Self.ios.appending(path: "DosarCuSina/Resources/Assets.xcassets/AppIcon.appiconset")
+        var pictures = try FileManager.default.contentsOfDirectory(at: set, includingPropertiesForKeys: nil).filter { $0.pathExtension == "png" }
+        pictures.append(Self.ios.deletingLastPathComponent().appending(path: "site/apple-touch-icon.png"))
+        for picture in pictures {
+            let source = try #require(CGImageSourceCreateWithURL(picture as CFURL, nil))
+            let image = try #require(CGImageSourceCreateImageAtIndex(source, 0, nil))
+            let side = image.width
+            let space = try #require(CGColorSpace(name: CGColorSpace.sRGB))
+            // Reading the file back into memory is not a canvas the app draws on (`ImageScaling`).
+            let reading = try #require(CGContext(data: nil, width: side, height: side, bitsPerComponent: 8, bytesPerRow: side * 4, space: space, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue))
+            reading.draw(image, in: CGRect(x: 0, y: 0, width: side, height: side))
+            let bytes = try #require(reading.data)
+            let pixels = UnsafeBufferPointer(start: bytes.assumingMemoryBound(to: UInt8.self), count: side * side * 4)
+            // The binder's frame starts about an eighth of the side in; outside it, only the background.
+            let band = max(1, side * 9 / 100)
+            var largestStep = 0
+            for y in 0..<side {
+                for x in 0..<side where x < band || y < band || x >= side - band || y >= side - band {
+                    let here = (y * side + x) * 4
+                    for next in [x + 1 < side ? here + 4 : nil, y + 1 < side ? here + side * 4 : nil].compactMap({ $0 }) {
+                        for channel in 0..<3 {
+                            largestStep = max(largestStep, abs(Int(pixels[here + channel]) - Int(pixels[next + channel])))
+                        }
+                    }
+                }
+            }
+            #expect(largestStep <= 8, "\(picture.lastPathComponent) has something drawn along its edge (a step of \(largestStep)): fill the square with the artwork, the system rounds the corners")
+        }
+    }
+
     @Test("Plain http reaches only the home network, as Settings says a local AI service may use")
     func plainHTTPOnlyOnTheHomeNetwork() throws {
         let security = try #require(Bundle.main.infoDictionary?["NSAppTransportSecurity"] as? [String: Any])
