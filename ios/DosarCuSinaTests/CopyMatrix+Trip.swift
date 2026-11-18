@@ -84,7 +84,7 @@ extension CopyMatrixTests {
     func tripExpiredWordsArePast() {
         for requirement in TravelRules.allRequirements {
             for type in requirement.accepted {
-                let words = TravelWording.ends(requirement, type: type, expiry: tripSamplePast, goodUntil: tripSamplePast, today: tripSampleToday)
+                let words = TravelWording.ends(requirement, type: type, expiry: Self.tripSamplePast, goodUntil: Self.tripSamplePast, today: Self.tripSampleToday)
                 #expect(words.hasPrefix("A expirat pe"), "\(requirement.need) \(type): \(words)")
             }
         }
