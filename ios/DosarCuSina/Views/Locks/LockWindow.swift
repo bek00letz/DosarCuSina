@@ -38,20 +38,24 @@ enum LockCover: Equatable {
     ///   when iOS takes the app switcher's picture. It is also the inactive state, except while
     ///   a Face ID prompt is up, since the prompt itself makes the app inactive and must not be
     ///   covered by the app's own cover.
+    /// - Whether a section lock is on is the binder's one answer (`BinderLocks.anySectionLocked`),
+    ///   which counts a section whose category hasn't arrived yet; it is asked only when the app
+    ///   leaves the screen with the session open, the one moment it decides anything.
     static func decide(
         appLockEnabled: Bool,
-        anySectionLocked: Bool,
+        anySectionLocked: @autoclosure () -> Bool,
         isSessionUnlocked: Bool,
         phase: Phase,
         isAuthenticating: Bool
     ) -> LockCover? {
         if appLockEnabled, !isSessionUnlocked { return .lock }
-        guard appLockEnabled || (anySectionLocked && isSessionUnlocked) else { return nil }
         switch phase {
         case .active: return nil
-        case .inactive: return isAuthenticating ? nil : .privacy
-        case .background: return .privacy
+        case .inactive: if isAuthenticating { return nil }
+        case .background: break
         }
+        guard appLockEnabled || (isSessionUnlocked && anySectionLocked()) else { return nil }
+        return .privacy
     }
 }
 
