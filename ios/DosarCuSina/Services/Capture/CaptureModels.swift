@@ -467,7 +467,7 @@ public struct CaptureFieldAlternative: Hashable, Codable, Sendable {
 public struct CaptureReadingSource: Sendable, Codable, Hashable {
     /// The recognized text, as read.
     public let text: String
-    /// Recognized lines with their positions, page by page. Empty for pasted text and a PDF's text layer.
+    /// Lines with their positions, page by page: recognized, or a digital PDF's own (`PDFTextLines`). Empty for pasted text.
     public let pages: [[RecognizedLine]]
     public let barcodes: [CaptureBarcode]
     /// "Today" when it was read, for the windows dates must fall in.
