@@ -31,6 +31,26 @@ struct SearchIndexTests {
         #expect(index.search("torpedou").first?.snippet == "polița veche e în torpedou")
         #expect(index.search("polita", kinds: [.historyEntry]).map(\.id) == ["c"])
     }
+
+    /// A deadline found by its section's name said „VW Golf · 3 martie”, then „VW Golf” again
+    /// under it. For every kind of result, the preview is never what the row already says.
+    @Test("The preview line never repeats the title or the subtitle")
+    func previewAddsSomething() {
+        let deadline = SearchDocument(id: "d", kind: .obligation, title: "RCA", subtitle: "VW Golf · 3 martie", route: .home, fields: [
+            SearchField("RCA", weight: SearchField.Weight.title),
+            SearchField("VW Golf", weight: SearchField.Weight.label),
+            SearchField("Golful din garaj", weight: SearchField.Weight.note),
+        ])
+        let part = SearchDocument(id: "e", kind: .component, title: "Plăcuțe frână față", subtitle: "VW Golf · 3 martie", route: .home, fields: [
+            SearchField("Plăcuțe frână față", weight: SearchField.Weight.title),
+            SearchField("VW Golf", weight: SearchField.Weight.label),
+        ])
+        let index = SearchIndex([deadline, part])
+        #expect(index.search("golf").first { $0.id == "d" }?.snippet == "Golful din garaj", "The next field that matched, which says something new")
+        #expect(index.search("golf").first { $0.id == "e" }?.snippet == nil, "The subtitle already says it")
+        #expect(index.search("rca").first?.snippet == nil, "The title already says it")
+        #expect(index.search("garaj").first?.snippet == "Golful din garaj")
+    }
 }
 
 @MainActor

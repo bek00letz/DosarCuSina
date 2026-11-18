@@ -56,12 +56,6 @@ struct DSActionValueRow: View {
                 Text(verbatim: value)
                     .dsFont(.headline, numeric: true)
                     .textSelection(.enabled)
-                if let note {
-                    note.dsFont(.subheadline, numeric: true)
-                }
-                if let status {
-                    status.padding(.top, DS.Space.xxs)
-                }
             }
         } actions: {
             Button(action: perform) {
@@ -69,6 +63,13 @@ struct DSActionValueRow: View {
             }
             .buttonStyle(.bordered)
             .buttonBorderShape(.capsule)
+        } below: {
+            if let note {
+                note.dsFont(.subheadline, numeric: true)
+            }
+            if let status {
+                status.padding(.top, DS.Space.xxs)
+            }
         }
         .sensoryFeedback(.success, trigger: copied)
         .accessibilityElement(children: .combine)
@@ -89,22 +90,47 @@ struct DSActionValueRow: View {
     }
 }
 
-/// A value with its buttons: side by side when everything fits on one line, the
-/// buttons on their own line under the value otherwise, and under each other when
-/// even they don't fit side by side. Button labels never wrap, so a narrow screen
-/// or large text moves the buttons down instead of breaking "Copiază" into
-/// syllables. The one layout for every value-with-actions row.
-struct DSValueWithActions<Value: View, Actions: View>: View {
+/// A value with its buttons: side by side when the value (its title and the value
+/// itself) fits on one line with them, the buttons on their own line under the value
+/// otherwise, and under each other when even they don't fit side by side. Button
+/// labels never wrap, so a narrow screen or large text moves the buttons down instead
+/// of breaking "Copiază" into syllables. What is said about the value (`below`: a
+/// passport's „Bun de călătorit până pe …”, how urgent its date is, a note) takes no
+/// part in that fit: it sits under the row at its full width and wraps there, so a
+/// long line never pushes the button away from the date. The one layout for every
+/// value-with-actions row.
+struct DSValueWithActions<Value: View, Actions: View, Below: View>: View {
     @ViewBuilder let value: () -> Value
     @ViewBuilder let actions: () -> Actions
+    @ViewBuilder let below: () -> Below
+
+    init(@ViewBuilder value: @escaping () -> Value, @ViewBuilder actions: @escaping () -> Actions,
+         @ViewBuilder below: @escaping () -> Below) {
+        self.value = value
+        self.actions = actions
+        self.below = below
+    }
 
     var body: some View {
-        DSAdaptiveStack(spacing: DS.Space.s) {
-            value().frame(maxWidth: .infinity, alignment: .leading)
-            // Buttons that don't fit beside each other stack too, so none runs off the screen.
-            DSAdaptiveStack(spacing: DS.Space.xs) { actions() }
-                .layoutPriority(1)
+        VStack(alignment: .leading, spacing: 2) {
+            DSAdaptiveStack(spacing: DS.Space.s) {
+                value().frame(maxWidth: .infinity, alignment: .leading)
+                // Buttons that don't fit beside each other stack too, so none runs off the screen.
+                DSAdaptiveStack(spacing: DS.Space.xs) { actions() }
+                    .layoutPriority(1)
+            }
+            // Each line its own, at the row's width (a `Group` adds no space when there is none).
+            Group { below() }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
         }
+    }
+}
+
+extension DSValueWithActions where Below == EmptyView {
+    /// A value with its buttons and nothing said under it.
+    init(@ViewBuilder value: @escaping () -> Value, @ViewBuilder actions: @escaping () -> Actions) {
+        self.init(value: value, actions: actions) { EmptyView() }
     }
 }
 

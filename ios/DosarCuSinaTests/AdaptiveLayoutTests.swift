@@ -106,4 +106,37 @@ struct AdaptiveLayoutTests {
         #expect(standard.width >= 1366 - 0.5, "Centred in the whole width")
         #expect(DS.ReadableWidth.text.points < 1366 && DS.ReadableWidth.grid.points > DS.ReadableWidth.text.points)
     }
+
+    /// A passport's long travel line under „Valabil până la” pushed „Copiază” under the date.
+    /// What is said under a value takes no part in whether its buttons fit beside it: the row
+    /// is the value and its button on one line, then the note at the row's width.
+    @Test("A line under a value never moves its button away from it")
+    func aNoteUnderAValueKeepsTheButtonBesideIt() {
+        let note = "Bun de călătorit până pe 14 septembrie 2033, cu șase luni înainte să expire"
+        let plain = size(of: DSActionValueRow(title: Text(verbatim: "Valabil până la"), value: "14 martie 2034", action: .copy), width: 375)
+        let withNote = size(of: DSActionValueRow(title: Text(verbatim: "Valabil până la"), value: "14 martie 2034", action: .copy,
+                                                 note: Text(verbatim: note)), width: 375)
+        let noteAlone = size(of: Text(verbatim: note).dsFont(.subheadline, numeric: true), width: 375)
+        #expect(withNote.height <= plain.height + noteAlone.height + 4, "The note adds only its own lines; the button stays beside the date")
+        #expect(withNote.width <= 375.5)
+    }
+
+    /// The binder's plan, by the room it has: never a device's model or size.
+    @Test("The binder's boxes: two on a phone, square three or four on a wide screen, one at accessibility sizes")
+    func boxGridPlan() {
+        #expect(DSBoxGrid.plan(room: CGSize(width: 390, height: 844), isRegularWidth: false, isAccessibilitySize: false)
+            == .init(columns: 2, squares: false))
+        #expect(DSBoxGrid.plan(room: CGSize(width: 1032, height: 1376), isRegularWidth: true, isAccessibilitySize: false)
+            == .init(columns: 3, squares: true), "Taller than wide: three")
+        #expect(DSBoxGrid.plan(room: CGSize(width: 1376, height: 1032), isRegularWidth: true, isAccessibilitySize: false)
+            == .init(columns: 4, squares: true), "Wider than tall: four")
+        #expect(DSBoxGrid.plan(room: CGSize(width: 1376, height: 1032), isRegularWidth: true, isAccessibilitySize: true)
+            == .init(columns: 1, squares: false))
+
+        let box = DSBox(title: "VW Golf 2018", systemImage: "car.fill", tint: .blue, statusText: "Totul e în regulă", tone: .allGood)
+        let square = size(of: box.dsAtLeastSquare(true), width: 300)
+        #expect(abs(square.height - 300) < 1, "As tall as it is wide")
+        let narrow = size(of: box.dsAtLeastSquare(true), width: 300, typeSize: .xxxLarge)
+        #expect(narrow.height >= 300, "Never shorter than wide, taller when its words need it")
+    }
 }

@@ -67,6 +67,14 @@ public struct Money: Hashable, Sendable, Codable {
                locale: .dosarDefault, comment: "A whole amount of money in lei: the first argument is the amount as written („1.250”), the second only chooses the plural („1 leu”, „2 lei”, „20 de lei”). Keep the no-break space.")
     }
 
+    /// A currency's name where it is chosen or shown alone (a money field's menu): the leu as
+    /// Romanian says it, „lei”, never „RON”, as amounts are written; any other by its code.
+    public static func currencyName(_ code: String) -> String {
+        code.uppercased() == defaultCurrency
+            ? String(localized: "lei", comment: "The leu's name in a currency menu beside an amount, as amounts are written („1.250 lei”), never „RON”.")
+            : code.uppercased()
+    }
+
     /// The whole number of lei an amount is, without its sign; nil when it doesn't fit.
     private static func count(_ amount: Decimal) -> Int? {
         let whole = NSDecimalNumber(decimal: amount.magnitude.rounded(scale: 0))
