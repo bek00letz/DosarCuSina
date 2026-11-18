@@ -80,7 +80,11 @@ Nothing at the moment.
 
 ## Questions for the owner
 
-None open. The health file's own health-card deadline was answered on 2026-11-18 (it stays) and is in [DECISIONS.md](DECISIONS.md).
+- **The support e-mail address** for the help page (`PublicPages`): the owner supplies it; until then the help page offers GitHub only.
+- **Identity cards without a chip held by people who were 70 or over on 2 August 2021**: the EU keeps theirs valid until they expire; the trip check applies 2 August 2031 to everyone. Worth a rule of its own?
+- **Other EU citizens' identity cards in Moldova and the Western Balkans**: only a Romanian card is taken there today (from the foreign ministry's pages); a German or Italian citizen is asked for a passport.
+
+The health file's own health-card deadline was answered on 2026-11-18 (it stays) and is in [DECISIONS.md](DECISIONS.md).
 
 The earlier ones (the IMEI rule and the four bill choices) were answered on 2026-11-03 and are in [DECISIONS.md](DECISIONS.md).
 
@@ -104,6 +108,13 @@ Newest first. Copy this template:
 - **Next:** the most useful next step.
 - **Decisions:** entries added to or questioned in DECISIONS.md, or "none".
 ```
+
+### 2026-11-18 — owner (with Claude) — `claude/trips-pages-misc`
+- **Did:** several citizenships per person (a list on the member, every one the documents print added on filing, the person's page adds or takes one away; the trip check goes by the most favourable, with that citizenship's documents; `CitizenshipsStep` offers a second one an earlier version left out); three trip regions (the Schengen area named, Moldova and the Western Balkans taking a Romanian identity card, from the foreign ministry's pages); the identity card without a chip until 2 August 2031, the simple one (CIS) no travel document, a family member's residence card and the Withdrawal Agreement's document as the permit's variants; expired documents said as expired; a rabies booster on time counts at once. The help page and the privacy policy say what is true now (backups, sync later, which providers' terms are linked), a compatible AI service's review says its rules are its own; `NSAllowsLocalNetworking` and the local network's words; onboarding offers no examples once something real is filed; a full page isn't withheld by the app-switcher cover.
+- **Tests:** new `SeveralCitizenshipsTests`; `TripsAndCitizenshipTests`, `ReadinessTests`, `ReplacedDocumentsTests`, `FullPageScreenshotTests`, `ReleaseReadinessTests`, `PersonalDocumentTests` and the trip part of the copy matrix updated. Run on GitHub (the Mac was too loaded for a local run).
+- **Left open:** the support e-mail address waits for the owner (a commit with a marked placeholder is kept off the branch); not seen on a phone: the citizenship chips and *Adaugă*, the local network prompt with an LM Studio server, a full page after Face ID; the 70-and-over exception for cards without a chip; other EU citizens' identity cards in the Western Balkans.
+- **Next:** try a full page after Face ID on a phone, and a compatible service on the home network over `http`.
+- **Decisions:** „A person can have several citizenships, and travels on the most favourable”, „Where a trip goes, as the rules tell places apart”, „Public pages say what is true now”, „Onboarding and full pages” (2026-11-18).
 
 ### 2026-11-18 — owner (with Claude) — `claude/share-log-clear`
 - **Did:** two follow-ups of #116. Setări › Despre › *Probleme la primire* has „Golește lista” (destructive, under the list, 44 pt, its own VoiceOver label): it empties the share log at once (`ShareFailureLog.clear`) and shows „Am golit lista.” with „Anulează”, which puts the entries back from memory beside any kept meanwhile (`putBack`); Despre's row goes and comes back with it (`ShareFailureLog.didChangeNotification`). Every change to the log, the extension's and the app's, is one coordinated write (`ShareInbox.changeFailureLog`). Items the share can't take and files past `ShareInbox.maxFiles` are now counted in the confirmation's note, each on its own line (`ShareFailure.unsupportedType`, `overFileLimit`, `Missed.left`, words and plurals in `ShareFailureWording`), and logged as kinds; a log entry says how many files it held (`Entry.files`, an earlier log read as one each). The extension's receiving loop moved to `ShareReceiving.receiveAll`, so tests pin it. A count is said only of what is true of every file it counts: files tried in vain for different reasons read „2 fișiere nu au ajuns. Un fișier e încă în iCloud. …” (`Missed.Part.ofReason`, `ShareFailureWording.line`), and „Nu s-au trimis” over the counted reason when none arrived. No database change.
