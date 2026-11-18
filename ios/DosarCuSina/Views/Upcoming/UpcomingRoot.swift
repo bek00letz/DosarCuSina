@@ -56,6 +56,8 @@ struct UpcomingRoot: View {
         .task(id: changeToken) { reload() }
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in reload() }
         .onReceive(NotificationCenter.default.publisher(for: OutsideActionFailures.didChange)) { _ in reload() }
+        // A lock turned on or off in Setări changes what each row may say: read again at once.
+        .onReceive(NotificationCenter.default.publisher(for: SectionLocks.didChange)) { _ in reload() }
         .confirmationDialog(
             Text("Amâni până când?"),
             isPresented: Binding(get: { snoozing != nil }, set: { if !$0 { snoozing = nil } }),
@@ -379,12 +381,13 @@ struct UpcomingRoot: View {
 
     private func complete(_ entry: AttentionEntry) {
         Task {
+            guard let obligation = UpcomingActions(context: context).obligation(entry.id) else { return }
             // Closing a locked category's deadline asks for Face ID first; „Amână” never does
-            // (`DeadlineChange`, the rule every way in reads).
-            let confirmed = await vault.confirmClosing(inLockedCategory: entry.obligation.isSensitive,
+            // (`DeadlineChange`, the rule every way in reads). The lock is read now, from the
+            // deadline itself, never from the row: a lock turned on since the list was read counts.
+            let confirmed = await vault.confirmClosing(inLockedCategory: obligation.isSensitive(in: context),
                                                        reason: String(localized: "Deschide secțiunea protejată ca să bifezi termenul."))
             guard confirmed == .success else { return }
-            guard let obligation = UpcomingActions(context: context).obligation(entry.id) else { return }
             do {
                 // The page's own entry: a chore is done at once and its toast offers a note;
                 // any other kind opens "Am rezolvat", which asks what the kind asks. Only for the
@@ -405,7 +408,7 @@ struct UpcomingRoot: View {
     private func snooze(_ entry: AttentionEntry, days: Int) {
         let actions = UpcomingActions(context: context)
         guard let obligation = actions.obligation(entry.id) else { return }
-        let title = vault.isLocked(sectionIsSensitive: entry.obligation.isSensitive) ? String(localized: "termenul") : obligation.title
+        let title = vault.isLocked(sectionIsSensitive: obligation.isSensitive(in: context)) ? String(localized: "termenul") : obligation.title
         do {
             toast = try actions.snooze(obligation, days: days, title: title)
         } catch {

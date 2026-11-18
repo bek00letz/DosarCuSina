@@ -56,6 +56,18 @@ struct LockedSectionView: View {
         reason = String(localized: "Deschide lista „\(title)”.", comment: "Face ID reason for opening a readiness checklist.")
     }
 
+    private init(heading: Text, purpose: Purpose, reason: String) {
+        self.heading = heading
+        self.purpose = purpose
+        self.reason = reason
+    }
+
+    /// A document whose section can't be found (`RouteLock.unknownSection`): it names nothing.
+    static var unnamedDocument: LockedSectionView {
+        LockedSectionView(heading: Text(verbatim: LockedWording.document), purpose: .contents,
+                          reason: String(localized: "Deschide actul protejat.", comment: "Face ID reason for opening a document behind Face ID whose section isn't known."))
+    }
+
     private var message: Text {
         switch purpose {
         case .contents: Text("Deschide cu \(vault.biometryName) ca să vezi ce e înăuntru.", comment: "Message on a locked section.")

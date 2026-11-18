@@ -20,19 +20,18 @@ struct DocumentScreen: View {
 
     var body: some View {
         if let attachment = matches.first {
+            // Behind the lock of every section it belongs to (its own, its deadline's, its
+            // record's), and locked while anything is when it names none (`Attachment.lock`).
+            let lock = attachment.lock(among: Dictionary(templates.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first }))
             if DocumentPageLayout.isOn {
                 if let asset = attachment.asset, isPersonalDocument(asset),
                    DocumentPageFacts.isCurrentPicture(attachment, ofPersonalDocument: asset) {
                     PersonalDocumentPage(document: asset)
-                } else if let asset = attachment.asset {
-                    LockGate(asset: asset) { PaperPage(attachment: attachment) }
                 } else {
-                    PaperPage(attachment: attachment)
+                    RouteLockGate(lock) { PaperPage(attachment: attachment) }
                 }
-            } else if let asset = attachment.asset {
-                LockGate(asset: asset) { DocumentContent(attachment: attachment) }
             } else {
-                DocumentContent(attachment: attachment)
+                RouteLockGate(lock) { DocumentContent(attachment: attachment) }
             }
         } else {
             MissingRecordView()

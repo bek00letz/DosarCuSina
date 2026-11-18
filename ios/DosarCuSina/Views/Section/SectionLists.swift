@@ -40,6 +40,8 @@ struct SectionListScreen: View {
 
 /// Shows `content` only when the asset's category isn't locked right now, by the one answer
 /// (`Asset.isSensitive(template:)`): a section whose category hasn't arrived yet stays closed.
+/// The sheets `content` presents live behind the same lock (`EnvironmentValues.screenLock`): when
+/// the lock comes back, `content` goes, and a sheet still up shows the locked state.
 struct LockGate<Content: View>: View {
     let asset: Asset
     @ViewBuilder var content: Content
@@ -60,6 +62,7 @@ struct LockGate<Content: View>: View {
                 .navigationBarTitleDisplayMode(.inline)
         } else {
             content
+                .screenLock(.section(asset.id))
         }
     }
 }

@@ -136,9 +136,12 @@ private struct BackupSection: View {
                 Text("Nu acum", comment: "Cancels an optional action.")
             }
         } message: { file in
-            if file.wasWrong {
+            switch file.asked {
+            case .wrong:
                 Text("Parola nu deschide copia. Verifică literele mari și mici și încearcă din nou.", comment: "A backup's password was wrong.")
-            } else {
+            case .nothingTyped:
+                Text("Nu ai scris nicio parolă. Scrie parola pe care ai ales-o când ai făcut copia.", comment: "Asks again for a backup's password after nothing was typed.")
+            case .first:
                 Text("Scrie parola pe care ai ales-o când ai făcut copia.", comment: "Asks for a backup's password.")
             }
         }

@@ -29,7 +29,6 @@ private struct ProviderContent: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
     @Environment(\.announce) private var announce
-    @Environment(BiometricVaultManager.self) private var vault
 
     @State private var notes: String
     @State private var saveTask: Task<Void, Never>?
@@ -168,18 +167,27 @@ private struct ProviderContent: View {
                     }
                     ForEach(Array(work.enumerated()), id: \.element.id) { index, entry in
                         if index > 0 { DSRowSeparator() }
-                        if let asset = entry.asset, isHidden(asset) {
-                            DSListRow(title: Text("O lucrare într-o secțiune protejată", comment: "A job hidden behind a lock."), subtitle: Text(verbatim: DosarFormat.day(entry.occurredAt))) { EmptyView() }
-                        } else {
-                            NavigationLink(value: AppRoute.historyEntry(entry.id)) {
-                                HistoryEntryRow(entry: entry, showsAsset: true)
+                        if let asset = entry.asset {
+                            // A job in a section whose category is locked names nothing of it.
+                            SectionRowGate(section: asset) {
+                                jobLink(entry)
+                            } locked: { _ in
+                                DSListRow(title: Text(verbatim: LockedWording.job), subtitle: Text(verbatim: DosarFormat.day(entry.occurredAt))) { EmptyView() }
                             }
-                            .buttonStyle(.dsPressable)
+                        } else {
+                            jobLink(entry)
                         }
                     }
                 }
             }
         }
+    }
+
+    private func jobLink(_ entry: HistoryEntry) -> some View {
+        NavigationLink(value: AppRoute.historyEntry(entry.id)) {
+            HistoryEntryRow(entry: entry, showsAsset: true)
+        }
+        .buttonStyle(.dsPressable)
     }
 
     @ViewBuilder
@@ -192,8 +200,11 @@ private struct ProviderContent: View {
                     VStack(spacing: 0) {
                         ForEach(Array(assets.enumerated()), id: \.element.id) { index, asset in
                             if index > 0 { DSRowSeparator() }
+                            // A section whose category is locked shows only the locked words; its page asks for Face ID.
                             NavigationLink(value: AppRoute.asset(asset.id)) {
-                                DSListRow(title: Text(verbatim: asset.name), showsChevron: true) { EmptyView() }
+                                SectionRowGate(section: asset) {
+                                    DSListRow(title: Text(verbatim: asset.name), showsChevron: true) { EmptyView() }
+                                }
                             }
                             .buttonStyle(.dsPressable)
                         }
@@ -204,10 +215,6 @@ private struct ProviderContent: View {
     }
 
     // MARK: Actions
-
-    private func isHidden(_ asset: Asset) -> Bool {
-        vault.isLocked(asset, template: (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil)
-    }
 
     private func rate(_ value: Int?) {
         run { try ProviderActions(context: context).setRating(provider, value) }

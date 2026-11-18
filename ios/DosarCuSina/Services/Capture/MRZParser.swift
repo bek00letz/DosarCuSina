@@ -264,10 +264,8 @@ public enum MRZParser {
         case alphanumeric
     }
 
-    /// OCR-B characters recognition mistakes for one another.
-    static let confusions: [[Character]] = [
-        ["O", "0", "Q"], ["I", "1", "L"], ["B", "8"], ["S", "5"], ["Z", "2"], ["G", "6"],
-    ]
+    /// OCR-B characters recognition mistakes for one another: recognition's one list.
+    static let confusions: [[Character]] = CaptureText.lookAlikes
 
     /// Letters recognition reads where only a digit can stand (a date, a check digit).
     private static let digitLookalikes: [Character: Character] = [
