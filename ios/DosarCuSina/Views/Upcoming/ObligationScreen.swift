@@ -235,6 +235,8 @@ private struct ObligationPage: View {
                 .disabled(vault.isAuthenticating)
             }
         }
+        // A screenshot of a locked deadline is only what the screen shows.
+        .withholdsFullPageScreenshot()
     }
 
     // MARK: Actions
