@@ -320,7 +320,7 @@ struct BinderBoxes {
                 symbol: asset.symbol(template: template),
                 tint: asset.tintColor(template: template),
                 photo: isLocked ? nil : asset.thumbnail(),
-                statusText: status.line(isSensitive: isLocked),
+                statusText: status.line(isSensitive: isLocked, isLocked: { vault.isLocked(sectionIsSensitive: $0) }),
                 tone: status.tone,
                 isExample: asset.isExample,
                 isLocked: isLocked,
@@ -342,7 +342,7 @@ struct BinderBoxes {
                     symbol: template.symbol,
                     tint: template.tintColor,
                     photo: nil,
-                    statusText: status.line(counting: all.count, of: template.behavior.sectionNoun, isSensitive: isLocked),
+                    statusText: status.line(counting: all.count, of: template.behavior.sectionNoun, isSensitive: isLocked, isLocked: { vault.isLocked(sectionIsSensitive: $0) }),
                     tone: status.tone,
                     isExample: !all.isEmpty && all.allSatisfy(\.isExample),
                     isLocked: isLocked,
@@ -361,7 +361,7 @@ struct BinderBoxes {
                 photo: nil,
                 // Folded into the add box while it holds nothing (`BinderLayout.defaultOrder`); shown
                 // empty only while it holds just the people its documents will go under.
-                statusText: all.isEmpty ? String(localized: "Gol deocamdată", comment: "Box status when a category box holds nothing yet.") : status.line(isSensitive: isLocked),
+                statusText: all.isEmpty ? String(localized: "Gol deocamdată", comment: "Box status when a category box holds nothing yet.") : status.line(isSensitive: isLocked, isLocked: { vault.isLocked(sectionIsSensitive: $0) }),
                 tone: all.isEmpty ? .neutral : status.tone,
                 isExample: !all.isEmpty && all.allSatisfy(\.isExample),
                 isLocked: isLocked

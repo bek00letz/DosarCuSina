@@ -11,6 +11,7 @@ struct SectionHero: View {
 
     @Environment(\.modelContext) private var context
     @Environment(\.calendar) private var calendar
+    @Environment(BiometricVaultManager.self) private var vault
     @Query private var templates: [CategoryTemplate]
 
     var body: some View {
@@ -209,16 +210,22 @@ struct SectionHero: View {
 
     @ViewBuilder
     private var memberDetails: some View {
-        // The person's personal documents, each by its own category's expiry field.
-        let documentTemplates = Dictionary(templates.filter { $0.behavior.role == .personalDocument }.map { ($0.key, $0.definition) },
-                                           uniquingKeysWith: { first, _ in first })
-        // One replaced by a new one is expired already: never the next to expire.
-        let next = DocumentPageFacts.nextToExpire(asset.children ?? []) { child in
-            documentTemplates[child.templateKey].flatMap { AssetFacts.expiry(child.values, template: $0) }
-        }
-        if let next {
-            ExpiryLine(label: String(localized: "Următorul act care expiră: \(next.document.name)", comment: "Hero of a person: the next document to expire."), day: next.day, rule: DateUrgency.rule(for: next.day, on: next.document))
-        } else {
+        switch HolderHero.nextDocument(of: asset, templates: templates, vault: vault) {
+        case .shown(let document, let day):
+            ExpiryLine(label: String(localized: "Următorul act care expiră: \(document.name)", comment: "Hero of a person: the next document to expire."), day: day, rule: DateUrgency.rule(for: day, on: document))
+        case .locked:
+            // Its category is locked: nothing of it, not even when it expires, until Face ID.
+            VStack(alignment: .leading, spacing: DS.Space.xxs) {
+                Text(verbatim: LockedWording.nextDocumentLabel).dsFont(.captionEmphasized)
+                Label {
+                    Text(verbatim: LockedWording.document).dsFont(.title)
+                } icon: {
+                    Image(systemName: "lock.fill").foregroundStyle(DS.Palette.secondaryLabel)
+                }
+                .labelStyle(DSLeadingIconLabelStyle())
+            }
+            .accessibilityElement(children: .combine)
+        case .noExpiry:
             Text("Niciun act cu dată de expirare încă.", comment: "Hero of a person with no documents.")
                 .dsFont(.subheadline)
         }
@@ -245,7 +252,35 @@ struct SectionHero: View {
         let descendants = Set(AssetActions.descendants(of: asset).map(\.id))
         let status = BoxStatus.make(forAsset: asset.id, descendants: descendants, in: snapshots)
         DS.Hairline()
-        DSStatusLine(text: status.line(isSensitive: false), tone: status.tone)
+        // The page itself is open; a deadline of a section filed under it whose own category is
+        // locked (a person's identity card) is named only as „O scadență”, as on its box.
+        DSStatusLine(text: status.line(isSensitive: false, isLocked: { vault.isLocked(sectionIsSensitive: $0) }), tone: status.tone)
+    }
+}
+
+/// What a person's hero says of their documents: the next to expire, by each one's own category's
+/// expiry field, or only that it is locked while its category is behind Face ID.
+enum HolderHero {
+    enum NextDocument {
+        /// No document with an expiry date.
+        case noExpiry
+        /// The next to expire is behind Face ID right now: nothing of it shows.
+        case locked
+        case shown(Asset, CalendarDay)
+    }
+
+    @MainActor
+    static func nextDocument(of person: Asset, templates: [CategoryTemplate], vault: BiometricVaultManager) -> NextDocument {
+        let byKey = Dictionary(templates.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
+        // One replaced by a new one is expired already: never the next to expire.
+        let next = DocumentPageFacts.nextToExpire(person.children ?? []) { child in
+            byKey[child.templateKey].flatMap { template in
+                template.behavior.role == .personalDocument ? AssetFacts.expiry(child.values, template: template.definition) : nil
+            }
+        }
+        guard let next else { return .noExpiry }
+        if vault.isLocked(next.document, template: byKey[next.document.templateKey]) { return .locked }
+        return .shown(next.document, next.day)
     }
 }
 
