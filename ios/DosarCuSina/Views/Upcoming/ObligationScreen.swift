@@ -30,6 +30,12 @@ struct ObligationScreen: View {
         guard !isLocked, let asset = obligation.asset else { return nil }
         return .asset(asset.id)
     }
+
+    /// The lock the page's own sheets live behind: its section's; none for a deadline of the
+    /// whole household.
+    static func sheetLock(for obligation: Obligation) -> RouteLock {
+        obligation.asset.map { .section($0.id) } ?? .open
+    }
 }
 
 private struct ObligationPage: View {
@@ -156,6 +162,10 @@ private struct ObligationPage: View {
             }
             Button("Renunță", role: .cancel) {}
         }
+        // The page draws its own locked state; its sheets (Editează, „Am rezolvat”, the reminders,
+        // the calendar event) live behind its section's lock, so when the lock comes back while
+        // one is up it shows the locked state and saves nothing.
+        .screenLock(ObligationScreen.sheetLock(for: obligation))
     }
 
     // MARK: Header

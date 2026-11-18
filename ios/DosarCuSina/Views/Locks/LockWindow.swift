@@ -116,6 +116,16 @@ final class LockWindowController {
         withAnimation(animation, completionCriteria: .removed, change) { completion() }
     }
 
+    /// Ends typing in every window of the scene as the cover goes up: the keyboard has a window of
+    /// its own above the app's, so it would show over the cover, with what was typed in its
+    /// suggestions. Tests count the calls.
+    typealias EndEditing = @MainActor (_ scene: UIWindowScene) -> Void
+
+    /// Every window of the scene, sheets and full-screen flows included, gives up the keyboard.
+    static let endEditingInScene: EndEditing = { scene in
+        for window in scene.windows { window.endEditing(true) }
+    }
+
     var vault: BiometricVaultManager?
     var scenePhase: ScenePhase {
         get { state.scenePhase }
@@ -125,11 +135,13 @@ final class LockWindowController {
     private var window: UIWindow?
     private let state = LockLayerState()
     private let fade: Fade
+    private let endEditing: EndEditing
     /// Changes whenever the cover does, so only the fade of the latest uncovering hides the window.
     private var generation = 0
 
-    init(fade: @escaping Fade = LockWindowController.systemFade) {
+    init(fade: @escaping Fade = LockWindowController.systemFade, endEditing: @escaping EndEditing = LockWindowController.endEditingInScene) {
         self.fade = fade
+        self.endEditing = endEditing
     }
 
     func attach(to appWindow: UIWindow) {
@@ -152,6 +164,8 @@ final class LockWindowController {
             generation += 1
             let window = self.window ?? makeWindow(in: scene)
             let wasHidden = window.isHidden
+            // The keyboard goes as the cover goes up: nothing typed shows above it.
+            if wasHidden || !window.isUserInteractionEnabled { endEditing(scene) }
             var whole = Transaction()
             whole.disablesAnimations = true
             withTransaction(whole) { state.cover = cover }
