@@ -53,6 +53,17 @@ struct PublicPagesTests {
         #expect(html.contains(#"hreflang="en""#))
     }
 
+    /// The help page, in both languages, offers the support address as a contact that needs no
+    /// account, the same one `PublicPages` keeps.
+    @Test func bothHelpPagesOfferTheSupportAddress() throws {
+        #expect(PublicPages.supportMail.scheme == "mailto")
+        for page in ["ajutor/index.html", "en/help/index.html"] {
+            let html = try String(contentsOf: Self.siteFolder.appending(path: page), encoding: .utf8)
+            #expect(html.contains(#"href="mailto:\#(PublicPages.supportEmail)""#), "\(page) links to the support address")
+            #expect(html.contains(">\(PublicPages.supportEmail)</a>"), "\(page) shows it")
+        }
+    }
+
     @Test func theWorkflowPublishesTheFolderTheAppLinksInto() throws {
         let workflow = try String(contentsOf: Self.repository.appending(path: ".github/workflows/pages.yml"), encoding: .utf8)
         #expect(workflow.contains("path: site\n"))

@@ -1153,8 +1153,32 @@
     "A expirat pe %@. Ai nevoie de ea până la graniță. O cumperi online sau la benzinărie." : {
       "comment" : "Trip check: the vignette has ended before the trip starts."
     },
+    "A expirat pe %@. Cere altul de la casa de asigurări de sănătate." : {
+      "comment" : "Trip check: the European health card has already expired."
+    },
+    "A expirat pe %@. Fă-l din nou cu cel puțin 21 de zile înainte de plecare." : {
+      "comment" : "Trip check: the rabies vaccine has already expired."
+    },
+    "A expirat pe %@. Fă-l înainte de plecare." : {
+      "comment" : "Trip check: the ITP has already expired."
+    },
+    "A expirat pe %@. Fă-ți alta sau ia un pașaport valabil." : {
+      "comment" : "Trip check: the ID card has already expired."
+    },
+    "A expirat pe %@. Fă-ți altul înainte de plecare." : {
+      "comment" : "Trip check: the driving licence has already expired.\nTrip check: the passport has already expired."
+    },
+    "A expirat pe %@. Fă-ți altul sau ia o carte de identitate valabilă." : {
+      "comment" : "Trip check: the passport, an EU citizen's only identity document, has already expired."
+    },
     "A expirat pe %@. Fără ITP valabil, cumpărătorul nu poate înmatricula mașina." : {
       "comment" : "Sale check: the ITP has expired."
+    },
+    "A expirat pe %@. Fără RCA valabil nu ai voie să ieși cu mașina. Reînnoiește-l înainte de plecare." : {
+      "comment" : "Trip check: the RCA has already expired."
+    },
+    "A expirat pe %@. Fără un permis valabil nu poți intra înapoi în țară. Întreabă la Imigrări ce poți face înainte de plecare." : {
+      "comment" : "Trip check: the residence permit has already expired."
     },
     "A expirat pe %@. Până la vânzare nu ai voie să circuli cu mașina." : {
       "comment" : "Sale check: the RCA has expired."
@@ -1239,6 +1263,17 @@
     "Actele celuilalt șofer" : {
       "comment" : "Claim photo: the other driver's papers."
     },
+    "Actele din „%@” arată și cetățenia: %@. O păstrez lângă celelalte?" : {
+      "comment" : "Repair: a person's documents show a citizenship their page doesn't keep. The first argument is the person, the second the countries.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Actele din „%1$@” arată și cetățenia: %2$@. O păstrez lângă celelalte?"
+          }
+        }
+      }
+    },
     "Actele fiecărei persoane, la un loc." : {
       "comment" : "Category summary of the people documents are filed under."
     },
@@ -1303,7 +1338,7 @@
       "comment" : "Import mode: merge."
     },
     "Adaugă" : {
-      "comment" : "Adds a suggested obligation.\nReadiness row: adds what is missing.\nTab: scan or add something."
+      "comment" : "Adds a suggested obligation.\nAdds an option to a long multiple choice, from a searchable list.\nReadiness row: adds what is missing.\nTab: scan or add something."
     },
     "Adaugă actul nou" : {
       "comment" : "A renewed personal document's page: adds the new document for the same person."
@@ -1474,7 +1509,7 @@
       "comment" : "Capture review: the same photo was added before."
     },
     "Ai nevoie de pașaport, bun de călătorit până te întorci." : {
-      "comment" : "Trip region rule: outside the EU."
+      "comment" : "Trip region rule: anywhere else."
     },
     "Ai o scadență %@" : {
       "comment" : "Generic reminder title: due in a duration such as 'în 7 zile' or 'într-o lună'."
@@ -2269,6 +2304,9 @@
     "Atinge ca să copiezi." : {
       "comment" : "VoiceOver hint of a fact row."
     },
+    "Atinge ca să o scoți." : {
+      "comment" : "VoiceOver hint of a chosen option in a long multiple choice: tapping takes it away."
+    },
     "Atinge ca să suni." : {
       "comment" : "VoiceOver hint of a phone fact row."
     },
@@ -2605,6 +2643,15 @@
     "Carte de identitate sau pașaport" : {
       "comment" : "Trip check: an EU citizen's identity document, either one."
     },
+    "Carte de identitate simplă" : {
+
+    },
+    "Carte de rezidență" : {
+
+    },
+    "Carte de rezidență, pentru un membru de familie al unui cetățean UE" : {
+
+    },
     "Carte verde" : {
 
     },
@@ -2619,6 +2666,9 @@
     },
     "Cartea de identitate a vehiculului (CIV)" : {
 
+    },
+    "Cartea de identitate simplă nu e act de călătorie: e bună doar în țară. Ia un pașaport sau fă-ți cartea electronică." : {
+      "comment" : "Trip check: the simple identity card (CIS) isn't a travel document."
     },
     "Cartea de identitate veche" : {
 
@@ -2771,6 +2821,9 @@
     },
     "Ce adaugi?" : {
       "comment" : "Title of the add-section catalog."
+    },
+    "Ce ai adăugat e deja în dosar. Restul îl adaugi când vrei, din Adaugă." : {
+
     },
     "Ce ai atașat rămâne în dosar." : {
       "comment" : "Deleting a history entry keeps the documents filed with it."
@@ -2994,8 +3047,8 @@
     "Cetățenie" : {
       "comment" : "A household member's section: their citizenship."
     },
-    "Cetățenilor UE le ajunge cartea de identitate sau pașaportul, valabile până te întorci." : {
-      "comment" : "Trip region rule: inside the EU."
+    "Cetățenii" : {
+      "comment" : "Repair group: a person's second citizenship, which an earlier version didn't keep."
     },
     "Cheia merge. Documentele scanate vor fi citite mai bine." : {
       "comment" : "AI key test: valid."
@@ -4083,6 +4136,9 @@
     "Dosarul tău a ajuns" : {
 
     },
+    "Dosarul tău a început" : {
+
+    },
     "Dosarul tău cu acte, care te anunță din timp" : {
 
     },
@@ -4258,6 +4314,17 @@
     "Emis de" : {
 
     },
+    "Era bun de călătorit doar până pe %@. Expiră pe %@, iar multe țări nu primesc un pașaport atât de aproape de expirare. Fă-ți altul înainte de plecare." : {
+      "comment" : "Trip check: the passport's travel cut-off has already passed, though it hasn't expired.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Era bun de călătorit doar până pe %1$@. Expiră pe %2$@, iar multe țări nu primesc un pașaport atât de aproape de expirare. Fă-ți altul înainte de plecare."
+          }
+        }
+      }
+    },
     "Era de plătit până pe %@." : {
       "comment" : "Capture review: the day a bill was to be paid by, already passed."
     },
@@ -4339,6 +4406,9 @@
     "Expiră pe %@, cât ești plecat. Cumpără alta pentru drumul înapoi, online sau la benzinărie." : {
       "comment" : "Trip check: the vignette ends during the trip."
     },
+    "Expiră pe %@, înainte să pleci. Ai nevoie de ea până la graniță. O cumperi online sau la benzinărie." : {
+      "comment" : "Trip check: the vignette ends before the trip starts, on a day still to come."
+    },
     "Expiră pe %@, înainte să te întorci." : {
       "comment" : "Trip check: the driving licence ends during the trip."
     },
@@ -4348,8 +4418,8 @@
     "Expiră pe %@, înainte să te întorci. Cere prelungirea cu cel puțin 30 de zile înainte să expire." : {
       "comment" : "Trip check: the residence permit expires before the end of the trip."
     },
-    "Expiră pe %@, înainte să te întorci. Fă-l din nou cu cel puțin 21 de zile înainte de plecare." : {
-      "comment" : "Trip check: the rabies vaccine ends during the trip."
+    "Expiră pe %@, înainte să te întorci. Fă-l din nou înainte să expire, ca să fie valabil de îndată." : {
+      "comment" : "Trip check: the rabies vaccine ends during the trip; a booster before it ends counts at once."
     },
     "Expiră pe %@, înainte să te întorci. Fă-l înainte de plecare." : {
       "comment" : "Trip check: the ITP ends during the trip."
@@ -4365,6 +4435,28 @@
     },
     "Expiră pe %@, înainte să te întorci. Reînnoiește-l înainte de plecare." : {
       "comment" : "Trip check: the RCA ends during the trip."
+    },
+    "Expiră pe %@, la mai puțin de %@ după ce te întorci, iar țările de acolo îl cer valabil cel puțin atât. Fă-ți altul sau ia o carte de identitate valabilă." : {
+      "comment" : "Trip check: the passport isn't valid long enough after a trip to Moldova or the Western Balkans. The second argument is a number of months.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Expiră pe %1$@, la mai puțin de %2$@ după ce te întorci, iar țările de acolo îl cer valabil cel puțin atât. Fă-ți altul sau ia o carte de identitate valabilă."
+          }
+        }
+      }
+    },
+    "Expiră pe %@, la mai puțin de %@ după ce te întorci, iar țările de acolo o cer valabilă cel puțin atât. Fă-ți alta sau ia un pașaport valabil." : {
+      "comment" : "Trip check: the ID card isn't valid long enough after a trip to Moldova or the Western Balkans. The second argument is a number of months.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Expiră pe %1$@, la mai puțin de %2$@ după ce te întorci, iar țările de acolo o cer valabilă cel puțin atât. Fă-ți alta sau ia un pașaport valabil."
+          }
+        }
+      }
     },
     "Expiră pe %@." : {
       "comment" : "Capture review: the day a document or a policy expires."
@@ -4527,13 +4619,16 @@
     "Facturi trecute de mai multe ori" : {
       "comment" : "Repair group: the same bill logged twice in Istoric."
     },
-    "Făcut pe %@. Trebuie făcut cu cel puțin 21 de zile înainte de plecare, adică până pe %@. Întreabă medicul veterinar." : {
-      "comment" : "Trip check: the rabies vaccine was given too close to departure.",
+    "Făcut pe %@, cu mai puțin de 21 de zile înainte de plecare. Un rapel făcut înainte să expire cel vechi e valabil de îndată. Altfel, întreabă medicul veterinar." : {
+      "comment" : "Trip check: a rabies vaccine close to departure, not known whether it was a booster on time."
+    },
+    "Făcut pe %@, după ce expirase cel vechi. Trebuie făcut cu cel puțin 21 de zile înainte de plecare, adică până pe %@. Întreabă medicul veterinar." : {
+      "comment" : "Trip check: the rabies vaccine was given after the previous one lapsed, too close to departure.",
       "localizations" : {
         "ro" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Făcut pe %1$@. Trebuie făcut cu cel puțin 21 de zile înainte de plecare, adică până pe %2$@. Întreabă medicul veterinar."
+            "value" : "Făcut pe %1$@, după ce expirase cel vechi. Trebuie făcut cu cel puțin 21 de zile înainte de plecare, adică până pe %2$@. Întreabă medicul veterinar."
           }
         }
       }
@@ -4547,7 +4642,10 @@
     "Fără cetățenie (apatrid)" : {
       "comment" : "A citizenship choice: none, stateless."
     },
-    "Fără cip" : {
+    "Fără cip, e bună de călătorit doar până pe %@. Fă-ți cartea electronică sau ia un pașaport valabil." : {
+      "comment" : "Trip check: an ID card without a chip stops being a travel document before the trip ends (EU rules)."
+    },
+    "Fără cip, modelul vechi" : {
 
     },
     "Fără cont, fără reclame, fără urmărire. Copia de siguranță o faci tu, când vrei. Internetul îl folosesc doar dacă pui cheia ta de la un serviciu AI (%@). Atunci actele citite cu el ajung la acel serviciu." : {
@@ -4984,8 +5082,8 @@
         }
       }
     },
-    "În afara UE" : {
-      "comment" : "Trip region: outside the EU."
+    "În altă țară" : {
+      "comment" : "Trip region: anywhere outside the EU, the Schengen area, Moldova and the Western Balkans."
     },
     "În codul de jos al actului scrie: %@" : {
       "comment" : "What the machine-readable zone says."
@@ -5030,6 +5128,9 @@
     "În medie, pe factură" : {
       "comment" : "Money row: a subscription's average bill over the last year."
     },
+    "În Moldova sau în Balcanii de Vest" : {
+      "comment" : "Trip region: the Republic of Moldova and the Western Balkans."
+    },
     "În rândul de aplicații care apare, alege Dosar cu Șină." : {
 
     },
@@ -5039,6 +5140,9 @@
     "În total" : {
       "comment" : "Money row: spent in total, since the section is in the binder. Agrees with no noun, so it fits every section."
     },
+    "În UE sau în spațiul Schengen" : {
+      "comment" : "Trip region: the EU and the rest of the Schengen area."
+    },
     "în ultima zi bună de călătorit" : {
       "comment" : "Part of a deadline's schedule line: on the last day a passport is good for travel."
     },
@@ -5047,9 +5151,6 @@
     },
     "În ultimul an" : {
       "comment" : "Money row: spent in the last 12 months."
-    },
-    "În Uniunea Europeană" : {
-      "comment" : "Trip region: inside the EU."
     },
     "În următoarele 30 de zile" : {
 
@@ -6261,8 +6362,8 @@
     "Nu e în dosar. Fără RCA valabil nu ai voie să ieși cu mașina." : {
       "comment" : "Trip check: no RCA deadline."
     },
-    "Nu e în dosar. În afara UE ai nevoie de pașaport. Adaugă-l cu o poză și verific până când e bun." : {
-      "comment" : "Trip check: no passport for a trip outside the EU."
+    "Nu e în dosar. Pentru drumul acesta ai nevoie de pașaport. Adaugă-l cu o poză și verific până când e bun." : {
+      "comment" : "Trip check: no passport for a trip outside the EU and the Schengen area."
     },
     "Nu e încă în dosar" : {
 
@@ -6323,6 +6424,9 @@
     },
     "Nu știu până când e valabilă. Adaugă termenul poliței." : {
       "comment" : "Claim check: the policy's deadline isn't in the binder."
+    },
+    "Nu sunt în dosar. Acolo merge oricare, dacă e valabil și la %@ după ce te întorci. Adaugă-l cu o poză și verific." : {
+      "comment" : "Trip check: neither an ID card nor a passport in the binder, for a trip to Moldova or the Western Balkans. The argument is a number of months."
     },
     "Nu sunt în dosar. Adaugă unul dintre ele cu o poză și verific până când e valabil." : {
       "comment" : "Trip check: neither an ID card nor a passport in the binder, for an EU citizen."
@@ -6944,6 +7048,9 @@
     "Pentru ce" : {
       "comment" : "A doctor's visit: what it was for."
     },
+    "Pentru cetățeni britanici (Acordul de retragere)" : {
+
+    },
     "Pentru contract și la primărie." : {
       "comment" : "Sale: why the seller's ID card is needed."
     },
@@ -6981,6 +7088,9 @@
 
     },
     "Permis de ședere" : {
+
+    },
+    "Permis de ședere (Acordul de retragere)" : {
 
     },
     "permisul de conducere" : {
@@ -7397,6 +7507,17 @@
     },
     "Rapel antitetanos" : {
 
+    },
+    "Rapel făcut pe %@, înainte să expire cel vechi, deci e valabil de îndată. Valabil până pe %@." : {
+      "comment" : "Trip check: a rabies booster given close to departure, but before the previous one ran out, counts at once.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Rapel făcut pe %1$@, înainte să expire cel vechi, deci e valabil de îndată. Valabil până pe %2$@."
+          }
+        }
+      }
     },
     "raport" : {
 
@@ -7961,6 +8082,9 @@
     "Semnătură electronică" : {
 
     },
+    "Serbia, Muntenegru, Macedonia de Nord, Albania, Bosnia și Herțegovina. Cetățenilor români le ajunge cartea de identitate sau pașaportul, valabile și la %@ după ce te întorci." : {
+      "comment" : "Trip region rule: Moldova and the Western Balkans. The argument is a number of months."
+    },
     "Seria de șasiu (VIN)" : {
 
     },
@@ -8033,10 +8157,16 @@
     "Sfârșit contract" : {
 
     },
+    "Și Elveția, Norvegia, Islanda și Liechtenstein. Cetățenilor UE le ajunge cartea de identitate sau pașaportul, valabile până te întorci." : {
+      "comment" : "Trip region rule: the EU and the Schengen area."
+    },
     "Și termenele de revizie?" : {
       "comment" : "Asks what to do with service deadlines a category change touches."
     },
     "Simbol" : {
+
+    },
+    "Simplă (CIS)" : {
 
     },
     "Simplu electronic" : {
@@ -8792,6 +8922,17 @@
     "Valabil până la %@" : {
       "comment" : "Document row: valid until."
     },
+    "Valabil până pe %@, și la %@ după ce te întorci, cât cer țările de acolo." : {
+      "comment" : "Trip check: a passport valid long enough after a trip to Moldova or the Western Balkans. The second argument is a number of months.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Valabil până pe %1$@, și la %2$@ după ce te întorci, cât cer țările de acolo."
+          }
+        }
+      }
+    },
     "Valabil până pe %@." : {
       "comment" : "Readiness: a deadline valid until a day."
     },
@@ -8800,6 +8941,17 @@
     },
     "Valabil până pe %@. Ia-l cu tine: îți trebuie ca să intri înapoi în țară." : {
       "comment" : "Trip check: the residence permit covers the trip; it is needed to come back."
+    },
+    "Valabil până pe %@. Ia-l pe el: cartea de identitate nu mai e valabilă la %@ după ce te întorci." : {
+      "comment" : "Trip check: the ID card isn't valid long enough after a trip to Moldova or the Western Balkans; the passport is. The second argument is a number of months.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Valabil până pe %1$@. Ia-l pe el: cartea de identitate nu mai e valabilă la %2$@ după ce te întorci."
+          }
+        }
+      }
     },
     "Valabil până pe %@. Ia-l pe el: cartea de identitate nu mai e valabilă la întoarcere." : {
       "comment" : "Trip check: the ID card ends before return, the passport covers the trip."
@@ -8812,6 +8964,17 @@
     },
     "Valabil până pe %@. Verifică în pașaport că e făcut cu cel puțin 21 de zile înainte de plecare." : {
       "comment" : "Trip check: the rabies vaccine is valid but its date isn't known."
+    },
+    "Valabilă până pe %@, și la %@ după ce te întorci, cât cer țările de acolo." : {
+      "comment" : "Trip check: an ID card valid long enough after a trip to Moldova or the Western Balkans. The second argument is a number of months.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Valabilă până pe %1$@, și la %2$@ după ce te întorci, cât cer țările de acolo."
+          }
+        }
+      }
     },
     "Valabilă până pe %@." : {
       "comment" : "Readiness: something valid until a day (feminine)."
@@ -8915,6 +9078,9 @@
     },
     "Vezi unde e acum" : {
       "comment" : "Capture review: opens the document already kept."
+    },
+    "Vine cu RCA-ul, care a expirat." : {
+      "comment" : "Trip check: no green card because the RCA has already expired."
     },
     "Vine cu RCA-ul, care expiră înainte să te întorci." : {
       "comment" : "Trip check: no green card because the RCA ends during the trip."

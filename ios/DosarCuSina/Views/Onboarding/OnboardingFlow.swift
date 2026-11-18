@@ -26,14 +26,36 @@ struct OnboardingFlow: View {
     @State private var toast: DSToast?
     /// Whether the last step waited for the person's binder to come down from iCloud.
     @State private var waitedForICloud = false
-    /// Whether anything is in the binder, read one section at most.
-    @Query(OnboardingFlow.anySection) private var someSection: [Asset]
+    /// Whether anything of the person's own is in the binder (a document the photo step filed,
+    /// a binder that came down from iCloud), read one section at most; examples don't count.
+    @Query(OnboardingFlow.anyRealSection) private var someSection: [Asset]
     private let persistence = PersistenceController.shared
 
-    private static var anySection: FetchDescriptor<Asset> {
-        var descriptor = FetchDescriptor<Asset>()
+    private static var anyRealSection: FetchDescriptor<Asset> {
+        var descriptor = FetchDescriptor<Asset>(predicate: #Predicate { !$0.isExample })
         descriptor.fetchLimit = 1
         return descriptor
+    }
+
+    /// What the last step shows.
+    enum Start: Equatable {
+        /// The person's binder may still be coming down from iCloud: it waits.
+        case arriving
+        /// It came down while the step waited.
+        case arrived
+        /// Something of the person's is already in the binder (the photo step filed it): the
+        /// binder opens, and no examples are offered.
+        case started
+        /// The binder is empty: examples or an empty start.
+        case choose
+    }
+
+    /// The one rule for the last step: examples are offered only while nothing of the person's
+    /// is in the binder and nothing may still be on its way.
+    static func start(binderMayBeArriving: Bool, waitedForICloud: Bool, hasRealSection: Bool) -> Start {
+        if binderMayBeArriving { return .arriving }
+        guard hasRealSection else { return .choose }
+        return waitedForICloud ? .arrived : .started
     }
 
     var body: some View {
@@ -129,15 +151,25 @@ struct OnboardingFlow: View {
     }
 
     /// How to start. On a new device signed into iCloud, the person's binder may be on its way:
-    /// the step waits for it, and offers examples only once it is known the binder is empty.
+    /// the step waits for it, and offers examples only once it is known the binder is empty. A
+    /// document already filed in the photo step means the binder has begun: no examples then.
     @ViewBuilder
     private var examples: some View {
-        if persistence.binderMayBeArriving {
-            arriving
-        } else if waitedForICloud, !someSection.isEmpty {
-            arrived
-        } else {
-            chooseStart
+        switch Self.start(binderMayBeArriving: persistence.binderMayBeArriving, waitedForICloud: waitedForICloud, hasRealSection: !someSection.isEmpty) {
+        case .arriving: arriving
+        case .arrived: arrived
+        case .started: started
+        case .choose: chooseStart
+        }
+    }
+
+    private var started: some View {
+        OnboardingPage(
+            symbols: ["checkmark.circle.fill"],
+            title: "Dosarul tău a început",
+            message: "Ce ai adăugat e deja în dosar. Restul îl adaugi când vrei, din Adaugă."
+        ) {
+            DSPrimaryButton("Deschide dosarul", action: onFinish)
         }
     }
 

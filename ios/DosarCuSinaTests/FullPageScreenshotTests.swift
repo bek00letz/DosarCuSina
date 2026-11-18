@@ -25,9 +25,24 @@ struct FullPageScreenshotTests {
         #expect(FullPageScreenshot.offers(cover: nil, showsLockedState: false, viewport: phone()))
     }
 
-    @Test("Nothing is offered while the app lock or the app-switcher cover is up", arguments: [LockCover.lock, .privacy])
-    func nothingWhileCovered(cover: LockCover) {
-        #expect(!FullPageScreenshot.offers(cover: cover, showsLockedState: false, viewport: phone()))
+    @Test("Nothing is offered while the app lock is up")
+    func nothingWhileLocked() {
+        #expect(!FullPageScreenshot.offers(cover: .lock, showsLockedState: false, viewport: phone()))
+        #expect(FullPageScreenshot.withholds(.lock))
+    }
+
+    /// After any Face ID in the session the app-switcher cover is up whenever the app isn't
+    /// active, the screenshot editor's moment included: it hides the app from the app switcher,
+    /// not the screen the person just saw, so it never withholds the page.
+    @Test("The app-switcher cover after a Face ID doesn't withhold a full page")
+    func theAppSwitcherCoverDoesNotWithhold() {
+        #expect(!FullPageScreenshot.withholds(.privacy))
+        #expect(!FullPageScreenshot.withholds(nil))
+        #expect(FullPageScreenshot.offers(cover: .privacy, showsLockedState: false, viewport: phone()))
+        let editorOpen = LockCover.decide(appLockEnabled: false, anySectionLocked: true, isSessionUnlocked: true, phase: .inactive, isAuthenticating: false)
+        #expect(editorOpen == .privacy, "The screenshot editor makes the app inactive")
+        #expect(FullPageScreenshot.offers(cover: editorOpen, showsLockedState: false, viewport: phone()))
+        #expect(!FullPageScreenshot.offers(cover: editorOpen, showsLockedState: true, viewport: phone()), "A locked section's screen still withholds it")
     }
 
     @Test("Nothing is offered while a locked state shows")

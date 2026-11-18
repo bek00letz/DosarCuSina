@@ -17,6 +17,13 @@ enum PublicPages {
     /// Every page the app or the App Store links to.
     static let all = [privacyPolicy, help]
 
+    /// The support address, a contact that needs no account: the owner's chosen public one,
+    /// written on the help page in both languages (`PublicPagesTests` checks they agree).
+    static let supportEmail = "ar6development@gmail.com"
+
+    /// Writing to it, from a link.
+    static var supportMail: URL { URL(string: "mailto:" + supportEmail)! }
+
     private static func page(_ path: String) -> URL {
         site.appending(path: path, directoryHint: .isDirectory)
     }

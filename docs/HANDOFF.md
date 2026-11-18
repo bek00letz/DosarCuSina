@@ -81,7 +81,10 @@ Nothing at the moment.
 
 ## Questions for the owner
 
-None open. The health file's own health-card deadline was answered on 2026-11-18 (it stays) and is in [DECISIONS.md](DECISIONS.md).
+- **Identity cards without a chip held by people who were 70 or over on 2 August 2021**: the EU keeps theirs valid until they expire; the trip check applies 2 August 2031 to everyone. Worth a rule of its own?
+- **Other EU citizens' identity cards in Moldova and the Western Balkans**: only a Romanian card is taken there today (from the foreign ministry's pages); a German or Italian citizen is asked for a passport.
+
+The health file's own health-card deadline was answered on 2026-11-18 (it stays) and is in [DECISIONS.md](DECISIONS.md).
 
 The earlier ones (the IMEI rule and the four bill choices) were answered on 2026-11-03 and are in [DECISIONS.md](DECISIONS.md).
 
@@ -133,6 +136,12 @@ Newest first. Copy this template:
 - **Next:** look at a person's page and Agendă with Acte locked and the session closed.
 - **Decisions:** „A locked section is locked wherever it is named” (owner: Caută keeps titles).
 
+### 2026-11-18 — owner (with Claude) — `claude/trips-pages-misc`
+- **Did:** several citizenships per person (a list on the member, every one the documents print added on filing, the person's page adds or takes one away; the trip check goes by the most favourable, with that citizenship's documents; `CitizenshipsStep` offers a second one an earlier version left out); three trip regions (the Schengen area named, Moldova and the Western Balkans taking a Romanian identity card, from the foreign ministry's pages); the identity card without a chip until 2 August 2031, the simple one (CIS) no travel document, a family member's residence card and the Withdrawal Agreement's document as the permit's variants; expired documents said as expired; a rabies booster on time counts at once. The help page and the privacy policy say what is true now (backups, sync later, which providers' terms are linked), a compatible AI service's review says its rules are its own; `NSAllowsLocalNetworking` and the local network's words; onboarding offers no examples once something real is filed; a full page isn't withheld by the app-switcher cover; the help page gives the owner's support e-mail address as a contact that needs no account (`PublicPages.supportEmail`).
+- **Tests:** new `SeveralCitizenshipsTests`; `TripsAndCitizenshipTests`, `ReadinessTests`, `ReplacedDocumentsTests`, `FullPageScreenshotTests`, `ReleaseReadinessTests`, `PersonalDocumentTests` and the trip part of the copy matrix updated. Run on GitHub (the Mac was too loaded for a local run).
+- **Left open:** not seen on a phone: the citizenship chips and *Adaugă*, the local network prompt with an LM Studio server, a full page after Face ID; the 70-and-over exception for cards without a chip; other EU citizens' identity cards in the Western Balkans.
+- **Next:** try a full page after Face ID on a phone, and a compatible service on the home network over `http`.
+- **Decisions:** „A person can have several citizenships, and travels on the most favourable”, „Where a trip goes, as the rules tell places apart”, „Public pages say what is true now”, „Onboarding and full pages” (2026-11-18).
 ### 2026-11-18 — owner (with Claude) — `claude/share-memory-cancel`
 - **Did:** four break-it findings of the share. A file too large is refused without being read whole: too large ends the item (no link, no bytes after it), nothing is asked once the share has no room left, bytes only when no way had a file (`ShareReceiving.receive`, `ShareInbox.statedSize`); a .txt with its link is a file first; the item provider's wrapper no longer hides the sender's cause (`ShareFailure(_:)`). „Renunță” stops the share through `ShareCancellation` (copies, loads and coordinated reads stop; staging removed; no notice; anything committed taken back), the flow now `ShareDelivery.deliver` in `ios/Shared`. Abandoned staging goes at launch and on every inbox read (`removeAbandonedStaging`, by last touch, `longestShare`). *Probleme la primire* stays open after „Golește lista” (`ShareProblems.showsRow(_:pageIsOpen:)`), and its undo puts back every entry by id (`ShareFailureLog.Entry.id`). No database change.
 - **Tests:** new `ShareStopAndLimitsTests` (a 200 MB file and a link to a 300 MB one refused with their bytes never asked for, no room left asks nothing, a file that can't be copied isn't asked for as bytes, the token, a stopped copy, a share stopped while copying and while announcing leaves nothing and posts nothing, abandoned staging by age); `ShareProblemsClearTests` (entries alike in the same second come back, putting back twice, an earlier log without ids, the row while the page is open); the architecture check locally; the whole suite on GitHub.

@@ -13,8 +13,9 @@ import UIKit
 /// still copy of the screen stays over the app while it scrolls, so nothing moves under the
 /// person, and the content goes back to where it was.
 ///
-/// Nothing is offered while a lock covers the app (`LockCover`) or while a locked state shows
-/// (`withholdsFullPageScreenshot`): then only the plain screenshot exists. The PDF is made in
+/// Nothing is offered while something is locked right now: the app lock covers the app
+/// (`FullPageScreenshot.withholds`), or a locked state shows (`withholdsFullPageScreenshot`);
+/// then only the plain screenshot exists. The PDF is made in
 /// memory and handed to the system; no file is written.
 @MainActor
 final class FullPageScreenshots: NSObject, UIScreenshotServiceDelegate {
@@ -40,7 +41,7 @@ final class FullPageScreenshots: NSObject, UIScreenshotServiceDelegate {
         }
         isCapturing = true
         Task {
-            let page = await capture.run(stillOffered: { [weak self] in self.map { $0.cover == nil } ?? false })
+            let page = await capture.run(stillOffered: { [weak self] in self.map { !FullPageScreenshot.withholds($0.cover) } ?? false })
             isCapturing = false
             completionHandler(page?.data, page?.index ?? 0, page?.rect ?? .zero)
         }
