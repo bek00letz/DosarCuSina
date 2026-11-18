@@ -157,8 +157,8 @@ struct FullPageCapture {
         let showsLockedState = FullPageScreenshotTarget.showsLockedState(in: window)
         let scroll = FullPageScreenshotTarget.frontmost(from: window.rootViewController)
             .flatMap { $0.viewIfLoaded }
-            .flatMap(FullPageScreenshotTarget.scrollView(in:))
-        let viewport = scroll.map(FullPageScreenshotTarget.viewport(of:))
+            .flatMap { FullPageScreenshotTarget.scrollView(in: $0) }
+        let viewport = scroll.map { FullPageScreenshotTarget.viewport(of: $0) }
         guard FullPageScreenshot.offers(cover: cover, showsLockedState: showsLockedState, viewport: viewport),
               let scroll, let viewport, let visible = viewport.visible else { return nil }
         self.window = window
