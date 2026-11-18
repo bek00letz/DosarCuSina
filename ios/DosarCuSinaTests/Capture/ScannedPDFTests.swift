@@ -91,6 +91,7 @@ struct ScannedPDFTests {
         let footer = [RecognizedLine("Scanat cu Aplicația Exemplu", box: TextBox(x: 0.05, y: 0.97, width: 0.6, height: 0.012))]
         #expect(PDFTextCoverage.isScanned(lines: footer, pictureShare: 1))
         #expect(!PDFTextCoverage.isScanned(lines: footer, pictureShare: 0.1), "A logo is no scan")
-        #expect(PDFPagePictures.share(of: try #require(PDFPageRendering.document(Self.scanWithFooter)?.page(at: 1))) > 0.99)
+        let page = try #require(PDFPageRendering.document(Self.scanWithFooter)?.page(at: 1))
+        #expect(PDFPagePictures.share(of: page) > 0.99)
     }
 }

@@ -374,7 +374,8 @@ struct DataRepairTests {
         try context.save()
 
         let found = try applyTwice(.personalLessonLabels, in: context) {
-            #expect(try context.fetch(FetchDescriptor<IssuerLesson>()).map(\.label) == ["Ultima zi de plată"])
+            let labels = try context.fetch(FetchDescriptor<IssuerLesson>()).map(\.label)
+            #expect(labels == ["Ultima zi de plată"])
         }
         #expect(found.count == 3)
         #expect(found.allSatisfy { $0.isFixable } && !DataRepairs.step(.personalLessonLabels).isSuggestion)
