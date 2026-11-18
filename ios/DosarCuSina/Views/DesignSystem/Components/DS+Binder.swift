@@ -126,7 +126,9 @@ struct DSBox: View {
                     DSExampleBadge()
                 }
             }
-            Spacer(minLength: 0)
+            // Top-aligned: the title keeps one place under the artwork in every box, so a row's
+            // titles line up whatever their status lines take (one line or three); the room
+            // left over gathers at the bottom.
             Text(verbatim: title)
                 .dsFont(.sectionTitle)
                 .fontWeight(.bold)
@@ -135,9 +137,11 @@ struct DSBox: View {
                 .fixedSize(horizontal: false, vertical: true)
             DSStatusLine(text: statusText, tone: tone)
                 .lineLimit(3)
+            Spacer(minLength: 0)
         }
         .padding(DS.Space.m)
-        .frame(maxWidth: .infinity, minHeight: 168, alignment: .topLeading)
+        // As tall as the tallest box of its row, so a row's boxes end on one line too.
+        .frame(maxWidth: .infinity, minHeight: 168, maxHeight: .infinity, alignment: .topLeading)
         .background(DS.Palette.surface, in: .rect(cornerRadius: DS.Radius.card, style: .continuous))
         .containerShape(.rect(cornerRadius: DS.Radius.card, style: .continuous))
         .dsHairlineBorder(RoundedRectangle(cornerRadius: DS.Radius.card, style: .continuous))
@@ -204,7 +208,7 @@ struct DSAddBox: View {
             }
         }
         .padding(DS.Space.m)
-        .frame(maxWidth: .infinity, minHeight: 168)
+        .frame(maxWidth: .infinity, minHeight: 168, maxHeight: .infinity)
         .accessibilityElement(children: .combine)
         .background {
             RoundedRectangle(cornerRadius: DS.Radius.card, style: .continuous)

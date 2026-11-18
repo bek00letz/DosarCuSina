@@ -75,14 +75,16 @@ struct DosarHomeView: View {
 
     // MARK: Grid
 
+    /// The boxes of a row stand on one line at the top (`alignment: .top`), each as tall as the
+    /// row (`DSBox`), so their titles line up whatever their status lines take.
     private var columns: [GridItem] {
         if dynamicTypeSize.isAccessibilitySize {
-            return [GridItem(.flexible(), spacing: DS.Space.s)]
+            return [GridItem(.flexible(), spacing: DS.Space.s, alignment: .top)]
         }
         if horizontalSizeClass == .regular {
-            return [GridItem(.adaptive(minimum: 220, maximum: 360), spacing: DS.Space.s)]
+            return [GridItem(.adaptive(minimum: 220, maximum: 360), spacing: DS.Space.s, alignment: .top)]
         }
-        return Array(repeating: GridItem(.flexible(), spacing: DS.Space.s), count: 2)
+        return Array(repeating: GridItem(.flexible(), spacing: DS.Space.s, alignment: .top), count: 2)
     }
 
     private var grid: some View {
