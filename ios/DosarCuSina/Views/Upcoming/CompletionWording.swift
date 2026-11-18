@@ -45,6 +45,16 @@ extension CompletionShape.NewEnd {
         }
     }
 
+    /// Above "Salvează" while the date is empty: saving waits for it.
+    var needed: String {
+        switch self {
+        case .expires: String(localized: "Alege data la care expiră. De la ea îți amintesc din nou.",
+                              comment: "Am rezolvat: why saving waits, while the new expiry is empty.")
+        case .ends: String(localized: "Alege data la care se termină. De la ea îți amintesc din nou.",
+                           comment: "Am rezolvat: why saving waits, while a renewed contract's new end is empty.")
+        }
+    }
+
     /// Said once the date was read off the photo and written above.
     var filledFromPhoto: String {
         switch self {

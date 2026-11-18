@@ -24,7 +24,8 @@ extension WidgetFeed {
                 kind: obligation.kind.rawValue,
                 isSensitive: obligation.isSensitive,
                 deepLink: DeepLink.url(for: .obligation(obligation.id)),
-                urgency: obligation.reminders.urgencyRule
+                urgency: obligation.reminders.urgencyRule,
+                closesInTheApp: obligation.closesInTheApp
             )
         }
         return WidgetFeed(generatedAt: now, needsActionCount: digest.needsActionCount, items: Array(items))

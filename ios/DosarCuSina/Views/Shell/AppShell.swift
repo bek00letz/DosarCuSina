@@ -144,6 +144,8 @@ struct AppShell: View {
                 // One of their own documents opens its page; a paper kept on theirs stays there.
                 router.push(.asset(documentID))
             }
+        case .completion(let id, let cycle):
+            OutsideCompletionSheet(obligationID: id, cycle: cycle)
         case .addSection(let request):
             AddSectionFlow(request: request) { asset in
                 // A new top-level section opens right away; a child shows up in its parent's pocket.
@@ -197,7 +199,7 @@ struct RouteScreen: View {
         case .category(let key): CategoryScreen(templateKey: key)
         case .addVisit(let id): AddVisitFlow(assetID: id)
         case .readiness(let readiness): ReadinessScreen(route: readiness)
-        case .home, .upcoming, .search, .intake, .settings:
+        case .home, .upcoming, .search, .intake, .settings, .completion:
             // Tabs and sheets aren't pushed; hand them to the router instead.
             Color.clear.task { router.open(route) }
         }

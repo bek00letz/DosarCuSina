@@ -487,7 +487,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Revizie periodică (`vehicleService`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la service-ul care a lucrat. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometraj |
 | Schimb de anvelope (`tyreChange`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Factura (Opțional. O păstrez în istoric.) — Fotografiază factura: De la vulcanizare. [Citesc factura… / Am citit factura / Factura nu s-a citit]; Kilometraj |
 | CASCO (`policy`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Polița nouă (Opțional. Din ea iau data următoare.) — Fotografiază polița nouă: Cea primită de la asigurător sau de la broker. [Citesc polița nouă… / Am citit polița nouă / Polița nouă nu s-a citit / Nu am găsit o dată nouă pe ea. O păstrez oricum.] |
-| Trusă medicală și stingător (`safetyKit`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Expiră pe — De aici încep să-ți amintesc din nou. |
+| Trusă medicală și stingător (`safetyKit`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Expiră pe — De aici încep să-ți amintesc din nou. [until chosen: Alege data la care expiră. De la ea îți amintesc din nou.]; from outside the app: opens „Am rezolvat”, no widget „Gata” |
 
 ### Locuințe (`home`)
 
@@ -505,7 +505,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 
 | Where | Words |
 | :--- | :--- |
-| Reînnoire (`documentReplaced`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Închid termenul și trec actul acesta ca expirat. Actul nou are altă serie și alt număr, așa că îl adaugi separat, cu poza lui. Once closed: „Ai reînnoit actul” — Cel nou are altă serie și alt număr: adaugă-l ca act nou, cu poza lui. Pe acesta îl poți păstra sau șterge. [Adaugă actul nou · Șterge actul vechi] · the toast's Vezi actul · the badge Expirat |
+| Reînnoire (`documentReplaced`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Închid termenul și trec actul acesta ca expirat. Actul nou are altă serie și alt număr, așa că îl adaugi separat, cu poza lui. Once closed: „Ai reînnoit actul” — Cel nou are altă serie și alt număr: adaugă-l ca act nou, cu poza lui. Pe acesta îl poți păstra sau șterge. [Adaugă actul nou · Șterge actul vechi] · the toast's Vezi actul · the badge Expirat; from outside the app: opens „Am rezolvat”, no widget „Gata” |
 
 ### Animale (`pet`)
 
@@ -525,7 +525,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Control stomatologic (`dentist`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Notă — Ce s-a făcut, ce urmează. |
 | Rapel antitetanos (`vaccine`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Adeverința de vaccinare (Opțional. O păstrez în dosar.) — Fotografiază adeverința: Sau pagina din carnetul de vaccinări. [Citesc adeverința de vaccinare… / Am citit adeverința de vaccinare / Adeverința de vaccinare nu s-a citit] |
 | Vaccin antigripal (`vaccine`) | Am rezolvat / Am rezolvat… — Când; Cât a costat; Adeverința de vaccinare (Opțional. O păstrez în dosar.) — Fotografiază adeverința: Sau pagina din carnetul de vaccinări. [Citesc adeverința de vaccinare… / Am citit adeverința de vaccinare / Adeverința de vaccinare nu s-a citit] |
-| Card european de sănătate (`newHealthCard`) | Am rezolvat / Am rezolvat… — Când; Închid termenul. Cardul nou are alt număr, așa că îl adaugi separat, la acte, cu poza lui. De acolo îți amintesc când expiră. Once closed: „Ai un card nou” — Are alt număr: adaugă-l la acte, cu poza lui, și îți amintesc de el când expiră. [Adaugă cardul nou] · the toast's Vezi termenul |
+| Card european de sănătate (`newHealthCard`) | Am rezolvat / Am rezolvat… — Când; Închid termenul. Cardul nou are alt număr, așa că îl adaugi separat, la acte, cu poza lui. De acolo îți amintesc când expiră. Once closed: „Ai un card nou” — Are alt număr: adaugă-l la acte, cu poza lui, și îți amintesc de el când expiră. [Adaugă cardul nou] · the toast's Vezi termenul; from outside the app: opens „Am rezolvat”, no widget „Gata” |
 
 ### Garanții (`purchase`)
 
@@ -538,7 +538,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 | Where | Words |
 | :--- | :--- |
 | Reînnoire anuală (`bill`) | Am rezolvat / Am rezolvat… — Când; Cât ai plătit; Factura (Opțional. O trec în istoric.) — Fotografiază factura: Cea pe care ai plătit-o. [Citesc factura… / Am citit factura / Factura nu s-a citit] |
-| Se termină contractul (`newContract`) | Am rezolvat / Am rezolvat… — Când; Contractul nou (Opțional. Din el iau data la care se termină.) — Fotografiază contractul nou: Pagina cu perioada contractului. [Citesc contractul nou… / Am citit contractul nou / Contractul nou nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.]; Se termină pe — De aici încep să-ți amintesc din nou. |
+| Se termină contractul (`newContract`) | Am rezolvat / Am rezolvat… — Când; Contractul nou (Opțional. Din el iau data la care se termină.) — Fotografiază contractul nou: Pagina cu perioada contractului. [Citesc contractul nou… / Am citit contractul nou / Contractul nou nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.]; Se termină pe — De aici încep să-ți amintesc din nou. [until chosen: Alege data la care se termină. De la ea îți amintesc din nou.]; from outside the app: opens „Am rezolvat”, no widget „Gata” |
 | Se termină perioada minimă (`acknowledged`) | Gata / Gata — nothing: done today, „Adaugă o notă” after |
 | Factura de plătit (`bill`) | Am rezolvat / Am rezolvat… — Când; Cât ai plătit; Factura (Opțional. O trec în istoric.) — Fotografiază factura: Cea pe care ai plătit-o. [Citesc factura… / Am citit factura / Factura nu s-a citit] |
 
@@ -563,7 +563,7 @@ No visits: offered nowhere, and Istoric adds nothing by hand.
 
 | Where | Words |
 | :--- | :--- |
-| Se termină contractul de închiriere (`newLease`) | Am rezolvat / Am rezolvat… — Când; Contractul nou (Opțional. Din el iau data la care se termină.) — Fotografiază contractul nou: Pagina cu perioada închirierii. [Citesc contractul nou… / Am citit contractul nou / Contractul nou nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.]; Se termină pe — De aici încep să-ți amintesc din nou. |
+| Se termină contractul de închiriere (`newLease`) | Am rezolvat / Am rezolvat… — Când; Contractul nou (Opțional. Din el iau data la care se termină.) — Fotografiază contractul nou: Pagina cu perioada închirierii. [Citesc contractul nou… / Am citit contractul nou / Contractul nou nu s-a citit / Nu am găsit o dată nouă pe el. Îl păstrez oricum.]; Se termină pe — De aici încep să-ți amintesc din nou. [until chosen: Alege data la care se termină. De la ea îți amintesc din nou.]; from outside the app: opens „Am rezolvat”, no widget „Gata” |
 
 ### Espressoare (`espresso`)
 

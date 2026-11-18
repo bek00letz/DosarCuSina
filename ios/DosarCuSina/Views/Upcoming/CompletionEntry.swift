@@ -72,3 +72,38 @@ private struct CompletionSheetModifier: ViewModifier {
         }
     }
 }
+
+/// "Am rezolvat" opened from outside the app (`AppRoute.completion`): a reminder's or Siri's
+/// „Am rezolvat” on a deadline whose closing asks what only the app can ask, a new day or a new
+/// document (`CompletionShape.closesOutsideTheApp`). The same sheet as the page's, for the cycle
+/// the person saw, behind its section's lock (Face ID for a locked category); what it saved is
+/// said on the shell's toast, over the deadline's page.
+struct OutsideCompletionSheet: View {
+    let cycle: CalendarDay
+
+    @Query private var matches: [Obligation]
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.announce) private var announce
+
+    init(obligationID: UUID, cycle: CalendarDay) {
+        self.cycle = cycle
+        _matches = Query(filter: #Predicate<Obligation> { $0.id == obligationID })
+    }
+
+    var body: some View {
+        if let obligation = matches.first {
+            // Behind its section's lock, as the page's own sheet is; a deadline of the whole
+            // household has no section, so no lock.
+            RouteLockGate(obligation.asset.map { .section($0.id) } ?? .open, inSheet: true) { sheet(obligation) }
+        } else {
+            DSEmptyState("Termenul nu mai există", systemImage: "calendar.badge.exclamationmark", message: "Poate a fost șters împreună cu secțiunea lui.")
+        }
+    }
+
+    private func sheet(_ obligation: Obligation) -> some View {
+        ObligationCompleteSheet(obligation: obligation, cycle: cycle) { result in
+            if let result { announce(result) }
+            dismiss()
+        }
+    }
+}

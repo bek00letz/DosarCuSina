@@ -45,11 +45,15 @@ public struct DeliveredReminder: Hashable, Sendable {
     public var obligationId: UUID?
     /// The cycle it was about (see `ReminderPayload.cycle`).
     public var cycle: CalendarDay?
+    /// It was written with a locked category's generic words (its category,
+    /// `ReminderActions.isProtected(category:)`); otherwise it names the deadline.
+    public var isProtected: Bool
 
-    public init(identifier: String, obligationId: UUID?, cycle: CalendarDay?) {
+    public init(identifier: String, obligationId: UUID?, cycle: CalendarDay?, isProtected: Bool = false) {
         self.identifier = identifier
         self.obligationId = obligationId
         self.cycle = cycle
+        self.isProtected = isProtected
     }
 }
 
@@ -73,19 +77,44 @@ public enum ReminderActions {
     /// A reminder about a deadline of a locked category: „Am rezolvat” opens the app, which asks
     /// for Face ID before it closes the deadline; „Amână” works from the Lock Screen as it is.
     public static let protectedCategoryIdentifier = "OBLIGATION_PROTECTED"
+    /// A reminder about a deadline whose closing asks a new day or a new document
+    /// (`CompletionShape.closesOutsideTheApp`): „Am rezolvat” opens the app's „Am rezolvat”.
+    public static let inAppCategoryIdentifier = "OBLIGATION_IN_APP"
 
-    /// The category a reminder about a deadline gets.
-    public static func category(isProtected: Bool) -> String {
-        isProtected ? protectedCategoryIdentifier : categoryIdentifier
+    /// What a reminder's category says of its deadline: whether its category is locked on this
+    /// device, and whether closing it asks what only the app can ask. One category each, so the
+    /// buttons' options follow both and a reminder shown says which it was when it fired.
+    struct Kind: Hashable, CaseIterable {
+        var isProtected: Bool
+        var closesInTheApp: Bool
+
+        static let allCases = [false, true].flatMap { isProtected in
+            [false, true].map { Kind(isProtected: isProtected, closesInTheApp: $0) }
+        }
     }
 
-    /// What „Am rezolvat” asks of the system before the app hears of it: the phone unlocked,
-    /// and for a locked category the app on screen, so it can ask for Face ID (`DeadlineChange`).
-    static func completeOptions(isProtected: Bool) -> UNNotificationActionOptions {
-        DeadlineChange.close.asksFaceID(inLockedCategory: isProtected) ? [.authenticationRequired, .foreground] : [.authenticationRequired]
+    /// The category a reminder about a deadline gets. A locked category's wins: its „Am rezolvat”
+    /// opens the app already, and its generic words are what a shown reminder is read by.
+    public static func category(isProtected: Bool, closesInTheApp: Bool = false) -> String {
+        if isProtected { return protectedCategoryIdentifier }
+        return closesInTheApp ? inAppCategoryIdentifier : categoryIdentifier
     }
 
-    /// What „Amână” asks of the system: nothing, locked category or not (`DeadlineChange`).
+    /// Whether a shown reminder of this category was written with a locked category's generic words.
+    static func isProtected(category: String) -> Bool {
+        category == protectedCategoryIdentifier
+    }
+
+    /// What „Am rezolvat” asks of the system before the app hears of it: the phone unlocked; the
+    /// app on screen for a locked category, so it can ask for Face ID (`DeadlineChange`), and for
+    /// a deadline whose closing asks a new day or a new document, which only the app asks.
+    static func completeOptions(isProtected: Bool, closesInTheApp: Bool = false) -> UNNotificationActionOptions {
+        DeadlineChange.close.asksFaceID(inLockedCategory: isProtected) || closesInTheApp
+            ? [.authenticationRequired, .foreground] : [.authenticationRequired]
+    }
+
+    /// What „Amână” asks of the system: nothing, locked category or not (`DeadlineChange`), and
+    /// whether or not closing needs the app.
     static func snoozeOptions(isProtected: Bool) -> UNNotificationActionOptions {
         DeadlineChange.snooze.asksFaceID(inLockedCategory: isProtected) ? [.authenticationRequired, .foreground] : []
     }
@@ -149,6 +178,13 @@ public struct SystemNotificationCenterClient: NotificationCenterClient {
 
     public func add(_ reminder: PlannedReminder) async throws {
         let content = UNMutableNotificationContent()
+        content.badge = reminder.badge.map { NSNumber(value: $0) }
+        guard reminder.showsAlert else {
+            // Only the badge, as the day starts (`BadgePlanner`): nothing shown, nothing heard.
+            content.userInfo = [ReminderActions.fingerprintKey: reminder.fingerprint]
+            try await center.add(UNNotificationRequest(identifier: reminder.identifier, content: content, trigger: ReminderTrigger.make(firingAt: reminder.fireDate)))
+            return
+        }
         content.title = reminder.title
         content.body = reminder.body
         content.sound = .default
@@ -160,7 +196,7 @@ public struct SystemNotificationCenterClient: NotificationCenterClient {
         ]
         if let id = reminder.obligationId {
             // Only reminders about a deadline get "Am rezolvat" and "Amână".
-            content.categoryIdentifier = ReminderActions.category(isProtected: reminder.isProtected)
+            content.categoryIdentifier = ReminderActions.category(isProtected: reminder.isProtected, closesInTheApp: reminder.closesInTheApp)
             info[ReminderActions.obligationIdKey] = id.uuidString
         } else {
             content.categoryIdentifier = ""
@@ -169,9 +205,8 @@ public struct SystemNotificationCenterClient: NotificationCenterClient {
             info[ReminderActions.cycleKey] = cycle.isoString
         }
         content.userInfo = info
-        let parts = Calendar.dosar.dateComponents([.year, .month, .day, .hour, .minute], from: reminder.fireDate)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: parts, repeats: false)
-        try await center.add(UNNotificationRequest(identifier: reminder.identifier, content: content, trigger: trigger))
+        // In the app's calendar, whatever calendar the phone is set to (`ReminderTrigger`).
+        try await center.add(UNNotificationRequest(identifier: reminder.identifier, content: content, trigger: ReminderTrigger.make(firingAt: reminder.fireDate)))
     }
 
     public func remove(identifiers: [String]) async {
@@ -182,7 +217,8 @@ public struct SystemNotificationCenterClient: NotificationCenterClient {
         await center.deliveredNotifications().map { notification in
             let request = notification.request
             let payload = ReminderPayload(identifier: request.identifier, userInfo: request.content.userInfo, deliveredAt: notification.date)
-            return DeliveredReminder(identifier: request.identifier, obligationId: payload.obligationId, cycle: payload.cycle)
+            return DeliveredReminder(identifier: request.identifier, obligationId: payload.obligationId, cycle: payload.cycle,
+                                     isProtected: ReminderActions.isProtected(category: request.content.categoryIdentifier))
         }
     }
 
@@ -196,19 +232,22 @@ public struct SystemNotificationCenterClient: NotificationCenterClient {
     }
 
     public func registerCategories() async {
-        let categories = [false, true].map { isProtected in
+        // One per kind; a locked one that closes in the app is the locked one (`category`).
+        var seen = Set<String>()
+        let kinds = ReminderActions.Kind.allCases.filter { seen.insert(ReminderActions.category(isProtected: $0.isProtected, closesInTheApp: $0.closesInTheApp)).inserted }
+        let categories = kinds.map { kind in
             let complete = UNNotificationAction(
                 identifier: ReminderActions.complete,
                 title: String(localized: "Am rezolvat", comment: "Notification action"),
-                options: ReminderActions.completeOptions(isProtected: isProtected)
+                options: ReminderActions.completeOptions(isProtected: kind.isProtected, closesInTheApp: kind.closesInTheApp)
             )
             let snooze = UNNotificationAction(
                 identifier: ReminderActions.snooze,
                 title: String(localized: "Amână 3 zile", comment: "Notification action"),
-                options: ReminderActions.snoozeOptions(isProtected: isProtected)
+                options: ReminderActions.snoozeOptions(isProtected: kind.isProtected)
             )
             return UNNotificationCategory(
-                identifier: ReminderActions.category(isProtected: isProtected),
+                identifier: ReminderActions.category(isProtected: kind.isProtected, closesInTheApp: kind.closesInTheApp),
                 actions: [complete, snooze],
                 intentIdentifiers: [],
                 hiddenPreviewsBodyPlaceholder: String(localized: "Scadență", comment: "Notification preview placeholder when previews are hidden"),
@@ -222,7 +261,9 @@ public struct SystemNotificationCenterClient: NotificationCenterClient {
 /// Makes the pending notifications match a plan: removes what is stale, adds
 /// what is missing, leaves the rest alone. Reminders already shown for a cycle
 /// that has closed are removed from Notification Center, so their buttons can't
-/// be tapped later. It only touches its own identifiers.
+/// be tapped later, and so are those that name a deadline whose category is locked
+/// now: what stays there says no more than a reminder planned now would. It only
+/// touches its own identifiers.
 public struct NotificationReconciler: Sendable {
     public let client: any NotificationCenterClient
 
@@ -254,9 +295,13 @@ public struct NotificationReconciler: Sendable {
     /// - Parameter openCycles: the due day of every obligation that still reminds.
     ///   A shown reminder for any other cycle (done, snoozed past, deleted) is cleared.
     ///   Nil leaves Notification Center alone.
+    /// - Parameter locked: the obligations whose category is locked on this device now. A shown
+    ///   reminder that names one of them (written before its lock was turned on) is cleared:
+    ///   one planned now would say only the generic words.
     @discardableResult
-    public func apply(_ plan: [PlannedReminder], badgeCount: Int, openCycles: [UUID: CalendarDay]? = nil, prompt: PermissionPrompt) async -> Outcome {
-        let authorization = await self.authorization(asking: prompt, somethingToRemind: !plan.isEmpty)
+    public func apply(_ plan: [PlannedReminder], badgeCount: Int, openCycles: [UUID: CalendarDay]? = nil, locked: Set<UUID> = [],
+                      prompt: PermissionPrompt) async -> Outcome {
+        let authorization = await self.authorization(asking: prompt, somethingToRemind: plan.contains(where: \.showsAlert))
 
         let pending = await client.pending().filter { $0.identifier.hasPrefix(ReminderPlanner.identifierPrefix) }
         let wanted = authorization == .authorized ? plan : []
@@ -280,7 +325,7 @@ public struct NotificationReconciler: Sendable {
         var cleared = 0
         if let openCycles {
             let closed = await client.delivered()
-                .filter { $0.identifier.hasPrefix(ReminderPlanner.identifierPrefix) && Self.isClosed($0, openCycles: openCycles) }
+                .filter { $0.identifier.hasPrefix(ReminderPlanner.identifierPrefix) && Self.isOutdated($0, openCycles: openCycles, locked: locked) }
                 .map(\.identifier)
             if !closed.isEmpty {
                 await client.removeDelivered(identifiers: closed)
@@ -291,6 +336,14 @@ public struct NotificationReconciler: Sendable {
             await client.setBadgeCount(badgeCount)
         }
         return Outcome(authorization: authorization, added: added, removed: stale.count, failed: failed, clearedDelivered: cleared)
+    }
+
+    /// A shown reminder that no longer belongs in Notification Center: its cycle closed
+    /// (`isClosed`), or it names a deadline whose category is locked now.
+    static func isOutdated(_ reminder: DeliveredReminder, openCycles: [UUID: CalendarDay], locked: Set<UUID>) -> Bool {
+        if isClosed(reminder, openCycles: openCycles) { return true }
+        guard let id = reminder.obligationId else { return false }
+        return locked.contains(id) && !reminder.isProtected
     }
 
     /// A shown reminder whose cycle is no longer open. The "open the app" reminder
