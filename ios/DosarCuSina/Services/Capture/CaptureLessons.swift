@@ -44,7 +44,8 @@ public struct IssuerKey: RawRepresentable, Hashable, Codable, Sendable, Comparab
 /// reader's evidence like any other: told to the readers as the kind's learned rows
 /// (`LessonBook.teaching`), read by `LabelledLayout`, the one layout reader, where the issuer
 /// prints the value, never by code of its own; `ReadingArbiter` still decides between what every
-/// reader read.
+/// reader read, and a label outside the kind's table only fills what the table misses
+/// (`ReadingArbiter.admitsLearned`).
 public struct CaptureLesson: Hashable, Codable, Sendable {
     public let issuer: IssuerKey
     public let kind: CaptureDocumentKind
@@ -97,9 +98,11 @@ public struct LessonBook: Hashable, Codable, Sendable {
     /// anywhere, as long as nothing stands between them ("Total de plată …… 123,45 lei").
     static let rowReach = Double.infinity
 
-    /// What a value read at a learned label is worth: more than a label of the kind's own table
-    /// (a lesson is learned only where the kind's readers missed or misread this issuer's value),
-    /// less than a value a check proves.
+    /// What a value read at a learned label is worth: more than a guess of the kind's readers and
+    /// a label of the kind's own read on rows joined across a column, less than a value a check
+    /// proves. A lesson under a label outside the kind's table never stands against a value the
+    /// kind's readers read at one of the kind's own labels (`ReadingArbiter.admitsLearned`): it
+    /// fills what the table misses.
     static let readingConfidence = 0.85
 
     public var isEmpty: Bool { lessons.isEmpty }

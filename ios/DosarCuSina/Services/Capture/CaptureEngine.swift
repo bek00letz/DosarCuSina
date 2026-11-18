@@ -75,6 +75,8 @@ public final class CaptureEngine: Sendable {
 
     /// Only the first pages of long PDFs are read; enough for any policy, invoice or contract.
     public static let maxPDFPages = 25
+    /// How large a PDF page is drawn to be read like a photo, on its long edge, in pixels.
+    static let pdfReadingLongEdge: CGFloat = 2000
 
     let analyzer: CaptureAnalyzer
     let recognizer: any CaptureRecognizing
@@ -158,7 +160,7 @@ public final class CaptureEngine: Sendable {
             if extracted.pageCount > Self.maxPDFPages {
                 notices.append(.pagesTruncated(readPages: Self.maxPDFPages, totalPages: extracted.pageCount))
             }
-            let rendered = PDFPageRendering.render(data, maxPages: text.count < 40 ? Self.maxPDFPages : 1, longEdge: 2000)
+            let rendered = PDFPageRendering.render(data, maxPages: text.count < 40 ? Self.maxPDFPages : 1, longEdge: Self.pdfReadingLongEdge)
             pdfThumbnail = rendered.first
             // A scanned PDF has no text layer; read its pages like photos.
             if text.count < 40 {
@@ -173,13 +175,24 @@ public final class CaptureEngine: Sendable {
                 // A digital PDF's lines with where they sit, so a form's labels find their values
                 // as on a photo (`PDFTextLines`). Its plain text stays the reading when the
                 // lines can't be had.
-                let lines = PDFTextLines.pages(of: data, maxPages: Self.maxPDFPages)
+                var lines = PDFTextLines.pages(of: data, maxPages: Self.maxPDFPages)
+                // A page whose text covers only a little of what its pictures show (a scan with a
+                // scanner app's footer) is read like a photo, by what the page shows
+                // (`PDFTextCoverage`).
+                let scanned = PDFTextCoverage.scannedPages(of: data, lines: lines)
+                for index in scanned.sorted() {
+                    guard let page = index == 0 ? rendered.first : PDFPageRendering.render(data, page: index, longEdge: Self.pdfReadingLongEdge)
+                    else { continue }
+                    let read = try await recognizer.recognize(page)
+                    lines[index] = read.items
+                    barcodes += read.barcodes
+                }
                 if lines.contains(where: { !$0.isEmpty }) {
                     recognized = lines
                     text = lines.map { $0.map(\.text).joined(separator: "\n") }.joined(separator: "\n")
                 }
                 // Digital PDFs still carry payment QR codes as images.
-                if let first = rendered.first, let read = try? await recognizer.recognize(first) {
+                if !scanned.contains(0), let first = rendered.first, let read = try? await recognizer.recognize(first) {
                     barcodes += read.barcodes
                 }
             }

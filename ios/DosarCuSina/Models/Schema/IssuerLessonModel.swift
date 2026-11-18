@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV16 {
+extension DosarSchemaV17 {
     /// One thing capture learned from what the person saved: the issuer of a kind of paper
     /// prints one of its values under one label ("ENGIE Romania S.A. prints a bill's due date
     /// under „Ultima zi de plată”"). The phone's own reader is told the label the next time it
@@ -14,7 +14,7 @@ extension DosarSchemaV16 {
     ///
     /// The id is the lesson's own (`CaptureLesson.id`): the same issuer, kind, field and label
     /// give the same id on every device, so two devices that learn the same lesson make one
-    /// record once their copies meet (`RecordsMeet`). Version 16.
+    /// record once their copies meet (`RecordsMeet`). Version 16; its category, version 17.
     @Model
     public final class IssuerLesson {
         public var id: UUID = UUID()
@@ -30,10 +30,15 @@ extension DosarSchemaV16 {
         public var fieldKey: String = ""
         /// The label, as printed: a few words, no digits.
         public var label: String = ""
+        /// The category of the section the paper it was learned from was filed in (a
+        /// `CategoryTemplate` key), so what was learned from a locked category's papers stays
+        /// behind its lock (`IssuerLessons.isProtected`). Nil for a lesson learned before
+        /// version 17, or from a paper filed in no section.
+        public var categoryKey: String?
         public var createdAt: Date = Date()
         public var updatedAt: Date = Date()
 
-        public init(_ lesson: CaptureLesson, issuerName: String) {
+        public init(_ lesson: CaptureLesson, issuerName: String, categoryKey: String? = nil) {
             self.copyID = UUID()
             self.id = lesson.id
             self.issuerKey = lesson.issuer.rawValue
@@ -41,6 +46,7 @@ extension DosarSchemaV16 {
             self.kindRaw = lesson.kind.rawValue
             self.fieldKey = lesson.field.rawValue
             self.label = lesson.label
+            self.categoryKey = categoryKey
         }
 
         /// The lesson it keeps; nil for one a newer build wrote that this one can't read (a kind

@@ -2861,6 +2861,9 @@
     "Ce am învățat" : {
       "comment" : "Settings page and section: what capture learned from the papers the person saved, by issuer."
     },
+    "Ce am învățat de pe documente" : {
+      "comment" : "Repair group: labels capture learned that hold a name, an address or a plate of the household."
+    },
     "Ce ascunzi de aici nu se șterge; îl găsești în Caută." : {
       "comment" : "Footer of the home visibility settings."
     },
@@ -3827,6 +3830,12 @@
     "De obicei prețul crește după. E momentul să ceri o ofertă mai bună." : {
 
     },
+    "De pe documentele „%@” am ținut minte eticheta „%@”, care conține un nume, o adresă sau un număr de mașină din dosarul tău. O uit?" : {
+      "comment" : "Repair: a label capture learned of an issuer's papers holds a value of the household (a name, an address, a plate)."
+    },
+    "De pe documentul unei firme am ținut minte o etichetă care conține un nume, o adresă sau un număr de mașină din dosarul tău. O uit?" : {
+      "comment" : "Repair: a label capture learned holds a value of the household; the issuer isn't named (a locked category's paper, or no name)."
+    },
     "De pe factura din %@" : {
       "comment" : "Under the last meter index: the bill it was read from."
     },
@@ -3859,6 +3868,9 @@
     },
     "Deblochează" : {
       "comment" : "Button that asks for Face ID to open a locked section."
+    },
+    "Deblochează ca să vezi ce am învățat." : {
+      "comment" : "Settings: unlock to see what was learned of an issuer from a locked category's papers."
     },
     "Deblochează secțiunea ca să vezi mai mult." : {
       "comment" : "Search result in a locked section."
@@ -4719,6 +4731,9 @@
     },
     "Firma cu CUI %@" : {
       "comment" : "Settings: an issuer capture learned of, known only by its tax ID."
+    },
+    "Firmă dintr-o categorie protejată" : {
+      "comment" : "Settings: an issuer learned of from papers of a locked category, before Face ID."
     },
     "Firmă fără nume" : {
       "comment" : "Settings: an issuer capture learned of whose name wasn't saved."
@@ -8730,6 +8745,9 @@
     "Uită ce am învățat" : {
       "comment" : "Menu: forget what was learned of an issuer's papers."
     },
+    "Uită eticheta" : {
+      "comment" : "Applies one repair: forget a label capture learned that holds a value of the household."
+    },
     "Ulei cutie de viteze" : {
 
     },
@@ -9060,6 +9078,9 @@
     },
     "Vezi actul" : {
       "comment" : "Toast after closing a personal document's renewal: opens the document's page."
+    },
+    "Vezi ce am învățat din documentele protejate" : {
+      "comment" : "Face ID reason: show what was learned from papers of locked categories in Settings."
     },
     "Vezi ce-ți trebuie" : {
 

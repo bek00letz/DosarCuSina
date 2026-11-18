@@ -153,8 +153,10 @@ struct CaptureKindProfile: Sendable {
     var labels: [(CaptureFieldKey, [String])] = []
     /// What capture learned an issuer prints under its labels, for one read of that issuer's
     /// paper (`LessonBook.teaching`). Read where the issuer prints each value, through
-    /// `LabelledLayout` over the page's lines with their positions, before the kind's own readers
-    /// (`CaptureAnalyzer`); never told to the kind's line readers, so a lesson is read one way.
+    /// `LabelledLayout` over the page's lines with their positions, beside the kind's own readers
+    /// (`CaptureAnalyzer`): a label outside the kind's table only fills what they miss
+    /// (`ReadingArbiter.admitsLearned`). Never told to the kind's line readers, so a lesson is
+    /// read one way.
     /// Empty in the registry.
     var learnedLabels: [(CaptureFieldKey, [String])] = []
     /// A payment barcode on it is its payment code (a bill, a service invoice, any other paper).

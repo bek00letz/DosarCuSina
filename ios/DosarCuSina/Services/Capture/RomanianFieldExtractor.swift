@@ -346,14 +346,26 @@ public enum RomanianFieldExtractor {
     /// A company's legal form (`CaptureLexicon.companyForms`), as a whole word.
     private static let companyPattern = #"\b"# + printed(CaptureLexicon.companyForms) + #"(?=\s|$|,)"#
 
+    /// How many lines after the line that starts it the buyer's block goes on (its name, its address).
+    static let buyerBlockLines = 2
+
+    /// The lines of the buyer's block: each line that names one of `CaptureLexicon.buyerLabels`
+    /// ("Client", "Cumpărător"), and the `buyerBlockLines` after it. Who a paper is for, never who
+    /// issued it: the one answer the issuer's name and what capture learns both read.
+    static func buyerBlock(in text: CaptureText) -> Set<Int> {
+        var block = Set<Int>()
+        for (index, line) in text.folded.enumerated() where CaptureLexicon.buyerLabels.contains(where: { line.contains($0) }) {
+            block.formUnion(index...min(index + buyerBlockLines, text.folded.count - 1))
+        }
+        return block
+    }
+
     /// The company that issued the document: a line with a company suffix that isn't in the buyer's block.
     static func issuerName(in text: CaptureText) -> (name: String, line: Int)? {
+        let buyer = buyerBlock(in: text)
         for (index, line) in text.folded.enumerated() {
             guard TextPattern.first(companyPattern, in: line) != nil else { continue }
-            let inBuyerBlock = (max(0, index - 2)...index).contains { lineIndex in
-                CaptureLexicon.buyerLabels.contains { text.folded[lineIndex].contains($0) }
-            }
-            if inBuyerBlock { continue }
+            if buyer.contains(index) { continue }
             var name = text.original[index]
             // The prefixes are folded; the name keeps its own letters ("Vânzător: …" loses its label).
             for prefix in CaptureLexicon.issuerPrefixes where RomanianText.fold(name).hasPrefix(prefix) {

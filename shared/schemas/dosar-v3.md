@@ -344,13 +344,14 @@ diacritics, and words joined by `-`.
 
 ### Issuer lesson (`data/issuer_lessons.json`)
 
-`id`, `issuerKey`, `issuerName`, `kind`, `field`, `label`, `createdAt`, `updatedAt`.
+`id`, `issuerKey`, `issuerName`, `kind`, `field`, `label`, `categoryKey`?, `createdAt`, `updatedAt`.
 
 - **What it is:** an issuer prints the value `field` (a capture field key, `dueDate`) of a paper of `kind` (a capture kind, `utilityInvoice`) under `label`, as printed („Ultima zi de plată”). Learned from what the person saved, never from a model's answer; it holds only an issuer's words and layout.
 - **`issuerKey`:** `cui:` and the issuer's CUI (digits only, without `RO`), or `name:` and its name in capitals, letters and digits only.
 - **`label`:** one to four words, no digits. A reader leaves out a lesson whose label isn't so.
 - **`id`:** the lesson's own, the same for the same issuer, kind, field and label (a name-based UUID), so two devices that learn the same lesson have one record.
 - Two lessons that give one label of one issuer's `kind` to two fields contradict each other; a reader keeps neither.
+- **`categoryKey`:** the category (a template key) of the section the paper it was learned from was filed in. Missing when not known (archives from before it, a paper filed in no section); a reader keeps such a lesson behind any lock the binder has.
 - `manifest.counts.issuerLessons` is missing in archives from before it.
 
 ### Measurement (`data/measurements.json`)

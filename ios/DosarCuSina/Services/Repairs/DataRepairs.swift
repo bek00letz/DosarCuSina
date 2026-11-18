@@ -51,6 +51,7 @@ struct DataRepairs {
         RenewalRepeatsStep(),
         SubscriptionCodesStep(),
         CitizenshipsStep(),
+        PersonalLessonLabelsStep(),
     ]
 
     static func step(_ id: DataRepairStepID) -> any DataRepairStep {
@@ -129,6 +130,7 @@ enum DataRepairStepID: String, CaseIterable, Sendable, Hashable {
     case renewalRepeats = "renewal-repeats"
     case subscriptionCodes = "subscription-codes"
     case citizenships = "citizenships"
+    case personalLessonLabels = "personal-lesson-labels"
 }
 
 /// One thing a repair would change, in plain words, with what applying it needs.
@@ -188,6 +190,8 @@ struct DataRepairFinding: Identifiable, Hashable, Sendable {
         case subscriptionCode(assetID: UUID, from: String, to: String)
         /// Citizenships a person's documents print that their kept list leaves out: they join it.
         case citizenships(personID: UUID, add: [String])
+        /// A lesson capture learned whose label holds a value of the household's: it is forgotten.
+        case issuerLesson(id: UUID)
     }
 }
 

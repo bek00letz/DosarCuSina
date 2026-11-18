@@ -44,7 +44,9 @@ struct IssuerLessons {
     /// Keeps what a saved paper taught, as part of the step that files it: inside the filer's
     /// unit, so the paper and its lessons are kept together, and "Anulează" takes both back.
     /// A lesson already kept takes the issuer's name as saved now; a lesson shown wrong goes.
-    func record(_ outcome: CaptureLessonLearner.Outcome) throws {
+    /// Each new lesson keeps the category of the section the paper was filed in (`categoryKey`),
+    /// and one kept without a category takes it.
+    func record(_ outcome: CaptureLessonLearner.Outcome, learnedIn categoryKey: String?) throws {
         try UnitOfWork.perform(in: context, now: now()) {
             let kept = try records()
             let forgotten = Set(outcome.forgotten.map(\.id))
@@ -54,8 +56,9 @@ struct IssuerLessons {
             for lesson in outcome.learned {
                 if let here = kept.first(where: { $0.id == lesson.id && !$0.isDeleted }) {
                     if !outcome.issuerName.isEmpty, here.issuerName != outcome.issuerName { here.issuerName = outcome.issuerName }
+                    if here.categoryKey == nil, let categoryKey { here.categoryKey = categoryKey }
                 } else {
-                    context.insert(IssuerLesson(lesson, issuerName: outcome.issuerName))
+                    context.insert(IssuerLesson(lesson, issuerName: outcome.issuerName, categoryKey: categoryKey))
                 }
             }
             // One name for the issuer, the one saved last.
@@ -117,13 +120,31 @@ struct IssuerLessons {
         let name: String
         /// Each learned value and its label, in the order the review shows values.
         let lessons: [CaptureLesson]
+        /// Everything learned of it comes from papers of locked categories (`isProtected`): its
+        /// name and labels show only once the binder is unlocked.
+        var isProtected = false
 
         var id: String { key.rawValue }
     }
 
+    /// Whether what `record` keeps is behind Face ID on this device: the category it was learned
+    /// in is locked (`BinderLocks`, the one lock answer); a lesson whose category isn't known (one
+    /// learned before lessons kept it) is, while any lock is on. Locks fail closed.
+    nonisolated static func isProtected(_ record: IssuerLesson, locks: BinderLocks) -> Bool {
+        guard let key = record.categoryKey else { return locks.anySectionLocked }
+        return locks.lockedKeys.contains(key)
+    }
+
+    /// The binder's locks as lessons read them: every category's record, and every category a
+    /// section or a lesson names (`BinderLocks`).
+    static func locks(templates: [CategoryTemplate], sections: [Asset], lessons: [IssuerLesson], in container: ModelContainer?) -> BinderLocks {
+        BinderLocks(templates: templates, naming: sections.map(\.templateKey) + lessons.compactMap(\.categoryKey), in: container)
+    }
+
     /// The issuers `records` teach of, by name; a lesson another contradicts isn't shown, as it
-    /// isn't read. A record a newer build wrote that this one can't read is left out.
-    static func issuers(_ records: [IssuerLesson]) -> [Issuer] {
+    /// isn't read. A record a newer build wrote that this one can't read is left out. An issuer
+    /// all of whose lessons are protected under `locks` is marked so (`Issuer.isProtected`).
+    static func issuers(_ records: [IssuerLesson], locks: BinderLocks? = nil) -> [Issuer] {
         let lessons = records.filter { !$0.isDeleted }.compactMap { record in record.lesson.map { (record, $0) } }
         let out = LessonBook.contradicted(lessons.map(\.1))
         let byIssuer = Dictionary(grouping: lessons.filter { !out.contains($0.1) }, by: \.1.issuer)
@@ -137,7 +158,8 @@ struct IssuerLessons {
                 if lhs.kind != rhs.kind { return lhs.kind.rawValue < rhs.kind.rawValue }
                 return lhs.label < rhs.label
             }
-            return Issuer(key: key, name: name, lessons: sorted)
+            let isProtected = locks.map { locks in entries.allSatisfy { isProtected($0.0, locks: locks) } } ?? false
+            return Issuer(key: key, name: name, lessons: sorted, isProtected: isProtected)
         }
         .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }

@@ -356,6 +356,7 @@
           "kind": { "type": "string" },
           "field": { "type": "string" },
           "label": { "type": "string", "pattern": "^[^0-9]+$", "description": "One to four words, as printed, with no digits." },
+          "categoryKey": { "type": "string", "description": "The category (template key) of the section the paper it was learned from was filed in. Missing when not known." },
           "createdAt": { "$ref": "#/$defs/timestamp" },
           "updatedAt": { "$ref": "#/$defs/timestamp" }
         }

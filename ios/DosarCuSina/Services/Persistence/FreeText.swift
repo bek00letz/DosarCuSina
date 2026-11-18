@@ -237,11 +237,11 @@ extension Provider: HoldsFreeText {
 
 extension IssuerLesson: HoldsFreeText {
     /// The issuer's name and the label are words, though a lesson keeps no digits of a label
-    /// (`CaptureLessonLearner`); the key, the kind and the field are the app's own.
+    /// (`CaptureLessonLearner`); the key, the kind, the field and the category are the app's own.
     static var freeText: [FreeTextProperty<IssuerLesson>] {
         [.text("issuerName", \.issuerName), .text("label", \.label)]
     }
-    static var machineText: Set<String> { ["issuerKey", "kindRaw", "fieldKey"] }
+    static var machineText: Set<String> { ["issuerKey", "kindRaw", "fieldKey", "categoryKey"] }
     var keptWhole: PaymentCardNumbers.KeptWhole { .nothing }
 
 }

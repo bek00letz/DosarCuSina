@@ -163,12 +163,13 @@ public struct CaptureAnalyzer: Sendable {
         let template = IdentityTemplates.template(for: kind, text: text, machineReadableFormat: mrz?.format)
         if template != nil { text = lines }
         // Every reader below is told the kind's own labels (`CaptureKindProfile.labels`), and
-        // what every document prints the same way where the kind has no row of its own. Before
+        // what every document prints the same way where the kind has no row of its own. Beside
         // them, what was learned of the issuer the page names (`LessonBook.teaching`), read where
-        // the issuer prints it.
+        // the issuer prints it: a kind's own label first, one outside its table after them,
+        // where the arbiter admits it (`addLearned`).
         let issuer = IssuerKey.read(in: text)
         let profile = lessons.teaching(self.profile(of: kind), issuer: issuer)
-        addLearned(lines, profile: profile, years: years, into: &fields)
+        addLearned(lines, profile: profile, years: years, underOwnLabels: true, into: &fields)
         switch kind {
         case .passport, .identityCard, .residencePermit, .drivingLicence, .criminalRecord, .healthInsuranceCard, .bankCard, .greenCard, .electronicSignature:
             // Printed labels, read with the document's template. The MRZ (when on the
@@ -241,6 +242,8 @@ public struct CaptureAnalyzer: Sendable {
             addInvoiceBasics(text, profile: profile, years: years, into: &fields)
         }
 
+        addLearned(lines, profile: profile, years: years, underOwnLabels: false, into: &fields)
+
         if profile.readsPaymentCode,
            let barcode = barcodes.first(where: { !$0.payload.isEmpty }) {
             fields.add(.paymentCode, .text(barcode.payload), 0.95, nil, tier: .deterministic)
@@ -270,30 +273,42 @@ public struct CaptureAnalyzer: Sendable {
     /// its row, under it in a column, or after it on a line that holds another value first is read
     /// as on the paper it was learned from. A value beside its label may stand anywhere on its row
     /// (`LessonBook.rowReach`). The kind's own and the shared rows are in the layout too, so a
-    /// value never runs into another label; each value is read as its field is (`LabelledLayout.field`).
-    /// Read before the kind's readers, at `LessonBook.readingConfidence`: where they read the field
-    /// another way, the issuer's own label wins, unless a check (a CUI's control digit) proves theirs.
-    private func addLearned(_ lines: CaptureText, profile: CaptureKindProfile, years: DateWindow, into fields: inout FieldSet) {
+    /// value never runs into another label; each value is read as its field is (`LabelledLayout.field`),
+    /// at `LessonBook.readingConfidence`.
+    ///
+    /// Two passes, `underOwnLabels` first: a lesson whose label is one of the kind's own wordings of
+    /// the field is the kind's label read where this issuer prints it (a column the kind's readers
+    /// read on rows joined across the page), weighed with their readings as any reading is. A
+    /// lesson under a label outside the kind's table is read after the kind's readers and counts
+    /// only where `ReadingArbiter.admitsLearned` says: never over a value they read at one of the
+    /// kind's own labels for the field.
+    private func addLearned(_ lines: CaptureText, profile: CaptureKindProfile, years: DateWindow, underOwnLabels: Bool,
+                            into fields: inout FieldSet) {
         guard !profile.learnedLabels.isEmpty else { return }
         let learned = Set(profile.learnedLabels.flatMap(\.1))
         let known = (profile.labels + CaptureKindProfile.commonLabels).map { key, words in
             (TaughtLabel.known(key), words.filter { !learned.contains($0) })
         }
-        let layout = LabelledLayout(text: lines, words: profile.learnedLabels.map { (TaughtLabel.learned($0.0), $0.1) } + known,
-                                    reach: LessonBook.rowReach)
+        let taught = profile.learnedLabels.flatMap { key, words -> [(TaughtLabel, [String])] in
+            let own = profile.wordings(of: key)
+            return [(.learned(key, own: true), words.filter(own.contains)), (.learned(key, own: false), words.filter { !own.contains($0) })]
+        }
+        let layout = LabelledLayout(text: lines, words: taught + known, reach: LessonBook.rowReach)
         let currency = RomanianFieldExtractor.dominantCurrency(in: lines)
         for (key, _) in profile.learnedLabels {
-            if let field = layout.field(.learned(key), as: key, kind: profile.kind, window: years, currency: currency,
-                                        confidence: LessonBook.readingConfidence) {
+            guard let field = layout.field(.learned(key, own: underOwnLabels), as: key, kind: profile.kind, window: years, currency: currency,
+                                           confidence: LessonBook.readingConfidence) else { continue }
+            if underOwnLabels || ReadingArbiter.admitsLearned(field, over: fields.field(key), ownLabels: profile.wordings(of: key)) {
                 fields.add(field)
             }
         }
     }
 
-    /// A label in the layout lessons are read with: one learned of the issuer, or one the kind or
-    /// every document prints, there so a learned label's value stops where another label starts.
+    /// A label in the layout lessons are read with: one learned of the issuer (one of the kind's
+    /// own wordings of the field, or one outside its table), or one the kind or every document
+    /// prints, there so a learned label's value stops where another label starts.
     private enum TaughtLabel: Hashable {
-        case learned(CaptureFieldKey)
+        case learned(CaptureFieldKey, own: Bool)
         case known(CaptureFieldKey)
     }
 
@@ -529,6 +544,7 @@ struct FieldSet {
         add(CaptureField(key: key, value: value, confidence: confidence, sourceText: source, tier: tier))
     }
 
+    func field(_ key: CaptureFieldKey) -> CaptureField? { fields.first { $0.key == key } }
     func text(_ key: CaptureFieldKey) -> String? { fields.first { $0.key == key }?.value.text }
     func day(_ key: CaptureFieldKey) -> CalendarDay? { fields.first { $0.key == key }?.value.day }
 }

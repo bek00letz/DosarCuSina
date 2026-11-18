@@ -295,12 +295,18 @@ public enum PDFPageRendering {
         guard let document = document(data) else { return [] }
         let count = min(document.numberOfPages, maxPages)
         guard count > 0 else { return [] }
-        return (1...count).compactMap { number in
-            guard let page = document.page(at: number) else { return nil }
-            let size = shownSize(of: page, quarterTurns: 0)
-            guard max(size.width, size.height) > 0 else { return nil }
-            return render(page, quarterTurns: 0, pixelsPerPoint: longEdge / max(size.width, size.height))
-        }
+        return (1...count).compactMap { number in document.page(at: number).flatMap { render($0, longEdge: longEdge) } }
+    }
+
+    /// The page at `index` (from 0), drawn so its long edge is `longEdge` pixels: for reading.
+    static func render(_ data: Data, page index: Int, longEdge: CGFloat) -> CGImage? {
+        document(data)?.page(at: index + 1).flatMap { render($0, longEdge: longEdge) }
+    }
+
+    private static func render(_ page: CGPDFPage, longEdge: CGFloat) -> CGImage? {
+        let size = shownSize(of: page, quarterTurns: 0)
+        guard max(size.width, size.height) > 0 else { return nil }
+        return render(page, quarterTurns: 0, pixelsPerPoint: longEdge / max(size.width, size.height))
     }
 }
 

@@ -29,6 +29,9 @@ import Foundation
 ///   series and number) agrees when it is the same value written differently, or when one
 ///   reader read only a part of it: the whole is kept, so a part never beats it, and two
 ///   parts read by different readers are joined (`agreedValue`).
+/// - A value read at a label learned of the issuer (`CaptureLessonLearner`) fills what the
+///   kind's own table misses: under a label outside that table it never stands against a value
+///   the kind's readers read at one of the kind's own labels for the field (`admitsLearned`).
 /// - Being missing from the text recognised on the phone is never a reason to drop or
 ///   demote an AI value: it is kept, marked "Verifică" unless it passes its own check or
 ///   agrees with the phone (`ModelAnswerMapper`). A value outside its plausibility window
@@ -119,6 +122,20 @@ enum ReadingArbiter {
         if candidate.confidence != existing.confidence { return candidate.confidence > existing.confidence }
         if new != old { return new > old }
         return candidate.tier < existing.tier
+    }
+
+    /// Whether a value read at a label learned of the issuer, outside the kind's own table
+    /// (`CaptureKindProfile.learnedLabels`), may stand beside what the kind's own readers read of
+    /// the field (`existing`): where they read nothing, or read it without one of the kind's own
+    /// labels for it (`ownLabels`: a guess, such as the first date on the page), it is weighed
+    /// like any reading; where they read it at one of those labels, theirs stands and the
+    /// learned one isn't offered. A learned label fills what the kind's table misses, never
+    /// overrides what it reads („Total de plată” over a short label learned of another paper).
+    static func admitsLearned(_ learned: CaptureField, over existing: CaptureField?, ownLabels: Set<String>) -> Bool {
+        guard let existing, existing.value != learned.value else { return true }
+        guard let source = existing.sourceText else { return true }
+        let folded = RomanianText.fold(source)
+        return !ownLabels.contains { CaptureText.containsWord($0, inFolded: folded) }
     }
 
     /// The value two readers agree on, or nil when they disagree. Beyond the same text, a
