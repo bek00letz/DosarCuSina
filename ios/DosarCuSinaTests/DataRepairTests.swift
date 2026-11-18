@@ -379,7 +379,9 @@ struct DataRepairTests {
         }
         #expect(found.count == 3)
         #expect(found.allSatisfy { $0.isFixable } && !DataRepairs.step(.personalLessonLabels).isSuggestion)
-        #expect(DataRepairs.steps.map { type(of: $0).id }.last == .personalLessonLabels, "A new step at the end")
+        let ids = DataRepairs.steps.map { type(of: $0).id }
+        #expect(ids.firstIndex(of: .personalLessonLabels) == ids.firstIndex(of: .citizenships).map { $0 + 1 },
+                "Added after the steps there were; later steps follow it")
         #expect(found.contains { $0.message.contains("„Titular Exemplu”") }, "Named, from an open category's papers")
     }
 
