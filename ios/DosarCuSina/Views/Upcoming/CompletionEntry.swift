@@ -60,9 +60,13 @@ private struct CompletionSheetModifier: ViewModifier {
     func body(content: Content) -> some View {
         content.dsSheet(item: $request) { request in
             if let obligation = UpcomingActions(context: context).obligation(request.obligationID) {
-                ObligationCompleteSheet(obligation: obligation, cycle: request.cycle) { result in
-                    self.request = nil
-                    if let result { toast = result }
+                // Behind its own section's lock, wherever it was opened from (Urmează is open):
+                // when the lock comes back while it is up, it shows the locked state and files nothing.
+                RouteLockGate(obligation.asset.map { .section($0.id) } ?? .open, inSheet: true) {
+                    ObligationCompleteSheet(obligation: obligation, cycle: request.cycle) { result in
+                        self.request = nil
+                        if let result { toast = result }
+                    }
                 }
             }
         }

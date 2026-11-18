@@ -17,16 +17,24 @@ public struct SyncEvent: Equatable, Sendable {
     public var finishedAt: Date?
     public var succeeded: Bool
     public var problem: SyncProblem?
+    /// When the step started; nil when it isn't known (a test's report).
+    public var startedAt: Date?
+    /// Which mirroring reported it: the `NSPersistentCloudKitContainer` behind one container
+    /// (`SyncEventSources`); nil when it isn't known (a test's report).
+    public var source: ObjectIdentifier?
 
-    public init(kind: Kind, finishedAt: Date?, succeeded: Bool, problem: SyncProblem? = nil) {
+    public init(kind: Kind, finishedAt: Date?, succeeded: Bool, problem: SyncProblem? = nil, startedAt: Date? = nil, source: ObjectIdentifier? = nil) {
         self.kind = kind
         self.finishedAt = finishedAt
         self.succeeded = succeeded
         self.problem = problem
+        self.startedAt = startedAt
+        self.source = source
     }
 
-    /// The event a notification carries; nil for a kind this build doesn't know.
-    init?(_ event: NSPersistentCloudKitContainer.Event) {
+    /// The event a notification carries, from the mirroring that posted it (`source`); nil for a
+    /// kind this build doesn't know.
+    init?(_ event: NSPersistentCloudKitContainer.Event, source: AnyObject?) {
         switch event.type {
         case .setup: kind = .setup
         case .import: kind = .download
@@ -36,6 +44,42 @@ public struct SyncEvent: Equatable, Sendable {
         finishedAt = event.endDate
         succeeded = event.succeeded
         problem = event.error.map(SyncProblem.init)
+        startedAt = event.startDate
+        self.source = source.map { ObjectIdentifier($0) }
+    }
+}
+
+/// Which of the mirroring's reports are the open container's own. The system posts every
+/// mirroring's reports to everyone, and a container retired a moment ago (sync turned off and
+/// on, another account) may still finish a step after the store opened under a new one: its
+/// report must never stand for the new container's (a download it finished is not the new
+/// container's first download, `CloudArrival`; its full iCloud is not the new one's).
+///
+/// One rule, from what each report says: a step that started before the open container was
+/// asked for is a retired one's. The open container's mirroring is then known by its first own
+/// report (`current`), and only its reports count after that; while a retired container that
+/// synced is still around, that first report must be the open one's setting up, which every new
+/// mirroring starts with and an old one finished long before. A report that names no mirroring
+/// (a test's) counts as it comes.
+struct SyncEventSources: Equatable {
+    /// When the open container was asked for.
+    let openedAt: Date
+    /// The open container's mirroring, once its first report came.
+    private(set) var current: ObjectIdentifier?
+
+    init(openedAt: Date) {
+        self.openedAt = openedAt
+    }
+
+    /// Whether `event` is the open container's own. `retiredStillAround`: a container that synced
+    /// before was retired and isn't gone yet.
+    mutating func admits(_ event: SyncEvent, retiredStillAround: Bool) -> Bool {
+        guard let source = event.source else { return true }
+        if let current { return source == current }
+        if let started = event.startedAt, started < openedAt { return false }
+        guard !retiredStillAround || event.kind == .setup else { return false }
+        current = source
+        return true
     }
 }
 

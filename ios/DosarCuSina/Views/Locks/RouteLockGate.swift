@@ -21,6 +21,67 @@ struct RouteLockGate<Content: View>: View {
             content
         case .section(let id):
             SectionIDLockGate(assetID: id, inSheet: inSheet) { content }
+        case .unknownSection:
+            UnknownSectionLockGate(inSheet: inSheet) { content }
+        }
+    }
+}
+
+// MARK: - A screen's own sheets
+
+extension EnvironmentValues {
+    /// The lock a screen's own sheets and full-screen covers are drawn behind (`dsSheet`,
+    /// `dsFullScreenCover`): the section the screen shows, set by its gate (`LockGate`) or by a
+    /// screen that draws its own locked state (`View.screenLock`). A sheet of a locked screen
+    /// lives inside its gate, so when the lock comes back it shows the locked state, with
+    /// "Închide", and nothing it held is saved.
+    @Entry var screenLock: RouteLock = .open
+}
+
+extension View {
+    /// Declares the lock this screen's own sheets are drawn behind (`EnvironmentValues.screenLock`).
+    /// Every screen that decides a section's lock itself and presents a sheet declares it (the
+    /// `sheet-outside-its-lock` check); `.open` for a screen whose sheets show nothing of a locked
+    /// section.
+    func screenLock(_ lock: RouteLock) -> some View {
+        environment(\.screenLock, lock)
+    }
+}
+
+/// `RouteLock.unknownSection`: drawn only while nothing of the binder is behind Face ID, or the
+/// session is open (`BinderLocks`, which counts a section whose category hasn't arrived).
+private struct UnknownSectionLockGate<Content: View>: View {
+    let inSheet: Bool
+    @ViewBuilder var content: Content
+    @Environment(BiometricVaultManager.self) private var vault
+    @Environment(\.dismiss) private var dismiss
+    @Query private var templates: [CategoryTemplate]
+    @Query(BinderLocks.sections) private var sections: [Asset]
+    @Environment(\.modelContext) private var context
+
+    init(inSheet: Bool, @ViewBuilder content: () -> Content) {
+        self.inSheet = inSheet
+        self.content = content()
+    }
+
+    var body: some View {
+        let locks = BinderLocks(templates: templates, naming: sections.map(\.templateKey), in: context.container)
+        if vault.isLocked(sectionIsSensitive: locks.anySectionLocked) {
+            if inSheet {
+                NavigationStack {
+                    LockedSectionView.unnamedDocument
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("Închide") { dismiss() }
+                            }
+                        }
+                }
+            } else {
+                LockedSectionView.unnamedDocument
+            }
+        } else {
+            content
+                .screenLock(.unknownSection)
         }
     }
 }

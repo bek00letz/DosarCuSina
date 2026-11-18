@@ -96,7 +96,7 @@ struct BackupsThatRestoreTests {
         let source = CountingSource(MemoryByteSource(file.data))
         let folder = URL.temporaryDirectory.appending(path: "restore-test-\(UUID().uuidString)", directoryHint: .isDirectory)
         defer { try? FileManager.default.removeItem(at: folder) }
-        let package = try DossierArchiveReader.read(source, password: "parola-exemplu", limits: .standard, keeping: .extract(into: folder))
+        let package = try DossierArchiveReader.read(source, password: "parola-exemplu", limits: .standard, extractingTo: folder)
         #expect(package.attachments.count == 300)
         #expect(source.largestRead <= chunk, "Never more than a chunk read at once")
     }
@@ -108,7 +108,7 @@ struct BackupsThatRestoreTests {
         #expect(file.data.count > 2 * DosarZipEngine.Reader.pieceSize)
 
         let source = CountingSource(MemoryByteSource(file.data))
-        let summary = ArchiveSummary(try DossierArchiveReader.read(source, password: nil, limits: .standard, keeping: .checkOnly))
+        let summary = try DossierArchiveReader.summary(source, password: nil, limits: .standard)
         #expect(summary.counts.attachments == 120)
         #expect(source.largestRead <= DosarZipEngine.Reader.pieceSize)
     }

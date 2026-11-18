@@ -10,6 +10,9 @@ import SwiftUI
 // Every sheet and cover a screen presents goes through `dsSheet` or `dsFullScreenCover` (the
 // `sheet-outside-router` check), and a system picker shown by a binding (photos, files) through
 // `dsPresents`. The shell's own sheet is `ShellRouter.sheet`.
+//
+// Each is drawn behind the lock of the screen that presents it (`EnvironmentValues.screenLock`,
+// set by the screen's gate), so a sheet of a locked screen lives inside its gate.
 
 extension View {
     /// A sheet the router knows about, shown while `isPresented` is true.
@@ -86,6 +89,8 @@ private struct ScreenSheet<Item: Identifiable, Shown: View>: ViewModifier {
     let shown: (Item) -> Shown
 
     @Environment(ShellRouter.self) private var router: ShellRouter?
+    /// The lock of the screen that presents it: a sheet of a locked screen lives inside its gate.
+    @Environment(\.screenLock) private var lock
     @State private var id = UUID()
 
     @ViewBuilder
@@ -99,7 +104,10 @@ private struct ScreenSheet<Item: Identifiable, Shown: View>: ViewModifier {
     }
 
     private func presented(_ value: Item) -> some View {
-        shown(value)
+        // Behind the presenting screen's lock (`EnvironmentValues.screenLock`): when that lock
+        // comes back while it is up, it shows the locked state with "Închide", and what it held
+        // goes unsaved.
+        RouteLockGate(lock, inSheet: true) { shown(value) }
             .environment(\.screenSheet, router.map { ScreenSheetHandle(id: id, router: $0) })
             .onAppear {
                 router?.screenSheetDidAppear(id, waitsByItself: keepsRoutesWaiting) { item = nil }

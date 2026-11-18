@@ -44,7 +44,7 @@ enum InboxWording {
         let isClosed = !isSessionUnlocked && !lockedCategories.isEmpty
 
         if isClosed, let key = preview?.categoryKey, lockedCategories.contains(key) {
-            return Row(title: String(localized: "Act protejat", comment: "De verificat: something shared that belongs to a locked section; nothing about it shows until unlock."),
+            return Row(title: LockedWording.document,
                        detail: joined([pages, received]), symbol: "lock.fill", showsThumbnail: false, isProtected: true)
         }
         if item.isPractice {

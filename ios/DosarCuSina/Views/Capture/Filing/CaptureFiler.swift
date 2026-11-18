@@ -877,11 +877,19 @@ struct CaptureFiler {
     /// (`read`) goes, so the earlier policy's never passes for this one's; who issued it, its
     /// claims line and who it insures stay. It is another policy when it prints another number
     /// than the one kept, compared as values are; without two numbers to compare, when it renews
-    /// the deadline (`renews`). The same policy filed again changes nothing it doesn't print.
+    /// the deadline (`renews`). The same policy filed again changes nothing it doesn't print, and a
+    /// number that reads as the kept one but for characters recognition reads for one another
+    /// (`CaptureText.readAlike`) is the same policy misread: the number kept, and every value the
+    /// person typed for it (the sum), stay.
     static func newPolicy(_ read: FieldValues, onto merged: FieldValues, kept: FieldValues, facts: BlueprintFacts, renews: Bool) -> FieldValues {
         let isAnother: Bool
         if let field = facts.field(for: .policyNumber), let printed = read[field]?.textValue, let earlier = kept[field]?.textValue {
-            isAnother = RomanianText.compact(printed) != RomanianText.compact(earlier)
+            guard !CaptureText.readAlike(printed, earlier) else {
+                var values = merged
+                values[field] = kept[field]
+                return values
+            }
+            isAnother = true
         } else {
             isAnother = renews
         }

@@ -167,12 +167,15 @@ struct DossierImporter {
     }
 
     /// The phone's records of `type`, by id: the ones an archive's record is written onto, in
-    /// both modes. Copies of one id not joined yet: the first is the one written onto, and in
+    /// both modes. Copies of one id not joined yet: the one written onto is the copy joining
+    /// keeps on every device (`RecordsMeet.staysBefore`), whatever order they are read in, and in
     /// "Înlocuiește tot" the others go.
-    private func existing<T: PersistentModel>(_ type: T.Type, id: KeyPath<T, UUID>) throws -> [UUID: T] {
+    private func existing<T: UndoableRecord>(_ type: T.Type, id: KeyPath<T, UUID>) throws -> [UUID: T] {
         var map: [UUID: T] = [:]
-        for item in try context.fetch(FetchDescriptor<T>()) where map[item[keyPath: id]] == nil {
-            map[item[keyPath: id]] = item
+        for item in try context.fetch(FetchDescriptor<T>()) {
+            let key = item[keyPath: id]
+            if let here = map[key], !RecordsMeet.staysBefore(item, here) { continue }
+            map[key] = item
         }
         return map
     }
@@ -213,7 +216,9 @@ struct DossierImporter {
     /// Imports templates and returns every definition in effect after the import, by key.
     private func importTemplates(_ result: inout ArchiveImportResult, phone: PhoneKeeps) throws -> [String: TemplateDefinition] {
         var byKey: [String: CategoryTemplate] = [:]
-        for template in try context.fetch(FetchDescriptor<CategoryTemplate>()) where byKey[template.key] == nil {
+        // Copies of one category not joined yet: the one joining keeps (`existing`'s rule).
+        for template in try context.fetch(FetchDescriptor<CategoryTemplate>()) {
+            if let here = byKey[template.key], !RecordsMeet.staysBefore(template, here) { continue }
             byKey[template.key] = template
         }
         let mentioned = Set(package.templates.map(\.key))
