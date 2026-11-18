@@ -79,7 +79,7 @@ Nothing at the moment.
 
 ## Questions for the owner
 
-- **The health file's own health-card deadline.** Now that a health file's European health card closes by offering the new card among the person's documents, should a health file still offer a health-card deadline of its own (*Card european de sănătate* under *Alt termen*), or only point to adding the card as a document? Keeping both is two places for one card. (From `claude/insured-sum-widget-ehic`.)
+None open. The health file's own health-card deadline was answered on 2026-11-18 (it stays) and is in [DECISIONS.md](DECISIONS.md).
 
 The earlier ones (the IMEI rule and the four bill choices) were answered on 2026-11-03 and are in [DECISIONS.md](DECISIONS.md).
 
@@ -103,6 +103,13 @@ Newest first. Copy this template:
 - **Next:** the most useful next step.
 - **Decisions:** entries added to or questioned in DECISIONS.md, or "none".
 ```
+
+### 2026-11-18 — owner (with Claude) — `claude/data-followups`
+- **Did:** the owner's follow-ups of 17 November. Two decisions recorded (the small widget's symbol beside the title; a health file keeps its own health-card deadline). A newer policy that doesn't print its number or sum leaves none of the earlier policy's, declared once per fact (`BlueprintFactRole.belongsToThePolicy`, `CaptureFiler.newPolicy`); the insurer, claims line and who it insures carry over. Two repair steps at the end of `DataRepairs.steps`, both corrections: `RenewalRepeatsStep` stops a deadline that closes when its document is replaced from repeating (the health cards an earlier catalog made every two years), and *Editează* no longer offers such a deadline a repeat; `SubscriptionCodesStep` moves a billing account kept as the client code, or a water or heating place code kept as a gas CLC, only where the subscription's own papers, read again, say what it is. A home's Abonamente pocket and its full list are grouped like Abonamente (`SubscriptionGroup.listing`). The repeat stepper steps in the unit's own steps (`RepeatChoice.ladder`: 14 and 21 days are a step away).
+- **Tests:** `InsuredSumTests`, `DataRepairTests` (the two new steps), `SubscriptionsByServiceTests` (the one listing), `RepeatAndReminderTimeTests` (the steps); the whole suite on GitHub's runner (its iPhone simulator). Nothing run locally: the Mac was too loaded.
+- **Left open:** not seen on a phone: the home's Abonamente pocket with two groups and its headings at the accessibility sizes, the full list's sections, the stepper's new steps with VoiceOver, both repair entries in *De corectat*. A code kept as *Cod client* by a subscription typed by hand, or whose papers' text is gone, stays where it is: nothing tells it apart from a client code.
+- **Next:** file a renewed CASCO without its sum and open its deadline; open a home with gas and internet under it.
+- **Decisions:** „The widget's symbol, the health file's own card deadline, and the follow-ups of 17 November (owner)” (2026-11-18), which replaces the insured sum's „Left as it is” of 17 November.
 
 ### 2026-11-17 — owner (with Claude) — `claude/insured-sum-widget-ehic`
 - **Did:** three owner decisions. A policy's insured sum is one of its deadline's facts (`BlueprintFactRole.insuredSum`, money fields for a home's PAD and optional policy and a car's CASCO, none for an RCA), filed by capture from the review and „Am rezolvat” and shown on the deadline's page under *Polița*. The widget's „Gata” is a full 44 pt in every size: the medium widget shows two rows, declared once with every family's count (`WidgetLayout`, `WidgetDoneLabel`), and the small widget's symbol sits beside the title. A health file's European health card closes like a personal document (`CompletionKind.newHealthCard` now declares a replacement of one of the holder's documents, `Replacement.Replaces.holdersDocument`): „Am rezolvat” asks only *Când*, closes it whatever its old repeat, never shows the health file expired, and offers *Adaugă cardul nou* until the new card is among the person's documents. Catalog 26.
