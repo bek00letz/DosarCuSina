@@ -86,9 +86,11 @@ struct DSStatusBadge: View {
 
     var body: some View {
         HStack(spacing: DS.Space.xxs) {
+            // The words say it all („În 5 zile”, „Expirat”): VoiceOver reads them, not the symbol's name first.
             Image(systemName: status.systemImage)
                 .imageScale(.small)
                 .foregroundStyle(status.color)
+                .accessibilityHidden(true)
             // Wraps instead of being cut off when the row is narrow or the text is large.
             text
                 .foregroundStyle(status.textColor)

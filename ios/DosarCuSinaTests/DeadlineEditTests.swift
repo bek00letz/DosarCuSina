@@ -176,7 +176,7 @@ struct DeadlineEditTests {
         let line = ReminderWording.schedule(rule: .interval(.days(3), anchor: .completion),
                                             profile: ReminderProfile(leadDays: [1], consequence: .comfort),
                                             minuteOfDay: 7 * 60 + 30, usual: 9 * 60, calendar: calendar)
-        #expect(line == "La fiecare 3 zile, de la data la care l-ai făcut · Îți amintesc cu o zi înainte, la 07:30")
+        #expect(line == "La fiecare 3 zile, de la data rezolvării · Îți amintesc cu o zi înainte, la 07:30")
 
         let usual = ReminderWording.schedule(rule: .none, profile: ReminderProfile(leadDays: [30, 7, 0], consequence: .legal),
                                              minuteOfDay: nil, usual: 9 * 60, calendar: calendar)

@@ -20,7 +20,7 @@ enum PhotoOnRequest: CaseIterable {
     var header: String {
         switch self {
         case .bankCard: String(localized: "Poza cardului")
-        case .pageWithCardNumber: String(localized: "Poza actului")
+        case .pageWithCardNumber: String(localized: "Poza documentului")
         }
     }
 
@@ -28,7 +28,7 @@ enum PhotoOnRequest: CaseIterable {
     var keep: String {
         switch self {
         case .bankCard: String(localized: "Păstrează și poza cardului")
-        case .pageWithCardNumber: String(localized: "Păstrează și poza actului")
+        case .pageWithCardNumber: String(localized: "Păstrează și poza documentului")
         }
     }
 
@@ -36,13 +36,13 @@ enum PhotoOnRequest: CaseIterable {
     func note(keepsPhoto: Bool) -> String {
         switch (self, keepsPhoto) {
         case (.bankCard, true):
-            String(localized: "Poza arată numărul întreg al cardului. O păstrez în dosar, protejată ca restul actelor.")
+            String(localized: "Poza arată numărul întreg al cardului. O păstrez în dosar, protejată ca restul documentelor.")
         case (.bankCard, false):
             String(localized: "Păstrez doar banca, tipul cardului, ultimele 4 cifre și data expirării. Poza și numărul întreg nu se păstrează.")
         case (.pageWithCardNumber, true):
-            String(localized: "Poza arată numărul întreg al unui card. O păstrez în dosar, protejată ca restul actelor.")
+            String(localized: "Poza arată numărul întreg al unui card. O păstrez în dosar, protejată ca restul documentelor.")
         case (.pageWithCardNumber, false):
-            String(localized: "Poza arată numărul întreg al unui card, așa că nu o păstrez. Păstrez ce am citit pe act, cu numărul cardului ascuns.")
+            String(localized: "Poza arată numărul întreg al unui card, așa că nu o păstrez. Păstrez ce am citit pe document, cu numărul cardului ascuns.")
         }
     }
 }

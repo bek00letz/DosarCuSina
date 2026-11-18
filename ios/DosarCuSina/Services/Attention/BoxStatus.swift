@@ -53,7 +53,7 @@ public struct BoxStatus: Hashable, Sendable {
                      now: Date = Date(), calendar: Calendar = .dosar) -> String {
         guard let entry else { return String(localized: "Totul e în regulă", comment: "Box status when nothing needs attention") }
         let hidden = isSensitive || isLocked(entry.obligation.isSensitive)
-        let title = hidden ? String(localized: "O scadență", comment: "Box status title in a locked section") : entry.obligation.title
+        let title = hidden ? String(localized: "Un termen", comment: "Box status title in a locked section") : entry.obligation.title
         let when = WhenWording.phrase(entry.urgency, daysRemaining: entry.daysRemaining, from: now, calendar: calendar)
         return String(localized: "\(title) · \(when)", comment: "Box status: the obligation, then when it is due, e.g. 'ITP · în 5 zile'.")
     }

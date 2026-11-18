@@ -24,7 +24,7 @@ struct DeadlineEditSheet: View {
     /// "Se repetă" as the control holds it, so a number set before "Nu se repetă" comes back.
     @State private var repeatChoice: RepeatChoice
     @State private var isAddingCustomLead = false
-    @State private var reveals = false
+    @State private var reveals = DSValidationReveal()
     @State private var isSaving = false
     @State private var errorMessage: String?
     @State private var saveRequest: ReminderSaveRequest?
@@ -49,12 +49,11 @@ struct DeadlineEditSheet: View {
                     remindersSection
                 }
                 .padding(DS.Space.m)
-                .frame(maxWidth: 640)
-                .frame(maxWidth: .infinity)
+                .dsReadableWidth()
             }
             .scrollDismissesKeyboard(.interactively)
             .background(DS.Palette.background)
-            .environment(\.dsRevealsValidation, reveals)
+            .dsRevealsValidation(reveals)
             .dsPinnedAction {
                 DSPrimaryButton("Salvează", systemImage: "checkmark", action: save)
                     .keyboardShortcut(.return, modifiers: .command)
@@ -187,7 +186,7 @@ struct DeadlineEditSheet: View {
     /// Returns at once while the save runs, so two quick taps save once.
     private func save() {
         guard !isSaving else { return }
-        guard draft.canSave, due != nil else { reveals = true; return }
+        guard draft.canSave, due != nil else { reveals.reveal(); return }
         guard draft != start else { onClose(nil); return }
         isSaving = true
         // The first save that adds or changes reminders explains the notification question

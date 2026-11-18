@@ -122,8 +122,8 @@ struct OnboardingFlow: View {
     private var welcome: some View {
         OnboardingPage(
             symbols: ["car.fill", "house.fill", "pawprint.fill", "doc.text.fill"],
-            title: "Dosarul tău cu acte, care te anunță din timp",
-            message: "ITP-ul și RCA-ul mașinii, pașaportul, verificarea centralei, vaccinul pisicii. Le ții aici, cu actele lor, și îți spun din timp ce urmează."
+            title: "Dosarul tău cu documente, care te anunță din timp",
+            message: "ITP-ul și RCA-ul mașinii, pașaportul, verificarea centralei, vaccinul pisicii. Le ții aici, cu documentele lor, și îți spun din timp ce urmează."
         ) {
             DSPrimaryButton("Începe", action: advance)
         }
@@ -132,7 +132,7 @@ struct OnboardingFlow: View {
     private var photo: some View {
         OnboardingPage(
             symbols: ["camera.fill"],
-            title: "Fotografiază un act",
+            title: "Fotografiază un document",
             message: "O poliță, un pașaport, o factură. Îl citesc pe telefon și îți arăt ce am găsit înainte să salvez ceva."
         ) {
             if let photoMessage {
@@ -251,6 +251,7 @@ private struct OnboardingPage<Actions: View>: View {
             }
             .padding(DS.Space.m)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .dsReadableWidth()
         }
         .scrollBounceBehavior(.basedOnSize)
         .dsPinnedAction { actions }

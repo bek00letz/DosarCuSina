@@ -304,7 +304,7 @@ struct LockedSectionsEverywhereTests {
         }
         for isSensitive in [true, false] {
             let feed = WidgetFeed(generatedAt: noon("2026-12-03"), needsActionCount: 0, items: [item(isSensitive)])
-            let row = WidgetContent.rows(feed: feed, completed: [], now: noon("2026-12-03"), calendar: calendar, protectedTitle: "Scadență protejată", limit: 3).first
+            let row = WidgetContent.rows(feed: feed, completed: [], now: noon("2026-12-03"), calendar: calendar, protectedTitle: "Termen protejat", limit: 3).first
             #expect(row?.canComplete == !isSensitive)
         }
     }
@@ -386,7 +386,7 @@ struct LockedSectionsEverywhereTests {
         let documents = template(BuiltInTemplates.Key.documents, in: holder.templates)
         let member = template(BuiltInTemplates.Key.member, in: holder.templates)
 
-        // Session closed: the person's page opens; their identity card says only „Act protejat”.
+        // Session closed: the person's page opens; their identity card says only „Document protejat”.
         let closed = closedVault()
         #expect(SectionRowLock.of(holder.person, template: member, vault: closed) == .open)
         #expect(SectionRowLock.of(holder.card, template: documents, vault: closed) == .locked(title: LockedWording.document))
@@ -430,7 +430,7 @@ struct LockedSectionsEverywhereTests {
         #expect(status.entry != nil)
         let closed = closedVault()
         let shut = status.line(isSensitive: false, isLocked: { closed.isLocked(sectionIsSensitive: $0) }, now: now, calendar: calendar)
-        #expect(!shut.contains("buletin"), "„O scadență”, never its title")
+        #expect(!shut.contains("buletin"), "„Un termen”, never its title")
         #expect(!status.line(isSensitive: false, now: now, calendar: calendar).contains("buletin"), "Without a vault, every lock reads closed")
         #expect(!status.line(counting: 2, of: nil, isSensitive: false, isLocked: { closed.isLocked(sectionIsSensitive: $0) }, now: now, calendar: calendar).contains("buletin"))
         let open = await openVault()

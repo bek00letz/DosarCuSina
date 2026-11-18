@@ -51,7 +51,7 @@ struct SettingsGridSuggestionsTests {
 
     @Test func eachRowSaysHowItStandsInWords() {
         #expect(SettingsStatus.notifications(.authorized, minuteOfDay: 9 * 60) == "Pornite, la 09:00")
-        #expect(SettingsStatus.notifications(.denied, minuteOfDay: 9 * 60) == "Oprite din Setările telefonului")
+        #expect(SettingsStatus.notifications(.denied, minuteOfDay: 9 * 60) == "Oprite din Configurări")
         #expect(SettingsStatus.notifications(.notDetermined, minuteOfDay: 9 * 60) == "Nu ai ales încă")
         #expect(SettingsStatus.notifications(.authorized, minuteOfDay: 9 * 60, isOn: false) == "Oprite pe acest telefon", "The app's own switch is off")
 

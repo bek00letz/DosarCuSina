@@ -128,8 +128,8 @@ struct DocumentPagesViewer: View {
                         DSCompactButton("Poza întreagă", systemImage: "photo") { showWholePhoto(page, true) }
                             .accessibilityLabel(Text("Folosește poza întreagă", comment: "Shows the whole photo instead of the document cut out of it."))
                     } else {
-                        DSCompactButton("Doar actul", systemImage: "crop") { showWholePhoto(page, false) }
-                            .accessibilityLabel(Text("Arată doar actul, fără ce e în jur", comment: "Shows the document cut out of its photo again."))
+                        DSCompactButton("Doar documentul", systemImage: "crop") { showWholePhoto(page, false) }
+                            .accessibilityLabel(Text("Arată doar documentul, fără ce e în jur", comment: "Shows the document cut out of its photo again."))
                     }
                 }
             }
@@ -157,7 +157,7 @@ struct DocumentPagesViewer: View {
             guard let receipt = try await editing.showWholePhoto(page, whole) else { return }
             toast = .undo(whole
                 ? LocalizedStringResource("Se vede poza întreagă", comment: "Toast after choosing the whole photo of a document.")
-                : LocalizedStringResource("Se vede doar actul", comment: "Toast after choosing the document cut out of its photo."), receipt: receipt)
+                : LocalizedStringResource("Se vede doar documentul", comment: "Toast after choosing the document cut out of its photo."), receipt: receipt)
         }
     }
 

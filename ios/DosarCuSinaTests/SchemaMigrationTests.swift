@@ -820,7 +820,7 @@ struct SchemaMigrationTests {
             let schema = Schema(versionedSchema: DosarSchemaV6.self)
             let container = try ModelContainer(for: schema, configurations: [ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)])
             let context = ModelContext(container)
-            let gas = DosarSchemaV6.Asset(name: "Gaz – ENGIE Romania S.A.", templateKey: "subscription")
+            let gas = DosarSchemaV6.Asset(name: "Gaze – ENGIE Romania S.A.", templateKey: "subscription")
             let bill = DosarSchemaV6.HistoryEntry(title: "Factură ENGIE Romania S.A.")
             bill.kindRaw = HistoryKind.payment.rawValue
             bill.note = "Factura nr. EXM 0000001"
@@ -846,7 +846,7 @@ struct SchemaMigrationTests {
         #expect(bill.totalCost == Money(245))
         #expect(bill.reference == nil)
         #expect(bill.attachments?.first?.framingData == Data("{}".utf8))
-        #expect(bill.asset?.name == "Gaz – ENGIE Romania S.A.")
+        #expect(bill.asset?.name == "Gaze – ENGIE Romania S.A.")
 
         // The new attribute is kept.
         bill.reference = "EXM 0000001"

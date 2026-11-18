@@ -50,6 +50,7 @@ struct SharePracticeView: View {
                 }
             }
             .padding(DS.Space.m)
+            .dsReadableWidth()
         }
         .background(DS.Palette.background)
         .navigationTitle(isOnboarding ? "" : String(localized: "Trimite din altă aplicație"))
@@ -155,8 +156,17 @@ struct SharePracticeView: View {
 }
 
 /// A drawing of the share sheet's app row, with "Mai multe" at its end. A
-/// still picture: nothing here scrolls.
-private struct AppRowIllustration: View {
+/// still picture: nothing here scrolls. It grows with the text up to the largest standard size
+/// (`DS.Control.largestDecorationSize`), so its four icons stay inside a phone's width at the
+/// accessibility sizes; VoiceOver reads its label instead.
+struct AppRowIllustration: View {
+    var body: some View {
+        AppRowDrawing()
+            .dynamicTypeSize(...DS.Control.largestDecorationSize)
+    }
+}
+
+private struct AppRowDrawing: View {
     @ScaledMetric(relativeTo: .body) private var side: CGFloat = 44
 
     var body: some View {

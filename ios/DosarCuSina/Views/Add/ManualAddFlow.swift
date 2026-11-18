@@ -47,7 +47,7 @@ struct ManualAddFlow: View {
                 }
                 Section {
                     Button { isCreatingSection = true } label: {
-                        DSListRow("Secțiune nouă", subtitle: "O mașină, o casă, un animal, un act…", systemImage: "folder.badge.plus", showsChevron: true)
+                        DSListRow("Secțiune nouă", subtitle: "O mașină, o casă, un animal, un pașaport…", systemImage: "folder.badge.plus", showsChevron: true)
                     }
                     .buttonStyle(.plain)
                 }
@@ -129,7 +129,7 @@ private struct ManualWhatView: View {
                     }
                 }
                 if ManualAddFlow.offersDocumentPhoto {
-                    DSActionCard("Un act", subtitle: "Poză, PDF sau scanare. Îl citesc și ți-l arăt.", systemImage: "doc.viewfinder") {
+                    DSActionCard("Un document", subtitle: "Poză, PDF sau scanare. Îl citesc și ți-l arăt.", systemImage: "doc.viewfinder") {
                         isChoosingSource = true
                     }
                 }
@@ -138,12 +138,13 @@ private struct ManualWhatView: View {
                 }
             }
             .padding(DS.Space.m)
+            .dsReadableWidth()
         }
         .background(DS.Palette.background)
         .navigationTitle("Ce adaugi?")
         .navigationBarTitleDisplayMode(.inline)
-        .confirmationDialog("Un act", isPresented: $isChoosingSource, titleVisibility: .visible) {
-            if CaptureSource.isCameraAvailable { Button("Fotografiază actul") { source = .camera } }
+        .confirmationDialog("Un document", isPresented: $isChoosingSource, titleVisibility: .visible) {
+            if CaptureSource.isCameraAvailable { Button("Fotografiază documentul") { source = .camera } }
             Button("Alege din poze") { source = .photos }
             Button("Din Fișiere") { source = .files }
             Button("Renunță", role: .cancel) {}

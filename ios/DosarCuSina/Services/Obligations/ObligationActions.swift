@@ -21,9 +21,9 @@ public enum ObligationActionError: LocalizedError, Equatable {
     public var errorDescription: String? {
         switch self {
         case .notActive:
-            return String(localized: "Obligația e pusă pe pauză sau încheiată. Reactiveaz-o mai întâi.")
+            return String(localized: "Termenul e pus pe pauză sau încheiat. Pornește-l din nou mai întâi.")
         case .missingFirstDueDate:
-            return String(localized: "Alege data la care e scadentă prima dată.")
+            return String(localized: "Alege data primului termen.")
         case .notPersonsOwn:
             return String(localized: "Numele și cât de important e vin din categoria lui, așa că rămân cum sunt.",
                           comment: "Error: a category's deadline can't be renamed or have its importance changed.")

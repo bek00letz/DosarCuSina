@@ -122,15 +122,15 @@ extension CaptureKindProfile {
     /// What the machine-readable zone says, where it is printed: on the back of a card, or at the bottom.
     func machineReadableWords(_ value: String) -> String {
         hasMachineReadableBack
-            ? String(localized: "Pe spatele actului scrie: \(value)", comment: "What the machine-readable zone on the back of the card says.")
-            : String(localized: "În codul de jos al actului scrie: \(value)", comment: "What the machine-readable zone says.")
+            ? String(localized: "Pe spatele documentului scrie: \(value)", comment: "What the machine-readable zone on the back of the card says.")
+            : String(localized: "În codul de jos al documentului scrie: \(value)", comment: "What the machine-readable zone says.")
     }
 
     /// Under „Citește mai bine cu …”: what the AI provider is sent, a personal document's
     /// photo or another paper's first page.
     func sentToProviderWords(_ provider: String) -> String {
         documentType != nil
-            ? String(localized: "Poza actului se trimite la \(provider), cu cheia ta.",
+            ? String(localized: "Poza documentului se trimite la \(provider), cu cheia ta.",
                      comment: "Capture review: a personal document's photo is sent to the AI provider. The argument is the provider's name.")
             : String(localized: "Prima pagină se trimite la \(provider), cu cheia ta.",
                      comment: "Capture review: a paper's first page is sent to the AI provider. The argument is the provider's name.")
@@ -309,7 +309,7 @@ struct CaptureReviewPlace {
 /// The words the review says for every kind alike.
 enum CaptureReviewWording {
     // The screen
-    static var title: String { String(localized: "Verifică actul", comment: "Capture review: the screen's title.") }
+    static var title: String { String(localized: "Verifică documentul", comment: "Capture review: the screen's title.") }
     static var save: String { String(localized: "Salvează", comment: "Capture review: files the document.") }
     static var notSaved: String { String(localized: "Nu s-a salvat") }
     static var later: String { String(localized: "Mai târziu", comment: "Closes the review of something shared; it stays in De verificat.") }
@@ -317,23 +317,23 @@ enum CaptureReviewWording {
         String(localized: "Șterge din De verificat", comment: "Takes something shared out of De verificat, from its review.")
     }
     static var discardFromInbox: String {
-        String(localized: "Ce ai schimbat nu se salvează. Actul rămâne în De verificat.", comment: "Closing the review of something shared, after changes.")
+        String(localized: "Ce ai schimbat nu se salvează. Documentul rămâne în De verificat.", comment: "Closing the review of something shared, after changes.")
     }
     static var photoDidNotOpen: String { String(localized: "Poza nu s-a putut deschide. Încearcă din nou.") }
 
     // The summary card
     static var whenHeading: String { String(localized: "Când te anunț", comment: "Capture review: the summary card's heading over the reminder.") }
-    static var seeLarge: String { String(localized: "Vezi actul mare", comment: "VoiceOver label of the document thumbnail in the review.") }
+    static var seeLarge: String { String(localized: "Vezi documentul mare", comment: "VoiceOver label of the document thumbnail in the review.") }
     static var seeLargeHint: String {
         String(localized: "Se deschide pe tot ecranul. Poți mări sau roti pagina.", comment: "VoiceOver hint of the document thumbnail.")
     }
-    static var whatKind: String { String(localized: "Ce act e", comment: "Capture review: the menu of document kinds.") }
+    static var whatKind: String { String(localized: "Ce document e", comment: "Capture review: the menu of document kinds.") }
     static var notThis: String { String(localized: "Nu e asta? Schimbă", comment: "Capture review: opens the menu of document kinds.") }
     static func phoneSawKind(_ kind: String) -> String {
         String(localized: "Pe telefon părea: \(kind)", comment: "The kind the phone read, beside the AI provider's.")
     }
     static func checkedKind(_ kind: String) -> String {
-        String(localized: "Codul de jos al actului arată: \(kind)", comment: "The kind the checked machine-readable zone shows.")
+        String(localized: "Codul de jos al documentului arată: \(kind)", comment: "The kind the checked machine-readable zone shows.")
     }
     static func readWithProvider(_ shortName: String) -> String {
         String(localized: "Citit și cu \(shortName), cu cheia ta.", comment: "The AI provider read the document too. The argument is the provider's short name.")
@@ -344,15 +344,15 @@ enum CaptureReviewWording {
     static var readOnPhone: String {
         String(localized: "Citit pe telefon. Nimic n-a plecat de aici.", comment: "Capture review: read on the phone alone.")
     }
-    static var cropped: String { String(localized: "Am păstrat doar actul, fără ce e în jur.", comment: "The review: the document was cut out of its photo.") }
+    static var cropped: String { String(localized: "Am păstrat doar documentul, fără ce e în jur.", comment: "The review: the document was cut out of its photo.") }
     static var wholePhotoKept: String { String(localized: "Se păstrează poza întreagă.", comment: "The review: the whole photo is kept, not the cut-out.") }
     static var useWholePhoto: String { String(localized: "Folosește poza întreagă", comment: "The review: keeps the whole photo instead of the cut-out.") }
-    static var onlyDocument: String { String(localized: "Doar actul", comment: "The review: keeps only the document cut out of its photo.") }
+    static var onlyDocument: String { String(localized: "Doar documentul", comment: "The review: keeps only the document cut out of its photo.") }
     static var chooseAnother: String { String(localized: "Alege alta", comment: "Capture review: opens the choice of a place.") }
     static var check: String { String(localized: "Verifică", comment: "Capture review: a value or a place worth a look.") }
     static var changeDay: String { String(localized: "Schimbă ziua", comment: "Capture review: scrolls to the day the reminder follows.") }
     static var changeDayHint: String {
-        String(localized: "Arată ziua de pe act, ca s-o poți schimba.", comment: "VoiceOver hint of the review's reminder line.")
+        String(localized: "Arată ziua de pe document, ca s-o poți schimba.", comment: "VoiceOver hint of the review's reminder line.")
     }
     static var directDebit: String { String(localized: "Se plătește prin debit direct", comment: "Capture review: the bank pays this subscription's bills. Said of the bills, like „Se plătește prin debit direct, așa că nu îți amintesc.”") }
     static var changeLater: String { String(localized: "Poți schimba după, pe pagina termenului.", comment: "Capture review: under the reminder.") }
@@ -376,10 +376,10 @@ enum CaptureReviewWording {
     static var backNotRead: String { String(localized: "Nu am putut citi spatele", comment: "Capture review: the card's back couldn't be read.") }
     static var checkNumbers: String { String(localized: "Verifică numărul și datele", comment: "Capture review: the machine-readable zone didn't read for sure.") }
     static var checkNumbersMessage: String {
-        String(localized: "Codul de jos al actului nu s-a citit sigur.", comment: "Capture review: the machine-readable zone didn't read for sure.")
+        String(localized: "Codul de jos al documentului nu s-a citit sigur.", comment: "Capture review: the machine-readable zone didn't read for sure.")
     }
     static func providerDidNotRead(_ name: String) -> String {
-        String(localized: "\(name) nu a citit actul", comment: "Capture review: the AI provider couldn't read the document. The argument is its name.")
+        String(localized: "\(name) nu a citit documentul", comment: "Capture review: the AI provider couldn't read the document. The argument is its name.")
     }
     static var hardToRead: String { String(localized: "Poza e greu de citit", comment: "Capture review: little text was read.") }
     static var hardToReadMessage: String {
@@ -397,7 +397,7 @@ enum CaptureReviewWording {
         String(localized: "Trimit poza la \(name)?", comment: "Capture review: asks before an identity document's photo goes to the AI provider.")
     }
     static func sendPhotoMessage(_ name: String) -> String {
-        String(localized: "Nu sunt sigur ce am citit. \(name) poate citi actul mai bine, cu cheia ta. Fără un da, poza rămâne pe telefon.",
+        String(localized: "Nu sunt sigur ce am citit. \(name) poate citi documentul mai bine, cu cheia ta. Fără un da, poza rămâne pe telefon.",
                comment: "Capture review: why the photo would be sent, and that it stays without a yes. The argument is the AI provider's name.")
     }
     static var sendPhoto: String { String(localized: "Trimite poza", comment: "Capture review: sends the photo to the AI provider.") }
@@ -420,13 +420,13 @@ enum CaptureReviewWording {
     // What was read
     static var whatWasRead: String { String(localized: "Ce am citit", comment: "Capture review: the section of values read.") }
     static var checkMarked: String { String(localized: "Verifică ce e marcat.", comment: "Capture review: some values are worth a look.") }
-    static var documentName: String { String(localized: "Numele actului", comment: "Capture review: the document's name field.") }
-    static var notFound: String { String(localized: "Nu am găsit pe act:", comment: "Capture review: the fields the kind usually carries, not read.") }
+    static var documentName: String { String(localized: "Numele documentului", comment: "Capture review: the document's name field.") }
+    static var notFound: String { String(localized: "Nu am găsit pe document:", comment: "Capture review: the fields the kind usually carries, not read.") }
     static func add(_ field: String) -> String {
         String(localized: "Adaugă: \(field)", comment: "Capture review: adds an empty field the kind usually carries. The argument is the field's name.")
     }
     static func fromDocument(_ source: String) -> String {
-        String(localized: "Din act: „\(source)”", comment: "Capture review: the bit of the page a value was read from.")
+        String(localized: "Din document: „\(source)”", comment: "Capture review: the bit of the page a value was read from.")
     }
     static func readFrom(_ source: String) -> String {
         String(localized: "Citit din: \(source)", comment: "VoiceOver label of the bit of the page a value was read from.")
@@ -434,7 +434,7 @@ enum CaptureReviewWording {
     static func phoneRead(_ value: String) -> String {
         String(localized: "Pe telefon am citit: \(value)", comment: "The phone's value, beside the AI provider's.")
     }
-    static var use: String { String(localized: "Folosește-l", comment: "Applies a value another reader read instead of the one shown.") }
+    static var use: String { String(localized: "Folosește", comment: "Applies a value another reader read instead of the one shown. No pronoun: the value may be a date, a number or a name.") }
     static func useThis(_ text: String) -> String {
         String(localized: "Folosește: \(text)", comment: "VoiceOver label of the button that applies another reader's value.")
     }
@@ -496,14 +496,14 @@ enum CaptureReviewWording {
     }
 
     // Where it goes
-    static var keepOnly: String { String(localized: "Doar păstrez actul", comment: "Capture review: the document goes to no section.") }
+    static var keepOnly: String { String(localized: "Doar păstrez documentul", comment: "Capture review: the document goes to no section.") }
     static var foundInSearch: String { String(localized: "Îl găsești în Caută.", comment: "Capture review: a document kept in no section is found in Caută.") }
     static var keepOnlySubtitle: String {
         String(localized: "Fără secțiune; îl găsești în Caută.", comment: "Place picker: the document goes to no section.")
     }
     static var sectionGone: String { String(localized: "Secțiune ștearsă", comment: "Capture review: the section chosen has gone.") }
     static var withPersonsDocuments: String {
-        String(localized: "Actul stă la actele acestei persoane.", comment: "Capture review: a document filed under a person.")
+        String(localized: "Documentul stă la documentele acestei persoane.", comment: "Capture review: a document filed under a person.")
     }
     static func atSubscription(_ name: String) -> String {
         String(localized: "La abonamentul „\(name)”", comment: "Capture review: the bill goes to this subscription.")
@@ -535,11 +535,11 @@ enum CaptureReviewWording {
 
     // The place picker
     static var newPersonChoice: String { String(localized: "Persoană nouă", comment: "Place picker: the document goes to a new person.") }
-    static var groupedByPerson: String { String(localized: "Actele stau grupate pe persoane.", comment: "Place picker: under „Persoană nouă”.") }
+    static var groupedByPerson: String { String(localized: "Documentele stau grupate pe persoane.", comment: "Place picker: under „Persoană nouă”.") }
     static func newSectionChoice(in category: String) -> String {
         String(localized: "Secțiune nouă în „\(category)”", comment: "Makes a new section of the category the document fits.")
     }
-    static var thenFiled: String { String(localized: "Completezi ce trebuie, apoi pun actul acolo.", comment: "Place picker: a new section is made first.") }
+    static var thenFiled: String { String(localized: "Completezi ce trebuie, apoi pun documentul acolo.", comment: "Place picker: a new section is made first.") }
     static var otherSection: String { String(localized: "Altă secțiune…", comment: "Place picker: lists every section.") }
     static var everySectionSubtitle: String { String(localized: "Toate secțiunile din dosar.", comment: "Place picker: under „Altă secțiune…”.") }
     static var close: String { String(localized: "Închide") }
@@ -547,7 +547,7 @@ enum CaptureReviewWording {
     static var whatSection: String { String(localized: "Ce fel de secțiune", comment: "Place picker: the list of categories for a new section.") }
     static var newSectionPlain: String { String(localized: "Secțiune nouă", comment: "Place picker: makes a new section of any category.") }
     static var chooseCategoryFirst: String {
-        String(localized: "Alegi ce fel de secțiune, apoi pun actul acolo.", comment: "Place picker: under „Secțiune nouă”.")
+        String(localized: "Alegi ce fel de secțiune, apoi pun documentul acolo.", comment: "Place picker: under „Secțiune nouă”.")
     }
     static var example: String { String(localized: "Exemplu", comment: "Place picker: a section of the example data.") }
     static var homeHoldsSubscription: String {

@@ -175,7 +175,7 @@ private struct CatalogStep: View {
 struct CustomSectionStep: View {
     @Bindable var model: AddSectionModel
     let next: () -> Void
-    @State private var reveals = false
+    @State private var reveals = DSValidationReveal()
     @Environment(\.modelContext) private var context
 
     /// The first version's step chose pockets one by one. Off: a category of one's own
@@ -197,18 +197,17 @@ struct CustomSectionStep: View {
                 }
             }
             .padding(DS.Space.m)
-            .frame(maxWidth: 640)
-            .frame(maxWidth: .infinity)
+            .dsReadableWidth()
         }
         .scrollDismissesKeyboard(.interactively)
         .background(DS.Palette.background)
-        .environment(\.dsRevealsValidation, reveals)
+        .dsRevealsValidation(reveals)
         .navigationTitle(Text(verbatim: AddSectionWording.customTitle))
         .navigationBarTitleDisplayMode(.inline)
         .dsPinnedAction {
             DSPrimaryButton(verbatim: AddSectionWording.next) {
                 guard let custom = model.custom, custom.isComplete else {
-                    reveals = true
+                    reveals.reveal()
                     return
                 }
                 model.chooseCustom(custom, in: context)
@@ -254,7 +253,7 @@ struct CustomSectionStep: View {
 private struct EssentialsStep: View {
     @Bindable var model: AddSectionModel
     let next: () -> Void
-    @State private var reveals = false
+    @State private var reveals = DSValidationReveal()
     @Environment(\.modelContext) private var context
     @Query(sort: \Asset.name) private var assets: [Asset]
     @Query private var templates: [CategoryTemplate]
@@ -290,17 +289,16 @@ private struct EssentialsStep: View {
                 }
             }
             .padding(DS.Space.m)
-            .frame(maxWidth: 640)
-            .frame(maxWidth: .infinity)
+            .dsReadableWidth()
         }
         .scrollDismissesKeyboard(.interactively)
         .background(DS.Palette.background)
-        .environment(\.dsRevealsValidation, reveals)
+        .dsRevealsValidation(reveals)
         .navigationTitle(Text(verbatim: AddSectionWording.essentialsTitle))
         .navigationBarTitleDisplayMode(.inline)
         .dsPinnedAction {
             DSPrimaryButton(verbatim: form?.essentialsAction(offersDeadlines: model.offersDeadlines(context: context)) ?? AddSectionWording.next) {
-                guard FieldValuesCheck.canSave(model.values, fields: fields) else { reveals = true; return }
+                guard FieldValuesCheck.canSave(model.values, fields: fields) else { reveals.reveal(); return }
                 next()
             }
         }
@@ -344,7 +342,7 @@ private struct EssentialsStep: View {
 private struct ObligationsStep: View {
     @Bindable var model: AddSectionModel
     let finish: () -> Void
-    @State private var reveals = false
+    @State private var reveals = DSValidationReveal()
     @Environment(\.calendar) private var calendar
 
     var body: some View {
@@ -387,16 +385,15 @@ private struct ObligationsStep: View {
                 }
             }
             .padding(DS.Space.m)
-            .frame(maxWidth: 640)
-            .frame(maxWidth: .infinity)
+            .dsReadableWidth()
         }
         .background(DS.Palette.background)
-        .environment(\.dsRevealsValidation, reveals)
+        .dsRevealsValidation(reveals)
         .navigationTitle(Text(verbatim: AddSectionWording.deadlinesTitle))
         .navigationBarTitleDisplayMode(.inline)
         .dsPinnedAction {
             DSPrimaryButton(verbatim: AddSectionWording.add) {
-                guard model.missingDates.isEmpty else { reveals = true; return }
+                guard model.missingDates.isEmpty else { reveals.reveal(); return }
                 finish()
             }
         }

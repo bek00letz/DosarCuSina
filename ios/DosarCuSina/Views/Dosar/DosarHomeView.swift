@@ -48,6 +48,7 @@ struct DosarHomeView: View {
                     grid
                         .padding(.horizontal, DS.Space.m)
                         .padding(.bottom, DS.Space.xl)
+                        .dsReadableWidth(.grid)
                 }
             }
         }
@@ -420,7 +421,7 @@ struct DosarEmptyState: View {
                         .dsFont(.title)
                         .multilineTextAlignment(.center)
                         .accessibilityAddTraits(.isHeader)
-                    Text("Pune aici mașina, casa, actele sau pisica. Îți spun din timp când expiră ceva și ții minte cine a reparat ce.", comment: "Empty home message.")
+                    Text("Pune aici mașina, casa, actele sau pisica. Îți spun din timp când expiră ceva și țin minte cine a reparat ce.", comment: "Empty home message.")
                         .dsFont(.body)
                         .foregroundStyle(DS.Palette.secondaryLabel)
                         .multilineTextAlignment(.center)
@@ -434,6 +435,7 @@ struct DosarEmptyState: View {
             .frame(maxWidth: .infinity)
             .padding(.horizontal, DS.Space.m)
             .padding(.bottom, DS.Space.xl)
+            .dsReadableWidth()
         }
         .dsPinnedAction {
             DSPrimaryButton("Adaugă primul lucru", systemImage: "plus", action: addFirst)

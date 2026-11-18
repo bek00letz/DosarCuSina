@@ -192,7 +192,7 @@ struct SectionHero: View {
     private var documentDetails: some View {
         // A document's own expiry, else (a product) the end of its warranty, named for what it is.
         if let expiry = AssetFacts.expiry(asset.values, template: definition) {
-            ExpiryLine(label: String(localized: "Valabil până la", comment: "Hero: document valid until."), day: expiry,
+            ExpiryLine(label: PocketWording.validityLabel(expiry, today: CalendarDay(Date(), calendar: calendar)), day: expiry,
                        rule: DateUrgency.rule(for: expiry, on: asset))
         } else if let warranty = AssetFacts.purchase(asset.values, template: definition).warrantyUntil {
             ExpiryLine(label: String(localized: "Garanție până la", comment: "Hero: warranty end date."), day: warranty,
@@ -253,7 +253,7 @@ struct SectionHero: View {
         let status = BoxStatus.make(forAsset: asset.id, descendants: descendants, in: snapshots)
         DS.Hairline()
         // The page itself is open; a deadline of a section filed under it whose own category is
-        // locked (a person's identity card) is named only as „O scadență”, as on its box.
+        // locked (a person's identity card) is named only as „Un termen”, as on its box.
         DSStatusLine(text: status.line(isSensitive: false, isLocked: { vault.isLocked(sectionIsSensitive: $0) }), tone: status.tone)
     }
 }
@@ -308,7 +308,7 @@ private struct HeroValueTile: View {
     }
 }
 
-/// "Valabil până la 14 mar. 2027" with a badge saying how far that is, drawn from
+/// "Expiră pe 14 mar. 2027" with a badge saying how far that is, drawn from
 /// the urgency of the deadline that date drives.
 struct ExpiryLine: View {
     let label: String

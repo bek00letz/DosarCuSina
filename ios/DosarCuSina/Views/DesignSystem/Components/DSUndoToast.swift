@@ -255,9 +255,14 @@ private struct DSToastView: View {
                     }
                 }
             } else {
-                HStack(spacing: DS.Space.s) {
-                    icon
-                    title
+                // The words wrap beside „Anulează” while they keep at least as much of the width
+                // as the button; at a large text size the button moves under them, at the trailing
+                // edge, so the words are never squeezed into a narrow column (`WordsBesideAction`).
+                WordsBesideAction(spacing: DS.Space.s) {
+                    HStack(spacing: DS.Space.s) {
+                        icon
+                        title
+                    }
                     if let actionTitle = toast.actionTitle, toast.offersAction {
                         button(actionTitle, action: onAction)
                     }
@@ -313,5 +318,57 @@ private struct DSToastView: View {
                 .contentShape(.rect)
         }
         .buttonStyle(.borderless)
+    }
+}
+
+/// The toast's words and its one button: side by side, the words wrapping beside the button,
+/// while the button takes no more of the width than the words keep; otherwise one under the
+/// other, the words across the whole width and the button at the trailing edge. It decides by
+/// measuring, never by the text size, so a short button stays beside the words at any size and
+/// a button grown wide at the largest sizes moves down.
+struct WordsBesideAction: Layout {
+    var spacing: CGFloat
+
+    /// Whether the button (the last piece) leaves the words at least as much of `width` as it takes.
+    func fitsBeside(in width: CGFloat?, subviews: Subviews) -> Bool {
+        guard subviews.count == 2, let width, width.isFinite else { return true }
+        let button = subviews[1].sizeThatFits(.unspecified).width
+        return button <= (width - spacing) / 2
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        guard let words = subviews.first else { return .zero }
+        guard subviews.count == 2 else { return words.sizeThatFits(proposal) }
+        let button = subviews[1].sizeThatFits(.unspecified)
+        if fitsBeside(in: proposal.width, subviews: subviews) {
+            let wordsWidth = proposal.width.map { max($0 - button.width - spacing, 0) }
+            let wordsSize = words.sizeThatFits(ProposedViewSize(width: wordsWidth, height: nil))
+            return CGSize(width: proposal.width ?? wordsSize.width + spacing + button.width, height: max(wordsSize.height, button.height))
+        }
+        let wordsSize = words.sizeThatFits(ProposedViewSize(width: proposal.width, height: nil))
+        let buttonSize = subviews[1].sizeThatFits(ProposedViewSize(width: proposal.width, height: nil))
+        return CGSize(width: proposal.width ?? max(wordsSize.width, buttonSize.width), height: wordsSize.height + buttonSize.height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        guard let words = subviews.first else { return }
+        guard subviews.count == 2 else {
+            words.place(at: bounds.origin, proposal: ProposedViewSize(width: bounds.width, height: nil))
+            return
+        }
+        let button = subviews[1]
+        if fitsBeside(in: bounds.width, subviews: subviews) {
+            let buttonSize = button.sizeThatFits(.unspecified)
+            let wordsWidth = max(bounds.width - buttonSize.width - spacing, 0)
+            let wordsSize = words.sizeThatFits(ProposedViewSize(width: wordsWidth, height: nil))
+            words.place(at: CGPoint(x: bounds.minX, y: bounds.midY), anchor: .leading, proposal: ProposedViewSize(width: wordsWidth, height: wordsSize.height))
+            button.place(at: CGPoint(x: bounds.maxX, y: bounds.midY), anchor: .trailing, proposal: ProposedViewSize(buttonSize))
+            return
+        }
+        let wordsSize = words.sizeThatFits(ProposedViewSize(width: bounds.width, height: nil))
+        words.place(at: bounds.origin, proposal: ProposedViewSize(width: bounds.width, height: wordsSize.height))
+        let buttonSize = button.sizeThatFits(ProposedViewSize(width: bounds.width, height: nil))
+        button.place(at: CGPoint(x: bounds.maxX, y: bounds.minY + wordsSize.height), anchor: .topTrailing,
+                     proposal: ProposedViewSize(width: min(buttonSize.width, bounds.width), height: buttonSize.height))
     }
 }

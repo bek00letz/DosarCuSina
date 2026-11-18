@@ -108,6 +108,7 @@ private struct ObligationPage: View {
                 }
             }
             .padding(DS.Space.m)
+            .dsReadableWidth()
         }
         .background(DS.Palette.background)
         .navigationTitle(Text(verbatim: isLocked ? "" : obligation.title))
@@ -195,7 +196,7 @@ private struct ObligationPage: View {
                 }
                 if obligation.isExample { DSExampleBadge() }
             }
-            Text(verbatim: isLocked ? String(localized: "O scadență protejată") : obligation.title)
+            Text(verbatim: isLocked ? String(localized: "Un termen protejat") : obligation.title)
                 .dsFont(.display)
                 .accessibilityAddTraits(.isHeader)
             if obligation.status == .active {
@@ -644,14 +645,15 @@ struct CustomLeadPage: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.l) {
-                Stepper(value: $days, in: 1...365) {
-                    // The page only adds a lead before the day (1 to 365 days), worded the same either way.
-                    Text(verbatim: ReminderWording.rowTitle(days: days, from: .dueDay))
-                        .dsFont(.headline, numeric: true)
-                }
-                .frame(minHeight: 44)
+                // The page only adds a lead before the day (1 to 365 days), worded the same either
+                // way, in the steps a repeat of days takes (whole weeks, then about a month).
+                DSStepsStepper(value: $days, in: 1...365, unit: .day,
+                               label: Text("Cu cât înainte", comment: "VoiceOver: the label of the stepper that sets how many days before the due day a reminder comes; its value says it."),
+                               valueText: ReminderWording.rowTitle(days: days, from: .dueDay))
+                    .sensoryFeedback(.selection, trigger: days)
             }
             .padding(DS.Space.m)
+            .dsReadableWidth()
         }
         .background(DS.Palette.background)
         .dsPinnedAction {
@@ -696,6 +698,7 @@ private struct RescheduleSheet: View {
                 DatePicker("Data nouă", selection: $date, displayedComponents: .date)
                     .datePickerStyle(.graphical)
                     .padding(DS.Space.m)
+                    .dsReadableWidth()
             }
             .dsPinnedAction {
                 DSPrimaryButton("Mută termenul", systemImage: "checkmark") { onClose(CalendarDay(date)) }

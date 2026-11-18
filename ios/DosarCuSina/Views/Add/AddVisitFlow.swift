@@ -127,6 +127,7 @@ private struct VisitFormView: View {
                 if let provider = shape.provider { providerSection(provider) }
             }
             .padding(DS.Space.m)
+            .dsReadableWidth()
         }
         .background(DS.Palette.background)
         .scrollDismissesKeyboard(.interactively)
@@ -272,10 +273,9 @@ private struct VisitFormView: View {
                     VStack(alignment: .leading, spacing: DS.Space.xs) {
                         DSTextField(LocalizedStringKey(shape.work?.rowName ?? ""), text: $extra.name)
                         DSMoneyField(LocalizedStringKey(VisitFormWording.rowCost), amount: $extra.cost, currencyCode: $draft.currency)
-                        Button(VisitFormWording.removeRow, role: .destructive) {
+                        DSLinkButton(verbatim: VisitFormWording.removeRow, role: .destructive) {
                             draft.extras.removeAll { $0.id == extra.id }
                         }
-                        .frame(minHeight: DS.Control.minimumHitTarget)
                     }
                 }
             }
@@ -403,7 +403,7 @@ private struct VisitFormView: View {
     private func apply(_ result: CaptureResult) {
         let before = draft.ticked.count + draft.extras.count
         if case .new(let name) = draft.provider { newProviderName = name }
-        draft.apply(result, form: form)
+        let filled = draft.apply(result, form: form)
         if case .new(let name) = draft.provider {
             // A paper from someone already in Oameni picks them, not a duplicate.
             let wanted = SearchText.normalize(name)
@@ -415,7 +415,7 @@ private struct VisitFormView: View {
         }
         let found = draft.ticked.count + draft.extras.count - before
         draft.documentTitle = CaptureMapping.defaultTitle(for: result.kind, fields: Dictionary(result.fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first }))
-        readNote = draft.document != nil ? form.readNote(found: found) : form.failedNote
+        readNote = draft.document != nil ? form.readNote(found: found, filled: filled) : form.failedNote
     }
 
     private func save(lowerReading: LowerReadingAnswer? = nil) {
@@ -562,6 +562,7 @@ private struct VisitSavedView: View {
                 }
             }
             .padding(DS.Space.m)
+            .dsReadableWidth()
         }
         .background(DS.Palette.background)
         .dsPinnedAction {

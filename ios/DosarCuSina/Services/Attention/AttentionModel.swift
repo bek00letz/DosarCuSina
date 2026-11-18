@@ -122,7 +122,7 @@ public enum AttentionModel {
                 let first = sorted[0].obligation
                 return AttentionAssetGroup(
                     assetId: assetId,
-                    assetName: first.assetName ?? String(localized: "Fără activ", comment: "Group for obligations not tied to an asset"),
+                    assetName: first.assetName ?? String(localized: "Fără secțiune", comment: "Group for obligations not tied to an asset"),
                     symbol: first.symbol,
                     tint: first.tint,
                     entries: sorted

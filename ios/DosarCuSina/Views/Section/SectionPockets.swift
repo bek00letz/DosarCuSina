@@ -386,7 +386,7 @@ struct DocumentRowLink: View {
         switch item {
         case .personal(let document):
             // One tap: the document's own page, picture first. While its category is locked, only
-            // „Act protejat”: no name, expiry or card digits, and its page asks for Face ID.
+            // „Document protejat”: no name, expiry or card digits, and its page asks for Face ID.
             NavigationLink(value: AppRoute.asset(document.id)) {
                 SectionRowGate(section: document) {
                     DSListRow(
@@ -445,8 +445,7 @@ extension Attachment {
     /// passed, else the date printed on it.
     func validityLine(today: CalendarDay = CalendarDay(Date())) -> String? {
         if let day = validUntilDay {
-            let date = DosarFormat.day(day)
-            return day < today ? PocketWording.expired(date) : PocketWording.expires(date)
+            return PocketWording.validity(day, today: today)
         }
         if let documentDay {
             return PocketWording.dated(DosarFormat.day(documentDay))

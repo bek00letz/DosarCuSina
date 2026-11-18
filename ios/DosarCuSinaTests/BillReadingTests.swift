@@ -144,7 +144,7 @@ struct BillReadingTests {
         _ = try home(context)
         let planned = try plan(bill(meter: 12_345, issued: "2026-10-05", due: "2026-11-20"), context)
         let meter = try #require(planned.meter)
-        #expect(meter.sentence == "Indexul 12.345\u{00A0}m³ se trece la „Gaz – ENGIE Romania S.A.”.")
+        #expect(meter.sentence == "Indexul 12.345\u{00A0}m³ se trece la „Gaze – ENGIE Romania S.A.”.")
         #expect(CaptureFilingPlan.Meter.unknownService.sentence == "Indexul nu-l trec: nu știu dacă e de gaze, de curent sau de apă.")
     }
 
@@ -545,7 +545,7 @@ struct BillReadingTests {
         var values = FieldValues()
         values[SubscriptionFields.provider] = .text("ENGIE Romania S.A.")
         values[SubscriptionFields.service] = .text(ServiceKind.gas)
-        let gas = try AssetActions(context: context).create(name: "Gaz – ENGIE Romania S.A.", template: template, values: values, parent: house)
+        let gas = try AssetActions(context: context).create(name: "Gaze – ENGIE Romania S.A.", template: template, values: values, parent: house)
         let blueprint = try #require(template.blueprints.first { $0.key == SubscriptionFields.billBlueprint })
         let reminder = try ObligationActions(context: context, calendar: .bucharest, now: { noon(self.today) })
             .create(from: blueprint, for: gas, firstDue: CalendarDay("2026-11-20"))

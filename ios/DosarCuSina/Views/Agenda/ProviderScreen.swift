@@ -60,8 +60,7 @@ private struct ProviderContent: View {
                 }
             }
             .padding(DS.Space.m)
-            .frame(maxWidth: 720)
-            .frame(maxWidth: .infinity)
+            .dsReadableWidth()
         }
         .scrollDismissesKeyboard(.interactively)
         .background(DS.Palette.background)
@@ -281,7 +280,7 @@ struct ProviderEditSheet: View {
     @State private var email: String
     @State private var address: String
     @State private var notes: String
-    @State private var reveals = false
+    @State private var reveals = DSValidationReveal()
     @State private var error: UserFacingError?
     private let original: ProviderDetails
 
@@ -335,12 +334,11 @@ struct ProviderEditSheet: View {
                     DSTextField("Note", text: $notes, kind: .longText, prompt: "Program, prețuri, cum ajungi la el")
                 }
                 .padding(DS.Space.m)
-                .frame(maxWidth: 640)
-                .frame(maxWidth: .infinity)
+                .dsReadableWidth()
             }
             .scrollDismissesKeyboard(.interactively)
             .background(DS.Palette.background)
-            .environment(\.dsRevealsValidation, reveals)
+            .dsRevealsValidation(reveals)
             .navigationTitle(provider == nil ? Text("Persoană nouă", comment: "Title when adding a provider.") : Text("Editează", comment: "Title of the edit sheet."))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -357,7 +355,7 @@ struct ProviderEditSheet: View {
     private func save() {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty, FieldFormatter.validate(email, as: .email).allowsSaving else {
-            reveals = true
+            reveals.reveal()
             return
         }
         do {

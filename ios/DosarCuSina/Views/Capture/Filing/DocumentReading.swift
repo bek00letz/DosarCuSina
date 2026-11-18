@@ -42,7 +42,7 @@ struct DocumentReading {
         case nothingToRead
 
         var errorDescription: String? {
-            String(localized: "Poza actului nu se mai poate citi. Adaugă o poză nouă de pe pagina actului.",
+            String(localized: "Poza documentului nu se mai poate citi. Adaugă o poză nouă de pe pagina documentului.",
                    comment: "Reading a document again found no page to read.")
         }
     }

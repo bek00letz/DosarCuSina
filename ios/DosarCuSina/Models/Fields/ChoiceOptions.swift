@@ -505,7 +505,7 @@ public enum ServiceKind {
     /// One service, declared once.
     public struct Service: Sendable {
         public let key: String
-        /// Its name, in a few words: "Gaz".
+        /// Its name, in a few words: "Gaze".
         public let label: String
         /// Other ways it is written: older text, what people type.
         public let aliases: [String]
@@ -527,7 +527,7 @@ public enum ServiceKind {
     public static var services: [Service] {
         let utility: [SubscriptionCode] = [.clientCode, .contractNumber]
         return [
-            Service(key: gas, label: String(localized: "Gaz"), aliases: ["Gaze", "Gaze naturale"], group: .utilities,
+            Service(key: gas, label: String(localized: "Gaze"), aliases: ["Gaz", "Gaze naturale"], group: .utilities,
                     codes: [.clc] + utility, isTiedToHome: true, sendsRegularBills: true, meter: .gas, modelDescription: "natural gas"),
             Service(key: electricity, label: String(localized: "Curent"), aliases: ["Energie electrică", "Electricitate"], group: .utilities,
                     codes: [.pod] + utility, isTiedToHome: true, sendsRegularBills: true, meter: .electricity, modelDescription: "electricity"),
@@ -572,7 +572,7 @@ public enum ServiceKind {
         service(key)?.sendsRegularBills ?? false
     }
 
-    /// The service's name, in a few words: "Gaz".
+    /// The service's name, in a few words: "Gaze".
     public static func label(for key: String?) -> String? {
         service(key)?.label
     }

@@ -98,13 +98,13 @@ struct RepeatAndReminderTimeTests {
     }
 
     @Test func theRuleReadsAsOneSentence() {
-        #expect(RepeatWording.sentence(.interval(.days(3), anchor: .completion)) == "La fiecare 3 zile, de la data la care l-ai făcut.")
+        #expect(RepeatWording.sentence(.interval(.days(3), anchor: .completion)) == "La fiecare 3 zile, de la data rezolvării.")
         #expect(RepeatWording.sentence(.interval(.months(1), anchor: .dueDate)) == "În fiecare lună, de la data termenului.")
         #expect(RepeatWording.sentence(.none) == "Nu se repetă.")
         #expect(RepeatWording.sentence(.fixedDates([MonthDay(month: 9, day: 30), MonthDay(month: 3, day: 31)]))
                 == "În fiecare an, pe 31 martie și pe 30 septembrie.")
-        #expect(RepeatWording.detail(of: .completion, every: 3, .day) == "Următorul e la 3 zile după ce îl bifezi.")
-        #expect(RepeatWording.detail(of: .dueDate, every: 1, .month) == "Următorul e la o lună după termen, oricând îl bifezi.")
+        #expect(RepeatWording.detail(of: .completion, every: 3, .day) == "Următorul e la 3 zile după rezolvare.")
+        #expect(RepeatWording.detail(of: .dueDate, every: 1, .month) == "Următorul e la o lună după termen, nu după rezolvare.")
     }
 
     @Test func theReminderTimeSaysWhichOneItIs() {

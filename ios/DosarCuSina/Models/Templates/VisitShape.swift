@@ -193,7 +193,7 @@ public struct VisitShape: Hashable, Sendable {
             work: WorkWords(
                 header: String(localized: "Ce s-a făcut"),
                 checklistHint: String(localized: "Atinge ce s-a făcut. Prețul și marca sunt opționale."),
-                rowsHint: String(localized: "Câte un rând pentru fiecare lucrare. Prețul e opțional.", comment: "Visit form: rows of what was done, with no checklist."),
+                rowsHint: String(localized: "Câte un rând pentru fiecare lucru făcut. Prețul e opțional.", comment: "Visit form: rows of what was done, with no checklist."),
                 rowName: String(localized: "Ce s-a făcut")
             ),
             asksBrand: true,
@@ -291,7 +291,7 @@ public struct VisitShape: Hashable, Sendable {
             work: WorkWords(
                 header: String(localized: "Ce s-a făcut"),
                 checklistHint: String(localized: "Atinge ce s-a făcut. Prețul e opțional.", comment: "Upkeep form: under the checklist."),
-                rowsHint: String(localized: "Câte un rând pentru fiecare lucrare. Prețul e opțional."),
+                rowsHint: String(localized: "Câte un rând pentru fiecare lucru făcut. Prețul e opțional."),
                 rowName: String(localized: "Ce s-a făcut")
             ),
             asksBrand: false,
@@ -489,8 +489,39 @@ extension VisitShape.Paper {
     /// Nothing on it to write in rows.
     public var nothingWritten: String { String(localized: "Nu am găsit rânduri pe ea. Scrie-le de mână.", comment: "Visit flow: no rows found on the paper.") }
 
-    /// Kept, its day, total and who issued it written in.
-    public var kept: String { String(localized: "Am trecut data, suma și numele de pe ea. Verifică-le.", comment: "Visit flow: the paper's day, total and issuer were filled in.") }
+    /// What a paper read without rows gives the form: its day, its total, who issued it.
+    public enum Fact: Hashable, Sendable, CaseIterable {
+        case day
+        case total
+        case issuer
+
+        /// The word in a sentence: „data”, „suma”, „numele”.
+        public var word: String {
+            switch self {
+            case .day: String(localized: "data", comment: "Visit flow: the paper's day, in a list of what was read off it.")
+            case .total: String(localized: "suma", comment: "Visit flow: the paper's total, in a list of what was read off it.")
+            case .issuer: String(localized: "numele", comment: "Visit flow: who issued the paper, in a list of what was read off it.")
+            }
+        }
+    }
+
+    /// Kept, with what it gave written in, only what it gave: „Am trecut data și suma de pe ea.”
+    /// Nothing at all is `nothingFound`, never this.
+    public func kept(_ facts: [Fact]) -> String {
+        let list = Self.list(facts).formatted(.list(type: .and).locale(.dosarDefault))
+        return String(localized: "Am trecut \(list) de pe ea. Verifică înainte să salvezi.", comment: "Visit flow: what was filled in from the paper, e.g. „data și suma”.")
+    }
+
+    /// Kept, but nothing the form asks was found on it: what to do instead.
+    public func nothingFound(_ asked: [Fact]) -> String {
+        let list = Self.list(asked).formatted(.list(type: .or).locale(.dosarDefault))
+        return String(localized: "Nu am găsit pe ea \(list). Completează de mână.", comment: "Visit flow: the paper was kept but none of its day, total or issuer was read, e.g. „data, suma sau numele”.")
+    }
+
+    /// The facts' words in the form's order.
+    private static func list(_ facts: [Fact]) -> [String] {
+        Fact.allCases.filter(facts.contains).map(\.word)
+    }
 
     /// A photo that couldn't be read, when the form ticks.
     public var failedTicking: String { String(localized: "Încearcă o poză mai clară. Poți bifa și de mână.") }

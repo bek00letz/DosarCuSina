@@ -113,12 +113,20 @@ struct VisitForm: Equatable {
         definition.flatMap(make(for:))?.rowsAreParts ?? false
     }
 
-    /// What the paper's reading did, said under its notice: how many rows it ticked or wrote.
-    func readNote(found: Int) -> String? {
+    /// What the paper's reading did, said under its notice: how many rows it ticked or wrote, or,
+    /// on a form without rows, which of its day, total and issuer it filled in (`filled`, what
+    /// `VisitDraft.apply` wrote), never more than it found.
+    func readNote(found: Int, filled: [VisitShape.Paper.Fact]) -> String? {
         guard let paper = shape.paper else { return nil }
         if hasChecklist { return found > 0 ? paper.ticked(found) : paper.nothingTicked }
         if hasRows { return found > 0 ? paper.written(found) : paper.nothingWritten }
-        return paper.kept
+        return filled.isEmpty ? paper.nothingFound(paperFacts) : paper.kept(filled)
+    }
+
+    /// What a paper can fill in on this form: its day and total, and who issued it where the
+    /// form asks who did it.
+    var paperFacts: [VisitShape.Paper.Fact] {
+        fields.contains(.provider) ? [.day, .total, .issuer] : [.day, .total]
     }
 
     /// A paper that couldn't be read: what to do instead.

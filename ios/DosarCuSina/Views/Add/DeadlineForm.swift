@@ -43,7 +43,7 @@ struct DeadlineForm: View {
     /// Its own reminder time, or nil for the general one from Settings.
     @State private var reminderMinute: Int?
     @State private var due: Date?
-    @State private var reveals = false
+    @State private var reveals = DSValidationReveal()
     @State private var errorMessage: String?
     @State private var saveRequest: ReminderSaveRequest?
     /// Adding to an example asks "Păstrezi … ca al tău?"; yes saves again.
@@ -103,11 +103,12 @@ struct DeadlineForm: View {
                 }
             }
             .padding(DS.Space.m)
+            .dsReadableWidth()
         }
         .background(DS.Palette.background)
         .dsPinnedAction {
             DSPrimaryButton(verbatim: DeadlineFormWording.save, systemImage: "checkmark") {
-                guard canSave else { reveals = true; return }
+                guard canSave else { reveals.reveal(); return }
                 saveRequest = ReminderSaveRequest { save(asset: asset, blueprints: blueprints) }
             }
         } note: {
@@ -115,7 +116,7 @@ struct DeadlineForm: View {
                 DSNotice(.error, title: LocalizedStringKey(DeadlineFormWording.notSaved), message: LocalizedStringKey(errorMessage))
             }
         }
-        .environment(\.dsRevealsValidation, reveals)
+        .dsRevealsValidation(reveals)
         .navigationTitle(Text(verbatim: DeadlineFormWording.title))
         .navigationBarTitleDisplayMode(.inline)
         .reminderPermissionGate($saveRequest)
