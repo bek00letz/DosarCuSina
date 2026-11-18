@@ -125,13 +125,13 @@
         }
       }
     },
-    "%@ · scadent pe %@" : {
+    "%@ · până pe %@" : {
       "comment" : "Reminder body: asset name and due date",
       "localizations" : {
         "ro" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ · scadent pe %2$@"
+            "value" : "%1$@ · până pe %2$@"
           }
         }
       }
@@ -368,11 +368,11 @@
     "%@ nu a acceptat cheia. Verifică în Setări dacă ai copiat-o întreagă." : {
       "comment" : "Cloud reading: the key was refused. The argument is the provider."
     },
-    "%@ nu a citit actul" : {
-      "comment" : "Capture review: the AI provider couldn't read the document. The argument is its name."
-    },
     "%@ nu a citit actul. Valorile citite pe telefon rămân." : {
       "comment" : "Cloud reading: the service declined."
+    },
+    "%@ nu a citit documentul" : {
+      "comment" : "Capture review: the AI provider couldn't read the document. The argument is its name."
     },
     "%@ nu a răspuns cum trebuie. Încearcă din nou peste câteva minute." : {
       "comment" : "Cloud reading: unexpected answer."
@@ -417,7 +417,7 @@
       }
     },
     "%@, %@" : {
-      "comment" : "Siri: a deadline and when it is due, e.g. 'ITP, în 5 zile'.\nVoiceOver: a check's outcome, then why. Keep both.",
+      "comment" : "Siri: a deadline and when it is due, e.g. 'ITP, în 5 zile'.\nVoiceOver: a check's outcome, then why. Keep both.\nVoiceOver: a number field's name and the unit its number is in, e.g. „Kilometraj, km”.",
       "localizations" : {
         "ro" : {
           "stringUnit" : {
@@ -427,8 +427,8 @@
         }
       }
     },
-    "%@, de la data la care l-ai făcut" : {
-      "comment" : "How a deadline repeats, counted from the day it was done, e.g. „La fiecare 3 zile, de la data la care l-ai făcut.”"
+    "%@, de la data rezolvării" : {
+      "comment" : "How a deadline repeats, counted from the day it was done, e.g. „La fiecare 3 zile, de la data rezolvării.”"
     },
     "%@, de la data termenului" : {
       "comment" : "How a deadline repeats, counted from its due day, e.g. „În fiecare lună, de la data termenului.”"
@@ -445,7 +445,7 @@
       }
     },
     "%@: „%@”" : {
-      "comment" : "Settings: a value and the label an issuer prints it under, e.g. 'Data scadenței: „Ultima zi de plată”'.",
+      "comment" : "Settings: a value and the label an issuer prints it under, e.g. 'De plătit până la: „Ultima zi de plată”'.",
       "localizations" : {
         "ro" : {
           "stringUnit" : {
@@ -1144,6 +1144,9 @@
     "a expirat %@" : {
       "comment" : "Bank card row: it expired, month/year as on the card."
     },
+    "A expirat pe" : {
+      "comment" : "Caption over the day a paper stopped being valid, passed."
+    },
     "A expirat pe %@" : {
       "comment" : "A passport's line once it has expired\nDocument row: the day a paper stopped being valid, passed."
     },
@@ -1197,7 +1200,7 @@
     "Abonamente" : {
       "comment" : "Category name\nSection pocket"
     },
-    "Abonamente cu facturile lor, ca la o locuință: curent, internet, loc de parcare." : {
+    "Abonamente cu facturile lor, ca la o locuință, pentru curent, internet sau loc de parcare." : {
       "comment" : "Explains the bills switch."
     },
     "Abonamentul" : {
@@ -1208,9 +1211,6 @@
     },
     "Act de identitate" : {
 
-    },
-    "Act protejat" : {
-      "comment" : "A row in place of something behind Face ID that is a document (a person's ID card, something shared into De verificat); nothing about it shows until unlock."
     },
     "Acte" : {
       "comment" : "Category name\nSection pocket\nSummary of a category of one's own: it keeps documents."
@@ -1272,9 +1272,6 @@
     "Actul e păstrat ca PDF, cu paginile lui. Adaugă spatele ca act separat." : {
       "comment" : "Adding the back to a document kept as a PDF was refused."
     },
-    "Actul e salvat." : {
-
-    },
     "Actul locuinței (contract de închiriere sau de proprietate)" : {
       "comment" : "What renewing a residence permit asks: proof of where one lives."
     },
@@ -1283,12 +1280,6 @@
     },
     "Actul nou" : {
 
-    },
-    "Actul se salvează la fel, doar fără ele." : {
-      "comment" : "Explains that removing the lines keeps the document."
-    },
-    "Actul stă la actele acestei persoane." : {
-      "comment" : "Capture review: a document filed under a person."
     },
     "Acum" : {
 
@@ -1476,18 +1467,6 @@
     "Ai nevoie de pașaport, bun de călătorit până te întorci." : {
       "comment" : "Trip region rule: outside the EU."
     },
-    "Ai o scadență %@" : {
-      "comment" : "Generic reminder title: due in a duration such as 'în 7 zile' or 'într-o lună'."
-    },
-    "Ai o scadență azi" : {
-      "comment" : "Generic reminder title"
-    },
-    "Ai o scadență depășită" : {
-      "comment" : "Generic reminder title"
-    },
-    "Ai o scadență mâine" : {
-      "comment" : "Generic reminder title"
-    },
     "Ai primit o factură pe mail sau WhatsApp? Trimite-o direct aici." : {
 
     },
@@ -1502,6 +1481,18 @@
     },
     "Ai un card nou" : {
       "comment" : "A closed European health card deadline: the card that offers adding the new one."
+    },
+    "Ai un termen %@" : {
+      "comment" : "Generic reminder title: due in a duration such as 'în 7 zile' or 'într-o lună'."
+    },
+    "Ai un termen azi" : {
+      "comment" : "Generic reminder title"
+    },
+    "Ai un termen depășit" : {
+      "comment" : "Generic reminder title"
+    },
+    "Ai un termen mâine" : {
+      "comment" : "Generic reminder title"
     },
     "Ai văzut cum ajunge aici o factură. Datele de pe ea nu sunt reale." : {
 
@@ -1560,7 +1551,7 @@
     "Alege cine pleacă, cu ce mașină sau cu ce animal, și îți spun ce e pregătit." : {
 
     },
-    "Alege data la care e scadentă prima dată." : {
+    "Alege data primului termen." : {
 
     },
     "Alege din Contacte" : {
@@ -1602,7 +1593,7 @@
     "Alegi ce act e și până când e valabil." : {
 
     },
-    "Alegi ce fel de secțiune, apoi pun actul acolo." : {
+    "Alegi ce fel de secțiune, apoi pun documentul acolo." : {
       "comment" : "Place picker: under „Secțiune nouă”."
     },
     "Alegi ce pagini trimiți, ca poze sau ca PDF." : {
@@ -1628,6 +1619,9 @@
     },
     "Alt document" : {
 
+    },
+    "Alt obiect" : {
+      "comment" : "Add-section option: a thing that has no category of its own."
     },
     "Alt termen" : {
       "comment" : "Adds an obligation that isn't in the suggestions."
@@ -1830,7 +1824,7 @@
     "Am înțeles" : {
       "comment" : "Button that closes an error alert.\nPuts away a repair finding that only says what to do."
     },
-    "Am păstrat doar actul, fără ce e în jur." : {
+    "Am păstrat doar documentul, fără ce e în jur." : {
       "comment" : "The review: the document was cut out of its photo."
     },
     "Am păstrat nota." : {
@@ -1899,6 +1893,9 @@
     "Am șters termenul „%@”." : {
       "comment" : "Toast after deleting a deadline."
     },
+    "Am trecut %@ de pe ea. Verifică înainte să salvezi." : {
+      "comment" : "Visit flow: what was filled in from the paper, e.g. „data și suma”."
+    },
     "Am trecut %lld rânduri de pe factură. Verifică-le." : {
       "comment" : "Visit flow: rows written from a scanned invoice.",
       "localizations" : {
@@ -1956,9 +1953,6 @@
           }
         }
       }
-    },
-    "Am trecut data, suma și numele de pe ea. Verifică-le." : {
-      "comment" : "Visit flow: the paper's day, total and issuer were filled in."
     },
     "Am trecut mai sus data la care expiră. Verifică-o." : {
 
@@ -2125,7 +2119,7 @@
     "Arată %@" : {
       "comment" : "Face ID reason when showing a secret code."
     },
-    "Arată doar actul, fără ce e în jur" : {
+    "Arată doar documentul, fără ce e în jur" : {
       "comment" : "Shows the document cut out of its photo again."
     },
     "Arată fiecare separat" : {
@@ -2134,7 +2128,7 @@
     "Arată în căutarea iPhone-ului" : {
       "comment" : "Setting: show sections, deadlines and documents in Spotlight."
     },
-    "Arată ziua de pe act, ca s-o poți schimba." : {
+    "Arată ziua de pe document, ca s-o poți schimba." : {
       "comment" : "VoiceOver hint of the review's reminder line."
     },
     "Arată-mi" : {
@@ -2341,7 +2335,7 @@
       "comment" : "One bike, as a new section's name when none is typed."
     },
     "Bicicletă" : {
-
+      "comment" : "Add-section option."
     },
     "Bicicleta de oraș" : {
       "comment" : "Example name of a new bike, in „Cum vrei să apară în dosar, de exemplu …”."
@@ -2361,10 +2355,10 @@
     "Bifează ce s-a lucrat sau scrie cât a costat ca să poți salva." : {
       "comment" : "Job form: what saving needs."
     },
-    "Bifează din widget o obligație din Dosar cu Șină." : {
+    "Bifează din widget un termen din Dosar cu Șină." : {
 
     },
-    "Bifează o obligație. Dacă se repetă, trece la următoarea scadență." : {
+    "Bifează un termen. Dacă se repetă, trece la următorul." : {
 
     },
     "Bifez singur ce scrie pe ea și trec sumele." : {
@@ -2662,6 +2656,9 @@
     "Câte un rând pentru fiecare lucrare. Prețul e opțional." : {
       "comment" : "Visit form: rows of what was done, with no checklist."
     },
+    "Câte un rând pentru fiecare lucru făcut. Prețul e opțional." : {
+      "comment" : "Visit form: rows of what was done, with no checklist."
+    },
     "Câte un rând pentru fiecare tratament. Prețul e opțional." : {
       "comment" : "Vet visit form: rows, with no checklist."
     },
@@ -2793,7 +2790,7 @@
     "Ce ai plătit" : {
       "comment" : "Istoric record: what a tax or a declaration paid for."
     },
-    "Ce ai schimbat nu se salvează. Actul rămâne în De verificat." : {
+    "Ce ai schimbat nu se salvează. Documentul rămâne în De verificat." : {
       "comment" : "Closing the review of something shared, after changes."
     },
     "Ce ai trimis din alte aplicații." : {
@@ -2819,6 +2816,9 @@
     },
     "Ce cuprinde" : {
       "comment" : "Istoric record: the lines of a bill or a payment."
+    },
+    "Ce document e" : {
+      "comment" : "Capture review: the menu of document kinds."
     },
     "Ce e marcat „Exemplu” e doar ca să vezi cum arată un dosar plin." : {
       "comment" : "Note at the end of the binder while examples are in it."
@@ -2889,9 +2889,6 @@
     "Ce s-a verificat" : {
       "comment" : "Istoric record: what an inspection checked."
     },
-    "Ce scadențe am" : {
-
-    },
     "Ce schimbi rămâne pe telefon și pleacă singur când revine internetul." : {
       "comment" : "iCloud sync status detail: no network; what happens."
     },
@@ -2902,6 +2899,9 @@
 
     },
     "Ce termen" : {
+
+    },
+    "Ce termene am" : {
 
     },
     "Ce ține de altă secțiune" : {
@@ -3007,7 +3007,7 @@
       "comment" : "A citizenship: China."
     },
     "Chiriaș" : {
-
+      "comment" : "Add-section option."
     },
     "Chiriaș exemplu" : {
 
@@ -3069,9 +3069,6 @@
     "Citesc %@…" : {
       "comment" : "Am rezolvat: the paper's photo is being read. The argument is the paper's name, e.g. „raportul ITP”."
     },
-    "Citesc actul" : {
-
-    },
     "Citesc actul…" : {
 
     },
@@ -3080,6 +3077,12 @@
     },
     "Citesc din nou poza actului, pe telefon, și completez mai jos ce găsesc." : {
       "comment" : "VoiceOver hint of reading a document again."
+    },
+    "Citesc documentul" : {
+
+    },
+    "Citesc documentul…" : {
+
     },
     "Citesc factura…" : {
 
@@ -3183,10 +3186,10 @@
     "Codul a fost scris pe alt dispozitiv. Deschide aplicația pe el, cu Parole în iCloud pornit, apoi încearcă din nou aici peste câteva minute." : {
       "comment" : "A sealed code from another device that hasn't shared its key yet; iCloud Keychain works on this one."
     },
-    "Codul de jos al actului arată: %@" : {
+    "Codul de jos al documentului arată: %@" : {
       "comment" : "The kind the checked machine-readable zone shows."
     },
-    "Codul de jos al actului nu s-a citit sigur." : {
+    "Codul de jos al documentului nu s-a citit sigur." : {
       "comment" : "Capture review: the machine-readable zone didn't read for sure."
     },
     "Codul nu s-a putut păstra în siguranță pe acest telefon. Încearcă din nou peste puțin timp." : {
@@ -3222,7 +3225,7 @@
     "Completează acest câmp." : {
       "comment" : "Validation message under a required field that was left empty."
     },
-    "Completezi ce trebuie, apoi pun actul acolo." : {
+    "Completezi ce trebuie, apoi pun documentul acolo." : {
       "comment" : "Place picker: a new section is made first."
     },
     "Confirmă că ești tu ca să bifezi termenul protejat." : {
@@ -3433,6 +3436,9 @@
     "Cu %@ mai puțin decât cea dinainte." : {
       "comment" : "A bill compared with the one before it."
     },
+    "Cu cât înainte" : {
+      "comment" : "VoiceOver: the label of the stepper that sets how many days before the due day a reminder comes; its value says it."
+    },
     "Cu cine ai semnat-o" : {
       "comment" : "Istoric record: who a renewed paper named by a feminine noun was signed with."
     },
@@ -3592,6 +3598,9 @@
     "Dacă uiți parola, copia nu mai poate fi deschisă de nimeni. Pune-o undeva sigur, de exemplu în Parole." : {
       "comment" : "Warning: a forgotten backup password can't be recovered."
     },
+    "data" : {
+      "comment" : "Visit flow: the paper's day, in a list of what was read off it."
+    },
     "Data" : {
 
     },
@@ -3604,7 +3613,7 @@
     "Data cumpărării" : {
 
     },
-    "Data de pe act" : {
+    "Data de pe document" : {
       "comment" : "The date printed on a paper."
     },
     "Data emiterii" : {
@@ -3726,8 +3735,8 @@
     "De la cel care a lucrat." : {
       "comment" : "Am rezolvat: which invoice, for a service of one's own."
     },
-    "De la data la care l-ai făcut" : {
-      "comment" : "Repeat: the next due day counts from the day the deadline was done."
+    "De la data rezolvării" : {
+      "comment" : "Repeat: the next due day counts from the day the deadline was done. Said of no noun, so it fits any deadline (a rovinietă bought, an ITP done)."
     },
     "De la data termenului" : {
       "comment" : "Repeat: the next due day counts from this one's due day."
@@ -3828,6 +3837,9 @@
     "Deschide ce ai trimis" : {
       "comment" : "Face ID reason: open something shared that belongs to a locked section."
     },
+    "Deschide Configurări" : {
+      "comment" : "Opens the system notification settings."
+    },
     "Deschide cu %@" : {
 
     },
@@ -3876,7 +3888,7 @@
     "Deschide secțiunea protejată ca să bifezi termenul." : {
 
     },
-    "Deschide secțiunea protejată ca să salvez actul." : {
+    "Deschide secțiunea protejată ca să salvez documentul." : {
 
     },
     "Deschide secțiunea protejată." : {
@@ -3887,9 +3899,6 @@
     },
     "Deschide Setările" : {
 
-    },
-    "Deschide Setările telefonului" : {
-      "comment" : "Opens the system notification settings."
     },
     "Deschide sugestiile. Alegi tu ce se schimbă." : {
       "comment" : "VoiceOver hint of the suggestions note in Urmează."
@@ -3930,14 +3939,14 @@
     "Din %@" : {
       "comment" : "De verificat: the app a file came from, e.g. „Din WhatsApp”.\nDocument row: the date on the document."
     },
-    "Din act: „%@”" : {
-      "comment" : "Capture review: the bit of the page a value was read from."
-    },
     "Din agenda telefonului (opțional)" : {
 
     },
     "Din care arhivate" : {
       "comment" : "Storage row: archived documents."
+    },
+    "Din document: „%@”" : {
+      "comment" : "Capture review: the bit of the page a value was read from."
     },
     "Din față, din spate și din lateral, înainte să le mutați." : {
       "comment" : "Claim photo: angles of the cars."
@@ -3969,13 +3978,13 @@
     "Distribuție (curea sau lanț)" : {
 
     },
-    "Doar actul" : {
+    "Doar documentul" : {
       "comment" : "The review: keeps only the document cut out of its photo."
     },
     "Doar fața" : {
       "comment" : "Share a two-sided document: only the front."
     },
-    "Doar păstrez actul" : {
+    "Doar păstrez documentul" : {
       "comment" : "Capture review: the document goes to no section."
     },
     "Doar pe telefon" : {
@@ -4002,11 +4011,17 @@
     "Document" : {
 
     },
+    "Document protejat" : {
+      "comment" : "A row in place of something behind Face ID that is a document (a person's ID card, something shared into De verificat); nothing about it shows until unlock."
+    },
     "Documente" : {
       "comment" : "Header: scanned documents.\nSearch group: documents.\nStorage row: all documents."
     },
     "Documente reînnoite" : {
       "comment" : "Repair group: deadlines that close when a document is replaced with a new one, kept repeating by an earlier version."
+    },
+    "Documentele stau grupate pe persoane." : {
+      "comment" : "Place picker: under „Persoană nouă”."
     },
     "documentul" : {
 
@@ -4014,8 +4029,17 @@
     "Documentul e păstrat, dar nu îl pot arăta aici." : {
 
     },
+    "Documentul e salvat." : {
+
+    },
     "Documentul PDF" : {
       "comment" : "VoiceOver label of a PDF preview."
+    },
+    "Documentul se salvează la fel, doar fără ele." : {
+      "comment" : "Explains that removing the lines keeps the document."
+    },
+    "Documentul stă la documentele acestei persoane." : {
+      "comment" : "Capture review: a document filed under a person."
     },
     "Dosar" : {
       "comment" : "Tab: the binder.\nTitle of the home tab."
@@ -4059,7 +4083,7 @@
     "Dosarul tău a ajuns" : {
 
     },
-    "Dosarul tău cu acte, care te anunță din timp" : {
+    "Dosarul tău cu documente, care te anunță din timp" : {
 
     },
     "Dosarul tău poate fi pe drum" : {
@@ -4246,6 +4270,9 @@
     "Espressoare" : {
       "comment" : "Category name"
     },
+    "Espressor" : {
+      "comment" : "Add-section option."
+    },
     "Espressorul" : {
       "comment" : "One espresso machine, as a new section's name when none is typed."
     },
@@ -4266,9 +4293,6 @@
     },
     "Eu" : {
       "comment" : "Example household member"
-    },
-    "Eu văd ce document e. Pentru un act care expiră, îți amintesc la timp." : {
-      "comment" : "Under „Fotografiază” on a person's „Adaugă un document”: capture tells an act with an expiry from another paper."
     },
     "Exemple" : {
       "comment" : "Settings section."
@@ -4307,7 +4331,7 @@
       "comment" : "Badge: a document expires tomorrow."
     },
     "Expiră pe" : {
-
+      "comment" : "Caption over the day a paper stops being valid, still to come."
     },
     "Expiră pe %@" : {
       "comment" : "A passport's expiry, on its page\nDocument row: the day a paper stops being valid, still to come."
@@ -4514,9 +4538,6 @@
         }
       }
     },
-    "Fără activ" : {
-      "comment" : "Group for obligations not tied to an asset"
-    },
     "Fără alergii cunoscute" : {
 
     },
@@ -4532,7 +4553,7 @@
     "Fără contor, de obicei o dată pe an: un pian, o centrală." : {
       "comment" : "Service choice explained: by time."
     },
-    "Fără ele nu îți pot aminti de ITP, RCA sau acte. Le pornești din Setările telefonului." : {
+    "Fără ele nu îți pot aminti de ITP, RCA sau acte. Le pornești din Configurări, la Notificări." : {
       "comment" : "Explains why notifications matter."
     },
     "Fără ITP valabil, înmatricularea se suspendă." : {
@@ -4545,7 +4566,7 @@
       "comment" : "Footnote when a document has no expiry date."
     },
     "Fără secțiune" : {
-      "comment" : "Agenda group of people not tied to a section."
+      "comment" : "Agenda group of people not tied to a section.\nGroup for obligations not tied to an asset"
     },
     "Fără secțiune; îl găsești în Caută." : {
       "comment" : "Place picker: the document goes to no section."
@@ -4610,6 +4631,9 @@
     "Fișa medicală" : {
       "comment" : "One person's health section, as a new section's name when none is typed."
     },
+    "Fișă medicală" : {
+      "comment" : "Add-section option."
+    },
     "Fișă veterinar" : {
 
     },
@@ -4628,6 +4652,9 @@
     "Fișierul se șterge de pe acest telefon. Dacă vrei doar să nu-l mai vezi, mută-l în arhivă." : {
       "comment" : "Delete confirmation message for a document."
     },
+    "Folosește" : {
+      "comment" : "Applies a value another reader read instead of the one shown. No pronoun: the value may be a date, a number or a name."
+    },
     "Folosește acest model" : {
       "comment" : "Uses the typed AI model name."
     },
@@ -4637,9 +4664,6 @@
     "Folosește poza întreagă" : {
       "comment" : "Shows the whole photo instead of the document cut out of it.\nThe review: keeps the whole photo instead of the cut-out."
     },
-    "Folosește-l" : {
-      "comment" : "Applies a value another reader read instead of the one shown."
-    },
     "Folosește: %@" : {
       "comment" : "VoiceOver label of the button that applies another reader's value."
     },
@@ -4648,9 +4672,6 @@
     },
     "Fotografiază" : {
 
-    },
-    "Fotografiază actul" : {
-      "comment" : "Photo source: camera."
     },
     "Fotografiază actul nou" : {
 
@@ -4669,6 +4690,9 @@
     },
     "Fotografiază contractul nou" : {
       "comment" : "Am rezolvat: photographs a renewed contract."
+    },
+    "Fotografiază documentul" : {
+      "comment" : "Photo source: camera."
     },
     "Fotografiază dovada" : {
 
@@ -4703,7 +4727,7 @@
     "Fotografiază spatele" : {
       "comment" : "Back source: camera.\nCapture review: takes a photo of the card's back."
     },
-    "Fotografiază un act" : {
+    "Fotografiază un document" : {
 
     },
     "Fotografiezi actul, iar eu completez ce act e, datele și când expiră." : {
@@ -4772,13 +4796,10 @@
     "Gata" : {
 
     },
-    "Gata, am bifat-o." : {
+    "Gata, l-am bifat." : {
 
     },
-    "Gata. Următoarea scadență e pe %@." : {
-
-    },
-    "Gaz" : {
+    "Gata. Următorul termen e pe %@." : {
 
     },
     "Gaze" : {
@@ -4960,7 +4981,7 @@
     "În afara UE" : {
       "comment" : "Trip region: outside the EU."
     },
-    "În codul de jos al actului scrie: %@" : {
+    "În codul de jos al documentului scrie: %@" : {
       "comment" : "What the machine-readable zone says."
     },
     "În curând" : {
@@ -5086,7 +5107,7 @@
     "Încearcă din nou. Dacă nu merge, verifică dacă telefonul mai are spațiu liber." : {
       "comment" : "A document's share couldn't be prepared."
     },
-    "Încearcă din nou. Dacă tot nu merge, fă o poză mai clară, cu actul întins și fără umbre." : {
+    "Încearcă din nou. Dacă tot nu merge, fă o poză mai clară, cu documentul întins și fără umbre." : {
 
     },
     "Încearcă din nou. Dacă tot nu merge, poți porni cu un dosar gol și pune înapoi o copie de siguranță din Setări." : {
@@ -5095,7 +5116,7 @@
     "Încearcă din nou. Poți începe și gol; cât dosarul e gol, exemplele se încarcă de acolo." : {
 
     },
-    "Încearcă o poză mai clară, cu actul întins și fără umbre." : {
+    "Încearcă o poză mai clară, cu documentul întins și fără umbre." : {
 
     },
     "Încearcă o poză mai clară, de aproape și fără umbre." : {
@@ -5297,7 +5318,7 @@
     "ITP-ul e valabil până pe %@." : {
       "comment" : "Capture review: the last day an inspection report keeps the car's ITP valid."
     },
-    "ITP-ul și RCA-ul mașinii, pașaportul, verificarea centralei, vaccinul pisicii. Le ții aici, cu actele lor, și îți spun din timp ce urmează." : {
+    "ITP-ul și RCA-ul mașinii, pașaportul, verificarea centralei, vaccinul pisicii. Le ții aici, cu documentele lor, și îți spun din timp ce urmează." : {
 
     },
     "ITP, o asigurare, un vaccin, o plată." : {
@@ -5943,7 +5964,7 @@
     "Niciun document. Scanează un act și îl găsești aici." : {
       "comment" : "Empty Acte pocket of a category whose sections keep no paper of their own kind."
     },
-    "Niciun produs. Adaugă aragazul sau centrala și ții minte garanția." : {
+    "Niciun produs. Adaugă aragazul sau centrala și țin minte garanția." : {
       "comment" : "Empty Produse pocket."
     },
     "Niciun termen. Adaugă unul și îți amintesc la timp." : {
@@ -6141,8 +6162,11 @@
     "Nu am găsit o dată nouă pe ele. Le păstrez oricum." : {
       "comment" : "Am rezolvat: no new date on papers named by a plural noun; their photo is kept."
     },
-    "Nu am găsit pe act:" : {
+    "Nu am găsit pe document:" : {
       "comment" : "Capture review: the fields the kind usually carries, not read."
+    },
+    "Nu am găsit pe ea %@. Completează de mână." : {
+      "comment" : "Visit flow: the paper was kept but none of its day, total or issuer was read, e.g. „data, suma sau numele”."
     },
     "Nu am găsit rânduri de bifat. Bifează de mână." : {
 
@@ -6161,6 +6185,9 @@
     },
     "Nu am putut citi ce categorii ai protejat" : {
       "comment" : "Settings notice: this device's category locks couldn't be read."
+    },
+    "Nu am putut citi documentul" : {
+
     },
     "Nu am putut citi spatele" : {
       "comment" : "Capture review: the card's back couldn't be read."
@@ -6303,7 +6330,7 @@
     "Nu sunt în dosar. Adaugă unul dintre ele cu o poză și verific până când e valabil." : {
       "comment" : "Trip check: neither an ID card nor a passport in the binder, for an EU citizen."
     },
-    "Nu sunt sigur ce am citit. %@ poate citi actul mai bine, cu cheia ta. Fără un da, poza rămâne pe telefon." : {
+    "Nu sunt sigur ce am citit. %@ poate citi documentul mai bine, cu cheia ta. Fără un da, poza rămâne pe telefon." : {
       "comment" : "Capture review: why the photo would be sent, and that it stays without a yes. The argument is the AI provider's name."
     },
     "Nu te anunț despre ele până atunci." : {
@@ -6399,14 +6426,17 @@
     "Nume, număr, piesă, meseriaș…" : {
       "comment" : "Search field prompt."
     },
+    "numele" : {
+      "comment" : "Visit flow: who issued the paper, in a list of what was read off it."
+    },
     "Numele abonamentului" : {
       "comment" : "Capture review: the new subscription's name field."
     },
-    "Numele actului" : {
-      "comment" : "Capture review: the document's name field."
-    },
     "Numele de familie întâi, ca în acte." : {
 
+    },
+    "Numele documentului" : {
+      "comment" : "Capture review: the document's name field."
     },
     "Numele locuinței" : {
       "comment" : "Capture review: the new home's name field."
@@ -6453,7 +6483,7 @@
     "O mașină" : {
       "comment" : "„Ține de…” choice of a category of one's own: its sections belong to a car."
     },
-    "O mașină, o casă, un animal, un act…" : {
+    "O mașină, o casă, un animal, un pașaport…" : {
 
     },
     "O parte din copia de siguranță e deteriorată. Fă copia din nou și încearcă iar." : {
@@ -6486,15 +6516,6 @@
     "O programare la serviciul de pașapoarte" : {
 
     },
-    "O scadență" : {
-      "comment" : "Box status title in a locked section"
-    },
-    "o scadență protejată" : {
-
-    },
-    "O scadență protejată" : {
-
-    },
     "O secțiune" : {
       "comment" : "„Ține de…” choice for a part that holds no sections."
     },
@@ -6516,15 +6537,6 @@
     "Obiectul" : {
       "comment" : "One thing in Altele, as a new section's name when none is typed."
     },
-    "Obligația e pusă pe pauză sau încheiată. Reactiveaz-o mai întâi." : {
-
-    },
-    "Obligația nu mai e activă. Poate ai bifat-o deja." : {
-
-    },
-    "Obligație" : {
-
-    },
     "Obligatorie la cel mult 2 ani, făcută de o firmă autorizată ISCIR." : {
 
     },
@@ -6534,16 +6546,13 @@
     "Obligatoriu și cerut la trecerea graniței." : {
 
     },
-    "OK" : {
-
-    },
     "Oprită" : {
       "comment" : "Settings row: no lock is on."
     },
     "Oprită, citesc pe telefon" : {
       "comment" : "Settings row: no AI service is set up; documents are read on the phone."
     },
-    "Oprite din Setările telefonului" : {
+    "Oprite din Configurări" : {
       "comment" : "Settings row: notifications are off in the phone's settings."
     },
     "Oprite pe acest telefon" : {
@@ -6627,7 +6636,7 @@
     "Ore de motor" : {
       "comment" : "Counter field of a category of one's own, in engine hours."
     },
-    "Orice altceva, cu scadențele tale." : {
+    "Orice altceva, cu termenele tale." : {
       "comment" : "Category summary"
     },
     "Orice vrei să ții minte" : {
@@ -6676,6 +6685,9 @@
     },
     "până la %@" : {
       "comment" : "Child summary: valid or contracted until a date."
+    },
+    "Până pe %@" : {
+      "comment" : "Reminder body: due date"
     },
     "Paraziți" : {
 
@@ -6780,10 +6792,10 @@
     "Păstrează protecțiile" : {
       "comment" : "Keeps every section locked after the section locks couldn't be read, so each can then be turned off with Face ID."
     },
-    "Păstrează și poza actului" : {
+    "Păstrează și poza cardului" : {
 
     },
-    "Păstrează și poza cardului" : {
+    "Păstrează și poza documentului" : {
 
     },
     "Păstrez doar banca, tipul cardului, ultimele 4 cifre și data expirării. Poza și numărul întreg nu se păstrează." : {
@@ -6896,7 +6908,7 @@
     "Pe rețeaua de acasă merge și http://, de exemplu un server LM Studio." : {
 
     },
-    "Pe spatele actului scrie: %@" : {
+    "Pe spatele documentului scrie: %@" : {
       "comment" : "What the machine-readable zone on the back of the card says."
     },
     "Pe telefon am citit: %@" : {
@@ -7046,7 +7058,7 @@
       "comment" : "One plant, as a new section's name when none is typed."
     },
     "Plantă" : {
-
+      "comment" : "Add-section option."
     },
     "Plante" : {
       "comment" : "Category name\nSection pocket"
@@ -7158,7 +7170,7 @@
     "Pornite, la %@" : {
       "comment" : "Settings row: notifications are on, and the usual reminder time."
     },
-    "Pot citi poze, PDF-uri și text. Alege actul ca poză sau PDF." : {
+    "Pot citi poze, PDF-uri și text. Alege documentul ca poză sau PDF." : {
 
     },
     "Poți adăuga" : {
@@ -7179,12 +7191,6 @@
     "Poza actului nu mai e aici. Adaug-o din nou, apoi salvează." : {
 
     },
-    "Poza actului nu se mai poate citi. Adaugă o poză nouă de pe pagina actului." : {
-      "comment" : "Reading a document again found no page to read."
-    },
-    "Poza actului se trimite la %@, cu cheia ta." : {
-      "comment" : "Capture review: a personal document's photo is sent to the AI provider. The argument is the provider's name."
-    },
     "Poza actului, %@" : {
       "comment" : "VoiceOver label of a document's front or back picture."
     },
@@ -7194,17 +7200,26 @@
     "Poza arată numărul întreg al cardului" : {
 
     },
-    "Poza arată numărul întreg al cardului. O păstrez în dosar, protejată ca restul actelor." : {
+    "Poza arată numărul întreg al cardului. O păstrez în dosar, protejată ca restul documentelor." : {
 
     },
-    "Poza arată numărul întreg al unui card, așa că nu o păstrez. Păstrez ce am citit pe act, cu numărul cardului ascuns." : {
+    "Poza arată numărul întreg al unui card, așa că nu o păstrez. Păstrez ce am citit pe document, cu numărul cardului ascuns." : {
 
     },
-    "Poza arată numărul întreg al unui card. O păstrez în dosar, protejată ca restul actelor." : {
+    "Poza arată numărul întreg al unui card. O păstrez în dosar, protejată ca restul documentelor." : {
 
     },
     "Poza cardului" : {
 
+    },
+    "Poza documentului" : {
+
+    },
+    "Poza documentului nu se mai poate citi. Adaugă o poză nouă de pe pagina documentului." : {
+      "comment" : "Reading a document again found no page to read."
+    },
+    "Poza documentului se trimite la %@, cu cheia ta." : {
+      "comment" : "Capture review: a personal document's photo is sent to the AI provider. The argument is the provider's name."
     },
     "Poza e greu de citit" : {
       "comment" : "Capture review: little text was read."
@@ -7230,11 +7245,11 @@
     "Poze mai vechi" : {
       "comment" : "Header of a document's older pictures."
     },
+    "Poze și PDF-uri cu acte, contracte și garanții." : {
+      "comment" : "Explains the documents switch."
+    },
     "Poze și PDF-uri cu actele și facturile." : {
       "comment" : "Pocket explanation."
-    },
-    "Poze și PDF-uri: acte, contracte, garanții." : {
-      "comment" : "Explains the documents switch."
     },
     "Pregătesc actul…" : {
 
@@ -7332,7 +7347,7 @@
     "Pune aici ce cauți des, un număr sau un cod. Un cod sau o parolă rămân ascunse, ca un PIN." : {
       "comment" : "Empty Date importante pocket, the same for every category."
     },
-    "Pune aici mașina, casa, actele sau pisica. Îți spun din timp când expiră ceva și ții minte cine a reparat ce." : {
+    "Pune aici mașina, casa, actele sau pisica. Îți spun din timp când expiră ceva și țin minte cine a reparat ce." : {
       "comment" : "Empty home message."
     },
     "Pune casetele în ordinea de la început" : {
@@ -7409,6 +7424,9 @@
     },
     "Recomandat (%@)" : {
       "comment" : "AI setting: the recommended model is used. The argument is its name."
+    },
+    "Recunosc ce document e. Pentru un act care expiră, îți amintesc la timp." : {
+      "comment" : "Under „Fotografiază” on a person's „Adaugă un document”: capture tells an act with an expiry from another paper."
     },
     "Regula nouă se aplică după ce îl bifezi." : {
       "comment" : "Under the repeat control in a deadline's edit sheet: the new rule counts from the next completion."
@@ -7628,23 +7646,11 @@
     "Sau dovada plății din aplicația băncii." : {
 
     },
-    "Sau o dată pe an, ce vine întâi." : {
+    "Sau o dată pe an, ce vine mai întâi." : {
 
     },
     "Sau pagina din carnetul de vaccinări." : {
       "comment" : "Am rezolvat: which paper, for a person's vaccine."
-    },
-    "Scadent pe %@" : {
-      "comment" : "Reminder body: due date"
-    },
-    "Scadență" : {
-      "comment" : "Notification preview placeholder when previews are hidden"
-    },
-    "Scadență protejată" : {
-      "comment" : "Widget title for a protected category"
-    },
-    "Scadențe" : {
-
     },
     "Scanează un document" : {
       "comment" : "Adds a photo of another paper on a person's page, beside their own documents, in the two-button layout kept switched off."
@@ -7766,7 +7772,7 @@
     "Scrie un număr întreg, fără zecimale." : {
       "comment" : "Number field error: a count with decimals."
     },
-    "Scrie un număr întreg, mai mare ca zero." : {
+    "Scrie un număr întreg, mai mare decât zero." : {
 
     },
     "Scrie un nume pentru secțiunea nouă." : {
@@ -7871,7 +7877,7 @@
     "Se termină perioada minimă" : {
 
     },
-    "Se vede doar actul" : {
+    "Se vede doar documentul" : {
       "comment" : "Toast after choosing the document cut out of its photo."
     },
     "Se vede poza întreagă" : {
@@ -8045,10 +8051,10 @@
     "Specie" : {
 
     },
-    "Spune ce obligații au nevoie de atenție acum." : {
+    "Spune ce poți face cu el." : {
 
     },
-    "Spune ce poți face cu el." : {
+    "Spune ce termene au nevoie de atenție acum." : {
 
     },
     "Spune-mi ce cetățenie are, ca să știu ce acte îi trebuie." : {
@@ -8161,6 +8167,9 @@
     },
     "Sugestii pentru „%@”. Le poți schimba oricând." : {
       "comment" : "Footer of suggested obligations."
+    },
+    "suma" : {
+      "comment" : "Visit flow: the paper's total, in a list of what was read off it."
     },
     "Sumă asigurată" : {
 
@@ -8291,7 +8300,10 @@
       "comment" : "Save failed because the phone is full.\nThe database can't be opened because the phone is full."
     },
     "Termen" : {
-
+      "comment" : "Notification preview placeholder when previews are hidden"
+    },
+    "Termen protejat" : {
+      "comment" : "Widget title for a protected category"
     },
     "Termene" : {
       "comment" : "Header of the obligations list.\nSearch group: obligations."
@@ -8327,6 +8339,12 @@
 
     },
     "Termenul e într-o categorie protejată. Deschide-l în Dosar cu Șină și confirmă cu Face ID ca să-l bifezi." : {
+
+    },
+    "Termenul e pus pe pauză sau încheiat. Pornește-l din nou mai întâi." : {
+
+    },
+    "Termenul nu mai e activ. Poate l-ai bifat deja." : {
 
     },
     "Termenul nu mai există" : {
@@ -8605,10 +8623,7 @@
     "Ultimul index" : {
       "comment" : "Hero of a gas, electricity or water subscription: the meter's last index."
     },
-    "Un act" : {
-
-    },
-    "Un act (buletin, pașaport, permis)" : {
+    "Un act (carte de identitate, pașaport, permis)" : {
       "comment" : "Add-section option."
     },
     "Un act e bun de călătorit încă %@" : {
@@ -8619,6 +8634,9 @@
     },
     "Un control, o durere, o trimitere…" : {
       "comment" : "Example of what a doctor's visit was for."
+    },
+    "Un document" : {
+
     },
     "Un document e prea mare pentru o copie. Scoate-l din dosar și păstrează-l în altă parte, apoi încearcă din nou." : {
       "comment" : "Backup: one file is too large for a backup."
@@ -8645,6 +8663,12 @@
 
     },
     "Un termen" : {
+      "comment" : "Box status title in a locked section"
+    },
+    "un termen protejat" : {
+
+    },
+    "Un termen protejat" : {
 
     },
     "Un text" : {
@@ -8702,16 +8726,16 @@
 
     },
     "Următorul act care expiră" : {
-      "comment" : "Hero of a person, when the next document to expire is behind Face ID: the label above „Act protejat”."
+      "comment" : "Hero of a person, when the next document to expire is behind Face ID: the label above „Document protejat”."
     },
     "Următorul act care expiră: %@" : {
       "comment" : "Hero of a person: the next document to expire."
     },
-    "Următorul e la %@ după ce îl bifezi." : {
-      "comment" : "Repeat counted from the day it was done: the next one is this long after it is ticked off."
+    "Următorul e la %@ după rezolvare." : {
+      "comment" : "Repeat counted from the day it was done: the next one is this long after it is done."
     },
-    "Următorul e la %@ după termen, oricând îl bifezi." : {
-      "comment" : "Repeat counted from the due day: the next one is this long after the due day, whenever it is ticked off."
+    "Următorul e la %@ după termen, nu după rezolvare." : {
+      "comment" : "Repeat counted from the due day: the next one is this long after the due day, whenever it is done."
     },
     "Următorul termen: %@." : {
 
@@ -8758,9 +8782,6 @@
     },
     "Valabil până la" : {
       "comment" : "A paper's last valid day.\nHero: document valid until."
-    },
-    "Valabil până la %@" : {
-      "comment" : "Document row: valid until."
     },
     "Valabil până pe %@." : {
       "comment" : "Readiness: a deadline valid until a day."
@@ -8810,9 +8831,6 @@
     "Verifică" : {
       "comment" : "Capture review: a value or a place worth a look."
     },
-    "Verifică actul" : {
-      "comment" : "Capture review: the screen's title."
-    },
     "Verifică asigurarea de la %@: „%@” stă la PAD și nu-mi dau seama dacă e PAD sau asigurarea facultativă. E cea facultativă? O mut acolo, cu asigurătorul și telefonul de daune." : {
       "comment" : "Repair: a home's policy facts whose cover can't be told. Applying moves them to the optional policy; leaving keeps them as PAD's.",
       "localizations" : {
@@ -8826,6 +8844,9 @@
     },
     "Verifică ce e marcat." : {
       "comment" : "Capture review: some values are worth a look."
+    },
+    "Verifică documentul" : {
+      "comment" : "Capture review: the screen's title."
     },
     "Verifică numărul și datele" : {
       "comment" : "Capture review: the machine-readable zone didn't read for sure."
@@ -8865,11 +8886,11 @@
     "Vezi actul" : {
       "comment" : "Toast after closing a personal document's renewal: opens the document's page."
     },
-    "Vezi actul mare" : {
-      "comment" : "VoiceOver label of the document thumbnail in the review."
-    },
     "Vezi ce-ți trebuie" : {
 
+    },
+    "Vezi documentul mare" : {
+      "comment" : "VoiceOver label of the document thumbnail in the review."
     },
     "Vezi factura" : {
       "comment" : "Opens the bill or invoice already in the binder."
