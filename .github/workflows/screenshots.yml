@@ -47,14 +47,17 @@ jobs:
         env:
           SIMULATORS: ${{ inputs.simulators || 'iPhone 17 Pro Max,iPad Pro 13-inch (M5)' }}
           DERIVED_DATA_PATH: ${{ runner.temp }}/DerivedData
+          SCREENSHOT_LOGS: ${{ runner.temp }}/screenshot-logs
         run: |
           IFS=',' read -ra simulators <<< "$SIMULATORS"
           scripts/app-store-screenshots.sh "$RUNNER_TEMP/screenshots" "${simulators[@]}"
 
       - name: Frame them with their captions
+        if: always()
         run: swift marketing/frame-screenshots.swift "$RUNNER_TEMP/screenshots" "$RUNNER_TEMP/framed"
 
       - name: Keep the screenshots
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: screenshots
@@ -62,9 +65,19 @@ jobs:
           retention-days: 30
 
       - name: Keep the framed screenshots
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: framed-screenshots
           path: ${{ runner.temp }}/framed
           retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Keep the logs of a run that missed a screenshot
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshot-logs
+          path: ${{ runner.temp }}/screenshot-logs
+          retention-days: 7
           if-no-files-found: ignore

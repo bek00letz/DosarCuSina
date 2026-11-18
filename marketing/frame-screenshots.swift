@@ -61,14 +61,15 @@ func writePNG(_ image: CGImage, to url: URL) throws {
 
 /// A caption's lines, laid out centred in `width`; returns the height they take.
 func drawText(_ string: String, size: CGFloat, weight: NSFont.Weight, color: CGColor, tracking: CGFloat,
-              lineHeight: CGFloat, in context: CGContext, top: CGFloat, left: CGFloat, width: CGFloat, canvasHeight: CGFloat) -> CGFloat {
+              lineHeight: CGFloat, in context: CGContext, top: CGFloat, left: CGFloat, width: CGFloat, canvasHeight: CGFloat,
+              draws: Bool = true) -> CGFloat {
     let paragraph = NSMutableParagraphStyle()
     paragraph.alignment = .center
     paragraph.lineBreakMode = .byWordWrapping
     paragraph.minimumLineHeight = size * lineHeight
     paragraph.maximumLineHeight = size * lineHeight
-    // No widow: the last two words stay together.
-    var text = string
+    // No widow: the last two words stay together; nor a word cut at its hyphen („ce-ți”, „într-un”).
+    var text = string.replacingOccurrences(of: "-", with: "\u{2011}")
     if let last = text.range(of: " ", options: .backwards) { text.replaceSubrange(last, with: "\u{00A0}") }
     let attributed = NSAttributedString(string: text, attributes: [
         .font: NSFont.systemFont(ofSize: size, weight: weight),
@@ -79,6 +80,7 @@ func drawText(_ string: String, size: CGFloat, weight: NSFont.Weight, color: CGC
     let framesetter = CTFramesetterCreateWithAttributedString(attributed)
     let fit = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRange(), nil, CGSize(width: width, height: .greatestFiniteMagnitude), nil)
     let height = ceil(fit.height)
+    guard draws else { return height }
     let path = CGPath(rect: CGRect(x: left, y: canvasHeight - top - height, width: width, height: height), transform: nil)
     let frame = CTFramesetterCreateFrame(framesetter, CFRange(), path, nil)
     CTFrameDraw(frame, context)
@@ -96,18 +98,28 @@ func frame(_ screen: CGImage, caption: Caption, style: Style) -> CGImage? {
 
     // The caption: one type scale for every size, from the canvas's width.
     let unit = isPad ? width / 1.55 : width
+    // Every caption gets the room of two title lines and a subtitle, and sits in the middle of it,
+    // so the device stands at the same height on every screenshot of the set.
     let margin = width * 0.08
+    let textWidth = width - margin * 2
     let titleSize = (unit * 0.074).rounded()
     let subtitleSize = (unit * 0.040).rounded()
-    var top = height * (isPad ? 0.055 : 0.065)
-    top += drawText(caption.title, size: titleSize, weight: .bold, color: style.title, tracking: -0.008, lineHeight: 1.08,
-                    in: context, top: top, left: margin, width: width - margin * 2, canvasHeight: height)
-    if let subtitle = caption.subtitle {
-        top += subtitleSize * 0.55
-        top += drawText(subtitle, size: subtitleSize, weight: .regular, color: style.subtitle, tracking: 0, lineHeight: 1.2,
-                        in: context, top: top, left: margin, width: width - margin * 2, canvasHeight: height)
+    let gap = subtitleSize * 0.55
+    func captionHeight(draws: Bool, top: CGFloat) -> CGFloat {
+        var used = drawText(caption.title, size: titleSize, weight: .bold, color: style.title, tracking: -0.008, lineHeight: 1.08,
+                            in: context, top: top, left: margin, width: textWidth, canvasHeight: height, draws: draws)
+        if let subtitle = caption.subtitle {
+            used += gap
+            used += drawText(subtitle, size: subtitleSize, weight: .regular, color: style.subtitle, tracking: 0, lineHeight: 1.2,
+                             in: context, top: top + used, left: margin, width: textWidth, canvasHeight: height, draws: draws)
+        }
+        return used
     }
-    top += height * 0.04
+    let captionTop = height * (isPad ? 0.055 : 0.065)
+    let room = ceil(titleSize * 1.08 * 2) + gap + ceil(subtitleSize * 1.2)
+    let used = captionHeight(draws: false, top: 0)
+    _ = captionHeight(draws: true, top: captionTop + max(0, (room - used) / 2))
+    let top = captionTop + max(room, used) + height * 0.04
 
     // The device: the screen, its corners concentric with the bezel's.
     let deviceWidth = width * style.deviceWidth

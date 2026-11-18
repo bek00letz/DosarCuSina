@@ -7,6 +7,7 @@
 #
 # A simulator is named by its name ("iPhone 17 Pro Max") or its id. The pictures land in
 # <output folder>/<simulator name>/<order>-<scene>-<light|dark>.png, at the device's own pixels.
+# It fails when a device misses a screen; SCREENSHOT_LOGS names a folder for each pass's log.
 # The status bar reads 9:41 with a full battery; Face ID is enrolled so a locked section opens.
 #
 # It never downloads a runtime. On GitHub (CI=true) a simulator that isn't there yet is made
@@ -25,6 +26,9 @@ OUT="$(cd "$OUT" && pwd)"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/dosar-screenshots.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
 DERIVED="${DERIVED_DATA_PATH:-$WORK/DerivedData}"
+# Each pass's log, kept for a run that needs looking into (SCREENSHOT_LOGS, else beside the work).
+LOGS="${SCREENSHOT_LOGS:-$WORK/logs}"
+mkdir -p "$LOGS"
 # Every launch of this run shares one household, made at its first launch.
 RUN=$(date +%Y%m%d%H%M%S)
 
@@ -65,18 +69,24 @@ for wanted in "$@"; do
 
     for appearance in light dark; do
         xcrun simctl ui "$udid" appearance "$appearance"
-        results="$WORK/$udid-$appearance.xcresult"
-        TEST_RUNNER_SCREENSHOT_APPEARANCE=$appearance TEST_RUNNER_SCREENSHOT_RUN=$RUN xcodebuild test-without-building \
-            -xctestrun "$XCTESTRUN" -destination "id=$udid" -resultBundlePath "$results" \
-            -parallel-testing-enabled NO > "$WORK/$udid-$appearance.log" 2>&1 || {
-                grep -E "error:|failed|\*\* TEST" "$WORK/$udid-$appearance.log" | sort -u >&2 || true
-                echo "Some screenshots on $name ($appearance) failed; the rest are kept." >&2
-            }
-        attachments="$WORK/$udid-$appearance-attachments"
-        xcrun xcresulttool export attachments --path "$results" --output-path "$attachments" >/dev/null
         mkdir -p "$OUT/$name"
-        # The manifest names each picture as the test did ("01-binder-light").
-        python3 - "$attachments" "$OUT/$name" <<'PY'
+        # A test that fails is run again (a simulator under load can miss a launch); a pass that
+        # kept none of its pictures is run again whole, once.
+        for attempt in 1 2; do
+            results="$WORK/$udid-$appearance-$attempt.xcresult"
+            log="$LOGS/$name-$appearance-$attempt.log"
+            TEST_RUNNER_SCREENSHOT_APPEARANCE=$appearance TEST_RUNNER_SCREENSHOT_RUN=$RUN xcodebuild test-without-building \
+                -xctestrun "$XCTESTRUN" -destination "id=$udid" -resultBundlePath "$results" \
+                -parallel-testing-enabled NO -retry-tests-on-failure -test-iterations 3 > "$log" 2>&1 || {
+                    grep -E "error:|Test Case .* failed|\*\* TEST" "$log" | sort -u >&2 || true
+                    tail -n 15 "$log" >&2
+                    echo "Some screenshots on $name ($appearance) failed; the rest are kept. The log: $log" >&2
+                }
+            attachments="$WORK/$udid-$appearance-$attempt-attachments"
+            xcrun xcresulttool export attachments --path "$results" --output-path "$attachments" >/dev/null 2>&1 || true
+            [[ -f "$attachments/manifest.json" ]] || continue
+            # The manifest names each picture as the test did ("01-binder-light").
+            python3 - "$attachments" "$OUT/$name" <<'PY'
 import json, os, re, shutil, sys
 source, target = sys.argv[1], sys.argv[2]
 for test in json.load(open(os.path.join(source, "manifest.json"))):
@@ -86,8 +96,24 @@ for test in json.load(open(os.path.join(source, "manifest.json"))):
         if kept:
             shutil.copy(os.path.join(source, attachment["exportedFileName"]), os.path.join(target, kept.group(1) + ".png"))
 PY
+            ls "$OUT/$name"/*-"$appearance".png >/dev/null 2>&1 && break
+        done
     done
     xcrun simctl status_bar "$udid" clear
     xcrun simctl ui "$udid" appearance light
 done
 echo "The screenshots are in $OUT"
+
+# Every device has every screen, in light and in dark, or the run says which are missing.
+expected=$(grep -c '^    func test' "$REPO_ROOT/ios/DosarCuSinaScreenshots/AppStoreScreenshots.swift")
+missing=0
+for folder in "$OUT"/*/; do
+    for appearance in light dark; do
+        count=$(find "$folder" -name "*-$appearance.png" | wc -l | tr -d ' ')
+        if [[ $count -lt $expected ]]; then
+            echo "$(basename "$folder"), $appearance: $count of $expected screenshots." >&2
+            missing=1
+        fi
+    done
+done
+exit "$missing"
