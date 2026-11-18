@@ -324,6 +324,8 @@ struct LockedSectionsEverywhereTests {
     /// A person (open by default) with an identity card (Acte, locked by default) that expires on
     /// 5 December, and a deadline of the card's.
     private struct Holder {
+        /// Kept alive with the test: a context outlived by its container is torn down under it.
+        let container: ModelContainer
         let context: ModelContext
         let person: Asset
         let card: Asset
@@ -346,7 +348,7 @@ struct LockedSectionsEverywhereTests {
         let card = try actions.create(name: "Carte de identitate", template: documents, values: values, parent: person)
         try ObligationActions(context: context, calendar: calendar, now: { noon("2026-12-03") })
             .create(title: "Reînnoiește buletinul", kind: .legal, dueDay: CalendarDay("2026-12-05"), for: card)
-        return Holder(context: context, person: person, card: card, templates: try context.fetch(FetchDescriptor<CategoryTemplate>()))
+        return Holder(container: container, context: context, person: person, card: card, templates: try context.fetch(FetchDescriptor<CategoryTemplate>()))
     }
 
     private func template(_ key: String, in templates: [CategoryTemplate]) -> CategoryTemplate? {
