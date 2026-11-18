@@ -23,6 +23,7 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 ### Public pages say what is true now
 - **Decided:** the help page says the binder moves to a new phone with a backup, and that iCloud sync comes in a later version, with no date; the privacy policy says the App Store version doesn't sync yet. Both languages, dated 18 November 2026.
 - **Decided:** before a document goes to a compatible AI service, which has no terms to link, the review says its rules are its own and to read them (the words Settings already used, now one source, `AIKeyWording.ownServiceRules`); the privacy policy says which providers are linked and where.
+- **Decided (owner):** the help page, in both languages, gives a support e-mail address as a contact that needs no account, beside GitHub: the owner's chosen public address, kept once in `PublicPages.supportEmail` (`PublicPagesTests` checks the pages agree), with the same warning to send no photos of documents or personal details.
 - **Decided:** plain `http` to a home server (`NSAllowsLocalNetworking`) with the local network's words (`NSLocalNetworkUsageDescription`), checked by `ReleaseReadinessTests` and `scripts/bundle-check.sh`; the privacy policy lists the local network among what the app asks for.
 
 ### Onboarding and full pages
