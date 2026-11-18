@@ -24,6 +24,15 @@ public struct PlannedReminder: Hashable, Sendable, Identifiable {
     /// Face ID before it closes the deadline (`DeadlineChange`), „Amână” still works where it is
     /// (`ReminderActions.protectedCategoryIdentifier`).
     public var isProtected: Bool = false
+    /// Closing its deadline asks a new day or a new document (`CompletionShape.closesOutsideTheApp`):
+    /// „Am rezolvat” opens the app's „Am rezolvat” (`ReminderActions.inAppCategoryIdentifier`).
+    public var closesInTheApp: Bool = false
+    /// The app's badge once it fires, the count of the day it fires on (`BadgePlanner`); nil leaves
+    /// the badge as it is.
+    public var badge: Int?
+    /// False for a reminder that only sets the badge (`BadgePlanner`): no title, no sound, nothing
+    /// shown.
+    public var showsAlert: Bool = true
 
     public var id: String { identifier }
 }
@@ -304,6 +313,7 @@ public enum ReminderPlanner {
         let fingerprint = [
             String(Int(fireDate.timeIntervalSince1970)), obligation.dueDay.isoString, title, body, isTimeSensitive ? "ts" : "a",
             obligation.isSensitive ? "locked" : "open",
+            obligation.closesInTheApp ? "inApp" : "outside",
         ].joined(separator: "|")
         return PlannedReminder(
             identifier: identifier(obligationId: obligation.id, suffix: identifierSuffix),
@@ -315,7 +325,8 @@ public enum ReminderPlanner {
             isTimeSensitive: isTimeSensitive,
             fingerprint: fingerprint,
             deepLink: DeepLink.url(for: .obligation(obligation.id)),
-            isProtected: obligation.isSensitive
+            isProtected: obligation.isSensitive,
+            closesInTheApp: obligation.closesInTheApp
         )
     }
 

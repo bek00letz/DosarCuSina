@@ -9,8 +9,10 @@ import Foundation
 /// deadline (the deadline's page, Urmează) and by what saving keeps (`CompletionDraft`), so a
 /// value a kind doesn't ask is never written.
 ///
-/// Outside the app (a reminder's button, the widget's *Gata*, Siri) every kind completes in
-/// one step, as before (`IntentEngine`): nothing there can ask.
+/// Outside the app (a reminder's button, the widget's *Gata*, Siri) nothing can ask, so a kind
+/// closes there in one step only when what it asks is optional (`closesOutsideTheApp`); one that
+/// goes on from a new day the person gives, or replaces a document with a new one, is closed in
+/// the app's "Am rezolvat" (`IntentEngine`).
 public struct CompletionShape: Hashable, Sendable {
     /// The question for the money a completion cost.
     public enum Cost: Hashable, Sendable {
@@ -203,6 +205,14 @@ public struct CompletionShape: Hashable, Sendable {
     public var replacesDocument: Bool { replacement != nil }
     /// Whether closing it replaces its section itself, a personal document (`Asset.wasReplaced`).
     public var replacesSection: Bool { replacement?.replacesItsSection ?? false }
+
+    /// Whether it can be closed in one step from outside the app, where nothing can be asked (a
+    /// reminder's „Am rezolvat”, the widget's *Gata*, Siri and Shortcuts): not when it goes on
+    /// from a new day the person must give (`newEnd`: a kit's new expiry, a contract's new end),
+    /// nor when it replaces a document with a new one (`replacement`: a passport, a health card),
+    /// which only "Am rezolvat" in the app can ask. The one answer every outside surface reads
+    /// (`IntentEngine`, the reminder's buttons, the widget's rows).
+    public var closesOutsideTheApp: Bool { newEnd == nil && replacement == nil }
 
     /// Whether completing asks nothing: "Gata" marks it done today, no sheet, and its toast
     /// offers a note for that completion ("Adaugă o notă").

@@ -12,7 +12,12 @@ public struct ObligationEntity: AppEntity, Sendable {
     public let assetName: String?
     public let dueDay: CalendarDay
 
+    /// Whether its day is shown: not while the whole app is locked.
+    let showsDay: Bool
+
     public var displayRepresentation: DisplayRepresentation {
+        // Nothing of the binder while the app is locked, its due day included.
+        guard showsDay else { return DisplayRepresentation(title: "\(title)") }
         let due = DosarFormat.dayMonth(dueDay)
         if let assetName {
             return DisplayRepresentation(title: "\(title)", subtitle: "\(assetName) · \(due)")
@@ -20,10 +25,17 @@ public struct ObligationEntity: AppEntity, Sendable {
         return DisplayRepresentation(title: "\(title)", subtitle: "\(due)")
     }
 
-    init(_ snapshot: ObligationSnapshot) {
+    /// The deadline as Siri and Shortcuts may show it, by the rule every outside surface follows
+    /// (`SearchPrivacy`): a locked category's in generic words, and every one generic, its day
+    /// left out, while the whole app is locked. The id and the cycle stay, so a shortcut that
+    /// holds it still finds it, and the app opens it after Face ID.
+    init(_ snapshot: ObligationSnapshot, appLockEnabled: Bool) {
+        let listsAnything = SearchPrivacy.outsideListsAnything(appLockEnabled: appLockEnabled)
+        let named = listsAnything && !snapshot.isSensitive
         self.id = snapshot.id
-        self.title = snapshot.isSensitive ? String(localized: "Scadență protejată") : snapshot.title
-        self.assetName = snapshot.isSensitive ? nil : snapshot.assetName
+        self.showsDay = listsAnything
+        self.title = named ? snapshot.title : String(localized: "Scadență protejată")
+        self.assetName = named ? snapshot.assetName : nil
         self.dueDay = snapshot.dueDay
     }
 }
@@ -31,15 +43,27 @@ public struct ObligationEntity: AppEntity, Sendable {
 public struct ObligationQuery: EntityQuery {
     public init() {}
 
+    /// The deadlines a shortcut holds, by id. While the app is locked they come back generic
+    /// (`ObligationEntity.init(_:appLockEnabled:)`), so a saved shortcut still runs and opens the
+    /// app, which asks for Face ID.
     public func entities(for identifiers: [UUID]) async throws -> [ObligationEntity] {
-        let wanted = Set(identifiers)
-        return try await IntentStore.snapshots().filter { wanted.contains($0.id) }.map(ObligationEntity.init)
+        try await MainActor.run {
+            let wanted = Set(identifiers)
+            let locked = IntentStore.appLockEnabled
+            return try IntentStore.snapshots().filter { wanted.contains($0.id) }.map { ObligationEntity($0, appLockEnabled: locked) }
+        }
     }
 
-    /// What needs attention, in the Radar's order.
+    /// What needs attention, in the Radar's order. Nothing while the app is locked: as in the
+    /// iPhone's search, a locked app lists nothing of the binder outside it
+    /// (`SearchPrivacy.outsideListsAnything`).
     public func suggestedEntities() async throws -> [ObligationEntity] {
-        let digest = AttentionModel.digest(try await IntentStore.snapshots())
-        return (digest.now + digest.soon.flatMap(\.entries)).prefix(10).map { ObligationEntity($0.obligation) }
+        try await MainActor.run {
+            let locked = IntentStore.appLockEnabled
+            guard SearchPrivacy.outsideListsAnything(appLockEnabled: locked) else { return [] }
+            let digest = AttentionModel.digest(try IntentStore.snapshots())
+            return (digest.now + digest.soon.flatMap(\.entries)).prefix(10).map { ObligationEntity($0.obligation, appLockEnabled: locked) }
+        }
     }
 }
 
@@ -49,6 +73,8 @@ enum IntentError: Error, CustomLocalizedStringResourceConvertible {
     case appLocked
     /// A deadline of a locked category, not closed: Face ID wasn't given, or couldn't be asked.
     case protectedDeadline
+    /// A deadline whose closing asks a new day or a new document, which only the app asks.
+    case closesInTheApp
 
     var localizedStringResource: LocalizedStringResource {
         switch self {
@@ -56,6 +82,7 @@ enum IntentError: Error, CustomLocalizedStringResourceConvertible {
         case .notFound: return "Obligația nu mai e activă. Poate ai bifat-o deja."
         case .appLocked: return "Dosar cu Șină e protejat cu Face ID. Deschide aplicația ca să vezi termenele."
         case .protectedDeadline: return "Termenul e într-o categorie protejată. Deschide-l în Dosar cu Șină și confirmă cu Face ID ca să-l bifezi."
+        case .closesInTheApp: return "Termenul cere o dată nouă sau actul nou. Deschide-l în Dosar cu Șină și apasă „Am rezolvat” ca să-l bifezi."
         }
     }
 }
@@ -73,9 +100,12 @@ enum IntentStore {
         try ObligationSnapshot.fetchForOutside(in: PersistenceController.context(in: container()))
     }
 
+    /// Whether the whole app is locked on this device.
+    static var appLockEnabled: Bool { AppPreferences.shared.appLockEnabled }
+
     /// With the app lock on, intents that read or change deadlines open the app,
     /// which asks for Face ID, instead of answering.
-    static var opensAppInstead: Bool { AppPreferences.shared.appLockEnabled }
+    static var opensAppInstead: Bool { appLockEnabled }
 }
 
 public struct CompleteObligationIntent: AppIntent {
@@ -104,6 +134,14 @@ public struct CompleteObligationIntent: AppIntent {
         // The cycle Siri resolved the deadline on: a shortcut run later never closes the next one.
         let request = OutsideRequest(obligationId: id, cycle: obligation.dueDay, action: .complete, surface: .shortcut)
         let container = try await MainActor.run { try IntentStore.container() }
+        // Closing that asks a new day or a new document happens in the app's "Am rezolvat"
+        // (`IntentEngine.needsTheApp`, the one rule): the shortcut continues there.
+        if try await MainActor.run(body: { try IntentEngine.needsTheApp(request, in: container.mainContext) }) {
+            let cycle = obligation.dueDay
+            await MainActor.run { AppNavigator.shared.open(.completion(id, cycle: cycle)) }
+            guard systemContext.currentMode.canContinueInForeground else { throw IntentError.closesInTheApp }
+            throw needsToContinueInForegroundError("Deschide Dosar cu Șină ca să termini de bifat.", alwaysConfirm: false)
+        }
         // A deadline of a locked category closes only after Face ID, which the app asks
         // (`IntentEngine.perform`, the one rule): the shortcut continues there.
         if try await MainActor.run(body: { try IntentEngine.asksFaceID(request, in: container.mainContext) }) {
@@ -116,6 +154,11 @@ public struct CompleteObligationIntent: AppIntent {
             // Its page, to finish there.
             await MainActor.run { AppNavigator.shared.open(.obligation(id)) }
             throw IntentError.protectedDeadline
+        case .needsTheApp:
+            // Changed meanwhile into one that asks: its "Am rezolvat", to finish there.
+            let cycle = obligation.dueDay
+            await MainActor.run { AppNavigator.shared.open(.completion(id, cycle: cycle)) }
+            throw IntentError.closesInTheApp
         case .skipped, .snoozed:
             throw IntentError.notFound
         case .completed(let next?):

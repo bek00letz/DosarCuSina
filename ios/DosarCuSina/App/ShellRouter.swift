@@ -32,6 +32,9 @@ enum ShellSheet: Identifiable, Hashable, Sendable {
     /// first, and capture decides whether it is one of their own documents or a paper kept on
     /// their page (`HolderDocumentFiling.captureDecides`); „Scriu eu” types one of their own.
     case addDocument(holderID: UUID)
+    /// "Am rezolvat" for one deadline at the cycle the person saw, asked from outside the app
+    /// (`AppRoute.completion`).
+    case completion(obligationID: UUID, cycle: CalendarDay)
 
     var id: String {
         switch self {
@@ -40,6 +43,7 @@ enum ShellSheet: Identifiable, Hashable, Sendable {
         case .addSection(let request): "section.\(request.parentID?.uuidString ?? "")\(request.templateKey ?? "")"
         case .addPersonalDocument(let holderID): "personalDocument.\(holderID?.uuidString ?? "")"
         case .addDocument(let holderID): "document.\(holderID.uuidString)"
+        case .completion(let id, let cycle): "completion.\(id.uuidString).\(cycle.isoString)"
         }
     }
 
@@ -53,6 +57,8 @@ enum ShellSheet: Identifiable, Hashable, Sendable {
         case .addSection(let request): request.parentID.map(RouteLock.section) ?? .open
         case .addPersonalDocument(let holderID): holderID.map(RouteLock.section) ?? .open
         case .addDocument(let holderID): .section(holderID)
+        // Its section is found from the deadline, by the same answer (`OutsideCompletionSheet`).
+        case .completion: .drawnByItsScreen
         }
     }
 }
@@ -84,7 +90,7 @@ extension AppRoute {
         switch self {
         case .home, .upcoming, .search, .intake, .settings, .agenda: .open
         case .asset(let id), .addVisit(let id): .section(id)
-        case .obligation, .historyEntry, .document, .provider, .category, .readiness: .drawnByItsScreen
+        case .obligation, .completion, .historyEntry, .document, .provider, .category, .readiness: .drawnByItsScreen
         }
     }
 }
@@ -119,6 +125,9 @@ enum ShellRouting {
             return ShellRoutePlan(tab: .dosar, path: [.asset(id)], sheet: .addVisit(id))
         case .obligation:
             return ShellRoutePlan(tab: .upcoming, path: [route])
+        case .completion(let id, let cycle):
+            // Over the deadline's page, which is there once the sheet closes.
+            return ShellRoutePlan(tab: .upcoming, path: [.obligation(id)], sheet: .completion(obligationID: id, cycle: cycle))
         case .historyEntry, .document, .category:
             return ShellRoutePlan(tab: .dosar, path: [route])
         case .agenda:

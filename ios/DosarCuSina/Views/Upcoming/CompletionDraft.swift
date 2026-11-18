@@ -32,6 +32,13 @@ struct CompletionDraft {
         return ObligationActions.continues(on: day, after: CalendarDay(now, calendar: calendar)) ? nil : CompletionWording.newDayHasPassed
     }
 
+    /// Whether saving still waits for the new day: a completion that goes on from one (a kit's
+    /// new expiry, a contract's new end: `CompletionShape.newEnd`) needs it, or the deadline would
+    /// close for good and never remind again.
+    func lacksNewDay(shape: CompletionShape) -> Bool {
+        shape.asksNewExpiry && newExpiry == nil
+    }
+
     /// What saving files, for `obligation`, as its kind asks it. The date is today when the
     /// kind doesn't ask one. `counter` is the counter the sheet asked for, if any
     /// (`ObligationActions.counter`): a reading is kept only on one. `cycle` is the one the

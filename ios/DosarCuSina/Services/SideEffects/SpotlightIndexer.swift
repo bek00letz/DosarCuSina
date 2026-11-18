@@ -48,7 +48,7 @@ public final class SpotlightIndexer: SideEffectIndexer {
     /// Whether anything of the app may be in the iPhone's search: the setting is on and the
     /// whole app isn't locked. Someone who locks the whole app finds nothing of it outside.
     public static func showsAnything(_ preferences: AppPreferences) -> Bool {
-        preferences.showsInSpotlight && !preferences.appLockEnabled
+        preferences.showsInSpotlight && SearchPrivacy.outsideListsAnything(appLockEnabled: preferences.appLockEnabled)
     }
 
     public func reconcile(obligations: [ObligationSnapshot], context: ModelContext) async {

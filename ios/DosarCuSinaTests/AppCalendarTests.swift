@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import UserNotifications
 @testable import DosarCuSina
 
 /// One calendar counts the app's days, Gregorian whatever the phone is set to. A test
@@ -110,5 +111,29 @@ struct AppCalendarTests {
         let line = DueWording.line(kind: .legal, due: CalendarDay("2027-03-31"), today: today)
         #expect(line == DueWording.line(kind: .legal, due: CalendarDay("2027-03-31"), today: today, calendar: Self.gregorian))
         #expect(line.hasSuffix("31 martie 2027"))
+    }
+
+    /// A reminder's date parts carry the app's calendar, so the system reads them as the
+    /// Gregorian day and hour the plan chose, whatever calendar the phone is set to: parts with
+    /// no calendar are read in the phone's, where 2026 is another year.
+    @Test(arguments: [Calendar.Identifier.buddhist, .japanese, .hebrew])
+    func aReminderFiresOnItsGregorianDayWhateverThePhonesCalendar(_ identifier: Calendar.Identifier) throws {
+        let phone = Self.phone(identifier)
+        // Ahead of any day the tests run on, so the system still has a next date for it.
+        let fire = ReminderPlanner.fireDate(day: CalendarDay("2036-11-15"), minuteOfDay: 9 * 60 + 30)
+        let parts = ReminderTrigger.components(firingAt: fire)
+        let calendar = try #require(parts.calendar, "Every trigger's date parts say their calendar")
+        #expect(calendar.identifier == .gregorian)
+        #expect(parts.timeZone == nil, "A wall-clock time: it fires at its hour wherever the phone is")
+        // What the system does with them: their own calendar, else the phone's.
+        #expect((parts.calendar ?? phone).date(from: parts) == fire)
+        var bare = parts
+        bare.calendar = nil
+        #expect(phone.date(from: bare) != fire, "Without a calendar the phone's would read another year")
+
+        let trigger = ReminderTrigger.make(firingAt: fire)
+        #expect(trigger.dateComponents.calendar?.identifier == .gregorian)
+        #expect(!trigger.repeats)
+        #expect(trigger.nextTriggerDate() == fire)
     }
 }

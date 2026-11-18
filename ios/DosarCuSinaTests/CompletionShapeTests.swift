@@ -273,7 +273,7 @@ struct CompletionShapeTests {
 
     // MARK: Outside the app
 
-    @Test("Outside the app every kind still completes in one step", arguments: ObligationKind.allCases)
+    @Test("Outside the app a kind completes in one step unless it asks what only the app asks", arguments: ObligationKind.allCases)
     func outsideTheAppIsOneStep(_ kind: ObligationKind) throws {
         let context = try makeContext()
         let deadline = try ObligationActions(context: context, calendar: calendar, now: { noon(self.today) })
@@ -282,6 +282,12 @@ struct CompletionShapeTests {
 
         let outcome = try IntentEngine.apply(request, in: context, calendar: calendar, now: { noon(self.today) })
 
+        guard deadline.completion(in: context).closesOutsideTheApp else {
+            // A new day or a new document: closed only in the app's „Am rezolvat”.
+            #expect(outcome == .needsTheApp)
+            #expect(deadline.dueDay == CalendarDay("2026-11-06") && deadline.history.isEmpty, "Nothing changed")
+            return
+        }
         #expect(outcome == .completed(next: CalendarDay("2026-12-06")))
         let entry = try #require(deadline.history.first)
         #expect(entry.totalCost == nil && entry.note == nil && entry.metricReading == nil, "Nothing asked outside the app")

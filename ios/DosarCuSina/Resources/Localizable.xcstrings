@@ -1563,6 +1563,12 @@
     "Alege data la care e scadentă prima dată." : {
 
     },
+    "Alege data la care expiră. De la ea îți amintesc din nou." : {
+      "comment" : "Am rezolvat: why saving waits, while the new expiry is empty."
+    },
+    "Alege data la care se termină. De la ea îți amintesc din nou." : {
+      "comment" : "Am rezolvat: why saving waits, while a renewed contract's new end is empty."
+    },
     "Alege din Contacte" : {
       "comment" : "Button in an empty contact field."
     },
@@ -3847,6 +3853,9 @@
 
     },
     "Deschide Dosar cu Șină ca să confirmi cu Face ID." : {
+
+    },
+    "Deschide Dosar cu Șină ca să termini de bifat." : {
 
     },
     "Deschide Dosar cu Șină ca să vezi termenele." : {
@@ -8316,6 +8325,9 @@
     },
     "Termenul a fost bifat între timp, dintr-o notificare, din widget sau de pe alt dispozitiv. N-am salvat nimic, iar următorul termen a rămas cum era." : {
       "comment" : "Error: the deadline was closed elsewhere while the person was closing it; nothing was saved."
+    },
+    "Termenul cere o dată nouă sau actul nou. Deschide-l în Dosar cu Șină și apasă „Am rezolvat” ca să-l bifezi." : {
+
     },
     "Termenul de acum rămâne pe %@. Regula nouă se aplică după ce îl bifezi." : {
       "comment" : "Under the repeat control on a deadline's page: the current due day stays."
