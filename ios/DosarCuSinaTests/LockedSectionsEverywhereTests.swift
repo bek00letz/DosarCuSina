@@ -324,7 +324,7 @@ struct LockedSectionsEverywhereTests {
     /// A person (open by default) with an identity card (Acte, locked by default) that expires on
     /// 5 December, and a deadline of the card's.
     private struct Holder {
-        /// Kept for the test's length: a context whose container goes is reset, and its records with it.
+        /// Kept alive with the test: a context outlived by its container is torn down under it.
         let container: ModelContainer
         let context: ModelContext
         let person: Asset
