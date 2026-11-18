@@ -240,7 +240,8 @@ struct FullPageScreenshotTests {
     }
 
     private func pageBoxes(_ data: Data) throws -> [CGRect] {
-        let document = try #require(CGPDFDocument(try #require(CGDataProvider(data: data as CFData))))
+        let provider = try #require(CGDataProvider(data: data as CFData))
+        let document = try #require(CGPDFDocument(provider))
         return (0..<document.numberOfPages).compactMap { document.page(at: $0 + 1)?.getBoxRect(.mediaBox) }
     }
 
