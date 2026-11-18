@@ -25,30 +25,12 @@ OUT="$(cd "$OUT" && pwd)"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/dosar-screenshots.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
 DERIVED="${DERIVED_DATA_PATH:-$WORK/DerivedData}"
-BUNDLE_ID=com.ar.dosarcusina.app
+# Every launch of this run shares one household, made at its first launch.
+RUN=$(date +%Y%m%d%H%M%S)
 
-# "udid" of the available simulator with this name or id, made on GitHub when it isn't there.
-find_simulator() {
-    local wanted=$1 udid
-    udid=$(xcrun simctl list devices available -j | python3 -c '
-import json, sys
-wanted = sys.argv[1]
-devices = [d for runtime, ds in json.load(sys.stdin)["devices"].items() if "iOS" in runtime for d in ds]
-match = [d["udid"] for d in devices if d["udid"] == wanted or d["name"] == wanted]
-print(match[-1] if match else "")' "$wanted")
-    if [[ -z $udid && ${CI:-} == true ]]; then
-        local runtime type
-        runtime=$(xcrun simctl list runtimes available -j | python3 -c '
-import json, sys
-print([r["identifier"] for r in json.load(sys.stdin)["runtimes"] if r["platform"] == "iOS"][-1])')
-        type=$(xcrun simctl list devicetypes -j | python3 -c '
-import json, sys
-print(next(t["identifier"] for t in json.load(sys.stdin)["devicetypes"] if t["name"] == sys.argv[1]))' "$wanted")
-        udid=$(xcrun simctl create "$wanted" "$type" "$runtime")
-    fi
-    [[ -n $udid ]] || { echo "No simulator named $wanted is installed." >&2; exit 1; }
-    echo "$udid"
-}
+# Simulators are made only on GitHub's runners; on our Macs only installed ones are used.
+CREATE=()
+[[ ${CI:-} == true ]] && CREATE=(--create)
 
 echo "Building the app and its screenshot tests"
 set -o pipefail
@@ -60,13 +42,20 @@ XCTESTRUN=$(find "$DERIVED/Build/Products" -name 'DosarCuSinaScreenshots*.xctest
 [[ -n $XCTESTRUN ]] || { echo "The build made no test run; see the log above." >&2; exit 1; }
 
 for wanted in "$@"; do
-    udid=$(find_simulator "$wanted")
-    name=$(xcrun simctl list devices -j | python3 -c '
-import json, sys
-print(next(d["name"] for ds in json.load(sys.stdin)["devices"].values() for d in ds if d["udid"] == sys.argv[1]))' "$udid")
+    found=$(python3 "$REPO_ROOT/scripts/find-simulator.py" "$wanted" ${CREATE[@]+"${CREATE[@]}"})
+    udid=$(cut -f1 <<<"$found")
+    name=$(cut -f2 <<<"$found")
     echo "Screenshots on $name ($udid)"
     xcrun simctl boot "$udid" 2>/dev/null || true
     xcrun simctl bootstatus "$udid" -b >/dev/null
+    if [[ ${CI:-} == true ]]; then
+        # A runner's simulator speaks Romanian too, so the iPad's status bar dates the Romanian way.
+        xcrun simctl spawn "$udid" defaults write -g AppleLanguages -array ro
+        xcrun simctl spawn "$udid" defaults write -g AppleLocale ro_RO
+        xcrun simctl shutdown "$udid"
+        xcrun simctl boot "$udid"
+        xcrun simctl bootstatus "$udid" -b >/dev/null
+    fi
     # A clean status bar: 9:41, full signal, a full battery.
     xcrun simctl status_bar "$udid" override --time 9:41 --dataNetwork wifi --wifiMode active --wifiBars 3 \
         --cellularMode active --cellularBars 4 --operatorName "" --batteryState charged --batteryLevel 100
@@ -77,7 +66,7 @@ print(next(d["name"] for ds in json.load(sys.stdin)["devices"].values() for d in
     for appearance in light dark; do
         xcrun simctl ui "$udid" appearance "$appearance"
         results="$WORK/$udid-$appearance.xcresult"
-        TEST_RUNNER_SCREENSHOT_APPEARANCE=$appearance xcodebuild test-without-building \
+        TEST_RUNNER_SCREENSHOT_APPEARANCE=$appearance TEST_RUNNER_SCREENSHOT_RUN=$RUN xcodebuild test-without-building \
             -xctestrun "$XCTESTRUN" -destination "id=$udid" -resultBundlePath "$results" \
             -parallel-testing-enabled NO > "$WORK/$udid-$appearance.log" 2>&1 || {
                 grep -E "error:|failed|\*\* TEST" "$WORK/$udid-$appearance.log" | sort -u >&2 || true
@@ -88,13 +77,14 @@ print(next(d["name"] for ds in json.load(sys.stdin)["devices"].values() for d in
         mkdir -p "$OUT/$name"
         # The manifest names each picture as the test did ("01-binder-light").
         python3 - "$attachments" "$OUT/$name" <<'PY'
-import json, os, shutil, sys
+import json, os, re, shutil, sys
 source, target = sys.argv[1], sys.argv[2]
 for test in json.load(open(os.path.join(source, "manifest.json"))):
     for attachment in test.get("attachments", []):
-        name = attachment.get("suggestedHumanReadableName", "")
-        base = name.split("_", 1)[0] if "_" in name else os.path.splitext(name)[0]
-        shutil.copy(os.path.join(source, attachment["exportedFileName"]), os.path.join(target, base + ".png"))
+        # Only the pictures the tests kept; a failure's own snapshots and recordings stay out.
+        kept = re.match(r"(\d\d-[a-z]+-(?:light|dark))_", attachment.get("suggestedHumanReadableName", ""))
+        if kept:
+            shutil.copy(os.path.join(source, attachment["exportedFileName"]), os.path.join(target, kept.group(1) + ".png"))
 PY
     done
     xcrun simctl status_bar "$udid" clear

@@ -3,11 +3,12 @@ import Foundation
 import SwiftData
 
 /// The App Store's screenshots, in development builds only (never in a release build): the
-/// `DosarCuSinaScreenshots` UI tests launch the app with `-DosarScreenshots <scene>`, and the
-/// app opens on a binder of its own (`BuildInfo.isScreenshotRun`: its own store, which never
-/// syncs), filled once with a made-up household through the same actions a person's steps
-/// take, at the scene's screen. `scripts/app-store-screenshots.sh` runs them for every size
-/// App Store Connect asks for, in light and dark.
+/// `DosarCuSinaScreenshots` UI tests launch the app with `-DosarScreenshots <scene>` and
+/// `-DosarScreenshotsRun <run>`, and the app opens on a binder of its own for that run
+/// (`BuildInfo.screenshotStoreName`: its own store, which never syncs), filled at the run's first
+/// launch with a made-up household through the same actions a person's steps take, at the
+/// scene's screen. `scripts/app-store-screenshots.sh` runs them for every size App Store Connect
+/// asks for, in light and dark.
 @MainActor
 enum ScreenshotStage {
     /// Each screen the App Store shows, by the name the UI tests launch it with.
@@ -18,22 +19,36 @@ enum ScreenshotStage {
     /// The launch argument, followed by the scene's name.
     nonisolated static let argument = "-DosarScreenshots"
 
+    /// The launch argument naming the run, which every launch of one run shares.
+    nonisolated static let runArgument = "-DosarScreenshotsRun"
+
     /// The scene this launch is for; nil in every other launch.
-    nonisolated static var scene: Scene? {
-        let arguments = ProcessInfo.processInfo.arguments
-        guard let index = arguments.firstIndex(of: argument), arguments.indices.contains(index + 1) else { return nil }
-        return Scene(rawValue: arguments[index + 1])
+    nonisolated static var scene: Scene? { value(after: argument).flatMap(Scene.init(rawValue:)) }
+
+    /// The store of this run's household; nil in every other launch. A run without a name (a
+    /// launch by hand) shares one.
+    nonisolated static var storeName: String? {
+        guard scene != nil else { return nil }
+        let run = value(after: runArgument)?.filter { $0.isLetter || $0.isNumber } ?? ""
+        return run.isEmpty ? "Screenshots.store" : "Screenshots-\(run).store"
     }
 
-    /// Fills the screenshots' binder the first time, keeps their trip, and opens the scene's
-    /// screen. Does nothing in any other launch.
+    private nonisolated static func value(after name: String) -> String? {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let index = arguments.firstIndex(of: name), arguments.indices.contains(index + 1) else { return nil }
+        return arguments[index + 1]
+    }
+
+    /// Fills the screenshots' binder at the run's first launch, with its trip, and opens the
+    /// scene's screen. Does nothing in any other launch.
     static func prepare(in context: ModelContext, navigator: AppNavigator, calendar: Calendar = .dosar, now: Date = Date()) {
         guard let scene else { return }
         do {
             if try context.fetchCount(FetchDescriptor<Asset>()) == 0 {
-                try ScreenshotHousehold(context: context, calendar: calendar, now: now).fill()
+                let household = ScreenshotHousehold(context: context, calendar: calendar, now: now)
+                try household.fill()
+                household.keepTrip()
             }
-            try ScreenshotHousehold(context: context, calendar: calendar, now: now).keepTrip()
         } catch {
             PersistenceLog.failed("screenshot household", error)
         }
@@ -98,12 +113,14 @@ struct ScreenshotHousehold {
         try UnitOfWork.perform(in: context, now: now) { try addHousehold(templates: try store.templatesByKey()) }
     }
 
-    /// The trip the trip checklist opens on, kept on this phone like a person's.
-    func keepTrip() throws {
+    /// The trip the trip checklist opens on, kept on this phone like a person's, in place of
+    /// any an earlier run kept (its people are another run's).
+    func keepTrip() {
         let trips = TripPlanStore()
-        guard trips.load(today: today).isEmpty else { return }
-        let people = try context.fetch(FetchDescriptor<Asset>()).filter { $0.templateKey == BuiltInTemplates.Key.member }
-        let cars = try context.fetch(FetchDescriptor<Asset>()).filter { $0.templateKey == BuiltInTemplates.Key.vehicle }
+        trips.clear()
+        let sections = (try? context.fetch(FetchDescriptor<Asset>())) ?? []
+        let people = sections.filter { $0.templateKey == BuiltInTemplates.Key.member }
+        let cars = sections.filter { $0.templateKey == BuiltInTemplates.Key.vehicle }
         trips.save(TripPlan(
             start: day(24), end: day(34), region: .europeanUnion, destination: Self.tripDestination,
             travellers: Set(people.map { .member($0.id) }), vehicles: Set(cars.map(\.id))
@@ -137,7 +154,7 @@ struct ScreenshotHousehold {
             passport["document.type"] = .text(DocumentType.passport)
             passport[DocumentFields.number] = .text("050000000")
             passport[DocumentFields.issueDate] = .date(day(-1_650))
-            passport[DocumentFields.expiry] = .date(day(176))
+            passport[DocumentFields.expiry] = .date(day(1_410))
             try assets.create(name: Self.passportName, template: documents, values: passport, obligations: plan(documents, passport), parent: ana)
 
             var anaCard = FieldValues()
@@ -154,7 +171,7 @@ struct ScreenshotHousehold {
 
             var mihaiCard = FieldValues()
             mihaiCard["document.type"] = .text(DocumentType.idCard)
-            mihaiCard[DocumentFields.expiry] = .date(day(19))
+            mihaiCard[DocumentFields.expiry] = .date(day(1_830))
             try assets.create(name: DocumentNaming.name(document: "Carte de identitate", holder: Self.secondPerson), template: documents,
                               values: mihaiCard, obligations: plan(documents, mihaiCard), parent: mihai)
         }
@@ -184,7 +201,7 @@ struct ScreenshotHousehold {
                 items: [
                     LineItemDraft(name: "Schimb ulei și filtru", partBrandOrCode: "5W-30", cost: Money(420)),
                     LineItemDraft(name: "Plăcuțe frână față", cost: Money(380)),
-                    LineItemDraft(name: "Manoperă", cost: Money(350)),
+                    LineItemDraft(name: "Filtru de aer", cost: Money(120)),
                 ],
                 providers: [mechanic], rating: 5
             )

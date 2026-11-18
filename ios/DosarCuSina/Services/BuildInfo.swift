@@ -26,11 +26,15 @@ public struct BuildInfo: Equatable, Sendable {
     /// Whether the app was launched for the App Store's screenshots (`ScreenshotStage`), which
     /// only a development build can be: the binder is a store of its own that never syncs, so a
     /// screenshot run never touches the binder of the phone it runs on.
-    public static var isScreenshotRun: Bool {
+    public static var isScreenshotRun: Bool { screenshotStoreName != nil }
+
+    /// The screenshots' own store, one per run of them (`ScreenshotStage.storeName`), so every
+    /// run starts from a household made that day; nil in every other launch, and in a release build.
+    public static var screenshotStoreName: String? {
         #if DEBUG
-        ProcessInfo.processInfo.arguments.contains(ScreenshotStage.argument)
+        ScreenshotStage.storeName
         #else
-        false
+        nil
         #endif
     }
 

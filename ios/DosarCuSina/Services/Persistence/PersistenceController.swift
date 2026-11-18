@@ -612,7 +612,7 @@ public final class PersistenceController {
         let base = URL.applicationSupportDirectory
         try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
         // A screenshot run keeps its made-up binder apart from the phone's (`ScreenshotStage`).
-        return base.appending(path: BuildInfo.isScreenshotRun ? "Screenshots.store" : "Dosar-v2.store")
+        return base.appending(path: BuildInfo.screenshotStoreName ?? "Dosar-v2.store")
     }
 
     public nonisolated static let schema = Schema(versionedSchema: CurrentSchema.self)

@@ -10,6 +10,8 @@ import XCTest
 final class AppStoreScreenshots: XCTestCase {
     /// What the script says the simulator is set to ("light" or "dark"), for the pictures' names.
     private var appearance: String { ProcessInfo.processInfo.environment["SCREENSHOT_APPEARANCE"] ?? "light" }
+    /// The run all of these launches share, so they share one household (one per run).
+    private var run: String { ProcessInfo.processInfo.environment["SCREENSHOT_RUN"] ?? "" }
 
     func test01Binder() throws {
         let app = launch(.binder)
@@ -31,8 +33,9 @@ final class AppStoreScreenshots: XCTestCase {
 
     func test04Capture() throws {
         let app = launch(.capture)
-        // The review is up once the invoice's firm shows as read.
-        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS[c] %@", "Service Exemplu")).firstMatch.waitForExistence(timeout: 60))
+        // Once the invoice is read: the review, or the visit it belongs to when it names the car.
+        let read = app.navigationBars.matching(NSPredicate(format: "identifier IN %@", ["Verifică documentul", "Am fost la service"])).firstMatch
+        XCTAssertTrue(read.waitForExistence(timeout: 90))
         keep(app, "04-capture")
     }
 
@@ -55,10 +58,9 @@ final class AppStoreScreenshots: XCTestCase {
         let field = app.searchFields.firstMatch
         XCTAssertTrue(field.waitForExistence(timeout: 30))
         field.tap()
-        field.typeText("rca")
-        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS[c] %@", "RCA")).firstMatch.waitForExistence(timeout: 30))
-        // The keyboard goes, so the results show whole.
-        app.swipeDown(velocity: .fast)
+        // Searching ends with the keyboard's search key, so the results show whole.
+        field.typeText("golf\n")
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS[c] %@", "Golf")).firstMatch.waitForExistence(timeout: 30))
         keep(app, "07-search")
     }
 
@@ -71,6 +73,7 @@ final class AppStoreScreenshots: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = [
             "-DosarScreenshots", scene.rawValue,
+            "-DosarScreenshotsRun", run,
             // Onboarding was seen: the screenshots show a binder in use.
             "-preferences.hasCompletedOnboarding", "YES",
             "-AppleLanguages", "(ro)",
@@ -91,14 +94,18 @@ final class AppStoreScreenshots: XCTestCase {
         if buttons.count > 1 { buttons.element(boundBy: 1).tap() } else { buttons.firstMatch.tap() }
     }
 
-    /// A locked section asks for Face ID: the simulator's enrolled face matches.
+    /// A locked section asks for Face ID: the simulator's enrolled face matches. The first time,
+    /// iOS asks whether the app may use Face ID, and the face can come before the prompt does,
+    /// so it tries again.
     private func unlockIfAsked(_ app: XCUIApplication) {
         let unlock = app.buttons["Deblochează"].firstMatch
         guard unlock.waitForExistence(timeout: 5) else { return }
-        unlock.tap()
-        answerSystemAlerts()
-        notify_post("com.apple.BiometricKit_Sim.pearl.match")
-        _ = unlock.waitForNonExistence(timeout: 10)
+        for _ in 0..<3 where unlock.exists {
+            unlock.tap()
+            answerSystemAlerts()
+            notify_post("com.apple.BiometricKit_Sim.pearl.match")
+            _ = unlock.waitForNonExistence(timeout: 8)
+        }
     }
 
     private func keep(_ app: XCUIApplication, _ name: String) {
