@@ -577,6 +577,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Dosar cu Șină";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Aplicația are nevoie de acces la cameră pentru a scana facturi, chitanțe și documente.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Folosim Face ID ca să deschidem doar categoriile pe care le-ai protejat, cum ar fi actele și datele medicale.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Ca să citești acte cu serviciul AI de pe rețeaua ta, dacă îl alegi în Setări.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Ca să salvezi în Poze paginile pe care le trimiți.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -615,6 +616,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Dosar cu Șină";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Aplicația are nevoie de acces la cameră pentru a scana facturi, chitanțe și documente.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Folosim Face ID ca să deschidem doar categoriile pe care le-ai protejat, cum ar fi actele și datele medicale.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Ca să citești acte cu serviciul AI de pe rețeaua ta, dacă îl alegi în Setări.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Ca să salvezi în Poze paginile pe care le trimiți.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
