@@ -5597,6 +5597,17 @@
         }
       }
     },
+    "La %@, rândul „%@” din vizita din %@ e trecut ca piesă. Îl păstrez ca manoperă a vizitei? Costul vizitei rămâne același." : {
+      "comment" : "Repair: a visit's labour line kept as a part by an earlier version. The first argument is the section, the second the line's name, the third the visit's day.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "La %1$@, rândul „%2$@” din vizita din %3$@ e trecut ca piesă. Îl păstrez ca manoperă a vizitei? Costul vizitei rămâne același."
+          }
+        }
+      }
+    },
     "La abonamentul „%@”" : {
       "comment" : "Capture review: the bill goes to this subscription."
     },
@@ -5899,6 +5910,9 @@
     },
     "Manole Corina" : {
 
+    },
+    "Manoperă" : {
+      "comment" : "Repair group: labour lines an earlier version kept as parts of a visit."
     },
     "Manual" : {
 

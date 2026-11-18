@@ -52,6 +52,7 @@ struct DataRepairs {
         SubscriptionCodesStep(),
         CitizenshipsStep(),
         PersonalLessonLabelsStep(),
+        LabourPartsStep(),
     ]
 
     static func step(_ id: DataRepairStepID) -> any DataRepairStep {
@@ -131,6 +132,7 @@ enum DataRepairStepID: String, CaseIterable, Sendable, Hashable {
     case subscriptionCodes = "subscription-codes"
     case citizenships = "citizenships"
     case personalLessonLabels = "personal-lesson-labels"
+    case labourParts = "labour-parts"
 }
 
 /// One thing a repair would change, in plain words, with what applying it needs.
@@ -192,6 +194,8 @@ struct DataRepairFinding: Identifiable, Hashable, Sendable {
         case citizenships(personID: UUID, add: [String])
         /// A lesson capture learned whose label holds a value of the household's: it is forgotten.
         case issuerLesson(id: UUID)
+        /// A visit's labour line kept as a part of one's own: it becomes the visit's labour.
+        case labourPart(itemID: UUID)
     }
 }
 
