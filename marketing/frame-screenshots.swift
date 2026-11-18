@@ -1,17 +1,16 @@
 // Frames the App Store screenshots with their captions, at App Store Connect's exact pixel sizes.
 //
-//   swift marketing/frame-screenshots.swift <screenshots folder> <output folder> [style…] [--only 01-binder,04-capture]
+//   swift marketing/frame-screenshots.swift <screenshots folder> <output folder> [--only 01-binder,04-capture]
 //
 // <screenshots folder> is what scripts/app-store-screenshots.sh wrote: a folder per device with
-// "<order>-<scene>-<light|dark>.png". Each picture becomes, for each style, a framed picture of
-// the same size (the size App Store Connect asks for that device), in
-// <output folder>/<style>/<device>/<order>-<scene>-<appearance>.png. The captions are text, in
-// marketing/app-store/captions.json, never in a picture: regenerating is this one command.
+// "<order>-<scene>-<light|dark>.png". Each light picture becomes a framed picture of the same size
+// (the size App Store Connect asks for that device), in <output folder>/<device>/<order>-<scene>.png,
+// ready to upload in that order. The captions are text, in marketing/app-store/captions.json, never
+// in a picture: regenerating is this one command.
 //
-// The styles (all in SF Pro, the system font, with a real type scale and tight tracking):
-//   above  a light background, the caption above, the device in a thin bezel running off the bottom
-//   night  the icon's night blue, a white caption, the whole device in its bezel
-//   bleed  the app's blue, a white caption, the screen without a bezel, running off the bottom
+// The style is the owner's choice (docs/DECISIONS.md): a light background, the caption above in SF Pro
+// (the system font) with a real type scale and tight tracking, and the device in a thin bezel running
+// off the bottom edge.
 import AppKit
 import CoreText
 import Foundation
@@ -41,14 +40,9 @@ struct Style {
     /// Whether the device runs off the bottom edge (else it stands whole, centred under the caption).
     let bleedsOffBottom: Bool
 
-    static let all: [Style] = [
-        Style(name: "above", background: (color(0xF7F8FB), color(0xE4E9F2)), title: color(0x0B1220), subtitle: color(0x4A5568),
-              deviceWidth: 0.80, bezel: true, bleedsOffBottom: true),
-        Style(name: "night", background: (color(0x1C2B52), color(0x0A0F1E)), title: color(0xFFFFFF), subtitle: color(0xB8C4DE),
-              deviceWidth: 0.70, bezel: true, bleedsOffBottom: false),
-        Style(name: "bleed", background: (color(0x1E7BFF), color(0x0A5BD8)), title: color(0xFFFFFF), subtitle: color(0xDCE9FF),
-              deviceWidth: 0.86, bezel: false, bleedsOffBottom: true),
-    ]
+    /// Light, the caption above, a thin bezel running off the bottom.
+    static let light = Style(name: "light", background: (color(0xF7F8FB), color(0xE4E9F2)), title: color(0x0B1220), subtitle: color(0x4A5568),
+                             deviceWidth: 0.80, bezel: true, bleedsOffBottom: true)
 }
 
 func loadImage(_ url: URL) -> CGImage? {
@@ -163,12 +157,10 @@ if let index = arguments.firstIndex(of: "--only"), arguments.indices.contains(in
     arguments.removeSubrange(index...index + 1)
 }
 guard arguments.count >= 2 else {
-    FileHandle.standardError.write(Data("Usage: swift marketing/frame-screenshots.swift <screenshots folder> <output folder> [style…] [--only 01-binder,…]\n".utf8))
+    FileHandle.standardError.write(Data("Usage: swift marketing/frame-screenshots.swift <screenshots folder> <output folder> [--only 01-binder,…]\n".utf8))
     exit(2)
 }
 let input = URL(fileURLWithPath: arguments[0]), output = URL(fileURLWithPath: arguments[1])
-let wantedStyles = Set(arguments.dropFirst(2))
-let styles = wantedStyles.isEmpty ? Style.all : Style.all.filter { wantedStyles.contains($0.name) }
 let captionsURL = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appending(path: "app-store/captions.json")
 let captions = try JSONDecoder().decode([String: [String: Caption]].self, from: Data(contentsOf: captionsURL))["ro"] ?? [:]
 
@@ -177,17 +169,14 @@ var written = 0
 for device in try files.contentsOfDirectory(at: input, includingPropertiesForKeys: [.isDirectoryKey]).sorted(by: { $0.path < $1.path })
 where (try? device.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true {
     for file in try files.contentsOfDirectory(at: device, includingPropertiesForKeys: nil).sorted(by: { $0.path < $1.path })
-    where file.pathExtension == "png" {
-        let name = file.deletingPathExtension().lastPathComponent
-        let scene = name.split(separator: "-").prefix(2).joined(separator: "-")
+    where file.pathExtension == "png" && file.deletingPathExtension().lastPathComponent.hasSuffix("-light") {
+        let scene = file.deletingPathExtension().lastPathComponent.split(separator: "-").prefix(2).joined(separator: "-")
         guard only?.contains(scene) ?? true else { continue }
         guard let caption = captions[scene] else { print("No caption for \(scene); left out."); continue }
         guard let screen = loadImage(file) else { print("Can't read \(file.path)."); continue }
-        for style in styles {
-            guard let framed = frame(screen, caption: caption, style: style) else { continue }
-            try writePNG(framed, to: output.appending(path: "\(style.name)/\(device.lastPathComponent)/\(name).png"))
-            written += 1
-        }
+        guard let framed = frame(screen, caption: caption, style: .light) else { continue }
+        try writePNG(framed, to: output.appending(path: "\(device.lastPathComponent)/\(scene).png"))
+        written += 1
     }
 }
 print("Framed \(written) screenshots into \(output.path)")

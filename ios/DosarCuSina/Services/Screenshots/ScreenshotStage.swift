@@ -73,11 +73,13 @@ enum ScreenshotStage {
         }
     }
 
-    /// The practice invoice (`SampleInvoice`, placeholder data), read as if just picked, for
-    /// the capture scene's review; nil in every other launch, and after the first time.
+    /// The practice invoice (`SampleInvoice`, placeholder data) in the household's names: the
+    /// garage that services the car, and Ana. Read as if just picked, for the capture scene;
+    /// nil in every other launch, and after the first time.
     static func captureInput() -> CaptureFlowInput? {
         guard scene == .capture, !hasOpenedCapture,
-              let url = try? SampleInvoice.writePDF(), let data = try? Data(contentsOf: url) else { return nil }
+              let url = try? SampleInvoice.writePDF(issuer: ScreenshotHousehold.invoiceIssuer, client: ScreenshotHousehold.invoiceClient),
+              let data = try? Data(contentsOf: url) else { return nil }
         hasOpenedCapture = true
         return CaptureFlowInput(payload: .pdf(data))
     }
@@ -85,8 +87,9 @@ enum ScreenshotStage {
     private static var hasOpenedCapture = false
 }
 
-/// The screenshots' household: two people with their documents, a car, a home with its
-/// subscriptions and guarantees, a cat and a health profile. Every value is made up
+/// The screenshots' household: two people with their documents (Ana's passport with a drawn
+/// specimen page), a car, a home with its subscriptions and guarantees, PawPaw with his drawn
+/// photo, and a health profile. Every value is made up
 /// (placeholder plates, firms and numbers, as AGENTS.md asks); dates are counted from the
 /// day the screenshots are taken, so every run shows the same picture.
 @MainActor
@@ -96,6 +99,9 @@ struct ScreenshotHousehold {
     static let firstPerson = "Ana"
     static let secondPerson = "Mihai"
     static let tripDestination = "Grecia"
+    static let mechanic = "Service Auto Nord"
+    static let invoiceIssuer = "Service Auto Nord SRL"
+    static let invoiceClient = "Ana Dosarescu"
 
     let context: ModelContext
     let calendar: Calendar
@@ -151,11 +157,21 @@ struct ScreenshotHousehold {
             people = [ana, mihai]
 
             var passport = FieldValues()
+            let issued = day(-1_650), expires = day(1_410)
             passport["document.type"] = .text(DocumentType.passport)
             passport[DocumentFields.number] = .text("050000000")
-            passport[DocumentFields.issueDate] = .date(day(-1_650))
-            passport[DocumentFields.expiry] = .date(day(1_410))
-            try assets.create(name: Self.passportName, template: documents, values: passport, obligations: plan(documents, passport), parent: ana)
+            passport[DocumentFields.issueDate] = .date(issued)
+            passport[DocumentFields.expiry] = .date(expires)
+            let passportSection = try assets.create(name: Self.passportName, template: documents, values: passport,
+                                                    obligations: plan(documents, passport), parent: ana)
+            // Its page: a drawn specimen, plainly marked, with the same made-up values.
+            let specimen = ScreenshotPictures.Passport(issued: (issued.year, issued.month, issued.day), expires: (expires.year, expires.month, expires.day))
+            if let page = ScreenshotPictures.jpeg(width: 1600, height: 1126, { ScreenshotPictures.drawPassport(specimen, size: $0, in: $1) }) {
+                try AttachmentActions(context: context, calendar: calendar).file(
+                    DocumentDraft(title: Self.passportName, fileName: "pasaport.jpg", kind: .identity, contentType: "public.jpeg", pageImages: [page]),
+                    asset: passportSection
+                )
+            }
 
             var anaCard = FieldValues()
             anaCard["document.type"] = .text(DocumentType.idCard)
@@ -193,7 +209,7 @@ struct ScreenshotHousehold {
             if let itp = (car.obligations ?? []).first(where: { $0.blueprintKey == "vehicle.itp" }) {
                 try ObligationActions(context: context, calendar: calendar, now: { now }).recordPastCompletion(of: itp, on: daysAgo(707), cost: Money(170))
             }
-            let mechanic = try providers.create(name: "Service Auto Nord", trades: [.mechanic, .tyreShop], phone: "0700 000 001", linkedTo: [car])
+            let mechanic = try providers.create(name: Self.mechanic, trades: [.mechanic, .tyreShop], phone: "0700 000 001", linkedTo: [car])
             try providers.setWouldCallAgain(mechanic, true)
             try history.record(
                 on: car, kind: .maintenance, title: "Revizie anuală", occurredAt: daysAgo(380),
@@ -285,6 +301,9 @@ struct ScreenshotHousehold {
                 name: "PawPaw", template: template, values: values,
                 obligations: plan(template, values, dues: ["pet.vaccine": 34, "pet.rabies": 34, "pet.dewormInternal": 4, "pet.dewormExternal": 15])
             )
+            if let photo = ScreenshotPictures.jpeg(width: 1200, height: 1200, { ScreenshotPictures.drawPawPaw(size: $0, in: $1) }) {
+                try assets.setPhoto(cat, photo)
+            }
             let vet = try providers.create(name: "Cabinet veterinar Lăbuța", trades: [.vet], phone: "0700 000 003", linkedTo: [cat])
             try providers.setRating(vet, 5)
         }

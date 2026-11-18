@@ -20,13 +20,13 @@
       "title": "Pleci din țară? Vezi ce-ți trebuie",
       "subtitle": "Actele fiecăruia și ale mașinii"
     },
-    "06-document": {
-      "title": "Actele, în spatele Face ID",
-      "subtitle": "Știi cât mai sunt valabile"
-    },
-    "07-search": {
+    "06-search": {
       "title": "Găsești orice în câteva litere",
       "subtitle": "În tot dosarul"
+    },
+    "07-document": {
+      "title": "Actele, în spatele Face ID",
+      "subtitle": "Știi cât mai sunt valabile"
     }
   }
 }

@@ -46,14 +46,7 @@ final class AppStoreScreenshots: XCTestCase {
         keep(app, "05-trip")
     }
 
-    func test06Document() throws {
-        let app = launch(.document)
-        unlockIfAsked(app)
-        XCTAssertTrue(app.staticTexts["050000000"].firstMatch.waitForExistence(timeout: 30))
-        keep(app, "06-document")
-    }
-
-    func test07Search() throws {
+    func test06Search() throws {
         let app = launch(.search)
         let field = app.searchFields.firstMatch
         XCTAssertTrue(field.waitForExistence(timeout: 30))
@@ -61,7 +54,14 @@ final class AppStoreScreenshots: XCTestCase {
         // Searching ends with the keyboard's search key, so the results show whole.
         field.typeText("golf\n")
         XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS[c] %@", "Golf")).firstMatch.waitForExistence(timeout: 30))
-        keep(app, "07-search")
+        keep(app, "06-search")
+    }
+
+    func test07Document() throws {
+        let app = launch(.document)
+        unlockIfAsked(app)
+        XCTAssertTrue(app.staticTexts["050000000"].firstMatch.waitForExistence(timeout: 30))
+        keep(app, "07-document")
     }
 
     // MARK: Helpers

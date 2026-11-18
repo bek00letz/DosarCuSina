@@ -81,17 +81,17 @@ scripts/architecture-check.sh
 
 The screenshots are taken by UI tests, never by hand, so they can be taken again whenever a screen changes. The `DosarCuSinaScreenshots` scheme launches a development build with `-DosarScreenshots <scene>`: the app opens on a binder of its own (a separate store that never syncs, so the phone's binder is never touched), filled once with a made-up household through the app's own actions (`ScreenshotStage`), at the screen the scene names. A release build has none of it.
 
-On GitHub: Actions › Screenshots › Run workflow. It also runs on a pull request that changes the household, the UI tests, the captions or the framing. The run's artifacts are `screenshots` (the raw captures, a folder per device, light and dark) and `framed-screenshots` (each framing style with its captions, at App Store Connect's pixel sizes). By default it takes the iPhone 6.9″ (iPhone 17 Pro Max, 1320 × 2868) and the iPad 13″ (iPad Pro 13-inch, 2064 × 2752).
+On GitHub: Actions › Screenshots › Run workflow. It also runs on a pull request that changes the household, the UI tests, the captions or the framing. The run's artifacts are `screenshots` (the raw captures, a folder per device, light and dark) and `framed-screenshots` (the light ones with their captions, at App Store Connect's pixel sizes, a folder per device, numbered in the order to upload them). By default it takes the iPhone 6.9″ (iPhone 17 Pro Max, 1320 × 2868) and the iPad 13″ (iPad Pro 13-inch, 2064 × 2752).
 
 On a Mac, with a simulator that is already installed (each takes a few minutes; the status bar reads 9:41, Face ID is enrolled on the simulator). Each run makes its household in a store of its own; the trips the app keeps on that simulator are replaced by the screenshots' trip, so use a simulator you don't otherwise test trips on:
 
 ```sh
 scripts/app-store-screenshots.sh /tmp/screenshots "iPad Pro 13-inch (M5)"
-swift marketing/frame-screenshots.swift /tmp/screenshots /tmp/framed            # every style
-swift marketing/frame-screenshots.swift /tmp/screenshots /tmp/framed above       # one style
+swift marketing/frame-screenshots.swift /tmp/screenshots /tmp/framed
+swift marketing/frame-screenshots.swift /tmp/screenshots /tmp/framed --only 03-car   # one screen
 ```
 
-The captions are text in [marketing/app-store/captions.json](marketing/app-store/captions.json); the listing (name, subtitle, description, keywords, review notes, age rating) is in [marketing/app-store/ro.md](marketing/app-store/ro.md), with an optional English one in [en.md](marketing/app-store/en.md). `python3 marketing/check-listing.py` checks every field against App Store Connect's limits.
+The captions are text in [marketing/app-store/captions.json](marketing/app-store/captions.json); the listing (name, subtitle, description, keywords, review notes, age rating) is in [marketing/app-store/ro.md](marketing/app-store/ro.md), in Romanian only (DECISIONS, 2026-11-18). `python3 marketing/check-listing.py` checks every field against App Store Connect's limits.
 
 ## Repository layout
 
