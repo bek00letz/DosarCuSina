@@ -39,6 +39,51 @@ struct VisitTests {
         #expect(context.hasChanges == false, "Everything was saved together")
     }
 
+    /// An invoice's labour line („Manoperă”, „Mână de lucru”), whoever wrote it, is kept on the
+    /// visit as its labour cost: never a part, so Istoric's pocket, search and "when was it last
+    /// done" never list it, and the title counts only the work.
+    @Test func labourIsTheVisitsWorkNeverAPart() throws {
+        let context = try makeContext()
+        let template = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.vehicle))
+        let car = try AssetActions(context: context, calendar: .bucharest, now: { noon("2026-01-10") }).create(name: "VW Golf 2018", template: template, values: FieldValues())
+
+        let entry = try HistoryActions(context: context, now: { noon("2026-06-01") }).recordVisit(
+            on: car,
+            checklist: [.init(componentKey: "engine.oil", cost: Money(420))],
+            extraItems: [
+                LineItemDraft(name: "Odorizant", cost: Money(20)),
+                LineItemDraft(name: "Manoperă", cost: Money(200)),
+                LineItemDraft(name: "Mână de lucru 1,5 ore", cost: Money(150)),
+            ],
+            calendar: .bucharest
+        ).value
+        let labour = entry.items?.filter { LabourLine.matches($0.name) } ?? []
+        #expect(labour.count == 2)
+        #expect(labour.allSatisfy { $0.componentKey == nil }, "Labour is no part")
+        #expect(labour.map(\.laborCostAmount).sorted { ($0 ?? 0) < ($1 ?? 0) } == [150, 200], "Kept as labour")
+        #expect(labour.allSatisfy { $0.costAmount == nil })
+        #expect(Set(labour.compactMap(\.totalCost)) == [Money(150), Money(200)], "What it cost is the same")
+        #expect(entry.items?.first { $0.name == "Odorizant" }?.componentKey?.hasPrefix(ComponentCatalog.customKeyPrefix) == true, "A part of one's own stays a part")
+        #expect(entry.title.hasSuffix(", Odorizant"), "The title names the work, not the labour: \(entry.title)")
+        #expect(!entry.title.contains("Manoperă"))
+
+        let tracked = MaintenanceLog.trackedComponents(in: HistoryItemSnapshot.items(of: car))
+        #expect(!tracked.contains { $0.contains("manopera") || $0.contains("mana") })
+        #expect(tracked.contains("engine.oil"))
+    }
+
+    @Test("Labour's words match where a word starts, and nothing longer")
+    func labourWords() {
+        #expect(LabourLine.matches("Manoperă 1,5 ore"))
+        #expect(LabourLine.matches("Manopera service"))
+        #expect(LabourLine.matches("MÂNĂ DE LUCRU"))
+        #expect(LabourLine.matches("Ore lucrate: 2"))
+        #expect(!LabourLine.matches("Analize de laborator"), "A laboratory is no labour")
+        #expect(!LabourLine.matches("Filtru ulei"))
+        #expect(LabourLine.work(["Plăcuțe frână față", "Manoperă"]) == ["Plăcuțe frână față"])
+        #expect(LabourLine.work(["Manoperă"]) == ["Manoperă"], "A visit of labour alone keeps its name")
+    }
+
     @Test func checklistGroupsComponentsInCatalogOrder() {
         let groups = ComponentCatalog.checklist(for: BuiltInComponents.vehicle)
         #expect(groups.first?.title == "Frâne")

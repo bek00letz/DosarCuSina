@@ -145,7 +145,7 @@ struct VisitForm: Equatable {
 
     /// The record's title in Istoric: what was done when it is one or two things, else the kind's.
     func entryTitle(for items: [String]) -> String {
-        let names = items.filter { !$0.isEmpty }
+        let names = LabourLine.work(items.filter { !$0.isEmpty })
         switch names.count {
         case 0: return shape.entryTitle
         case 1...2: return names.joined(separator: ", ")

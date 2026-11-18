@@ -24,6 +24,15 @@ enum CaptureLexicon {
         "km bord", "kilometraj", "odometru", "garanti", "valabil",
     ]
 
+    /// Words of a line that is the work itself, never a part or a job done to one: the labour
+    /// ("Manoperă 1,5 ore", „mână de lucru”, hours worked), read by `LabourLine` on every line,
+    /// whoever wrote it (a reader, a model, the person). Each word matches only where a word
+    /// starts, so it reaches its endings („manoperei”) and nothing longer: never "labor", which
+    /// a laboratory's „laborator” starts with.
+    static let labourWords = [
+        "manopera", "mana de lucru", "mana lucru", "ore lucrate", "ore de lucru", "ore munca", "ore de munca", "labour",
+    ]
+
     /// Labels that start the buyer's block: a firm named within two lines after one is the
     /// customer, never the issuer.
     static let buyerLabels = ["client", "cumparator", "beneficiar", "asigurat", "contractant"]
