@@ -41,6 +41,122 @@
         }
       }
     },
+    "%lld fișiere nu au ajuns." : {
+      "comment" : "Share sheet, after some files arrived: how many didn't. One is a word: „Un fișier nu a ajuns.”",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld fișiere nu au ajuns."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Un fișier nu a ajuns."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld de fișiere nu au ajuns."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld fișiere nu au mai încăput pe telefon." : {
+      "comment" : "Share sheet, after some files arrived: how many didn't fit on the phone. One is a word: „Un fișier nu a mai încăput pe telefon.”",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld fișiere nu au mai încăput pe telefon."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Un fișier nu a mai încăput pe telefon."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld de fișiere nu au mai încăput pe telefon."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld fișiere sunt încă în iCloud." : {
+      "comment" : "Share sheet, after some files arrived: how many are still in iCloud. One is a word: „Un fișier e încă în iCloud.”",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld fișiere sunt încă în iCloud."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Un fișier e încă în iCloud."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld de fișiere sunt încă în iCloud."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld fișiere sunt prea mari." : {
+      "comment" : "Share sheet, after some files arrived: how many are too large. One is a word: „Un fișier e prea mare.”",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld fișiere sunt prea mari."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Un fișier e prea mare."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld de fișiere sunt prea mari."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld luni" : {
       "comment" : "A number of months, with Romanian plural forms.",
       "localizations" : {
@@ -157,8 +273,34 @@
         }
       }
     },
-    "Aplicația din care l-ai trimis nu mi-a dat voie să-l citesc. Salvează-l întâi în Fișiere, apoi trimite-l de acolo." : {
-      "comment" : "Share sheet: what to do when the file can't be read."
+    "Aplicația din care ai trimis cele %lld fișiere nu mi-a dat voie să le citesc. Salvează-le întâi în Fișiere, apoi trimite-le de acolo." : {
+      "comment" : "Share failed: what to do when the files can't be read. Plural variations without the number: one „Aplicația din care l-ai trimis nu mi-a dat voie să-l citesc. Salvează-l întâi în Fișiere, apoi trimite-l de acolo.”, several with „le”.",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Aplicația din care le-ai trimis nu mi-a dat voie să le citesc. Salvează-le întâi în Fișiere, apoi trimite-le de acolo."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Aplicația din care l-ai trimis nu mi-a dat voie să-l citesc. Salvează-l întâi în Fișiere, apoi trimite-l de acolo."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Aplicația din care le-ai trimis nu mi-a dat voie să le citesc. Salvează-le întâi în Fișiere, apoi trimite-le de acolo."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Atinge notificarea ca să continui. Te așteaptă în aplicație, la De verificat." : {
       "comment" : "Share sheet: a notice is on its way."
@@ -166,8 +308,150 @@
     "azi" : {
       "comment" : "When: due today."
     },
-    "Ca să-l descarc, telefonul are nevoie de internet. Conectează-te, apoi trimite-l din nou." : {
-      "comment" : "Share sheet: downloading the file needs the internet."
+    "Ca să descarc cele %lld fișiere, telefonul are nevoie de internet. Conectează-te, apoi trimite-le din nou." : {
+      "comment" : "Share failed: downloading the files needs the internet. Plural variations without the number: one „Ca să-l descarc, telefonul are nevoie de internet. Conectează-te, apoi trimite-l din nou.”, several „Ca să le descarc, telefonul are nevoie de internet. Conectează-te, apoi trimite-le din nou.”",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Ca să le descarc, telefonul are nevoie de internet. Conectează-te, apoi trimite-le din nou."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Ca să-l descarc, telefonul are nevoie de internet. Conectează-te, apoi trimite-l din nou."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Ca să le descarc, telefonul are nevoie de internet. Conectează-te, apoi trimite-le din nou."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Cele %lld fișiere nu s-au putut copia. Încearcă din nou din aplicația din care le-ai trimis." : {
+      "comment" : "Share failed: the copy failed for a reason the phone didn't name. Plural variations without the number: one „Fișierul nu s-a putut copia. Încearcă din nou din aplicația din care l-ai trimis.”, several „Fișierele nu s-au putut copia. … le-ai trimis.”",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fișierele nu s-au putut copia. Încearcă din nou din aplicația din care le-ai trimis."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fișierul nu s-a putut copia. Încearcă din nou din aplicația din care l-ai trimis."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fișierele nu s-au putut copia. Încearcă din nou din aplicația din care le-ai trimis."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Cele %lld fișiere nu s-au trimis" : {
+      "comment" : "Share failed: the copy failed. Plural variations without the number: one „Nu s-a trimis”, several „Nu s-au trimis”.",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu s-au trimis"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu s-a trimis"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu s-au trimis"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Cele %lld fișiere sunt încă în iCloud" : {
+      "comment" : "Share failed: the files are in iCloud and couldn't be downloaded. Plural variations without the number: one „Fișierul e încă în iCloud”, several „Fișierele sunt încă în iCloud”.",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fișierele sunt încă în iCloud"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fișierul e încă în iCloud"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fișierele sunt încă în iCloud"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Cele %lld fișiere sunt prea mari" : {
+      "comment" : "Share failed: the files or the share are too large. Plural variations without the number: one „Fișierul e prea mare”, several „Fișierele sunt prea mari”.",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fișierele sunt prea mari"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fișierul e prea mare"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fișierele sunt prea mari"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "depășit de %@" : {
       "comment" : "When: late past its grace, by a duration such as '3 zile'."
@@ -214,20 +498,63 @@
     "Deschide Dosar cu Șină ca să continui. Te așteaptă la De verificat." : {
       "comment" : "Share sheet: no notice, notifications aren't allowed."
     },
-    "Deschide Dosar cu Șină o dată, apoi trimite-l din nou." : {
-      "comment" : "Share sheet: what to do when the shared folder isn't available."
+    "Deschide Dosar cu Șină o dată, apoi trimite cele %lld fișiere din nou." : {
+      "comment" : "Share failed: what to do when the shared folder isn't available. Plural variations without the number: one „Deschide Dosar cu Șină o dată, apoi trimite-l din nou.”, several „… apoi trimite-le din nou.”",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Deschide Dosar cu Șină o dată, apoi trimite-le din nou."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Deschide Dosar cu Șină o dată, apoi trimite-l din nou."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Deschide Dosar cu Șină o dată, apoi trimite-le din nou."
+                }
+              }
+            }
+          }
+        }
+      }
     },
-    "Fă loc din Configurări › General › Spațiu iPhone, apoi trimite-l din nou." : {
-      "comment" : "Share sheet: where to free up space. The path names the iPhone's own Settings screens."
-    },
-    "Fișierul e încă în iCloud" : {
-      "comment" : "Share sheet: the file is in iCloud and couldn't be downloaded."
-    },
-    "Fișierul e prea mare" : {
-      "comment" : "Share sheet: a file or the share is too large."
-    },
-    "Fișierul nu s-a putut copia. Încearcă din nou din aplicația din care l-ai trimis." : {
-      "comment" : "Share sheet: the copy failed for a reason the phone didn't name."
+    "Fă loc din Configurări › General › Spațiu iPhone, apoi trimite cele %lld fișiere din nou." : {
+      "comment" : "Share failed: where to free up space. The path names the iPhone's own Settings screens. Plural variations without the number: one „Fă loc din Configurări › General › Spațiu iPhone, apoi trimite-l din nou.”, several „… apoi trimite-le din nou.”",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fă loc din Configurări › General › Spațiu iPhone, apoi trimite-le din nou."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fă loc din Configurări › General › Spațiu iPhone, apoi trimite-l din nou."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fă loc din Configurări › General › Spațiu iPhone, apoi trimite-le din nou."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "în %@" : {
       "comment" : "In a duration such as '5 zile' or '2 luni și 3 săptămâni'. A duration of one ('o lună', 'un an') is joined: 'într-o lună'."
@@ -241,23 +568,156 @@
     "mâine" : {
       "comment" : "When: due tomorrow."
     },
-    "Nu am unde să pun fișierul" : {
-      "comment" : "Share sheet: the app's shared folder isn't available."
+    "Nu am avut unde să pun %lld fișiere." : {
+      "comment" : "Share sheet, after some files arrived: how many had nowhere to go. One is a word: „Nu am avut unde să pun un fișier.”",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu am avut unde să pun %lld fișiere."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu am avut unde să pun un fișier."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu am avut unde să pun %lld de fișiere."
+                }
+              }
+            }
+          }
+        }
+      }
     },
-    "Nu l-am putut descărca acum. Deschide-l o dată în Fișiere, apoi trimite-l din nou." : {
-      "comment" : "Share sheet: what to do with a file still in iCloud."
+    "Nu am putut descărca cele %lld fișiere acum. Deschide-le o dată în Fișiere, apoi trimite-le din nou." : {
+      "comment" : "Share failed: what to do with files still in iCloud. Plural variations without the number: one „Nu l-am putut descărca acum. Deschide-l o dată în Fișiere, apoi trimite-l din nou.”, several „Nu le-am putut descărca acum. Deschide-le o dată în Fișiere, apoi trimite-le din nou.”",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu le-am putut descărca acum. Deschide-le o dată în Fișiere, apoi trimite-le din nou."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu l-am putut descărca acum. Deschide-l o dată în Fișiere, apoi trimite-l din nou."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu le-am putut descărca acum. Deschide-le o dată în Fișiere, apoi trimite-le din nou."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Nu am putut deschide %lld fișiere." : {
+      "comment" : "Share sheet, after some files arrived: how many couldn't be read. One is a word: „Nu am putut deschide un fișier.”",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu am putut deschide %lld fișiere."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu am putut deschide un fișier."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu am putut deschide %lld de fișiere."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Nu am unde să pun cele %lld fișiere" : {
+      "comment" : "Share failed: the app's shared folder isn't available. Plural variations without the number: one „Nu am unde să pun fișierul”, several „Nu am unde să pun fișierele”.",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu am unde să pun fișierele"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu am unde să pun fișierul"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu am unde să pun fișierele"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Nu mai e loc pe telefon" : {
       "comment" : "Share sheet: the phone is out of space."
     },
-    "Nu pot deschide fișierul" : {
-      "comment" : "Share sheet: the sending app didn't allow reading the file."
+    "Nu pot deschide cele %lld fișiere" : {
+      "comment" : "Share failed: the sending app didn't allow reading the files. Plural variations without the number: one „Nu pot deschide fișierul”, several „Nu pot deschide fișierele”.",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu pot deschide fișierele"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu pot deschide fișierul"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu pot deschide fișierele"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Nu pot primi asta" : {
       "comment" : "Share sheet: nothing it can read."
-    },
-    "Nu s-a trimis" : {
-      "comment" : "Share sheet: the copy failed."
     },
     "Pot primi poze, PDF-uri și text. Trimite factura sau actul ca poză sau PDF." : {
       "comment" : "Share sheet: what it can read."
@@ -271,8 +731,34 @@
     "Te întorci în aplicație și vezi unde a ajuns." : {
       "comment" : "Share sheet: the practice invoice, sent from inside the app."
     },
-    "Telefonul nu mi-a dat fișierul. Încearcă din nou din aplicația din care l-ai trimis." : {
-      "comment" : "Share sheet: the sending app handed over nothing."
+    "Telefonul nu mi-a dat cele %lld fișiere. Încearcă din nou din aplicația din care le-ai trimis." : {
+      "comment" : "Share failed: the sending app handed over nothing. Plural variations without the number: one „Telefonul nu mi-a dat fișierul. Încearcă din nou din aplicația din care l-ai trimis.”, several „Telefonul nu mi-a dat fișierele. … le-ai trimis.”",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Telefonul nu mi-a dat fișierele. Încearcă din nou din aplicația din care le-ai trimis."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Telefonul nu mi-a dat fișierul. Încearcă din nou din aplicația din care l-ai trimis."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Telefonul nu mi-a dat fișierele. Încearcă din nou din aplicația din care le-ai trimis."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Trimite actele câte unul, sau ca poze în loc de un PDF mare." : {
       "comment" : "Share sheet: what to do with a file that is too large."

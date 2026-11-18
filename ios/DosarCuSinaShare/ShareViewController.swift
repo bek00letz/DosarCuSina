@@ -67,8 +67,10 @@ final class ShareModel {
     /// Receives every item into the share's holding folder in the inbox, then sorts what
     /// arrived into inbox items (`ShareInbox.plan`): photos together, each PDF alone.
     private static func receiveEveryWay(_ providers: [NSItemProvider]) async -> Phase {
+        // Before anything is received, a failure is about every file shared.
+        let shared = max(providers.count, 1)
         guard let inbox = ShareInbox.shared() else {
-            return failed(.inboxUnavailable, way: "inbox", in: nil)
+            return failed(.inboxUnavailable, way: "inbox", in: nil, files: shared)
         }
         let holding: URL
         do {
@@ -76,12 +78,13 @@ final class ShareModel {
             inbox.removeAbandonedStaging()
             holding = try inbox.makeStagingFolder()
         } catch {
-            return failed(error, way: "inbox", in: inbox)
+            return failed(error, way: "inbox", in: inbox, files: shared)
         }
         defer { inbox.discard(staging: holding) }
 
         var received: [ShareReceiving.Received] = []
-        var failures: [ShareFailure] = []
+        // What didn't arrive, told beside what did (`ShareConfirmation`'s note) or on its own.
+        var missed = ShareFailure.Tally()
         var sharedBytes = 0
         for (index, provider) in providers.enumerated() where received.count < ShareInbox.maxFiles {
             switch await ShareReceiving.receive(provider, into: holding, index: index, room: ShareInbox.room(sharedSoFar: sharedBytes)) {
@@ -91,12 +94,12 @@ final class ShareModel {
             case .unsupported:
                 continue
             case .failed(let failure, let attempts):
-                failures.append(failure)
+                missed.add(failure)
                 ShareFailureLog.record(ShareFailureLog.Entry(at: Date(), failure: failure, attempts: attempts), in: inbox)
             }
         }
         guard !received.isEmpty else {
-            return ShareFailure.mostTelling(failures).map(Phase.failed) ?? .unsupported
+            return .nothingSaved(missed.missed)
         }
 
         var saved: [InboxItem] = []
@@ -114,31 +117,31 @@ final class ShareModel {
             } catch {
                 if let staging { inbox.discard(staging: staging) }
                 let attempt = ShareFailureLog.Attempt(way: "commit", error: error)
-                failures.append(attempt.failure)
+                missed.add(attempt.failure, files: planned.indices.count)
                 ShareFailureLog.record(ShareFailureLog.Entry(at: Date(), failure: attempt.failure, attempts: [attempt]), in: inbox)
             }
         }
         guard !saved.isEmpty else {
-            return .failed(ShareFailure.mostTelling(failures) ?? .couldNotCopy)
+            return .nothingSaved(missed.missed)
         }
         AppGroup.postInboxDidChange()
         // A quiet notice the person can tap to continue, only if they already allow
         // notifications; the extension never asks (`InboxNotice`).
         let notified = await InboxNotice.announce(waiting: inbox.waitingItems() ?? [], center: SystemInboxNoticeCenter())
-        return .saved(count: saved.count, next: InboxNotice.nextStep(saved: saved, notified: notified))
+        return .saved(count: saved.count, next: InboxNotice.nextStep(saved: saved, notified: notified), notArrived: missed.missed)
     }
 
     /// A share that failed before any item could be received: logged, and told.
-    private static func failed(_ error: any Error, way: String, in inbox: ShareInbox?) -> Phase {
+    private static func failed(_ error: any Error, way: String, in inbox: ShareInbox?, files: Int) -> Phase {
         let attempt = ShareFailureLog.Attempt(way: way, error: error)
         ShareFailureLog.record(ShareFailureLog.Entry(at: Date(), failure: attempt.failure, attempts: [attempt]), in: inbox)
-        return .failed(attempt.failure)
+        return .failed(attempt.failure, count: files)
     }
 
-    private static func failed(_ failure: ShareFailure, way: String, in inbox: ShareInbox?) -> Phase {
+    private static func failed(_ failure: ShareFailure, way: String, in inbox: ShareInbox?, files: Int) -> Phase {
         let attempt = ShareFailureLog.Attempt(way: way, failure: failure, domain: "none", code: 0)
         ShareFailureLog.record(ShareFailureLog.Entry(at: Date(), failure: failure, attempts: [attempt]), in: inbox)
-        return .failed(failure)
+        return .failed(failure, count: files)
     }
 }
 
@@ -205,6 +208,15 @@ struct ShareConfirmationView: View {
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
+                // What didn't arrive of the same share, and what to do: one confirmation, read
+                // with the rest.
+                if let note = confirmation.note {
+                    Text(verbatim: note)
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, DS.Space.s)
+                }
             }
             .accessibilityElement(children: .combine)
         }
