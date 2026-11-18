@@ -77,6 +77,22 @@ Every pull request runs the same script on GitHub (the `build-and-test` check, o
 scripts/architecture-check.sh
 ```
 
+## App Store screenshots and listing
+
+The screenshots are taken by UI tests, never by hand, so they can be taken again whenever a screen changes. The `DosarCuSinaScreenshots` scheme launches a development build with `-DosarScreenshots <scene>`: the app opens on a binder of its own (a separate store that never syncs, so the phone's binder is never touched), filled once with a made-up household through the app's own actions (`ScreenshotStage`), at the screen the scene names. A release build has none of it.
+
+On GitHub: Actions › Screenshots › Run workflow. It also runs on a pull request that changes the household, the UI tests, the captions or the framing. The run's artifacts are `screenshots` (the raw captures, a folder per device, light and dark) and `framed-screenshots` (each framing style with its captions, at App Store Connect's pixel sizes). By default it takes the iPhone 6.9″ (iPhone 17 Pro Max, 1320 × 2868) and the iPad 13″ (iPad Pro 13-inch, 2064 × 2752).
+
+On a Mac, with a simulator that is already installed (each takes a few minutes; the status bar reads 9:41, Face ID is enrolled on the simulator):
+
+```sh
+scripts/app-store-screenshots.sh /tmp/screenshots "iPad Pro 13-inch (M5)"
+swift marketing/frame-screenshots.swift /tmp/screenshots /tmp/framed            # every style
+swift marketing/frame-screenshots.swift /tmp/screenshots /tmp/framed above       # one style
+```
+
+The captions are text in [marketing/app-store/captions.json](marketing/app-store/captions.json); the listing (name, subtitle, description, keywords, review notes, age rating) is in [marketing/app-store/ro.md](marketing/app-store/ro.md), with an optional English one in [en.md](marketing/app-store/en.md). `python3 marketing/check-listing.py` checks every field against App Store Connect's limits.
+
 ## Repository layout
 
 | Path | What's there |
@@ -86,11 +102,13 @@ scripts/architecture-check.sh
 | `ios/DosarCuSinaShare/` | The share extension. |
 | `ios/Shared/` | Code compiled into the app and its extensions: the App Group handoff. |
 | `ios/DosarCuSinaTests/` | Tests. |
+| `ios/DosarCuSinaScreenshots/` | The UI tests that take the App Store's screenshots (their own scheme, never in the test run). |
 | `ios/Legacy/` | The first version of the app. Not compiled, kept as a way back. |
 | `shared/` | The `.dosar` format and fixtures, Romanian administrative standards, starter templates. |
 | `android/` | The paused Android version. |
 | `tests/` | The test runner, plus legacy and Android scripts. |
 | `docs/` | Decisions, handoff notes, copy guide, archive. |
+| `marketing/` | The App Store listing's text, the screenshots' captions and the script that frames them. |
 | `site/` | The public web pages: the privacy policy and help, in Romanian and English, published with GitHub Pages. |
 | `scripts/`, `.githooks/` | The privacy and architecture checks, the architecture exceptions and fixtures, and the hook that runs both. |
 | `.github/` | Code owners, templates, and the workflows for the checks and the web pages. |

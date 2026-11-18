@@ -23,6 +23,17 @@ public struct BuildInfo: Equatable, Sendable {
         ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     }
 
+    /// Whether the app was launched for the App Store's screenshots (`ScreenshotStage`), which
+    /// only a development build can be: the binder is a store of its own that never syncs, so a
+    /// screenshot run never touches the binder of the phone it runs on.
+    public static var isScreenshotRun: Bool {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains(ScreenshotStage.argument)
+        #else
+        false
+        #endif
+    }
+
     /// "1.0 (build 180) · 7754ec8", or without the commit for builds made outside git.
     public var summary: String {
         let versionAndBuild = String(localized: "\(version) (build \(build))", comment: "About: version and build number, e.g. '1.0 (build 180)'.")

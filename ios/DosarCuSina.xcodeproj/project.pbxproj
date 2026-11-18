@@ -33,6 +33,13 @@
 			remoteGlobalIDString = D05A01302C00000000000130;
 			remoteInfo = DosarCuSinaShare;
 		};
+		D05A03062C00000000000306 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D05A00092C00000000000009 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D05A00052C00000000000005;
+			remoteInfo = DosarCuSina;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -55,6 +62,7 @@
 		D05A00102C00000000000010 /* DosarCuSinaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DosarCuSinaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D05A01012C00000000000101 /* DosarCuSinaWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DosarCuSinaWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		D05A01022C00000000000102 /* DosarCuSinaShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DosarCuSinaShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		D05A03002C00000000000300 /* DosarCuSinaScreenshots.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DosarCuSinaScreenshots.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -92,6 +100,7 @@
 		D05A01032C00000000000103 /* DosarCuSinaWidgets */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (D05A01062C00000000000106 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = DosarCuSinaWidgets; sourceTree = "<group>"; };
 		D05A01042C00000000000104 /* DosarCuSinaShare */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (D05A01072C00000000000107 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = DosarCuSinaShare; sourceTree = "<group>"; };
 		D05A01052C00000000000105 /* Shared */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (D05A01082C00000000000108 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Shared; sourceTree = "<group>"; };
+		D05A03012C00000000000301 /* DosarCuSinaScreenshots */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DosarCuSinaScreenshots; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -123,6 +132,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D05A03022C00000000000302 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -134,6 +150,7 @@
 				D05A01052C00000000000105 /* Shared */,
 				D05A01032C00000000000103 /* DosarCuSinaWidgets */,
 				D05A01042C00000000000104 /* DosarCuSinaShare */,
+				D05A03012C00000000000301 /* DosarCuSinaScreenshots */,
 				D05A00042C00000000000004 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -145,6 +162,7 @@
 				D05A00102C00000000000010 /* DosarCuSinaTests.xctest */,
 				D05A01012C00000000000101 /* DosarCuSinaWidgets.appex */,
 				D05A01022C00000000000102 /* DosarCuSinaShare.appex */,
+				D05A03002C00000000000300 /* DosarCuSinaScreenshots.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -242,6 +260,27 @@
 			productReference = D05A01022C00000000000102 /* DosarCuSinaShare.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		D05A03032C00000000000303 /* DosarCuSinaScreenshots */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D05A03082C00000000000308 /* Build configuration list for PBXNativeTarget "DosarCuSinaScreenshots" */;
+			buildPhases = (
+				D05A03042C00000000000304 /* Sources */,
+				D05A03022C00000000000302 /* Frameworks */,
+				D05A03052C00000000000305 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D05A03072C00000000000307 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				D05A03012C00000000000301 /* DosarCuSinaScreenshots */,
+			);
+			name = DosarCuSinaScreenshots;
+			productName = DosarCuSinaScreenshots;
+			productReference = D05A03002C00000000000300 /* DosarCuSinaScreenshots.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -265,6 +304,10 @@
 					D05A01302C00000000000130 = {
 						CreatedOnToolsVersion = 27.2;
 					};
+					D05A03032C00000000000303 = {
+						CreatedOnToolsVersion = 27.2;
+						TestTargetID = D05A00052C00000000000005;
+					};
 				};
 			};
 			buildConfigurationList = D05A000A2C0000000000000A /* Build configuration list for PBXProject "DosarCuSina" */;
@@ -285,6 +328,7 @@
 				D05A00132C00000000000013 /* DosarCuSinaTests */,
 				D05A01102C00000000000110 /* DosarCuSinaWidgets */,
 				D05A01302C00000000000130 /* DosarCuSinaShare */,
+				D05A03032C00000000000303 /* DosarCuSinaScreenshots */,
 			);
 		};
 /* End PBXProject section */
@@ -312,6 +356,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		D05A01332C00000000000133 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D05A03052C00000000000305 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -418,6 +469,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D05A03042C00000000000304 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -435,6 +493,11 @@
 			isa = PBXTargetDependency;
 			target = D05A01302C00000000000130 /* DosarCuSinaShare */;
 			targetProxy = D05A01232C00000000000123 /* PBXContainerItemProxy */;
+		};
+		D05A03072C00000000000307 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D05A00052C00000000000005 /* DosarCuSina */;
+			targetProxy = D05A03062C00000000000306 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -791,6 +854,40 @@
 			};
 			name = Release;
 		};
+		D05A03092C00000000000309 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4NDY4PQ2LB;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ar.dosarcusina.screenshots;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = DosarCuSina;
+			};
+			name = Debug;
+		};
+		D05A030A2C0000000000030A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4NDY4PQ2LB;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ar.dosarcusina.screenshots;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = DosarCuSina;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -835,6 +932,15 @@
 			buildConfigurations = (
 				D05A01362C00000000000136 /* Debug */,
 				D05A01372C00000000000137 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D05A03082C00000000000308 /* Build configuration list for PBXNativeTarget "DosarCuSinaScreenshots" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D05A03092C00000000000309 /* Debug */,
+				D05A030A2C0000000000030A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

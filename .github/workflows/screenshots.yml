@@ -1,0 +1,70 @@
+# The App Store's screenshots, on demand (Actions › Screenshots › Run workflow) and on a pull
+# request that changes what they're made from (the household, the UI tests, the captions, the
+# framing): builds the app with its screenshot UI tests (ios/DosarCuSinaScreenshots) and
+# takes every screen of its made-up household on the sizes App Store Connect asks for, in
+# light and dark (scripts/app-store-screenshots.sh), then frames them with their captions
+# (marketing/frame-screenshots.swift). Both sets are kept as the run's artifacts.
+name: Screenshots
+
+on:
+  workflow_dispatch:
+    inputs:
+      simulators:
+        description: "Simulators, comma-separated (iPhone 6.9″ and iPad 13″)"
+        default: "iPhone 17 Pro Max,iPad Pro 13-inch (M5)"
+        required: true
+  pull_request:
+    paths:
+      - ios/DosarCuSina/Services/Screenshots/**
+      - ios/DosarCuSinaScreenshots/**
+      - scripts/app-store-screenshots.sh
+      - marketing/**
+      - .github/workflows/screenshots.yml
+
+permissions:
+  contents: read
+
+# A newer push to the same pull request replaces the run in progress.
+concurrency:
+  group: screenshots-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  screenshots:
+    name: screenshots
+    runs-on: xcode-27
+    timeout-minutes: 90
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Show the Xcode and simulators in use
+        run: |
+          xcodebuild -version
+          xcrun simctl list runtimes available
+
+      - name: Take the screenshots
+        env:
+          SIMULATORS: ${{ inputs.simulators || 'iPhone 17 Pro Max,iPad Pro 13-inch (M5)' }}
+          DERIVED_DATA_PATH: ${{ runner.temp }}/DerivedData
+        run: |
+          IFS=',' read -ra simulators <<< "$SIMULATORS"
+          scripts/app-store-screenshots.sh "$RUNNER_TEMP/screenshots" "${simulators[@]}"
+
+      - name: Frame them with their captions
+        run: swift marketing/frame-screenshots.swift "$RUNNER_TEMP/screenshots" "$RUNNER_TEMP/framed"
+
+      - name: Keep the screenshots
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshots
+          path: ${{ runner.temp }}/screenshots
+          retention-days: 30
+
+      - name: Keep the framed screenshots
+        uses: actions/upload-artifact@v7
+        with:
+          name: framed-screenshots
+          path: ${{ runner.temp }}/framed
+          retention-days: 30
+          if-no-files-found: ignore

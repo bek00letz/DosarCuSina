@@ -92,6 +92,10 @@ struct DosarCuSinaApp: App {
         // Built-in categories, the repair list and the household's own deadlines, each saved
         // through UnitOfWork.
         LaunchData.prepare(in: container.mainContext, today: CalendarDay(Date()))
+        #if DEBUG
+        // The App Store's screenshots: their made-up binder, at the screen they show.
+        ScreenshotStage.prepare(in: container.mainContext, navigator: navigator)
+        #endif
         // Capture recognizes documents already in the binder by their fingerprint.
         Task {
             await CaptureDocumentStore.shared().setDuplicateLookup { fingerprint in
