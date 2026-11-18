@@ -220,45 +220,35 @@ public enum ShareReceiving {
         switch way {
         case .file(let identifier):
             return try await withCheckedThrowingContinuation { continuation in
+                let answer = FirstAnswer(continuation)
                 let loading = provider.loadFileRepresentation(forTypeIdentifier: identifier) { url, error in
                     // The system's copy only exists while this runs, so it is copied here.
-                    if let error {
-                        continuation.resume(throwing: error)
-                        return
-                    }
-                    guard let url else {
-                        continuation.resume(returning: nil)
-                        return
-                    }
-                    let type = UTType(identifier)
-                    let file = target(base, extension: url.pathExtension.isEmpty ? type?.preferredFilenameExtension : url.pathExtension)
-                    continuation.resume(with: Result {
+                    answer.resume {
+                        if let error { throw error }
+                        guard let url else { return nil }
+                        let type = UTType(identifier)
+                        let file = target(base, extension: url.pathExtension.isEmpty ? type?.preferredFilenameExtension : url.pathExtension)
                         let bytes = try ShareInbox.copyStreaming(from: url, to: file, limit: room, stop: stop)
                         // The system names its copy itself ("PDF document.pdf"): only the sender's name counts.
                         return .copied(file: file, bytes: bytes, hint: ShareInbox.type(ofFile: url) ?? type, name: nil)
-                    })
+                    }
                 }
                 stop?.onStop { loading.cancel() }
             }
         case .data(let identifier):
             return try await withCheckedThrowingContinuation { continuation in
+                let answer = FirstAnswer(continuation)
                 let loading = provider.loadDataRepresentation(forTypeIdentifier: identifier) { data, error in
-                    if let error {
-                        continuation.resume(throwing: error)
-                        return
-                    }
-                    guard let data, !data.isEmpty else {
-                        continuation.resume(returning: nil)
-                        return
-                    }
-                    let type = UTType(identifier)
-                    let file = target(base, extension: type?.preferredFilenameExtension)
-                    continuation.resume(with: Result {
+                    answer.resume {
+                        if let error { throw error }
+                        guard let data, !data.isEmpty else { return nil }
+                        let type = UTType(identifier)
+                        let file = target(base, extension: type?.preferredFilenameExtension)
                         try stop?.check()
                         guard data.count <= room else { throw ShareInbox.InboxError.tooLarge }
                         try data.write(to: file, options: [.atomic, .completeFileProtection])
                         return .copied(file: file, bytes: data.count, hint: type, name: nil)
-                    })
+                    }
                 }
                 stop?.onStop { loading.cancel() }
             }
@@ -323,6 +313,28 @@ public enum ShareReceiving {
         default: nil
         }
         return url?.isFileURL == true ? url : nil
+    }
+}
+
+/// A system loader's answer, taken once. Cancelling a load answers it with the cancellation's
+/// error, and the item may still arrive after: only the first answer counts, and what comes
+/// after is neither copied nor kept.
+private final class FirstAnswer<Value>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuation: CheckedContinuation<Value, any Error>?
+
+    init(_ continuation: CheckedContinuation<Value, any Error>) {
+        self.continuation = continuation
+    }
+
+    /// Runs `body` and hands on what it gives, only for the first answer.
+    func resume(_ body: () throws -> Value) {
+        let waiting: CheckedContinuation<Value, any Error>? = lock.withLock {
+            defer { continuation = nil }
+            return continuation
+        }
+        guard let waiting else { return }
+        waiting.resume(with: Result { try body() })
     }
 }
 
