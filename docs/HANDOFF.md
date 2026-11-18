@@ -80,7 +80,7 @@ Nothing at the moment.
 
 ## Questions for the owner
 
-- **The health file's own health-card deadline.** Now that a health file's European health card closes by offering the new card among the person's documents, should a health file still offer a health-card deadline of its own (*Card european de sănătate* under *Alt termen*), or only point to adding the card as a document? Keeping both is two places for one card. (From `claude/insured-sum-widget-ehic`.)
+None open. The health file's own health-card deadline was answered on 2026-11-18 (it stays) and is in [DECISIONS.md](DECISIONS.md).
 
 The earlier ones (the IMEI rule and the four bill choices) were answered on 2026-11-03 and are in [DECISIONS.md](DECISIONS.md).
 
@@ -111,6 +111,12 @@ Newest first. Copy this template:
 - **Left open:** not seen on a phone: the button, its toast and Despre's row going and coming back; a share of more than 20 files and one with a web link beside a PDF.
 - **Next:** share 22 photos and a link from Safari together, read the note, then empty *Probleme la primire* and take it back.
 - **Decisions:** „„Probleme la primire” can be emptied, and a share names every file it left out” (2026-11-18).
+### 2026-11-18 — owner (with Claude) — `claude/data-followups`
+- **Did:** the owner's follow-ups of 17 November. Two decisions recorded (the small widget's symbol beside the title; a health file keeps its own health-card deadline). A newer policy that doesn't print its number or sum leaves none of the earlier policy's, declared once per fact (`BlueprintFactRole.belongsToThePolicy`, `CaptureFiler.newPolicy`); the insurer, claims line and who it insures carry over. Two repair steps at the end of `DataRepairs.steps`, both corrections: `RenewalRepeatsStep` stops a deadline that closes when its document is replaced from repeating (the health cards an earlier catalog made every two years), and *Editează* no longer offers such a deadline a repeat; `SubscriptionCodesStep` moves a billing account kept as the client code, or a water or heating place code kept as a gas CLC, only where the subscription's own papers, read again, say what it is. A home's Abonamente pocket and its full list are grouped like Abonamente (`SubscriptionGroup.listing`). The repeat stepper steps in the unit's own steps (`RepeatChoice.ladder`: 14 and 21 days are a step away).
+- **Tests:** `InsuredSumTests`, `DataRepairTests` (the two new steps), `SubscriptionsByServiceTests` (the one listing), `RepeatAndReminderTimeTests` (the steps); the whole suite on GitHub's runner (its iPhone simulator). Nothing run locally: the Mac was too loaded.
+- **Left open:** not seen on a phone: the home's Abonamente pocket with two groups and its headings at the accessibility sizes, the full list's sections, the stepper's new steps with VoiceOver, both repair entries in *De corectat*. A code kept as *Cod client* by a subscription typed by hand, or whose papers' text is gone, stays where it is: nothing tells it apart from a client code.
+- **Next:** file a renewed CASCO without its sum and open its deadline; open a home with gas and internet under it.
+- **Decisions:** „The widget's symbol, the health file's own card deadline, and the follow-ups of 17 November (owner)” (2026-11-18), which replaces the insured sum's „Left as it is” of 17 November.
 
 ### 2026-11-18 — owner (with Claude) — `claude/full-page-screenshots`
 - **Did:** the owner's request: a screenshot in the app offers the editor's *Pagină întreagă*, a PDF of the screen in front's whole scrolling content, for every screen, through one scene delegate (`FullPageScreenshots`, `FullPageScreenshotTarget`, `FullPageScreenshot`, `FullPageDocument`). Nothing while a lock covers the app or a locked state shows (`.withholdsFullPageScreenshot()` on `DSLockedState` and a locked deadline's card).

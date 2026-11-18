@@ -400,9 +400,16 @@ struct ChildrenListScreen: View {
         // The category's own definition, a category of one's own's too.
         let definition = templates.first { $0.key == templateKey }?.definition
         List {
-            ForEach(children) { child in
-                NavigationLink(value: AppRoute.asset(child.id)) {
-                    ChildRow(child: child, definition: definition)
+            // Under their groups, as their category lists them (`SubscriptionGroup.listing`).
+            ForEach(SubscriptionGroup.listing(children, in: definition, values: \.values)) { listed in
+                Section {
+                    ForEach(listed.items) { child in
+                        NavigationLink(value: AppRoute.asset(child.id)) {
+                            ChildRow(child: child, definition: definition)
+                        }
+                    }
+                } header: {
+                    if let group = listed.group { Text(verbatim: group.label) }
                 }
             }
             Button {

@@ -152,14 +152,11 @@ private struct CategoryContent: View {
                     Text(verbatim: total.formatted())
                 }
             }
-            // Under what each one is (`SubscriptionGroup`), when the category keeps the group;
-            // a category of one's own listed by cost has one list.
-            if template.definition.field(SubscriptionFields.group) != nil {
-                ForEach(SubscriptionGroup.grouping(items, values: \.values)) { listed in
-                    assetGroup(listed.group.label, listed.items, definition: template.definition)
-                }
-            } else {
-                assetGroup(String(localized: "Abonamente", comment: "Section pocket"), items, definition: template.definition)
+            // Under what each one is (`SubscriptionGroup.listing`), when the category keeps the
+            // group; a category of one's own listed by cost has one list.
+            ForEach(SubscriptionGroup.listing(items, in: template.definition, values: \.values)) { listed in
+                assetGroup(listed.group?.label ?? String(localized: "Abonamente", comment: "Section pocket"), listed.items,
+                           definition: template.definition)
             }
             DSSecondaryButton("Adaugă un abonament", systemImage: "plus") { addTopLevel() }
         }

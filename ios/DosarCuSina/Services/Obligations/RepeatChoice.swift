@@ -105,27 +105,28 @@ public struct RepeatChoice: Hashable, Sendable {
         return 1...min(max(Self.upperBound(for: unit), every), RecurrenceInterval.longest(in: unit))
     }
 
-    /// The number „+” or „−” gives after `value` (a tap, a held press or a VoiceOver swipe), in
-    /// steps that grow with the number, so 365 days is a few dozen steps away, never 364: one
-    /// by one below 10, then by 5 below 60, by 10 below 180, by 30 beyond. A step lands on its
-    /// own multiples (12 goes up to 15 and down to 10), and stays inside `range`.
-    public static func stepped(_ value: Int, up: Bool, in range: ClosedRange<Int>) -> Int {
-        func step(at number: Int) -> Int {
-            switch number {
-            case ..<10: 1
-            case ..<60: 5
-            case ..<180: 10
-            default: 30
-            }
+    /// The numbers „+” and „−” stop at, in the unit's own steps: days one by one to two weeks,
+    /// then whole weeks to eight, then about a month at a time (60, 90 … 360); weeks one by one
+    /// to twelve, then four at a time to a year, then half a year; months one by one to a year,
+    /// then a quarter to two years, then a year; years one by one. So 7, 14 and 21 days, a
+    /// quarter of months and a year of weeks are each a step away, and a year of days is a few
+    /// dozen steps, never 364.
+    public static func ladder(for unit: RecurrenceInterval.Unit) -> [Int] {
+        switch unit {
+        case .day: Array(1...13) + Array(stride(from: 14, through: 56, by: 7)) + Array(stride(from: 60, through: 360, by: 30))
+        case .week: Array(1...12) + Array(stride(from: 16, through: 52, by: 4)) + [78, 104]
+        case .month: Array(1...12) + [15, 18, 21, 24] + Array(stride(from: 36, through: 120, by: 12))
+        case .year: Array(1...20)
         }
-        let next: Int
-        if up {
-            let size = step(at: value)
-            next = (value / size + 1) * size
-        } else {
-            let size = step(at: value - 1)
-            next = ((value - 1) / size) * size
-        }
-        return min(max(next, range.lowerBound), range.upperBound)
+    }
+
+    /// The number „+” or „−” gives after `value` (a tap, a held press or a VoiceOver swipe): the
+    /// next stop of the unit's ladder (`ladder(for:)`) above or below it, so a number between two
+    /// stops (a rule's 40 days) goes to the nearest one each way, and the range's ends are stops
+    /// too. It stays inside `range`.
+    public static func stepped(_ value: Int, up: Bool, unit: RecurrenceInterval.Unit, in range: ClosedRange<Int>) -> Int {
+        let stops = ladder(for: unit) + [range.lowerBound, range.upperBound]
+        let next = up ? stops.filter { $0 > value }.min() : stops.filter { $0 < value }.max()
+        return min(max(next ?? value, range.lowerBound), range.upperBound)
     }
 }

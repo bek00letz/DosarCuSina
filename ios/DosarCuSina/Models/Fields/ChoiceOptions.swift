@@ -427,11 +427,12 @@ public enum SubscriptionGroup: String, CaseIterable, Hashable, Sendable {
         SubscriptionGroup(stored: values[SubscriptionFields.group]?.textValue) ?? of(service: SubscriptionFields.service(of: values))
     }
 
-    /// One group's subscriptions, as listed.
+    /// One group's subscriptions, as listed; `group` nil for the one list of a category that
+    /// keeps no group (`listing(_:in:values:)`).
     public struct Listed<Item>: Identifiable {
-        public let group: SubscriptionGroup
+        public let group: SubscriptionGroup?
         public let items: [Item]
-        public var id: SubscriptionGroup { group }
+        public var id: SubscriptionGroup? { group }
     }
 
     /// `items` under their groups, in the groups' order, each keeping the order it came in;
@@ -442,6 +443,31 @@ public enum SubscriptionGroup: String, CaseIterable, Hashable, Sendable {
             let members = placed.filter { $0.group == group }.map(\.item)
             return members.isEmpty ? nil : Listed(group: group, items: members)
         }
+    }
+
+    /// Whether a category lists its sections under groups: it keeps the group field (Abonamente;
+    /// a category of one's own listed by cost keeps none).
+    public static func groups(_ definition: TemplateDefinition?) -> Bool {
+        definition?.field(SubscriptionFields.group) != nil
+    }
+
+    /// A category's sections as every list of them shows them: under their groups (`grouping`)
+    /// when the category keeps one (`groups`), else as one list with no group. The one listing
+    /// for Abonamente's page, a home's Abonamente pocket and its full list.
+    public static func listing<Item>(_ items: [Item], in definition: TemplateDefinition?, values: (Item) -> FieldValues) -> [Listed<Item>] {
+        guard groups(definition) else { return items.isEmpty ? [] : [Listed(group: nil, items: items)] }
+        return grouping(items, values: values)
+    }
+
+    /// The first `limit` items of `listing` in its order, for a pocket that shows only a few, each
+    /// with the group it opens: the first item of each group, when the listing has more than one
+    /// group to tell apart; nil otherwise, so a pocket of one group shows no heading of its own.
+    public static func firstRows<Item>(of listing: [Listed<Item>], limit: Int) -> [(opens: SubscriptionGroup?, item: Item)] {
+        let headed = listing.count > 1
+        let rows = listing.flatMap { listed in
+            listed.items.enumerated().map { index, item in (opens: headed && index == 0 ? listed.group : nil, item: item) }
+        }
+        return Array(rows.prefix(limit))
     }
 }
 

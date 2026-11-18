@@ -507,6 +507,18 @@ public enum BlueprintFactRole: String, Codable, CaseIterable, Sendable {
     /// The sum the policy insures for (suma asigurată), as money: a home's policies and a car's
     /// CASCO keep one; an RCA's limits are set by law, so it names none.
     case insuredSum
+
+    /// Whether the fact describes one policy paper and no other: its number and the sum it
+    /// insures for. A newer policy that doesn't print it leaves it empty, so the earlier
+    /// policy's never passes for the newer one's (`CaptureFiler.newPolicy`). Who issued it, its
+    /// claims line and who it insures carry over a renewal: they stay until a newer paper names
+    /// others.
+    public var belongsToThePolicy: Bool {
+        switch self {
+        case .policyNumber, .insuredSum: true
+        case .insurer, .claimsPhone, .policyholder: false
+        }
+    }
 }
 
 /// Which of the section's fields hold the facts one deadline needs: a car's CASCO keeps

@@ -48,6 +48,8 @@ struct DataRepairs {
         OwnCategoryBoxesStep(),
         OwnCategoryVisitsStep(),
         ServiceNotesStep(),
+        RenewalRepeatsStep(),
+        SubscriptionCodesStep(),
     ]
 
     static func step(_ id: DataRepairStepID) -> any DataRepairStep {
@@ -123,6 +125,8 @@ enum DataRepairStepID: String, CaseIterable, Sendable, Hashable {
     case ownCategoryBoxes = "own-category-boxes"
     case ownCategoryVisits = "own-category-visits"
     case serviceNotes = "service-notes"
+    case renewalRepeats = "renewal-repeats"
+    case subscriptionCodes = "subscription-codes"
 }
 
 /// One thing a repair would change, in plain words, with what applying it needs.
@@ -175,6 +179,11 @@ struct DataRepairFinding: Identifiable, Hashable, Sendable {
         case intoHome(assetID: UUID?, homeID: UUID?)
         /// A service deadline's note that is only its rule, as an earlier version copied it: it goes.
         case serviceNote(obligationID: UUID)
+        /// A deadline that closes when its document is replaced, kept repeating: it stops repeating.
+        case stopsRepeating(obligationID: UUID)
+        /// A subscription's code kept under another code's field (`SubscriptionCode` raw values):
+        /// it moves to the one its papers name.
+        case subscriptionCode(assetID: UUID, from: String, to: String)
     }
 }
 

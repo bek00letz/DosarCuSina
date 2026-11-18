@@ -168,14 +168,18 @@ struct ChildrenPocket: View {
         let contents = Self.contents(of: asset, pocket: pocket, templates: templates)
         let children = contents.children
         let definition = contents.kinds.first?.definition
+        // Listed as their category lists them: subscriptions under their groups
+        // (`SubscriptionGroup.listing`), each group named once there is more than one.
+        let rows = SubscriptionGroup.firstRows(of: SubscriptionGroup.listing(children, in: definition, values: \.values), limit: 3)
         DSPocketCard(pocket.title, count: children.isEmpty ? nil : children.count) {
             if children.isEmpty {
                 PocketEmptyLine(text: empty)
             }
-            ForEach(Array(children.prefix(3).enumerated()), id: \.element.id) { index, child in
+            ForEach(Array(rows.enumerated()), id: \.element.item.id) { index, row in
                 if index > 0 { DSRowSeparator() }
-                NavigationLink(value: AppRoute.asset(child.id)) {
-                    ChildRow(child: child, definition: definition)
+                if let group = row.opens { PocketGroupHeading(title: group.label) }
+                NavigationLink(value: AppRoute.asset(row.item.id)) {
+                    ChildRow(child: row.item, definition: definition)
                 }
                 .buttonStyle(.dsPressable)
             }
@@ -191,6 +195,20 @@ struct ChildrenPocket: View {
                 PocketAddButton(addition: .child(pocket, templateKey: childKey), add: add)
             }
         }
+    }
+}
+
+/// The name of a group inside a pocket (*Utilități*, *Internet și telefon*), above its first row.
+struct PocketGroupHeading: View {
+    let title: String
+
+    var body: some View {
+        Text(verbatim: title)
+            .dsFont(.captionEmphasized)
+            .foregroundStyle(DS.Palette.secondaryLabel)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, DS.Space.xs)
+            .accessibilityAddTraits(.isHeader)
     }
 }
 
