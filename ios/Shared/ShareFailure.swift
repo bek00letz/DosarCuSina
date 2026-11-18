@@ -127,7 +127,10 @@ public enum ShareFailure: String, Codable, Sendable, CaseIterable {
     }
 
     /// What an error means for a share, from its domain and code, and those of the errors
-    /// under it (`NSUnderlyingErrorKey`): the system often wraps the telling one.
+    /// under it (`NSUnderlyingErrorKey`): the system often wraps the telling one. The item
+    /// provider's own "couldn't load it" wraps whatever the sender's file gave (not allowed,
+    /// offline, still in iCloud), so a cause under it is told before it: it means nothing was
+    /// handed over only when nothing under it says why.
     public init(_ error: any Error) {
         if let inbox = error as? ShareInbox.InboxError {
             self = switch inbox {
@@ -136,13 +139,9 @@ public enum ShareFailure: String, Codable, Sendable, CaseIterable {
             }
             return
         }
-        for layer in Self.layers(of: error) {
-            if let known = Self.known(domain: layer.domain, code: layer.code) {
-                self = known
-                return
-            }
-        }
-        self = .couldNotCopy
+        let layers = Self.layers(of: error)
+        let known = layers.compactMap { layer in Self.known(domain: layer.domain, code: layer.code).map { (layer.domain, $0) } }
+        self = known.first { $0.0 != NSItemProvider.errorDomain }?.1 ?? known.first?.1 ?? .couldNotCopy
     }
 
     /// The error and the ones it wraps, outermost first, a few deep.
