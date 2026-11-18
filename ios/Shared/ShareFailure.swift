@@ -35,6 +35,37 @@ public enum ShareFailure: String, Codable, Sendable, CaseIterable {
         return mostTellingFirst.first(where: found.contains)
     }
 
+    /// The items of one share that didn't arrive: how many files, and the most telling reason
+    /// among theirs. What the confirmation counts, with `ShareFailureWording`.
+    public struct Missed: Equatable, Hashable, Sendable {
+        public var files: Int
+        public var failure: ShareFailure
+
+        public init(files: Int, failure: ShareFailure) {
+            self.files = files
+            self.failure = failure
+        }
+    }
+
+    /// Counts what didn't arrive as a share goes: each item that failed, with how many files it
+    /// held (photos sorted into one document count each).
+    public struct Tally: Sendable {
+        private var files = 0
+        private var reasons: [ShareFailure] = []
+
+        public init() {}
+
+        public mutating func add(_ failure: ShareFailure, files: Int = 1) {
+            self.files += max(files, 1)
+            reasons.append(failure)
+        }
+
+        /// How many didn't arrive and why; nil while nothing failed.
+        public var missed: Missed? {
+            ShareFailure.mostTelling(reasons).map { Missed(files: files, failure: $0) }
+        }
+    }
+
     /// What an error means for a share, from its domain and code, and those of the errors
     /// under it (`NSUnderlyingErrorKey`): the system often wraps the telling one.
     public init(_ error: any Error) {

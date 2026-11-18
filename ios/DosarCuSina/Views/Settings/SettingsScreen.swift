@@ -778,6 +778,10 @@ enum AboutWording {
 
 struct AboutSettings: View {
     @State private var isShowingGallery = false
+    @Environment(\.scenePhase) private var scenePhase
+    /// The share log, read as the section shows so its row is there from the first frame, and
+    /// again when the app comes back (the share extension writes it while the app doesn't run).
+    @State private var shareProblems = ShareProblems.read()
 
     var body: some View {
         Section {
@@ -797,6 +801,21 @@ struct AboutSettings: View {
                 Text("Ajutor", comment: "About: opens the help page on the app's website: common questions, asking for help, reporting a problem.")
                     .frame(minHeight: DS.Control.minimumHitTarget)
             }
+            // Only while a file shared from another app didn't arrive: fewer rows otherwise.
+            if ShareProblems.showsRow(shareProblems) {
+                NavigationLink {
+                    ShareProblemsScreen()
+                } label: {
+                    VStack(alignment: .leading, spacing: DS.Space.xxs) {
+                        Text(verbatim: ShareProblemsWording.title)
+                        Text(verbatim: SettingsStatus.shareProblems(shareProblems.count))
+                            .dsFont(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(minHeight: DS.Control.minimumHitTarget, alignment: .leading)
+                    .accessibilityElement(children: .combine)
+                }
+            }
             #if DEBUG
             Button {
                 isShowingGallery = true
@@ -809,7 +828,12 @@ struct AboutSettings: View {
             // Last, so it's easy to find: which build this phone runs, copyable.
             DSActionValueRow(title: Text("Versiunea", comment: "About: app version and build."), value: BuildInfo.current.summary, action: .copy)
         } header: {
+            // On the header, the one view of the section that stays: a modifier on the Section
+            // would reach every row.
             Text("Despre", comment: "Settings section.")
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .active { shareProblems = ShareProblems.read() }
+                }
         }
     }
 }

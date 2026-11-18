@@ -164,6 +164,12 @@ enum SettingsStatus {
         return String(localized: "\(count) lucruri de corectat", locale: .dosarDefault, comment: "Settings row: how many things wait in the repair list, with Romanian plural forms (un lucru de corectat).")
     }
 
+    /// Despre's „Probleme la primire”: „Un fișier nu a ajuns”, „3 fișiere nu au ajuns”, counted
+    /// by the share log's entries (`ShareProblems`). The row shows only while there are any.
+    static func shareProblems(_ count: Int) -> String {
+        String(localized: "\(count) fișiere nu au ajuns", locale: .dosarDefault, comment: "Settings › Despre: how many files shared from other apps didn't arrive, with Romanian plural forms (un fișier nu a ajuns).")
+    }
+
     static var examples: String {
         String(localized: "Sunt în dosar", comment: "Settings row: examples are in the binder.")
     }
