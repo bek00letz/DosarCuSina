@@ -38,14 +38,17 @@ enum LabelWording: Hashable, Sendable {
 ///
 /// - A label is matched as whole words in folded text; longer wordings win.
 /// - A value is the rest of the label's line when the line holds more than labels.
-/// - With positions (recognized pages), a value is otherwise the nearest line on the
-///   same row to the right of the label, or the nearest line below whose span
-///   overlaps the label's, before the next label in that column. The label's own
-///   translation stacked under it ("Nume" over "Surname") is skipped, and value lines
-///   stacked tightly in the column are one value ("CORINA" over "IOANA").
-/// - Without positions (pasted text, a PDF's text layer), the value is the next line
+/// - With positions (recognized pages, a digital PDF's lines), a value is otherwise the
+///   nearest line on the same row to the right of the label, within `reach` line heights,
+///   or the nearest line below whose span overlaps the label's, before the next label in
+///   that column. The label's own translation stacked under it ("Nume" over "Surname") is
+///   skipped, and value lines stacked tightly in the column are one value ("CORINA" over "IOANA").
+/// - Without positions (pasted text, a PDF's plain text), the value is the next line
 ///   that isn't a label, skipping the label's own translations.
 /// - A value is never a known label, so a label never borrows its neighbour's value.
+///
+/// Read backwards, the same places say where a value's label stands (`lineBefore`,
+/// `lineAbove`): what capture learns an issuer prints a value under (`CaptureLessonLearner`).
 struct LabelledLayout<Key: Hashable> {
     struct Position {
         let key: Key
@@ -77,10 +80,13 @@ struct LabelledLayout<Key: Hashable> {
 
     let text: CaptureText
     let positions: [Position]
+    /// How far to the right of its label, in line heights, a value beside it on its row may sit.
+    let reach: Double
     private let positionsByLine: [Int: [Position]]
 
-    init(text: CaptureText, labels: [(Key, [LabelWording])]) {
+    init(text: CaptureText, labels: [(Key, [LabelWording])], reach: Double = LabelledLayout.maximumBesideGap) {
         self.text = text
+        self.reach = reach
         let wordings = labels
             .flatMap { key, words in words.map { (key, $0) } }
             .sorted { $0.1.length > $1.1.length }
@@ -98,8 +104,8 @@ struct LabelledLayout<Key: Hashable> {
         positionsByLine = Dictionary(grouping: positions, by: \.line)
     }
 
-    init(text: CaptureText, words: [(Key, [String])]) {
-        self.init(text: text, labels: words.map { ($0.0, $0.1.map(LabelWording.words)) })
+    init(text: CaptureText, words: [(Key, [String])], reach: Double = LabelledLayout.maximumBesideGap) {
+        self.init(text: text, labels: words.map { ($0.0, $0.1.map(LabelWording.words)) }, reach: reach)
     }
 
     /// The first line a label is on, if it was found.
@@ -125,6 +131,13 @@ struct LabelledLayout<Key: Hashable> {
     /// (an address, where a column header may come before the real label).
     func allFound(for key: Key) -> [Found] {
         positions.filter { $0.key == key }.compactMap { value(at: $0) }
+    }
+
+    /// Every value each place of a label may have, top to bottom and each place's in the order
+    /// this layout reads them (`candidates(at:)`), for a reader that takes the first one that
+    /// reads as what it looks for (a date, an amount).
+    func allCandidates(for key: Key) -> [Found] {
+        positions.filter { $0.key == key }.flatMap(candidates(at:))
     }
 
     /// The date printed for a label: after it on its line, or in its value.
@@ -181,7 +194,7 @@ struct LabelledLayout<Key: Hashable> {
             .filter { index in
                 guard index != line, text.pages[index] == page, let other = text.boxes[index] else { return false }
                 return other.isOnSameRow(as: box) && other.minX >= box.maxX - 0.25 * box.height
-                    && other.minX - box.maxX <= Self.maximumBesideGap * box.height
+                    && other.minX - box.maxX <= reach * box.height
             }
             .sorted { (text.boxes[$0]?.minX ?? 0) < (text.boxes[$1]?.minX ?? 0) }
         let beside = right.prefix { !isLabelLine($0) }
@@ -217,20 +230,30 @@ struct LabelledLayout<Key: Hashable> {
     // MARK: - Finding values
 
     private func value(at position: Position) -> Found? {
+        candidates(at: position).first
+    }
+
+    /// Every value a label may have, in the order this layout reads them: the rest of its line;
+    /// then, with positions, the nearest line beside it on its row and the lines in its column
+    /// under it; without positions, the next line. `value(at:)` is the first.
+    private func candidates(at position: Position) -> [Found] {
+        var found: [Found] = []
         if let rest = restOfLine(after: position) {
-            return Found(label: position, lines: [position.line], labelLines: [], value: rest, folded: RomanianText.fold(rest), source: text.original[position.line])
+            found.append(Found(label: position, lines: [position.line], labelLines: [], value: rest, folded: RomanianText.fold(rest), source: text.original[position.line]))
         }
         let labelLines = labelBlock(below: position)
-        let lines: [Int]
+        let placed: [[Int]]
         if text.boxes[position.line] != nil {
-            lines = beside(position).map { [$0] } ?? column(below: position, after: labelLines.last ?? position.line)
+            placed = [beside(position).map { [$0] } ?? [], column(below: position, after: labelLines.last ?? position.line)]
         } else {
-            lines = nextLine(after: labelLines.last ?? position.line).map { [$0] } ?? []
+            placed = [nextLine(after: labelLines.last ?? position.line).map { [$0] } ?? []]
         }
-        guard !lines.isEmpty else { return nil }
-        let value = lines.map { text.original[$0] }.joined(separator: " ")
-        let source = ([position.line] + labelLines + lines).map { text.original[$0] }.joined(separator: " ")
-        return Found(label: position, lines: lines, labelLines: labelLines, value: value, folded: RomanianText.fold(value), source: source)
+        for lines in placed where !lines.isEmpty {
+            let value = lines.map { text.original[$0] }.joined(separator: " ")
+            let source = ([position.line] + labelLines + lines).map { text.original[$0] }.joined(separator: " ")
+            found.append(Found(label: position, lines: lines, labelLines: labelLines, value: value, folded: RomanianText.fold(value), source: source))
+        }
+        return found
     }
 
     /// What follows the label on its own line, when no other label follows it there.
@@ -343,8 +366,7 @@ struct LabelledLayout<Key: Hashable> {
         let right = text.boxes.indices
             .filter { index in
                 guard index != position.line, text.pages[index] == page, let box = text.boxes[index] else { return false }
-                return box.isOnSameRow(as: lineBox) && box.minX >= lineBox.maxX - 0.25 * lineBox.height
-                    && box.minX - lineBox.maxX <= Self.maximumBesideGap * lineBox.height
+                return Self.isBeside(box, after: lineBox, reach: reach)
             }
             .min { (text.boxes[$0]?.minX ?? 0) < (text.boxes[$1]?.minX ?? 0) }
         guard let right, !isLabelLine(right) else { return nil }
@@ -376,15 +398,60 @@ struct LabelledLayout<Key: Hashable> {
         let page = text.pages[line]
         let candidates = text.boxes.indices.filter { index in
             guard index != line, text.pages[index] == page, let box = text.boxes[index] else { return false }
-            // A real overlap, not a shared edge: at least a quarter of the narrower of the two.
-            let overlap = box.horizontalOverlap(span)
-            return box.minY >= anchor.midY && !box.isOnSameRow(as: anchor) && overlap > 0 && overlap >= 0.25 * min(box.width, span.width)
-                && (limit.map { box.minY <= $0 } ?? true)
+            return Self.isUnder(box, anchor, span: span) && (limit.map { box.minY <= $0 } ?? true)
         }
         guard let nearest = candidates.min(by: { (text.boxes[$0]?.minY ?? 0) < (text.boxes[$1]?.minY ?? 0) }),
               let nearestBox = text.boxes[nearest] else { return nil }
         return candidates
             .filter { text.boxes[$0]?.isOnSameRow(as: nearestBox) == true }
             .max { (text.boxes[$0]?.horizontalOverlap(span) ?? 0) < (text.boxes[$1]?.horizontalOverlap(span) ?? 0) }
+    }
+
+    // MARK: - Where things stand
+
+    /// Whether `box` sits beside a label's line `label` on its row, to its right, within `reach`
+    /// line heights: where `beside` looks for a label's value.
+    static func isBeside(_ box: TextBox, after label: TextBox, reach: Double) -> Bool {
+        box.isOnSameRow(as: label) && box.minX >= label.maxX - 0.25 * label.height && box.minX - label.maxX <= reach * label.height
+    }
+
+    /// Whether `box` sits under the line `anchor` in the column `span` covers: below it, on
+    /// another row, overlapping the span for real, not by a shared edge (at least a quarter of
+    /// the narrower of the two). Where `column` looks for a label's value.
+    static func isUnder(_ box: TextBox, _ anchor: TextBox, span: TextBox) -> Bool {
+        let overlap = box.horizontalOverlap(span)
+        return box.minY >= anchor.midY && !box.isOnSameRow(as: anchor) && overlap > 0 && overlap >= 0.25 * min(box.width, span.width)
+    }
+
+    // MARK: - Where a value's label stands
+
+    /// The line a value on `line` would be read beside: the nearest line to its left on its row
+    /// that it sits beside within `reach` line heights (`isBeside`). Nil without positions.
+    static func lineBefore(_ line: Int, in text: CaptureText, reach: Double) -> Int? {
+        guard let box = text.boxes[line] else { return nil }
+        let page = text.pages[line]
+        return text.boxes.indices
+            .filter { index in
+                guard index != line, text.pages[index] == page, let other = text.boxes[index] else { return false }
+                return isBeside(box, after: other, reach: reach)
+            }
+            .max { (text.boxes[$0]?.maxX ?? 0) < (text.boxes[$1]?.maxX ?? 0) }
+    }
+
+    /// The line a value on `line` would be read under: the nearest line above it in its column
+    /// (`isUnder`), no further than a value may sit under its label (`maximumDrop`); on a row
+    /// with several, the one that overlaps it most. Nil without positions.
+    static func lineAbove(_ line: Int, in text: CaptureText) -> Int? {
+        guard let box = text.boxes[line] else { return nil }
+        let page = text.pages[line]
+        let candidates = text.boxes.indices.filter { index in
+            guard index != line, text.pages[index] == page, let other = text.boxes[index] else { return false }
+            return isUnder(box, other, span: other) && box.minY <= other.maxY + maximumDrop * other.height
+        }
+        guard let nearest = candidates.max(by: { (text.boxes[$0]?.maxY ?? 0) < (text.boxes[$1]?.maxY ?? 0) }),
+              let nearestBox = text.boxes[nearest] else { return nil }
+        return candidates
+            .filter { text.boxes[$0]?.isOnSameRow(as: nearestBox) == true }
+            .max { (text.boxes[$0]?.horizontalOverlap(box) ?? 0) < (text.boxes[$1]?.horizontalOverlap(box) ?? 0) }
     }
 }

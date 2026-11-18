@@ -153,6 +153,17 @@ public enum RomanianFieldExtractor {
         var hasCurrency = false
     }
 
+    /// The numbers on a folded line that aren't part of a date, with where each is printed, read
+    /// by the one number reader as `kind`; one it can't read is left out.
+    static func numbers(inLine line: String, as kind: NumberKind) -> [(reading: RomanianNumber.Reading, range: Range<String.Index>)] {
+        let dateRanges = dates(inLine: line, index: 0).map(\.range)
+        return TextPattern.matches(#"(?<![\d.,])(\d+(?:[.,]\d+)*)(?!\d)"#, in: line).compactMap { match in
+            guard !dateRanges.contains(where: { $0.overlaps(match.range) }), let raw = match[1],
+                  let reading = try? RomanianNumber.read(raw, as: kind, from: .document).get() else { return nil }
+            return (reading, match.range)
+        }
+    }
+
     /// Amounts on a line, skipping anything that is part of a date.
     static func amounts(inLine line: String) -> [AmountMatch] {
         let dateRanges = dates(inLine: line, index: 0).map(\.range)

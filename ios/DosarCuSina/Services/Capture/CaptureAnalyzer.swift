@@ -163,10 +163,12 @@ public struct CaptureAnalyzer: Sendable {
         let template = IdentityTemplates.template(for: kind, text: text, machineReadableFormat: mrz?.format)
         if template != nil { text = lines }
         // Every reader below is told the kind's own labels (`CaptureKindProfile.labels`), and
-        // what every document prints the same way where the kind has no row of its own; before
-        // them, what was learned of the issuer the page names (`LessonBook.teaching`).
+        // what every document prints the same way where the kind has no row of its own. Before
+        // them, what was learned of the issuer the page names (`LessonBook.teaching`), read where
+        // the issuer prints it.
         let issuer = IssuerKey.read(in: text)
         let profile = lessons.teaching(self.profile(of: kind), issuer: issuer)
+        addLearned(lines, profile: profile, years: years, into: &fields)
         switch kind {
         case .passport, .identityCard, .residencePermit, .drivingLicence, .criminalRecord, .healthInsuranceCard, .bankCard, .greenCard, .electronicSignature:
             // Printed labels, read with the document's template. The MRZ (when on the
@@ -193,7 +195,7 @@ public struct CaptureAnalyzer: Sendable {
             // provider the same way; the issuer, the number and the total as on any invoice.
             addIssuer(text, profile: profile, into: &fields)
             addInvoiceNumberAndTotal(text, profile: profile, into: &fields)
-            fields.add(BillReader.fields(in: text, window: years, labels: profile.labelTable))
+            fields.add(BillReader.fields(in: text, window: years, labels: profile.labels))
             // The bill's own issue-date wordings are its layout's; when they find none, the
             // date as every document labels it.
             if fields.day(.issueDate) == nil {
@@ -261,6 +263,39 @@ public struct CaptureAnalyzer: Sendable {
     }
 
     // MARK: - Field groups
+
+    /// What was learned of the page's issuer (`CaptureKindProfile.learnedLabels`), read where the
+    /// issuer prints each value: through `LabelledLayout` over the page's lines as they were
+    /// recognized, with their positions (never joined into rows), so a value beside its label on
+    /// its row, under it in a column, or after it on a line that holds another value first is read
+    /// as on the paper it was learned from. A value beside its label may stand anywhere on its row
+    /// (`LessonBook.rowReach`). The kind's own and the shared rows are in the layout too, so a
+    /// value never runs into another label; each value is read as its field is (`LabelledLayout.field`).
+    /// Read before the kind's readers, at `LessonBook.readingConfidence`: where they read the field
+    /// another way, the issuer's own label wins, unless a check (a CUI's control digit) proves theirs.
+    private func addLearned(_ lines: CaptureText, profile: CaptureKindProfile, years: DateWindow, into fields: inout FieldSet) {
+        guard !profile.learnedLabels.isEmpty else { return }
+        let learned = Set(profile.learnedLabels.flatMap(\.1))
+        let known = (profile.labels + CaptureKindProfile.commonLabels).map { key, words in
+            (TaughtLabel.known(key), words.filter { !learned.contains($0) })
+        }
+        let layout = LabelledLayout(text: lines, words: profile.learnedLabels.map { (TaughtLabel.learned($0.0), $0.1) } + known,
+                                    reach: LessonBook.rowReach)
+        let currency = RomanianFieldExtractor.dominantCurrency(in: lines)
+        for (key, _) in profile.learnedLabels {
+            if let field = layout.field(.learned(key), as: key, kind: profile.kind, window: years, currency: currency,
+                                        confidence: LessonBook.readingConfidence) {
+                fields.add(field)
+            }
+        }
+    }
+
+    /// A label in the layout lessons are read with: one learned of the issuer, or one the kind or
+    /// every document prints, there so a learned label's value stops where another label starts.
+    private enum TaughtLabel: Hashable {
+        case learned(CaptureFieldKey)
+        case known(CaptureFieldKey)
+    }
 
     /// The fields a machine-readable zone holds: certain where its check digits pass.
     /// Every field the machine-readable zone can give (`machineReadableFields`).

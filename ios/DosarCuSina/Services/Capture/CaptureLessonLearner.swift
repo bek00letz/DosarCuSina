@@ -7,9 +7,15 @@ import Foundation
 /// (`CaptureReadingSource.lessons`), and for every value the phone missed or read wrong it looks
 /// for the label the issuer printed it under. A lesson is kept only when the evidence points one way:
 ///
-/// - the saved value is printed next to exactly one label on the page (the words before it on its
-///   line, or the line above when it starts its line), and that label is short: one to four words,
-///   with no digits (`accepts`);
+/// - the saved value is printed next to exactly one label on the page, and that label is short:
+///   one to four words, with no digits (`accepts`). Its label is where `LabelledLayout` reads a
+///   label's value, read backwards: the words before it on its line, after a date or an amount
+///   printed before it there (`afterLastValue`); else, on a page whose lines have positions (a
+///   photo, a scan, a digital PDF), the nearest line to its left on its row, else the nearest line
+///   above it whose span overlaps it (a two-column layout); without positions, the line above;
+/// - the label isn't one the kind reads as another value (`CaptureKindProfile.wordings(otherThan:)`),
+///   and one the kind reads as this value teaches only where the kind's own readers, without any
+///   lesson, read the value wrong on this page (a column they read on rows joined across it);
 /// - the label holds no value of the person's: none of the values saved (a name, an address, a
 ///   code), no card number, nothing shaped like a CNP; it holds only the issuer's words;
 /// - told to the readers, the label reads the saved value on this very page, and every value the
@@ -58,7 +64,9 @@ enum CaptureLessonLearner {
         if let pageTaxID = issuer.taxID, let savedTaxID = ProviderTaxID.normalized(saved.values[.providerTaxID]?.text),
            savedTaxID != pageTaxID { return nil }
 
-        let text = read.text
+        // The page as it was recognized, each line where it sits, never joined into rows: where
+        // the lessons are read (`CaptureAnalyzer`), so a column's label is found above its value.
+        let text = source.pages.isEmpty ? read.text : CaptureText(pages: source.pages)
         let phone = firstValues(read.fields)
         let window = DateWindow.around(CalendarDay(source.referenceDate))
         let personal = personalWords(in: saved.values)
@@ -74,13 +82,22 @@ enum CaptureLessonLearner {
         }
 
         var learned: [CaptureLesson] = []
+        // What the kind's own readers read of the page without any lesson, when it is asked.
+        var kindAlone: [CaptureFieldKey: CaptureValue]?
         for key in saved.values.keys.sorted(by: { $0.rawValue < $1.rawValue }) where kind.allows(key) && !right.contains(key) {
             guard let value = saved.values[key],
                   let label = label(of: value, key: key, in: text, window: window),
                   accepts(label, value: value, personal: personal) else { continue }
             let lesson = CaptureLesson(issuer: issuer, kind: kind, field: key, label: label)
-            // A wording the kind's own table has already: nothing to learn.
-            guard !kind.profile.labels(for: key).contains(lesson.folded) else { continue }
+            // A wording the kind reads as another value is the kind's, never this one's.
+            guard !kind.profile.wordings(otherThan: key).contains(lesson.folded) else { continue }
+            // One it reads as this value teaches only where the kind's own readers, without any
+            // lesson, read the value wrong here (a column, read on rows joined across the page):
+            // the lesson reads it where this issuer prints it.
+            if kind.profile.wordings(of: key).contains(lesson.folded) {
+                if kindAlone == nil { kindAlone = firstValues(analyze(source, as: kind, with: analyzer).fields) }
+                guard kindAlone?[key].map({ same($0, value) }) != true else { continue }
+            }
             // A label already taught for another value: the papers disagree, and neither stands.
             let disagreeing = standing.filter { $0.contradicts(lesson) }
             guard disagreeing.isEmpty else {
@@ -98,7 +115,7 @@ enum CaptureLessonLearner {
         // Two lessons of this paper the same: once.
         learned = learned.filter { lesson in !standing.contains(lesson) }
         guard !learned.isEmpty || !forgotten.isEmpty else { return nil }
-        return Outcome(issuer: issuer, issuerName: issuerName(saved: saved.values, page: text) ?? "", learned: learned, forgotten: forgotten)
+        return Outcome(issuer: issuer, issuerName: issuerName(saved: saved.values, page: read.text) ?? "", learned: learned, forgotten: forgotten)
     }
 
     // MARK: The label
@@ -133,7 +150,7 @@ enum CaptureLessonLearner {
     /// The one label the saved value is printed next to on the page; nil when it is printed next
     /// to none, or next to two different ones.
     static func label(of value: CaptureValue, key: CaptureFieldKey, in text: CaptureText, window: DateWindow) -> String? {
-        let found = places(of: value, key: key, in: text, window: window).compactMap { label(before: $0, in: text) }
+        let found = places(of: value, key: key, in: text, window: window).compactMap { label(at: $0, in: text) }
         let distinct = Dictionary(grouping: found, by: RomanianText.fold)
         guard distinct.count == 1 else { return nil }
         return found.first
@@ -151,25 +168,17 @@ enum CaptureLessonLearner {
             case .money(let money):
                 starts = RomanianFieldExtractor.amounts(inLine: line).filter { $0.amount == money.amount }.map(\.range.lowerBound)
             case .number(let number):
-                starts = numbers(inLine: line, as: key == .meterIndex ? .meterIndex : .count).filter { $0.value == number }.map(\.start)
+                starts = RomanianFieldExtractor.numbers(inLine: line, as: key == .meterIndex ? .meterIndex : .count)
+                    .filter { $0.reading.value == number }.map(\.range.lowerBound)
             case .metric(let number, let unit):
-                starts = numbers(inLine: line, as: unit == .kilometres ? .kilometres : .meterIndex).filter { $0.value == number }.map(\.start)
+                starts = RomanianFieldExtractor.numbers(inLine: line, as: unit == .kilometres ? .kilometres : .meterIndex)
+                    .filter { $0.reading.value == number }.map(\.range.lowerBound)
             case .text(let printed):
                 starts = textStarts(of: printed, inLine: line)
             case .lineItems:
                 starts = []
             }
             return starts.map { (index, $0) }
-        }
-    }
-
-    /// The numbers on a folded line that aren't part of a date, read by the one number reader.
-    private static func numbers(inLine line: String, as kind: NumberKind) -> [(value: Decimal, start: String.Index)] {
-        let dates = RomanianFieldExtractor.dates(inLine: line, index: 0).map(\.range)
-        return TextPattern.matches(#"(?<![\d.,])(\d+(?:[.,]\d+)*)(?!\d)"#, in: line).compactMap { match in
-            guard !dates.contains(where: { $0.overlaps(match.range) }), let raw = match[1],
-                  let reading = try? RomanianNumber.read(raw, as: kind, from: .document).get() else { return nil }
-            return (reading.value, match.range.lowerBound)
         }
     }
 
@@ -200,36 +209,69 @@ enum CaptureLessonLearner {
         }
     }
 
-    /// The label before a value: the words before it on its line, or, when it starts its line,
-    /// the whole line above on the same page. Nil when that is no label: none, too long, or digits.
-    private static func label(before place: (line: Int, start: String.Index), in text: CaptureText) -> String? {
+    /// The label of the value printed at `place`, where `LabelledLayout` would read it as that
+    /// label's value: the words before it on its line, after a value printed before it there;
+    /// else, when it starts its line on a page with positions, the nearest line to its left on its
+    /// row (`LabelledLayout.lineBefore`, as far as a lesson's value is read beside its label,
+    /// `LessonBook.rowReach`) when that ends in a label, else the nearest line above it in its
+    /// column (`LabelledLayout.lineAbove`); without positions, the line above on the same page.
+    /// Nil when that is no label: none, too long, or digits.
+    private static func label(at place: (line: Int, start: String.Index), in text: CaptureText) -> String? {
         let before = text.folded[place.line][..<place.start]
         if before.contains(where: { $0.isLetter || $0.isNumber }) {
-            return printed(String(before), line: place.line, in: text)
+            return printed(on: place.line, upTo: place.start, in: text)
         }
-        let above = place.line - 1
-        guard above >= 0, text.pages[above] == text.pages[place.line] else { return nil }
-        return printed(text.folded[above], line: above, in: text)
+        guard text.boxes[place.line] != nil else {
+            let above = place.line - 1
+            guard above >= 0, text.pages[above] == text.pages[place.line] else { return nil }
+            return printed(on: above, upTo: nil, in: text)
+        }
+        if let left = LabelledLayout<CaptureFieldKey>.lineBefore(place.line, in: text, reach: LessonBook.rowReach),
+           let label = printed(on: left, upTo: nil, in: text) {
+            return label
+        }
+        return LabelledLayout<CaptureFieldKey>.lineAbove(place.line, in: text).flatMap { printed(on: $0, upTo: nil, in: text) }
     }
 
-    /// What separates a label from its value, around it.
-    private static let separators = CharacterSet.whitespaces.union(CharacterSet(charactersIn: ":;=|-–—"))
-
-    /// The label as printed, from the folded words before a value (`folded`, a prefix of the folded
-    /// line): the same characters of the line as read, when folding kept them one for one, else its
-    /// folded words. Nil when it isn't label-shaped (`longestLabel` words at most, no digits).
-    private static func printed(_ folded: String, line: Int, in text: CaptureText) -> String? {
-        let words = RomanianText.words(folded)
-        guard (1...longestLabel).contains(words.count), !folded.contains(where: \.isNumber) else { return nil }
+    /// The label as printed on `line`, up to `end` (its end when nil): its words after a value
+    /// printed before them (`afterLastValue`), the same characters of the line as read when
+    /// folding kept them one for one, else its folded words. Nil when they aren't label-shaped
+    /// (`longestLabel` words at most, no digits).
+    private static func printed(on line: Int, upTo end: String.Index?, in text: CaptureText) -> String? {
+        let folded = text.folded[line]
+        let end = end ?? folded.endIndex
+        let start = afterLastValue(in: folded, before: end)
+        let words = RomanianText.words(String(folded[start..<end]))
+        guard (1...longestLabel).contains(words.count), !folded[start..<end].contains(where: \.isNumber) else { return nil }
         let original = text.original[line]
         let printed: String
-        if original.count == text.folded[line].count {
-            printed = String(original.prefix(folded.count))
+        if original.count == folded.count {
+            let from = folded.distance(from: folded.startIndex, to: start), to = folded.distance(from: folded.startIndex, to: end)
+            printed = String(original.dropFirst(from).prefix(to - from))
         } else {
             printed = words.joined(separator: " ")
         }
-        let label = printed.trimmingCharacters(in: separators)
+        let label = printed.trimmingCharacters(in: LabelledLayout<CaptureFieldKey>.valueSeparators)
         return label.isEmpty ? nil : label
+    }
+
+    /// Where the words after the last value printed on a folded line before `end` start: after its
+    /// last date, or its last amount printed with its currency and that currency ("01.11.2026",
+    /// "123,45 lei"), as the shared readers read them; the line's start when none comes before
+    /// `end`. Only a value a reader reads on its own ends another label's value: a bare number
+    /// ("Termen 30 zile") is part of its label, which then holds a digit and is refused.
+    static func afterLastValue(in line: String, before end: String.Index) -> String.Index {
+        let prefix = String(line[..<end])
+        var cut = 0
+        for date in RomanianFieldExtractor.dates(inLine: prefix, index: 0) {
+            cut = max(cut, prefix.distance(from: prefix.startIndex, to: date.range.upperBound))
+        }
+        for amount in RomanianFieldExtractor.amounts(inLine: prefix) where amount.hasCurrency {
+            let currency = prefix[amount.range.upperBound...].drop(while: \.isWhitespace)
+            let currencyEnd = currency.firstIndex(where: \.isWhitespace) ?? prefix.endIndex
+            cut = max(cut, prefix.distance(from: prefix.startIndex, to: currencyEnd))
+        }
+        return line.index(line.startIndex, offsetBy: cut)
     }
 
     // MARK: Values
