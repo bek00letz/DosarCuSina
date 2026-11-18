@@ -69,8 +69,9 @@ public enum MemberFields {
     /// The person's RCA bonus-malus class (`BonusMalusClass`): it follows the driver's
     /// history, so it is kept on the person, never on a car.
     public static let bonusMalus = "member.bonusMalus"
-    /// The person's citizenship, by country (`Citizenship`): read from their passport,
-    /// identity card or residence permit, changed on their page; the trip check's rules follow it.
+    /// The person's citizenships, a list of countries (`Citizenship`): every one their passport,
+    /// identity card or residence permit prints, added or taken away on their page; the trip
+    /// check goes by the most favourable. Read through `Citizenship.kept(in:)`.
     public static let citizenship = "member.citizenship"
 }
 

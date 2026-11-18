@@ -177,6 +177,9 @@ struct ReleaseReadinessTests {
         (#"\bAVAudioRecorder\b|\brecordPermission\b"#, "NSMicrophoneUsageDescription"),
         (#"\bSFSpeechRecognizer\b"#, "NSSpeechRecognitionUsageDescription"),
         (#"\bNFC(Tag|NDEF)ReaderSession\b"#, "NFCReaderUsageDescription"),
+        // A compatible AI service on the home network (LM Studio, Ollama): iOS asks before the
+        // app reaches a device there.
+        (#"\bisLocal\(|\bvalidatedBaseURL\("#, "NSLocalNetworkUsageDescription"),
     ]
 
     @Test("Every permission a part's code can ask for has its words in that part's Info.plist", arguments: Shipped.all)
@@ -228,6 +231,18 @@ struct ReleaseReadinessTests {
             let opaque: [CGImageAlphaInfo] = [.none, .noneSkipFirst, .noneSkipLast]
             #expect(properties[kCGImagePropertyHasAlpha] as? Bool != true && opaque.contains(image.alphaInfo), "\(picture.lastPathComponent) has an alpha channel: save it without one")
         }
+    }
+
+    @Test("Plain http reaches only the home network, as Settings says a local AI service may use")
+    func plainHTTPOnlyOnTheHomeNetwork() throws {
+        let security = try #require(Bundle.main.infoDictionary?["NSAppTransportSecurity"] as? [String: Any])
+        #expect(security["NSAllowsLocalNetworking"] as? Bool == true, "A server at localhost or a .local name, over http")
+        #expect(Set(security.keys) == ["NSAllowsLocalNetworking"], "Nothing else is let through in the clear")
+        let words = try #require(Bundle.main.infoDictionary?["NSLocalNetworkUsageDescription"] as? String)
+        #expect(words == "Ca să citești documente cu serviciul AI de pe rețeaua ta, dacă îl alegi în Setări.")
+        #expect(!words.contains("!"))
+        #expect(AIProviderSettings.validatedBaseURL("http://studio.local:1234/v1") != nil)
+        #expect(AIProviderSettings.validatedBaseURL("http://example.com/v1") == nil, "Never the internet in the clear")
     }
 
     @Test("The export-compliance answer is in the Info.plist: only the encryption iOS provides")

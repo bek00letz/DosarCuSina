@@ -156,10 +156,10 @@ struct ReadinessTests {
         var petValues = FieldValues()
         petValues[PetFields.passport] = .text("RO-000000")
         let cat = ReadinessAsset(name: "PawPaw", templateKey: BuiltInTemplates.Key.pet, values: petValues, obligations: [
-            BuiltInBlueprints.petRabies: ReadinessObligation(due: CalendarDay("2027-12-10"), lastDone: CalendarDay("2026-12-10")),
+            BuiltInBlueprints.petRabies: ReadinessObligation(due: CalendarDay("2027-12-10"), lastDone: CalendarDay("2026-12-10"), lastCycleDue: CalendarDay("2026-11-30")),
         ])
         let items = trip(.everyone(start: "2026-12-20", end: "2027-01-05", region: .europeanUnion, withPet: true, in: [cat]), [cat])
-        #expect(items[id: "trip.rabies.\(cat.id)"]?.status == .problem, "Vaccinated only 10 days before leaving")
+        #expect(items[id: "trip.rabies.\(cat.id)"]?.status == .problem, "Vaccinated again only 10 days before leaving, after the one before ran out")
         #expect(items[id: "trip.petPassport.\(cat.id)"]?.status == .ok)
         #expect(items[id: "trip.petTiter.\(cat.id)"] == nil)
 

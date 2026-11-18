@@ -130,7 +130,7 @@ public enum DocumentType {
         [
             option(idCard, "Carte de identitate", ["Buletin", "CI", "ID card"]),
             option(passport, "Pașaport", ["Pasaport", "Passport"]),
-            option(residencePermit, "Permis de ședere", ["Permis de sedere", "Residence permit", "Permis de ședere temporară", "Permis de ședere pe termen lung"]),
+            option(residencePermit, "Permis de ședere", ["Permis de sedere", "Residence permit", "Permis de ședere temporară", "Permis de ședere pe termen lung", "Carte de rezidență", "Residence card"]),
             option(drivingLicence, "Permis de conducere", ["Permis", "Driving licence"]),
             option(euHealthCard, "Card european de sănătate", ["CEASS", "EHIC", "Card european de asigurări sociale de sănătate"]),
             option(nationalHealthCard, "Card național de sănătate", ["Card de sănătate", "Cardul de sănătate", "Card național de asigurări sociale de sănătate"]),
@@ -264,9 +264,19 @@ public enum DocumentType {
     /// PIN codes). Data, read by the template, the add flow and the naming.
     public enum Variant {
         public static let idCardElectronic = "documentVariant.idCard.electronic"
+        /// The identity card of before the electronic one: no chip, a machine-readable zone.
         public static let idCardWithoutChip = "documentVariant.idCard.withoutChip"
+        /// The simple identity card issued since 2025 („carte de identitate simplă”, CIS): no
+        /// chip and no travel document (`TravelRules.notForTravel`).
+        public static let idCardSimple = "documentVariant.idCard.simple"
         public static let passportElectronic = "documentVariant.passport.electronic"
         public static let passportTemporary = "documentVariant.passport.temporary"
+        /// The residence card of a family member of an EU citizen („carte de rezidență”,
+        /// Directive 2004/38/EC, art. 10), in the residence permit's uniform format.
+        public static let residenceCard = "documentVariant.residencePermit.residenceCard"
+        /// The residence document of a British citizen living in Romania under the Withdrawal
+        /// Agreement (art. 18), in the residence permit's uniform format.
+        public static let withdrawalAgreement = "documentVariant.residencePermit.withdrawalAgreement"
         public static let bankCardDebit = "documentVariant.bankCard.debit"
         public static let bankCardCredit = "documentVariant.bankCard.credit"
         public static let criminalRecordJudicial = "documentVariant.criminalRecord.judicial"
@@ -289,9 +299,12 @@ public enum DocumentType {
         }
         return [
             variant(idCard, Variant.idCardElectronic, "Electronică, cu cip (CEI)"),
-            variant(idCard, Variant.idCardWithoutChip, "Fără cip"),
+            variant(idCard, Variant.idCardWithoutChip, "Fără cip, modelul vechi"),
+            variant(idCard, Variant.idCardSimple, "Simplă (CIS)", name: "Carte de identitate simplă"),
             variant(passport, Variant.passportElectronic, "Simplu electronic"),
             variant(passport, Variant.passportTemporary, "Simplu temporar", name: "Pașaport temporar"),
+            variant(residencePermit, Variant.residenceCard, "Carte de rezidență, pentru un membru de familie al unui cetățean UE", name: "Carte de rezidență"),
+            variant(residencePermit, Variant.withdrawalAgreement, "Pentru cetățeni britanici (Acordul de retragere)", name: "Permis de ședere (Acordul de retragere)"),
             variant(bankCard, Variant.bankCardDebit, "De debit", name: "Card de debit"),
             variant(bankCard, Variant.bankCardCredit, "De credit", name: "Card de credit"),
             variant(criminalRecord, Variant.criminalRecordJudicial, "Judiciar", name: "Cazier judiciar"),

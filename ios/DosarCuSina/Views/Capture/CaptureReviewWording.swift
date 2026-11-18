@@ -405,6 +405,8 @@ enum CaptureReviewWording {
     static func dataPolicy(_ name: String) -> String {
         String(localized: "Cum folosește \(name) ce trimiți", comment: "Link to the AI provider's data-use terms.")
     }
+    /// A compatible service has no terms to link: its rules are its own.
+    static var ownServiceRules: String { AIKeyWording.ownServiceRules }
     static var cardsStayOnPhone: String {
         String(localized: "Cardurile bancare se citesc doar pe telefon.", comment: "Capture review: why a bank card can't be read by the AI provider.")
     }

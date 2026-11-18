@@ -663,10 +663,11 @@ public enum BuiltInTemplates {
             tint: .indigo,
             isOnHomeByDefault: false,
             sections: [
-                // Read from their passport, identity card or residence permit; the trip check's
-                // rules follow it. Sensitive, so never in search or outside the app.
+                // Every citizenship their passport, identity card or residence permit prints, and
+                // the ones the person adds: a list, since a person can have several. The trip
+                // check goes by the most favourable. Sensitive, so never in search or outside the app.
                 FieldSection(key: "member.identity", title: String(localized: "Cetățenie", comment: "A household member's section: their citizenship."), fields: [
-                    FieldDefinition(key: MemberFields.citizenship, label: String(localized: "Cetățenie"), type: .choice, role: .keyFact, isSensitive: true,
+                    FieldDefinition(key: MemberFields.citizenship, label: String(localized: "Cetățenie"), type: .multiChoice, role: .keyFact, isSensitive: true,
                                     options: Citizenship.options),
                 ]),
                 // The RCA class follows the driver's history, not a car's: it is the person's.

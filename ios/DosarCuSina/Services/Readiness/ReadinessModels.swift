@@ -125,8 +125,16 @@ public enum TripTraveller: Hashable, Sendable, Codable {
 /// A trip as the person describes it. Kept on this phone only while the trip is ahead
 /// (`TripPlanStore`, several at once), never in the binder.
 public struct TripPlan: Hashable, Sendable, Codable, Identifiable {
+    /// Where a trip goes, as the travel rules tell places apart (`TravelRules`). Kept by its raw
+    /// value, so a case is never renamed.
     public enum Region: String, Hashable, Sendable, Codable, CaseIterable {
+        /// The EU and the rest of the Schengen area: the EU's 27, Switzerland, Norway, Iceland
+        /// and Liechtenstein, where an EU citizen travels with an identity card.
         case europeanUnion
+        /// The Republic of Moldova, Serbia, Montenegro, North Macedonia, Albania and Bosnia and
+        /// Herzegovina, which take a Romanian identity card (`TravelRules.identityCards`).
+        case moldovaAndWesternBalkans
+        /// Anywhere else.
         case outsideEU
     }
 
@@ -189,16 +197,21 @@ public struct TripPlan: Hashable, Sendable, Codable, Identifiable {
 extension TripPlan.Region {
     public var title: String {
         switch self {
-        case .europeanUnion: String(localized: "În Uniunea Europeană", comment: "Trip region: inside the EU.")
-        case .outsideEU: String(localized: "În afara UE", comment: "Trip region: outside the EU.")
+        case .europeanUnion: String(localized: "În UE sau în spațiul Schengen", comment: "Trip region: the EU and the rest of the Schengen area.")
+        case .moldovaAndWesternBalkans: String(localized: "În Moldova sau în Balcanii de Vest", comment: "Trip region: the Republic of Moldova and the Western Balkans.")
+        case .outsideEU: String(localized: "În altă țară", comment: "Trip region: anywhere outside the EU, the Schengen area, Moldova and the Western Balkans.")
         }
     }
 
-    /// What the region asks of people's documents, in one line (the rule the checks apply).
+    /// What the region holds and asks of people's documents, in one line (the rule the checks apply).
     public var summary: String {
         switch self {
-        case .europeanUnion: String(localized: "Cetățenilor UE le ajunge cartea de identitate sau pașaportul, valabile până te întorci.", comment: "Trip region rule: inside the EU.")
-        case .outsideEU: String(localized: "Ai nevoie de pașaport, bun de călătorit până te întorci.", comment: "Trip region rule: outside the EU.")
+        case .europeanUnion:
+            String(localized: "Și Elveția, Norvegia, Islanda și Liechtenstein. Cetățenilor UE le ajunge cartea de identitate sau pașaportul, valabile până te întorci.", comment: "Trip region rule: the EU and the Schengen area.")
+        case .moldovaAndWesternBalkans:
+            String(localized: "Serbia, Muntenegru, Macedonia de Nord, Albania, Bosnia și Herțegovina. Cetățenilor români le ajunge cartea de identitate sau pașaportul, valabile și la \(CalendarCount.months(TravelRules.identityOrPassportPastReturn.monthsValidAfterReturn)) după ce te întorci.", comment: "Trip region rule: Moldova and the Western Balkans. The argument is a number of months.")
+        case .outsideEU:
+            String(localized: "Ai nevoie de pașaport, bun de călătorit până te întorci.", comment: "Trip region rule: anywhere else.")
         }
     }
 }
@@ -374,17 +387,21 @@ public struct ReadinessObligation: Hashable, Sendable {
     public var due: CalendarDay
     /// The last time it was done.
     public var lastDone: CalendarDay?
+    /// The due day of the cycle the last time closed (`HistoryEntry.cycleDueDay`): done on or
+    /// before it, it was renewed before the one before ran out (a rabies booster on time).
+    public var lastCycleDue: CalendarDay?
     /// Policy or contract number.
     public var reference: String?
     public var title: String
     public var kind: ObligationKind
     public var amount: Money?
 
-    public init(id: UUID = UUID(), due: CalendarDay, lastDone: CalendarDay? = nil, reference: String? = nil,
+    public init(id: UUID = UUID(), due: CalendarDay, lastDone: CalendarDay? = nil, lastCycleDue: CalendarDay? = nil, reference: String? = nil,
                 title: String = "", kind: ObligationKind = .routine, amount: Money? = nil) {
         self.id = id
         self.due = due
         self.lastDone = lastDone
+        self.lastCycleDue = lastCycleDue
         self.reference = reference
         self.title = title
         self.kind = kind

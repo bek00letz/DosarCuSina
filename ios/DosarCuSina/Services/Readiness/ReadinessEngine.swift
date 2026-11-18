@@ -6,7 +6,8 @@ import SwiftData
 /// which policy a claim goes to, what a buyer asks for); the screens only draw it.
 public enum ReadinessEngine {
     /// The checklist for `scenario`. `today` matters for a sale and a claim (is the ITP
-    /// still valid now?); a trip is checked for its own days.
+    /// still valid now?); a trip is checked for its own days, and says a day already passed as
+    /// passed („A expirat pe…”).
     public static func checklist(
         _ scenario: ReadinessScenario,
         assets: [ReadinessAsset],
@@ -15,7 +16,7 @@ public enum ReadinessEngine {
     ) -> ReadinessChecklist {
         switch scenario {
         case .trip(let plan):
-            return ReadinessChecklist(groups: trip(plan, assets: assets, calendar: calendar))
+            return ReadinessChecklist(groups: trip(plan, assets: assets, today: today, calendar: calendar))
         case .sellingVehicle(let id):
             guard let car = assets.first(where: { $0.id == id }) else { return ReadinessChecklist(groups: []) }
             return ReadinessChecklist(groups: sale(of: car, today: today))
@@ -154,22 +155,23 @@ extension ReadinessEngine {
             || asset.obligations[BuiltInBlueprints.healthEUCard] != nil
     }
 
-    static func trip(_ plan: TripPlan, assets: [ReadinessAsset], calendar: Calendar) -> [ReadinessGroup] {
+    static func trip(_ plan: TripPlan, assets: [ReadinessAsset], today: CalendarDay, calendar: Calendar) -> [ReadinessGroup] {
         let candidates = tripCandidates(in: assets)
         var groups: [ReadinessGroup] = []
         for candidate in candidates.travellers where plan.travellers.contains(candidate.traveller) {
             groups.append(ReadinessGroup(
                 id: "trip.person.\(candidate.traveller.key)", title: candidate.name, symbol: "person.crop.circle",
-                items: travellerChecks(candidate.traveller, plan: plan, assets: assets, holderCount: candidates.travellers.count, calendar: calendar)
+                items: travellerChecks(candidate.traveller, plan: plan, assets: assets, holderCount: candidates.travellers.count,
+                                       today: today, calendar: calendar)
             ))
         }
         for car in assets.filter(isVehicle) where plan.vehicles.contains(car.id) {
             groups.append(ReadinessGroup(id: "trip.vehicle.\(car.id)", title: car.name, symbol: "car.fill",
-                                         items: carChecks(car, plan: plan, assets: assets, calendar: calendar)))
+                                         items: carChecks(car, plan: plan, assets: assets, today: today, calendar: calendar)))
         }
         for pet in assets.filter(isPet) where plan.pets.contains(pet.id) {
             groups.append(ReadinessGroup(id: "trip.pet.\(pet.id)", title: pet.name, symbol: "pawprint.fill",
-                                         items: petChecks(pet, plan: plan, calendar: calendar)))
+                                         items: petChecks(pet, plan: plan, today: today, calendar: calendar)))
         }
         return groups
     }
@@ -180,9 +182,10 @@ extension ReadinessEngine {
         return nil
     }
 
-    /// A traveller's citizenship: what is kept on the member, else what their documents print
-    /// (`Citizenship.of`); for documents filed under no one, what they print. Nil when unknown.
-    static func citizenship(of traveller: TripTraveller, in assets: [ReadinessAsset]) -> String? {
+    /// A traveller's citizenships: every one kept on the member, else every one their
+    /// documents print (`Citizenship.of`); for documents filed under no one, what they print.
+    /// Empty when none is known.
+    static func citizenships(of traveller: TripTraveller, in assets: [ReadinessAsset]) -> [String] {
         let documents = personalDocuments(of: traveller, in: assets).map(\.values)
         switch traveller {
         case .member(let id): return Citizenship.of(person: assets.first { $0.id == id }?.values, documents: documents)
@@ -190,22 +193,46 @@ extension ReadinessEngine {
         }
     }
 
+    /// The documents that can stand for `citizenship`: those that print it, and those that
+    /// print none (most identity cards are kept without their nationality). A Moldovan passport
+    /// is never a Romanian citizen's travel document.
+    static func documents(_ own: [ReadinessAsset], standingFor citizenship: String) -> [ReadinessAsset] {
+        own.filter { Citizenship.printed(on: $0.values).map { $0 == citizenship } ?? true }
+    }
+
     /// What one traveller needs, by their citizenship and the region (`TravelRules`): the
-    /// citizenship asked first when it isn't known, each document the rules ask for, the
-    /// health card inside the EU, the visa rules outside it.
-    static func travellerChecks(_ traveller: TripTraveller, plan: TripPlan, assets: [ReadinessAsset], holderCount: Int, calendar: Calendar) -> [ReadinessItem] {
+    /// citizenship asked first when none is known, each document the rules ask for, the
+    /// health card in the EU, the visa rules outside it.
+    ///
+    /// A person with several citizenships travels on the most favourable for this trip: each
+    /// one's rules are checked with that citizenship's documents, and the one that leaves the
+    /// least to fix wins, then the one that asks for less, then a free-movement citizenship. A
+    /// Romanian and Moldovan citizen goes into the EU on the Romanian identity card or passport,
+    /// and is never asked for a residence permit.
+    static func travellerChecks(_ traveller: TripTraveller, plan: TripPlan, assets: [ReadinessAsset], holderCount: Int,
+                                today: CalendarDay, calendar: Calendar) -> [ReadinessItem] {
         let own = personalDocuments(of: traveller, in: assets)
         let key = traveller.key
-        let group = Citizenship.group(of: citizenship(of: traveller, in: assets))
         var items: [ReadinessItem] = []
-        if group == .unknown {
+        let known = citizenships(of: traveller, in: assets)
+        if known.isEmpty {
             items.append(citizenshipQuestion(for: traveller))
-        }
-        for requirement in TravelRules.requirements(for: group, in: plan.region) {
-            items.append(check(requirement, own: own, key: key, traveller: traveller, end: plan.end, calendar: calendar))
+            items += TravelRules.requirements(forCitizenship: nil, in: plan.region).map {
+                check($0, own: own, key: key, traveller: traveller, plan: plan, today: today, calendar: calendar)
+            }
+        } else {
+            let ways = known.enumerated().map { index, citizenship in
+                let checks = TravelRules.requirements(forCitizenship: citizenship, in: plan.region).map {
+                    check($0, own: documents(own, standingFor: citizenship), key: key, traveller: traveller, plan: plan, today: today, calendar: calendar)
+                }
+                let left = checks.filter { $0.status != .ok }.count
+                let freeFirst = Citizenship.group(of: citizenship) == .freeMovement ? 0 : 1
+                return (checks: checks, rank: [left, checks.count, freeFirst, index])
+            }
+            items += ways.min { $0.rank.lexicographicallyPrecedes($1.rank) }?.checks ?? []
         }
         if TravelRules.checksHealthCard(in: plan.region) {
-            items.append(healthCard(own, traveller: traveller, assets: assets, holderCount: holderCount, end: plan.end))
+            items.append(healthCard(own, traveller: traveller, assets: assets, holderCount: holderCount, end: plan.end, today: today))
         }
         if TravelRules.remindsOfVisa(in: plan.region) {
             items.append(reminder("trip.visa.\(key)", TravelWording.visaTitle, TravelWording.visaDetail))
@@ -233,29 +260,39 @@ extension ReadinessEngine {
         /// Its type's place in the requirement's order: the lower, the more preferred.
         var order: Int
         var expiry: CalendarDay
-        /// Until when it counts: its expiry, or a passport's travel cut-off.
+        /// Until when it counts: its expiry, a passport's travel cut-off, or the last day its
+        /// kind is good for travel (`TravelRules.travelEnd`), whichever comes first.
         var countsUntil: CalendarDay
     }
 
     /// One requirement, met by any of its document types: the first type (in the rule's
-    /// order) that covers the whole trip; else the one that lasts longest, which ends too
-    /// early; else one with no expiry written down; else nothing in the binder, to add.
-    /// A passport counts until its travel cut-off where the rule says so (outside the EU),
-    /// the same cut-off its reminders and urgency use; every other document until it expires.
+    /// order) that covers the whole trip, and the months after it the destination asks; else
+    /// the one that lasts longest, which ends too early; else a document that is no travel
+    /// document (the simple identity card); else one with no expiry written down; else nothing
+    /// in the binder, to add. A passport counts until its travel cut-off where the rule says so
+    /// (outside the EU), the same cut-off its reminders and urgency use; every other document
+    /// until it expires or its kind stops being good for travel.
     static func check(_ requirement: TravelRequirement, own: [ReadinessAsset], key: String, traveller: TripTraveller,
-                      end: CalendarDay, calendar: Calendar) -> ReadinessItem {
+                      plan: TripPlan, today: CalendarDay, calendar: Calendar) -> ReadinessItem {
         let id = "trip.\(requirement.need.rawValue).\(key)"
         var found: [ReadinessAsset] = []
+        var notForTravel: [ReadinessAsset] = []
         var dated: [DatedDocument] = []
         for (order, type) in requirement.accepted.enumerated() {
             for document in documents(of: type, in: own) {
+                guard TravelRules.travels(document.values) else {
+                    notForTravel.append(document)
+                    continue
+                }
                 found.append(document)
                 guard let expiry = expiry(document) else { continue }
-                let countsUntil = requirement.countsTravelCutoff ? goodForTravelUntil(document, expiry: expiry, calendar: calendar) : expiry
+                var countsUntil = requirement.countsTravelCutoff ? goodForTravelUntil(document, expiry: expiry, calendar: calendar) : expiry
+                if let end = TravelRules.travelEnd(of: document.values) { countsUntil = min(countsUntil, end) }
                 dated.append(DatedDocument(document: document, type: type, order: order, expiry: expiry, countsUntil: countsUntil))
             }
         }
-        let covering = dated.filter { DueDayValidity.covers(through: end, due: $0.countsUntil) }
+        let lastDay = requirement.lastDayNeeded(returning: plan.end, calendar: calendar)
+        let covering = dated.filter { DueDayValidity.covers(through: lastDay, due: $0.countsUntil) }
         // The most preferred type first, then the one that lasts longest.
         if let best = covering.min(by: { ($0.order, $1.countsUntil) < ($1.order, $0.countsUntil) }) {
             // An earlier choice is in the binder but doesn't last: say why this one is taken.
@@ -267,8 +304,12 @@ extension ReadinessEngine {
         // The one that lasts longest, the most preferred type on a tie.
         if let best = dated.min(by: { ($1.countsUntil, $0.order) < ($0.countsUntil, $1.order) }) {
             return ReadinessItem(id: id, status: .problem, title: typeTitle(best.type),
-                                 detail: TravelWording.ends(requirement, type: best.type, expiry: best.expiry, goodUntil: best.countsUntil),
+                                 detail: TravelWording.ends(requirement, type: best.type, expiry: best.expiry, goodUntil: best.countsUntil, today: today),
                                  action: .open(.asset(best.document.id)))
+        }
+        if let simple = notForTravel.first, found.isEmpty {
+            return ReadinessItem(id: id, status: .problem, title: simple.name, detail: TravelWording.notATravelDocument,
+                                 action: addDocument(for: traveller) ?? .open(.asset(simple.id)))
         }
         if let undated = found.first {
             return ReadinessItem(id: id, status: .missing, title: undated.name, detail: TravelWording.undated, action: .editSection(assetID: undated.id))
@@ -277,9 +318,15 @@ extension ReadinessEngine {
                              action: addDocument(for: traveller))
     }
 
+    /// "A expirat pe …" for a day already passed, else what `ahead` says of a day still to come.
+    static func ending(_ day: CalendarDay, today: CalendarDay, passed: (String) -> String, ahead: (String) -> String) -> String {
+        day < today ? passed(DosarFormat.longDay(day)) : ahead(DosarFormat.longDay(day))
+    }
+
     /// The European health card, as a document or as the renewal on a health profile filed
     /// under the person (or, in a household of one, on its own).
-    static func healthCard(_ own: [ReadinessAsset], traveller: TripTraveller, assets: [ReadinessAsset], holderCount: Int, end: CalendarDay) -> ReadinessItem {
+    static func healthCard(_ own: [ReadinessAsset], traveller: TripTraveller, assets: [ReadinessAsset], holderCount: Int,
+                           end: CalendarDay, today: CalendarDay) -> ReadinessItem {
         let id = "trip.ehic.\(traveller.key)"
         let title = typeTitle(DocumentType.euHealthCard)
         let cards = documents(of: DocumentType.euHealthCard, in: own)
@@ -305,12 +352,15 @@ extension ReadinessEngine {
                                  action: best.action)
         }
         return ReadinessItem(id: id, status: .warning, need: .optional, title: title,
-                             detail: String(localized: "Expiră pe \(DosarFormat.longDay(best.until)), înainte să te întorci. Cere altul de la casa de asigurări de sănătate.", comment: "Trip check: the European health card ends before the end of the trip."),
+                             detail: ending(best.until, today: today,
+                                            passed: { String(localized: "A expirat pe \($0). Cere altul de la casa de asigurări de sănătate.", comment: "Trip check: the European health card has already expired.") },
+                                            ahead: { String(localized: "Expiră pe \($0), înainte să te întorci. Cere altul de la casa de asigurări de sănătate.", comment: "Trip check: the European health card ends before the end of the trip.") }),
                              action: best.action)
     }
 
     /// A deadline that must still be valid when the trip ends (RCA, ITP).
-    static func validThroughTrip(_ key: String, title: String, on car: ReadinessAsset, end: CalendarDay, failing: (String) -> String, missing: String) -> ReadinessItem {
+    static func validThroughTrip(_ key: String, title: String, on car: ReadinessAsset, end: CalendarDay, today: CalendarDay,
+                                 failing: (String) -> String, passed: (String) -> String, missing: String) -> ReadinessItem {
         let id = "\(key).\(car.id)"
         guard let obligation = car.obligations[key] else {
             return notInBinder(id, title: title, detail: missing, asset: car, blueprintKey: key)
@@ -320,19 +370,21 @@ extension ReadinessEngine {
             id: id, status: ok ? .ok : .problem, title: title,
             detail: ok
                 ? String(localized: "Valabil până pe \(DosarFormat.longDay(obligation.due)).", comment: "Readiness: a deadline valid until a day.")
-                : failing(DosarFormat.longDay(obligation.due)),
+                : ending(obligation.due, today: today, passed: passed, ahead: failing),
             action: .open(.obligation(obligation.id))
         )
     }
 
-    static func carChecks(_ car: ReadinessAsset, plan: TripPlan, assets: [ReadinessAsset], calendar: Calendar) -> [ReadinessItem] {
+    static func carChecks(_ car: ReadinessAsset, plan: TripPlan, assets: [ReadinessAsset], today: CalendarDay, calendar: Calendar) -> [ReadinessItem] {
         let rca = car.obligations[BuiltInBlueprints.vehicleRCA]
         var items = [
-            validThroughTrip(BuiltInBlueprints.vehicleRCA, title: String(localized: "RCA"), on: car, end: plan.end,
+            validThroughTrip(BuiltInBlueprints.vehicleRCA, title: String(localized: "RCA"), on: car, end: plan.end, today: today,
                              failing: { String(localized: "Expiră pe \($0), înainte să te întorci. Reînnoiește-l înainte de plecare.", comment: "Trip check: the RCA ends during the trip.") },
+                             passed: { String(localized: "A expirat pe \($0). Fără RCA valabil nu ai voie să ieși cu mașina. Reînnoiește-l înainte de plecare.", comment: "Trip check: the RCA has already expired.") },
                              missing: String(localized: "Nu e în dosar. Fără RCA valabil nu ai voie să ieși cu mașina.", comment: "Trip check: no RCA deadline.")),
-            validThroughTrip(BuiltInBlueprints.vehicleITP, title: String(localized: "ITP"), on: car, end: plan.end,
+            validThroughTrip(BuiltInBlueprints.vehicleITP, title: String(localized: "ITP"), on: car, end: plan.end, today: today,
                              failing: { String(localized: "Expiră pe \($0), înainte să te întorci. Fă-l înainte de plecare.", comment: "Trip check: the ITP ends during the trip.") },
+                             passed: { String(localized: "A expirat pe \($0). Fă-l înainte de plecare.", comment: "Trip check: the ITP has already expired.") },
                              missing: String(localized: "Nu e în dosar. Adaugă data ca să verific.", comment: "Trip check: no ITP deadline.")),
         ]
 
@@ -353,7 +405,9 @@ extension ReadinessEngine {
                                        action: .open(.obligation(rca.id))))
         } else if let rca {
             items.append(ReadinessItem(id: greenID, status: .problem, title: greenTitle,
-                                       detail: String(localized: "Vine cu RCA-ul, care expiră înainte să te întorci.", comment: "Trip check: no green card because the RCA ends during the trip."),
+                                       detail: rca.due < today
+                                           ? String(localized: "Vine cu RCA-ul, care a expirat.", comment: "Trip check: no green card because the RCA has already expired.")
+                                           : String(localized: "Vine cu RCA-ul, care expiră înainte să te întorci.", comment: "Trip check: no green card because the RCA ends during the trip."),
                                        action: .open(.obligation(rca.id))))
         } else {
             items.append(notInBinder(greenID, title: greenTitle,
@@ -376,7 +430,9 @@ extension ReadinessEngine {
                                            action: .open(.obligation(vignette.id))))
             } else {
                 items.append(ReadinessItem(id: vignetteID, status: .problem, title: vignetteTitle,
-                                           detail: String(localized: "A expirat pe \(day). Ai nevoie de ea până la graniță. O cumperi online sau la benzinărie.", comment: "Trip check: the vignette has ended before the trip starts."),
+                                           detail: vignette.due < today
+                                               ? String(localized: "A expirat pe \(day). Ai nevoie de ea până la graniță. O cumperi online sau la benzinărie.", comment: "Trip check: the vignette has ended before the trip starts.")
+                                               : String(localized: "Expiră pe \(day), înainte să pleci. Ai nevoie de ea până la graniță. O cumperi online sau la benzinărie.", comment: "Trip check: the vignette ends before the trip starts, on a day still to come."),
                                            action: .open(.obligation(vignette.id))))
             }
         } else {
@@ -385,12 +441,12 @@ extension ReadinessEngine {
                                      asset: car, blueprintKey: vignetteKey))
         }
 
-        items.append(drivingLicence(for: car, plan: plan, assets: assets))
+        items.append(drivingLicence(for: car, plan: plan, assets: assets, today: today))
         return items
     }
 
     /// Someone going has to drive: a licence valid until the trip ends.
-    static func drivingLicence(for car: ReadinessAsset, plan: TripPlan, assets: [ReadinessAsset]) -> ReadinessItem {
+    static func drivingLicence(for car: ReadinessAsset, plan: TripPlan, assets: [ReadinessAsset], today: CalendarDay) -> ReadinessItem {
         let id = "trip.licence.\(car.id)"
         let title = typeTitle(DocumentType.drivingLicence)
         let going = plan.travellers.flatMap { personalDocuments(of: $0, in: assets) }
@@ -402,7 +458,9 @@ extension ReadinessEngine {
                                      action: .open(.asset(licence.id)))
             }
             return ReadinessItem(id: id, status: .problem, title: title,
-                                 detail: String(localized: "Expiră pe \(DosarFormat.longDay(until)), înainte să te întorci.", comment: "Trip check: the driving licence ends during the trip."),
+                                 detail: ending(until, today: today,
+                                                passed: { String(localized: "A expirat pe \($0). Fă-ți altul înainte de plecare.", comment: "Trip check: the driving licence has already expired.") },
+                                                ahead: { String(localized: "Expiră pe \($0), înainte să te întorci.", comment: "Trip check: the driving licence ends during the trip.") }),
                                  action: .open(.asset(licence.id)))
         }
         let firstMember = plan.travellers.compactMap { traveller -> UUID? in
@@ -414,7 +472,11 @@ extension ReadinessEngine {
                              action: firstMember.map { .addPersonalDocument(holderID: $0) })
     }
 
-    static func petChecks(_ pet: ReadinessAsset, plan: TripPlan, calendar: Calendar) -> [ReadinessItem] {
+    /// The days a first rabies vaccine takes before it counts for crossing a border (Regulation
+    /// (EU) No 576/2013, Annex III): a booster given before the one before ran out counts at once.
+    static let rabiesWaitDays = 21
+
+    static func petChecks(_ pet: ReadinessAsset, plan: TripPlan, today: CalendarDay, calendar: Calendar) -> [ReadinessItem] {
         var items: [ReadinessItem] = []
         let hasPassport = hasValue(PetFields.passport, on: pet)
         items.append(ReadinessItem(
@@ -428,36 +490,60 @@ extension ReadinessEngine {
         let rabiesID = "trip.rabies.\(pet.id)"
         let rabiesTitle = String(localized: "Vaccin antirabic", comment: "Trip check: a pet's rabies vaccine.")
         if let rabies = pet.obligations[BuiltInBlueprints.petRabies] {
-            // A first rabies vaccine counts from 21 days after it is given; it must still be valid on return.
-            let latestAllowed = plan.start.adding(days: -21, calendar: calendar)
-            let validOnReturn = DueDayValidity.covers(through: plan.end, due: rabies.due)
-            let status: ReadinessStatus
-            let detail: String
-            if !validOnReturn {
-                status = .problem
-                detail = String(localized: "Expiră pe \(DosarFormat.longDay(rabies.due)), înainte să te întorci. Fă-l din nou cu cel puțin 21 de zile înainte de plecare.", comment: "Trip check: the rabies vaccine ends during the trip.")
-            } else if let done = rabies.lastDone, done > latestAllowed {
-                status = .problem
-                detail = String(localized: "Făcut pe \(DosarFormat.longDay(done)). Trebuie făcut cu cel puțin 21 de zile înainte de plecare, adică până pe \(DosarFormat.longDay(latestAllowed)). Întreabă medicul veterinar.", comment: "Trip check: the rabies vaccine was given too close to departure.")
-            } else if rabies.lastDone == nil {
-                status = .warning
-                detail = String(localized: "Valabil până pe \(DosarFormat.longDay(rabies.due)). Verifică în pașaport că e făcut cu cel puțin 21 de zile înainte de plecare.", comment: "Trip check: the rabies vaccine is valid but its date isn't known.")
-            } else {
-                status = .ok
-                detail = String(localized: "Valabil până pe \(DosarFormat.longDay(rabies.due)).", comment: "Readiness: a deadline valid until a day.")
-            }
-            items.append(ReadinessItem(id: rabiesID, status: status, title: rabiesTitle, detail: detail, action: .open(.obligation(rabies.id))))
+            items.append(ReadinessItem(id: rabiesID, title: rabiesTitle, rabies: rabies, plan: plan, today: today, calendar: calendar))
         } else {
             items.append(notInBinder(rabiesID, title: rabiesTitle,
                                      detail: String(localized: "Nu e în dosar. Adaugă data vaccinului ca să verific.", comment: "Trip check: no rabies vaccine deadline."),
                                      asset: pet, blueprintKey: BuiltInBlueprints.petRabies))
         }
-        if plan.region == .outsideEU {
+        if plan.region != .europeanUnion {
             items.append(reminder("trip.petTiter.\(pet.id)",
                                   String(localized: "Ce cere țara pentru animale", comment: "Trip reminder: rules for pets outside the EU."),
                                   String(localized: "Unele țări din afara UE cer și un test de anticorpi, făcut cu luni înainte. Întreabă medicul veterinar.", comment: "Trip reminder: rabies antibody test for some countries.")))
         }
         return items
+    }
+}
+
+extension ReadinessItem {
+    /// A pet's rabies vaccine for a trip. It must still be valid on the day back. A vaccine
+    /// given less than 21 days before leaving counts only if it was a booster given before the
+    /// one before ran out (done on or before the due day of the cycle it closed); a first one,
+    /// or one after a lapse, waits its 21 days. When the binder can't tell which it was, the
+    /// person is asked to look in the pet's passport.
+    init(id: String, title: String, rabies: ReadinessObligation, plan: TripPlan, today: CalendarDay, calendar: Calendar) {
+        let wait = ReadinessEngine.rabiesWaitDays
+        let latestAllowed = plan.start.adding(days: -wait, calendar: calendar)
+        let validOnReturn = DueDayValidity.covers(through: plan.end, due: rabies.due)
+        let until = DosarFormat.longDay(rabies.due)
+        let status: ReadinessStatus
+        let detail: String
+        if !validOnReturn {
+            status = .problem
+            detail = rabies.due < today
+                ? String(localized: "A expirat pe \(until). Fă-l din nou cu cel puțin 21 de zile înainte de plecare.", comment: "Trip check: the rabies vaccine has already expired.")
+                : String(localized: "Expiră pe \(until), înainte să te întorci. Fă-l din nou înainte să expire, ca să fie valabil de îndată.", comment: "Trip check: the rabies vaccine ends during the trip; a booster before it ends counts at once.")
+        } else if let done = rabies.lastDone, done > latestAllowed {
+            let given = DosarFormat.longDay(done)
+            switch rabies.lastCycleDue.map({ done <= $0 }) {
+            case true?:
+                status = .ok
+                detail = String(localized: "Rapel făcut pe \(given), înainte să expire cel vechi, deci e valabil de îndată. Valabil până pe \(until).", comment: "Trip check: a rabies booster given close to departure, but before the previous one ran out, counts at once.")
+            case false?:
+                status = .problem
+                detail = String(localized: "Făcut pe \(given), după ce expirase cel vechi. Trebuie făcut cu cel puțin 21 de zile înainte de plecare, adică până pe \(DosarFormat.longDay(latestAllowed)). Întreabă medicul veterinar.", comment: "Trip check: the rabies vaccine was given after the previous one lapsed, too close to departure.")
+            case nil:
+                status = .warning
+                detail = String(localized: "Făcut pe \(given), cu mai puțin de 21 de zile înainte de plecare. Un rapel făcut înainte să expire cel vechi e valabil de îndată. Altfel, întreabă medicul veterinar.", comment: "Trip check: a rabies vaccine close to departure, not known whether it was a booster on time.")
+            }
+        } else if rabies.lastDone == nil {
+            status = .warning
+            detail = String(localized: "Valabil până pe \(until). Verifică în pașaport că e făcut cu cel puțin 21 de zile înainte de plecare.", comment: "Trip check: the rabies vaccine is valid but its date isn't known.")
+        } else {
+            status = .ok
+            detail = String(localized: "Valabil până pe \(until).", comment: "Readiness: a deadline valid until a day.")
+        }
+        self.init(id: id, status: status, title: title, detail: detail, action: .open(.obligation(rabies.id)))
     }
 }
 
@@ -730,9 +816,10 @@ extension ReadinessAsset {
             var obligations: [String: ReadinessObligation] = [:]
             var others: [ReadinessObligation] = []
             for obligation in asset.activeObligations {
-                let lastDone = obligation.history.first.map { CalendarDay($0.occurredAt, calendar: calendar) }
+                let last = obligation.history.first
+                let lastDone = last.map { CalendarDay($0.occurredAt, calendar: calendar) }
                 let reading = ReadinessObligation(
-                    id: obligation.id, due: obligation.dueDay, lastDone: lastDone, reference: obligation.reference,
+                    id: obligation.id, due: obligation.dueDay, lastDone: lastDone, lastCycleDue: last?.cycleDueDay, reference: obligation.reference,
                     title: obligation.title, kind: obligation.kind, amount: obligation.estimatedCost
                 )
                 if let key = obligation.blueprintKey { obligations[key] = reading } else { others.append(reading) }

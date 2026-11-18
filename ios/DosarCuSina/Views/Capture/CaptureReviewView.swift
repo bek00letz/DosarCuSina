@@ -389,7 +389,9 @@ struct CaptureReviewView: View {
         }
     }
 
-    /// "Cum folosește Gemini ce trimiți", when the provider publishes its terms.
+    /// "Cum folosește Gemini ce trimiți", when the provider publishes its terms; for a service
+    /// with none to link (a compatible one), that its rules are its own, so every provider says
+    /// something before a document goes.
     @ViewBuilder private var dataPolicyLink: some View {
         if let policy = cloudProvider.dataPolicyURL {
             Link(destination: policy) {
@@ -397,6 +399,10 @@ struct CaptureReviewView: View {
                     .frame(minHeight: 44, alignment: .leading)
             }
             .dsFont(.footnote)
+        } else {
+            Text(verbatim: Words.ownServiceRules)
+                .dsFont(.footnote)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 

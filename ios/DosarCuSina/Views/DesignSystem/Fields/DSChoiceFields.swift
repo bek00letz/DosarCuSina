@@ -102,13 +102,17 @@ struct DSChoiceField<Option: Hashable>: View {
     }
 }
 
-/// Pick any number of options, shown as chips that wrap onto new lines.
+/// Pick any number of options, shown as chips that wrap onto new lines. A long list (a
+/// person's citizenships) shows only the chosen ones, each taken away with a tap, and
+/// „Adaugă” opens the same searchable list a long `DSChoiceField` opens (`DSChoiceListSheet`).
 struct DSMultiChoiceField<Option: Hashable>: View {
     let title: LocalizedStringKey
     @Binding var selection: Set<Option>
     let options: [Option]
     let optionTitle: (Option) -> String
     var footnote: LocalizedStringKey?
+
+    @State private var isAdding = false
 
     init(
         _ title: LocalizedStringKey,
@@ -124,23 +128,30 @@ struct DSMultiChoiceField<Option: Hashable>: View {
         self.optionTitle = optionTitle
     }
 
+    /// Whether the options are too many to show at once: the same limit as a choice's menu.
+    private var isLong: Bool { options.count > DSChoiceField<Option>.menuLimit }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .dsFont(.captionEmphasized)
                 .accessibilityAddTraits(.isHeader)
-            DSFlowLayout {
-                ForEach(options, id: \.self) { option in
-                    let isSelected = selection.contains(option)
-                    DSChip(
-                        verbatim: optionTitle(option),
-                        systemImage: isSelected ? "checkmark" : nil,
-                        isSelected: isSelected
-                    ) {
-                        if isSelected {
-                            selection.remove(option)
-                        } else {
-                            selection.insert(option)
+            if isLong {
+                longList
+            } else {
+                DSFlowLayout {
+                    ForEach(options, id: \.self) { option in
+                        let isSelected = selection.contains(option)
+                        DSChip(
+                            verbatim: optionTitle(option),
+                            systemImage: isSelected ? "checkmark" : nil,
+                            isSelected: isSelected
+                        ) {
+                            if isSelected {
+                                selection.remove(option)
+                            } else {
+                                selection.insert(option)
+                            }
                         }
                     }
                 }
@@ -150,6 +161,28 @@ struct DSMultiChoiceField<Option: Hashable>: View {
             }
         }
         .accessibilityElement(children: .contain)
+        .sensoryFeedback(.selection, trigger: selection)
+    }
+
+    /// The chosen options, in the list's order, each with its way out, and „Adaugă”.
+    private var longList: some View {
+        DSFlowLayout {
+            ForEach(options.filter(selection.contains), id: \.self) { option in
+                DSChip(verbatim: optionTitle(option), systemImage: "xmark", isSelected: true) {
+                    selection.remove(option)
+                }
+                .accessibilityHint(Text("Atinge ca să o scoți.", comment: "VoiceOver hint of a chosen option in a long multiple choice: tapping takes it away."))
+            }
+            DSChip(title: Text("Adaugă", comment: "Adds an option to a long multiple choice, from a searchable list."), systemImage: "plus", isSelected: false) {
+                isAdding = true
+            }
+            .dsSheet(isPresented: $isAdding) {
+                DSChoiceListSheet(title: Text(title), options: options.filter { !selection.contains($0) }, optionTitle: optionTitle,
+                                  selection: nil) { chosen in
+                    if let chosen { selection.insert(chosen) }
+                }
+            }
+        }
     }
 }
 

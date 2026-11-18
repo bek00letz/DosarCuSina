@@ -378,7 +378,7 @@ struct CaptureFiler {
 
         // The policy's bonus-malus class, on the person it insures (never on the car).
         try keepBonusMalus(plan.bonusMalus, on: outcome.asset, deadline: plan.blueprint)
-        // The citizenship a personal document prints, on its holder when they have none yet.
+        // The citizenship a personal document prints, among its holder's citizenships.
         try keepCitizenship(of: outcome.asset, templates: templates)
 
         // 2. The deadline, as the plan says: the section's own moves (or its cycle closes),
@@ -814,16 +814,17 @@ struct CaptureFiler {
     }
 
     /// The citizenship a personal document prints (`DocumentFields.nationality`: a passport's
-    /// or residence permit's zone, an identity card's line), kept on the person it is filed
-    /// under when they have none yet (`MemberFields.citizenship`). One the person chose, or an
-    /// earlier document gave, is never changed: a person with two keeps the one they said.
+    /// or residence permit's zone, an identity card's line), added to the citizenships of the
+    /// person it is filed under (`MemberFields.citizenship`), with every other one their
+    /// documents print when none was kept yet. A person can have several: a second country's
+    /// passport adds its citizenship and takes none away. Only the person's page takes one away.
     private func keepCitizenship(of document: Asset?, templates: [String: CategoryTemplate]) throws {
         guard let document, templates.plays(.personalDocument, document.templateKey),
               let holder = document.parent, templates.plays(.holder, holder.templateKey),
-              holder.values[MemberFields.citizenship]?.textValue == nil,
-              let citizenship = Citizenship.read(fromDocuments: [document.values]) else { return }
-        var values = holder.values
-        values[MemberFields.citizenship] = .text(citizenship)
+              let printed = Citizenship.printed(on: document.values) else { return }
+        let documents = (holder.children ?? []).filter { templates.plays(.personalDocument, $0.templateKey) }.map(\.values)
+        let known = Citizenship.of(person: holder.values, documents: documents)
+        guard let values = Citizenship.keeping(known + [printed], in: holder.values) else { return }
         try AssetActions(context: context, calendar: calendar, now: now).update(holder, name: holder.name, values: values, notes: holder.notes)
     }
 

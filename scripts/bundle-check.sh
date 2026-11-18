@@ -3,7 +3,8 @@
 #
 #   - the app, its widgets and its share extension each carry a privacy manifest
 #     (PrivacyInfo.xcprivacy) that is a valid property list and tracks nothing;
-#   - the app has the words for every permission it asks (camera, Face ID, adding to Photos);
+#   - the app has the words for every permission it asks (camera, Face ID, the home network
+#     for a local AI service, adding to Photos), and reaches only the home network over http;
 #   - the export-compliance answer is there (ITSAppUsesNonExemptEncryption = NO);
 #   - every part carries the same version and build number;
 #   - "remote-notification" is among the background modes exactly when release builds sync
@@ -43,9 +44,15 @@ for part in "$app" "$app/PlugIns/DosarCuSinaWidgets.appex" "$app/PlugIns/DosarCu
     fi
 done
 
-for key in NSCameraUsageDescription NSFaceIDUsageDescription NSPhotoLibraryAddUsageDescription; do
+for key in NSCameraUsageDescription NSFaceIDUsageDescription NSLocalNetworkUsageDescription NSPhotoLibraryAddUsageDescription; do
     [ -n "$(value "$app" "$key")" ] || fail "the app has no $key: set INFOPLIST_KEY_$key in the app target"
 done
+
+# Plain http only to a server on the home network (a compatible AI service), never the internet.
+[ "$(value "$app" NSAppTransportSecurity:NSAllowsLocalNetworking)" = true ] \
+    || fail "the app's NSAppTransportSecurity needs NSAllowsLocalNetworking = YES for an AI service on the home network"
+[ -z "$(value "$app" NSAppTransportSecurity:NSAllowsArbitraryLoads)" ] \
+    || fail "the app must not set NSAllowsArbitraryLoads: only the home network is reached over http"
 
 [ "$(value "$app" ITSAppUsesNonExemptEncryption)" = false ] || fail "ITSAppUsesNonExemptEncryption must be NO (only the encryption iOS provides)"
 

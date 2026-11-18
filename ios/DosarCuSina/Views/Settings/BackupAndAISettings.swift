@@ -453,7 +453,7 @@ struct AISettings: View {
                         .frame(minHeight: 44)
                 }
             } else {
-                Text("Serviciul ales are regulile lui pentru ce trimiți. Citește-le înainte să trimiți acte.", comment: "Note for a custom AI service.")
+                Text(verbatim: AIKeyWording.ownServiceRules)
                     .dsFont(.footnote)
             }
         } header: {
@@ -522,5 +522,12 @@ enum AIKeyWording {
         case .failed(let error):
             error.message(provider: provider)
         }
+    }
+
+    /// Said wherever a provider's terms would be linked, for a service with none to link (a
+    /// compatible service, which is the person's own choice): in Settings and before a document
+    /// is sent from the review.
+    static var ownServiceRules: String {
+        String(localized: "Serviciul ales are regulile lui pentru ce trimiți. Citește-le înainte să trimiți acte.", comment: "Note for a custom AI service.")
     }
 }
