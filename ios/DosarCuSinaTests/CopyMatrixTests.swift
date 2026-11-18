@@ -178,7 +178,7 @@ struct CopyMatrixTests {
                             + "[\(paper.readingWords) / \(paper.readWords) / \(paper.unreadWords)"
                             + (paper.readsADate ? " / \(paper.noDateKeptWords)]" : "]"))
             }
-            if let newEnd = shape.newEnd { asks.append("\(newEnd.label) — \(CompletionWording.newEndFootnote)") }
+            if let newEnd = shape.newEnd { asks.append("\(newEnd.label) — \(CompletionWording.newEndFootnote) [until chosen: \(newEnd.needed)]") }
             if let note = shape.note { asks.append("\(CompletionWording.note) — \(note.prompt)") }
             if let counter = counterTitle(blueprint, in: definition) { asks.append(counter) }
             if let replacement = shape.replacement {
@@ -188,6 +188,8 @@ struct CopyMatrixTests {
                 asks.append("\(replacement.inSheet) Once closed: „\(replacement.title)” — \(replacement.message) "
                             + "[\(offers)] · the toast's \(replacement.open)" + (replacement.replacesItsSection ? " · the badge Expirat" : ""))
             }
+            // A reminder's button, the widget and Siri can't ask: such a deadline is closed in the app.
+            if !shape.closesOutsideTheApp { asks.append("from outside the app: opens „Am rezolvat”, no widget „Gata”") }
             return ("\(blueprint.title) (`\(kind.rawValue)`)", "\(shape.actionWords) / \(shape.menuWords) — " + asks.joined(separator: "; "))
         }
     }

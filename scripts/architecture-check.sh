@@ -238,6 +238,13 @@ rule own-canvas "$app" '^ios/DosarCuSina/Services/Documents/ImageScaling\.swift$
     'CGContext\( *consumer:' \
     "Draw a picture on ImageScaling.canvas(width:height:onWhite:), and change its size with ImageScaling.scaled or decoded: one canvas and one scaler, the same quality everywhere."
 
+# A reminder's moment reaches the system in one place, whose date parts carry the app's
+# calendar: parts without one are read in the phone's calendar (Buddhist, Japanese, Hebrew…),
+# where the year means another one.
+rule trigger-outside-reminder-trigger "$app" '^ios/DosarCuSina/Services/Reminders/ReminderTrigger\.swift$' \
+    'UN(Calendar|TimeInterval)NotificationTrigger *\(' - \
+    "Hand a reminder's moment to the system with ReminderTrigger.make(firingAt:), whose date parts carry the app's calendar, so it fires on that day whatever calendar the phone is set to."
+
 # A row that gives way is DSAdaptiveStack, laid out once so a field or a button keeps its
 # state. Widgets are left out on purpose: a Lock Screen line (accessoryInline) shows one
 # line of text the system lays out itself, ignoring any layout of the app's, and offers
