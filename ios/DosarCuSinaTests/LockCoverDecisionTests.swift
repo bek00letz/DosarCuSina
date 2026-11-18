@@ -64,6 +64,26 @@ struct LockCoverDecisionTests {
         }
     }
 
+    @Test("Whether a section is locked is asked only as the app leaves the screen with the session open")
+    func theLockAnswerIsAskedOnlyWhenItDecides() {
+        var asked = 0
+        func anySectionLocked() -> Bool {
+            asked += 1
+            return true
+        }
+        // Each decision is made outside `#expect`, which would read its arguments itself.
+        let onScreen = LockCover.decide(appLockEnabled: false, anySectionLocked: anySectionLocked(), isSessionUnlocked: true, phase: .active, isAuthenticating: false)
+        let duringAPrompt = LockCover.decide(appLockEnabled: false, anySectionLocked: anySectionLocked(), isSessionUnlocked: true, phase: .inactive, isAuthenticating: true)
+        let appLocked = LockCover.decide(appLockEnabled: true, anySectionLocked: anySectionLocked(), isSessionUnlocked: false, phase: .background, isAuthenticating: false)
+        #expect(onScreen == nil)
+        #expect(duringAPrompt == nil)
+        #expect(appLocked == .lock)
+        #expect(asked == 0, "The binder isn't read while nothing depends on it")
+        let leaving = LockCover.decide(appLockEnabled: false, anySectionLocked: anySectionLocked(), isSessionUnlocked: true, phase: .background, isAuthenticating: false)
+        #expect(leaving == .privacy)
+        #expect(asked == 1)
+    }
+
     @Test("The scene's phase reads as the cover's")
     func scenePhases() {
         #expect(LockCover.Phase(ScenePhase.active) == .active)

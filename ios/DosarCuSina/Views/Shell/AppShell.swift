@@ -24,13 +24,15 @@ struct AppShell: View {
     /// How far each tab's content keeps from the bottom edge (the tab bar), and the shell's own.
     @State private var tabInsets: [AppTab: CGFloat] = [:]
     @State private var shellInset: CGFloat = 0
-    /// Every category: which are locked is this device's choice, read through each one (`SectionLocks`).
-    @Query private var categories: [CategoryTemplate]
+    @Environment(\.modelContext) private var context
 
+    /// Whether a section lock is on is the binder's one answer, read as the app leaves the screen
+    /// (a change of `scenePhase` draws the shell again): it counts a section whose category hasn't
+    /// arrived yet as every screen does (`BinderLocks`).
     private var cover: LockCover? {
         LockCover.decide(
             appLockEnabled: preferences.appLockEnabled,
-            anySectionLocked: categories.contains(where: \.isSensitive),
+            anySectionLocked: BinderLocks.read(in: context).anySectionLocked,
             isSessionUnlocked: vault.isSessionUnlocked,
             phase: LockCover.Phase(scenePhase),
             isAuthenticating: vault.isAuthenticating
