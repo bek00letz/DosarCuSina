@@ -275,10 +275,11 @@ struct SeveralCitizenshipsTests {
         #expect(trip(plan(early), [early])[id: "trip.rabies.\(early.id)"]?.status == .ok, "More than 21 days before: fine either way")
     }
 
-    @Test("The citizenships repair is a new step at the end")
+    @Test("The citizenships repair is a new step after the ones before it")
     func theRepairComesLast() {
         let ids = DataRepairs.steps.map { type(of: $0).id }
-        #expect(ids.last == .citizenships)
+        #expect(ids.firstIndex(of: .citizenships) == ids.firstIndex(of: .subscriptionCodes).map { $0 + 1 },
+                "Added at the end of the steps there were; later steps follow it")
         #expect(DataRepairStepID.citizenships.rawValue == "citizenships")
     }
 }
