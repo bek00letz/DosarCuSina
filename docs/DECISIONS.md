@@ -6,6 +6,15 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ---
 
+## 2026-11-18
+
+### A screenshot offers the whole page (owner)
+- **Decided (owner):** a screenshot taken in the app offers the screenshot editor's *Pagină întreagă* (Full Page), the screen's whole scrolling content as a PDF, for every screen.
+- **Decided:** built once, as the scene's one `UIScreenshotService` delegate (`FullPageScreenshots`, set by `FullPageScreenshotHost` in `AppShell`), never by a screen. The page is the screen in front: the topmost sheet still up, else the selected tab's top screen, and its largest scroll view that scrolls up and down and covers at least half of it (`FullPageScreenshotTarget`). It is drawn from the app's own window a screen at a time while the content scrolls underneath a still copy of the screen, then put back where it was, so the PDF is what the screen draws: the person's text size, light or dark, masked codes still masked, an iPad's split width. *Alternative:* drawing the screen's SwiftUI content again off the screen; not done, since a screen's views can't be rebuilt generically outside their place, and a lazy list draws only the rows near the screen either way.
+- **Decided:** nothing is offered while a lock covers the app (`LockCover`, the shell's one answer; the lock window is in the same scene, so the same delegate answers for it), while a locked state shows (`.withholdsFullPageScreenshot()`, on `DSLockedState` and a locked deadline's card), for an alert, for a screen without a scroll view, or for content that fits on the screen. A capture covered on its way gives nothing. Then only the plain screenshot exists.
+- **Decided:** a very long list stops at thirty screens (`FullPageScreenshot.mostScreens`), from the top while the visible part is among them, else ending with it: each screen is scrolled to, drawn and kept as a picture while the editor waits. PDF pages are at most 14,400 pt tall (`largestPageSide`, the PDF reference's limit), and the editor opens at the visible part (`current`). The PDF is made in memory; no file is written.
+- **Pinned by:** `FullPageScreenshotTests` (when it is offered, which scroll view, the stretch, the pages and the place the editor opens, a capture in a window that puts the list back). The editor itself shows only on a device or the simulator.
+
 ## 2026-11-17
 
 ### A policy's insured sum, a full „Gata” in the widget, the health card closed like a document (owner)
