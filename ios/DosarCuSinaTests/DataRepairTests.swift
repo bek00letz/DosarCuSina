@@ -265,6 +265,90 @@ struct DataRepairTests {
         #expect(stored.shownNote == blueprint.shownNote, "A note an earlier version stored is never shown")
     }
 
+    // MARK: Deadlines that close when done
+
+    @Test("A health card deadline an earlier catalog kept repeating is offered to stop repeating, as a correction; others keep their repeat")
+    func aRenewalKeptRepeatingIsOffered() throws {
+        let context = try makeContext()
+        let health = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.health))
+        let file = try AssetActions(context: context).create(name: "Fișa medicală", template: health, values: FieldValues())
+        func deadline(_ key: String) throws -> Obligation {
+            let blueprint = try #require(health.definition.blueprints.first { $0.key == key })
+            return try ObligationActions(context: context).create(from: blueprint, for: file, firstDue: CalendarDay("2027-03-01"))
+        }
+        let card = try deadline(BuiltInBlueprints.healthEUCard)
+        // As an earlier catalog made it.
+        card.recurrence = .interval(.years(2), anchor: .completion)
+        let flu = try deadline("health.flu")
+        try UnitOfWork.save(context)
+        #expect(!DeadlineEdit(card).offersRepeat, "Editează offers no repeat for a deadline that closes when done")
+
+        let found = try applyTwice(.renewalRepeats, in: context) {
+            #expect(card.recurrence == .none)
+            #expect(card.dueDay == CalendarDay("2027-03-01") && card.status == .active, "Only what its page says changes")
+            #expect(flu.recurrence.repeats, "A vaccine keeps repeating")
+        }
+        #expect(found.count == 1)
+        #expect(!DataRepairs.step(.renewalRepeats).isSuggestion, "A correction: in De corectat, not a suggestion")
+        #expect(DeadlineEdit(flu).offersRepeat == (RepeatChoice(rule: flu.recurrence) != nil))
+    }
+
+    // MARK: Subscription codes
+
+    @Test("A code an earlier version kept under another code's name moves only where the subscription's papers say what it is")
+    func aCodeMovesWhereItsPapersSaySo() throws {
+        let context = try makeContext()
+        func subscription(_ name: String, service: String, _ codes: [SubscriptionCode: String], paper: String?) -> Asset {
+            var values = FieldValues()
+            values[SubscriptionFields.service] = .text(service)
+            for (code, value) in codes { values[code.fieldKey] = .text(value) }
+            let asset = Asset(name: name, templateKey: BuiltInTemplates.Key.subscription, values: values)
+            context.insert(asset)
+            if let paper {
+                let document = Attachment(fileName: "factura.pdf", contentType: "application/pdf", data: nil)
+                document.extractedText = paper
+                context.insert(document)
+                document.asset = asset
+            }
+            return asset
+        }
+        // The billing account, kept as the client code by the reader before subscriptions had one.
+        let internet = subscription("Internet Exemplu", service: ServiceKind.internetTV, [.clientCode: "3000000000"],
+                                    paper: SubscriptionsByServiceTests.telecomContract)
+        // A client code that is one.
+        let rightly = subscription("Internet acasă", service: ServiceKind.internetTV, [.clientCode: "2000000000"],
+                                   paper: SubscriptionsByServiceTests.telecomContract)
+        // A water bill's place code, kept as a gas code.
+        let water = subscription("Apă", service: ServiceKind.water, [.clc: "400000001"], paper: """
+        Apa Nova București S.A.
+        FACTURĂ FISCALĂ seria EX nr. 000000001
+        Apă potabilă și canalizare
+        Cod client: 1000000000
+        Cod loc de consum: 400000001
+        Data scadenței: 25.10.2026
+        Total de plată: 85,30 lei
+        """)
+        // Nothing to tell by: typed by hand, no paper.
+        let typed = subscription("Telefon", service: ServiceKind.mobile, [.clientCode: "3000000000"], paper: nil)
+        // Its account already holds another value: not certain.
+        let taken = subscription("Internet birou", service: ServiceKind.internetTV, [.clientCode: "3000000000", .account: "3000000009"],
+                                 paper: SubscriptionsByServiceTests.telecomContract)
+        try context.save()
+
+        let found = try applyTwice(.subscriptionCodes, in: context) {
+            #expect(internet.value(SubscriptionFields.account) == .text("3000000000"))
+            #expect(internet.value(SubscriptionFields.clientCode) == nil)
+            #expect(water.value(SubscriptionFields.placeCode) == .text("400000001"))
+            #expect(water.value(SubscriptionFields.clc) == nil)
+            #expect(rightly.value(SubscriptionFields.clientCode) == .text("2000000000"), "A client code its paper calls one stays")
+            #expect(typed.value(SubscriptionFields.clientCode) == .text("3000000000"), "Nothing is guessed without a paper")
+            #expect(taken.value(SubscriptionFields.clientCode) == .text("3000000000"))
+            #expect(taken.value(SubscriptionFields.account) == .text("3000000009"))
+        }
+        #expect(found.count == 2)
+        #expect(found.allSatisfy { $0.isFixable } && !DataRepairs.step(.subscriptionCodes).isSuggestion)
+    }
+
     @Test func everyStepHasItsOwnStoredID() {
         let ids = DataRepairs.steps.map { type(of: $0).id }
         #expect(Set(ids).count == ids.count)

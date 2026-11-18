@@ -18,9 +18,12 @@ struct DeadlineEdit: Equatable {
     var reminderMinuteOfDay: Int?
     /// Whether its name and importance are the person's to change.
     let isPersonsOwn: Bool
+    /// Whether closing it replaces a document with a new one (`CompletionShape.replacesDocument`),
+    /// so it closes when done, whatever a repeat would say, and the new document reminds of its own.
+    let closesWhenDone: Bool
 
     init(title: String, importance: DeadlineChoice.Importance?, dueDay: CalendarDay, recurrence: RecurrenceRule,
-         reminders: ReminderProfile, reminderMinuteOfDay: Int?, isPersonsOwn: Bool) {
+         reminders: ReminderProfile, reminderMinuteOfDay: Int?, isPersonsOwn: Bool, closesWhenDone: Bool = false) {
         self.title = title
         self.importance = isPersonsOwn ? importance : nil
         self.dueDay = dueDay
@@ -28,6 +31,7 @@ struct DeadlineEdit: Equatable {
         self.reminders = reminders
         self.reminderMinuteOfDay = reminderMinuteOfDay
         self.isPersonsOwn = isPersonsOwn
+        self.closesWhenDone = closesWhenDone
     }
 
     /// The deadline as it is now.
@@ -35,15 +39,17 @@ struct DeadlineEdit: Equatable {
     init(_ obligation: Obligation) {
         self.init(title: obligation.title, importance: DeadlineChoice.Importance(kind: obligation.kind), dueDay: obligation.dueDay,
                   recurrence: obligation.recurrence, reminders: obligation.reminders,
-                  reminderMinuteOfDay: obligation.reminderMinuteOfDay, isPersonsOwn: obligation.isPersonsOwn)
+                  reminderMinuteOfDay: obligation.reminderMinuteOfDay, isPersonsOwn: obligation.isPersonsOwn,
+                  closesWhenDone: obligation.modelContext.map { obligation.completion(in: $0).replacesDocument } ?? false)
     }
 
     /// Whether the sheet offers "Cât de important e".
     var offersImportance: Bool { importance != nil }
 
     /// Whether "Se repetă" is offered: a rule of every so many days, weeks, months or years, or
-    /// none (`RepeatChoice`). A rule on fixed dates, by a counter or by law is its category's.
-    var offersRepeat: Bool { RepeatChoice(rule: recurrence) != nil }
+    /// none (`RepeatChoice`). A rule on fixed dates, by a counter or by law is its category's, and
+    /// a deadline that closes when done (`closesWhenDone`) has no repeat to choose.
+    var offersRepeat: Bool { !closesWhenDone && RepeatChoice(rule: recurrence) != nil }
 
     /// A new importance, with the reminders moved by the one rule (`DeadlineChoice.reminders`), so
     /// the sheet shows what saving will keep.
