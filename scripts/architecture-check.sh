@@ -357,6 +357,13 @@ rule main-action-in-scroll '^ios/(DosarCuSina|DosarCuSinaShare)/' "$design_syste
     "Pin a screen's or a sheet's main action with .dsPinnedAction { DSPrimaryButton(…) }, with note: for what is said above it and secondary: for the actions under it. Inside the ScrollView it is lost at the end of the content; in a pocket's card, add with DSSecondaryButton like every pocket."
 rule hand-pinned-action "$app" '^ios/Shared/DSBottomBar\.swift$' '-' - \
     'Pin actions with .dsPinnedAction (note: and secondary: for what goes with them), the one bar, which keeps its height, material and keyboard behaviour everywhere.'
+# Checked in its own pass below, one struct at a time: a sheet of a locked screen lives inside its
+# gate. A screen's own sheets (dsSheet, dsFullScreenCover) are drawn behind the lock its gate
+# declares (EnvironmentValues.screenLock, set by LockGate), so when the lock comes back a sheet
+# still up shows the locked state. A struct that decides a lock itself (isLocked( …)) and
+# presents a sheet draws its own gate, so it says which lock its sheets live behind.
+rule sheet-outside-its-lock "^ios/DosarCuSina/Views/" "^ios/DosarCuSina/Views/Locks/" '-' - \
+    "A sheet of a locked screen lives inside its gate. Draw the screen through LockGate (or RouteLockGate), which puts its sheets behind the section's lock; a screen that draws its own locked state declares the lock its sheets live behind with .screenLock(…), .open when they show nothing of a locked section."
 # A modifier on a Section or a ForEach reaches each view inside it (and a Section's header and
 # footer) one by one, so a sheet, an alert or a dialog there is presented once for each of them:
 # the copies that can't present make UIKit dismiss from the root, and Settings closed with the
@@ -504,6 +511,44 @@ scan() {
                 if (words_in(literal) ~ /[A-Za-z]/) { print path "\ttext-in-shaped-screen\t" FNR; break }
             }
         }
+    ' "$rules" "$map" $files
+
+    # A sheet of a locked screen lives inside its gate (sheet-outside-its-lock): a top-level struct
+    # that decides a lock itself and presents a sheet declares the lock its sheets live behind.
+    # Strings and comments are left out before braces are counted.
+    # shellcheck disable=SC2086
+    awk -F'\t' -v rules_file="$rules" -v map_file="$map" '
+        function code_of(line) {
+            if (line ~ /^[[:space:]]*(\/\/|\/\*|\*)/) return ""
+            sub(/(^|[[:space:]])\/\/.*$/, "", line)
+            gsub(/"([^"\\]|\\.)*"/, "\"\"", line)
+            return line
+        }
+        function settle() {
+            if (open_struct && reads_lock && presents_at > 0 && !declares) print path "\tsheet-outside-its-lock\t" presents_at
+            open_struct = 0; reads_lock = 0; presents_at = 0; declares = 0
+        }
+        FILENAME == rules_file { inc[$1] = $2; exc[$1] = $3; next }
+        FILENAME == map_file { path_of[$2] = $1; next }
+        FNR == 1 {
+            settle()
+            path = path_of[FILENAME]; depth = 0
+            covered = path ~ inc["sheet-outside-its-lock"] && !(exc["sheet-outside-its-lock"] != "-" && path ~ exc["sheet-outside-its-lock"])
+        }
+        !covered { next }
+        {
+            code = code_of($0)
+            if (code == "") next
+            if (depth == 0 && code ~ /(^|[^A-Za-z0-9_])struct[[:space:]]+[A-Z]/) { settle(); open_struct = 1 }
+            if (open_struct) {
+                if (code ~ /(^|[^A-Za-z0-9_])isLocked\(/) reads_lock = 1
+                if (presents_at == 0 && code ~ /\.(dsSheet|dsFullScreenCover)[[:space:]]*\(/) presents_at = FNR
+                if (code ~ /\.screenLock\(/) declares = 1
+            }
+            depth += gsub(/\{/, "{", code) - gsub(/\}/, "}", code)
+            if (open_struct && depth <= 0 && code ~ /\}/) settle()
+        }
+        END { settle() }
     ' "$rules" "$map" $files
 
     # Tab roots: the first view inside each NavigationStack(path:) in the shell.

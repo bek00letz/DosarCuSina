@@ -144,10 +144,7 @@ enum IntentEngine {
     }
 
     private static func asksFaceID(_ action: OutsideAction, for obligation: Obligation, in context: ModelContext) -> Bool {
-        // A deadline of the whole household has no section, so no lock.
-        guard let asset = obligation.asset else { return false }
-        let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
-        return action.change.asksFaceID(inLockedCategory: asset.isSensitive(template: template))
+        action.change.asksFaceID(inLockedCategory: obligation.isSensitive(in: context))
     }
 
     /// Applies one request and saves. Throws only when saving fails.

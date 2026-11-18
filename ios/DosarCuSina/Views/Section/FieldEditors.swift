@@ -43,7 +43,8 @@ struct FieldEditor: View {
             DSMetricField(title, value: numberBinding, unit: field.unit, isRequired: isRequired)
         case .year:
             DSMetricField(title, value: numberBinding, unit: nil, fractionDigits: 0...0, groupsDigits: false, isRequired: isRequired) { year in
-                FieldEditor.validation(FieldFormatter.validate(String(Int(year)), as: .year))
+                // A year no count holds (from a backup) reads as no year, never a stop.
+                FieldEditor.validation(FieldFormatter.validate(FieldValue.wholeNumber(year).map { String($0) } ?? "", as: .year))
             }
         case .money:
             DSMoneyField(title, amount: moneyBinding, currencyCode: currencyBinding, isRequired: isRequired)

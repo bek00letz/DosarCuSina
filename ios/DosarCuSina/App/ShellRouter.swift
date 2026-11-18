@@ -78,6 +78,10 @@ enum RouteLock: Hashable, Sendable {
     /// keeps its due day, a checklist says it reads protected data, a firm's page leaves the
     /// locked sections out).
     case drawnByItsScreen
+    /// A record that names no section that can be found (a document whose deadline or record has
+    /// gone): its own lock can't be known, so it is drawn only while nothing of the binder is
+    /// locked or the session is open (`BinderLocks.anySectionLocked`). Locks fail closed.
+    case unknownSection
 }
 
 extension AppRoute {

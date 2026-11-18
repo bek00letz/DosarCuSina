@@ -60,9 +60,13 @@ private struct CompletionSheetModifier: ViewModifier {
     func body(content: Content) -> some View {
         content.dsSheet(item: $request) { request in
             if let obligation = UpcomingActions(context: context).obligation(request.obligationID) {
-                ObligationCompleteSheet(obligation: obligation, cycle: request.cycle) { result in
-                    self.request = nil
-                    if let result { toast = result }
+                // Behind its own section's lock, wherever it was opened from (Urmează is open):
+                // when the lock comes back while it is up, it shows the locked state and files nothing.
+                RouteLockGate(obligation.asset.map { .section($0.id) } ?? .open, inSheet: true) {
+                    ObligationCompleteSheet(obligation: obligation, cycle: request.cycle) { result in
+                        self.request = nil
+                        if let result { toast = result }
+                    }
                 }
             }
         }
@@ -88,12 +92,9 @@ struct OutsideCompletionSheet: View {
 
     var body: some View {
         if let obligation = matches.first {
-            if let assetID = obligation.asset?.id {
-                SectionIDLockGate(assetID: assetID, inSheet: true) { sheet(obligation) }
-            } else {
-                // A deadline of the whole household has no section, so no lock.
-                sheet(obligation)
-            }
+            // Behind its section's lock, as the page's own sheet is; a deadline of the whole
+            // household has no section, so no lock.
+            RouteLockGate(obligation.asset.map { .section($0.id) } ?? .open, inSheet: true) { sheet(obligation) }
         } else {
             DSEmptyState("Termenul nu mai există", systemImage: "calendar.badge.exclamationmark", message: "Poate a fost șters împreună cu secțiunea lui.")
         }

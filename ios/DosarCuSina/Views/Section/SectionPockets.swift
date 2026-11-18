@@ -213,20 +213,24 @@ struct PocketGroupHeading: View {
 }
 
 /// A child asset: its name and one line of what matters (contract end and rent,
-/// warranty end, price), with a badge when a date is near or past.
+/// warranty end, price), with a badge when a date is near or past. While the child's own
+/// category is locked, only the locked words (`SectionRowGate`): a parent's page never shows
+/// what a locked section holds.
 struct ChildRow: View {
     let child: Asset
     let definition: TemplateDefinition?
 
     var body: some View {
-        let summary = definition.map { ChildSummary.make(child.values, definition: $0) }
-        DSListRow(
-            title: Text(verbatim: child.name),
-            subtitle: summary?.line.map { Text(verbatim: $0) },
-            showsChevron: true
-        ) {
-            if let day = summary?.endDay {
-                ExpiryBadge(day: day, rule: DateUrgency.rule(for: day, on: child), on: child)
+        SectionRowGate(section: child) {
+            let summary = definition.map { ChildSummary.make(child.values, definition: $0) }
+            DSListRow(
+                title: Text(verbatim: child.name),
+                subtitle: summary?.line.map { Text(verbatim: $0) },
+                showsChevron: true
+            ) {
+                if let day = summary?.endDay {
+                    ExpiryBadge(day: day, rule: DateUrgency.rule(for: day, on: child), on: child)
+                }
             }
         }
     }
@@ -381,16 +385,19 @@ struct DocumentRowLink: View {
     var body: some View {
         switch item {
         case .personal(let document):
-            // One tap: the document's own page, picture first.
+            // One tap: the document's own page, picture first. While its category is locked, only
+            // „Act protejat”: no name, expiry or card digits, and its page asks for Face ID.
             NavigationLink(value: AppRoute.asset(document.id)) {
-                DSListRow(
-                    title: Text(verbatim: document.name),
-                    subtitle: DocumentSummary.line(document.values).map { Text(verbatim: $0) },
-                    systemImage: "person.text.rectangle",
-                    thumbnail: showsPicture ? DSThumbnailWell(image: picture(of: document), systemImage: "person.text.rectangle") : nil,
-                    showsChevron: true
-                ) {
-                    if let day = document.value(DocumentFields.expiry)?.dateValue { ExpiryBadge(day: day, rule: DateUrgency.rule(for: day, on: document), on: document) }
+                SectionRowGate(section: document) {
+                    DSListRow(
+                        title: Text(verbatim: document.name),
+                        subtitle: DocumentSummary.line(document.values).map { Text(verbatim: $0) },
+                        systemImage: "person.text.rectangle",
+                        thumbnail: showsPicture ? DSThumbnailWell(image: picture(of: document), systemImage: "person.text.rectangle") : nil,
+                        showsChevron: true
+                    ) {
+                        if let day = document.value(DocumentFields.expiry)?.dateValue { ExpiryBadge(day: day, rule: DateUrgency.rule(for: day, on: document), on: document) }
+                    }
                 }
             }
             .buttonStyle(.dsPressable)

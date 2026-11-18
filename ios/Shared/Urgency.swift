@@ -67,8 +67,20 @@ public enum ReminderLead: Hashable, Sendable {
     case days(Int)
     case months(Int)
 
+    /// The longest a reminder's lead, a grace or a travel margin can be, in days: a hundred years,
+    /// as long as anything repeats (`RecurrenceInterval.longest(in:)`). A number from outside (a
+    /// backup, another device, the widget's snapshot) is held to it where it is read
+    /// (`ReminderProfile`, `UrgencyRule`), so every day worked out from it is a day the calendar has.
+    public static let longestDays = 36_500
+
+    /// `days` as a length of days the app counts with: none below zero, at most `longestDays`.
+    public static func bounded(_ days: Int) -> Int {
+        min(max(0, days), longestDays)
+    }
+
     public init(days: Int) {
-        let n = abs(days)
+        // Its size, held to the longest: the most negative number has no size an `Int` holds.
+        let n = Self.bounded(Int(clamping: days.magnitude))
         if n >= 365, n % 365 == 0 {
             self = .months(n / 365 * 12)
         } else if n >= 30, n % 30 == 0 {
@@ -125,11 +137,13 @@ public struct UrgencyRule: Hashable, Sendable, Codable {
     /// A date nothing reminds about: urgent only on the day and once it has passed.
     public static let noReminders = UrgencyRule(graceDays: 0, firstLeadDays: 0, maxWindowDays: 0)
 
+    /// Each length held to what the app counts with (`ReminderLead.bounded`), however it was made:
+    /// from a profile, or read from the widget's snapshot.
     public init(graceDays: Int, firstLeadDays: Int, maxWindowDays: Int, travelMarginDays: Int = 0) {
-        self.graceDays = max(0, graceDays)
-        self.firstLeadDays = max(0, firstLeadDays)
-        self.maxWindowDays = max(0, maxWindowDays)
-        self.travelMarginDays = max(0, travelMarginDays)
+        self.graceDays = ReminderLead.bounded(graceDays)
+        self.firstLeadDays = ReminderLead.bounded(firstLeadDays)
+        self.maxWindowDays = ReminderLead.bounded(maxWindowDays)
+        self.travelMarginDays = ReminderLead.bounded(travelMarginDays)
     }
 
     /// The last day a document with a travel margin is good for travel ("Bun de călătorit

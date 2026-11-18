@@ -75,12 +75,16 @@ public struct ReminderProfile: Hashable, Sendable, Codable {
         consequence == .legal || consequence == .financial
     }
 
+    /// Every length is held to what the app counts with (`ReminderLead.bounded`: none below zero,
+    /// a hundred years at most), however the profile is made: in the app, from a backup (its
+    /// decoder comes through here), from another device's columns (`Obligation.reminders`). A
+    /// lead counts by its size, so a negative one is the same lead.
     public init(leadDays: [Int], consequence: Consequence, graceDays: Int = 0, followUpAfterLapse: Bool? = nil, travelMarginDays: Int = 0) {
-        self.leadDays = Array(Set(leadDays.map(abs))).sorted(by: >)
+        self.leadDays = Array(Set(leadDays.map { ReminderLead.bounded(Int(clamping: $0.magnitude)) })).sorted(by: >)
         self.consequence = consequence
-        self.graceDays = max(0, graceDays)
+        self.graceDays = ReminderLead.bounded(graceDays)
         self.followUpAfterLapse = followUpAfterLapse ?? Self.defaultFollowUp(for: consequence)
-        self.travelMarginDays = max(0, travelMarginDays)
+        self.travelMarginDays = ReminderLead.bounded(travelMarginDays)
     }
 
     /// How urgent the item is on every surface: it needs the person from its earliest
