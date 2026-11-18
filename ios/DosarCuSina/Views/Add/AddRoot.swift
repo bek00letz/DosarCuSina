@@ -172,9 +172,10 @@ struct AddRoot: View {
         .transition(DS.Motion.transition(from: .top, reduceMotion: reduceMotion))
     }
 
-    /// The categories behind Face ID, by key.
+    /// The categories behind Face ID, by key: the binder's one answer, asked too for the category
+    /// a waiting item was read as, whether or not its record is here (`BinderLocks`).
     private var lockedCategories: Set<String> {
-        Set(templates.filter(\.isSensitive).map(\.key))
+        BinderLocks(templates: templates, naming: inbox.previews.values.compactMap(\.categoryKey), in: context.container).lockedKeys
     }
 
     private func row(_ item: InboxItem) -> InboxWording.Row {

@@ -263,3 +263,65 @@ extension Asset {
         isSensitive(template: templates[templateKey])
     }
 }
+
+// MARK: - The whole binder
+
+/// Which categories are behind Face ID on this device across the whole binder: the one answer
+/// (`CategoryTemplate.isSensitive(key:template:in:)`) asked for every category whose record is
+/// here and for every category a section names whose record isn't here yet, so a section that
+/// arrives before its category counts as locked, as it reads on its own page. Whatever asks
+/// whether anything of the binder is locked reads this, never the category records alone: the
+/// app-switcher cover (`AppShell`, `LockCover`), Face ID before a backup (`BackupFlow`),
+/// Settings' row for the locks and De verificat (the `lock-without-its-category` check).
+struct BinderLocks: Equatable {
+    /// The keys of the categories behind Face ID on this device.
+    let lockedKeys: Set<String>
+    /// The binder couldn't be read: something of it may be behind Face ID (locks fail closed).
+    private let unread: Bool
+
+    /// From the categories' records and the keys the sections (or anything else asked about, such
+    /// as an item waiting in De verificat) name.
+    init(templates: [CategoryTemplate], naming keys: some Sequence<String>, in container: ModelContainer?) {
+        var byKey: [String: [CategoryTemplate]] = [:]
+        for template in templates { byKey[template.key, default: []].append(template) }
+        var locked = Set<String>()
+        // Two copies of one category before they are joined (`RecordsMeet`): locked if either is.
+        for (key, copies) in byKey where copies.contains(where: { CategoryTemplate.isSensitive(key: key, template: $0, in: container) }) {
+            locked.insert(key)
+        }
+        for key in Set(keys) where byKey[key] == nil && CategoryTemplate.isSensitive(key: key, template: nil, in: container) {
+            locked.insert(key)
+        }
+        lockedKeys = locked
+        unread = false
+    }
+
+    private init(unread: Bool) {
+        lockedKeys = []
+        self.unread = unread
+    }
+
+    /// The binder in `context`: its categories and the categories its sections name. A store that
+    /// can't be read gives an answer in which something is locked.
+    static func read(in context: ModelContext) -> BinderLocks {
+        do {
+            let templates = try context.fetch(FetchDescriptor<CategoryTemplate>())
+            let keys = try context.fetch(sections).map(\.templateKey)
+            return BinderLocks(templates: templates, naming: keys, in: context.container)
+        } catch {
+            return BinderLocks(unread: true)
+        }
+    }
+
+    /// Every section, for the category it names: what a screen that follows the binder's locks
+    /// queries beside the categories (`@Query(BinderLocks.sections)`).
+    static var sections: FetchDescriptor<Asset> {
+        var descriptor = FetchDescriptor<Asset>()
+        descriptor.propertiesToFetch = [\.templateKey]
+        return descriptor
+    }
+
+    /// Whether anything of the binder may be behind Face ID on this device: a category's lock is
+    /// on, a section whose category hasn't arrived reads as locked, or the binder couldn't be read.
+    var anySectionLocked: Bool { unread || !lockedKeys.isEmpty }
+}

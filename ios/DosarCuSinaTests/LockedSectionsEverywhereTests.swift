@@ -111,6 +111,55 @@ struct LockedSectionsEverywhereTests {
         #expect(CategoryTemplate.isSensitive(key: "custom.unknown", template: nil, in: nil))
     }
 
+    @Test func theCoverAndABackupFollowASectionWhoseCategoryHasntArrived() async throws {
+        let container = try makeInMemoryContainer()
+        let context = container.mainContext
+        try TemplateStore(context: context).installBuiltIns()
+        // Every lock off, with Face ID: nothing of the binder is behind it.
+        let lowering = try await faceIDConfirmed()
+        for template in try context.fetch(FetchDescriptor<CategoryTemplate>()) { try template.setLock(false, lowering: lowering) }
+        let template = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.vehicle))
+        let section = try AssetActions(context: context, calendar: calendar).create(name: "Caiet", template: template, values: FieldValues())
+        func cover(_ phase: LockCover.Phase) -> LockCover? {
+            LockCover.decide(appLockEnabled: false, anySectionLocked: BinderLocks.read(in: context).anySectionLocked,
+                             isSessionUnlocked: true, phase: phase, isAuthenticating: false)
+        }
+        #expect(!BinderLocks.read(in: context).anySectionLocked)
+        #expect(cover(.background) == nil)
+
+        // Its category of one's own is still on its way from another device.
+        let key = "custom.0b6c6f43-0000-4000-8000-0000000000bb"
+        section.templateKey = key
+        let locks = BinderLocks.read(in: context)
+        #expect(locks.anySectionLocked, "Locked until its category arrives, as on its own page")
+        #expect(locks.lockedKeys == [key])
+        #expect(cover(.inactive) == .privacy, "The app switcher's picture is covered")
+        #expect(cover(.background) == .privacy)
+        #expect(cover(.active) == nil)
+        #expect(SettingsStatus.protection(appLock: false, lockedCategories: locks.lockedKeys.count, biometryName: "Face ID", needsChoosingAgain: false)
+            == "Face ID pentru o categorie")
+        // De verificat: an item read as that category's shows as protected.
+        let templates = try context.fetch(FetchDescriptor<CategoryTemplate>())
+        #expect(BinderLocks(templates: templates, naming: [key], in: container).lockedKeys == [key])
+
+        // A backup asks for Face ID first, and makes nothing without it.
+        let authenticator = FakeAuthenticator(.cancel)
+        let vault = BiometricVaultManager(authenticator: authenticator, appLockEnabled: { false }, observesAppLifecycle: false)
+        let directory = URL.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let flow = BackupFlow(container: container, vault: vault, workDirectory: directory, inbox: directory.appending(path: "Inbox"),
+                              keeper: RecordingBackupKeeper())
+        await flow.export(password: nil)
+        #expect(authenticator.prompts == 1)
+        #expect(flow.exportURL == nil)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: directory.path(percentEncoded: false)).isEmpty, "Nothing is written")
+
+        // This device's own choice for the key still counts.
+        try SectionLocks.of(container).set(false, for: key)
+        #expect(!BinderLocks.read(in: context).anySectionLocked)
+        #expect(cover(.background) == nil)
+    }
+
     // MARK: Routes and sheets
 
     @Test func everyRouteAndSheetIntoASectionOpensBehindItsLock() {

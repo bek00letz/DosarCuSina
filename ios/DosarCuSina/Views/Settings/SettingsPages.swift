@@ -209,6 +209,8 @@ private struct SettingsRoot: View {
     @Environment(AppPreferences.self) private var preferences
     @Environment(BiometricVaultManager.self) private var vault
     @Query private var templates: [CategoryTemplate]
+    /// The categories the sections name, for the locks' row (`BinderLocks`).
+    @Query(BinderLocks.sections) private var sections: [Asset]
     @Query(filter: #Predicate<Asset> { $0.isExample }) private var examples: [Asset]
     @Query private var lessons: [IssuerLesson]
     @State private var repairs = DataRepairCenter.shared
@@ -250,7 +252,7 @@ private struct SettingsRoot: View {
         case .protection:
             return SettingsStatus.protection(
                 appLock: preferences.appLockEnabled,
-                lockedCategories: templates.filter(\.isSensitive).count,
+                lockedCategories: BinderLocks(templates: templates, naming: sections.map(\.templateKey), in: context.container).lockedKeys.count,
                 biometryName: vault.biometryName,
                 needsChoosingAgain: SectionLocks.of(context.container).needsChoosingAgain
             )
