@@ -43,7 +43,7 @@ Onboarding runs once, is short and skippable: what the app is, an optional first
 - **One status line per box**, from the box status engine (4.5): *Totul e în regulă* (all good), or the single most pressing deadline and how far it is (*RCA · în 5 zile*). Status uses a symbol and a semantic colour, never colour alone. In a locked section the line names no deadline.
 - **Opening a box zooms** out of the box with the system zoom transition; going back returns into it. The same screens pushed from elsewhere slide in.
 - **Rearranging:** long-press and drag. VoiceOver and the context menu offer *Mută mai în față / în spate* (move earlier / later). The order is kept on this device; new boxes slot in next to their neighbours.
-- **Layout:** two columns on iPhone, adaptive on iPad, one column at accessibility text sizes. A row's boxes start at the top and share its height, so their titles line up whatever their status lines take.
+- **Layout:** two columns where the width is compact (an iPhone), square boxes sized by the width where it is regular (an iPad): three a row when the room is taller than wide, four when wider (`DSBoxGrid`); one column at accessibility text sizes. A row's boxes start at the top and share its height, so their titles line up whatever their status lines take.
 - **First run:** an empty state with *Adaugă primul lucru* (add the first thing) pinned to the bottom edge and *Încarcă exemple* under it.
 
 ### 2.3 Section pages
