@@ -5,7 +5,8 @@ import Testing
 
 /// Two phones with a tenancy each make their own rental income declaration; "Adaugă" brings
 /// both copies together. The household keeps one, the same one whatever order they are read
-/// in: the copy furthest on, with everything the other recorded.
+/// in: the copy with the person's history on it, with everything the other recorded, never a
+/// fresh copy the app just made.
 @MainActor
 @Suite("Copies of a household deadline")
 struct HouseholdDeadlineCopiesTests {
@@ -14,11 +15,12 @@ struct HouseholdDeadlineCopiesTests {
     static let smaller = UUID(uuidString: "00000000-0000-4000-8000-000000000001")!
     static let larger = UUID(uuidString: "00000000-0000-4000-8000-000000000002")!
 
-    private func declaration(id: UUID, in context: ModelContext) -> Obligation {
+    private func declaration(id: UUID, due: CalendarDay = CalendarDay("2027-05-25"), in context: ModelContext) -> Obligation {
         let blueprint = HouseholdRules.rentalDeclaration
-        let obligation = Obligation(id: id, title: blueprint.title, kind: blueprint.kind, dueDay: CalendarDay("2027-05-25"),
+        let obligation = Obligation(id: id, title: blueprint.title, kind: blueprint.kind, dueDay: due,
                                     recurrence: blueprint.recurrence, reminders: blueprint.reminders)
         obligation.blueprintKey = blueprint.key
+        obligation.notes = blueprint.deadlineNote
         context.insert(obligation)
         return obligation
     }
@@ -99,5 +101,80 @@ struct HouseholdDeadlineCopiesTests {
         try LaunchData.reconcileHouseholdRules(in: context, today: CalendarDay("2026-11-10"))
 
         #expect(try declarations(in: context).map(\.id) == [Self.smaller])
+    }
+
+    @Test("The overdue copy the person worked on stays over a fresh one, with its note, reminders and snooze, in any order",
+          arguments: [true, false], [true, false])
+    func theOverdueCopyStays(overdueHasSmallerID: Bool, overdueFirst: Bool) throws {
+        let context = try makeContext()
+        context.insert(Asset(name: "Apartament Exemplu – chiriaș", templateKey: BuiltInTemplates.Key.tenancy))
+        let ids = overdueHasSmallerID ? (Self.smaller, Self.larger) : (Self.larger, Self.smaller)
+        func overdue() -> Obligation {
+            let copy = declaration(id: ids.0, due: CalendarDay("2026-05-25"), in: context)
+            copy.notes = "Am cerut adeverința de la bancă."
+            copy.reminders = copy.reminders.withLeadDays([14])
+            copy.remindersCustomized = true
+            copy.snoozedUntil = CalendarDay("2026-06-05")
+            return copy
+        }
+        let first = overdueFirst ? overdue() : nil
+        _ = declaration(id: ids.1, in: context)
+        let overdueCopy = first ?? overdue()
+        try context.save()
+        let overdueID = overdueCopy.id
+
+        try LaunchData.reconcileHouseholdRules(in: context, today: CalendarDay("2026-06-01"))
+
+        let left = try declarations(in: context)
+        #expect(left.map(\.id) == [overdueID], "The copy the person was working on stays")
+        let stays = try #require(left.first)
+        #expect(stays.dueDay == CalendarDay("2026-05-25"), "Still overdue: the fresh copy's later day never hides it")
+        #expect(stays.notes == "Am cerut adeverința de la bancă.")
+        #expect(stays.reminders.leadDays == [14])
+        #expect(stays.snoozedUntil == CalendarDay("2026-06-05"))
+    }
+
+    @Test("Of two copies nobody touched, the one still open earliest stays")
+    func theEarliestOpenCopyStays() throws {
+        let context = try makeContext()
+        context.insert(Asset(name: "Apartament Exemplu – chiriaș", templateKey: BuiltInTemplates.Key.tenancy))
+        _ = declaration(id: Self.smaller, in: context)
+        let earlier = declaration(id: Self.larger, due: CalendarDay("2026-05-25"), in: context)
+        try context.save()
+        let earlierID = earlier.id
+
+        try LaunchData.reconcileHouseholdRules(in: context, today: CalendarDay("2026-06-01"))
+
+        #expect(try declarations(in: context).map(\.id) == [earlierID])
+    }
+
+    @Test("What the person wrote on the copy that goes comes over when the copy that stays has none")
+    func theNoteComesOver() throws {
+        let (context, filed, due, _) = try merged(filedHasSmallerID: true, filedFirst: true)
+        due.notes = "Chiriașul a plătit în avans."
+        try context.save()
+        let filedID = filed.id
+
+        try LaunchData.reconcileHouseholdRules(in: context, today: CalendarDay("2027-05-12"))
+
+        let left = try declarations(in: context)
+        #expect(left.map(\.id) == [filedID], "The filed copy stays")
+        #expect(left.first?.notes == "Chiriașul a plătit în avans.")
+    }
+
+    @Test("No declaration is made while the binder is still arriving: the person's own may be on its way")
+    func noDeclarationWhileArriving() throws {
+        let context = try makeContext()
+        context.insert(Asset(name: "Apartament Exemplu – chiriaș", templateKey: BuiltInTemplates.Key.tenancy))
+        try context.save()
+        let container = context.container
+        CloudArrival.awaitFirstDownload(in: container)
+
+        #expect(try !LaunchData.reconcileHouseholdRules(in: context, today: CalendarDay("2026-11-10")))
+        #expect(try declarations(in: context).isEmpty)
+
+        CloudArrival.follow(SyncEvent(kind: .download, finishedAt: noon("2026-11-10"), succeeded: true), in: container)
+        #expect(try LaunchData.reconcileHouseholdRules(in: context, today: CalendarDay("2026-11-10")))
+        #expect(try declarations(in: context).count == 1, "Made once all of it has come")
     }
 }

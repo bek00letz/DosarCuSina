@@ -164,12 +164,13 @@ public enum DosarZipEngine {
                 return String(localized: "Fișierul nu e o copie de siguranță întreagă. Fă copia din nou și încearcă iar.", comment: "Backup: the file isn't a readable backup.")
             case .unsupportedCompressionMethod:
                 return String(localized: "Copia de siguranță e scrisă într-un fel pe care aplicația nu îl citește. Actualizează aplicația și încearcă din nou.", comment: "Backup: compressed in a way the app can't read.")
-            case .crcMismatch(let path, _, _), .fileCorrupted(let path):
-                return String(localized: "Fișierul \(path) din copia de siguranță e deteriorat. Fă copia din nou și încearcă iar.", comment: "Backup: one file inside it is damaged. The argument is its path.")
-            case .unsafeEntryPath(let path):
-                return String(localized: "Copia de siguranță conține un nume de fișier nepermis: \(path). Fă copia din nou din aplicație.", comment: "Backup: a file name inside it isn't allowed.")
-            case .duplicateEntry(let path):
-                return String(localized: "Copia de siguranță conține de două ori fișierul \(path). Fă copia din nou din aplicație.", comment: "Backup: a file appears twice inside it.")
+            // In plain words, never the archive's own path (it stays on the error).
+            case .crcMismatch, .fileCorrupted:
+                return String(localized: "O parte din copia de siguranță e deteriorată. Fă copia din nou și încearcă iar.", comment: "Backup: one file inside it is damaged.")
+            case .unsafeEntryPath:
+                return String(localized: "Copia de siguranță conține un fișier cu un nume nepermis. Fă copia din nou din aplicație.", comment: "Backup: a file name inside it isn't allowed.")
+            case .duplicateEntry:
+                return String(localized: "Copia de siguranță conține de două ori același fișier. Fă copia din nou din aplicație.", comment: "Backup: a file appears twice inside it.")
             case .sizeLimitExceeded:
                 return String(localized: "Copia de siguranță e prea mare pentru a fi deschisă pe acest telefon.", comment: "Backup: too large to open.")
             case .unpacksTooLarge:

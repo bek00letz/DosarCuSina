@@ -35,10 +35,12 @@ public enum HouseholdRules {
     /// filed or attached a paper to stays, as theirs.
     ///
     /// Two copies of one (each phone made its own, and "Adaugă" brought them together) become
-    /// one: the copy furthest on is kept (`kept(among:)`), and what the others recorded, their
-    /// completions and documents, moves onto it before they go. At launch it is the app's own
-    /// step (`ChangeOrigin.app`), so nothing it changes gets a new change time; the deadline it
-    /// makes has the time it was made.
+    /// one: the copy with the person's history on it is kept (`kept(among:)`), and what the
+    /// others recorded, their completions and documents, moves onto it before they go, with
+    /// their notes and reminders where the kept copy has none of its own. A new declaration is
+    /// made only once the binder has all arrived (`CloudArrival`): the person's own may still be
+    /// on its way from iCloud. At launch it is the app's own step (`ChangeOrigin.app`), so nothing
+    /// it changes gets a new change time; the deadline it makes has the time it was made.
     @discardableResult
     public static func reconcile(in context: ModelContext, today: CalendarDay, calendar: Calendar = .dosar) throws -> Bool {
         let tenancyKey = BuiltInTemplates.Key.tenancy
@@ -71,6 +73,8 @@ public enum HouseholdRules {
             if kept.isExample != isExample { kept.isExample = isExample; changed = true }
             return changed
         }
+        // The person's declaration may still be on its way: one made now would be a second copy.
+        guard CloudArrival.of(context.container).isWhole else { return false }
         let blueprint = rentalDeclaration
         guard let due = RecurrenceEngine.firstDue(for: blueprint, values: FieldValues(), today: today, calendar: calendar) else { return false }
         let obligation = Obligation(title: blueprint.title, kind: blueprint.kind, dueDay: due, recurrence: blueprint.recurrence,
@@ -83,23 +87,57 @@ public enum HouseholdRules {
     }
 
     /// The copy of a household deadline that stays when there are several, whatever order they
-    /// are read in: the one whose cycle is furthest on (a declaration already filed this year
-    /// is due next year, so it wins over one still due), then the one with more recorded in
-    /// its history, then the one with the smallest id, so every phone keeps the same one.
+    /// are read in, so every phone keeps the same one:
+    /// 1. a copy with a completion: the person filed it. The one furthest on stays (a declaration
+    ///    filed this year is due next year), so no reminder comes back for a cycle already filed;
+    /// 2. else a copy with something else of the person's on it (a document, their own note, a
+    ///    snooze, reminders they changed): the overdue copy they were working on, never a fresh
+    ///    copy the app just made;
+    /// 3. else the earliest still open: the one that reminds soonest;
+    /// 4. then the smallest id.
     static func kept(among copies: [Obligation]) -> Obligation? {
-        copies.max { lhs, rhs in
-            if lhs.dueDay != rhs.dueDay { return lhs.dueDay < rhs.dueDay }
-            let lhsHistory = lhs.historyEntries?.count ?? 0, rhsHistory = rhs.historyEntries?.count ?? 0
-            if lhsHistory != rhsHistory { return lhsHistory < rhsHistory }
-            // The smaller id is the "larger" here, so `max` keeps it.
-            return lhs.id.uuidString > rhs.id.uuidString
-        }
+        copies.min(by: staysBefore)
+    }
+
+    /// Whether `lhs` stays rather than `rhs` (`kept(among:)`'s order).
+    private static func staysBefore(_ lhs: Obligation, _ rhs: Obligation) -> Bool {
+        let lhsFiled = !(lhs.historyEntries ?? []).isEmpty, rhsFiled = !(rhs.historyEntries ?? []).isEmpty
+        if lhsFiled != rhsFiled { return lhsFiled }
+        if lhsFiled, lhs.dueDay != rhs.dueDay { return lhs.dueDay > rhs.dueDay }
+        let lhsMarked = hasPersonsMarks(lhs), rhsMarked = hasPersonsMarks(rhs)
+        if lhsMarked != rhsMarked { return lhsMarked }
+        let lhsOpen = lhs.status == .active, rhsOpen = rhs.status == .active
+        if lhsOpen != rhsOpen { return lhsOpen }
+        if lhs.dueDay != rhs.dueDay { return lhs.dueDay < rhs.dueDay }
+        return lhs.id.uuidString < rhs.id.uuidString
+    }
+
+    /// Whether the person left something of theirs on a copy besides a completion: a document,
+    /// a note other than the one the app writes, a snooze, reminders or a reminder time they chose.
+    static func hasPersonsMarks(_ copy: Obligation) -> Bool {
+        !(copy.attachments ?? []).isEmpty || hasOwnNote(copy) || copy.snoozedUntil != nil
+            || copy.remindersCustomized || copy.reminderMinuteOfDay != nil
+    }
+
+    /// A note the person wrote: anything but none or the blueprint's own.
+    private static func hasOwnNote(_ copy: Obligation) -> Bool {
+        guard let note = copy.notes?.trimmingCharacters(in: .whitespacesAndNewlines), !note.isEmpty else { return false }
+        return note != rentalDeclaration.deadlineNote?.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     /// Moves what `copy` recorded (its completions and the documents filed with it) onto
-    /// `kept`, so nothing of the person's goes with the copy.
+    /// `kept`, so nothing of the person's goes with the copy; its note and the reminders the
+    /// person chose come too where `kept` has none of its own, and its snooze when both are
+    /// for the same day.
     private static func fold(_ copy: Obligation, into kept: Obligation) {
         for entry in copy.historyEntries ?? [] { entry.obligation = kept }
         for attachment in copy.attachments ?? [] { attachment.obligation = kept }
+        if hasOwnNote(copy), !hasOwnNote(kept) { kept.notes = copy.notes }
+        if copy.remindersCustomized, !kept.remindersCustomized {
+            kept.keptReminders = copy.keptReminders
+            kept.remindersCustomized = true
+        }
+        if kept.reminderMinuteOfDay == nil, let minute = copy.reminderMinuteOfDay { kept.reminderMinuteOfDay = minute }
+        if kept.snoozedUntil == nil, kept.dueDay == copy.dueDay, let snooze = copy.snoozedUntil { kept.snoozedUntil = snooze }
     }
 }

@@ -51,13 +51,31 @@ private struct HistoryNoteSheetModifier: ViewModifier {
                 saved = nil
                 restoring = nil
             }) { request in
-                HistoryNoteSheet(target: request.target) { result in
-                    saved = result
-                    restoring = nil
-                    self.request = nil
+                // Behind the lock of the section the note is written in, wherever it was opened from.
+                RouteLockGate(lock(of: request.target), inSheet: true) {
+                    HistoryNoteSheet(target: request.target) { result in
+                        saved = result
+                        restoring = nil
+                        self.request = nil
+                    }
                 }
                 .presentationDetents([.medium, .large])
             }
+    }
+
+    @Environment(\.modelContext) private var context
+
+    /// The section the note is written in: a record's, or the new note's own.
+    private func lock(of target: HistoryNoteRequest.Target) -> RouteLock {
+        switch target {
+        case .newNote(let assetID):
+            return .section(assetID)
+        case .entry(let id):
+            var descriptor = FetchDescriptor<HistoryEntry>(predicate: #Predicate { $0.id == id })
+            descriptor.fetchLimit = 1
+            guard let entry = try? context.fetch(descriptor).first else { return .open }
+            return entry.asset.map { .section($0.id) } ?? .open
+        }
     }
 }
 

@@ -96,7 +96,9 @@ enum RecordsMeet {
 
     /// The order copies of one record are kept in: the smallest copy name first, the same on
     /// every device. Two copies with the same name (one copy read twice) by where they are kept.
-    private static func staysBefore(_ lhs: any UndoableRecord, _ rhs: any UndoableRecord) -> Bool {
+    /// The one rule for which copy is the record: "Înlocuiește tot" writes onto the same copy
+    /// (`DossierImporter`), so the copy it replaces is the one every device keeps.
+    nonisolated static func staysBefore(_ lhs: any UndoableRecord, _ rhs: any UndoableRecord) -> Bool {
         let left = lhs.copyID?.uuidString ?? "", right = rhs.copyID?.uuidString ?? ""
         if left != right { return left < right }
         return String(describing: lhs.persistentModelID) < String(describing: rhs.persistentModelID)
