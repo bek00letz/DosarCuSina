@@ -96,6 +96,50 @@ struct DSLeadingIconLabelStyle: LabelStyle {
     }
 }
 
+// MARK: - The grid of boxes
+
+/// How the binder's boxes are laid out, by the room the grid has: the one rule, for every
+/// device and window, never a model or a size of one. At accessibility text sizes, one box a
+/// row; where the width is compact (an iPhone, a narrow window), two, as tall as their words;
+/// where it is regular (an iPad, a wide window), square boxes sized by the width, three a row
+/// when the room is taller than it is wide and four when it is wider, so a binder fills the
+/// screen instead of a strip at its top.
+enum DSBoxGrid {
+    struct Plan: Equatable {
+        let columns: Int
+        /// Each box at least as tall as it is wide (`dsAtLeastSquare`).
+        let squares: Bool
+    }
+
+    static func plan(room: CGSize, isRegularWidth: Bool, isAccessibilitySize: Bool) -> Plan {
+        if isAccessibilitySize { return Plan(columns: 1, squares: false) }
+        guard isRegularWidth else { return Plan(columns: 2, squares: false) }
+        return Plan(columns: room.width > room.height ? 4 : 3, squares: true)
+    }
+}
+
+/// Lays its one view out at the width offered and at least that tall: a square, or taller when
+/// its content needs more (larger text), never cut.
+struct DSAtLeastSquareLayout: Layout {
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        guard let content = subviews.first else { return .zero }
+        let width = proposal.width ?? content.sizeThatFits(.unspecified).width
+        let height = content.sizeThatFits(ProposedViewSize(width: width, height: nil)).height
+        return CGSize(width: width, height: max(width, height))
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        subviews.first?.place(at: bounds.origin, proposal: ProposedViewSize(bounds.size))
+    }
+}
+
+extension View {
+    /// The view at least as tall as it is wide, when `isOn` (`DSBoxGrid.Plan.squares`).
+    @ViewBuilder func dsAtLeastSquare(_ isOn: Bool) -> some View {
+        if isOn { DSAtLeastSquareLayout { self } } else { self }
+    }
+}
+
 // MARK: - Home box
 
 /// A big box on the Dosar grid: a photo or the category symbol, the name in large
