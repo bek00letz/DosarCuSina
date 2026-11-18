@@ -111,7 +111,8 @@ struct HistoryAndProvidersTests {
             ],
             providers: [mechanic], rating: 5
         )
-        #expect(entry.items?.compactMap(\.componentKey).sorted() == ["brakes.padsFront", "custom.manopera"])
+        // „Manoperă” is the visit's labour, never a part of its own.
+        #expect(entry.items?.compactMap(\.componentKey).sorted() == ["brakes.padsFront"])
         #expect(entry.effectiveCost.amount(in: "RON") == 450)
         #expect(car.value("vehicle.odometer") == .number(103_000))
 
