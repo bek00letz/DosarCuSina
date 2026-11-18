@@ -319,7 +319,7 @@ public enum ShareReceiving {
 /// A system loader's answer, taken once. Cancelling a load answers it with the cancellation's
 /// error, and the item may still arrive after: only the first answer counts, and what comes
 /// after is neither copied nor kept.
-private final class FirstAnswer<Value>: @unchecked Sendable {
+private final class FirstAnswer<Value: Sendable>: @unchecked Sendable {
     private let lock = NSLock()
     private var continuation: CheckedContinuation<Value, any Error>?
 
