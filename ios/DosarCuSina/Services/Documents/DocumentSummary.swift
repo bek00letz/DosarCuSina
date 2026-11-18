@@ -3,12 +3,12 @@ import Foundation
 /// The one line a personal document shows under its name, where it is listed (a
 /// person's documents, Acte): what tells it apart at a glance. A bank card reads
 /// "Visa •••• 4821, expiră 08/28", the way the card itself says it; any other document
-/// says how long it is valid.
+/// says when it expires or expired („Expiră pe …”, `PocketWording.validity`).
 enum DocumentSummary {
     static func line(_ values: FieldValues, today: CalendarDay = CalendarDay(Date())) -> String? {
         let expiry = values[DocumentFields.expiry]?.dateValue
         guard DocumentType.options.option(for: values[DocumentType.typeFieldKey]?.textValue ?? "")?.key == DocumentType.bankCard else {
-            return expiry.map { String(localized: "Valabil până la \(DosarFormat.day($0))", comment: "Document row: valid until.") }
+            return expiry.map { PocketWording.validity($0, today: today) }
         }
         let card = [
             PaymentCardNetwork.label(for: values[DocumentFields.cardNetwork]?.textValue),

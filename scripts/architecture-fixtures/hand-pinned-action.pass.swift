@@ -3,7 +3,7 @@
 struct ExampleSheet: View {
     var body: some View {
         ScrollView {
-            Text("Ce se mută")
+            Text("Ce se mută").dsReadableWidth()
         }
         .dsPinnedAction {
             DSPrimaryButton("Mută aici") { move() }

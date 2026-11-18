@@ -21,22 +21,9 @@ struct DSRepeatField: View {
             }
             if let unit = choice.frequency.unit {
                 VStack(alignment: .leading, spacing: DS.Space.xs) {
-                    // The unit's own steps (`RepeatChoice.stepped`: whole weeks in days, quarters in
-                    // months), for a tap, a held press and a VoiceOver swipe alike. VoiceOver reads what it is, then its value once.
-                    let range = choice.everyRange
-                    Stepper(
-                        label: {
-                            Text(verbatim: RepeatWording.every(choice.every, unit))
-                                .dsFont(.headline, numeric: true)
-                        },
-                        onIncrement: choice.every < range.upperBound
-                            ? { choice.every = RepeatChoice.stepped(choice.every, up: true, unit: unit, in: range) } : nil,
-                        onDecrement: choice.every > range.lowerBound
-                            ? { choice.every = RepeatChoice.stepped(choice.every, up: false, unit: unit, in: range) } : nil
-                    )
-                    .frame(minHeight: DS.Control.minimumHitTarget)
-                    .accessibilityLabel(Text("Cât de des", comment: "VoiceOver: the label of the stepper that sets how often a deadline repeats; its value says it, e.g. „La fiecare 3 zile”."))
-                    .accessibilityValue(Text(verbatim: RepeatWording.every(choice.every, unit)))
+                    DSStepsStepper(value: $choice.every, in: choice.everyRange, unit: unit,
+                                   label: Text("Cât de des", comment: "VoiceOver: the label of the stepper that sets how often a deadline repeats; its value says it, e.g. „La fiecare 3 zile”."),
+                                   valueText: RepeatWording.every(choice.every, unit))
                     DS.Hairline()
                     ForEach(RepeatWording.anchors, id: \.self) { anchor in
                         DSCheckRow(title: Text(verbatim: RepeatWording.title(of: anchor)),
@@ -153,5 +140,43 @@ struct DSReminderTimeField: View {
         } set: { date in
             minuteOfDay = ReminderClock.minuteOfDay(of: date, calendar: calendar)
         }
+    }
+}
+
+/// A count set with „+” and „−” in its unit's own steps (`RepeatChoice.stepped`): days one by
+/// one to two weeks, then whole weeks, then about a month at a time, so a year is a few dozen
+/// taps, never 365. For a tap, a held press and a VoiceOver swipe alike; VoiceOver reads what it
+/// is, then its value once. How often a deadline repeats and a reminder's „Altă zi” both use it.
+struct DSStepsStepper: View {
+    @Binding var value: Int
+    let range: ClosedRange<Int>
+    let unit: RecurrenceInterval.Unit
+    /// What it sets, for VoiceOver („Cât de des”, „Cu cât înainte”).
+    let label: Text
+    /// The value in words, shown beside the buttons and read by VoiceOver.
+    let valueText: String
+
+    init(value: Binding<Int>, in range: ClosedRange<Int>, unit: RecurrenceInterval.Unit, label: Text, valueText: String) {
+        self._value = value
+        self.range = range
+        self.unit = unit
+        self.label = label
+        self.valueText = valueText
+    }
+
+    var body: some View {
+        Stepper(
+            label: {
+                Text(verbatim: valueText)
+                    .dsFont(.headline, numeric: true)
+            },
+            onIncrement: value < range.upperBound
+                ? { value = RepeatChoice.stepped(value, up: true, unit: unit, in: range) } : nil,
+            onDecrement: value > range.lowerBound
+                ? { value = RepeatChoice.stepped(value, up: false, unit: unit, in: range) } : nil
+        )
+        .frame(minHeight: DS.Control.minimumHitTarget)
+        .accessibilityLabel(label)
+        .accessibilityValue(Text(verbatim: valueText))
     }
 }

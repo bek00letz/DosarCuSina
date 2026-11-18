@@ -189,9 +189,9 @@ struct UrgencyEverywhereTests {
         #expect(CalendarCount.weeks(3) == "3 săptămâni")
         #expect(CalendarCount.months(1) == "o lună")
         #expect(CalendarCount.years(20) == "20 de ani")
-        #expect(TemplateStoreError.inUse(assetCount: 1).errorDescription == "Categoria are încă un activ. Mută-l sau șterge-l mai întâi.")
-        #expect(TemplateStoreError.inUse(assetCount: 3).errorDescription == "Categoria are încă 3 active. Mută-le sau șterge-le mai întâi.")
-        #expect(TemplateStoreError.inUse(assetCount: 20).errorDescription == "Categoria are încă 20 de active. Mută-le sau șterge-le mai întâi.")
+        #expect(TemplateStoreError.inUse(assetCount: 1).errorDescription == "Categoria are încă o secțiune. Mut-o sau șterge-o mai întâi.")
+        #expect(TemplateStoreError.inUse(assetCount: 3).errorDescription == "Categoria are încă 3 secțiuni. Mută-le sau șterge-le mai întâi.")
+        #expect(TemplateStoreError.inUse(assetCount: 20).errorDescription == "Categoria are încă 20 de secțiuni. Mută-le sau șterge-le mai întâi.")
         let jobs = { (n: Int) in HistoryActions.visitTitle(for: (1...n).map { LineItemDraft(name: "Lucrare \($0)") }) }
         #expect(jobs(3) == "Revizie: 3 lucrări")
         #expect(jobs(20) == "Revizie: 20 de lucrări")
@@ -217,11 +217,11 @@ struct UrgencyEverywhereTests {
         #expect(DueWording.relative(daysRemaining: 30, from: start, calendar: calendar) == "într-o lună")
         #expect(DueWording.relative(daysRemaining: -7, from: start, calendar: calendar) == "acum 7 zile")
         #expect(ReminderPlanner.specificTitle("ITP", daysBefore: 30, from: start, calendar: calendar) == "Într-o lună: ITP")
-        #expect(ReminderPlanner.genericTitle(daysBefore: 365, from: start, calendar: calendar) == "Ai o scadență într-un an")
+        #expect(ReminderPlanner.genericTitle(daysBefore: 365, from: start, calendar: calendar) == "Ai un termen într-un an")
         #expect(ReminderWording.rowTitle(days: 30, from: .dueDay) == "Cu o lună înainte")
         #expect(ReminderWording.rowTitle(days: 1, from: .dueDay) == "Cu o zi înainte")
         #expect(ReminderWording.rowTitle(days: 365, from: .dueDay) == "Cu un an înainte")
         #expect(UpcomingActions.snoozeTitle(days: 7) == "Peste 7 zile")
-        #expect(TemplateStoreError.inUse(assetCount: 1).errorDescription == "Categoria are încă un activ. Mută-l sau șterge-l mai întâi.")
+        #expect(TemplateStoreError.inUse(assetCount: 1).errorDescription == "Categoria are încă o secțiune. Mut-o sau șterge-o mai întâi.")
     }
 }

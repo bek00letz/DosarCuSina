@@ -21,7 +21,7 @@ extension SectionPocket {
         case .tenants:
             String(localized: "Niciun chiriaș. Adaugă contractul și îți spun când se termină.", comment: "Empty Chiriași pocket.")
         case .products:
-            String(localized: "Niciun produs. Adaugă aragazul sau centrala și ții minte garanția.", comment: "Empty Produse pocket.")
+            String(localized: "Niciun produs. Adaugă aragazul sau centrala și țin minte garanția.", comment: "Empty Produse pocket.")
         case .subscriptions:
             String(localized: "Niciun abonament trecut aici.", comment: "Empty Abonamente pocket.")
         case .plants:
@@ -186,6 +186,23 @@ enum PocketWording {
     /// Its line: the day it stopped being valid, passed.
     static func expired(_ day: String) -> String {
         String(localized: "A expirat pe \(day)", comment: "Document row: the day a paper stopped being valid, passed.")
+    }
+
+    /// Its line, by whether its last valid day has passed: „Expiră pe 12 august 2031”, „A expirat
+    /// pe 10 mai 2026”. The one choice every paper's line makes (a row in Acte, a person's
+    /// document), never „Valabil până la”, which agrees only with a masculine noun and reads as
+    /// still valid long after the day.
+    static func validity(_ day: CalendarDay, today: CalendarDay) -> String {
+        let date = DosarFormat.day(day)
+        return day < today ? expired(date) : expires(date)
+    }
+
+    /// The caption over a paper's last valid day, by the same rule: „Expiră pe”, „A expirat pe”
+    /// (a document's page, a section's hero).
+    static func validityLabel(_ day: CalendarDay, today: CalendarDay) -> String {
+        day < today
+            ? String(localized: "A expirat pe", comment: "Caption over the day a paper stopped being valid, passed.")
+            : String(localized: "Expiră pe", comment: "Caption over the day a paper stops being valid, still to come.")
     }
 
     /// Its line: the day printed on it.

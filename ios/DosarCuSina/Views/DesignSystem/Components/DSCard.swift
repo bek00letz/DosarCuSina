@@ -34,6 +34,19 @@ struct DSThumbnailWell: View {
     let image: Image?
     let systemImage: String
     var tint: Color = DS.Palette.accent
+
+    /// It grows with the text up to the largest standard size, then stays, so the row's words
+    /// keep their width at the accessibility sizes (`DS.Control.largestDecorationSize`).
+    var body: some View {
+        DSThumbnailWellDrawing(image: image, systemImage: systemImage, tint: tint)
+            .dynamicTypeSize(...DS.Control.largestDecorationSize)
+    }
+}
+
+private struct DSThumbnailWellDrawing: View {
+    let image: Image?
+    let systemImage: String
+    let tint: Color
     /// A page needs a little more room than a symbol to be recognisable; it scales with Dynamic Type.
     @ScaledMetric(relativeTo: .body) private var side: CGFloat = 44
 
@@ -73,13 +86,25 @@ struct DSThumbnailWell: View {
 struct DSIconWell: View {
     let systemImage: String
     var tint: Color = DS.Palette.accent
-    /// Visual size scales with Dynamic Type.
-    @ScaledMetric(relativeTo: .body) private var side: CGFloat = 34
 
     init(systemImage: String, tint: Color = DS.Palette.accent) {
         self.systemImage = systemImage
         self.tint = tint
     }
+
+    /// It grows with the text up to the largest standard size, then stays, so the row's words
+    /// keep their width at the accessibility sizes (`DS.Control.largestDecorationSize`).
+    var body: some View {
+        DSIconWellDrawing(systemImage: systemImage, tint: tint)
+            .dynamicTypeSize(...DS.Control.largestDecorationSize)
+    }
+}
+
+private struct DSIconWellDrawing: View {
+    let systemImage: String
+    let tint: Color
+    /// Visual size scales with Dynamic Type.
+    @ScaledMetric(relativeTo: .body) private var side: CGFloat = 34
 
     var body: some View {
         Image(systemName: systemImage)

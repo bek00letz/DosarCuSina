@@ -191,8 +191,12 @@ struct VisitDraft: Equatable {
     /// Fills the draft from a captured paper, as its form asks: ticks the rows its lines match,
     /// with their costs; lines the catalog doesn't know become rows of one's own ("Altceva");
     /// the total, the date, the counter and the provider's name fill in when empty. What the
-    /// form doesn't ask is left out: a doctor's visit takes the day, the total and who.
-    mutating func apply(_ result: CaptureResult, form: VisitForm, calendar: Calendar = .dosar) {
+    /// form doesn't ask is left out: a doctor's visit takes the day, the total and who. Returns
+    /// which of the paper's day, total and issuer it filled in, for the note that says so
+    /// (`VisitForm.readNote`).
+    @discardableResult
+    mutating func apply(_ result: CaptureResult, form: VisitForm, calendar: Calendar = .dosar) -> [VisitShape.Paper.Fact] {
+        var filled: [VisitShape.Paper.Fact] = []
         let fields = Dictionary(result.fields.map { ($0.key, $0.value) }, uniquingKeysWith: { first, _ in first })
         let asks = form.fields
         let components = form.components
@@ -215,9 +219,11 @@ struct VisitDraft: Equatable {
         if total == nil, let money = fields[.total]?.money {
             total = money.amount
             currency = money.currency
+            filled.append(.total)
         }
         if let day = (fields[.issueDate] ?? fields[.purchaseDate])?.day {
             self.date = day.noonDate(in: calendar)
+            filled.append(.day)
         }
         if asks.contains(.counter), odometer == nil, case .metric(let value, _)? = fields[.odometer] {
             odometer = NSDecimalNumber(decimal: value).doubleValue
@@ -225,6 +231,7 @@ struct VisitDraft: Equatable {
         }
         if asks.contains(.provider), provider == .none, let name = fields[.provider]?.text, !name.isEmpty {
             provider = .new(name)
+            filled.append(.issuer)
         }
         if asks.contains(.paper), let document = result.document {
             if document != self.document {
@@ -237,6 +244,7 @@ struct VisitDraft: Equatable {
         if let taxID = fields[.providerTaxID]?.text { providerTaxID = taxID }
         if let number = fields[.invoiceNumber]?.text, !number.trimmingCharacters(in: .whitespaces).isEmpty { reference = number }
         documentText = result.recognizedText.isEmpty ? nil : result.recognizedText
+        return filled
     }
 }
 

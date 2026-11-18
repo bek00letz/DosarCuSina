@@ -194,6 +194,21 @@ struct ReleaseReadinessTests {
         }
     }
 
+    /// What iOS shows when a permission is asked is the app talking, so it speaks as the app
+    /// does everywhere (docs/COPY_GUIDE.md): as one, „eu”, to „tu”; never „noi” („Folosim”,
+    /// „deschidem”) and never about itself in the third person („Aplicația are nevoie”).
+    @Test("Every permission's words speak in the app's one voice", arguments: Shipped.all)
+    func permissionWordsSpeakAsTheApp(_ target: Shipped) throws {
+        let info = try #require(try target.bundle().infoDictionary)
+        let plural = try Regex(#"(?i)\b(noi|folosim|avem|putem|cerem|deschidem|păstrăm|trimitem|citim|salvăm)\b"#)
+        for permission in Self.permissions {
+            guard let words = info[permission.key] as? String else { continue }
+            #expect(!words.contains("Aplicația") && !words.contains("aplicația"), "\(permission.key): „\(words)” speaks of the app in the third person")
+            #expect(words.firstMatch(of: plural) == nil, "\(permission.key): „\(words)” speaks as „noi”; the app says „eu”")
+            #expect(!words.contains("!"))
+        }
+    }
+
     @Test("Saving a page to Photos from „Trimite” says why, in the app's words")
     func savingToPhotosSaysWhy() throws {
         let words = try #require(Bundle.main.infoDictionary?["NSPhotoLibraryAddUsageDescription"] as? String)
@@ -224,7 +239,7 @@ struct ReleaseReadinessTests {
         #expect(security["NSAllowsLocalNetworking"] as? Bool == true, "A server at localhost or a .local name, over http")
         #expect(Set(security.keys) == ["NSAllowsLocalNetworking"], "Nothing else is let through in the clear")
         let words = try #require(Bundle.main.infoDictionary?["NSLocalNetworkUsageDescription"] as? String)
-        #expect(words == "Ca să citești acte cu serviciul AI de pe rețeaua ta, dacă îl alegi în Setări.")
+        #expect(words == "Ca să citești documente cu serviciul AI de pe rețeaua ta, dacă îl alegi în Setări.")
         #expect(!words.contains("!"))
         #expect(AIProviderSettings.validatedBaseURL("http://studio.local:1234/v1") != nil)
         #expect(AIProviderSettings.validatedBaseURL("http://example.com/v1") == nil, "Never the internet in the clear")

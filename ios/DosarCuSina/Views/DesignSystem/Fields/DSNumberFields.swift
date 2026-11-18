@@ -204,7 +204,9 @@ struct DSMetricField: View {
                     .keyboardType(fractionDigits.upperBound > 0 ? .decimalPad : .numberPad)
                     .font(.body.monospacedDigit())
                     .focused($isFocused)
-                    .accessibilityHint(Text(verbatim: unit?.label ?? ""))
+                    // The unit is part of what the field is, so VoiceOver says it with the name
+                    // („Kilometraj, km”), never only as a hint that may be turned off.
+                    .accessibilityLabel(unit.map { Text("\(Text(title)), \($0.label)", comment: "VoiceOver: a number field's name and the unit its number is in, e.g. „Kilometraj, km”.") } ?? Text(title))
                 Text(verbatim: unit?.label ?? "")
                     .foregroundStyle(DS.Palette.secondaryLabel)
                     .accessibilityHidden(true)

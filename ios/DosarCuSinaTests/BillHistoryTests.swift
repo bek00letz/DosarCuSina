@@ -76,7 +76,7 @@ struct BillHistoryTests {
 
     @Test func theNoteIsCalmAndOnlyForBilledServices() throws {
         let missingDays = [bill(monthsAgo(1, plusDays: -21))]
-        let gas = BillWatchSnapshot(name: "Gaz – ENGIE Romania S.A.", provider: "ENGIE Romania S.A.", placeName: "Casa Pipera",
+        let gas = BillWatchSnapshot(name: "Gaze – ENGIE Romania S.A.", provider: "ENGIE Romania S.A.", placeName: "Casa Pipera",
                                     service: ServiceKind.gas, bills: missingDays)
         let streaming = BillWatchSnapshot(name: "Netflix", provider: "Netflix", service: ServiceKind.other, bills: missingDays)
         let example = BillWatchSnapshot(name: "Gaz", provider: "ENGIE Romania S.A.", service: ServiceKind.gas, bills: missingDays, isExample: true)
@@ -85,7 +85,7 @@ struct BillHistoryTests {
         #expect(notes.count == 2)
         let note = try #require(notes.first { $0.assetId == gas.id })
         #expect(note.title == "Factura de la ENGIE n-a venit luna asta")
-        #expect(note.detail.hasPrefix("Gaz – ENGIE Romania S.A. · Casa Pipera. Ultima a venit pe "))
+        #expect(note.detail.hasPrefix("Gaze – ENGIE Romania S.A. · Casa Pipera. Ultima a venit pe "))
         #expect(notes.first { $0.assetId == locked.id }?.title == "O factură n-a venit încă", "A locked section names nothing")
 
         var quarterly = gas

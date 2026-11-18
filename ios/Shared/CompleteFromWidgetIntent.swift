@@ -13,7 +13,7 @@ import Foundation
 /// Live Activity involved), from iOS 27 pinned there (`allowedExecutionTargets`).
 public struct CompleteFromWidgetIntent: AppIntent, LiveActivityIntent {
     public static let title: LocalizedStringResource = "Marchează ca rezolvat"
-    public static let description = IntentDescription("Bifează din widget o obligație din Dosar cu Șină.")
+    public static let description = IntentDescription("Bifează din widget un termen din Dosar cu Șină.")
     /// Only widgets use it; Shortcuts has `CompleteObligationIntent`.
     public static let isDiscoverable = false
     public static var supportedModes: IntentModes { .background }
@@ -21,7 +21,7 @@ public struct CompleteFromWidgetIntent: AppIntent, LiveActivityIntent {
     @available(iOS 27.0, *)
     public static var allowedExecutionTargets: IntentExecutionTargets { .main }
 
-    @Parameter(title: "Obligație")
+    @Parameter(title: "Termen")
     public var obligationID: String
 
     @Parameter(title: "Termen")

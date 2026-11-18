@@ -97,13 +97,60 @@ struct DSCompactButton: View {
                 if let systemImage {
                     Image(systemName: systemImage).accessibilityHidden(true)
                 }
-                title.lineLimit(1).fixedSize()
+                // One line wherever it fits; at the largest text sizes, or beside a long value on a
+                // narrow screen, it wraps rather than running past the screen's edge.
+                title
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .font(.subheadline.weight(.semibold))
             .frame(minHeight: DS.Control.compactLabel)
         }
         .buttonStyle(.bordered)
         .controlSize(.large)
+        // Beside a row's words it keeps its own width first, so it wraps only when the screen
+        // itself is too narrow for it.
+        .layoutPriority(1)
+    }
+}
+
+/// An action written as words inside content (under a notice, under a paper's photo, under a
+/// row of a form): borderless, in the accent colour, and its whole 44 pt is the target. The
+/// frame is on its label, so a tap anywhere in it lands, never only on the words.
+struct DSLinkButton: View {
+    private let title: Text
+    private let role: ButtonRole?
+    private let action: () -> Void
+
+    init(_ title: LocalizedStringKey, role: ButtonRole? = nil, action: @escaping () -> Void) {
+        self.title = Text(title)
+        self.role = role
+        self.action = action
+    }
+
+    /// For titles that are already localized (a wording type's).
+    init(verbatim title: String, role: ButtonRole? = nil, action: @escaping () -> Void) {
+        self.title = Text(verbatim: title)
+        self.role = role
+        self.action = action
+    }
+
+    /// For a title with its own look (a notice's action, in its weight).
+    init(title: Text, role: ButtonRole? = nil, action: @escaping () -> Void) {
+        self.title = title
+        self.role = role
+        self.action = action
+    }
+
+    var body: some View {
+        Button(role: role, action: action) {
+            title
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(minHeight: DS.Control.minimumHitTarget, alignment: .leading)
+                .contentShape(.rect)
+        }
+        .buttonStyle(.borderless)
     }
 }
 

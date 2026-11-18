@@ -5,9 +5,9 @@ import SwiftUI
 /// from outside its own page: a person's documents, a home's subscriptions, a firm's sections,
 /// a box's line, Agendă's last job, De verificat. One place, so every surface says the same.
 enum LockedWording {
-    /// A personal document whose category is locked: „Act protejat”, with no name, date or digits.
+    /// A personal document whose category is locked: „Document protejat”, with no name, date or digits.
     static var document: String {
-        String(localized: "Act protejat", comment: "A row in place of something behind Face ID that is a document (a person's ID card, something shared into De verificat); nothing about it shows until unlock.")
+        String(localized: "Document protejat", comment: "A row in place of something behind Face ID that is a document (a person's ID card, something shared into De verificat); nothing about it shows until unlock.")
     }
 
     /// Any other section whose category is locked: „Secțiune protejată”.
@@ -22,7 +22,7 @@ enum LockedWording {
 
     /// Under the label of a person's next document to expire, when that document is locked.
     static var nextDocumentLabel: String {
-        String(localized: "Următorul act care expiră", comment: "Hero of a person, when the next document to expire is behind Face ID: the label above „Act protejat”.")
+        String(localized: "Următorul act care expiră", comment: "Hero of a person, when the next document to expire is behind Face ID: the label above „Document protejat”.")
     }
 
     /// The hint of a locked row: what tapping it asks.

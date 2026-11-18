@@ -55,9 +55,10 @@ struct LearnedIssuersSettings: View {
                 systemImage: "lock.fill",
                 trailing: { EmptyView() }
             )
+            .frame(minHeight: 44)
+            .contentShape(.rect)
         }
         .buttonStyle(.plain)
-        .frame(minHeight: 44)
     }
 
     private func issuerRow(_ issuer: IssuerLessons.Issuer) -> some View {
@@ -86,7 +87,7 @@ struct LearnedIssuersSettings: View {
 
     private func unlock() {
         Task {
-            _ = await vault.unlock(reason: String(localized: "Vezi ce am învățat din actele protejate",
+            _ = await vault.unlock(reason: String(localized: "Vezi ce am învățat din documentele protejate",
                                                   comment: "Face ID reason: show what was learned from papers of locked categories in Settings."))
         }
     }

@@ -33,7 +33,7 @@ private struct PhotoFirstCapture: ViewModifier {
         content
             .confirmationDialog(title, isPresented: $isPresented, titleVisibility: .visible) {
                 if CaptureSource.isCameraAvailable {
-                    Button { source = .camera } label: { Text("Fotografiază actul", comment: "Photo source: camera.") }
+                    Button { source = .camera } label: { Text("Fotografiază documentul", comment: "Photo source: camera.") }
                 }
                 Button { source = .photos } label: { Text("Alege din poze", comment: "Photo source: library.") }
                 Button { source = .files } label: { Text("Din Fișiere", comment: "Photo source: files.") }

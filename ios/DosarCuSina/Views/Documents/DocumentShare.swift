@@ -176,6 +176,7 @@ struct DocumentShareSheet: View {
                 }
                 .padding(DS.Space.m)
                 .animation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion), value: failure)
+                .dsReadableWidth()
             }
             .dsPinnedAction {
                 DSPrimaryButton(Text("Trimite", comment: "Opens the share sheet with the chosen pages."), systemImage: "square.and.arrow.up") {

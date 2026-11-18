@@ -43,30 +43,31 @@ enum RepeatWording {
     static func title(of anchor: RecurrenceAnchor) -> String {
         switch anchor {
         case .dueDate: String(localized: "De la data termenului", comment: "Repeat: the next due day counts from this one's due day.")
-        case .completion: String(localized: "De la data la care l-ai făcut", comment: "Repeat: the next due day counts from the day the deadline was done.")
+        case .completion: String(localized: "De la data rezolvării", comment: "Repeat: the next due day counts from the day the deadline was done. Said of no noun, so it fits any deadline (a rovinietă bought, an ITP done).")
         }
     }
 
     /// What each way means for the next due day, with this choice's step: „Următorul e la
-    /// 3 zile după ce îl bifezi.”
+    /// 3 zile după rezolvare.” Said of no noun, so it agrees with any deadline: a deadline
+    /// declares no gender (one of one's own never does), so nothing here takes one.
     static func detail(of anchor: RecurrenceAnchor, every count: Int, _ unit: RecurrenceInterval.Unit) -> String {
         let step = step(count, unit)
         switch anchor {
         case .dueDate:
-            return String(localized: "Următorul e la \(step) după termen, oricând îl bifezi.", comment: "Repeat counted from the due day: the next one is this long after the due day, whenever it is ticked off.")
+            return String(localized: "Următorul e la \(step) după termen, nu după rezolvare.", comment: "Repeat counted from the due day: the next one is this long after the due day, whenever it is done.")
         case .completion:
-            return String(localized: "Următorul e la \(step) după ce îl bifezi.", comment: "Repeat counted from the day it was done: the next one is this long after it is ticked off.")
+            return String(localized: "Următorul e la \(step) după rezolvare.", comment: "Repeat counted from the day it was done: the next one is this long after it is done.")
         }
     }
 
-    /// The rule in one sentence, for every kind of rule: „La fiecare 3 zile, de la data la care
-    /// l-ai făcut.”, „În fiecare an, pe 31 martie și pe 30 septembrie.”, „Nu se repetă.”
+    /// The rule in one sentence, for every kind of rule: „La fiecare 3 zile, de la data
+    /// rezolvării.”, „În fiecare an, pe 31 martie și pe 30 septembrie.”, „Nu se repetă.”
     static func sentence(_ rule: RecurrenceRule) -> String {
         String(localized: "\(phrase(rule)).", comment: "How a deadline repeats, as a sentence: the words of the rule and a full stop.")
     }
 
     /// The rule in words, without the full stop, to go on in a line: „La fiecare 3 zile, de la
-    /// data la care l-ai făcut · Îți amintesc …” (`ReminderWording.schedule`).
+    /// data rezolvării · Îți amintesc …” (`ReminderWording.schedule`).
     static func phrase(_ rule: RecurrenceRule) -> String {
         switch rule {
         case .none:
@@ -77,7 +78,7 @@ enum RepeatWording {
             case .dueDate:
                 return String(localized: "\(often), de la data termenului", comment: "How a deadline repeats, counted from its due day, e.g. „În fiecare lună, de la data termenului.”")
             case .completion:
-                return String(localized: "\(often), de la data la care l-ai făcut", comment: "How a deadline repeats, counted from the day it was done, e.g. „La fiecare 3 zile, de la data la care l-ai făcut.”")
+                return String(localized: "\(often), de la data rezolvării", comment: "How a deadline repeats, counted from the day it was done, e.g. „La fiecare 3 zile, de la data rezolvării.”")
             }
         case .fixedDates(let dates):
             let days = dates.sorted().map { date in

@@ -11,11 +11,14 @@ struct ExampleRecordPage: View {
 
     var body: some View {
         ScrollView {
-            if isLocked {
-                Text("Secțiunea e protejată")
-            } else {
-                Button("Editează") { isEditing = true }
+            VStack {
+                if isLocked {
+                    Text("Secțiunea e protejată")
+                } else {
+                    Button("Editează") { isEditing = true }
+                }
             }
+            .dsReadableWidth()
         }
         .dsSheet(isPresented: $isEditing) {
             Text("Editează")
@@ -42,7 +45,7 @@ struct ExampleRows: View {
 
     var body: some View {
         ForEach(rows) { row in
-            Text(verbatim: vault.isLocked(sectionIsSensitive: row.isSensitive) ? "O scadență protejată" : row.title)
+            Text(verbatim: vault.isLocked(sectionIsSensitive: row.isSensitive) ? "Un termen protejat" : row.title)
         }
     }
 }

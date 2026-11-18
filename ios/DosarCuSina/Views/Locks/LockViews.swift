@@ -96,6 +96,7 @@ struct LockedSectionView: View {
             }
             .padding(.top, DS.Space.xxl)
             .dsAnimation(value: feedback)
+            .dsReadableWidth()
         }
         .background(DS.Palette.background)
         .sensoryFeedback(.error, trigger: attempts) { _, _ in feedback == .failed }

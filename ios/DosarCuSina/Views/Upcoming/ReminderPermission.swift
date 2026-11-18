@@ -109,6 +109,7 @@ private struct ReminderPermissionExplainer: View {
                     .dsFont(.footnote)
             }
             .padding(DS.Space.xl)
+            .dsReadableWidth()
         }
         .dsPinnedAction { DSPrimaryButton("Continuă", action: onContinue) }
     }

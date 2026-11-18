@@ -25,7 +25,7 @@ enum HolderDocumentFiling: Hashable, Sendable {
         case .personalDocument:
             String(localized: "Fotografiezi actul, iar eu completez ce act e, datele și când expiră.")
         case .captureDecides:
-            String(localized: "Eu văd ce document e. Pentru un act care expiră, îți amintesc la timp.",
+            String(localized: "Recunosc ce document e. Pentru un act care expiră, îți amintesc la timp.",
                    comment: "Under „Fotografiază” on a person's „Adaugă un document”: capture tells an act with an expiry from another paper.")
         }
     }
@@ -132,8 +132,7 @@ struct AddPersonalDocumentFlow: View {
                     }
                 }
                 .padding(DS.Space.m)
-                .frame(maxWidth: 640)
-                .frame(maxWidth: .infinity)
+                .dsReadableWidth()
             }
             .background(DS.Palette.background)
             .navigationTitle(Text(verbatim: filing.title))
@@ -194,7 +193,7 @@ private struct HolderStep: View {
     @Query private var templates: [CategoryTemplate]
     @State private var choice: PersonalDocumentHolder.Choice?
     @State private var newName = ""
-    @State private var reveals = false
+    @State private var reveals = DSValidationReveal()
     @State private var isWriting = false
 
     var body: some View {
@@ -219,24 +218,24 @@ private struct HolderStep: View {
                         }
                     }
                 }
-                if reveals, chosen == nil, choice != .someoneNew, !members.isEmpty {
+                if reveals.isOn, chosen == nil, choice != .someoneNew, !members.isEmpty {
                     Text("Alege al cui e actul.", comment: "Error when continuing without choosing whose a document is.")
                         .dsFont(.footnote)
                         .foregroundStyle(DSStatus.overdue.textColor)
+                        .dsValidationTarget("Alege al cui e actul.")
                 }
             }
             .padding(DS.Space.m)
-            .frame(maxWidth: 640)
-            .frame(maxWidth: .infinity)
+            .dsReadableWidth()
         }
         .scrollDismissesKeyboard(.interactively)
         .background(DS.Palette.background)
-        .environment(\.dsRevealsValidation, reveals)
+        .dsRevealsValidation(reveals)
         .navigationTitle(Text("Al cui e?", comment: "Title of the step that asks whose a typed-in document is."))
         .navigationBarTitleDisplayMode(.inline)
         .dsPinnedAction {
             DSPrimaryButton("Continuă") {
-                guard chosen != nil else { reveals = true; return }
+                guard chosen != nil else { reveals.reveal(); return }
                 isWriting = true
             }
         }
@@ -263,7 +262,7 @@ private struct PersonalDocumentForm: View {
     @Query private var templates: [CategoryTemplate]
 
     @State private var isEditingName = false
-    @State private var reveals = false
+    @State private var reveals = DSValidationReveal()
     @State private var errorMessage: String?
     @State private var saveRequest: ReminderSaveRequest?
     @State private var savedCount = 0
@@ -294,13 +293,12 @@ private struct PersonalDocumentForm: View {
                 }
             }
             .padding(DS.Space.m)
-            .frame(maxWidth: 640)
-            .frame(maxWidth: .infinity)
+            .dsReadableWidth()
             .dsAnimation(value: draft.type)
         }
         .scrollDismissesKeyboard(.interactively)
         .background(DS.Palette.background)
-        .environment(\.dsRevealsValidation, reveals)
+        .dsRevealsValidation(reveals)
         .navigationTitle(Text("Scriu eu", comment: "Title of the screen where a document is typed in by hand."))
         .navigationBarTitleDisplayMode(.inline)
         .dsPinnedAction {
@@ -327,10 +325,11 @@ private struct PersonalDocumentForm: View {
                     }
                 }
             }
-            if reveals, draft.type == nil {
+            if reveals.isOn, draft.type == nil {
                 Text("Alege ce act e.", comment: "Error when saving a personal document without a type.")
                     .dsFont(.footnote)
                     .foregroundStyle(DSStatus.overdue.textColor)
+                    .dsValidationTarget("Alege ce act e.")
             }
         }
     }
@@ -451,7 +450,7 @@ private struct PersonalDocumentForm: View {
 
     private func requestSave() {
         errorMessage = nil
-        guard draft.type != nil else { reveals = true; return }
+        guard draft.type != nil else { reveals.reveal(); return }
         if reminderLine != nil {
             saveRequest = ReminderSaveRequest { save() }
         } else {

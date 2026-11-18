@@ -10,7 +10,7 @@ import SwiftData
 /// (`IssuerLessons.isProtected`). It asks, because it changes what Settings › Ce am învățat lists.
 struct PersonalLessonLabelsStep: DataRepairStep {
     static let id = DataRepairStepID.personalLessonLabels
-    var title: String { String(localized: "Ce am învățat de pe acte", comment: "Repair group: labels capture learned that hold a name, an address or a plate of the household.") }
+    var title: String { String(localized: "Ce am învățat de pe documente", comment: "Repair group: labels capture learned that hold a name, an address or a plate of the household.") }
     var applyTitle: String { String(localized: "Uită eticheta", comment: "Applies one repair: forget a label capture learned that holds a value of the household.") }
 
     /// The lessons whose label holds a word of the household's.
@@ -29,10 +29,10 @@ struct PersonalLessonLabelsStep: DataRepairStep {
         return candidates.map { lesson in
             let message: String
             if IssuerLessons.isProtected(lesson, locks: locks) || lesson.issuerName.isEmpty {
-                message = String(localized: "De pe actul unei firme am ținut minte o etichetă care conține un nume, o adresă sau un număr de mașină din dosarul tău. O uit?",
+                message = String(localized: "De pe documentul unei firme am ținut minte o etichetă care conține un nume, o adresă sau un număr de mașină din dosarul tău. O uit?",
                                  comment: "Repair: a label capture learned holds a value of the household; the issuer isn't named (a locked category's paper, or no name).")
             } else {
-                message = String(localized: "De pe actele „\(lesson.issuerName)” am ținut minte eticheta „\(lesson.label)”, care conține un nume, o adresă sau un număr de mașină din dosarul tău. O uit?",
+                message = String(localized: "De pe documentele „\(lesson.issuerName)” am ținut minte eticheta „\(lesson.label)”, care conține un nume, o adresă sau un număr de mașină din dosarul tău. O uit?",
                                  comment: "Repair: a label capture learned of an issuer's papers holds a value of the household (a name, an address, a plate).")
             }
             return DataRepairFinding(id: "\(Self.id.rawValue):\(lesson.id.uuidString)", step: Self.id, message: message,

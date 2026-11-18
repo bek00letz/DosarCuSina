@@ -20,12 +20,12 @@ enum CustomCategoryWording {
 
     static var keeps: String { String(localized: "Ce ține minte") }
     static var documents: String { String(localized: "Are acte", comment: "Switch of a category of one's own: its sections keep documents.") }
-    static var documentsHint: String { String(localized: "Poze și PDF-uri: acte, contracte, garanții.", comment: "Explains the documents switch.") }
+    static var documentsHint: String { String(localized: "Poze și PDF-uri cu acte, contracte și garanții.", comment: "Explains the documents switch.") }
     static var bills: String {
         String(localized: "Are facturi și contracte", comment: "Switch of a category of one's own: its sections keep subscriptions and their bills.")
     }
     static var billsHint: String {
-        String(localized: "Abonamente cu facturile lor, ca la o locuință: curent, internet, loc de parcare.", comment: "Explains the bills switch.")
+        String(localized: "Abonamente cu facturile lor, ca la o locuință, pentru curent, internet sau loc de parcare.", comment: "Explains the bills switch.")
     }
     static var service: String {
         String(localized: "Are revizii sau lucrări", comment: "Switch of a category of one's own: its sections have a regular service or job, logged as visits.")
@@ -34,7 +34,7 @@ enum CustomCategoryWording {
         String(localized: "Le notezi în istoric și îți amintesc din timp, ca la mașină.", comment: "Explains the service switch: visits and a reminder.")
     }
     static var serviceCounter: String { String(localized: "Revizia se face", comment: "VoiceOver label of the service counter choice.") }
-    static var wholeNumber: LocalizedStringResource { LocalizedStringResource("Scrie un număr întreg, mai mare ca zero.") }
+    static var wholeNumber: LocalizedStringResource { LocalizedStringResource("Scrie un număr întreg, mai mare decât zero.") }
 
     // MARK: Ține de…
 
@@ -109,7 +109,7 @@ extension CategorySwitches.Counter {
     var everyFootnote: String {
         switch self {
         case .time: String(localized: "Îți amintesc din timp de fiecare revizie.")
-        case .kilometres, .engineHours: String(localized: "Sau o dată pe an, ce vine întâi.")
+        case .kilometres, .engineHours: String(localized: "Sau o dată pe an, ce vine mai întâi.")
         }
     }
 

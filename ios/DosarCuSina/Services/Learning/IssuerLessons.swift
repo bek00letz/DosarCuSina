@@ -175,11 +175,11 @@ enum IssuerWording {
         return String(localized: "Firmă fără nume", comment: "Settings: an issuer capture learned of whose name wasn't saved.")
     }
 
-    /// One lesson, in plain words: „Data scadenței: „Ultima zi de plată””, the value and the label
+    /// One lesson, in plain words: „De plătit până la: „Ultima zi de plată””, the value and the label
     /// the issuer prints it under.
     static func lesson(_ lesson: CaptureLesson) -> String {
         String(localized: "\(CaptureMapping.label(for: lesson.field)): „\(lesson.label)”",
-               comment: "Settings: a value and the label an issuer prints it under, e.g. 'Data scadenței: „Ultima zi de plată”'.")
+               comment: "Settings: a value and the label an issuer prints it under, e.g. 'De plătit până la: „Ultima zi de plată”'.")
     }
 
     /// The row's status in Settings' list: „Nimic încă”, „De la o firmă”, „De la 3 firme”.

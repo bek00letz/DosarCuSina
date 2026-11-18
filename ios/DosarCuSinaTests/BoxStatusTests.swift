@@ -59,7 +59,7 @@ struct BoxStatusTests {
         let status = BoxStatus.make([snapshot("Colonoscopie", kind: .health, due: "2026-11-05", offsets: [7], consequence: .health)], now: today, calendar: calendar)
         let line = status.line(isSensitive: true)
         #expect(!line.contains("Colonoscopie"))
-        #expect(line == "O scadență · în 3 zile")
+        #expect(line == "Un termen · în 3 zile")
     }
 
     @Test func childrenCountTowardsTheParentBox() {

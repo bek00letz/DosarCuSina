@@ -20,7 +20,7 @@ struct AssetEditSheet: View {
     @State private var notes: String
     @State private var photoData: Data?
     @State private var photoItem: PhotosPickerItem?
-    @State private var revealsValidation = false
+    @State private var revealsValidation = DSValidationReveal()
     @State private var error: UserFacingError?
     @State private var readingQuestion: LowerReadingQuestion?
     @State private var savedCount = 0
@@ -72,12 +72,11 @@ struct AssetEditSheet: View {
                     }
                 }
                 .padding(DS.Space.m)
-                .frame(maxWidth: 640)
-                .frame(maxWidth: .infinity)
+                .dsReadableWidth()
             }
             .scrollDismissesKeyboard(.interactively)
             .background(DS.Palette.background)
-            .environment(\.dsRevealsValidation, revealsValidation)
+            .dsRevealsValidation(revealsValidation)
             .navigationTitle(Text("Editează", comment: "Title of the edit sheet."))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -126,7 +125,7 @@ struct AssetEditSheet: View {
     private func save(lowerReading: LowerReadingAnswer? = nil) {
         guard hasChanges else { dismiss(); return }
         guard !trimmedName.isEmpty, FieldValuesCheck.canSave(values, fields: definition.allFields) else {
-            revealsValidation = true
+            revealsValidation.reveal()
             return
         }
         do {

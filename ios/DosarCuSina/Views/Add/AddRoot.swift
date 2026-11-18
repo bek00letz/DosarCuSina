@@ -36,6 +36,7 @@ struct AddRoot: View {
                 shareCard
             }
             .padding(DS.Space.m)
+            .dsReadableWidth()
         }
         .background(DS.Palette.background)
         .navigationTitle("Adaugă")
@@ -111,11 +112,11 @@ struct AddRoot: View {
     private var waysIn: some View {
         VStack(alignment: .leading, spacing: DS.Space.s) {
             if CaptureSource.isCameraAvailable {
-                DSActionCard("Fotografiază un act", subtitle: "Pagina se îndreaptă singură. Poți face mai multe pagini.", systemImage: "camera.fill") {
+                DSActionCard("Fotografiază un document", subtitle: "Pagina se îndreaptă singură. Poți face mai multe pagini.", systemImage: "camera.fill") {
                     source = .camera
                 }
             }
-            DSActionCard("Alege din poze", subtitle: "O poză cu actul, făcută mai demult.", systemImage: "photo.on.rectangle") {
+            DSActionCard("Alege din poze", subtitle: "O poză cu documentul, făcută mai demult.", systemImage: "photo.on.rectangle") {
                 source = .photos
             }
             DSActionCard("Din Fișiere", subtitle: "Un PDF sau o poză salvată pe telefon.", systemImage: "folder.fill") {

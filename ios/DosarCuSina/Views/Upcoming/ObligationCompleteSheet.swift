@@ -75,6 +75,7 @@ struct ObligationCompleteSheet: View {
                     }
                 }
                 .padding(DS.Space.m)
+                .dsReadableWidth()
             }
             .background(DS.Palette.background)
             .dsPinnedAction {
@@ -167,8 +168,7 @@ struct ObligationCompleteSheet: View {
                 if document != nil, let bill = billPlan {
                     // A photo of the bill: filed as a bill, as the review says it.
                     billNotices(bill)
-                    Button(CompletionWording.anotherPhoto) { isChoosingSource = true }
-                        .frame(minHeight: DS.Control.minimumHitTarget)
+                    DSLinkButton(verbatim: CompletionWording.anotherPhoto) { isChoosingSource = true }
                 } else if let document {
                     let read = CaptureFiler.nextDay(in: document)
                     // Only a date after today and after this cycle becomes the next deadline
@@ -188,8 +188,7 @@ struct ObligationCompleteSheet: View {
                         paper.noDateKeptWords
                     }
                     DSNotice(.success, title: LocalizedStringKey(paper.readWords), message: message.map { LocalizedStringKey($0) })
-                    Button(CompletionWording.anotherPhoto) { isChoosingSource = true }
-                        .frame(minHeight: DS.Control.minimumHitTarget)
+                    DSLinkButton(verbatim: CompletionWording.anotherPhoto) { isChoosingSource = true }
                 } else {
                     DSActionCard(paper.actionTitle, subtitle: paper.exampleTitle, systemImage: "doc.viewfinder") {
                         isChoosingSource = true

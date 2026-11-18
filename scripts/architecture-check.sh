@@ -371,6 +371,36 @@ rule sheet-outside-its-lock "^ios/DosarCuSina/Views/" "^ios/DosarCuSina/Views/Lo
 rule presentation-on-section "$app" - '-' - \
     "Hang a sheet, alert or dialog on one view that stays while it is up: the row or button that opens it, or the section's header. On a Section or a ForEach it reaches every row inside (and the header and footer), is presented once for each, and the extra copies close the screen under it."
 
+# A button's tap target is its label: a minimum frame written after the button closes makes the
+# row 44 pt tall while the tap still lands only on the words, about 20 pt. Found by parentheses
+# and braces in the pass below: the frame goes on the label (with .contentShape), or the button is
+# one of the design system's (DSLinkButton, DSCompactButton), which are 44 pt themselves.
+rule hit-target-outside-button "$app" '^ios/DosarCuSinaWidgets/' '-' - \
+    "A button's tap target is its label. Use DSLinkButton (or DSCompactButton, DSSecondaryButton), or put the minimum frame on the label with .contentShape(.rect), never on the button after it closes."
+# One readable width for every screen (DS.ReadableWidth): on an iPad or a wide window the content
+# stays at a width that reads well. A screen's vertical ScrollView holds its content at it
+# (found by braces in the pass below), and no screen writes a width of its own.
+rule screen-without-readable-width '^ios/DosarCuSina/' "$design_system" '-' - \
+    "Hold a screen's scrolling content at the one readable width: .dsReadableWidth() on the content inside the ScrollView (.dsReadableWidth(.grid) for a grid of boxes)."
+rule readable-width-by-hand "$app" "$design_system"'|^ios/Shared/DSLayout\.swift$' \
+    '\.frame\(maxWidth: *[6-9][0-9][0-9]' - \
+    "A screen's width comes from the one readable-width rule: .dsReadableWidth() (DS.ReadableWidth), which also grows with the text size."
+
+# One word for any paper (docs/COPY_GUIDE.md, „Document” and „Act”): what capture, Adaugă and
+# onboarding say of a paper they don't know yet is a „document”; „act” is a personal document
+# with its holder (an identity card, a passport), said where only one of those is meant. An
+# „act adițional” is a contract's addendum, its own word.
+rule act-for-any-paper '^ios/DosarCuSina/Views/(Capture|Add|Onboarding)/' - \
+    '"([^"]*[^A-Za-z"])?(act|actul|actului|actele|actelor|acte|Act|Actul|Actului|Actele)([^A-Za-z"][^"]*)?"' \
+    'act adi' \
+    "Capture, Adaugă and onboarding speak of any paper: say „document” („Verifică documentul”, „Fotografiază un document”), or the kind's own noun (CaptureKindProfile.noun). „Act” is only a personal document, where nothing else is meant."
+# One word for a deadline (docs/COPY_GUIDE.md): „termen”, in the app, the widgets, Siri,
+# Shortcuts and notifications alike. A bill's own label („Data scadenței”) is read by capture's
+# tables, which keep the words papers print.
+rule one-word-for-a-deadline "$app" '^ios/DosarCuSina/Services/Capture/' \
+    '"[^"]*([Oo]bligați|[Oo]bligație|[Ss]caden(ț|t))' - \
+    "A deadline is a „termen” everywhere the app speaks: „Termen protejat”, „Ai un termen mâine”, „Ce termene am”, „până pe 14 noiembrie”. Never „obligație” or „scadență”."
+
 # --- The scan ----------------------------------------------------------------
 
 # Prints "path<TAB>rule<TAB>line" for every match. $1 is a file of
@@ -431,10 +461,27 @@ scan() {
         }
         FILENAME == rules_file { inc[$1] = $2; exc[$1] = $3; next }
         FILENAME == map_file { path_of[$2] = $1; next }
-        FNR == 1 { path = path_of[FILENAME]; depth = 0; scroll_at = -1; inset_at = -1; pocket_at = -1; nesting = 0; held = 0; chained_at = -1 }
+        FNR == 1 { path = path_of[FILENAME]; depth = 0; scroll_at = -1; inset_at = -1; pocket_at = -1; nesting = 0; held = 0; chained_at = -1
+                   tapped = 0; tapped_chain = -1; screen_at = -1; screen_line = 0; readable = 0 }
         {
             code = code_of($0)
             if (code == "") next
+            # hit-target-outside-button: a Button, Link or Menu that closes at the level it opened at
+            # leaves "tapped_chain": the lines starting with "." at that level are its modifiers. A
+            # minimum frame there makes the layout 44 pt while the tap still lands only on the label.
+            if (tapped_chain >= 0) {
+                if (nesting < tapped_chain) tapped_chain = -1
+                else if (nesting == tapped_chain) {
+                    if (code ~ /^[[:space:]]*\./) {
+                        if (code ~ /^[[:space:]]*\.frame\(.*min(Height|Width):/ && covers("hit-target-outside-button")) {
+                            print path "\thit-target-outside-button\t" FNR
+                        }
+                    } else tapped_chain = -1
+                }
+            }
+            if (code ~ /(^|[^A-Za-z0-9_.])(Button|Link|Menu|ShareLink)[[:space:]]*[({]/) {
+                tapped++; tapped_at[tapped] = nesting
+            }
             # presentation-on-section: "nesting" counts braces and parentheses, so a modifier
             # written over several lines is read as one. A Section or ForEach that closes at the
             # level it opened at leaves "chained_at": the lines starting with "." at that level are
@@ -454,8 +501,15 @@ scan() {
             }
             nesting += gsub(/[{(]/, "&", code) - gsub(/[})]/, "&", code)
             while (held > 0 && nesting <= held_at[held]) { chained_at = held_at[held]; held-- }
+            while (tapped > 0 && nesting <= tapped_at[tapped]) { tapped_chain = tapped_at[tapped]; tapped-- }
             opens_scroll = scroll_at < 0 && code ~ /(^|[^A-Za-z0-9_])ScrollView[[:space:]]*(\([^)]*\))?[[:space:]]*\{/
             if (opens_scroll) scroll_at = depth
+            # screen-without-readable-width: the ScrollView of a screen that scrolls up and down holds
+            # its content at the readable width (dsReadableWidth) somewhere inside its braces.
+            if (screen_at < 0 && code ~ /(^|[^A-Za-z0-9_])ScrollView[[:space:]]*(\(\))?[[:space:]]*\{/) {
+                screen_at = depth; screen_line = FNR; readable = 0
+            }
+            if (screen_at >= 0 && code ~ /dsReadableWidth\(/) readable = 1
             opens_pocket = pocket_at < 0 && code ~ /(^|[^A-Za-z0-9_])DSPocketCard[[:space:]]*\(.*\{[[:space:]]*$/
             if (opens_pocket) pocket_at = depth
             if (((scroll_at >= 0 && !opens_scroll) || (pocket_at >= 0 && !opens_pocket)) \
@@ -471,6 +525,10 @@ scan() {
             opened = gsub(/\{/, "{", code); closed = gsub(/\}/, "}", code)
             depth += opened - closed
             if (scroll_at >= 0 && depth <= scroll_at) scroll_at = -1
+            if (screen_at >= 0 && depth <= screen_at) {
+                if (!readable && covers("screen-without-readable-width")) print path "\tscreen-without-readable-width\t" screen_line
+                screen_at = -1
+            }
             if (pocket_at >= 0 && depth <= pocket_at) pocket_at = -1
             if (inset_at >= 0 && depth <= inset_at) inset_at = -1
         }

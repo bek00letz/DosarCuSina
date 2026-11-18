@@ -105,6 +105,7 @@ struct CaptureReviewView: View {
                     readingOffer
                 }
                 .padding(DS.Space.m)
+                .dsReadableWidth()
             }
         }
         .dsPinnedAction {
@@ -833,7 +834,7 @@ private struct CaptureFieldEditor: View {
     }
 }
 
-/// A reading that wasn't kept, beside the one shown: what it says and "Folosește-l". The one
+/// A reading that wasn't kept, beside the one shown: what it says and "Folosește". The one
 /// mechanism for every alternative: the phone's value or kind, the AI's, a checked code's.
 private struct CaptureAlternativeNote: View {
     let text: String

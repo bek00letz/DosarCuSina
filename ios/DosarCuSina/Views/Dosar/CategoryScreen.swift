@@ -61,8 +61,7 @@ private struct CategoryContent: View {
                 }
             }
             .padding(DS.Space.m)
-            .frame(maxWidth: 720)
-            .frame(maxWidth: .infinity)
+            .dsReadableWidth()
         }
         .background(DS.Palette.background)
     }

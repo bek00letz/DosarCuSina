@@ -9,6 +9,7 @@ struct ExampleForm: View {
                 DSSecondaryButton("Adaugă o persoană") { add() }
             }
             .padding(DS.Space.m)
+            .dsReadableWidth()
         }
         .dsPinnedAction {
             DSPrimaryButton("Salvează", systemImage: "checkmark") { save() }

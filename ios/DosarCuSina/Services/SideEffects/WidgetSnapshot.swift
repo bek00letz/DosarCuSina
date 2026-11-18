@@ -16,7 +16,7 @@ extension WidgetFeed {
             return Item(
                 obligationId: obligation.id,
                 assetId: obligation.assetId,
-                title: obligation.isSensitive ? String(localized: "Scadență protejată", comment: "Widget title for a protected category") : obligation.title,
+                title: obligation.isSensitive ? String(localized: "Termen protejat", comment: "Widget title for a protected category") : obligation.title,
                 assetName: obligation.isSensitive ? nil : obligation.assetName,
                 symbol: obligation.isSensitive ? "lock.fill" : obligation.symbol,
                 tint: obligation.tint.rawValue,
