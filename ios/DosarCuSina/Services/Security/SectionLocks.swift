@@ -269,6 +269,7 @@ extension Obligation {
     /// `Asset.isSensitive(template:)`, with its category's record from `context`): what closing it
     /// asks (`DeadlineChange`), never a copy kept from earlier, such as a snapshot read before a
     /// lock was turned on. A deadline of the whole household has no section, so no lock.
+    @MainActor
     func isSensitive(in context: ModelContext) -> Bool {
         guard let asset else { return false }
         let template = (try? TemplateStore(context: context).template(forKey: asset.templateKey)) ?? nil
