@@ -249,14 +249,18 @@ public enum ShareFailureLog {
 
     /// One item of a share that didn't arrive: when, the reason told, every way tried, and how
     /// many files it held (photos sorted into one document, or every file past the limit).
-    public struct Entry: Codable, Hashable, Sendable {
+    public struct Entry: Codable, Hashable, Sendable, Identifiable {
+        /// Which entry it is, so two that failed alike in the same second stay two
+        /// (`merged`): the log keeps moments to the second.
+        public var id: UUID
         public var at: Date
         public var failure: ShareFailure
         public var attempts: [Attempt]
         /// How many files: one for most, and one for an entry kept before the count was.
         public var files: Int
 
-        public init(at: Date, failure: ShareFailure, attempts: [Attempt], files: Int = 1) {
+        public init(id: UUID = UUID(), at: Date, failure: ShareFailure, attempts: [Attempt], files: Int = 1) {
+            self.id = id
             self.at = at
             self.failure = failure
             self.attempts = attempts
@@ -264,11 +268,14 @@ public enum ShareFailureLog {
         }
 
         private enum CodingKeys: String, CodingKey {
-            case at, failure, attempts, files
+            case id, at, failure, attempts, files
         }
 
+        /// An entry kept before entries had an id gets one as it is read, kept from the log's
+        /// next change on.
         public init(from decoder: any Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
+            id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
             at = try container.decode(Date.self, forKey: .at)
             failure = try container.decode(ShareFailure.self, forKey: .failure)
             attempts = try container.decode([Attempt].self, forKey: .attempts)
@@ -315,8 +322,9 @@ public enum ShareFailureLog {
         return removed
     }
 
-    /// Puts back what `clear` took ("Anulează"), beside anything the share kept since, in time
-    /// order, the latest `kept` only.
+    /// Puts back exactly what `clear` took ("Anulează"), every entry of it, beside anything the
+    /// share kept since, in time order: the list as it would be had it never been emptied, the
+    /// latest `kept` only.
     public static func putBack(_ entries: [Entry], in inbox: ShareInbox) throws {
         try inbox.changeFailureLog { current in
             current = merged(entries, current)
@@ -324,11 +332,12 @@ public enum ShareFailureLog {
         NotificationCenter.default.post(name: didChangeNotification, object: nil)
     }
 
-    /// Two lists of the log as one: each entry once, oldest first (in the order given when two
-    /// came at the same moment), the latest `kept` only.
+    /// Two lists of the log as one: each entry once by its id (two that failed alike in the same
+    /// second are two), oldest first (in the order given when two came at the same moment), the
+    /// latest `kept` only.
     static func merged(_ earlier: [Entry], _ later: [Entry]) -> [Entry] {
-        var seen = Set<Entry>()
-        let unique = (earlier + later).filter { seen.insert($0).inserted }
+        var seen = Set<UUID>()
+        let unique = (earlier + later).filter { seen.insert($0.id).inserted }
         let ordered = unique.enumerated()
             .sorted { ($0.element.at, $0.offset) < ($1.element.at, $1.offset) }
             .map(\.element)

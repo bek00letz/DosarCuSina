@@ -38,14 +38,17 @@ enum ShareProblems {
         entries.reduce(0) { $0 + $1.files }
     }
 
-    /// Whether Despre shows the row: only while there is something to explain.
-    static func showsRow(_ entries: [ShareFailureLog.Entry]) -> Bool {
-        !entries.isEmpty
+    /// Whether Despre shows the row: only while there is something to explain, and while its
+    /// page is open (`pageIsOpen`), so „Golește lista” never takes away the page it was tapped on,
+    /// with its toast and "Anulează". Back in Despre, an empty list's row goes.
+    static func showsRow(_ entries: [ShareFailureLog.Entry], pageIsOpen: Bool = false) -> Bool {
+        !entries.isEmpty || pageIsOpen
     }
 
     /// „Golește lista”: empties the log and returns what it held, for the toast's "Anulează". An
     /// undo toast rather than a question first: what goes is a few small entries, kept in memory
-    /// and put back whole (`ShareFailureLog.putBack`), beside any the share kept meanwhile.
+    /// and put back whole, every one of them (`ShareFailureLog.putBack`), beside any the share
+    /// kept meanwhile.
     static func clear(_ inbox: ShareInbox? = ShareInbox.shared()) throws -> [ShareFailureLog.Entry] {
         guard let inbox else { return [] }
         return try ShareFailureLog.clear(in: inbox)
