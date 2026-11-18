@@ -87,7 +87,7 @@ extension DossierArchiveReader {
     static func read(_ data: Data, password: String? = nil, limits: DosarZipEngine.Limits = .standard) throws -> DossierV3.Package {
         let folder = URL.temporaryDirectory.appending(path: "archive-test-\(UUID().uuidString)", directoryHint: .isDirectory)
         defer { try? FileManager.default.removeItem(at: folder) }
-        var package = try read(MemoryByteSource(data), password: password, limits: limits, keeping: .extract(into: folder))
+        var package = try read(MemoryByteSource(data), password: password, limits: limits, extractingTo: folder)
         var files: [String: DossierV3.ArchiveFiles.Content] = [:]
         for path in package.files.paths {
             if let bytes = try package.files.data(at: path) { files[path] = .data(Data(bytes)) }

@@ -482,7 +482,16 @@ private struct KeptCopyRow: View {
 
     var body: some View {
         Label {
-            Text("Copia dosarului de dinainte de schimbarea contului", comment: "A copy of the binder kept before switching iCloud accounts.")
+            VStack(alignment: .leading, spacing: DS.Space.xxs) {
+                Text("Copia dosarului de dinainte de schimbarea contului", comment: "A copy of the binder kept before switching iCloud accounts.")
+                // Two copies are told apart by when each was kept.
+                if let kept = KeptCopies.keptAt(copy) {
+                    Text("Păstrată pe \(DosarFormat.longDay(kept)), la \(DosarFormat.time(kept))",
+                         comment: "When a copy of the binder was kept before switching iCloud accounts: its day and time.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
         } icon: {
             Image(systemName: "doc.on.doc")
         }

@@ -1234,7 +1234,7 @@
 
     },
     "Act protejat" : {
-      "comment" : "De verificat: something shared that belongs to a locked section; nothing about it shows until unlock."
+      "comment" : "A row in place of something behind Face ID that is a document (a person's ID card, something shared into De verificat); nothing about it shows until unlock."
     },
     "Acte" : {
       "comment" : "Category name\nSection pocket\nSummary of a category of one's own: it keeps documents."
@@ -3380,16 +3380,16 @@
     "Copia de siguranță ar ocupa prea mult loc pe telefon odată deschisă. Fă copia din nou din aplicație și încearcă iar." : {
       "comment" : "Backup: its files together would take too much room once unpacked."
     },
-    "Copia de siguranță conține de două ori fișierul %@. Fă copia din nou din aplicație." : {
+    "Copia de siguranță conține de două ori același fișier. Fă copia din nou din aplicație." : {
       "comment" : "Backup: a file appears twice inside it."
     },
-    "Copia de siguranță conține un fișier neașteptat: %@. Fă copia din nou din aplicație." : {
-      "comment" : "Backup: a file it doesn't list."
-    },
-    "Copia de siguranță conține un nume de fișier nepermis: %@. Fă copia din nou din aplicație." : {
+    "Copia de siguranță conține un fișier cu un nume nepermis. Fă copia din nou din aplicație." : {
       "comment" : "Backup: a file name inside it isn't allowed."
     },
-    "Copia de siguranță e incompletă: lipsește %@. Fă copia din nou și încearcă iar." : {
+    "Copia de siguranță conține un fișier pe care aplicația nu l-a pus acolo. Fă copia din nou din aplicație." : {
+      "comment" : "Backup: a file it doesn't list."
+    },
+    "Copia de siguranță e incompletă: îi lipsește o parte. Fă copia din nou și încearcă iar." : {
       "comment" : "Backup: a file is missing from it."
     },
     "Copia de siguranță e prea mare pentru a fi deschisă pe acest telefon." : {
@@ -3708,8 +3708,8 @@
     "Date tehnice" : {
 
     },
-    "Datele din %@ nu se potrivesc între ele." : {
-
+    "Datele din copia de siguranță nu se potrivesc între ele. Fă copia din nou și încearcă iar." : {
+      "comment" : "Backup: its records point at records it doesn't have."
     },
     "Datele nu pot fi deschise acum. Deschide aplicația și încearcă din nou." : {
 
@@ -3874,6 +3874,9 @@
     },
     "Deschide abonamentul." : {
       "comment" : "VoiceOver hint of a missing-bill note."
+    },
+    "Deschide actul protejat." : {
+      "comment" : "Face ID reason for opening a document behind Face ID whose section isn't known."
     },
     "Deschide ca să verifici și să salvezi." : {
 
@@ -4713,9 +4716,6 @@
     },
     "Fiscal" : {
 
-    },
-    "Fișierul %@ din copia de siguranță e deteriorat. Fă copia din nou și încearcă iar." : {
-      "comment" : "Backup: one file inside it is damaged. The argument is its path."
     },
     "Fișierul nu e o copie de siguranță Dosar cu Șină. Alege fișierul .dosar făcut din Setări." : {
       "comment" : "Backup: the chosen file isn't a backup."
@@ -6191,6 +6191,12 @@
     "Nu ai încă persoane în dosar. Adaugă-te, cu actele tale, ca să le verific." : {
       "comment" : "Trip form: no household members yet."
     },
+    "Nu ai scris nicio parolă. Scrie parola cu care a fost făcută copia." : {
+      "comment" : "Backup: a protected backup was opened with nothing typed for its password."
+    },
+    "Nu ai scris nicio parolă. Scrie parola pe care ai ales-o când ai făcut copia." : {
+      "comment" : "Asks again for a backup's password after nothing was typed."
+    },
     "Nu ai trecut un telefon" : {
 
     },
@@ -6554,6 +6560,9 @@
     "O mașină, o casă, un animal, un act…" : {
 
     },
+    "O parte din copia de siguranță e deteriorată. Fă copia din nou și încearcă iar." : {
+      "comment" : "Backup: one file inside it is damaged."
+    },
     "O păstrez și trec data și suma de pe ea." : {
       "comment" : "Visit form: the invoice is kept, its day and total read."
     },
@@ -6851,6 +6860,17 @@
     },
     "Păstrat, ascuns" : {
       "comment" : "A secret field that already holds a code."
+    },
+    "Păstrată pe %@, la %@" : {
+      "comment" : "When a copy of the binder was kept before switching iCloud accounts: its day and time.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Păstrată pe %1$@, la %2$@"
+          }
+        }
+      }
     },
     "Păstrează" : {
       "comment" : "Cancel a delete."
@@ -7903,6 +7923,9 @@
     "Se creează când salvezi." : {
       "comment" : "Capture review: a new section is made when saving."
     },
+    "Se deschide cu %@." : {
+      "comment" : "VoiceOver hint of a row behind Face ID. The name is Face ID, Touch ID or the passcode."
+    },
     "Se deschide dosarul…" : {
 
     },
@@ -7986,6 +8009,9 @@
     },
     "Secțiune nouă în %@" : {
       "comment" : "Capture review: the document goes to a new section of this category."
+    },
+    "Secțiune protejată" : {
+      "comment" : "A row in place of a section behind Face ID, on another section's page or a firm's; nothing about it shows until unlock."
     },
     "Secțiune ștearsă" : {
       "comment" : "Capture review: the section chosen has gone."
@@ -8804,6 +8830,9 @@
     },
     "Următoarea reînnoire" : {
 
+    },
+    "Următorul act care expiră" : {
+      "comment" : "Hero of a person, when the next document to expire is behind Face ID: the label above „Act protejat”."
     },
     "Următorul act care expiră: %@" : {
       "comment" : "Hero of a person: the next document to expire."

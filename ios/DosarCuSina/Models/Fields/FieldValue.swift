@@ -44,6 +44,19 @@ public enum FieldValue: Hashable, Sendable, Codable {
         return nil
     }
 
+    /// The number as a whole number (a year, a count), rounded; nil when it is none an `Int`
+    /// holds. A number from outside (a backup, another device) can be any size: where the app
+    /// counts with one, it reads it through here and never stops on it.
+    public var wholeNumberValue: Int? {
+        numberValue.flatMap(Self.wholeNumber)
+    }
+
+    /// `number` rounded to a whole number, when an `Int` holds it: nil past its range, for an
+    /// infinity or for what isn't a number.
+    public static func wholeNumber(_ number: Double) -> Int? {
+        Int(exactly: number.rounded())
+    }
+
     public var moneyValue: Money? {
         if case .money(let value) = self { return value }
         return nil

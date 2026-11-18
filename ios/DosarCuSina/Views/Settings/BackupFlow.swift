@@ -35,8 +35,17 @@ final class BackupFlow {
     struct LockedFile: Identifiable, Equatable {
         let id = UUID()
         let url: URL
-        /// The last password tried didn't open it.
-        var wasWrong = false
+        /// What the last try said: none yet, a password that didn't open it, or nothing typed.
+        var asked: Asked = .first
+
+        enum Asked: Equatable {
+            /// Asked for the first time.
+            case first
+            /// The password typed didn't open it.
+            case wrong
+            /// "Deschide" with nothing typed: asked again, the copy kept.
+            case nothingTyped
+        }
     }
 
     enum Work: Equatable {
@@ -223,7 +232,9 @@ final class BackupFlow {
         } catch ArchiveError.needsPassword {
             lockedFile = LockedFile(url: copy)
         } catch ArchiveError.wrongPassword {
-            lockedFile = LockedFile(url: copy, wasWrong: true)
+            lockedFile = LockedFile(url: copy, asked: .wrong)
+        } catch ArchiveError.noPasswordTyped {
+            lockedFile = LockedFile(url: copy, asked: .nothingTyped)
         } catch {
             BackupFiles.remove(copy)
             self.error = UserFacingError(error, doing: String(localized: "Copia nu se deschide", comment: "Title of an import error."))
