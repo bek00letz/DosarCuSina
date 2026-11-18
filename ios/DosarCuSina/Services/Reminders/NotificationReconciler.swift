@@ -114,7 +114,7 @@ public enum ReminderActions {
     }
 
     /// What „Amână” asks of the system: nothing, locked category or not (`DeadlineChange`), and
-    /// whatever closing asks.
+    /// whether or not closing needs the app.
     static func snoozeOptions(isProtected: Bool) -> UNNotificationActionOptions {
         DeadlineChange.snooze.asksFaceID(inLockedCategory: isProtected) ? [.authenticationRequired, .foreground] : []
     }

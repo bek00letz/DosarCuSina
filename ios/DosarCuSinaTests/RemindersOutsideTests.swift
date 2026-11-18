@@ -145,9 +145,11 @@ struct RemindersOutsideTests {
 
     // MARK: The widget's „Gata” takes its reminders away at once
 
+    /// An intent iOS runs in the app's process, so its pass reaches the reminders.
+    private func runsInTheApp<Intent: LiveActivityIntent>(_: Intent.Type) -> Bool { true }
+
     @Test func theWidgetsGataRunsInTheApp() {
-        let type: any LiveActivityIntent.Type = CompleteFromWidgetIntent.self
-        #expect(type == CompleteFromWidgetIntent.self)
+        #expect(runsInTheApp(CompleteFromWidgetIntent.self))
     }
 
     @Test func aWidgetTapTakesThatDeadlinesRemindersAwayAtOnce() async throws {
@@ -210,7 +212,7 @@ struct RemindersOutsideTests {
         let rent = snapshot("Chirie", kind: .payment, due: "2026-12-05", offsets: [0], grace: 0)
         let reminders = ReminderPlanner.plan([rent], now: now, calendar: calendar)
         let full = BadgePlanner.plan(reminders, obligations: [rent], now: now, calendar: calendar, limit: reminders.count)
-        #expect(full.allSatisfy(\.showsAlert), "No room left: the reminders carry the badge alone")
+        #expect(full.filter { !$0.showsAlert }.isEmpty, "No room left: the reminders carry the badge alone")
         #expect(full.count == reminders.count)
     }
 
