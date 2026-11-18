@@ -19,12 +19,13 @@ enum DSNumberText {
 // MARK: - Money
 
 /// An amount with its currency. The number is typed with the decimal keyboard;
-/// the currency is picked from a short list next to it.
+/// the currency is picked from a short list next to it, each named as amounts are
+/// written (`Money.currencyName`: „lei”, never „RON”).
 struct DSMoneyField: View {
     let title: LocalizedStringKey
     @Binding var amount: Decimal?
     @Binding var currencyCode: String
-    var currencies: [String] = ["RON", "EUR", "USD"]
+    var currencies: [String] = Money.commonCurrencies
     var isRequired: Bool = false
     var footnote: LocalizedStringKey?
     var validator: ((Decimal) -> DSValidation)?
@@ -38,7 +39,7 @@ struct DSMoneyField: View {
         _ title: LocalizedStringKey,
         amount: Binding<Decimal?>,
         currencyCode: Binding<String>,
-        currencies: [String] = ["RON", "EUR", "USD"],
+        currencies: [String] = Money.commonCurrencies,
         isRequired: Bool = false,
         footnote: LocalizedStringKey? = nil,
         validator: ((Decimal) -> DSValidation)? = nil
@@ -79,14 +80,14 @@ struct DSMoneyField: View {
                 Menu {
                     Picker(selection: $currencyCode) {
                         ForEach(currencies, id: \.self) { code in
-                            Text(verbatim: code).tag(code)
+                            Text(verbatim: Money.currencyName(code)).tag(code)
                         }
                     } label: {
                         Text("Monedă", comment: "Label of the currency picker next to an amount.")
                     }
                 } label: {
                     HStack(spacing: 2) {
-                        Text(verbatim: currencyCode)
+                        Text(verbatim: Money.currencyName(currencyCode))
                             .font(.body.weight(.semibold))
                         Image(systemName: "chevron.up.chevron.down")
                             .imageScale(.small)
@@ -96,7 +97,7 @@ struct DSMoneyField: View {
                     .contentShape(.rect)
                 }
                 .accessibilityLabel(Text("Monedă", comment: "Label of the currency picker next to an amount."))
-                .accessibilityValue(Text(verbatim: currencyCode))
+                .accessibilityValue(Text(verbatim: Money.currencyName(currencyCode)))
                 .sensoryFeedback(.selection, trigger: currencyCode)
             }
         }

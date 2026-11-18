@@ -162,6 +162,16 @@ struct MoneyTests {
         #expect(!Money(1, currency: "EUR").formattedCompact().contains("leu"))
     }
 
+    /// A money field's menu said „RON”; amounts are written in lei. Every currency offered is
+    /// named as amounts are: the leu „lei”, any other by its code.
+    @Test("A currency menu names the leu „lei”, never „RON”")
+    func currencyNames() {
+        #expect(Money.currencyName("RON") == "lei")
+        #expect(Money.currencyName("ron") == "lei")
+        #expect(Money.currencyName("EUR") == "EUR")
+        #expect(Money.commonCurrencies.map(Money.currencyName).allSatisfy { $0 != "RON" })
+    }
+
     @Test func amountStringRoundsToCents() {
         #expect(Money(Decimal(string: "12.345")!).amountString == "12.34")
         #expect(Money(Decimal(string: "12.5")!).amountString == "12.5")

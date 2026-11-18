@@ -5787,6 +5787,9 @@
     "Leasing sau credit pe mașină" : {
       "comment" : "Sale: a lease or loan on the car."
     },
+    "lei" : {
+      "comment" : "The leu's name in a currency menu beside an amount, as amounts are written („1.250 lei”), never „RON”."
+    },
     "Lichid de frână" : {
 
     },
