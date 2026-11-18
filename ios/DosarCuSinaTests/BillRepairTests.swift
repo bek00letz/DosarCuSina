@@ -20,7 +20,7 @@ struct BillRepairTests {
         var values = FieldValues()
         values[SubscriptionFields.provider] = .text("ENGIE Romania S.A.")
         values[SubscriptionFields.service] = .text(ServiceKind.gas)
-        return try AssetActions(context: context).create(name: "Gaz – ENGIE Romania S.A.", template: template, values: values)
+        return try AssetActions(context: context).create(name: "Gaze – ENGIE Romania S.A.", template: template, values: values)
     }
 
     /// A bill as an earlier version logged it: its number only in the note it wrote.
@@ -87,7 +87,7 @@ struct BillRepairTests {
         let found = try list.detect().filter { $0.step == .sameBillTwice }
         #expect(found.count == 1, "Another number is another bill")
         let finding = try #require(found.first)
-        #expect(finding.message == "„Gaz – ENGIE Romania S.A.” are factura din 5 octombrie 2026 de mai multe ori în Istoric. O las o singură dată?")
+        #expect(finding.message == "„Gaze – ENGIE Romania S.A.” are factura din 5 octombrie 2026 de mai multe ori în Istoric. O las o singură dată?")
         #expect(finding.subject == .sameBill(keep: second.id, merge: [first.id]), "The one whose paper came last stays")
         #expect(bills(on: gas).count == 3, "Nothing changes before the OK")
 
@@ -248,7 +248,7 @@ struct BillRepairTests {
         let finding = try #require(found.first)
         #expect(found.count == 1)
         #expect(finding.subject == .sameBill(keep: entry.id, merge: []))
-        #expect(finding.message == "Factura din 5 octombrie 2026 de la „Gaz – ENGIE Romania S.A.” are indexul sau termenul de plată de mai multe ori. Le las o singură dată?")
+        #expect(finding.message == "Factura din 5 octombrie 2026 de la „Gaze – ENGIE Romania S.A.” are indexul sau termenul de plată de mai multe ori. Le las o singură dată?")
         #expect(readings(of: gas).count == 2, "Nothing changes before the OK")
 
         try list.apply(found)

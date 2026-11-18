@@ -1,10 +1,13 @@
 {
   "sourceLanguage" : "ro",
   "strings" : {
-    "Bifează din widget o obligație din Dosar cu Șină." : {
+    "Bifează din widget un termen din Dosar cu Șină." : {
 
     },
     "Ce ai de rezolvat în curând, din Dosar cu Șină." : {
+
+    },
+    "Ce urmează apare aici." : {
 
     },
     "Deschide Dosar cu Șină o dată ca să apară aici." : {
@@ -25,19 +28,13 @@
     "Nimic de făcut acum" : {
 
     },
-    "Obligație" : {
-
-    },
-    "Scadență protejată" : {
-
-    },
     "Se încarcă…" : {
 
     },
-    "Te anunț din timp." : {
+    "Termen" : {
 
     },
-    "Termen" : {
+    "Termen protejat" : {
 
     },
     "Urmează" : {

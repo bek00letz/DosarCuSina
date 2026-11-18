@@ -19,7 +19,7 @@ struct FiledPaperWordingTests {
     }
 
     @Test func aBill() {
-        let gas = "Gaz – ENGIE Romania S.A."
+        let gas = "Gaze – ENGIE Romania S.A."
         #expect(FiledPaperWording.message(filed(.sameDocument, in: gas), paper: .bill, today: today)
             == "E în „\(gas)”, cea din 5 octombrie. Dacă salvezi, o actualizez cu ce am citit acum.")
         #expect(FiledPaperWording.message(filed(.number, in: gas), paper: .bill, today: today)

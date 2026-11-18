@@ -148,7 +148,7 @@ struct SubscriptionFilingTests {
         let gas = try #require(first.asset)
         #expect(gas.templateKey == BuiltInTemplates.Key.subscription)
         #expect(gas.parent?.id == house.id, "Gas lives under the house")
-        #expect(gas.name == "Gaz – ENGIE Romania S.A.")
+        #expect(gas.name == "Gaze – ENGIE Romania S.A.")
         #expect(gas.value(SubscriptionFields.service) == .text(ServiceKind.gas))
         #expect(gas.value(SubscriptionFields.clc) == .text("DEG0000000000001"))
         #expect(gas.value(SubscriptionFields.lastBill) == .money(Money(Decimal(string: "245.30")!)))
@@ -180,11 +180,11 @@ struct SubscriptionFilingTests {
         let context = try makeContext()
         let pipera = try home("Casa Pipera", context)
         let munte = try home("Casa de la munte", context)
-        let gasPipera = try subscription("Gaz – ENGIE", under: pipera, [
+        let gasPipera = try subscription("Gaze – ENGIE", under: pipera, [
             SubscriptionFields.provider: .text("ENGIE Romania S.A."), SubscriptionFields.service: .text(ServiceKind.gas),
             SubscriptionFields.clc: .text("DEG0000000000001"),
         ], context)
-        let gasMunte = try subscription("Gaz – ENGIE", under: munte, [
+        let gasMunte = try subscription("Gaze – ENGIE", under: munte, [
             SubscriptionFields.provider: .text("ENGIE Romania S.A."), SubscriptionFields.service: .text(ServiceKind.gas),
             SubscriptionFields.clc: .text("DEG0000000000002"),
         ], context)
@@ -219,7 +219,7 @@ struct SubscriptionFilingTests {
     @Test func directDebitMeansNoReminderToPay() async throws {
         let context = try makeContext()
         let house = try home("Casa Pipera", context)
-        let gas = try subscription("Gaz – ENGIE", under: house, [
+        let gas = try subscription("Gaze – ENGIE", under: house, [
             SubscriptionFields.provider: .text("ENGIE Romania S.A."), SubscriptionFields.service: .text(ServiceKind.gas),
             SubscriptionFields.clc: .text("DEG0000000000001"), SubscriptionFields.directDebit: .bool(true),
         ], context)

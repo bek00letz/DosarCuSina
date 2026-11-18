@@ -205,7 +205,7 @@ public enum BuiltInTemplates {
         TemplateDefinition(
             key: Key.documents,
             name: String(localized: "Acte", comment: "Category name"),
-            summary: String(localized: "Buletin, pașaport, permis, cu reînnoirea din timp.", comment: "Category summary"),
+            summary: String(localized: "Îți amintesc din timp să le reînnoiești.", comment: "Category summary"),
             symbol: "person.text.rectangle.fill",
             tint: .indigo,
             heroStyle: .document,
