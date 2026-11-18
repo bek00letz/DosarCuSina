@@ -230,19 +230,22 @@ struct SyncAccountAndContainersTests {
         }
 
         var sources = SyncEventSources(openedAt: opened)
-        #expect(!sources.admits(event(.download, started: opened.addingTimeInterval(-1), old), retiredStillAround: true),
-                "Started before the open container was asked for")
-        #expect(!sources.admits(event(.download, started: opened.addingTimeInterval(1), old), retiredStillAround: true),
-                "While a retired one is around, the open one is known by its setting up")
-        #expect(sources.admits(event(.setup, started: opened.addingTimeInterval(1), new), retiredStillAround: true))
-        #expect(sources.admits(event(.download, started: opened.addingTimeInterval(2), new), retiredStillAround: false))
-        #expect(!sources.admits(event(.setup, started: opened.addingTimeInterval(3), other), retiredStillAround: false), "Only the open one's from then on")
+        let before = sources.admits(event(.download, started: opened.addingTimeInterval(-1), old), retiredStillAround: true)
+        #expect(!before, "Started before the open container was asked for")
+        let oldAfter = sources.admits(event(.download, started: opened.addingTimeInterval(1), old), retiredStillAround: true)
+        #expect(!oldAfter, "While a retired one is around, the open one is known by its setting up")
+        let setup = sources.admits(event(.setup, started: opened.addingTimeInterval(1), new), retiredStillAround: true)
+        #expect(setup)
+        let own = sources.admits(event(.download, started: opened.addingTimeInterval(2), new), retiredStillAround: false)
+        #expect(own)
+        let another = sources.admits(event(.setup, started: opened.addingTimeInterval(3), other), retiredStillAround: false)
+        #expect(!another, "Only the open one's from then on")
 
         var alone = SyncEventSources(openedAt: opened)
-        #expect(alone.admits(event(.download, started: opened.addingTimeInterval(1), new), retiredStillAround: false),
-                "With no retired one around, its first report after opening is its own")
-        #expect(alone.admits(SyncEvent(kind: .upload, finishedAt: nil, succeeded: false), retiredStillAround: true),
-                "A report that names no mirroring counts as it comes")
+        let first = alone.admits(event(.download, started: opened.addingTimeInterval(1), new), retiredStillAround: false)
+        #expect(first, "With no retired one around, its first report after opening is its own")
+        let unnamed = alone.admits(SyncEvent(kind: .upload, finishedAt: nil, succeeded: false), retiredStillAround: true)
+        #expect(unnamed, "A report that names no mirroring counts as it comes")
         withExtendedLifetime((old, new, other)) {}
     }
 
