@@ -40,7 +40,7 @@ struct TripChecklistView: View {
     @State private var toast: DSToast?
     @State private var isConfirmingRemoval = false
     /// "Vezi ce-ți trebuie" was pressed with a question left: the fields say what is missing.
-    @State private var revealsQuestions = false
+    @State private var revealsQuestions = DSValidationReveal()
 
     private let store = TripPlanStore()
 
@@ -111,13 +111,13 @@ struct TripChecklistView: View {
         draft = TripDraft(ReadinessEngine.defaultTrip(start: today, end: today, holderID: holderID, assets: assets), calendar: calendar)
         draft.start = nil
         draft.end = nil
-        revealsQuestions = false
+        revealsQuestions.reset()
         editing = .new
     }
 
     private func edit(_ plan: TripPlan) {
         draft = TripDraft(plan, calendar: calendar)
-        revealsQuestions = false
+        revealsQuestions.reset()
         editing = .trip(plan.id)
     }
 
@@ -129,7 +129,7 @@ struct TripChecklistView: View {
         case .new, nil: id = UUID()
         }
         guard let plan = draft.plan(id: id, calendar: calendar) else {
-            revealsQuestions = true
+            revealsQuestions.reveal()
             return
         }
         store.save(plan)
@@ -137,13 +137,13 @@ struct TripChecklistView: View {
         if shownID != plan.id { ticked = [] }
         shownID = plan.id
         editing = nil
-        revealsQuestions = false
+        revealsQuestions.reset()
     }
 
     /// Back from the questions to where the person was: the trip, or the list.
     private func cancelQuestions() {
         editing = nil
-        revealsQuestions = false
+        revealsQuestions.reset()
     }
 
     /// Whether the questions have somewhere to go back to.
@@ -190,7 +190,7 @@ struct TripChecklistView: View {
         ReadinessPage {
             TripForm(draft: $draft, candidates: ReadinessEngine.tripCandidates(in: assets), holderTemplateKey: holderTemplateKey)
         }
-        .environment(\.dsRevealsValidation, revealsQuestions)
+        .dsRevealsValidation(revealsQuestions)
         .dsPinnedAction {
             DSPrimaryButton("Vezi ce-ți trebuie", systemImage: "checklist") { showChecklist() }
         } secondary: {

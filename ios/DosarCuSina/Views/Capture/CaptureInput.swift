@@ -13,7 +13,7 @@ enum CaptureInput {
         var errorDescription: String? {
             switch self {
             case .unreadable: return String(localized: "Fișierul nu se poate deschide. Poate s-a trimis doar pe jumătate; trimite-l din nou.")
-            case .unsupported: return String(localized: "Pot citi poze, PDF-uri și text. Alege actul ca poză sau PDF.")
+            case .unsupported: return String(localized: "Pot citi poze, PDF-uri și text. Alege documentul ca poză sau PDF.")
             }
         }
     }

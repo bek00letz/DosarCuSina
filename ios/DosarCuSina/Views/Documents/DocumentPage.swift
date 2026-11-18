@@ -84,8 +84,7 @@ private struct PersonalDocumentContent: View {
             .padding(.horizontal, DS.Space.m)
             .padding(.top, DS.Space.s)
             .padding(.bottom, DS.Space.xxl)
-            .frame(maxWidth: 720)
-            .frame(maxWidth: .infinity)
+            .dsReadableWidth()
         }
         .background(DS.Palette.background)
         .toolbar {
@@ -451,6 +450,7 @@ struct PaperPage: View {
     @State private var isShowingText = false
     @State private var error: UserFacingError?
     @State private var toast: DSToast?
+    @Environment(\.calendar) private var calendar
 
     var body: some View {
         ScrollView {
@@ -490,8 +490,7 @@ struct PaperPage: View {
             .padding(.horizontal, DS.Space.m)
             .padding(.top, DS.Space.s)
             .padding(.bottom, DS.Space.xxl)
-            .frame(maxWidth: 720)
-            .frame(maxWidth: .infinity)
+            .dsReadableWidth()
         }
         .background(DS.Palette.background)
         .navigationTitle(Text(verbatim: attachment.displayTitle))
@@ -520,13 +519,14 @@ struct PaperPage: View {
                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                 if let day = attachment.validUntilDay {
                     DSRowSeparator()
-                    DSReadOnlyValueRow(label: Text("Valabil până la", comment: "A paper's last valid day."), value: Text(verbatim: DosarFormat.longDay(day)))
+                    DSReadOnlyValueRow(label: Text(verbatim: PocketWording.validityLabel(day, today: CalendarDay(Date(), calendar: calendar))),
+                                       value: Text(verbatim: DosarFormat.longDay(day)))
                     ExpiryBadge(day: day, rule: attachment.obligation?.urgencyRule ?? DateUrgency.rule(for: day, on: attachment.asset))
                         .padding(.bottom, DS.Space.xs)
                 }
                 if let date = attachment.documentDay {
                     DSRowSeparator()
-                    DSReadOnlyValueRow(label: Text("Data de pe act", comment: "The date printed on a paper."), value: Text(verbatim: DosarFormat.day(date)))
+                    DSReadOnlyValueRow(label: Text("Data de pe document", comment: "The date printed on a paper."), value: Text(verbatim: DosarFormat.day(date)))
                 }
                 if let asset = attachment.asset {
                     DSRowSeparator()

@@ -99,7 +99,7 @@ enum SettingsPage: String, Hashable, CaseIterable, Sendable {
 /// What each row of Settings says about its page, in a few plain words. Pure, so it is tested.
 enum SettingsStatus {
     /// "Pornite, la 09:00", "Oprite pe acest telefon" (the app's own switch, `notificationsOn`),
-    /// "Oprite din Setările telefonului", "Nu ai ales încă".
+    /// "Oprite din Configurări", "Nu ai ales încă".
     static func notifications(_ authorization: ReminderAuthorization, minuteOfDay: Int, isOn: Bool = true) -> String {
         switch authorization {
         case .authorized where !isOn:
@@ -107,7 +107,7 @@ enum SettingsStatus {
         case .authorized:
             String(localized: "Pornite, la \(DosarFormat.time(minuteOfDay: minuteOfDay))", comment: "Settings row: notifications are on, and the usual reminder time.")
         case .denied:
-            String(localized: "Oprite din Setările telefonului", comment: "Settings row: notifications are off in the phone's settings.")
+            String(localized: "Oprite din Configurări", comment: "Settings row: notifications are off in the phone's settings.")
         case .notDetermined:
             String(localized: "Nu ai ales încă", comment: "Settings row: the person hasn't chosen whether to get notifications.")
         }

@@ -44,7 +44,7 @@ enum CaptureFlowResult {
     /// The toast for a filing: where it went, and "Anulează" when the receipt can take it back.
     @MainActor
     static func filing(in place: String?, assetID: UUID?, receipt: UndoReceipt?) -> CaptureFlowResult {
-        let message: LocalizedStringResource = place.map { "Salvat în \($0)." } ?? "Actul e salvat."
+        let message: LocalizedStringResource = place.map { "Salvat în \($0)." } ?? "Documentul e salvat."
         let toast = receipt.map { DSToast.undo(message, receipt: $0) } ?? DSToast(title: message, actionTitle: nil)
         return .filed(toast: toast, assetID: assetID)
     }
@@ -118,7 +118,7 @@ struct CaptureFlowView: View {
                 case .read(let result):
                     content(for: result)
                 case .failed:
-                    DSErrorState("Nu am putut citi actul", message: "Încearcă din nou. Dacă tot nu merge, fă o poză mai clară, cu actul întins și fără umbre.") {
+                    DSErrorState("Nu am putut citi documentul", message: "Încearcă din nou. Dacă tot nu merge, fă o poză mai clară, cu documentul întins și fără umbre.") {
                         session.read()
                     }
                     .toolbar {
@@ -270,11 +270,12 @@ private struct CaptureReadingView: View {
             }
             .padding(DS.Space.m)
             .dsSkeleton(true)
-            DSDelayedProgress(label: "Citesc actul…")
+            .dsReadableWidth()
+            DSDelayedProgress(label: "Citesc documentul…")
                 .padding(.top, DS.Space.m)
         }
         .background(DS.Palette.background)
-        .navigationTitle("Citesc actul")
+        .navigationTitle("Citesc documentul")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {

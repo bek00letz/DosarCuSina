@@ -4,7 +4,7 @@ import SwiftData
 
 /// An obligation as Siri, Shortcuts and widgets see it.
 public struct ObligationEntity: AppEntity, Sendable {
-    public static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Obligație")
+    public static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Termen")
     public static let defaultQuery = ObligationQuery()
 
     public let id: UUID
@@ -22,7 +22,7 @@ public struct ObligationEntity: AppEntity, Sendable {
 
     init(_ snapshot: ObligationSnapshot) {
         self.id = snapshot.id
-        self.title = snapshot.isSensitive ? String(localized: "Scadență protejată") : snapshot.title
+        self.title = snapshot.isSensitive ? String(localized: "Termen protejat") : snapshot.title
         self.assetName = snapshot.isSensitive ? nil : snapshot.assetName
         self.dueDay = snapshot.dueDay
     }
@@ -53,7 +53,7 @@ enum IntentError: Error, CustomLocalizedStringResourceConvertible {
     var localizedStringResource: LocalizedStringResource {
         switch self {
         case .storeUnavailable: return "Datele nu pot fi deschise acum. Deschide aplicația și încearcă din nou."
-        case .notFound: return "Obligația nu mai e activă. Poate ai bifat-o deja."
+        case .notFound: return "Termenul nu mai e activ. Poate l-ai bifat deja."
         case .appLocked: return "Dosar cu Șină e protejat cu Face ID. Deschide aplicația ca să vezi termenele."
         case .protectedDeadline: return "Termenul e într-o categorie protejată. Deschide-l în Dosar cu Șină și confirmă cu Face ID ca să-l bifezi."
         }
@@ -80,12 +80,12 @@ enum IntentStore {
 
 public struct CompleteObligationIntent: AppIntent {
     public static let title: LocalizedStringResource = "Marchează ca rezolvat"
-    public static let description = IntentDescription("Bifează o obligație. Dacă se repetă, trece la următoarea scadență.")
+    public static let description = IntentDescription("Bifează un termen. Dacă se repetă, trece la următorul.")
     /// Siri asks to unlock the phone first.
     public static let authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
     public static var supportedModes: IntentModes { [.background, .foreground(.dynamic)] }
 
-    @Parameter(title: "Obligație")
+    @Parameter(title: "Termen")
     public var obligation: ObligationEntity
 
     public init() {}
@@ -120,16 +120,16 @@ public struct CompleteObligationIntent: AppIntent {
             throw IntentError.notFound
         case .completed(let next?):
             let date = DosarFormat.longDay(next)
-            return .result(dialog: IntentDialog(stringLiteral: String(localized: "Gata. Următoarea scadență e pe \(date).")))
+            return .result(dialog: IntentDialog(stringLiteral: String(localized: "Gata. Următorul termen e pe \(date).")))
         case .completed(nil):
-            return .result(dialog: IntentDialog(stringLiteral: String(localized: "Gata, am bifat-o.")))
+            return .result(dialog: IntentDialog(stringLiteral: String(localized: "Gata, l-am bifat.")))
         }
     }
 }
 
 public struct UpcomingObligationsIntent: AppIntent {
-    public static let title: LocalizedStringResource = "Ce scadențe am"
-    public static let description = IntentDescription("Spune ce obligații au nevoie de atenție acum.")
+    public static let title: LocalizedStringResource = "Ce termene am"
+    public static let description = IntentDescription("Spune ce termene au nevoie de atenție acum.")
     /// Siri asks to unlock the phone first.
     public static let authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
     public static var supportedModes: IntentModes { [.background, .foreground(.dynamic)] }
@@ -148,7 +148,7 @@ public struct UpcomingObligationsIntent: AppIntent {
                 return String(localized: "Nimic urgent. Totul e la zi.")
             }
             let lines = digest.now.map { entry -> String in
-                let title = entry.obligation.isSensitive ? String(localized: "o scadență protejată") : entry.obligation.title
+                let title = entry.obligation.isSensitive ? String(localized: "un termen protejat") : entry.obligation.title
                 let when = WhenWording.phrase(entry.urgency, daysRemaining: entry.daysRemaining)
                 return String(localized: "\(title), \(when)", comment: "Siri: a deadline and when it is due, e.g. 'ITP, în 5 zile'.")
             }
@@ -163,10 +163,10 @@ public struct DosarShortcuts: AppShortcutsProvider {
         AppShortcut(
             intent: UpcomingObligationsIntent(),
             phrases: [
-                "Ce scadențe am în \(.applicationName)",
+                "Ce termene am în \(.applicationName)",
                 "Ce am de făcut în \(.applicationName)",
             ],
-            shortTitle: "Scadențe",
+            shortTitle: "Termene",
             systemImageName: "calendar.badge.clock"
         )
         AppShortcut(

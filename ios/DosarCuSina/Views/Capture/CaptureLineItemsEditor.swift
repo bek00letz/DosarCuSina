@@ -79,7 +79,7 @@ struct CaptureLineItemsEditor: View {
             Button(role: .destructive) { lines.removeAll() } label: { Text("Elimină toate", comment: "Removes every bill line.") }
             Button(role: .cancel) {} label: { Text("Renunță", comment: "Cancels a choice.") }
         } message: {
-            Text("Actul se salvează la fel, doar fără ele.", comment: "Explains that removing the lines keeps the document.")
+            Text("Documentul se salvează la fel, doar fără ele.", comment: "Explains that removing the lines keeps the document.")
         }
     }
 }
@@ -110,6 +110,7 @@ private struct CaptureLineItemSheet: View {
                     }
                 }
                 .padding(DS.Space.m)
+                .dsReadableWidth()
             }
             .background(DS.Palette.background)
             .navigationTitle(line == nil ? Text("Rând nou", comment: "Title when adding a bill line.") : Text("Rândul de pe factură", comment: "Title when editing a bill line."))

@@ -94,7 +94,7 @@ struct CopyMatrixTests {
             rows.append(("The paper's card", "\(paper.action) — \(form.paperHint ?? "")"))
             rows.append(("Where the photo comes from", "\(paper.sourceTitle): \(paper.camera)"))
             rows.append(("While it is read", paper.reading))
-            rows.append(("Read", "\(paper.attached) (\(paper.read), photo not kept) — \(form.readNote(found: sampleCount) ?? "") / \(form.readNote(found: 0) ?? "")"))
+            rows.append(("Read", "\(paper.attached) (\(paper.read), photo not kept) — \(form.readNote(found: sampleCount, filled: form.paperFacts) ?? "") / \(form.readNote(found: 0, filled: []) ?? "")"))
             rows.append(("Not read", "\(paper.unread) — \(form.failedNote ?? "")"))
             rows.append(("Already in the binder", paper.isInvoice ? FiledPaperWording.title : "(only the same document, said nothing)"))
         }

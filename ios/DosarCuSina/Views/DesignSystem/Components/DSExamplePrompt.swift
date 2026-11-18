@@ -26,12 +26,12 @@ private struct DSExamplePromptModifier: ViewModifier {
                 presenting: question
             ) { question in
                 Button("Da, păstrez") { keep(question) }
-                Button("Nu", role: .cancel) {}
+                Button("Renunță", role: .cancel) {}
             } message: { question in
                 Text(verbatim: question.explanation)
             }
             .alert("Nu am putut păstra exemplul", isPresented: Binding(get: { failure != nil }, set: { if !$0 { failure = nil } })) {
-                Button("OK", role: .cancel) {}
+                Button("Închide", role: .cancel) {}
             } message: {
                 Text(verbatim: failure ?? "")
             }

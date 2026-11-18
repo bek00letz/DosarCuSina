@@ -165,6 +165,7 @@ struct ReminderSettingsSheet: View {
                     onReminderTime: { isChoosingTime = true }
                 )
                 .padding(DS.Space.m)
+                .dsReadableWidth()
             }
             .background(DS.Palette.background)
             .navigationTitle("Când te anunț")
@@ -253,6 +254,7 @@ struct ReminderTimePage: View {
                 DSReminderTimeField(minuteOfDay: $minuteOfDay, usualMinuteOfDay: usualMinuteOfDay)
             }
             .padding(DS.Space.m)
+            .dsReadableWidth()
         }
         .background(DS.Palette.background)
         .dsPinnedAction {

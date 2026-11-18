@@ -18,8 +18,7 @@ private struct DSBottomBar<Note: View, Action: View, Secondary: View>: View {
         }
         .padding(.horizontal, DS.Space.m)
         .padding(.vertical, DS.Space.s)
-        .frame(maxWidth: 640)
-        .frame(maxWidth: .infinity)
+        .dsReadableWidth()
         .background(.bar)
     }
 }

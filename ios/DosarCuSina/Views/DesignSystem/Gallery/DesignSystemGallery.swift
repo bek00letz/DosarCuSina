@@ -181,7 +181,7 @@ private struct GalleryTypography: View {
         switch style {
         case .display: "84.200 km"
         case .title: "VW Golf 2018"
-        case .sectionTitle: "Scadențe apropiate"
+        case .sectionTitle: "Termene apropiate"
         case .headline: "ITP — stația Auto Test"
         case .body: "Inspecția tehnică se face la doi ani pentru mașinile mai noi de 12 ani."
         case .subheadline: "Ultima: 14 martie 2025"
@@ -248,9 +248,9 @@ private struct GalleryButtons: View {
                     VStack(spacing: DS.Space.s) {
                         Button {} label: { Text(verbatim: "Salvează").frame(maxWidth: .infinity) }
                             .buttonStyle(.borderedProminent).controlSize(.large).buttonBorderShape(.capsule)
-                        Button {} label: { Text(verbatim: "Adaugă o obligație").frame(maxWidth: .infinity) }
+                        Button {} label: { Text(verbatim: "Adaugă un termen").frame(maxWidth: .infinity) }
                             .buttonStyle(.bordered).controlSize(.large).buttonBorderShape(.capsule)
-                        Button(role: .destructive) {} label: { Text(verbatim: "Șterge activul").frame(maxWidth: .infinity) }
+                        Button(role: .destructive) {} label: { Text(verbatim: "Șterge secțiunea").frame(maxWidth: .infinity) }
                             .buttonStyle(.bordered).controlSize(.large).buttonBorderShape(.capsule)
                         HStack {
                             Button {} label: { Label { Text(verbatim: "Scanează") } icon: { Image(systemName: "doc.viewfinder") } }
@@ -272,12 +272,17 @@ private struct GalleryButtons: View {
                     }
                 }
             }
-            GallerySection(title: "Buton mic lângă un rând", note: "DSCompactButton: textul nu se rupe, ținta are cel puțin 44 pt.") {
+            GallerySection(title: "Buton mic lângă un rând", note: "DSCompactButton: un rând cât încape, se rupe doar când nu mai încape pe ecran; ținta are cel puțin 44 pt.") {
                 DSCard {
                     HStack(spacing: DS.Space.s) {
                         Text(verbatim: "ITP").dsFont(.headline).frame(maxWidth: .infinity, alignment: .leading)
-                        DSCompactButton("Adaugă") {}
+                        DSCompactButton(verbatim: "Adaugă") {}
                     }
+                }
+            }
+            GallerySection(title: "Acțiune scrisă în conținut", note: "DSLinkButton: doar cuvintele, dar ținta e toată înălțimea de 44 pt.") {
+                DSCard {
+                    DSLinkButton(verbatim: "Alege altă poză") {}
                 }
             }
             GallerySection(title: "Suprafețe apăsabile", note: "Răspuns imediat la atingere; cu Reducere mișcare doar se estompează.") {
@@ -345,7 +350,7 @@ private struct GalleryCards: View {
                         ) { EmptyView() }
                         DS.Hairline()
                         DSListRow(
-                            title: Text(verbatim: "Act protejat"),
+                            title: Text(verbatim: "Document protejat"),
                             subtitle: Text(verbatim: "Primit ieri la 18:40"),
                             thumbnail: DSThumbnailWell(image: nil, systemImage: "lock.fill"),
                             showsChevron: true
@@ -521,7 +526,7 @@ private struct GalleryStatus: View {
 private struct GalleryHeaders: View {
     var body: some View {
         GalleryPage {
-            DSSectionHeader(galleryWords("Scadențe apropiate"), count: 4, actionTitle: galleryWords("Vezi tot")) {}
+            DSSectionHeader(galleryWords("Termene apropiate"), count: 4, actionTitle: galleryWords("Vezi tot")) {}
             DSSectionHeader(verbatim: "VW Golf 2018", count: 2)
             HStack(spacing: DS.Space.s) {
                 DSMetricTile(galleryWords("În 30 de zile"), systemImage: "calendar", footnote: Text(verbatim: "3 plăți")) {
@@ -554,7 +559,7 @@ private struct GalleryStates: View {
                     message: galleryWords("Fișierul pare incomplet. Exportă-l din nou pe telefonul vechi și încearcă iar.")
                 ) {}
             }
-            DSNotice(.info, title: galleryWords("Mementourile sunt oprite"), message: galleryWords("Pornește notificările ca să afli la timp de scadențe."), actionTitle: galleryWords("Deschide Setări")) {}
+            DSNotice(.info, title: galleryWords("Mementourile sunt oprite"), message: galleryWords("Pornește notificările ca să afli la timp de termene."), actionTitle: galleryWords("Deschide Setări")) {}
             DSNotice(.warning, title: galleryWords("Pașaportul expiră în 5 luni"), message: galleryWords("Multe țări din afara UE cer cel puțin 6 luni de valabilitate."))
             DSNotice(.error, title: galleryWords("Nu am putut salva"), message: galleryWords("Spațiul de pe telefon e plin. Eliberează puțin spațiu și încearcă din nou."))
             DSNotice(.success, title: galleryWords("Copia de siguranță e gata"))
@@ -630,7 +635,7 @@ private struct GalleryFeedback: View {
             }
             GallerySection(title: "Schelet", note: "Păstrează forma conținutului, ca nimic să nu sară la încărcare.") {
                 DSCard(padding: 0) {
-                    DSListRow(title: Text(verbatim: "Factură ENGIE Romania S.A."), subtitle: Text(verbatim: "Scadentă pe 14 noiembrie"), systemImage: "flame.fill", tint: .orange) {
+                    DSListRow(title: Text(verbatim: "Factură ENGIE Romania S.A."), subtitle: Text(verbatim: "De plătit până pe 14 noiembrie"), systemImage: "flame.fill", tint: .orange) {
                         Text(348.5, format: .currency(code: "RON"))
                     }
                     .padding(.horizontal, DS.Space.m)
@@ -768,7 +773,7 @@ private struct GalleryFields: View {
                         DSTextField("E-mail", text: $email, kind: .email)
                         DSTextField(galleryWords("Link de anulare"), text: $url, kind: .url)
                         DSTextField("Adresă", text: $address, kind: .address)
-                        DSTextField("Note", text: $notes, kind: .longText, footnote: galleryWords("Orice vrei să ții minte despre acest activ."))
+                        DSTextField("Note", text: $notes, kind: .longText, footnote: galleryWords("Orice vrei să păstrez despre această secțiune."))
                     }
                 }
             }

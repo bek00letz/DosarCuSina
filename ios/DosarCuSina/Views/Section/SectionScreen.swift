@@ -106,8 +106,7 @@ private struct SectionContent: View {
             }
             .padding(.horizontal, DS.Space.m)
             .padding(.bottom, DS.Space.xxl)
-            .frame(maxWidth: 720)
-            .frame(maxWidth: .infinity)
+            .dsReadableWidth()
         }
         .background(DS.Palette.background)
         .toolbar {

@@ -60,4 +60,50 @@ struct AdaptiveLayoutTests {
             #expect(badgeSize.height > oneLine.height)
         }
     }
+
+    // MARK: The toast, the wells and drawings
+
+    private var toastWords: some View {
+        WordsBesideAction(spacing: DS.Space.s) {
+            Text(verbatim: "Am salvat „Revizie periodică”. Următoarea e pe 3 mai 2027.").frame(maxWidth: .infinity, alignment: .leading)
+            Text(verbatim: "Anulează").padding(.horizontal, DS.Space.xs)
+        }
+    }
+
+    @Test func theToastsButtonStaysBesideItsWordsAtTheStandardSize() {
+        let toast = size(of: toastWords, width: 343, typeSize: .large)
+        let words = size(of: Text(verbatim: "Am salvat „Revizie periodică”. Următoarea e pe 3 mai 2027."), width: 343 - 120, typeSize: .large)
+        #expect(toast.height <= words.height + 1, "Side by side: as tall as the words beside the button")
+    }
+
+    @Test func theToastsButtonMovesUnderItsWordsAtTheLargestSize() {
+        let toast = size(of: toastWords, width: 343, typeSize: .accessibility5)
+        let button = size(of: Text(verbatim: "Anulează").padding(.horizontal, DS.Space.xs), width: 343, typeSize: .accessibility5)
+        let words = size(of: Text(verbatim: "Am salvat „Revizie periodică”. Următoarea e pe 3 mai 2027."), width: 343, typeSize: .accessibility5)
+        #expect(toast.width <= 343.5)
+        #expect(toast.height >= words.height + button.height - 1, "Stacked: the words across the width, the button under them")
+    }
+
+    @Test("A row's symbol and thumbnail stop growing before the accessibility sizes, so its words keep the row")
+    func wellsStopGrowing() {
+        for well in [AnyView(DSIconWell(systemImage: "car.fill")), AnyView(DSThumbnailWell(image: nil, systemImage: "doc"))] {
+            let largest = size(of: well, width: 375, typeSize: .xxxLarge)
+            let accessibility = size(of: well, width: 375, typeSize: .accessibility5)
+            #expect(accessibility.width <= largest.width + 0.5)
+        }
+    }
+
+    @Test("The onboarding's drawing of the share sheet fits a phone at every size", arguments: [DynamicTypeSize.large, .accessibility3, .accessibility5])
+    func shareDrawingFits(typeSize: DynamicTypeSize) {
+        let width: CGFloat = 375 - 2 * DS.Space.m
+        #expect(size(of: AppRowIllustration(), width: width, typeSize: typeSize).width <= width + 0.5)
+    }
+
+    @Test("Every screen's content keeps one readable width, which grows with the text")
+    func oneReadableWidth() {
+        let page = Color.clear.frame(height: 10).dsReadableWidth()
+        let standard = size(of: page, width: 1366, typeSize: .large)
+        #expect(standard.width >= 1366 - 0.5, "Centred in the whole width")
+        #expect(DS.ReadableWidth.text.points < 1366 && DS.ReadableWidth.grid.points > DS.ReadableWidth.text.points)
+    }
 }

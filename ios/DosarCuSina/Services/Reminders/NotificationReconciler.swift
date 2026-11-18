@@ -211,7 +211,7 @@ public struct SystemNotificationCenterClient: NotificationCenterClient {
                 identifier: ReminderActions.category(isProtected: isProtected),
                 actions: [complete, snooze],
                 intentIdentifiers: [],
-                hiddenPreviewsBodyPlaceholder: String(localized: "Scadență", comment: "Notification preview placeholder when previews are hidden"),
+                hiddenPreviewsBodyPlaceholder: String(localized: "Termen", comment: "Notification preview placeholder when previews are hidden"),
                 options: []
             )
         }

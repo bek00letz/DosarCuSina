@@ -2674,7 +2674,7 @@
     "Categoria aleasă nu are acest termen, așa că nu îți amintesc." : {
       "comment" : "Capture review: the category chosen keeps no such deadline."
     },
-    "Categoria are încă %lld active. Mută-le sau șterge-le mai întâi." : {
+    "Categoria are încă %lld secțiuni. Mută-le sau șterge-le mai întâi." : {
       "comment" : "Shown when deleting a category that still has assets",
       "localizations" : {
         "ro" : {
@@ -2683,19 +2683,19 @@
               "few" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Categoria are încă %lld active. Mută-le sau șterge-le mai întâi."
+                  "value" : "Categoria are încă %lld secțiuni. Mută-le sau șterge-le mai întâi."
                 }
               },
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Categoria are încă un activ. Mută-l sau șterge-l mai întâi."
+                  "value" : "Categoria are încă o secțiune. Mut-o sau șterge-o mai întâi."
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Categoria are încă %lld de active. Mută-le sau șterge-le mai întâi."
+                  "value" : "Categoria are încă %lld de secțiuni. Mută-le sau șterge-le mai întâi."
                 }
               }
             }

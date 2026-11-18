@@ -1004,7 +1004,7 @@ struct CaptureFiler {
             add(try context.fetch(FetchDescriptor<Asset>(predicate: #Predicate { $0.id == memberID })).first)
         }
         guard keys.contains(where: { CategoryTemplate.isSensitive(key: $0, among: templates, in: context.container) }), !vault.isSessionUnlocked else { return }
-        let result = await vault.unlock(reason: String(localized: "Deschide secțiunea protejată ca să salvez actul."))
+        let result = await vault.unlock(reason: String(localized: "Deschide secțiunea protejată ca să salvez documentul."))
         guard result == .success else { throw FilingError.locked }
     }
 

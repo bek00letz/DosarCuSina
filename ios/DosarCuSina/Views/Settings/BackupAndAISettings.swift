@@ -205,6 +205,7 @@ private struct BackupPasswordSheet: View {
                     .dsFont(.footnote)
                 }
                 .padding(DS.Space.m)
+                .dsReadableWidth()
             }
             .background(DS.Palette.background)
             .dsPinnedAction {

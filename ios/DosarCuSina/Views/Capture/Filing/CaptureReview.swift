@@ -20,7 +20,7 @@ struct CaptureReview: Identifiable {
         var confidence: Double
         var sourceText: String?
         var tier: CaptureTier
-        /// What other readers read here, shown beside the value with "Folosește-l" and
+        /// What other readers read here, shown beside the value with "Folosește" and
         /// never applied by themselves: the phone's value an AI value replaced, or, beside
         /// the person's own value, what a checked code or the AI read.
         var alternatives: [CaptureAlternative<CaptureValue>] = []
@@ -319,7 +319,7 @@ struct CaptureReview: Identifiable {
         fields.append(field)
     }
 
-    /// The person chose another kind: from the list, or another reader's ("Folosește-l").
+    /// The person chose another kind: from the list, or another reader's ("Folosește").
     /// The page is read again as that kind (`CaptureEngine.reinterpret`: that kind's
     /// patterns and labels, merged with what the models read, only the fields it carries),
     /// and the review keeps everything they changed. What depends on the kind follows

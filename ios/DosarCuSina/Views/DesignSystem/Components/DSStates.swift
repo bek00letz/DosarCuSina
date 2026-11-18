@@ -142,9 +142,7 @@ struct DSNotice: View {
                     message.dsFont(.subheadline)
                 }
                 if let actionTitle, let action {
-                    Button(action: action) { actionTitle.font(.subheadline.weight(.semibold)) }
-                        .buttonStyle(.borderless)
-                        .frame(minHeight: 44, alignment: .leading)
+                    DSLinkButton(title: actionTitle.font(.subheadline.weight(.semibold)), action: action)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

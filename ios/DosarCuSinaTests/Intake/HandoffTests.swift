@@ -199,9 +199,9 @@ struct WidgetContentTests {
         let itp = snapshot("ITP", kind: .legal, due: "2026-11-07", asset: car)
         let passport = snapshot("Pașaport", kind: .renewal, due: "2026-11-05", isSensitive: true)
         let rows = WidgetContent.rows(feed: try feed([itp, passport], now: noon("2026-11-02")), completed: [],
-                                      now: noon("2026-11-02"), calendar: .bucharest, protectedTitle: "Scadență protejată", limit: 3)
+                                      now: noon("2026-11-02"), calendar: .bucharest, protectedTitle: "Termen protejat", limit: 3)
         let protected = try #require(rows.first { $0.id == passport.id })
-        #expect(protected.title == "Scadență protejată")
+        #expect(protected.title == "Termen protejat")
         #expect(protected.subtitle == nil)
         #expect(protected.canComplete == false, "No Gata for protected sections outside the app")
         let open = try #require(rows.first { $0.id == itp.id })

@@ -126,13 +126,13 @@ struct NotificationSettings: View {
                     } icon: {
                         Image(systemName: "exclamationmark.circle.fill").foregroundStyle(DSStatus.overdue.color)
                     }
-                    Text("Fără ele nu îți pot aminti de ITP, RCA sau acte. Le pornești din Setările telefonului.", comment: "Explains why notifications matter.")
+                    Text("Fără ele nu îți pot aminti de ITP, RCA sau acte. Le pornești din Configurări, la Notificări.", comment: "Explains why notifications matter.")
                         .dsFont(.footnote)
                 }
                 Button {
                     if let url = URL(string: UIApplication.openNotificationSettingsURLString) { openURL(url) }
                 } label: {
-                    Text("Deschide Setările telefonului", comment: "Opens the system notification settings.")
+                    Text("Deschide Configurări", comment: "Opens the system notification settings.")
                         .frame(minHeight: 44)
                 }
             case .notDetermined:

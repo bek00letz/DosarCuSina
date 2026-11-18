@@ -426,7 +426,7 @@ public enum CaptureKindEvidence: String, Codable, Sendable, CaseIterable {
 }
 
 /// Who read a value or a kind that wasn't kept, so the review can offer it beside the
-/// one shown, with "Folosește-l".
+/// one shown, with "Folosește".
 public enum CaptureAlternativeSource: Hashable, Codable, Sendable {
     /// The phone's own reading: patterns, labels or Apple's on-device model.
     case phone

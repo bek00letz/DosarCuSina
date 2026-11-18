@@ -122,6 +122,7 @@ struct HistoryNoteSheet: View {
                     }
                 }
                 .padding(DS.Space.m)
+                .dsReadableWidth()
             }
             .background(DS.Palette.background)
             .dsPinnedAction {

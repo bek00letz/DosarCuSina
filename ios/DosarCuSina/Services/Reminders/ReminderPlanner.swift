@@ -295,9 +295,9 @@ public enum ReminderPlanner {
             }
             let dueText = DosarFormat.dayMonth(obligation.dueDay, locale: locale)
             if let assetName = obligation.assetName, !assetName.isEmpty {
-                body = String(localized: "\(assetName) · scadent pe \(dueText)", comment: "Reminder body: asset name and due date")
+                body = String(localized: "\(assetName) · până pe \(dueText)", comment: "Reminder body: asset name and due date")
             } else {
-                body = String(localized: "Scadent pe \(dueText)", comment: "Reminder body: due date")
+                body = String(localized: "Până pe \(dueText)", comment: "Reminder body: due date")
             }
         }
         let isTimeSensitive = daysBefore <= 1 && obligation.reminders.consequence.allowsTimeSensitiveReminders
@@ -357,12 +357,12 @@ public enum ReminderPlanner {
 
     static func genericTitle(daysBefore: Int, from fireDate: Date, calendar: Calendar = .dosar) -> String {
         switch daysBefore {
-        case ..<0: return String(localized: "Ai o scadență depășită", comment: "Generic reminder title")
-        case 0: return String(localized: "Ai o scadență azi", comment: "Generic reminder title")
-        case 1: return String(localized: "Ai o scadență mâine", comment: "Generic reminder title")
+        case ..<0: return String(localized: "Ai un termen depășit", comment: "Generic reminder title")
+        case 0: return String(localized: "Ai un termen azi", comment: "Generic reminder title")
+        case 1: return String(localized: "Ai un termen mâine", comment: "Generic reminder title")
         default:
             let phrase = DurationWording.distance(days: daysBefore, from: fireDate, calendar: calendar)
-            return String(localized: "Ai o scadență \(DurationWording.inside(phrase))", comment: "Generic reminder title: due in a duration such as 'în 7 zile' or 'într-o lună'.")
+            return String(localized: "Ai un termen \(DurationWording.inside(phrase))", comment: "Generic reminder title: due in a duration such as 'în 7 zile' or 'într-o lună'.")
         }
     }
 }

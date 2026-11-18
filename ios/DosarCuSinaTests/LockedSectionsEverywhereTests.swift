@@ -292,7 +292,7 @@ struct LockedSectionsEverywhereTests {
         }
         for isSensitive in [true, false] {
             let feed = WidgetFeed(generatedAt: noon("2026-12-03"), needsActionCount: 0, items: [item(isSensitive)])
-            let row = WidgetContent.rows(feed: feed, completed: [], now: noon("2026-12-03"), calendar: calendar, protectedTitle: "Scadență protejată", limit: 3).first
+            let row = WidgetContent.rows(feed: feed, completed: [], now: noon("2026-12-03"), calendar: calendar, protectedTitle: "Termen protejat", limit: 3).first
             #expect(row?.canComplete == !isSensitive)
         }
     }

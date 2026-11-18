@@ -286,7 +286,7 @@ final class CaptureSession {
                 guard let self, !Task.isCancelled else { return }
                 if !(error is CancellationError) {
                     CaptureLog.engine.error("Reading again failed: \((error as NSError).domain, privacy: .public) \((error as NSError).code)")
-                    self.readAgainError = String(localized: "Încearcă o poză mai clară, cu actul întins și fără umbre.")
+                    self.readAgainError = String(localized: "Încearcă o poză mai clară, cu documentul întins și fără umbre.")
                 }
             }
             self?.rereading = nil

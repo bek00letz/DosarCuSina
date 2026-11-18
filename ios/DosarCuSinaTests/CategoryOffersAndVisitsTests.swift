@@ -31,8 +31,13 @@ struct CategoryOffersAndVisitsTests {
             BuiltInTemplates.Key.bike, BuiltInTemplates.Key.plants, BuiltInTemplates.Key.espresso,
         ])
         #expect(offers.others.map(SectionOffers.title(for:)) == [
-            "Un act (buletin, pașaport, permis)", "Sănătate", "Altele", "Biciclete", "Plante", "Espressoare",
+            "Un act (carte de identitate, pașaport, permis)", "Fișă medicală", "Alt obiect", "Bicicletă", "Plantă", "Espressor",
         ])
+        // Each is offered as one thing, never as its category's plural („Biciclete”).
+        for definition in BuiltInTemplates.all {
+            #expect(definition.behavior.offerTitle?.isEmpty == false, "\(definition.key) states its offer, as one thing")
+            #expect(definition.behavior.offerTitle != definition.name, "\(definition.key) is offered as one thing, not as „\(definition.name)”")
+        }
         let everything = Set((offers.shortlist + offers.others).map(\.key))
         #expect(!everything.contains(BuiltInTemplates.Key.tenancy))
         #expect(everything.count == BuiltInTemplates.all.count - 1, "Nothing else is left out")

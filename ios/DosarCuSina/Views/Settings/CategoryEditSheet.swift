@@ -18,7 +18,7 @@ struct CategoryEditSheet: View {
     @State private var layout = BinderLayoutStore.shared
     @State private var draft: CustomSectionDraft
     private let original: CustomSectionDraft
-    @State private var reveals = false
+    @State private var reveals = DSValidationReveal()
     @State private var question: TemplateStore.SwitchEffects?
     @State private var isConfirmingDelete = false
     @State private var error: UserFacingError?
@@ -47,12 +47,11 @@ struct CategoryEditSheet: View {
                     DSSecondaryButton("Șterge categoria", systemImage: "trash", role: .destructive) { isConfirmingDelete = true }
                 }
                 .padding(DS.Space.m)
-                .frame(maxWidth: 640)
-                .frame(maxWidth: .infinity)
+                .dsReadableWidth()
             }
             .scrollDismissesKeyboard(.interactively)
             .background(DS.Palette.background)
-            .environment(\.dsRevealsValidation, reveals)
+            .dsRevealsValidation(reveals)
             .navigationTitle(Text(verbatim: template.name))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -87,7 +86,7 @@ struct CategoryEditSheet: View {
     private var trimmedName: String { draft.name.trimmingCharacters(in: .whitespacesAndNewlines) }
 
     private func attemptSave() {
-        guard draft.isComplete else { reveals = true; return }
+        guard draft.isComplete else { reveals.reveal(); return }
         do {
             let effects = try TemplateStore(context: context).effects(of: draft.switches, on: template)
             if effects.isEmpty { save(changingDeadlines: false) } else { question = effects }

@@ -50,8 +50,7 @@ struct AgendaScreen: View {
                 }
             }
             .padding(DS.Space.m)
-            .frame(maxWidth: 720)
-            .frame(maxWidth: .infinity)
+            .dsReadableWidth()
             .dsAnimation(value: grouping)
         }
         .background(DS.Palette.background)

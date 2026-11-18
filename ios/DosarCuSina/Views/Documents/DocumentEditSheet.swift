@@ -27,7 +27,7 @@ struct DocumentEditSheet: View {
     @State private var readTask: Task<Void, Never>?
     @State private var isChoosingBackSource = false
     @State private var backSource: CaptureSource?
-    @State private var revealsValidation = false
+    @State private var revealsValidation = DSValidationReveal()
     @State private var error: UserFacingError?
     @State private var savedCount = 0
     @State private var exampleQuestion: ExampleSectionQuestion?
@@ -78,13 +78,12 @@ struct DocumentEditSheet: View {
                     }
                 }
                 .padding(DS.Space.m)
-                .frame(maxWidth: 640)
-                .frame(maxWidth: .infinity)
+                .dsReadableWidth()
                 .animation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion), value: reading)
             }
             .scrollDismissesKeyboard(.interactively)
             .background(DS.Palette.background)
-            .environment(\.dsRevealsValidation, revealsValidation)
+            .dsRevealsValidation(revealsValidation)
             .navigationTitle(Text("Editează actul", comment: "Title of a document's edit sheet."))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -238,7 +237,7 @@ struct DocumentEditSheet: View {
     private func save() {
         guard hasChanges else { dismiss(); return }
         guard !trimmedName.isEmpty, FieldValuesCheck.canSave(values, fields: definition.allFields) else {
-            revealsValidation = true
+            revealsValidation.reveal()
             return
         }
         do {

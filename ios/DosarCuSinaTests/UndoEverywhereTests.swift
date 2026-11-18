@@ -145,7 +145,7 @@ struct UndoEverywhereTests {
         #expect(UndoReceiptTests.differences(before, try UndoReceiptTests.database(house.context)).isEmpty)
 
         guard case .filed(let plain, _) = CaptureFlowResult.filing(in: nil, assetID: nil, receipt: nil) else { return }
-        #expect(String(localized: plain.title) == "Actul e salvat.")
+        #expect(String(localized: plain.title) == "Documentul e salvat.")
         #expect(!plain.offersAction, "Without a receipt there is nothing to take back")
     }
 

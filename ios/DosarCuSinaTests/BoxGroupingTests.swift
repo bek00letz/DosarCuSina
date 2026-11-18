@@ -141,7 +141,7 @@ struct BoxGroupingTests {
         #expect(status.entry?.obligation.title == "ITP")
         #expect(worst.contains { $0.entry == status.entry }, "The worst of the boxes they would have each")
         #expect(status.line(counting: 3, of: .car, isSensitive: false, now: today, calendar: calendar) == "3 mașini · ITP · în 9 zile")
-        #expect(status.line(counting: 3, of: .car, isSensitive: true, now: today, calendar: calendar) == "3 mașini · O scadență · în 9 zile")
+        #expect(status.line(counting: 3, of: .car, isSensitive: true, now: today, calendar: calendar) == "3 mașini · Un termen · în 9 zile")
         let calm = BoxStatus.make(forAssets: [golf], in: [], now: today, calendar: calendar)
         #expect(calm.line(counting: 1, of: .plant, isSensitive: false) == "o plantă · totul e în regulă")
     }

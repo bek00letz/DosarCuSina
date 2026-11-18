@@ -73,6 +73,7 @@ private struct RepeatSettingsSheet: View {
                         .padding(.horizontal, DS.Space.xs)
                 }
                 .padding(DS.Space.m)
+                .dsReadableWidth()
             }
             .background(DS.Palette.background)
             .dsPinnedAction {

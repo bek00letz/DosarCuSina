@@ -52,8 +52,7 @@ struct ReadinessPage<Content: View>: View {
             .padding(.horizontal, DS.Space.m)
             .padding(.top, DS.Space.s)
             .padding(.bottom, DS.Space.xxl)
-            .frame(maxWidth: 720)
-            .frame(maxWidth: .infinity)
+            .dsReadableWidth()
         }
         .background(DS.Palette.background)
     }

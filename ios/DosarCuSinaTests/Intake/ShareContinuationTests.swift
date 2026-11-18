@@ -486,7 +486,7 @@ struct InboxWordingTests {
         let card = InboxPreview(kind: CaptureDocumentKind.identityCard.rawValue, title: "Carte de identitate", categoryKey: BuiltInTemplates.Key.documents, pageCount: 2, hasThumbnail: true)
         let shared = item(.images, name: "Buletin Manole Corina.jpg", files: 2)
         let closed = row(shared, card, locked: [BuiltInTemplates.Key.documents], unlocked: false)
-        #expect(closed.title == "Act protejat")
+        #expect(closed.title == "Document protejat")
         #expect(closed.isProtected && !closed.showsThumbnail)
         #expect(!closed.detail.contains("Manole") && !closed.detail.contains("Buletin"))
         #expect(closed.symbol == "lock.fill")

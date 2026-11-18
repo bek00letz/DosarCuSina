@@ -245,7 +245,7 @@ struct UpcomingRoot: View {
     private func groupSummary(_ group: AttentionAssetGroup) -> String {
         let first = group.nextDay.map { DueWording.date($0, today: today) } ?? ""
         if let only = group.entries.first, group.entries.count == 1 {
-            let title = vault.isLocked(sectionIsSensitive: only.obligation.isSensitive) ? String(localized: "O scadență") : only.obligation.title
+            let title = vault.isLocked(sectionIsSensitive: only.obligation.isSensitive) ? String(localized: "Un termen") : only.obligation.title
             return "\(title) · \(first)"
         }
         let count = String(localized: "\(group.entries.count) termene", locale: .dosarDefault, comment: "How many deadlines a section has coming up")
@@ -286,7 +286,7 @@ struct UpcomingRoot: View {
         let obligation = snapshots.first { $0.id == failure.obligationId }
         // A deadline no longer in the list names nothing.
         let isLocked = vault.isLocked(sectionIsSensitive: obligation?.isSensitive ?? true)
-        let name = isLocked ? String(localized: "O scadență protejată") : (obligation?.title ?? "")
+        let name = isLocked ? String(localized: "Un termen protejat") : (obligation?.title ?? "")
         let title: String
         switch failure.action {
         case .complete: title = String(localized: "„\(name)” nu s-a bifat", comment: "Urmează: a reminder button or widget tap for this deadline couldn't be saved")
@@ -353,7 +353,7 @@ struct UpcomingRoot: View {
                 .dsFont(.title)
                 .multilineTextAlignment(.center)
             if let next {
-                let title = vault.isLocked(sectionIsSensitive: next.isSensitive) ? String(localized: "o scadență protejată") : next.title
+                let title = vault.isLocked(sectionIsSensitive: next.isSensitive) ? String(localized: "un termen protejat") : next.title
                 Text("Următorul: \(title), pe \(DueWording.date(next.dueDay, today: today)).")
                     .dsFont(.body)
                     .foregroundStyle(DS.Palette.secondaryLabel)
@@ -434,7 +434,7 @@ struct UpcomingRow: View {
             DSIconWell(systemImage: isLocked ? "lock.fill" : obligation.symbol, tint: obligation.tint.color)
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: DS.Space.xs) {
-                    Text(verbatim: isLocked ? String(localized: "O scadență protejată") : obligation.title)
+                    Text(verbatim: isLocked ? String(localized: "Un termen protejat") : obligation.title)
                         .dsFont(.headline)
                     if obligation.isExample { DSExampleBadge() }
                 }

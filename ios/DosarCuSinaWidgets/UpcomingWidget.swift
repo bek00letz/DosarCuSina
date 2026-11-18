@@ -78,7 +78,7 @@ struct UpcomingProvider: TimelineProvider {
             feed: feed,
             completed: WidgetCompletionQueue.shared()?.pending() ?? [],
             now: date,
-            protectedTitle: String(localized: "Scadență protejată"),
+            protectedTitle: String(localized: "Termen protejat"),
             limit: Self.rowLimit
         )
         return UpcomingEntry(date: date, rows: rows)
@@ -89,12 +89,15 @@ struct UpcomingProvider: TimelineProvider {
 
 /// The widget's colours for the app's urgency tones. The tone itself comes from the
 /// one urgency rule (`UrgencyRule`, ios/Shared), so a deadline looks the same here
-/// as in the app: red only when late past its grace.
+/// as in the app: red only when late past its grace. Text takes the app's own text colours for a
+/// tone (ios/Shared/StatusColors.xcassets, `DSStatus.textColor` in the app), which keep 4.5:1
+/// contrast on the widget's background in light, dark and Increase Contrast, never the system's
+/// vivid orange (about 2:1 on white).
 enum WidgetTone {
     static func color(_ urgency: AttentionUrgency) -> Color {
         switch urgency.tone {
-        case .overdue: .red
-        case .soon: .orange
+        case .overdue: Color(.statusOverdueText)
+        case .soon: Color(.statusSoonText)
         case .calm: .secondary
         }
     }
@@ -171,35 +174,45 @@ struct UpcomingWidgetView: View {
 
     @ViewBuilder private var small: some View {
         if let first = rows.first {
-            // The section's symbol sits beside the title, as on the Lock Screen, so a full
-            // 44 pt „Gata” fits under „when” in the smallest small widget (`WidgetLayout.smallHeight`).
-            VStack(alignment: .leading, spacing: WidgetLayout.spacing) {
-                Label {
-                    Text(verbatim: first.title)
-                        .font(.headline)
-                        .lineLimit(2)
-                } icon: {
-                    Image(systemName: first.symbol)
-                        .font(.headline)
-                        .foregroundStyle(.tint)
-                        .accessibilityHidden(true)
-                }
-                if let subtitle = first.subtitle {
-                    Text(verbatim: subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                }
-                Spacer(minLength: 0)
-                Text(verbatim: first.when)
-                    .font(.subheadline.weight(.semibold))
-                    .monospacedDigit()
-                    .foregroundStyle(WidgetTone.color(first.urgency))
-                if first.canComplete {
-                    doneButton(first)
-                }
+            // At a large text size the section's line goes first, then the title keeps one
+            // line, so „when” and a full „Gata” always fit; never a line cut off at the bottom.
+            ViewThatFits(in: .vertical) {
+                smallContent(first, titleLines: 2, showsSection: true)
+                smallContent(first, titleLines: 1, showsSection: true)
+                smallContent(first, titleLines: 1, showsSection: false)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .widgetURL(first.deepLink)
         } else {
             emptyState
+        }
+    }
+
+    private func smallContent(_ first: WidgetRow, titleLines: Int, showsSection: Bool) -> some View {
+        // The section's symbol sits beside the title, as on the Lock Screen, so a full
+        // 44 pt „Gata” fits under „when” in the smallest small widget (`WidgetLayout.smallHeight`).
+        VStack(alignment: .leading, spacing: WidgetLayout.spacing) {
+            Label {
+                Text(verbatim: first.title)
+                    .font(.headline)
+                    .lineLimit(titleLines)
+            } icon: {
+                Image(systemName: first.symbol)
+                    .font(.headline)
+                    .foregroundStyle(.tint)
+                    .accessibilityHidden(true)
+            }
+            if showsSection, let subtitle = first.subtitle {
+                Text(verbatim: subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+            }
+            Spacer(minLength: 0)
+            Text(verbatim: first.when)
+                .font(.subheadline.weight(.semibold))
+                .monospacedDigit()
+                .foregroundStyle(WidgetTone.color(first.urgency))
+            if first.canComplete {
+                doneButton(first)
+            }
         }
     }
 
@@ -207,38 +220,47 @@ struct UpcomingWidgetView: View {
         if rows.isEmpty {
             emptyState
         } else {
-            // As many rows as `WidgetLayout` says, each as tall as its full 44 pt „Gata”.
-            VStack(alignment: .leading, spacing: WidgetLayout.spacing) {
-                Text("Urmează")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                ForEach(rows) { row in
-                    HStack(spacing: DS.Space.xs) {
-                        Link(destination: row.deepLink) {
-                            HStack(spacing: DS.Space.xs) {
-                                Image(systemName: row.symbol)
-                                    .foregroundStyle(.tint)
-                                    .frame(width: 22)
-                                    .accessibilityHidden(true)
-                                VStack(alignment: .leading, spacing: 0) {
-                                    Text(verbatim: row.title).font(.subheadline.weight(.semibold)).lineLimit(1)
-                                    Text(verbatim: [row.subtitle, row.when].compactMap { $0 }.joined(separator: " · "))
-                                        .font(.caption)
-                                        .monospacedDigit()
-                                        .foregroundStyle(WidgetTone.color(row.urgency))
-                                        .lineLimit(1)
-                                }
-                                Spacer(minLength: 0)
+            // As many rows as `WidgetLayout` says, each at least as tall as its full 44 pt „Gata”
+            // and taller when its words grow; when they no longer fit at a large text size, only
+            // the first one, never a row cut off at the bottom.
+            ViewThatFits(in: .vertical) {
+                mediumRows(rows)
+                mediumRows(Array(rows.prefix(1)))
+            }
+        }
+    }
+
+    private func mediumRows(_ rows: [WidgetRow]) -> some View {
+        VStack(alignment: .leading, spacing: WidgetLayout.spacing) {
+            Text("Urmează")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+            ForEach(rows) { row in
+                HStack(spacing: DS.Space.xs) {
+                    Link(destination: row.deepLink) {
+                        HStack(spacing: DS.Space.xs) {
+                            Image(systemName: row.symbol)
+                                .foregroundStyle(.tint)
+                                .frame(width: 22)
+                                .accessibilityHidden(true)
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text(verbatim: row.title).font(.subheadline.weight(.semibold)).lineLimit(1)
+                                Text(verbatim: [row.subtitle, row.when].compactMap { $0 }.joined(separator: " · "))
+                                    .font(.caption)
+                                    .monospacedDigit()
+                                    .foregroundStyle(WidgetTone.color(row.urgency))
+                                    .lineLimit(1)
                             }
-                        }
-                        if row.canComplete {
-                            doneButton(row)
+                            Spacer(minLength: 0)
                         }
                     }
-                    .frame(height: WidgetLayout.rowHeight)
+                    if row.canComplete {
+                        doneButton(row)
+                    }
                 }
-                Spacer(minLength: 0)
+                .frame(minHeight: WidgetLayout.rowHeight)
             }
+            Spacer(minLength: 0)
         }
     }
 
@@ -272,7 +294,7 @@ struct UpcomingWidgetView: View {
         } else {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Nimic de făcut acum").font(.headline)
-                Text("Te anunț din timp.").font(.caption).foregroundStyle(.secondary)
+                Text("Ce urmează apare aici.").font(.caption).foregroundStyle(.secondary)
             }
         }
     }

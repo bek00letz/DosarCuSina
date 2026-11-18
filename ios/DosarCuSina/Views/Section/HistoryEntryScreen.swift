@@ -140,8 +140,7 @@ private struct HistoryEntryContent: View {
                 }
             }
             .padding(DS.Space.m)
-            .frame(maxWidth: 720)
-            .frame(maxWidth: .infinity)
+            .dsReadableWidth()
         }
         .background(DS.Palette.background)
         .navigationTitle(Text(verbatim: entry.asset?.name ?? entry.title))

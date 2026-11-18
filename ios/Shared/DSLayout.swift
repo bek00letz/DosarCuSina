@@ -44,6 +44,54 @@ extension DS {
         /// The smallest height of a bar that floats over the content (the toast): its 44 pt
         /// button with a little room above and below. It grows with its words.
         static let floatingBar: CGFloat = minimumHitTarget + 2 * DS.Space.xxs
+        /// The largest text size a symbol beside words grows to (an icon well, a row's
+        /// thumbnail, a drawing of a row of apps): it follows the text up to the largest standard
+        /// size and stops before the accessibility sizes, so the words beside it keep the row's
+        /// width instead of being squeezed into a column.
+        static let largestDecorationSize: DynamicTypeSize = .xxxLarge
+    }
+}
+
+// MARK: - Readable width
+
+extension DS {
+    /// How wide a screen's content grows: on an iPad or a wide window, text and forms stay at a
+    /// width that reads well and the screen's sides are left empty, as the system's own
+    /// readable width does. Grows with the text size, so large text keeps as many words a line.
+    enum ReadableWidth {
+        /// Text, forms and a section's or a deadline's page.
+        case text
+        /// A grid of boxes (the binder): wider, for more columns, still never edge to edge.
+        case grid
+
+        /// At the standard text size; `dsReadableWidth` scales it with the text.
+        var points: CGFloat {
+            switch self {
+            case .text: 672
+            case .grid: 1024
+            }
+        }
+    }
+}
+
+extension View {
+    /// The one readable-width rule for every screen: the content is centred and grows no wider
+    /// than `DS.ReadableWidth`, scaled with the text size. Put it on the content inside a
+    /// screen's `ScrollView` (and the pinned bar uses it too), never a `frame(maxWidth:)` of a
+    /// screen's own (the `readable-width` check).
+    func dsReadableWidth(_ width: DS.ReadableWidth = .text) -> some View {
+        modifier(DSReadableWidthModifier(width: width))
+    }
+}
+
+private struct DSReadableWidthModifier: ViewModifier {
+    let width: DS.ReadableWidth
+    @ScaledMetric(relativeTo: .body) private var scale: CGFloat = 1
+
+    func body(content: Content) -> some View {
+        content
+            .frame(maxWidth: width.points * scale)
+            .frame(maxWidth: .infinity)
     }
 }
 

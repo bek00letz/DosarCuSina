@@ -30,4 +30,21 @@ struct HitTargetTests {
         #expect(measured.height >= DS.Control.minimumHitTarget)
         #expect(measured.width >= DS.Control.minimumHitTarget)
     }
+
+    /// A long title wraps at the largest sizes instead of running past a phone's edge
+    /// („Folosește poza întreagă”, „E altă factură”, „Nu e contor nou”).
+    @Test(arguments: sizes)
+    func compactButtonNeverRunsOffTheScreen(typeSize: DynamicTypeSize) {
+        let width: CGFloat = 375 - 2 * DS.Space.m
+        let measured = size(of: DSCompactButton(verbatim: "Folosește poza întreagă", systemImage: "crop") {}, at: typeSize, width: width)
+        #expect(measured.width <= width + 0.5, "\(measured.width) pt in \(width) pt at \(typeSize)")
+        #expect(measured.height >= DS.Control.minimumHitTarget)
+    }
+
+    /// A text action is 44 pt tall itself, its label the target, at every size.
+    @Test(arguments: sizes)
+    func linkButtonIsAtLeast44Points(typeSize: DynamicTypeSize) {
+        let measured = size(of: DSLinkButton(verbatim: "Alege altă poză") {}, at: typeSize)
+        #expect(measured.height >= DS.Control.minimumHitTarget)
+    }
 }

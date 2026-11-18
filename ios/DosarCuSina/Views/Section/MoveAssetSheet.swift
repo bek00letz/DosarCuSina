@@ -32,7 +32,7 @@ struct MoveAssetSheet: View {
     @State private var choice: Choice?
     @State private var newMemberName = ""
     @State private var renames = true
-    @State private var reveals = false
+    @State private var reveals = DSValidationReveal()
     @State private var error: UserFacingError?
 
     private var destinations: [Asset] { AssetActions.moveDestinations(for: asset, among: assets) }
@@ -74,7 +74,7 @@ struct MoveAssetSheet: View {
                 }
             }
             .background(DS.Palette.background)
-            .environment(\.dsRevealsValidation, reveals)
+            .dsRevealsValidation(reveals)
             .navigationTitle(Text("Mută la…", comment: "Title of the sheet that files something under another parent."))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -138,8 +138,7 @@ struct MoveAssetSheet: View {
                 }
             }
             .padding(DS.Space.m)
-            .frame(maxWidth: 640)
-            .frame(maxWidth: .infinity)
+            .dsReadableWidth()
             .dsAnimation(value: proposedName)
         }
         .scrollDismissesKeyboard(.interactively)
@@ -155,7 +154,7 @@ struct MoveAssetSheet: View {
         case .asset(let id)?:
             target = .asset(id)
         case .newMember?:
-            guard newHolderName != nil else { reveals = true; return }
+            guard newHolderName != nil else { reveals.reveal(); return }
             target = .newMember(name: newMemberName)
         case .standalone?:
             target = .standalone

@@ -13,7 +13,7 @@ public enum TemplateStoreError: LocalizedError, Equatable {
         case .builtInBehaviourIsFixed:
             return String(localized: "Categoriile incluse se poartă mereu la fel. Poți schimba doar categoriile tale.", comment: "Shown when changing what a built-in category keeps.")
         case .inUse(let count):
-            return String(localized: "Categoria are încă \(count) active. Mută-le sau șterge-le mai întâi.", locale: .dosarDefault, comment: "Shown when deleting a category that still has assets")
+            return String(localized: "Categoria are încă \(count) secțiuni. Mută-le sau șterge-le mai întâi.", locale: .dosarDefault, comment: "Shown when deleting a category that still has assets")
         case .builtInCannotBeDeleted:
             return String(localized: "Categoriile incluse nu se pot șterge, dar le poți ascunde de pe ecranul principal.")
         }

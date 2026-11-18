@@ -438,8 +438,7 @@ extension Attachment {
     /// passed, else the date printed on it.
     func validityLine(today: CalendarDay = CalendarDay(Date())) -> String? {
         if let day = validUntilDay {
-            let date = DosarFormat.day(day)
-            return day < today ? PocketWording.expired(date) : PocketWording.expires(date)
+            return PocketWording.validity(day, today: today)
         }
         if let documentDay {
             return PocketWording.dated(DosarFormat.day(documentDay))

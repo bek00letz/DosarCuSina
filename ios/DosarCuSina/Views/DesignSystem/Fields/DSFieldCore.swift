@@ -29,8 +29,134 @@ enum DSValidation: Sendable {
 
 extension EnvironmentValues {
     /// Set to `true` on a form after the person taps Save, so every field shows its
-    /// problems at once, including fields they never touched.
+    /// problems at once, including fields they never touched. Forms set it through
+    /// `dsRevealsValidation(_:)`, which also takes the person to the first problem.
     @Entry var dsRevealsValidation: Bool = false
+    /// The fields of the form around, which say here whether they hold a problem and where they are.
+    @Entry var dsValidationTargets: DSValidationTargets? = nil
+    /// The field VoiceOver is sent to after a refused save.
+    @Entry var dsValidationFocus: DSValidationFocus? = nil
+}
+
+// MARK: - A refused save
+
+/// A form's request to show every field's problem: its save refused for a missing or wrong
+/// value. Each refusal is another attempt, so the form scrolls to its first problem and
+/// VoiceOver lands on it every time, not only the first. `reset()` hides the problems again
+/// (a form started over).
+struct DSValidationReveal: Equatable {
+    private(set) var attempt = 0
+
+    var isOn: Bool { attempt > 0 }
+
+    /// A save was refused: show every problem and go to the first.
+    mutating func reveal() { attempt += 1 }
+
+    mutating func reset() { attempt = 0 }
+}
+
+/// Where VoiceOver goes after a refused save: the field, and the attempt that sent it there.
+struct DSValidationFocus: Equatable {
+    let field: UUID
+    let attempt: Int
+}
+
+/// The fields of one form with a problem, and how high each sits on the screen, so a refused
+/// save goes to the one nearest the top. Fields keep it up to date themselves
+/// (`dsValidationTarget`); only the form's `dsRevealsValidation` reads it.
+@MainActor
+final class DSValidationTargets {
+    private var messages: [UUID: String] = [:]
+    private var tops: [UUID: CGFloat] = [:]
+
+    func set(_ id: UUID, message: String?) { messages[id] = message }
+    func place(_ id: UUID, top: CGFloat) { tops[id] = top }
+    func remove(_ id: UUID) {
+        messages[id] = nil
+        tops[id] = nil
+    }
+
+    /// The problem highest on the screen.
+    var first: (id: UUID, message: String)? {
+        messages.min { (tops[$0.key] ?? .greatestFiniteMagnitude) < (tops[$1.key] ?? .greatestFiniteMagnitude) }
+            .map { (id: $0.key, message: $0.value) }
+    }
+}
+
+extension View {
+    /// The one way a form shows its problems after a refused save: every field shows its own,
+    /// the form scrolls to the first (the one highest on the screen), VoiceOver moves to it and
+    /// says what is wrong. Put it where the form's `ScrollView` is, or around it; fields take
+    /// part by themselves (`DSFieldContainer`), anything else that says a problem through
+    /// `dsValidationTarget(_:)`.
+    func dsRevealsValidation(_ reveal: DSValidationReveal) -> some View {
+        modifier(DSValidationRevealModifier(reveal: reveal))
+    }
+
+    /// Takes part in a refused save's reveal: while `message` is set, this view is a problem the
+    /// form can scroll to and send VoiceOver to, with these words. The DS fields do this
+    /// themselves; a form's own line ("Alege al cui e actul.") uses it.
+    func dsValidationTarget(_ message: LocalizedStringResource?) -> some View {
+        modifier(DSValidationTargetModifier(message: message.map { String(localized: $0) }))
+    }
+}
+
+private struct DSValidationRevealModifier: ViewModifier {
+    let reveal: DSValidationReveal
+
+    @State private var targets = DSValidationTargets()
+    @State private var focus: DSValidationFocus?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func body(content: Content) -> some View {
+        ScrollViewReader { proxy in
+            content
+                .environment(\.dsRevealsValidation, reveal.isOn)
+                .environment(\.dsValidationTargets, targets)
+                .environment(\.dsValidationFocus, focus)
+                // After the fields have shown their problems for this attempt (they do so as the
+                // reveal reaches them, in the same update), go to the first.
+                .task(id: reveal.attempt) {
+                    guard reveal.isOn else { return }
+                    await Task.yield()
+                    goToFirst(proxy)
+                }
+        }
+    }
+
+    private func goToFirst(_ proxy: ScrollViewProxy) {
+        guard let first = targets.first else { return }
+        withAnimation(DS.Motion.animation(DS.Motion.standard, reduceMotion: reduceMotion)) {
+            proxy.scrollTo(first.id, anchor: .center)
+        }
+        focus = DSValidationFocus(field: first.id, attempt: reveal.attempt)
+        AccessibilityNotification.Announcement(first.message).post()
+    }
+}
+
+private struct DSValidationTargetModifier: ViewModifier {
+    let message: String?
+
+    @State private var id = UUID()
+    @Environment(\.dsValidationTargets) private var targets
+    @Environment(\.dsValidationFocus) private var focus
+    @AccessibilityFocusState private var isVoiceOverFocused: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .id(id)
+            .accessibilityFocused($isVoiceOverFocused)
+            .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { top in
+                targets?.place(id, top: top)
+            }
+            .onChange(of: message, initial: true) { _, message in
+                targets?.set(id, message: message)
+            }
+            .onChange(of: focus) { _, focus in
+                if focus?.field == id { isVoiceOverFocused = true }
+            }
+            .onDisappear { targets?.remove(id) }
+    }
 }
 
 extension DSValidation {
@@ -101,6 +227,8 @@ struct DSFieldContainer<Input: View>: View {
                         .accessibilityHidden(true)
                 }
                 .contentShape(shape)
+                // A problem that blocks saving: a refused save scrolls here and VoiceOver lands here.
+                .dsValidationTarget(validation.isInvalid ? validation.message : nil)
 
             messageLine
         }

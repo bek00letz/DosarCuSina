@@ -12,7 +12,7 @@ import Foundation
 ///   pagini") and when it arrived.
 /// - **Nothing that may not be shown:** every name goes through `SearchPrivacy.outsideText`
 ///   (no CNP, no card number, no sealed value). While a section lock is closed, an item
-///   read as belonging to a locked category is only "Act protejat", with no name, no
+///   read as belonging to a locked category is only "Document protejat", with no name, no
 ///   picture and no file name, and an item not read yet names nothing either.
 enum InboxWording {
     /// What one row shows.
@@ -44,7 +44,7 @@ enum InboxWording {
         let isClosed = !isSessionUnlocked && !lockedCategories.isEmpty
 
         if isClosed, let key = preview?.categoryKey, lockedCategories.contains(key) {
-            return Row(title: String(localized: "Act protejat", comment: "De verificat: something shared that belongs to a locked section; nothing about it shows until unlock."),
+            return Row(title: String(localized: "Document protejat", comment: "De verificat: something shared that belongs to a locked section; nothing about it shows until unlock."),
                        detail: joined([pages, received]), symbol: "lock.fill", showsThumbnail: false, isProtected: true)
         }
         if item.isPractice {

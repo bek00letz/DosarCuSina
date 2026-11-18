@@ -47,7 +47,7 @@ public struct BoxStatus: Hashable, Sendable {
     /// replaced, so the line never reveals what is inside.
     public func line(isSensitive: Bool, now: Date = Date(), calendar: Calendar = .dosar) -> String {
         guard let entry else { return String(localized: "Totul e în regulă", comment: "Box status when nothing needs attention") }
-        let title = isSensitive ? String(localized: "O scadență", comment: "Box status title in a locked section") : entry.obligation.title
+        let title = isSensitive ? String(localized: "Un termen", comment: "Box status title in a locked section") : entry.obligation.title
         let when = WhenWording.phrase(entry.urgency, daysRemaining: entry.daysRemaining, from: now, calendar: calendar)
         return String(localized: "\(title) · \(when)", comment: "Box status: the obligation, then when it is due, e.g. 'ITP · în 5 zile'.")
     }

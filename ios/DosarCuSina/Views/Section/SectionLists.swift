@@ -226,7 +226,7 @@ struct FirstDateSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.calendar) private var calendar
     @State private var date: Date? = nil
-    @State private var reveals = false
+    @State private var reveals = DSValidationReveal()
 
     var body: some View {
         NavigationStack {
@@ -240,15 +240,16 @@ struct FirstDateSheet: View {
                         .dsFont(.subheadline)
                 }
                 .padding(DS.Space.m)
+                .dsReadableWidth()
             }
             .background(DS.Palette.background)
-            .environment(\.dsRevealsValidation, reveals)
+            .dsRevealsValidation(reveals)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { DSCancelButton() }
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
-                        guard let date else { reveals = true; return }
+                        guard let date else { reveals.reveal(); return }
                         onSave(CalendarDay(date, calendar: calendar))
                         dismiss()
                     } label: {
@@ -337,6 +338,7 @@ struct PeopleListScreen: View {
                 DSSecondaryButton(verbatim: PocketAddition.person.title, systemImage: PocketAddition.person.systemImage) { isAdding = true }
             }
             .padding(DS.Space.m)
+            .dsReadableWidth()
         }
         .background(DS.Palette.background)
         .navigationTitle(Text(SectionPocket.people.title))
