@@ -779,8 +779,9 @@ enum AboutWording {
 struct AboutSettings: View {
     @State private var isShowingGallery = false
     @Environment(\.scenePhase) private var scenePhase
-    /// The share log, read as the section shows so its row is there from the first frame, and
-    /// again when the app comes back (the share extension writes it while the app doesn't run).
+    /// The share log, read as the section shows so its row is there from the first frame, again
+    /// when the app comes back (the share extension writes it while the app doesn't run), and
+    /// whenever the app empties it or puts it back.
     @State private var shareProblems = ShareProblems.read()
 
     var body: some View {
@@ -808,7 +809,7 @@ struct AboutSettings: View {
                 } label: {
                     VStack(alignment: .leading, spacing: DS.Space.xxs) {
                         Text(verbatim: ShareProblemsWording.title)
-                        Text(verbatim: SettingsStatus.shareProblems(shareProblems.count))
+                        Text(verbatim: SettingsStatus.shareProblems(ShareProblems.files(shareProblems)))
                             .dsFont(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -833,6 +834,10 @@ struct AboutSettings: View {
             Text("Despre", comment: "Settings section.")
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active { shareProblems = ShareProblems.read() }
+                }
+                // „Golește lista” takes the row away, and its "Anulează" brings it back.
+                .onReceive(NotificationCenter.default.publisher(for: ShareFailureLog.didChangeNotification)) { _ in
+                    shareProblems = ShareProblems.read()
                 }
         }
     }

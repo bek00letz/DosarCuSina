@@ -9,8 +9,9 @@ import UniformTypeIdentifiers
 ///
 /// Every copy goes into the share's own holding folder in the inbox a piece at a time
 /// (`ShareInbox.copyStreaming`), within the room the share has left (`ShareInbox.room`); the
-/// extension then sorts what arrived into items (`ShareInbox.plan`). Here so the app's tests
-/// pin the plan; the extension is the only caller of `receive`.
+/// extension then sorts what arrived into items (`ShareInbox.plan`). A whole share is received
+/// by `receiveAll`, which also counts every file that didn't arrive, untried ones included. Here
+/// so the app's tests pin the plan; the extension is the only caller of `receiveAll`.
 public enum ShareReceiving {
     /// One way of asking the sending app for an item.
     public enum Way: Hashable, Sendable {
@@ -122,6 +123,49 @@ public enum ShareReceiving {
             }
         }
         return .failed(ShareFailure.mostTelling(attempts.map(\.failure)) ?? .notHandedOver, attempts)
+    }
+
+    /// What one share received, and what of it didn't arrive.
+    public struct Share: Sendable {
+        /// The items that arrived, in the order shared: at most `ShareInbox.maxFiles`.
+        public var received: [Received] = []
+        /// Every file that didn't: tried in vain, not one the inbox takes, or past the limit.
+        public var missed = ShareFailure.Tally()
+    }
+
+    /// Receives a share's items in order into `holding`, within the room the share has left
+    /// (`ShareInbox.room`), until `ShareInbox.maxFiles` have arrived. Every file that doesn't
+    /// arrive is counted (`Share.missed`) and kept in `inbox`'s share log as kinds only: one that
+    /// failed every way, with its ways; one the inbox can't take (`unsupportedType`); and those
+    /// past the limit, one entry for all of them (`overFileLimit`), which are never asked for.
+    @MainActor
+    public static func receiveAll(_ providers: [NSItemProvider], into holding: URL, log inbox: ShareInbox?) async -> Share {
+        var share = Share()
+        var sharedBytes = 0
+        for (index, provider) in providers.enumerated() {
+            guard share.received.count < ShareInbox.maxFiles else {
+                left(.overFileLimit, way: "limit", files: providers.count - index, in: &share, log: inbox)
+                break
+            }
+            switch await receive(provider, into: holding, index: index, room: ShareInbox.room(sharedSoFar: sharedBytes)) {
+            case .received(let item):
+                share.received.append(item)
+                sharedBytes += item.bytes
+            case .unsupported:
+                left(.unsupportedType, way: "kind", files: 1, in: &share, log: inbox)
+            case .failed(let failure, let attempts):
+                share.missed.add(failure)
+                ShareFailureLog.record(ShareFailureLog.Entry(at: Date(), failure: failure, attempts: attempts), in: inbox)
+            }
+        }
+        return share
+    }
+
+    /// Files the share left untried: counted, and kept in the log under the step that left them.
+    private static func left(_ failure: ShareFailure, way: String, files: Int, in share: inout Share, log inbox: ShareInbox?) {
+        share.missed.add(failure, files: files)
+        let attempt = ShareFailureLog.Attempt(way: way, failure: failure, domain: "none", code: 0)
+        ShareFailureLog.record(ShareFailureLog.Entry(at: Date(), failure: failure, attempts: [attempt], files: files), in: inbox)
     }
 
     /// The copy's file: `base` with the extension the sender's file or type gives.

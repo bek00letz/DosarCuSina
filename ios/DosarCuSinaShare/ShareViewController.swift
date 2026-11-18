@@ -82,22 +82,11 @@ final class ShareModel {
         }
         defer { inbox.discard(staging: holding) }
 
-        var received: [ShareReceiving.Received] = []
-        // What didn't arrive, told beside what did (`ShareConfirmation`'s note) or on its own.
-        var missed = ShareFailure.Tally()
-        var sharedBytes = 0
-        for (index, provider) in providers.enumerated() where received.count < ShareInbox.maxFiles {
-            switch await ShareReceiving.receive(provider, into: holding, index: index, room: ShareInbox.room(sharedSoFar: sharedBytes)) {
-            case .received(let item):
-                received.append(item)
-                sharedBytes += item.bytes
-            case .unsupported:
-                continue
-            case .failed(let failure, let attempts):
-                missed.add(failure)
-                ShareFailureLog.record(ShareFailureLog.Entry(at: Date(), failure: failure, attempts: attempts), in: inbox)
-            }
-        }
+        let share = await ShareReceiving.receiveAll(providers, into: holding, log: inbox)
+        let received = share.received
+        // What didn't arrive (tried in vain, not something it takes, past the limit), told beside
+        // what did (`ShareConfirmation`'s note) or on its own.
+        var missed = share.missed
         guard !received.isEmpty else {
             return .nothingSaved(missed.missed)
         }
@@ -118,7 +107,7 @@ final class ShareModel {
                 if let staging { inbox.discard(staging: staging) }
                 let attempt = ShareFailureLog.Attempt(way: "commit", error: error)
                 missed.add(attempt.failure, files: planned.indices.count)
-                ShareFailureLog.record(ShareFailureLog.Entry(at: Date(), failure: attempt.failure, attempts: [attempt]), in: inbox)
+                ShareFailureLog.record(ShareFailureLog.Entry(at: Date(), failure: attempt.failure, attempts: [attempt], files: planned.indices.count), in: inbox)
             }
         }
         guard !saved.isEmpty else {

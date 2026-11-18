@@ -165,7 +165,8 @@ enum SettingsStatus {
     }
 
     /// Despre's „Probleme la primire”: „Un fișier nu a ajuns”, „3 fișiere nu au ajuns”, counted
-    /// by the share log's entries (`ShareProblems`). The row shows only while there are any.
+    /// by the files of the share log's entries (`ShareProblems.files`). The row shows only while
+    /// there are any.
     static func shareProblems(_ count: Int) -> String {
         String(localized: "\(count) fișiere nu au ajuns", locale: .dosarDefault, comment: "Settings › Despre: how many files shared from other apps didn't arrive, with Romanian plural forms (un fișier nu a ajuns).")
     }

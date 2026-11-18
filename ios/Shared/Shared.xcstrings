@@ -41,6 +41,64 @@
         }
       }
     },
+    "%lld fișiere au rămas pe dinafară" : {
+      "comment" : "Share: how many files were past the most one share takes. One is a word: „Un fișier a rămas pe dinafară”.",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld fișiere au rămas pe dinafară"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Un fișier a rămas pe dinafară"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld de fișiere au rămas pe dinafară"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld fișiere au rămas pe dinafară." : {
+      "comment" : "Share sheet, after some files arrived: how many were past the most one share takes. One is a word: „Un fișier a rămas pe dinafară.”",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld fișiere au rămas pe dinafară."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Un fișier a rămas pe dinafară."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld de fișiere au rămas pe dinafară."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld fișiere nu au ajuns." : {
       "comment" : "Share sheet, after some files arrived: how many didn't. One is a word: „Un fișier nu a ajuns.”",
       "localizations" : {
@@ -826,8 +884,76 @@
         }
       }
     },
+    "Nu pot primi %lld fișiere." : {
+      "comment" : "Share sheet, after some files arrived: how many aren't a photo, a PDF or text. One is a word: „Nu pot primi un fișier.”",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu pot primi %lld fișiere."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu pot primi un fișier."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Nu pot primi %lld de fișiere."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Nu pot primi asta" : {
       "comment" : "Share sheet: nothing it can read."
+    },
+    "Nu pot primi cele %lld fișiere" : {
+      "comment" : "Share: files that aren't a photo, a PDF or text. Plural variations without the number: one „Nu pot primi fișierul”, several „Nu pot primi fișierele”.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@files@"
+          },
+          "substitutions" : {
+            "files" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "few" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Nu pot primi fișierele"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Nu pot primi fișierul"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "Nu pot primi fișierele"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Pot primi poze, PDF-uri și text. Trimite factura sau actul ca poză sau PDF." : {
       "comment" : "Share sheet: what it can read."
@@ -882,6 +1008,35 @@
     },
     "Trimite actele câte unul, sau ca poze în loc de un PDF mare." : {
       "comment" : "Share sheet: what to do with a file that is too large."
+    },
+    "Trimite cel mult %lld fișiere odată, apoi restul separat." : {
+      "comment" : "Share: the most files one share takes, and to send the rest after. Plural forms: „Trimite cel mult 20 de fișiere odată, apoi restul separat.”",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Trimite cel mult %lld fișiere odată, apoi restul separat."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Trimite cel mult un fișier odată, apoi restul separat."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Trimite cel mult %lld de fișiere odată, apoi restul separat."
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
