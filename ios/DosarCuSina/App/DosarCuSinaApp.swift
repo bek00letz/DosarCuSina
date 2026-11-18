@@ -103,6 +103,8 @@ struct DosarCuSinaApp: App {
         DocumentShareFiles.removeLeftovers()
         // Pictures an earlier run kept for an undo it can no longer offer.
         UndoFiles.removeLeftovers()
+        // Copies a share ended mid-copy left in the inbox, which no share owns any more.
+        ShareInbox.shared()?.removeAbandonedStaging()
         // Started where the store opened (`follow`); the screens show its permission and outcome.
         sideEffects = SideEffectsCoordinator.shared(for: container)
     }

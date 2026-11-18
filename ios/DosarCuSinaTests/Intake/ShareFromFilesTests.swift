@@ -297,6 +297,9 @@ struct ShareFailureTests {
         #expect(ShareFailure(error(NSFileProviderErrorDomain, NSFileProviderError.Code.serverUnreachable.rawValue)) == .offline)
         #expect(ShareFailure(error(NSCocoaErrorDomain, NSFileReadNoPermissionError)) == .noAccess)
         #expect(ShareFailure(error(NSItemProvider.errorDomain, NSItemProvider.ErrorCode.unavailableCoercionError.rawValue)) == .notHandedOver)
+        #expect(ShareFailure(error(NSItemProvider.errorDomain, NSItemProvider.ErrorCode.itemUnavailableError.rawValue,
+                                   under: error(NSCocoaErrorDomain, NSFileReadNoPermissionError))) == .noAccess,
+                "The item provider's own error wraps what the sender's file gave: that is told")
         #expect(ShareFailure(ShareInbox.InboxError.tooLarge) == .tooLarge)
         #expect(ShareFailure(ShareReceivingError.stillInCloud(underlying: CocoaError(.fileReadUnknown))) == .stillInCloud)
         #expect(ShareFailure(error("com.exemplu.altceva", 7)) == .couldNotCopy)
