@@ -88,6 +88,7 @@ struct AppShell: View {
                 .environment(router)
                 .environment(\.screenSheet, ScreenSheetHandle(id: ShellRouter.shellSheetID, router: router))
                 .onAppear { router.sheetDidAppear() }
+                .dsSheetSizing()
         }
         // A route that comes during onboarding lands once it is over.
         .dsFullScreenCover(isPresented: Binding(get: { !preferences.hasCompletedOnboarding && !vault.isAppLocked }, set: { _ in }),

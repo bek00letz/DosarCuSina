@@ -41,6 +41,15 @@ extension View {
         modifier(ScreenSheet(item: item, style: .fullScreen, keepsRoutesWaiting: keepsRoutesWaiting, onDismiss: onDismiss, shown: content))
     }
 
+    /// How big a sheet opens where there is room around it (an iPad, a wide window): a page, as
+    /// tall as the screen allows, so a form shows its rows and its pinned action at once, never
+    /// a strip sized to what a scroll view would like (a few points). Every sheet takes it, the
+    /// shell's (`ShellRouter.sheet`) and a screen's own (`dsSheet`), from here; on an iPhone, or
+    /// in a narrow window, a sheet is the system's and its own detents apply.
+    func dsSheetSizing() -> some View {
+        presentationSizing(.page)
+    }
+
     /// Tells the router a system picker is up while `isPresented` is true (`.photosPicker`,
     /// `.fileImporter`): a route closes it before it lands. Put it beside the picker, with the
     /// same binding.
@@ -97,7 +106,7 @@ private struct ScreenSheet<Item: Identifiable, Shown: View>: ViewModifier {
     func body(content: Content) -> some View {
         switch style {
         case .sheet:
-            content.sheet(item: $item, onDismiss: dismissed) { presented($0) }
+            content.sheet(item: $item, onDismiss: dismissed) { presented($0).dsSheetSizing() }
         case .fullScreen:
             content.fullScreenCover(item: $item, onDismiss: dismissed) { presented($0) }
         }
