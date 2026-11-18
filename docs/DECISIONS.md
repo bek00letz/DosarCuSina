@@ -6,6 +6,12 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ---
 
+## 2026-11-18
+
+### What didn't arrive of a share is said, counted and kept where it can be read (owner)
+- **Decided (owner, the follow-ups of #100):** when some files of one share arrive and others don't, the share sheet's one confirmation says what arrived and, under it, how many didn't, the most telling reason and what to do (`ShareConfirmation.note`, from `ShareFailure.Tally`), never a second message. Every reason is counted by the files it is about, with the String Catalog's plurals: one „Fișierul…”, several „Fișierele…” (`ShareFailureWording`, the one place those words live). Setări › Despre gets *Probleme la primire*: the share log's latest failures in plain words, when and why, each with what to do, so a „Nu s-a trimis” can be explained without a developer. *Why:* the log was written but nobody could see it, and a partly failed share looked like a full success.
+- **Decided:** the row shows only while the log holds something (Settings keeps fewer rows); the page says „Nicio problemă la primire.” when it is empty. The page uses the share sheet's own words for one file, never a name or path (the log keeps none), and leaves out the way tried and the error's code, which say nothing to the person. *Left open for the owner:* the log keeps its latest 20 entries with no way to clear them, so an old failure keeps the row in Despre; options are a „Golește lista” action, or showing only the last few weeks.
+
 ## 2026-11-17
 
 ### A policy's insured sum, a full „Gata” in the widget, the health card closed like a document (owner)
