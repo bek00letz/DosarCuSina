@@ -152,7 +152,10 @@ struct CaptureKindProfile: Sendable {
     /// with the other fields' labels that start the same way (`CompositeLabels.table(for:)`).
     var labels: [(CaptureFieldKey, [String])] = []
     /// What capture learned an issuer prints under its labels, for one read of that issuer's
-    /// paper (`LessonBook.teaching`): read before the kind's own rows. Empty in the registry.
+    /// paper (`LessonBook.teaching`). Read where the issuer prints each value, through
+    /// `LabelledLayout` over the page's lines with their positions, before the kind's own readers
+    /// (`CaptureAnalyzer`); never told to the kind's line readers, so a lesson is read one way.
+    /// Empty in the registry.
     var learnedLabels: [(CaptureFieldKey, [String])] = []
     /// A payment barcode on it is its payment code (a bill, a service invoice, any other paper).
     var readsPaymentCode = false
@@ -219,16 +222,22 @@ struct CaptureKindProfile: Sendable {
     // MARK: Labels
 
     /// The wordings this kind prints `key` under: every row of its own table for `key`,
-    /// else the one every document shares (`commonLabels`), after what was learned of this
-    /// issuer (`learnedLabels`). Empty when none has one.
+    /// else the one every document shares (`commonLabels`). Empty when none has one.
     func labels(for key: CaptureFieldKey) -> [String] {
         let own = Self.labels(for: key, in: labels)
-        return Self.labels(for: key, in: learnedLabels) + (own.isEmpty ? Self.commonLabels(for: key) : own)
+        return own.isEmpty ? Self.commonLabels(for: key) : own
     }
 
-    /// The kind's own table with what was learned of this issuer before it, for a reader told the
-    /// whole table (`BillReader`).
-    var labelTable: [(CaptureFieldKey, [String])] { learnedLabels + labels }
+    /// Every wording the kind's own table and the shared one give a field other than `key`: a
+    /// label the kind reads as another value, never one an issuer's lesson may give `key`.
+    func wordings(otherThan key: CaptureFieldKey) -> Set<String> {
+        Set((labels + Self.commonLabels).filter { $0.0 != key }.flatMap { $0.1 })
+    }
+
+    /// Every wording the kind's own table and the shared one give `key`.
+    func wordings(of key: CaptureFieldKey) -> Set<String> {
+        Set((labels + Self.commonLabels).filter { $0.0 == key }.flatMap { $0.1 })
+    }
 
     /// The wordings every document prints `key` under, whatever its kind.
     static func commonLabels(for key: CaptureFieldKey) -> [String] {

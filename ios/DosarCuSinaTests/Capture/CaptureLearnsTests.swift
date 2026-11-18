@@ -186,15 +186,16 @@ struct CaptureLearnsTests {
 
     // MARK: Reading with lessons
 
-    @Test("A learned label is read before the kind's own, only for its issuer")
-    func learnedLabelsComeFirstForTheirIssuer() {
+    @Test("A learned label is taught only for its issuer, apart from the kind's own table")
+    func learnedLabelsAreTaughtForTheirIssuer() {
         let issuer = IssuerKey(rawValue: "cui:12345674")
         let book = LessonBook([CaptureLesson(issuer: issuer, kind: .utilityInvoice, field: .total, label: "Suma datorată")])
         let profile = CaptureDocumentKind.utilityInvoice.profile
         let taught = book.teaching(profile, issuer: issuer)
-        #expect(taught.labels(for: .total).first == "suma datorata")
-        #expect(taught.labels(for: .total).dropFirst() == CaptureKindProfile.commonLabels(for: .total)[...], "The shared labels stay")
-        #expect(book.teaching(profile, issuer: IssuerKey(rawValue: "cui:98765438")).labels(for: .total) == profile.labels(for: .total))
+        #expect(taught.learnedLabels.map(\.0) == [.total])
+        #expect(taught.learnedLabels.first?.1 == ["suma datorata"])
+        #expect(taught.labels(for: .total) == profile.labels(for: .total), "The kind's readers keep the kind's own table; lessons are read by position")
+        #expect(book.teaching(profile, issuer: IssuerKey(rawValue: "cui:98765438")).learnedLabels.isEmpty)
         #expect(book.teaching(CaptureDocumentKind.rcaPolicy.profile, issuer: issuer).learnedLabels.isEmpty, "Another kind of paper")
     }
 

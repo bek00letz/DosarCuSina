@@ -714,6 +714,35 @@
         }
       }
     },
+    "%lld fișiere nu au ajuns" : {
+      "comment" : "Settings › Despre: how many files shared from other apps didn't arrive, with Romanian plural forms (un fișier nu a ajuns).",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld fișiere nu au ajuns"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Un fișier nu a ajuns"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld de fișiere nu au ajuns"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld intrări de arătat cumpărătorului." : {
       "comment" : "Readiness: how many history entries a buyer can be shown.",
       "localizations" : {
@@ -2281,6 +2310,9 @@
     "Azi e ultima zi în care un act e bun de călătorit" : {
       "comment" : "Generic reminder title on the last day a document is good for travel"
     },
+    "Azi la %@" : {
+      "comment" : "Probleme la primire: a file that didn't arrive today, at a time."
+    },
     "Azi: %@" : {
       "comment" : "Reminder title, due today"
     },
@@ -2515,6 +2547,9 @@
     },
     "Când te anunț" : {
       "comment" : "Capture review: the summary card's heading over the reminder."
+    },
+    "Când un fișier trimis din altă aplicație nu ajunge, scriu aici de ce, fără numele lui." : {
+      "comment" : "Footer of Probleme la primire: what the list is, and that no file's name is kept."
     },
     "Capacitate cilindrică" : {
 
@@ -4827,6 +4862,9 @@
     "ieri" : {
       "comment" : "Due: yesterday"
     },
+    "Ieri la %@" : {
+      "comment" : "Probleme la primire: a file that didn't arrive yesterday, at a time."
+    },
     "Îi dai tu un nume și alegi ce ține minte." : {
       "comment" : "Explains the custom section option."
     },
@@ -5820,6 +5858,9 @@
     "Nicio plantă trecută aici. Adaug-o și îți amintesc de udat." : {
       "comment" : "Empty Plante pocket on a home's page."
     },
+    "Nicio problemă la primire." : {
+      "comment" : "Settings › Probleme la primire: every file shared from other apps arrived."
+    },
     "Nicio reparație notată încă. După una, notează aici ce s-a reparat, unde și cât a costat." : {
       "comment" : "Empty Istoric pocket of something bought (Garanții)."
     },
@@ -6713,6 +6754,17 @@
     "pe %@" : {
       "comment" : "Part of a repeat sentence: on a day of the year, e.g. „pe 31 martie”."
     },
+    "Pe %@ la %@" : {
+      "comment" : "Probleme la primire: a file that didn't arrive on a day („12 noiembrie”), at a time.",
+      "localizations" : {
+        "ro" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Pe %1$@ la %2$@"
+          }
+        }
+      }
+    },
     "Pe %@ scrie: „%@”. Dacă e așa, nu îți mai amintesc să plătești facturile." : {
       "comment" : "Capture review: a bill says the bank pays by direct debit. The first argument is the paper, e.g. „factură”; the second what it says.",
       "localizations" : {
@@ -7168,6 +7220,9 @@
     },
     "Probă" : {
 
+    },
+    "Probleme la primire" : {
+      "comment" : "Settings › Despre: the row and page that list the files shared from other apps that didn't arrive, and why."
     },
     "Procesul-verbal" : {
       "comment" : "Am rezolvat: the report a check leaves."
