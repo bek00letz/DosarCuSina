@@ -6,6 +6,11 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ---
 
+## 2026-11-18
+
+### Whether anything of the binder is locked is one answer
+- **Decided:** whether any section is behind Face ID on this device, and which categories are, is `BinderLocks`: the one answer for a section's lock (`CategoryTemplate.isSensitive(key:template:in:)`) asked for every category whose record is here and for every category a section names, so a section that arrives before its category counts as locked, as on its own page. The app-switcher cover, Face ID before a backup or bringing one in, Settings' *Protecție* row and De verificat read it; a binder that can't be read counts as locked. *Why:* every place that asks whether anything is locked gives the answer the section's own page gives, from one source. The cover reads it only as the app leaves the screen with the session open (`LockCover.decide` takes it as an autoclosure), so the shell no longer follows every category to draw itself. *Pinned by:* `LockedSectionsEverywhereTests`, `LockCoverDecisionTests`, and the `lock-without-its-category` check, which now refuses category records filtered by their lock (`\.isSensitive`, `{ $0.isSensitive }`).
+
 ## 2026-11-17
 
 ### A policy's insured sum, a full „Gata” in the widget, the health card closed like a document (owner)

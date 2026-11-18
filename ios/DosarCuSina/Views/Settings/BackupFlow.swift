@@ -94,9 +94,10 @@ final class BackupFlow {
         }
     }
 
-    /// Whether a section of the household is behind Face ID.
+    /// Whether a section of the household is behind Face ID: the binder's one answer, which counts
+    /// a section whose category hasn't arrived yet (`BinderLocks`).
     private var anySectionLocked: Bool {
-        ((try? container.mainContext.fetch(FetchDescriptor<CategoryTemplate>())) ?? []).contains(where: \.isSensitive)
+        BinderLocks.read(in: container.mainContext).anySectionLocked
     }
 
     /// Face ID or the passcode for the whole binder, whenever any lock is on. The work is

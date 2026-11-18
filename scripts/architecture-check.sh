@@ -266,10 +266,13 @@ rule unique-keys "$app" - \
 # that hasn't arrived yet (iCloud, an import) is locked by this device's choice for its key, else
 # as the catalog says, else locked (CategoryTemplate.isSensitive(key:template:in:)). Reading a
 # missing record as open (an optional lock defaulted to false, compared with true, or a vault
-# check of an optional template defaulted to false) is the way around it.
+# check of an optional template defaulted to false) is the way around it. So is asking whether
+# anything of the binder is locked from the category records alone (records filtered or searched
+# by their lock: \.isSensitive, { $0.isSensitive }), which leaves out a section whose category
+# hasn't arrived: BinderLocks asks the one answer for every category a section names.
 rule lock-without-its-category "$app" - \
-    'isSensitive *[}]? *[?][?] *false|[?][.]isSensitive *(==|!=) *(true|false)|isLocked *(\([$]0\))? *[)]? *[}]? *[?][?] *false' - \
-    "Whether a section is locked never depends on its category's record being there. Use asset.isSensitive(template:) or isSensitive(among:), CategoryTemplate.isSensitive(key:template:in:), or vault.isLocked(asset, template:): a category that hasn't arrived yet stays locked."
+    'isSensitive *[}]? *[?][?] *false|[?][.]isSensitive *(==|!=) *(true|false)|isLocked *(\([$]0\))? *[)]? *[}]? *[?][?] *false|(where: *|[(])[^A-Za-z0-9_?!( ][.]isSensitive *[)]|[{] *[$]0[.]isSensitive *[}]' - \
+    "Whether a section is locked never depends on its category's record being there. Use asset.isSensitive(template:) or isSensitive(among:), CategoryTemplate.isSensitive(key:template:in:), or vault.isLocked(asset, template:); whether anything of the binder is locked, or which categories are, is BinderLocks (read(in:), anySectionLocked, lockedKeys): a category that hasn't arrived yet stays locked."
 
 # A version's models are frozen the day the next version comes: code that names one by its
 # version (an extension, a predicate, the schema itself) silently stays with the frozen copy.
