@@ -103,6 +103,8 @@ struct AppShell: View {
             router.open(.settings(.repairs))
         }
         .background(LockWindowHost(cover: cover, scenePhase: scenePhase, vault: vault))
+        // A screenshot's full page of the screen in front, never while a lock covers it.
+        .background(FullPageScreenshotHost(cover: cover))
         .task { consumeRoute() }
         .onChange(of: navigator.pendingRoute) { _, _ in consumeRoute() }
         .onChange(of: vault.isAppLocked) { _, _ in consumeRoute() }
