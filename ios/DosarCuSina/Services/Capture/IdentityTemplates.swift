@@ -268,8 +268,12 @@ enum IdentityTemplates {
         id: "ro.residencePermit",
         kind: .residencePermit,
         signals: [("permis de sedere", 6), ("residence permit", 5), ("permis de sedere temporara", 6), ("permis de sedere pe termen lung", 6),
-                  ("tipul permisului", 3), ("type of permit", 3), ("inspectoratul general pentru imigrari", 4)],
-        distinctive: ["permis de sedere", "residence permit", "tipul permisului", "type of permit"],
+                  ("tipul permisului", 3), ("type of permit", 3), ("inspectoratul general pentru imigrari", 4),
+                  // The same format for a family member of an EU citizen, and for a British citizen
+                  // under the Withdrawal Agreement (`DocumentType.Variant.residenceCard`, `withdrawalAgreement`).
+                  ("carte de rezidenta", 6), ("residence card", 5),
+                  ("articolul 50 tue", 4), ("article 50 teu", 4), ("article 18(1) withdrawal agreement", 4)],
+        distinctive: ["permis de sedere", "residence permit", "tipul permisului", "type of permit", "carte de rezidenta", "residence card"],
         machineReadableFormats: [.td1],
         fields: [
             .init(.surname, ["nume / surname", "nume/surname", "nume", "surname"], .name),
@@ -286,8 +290,8 @@ enum IdentityTemplates {
             .init(.issuer, ["emis de / issued by", "emis de", "issued by", "autoritatea emitenta", "issuing authority"], .text),
         ],
         otherLabels: [
-            "permis de sedere", "residence permit", "tipul permisului / type of permit", "tipul permisului", "type of permit",
-            "observatii / remarks", "observatii", "remarks", "domiciliu / address", "domiciliu", "adresa", "address",
+            "permis de sedere", "residence permit", "carte de rezidenta", "residence card", "tipul permisului / type of permit",
+            "tipul permisului", "type of permit", "observatii / remarks", "observatii", "remarks", "domiciliu / address", "domiciliu", "adresa", "address",
             "locul nasterii", "place of birth", "semnatura titularului", "semnatura", "signature", "romania",
         ].map(LabelWording.words),
         agreements: identityDates,

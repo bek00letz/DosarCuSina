@@ -162,7 +162,7 @@ struct ReplacedDocumentsTests {
     func citizenshipOutlivesTheDocument() {
         let ana = ReadinessAsset.member("Ana Popescu", citizenship: nil)
         let replaced = ReadinessAsset.personalDocument(DocumentType.passport, expires: "2031-01-01", holder: ana, nationality: "ROU", wasReplaced: true)
-        #expect(ReadinessEngine.citizenship(of: .member(ana.id), in: [ana, replaced]) == Citizenship.romania,
+        #expect(ReadinessEngine.citizenships(of: .member(ana.id), in: [ana, replaced]) == [Citizenship.romania],
                 "Not asked again while the new one isn't in the binder yet")
     }
 
