@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import SwiftUI
 import Testing
 import UIKit
 @testable import DosarCuSina
@@ -471,8 +472,8 @@ struct LockedSectionsEverywhereTests {
         let home = try await household(locked: true, now: noon("2026-12-03"))
         let context = home.container.mainContext
         let templates = Dictionary(try context.fetch(FetchDescriptor<CategoryTemplate>()).map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
-        func paper() -> Attachment {
-            let attachment = Attachment(fileName: "document.pdf", contentType: "com.adobe.pdf", data: nil)
+        func paper() -> DosarCuSina.Attachment {
+            let attachment = DosarCuSina.Attachment(fileName: "document.pdf", contentType: "com.adobe.pdf", data: nil)
             context.insert(attachment)
             return attachment
         }
