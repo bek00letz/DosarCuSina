@@ -78,6 +78,10 @@ public struct ObligationSnapshot: Hashable, Sendable, Identifiable {
 }
 
 extension ObligationSnapshot {
+    /// Closing it asks what nothing outside the app can ask, a new day or a new document: its
+    /// completion's shape says so (`CompletionShape.closesOutsideTheApp`), as the app asks it.
+    public var closesInTheApp: Bool { !completion.asked.closesOutsideTheApp }
+
     /// Still hidden at `now`: the day its snooze ends hasn't started yet where the phone is.
     public func isSnoozed(at now: Date = Date(), calendar: Calendar = .dosar) -> Bool {
         guard let snoozedUntil else { return false }

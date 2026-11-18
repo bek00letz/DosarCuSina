@@ -223,15 +223,23 @@ public final class SideEffectsCoordinator: ContainerHolder {
         }
         let date = now()
         // Off: nothing planned, no badge, and no cycle left open, so every shown reminder goes too.
-        let plan: [PlannedReminder] = notifies ? ReminderPlanner.plan(outside, now: date, calendar: calendar, defaultMinuteOfDay: preferences.reminderMinuteOfDay) : []
+        // On: the reminders carry the badge of the day they fire, and the next days' changes of
+        // it are planned too, so it moves while the app stays closed (`BadgePlanner`).
+        let plan: [PlannedReminder] = notifies ? BadgePlanner.plan(
+            ReminderPlanner.plan(outside, now: date, calendar: calendar, defaultMinuteOfDay: preferences.reminderMinuteOfDay),
+            obligations: outside, now: date, calendar: calendar
+        ) : []
         let badge = notifies ? AttentionModel.digest(outside, now: date, calendar: calendar).needsActionCount : 0
         let openCycles: [UUID: CalendarDay] = notifies ? Dictionary(
             outside.filter { $0.status == .active }.map { ($0.id, $0.dueDay) },
             uniquingKeysWith: { first, _ in first }
         ) : [:]
 
+        // A shown reminder that names a deadline locked since says no more than one planned now.
+        let locked = Set(outside.compactMap { $0.isSensitive ? $0.id : nil })
+
         widgetWriter.write(WidgetFeed.make(from: outside, now: date, calendar: calendar))
-        let outcome = await reconciler.apply(plan, badgeCount: badge, openCycles: openCycles, prompt: prompt)
+        let outcome = await reconciler.apply(plan, badgeCount: badge, openCycles: openCycles, locked: locked, prompt: prompt)
         reminderAuthorization = outcome.authorization
         lastOutcome = outcome
         lastFailure = nil

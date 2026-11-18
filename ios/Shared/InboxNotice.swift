@@ -77,11 +77,13 @@ public enum InboxNotice {
 
     /// The share extension's side: posts the notice for what waits, replacing the one
     /// before, when the person already allowed notifications and left „Notificări” on
-    /// (`notificationsOn`, read from `NotificationSwitch`). Returns whether it posted.
+    /// (`notificationsOn`, read from `NotificationSwitch`). Never for a share the person stopped
+    /// with „Renunță” (`stop`), however late it came. Returns whether it posted.
     @discardableResult
     public static func announce(waiting: [InboxItem], center: any InboxNoticeCenter,
-                                notificationsOn: Bool = NotificationSwitch.isOn()) async -> Bool {
-        guard notificationsOn, let content = content(waiting: waiting), await center.isAllowed() else { return false }
+                                notificationsOn: Bool = NotificationSwitch.isOn(), stop: ShareCancellation? = nil) async -> Bool {
+        guard stop?.isStopped != true, notificationsOn, let content = content(waiting: waiting), await center.isAllowed(),
+              stop?.isStopped != true else { return false }
         return await center.post(content)
     }
 
