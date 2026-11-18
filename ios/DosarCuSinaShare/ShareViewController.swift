@@ -14,12 +14,16 @@ import UniformTypeIdentifiers
 /// notifications it leaves a quiet one (`InboxNotice`) whose tap opens De verificat.
 final class ShareViewController: UIViewController {
     private let model = ShareModel()
+    /// „Renunță” was tapped: the sheet closes once, whatever else is tapped meanwhile.
+    private var isStopping = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        let host = UIHostingController(rootView: ShareConfirmationView(model: model) { [weak self] in
+        let host = UIHostingController(rootView: ShareConfirmationView(model: model, onDone: { [weak self] in
             self?.finish()
-        }.dosarLocaleAndCalendar())
+        }, onStop: { [weak self] in
+            self?.stop()
+        }).dosarLocaleAndCalendar())
         addChild(host)
         host.view.translatesAutoresizingMaskIntoConstraints = false
         host.view.backgroundColor = .clear
@@ -34,11 +38,21 @@ final class ShareViewController: UIViewController {
 
         let items = (extensionContext?.inputItems as? [NSExtensionItem]) ?? []
         let providers = items.flatMap { $0.attachments ?? [] }
-        Task { await model.receive(providers) }
+        model.start(providers)
     }
 
     private func finish() {
         extensionContext?.completeRequest(returningItems: nil)
+    }
+
+    /// „Renunță”: the share stops at once, and the sheet closes once what it staged is gone.
+    private func stop() {
+        guard !isStopping else { return }
+        isStopping = true
+        Task {
+            await model.stop()
+            extensionContext?.cancelRequest(withError: CocoaError(.userCancelled))
+        }
     }
 }
 
@@ -56,81 +70,29 @@ final class ShareModel {
 
     private(set) var phase: Phase = .working
 
-    func receive(_ providers: [NSItemProvider]) async {
+    /// „Renunță”, shared with every copy of this share (`ShareDelivery`).
+    private let cancellation = ShareCancellation()
+    @ObservationIgnored private var receiving: Task<Void, Never>?
+
+    func start(_ providers: [NSItemProvider]) {
+        receiving = Task { await receive(providers) }
+    }
+
+    private func receive(_ providers: [NSItemProvider]) async {
         if Self.receivesEveryWay {
-            phase = await Self.receiveEveryWay(providers)
+            // Nil: the person stopped the share; the sheet is closing.
+            guard let delivered = await ShareDelivery.deliver(providers, into: ShareInbox.shared(), stop: cancellation) else { return }
+            phase = delivered
         } else {
             phase = await EarlierShareReceiving.receive(providers)
         }
     }
 
-    /// Receives every item into the share's holding folder in the inbox, then sorts what
-    /// arrived into inbox items (`ShareInbox.plan`): photos together, each PDF alone.
-    private static func receiveEveryWay(_ providers: [NSItemProvider]) async -> Phase {
-        // Before anything is received, a failure is about every file shared.
-        let shared = max(providers.count, 1)
-        guard let inbox = ShareInbox.shared() else {
-            return failed(.inboxUnavailable, way: "inbox", in: nil, files: shared)
-        }
-        let holding: URL
-        do {
-            try FileManager.default.createDirectory(at: inbox.directory, withIntermediateDirectories: true, attributes: ShareInbox.protection)
-            inbox.removeAbandonedStaging()
-            holding = try inbox.makeStagingFolder()
-        } catch {
-            return failed(error, way: "inbox", in: inbox, files: shared)
-        }
-        defer { inbox.discard(staging: holding) }
-
-        let share = await ShareReceiving.receiveAll(providers, into: holding, log: inbox)
-        let received = share.received
-        // What didn't arrive (tried in vain, not something it takes, past the limit), told beside
-        // what did (`ShareConfirmation`'s note) or on its own.
-        var missed = share.missed
-        guard !received.isEmpty else {
-            return .nothingSaved(missed.missed)
-        }
-
-        var saved: [InboxItem] = []
-        for planned in ShareInbox.plan(received.map(\.kind)) {
-            var staging: URL?
-            do {
-                let folder = try inbox.makeStagingFolder()
-                staging = folder
-                var files: [String] = []
-                for (position, index) in planned.indices.enumerated() {
-                    files.append(try inbox.stage(received: received[index].file, into: folder, index: position))
-                }
-                let originalName = planned.indices.lazy.compactMap { received[$0].name }.first
-                saved.append(try inbox.commit(staging: folder, payload: planned.payload, files: files, originalName: originalName))
-            } catch {
-                if let staging { inbox.discard(staging: staging) }
-                let attempt = ShareFailureLog.Attempt(way: "commit", error: error)
-                missed.add(attempt.failure, files: planned.indices.count)
-                ShareFailureLog.record(ShareFailureLog.Entry(at: Date(), failure: attempt.failure, attempts: [attempt], files: planned.indices.count), in: inbox)
-            }
-        }
-        guard !saved.isEmpty else {
-            return .nothingSaved(missed.missed)
-        }
-        AppGroup.postInboxDidChange()
-        // A quiet notice the person can tap to continue, only if they already allow
-        // notifications; the extension never asks (`InboxNotice`).
-        let notified = await InboxNotice.announce(waiting: inbox.waitingItems() ?? [], center: SystemInboxNoticeCenter())
-        return .saved(count: saved.count, next: InboxNotice.nextStep(saved: saved, notified: notified), notArrived: missed.missed)
-    }
-
-    /// A share that failed before any item could be received: logged, and told.
-    private static func failed(_ error: any Error, way: String, in inbox: ShareInbox?, files: Int) -> Phase {
-        let attempt = ShareFailureLog.Attempt(way: way, error: error)
-        ShareFailureLog.record(ShareFailureLog.Entry(at: Date(), failure: attempt.failure, attempts: [attempt]), in: inbox)
-        return .failed(attempt.failure, count: files)
-    }
-
-    private static func failed(_ failure: ShareFailure, way: String, in inbox: ShareInbox?, files: Int) -> Phase {
-        let attempt = ShareFailureLog.Attempt(way: way, failure: failure, domain: "none", code: 0)
-        ShareFailureLog.record(ShareFailureLog.Entry(at: Date(), failure: failure, attempts: [attempt]), in: inbox)
-        return .failed(failure, count: files)
+    /// Stops the share („Renunță”) and returns once it has left nothing behind.
+    func stop() async {
+        cancellation.stop()
+        receiving?.cancel()
+        await receiving?.value
     }
 }
 
@@ -140,6 +102,8 @@ final class ShareModel {
 struct ShareConfirmationView: View {
     let model: ShareModel
     let onDone: () -> Void
+    /// „Renunță” while copying: stops the share (`ShareModel.stop`).
+    let onStop: () -> Void
 
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
 
@@ -157,7 +121,7 @@ struct ShareConfirmationView: View {
         }
         .dsPinnedAction {
             switch confirmation.action {
-            case .cancel: DSSecondaryButton(verbatim: confirmation.action.title, action: onDone)
+            case .cancel: DSSecondaryButton(verbatim: confirmation.action.title, action: onStop)
             case .close: DSPrimaryButton(verbatim: confirmation.action.title, action: onDone)
             }
         }

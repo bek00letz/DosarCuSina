@@ -321,6 +321,48 @@ struct ShareProblemsClearTests {
         #expect(ShareProblemsWording.clearLabel == "Golește lista de probleme la primire")
     }
 
+    @Test func undoBringsBackExactlyWhatWasClearedEvenEntriesAlikeInTheSameSecond() throws {
+        let folder = try shareLogFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let inbox = ShareInbox(directory: folder)
+        // Two photos of one share that failed alike, in the same second: the log keeps moments to the second.
+        ShareFailureLog.record(failureEntry(.stillInCloud, at: 1_000), in: inbox)
+        ShareFailureLog.record(failureEntry(.stillInCloud, at: 1_000), in: inbox)
+        ShareFailureLog.record(failureEntry(.noAccess, at: 1_500), in: inbox)
+        let before = ShareProblems.read(inbox)
+        #expect(before.count == 3)
+
+        let removed = try ShareProblems.clear(inbox)
+        ShareFailureLog.record(failureEntry(.offline, at: 2_000), in: inbox)
+        try ShareProblems.putBack(removed, in: inbox)
+        let after = ShareProblems.read(inbox)
+        #expect(after.count == 4, "Every entry it took comes back, beside the one written meanwhile")
+        #expect(Array(after.prefix(3)) == before, "Exactly what was cleared, by identity")
+        #expect(after.last?.failure == .offline)
+
+        try ShareProblems.putBack(removed, in: inbox)
+        #expect(ShareProblems.read(inbox) == after, "Putting back twice brings nothing twice")
+    }
+
+    @Test func thePageKeepsItsRowWhileItIsOpenEvenOnceEmptied() {
+        #expect(ShareProblems.showsRow([], pageIsOpen: true), "„Golește lista” never closes the page it was tapped on")
+        #expect(!ShareProblems.showsRow([], pageIsOpen: false), "Back in Despre, the empty list's row goes")
+        #expect(SettingsStatus.shareProblems(0) == ShareProblemsWording.empty, "Emptied, the row says what the page says")
+    }
+
+    @Test func aLogKeptBeforeEntriesHadAnIdStillPutsBackWhole() throws {
+        let folder = try shareLogFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let inbox = ShareInbox(directory: folder)
+        let entry = #"{"at":"2026-11-18T12:05:00Z","failure":"stillInCloud","attempts":[{"way":"link","failure":"stillInCloud","domain":"NSCocoaErrorDomain","code":4}]}"#
+        try Data("[\(entry),\(entry)]".utf8).write(to: folder.appending(path: ShareInbox.failureLogName))
+        let removed = try ShareProblems.clear(inbox)
+        #expect(removed.count == 2)
+        #expect(Set(removed.map(\.id)).count == 2, "Each gets an id of its own as it is read")
+        try ShareProblems.putBack(removed, in: inbox)
+        #expect(ShareProblems.read(inbox).map(\.id) == removed.map(\.id))
+    }
+
     @Test func puttingBackKeepsTheLatestOnly() throws {
         let removed = (0 ..< ShareFailureLog.kept).map { failureEntry(.stillInCloud, at: TimeInterval($0)) }
         let since = [failureEntry(.noAccess, at: 10_000)]
