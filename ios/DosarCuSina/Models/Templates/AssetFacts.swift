@@ -65,8 +65,11 @@ public enum AssetFacts {
     }
 
     /// Everything Date importante shows: the template's key facts, then the person's own rows.
-    public static func factRows(_ values: FieldValues, customFacts: [CustomFact], template: TemplateDefinition?, locale: Locale = .dosarDefault) -> [FactRow] {
-        let fromTemplate = template.map { keyFacts(values, template: $0, locale: locale) } ?? []
+    /// `listed` are the fields the page already lists above its pockets (a document's page lists
+    /// every value, `DocumentPageFacts.listedAbove`): they are left out, so nothing shows twice.
+    public static func factRows(_ values: FieldValues, customFacts: [CustomFact], template: TemplateDefinition?,
+                                leavingOut listed: Set<String> = [], locale: Locale = .dosarDefault) -> [FactRow] {
+        let fromTemplate = (template.map { keyFacts(values, template: $0, locale: locale) } ?? []).filter { !listed.contains($0.field.key) }
         return fromTemplate.map {
             FactRow(id: $0.field.key, label: $0.field.label, text: $0.text, isCallable: $0.isCallable, isSensitive: $0.field.isSensitive, isCustom: false)
         } + customFacts.map {
