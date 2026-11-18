@@ -1824,6 +1824,9 @@
     "Am găsit ceva de corectat" : {
       "comment" : "Title of the prompt that opens the repair list."
     },
+    "Am golit lista." : {
+      "comment" : "Toast after emptying Settings › Probleme la primire; „Anulează” puts the list back."
+    },
     "Am înțeles" : {
       "comment" : "Button that closes an error alert.\nPuts away a repair finding that only says what to do."
     },
@@ -4787,6 +4790,12 @@
     "Gol deocamdată" : {
       "comment" : "Box status when a category box holds nothing yet."
     },
+    "Golește lista" : {
+      "comment" : "Settings › Probleme la primire: button that empties the list of files that didn't arrive. Undone from its toast."
+    },
+    "Golește lista de probleme la primire" : {
+      "comment" : "VoiceOver label of the button that empties Settings › Probleme la primire."
+    },
     "Golful" : {
       "comment" : "Example name of a new car, in „Cum vrei să apară în dosar, de exemplu …”."
     },
@@ -6131,11 +6140,17 @@
     "Nu am putut deschide ce ai trimis" : {
 
     },
+    "Nu am putut goli lista. Încearcă din nou." : {
+      "comment" : "Error: the list of files that didn't arrive couldn't be emptied."
+    },
     "Nu am putut opri sincronizarea pentru exemple. Închide aplicația, deschide-o din nou și încearcă iar." : {
       "comment" : "Examples couldn't load because sync didn't stop in time."
     },
     "Nu am putut păstra exemplul" : {
 
+    },
+    "Nu am putut pune lista înapoi. Ce nu ajunge de acum apare aici, ca de obicei." : {
+      "comment" : "Error: „Anulează” couldn't bring back the list of files that didn't arrive; new problems are still listed."
     },
     "Nu am putut salva. Încearcă din nou; dacă tot nu merge, repornește aplicația." : {
       "comment" : "Generic error message."

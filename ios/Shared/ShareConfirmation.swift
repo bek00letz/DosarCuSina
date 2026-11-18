@@ -10,7 +10,8 @@ public struct ShareConfirmation: Equatable, Sendable {
     public enum Phase: Equatable, Sendable {
         case working
         /// `count` documents (photos shared together are one), and what the person does next;
-        /// with `notArrived`, the files of the same share that didn't arrive, and why.
+        /// with `notArrived`, the files of the same share that didn't arrive, and why: those it
+        /// tried in vain, those it can't take, those past the limit.
         case saved(count: Int, next: InboxNotice.NextStep, notArrived: ShareFailure.Missed? = nil)
         /// Nothing it can read: not a photo, a PDF or text.
         case unsupported
@@ -18,10 +19,10 @@ public struct ShareConfirmation: Equatable, Sendable {
         /// do next.
         case failed(ShareFailure, count: Int = 1)
 
-        /// A share where nothing arrived: why, counted by the files that failed (`ShareFailure.Tally`),
-        /// or that there was nothing it can read when none failed.
+        /// A share where nothing arrived: why, counted by the files it tried in vain
+        /// (`ShareFailure.Tally`), or that there was nothing it can read when it tried none.
         public static func nothingSaved(_ missed: ShareFailure.Missed?) -> Phase {
-            missed.map { .failed($0.failure, count: $0.files) } ?? .unsupported
+            missed?.failed.map { .failed($0.failure, count: $0.files) } ?? .unsupported
         }
     }
 
@@ -72,7 +73,7 @@ public struct ShareConfirmation: Equatable, Sendable {
             note = notArrived.map(ShareFailureWording.note)
         case .unsupported:
             title = String(localized: "Nu pot primi asta", table: "Shared", comment: "Share sheet: nothing it can read.")
-            message = String(localized: "Pot primi poze, PDF-uri și text. Trimite factura sau actul ca poză sau PDF.", table: "Shared", comment: "Share sheet: what it can read.")
+            message = ShareFailureWording.advice(.unsupportedType)
         case .failed(let failure, let count):
             title = ShareFailureWording.title(failure, count: count)
             message = ShareFailureWording.advice(failure, count: count)
