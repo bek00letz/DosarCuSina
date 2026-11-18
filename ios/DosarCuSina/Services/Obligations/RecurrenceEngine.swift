@@ -264,8 +264,10 @@ public enum RecurrenceEngine {
         if values["vehicle.usage"]?.textValue.flatMap({ VehicleUse.options.option(for: $0)?.key }) == VehicleUse.commercial {
             return .months(6)
         }
-        guard let year = values["vehicle.year"]?.numberValue else { return .years(1) }
-        let age = day.year - Int(year)
+        // A year no count holds (a backup's 1e19) is an unknown age.
+        guard let year = values[VehicleFields.year]?.wholeNumberValue else { return .years(1) }
+        let (age, overflowed) = day.year.subtractingReportingOverflow(year)
+        guard !overflowed else { return .years(1) }
         return age <= 12 ? .years(2) : .years(1)
     }
 }

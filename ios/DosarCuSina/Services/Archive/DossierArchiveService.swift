@@ -15,6 +15,8 @@ public enum ArchiveError: LocalizedError, Equatable {
     case needsPassword
     /// The password given doesn't open the archive.
     case wrongPassword
+    /// A protected archive was given an empty password: nothing was typed.
+    case noPasswordTyped
     /// A document, by its title, is bigger than one file of a backup may be.
     case documentTooLarge(String)
     /// A section's photo, by the section's name, is bigger than one file of a backup may be.
@@ -26,18 +28,22 @@ public enum ArchiveError: LocalizedError, Equatable {
             return String(localized: "Fișierul nu e o copie de siguranță Dosar cu Șină. Alege fișierul .dosar făcut din Setări.", comment: "Backup: the chosen file isn't a backup.")
         case .unsupportedVersion:
             return String(localized: "Copia de siguranță a fost făcută de o versiune mai nouă a aplicației. Actualizează aplicația și încearcă din nou.", comment: "Backup: made by a newer version.")
-        case .missingFile(let path):
-            return String(localized: "Copia de siguranță e incompletă: lipsește \(path). Fă copia din nou și încearcă iar.", comment: "Backup: a file is missing from it.")
-        case .checksumMismatch(let path), .unreadableFile(let path):
-            return String(localized: "Fișierul \(path) din copia de siguranță e deteriorat. Fă copia din nou și încearcă iar.", comment: "Backup: one file inside it is damaged. The argument is its path.")
-        case .unlistedFile(let path):
-            return String(localized: "Copia de siguranță conține un fișier neașteptat: \(path). Fă copia din nou din aplicație.", comment: "Backup: a file it doesn't list.")
-        case .brokenReference(let path):
-            return String(localized: "Datele din \(path) nu se potrivesc între ele.")
+        // What went wrong, in plain words: never the archive's own path, which says nothing to
+        // the person (the path stays on the error, for tests and the log).
+        case .missingFile:
+            return String(localized: "Copia de siguranță e incompletă: îi lipsește o parte. Fă copia din nou și încearcă iar.", comment: "Backup: a file is missing from it.")
+        case .checksumMismatch, .unreadableFile:
+            return String(localized: "O parte din copia de siguranță e deteriorată. Fă copia din nou și încearcă iar.", comment: "Backup: one file inside it is damaged.")
+        case .unlistedFile:
+            return String(localized: "Copia de siguranță conține un fișier pe care aplicația nu l-a pus acolo. Fă copia din nou din aplicație.", comment: "Backup: a file it doesn't list.")
+        case .brokenReference:
+            return String(localized: "Datele din copia de siguranță nu se potrivesc între ele. Fă copia din nou și încearcă iar.", comment: "Backup: its records point at records it doesn't have.")
         case .needsPassword:
             return String(localized: "Copia e protejată cu o parolă. Scrie parola cu care a fost făcută.")
         case .wrongPassword:
             return String(localized: "Parola nu deschide copia. Verifică literele mari și mici și încearcă din nou.")
+        case .noPasswordTyped:
+            return String(localized: "Nu ai scris nicio parolă. Scrie parola cu care a fost făcută copia.", comment: "Backup: a protected backup was opened with nothing typed for its password.")
         case .documentTooLarge(let title):
             return String(localized: "„\(title)” e prea mare pentru o copie de siguranță. Scoate-l din dosar și păstrează-l în altă parte, apoi fă copia din nou.", comment: "Backup: one document is larger than a backup's file may be. The argument is the document's title.")
         case .photoTooLarge(let name):
@@ -62,10 +68,15 @@ public struct ArchiveSummary: Hashable, Sendable {
 
 extension ArchiveSummary {
     public init(_ package: DossierV3.Package) {
-        schemaVersion = package.manifest.schemaVersion
-        platform = package.manifest.platform
-        exportedAt = package.manifest.exportedAt
-        counts = package.manifest.counts
+        self.init(package.manifest)
+    }
+
+    /// What a manifest says the archive holds.
+    public init(_ manifest: DossierV3.Manifest) {
+        schemaVersion = manifest.schemaVersion
+        platform = manifest.platform
+        exportedAt = manifest.exportedAt
+        counts = manifest.counts
     }
 }
 
@@ -82,11 +93,13 @@ public struct ArchiveImportResult: Hashable, Sendable {
 
 /// Reads, checks and decodes an archive file, a piece at a time: the directory, then each
 /// file once, its checksum worked out as it is read. Thread-safe; nothing touches the
-/// database. Memory doesn't grow with the archive: only the files that describe the
-/// household (the manifest and `data/*.json`) are held, and the documents' files are
-/// either only checked (`summary`) or written to a folder of their own (`read`).
+/// database. Memory doesn't grow with the archive: every file is checked as it streams by,
+/// within the one set of limits both ways (`DosarZipEngine.Limits.standard`). Checking a
+/// backup (`summary`) keeps none of them, only the manifest; bringing one in (`read`) writes
+/// each to a folder of its own, then decodes the files that describe the household
+/// (`data/*.json`) one at a time, so only one is ever held whole.
 public enum DossierArchiveReader {
-    /// What becomes of the documents' files as they are checked.
+    /// What becomes of the archive's files as they are checked.
     enum Keeping {
         /// Checked against their checksums, then let go: enough to say what the archive holds.
         case checkOnly
@@ -94,24 +107,46 @@ public enum DossierArchiveReader {
         case extract(into: URL)
     }
 
-    /// What an archive holds, once every file in it is checked. Its documents' files aren't kept.
+    /// What an archive holds, once every file in it is checked. None of its files is kept.
     static func summary(contentsOf url: URL, password: String? = nil, limits: DosarZipEngine.Limits = .standard, run: BackupRun = BackupRun()) throws -> ArchiveSummary {
-        ArchiveSummary(try read(try ArchiveFileSource(url: url), password: password, limits: limits, keeping: .checkOnly, run: run))
+        try summary(try ArchiveFileSource(url: url), password: password, limits: limits, run: run)
     }
 
     /// The archive, checked and decoded, its documents' files written to `directory` for the
     /// importer to read one at a time. The caller removes `directory` once the package is written.
     static func read(contentsOf url: URL, password: String? = nil, extractingTo directory: URL, limits: DosarZipEngine.Limits = .standard, run: BackupRun = BackupRun()) throws -> DossierV3.Package {
-        try read(try ArchiveFileSource(url: url), password: password, limits: limits, keeping: .extract(into: directory), run: run)
+        try read(try ArchiveFileSource(url: url), password: password, limits: limits, extractingTo: directory, run: run)
     }
 
-    static func read(_ source: ArchiveByteSource, password: String?, limits: DosarZipEngine.Limits, keeping: Keeping, run: BackupRun = BackupRun()) throws -> DossierV3.Package {
+    static func summary(_ source: ArchiveByteSource, password: String?, limits: DosarZipEngine.Limits, run: BackupRun = BackupRun()) throws -> ArchiveSummary {
+        try opened(source, password: password) { plain in
+            switch try readPlain(plain, limits: limits, keeping: .checkOnly, run: run) {
+            case .summary(let summary): return summary
+            case .package(let package): return ArchiveSummary(package)
+            }
+        }
+    }
+
+    static func read(_ source: ArchiveByteSource, password: String?, limits: DosarZipEngine.Limits, extractingTo directory: URL, run: BackupRun = BackupRun()) throws -> DossierV3.Package {
+        try opened(source, password: password) { plain in
+            switch try readPlain(plain, limits: limits, keeping: .extract(into: directory), run: run) {
+            case .package(let package): return package
+            case .summary: throw ArchiveError.notADossier
+            }
+        }
+    }
+
+    /// The archive's own bytes, opened with its password when it has one, handed to `body`.
+    private static func opened<T>(_ source: ArchiveByteSource, password: String?, _ body: (ArchiveByteSource) throws -> T) throws -> T {
         var plain = source
         if ArchiveEncryption.isEncrypted(source) {
             guard let password else { throw ArchiveError.needsPassword }
+            // No archive is protected with an empty password (`ArchiveEncryption.minimumPasswordLength`):
+            // nothing was typed, which says nothing about the file.
+            guard !password.isEmpty else { throw ArchiveError.noPasswordTyped }
             plain = try inArchiveWords { try ArchiveEncryption.DecryptingSource(source, password: password) }
         }
-        return try inArchiveWords { try readPlain(plain, limits: limits, keeping: keeping, run: run) }
+        return try inArchiveWords { try body(plain) }
     }
 
     /// A protected archive's failures, anywhere in it, as the archive's own.
@@ -125,7 +160,13 @@ public enum DossierArchiveReader {
         }
     }
 
-    private static func readPlain(_ source: ArchiveByteSource, limits: DosarZipEngine.Limits, keeping: Keeping, run: BackupRun) throws -> DossierV3.Package {
+    /// What reading an archive gave: what it holds (checking only), or all of it.
+    private enum Reading {
+        case summary(ArchiveSummary)
+        case package(DossierV3.Package)
+    }
+
+    private static func readPlain(_ source: ArchiveByteSource, limits: DosarZipEngine.Limits, keeping: Keeping, run: BackupRun) throws -> Reading {
         let zip = try DosarZipEngine.Reader(source: source, limits: limits)
         guard let manifestItem = zip.item(at: DossierV3.Path.manifest) else { throw ArchiveError.notADossier }
         let manifestData = try zip.data(of: manifestItem)
@@ -135,12 +176,13 @@ public enum DossierArchiveReader {
 
         switch probe.schemaVersion {
         case 2:
+            // The first format's files are converted together, so they are held while it is read.
             var checked = try check(
                 zip, checksums: try DossierV2Converter.checksums(fromManifest: manifestData),
-                dataFiles: DossierV2Converter.dataFiles, refusingUnlisted: false, keeping: keeping, run: run
+                dataFiles: DossierV2Converter.dataFiles, refusingUnlisted: false, keeping: keeping, holdingData: true, run: run
             )
             checked.data[DossierV3.Path.manifest] = manifestData
-            return try DossierV2Converter.package(from: checked.data, vault: checked.vault)
+            return .package(try DossierV2Converter.package(from: checked.data, vault: checked.vault))
         case 3:
             break
         default:
@@ -151,11 +193,15 @@ public enum DossierArchiveReader {
         guard let manifest = try? decoder.decode(DossierV3.Manifest.self, from: manifestData) else {
             throw ArchiveError.unreadableFile(DossierV3.Path.manifest)
         }
-        let checked = try check(zip, checksums: manifest.checksums, dataFiles: Set(DossierV3.Path.dataFiles), refusingUnlisted: true, keeping: keeping, run: run)
+        let checked = try check(zip, checksums: manifest.checksums, dataFiles: Set(DossierV3.Path.dataFiles), refusingUnlisted: true,
+                                keeping: keeping, holdingData: false, run: run)
+        guard case .extract = keeping else { return .summary(ArchiveSummary(manifest)) }
 
+        /// Each file read from where it was written, decoded, and let go before the next.
         func decode<T: Decodable>(_ type: [T].Type, _ path: String) throws -> [T] {
-            guard let data = checked.data[path] else { return [] }
-            do { return try decoder.decode(type, from: data) } catch { throw ArchiveError.unreadableFile(path) }
+            guard let url = checked.dataFiles[path] else { return [] }
+            defer { try? FileManager.default.removeItem(at: url) }
+            do { return try decoder.decode(type, from: try Data(contentsOf: url)) } catch { throw ArchiveError.unreadableFile(path) }
         }
         let package = DossierV3.Package(
             manifest: manifest,
@@ -171,21 +217,31 @@ public enum DossierArchiveReader {
             files: checked.vault
         )
         try validateReferences(package)
-        return package
+        return .package(package)
+    }
+
+    /// What checking an archive's files kept: the data files held (`holdingData`) or written
+    /// out (where they are), and the documents' files.
+    struct Checked {
+        var data: [String: Data] = [:]
+        var dataFiles: [String: URL] = [:]
+        var vault: DossierV3.ArchiveFiles
     }
 
     /// Every listed file must exist and match its SHA-256; with `refusingUnlisted`, every
-    /// other file (but the manifest) must be listed. Each file is read once: the data files
-    /// whole (they are returned), the others a piece at a time, the documents' kept as
-    /// `keeping` says.
+    /// other file (but the manifest) must be listed. Each file is read once, a piece at a time:
+    /// kept as `keeping` says (only checked, or written to a file of its own in the folder,
+    /// named by its place, never by the archive's own path), a data file held whole only with
+    /// `holdingData`.
     static func check(
         _ zip: DosarZipEngine.Reader,
         checksums: [String: String],
         dataFiles: Set<String>,
         refusingUnlisted: Bool,
         keeping: Keeping,
+        holdingData: Bool,
         run: BackupRun = BackupRun()
-    ) throws -> (data: [String: Data], vault: DossierV3.ArchiveFiles) {
+    ) throws -> Checked {
         for path in checksums.keys.sorted() where zip.item(at: path) == nil {
             throw ArchiveError.missingFile(path)
         }
@@ -200,6 +256,7 @@ public enum DossierArchiveReader {
             folder = directory
         }
         var data: [String: Data] = [:]
+        var written: [String: URL] = [:]
         var vault: [String: DossierV3.ArchiveFiles.Content] = [:]
         let items = zip.items.filter { $0.path != DossierV3.Path.manifest }
         run.expect(items.count)
@@ -208,13 +265,14 @@ public enum DossierArchiveReader {
             try run.checkpoint(needsProtectedData: false)
             defer { run.did() }
             var hasher = SHA256()
-            if dataFiles.contains(item.path) {
+            let isData = dataFiles.contains(item.path)
+            if isData, holdingData {
                 let bytes = try zip.data(of: item)
                 hasher.update(data: bytes)
                 data[item.path] = bytes
-            } else if item.path.hasPrefix(DossierV3.Path.vaultPrefix), let folder {
+            } else if let folder, isData || item.path.hasPrefix(DossierV3.Path.vaultPrefix) {
                 // Named by its place, never by the archive's own path.
-                let url = folder.appending(path: "\(vault.count)")
+                let url = folder.appending(path: isData ? "data-\(written.count)" : "\(vault.count)")
                 // On its way into the binder: open to a locked phone while the import holds it.
                 let file = try ArchiveFileSink(creating: url, protection: BackupFileProtection.working)
                 try zip.stream(item) { piece in
@@ -222,7 +280,7 @@ public enum DossierArchiveReader {
                     try file.write(piece)
                 }
                 try file.close()
-                vault[item.path] = .file(url)
+                if isData { written[item.path] = url } else { vault[item.path] = .file(url) }
             } else {
                 try zip.stream(item) { hasher.update(data: $0) }
                 if item.path.hasPrefix(DossierV3.Path.vaultPrefix) { vault[item.path] = .checked }
@@ -231,7 +289,7 @@ public enum DossierArchiveReader {
                 throw ArchiveError.checksumMismatch(item.path)
             }
         }
-        return (data, DossierV3.ArchiveFiles(vault))
+        return Checked(data: data, dataFiles: written, vault: DossierV3.ArchiveFiles(vault))
     }
 
     static func validateReferences(_ package: DossierV3.Package) throws {

@@ -131,7 +131,124 @@ struct ValuesFromOutsideTests {
                 "Never a minute of the next day")
     }
 
+    // MARK: How a deadline reminds
+
+    @Test("Leads, grace and a travel margin from outside are held to a hundred years where they are read, and never stop the app")
+    func remindersAreHeld() throws {
+        let longest = ReminderLead.longestDays
+        let profile = try decode(ReminderProfile.self, #"{"leadDays": [-9223372036854775808, 9223372036854775807, -5], "consequence": "legal", "graceDays": 9223372036854775807, "travelMarginDays": 9223372036854775807}"#)
+        #expect(profile.leadDays == [longest, 5])
+        #expect(profile.graceDays == longest)
+        #expect(profile.travelMarginDays == longest)
+        #expect(ReminderProfile(leadDays: [7], consequence: .comfort, graceDays: -3, travelMarginDays: -1) == ReminderProfile(leadDays: [7], consequence: .comfort))
+
+        #expect(ReminderLead(days: .min) == ReminderLead(days: longest))
+        #expect(ReminderLead(days: longest) == .months(1_200), "A hundred years, counted in calendar months")
+        let due = CalendarDay("2026-11-17")
+        #expect(ReminderLead(days: .max).day(before: due, calendar: calendar) == CalendarDay("1926-11-17"))
+        let rule = profile.urgencyRule
+        #expect(rule.travelCutoff(before: due, calendar: calendar) == CalendarDay("1926-11-17"))
+        #expect(rule.urgency(of: due, today: CalendarDay("2026-11-18"), calendar: calendar) == .withinGrace)
+
+        // The widget's snapshot reads the same bounds.
+        let snapshot = try decode(UrgencyRule.self, #"{"graceDays": 9223372036854775807, "firstLeadDays": -9223372036854775808, "maxWindowDays": 9223372036854775807}"#)
+        #expect(snapshot.graceDays == longest)
+        #expect(snapshot.firstLeadDays == 0)
+        #expect(snapshot.maxWindowDays == longest)
+    }
+
+    @Test("A backup's reminders past any count come in held, and the deadline's page and urgency work with them")
+    func remindersFromABackupAreHeld() throws {
+        let container = try household { files in
+            NewerVersionTests.rewrite(&files, DossierV3.Path.obligations) { obligations in
+                obligations[0].set("reminders", [
+                    "consequence": "legal", "followUpAfterLapse": true, "graceDays": .int(.max),
+                    "leadDays": [.int(.min), .int(30)], "travelMarginDays": .int(.max),
+                ])
+            }
+        }
+        let context = ModelContext(container)
+        let itp = try #require(try context.fetch(FetchDescriptor<Obligation>()).first { $0.blueprintKey == BuiltInBlueprints.vehicleITP })
+        #expect(itp.reminders.leadDays == [ReminderLead.longestDays, 30])
+        #expect(itp.reminders.graceDays == ReminderLead.longestDays)
+        #expect(itp.reminderLeadDays == [ReminderLead.longestDays, 30], "Kept as it is read")
+        _ = itp.urgency()
+    }
+
+    // MARK: A car's year
+
+    @Test("A car year no count holds is an unknown age: „Am rezolvat” on its ITP takes the shorter interval")
+    func aCarYearPastAnyCount() throws {
+        let day = CalendarDay("2026-11-17")
+        for year in [1e19, -9_223_372_036_854_775_808, .infinity, .nan] {
+            #expect(RecurrenceEngine.itpInterval(values: FieldValues([VehicleFields.year: .number(year)]), on: day) == .years(1))
+        }
+        #expect(RecurrenceEngine.itpInterval(values: FieldValues([VehicleFields.year: .number(2018)]), on: day) == .years(2))
+        #expect(FieldValue.wholeNumber(1e19) == nil)
+        #expect(FieldValue.wholeNumber(2018.4) == 2018)
+
+        let container = try household { files in
+            NewerVersionTests.rewrite(&files, DossierV3.Path.assets) { assets in
+                guard let car = assets.firstIndex(where: { $0["id"] == "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a41" }) else { return }
+                assets[car].set("values", ["vehicle.year": ["type": "number", "value": .number(1e19)]])
+            }
+        }
+        let context = ModelContext(container)
+        let itp = try #require(try context.fetch(FetchDescriptor<Obligation>()).first { $0.blueprintKey == BuiltInBlueprints.vehicleITP })
+        try ObligationActions(context: context, calendar: calendar, now: { noon("2026-11-17") }).complete(itp)
+        #expect(itp.dueDay > day, "Closed, and the next one set")
+    }
+
     // MARK: Archives
+
+    @Test("A backup's errors say what went wrong in plain words, never a path inside it")
+    func errorsNameNoPath() {
+        let path = "vault/6b7c8d9e-0f1a-4b2c-9d4e-5f6a7b8c9db8.txt"
+        let errors: [any LocalizedError] = [
+            ArchiveError.missingFile(path), ArchiveError.checksumMismatch(path), ArchiveError.unreadableFile(path),
+            ArchiveError.unlistedFile(path), ArchiveError.brokenReference(DossierV3.Path.assets),
+            DosarZipEngine.ZipError.crcMismatch(path: path, expected: 0, actual: 1), DosarZipEngine.ZipError.fileCorrupted(path: path),
+            DosarZipEngine.ZipError.unsafeEntryPath(path: path), DosarZipEngine.ZipError.duplicateEntry(path: path),
+            DosarZipEngine.ZipError.fileTooLargeToWrite(path: path),
+        ]
+        for error in errors {
+            let text = error.errorDescription ?? ""
+            #expect(!text.isEmpty)
+            #expect(!text.contains("vault/") && !text.contains("data/") && !text.contains(".json"), "\(text)")
+        }
+        #expect(ArchiveError.noPasswordTyped.errorDescription != ArchiveError.notADossier.errorDescription,
+                "Nothing typed for a password is never „not a backup”")
+    }
+
+    @Test("Checking a backup streams every file and keeps none; bringing it in decodes each data file from where it was written, one at a time")
+    func checkingKeepsNoDataFile() throws {
+        // A data file that matches its checksum but isn't one: checking says what the manifest
+        // holds, and only bringing it in reads it.
+        let broken = try Fixtures.archive("dosar-v3/household") { files in
+            files[DossierV3.Path.assets] = Data("[".utf8)
+            var manifest = try! JSONSerialization.jsonObject(with: files[DossierV3.Path.manifest]!) as! [String: Any]
+            var checksums = manifest["checksums"] as! [String: String]
+            checksums[DossierV3.Path.assets] = DossierArchiveReader.sha256(files[DossierV3.Path.assets]!)
+            manifest["checksums"] = checksums
+            files[DossierV3.Path.manifest] = try! JSONSerialization.data(withJSONObject: manifest)
+        }
+        let summary = try ArchiveFile.holding(broken) { try DossierArchiveReader.summary(contentsOf: $0) }
+        #expect(summary.counts.assets > 0, "What the manifest says")
+        let folder = URL.temporaryDirectory.appending(path: "read-test-\(UUID().uuidString)", directoryHint: .isDirectory)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        #expect(throws: ArchiveError.unreadableFile(DossierV3.Path.assets)) {
+            try ArchiveFile.holding(broken) { try DossierArchiveReader.read(contentsOf: $0, extractingTo: folder) }
+        }
+
+        let whole = URL.temporaryDirectory.appending(path: "read-test-\(UUID().uuidString)", directoryHint: .isDirectory)
+        defer { try? FileManager.default.removeItem(at: whole) }
+        let package = try ArchiveFile.holding(try Fixtures.archive("dosar-v3/household")) {
+            try DossierArchiveReader.read(contentsOf: $0, extractingTo: whole)
+        }
+        #expect(!package.assets.isEmpty)
+        let left = try FileManager.default.contentsOfDirectory(atPath: whole.path(percentEncoded: false))
+        #expect(left.count == package.files.paths.count, "Only the documents' files wait for the importer; each data file went once read")
+    }
 
     @Test("An archive whose files together unpack past the limit is refused before any is read, both ways")
     func theWholeUnpackedSizeIsLimited() throws {
@@ -261,5 +378,26 @@ struct ValuesFromOutsideTests {
             #expect(before[id, default: []].union(after[id, default: []]).count == 1)
         }
         #expect(try !RecordsMeet.join(in: PersistenceController.context(in: container)))
+    }
+
+    @Test("Replacing everything over two copies of one record writes onto the copy every device keeps, in any order",
+          arguments: [true, false])
+    func replacingWritesOntoTheKeptCopy(smallerFirst: Bool) throws {
+        let context = try makeContext()
+        let container = context.container
+        let car = UUID(uuidString: "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a41")!
+        let smaller = UUID(uuidString: "00000000-0000-4000-8000-000000000001")!
+        let larger = UUID(uuidString: "00000000-0000-4000-8000-000000000002")!
+        for copy in smallerFirst ? [smaller, larger] : [larger, smaller] {
+            let asset = Asset(id: car, name: "VW Golf 2018", templateKey: BuiltInTemplates.Key.vehicle)
+            asset.copyID = copy
+            context.insert(asset)
+        }
+        try context.save()
+
+        try DossierArchiveService(container: container, calendar: calendar).importArchive(try Fixtures.archive("dosar-v3/household"), mode: .replace)
+
+        let copies = try ModelContext(container).fetch(FetchDescriptor<Asset>()).filter { $0.id == car }
+        #expect(copies.map(\.copyID) == [smaller], "The copy joining keeps is the one written onto; the other goes")
     }
 }
