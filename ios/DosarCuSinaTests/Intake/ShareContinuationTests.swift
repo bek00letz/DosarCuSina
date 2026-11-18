@@ -245,7 +245,7 @@ struct ShareConfirmationTests {
     @Test func itStaysUntilClosed() {
         #expect(!ShareConfirmation.closesByItself, "Nobody misses what happens next: it closes only on „Închide”")
         let saved: [ShareConfirmation.Phase] = [.saved(count: 1, next: .tapNotice), .saved(count: 2, next: .openApp), .saved(count: 1, next: .practice)]
-        for phase in saved + [.unsupported] + ShareFailure.allCases.map(ShareConfirmation.Phase.failed) {
+        for phase in saved + [.unsupported] + ShareFailure.allCases.map({ ShareConfirmation.Phase.failed($0) }) {
             #expect(ShareConfirmation(phase).action == .close, "Every outcome waits for „Închide”")
         }
         #expect(ShareConfirmation(.working).action == .cancel)
