@@ -142,6 +142,34 @@ struct InsuredSumTests {
         #expect(home.value(HomeFields.policyNumber) == nil, "A renewing policy with no number read leaves none of the earlier one's")
     }
 
+    @Test("The same policy read with a character mistaken for another keeps the sum typed for it and the number kept")
+    func aMisreadNumberIsTheSamePolicy() async throws {
+        let context = try makeContext()
+        var values = FieldValues()
+        values[VehicleFields.cascoInsuredSum] = .money(Money(60_000))
+        values[VehicleFields.cascoPolicyNumber] = .text("RO/00/X00/XX 000000001")
+        let (car, deadlines) = try section(BuiltInTemplates.Key.vehicle, name: "VW Golf 2018", deadlines: [BuiltInBlueprints.vehicleCASCO],
+                                           values: values, in: context)
+        let casco = try #require(deadlines.first)
+        _ = try await CaptureFiler(context: context).file(.completion(.init(
+            obligation: casco, date: Date(), cost: nil, document: policy(cover: InsuranceCover.casco, sum: nil, number: "R0/0O/X00/XX OOOOOOOO1"))))
+        #expect(car.value(VehicleFields.cascoInsuredSum) == .money(Money(60_000)), "The sum typed for this policy stays")
+        #expect(car.value(VehicleFields.cascoPolicyNumber) == .text("RO/00/X00/XX 000000001"), "The number kept stays as it was")
+
+        _ = try await CaptureFiler(context: context).file(.completion(.init(
+            obligation: casco, date: Date(), cost: nil, document: policy(cover: InsuranceCover.casco, sum: nil, number: "RO/00/X00/XX 000000002"))))
+        #expect(car.value(VehicleFields.cascoInsuredSum) == nil, "Another number is another policy")
+    }
+
+    @Test("Values read alike only for characters recognition takes for one another; two numbers of digits only, only when equal")
+    func readingAlike() {
+        #expect(CaptureText.readAlike("RO/00/X00/XX 000000001", "R0 0O X0O XX OOOOOOOOI"))
+        #expect(CaptureText.readAlike("B-123-ABC", "8 123 A8C"))
+        #expect(!CaptureText.readAlike("000000001", "000000002"))
+        #expect(!CaptureText.readAlike("000000003", "000000008"), "A 3 is no 8")
+        #expect(MRZParser.confusions == CaptureText.lookAlikes, "One list of look-alikes")
+    }
+
     @Test("An RCA keeps no sum, even when its paper prints one")
     func anRCAKeepsNone() async throws {
         let context = try makeContext()

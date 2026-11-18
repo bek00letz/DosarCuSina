@@ -89,6 +89,26 @@ public struct CaptureText: Sendable {
         RomanianText.Keyword(phrase, as: match).isFound(inFolded: folded)
     }
 
+    /// Characters text recognition reads for one another: O, 0 and Q; I, 1 and L; B and 8;
+    /// S and 5; Z and 2; G and 6. The one list, for the machine-readable zone's repairs too
+    /// (`MRZParser.confusions`). No two digits share a group, so two numbers of digits only
+    /// read alike only when they are the same number.
+    public static let lookAlikes: [[Character]] = [
+        ["O", "0", "Q"], ["I", "1", "L"], ["B", "8"], ["S", "5"], ["Z", "2"], ["G", "6"],
+    ]
+
+    /// Whether two values are one value read twice: the same once compared as values are
+    /// (`RomanianText.compact`), but for characters recognition reads for one another
+    /// (`lookAlikes`), so a policy number read "RO/0O/…" is the "RO/00/…" kept.
+    public static func readAlike(_ lhs: String, _ rhs: String) -> Bool {
+        func settled(_ text: String) -> String {
+            String(RomanianText.compact(text).map { character in
+                lookAlikes.first { $0.contains(character) }?.last(where: \.isNumber) ?? character
+            })
+        }
+        return settled(lhs) == settled(rhs)
+    }
+
     /// Whether a keyword is anywhere in the text (`containsWord(_:inFolded:as:)`).
     public func containsWord(_ phrase: String, as match: RomanianText.WordMatch? = nil) -> Bool {
         Self.containsWord(phrase, inFolded: joinedFolded, as: match)
