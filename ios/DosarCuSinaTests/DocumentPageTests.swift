@@ -118,7 +118,7 @@ struct DocumentPageTests {
             var values = FieldValues()
             values[DocumentType.typeFieldKey] = .text(type)
             for field in definition.allFields where field.key != DocumentType.typeFieldKey && !field.isSecret {
-                values[field.key] = field.type == .date || field.type == .expiryDate ? .date(CalendarDay(year: 2030, month: 1, day: 2)) : .text("XX000000")
+                values[field.key] = field.type == .date || field.type == .expiryDate ? FieldValue.date(CalendarDay(year: 2030, month: 1, day: 2)) : FieldValue.text("XX000000")
             }
             let document = try AssetActions(context: home.context).create(name: "Act exemplu", template: home.documents, values: values, parent: home.person)
             document.customFacts = [CustomFact(label: "Unde îl țin", value: "Sertarul de sus")]
