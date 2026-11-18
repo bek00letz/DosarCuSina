@@ -12,14 +12,14 @@ import UniformTypeIdentifiers
 struct ShareNotArrivedTests {
     @Test func aShareWhereSomeArrivedSaysHowManyDidntAndWhyInTheSameConfirmation() {
         var missed = ShareFailure.Tally()
-        missed.add(.couldNotCopy)
+        missed.add(.stillInCloud)
         missed.add(.stillInCloud)
         let phase = ShareConfirmation.Phase.saved(count: 2, next: .tapNotice, notArrived: missed.missed)
         let confirmation = ShareConfirmation(phase)
         #expect(confirmation.title == "Am primit 2 acte", "What arrived leads")
         #expect(confirmation.message == "Atinge notificarea ca să continui. Te așteaptă în aplicație, la De verificat.")
         #expect(confirmation.note == "2 fișiere sunt încă în iCloud. Nu le-am putut descărca acum. Deschide-le o dată în Fișiere, apoi trimite-le din nou.",
-                "How many didn't, the most telling reason, and what to do")
+                "All had the same reason: it is said of all of them, with what to do")
         #expect(confirmation.action == .close)
 
         let one = ShareConfirmation(.saved(count: 1, next: .openApp, notArrived: .init(files: 1, failure: .noRoom)))
@@ -31,10 +31,44 @@ struct ShareNotArrivedTests {
         var tally = ShareFailure.Tally()
         #expect(tally.missed == nil)
         #expect(ShareConfirmation.Phase.nothingSaved(tally.missed) == .unsupported, "Nothing failed and nothing arrived: nothing it can read")
-        tally.add(.notHandedOver)
+        tally.add(.tooLarge)
         tally.add(.tooLarge, files: 3) // photos sorted into one document that couldn't be kept
         #expect(tally.missed == ShareFailure.Missed(files: 4, failure: .tooLarge))
         #expect(ShareConfirmation.Phase.nothingSaved(tally.missed) == .failed(.tooLarge, count: 4))
+        #expect(ShareConfirmation(.nothingSaved(tally.missed)).title == "Fișierele sunt prea mari")
+    }
+
+    @Test func aCountIsNeverPinnedOnAReasonOnlySomeFilesHad() {
+        // One still in iCloud, one copy that failed: two didn't arrive, one is in iCloud.
+        var mixed = ShareFailure.Tally()
+        mixed.add(.stillInCloud)
+        mixed.add(.couldNotCopy)
+        #expect(mixed.missed?.failed == .init(files: 2, failure: .stillInCloud, ofReason: 1))
+        #expect(ShareConfirmation(.saved(count: 1, next: .openApp, notArrived: mixed.missed)).note
+            == "2 fișiere nu au ajuns. Un fișier e încă în iCloud. Nu l-am putut descărca acum. Deschide-l o dată în Fișiere, apoi trimite-l din nou.")
+
+        // Nothing arrived: the title is what is true of all of them, the reason counted apart.
+        var nothing = ShareFailure.Tally()
+        nothing.add(.notHandedOver)
+        nothing.add(.tooLarge, files: 3)
+        let phase = ShareConfirmation.Phase.nothingSaved(nothing.missed)
+        #expect(phase == .failed(.tooLarge, count: 4, ofReason: 3))
+        #expect(ShareConfirmation(phase).title == "Nu s-au trimis")
+        #expect(ShareConfirmation(phase).message == "3 fișiere sunt prea mari. Trimite actele câte unul, sau ca poze în loc de un PDF mare.")
+
+        // Reasons that name no cause: only what is true of all of them.
+        var unnamed = ShareFailure.Tally()
+        unnamed.add(.notHandedOver)
+        unnamed.add(.couldNotCopy)
+        #expect(ShareConfirmation(.saved(count: 1, next: .openApp, notArrived: unnamed.missed)).note
+            == "2 fișiere nu au ajuns. Fișierele nu s-au putut copia. Încearcă din nou din aplicația din care le-ai trimis.")
+
+        // Every reason, mixed with another: the count opening the line is the one true of all.
+        for failure in ShareFailure.allCases where !failure.isLeftUntried {
+            let line = ShareFailureWording.line(.init(files: 3, failure: failure, ofReason: 2))
+            #expect(line.hasPrefix("3 fișiere nu au ajuns. "), "\(failure): „\(line)”")
+            #expect(!line.contains("3 fișiere sunt") && !line.contains("3 fișiere nu au mai"), "\(failure): „\(line)”")
+        }
     }
 
     @Test func everyReasonIsCountedForSeveralFiles() {

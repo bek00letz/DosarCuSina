@@ -16,13 +16,13 @@ public struct ShareConfirmation: Equatable, Sendable {
         /// Nothing it can read: not a photo, a PDF or text.
         case unsupported
         /// Nothing arrived, and why (`ShareFailure`), for `count` files: each reason says what to
-        /// do next.
-        case failed(ShareFailure, count: Int = 1)
+        /// do next. With `ofReason`, only that many had the reason: the files failed differently.
+        case failed(ShareFailure, count: Int = 1, ofReason: Int? = nil)
 
         /// A share where nothing arrived: why, counted by the files it tried in vain
         /// (`ShareFailure.Tally`), or that there was nothing it can read when it tried none.
         public static func nothingSaved(_ missed: ShareFailure.Missed?) -> Phase {
-            missed?.failed.map { .failed($0.failure, count: $0.files) } ?? .unsupported
+            missed?.failed.map { .failed($0.failure, count: $0.files, ofReason: $0.isMixed ? $0.ofReason : nil) } ?? .unsupported
         }
     }
 
@@ -74,9 +74,17 @@ public struct ShareConfirmation: Equatable, Sendable {
         case .unsupported:
             title = String(localized: "Nu pot primi asta", table: "Shared", comment: "Share sheet: nothing it can read.")
             message = ShareFailureWording.advice(.unsupportedType)
-        case .failed(let failure, let count):
-            title = ShareFailureWording.title(failure, count: count)
-            message = ShareFailureWording.advice(failure, count: count)
+        case .failed(let failure, let count, let ofReason):
+            let part = ShareFailure.Missed.Part(files: count, failure: failure, ofReason: ofReason)
+            if part.isMixed {
+                // Different reasons: the title says what is true of all of them („Nu s-au
+                // trimis”), the message the most telling reason, counted by those that had it.
+                title = ShareFailureWording.title(.couldNotCopy, count: count)
+                message = ShareFailureWording.mixedReason(part)
+            } else {
+                title = ShareFailureWording.title(failure, count: count)
+                message = ShareFailureWording.advice(failure, count: count)
+            }
         }
         action = phase == .working ? .cancel : .close
     }

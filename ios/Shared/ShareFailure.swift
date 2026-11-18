@@ -50,20 +50,28 @@ public enum ShareFailure: String, Codable, Sendable, CaseIterable {
         return mostTellingFirst.first(where: found.contains)
     }
 
-    /// The files of one share that didn't arrive. Those it tried to copy are told together, under
-    /// the most telling reason among theirs (`failed`); those it left untried, each reason with its
+    /// The files of one share that didn't arrive. Those it tried to copy are told together, with
+    /// the most telling reason among theirs and how many had it (`failed`); those it left untried, each reason with its
     /// own count (`left`: nothing it can take, past the files one share takes). What the
     /// confirmation counts, with `ShareFailureWording`.
     public struct Missed: Equatable, Hashable, Sendable {
-        /// How many files, and why.
+        /// How many files, and why: `failure` is true of `ofReason` of the `files`, of all of them
+        /// unless the files tried in vain failed for different reasons. A count is only ever said
+        /// of what is true of every file it counts (`ShareFailureWording.line`).
         public struct Part: Equatable, Hashable, Sendable {
             public var files: Int
             public var failure: ShareFailure
+            /// How many of `files` had `failure`.
+            public var ofReason: Int
 
-            public init(files: Int, failure: ShareFailure) {
+            public init(files: Int, failure: ShareFailure, ofReason: Int? = nil) {
                 self.files = files
                 self.failure = failure
+                self.ofReason = min(ofReason ?? files, files)
             }
+
+            /// Whether the files had different reasons, so `failure` is true of only some.
+            public var isMixed: Bool { ofReason < files }
         }
 
         /// The files tried in vain, under the most telling reason; nil when none was.
@@ -92,7 +100,8 @@ public enum ShareFailure: String, Codable, Sendable, CaseIterable {
     /// held (photos sorted into one document count each), and each file left untried.
     public struct Tally: Sendable {
         private var tried = 0
-        private var reasons: [ShareFailure] = []
+        /// The files tried in vain, by reason.
+        private var reasons: [ShareFailure: Int] = [:]
         private var left: [ShareFailure: Int] = [:]
 
         public init() {}
@@ -103,13 +112,14 @@ public enum ShareFailure: String, Codable, Sendable, CaseIterable {
                 left[failure, default: 0] += files
             } else {
                 tried += files
-                reasons.append(failure)
+                reasons[failure, default: 0] += files
             }
         }
 
-        /// How many didn't arrive and why; nil while nothing failed.
+        /// How many didn't arrive and why; nil while nothing failed. The files tried in vain are
+        /// one part, under the most telling reason, with how many of them had it.
         public var missed: Missed? {
-            let failed = ShareFailure.mostTelling(reasons).map { Missed.Part(files: tried, failure: $0) }
+            let failed = ShareFailure.mostTelling(reasons.keys).map { Missed.Part(files: tried, failure: $0, ofReason: reasons[$0]) }
             let leftParts = ShareFailure.leftUntried.compactMap { reason in left[reason].map { Missed.Part(files: $0, failure: reason) } }
             guard failed != nil || !leftParts.isEmpty else { return nil }
             return Missed(failed: failed, left: leftParts)

@@ -109,7 +109,26 @@ public enum ShareFailureWording {
     /// vain, then each reason a file was left untried), how many and why, then what to do, a
     /// line each.
     public static func note(_ missed: ShareFailure.Missed) -> String {
-        missed.parts.map { cause($0.failure, count: $0.files) + " " + advice($0.failure, count: $0.files) }
-            .joined(separator: "\n")
+        missed.parts.map(line).joined(separator: "\n")
     }
+
+    /// One part of the note. A count goes only with what is true of every file it counts: files
+    /// that all had one reason are told by it („2 fișiere sunt încă în iCloud. …”); files with
+    /// different reasons by what is true of all of them, then the most telling reason, counted by
+    /// the files that had it („2 fișiere nu au ajuns. Un fișier e încă în iCloud. …”).
+    public static func line(_ part: ShareFailure.Missed.Part) -> String {
+        guard part.isMixed else { return cause(part.failure, count: part.files) + " " + advice(part.failure, count: part.files) }
+        return cause(.couldNotCopy, count: part.files) + " " + mixedReason(part)
+    }
+
+    /// The most telling reason of files that failed for different reasons, counted by the files
+    /// that had it, and what to do about them; for a reason that names no cause (nothing handed
+    /// over, a copy that failed), what is true of all of them instead.
+    public static func mixedReason(_ part: ShareFailure.Missed.Part) -> String {
+        if namesNoCause.contains(part.failure) { return advice(.couldNotCopy, count: part.files) }
+        return cause(part.failure, count: part.ofReason) + " " + advice(part.failure, count: part.ofReason)
+    }
+
+    /// The reasons whose words say only that a file didn't arrive, not why.
+    static let namesNoCause: Set<ShareFailure> = [.notHandedOver, .couldNotCopy]
 }
