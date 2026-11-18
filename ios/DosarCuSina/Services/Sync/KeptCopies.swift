@@ -60,7 +60,9 @@ enum KeptCopies {
         return files.filter { $0.pathExtension.lowercased() == "dosar" }.sorted { lhs, rhs in
             let left = keptAt(lhs) ?? .distantPast, right = keptAt(rhs) ?? .distantPast
             if left != right { return left > right }
-            return lhs.lastPathComponent.compare(rhs.lastPathComponent, options: .numeric) == .orderedDescending
+            // By the name before its extension, so „… 2” comes after the name it numbers.
+            let leftName = lhs.deletingPathExtension().lastPathComponent, rightName = rhs.deletingPathExtension().lastPathComponent
+            return leftName.compare(rightName, options: .numeric) == .orderedDescending
         }
     }
 
