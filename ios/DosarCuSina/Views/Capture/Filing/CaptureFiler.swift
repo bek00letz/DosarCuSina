@@ -20,8 +20,9 @@ import SwiftData
 /// Side effects (reminders, widgets) follow every save through `SideEffectsCoordinator`.
 ///
 /// A review the person saved also teaches the phone's own reader what its issuer prints where
-/// (`CaptureLessonLearner`), worked out before the unit opens and kept in it (`IssuerLessons.record`):
-/// the paper and its lessons are kept together, and "Anulează" takes both back.
+/// (`CaptureLessonLearner`), worked out away from the main thread before the unit opens and kept
+/// in it with the category of the section it was filed in (`IssuerLessons.record`): the paper and
+/// its lessons are kept together, and "Anulează" takes both back.
 @MainActor
 struct CaptureFiler {
     let context: ModelContext
@@ -276,7 +277,9 @@ struct CaptureFiler {
         }
         // Every question the person must answer is asked before anything is written.
         try askFirst(for: intent, document: document)
-        let lessons = Self.lessons(taughtBy: intent)
+        // What the paper teaches takes time too: worked out now, away from the main thread.
+        let household = try HouseholdValues.words(in: context)
+        let lessons = await Self.lessons(taughtBy: intent, household: household)
         // From here nothing waits: one step, everything or nothing.
         let filing = try UnitOfWork.performUndoable(in: context, now: now()) {
             let outcome: Outcome
@@ -285,7 +288,7 @@ struct CaptureFiler {
             case .completion(let completion): outcome = try fileCompletion(completion, document: document)
             case .visit(let visit): outcome = try fileVisit(visit, document: document)
             }
-            if let lessons { try IssuerLessons(context: context, now: now).record(lessons) }
+            if let lessons { try IssuerLessons(context: context, now: now).record(lessons, learnedIn: outcome.asset?.templateKey) }
             return outcome
         }
         var outcome = filing.value
@@ -296,10 +299,14 @@ struct CaptureFiler {
     }
 
     /// What filing `intent` teaches the phone's own reader: only a review's, whose every value the
-    /// person saw before saving, compared with what the phone read of the same page.
-    static func lessons(taughtBy intent: Intent) -> CaptureLessonLearner.Outcome? {
+    /// person saw before saving, compared with what the phone read of the same page, with
+    /// `household` the words of what the binder keeps that names the household
+    /// (`HouseholdValues`). Worked out away from the main thread: reading the page again takes
+    /// time, and the screen keeps answering meanwhile.
+    static func lessons(taughtBy intent: Intent, household: Set<String>) async -> CaptureLessonLearner.Outcome? {
         guard case .review(let review) = intent, let source = review.result.source else { return nil }
-        return CaptureLessonLearner.lessons(from: source, saved: .init(kind: review.kind, values: review.valuesByKey))
+        let saved = CaptureLessonLearner.Saved(kind: review.kind, values: review.valuesByKey, household: household)
+        return await Task.detached(priority: .userInitiated) { CaptureLessonLearner.lessons(from: source, saved: saved) }.value
     }
 
     /// The document an intent files, if any.

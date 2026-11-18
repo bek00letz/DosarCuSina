@@ -69,7 +69,7 @@ public enum ReadingBasis: String, Codable, CaseIterable, Sendable {
     case estimated
 }
 
-extension DosarSchemaV16 {
+extension DosarSchemaV17 {
     /// A line in a history entry: a part replaced, a job done, a vaccine given.
     /// `componentKey` ties it to the template's component catalog so "when did I
     /// last change the brake pads" has one answer across entries.

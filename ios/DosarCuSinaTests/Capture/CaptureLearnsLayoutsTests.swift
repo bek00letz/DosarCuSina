@@ -139,6 +139,23 @@ struct CaptureLearnsLayoutsTests {
         #expect(CaptureLessonLearner.lessons(from: Self.source(personal, on: "2026-11-02"), saved: withHolder) == nil)
     }
 
+    @Test("On a two-column bill, the left column's text is never the right column's label")
+    func theLeftColumnIsNeverTheRightColumnsLabel() {
+        let bill: [[RecognizedLine]] = [[
+            Self.line("ENGIE Romania S.A.", x: 0.05, y: 0.04),
+            Self.line("CUI: RO12345674", x: 0.05, y: 0.07),
+            Self.line("FACTURĂ GAZE NATURALE", x: 0.05, y: 0.10),
+            Self.line("Produs", x: 0.05, y: 0.20), Self.line("Termen achitare", x: 0.55, y: 0.20),
+            Self.line("Gaze naturale", x: 0.05, y: 0.23), Self.line("15.12.2026", x: 0.55, y: 0.23),
+            Self.line("Următoarea citire", x: 0.05, y: 0.29),
+            Self.line("20.12.2026", x: 0.05, y: 0.32),
+        ]]
+        let saved = CaptureLessonLearner.Saved(kind: .utilityInvoice, values: [.dueDate: Self.due])
+        let learned = CaptureLessonLearner.lessons(from: Self.source(bill, on: "2026-11-02"), saved: saved)?.learned ?? []
+        #expect(!learned.contains { $0.label == "Gaze naturale" }, "The text beside it is the other column's")
+        #expect(!learned.contains { $0.field == .dueDate }, "Its column's label and the text beside it both read as labels: which is its own can't be told")
+    }
+
     @Test("A value printed under two different labels teaches nothing")
     func twoColumnLabelsTeachNothing() {
         let twice = Self.twoColumnBill(issued: "01.11.2026", due: "15.12.2026", nextReading: "20.12.2026", total: "123,45", extra: [

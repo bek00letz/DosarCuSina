@@ -4,7 +4,7 @@ import SwiftData
 /// The current schema of the household database.
 ///
 /// Every model lives inside this namespace so that the next version can freeze a
-/// copy of these definitions and migrate from them (as `DosarSchemaV2` to `DosarSchemaV15`
+/// copy of these definitions and migrate from them (as `DosarSchemaV2` to `DosarSchemaV16`
 /// are frozen in `Versions/`). App code uses the top-level type aliases below and never names the
 /// version directly.
 ///
@@ -50,9 +50,11 @@ import SwiftData
 /// theirs that syncs like the category's place and whether it shows. Version 16 adds what capture
 /// learned of each issuer's papers from what the person saved (`IssuerLesson`, a model of its own:
 /// the label an issuer prints a value under), so the phone reads the next paper of that issuer
-/// itself; nothing else changes.
-public enum DosarSchemaV16: VersionedSchema {
-    public static let versionIdentifier = Schema.Version(16, 0, 0)
+/// itself; nothing else changes. Version 17 adds the category of the section the paper a lesson
+/// was learned from was filed in (`IssuerLesson.categoryKey`, none by default: not known), so
+/// Settings keeps what was learned from a locked category's papers behind its lock.
+public enum DosarSchemaV17: VersionedSchema {
+    public static let versionIdentifier = Schema.Version(17, 0, 0)
 
     public static var models: [any PersistentModel.Type] {
         [
@@ -76,8 +78,8 @@ public enum DosarSchemaV16: VersionedSchema {
 /// stage that carries something across the change of shape carries it through `MigrationCarry`,
 /// never in memory, so an upgrade that stops halfway finishes at the next launch.
 public enum DosarMigrationPlan: SchemaMigrationPlan {
-    public static var schemas: [any VersionedSchema.Type] { [DosarSchemaV2.self, DosarSchemaV3.self, DosarSchemaV4.self, DosarSchemaV5.self, DosarSchemaV6.self, DosarSchemaV7.self, DosarSchemaV8.self, DosarSchemaV9.self, DosarSchemaV10.self, DosarSchemaV11.self, DosarSchemaV12.self, DosarSchemaV13.self, DosarSchemaV14.self, DosarSchemaV15.self, DosarSchemaV16.self] }
-    public static var stages: [MigrationStage] { [v2ToV3, v3ToV4, v4ToV5, v5ToV6, v6ToV7, v7ToV8, v8ToV9, v9ToV10, v10ToV11, v11ToV12, v12ToV13, v13ToV14, v14ToV15, v15ToV16] }
+    public static var schemas: [any VersionedSchema.Type] { [DosarSchemaV2.self, DosarSchemaV3.self, DosarSchemaV4.self, DosarSchemaV5.self, DosarSchemaV6.self, DosarSchemaV7.self, DosarSchemaV8.self, DosarSchemaV9.self, DosarSchemaV10.self, DosarSchemaV11.self, DosarSchemaV12.self, DosarSchemaV13.self, DosarSchemaV14.self, DosarSchemaV15.self, DosarSchemaV16.self, DosarSchemaV17.self] }
+    public static var stages: [MigrationStage] { [v2ToV3, v3ToV4, v4ToV5, v5ToV6, v6ToV7, v7ToV8, v8ToV9, v9ToV10, v10ToV11, v11ToV12, v12ToV13, v13ToV14, v14ToV15, v15ToV16, v16ToV17] }
 
     /// Version 3 only adds optional attributes; existing records keep every value. What
     /// the new attributes should hold for old records is filled in later: the categories'
@@ -164,23 +166,27 @@ public enum DosarMigrationPlan: SchemaMigrationPlan {
     /// Version 16 only adds a model (what capture learned of an issuer's papers); existing records
     /// keep every value, and nothing is learned yet: the next paper the person saves teaches it.
     static var v15ToV16: MigrationStage { .lightweight(fromVersion: DosarSchemaV15.self, toVersion: DosarSchemaV16.self) }
+
+    /// Version 17 only adds an optional attribute (the category a lesson was learned in); every
+    /// lesson already kept stays, its category not known (read as `IssuerLessons.isProtected` says).
+    static var v16ToV17: MigrationStage { .lightweight(fromVersion: DosarSchemaV16.self, toVersion: DosarSchemaV17.self) }
 }
 
 /// The schema the app runs on, for code that needs the schema itself (its models, a `Schema`):
 /// outside `Models/Schema/`, code names this and the model aliases below, never a version, so
 /// the next version is one change here (the `frozen-schema-version` check).
-public typealias CurrentSchema = DosarSchemaV16
+public typealias CurrentSchema = DosarSchemaV17
 
-public typealias CategoryTemplate = DosarSchemaV16.CategoryTemplate
-public typealias Asset = DosarSchemaV16.Asset
-public typealias Obligation = DosarSchemaV16.Obligation
-public typealias HistoryEntry = DosarSchemaV16.HistoryEntry
-public typealias ServiceItem = DosarSchemaV16.ServiceItem
-public typealias MeasurementLog = DosarSchemaV16.MeasurementLog
-public typealias Attachment = DosarSchemaV16.Attachment
-public typealias Provider = DosarSchemaV16.Provider
-public typealias AttachmentPage = DosarSchemaV16.AttachmentPage
-public typealias IssuerLesson = DosarSchemaV16.IssuerLesson
+public typealias CategoryTemplate = DosarSchemaV17.CategoryTemplate
+public typealias Asset = DosarSchemaV17.Asset
+public typealias Obligation = DosarSchemaV17.Obligation
+public typealias HistoryEntry = DosarSchemaV17.HistoryEntry
+public typealias ServiceItem = DosarSchemaV17.ServiceItem
+public typealias MeasurementLog = DosarSchemaV17.MeasurementLog
+public typealias Attachment = DosarSchemaV17.Attachment
+public typealias Provider = DosarSchemaV17.Provider
+public typealias AttachmentPage = DosarSchemaV17.AttachmentPage
+public typealias IssuerLesson = DosarSchemaV17.IssuerLesson
 
 /// Shared JSON coding for values stored as `Data` on models and written to archives.
 /// Keys are sorted so the same value always produces the same bytes.

@@ -349,6 +349,51 @@ struct DataRepairTests {
         #expect(found.allSatisfy { $0.isFixable } && !DataRepairs.step(.subscriptionCodes).isSuggestion)
     }
 
+    // MARK: Lessons whose label is the household's
+
+    @Test("A learned label that holds a person's name, a home's locality or a plate is offered to be forgotten; an issuer's own label stays")
+    func lessonsHoldingTheHouseholdsValuesAreForgotten() throws {
+        let context = try makeContext()
+        context.insert(Asset(name: "Ion Exemplu", templateKey: BuiltInTemplates.Key.member))
+        var home = FieldValues()
+        home[HomeFields.address] = .text("Strada Exemplu nr. 1, Exempluville")
+        context.insert(Asset(name: "Apartament", templateKey: BuiltInTemplates.Key.home, values: home))
+        var car = FieldValues()
+        car[VehicleFields.plate] = .text("B-123-ABC")
+        context.insert(Asset(name: "VW Golf 2018", templateKey: BuiltInTemplates.Key.vehicle, values: car))
+        let issuer = IssuerKey(rawValue: "cui:12345674")
+        let own = IssuerLesson(CaptureLesson(issuer: issuer, kind: .utilityInvoice, field: .dueDate, label: "Ultima zi de plată"),
+                               issuerName: "ENGIE Romania S.A.", categoryKey: BuiltInTemplates.Key.subscription)
+        let name = IssuerLesson(CaptureLesson(issuer: issuer, kind: .utilityInvoice, field: .total, label: "Titular Exemplu"),
+                                issuerName: "ENGIE Romania S.A.", categoryKey: BuiltInTemplates.Key.subscription)
+        let locality = IssuerLesson(CaptureLesson(issuer: issuer, kind: .utilityInvoice, field: .issueDate, label: "Exempluville"),
+                                    issuerName: "ENGIE Romania S.A.", categoryKey: BuiltInTemplates.Key.subscription)
+        let plate = IssuerLesson(CaptureLesson(issuer: issuer, kind: .serviceInvoice, field: .odometer, label: "Mașina ABC"),
+                                 issuerName: "Service Exemplu SRL", categoryKey: BuiltInTemplates.Key.vehicle)
+        for lesson in [own, name, locality, plate] { context.insert(lesson) }
+        try context.save()
+
+        let found = try applyTwice(.personalLessonLabels, in: context) {
+            #expect(try context.fetch(FetchDescriptor<IssuerLesson>()).map(\.label) == ["Ultima zi de plată"])
+        }
+        #expect(found.count == 3)
+        #expect(found.allSatisfy { $0.isFixable } && !DataRepairs.step(.personalLessonLabels).isSuggestion)
+        #expect(found.contains { $0.message.contains("„Titular Exemplu”") }, "Named, from an open category's papers")
+    }
+
+    @Test("A lesson from a locked category's papers is offered without naming its issuer")
+    func aLockedCategorysLessonIsNotNamed() throws {
+        let context = try makeContext()
+        context.insert(Asset(name: "Ion Exemplu", templateKey: BuiltInTemplates.Key.member))
+        let clinic = IssuerLesson(CaptureLesson(issuer: IssuerKey(rawValue: "name:CLINICAEXEMPLU"), kind: .medicalResult, field: .issueDate,
+                                                label: "Pacient Exemplu"), issuerName: "Clinica Exemplu SRL", categoryKey: BuiltInTemplates.Key.health)
+        context.insert(clinic)
+        try context.save()
+        let found = try repairs(context).detect().filter { $0.step == .personalLessonLabels }
+        #expect(found.count == 1)
+        #expect(found.allSatisfy { !$0.message.contains("Clinica") && !$0.message.contains("Pacient") })
+    }
+
     @Test func everyStepHasItsOwnStoredID() {
         let ids = DataRepairs.steps.map { type(of: $0).id }
         #expect(Set(ids).count == ids.count)

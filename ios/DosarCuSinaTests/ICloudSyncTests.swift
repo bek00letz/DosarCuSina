@@ -176,7 +176,7 @@ struct ICloudSyncTests {
 
     @Test("Every model is shaped as CloudKit needs: defaults or optional, nothing unique, relationships optional with inverses")
     func everyModelIsCloudKitShaped() throws {
-        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: DosarSchemaV16.models))
+        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: DosarSchemaV17.models))
         for entity in model.entities {
             #expect(entity.uniquenessConstraints.flatMap { $0 }.isEmpty, "\(entity.name ?? "") has nothing unique")
             for (name, attribute) in entity.attributesByName {

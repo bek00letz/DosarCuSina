@@ -11,13 +11,18 @@ import Foundation
 ///   one to four words, with no digits (`accepts`). Its label is where `LabelledLayout` reads a
 ///   label's value, read backwards: the words before it on its line, after a date or an amount
 ///   printed before it there (`afterLastValue`); else, on a page whose lines have positions (a
-///   photo, a scan, a digital PDF), the nearest line to its left on its row, else the nearest line
-///   above it whose span overlaps it (a two-column layout); without positions, the line above;
+///   photo, a scan, a digital PDF), the nearest line above it in its own column (a two-column
+///   layout) or the nearest line to its left on its row, with nothing between them, whichever is
+///   a label, and none when both are (the text to its left may be another column's); without
+///   positions, the line above;
 /// - the label isn't one the kind reads as another value (`CaptureKindProfile.wordings(otherThan:)`),
 ///   and one the kind reads as this value teaches only where the kind's own readers, without any
 ///   lesson, read the value wrong on this page (a column they read on rows joined across it);
 /// - the label holds no value of the person's: none of the values saved (a name, an address, a
-///   code), no card number, nothing shaped like a CNP; it holds only the issuer's words;
+///   code), nothing the binder keeps that names the household (`Saved.household`: the people's
+///   names, the homes' addresses and localities, the plates, `HouseholdValues`), no proper name
+///   the page prints in its buyer's block (`buyerBlockNames`), no card number, nothing shaped like
+///   a CNP; it holds only the issuer's words;
 /// - told to the readers, the label reads the saved value on this very page, and every value the
 ///   phone read right still reads the same;
 /// - no lesson of the same issuer gives that label to another value; when one does, both go.
@@ -33,9 +38,12 @@ enum CaptureLessonLearner {
     static let shortestText = 3
 
     /// What the person saved from a review.
-    struct Saved {
+    struct Saved: Sendable {
         var kind: CaptureDocumentKind
         var values: [CaptureFieldKey: CaptureValue]
+        /// The words of what the binder keeps that names the household, wherever it is kept
+        /// (`HouseholdValues.words`): a label holding one is the person's, never the issuer's.
+        var household: Set<String> = []
     }
 
     /// What one saved paper taught.
@@ -69,7 +77,7 @@ enum CaptureLessonLearner {
         let text = source.pages.isEmpty ? read.text : CaptureText(pages: source.pages)
         let phone = firstValues(read.fields)
         let window = DateWindow.around(CalendarDay(source.referenceDate))
-        let personal = personalWords(in: saved.values)
+        let personal = personalWords(in: saved.values).union(saved.household).union(buyerBlockNames(in: read.text, kind: kind))
         let standing = book.standing(for: issuer, kind: kind)
         let right = Set(saved.values.keys.filter { key in phone[key].map { same($0, saved.values[key]) } ?? false })
 
@@ -142,9 +150,32 @@ enum CaptureLessonLearner {
     /// The words of every value saved that isn't the issuer's own name: a holder's name, an
     /// address, a code. A label holding one of them is the person's, never the issuer's.
     static func personalWords(in values: [CaptureFieldKey: CaptureValue]) -> Set<String> {
-        Set(values.filter { !issuerFields.contains($0.key) }.values.compactMap(\.text).flatMap { text in
-            RomanianText.words(text).filter { $0.count >= shortestText }.map(String.init)
-        })
+        words(of: values.filter { !issuerFields.contains($0.key) }.values.compactMap(\.text))
+    }
+
+    /// The folded words of `texts` a label is checked against: each of `shortestText` letters or
+    /// digits or more, as a value's words are looked for on the page.
+    static func words(of texts: some Sequence<String>) -> Set<String> {
+        Set(texts.flatMap { text in RomanianText.words(text).filter { $0.count >= shortestText }.map(String.init) })
+    }
+
+    /// The proper names the page prints in its buyer's block (`RomanianFieldExtractor.buyerBlock`):
+    /// the customer's name and address as printed, each word that starts with a capital and is no
+    /// word of a label any table knows (the kind's, every document's, the lexicon's), folded. A
+    /// label holding one is the person's.
+    static func buyerBlockNames(in text: CaptureText, kind: CaptureDocumentKind) -> Set<String> {
+        let block = RomanianFieldExtractor.buyerBlock(in: text)
+        guard !block.isEmpty else { return [] }
+        let tables = kind.profile.labels + CaptureKindProfile.commonLabels
+        let known = words(of: tables.flatMap(\.1) + CaptureLexicon.buyerLabels + CaptureLexicon.nonItemWords
+            + CaptureLexicon.holderAddressLabels + CaptureLexicon.policyholderNeighbourLabels)
+        var names = Set<String>()
+        for line in block.sorted() {
+            for word in text.original[line].split(whereSeparator: { !$0.isLetter }) where word.first?.isUppercase == true {
+                for folded in words(of: [String(word)]) where !known.contains(folded) { names.insert(folded) }
+            }
+        }
+        return names
     }
 
     /// The one label the saved value is printed next to on the page; nil when it is printed next
@@ -211,11 +242,12 @@ enum CaptureLessonLearner {
 
     /// The label of the value printed at `place`, where `LabelledLayout` would read it as that
     /// label's value: the words before it on its line, after a value printed before it there;
-    /// else, when it starts its line on a page with positions, the nearest line to its left on its
-    /// row (`LabelledLayout.lineBefore`, as far as a lesson's value is read beside its label,
-    /// `LessonBook.rowReach`) when that ends in a label, else the nearest line above it in its
-    /// column (`LabelledLayout.lineAbove`); without positions, the line above on the same page.
-    /// Nil when that is no label: none, too long, or digits.
+    /// else, when it starts its line on a page with positions, the nearest line above it in its
+    /// own column (`LabelledLayout.lineAbove`) or the nearest line to its left on its row with
+    /// nothing between them (`LabelledLayout.lineBefore`, as far as a lesson's value is read
+    /// beside its label, `LessonBook.rowReach`), whichever is a label; when both are, none (the
+    /// text to its left may be another column's); without positions, the line above on the same
+    /// page. Nil when that is no label: none, too long, or digits.
     private static func label(at place: (line: Int, start: String.Index), in text: CaptureText) -> String? {
         let before = text.folded[place.line][..<place.start]
         if before.contains(where: { $0.isLetter || $0.isNumber }) {
@@ -226,11 +258,18 @@ enum CaptureLessonLearner {
             guard above >= 0, text.pages[above] == text.pages[place.line] else { return nil }
             return printed(on: above, upTo: nil, in: text)
         }
-        if let left = LabelledLayout<CaptureFieldKey>.lineBefore(place.line, in: text, reach: LessonBook.rowReach),
-           let label = printed(on: left, upTo: nil, in: text) {
-            return label
+        // In its own column, the line above it there; on its own row, the nearest line to its
+        // left, with nothing between them. When both read as labels, the text to its left may be
+        // another column's (a two-column bill): which is its label can't be told, and none is.
+        let above = LabelledLayout<CaptureFieldKey>.lineAbove(place.line, in: text).flatMap { printed(on: $0, upTo: nil, in: text) }
+        let left = LabelledLayout<CaptureFieldKey>.lineBefore(place.line, in: text, reach: LessonBook.rowReach)
+            .flatMap { printed(on: $0, upTo: nil, in: text) }
+        switch (above, left) {
+        case (let above?, nil): return above
+        case (nil, let left?): return left
+        case (let above?, let left?): return RomanianText.fold(above) == RomanianText.fold(left) ? above : nil
+        case (nil, nil): return nil
         }
-        return LabelledLayout<CaptureFieldKey>.lineAbove(place.line, in: text).flatMap { printed(on: $0, upTo: nil, in: text) }
     }
 
     /// The label as printed on `line`, up to `end` (its end when nil): its words after a value

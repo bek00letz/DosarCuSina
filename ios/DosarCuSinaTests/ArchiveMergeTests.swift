@@ -185,7 +185,8 @@ struct ArchiveMergeTests {
 
             // What capture learned of a firm's bills: its words and layout, nothing of the household's.
             let lesson = IssuerLesson(CaptureLesson(issuer: IssuerKey(rawValue: "cui:12345674"), kind: .utilityInvoice, field: .dueDate,
-                                                    label: "Ultima zi de plată"), issuerName: "ENGIE Romania S.A.")
+                                                    label: "Ultima zi de plată"), issuerName: "ENGIE Romania S.A.",
+                                     categoryKey: BuiltInTemplates.Key.subscription)
             context.insert(lesson)
             lesson.createdAt = then
             lesson.updatedAt = then

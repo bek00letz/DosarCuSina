@@ -545,7 +545,8 @@ extension IssuerLesson: UndoableRecord {
         [
             .attribute("id", \.id), .attribute("copyID", \.copyID), .attribute("issuerKey", \.issuerKey),
             .attribute("issuerName", \.issuerName), .attribute("kindRaw", \.kindRaw), .attribute("fieldKey", \.fieldKey),
-            .attribute("label", \.label), .attribute("createdAt", \.createdAt), .attribute("updatedAt", \.updatedAt),
+            .attribute("label", \.label), .attribute("categoryKey", \.categoryKey), .attribute("createdAt", \.createdAt),
+            .attribute("updatedAt", \.updatedAt),
         ]
     }
     public var recordKey: String { id.uuidString }

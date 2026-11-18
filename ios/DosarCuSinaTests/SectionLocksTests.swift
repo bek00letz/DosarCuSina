@@ -28,7 +28,7 @@ struct SectionLocksTests {
     }
 
     @Test func theLockIsNotInTheStore() throws {
-        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: DosarSchemaV16.models))
+        let model = try #require(NSManagedObjectModel.makeManagedObjectModel(for: DosarSchemaV17.models))
         let categories = try #require(model.entitiesByName["CategoryTemplate"])
         #expect(categories.attributesByName["isSensitive"] == nil, "iCloud never carries a lock")
     }

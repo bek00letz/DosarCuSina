@@ -281,7 +281,8 @@ struct DossierArchiveWriter: Sendable {
     private static func issuerLesson(_ lesson: IssuerLesson) -> DossierV3.IssuerLesson {
         DossierV3.IssuerLesson(
             id: DossierV3.id(lesson.id), issuerKey: lesson.issuerKey, issuerName: lesson.issuerName, kind: lesson.kindRaw,
-            field: lesson.fieldKey, label: lesson.label, createdAt: lesson.createdAt, updatedAt: lesson.updatedAt
+            field: lesson.fieldKey, label: lesson.label, categoryKey: lesson.categoryKey, createdAt: lesson.createdAt,
+            updatedAt: lesson.updatedAt
         )
     }
 

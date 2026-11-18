@@ -539,6 +539,7 @@ struct DossierImporter {
             record.kindRaw = dto.kind
             record.fieldKey = dto.field
             record.label = dto.label
+            record.categoryKey = dto.categoryKey
             record.createdAt = clamped(dto.createdAt)
             record.updatedAt = changeTime(dto.updatedAt)
         }

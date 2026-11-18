@@ -203,6 +203,9 @@ public enum DossierV3 {
         /// `CaptureFieldKey` raw value.
         public var field: String
         public var label: String
+        /// The category of the section its paper was filed in (`CategoryTemplate` key); missing in
+        /// archives from before it, and for a lesson whose category isn't known.
+        public var categoryKey: String? = nil
         public var createdAt: Date
         public var updatedAt: Date
     }
