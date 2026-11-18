@@ -56,7 +56,8 @@ struct FullPageScreenshotTests {
         #expect(viewport.offset(showingFrom: 0) == -100)
         #expect(viewport.offset(showingFrom: 1_000) == 900)
         // The last screen: the content's end sits on the tab bar.
-        #expect(viewport.offset(showingFrom: 2_900) == 3_000 + 80 - 844)
+        // Worked out in points through the bars' insets: equal to the point, not to the bit.
+        #expect(abs(viewport.offset(showingFrom: 2_900) - (3_000 + 80 - 844)) < 0.001)
     }
 
     // MARK: What a full page holds
