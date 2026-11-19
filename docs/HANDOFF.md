@@ -111,6 +111,13 @@ Newest first. Copy this template:
 - **Decisions:** entries added to or questioned in DECISIONS.md, or "none".
 ```
 
+### 2026-11-19 — owner (with Claude) — `claude/app-store-assets-folder`
+- **Did:** the framed set the owner approved (PawPaw and the specimen passport included) is kept in the repository, `marketing/app-store/screenshots/iphone-6.9/` and `ipad-13/`, numbered in upload order; the README shows the iPhone ones at its top. The Screenshots workflow no longer runs for a change to that folder alone.
+- **Tests:** none needed (pictures, README and a workflow trigger); the pull request's checks.
+- **Left open:** each time the set is taken again it adds about 13 MB to the repository's history; replace the files only when a screen really changes.
+- **Next:** upload the set and the listing text to App Store Connect.
+- **Decisions:** none.
+
 ### 2026-11-18 — owner (with Claude) — `claude/app-store-assets`
 - **Did:** the App Store assets. Stage 2 (the owner's answers): Romanian listing only (`en.md` gone), the light captioned style only, the order Dosar, Urmează, car, invoice reading, trip, search, passport; PawPaw's photo and a specimen passport page drawn in code (`ScreenshotPictures`); the reading scene in the household's names. Stage 1: The screenshots are taken by UI tests (`DosarCuSinaScreenshots`, its own scheme, never in the test run) on a made-up household the app makes itself in development builds (`ScreenshotStage`, `-DosarScreenshots <scene>`, a separate store that never syncs); `scripts/app-store-screenshots.sh` takes them on any installed simulator in light and dark, and the Screenshots workflow on GitHub for the iPhone 6.9″ and the iPad 13″. Listing drafts in `marketing/app-store/` (Romanian, and an optional English one), captions in `captions.json`, three framing styles in `marketing/frame-screenshots.swift`.
 - **Tests:** the screenshot UI tests on iPad Pro 13-inch (M5), iOS 27.2, and on GitHub's runner; the whole suite on GitHub's runner.
