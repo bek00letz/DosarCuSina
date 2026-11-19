@@ -611,7 +611,8 @@ public final class PersistenceController {
     public nonisolated static var defaultStoreURL: URL {
         let base = URL.applicationSupportDirectory
         try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
-        return base.appending(path: "Dosar-v2.store")
+        // A screenshot run keeps its made-up binder apart from the phone's (`ScreenshotStage`).
+        return base.appending(path: BuildInfo.screenshotStoreName ?? "Dosar-v2.store")
     }
 
     public nonisolated static let schema = Schema(versionedSchema: CurrentSchema.self)
@@ -642,7 +643,7 @@ public final class PersistenceController {
     /// Whether this build syncs at all: a development build, or a release one once sync ships. Never
     /// the host of a test run, whose binder is the Simulator's own.
     nonisolated static var syncIsBuiltIn: Bool {
-        syncIsBuiltIn(debug: isDebugBuild, shipsInRelease: syncShipsInReleaseBuilds, testHost: BuildInfo.isTestHost)
+        syncIsBuiltIn(debug: isDebugBuild, shipsInRelease: syncShipsInReleaseBuilds, testHost: BuildInfo.isTestHost || BuildInfo.isScreenshotRun)
     }
 
     /// Whether this build is one that syncs, whoever runs it: what its Info.plist's background

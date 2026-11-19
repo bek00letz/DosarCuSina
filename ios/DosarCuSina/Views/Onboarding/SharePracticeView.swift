@@ -253,7 +253,8 @@ enum SampleInvoice {
     static var total: Decimal { lines.reduce(0) { $0 + $1.amount } }
 
     /// Writes the PDF the share practice sends. The inbox recognizes it by its bytes (`ShareInbox.expectPractice`).
-    static func writePDF(date: Date = Date()) throws -> URL {
+    /// The App Store's screenshots read the same invoice in their household's names (`ScreenshotStage`).
+    static func writePDF(date: Date = Date(), issuer: String = SampleInvoice.issuer, client: String = SampleInvoice.client) throws -> URL {
         let url = FileManager.default.temporaryDirectory.appending(path: ShareInbox.practiceFileName)
         let page = CGRect(x: 0, y: 0, width: 595, height: 842)
         let renderer = UIGraphicsPDFRenderer(bounds: page)

@@ -1,0 +1,32 @@
+{
+  "ro": {
+    "01-binder": {
+      "title": "Actele casei, într-un singur dosar",
+      "subtitle": "Mașina, locuința, oamenii, animalele"
+    },
+    "02-upcoming": {
+      "title": "Știi mereu ce urmează",
+      "subtitle": "Îți amintesc la timp, nu mai devreme"
+    },
+    "03-car": {
+      "title": "ITP, RCA, rovinietă și revizii",
+      "subtitle": "Cu kilometrajul și istoricul la zi"
+    },
+    "04-capture": {
+      "title": "Faci o poză, eu citesc",
+      "subtitle": "Datele și sumele, citite pe telefon"
+    },
+    "05-trip": {
+      "title": "Pleci din țară? Vezi ce-ți trebuie",
+      "subtitle": "Actele fiecăruia și ale mașinii"
+    },
+    "06-search": {
+      "title": "Găsești orice în câteva litere",
+      "subtitle": "În tot dosarul"
+    },
+    "07-document": {
+      "title": "Actele, în spatele Face ID",
+      "subtitle": "Știi cât mai sunt valabile"
+    }
+  }
+}

@@ -48,6 +48,10 @@ struct AddRoot: View {
             markSeen()
         }
         .onDisappear { isOnScreen = false }
+        #if DEBUG
+        // The App Store's capture screenshot: the practice invoice, read as if just picked.
+        .task { if let input = ScreenshotStage.captureInput() { flow = input } }
+        #endif
         .onChange(of: inbox.items) { _, _ in markSeen() }
         .onChange(of: scenePhase) { _, _ in markSeen() }
         .dsToast($toast)
