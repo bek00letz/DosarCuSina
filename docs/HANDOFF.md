@@ -112,7 +112,7 @@ Newest first. Copy this template:
 ```
 
 ### 2026-11-19 — owner (with Claude) — `claude/app-store-assets-folder`
-- **Did:** the framed set the owner approved (PawPaw and the specimen passport included) is kept in the repository, `marketing/app-store/screenshots/iphone-6.9/` and `ipad-13/`, numbered in upload order; the README shows the iPhone ones at its top. The Screenshots workflow no longer runs for a change to that folder alone.
+- **Did:** the framed set the owner approved (PawPaw and the specimen passport included) is kept in the repository, `marketing/app-store/screenshots/iphone-6.9/` and `ipad-13/`, numbered in upload order; the README shows the iPhone ones at its top. The Screenshots workflow no longer runs for a change to that folder alone. The App Review section of `marketing/app-store/ro.md` is filled out field by field (sign-in, contact, notes, attachment), and its notes now give the tabs in English, a walk-through with the app's real button names, the optional AI provider and when it asks before sending, and every permission; `check-listing.py` counts them against the 4000 limit.
 - **Tests:** none needed (pictures, README and a workflow trigger); the pull request's checks.
 - **Left open:** each time the set is taken again it adds about 13 MB to the repository's history; replace the files only when a screen really changes.
 - **Next:** upload the set and the listing text to App Store Connect.
