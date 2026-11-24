@@ -51,6 +51,21 @@ struct ICloudSyncTests {
         #expect(modes.contains("fetch") && modes.contains("processing"), "Reminders' refresh and backups keep their own modes")
     }
 
+    /// What `CloudKitSchemaSetup` writes to iCloud's development environment before a deployment
+    /// is the layout the app stores, every model and every field of it, so nothing a phone writes
+    /// is missing from production.
+    @Test("The layout written to iCloud before a deployment is the one the app stores, field for field")
+    func theLayoutForICloudIsTheStoredOne() throws {
+        let model = try #require(CloudKitSchemaSetup.managedObjectModel())
+        let written = Dictionary(model.entities.compactMap { entity in entity.name.map { ($0, Set(entity.propertiesByName.keys)) } }) { first, _ in first }
+        let stored = Dictionary(PersistenceController.schema.entities.map { ($0.name, Set($0.properties.map(\.name))) }) { first, _ in first }
+        #expect(Set(written.keys) == Set(stored.keys))
+        for (name, properties) in stored {
+            #expect(written[name] == properties, "\(name)'s fields")
+        }
+        #expect(!CloudKitSchemaSetup.isRequested, "A test run never writes to iCloud")
+    }
+
     /// The switch is a build setting the code and the Info.plist both read; every configuration
     /// says the same, and the code was compiled with it.
     @Test("Shipping sync to release builds is one build setting, the same in every configuration")

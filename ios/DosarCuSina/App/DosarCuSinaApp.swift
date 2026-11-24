@@ -39,18 +39,16 @@ struct DosarCuSinaApp: App {
     var body: some Scene {
         WindowGroup {
             Group {
-                switch persistence.state {
-                case .ready(let container):
-                    AppShell()
-                        .modelContainer(container)
-                        .environment(\.sideEffects, sideEffects)
-                        // Again whenever the store opens under another container (sync turned on or off).
-                        .task(id: ObjectIdentifier(container)) { start(with: container) }
-                case .waitingForUnlock:
-                    StoreWaitingView()
-                case .failed(let failure):
-                    StoreRecoveryView(failure: failure, retry: persistence.retry, startFresh: persistence.startFresh)
+                #if DEBUG
+                if CloudKitSchemaSetup.isRequested {
+                    // A launch that only writes the data layout to iCloud's development environment.
+                    CloudKitSchemaSetupView()
+                } else {
+                    binder
                 }
+                #else
+                binder
+                #endif
             }
             .environment(navigator)
             .environment(preferences)
@@ -82,6 +80,22 @@ struct DosarCuSinaApp: App {
             default:
                 break
             }
+        }
+    }
+
+    /// The binder, as the store's state allows.
+    @ViewBuilder private var binder: some View {
+        switch persistence.state {
+        case .ready(let container):
+            AppShell()
+                .modelContainer(container)
+                .environment(\.sideEffects, sideEffects)
+                // Again whenever the store opens under another container (sync turned on or off).
+                .task(id: ObjectIdentifier(container)) { start(with: container) }
+        case .waitingForUnlock:
+            StoreWaitingView()
+        case .failed(let failure):
+            StoreRecoveryView(failure: failure, retry: persistence.retry, startFresh: persistence.startFresh)
         }
     }
 

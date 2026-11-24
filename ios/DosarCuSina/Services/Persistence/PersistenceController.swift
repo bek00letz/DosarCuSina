@@ -641,9 +641,10 @@ public final class PersistenceController {
     }
 
     /// Whether this build syncs at all: a development build, or a release one once sync ships. Never
-    /// the host of a test run, whose binder is the Simulator's own.
+    /// the host of a test run, whose binder is the Simulator's own, a screenshot run or a launch
+    /// that only writes iCloud's layout (`CloudKitSchemaSetup`).
     nonisolated static var syncIsBuiltIn: Bool {
-        syncIsBuiltIn(debug: isDebugBuild, shipsInRelease: syncShipsInReleaseBuilds, testHost: BuildInfo.isTestHost || BuildInfo.isScreenshotRun)
+        syncIsBuiltIn(debug: isDebugBuild, shipsInRelease: syncShipsInReleaseBuilds, testHost: BuildInfo.isTestHost || BuildInfo.isScreenshotRun || BuildInfo.isCloudKitSchemaRun)
     }
 
     /// Whether this build is one that syncs, whoever runs it: what its Info.plist's background
