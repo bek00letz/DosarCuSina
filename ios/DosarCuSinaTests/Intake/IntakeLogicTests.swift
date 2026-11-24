@@ -158,6 +158,8 @@ struct CaptureFilingTests {
 
     @Test func aBillRemindsToPayOnlyThroughItsSubscription() async throws {
         let context = try makeContext()
+        // One clock for the whole test: the bill falls due after it, whatever day the test runs on.
+        let filer = CaptureFiler(context: context, calendar: .bucharest, now: { noon("2026-11-02") })
         var review = CaptureReview(result: capture(.utilityInvoice, [
             field(.provider, .text("ENGIE Romania S.A.")),
             field(.dueDate, day("2026-11-20")),
@@ -166,8 +168,8 @@ struct CaptureFilingTests {
         ]), assets: [], context: context)
         #expect(review.destination == .newAsset(templateKey: BuiltInTemplates.Key.subscription), "No home yet: a subscription of its own")
         #expect(review.remindsToPay)
-        #expect(CaptureFiler(context: context).touchesReminders(review))
-        let outcome = try await CaptureFiler(context: context, calendar: .bucharest, now: { noon("2026-11-02") }).save(review)
+        #expect(filer.touchesReminders(review))
+        let outcome = try await filer.save(review)
         let bill = try #require(outcome.obligation)
         #expect(bill.title == "Factura de plătit")
         #expect(bill.asset?.templateKey == BuiltInTemplates.Key.subscription)
@@ -177,10 +179,10 @@ struct CaptureFilingTests {
         #expect(bill.reference == "EX-123")
 
         review.remindsToPay = false
-        #expect(!CaptureFiler(context: context).touchesReminders(review))
+        #expect(!filer.touchesReminders(review))
         review.remindsToPay = true
         review.destination = .none
-        #expect(!CaptureFiler(context: context).touchesReminders(review), "Kept without a place, a bill reminds through nothing")
+        #expect(!filer.touchesReminders(review), "Kept without a place, a bill reminds through nothing")
     }
 
     @Test func theOnlySectionOfAKindIsSuggestedAndExamplesNever() throws {

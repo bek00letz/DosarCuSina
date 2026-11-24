@@ -26,7 +26,7 @@ The app is in Romanian. It is for everyone, and built so that people who aren't 
 
 ## Privacy
 
-- Your data stays on your device and, where the build syncs and sync is on, in your own private iCloud database (development builds today; TestFlight and the App Store once the owner turns it on).
+- Your data stays on your device and, while iCloud sync is on (it is from the start), in your own private iCloud database, so the same binder is on your iPhone and iPad and comes back on a new phone.
 - No accounts, no analytics, no tracking, no servers of ours.
 - Reading documents happens on the phone. If you add your own key for an AI provider in Settings (Google Gemini, OpenAI, Anthropic Claude, or an OpenAI-compatible service such as one on your home network), you can choose to have a document read by it; only that document's first page is sent, when you tap or, if you turn it on, after a weak reading on the phone (an identity document asks first). Keys stay in the Keychain on your device.
 - Identity documents, health and any section you choose can be locked with Face ID.

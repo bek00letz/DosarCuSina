@@ -28,6 +28,17 @@ public struct BuildInfo: Equatable, Sendable {
     /// screenshot run never touches the binder of the phone it runs on.
     public static var isScreenshotRun: Bool { screenshotStoreName != nil }
 
+    /// Whether the app was launched only to write the data layout to iCloud's development
+    /// environment (`CloudKitSchemaSetup`), which only a development build can be: the binder
+    /// then opens on the phone alone, so its own mirroring never runs beside that step's.
+    public static var isCloudKitSchemaRun: Bool {
+        #if DEBUG
+        CloudKitSchemaSetup.isRequested
+        #else
+        false
+        #endif
+    }
+
     /// The screenshots' own store, one per run of them (`ScreenshotStage.storeName`), so every
     /// run starts from a household made that day; nil in every other launch, and in a release build.
     public static var screenshotStoreName: String? {

@@ -15,13 +15,13 @@ import Testing
 struct ICloudSyncTests {
     // MARK: Which builds sync
 
-    @Test("Development builds sync, TestFlight and the App Store wait for the switch, a test run never")
+    @Test("Development builds sync, and TestFlight and the App Store too since 1.0; a test run never")
     func whichBuildsSync() {
         #expect(PersistenceController.syncIsBuiltIn(debug: true, shipsInRelease: false, testHost: false))
         #expect(!PersistenceController.syncIsBuiltIn(debug: false, shipsInRelease: false, testHost: false))
         #expect(PersistenceController.syncIsBuiltIn(debug: false, shipsInRelease: true, testHost: false))
         #expect(!PersistenceController.syncIsBuiltIn(debug: true, shipsInRelease: true, testHost: true))
-        #expect(!PersistenceController.syncShipsInReleaseBuilds, "Sync reaches TestFlight only when the owner says the data layout has settled")
+        #expect(PersistenceController.syncShipsInReleaseBuilds, "Sync ships in 1.0 (DECISIONS 2026-11-24)")
         #expect(!PersistenceController.syncIsBuiltIn, "The host of a test run reaches no iCloud")
     }
 
@@ -49,6 +49,21 @@ struct ICloudSyncTests {
         let modes = try #require(Bundle.main.infoDictionary?["UIBackgroundModes"] as? [String])
         #expect(modes.contains("remote-notification") == PersistenceController.buildSyncs, "scripts/background-modes.sh keeps the mode only in a build that syncs")
         #expect(modes.contains("fetch") && modes.contains("processing"), "Reminders' refresh and backups keep their own modes")
+    }
+
+    /// What `CloudKitSchemaSetup` writes to iCloud's development environment before a deployment
+    /// is the layout the app stores, every model and every field of it, so nothing a phone writes
+    /// is missing from production.
+    @Test("The layout written to iCloud before a deployment is the one the app stores, field for field")
+    func theLayoutForICloudIsTheStoredOne() throws {
+        let model = try #require(CloudKitSchemaSetup.managedObjectModel())
+        let written = Dictionary(model.entities.compactMap { entity in entity.name.map { ($0, Set(entity.propertiesByName.keys)) } }) { first, _ in first }
+        let stored = Dictionary(PersistenceController.schema.entities.map { ($0.name, Set($0.properties.map(\.name))) }) { first, _ in first }
+        #expect(Set(written.keys) == Set(stored.keys))
+        for (name, properties) in stored {
+            #expect(written[name] == properties, "\(name)'s fields")
+        }
+        #expect(!CloudKitSchemaSetup.isRequested, "A test run never writes to iCloud")
     }
 
     /// The switch is a build setting the code and the Info.plist both read; every configuration
