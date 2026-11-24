@@ -14,6 +14,7 @@ import SwiftData
 enum LaunchData {
     /// The steps, by the name the log gives them.
     enum Step: String, CaseIterable, Sendable {
+        case parentLinks = "Putting back what another device's deletion let go"
         case recordsMeet = "Joining records that share an id"
         case issuerLessons = "Settling what capture learned"
         case builtInCategories = "Installing the built-in categories"
@@ -28,7 +29,9 @@ enum LaunchData {
         func run(_ step: Step, _ work: () throws -> Void) {
             if !PersistenceLog.attempt(step.rawValue, work) { failed.append(step) }
         }
-        // First, so every step after it reads each record once.
+        // What another device's deletion let go goes back to its copy first (`ParentLinks`).
+        run(.parentLinks) { _ = try ParentLinks.rehome(in: context) }
+        // Then copies, so every step after it reads each record once.
         run(.recordsMeet) { _ = try RecordsMeet.join(in: context) }
         run(.issuerLessons) { _ = try IssuerLessons.settle(in: context) }
         run(.builtInCategories) { _ = try TemplateStore(context: context).installBuiltIns() }

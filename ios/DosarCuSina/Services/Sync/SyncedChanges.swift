@@ -111,6 +111,9 @@ final class SyncedChanges: ContainerHolder {
     func settle() {
         guard let container else { return }
         let context = container.mainContext
+        PersistenceLog.attempt("Putting back what another device's deletion let go") {
+            _ = try ParentLinks.rehome(in: context)
+        }
         PersistenceLog.attempt("Joining records that share an id after a synced change") {
             _ = try RecordsMeet.join(in: context)
         }

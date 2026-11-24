@@ -69,7 +69,7 @@ public enum ReadingBasis: String, Codable, CaseIterable, Sendable {
     case estimated
 }
 
-extension DosarSchemaV17 {
+extension DosarSchemaV18 {
     /// A line in a history entry: a part replaced, a job done, a vaccine given.
     /// `componentKey` ties it to the template's component catalog so "when did I
     /// last change the brake pads" has one answer across entries.
@@ -105,6 +105,11 @@ extension DosarSchemaV17 {
         public var updatedAt: Date = Date.distantPast
 
         public var entry: HistoryEntry?
+        /// The id of the record of history it is in, kept beside `entry` as every save writes it
+        /// (`ParentLinks.stamp`): when a deletion from another device lets go of the link, it
+        /// goes back to its copy with this id, or waits in the repair list (`LostRecordsStep`).
+        /// None until it is next saved. Version 18.
+        public var entryID: UUID?
 
         @Relationship(deleteRule: .nullify, inverse: \Attachment.serviceItem)
         public var attachments: [Attachment]? = []
@@ -168,6 +173,11 @@ extension DosarSchemaV17 {
         public var basisRaw: String?
 
         public var asset: Asset?
+        /// The id of the section it is in, kept beside `asset` as every save writes it
+        /// (`ParentLinks.stamp`): when a deletion from another device lets go of the link, it
+        /// goes back to its copy with this id, or waits in the repair list (`LostRecordsStep`).
+        /// None until it is next saved. Version 18.
+        public var assetID: UUID?
 
         @Relationship(deleteRule: .nullify, inverse: \Attachment.measurement)
         public var attachments: [Attachment]? = []
@@ -272,7 +282,9 @@ extension DosarSchemaV17 {
         /// have `ChangeTime.unknown`, older than any change. Version 8.
         public var updatedAt: Date = Date.distantPast
 
-        @Relationship(deleteRule: .cascade, inverse: \AttachmentPage.attachment)
+        /// Deleting the document deletes them through `RecordContents`, never the database
+        /// (version 18).
+        @Relationship(deleteRule: .nullify, inverse: \AttachmentPage.attachment)
         public var pages: [AttachmentPage]? = []
 
         /// The document that replaced this one.
@@ -281,6 +293,11 @@ extension DosarSchemaV17 {
         public var supersedes: [Attachment]? = []
 
         public var asset: Asset?
+        /// The id of the section it is in, kept beside `asset` as every save writes it
+        /// (`ParentLinks.stamp`): when a deletion from another device lets go of the link, it
+        /// goes back to its copy with this id, or waits in the repair list (`LostRecordsStep`).
+        /// None until it is next saved. Version 18.
+        public var assetID: UUID?
         public var obligation: Obligation?
         public var historyEntry: HistoryEntry?
         public var serviceItem: ServiceItem?
@@ -332,6 +349,11 @@ extension DosarSchemaV17 {
         public var index: Int = 0
         @Attribute(.externalStorage) public var imageData: Data?
         public var attachment: Attachment?
+        /// The id of the document it is in, kept beside `attachment` as every save writes it
+        /// (`ParentLinks.stamp`): when a deletion from another device lets go of the link, it
+        /// goes back to its copy with this id, or waits in the repair list (`LostRecordsStep`).
+        /// None until it is next saved. Version 18.
+        public var attachmentID: UUID?
 
         public init(id: UUID = UUID(), index: Int, imageData: Data?) {
             self.copyID = UUID()

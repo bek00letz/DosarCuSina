@@ -401,10 +401,13 @@ public final class PersistenceController {
 
     /// Moves the unreadable store aside (it is kept, renamed, next to the new
     /// one) and opens an empty store. Never while the phone's files are still
-    /// locked: then the store isn't broken, only waiting.
+    /// locked: then the store isn't broken, only waiting. The empty store holds none of the
+    /// binder, so this phone no longer counts its first download as finished: while sync brings
+    /// the binder down again, it is said to be on its way and examples wait (`binderMayBeArriving`).
     public func startFresh() {
         guard isProtectedDataAvailable() else { return open() }
         Self.moveStoreAside(at: storeURL)
+        memory.firstDownloadFinishedFor = nil
         open()
     }
 
@@ -515,7 +518,14 @@ public final class PersistenceController {
         }
         if arriving != binderMayBeArriving { binderMayBeArriving = arriving }
         // The app's own steps on what is missing read it there, from any thread (`CloudArrival`).
-        if let container { CloudArrival.firstDownload(pending: arriving, in: container) }
+        // While iCloud is still asked which account it is, the store open on the phone alone may
+        // lack what the account's binder brings (a download cut short last time, changes made on
+        // another device meanwhile): nothing acts on what is missing until the store opens with
+        // iCloud and its first download finishes, or sync is settled off.
+        if let container {
+            CloudArrival.firstDownload(pending: arriving, in: container)
+            CloudArrival.accountUnsettled(sync == .checkingAccount, in: container)
+        }
     }
 
     /// Whether the first download for the binder's account hasn't finished on this phone, while

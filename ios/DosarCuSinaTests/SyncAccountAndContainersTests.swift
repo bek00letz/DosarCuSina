@@ -362,6 +362,43 @@ struct SyncAccountAndContainersTests {
         #expect(persistence.examplesMayLoad, "Only the first download for the account holds examples back")
     }
 
+    @Test("Before the account is known, the store open on the phone isn't whole: a download may have been cut short")
+    func theStoreOnThePhoneWaitsForTheAccount() async throws {
+        let store = Store()
+        let persistence = controller(store, account: Account(.signedIn(id: "a")), memory: InMemorySyncMemory(syncedAccount: "a", firstDownloadFinishedFor: "a"))
+        #expect(persistence.sync == .checkingAccount)
+        #expect(!persistence.binderMayBeArriving, "The binder came down long ago: nothing to say on screen")
+        let local = try #require(persistence.container)
+        #expect(!CloudArrival.of(local).isWhole, "The app's own steps on what is missing wait for this launch's download")
+    }
+
+    @Test func withoutAnAccountTheStoreOnThePhoneIsWhole() async throws {
+        let store = Store()
+        let persistence = controller(store, account: Account(.none), memory: InMemorySyncMemory(syncedAccount: "a", firstDownloadFinishedFor: "a"))
+        await persistence.settleSync()
+        #expect(persistence.sync == .noAccount)
+        let local = try #require(persistence.container)
+        #expect(CloudArrival.of(local).isWhole, "Nothing is coming: the phone's binder is all there is")
+    }
+
+    @Test("Starting over forgets the finished download, so the binder is said to be on its way again")
+    func startingOverWaitsForTheBinderAgain() async throws {
+        let store = Store()
+        let memory = InMemorySyncMemory(syncedAccount: "a", firstDownloadFinishedFor: "a")
+        let persistence = controller(store, account: Account(.signedIn(id: "a")), memory: memory)
+        await persistence.settleSync()
+        #expect(!persistence.binderMayBeArriving)
+
+        persistence.startFresh()
+        #expect(memory.firstDownloadFinishedFor == nil)
+        #expect(persistence.binderMayBeArriving, "The empty store holds none of the binder yet")
+        #expect(!persistence.examplesMayLoad)
+        await persistence.settleSync()
+        #expect(persistence.sync == .on, "The same account: it syncs again and the binder comes down")
+        persistence.record(SyncEvent(kind: .download, finishedAt: noon("2026-11-11"), succeeded: true))
+        #expect(!persistence.binderMayBeArriving)
+    }
+
     @Test func withoutAnAccountExamplesAreOfferedAtOnce() async {
         let store = Store()
         let persistence = controller(store, account: Account(.none), memory: InMemorySyncMemory())

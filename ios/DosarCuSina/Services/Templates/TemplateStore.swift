@@ -106,7 +106,8 @@ public struct TemplateStore {
 
     /// Moves assets off built-in templates an earlier catalog had: a replaced key
     /// hands its assets (with renamed field keys) to its successor; a retired key
-    /// with assets becomes a custom category so nothing disappears.
+    /// with assets becomes a custom category so nothing disappears, and one without goes once
+    /// the binder has all arrived (`CloudArrival`).
     private func retireOldBuiltIns(byKey: inout [String: CategoryTemplate]) throws -> Bool {
         var changed = false
         for (oldKey, newKey) in BuiltInTemplates.replacedKeys {
@@ -130,6 +131,9 @@ public struct TemplateStore {
                 old.isBuiltIn = false
                 old.builtInVersion = 0
             } else {
+                // None here yet may only mean they haven't arrived from iCloud: the category goes
+                // only once the binder is whole, or its sections would come back without it.
+                guard CloudArrival.of(context.container).isWhole else { continue }
                 context.delete(old)
                 byKey.removeValue(forKey: key)
             }
@@ -172,10 +176,11 @@ public struct TemplateStore {
         tint: TemplateTint,
         sections: [FieldSection],
         blueprints: [ObligationBlueprint] = [],
-        isSensitive: Bool = false
+        isSensitive: Bool = false,
+        key: String = TemplateDefinition.newCustomKey()
     ) throws -> CategoryTemplate {
         let definition = TemplateDefinition(
-            key: TemplateDefinition.newCustomKey(),
+            key: key,
             name: name,
             symbol: symbol,
             tint: tint,
@@ -194,8 +199,9 @@ public struct TemplateStore {
     /// Creates a category from a name, a symbol and the pockets it should show,
     /// with no fields of its own ("Altceva…"). Facts go in Date importante as free rows.
     @discardableResult
-    public func createCustom(name: String, symbol: String, pockets: [SectionPocket], tint: TemplateTint = .gray, isSensitive: Bool = false) throws -> CategoryTemplate {
-        let template = try createCustom(name: name, symbol: symbol, tint: tint, sections: [], isSensitive: isSensitive)
+    public func createCustom(name: String, symbol: String, pockets: [SectionPocket], tint: TemplateTint = .gray, isSensitive: Bool = false,
+                             key: String = TemplateDefinition.newCustomKey()) throws -> CategoryTemplate {
+        let template = try createCustom(name: name, symbol: symbol, tint: tint, sections: [], isSensitive: isSensitive, key: key)
         template.pockets = pockets
         try save()
         return template

@@ -3441,7 +3441,7 @@
         }
       }
     },
-    "Copia e un singur fișier cu tot dosarul, inclusiv documentele. Păstreaz-o în Fișiere, pe iCloud Drive sau trimite-o pe alt telefon. Codurile PIN și rândurile secrete nu intră în copie: rămân doar pe acest telefon." : {
+    "Copia e un singur fișier cu tot dosarul, inclusiv documentele. Păstreaz-o în Fișiere sau pe iCloud Drive. Codurile PIN și rândurile secrete nu intră în copie." : {
       "comment" : "Footer of the backup section."
     },
     "Copia nu s-a făcut" : {
@@ -6613,11 +6613,17 @@
     "O adresă de e-mail." : {
       "comment" : "VoiceOver hint for an email field."
     },
+    "O citire de contor a rămas fără secțiune: secțiunea ei a fost ștearsă pe alt dispozitiv. O păstrez într-o secțiune nouă, „Recuperate”?" : {
+      "comment" : "Repair: a counter reading whose section was deleted on another device."
+    },
     "O cutie pentru toate" : {
       "comment" : "Boxes choice: one box for all of a category's sections, wherever they are filed."
     },
     "O factură n-a venit încă" : {
       "comment" : "A missing bill, in a locked section."
+    },
+    "O înregistrare din Istoric a rămas fără secțiune: secțiunea ei a fost ștearsă pe alt dispozitiv. O păstrez într-o secțiune nouă, „Recuperate”?" : {
+      "comment" : "Repair: a record of history (a visit, a repair, a purchase) whose section was deleted on another device."
     },
     "O locuință" : {
       "comment" : "„Ține de…” choice of a category of one's own: its sections belong to a home."
@@ -6926,7 +6932,7 @@
       }
     },
     "Păstrează" : {
-      "comment" : "Cancel a delete."
+      "comment" : "Applies one repair: keep a record whose section was deleted on another device.\nCancel a delete."
     },
     "Păstrează ce era" : {
 
@@ -7528,6 +7534,9 @@
     "Rămân doar pe acest telefon." : {
       "comment" : "Footer: recent searches are kept on device."
     },
+    "Rămase fără secțiune" : {
+      "comment" : "Repair group: records whose section was deleted on another device."
+    },
     "Rând nou" : {
       "comment" : "Title when adding a bill line."
     },
@@ -7589,6 +7598,9 @@
     },
     "Recunosc ce document e. Pentru un act care expiră, îți amintesc la timp." : {
       "comment" : "Under „Fotografiază” on a person's „Adaugă un document”: capture tells an act with an expiry from another paper."
+    },
+    "Recuperate" : {
+      "comment" : "A section of one's own made for records whose section was deleted on another device."
     },
     "Regula nouă se aplică după ce îl bifezi." : {
       "comment" : "Under the repeat control in a deadline's edit sheet: the new rule counts from the next completion."
@@ -8815,6 +8827,9 @@
     "Un document" : {
 
     },
+    "Un document a rămas fără secțiune: secțiunea lui a fost ștearsă pe alt dispozitiv. Îl păstrez într-o secțiune nouă, „Recuperate”?" : {
+      "comment" : "Repair: a document whose section was deleted on another device."
+    },
     "Un document e prea mare pentru o copie. Scoate-l din dosar și păstrează-l în altă parte, apoi încearcă din nou." : {
       "comment" : "Backup: one file is too large for a backup."
     },
@@ -8841,6 +8856,9 @@
     },
     "Un termen" : {
       "comment" : "Box status title in a locked section"
+    },
+    "Un termen a rămas fără secțiune: secțiunea lui a fost ștearsă pe alt dispozitiv. Îl păstrez într-o secțiune nouă, „Recuperate”?" : {
+      "comment" : "Repair: a deadline whose section was deleted on another device."
     },
     "un termen protejat" : {
 

@@ -91,7 +91,7 @@ struct SameVisitTwiceStep: DataRepairStep {
             if let newest = papers.filter({ !$0.isArchived }).max(by: { $0.createdAt < $1.createdAt }) {
                 for older in papers where older.id != newest.id && !older.isArchived { try documents.supersede(older, with: newest) }
             }
-            for entry in extra { context.delete(entry) }
+            for entry in extra { RecordContents.delete(entry, in: context) }
         }
     }
 

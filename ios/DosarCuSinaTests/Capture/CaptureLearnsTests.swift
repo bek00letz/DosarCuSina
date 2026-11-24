@@ -425,7 +425,7 @@ struct CaptureLearnsTests {
 
     @Test func versionSeventeenOnlyAddsTheLessonsCategory() throws {
         let sixteen = try #require(NSManagedObjectModel.makeManagedObjectModel(for: DosarSchemaV16.models))
-        let seventeen = try #require(NSManagedObjectModel.makeManagedObjectModel(for: CurrentSchema.models))
+        let seventeen = try #require(NSManagedObjectModel.makeManagedObjectModel(for: DosarSchemaV17.models))
         for (entity, hash) in sixteen.entityVersionHashesByName where entity != "IssuerLesson" {
             #expect(seventeen.entityVersionHashesByName[entity] == hash, "\(entity) is as version 16 shipped it")
         }

@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV17 {
+extension DosarSchemaV18 {
     /// One thing capture learned from what the person saved: the issuer of a kind of paper
     /// prints one of its values under one label ("ENGIE Romania S.A. prints a bill's due date
     /// under „Ultima zi de plată”"). The phone's own reader is told the label the next time it

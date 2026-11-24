@@ -137,4 +137,21 @@ struct HouseholdTemplatesTests {
         #expect(templates["warranty"] == nil)
         #expect(templates["rental"]?.isCustom == true, "A retired category with assets stays, as the person's own")
     }
+
+    @Test func aRetiredCategoryWithNothingInItWaitsForTheBinder() throws {
+        let container = try makeInMemoryContainer()
+        let context = ModelContext(container)
+        var oldRental = BuiltInTemplates.other
+        oldRental.key = "rental"
+        context.insert(CategoryTemplate(definition: oldRental, isBuiltIn: true, homeOrder: 0))
+        try context.save()
+        CloudArrival.awaitFirstDownload(in: container)
+
+        try TemplateStore(context: context).installBuiltIns()
+        #expect(try TemplateStore(context: context).templatesByKey()["rental"] != nil, "Its sections may still be on their way")
+
+        CloudArrival.follow(SyncEvent(kind: .download, finishedAt: noon("2026-11-10"), succeeded: true), in: container)
+        try TemplateStore(context: context).installBuiltIns()
+        #expect(try TemplateStore(context: context).templatesByKey()["rental"] == nil, "Nothing came: it goes")
+    }
 }

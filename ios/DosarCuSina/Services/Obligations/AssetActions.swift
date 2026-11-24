@@ -373,9 +373,9 @@ public final class AssetActions {
     public func delete(_ asset: Asset, children: ChildrenOnDelete = .keep) throws -> UndoReceipt {
         try UnitOfWork.performUndoable(in: context, now: now()) {
             if children == .delete {
-                for child in Self.descendants(of: asset) { context.delete(child) }
+                for child in Self.descendants(of: asset) { RecordContents.delete(child, in: context) }
             }
-            context.delete(asset)
+            RecordContents.delete(asset, in: context)
             try HouseholdRules.reconcile(in: context, today: CalendarDay(now(), calendar: calendar), calendar: calendar)
             try save()
         }.receipt

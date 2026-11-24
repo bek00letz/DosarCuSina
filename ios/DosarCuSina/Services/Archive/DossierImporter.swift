@@ -139,7 +139,8 @@ struct DossierImporter {
     /// that was here is kept and was written over (`ArchiveMerge.outcome` in `.replace`).
     private func removeWhatTheArchiveLacks() throws {
         func remove<T: PersistentModel>(_ type: T.Type) throws {
-            for item in try context.fetch(FetchDescriptor<T>()) where !kept.contains(item) { context.delete(item) }
+            // With what each holds, as the database no longer deletes it (`RecordContents`).
+            for item in try context.fetch(FetchDescriptor<T>()) where !kept.contains(item) { RecordContents.delete(item, in: context) }
         }
         try remove(IssuerLesson.self)
         try remove(Attachment.self)
@@ -156,6 +157,7 @@ struct DossierImporter {
     /// every record made again (with a new `copyID`). Kept, unused, until replacing in place is
     /// proven on the person's devices; ask the owner before removing it.
     private func deleteEverything() throws {
+        for item in try context.fetch(FetchDescriptor<AttachmentPage>()) { context.delete(item) }
         for item in try context.fetch(FetchDescriptor<Attachment>()) { context.delete(item) }
         for item in try context.fetch(FetchDescriptor<MeasurementLog>()) { context.delete(item) }
         for item in try context.fetch(FetchDescriptor<ServiceItem>()) { context.delete(item) }

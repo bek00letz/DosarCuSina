@@ -314,7 +314,7 @@ public final class HistoryActions {
             }
             if effect.removedReading != nil { HouseholdMutations.removeReading(recordedBy: entry, in: context) }
             for attachment in entry.attachments ?? [] { attachment.historyEntry = nil }
-            context.delete(entry)
+            RecordContents.delete(entry, in: context)
             try save()
         }
     }

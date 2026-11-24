@@ -201,7 +201,7 @@ struct SameBillTwiceStep: DataRepairStep {
                 for paper in papers where paper.obligation.map({ joined.contains($0.id) }) == true { paper.obligation = deadline }
                 for bill in join.extraDeadlines { context.delete(bill) }
             }
-            for entry in extra { context.delete(entry) }
+            for entry in extra { RecordContents.delete(entry, in: context) }
         }
     }
 }

@@ -136,6 +136,7 @@ public enum UnitOfWork {
     nonisolated public static func performPrivate<T>(in context: ModelContext, _ work: () throws -> T) throws -> T {
         do {
             let result = try work()
+            ParentLinks.stamp(context)
             FreeText.mask(context)
             try saving(context)
             return result
@@ -185,9 +186,10 @@ public enum UnitOfWork {
             if let failure = failingCommits.removeValue(forKey: ObjectIdentifier(context)) {
                 throw failure
             }
-            // Card numbers out and change times first, so an undoable step's receipt records them;
+            // What holds each record by id, card numbers out and change times first, so an undoable step's receipt records them;
             // what it changed is read before the save, while the store still holds the state the
             // unit started from.
+            ParentLinks.stamp(context)
             FreeText.mask(context)
             ChangeTimes.stamp(context, origin: scope.origin, now: scope.now ?? Date())
             let pending = scope.receipt?.prepare()
@@ -202,6 +204,7 @@ public enum UnitOfWork {
 
     /// Saves the context with no card number in it and the change times its changes call for.
     private static func write(_ context: ModelContext, origin: ChangeOrigin, now: Date?) throws {
+        ParentLinks.stamp(context)
         FreeText.mask(context)
         ChangeTimes.stamp(context, origin: origin, now: now ?? Date())
         try saving(context)

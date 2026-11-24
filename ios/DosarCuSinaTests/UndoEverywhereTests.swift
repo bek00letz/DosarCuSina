@@ -14,7 +14,7 @@ struct UndoEverywhereTests {
 
     // MARK: What a delete takes
 
-    @Test("What goes with a deleted record is read from the schema's own delete rules")
+    @Test("What goes with a deleted record is what the app deletes with it, never the database")
     func ownershipFollowsTheSchema() {
         let owned = UndoableRecords.ownedRelationships.filter { !$0.value.isEmpty }
         #expect(owned == [

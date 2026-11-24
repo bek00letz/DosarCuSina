@@ -314,24 +314,21 @@ enum UndoableRecords {
     }
 
     /// What the schema says, by type: read once, from the models' own declarations.
-    private static let schemaFacts: (owned: [String: Set<String>], keptOutside: [String: Set<String>]) = {
+    private static let keptOutsideByType: [String: Set<String>] = {
         let schema = Schema(versionedSchema: CurrentSchema.self)
-        let owned = Dictionary(schema.entities.map { entity in
-            (entity.name, Set(entity.relationships.filter { if case .cascade = $0.deleteRule { true } else { false } }.map(\.name)))
-        }, uniquingKeysWith: { first, _ in first })
-        let keptOutside = Dictionary(schema.entities.map { entity in
+        return Dictionary(schema.entities.map { entity in
             (entity.name, Set(entity.attributes.filter { $0.options.contains(.externalStorage) }.map(\.name)))
         }, uniquingKeysWith: { first, _ in first })
-        return (owned, keptOutside)
     }()
 
-    /// The relationships whose records go with their owner when it is deleted, by type:
-    /// read from the schema's own delete rules, so they're written once, on the models.
-    static var ownedRelationships: [String: Set<String>] { schemaFacts.owned }
+    /// The relationships whose records go with their owner when it is deleted, by type: what
+    /// the app deletes with it (`RecordContents.owned`), since the database deletes nothing by
+    /// itself (version 18).
+    static var ownedRelationships: [String: Set<String>] { RecordContents.owned }
 
     /// The attributes the store keeps outside the database, by type (pictures and files, the
     /// models' `.externalStorage`): read and compared by their digest (`StoredValue.file`).
-    static var keptOutside: [String: Set<String>] { schemaFacts.keptOutside }
+    static var keptOutside: [String: Set<String>] { keptOutsideByType }
 
     /// The records `state`'s record owns: deleting it deletes them too.
     static func owned(by state: RecordState) -> Set<RecordRef> {
@@ -410,7 +407,7 @@ extension Obligation: UndoableRecord {
             .attribute("reference", \.reference), .attribute("statusRaw", \.statusRaw), .attribute("snoozedUntilISO", \.snoozedUntilISO),
             .attribute("isExample", \.isExample), .attribute("createdAt", \.createdAt), .attribute("updatedAt", \.updatedAt),
             .attribute("cycleKnownAt", \.cycleKnownAt), .attribute("remindersData", \.remindersData),
-            .toOne("asset", \.asset), .toMany("historyEntries", \.historyEntries), .toMany("attachments", \.attachments),
+            .toOne("asset", \.asset), .attribute("assetID", \.assetID), .toMany("historyEntries", \.historyEntries), .toMany("attachments", \.attachments),
         ]
     }
     public var recordKey: String { id.uuidString }
@@ -431,7 +428,7 @@ extension HistoryEntry: UndoableRecord {
             .attribute("isExample", \.isExample), .attribute("cycleDueDayISO", \.cycleDueDayISO), .attribute("nextDueDayISO", \.nextDueDayISO),
             .attribute("previousStatusRaw", \.previousStatusRaw), .attribute("previousDueMetric", \.previousDueMetric),
             .attribute("updatedAt", \.updatedAt),
-            .toOne("asset", \.asset), .toOne("obligation", \.obligation), .links("providers", \.providers),
+            .toOne("asset", \.asset), .attribute("assetID", \.assetID), .toOne("obligation", \.obligation), .links("providers", \.providers),
             .toMany("items", \.items), .toMany("attachments", \.attachments),
         ]
     }
@@ -453,7 +450,7 @@ extension ServiceItem: UndoableRecord {
             .attribute("currency", \.currency), .toOne("supplier", \.supplier), .attribute("batchOrTicket", \.batchOrTicket),
             .attribute("locationDetail", \.locationDetail), .attribute("daysInService", \.daysInService),
             .attribute("warrantyMonths", \.warrantyMonths), .attribute("notes", \.notes), .attribute("isExample", \.isExample),
-            .attribute("updatedAt", \.updatedAt), .toOne("entry", \.entry), .toMany("attachments", \.attachments),
+            .attribute("updatedAt", \.updatedAt), .toOne("entry", \.entry), .attribute("entryID", \.entryID), .toMany("attachments", \.attachments),
         ]
     }
     public var recordKey: String { id.uuidString }
@@ -474,7 +471,7 @@ extension MeasurementLog: UndoableRecord {
             .attribute("referenceMax", \.referenceMax), .attribute("source", \.source), .attribute("notes", \.notes),
             .attribute("isExample", \.isExample), .attribute("updatedAt", \.updatedAt), .attribute("startsCounter", \.startsCounter),
             .attribute("basisRaw", \.basisRaw),
-            .toOne("asset", \.asset), .toMany("attachments", \.attachments),
+            .toOne("asset", \.asset), .attribute("assetID", \.assetID), .toMany("attachments", \.attachments),
         ]
     }
     public var recordKey: String { id.uuidString }
@@ -496,7 +493,7 @@ extension Attachment: UndoableRecord {
             .attribute("compactedAt", \.compactedAt), .attribute("framingData", \.framingData),
             .attribute("createdAt", \.createdAt), .attribute("isExample", \.isExample), .attribute("updatedAt", \.updatedAt),
             .toMany("pages", \.pages), .toOne("supersededBy", \.supersededBy), .toMany("supersedes", \.supersedes),
-            .toOne("asset", \.asset), .toOne("obligation", \.obligation), .toOne("historyEntry", \.historyEntry),
+            .toOne("asset", \.asset), .attribute("assetID", \.assetID), .toOne("obligation", \.obligation), .toOne("historyEntry", \.historyEntry),
             .toOne("serviceItem", \.serviceItem), .toOne("measurement", \.measurement), .toOne("provider", \.provider),
         ]
     }
@@ -510,7 +507,8 @@ extension Attachment: UndoableRecord {
 
 extension AttachmentPage: UndoableRecord {
     public static var storedProperties: [StoredProperty<AttachmentPage>] {
-        [.attribute("id", \.id), .attribute("copyID", \.copyID), .attribute("index", \.index), .attribute("imageData", \.imageData), .toOne("attachment", \.attachment)]
+        [.attribute("id", \.id), .attribute("copyID", \.copyID), .attribute("index", \.index), .attribute("imageData", \.imageData), .toOne("attachment", \.attachment),
+         .attribute("attachmentID", \.attachmentID)]
     }
     public var recordKey: String { id.uuidString }
     public static func blank() -> Self { Self(index: 0, imageData: nil) }
