@@ -1,6 +1,6 @@
 # App Store: textul în română
 
-The listing in the app's language, ready to paste into App Store Connect (Romanian, the primary language). Every limit is App Store Connect's; the count beside each field is checked by `marketing/check-listing.py`. The words follow [docs/COPY_GUIDE.md](../../docs/COPY_GUIDE.md): the app speaks as „eu”, to „tu”, in sentence case, with no exclamation marks. Everything promised here is in version 1.0; iCloud sync isn't (it ships later, `DOSAR_SYNC_SHIPS_IN_RELEASE_BUILDS`), so the text doesn't promise it.
+The listing in the app's language, ready to paste into App Store Connect (Romanian, the primary language). Every limit is App Store Connect's; the count beside each field is checked by `marketing/check-listing.py`. The words follow [docs/COPY_GUIDE.md](../../docs/COPY_GUIDE.md): the app speaks as „eu”, to „tu”, in sentence case, with no exclamation marks. Everything promised here is in version 1.0, iCloud sync included (DECISIONS, 2026-11-24).
 
 ## Nume (30)
 
@@ -40,7 +40,7 @@ PLECI DIN ȚARĂ?
 Îți spun ce acte îți trebuie pentru călătorie, pentru fiecare om și pentru mașină: buletinul sau pașaportul, cât mai e valabil, ce lipsește. La fel când vinzi mașina sau ai o daună.
 
 AL TĂU, PE TELEFONUL TĂU
-Nu ai nevoie de cont. Nu sunt reclame, nu urmăresc nimic din ce faci. Merge fără internet, iar ce pui în dosar stă pe telefonul tău. Actele și sănătatea pot sta în spatele Face ID. Faci o copie de siguranță cu parolă oricând vrei.
+Nu ai nevoie de cont. Nu sunt reclame, nu urmăresc nimic din ce faci. Merge fără internet, iar ce pui în dosar stă pe telefonul tău și în iCloud-ul tău, ca să-l ai și pe iPad sau pe un telefon nou. Actele și sănătatea pot sta în spatele Face ID. Faci o copie de siguranță cu parolă oricând vrei.
 
 ȘI MAI MULTE
 • Caută în tot dosarul, și din căutarea iPhone-ului.
@@ -65,7 +65,7 @@ ITP,RCA,rovinietă,pașaport,buletin,garanție,revizie,centrală,CASCO,PAD,asigu
 ## Ce e nou în 1.0 (4000)
 
 ```text
-Prima versiune. Pune în dosar mașina, locuința, actele și animalele casei, și îți amintesc la timp de ce urmează.
+Prima versiune. Pune în dosar mașina, locuința, actele și animalele casei, și îți amintesc la timp de ce urmează. Dosarul te urmează pe iPad și pe un telefon nou, prin iCloud-ul tău.
 ```
 
 ## Adrese și contact
@@ -83,7 +83,7 @@ Prima versiune. Pune în dosar mașina, locuința, actele și animalele casei, �
 
 ## Confidențialitate (App Privacy)
 
-- Data collection: **Data Not Collected** („Nu se colectează date”). The app has no account, no analytics, no server of ours. The binder stays on the phone (and later in the person's own iCloud, which Apple doesn't count as collection by the developer). A page the person chooses to read with their own AI key goes from their phone to the provider they chose, under their own account; the developer never receives it.
+- Data collection: **Data Not Collected** („Nu se colectează date”). The app has no account, no analytics, no server of ours. The binder stays on the phone and, while sync is on, in the person's own private iCloud database, which the developer can't reach and Apple doesn't count as collection by the developer. A page the person chooses to read with their own AI key goes from their phone to the provider they chose, under their own account; the developer never receives it.
 - Tracking: **No**.
 
 ## Vârsta (Age Rating)
@@ -148,7 +148,7 @@ FACE ID
 "Acte" (documents) and "Sănătate" (health) are protected with Face ID by default; an optional app lock is in Setări > Protecție. On the simulator: Features > Face ID > Enrolled, then Matching Face when asked.
 
 ALSO IN THE APP
-Home and Lock Screen widgets; Siri and Shortcuts ("Ce termene am?", what deadlines do I have?); the iPhone's search; password-protected backups in Setări > iCloud și copii de siguranță. iCloud sync is not part of this version.
+Home and Lock Screen widgets; Siri and Shortcuts ("Ce termene am?", what deadlines do I have?); the iPhone's search; password-protected backups. iCloud sync (on by default, Setări > iCloud și copii de siguranță) keeps the binder in the person's own private iCloud database, so it appears on their iPad and a new phone; we have no server and can't see it. The examples never sync.
 
 The health category stores the person's own check-up and vaccine dates; the app gives no medical advice. The app is free, with no in-app purchases, subscriptions or ads, and no tracking.
 

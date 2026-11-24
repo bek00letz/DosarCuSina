@@ -6,6 +6,13 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ---
 
+## 2026-11-24
+
+### iCloud sync in 1.0
+- **Decided (owner):** version 1.0 ships with iCloud sync on by default, so the binder is on the person's iPhone and iPad and comes back on a new phone by itself. *Why:* an App Store version that keeps the binder only on the phone (and in the iPhone's own backup or a backup file the person remembers to make) isn't one the owner wants to publish. *Alternative:* 1.0 without sync, and sync in a later version; it was the plan until now, kept while the data layout settled.
+- **Decided:** before each deployment of the layout to production, a development build writes the whole layout to CloudKit's development environment (`CloudKitSchemaSetup`, the *DosarCuSina (iCloud layout)* scheme). *Why:* iCloud learns fields only from records a build uploads, so fields no development build has written yet would be missing in production, and phones writing them would fail to sync. From the first deployment on, a stored field is only ever added.
+- **Decided:** no TestFlight build before the layout is in production, then a TestFlight round on two devices before the App Store submission.
+
 ## 2026-11-18
 
 ### The App Store listing: Romanian only, light captioned screenshots, a drawn household
