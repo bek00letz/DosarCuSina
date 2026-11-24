@@ -21,6 +21,10 @@ on:
       - marketing/**
       # The framed set kept for App Store Connect and the README is what a run makes, not what it reads.
       - '!marketing/app-store/screenshots/**'
+      # The header art is drawn apart from the screenshots.
+      - '!marketing/app-store/header/**'
+      - '!marketing/header-art.swift'
+      - '!marketing/app-store/ro.md'
       - .github/workflows/screenshots.yml
 
 permissions:

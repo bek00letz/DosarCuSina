@@ -1,5 +1,7 @@
 # Dosar cu Șină
 
+<p align="center"><img src="marketing/app-store/header/readme-banner.png" alt="The Dosar cu Șină ring binder, with a passport, a bill, an insurance policy and other papers around it"></p>
+
 A documents binder for the rare-but-predictable parts of life admin. A *dosar cu șină* is the slotted folder Romanian households keep their papers in. This app is that folder on an iPhone: the car's ITP and insurance, the boiler check, the passport, the cat's vaccine, the warranty on the washing machine.
 
 - **Capture first.** Take a photo, or share a PDF or a message from another app. The app reads it on the phone, files it, and works out when to remind you.
@@ -107,6 +109,8 @@ swift marketing/frame-screenshots.swift /tmp/screenshots /tmp/framed --only 03-c
 ```
 
 The set to upload is kept in [marketing/app-store/screenshots/](marketing/app-store/screenshots): `iphone-6.9/` and `ipad-13/`, numbered in upload order, and the pictures at the top of this page are the iPhone ones. When a screen changes, take the set again and replace those files with the run's `framed-screenshots` in the same pull request.
+
+The product page's header (21:9, 3840 × 1646) and its search-results picture (3:2, 3840 × 2560), which iOS 27 shows above the screenshots, are drawn in code with no words in them: the icon's binder on its navy, with placeholder papers around it. They are kept in [marketing/app-store/header/](marketing/app-store/header) and drawn again with `swift marketing/header-art.swift marketing/app-store/header`, which also writes the banner at the top of this page at half the size (`readme-banner.png`).
 
 The captions are text in [marketing/app-store/captions.json](marketing/app-store/captions.json); the listing (name, subtitle, description, keywords, review notes, age rating) is in [marketing/app-store/ro.md](marketing/app-store/ro.md), in Romanian only (DECISIONS, 2026-11-18). `python3 marketing/check-listing.py` checks every field against App Store Connect's limits.
 
