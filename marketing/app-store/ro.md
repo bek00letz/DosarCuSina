@@ -81,6 +81,17 @@ Prima versiune. Pune în dosar mașina, locuința, actele și animalele casei, �
 | Categorie secundară | Finanțe sau Utilitare (alegerea proprietarului) |
 | Preț | Gratuit |
 
+## Antet și căutare (Header and Search Results)
+
+App Store Connect › the version's page › *Header and Search Results*, shown in iOS 27 and iPadOS 27 and later. Both pictures have no words, so they need no translation; both keep the binder inside Apple's safe area, and the papers around it may be cut at the sides.
+
+| Câmp | Fișier |
+| :--- | :--- |
+| Header (21:9) | [header/header-3840x1646.png](header/header-3840x1646.png) |
+| Search Results (3:2) | [header/search-3840x2560.png](header/search-3840x2560.png) |
+
+No video. Drawn by `marketing/header-art.swift`; after uploading, check them with App Store Connect's *Preview* on iPhone and iPad.
+
 ## Confidențialitate (App Privacy)
 
 - Data collection: **Data Not Collected** („Nu se colectează date”). The app has no account, no analytics, no server of ours. The binder stays on the phone and, while sync is on, in the person's own private iCloud database, which the developer can't reach and Apple doesn't count as collection by the developer. A page the person chooses to read with their own AI key goes from their phone to the provider they chose, under their own account; the developer never receives it.
