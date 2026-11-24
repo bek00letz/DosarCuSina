@@ -112,7 +112,7 @@ The set to upload is kept in [marketing/app-store/screenshots/](marketing/app-st
 
 The product page's header (21:9, 3840 × 1646) and its search-results picture (3:2, 3840 × 2560), which iOS 27 shows above the screenshots, are drawn in code with no words in them: the icon's binder on its navy, with placeholder papers around it. They are kept in [marketing/app-store/header/](marketing/app-store/header) and drawn again with `swift marketing/header-art.swift marketing/app-store/header`, which also writes the banner at the top of this page at half the size (`readme-banner.png`).
 
-The captions are text in [marketing/app-store/captions.json](marketing/app-store/captions.json); the listing (name, subtitle, description, keywords, review notes, age rating) is in [marketing/app-store/ro.md](marketing/app-store/ro.md), in Romanian only (DECISIONS, 2026-11-18). `python3 marketing/check-listing.py` checks every field against App Store Connect's limits.
+The captions are text in [marketing/app-store/captions.json](marketing/app-store/captions.json); the listing (name, subtitle, description, keywords, review notes, age rating) is in [marketing/app-store/ro.md](marketing/app-store/ro.md), and the featuring nomination, in English for Apple's editors, in [marketing/app-store/nomination.md](marketing/app-store/nomination.md), in Romanian only (DECISIONS, 2026-11-18). `python3 marketing/check-listing.py` checks every field against App Store Connect's limits.
 
 ## Repository layout
 

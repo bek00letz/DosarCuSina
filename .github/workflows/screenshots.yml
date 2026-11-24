@@ -25,6 +25,7 @@ on:
       - '!marketing/app-store/header/**'
       - '!marketing/header-art.swift'
       - '!marketing/app-store/ro.md'
+      - '!marketing/app-store/nomination.md'
       - .github/workflows/screenshots.yml
 
 permissions:
