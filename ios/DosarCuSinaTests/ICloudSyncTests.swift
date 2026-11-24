@@ -15,13 +15,13 @@ import Testing
 struct ICloudSyncTests {
     // MARK: Which builds sync
 
-    @Test("Development builds sync, TestFlight and the App Store wait for the switch, a test run never")
+    @Test("Development builds sync, and TestFlight and the App Store too since 1.0; a test run never")
     func whichBuildsSync() {
         #expect(PersistenceController.syncIsBuiltIn(debug: true, shipsInRelease: false, testHost: false))
         #expect(!PersistenceController.syncIsBuiltIn(debug: false, shipsInRelease: false, testHost: false))
         #expect(PersistenceController.syncIsBuiltIn(debug: false, shipsInRelease: true, testHost: false))
         #expect(!PersistenceController.syncIsBuiltIn(debug: true, shipsInRelease: true, testHost: true))
-        #expect(!PersistenceController.syncShipsInReleaseBuilds, "Sync reaches TestFlight only when the owner says the data layout has settled")
+        #expect(PersistenceController.syncShipsInReleaseBuilds, "Sync ships in 1.0 (DECISIONS 2026-11-24)")
         #expect(!PersistenceController.syncIsBuiltIn, "The host of a test run reaches no iCloud")
     }
 
