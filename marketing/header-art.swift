@@ -5,7 +5,8 @@
 //
 // Writes <output folder>/header-3840x1646.png (21:9, the product page's header) and
 // <output folder>/search-3840x2560.png (3:2, a search result). Both are PNGs without an alpha
-// channel, in sRGB.
+// channel, in sRGB, and <output folder>/readme-banner.png, the header at half its size for the
+// README's banner (the same drawing, lighter to load).
 //
 // The art is the app icon's ring binder, larger, on the icon's deep navy, with a few papers fanned
 // around it: a passport, a bill, an insurance policy, a home, a pet's card, a deadline. Every paper
@@ -324,6 +325,16 @@ func render(_ canvas: Canvas) -> CGImage? {
     return c.makeImage()
 }
 
+/// The same picture at half its size.
+func halved(_ image: CGImage) -> CGImage? {
+    let (w, h) = (image.width / 2, image.height / 2)
+    guard let c = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: 0,
+                            space: sRGB, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else { return nil }
+    c.interpolationQuality = .high
+    c.draw(image, in: CGRect(x: 0, y: 0, width: w, height: h))
+    return c.makeImage()
+}
+
 func writePNG(_ image: CGImage, to url: URL) throws {
     try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
     guard let destination = CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil) else {
@@ -352,4 +363,8 @@ for canvas in canvases {
     }
     try writePNG(image, to: output.appending(path: "\(canvas.name).png"))
     print("\(canvas.name).png")
+    if canvas.name.hasPrefix("header"), let banner = halved(image) {
+        try writePNG(banner, to: output.appending(path: "readme-banner.png"))
+        print("readme-banner.png")
+    }
 }
