@@ -12,16 +12,16 @@ A documents binder for the rare-but-predictable parts of life admin. A *dosar cu
 The app is in Romanian. It is for everyone, and built so that people who aren't comfortable with technology can use it just as well: four labelled tabs, big buttons, nothing hidden behind a swipe.
 
 <p align="center">
-  <img src="marketing/app-store/screenshots/iphone-6.9/01-binder.png" width="200" alt="The binder: one box per thing you look after, each with a status line">
-  <img src="marketing/app-store/screenshots/iphone-6.9/02-upcoming.png" width="200" alt="Urmează: what is due next, kept short">
-  <img src="marketing/app-store/screenshots/iphone-6.9/03-car.png" width="200" alt="A car’s page: ITP, insurance, vignette and services, with the odometer">
-  <img src="marketing/app-store/screenshots/iphone-6.9/04-capture.png" width="200" alt="Reading an invoice on the phone and filing it with the car">
+  <img src="marketing/app-store/screenshots/iphone-6.3/01-binder.png" width="200" alt="The binder: one box per thing you look after, each with a status line">
+  <img src="marketing/app-store/screenshots/iphone-6.3/02-upcoming.png" width="200" alt="Urmează: what is due next, kept short">
+  <img src="marketing/app-store/screenshots/iphone-6.3/03-car.png" width="200" alt="A car’s page: ITP, insurance, vignette and services, with the odometer">
+  <img src="marketing/app-store/screenshots/iphone-6.3/04-capture.png" width="200" alt="Reading an invoice on the phone and filing it with the car">
 </p>
 
 <p align="center">
-  <img src="marketing/app-store/screenshots/iphone-6.9/05-trip.png" width="200" alt="A trip abroad: the documents each traveller and the car need">
-  <img src="marketing/app-store/screenshots/iphone-6.9/06-search.png" width="200" alt="Search across the whole binder">
-  <img src="marketing/app-store/screenshots/iphone-6.9/07-document.png" width="200" alt="A passport behind Face ID, with how long it is still valid">
+  <img src="marketing/app-store/screenshots/iphone-6.3/05-trip.png" width="200" alt="A trip abroad: the documents each traveller and the car need">
+  <img src="marketing/app-store/screenshots/iphone-6.3/06-search.png" width="200" alt="Search across the whole binder">
+  <img src="marketing/app-store/screenshots/iphone-6.3/07-document.png" width="200" alt="A passport behind Face ID, with how long it is still valid">
 </p>
 
 <p align="center"><sub>The App Store screenshots, with a made-up household (<a href="marketing/app-store/screenshots">all of them, iPhone and iPad</a>).</sub></p>
@@ -98,7 +98,7 @@ scripts/architecture-check.sh
 
 The screenshots are taken by UI tests, never by hand, so they can be taken again whenever a screen changes. The `DosarCuSinaScreenshots` scheme launches a development build with `-DosarScreenshots <scene>`: the app opens on a binder of its own (a separate store that never syncs, so the phone's binder is never touched), filled once with a made-up household through the app's own actions (`ScreenshotStage`), at the screen the scene names. A release build has none of it.
 
-On GitHub: Actions › Screenshots › Run workflow. It also runs on a pull request that changes the household, the UI tests, the captions or the framing. The run's artifacts are `screenshots` (the raw captures, a folder per device, light and dark) and `framed-screenshots` (the light ones with their captions, at App Store Connect's pixel sizes, a folder per device, numbered in the order to upload them). By default it takes the iPhone 6.9″ (iPhone 17 Pro Max, 1320 × 2868) and the iPad 13″ (iPad Pro 13-inch, 2064 × 2752).
+On GitHub: Actions › Screenshots › Run workflow. It also runs on a pull request that changes the household, the UI tests, the captions or the framing. The run's artifacts are `screenshots` (the raw captures, a folder per device, light and dark) and `framed-screenshots` (the light ones with their captions, at App Store Connect's pixel sizes, a folder per device, numbered in the order to upload them). By default it takes the iPhone 6.3″ (iPhone 17 Pro, 1206 × 2622: the size App Store Connect asks for first, under *iPhone with Dynamic Island (medium display)*, and scales down from), the iPhone 6.9″ (iPhone 17 Pro Max, 1320 × 2868) and the iPad 13″ (iPad Pro 13-inch, 2064 × 2752).
 
 On a Mac, with a simulator that is already installed (each takes a few minutes; the status bar reads 9:41, Face ID is enrolled on the simulator). Each run makes its household in a store of its own; the trips the app keeps on that simulator are replaced by the screenshots' trip, so use a simulator you don't otherwise test trips on:
 
@@ -108,7 +108,7 @@ swift marketing/frame-screenshots.swift /tmp/screenshots /tmp/framed
 swift marketing/frame-screenshots.swift /tmp/screenshots /tmp/framed --only 03-car   # one screen
 ```
 
-The set to upload is kept in [marketing/app-store/screenshots/](marketing/app-store/screenshots): `iphone-6.9/` and `ipad-13/`, numbered in upload order, and the pictures at the top of this page are the iPhone ones. When a screen changes, take the set again and replace those files with the run's `framed-screenshots` in the same pull request.
+The set to upload is kept in [marketing/app-store/screenshots/](marketing/app-store/screenshots): `iphone-6.3/` (the one App Store Connect asks for), `iphone-6.9/` and `ipad-13/`, numbered in upload order, and the pictures at the top of this page are the 6.3″ ones. When a screen changes, take the set again and replace those files with the run's `framed-screenshots` in the same pull request.
 
 The product page's header (21:9, 3840 × 1646) and its search-results picture (3:2, 3840 × 2560), which iOS 27 shows above the screenshots, are drawn in code with no words in them: the icon's binder on its navy, with placeholder papers around it. They are kept in [marketing/app-store/header/](marketing/app-store/header) and drawn again with `swift marketing/header-art.swift marketing/app-store/header`, which also writes the banner at the top of this page at half the size (`readme-banner.png`).
 
