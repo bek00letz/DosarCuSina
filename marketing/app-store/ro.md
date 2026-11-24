@@ -109,24 +109,48 @@ Every answer in the questionnaire is **None / No**, which gives **4+**:
 
 Already answered in the app's Info.plist (`ITSAppUsesNonExemptEncryption` = NO): only the encryption iOS provides. `scripts/bundle-check.sh` checks it on every pull request.
 
-## Note pentru Apple (App Review Information)
+## Pentru Apple (App Review Information)
 
-App Review reads English; paste this into *Notes*. No sign-in is needed, so *Sign-in required* stays off.
+What App Store Connect asks under *App Review Information*, field by field. App Review reads English, so the notes are in English.
+
+| Field | Value |
+| :--- | :--- |
+| Sign-in required | Off: the app has no account and no sign-in, so there is no demo account. |
+| Contact: first and last name, phone, e-mail | The owner's, typed in App Store Connect only (never written in this public repository); e-mail ar6development@gmail.com. |
+| Notes | The block below. |
+| Attachment | None needed: the examples and the practice invoice are inside the app. |
+
+## Note pentru Apple (4000)
 
 ```text
-Dosar cu Șină is a household binder for Romanian paperwork (car inspection and insurance, passports, boiler checks, warranties, pets' vaccines) with reminders. The app is in Romanian. No account, no sign-in, no server: everything is stored on the device.
+Dosar cu Șină is a household binder for Romanian paperwork (car inspection and insurance, passports, boiler checks, warranties, pets' vaccines) with reminders. The app is in Romanian only. There is no account, no sign-in and no server of ours: everything is stored on the device.
 
-To see it filled in: on first launch, go through the short introduction and choose "Încarcă exemple" (load examples) on the last step. Later you can load or remove the examples in Setări (Settings) > Exemple. Examples are marked as such and never send notifications.
+THE TABS
+Dosar = the binder, one box per thing you look after. Urmează = what is due next. Adaugă = add something (photo, PDF, shared files). Caută = search. Setări (Settings) is the button at the top right of Dosar.
 
-Reading documents: in the "Adaugă" tab, take a photo of a paper or pick a PDF. The text is read on the device (Vision and, where available, Apple's on-device model). The intro also offers a practice invoice to share into the app from the share sheet, which shows how the share extension works ("Arată-mi cum").
+TO SEE IT FILLED IN
+1. On first launch, go through the short introduction and tap "Vreau să văd cu exemple" (show me with examples). Examples are marked "Exemplu" and never send notifications. They can be loaded or removed later in Setări > Exemple ("Încarcă exemple" / "Șterge exemplele").
+2. Dosar: tap the car's box for its page (deadlines, documents, services, costs).
+3. Urmează: tap a deadline, then "Am rezolvat" (done) to record it and move to the next date.
+4. Adaugă: take a photo of any paper or pick a PDF. It is read on the device (Vision and, where available, Apple's on-device model), and the app shows where it will file it before saving. The introduction's "Arată-mi cum" (show me how) shares a practice invoice into the app through the share sheet.
+5. Urmează, or a person's page: "Pleci din țară" (travelling abroad) checks the documents each traveller and the car need. A car's page also offers "Vinzi mașina" (selling the car) and "Ai avut o daună" (an insurance claim).
 
-Optional AI key: Setări > Citire cu AI lets a person add their own key for Google Gemini, OpenAI, Anthropic Claude or an OpenAI-compatible service, to read difficult documents better. It is optional and never required; nothing is locked behind it. The key stays in the device's Keychain and is sent only to the provider the person chose, only when they choose to read a document with it. We provide no key and no account.
+SHARE EXTENSION
+In Mail, Files or Photos, tap Share and choose Dosar cu Șină. The file waits in Adaugă > "De verificat" (to review) until it is filed.
 
-Face ID: the "Acte" (documents) and "Sănătate" (health) categories are protected with Face ID by default, as is the optional app lock (Setări > Protecție). On the simulator, use Features > Face ID > Matching Face.
+OPTIONAL AI PROVIDER (guidelines 5.1.1 and 5.1.2)
+Setări > Citire cu AI lets a person add their own key for Google Gemini, OpenAI, Anthropic Claude or an OpenAI-compatible service, to read difficult documents better. It is never required and nothing is locked behind it; without a key everything works the same. Before a document leaves the phone the app asks ("Trimit poza la <provider>?", send the photo to <provider>?), unless the person turns on "Citește automat când nu sunt sigur" (read automatically when unsure), which is off by default; identity documents always ask. Only the document's first page is sent, directly from the device to the provider the person chose, under their own key. We receive nothing. The key stays in the device's Keychain. The privacy policy describes this.
 
-Share extension: in another app (Mail, Files, Photos), tap Share and choose Dosar cu Șină. The file waits in Adaugă > "De verificat" (to review) until it is filed.
+PERMISSIONS
+Camera: to photograph documents. Face ID: to open protected categories. Photos (add only): to save pages the person shares. Local network: only if the person chooses an AI service on their own network. Notifications: asked only after an explanation in the app, the first time a deadline needs a reminder.
 
-Notifications are asked for only after an explanation in the app, the first time a deadline needs a reminder. Widgets, Siri and Shortcuts are available ("Ce termene am?").
+FACE ID
+"Acte" (documents) and "Sănătate" (health) are protected with Face ID by default; an optional app lock is in Setări > Protecție. On the simulator: Features > Face ID > Enrolled, then Matching Face when asked.
+
+ALSO IN THE APP
+Home and Lock Screen widgets; Siri and Shortcuts ("Ce termene am?", what deadlines do I have?); the iPhone's search; password-protected backups in Setări > iCloud și copii de siguranță. iCloud sync is not part of this version.
+
+The health category stores the person's own check-up and vaccine dates; the app gives no medical advice. The app is free, with no in-app purchases, subscriptions or ads, and no tracking.
 
 Contact: ar6development@gmail.com
 ```

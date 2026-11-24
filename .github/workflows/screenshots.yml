@@ -19,6 +19,8 @@ on:
       - ios/DosarCuSinaScreenshots/**
       - scripts/app-store-screenshots.sh
       - marketing/**
+      # The framed set kept for App Store Connect and the README is what a run makes, not what it reads.
+      - '!marketing/app-store/screenshots/**'
       - .github/workflows/screenshots.yml
 
 permissions:

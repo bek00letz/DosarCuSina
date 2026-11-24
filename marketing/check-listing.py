@@ -12,7 +12,7 @@ import re
 import sys
 
 FOLDER = pathlib.Path(__file__).resolve().parent / "app-store"
-FIELD = re.compile(r"^## (.+?) \((\d+)\)\n(?:.*?\n)??```text\n(.*?)\n```", re.S | re.M)
+FIELD = re.compile(r"^## ([^\n]+?) \((\d+)\)\n(?:.*?\n)??```text\n(.*?)\n```", re.S | re.M)
 
 
 def problems(path):

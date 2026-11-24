@@ -9,6 +9,21 @@ A documents binder for the rare-but-predictable parts of life admin. A *dosar cu
 
 The app is in Romanian. It is for everyone, and built so that people who aren't comfortable with technology can use it just as well: four labelled tabs, big buttons, nothing hidden behind a swipe.
 
+<p align="center">
+  <img src="marketing/app-store/screenshots/iphone-6.9/01-binder.png" width="200" alt="The binder: one box per thing you look after, each with a status line">
+  <img src="marketing/app-store/screenshots/iphone-6.9/02-upcoming.png" width="200" alt="Urmează: what is due next, kept short">
+  <img src="marketing/app-store/screenshots/iphone-6.9/03-car.png" width="200" alt="A car’s page: ITP, insurance, vignette and services, with the odometer">
+  <img src="marketing/app-store/screenshots/iphone-6.9/04-capture.png" width="200" alt="Reading an invoice on the phone and filing it with the car">
+</p>
+
+<p align="center">
+  <img src="marketing/app-store/screenshots/iphone-6.9/05-trip.png" width="200" alt="A trip abroad: the documents each traveller and the car need">
+  <img src="marketing/app-store/screenshots/iphone-6.9/06-search.png" width="200" alt="Search across the whole binder">
+  <img src="marketing/app-store/screenshots/iphone-6.9/07-document.png" width="200" alt="A passport behind Face ID, with how long it is still valid">
+</p>
+
+<p align="center"><sub>The App Store screenshots, with a made-up household (<a href="marketing/app-store/screenshots">all of them, iPhone and iPad</a>).</sub></p>
+
 ## Privacy
 
 - Your data stays on your device and, where the build syncs and sync is on, in your own private iCloud database (development builds today; TestFlight and the App Store once the owner turns it on).
@@ -91,6 +106,8 @@ swift marketing/frame-screenshots.swift /tmp/screenshots /tmp/framed
 swift marketing/frame-screenshots.swift /tmp/screenshots /tmp/framed --only 03-car   # one screen
 ```
 
+The set to upload is kept in [marketing/app-store/screenshots/](marketing/app-store/screenshots): `iphone-6.9/` and `ipad-13/`, numbered in upload order, and the pictures at the top of this page are the iPhone ones. When a screen changes, take the set again and replace those files with the run's `framed-screenshots` in the same pull request.
+
 The captions are text in [marketing/app-store/captions.json](marketing/app-store/captions.json); the listing (name, subtitle, description, keywords, review notes, age rating) is in [marketing/app-store/ro.md](marketing/app-store/ro.md), in Romanian only (DECISIONS, 2026-11-18). `python3 marketing/check-listing.py` checks every field against App Store Connect's limits.
 
 ## Repository layout
@@ -108,7 +125,7 @@ The captions are text in [marketing/app-store/captions.json](marketing/app-store
 | `android/` | The paused Android version. |
 | `tests/` | The test runner, plus legacy and Android scripts. |
 | `docs/` | Decisions, handoff notes, copy guide, archive. |
-| `marketing/` | The App Store listing's text, the screenshots' captions and the script that frames them. |
+| `marketing/` | The App Store listing's text, the screenshots' captions, the script that frames them and the framed set to upload (`app-store/screenshots/`). |
 | `site/` | The public web pages: the privacy policy and help, in Romanian and English, published with GitHub Pages. |
 | `scripts/`, `.githooks/` | The privacy and architecture checks, the architecture exceptions and fixtures, and the hook that runs both. |
 | `.github/` | Code owners, templates, and the workflows for the checks and the web pages. |
