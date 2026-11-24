@@ -111,11 +111,13 @@ enum ChangeTimes {
     /// Whether `property` is part of the record's own state: a value or a link it keeps itself
     /// (`StoredProperty.isOwn`, never a list of the records that point at it), that counts as a
     /// change of it (`ChangeTimed.changeCounts`), and neither a time the unit keeps (`keptTimes`)
-    /// nor which copy it is (`copyMark`). The one definition: change times are given by it, and
+    /// nor which copy it is (`copyMark`), nor the id of what holds it (`ParentLinks.idNames`,
+    /// written from its link, which is its own state). The one definition: change times are given by it, and
     /// undo checks and takes back by it (`UndoableRecord.isStillAsLeft`), so a kept time goes back
     /// as it was while still as the step left it, and a newer one stays.
     static func isOwnState<M: UndoableRecord>(_ property: StoredProperty<M>, of record: M) -> Bool {
         property.isOwn && !keptTimes.contains(property.name) && property.name != copyMark
+            && !ParentLinks.idNames.contains(property.name)
             && ((record as? any ChangeTimed)?.changeCounts(property.name) ?? true)
     }
 

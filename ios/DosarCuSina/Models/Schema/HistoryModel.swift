@@ -40,7 +40,7 @@ public enum HistoryKind: String, Codable, CaseIterable, Sendable {
     }
 }
 
-extension DosarSchemaV17 {
+extension DosarSchemaV18 {
     /// One thing that happened to an asset: a visit, a repair, a purchase, an
     /// inspection. It is the asset's single history: completing an obligation
     /// writes one of these, and so does logging a repair by hand.
@@ -79,12 +79,18 @@ extension DosarSchemaV17 {
         public var previousDueMetric: Double?
 
         public var asset: Asset?
+        /// The id of the section it is in, kept beside `asset` as every save writes it
+        /// (`ParentLinks.stamp`): when a deletion from another device lets go of the link, it
+        /// goes back to its copy with this id, or waits in the repair list (`LostRecordsStep`).
+        /// None until it is next saved. Version 18.
+        public var assetID: UUID?
         public var obligation: Obligation?
         /// Who did the work.
         public var providers: [Provider]? = []
 
-        /// Parts and jobs, each tied to a component.
-        @Relationship(deleteRule: .cascade, inverse: \ServiceItem.entry)
+        /// Parts and jobs, each tied to a component. Deleting the record deletes them through
+        /// `RecordContents`, never the database (version 18).
+        @Relationship(deleteRule: .nullify, inverse: \ServiceItem.entry)
         public var items: [ServiceItem]? = []
 
         @Relationship(deleteRule: .nullify, inverse: \Attachment.historyEntry)

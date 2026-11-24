@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV17 {
+extension DosarSchemaV18 {
     /// Something that has to be done by a date, once or on a schedule: ITP, RCA,
     /// local taxes, a vaccine, a subscription renewal.
     ///
@@ -70,6 +70,11 @@ extension DosarSchemaV17 {
         public var remindersData: Data?
 
         public var asset: Asset?
+        /// The id of the section it is in, kept beside `asset` as every save writes it
+        /// (`ParentLinks.stamp`): when a deletion from another device lets go of the link, it
+        /// goes back to its copy with this id, or waits in the repair list (`LostRecordsStep`).
+        /// None until it is next saved. Version 18.
+        public var assetID: UUID?
 
         /// Times it was done. They belong to the asset's history: deleting the
         /// obligation keeps them and only unlinks them.

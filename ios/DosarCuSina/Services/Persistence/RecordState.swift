@@ -410,7 +410,7 @@ extension Obligation: UndoableRecord {
             .attribute("reference", \.reference), .attribute("statusRaw", \.statusRaw), .attribute("snoozedUntilISO", \.snoozedUntilISO),
             .attribute("isExample", \.isExample), .attribute("createdAt", \.createdAt), .attribute("updatedAt", \.updatedAt),
             .attribute("cycleKnownAt", \.cycleKnownAt), .attribute("remindersData", \.remindersData),
-            .toOne("asset", \.asset), .toMany("historyEntries", \.historyEntries), .toMany("attachments", \.attachments),
+            .toOne("asset", \.asset), .attribute("assetID", \.assetID), .toMany("historyEntries", \.historyEntries), .toMany("attachments", \.attachments),
         ]
     }
     public var recordKey: String { id.uuidString }
@@ -431,7 +431,7 @@ extension HistoryEntry: UndoableRecord {
             .attribute("isExample", \.isExample), .attribute("cycleDueDayISO", \.cycleDueDayISO), .attribute("nextDueDayISO", \.nextDueDayISO),
             .attribute("previousStatusRaw", \.previousStatusRaw), .attribute("previousDueMetric", \.previousDueMetric),
             .attribute("updatedAt", \.updatedAt),
-            .toOne("asset", \.asset), .toOne("obligation", \.obligation), .links("providers", \.providers),
+            .toOne("asset", \.asset), .attribute("assetID", \.assetID), .toOne("obligation", \.obligation), .links("providers", \.providers),
             .toMany("items", \.items), .toMany("attachments", \.attachments),
         ]
     }
@@ -453,7 +453,7 @@ extension ServiceItem: UndoableRecord {
             .attribute("currency", \.currency), .toOne("supplier", \.supplier), .attribute("batchOrTicket", \.batchOrTicket),
             .attribute("locationDetail", \.locationDetail), .attribute("daysInService", \.daysInService),
             .attribute("warrantyMonths", \.warrantyMonths), .attribute("notes", \.notes), .attribute("isExample", \.isExample),
-            .attribute("updatedAt", \.updatedAt), .toOne("entry", \.entry), .toMany("attachments", \.attachments),
+            .attribute("updatedAt", \.updatedAt), .toOne("entry", \.entry), .attribute("entryID", \.entryID), .toMany("attachments", \.attachments),
         ]
     }
     public var recordKey: String { id.uuidString }
@@ -474,7 +474,7 @@ extension MeasurementLog: UndoableRecord {
             .attribute("referenceMax", \.referenceMax), .attribute("source", \.source), .attribute("notes", \.notes),
             .attribute("isExample", \.isExample), .attribute("updatedAt", \.updatedAt), .attribute("startsCounter", \.startsCounter),
             .attribute("basisRaw", \.basisRaw),
-            .toOne("asset", \.asset), .toMany("attachments", \.attachments),
+            .toOne("asset", \.asset), .attribute("assetID", \.assetID), .toMany("attachments", \.attachments),
         ]
     }
     public var recordKey: String { id.uuidString }
@@ -496,7 +496,7 @@ extension Attachment: UndoableRecord {
             .attribute("compactedAt", \.compactedAt), .attribute("framingData", \.framingData),
             .attribute("createdAt", \.createdAt), .attribute("isExample", \.isExample), .attribute("updatedAt", \.updatedAt),
             .toMany("pages", \.pages), .toOne("supersededBy", \.supersededBy), .toMany("supersedes", \.supersedes),
-            .toOne("asset", \.asset), .toOne("obligation", \.obligation), .toOne("historyEntry", \.historyEntry),
+            .toOne("asset", \.asset), .attribute("assetID", \.assetID), .toOne("obligation", \.obligation), .toOne("historyEntry", \.historyEntry),
             .toOne("serviceItem", \.serviceItem), .toOne("measurement", \.measurement), .toOne("provider", \.provider),
         ]
     }
@@ -510,7 +510,8 @@ extension Attachment: UndoableRecord {
 
 extension AttachmentPage: UndoableRecord {
     public static var storedProperties: [StoredProperty<AttachmentPage>] {
-        [.attribute("id", \.id), .attribute("copyID", \.copyID), .attribute("index", \.index), .attribute("imageData", \.imageData), .toOne("attachment", \.attachment)]
+        [.attribute("id", \.id), .attribute("copyID", \.copyID), .attribute("index", \.index), .attribute("imageData", \.imageData), .toOne("attachment", \.attachment),
+         .attribute("attachmentID", \.attachmentID)]
     }
     public var recordKey: String { id.uuidString }
     public static func blank() -> Self { Self(index: 0, imageData: nil) }

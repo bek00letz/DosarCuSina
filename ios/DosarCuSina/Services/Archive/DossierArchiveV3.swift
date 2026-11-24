@@ -369,15 +369,18 @@ public enum DossierV3 {
     ///   made the copy. A record a backup brings in is a new copy, with one of its own; carried
     ///   along, two devices' copies would look like one and could never be told apart
     ///   (`RecordsMeet`).
+    /// - The id of what holds a record (`assetID`, `entryID`, `attachmentID`): the backup carries
+    ///   the link itself, and the id is written again from it as the record is saved here
+    ///   (`ParentLinks.stamp`).
     static let stayOnThePhone: [String: Set<String>] = [
         "Asset": ["copyID"],
-        "Obligation": ["cycleKnownAt", "copyID"],
-        "HistoryEntry": ["copyID"],
-        "ServiceItem": ["copyID"],
-        "MeasurementLog": ["copyID"],
-        "Attachment": ["documentID", "compactedAt", "copyID"],
+        "Obligation": ["cycleKnownAt", "copyID", "assetID"],
+        "HistoryEntry": ["copyID", "assetID"],
+        "ServiceItem": ["copyID", "entryID"],
+        "MeasurementLog": ["copyID", "assetID"],
+        "Attachment": ["documentID", "compactedAt", "copyID", "assetID"],
         "Provider": ["contactIdentifier", "copyID"],
-        "AttachmentPage": ["id", "copyID"],
+        "AttachmentPage": ["id", "copyID", "attachmentID"],
         "CategoryTemplate": ["copyID"],
         "IssuerLesson": ["copyID"],
     ]

@@ -159,7 +159,7 @@ public final class AttachmentActions {
     @discardableResult
     public func delete(_ attachment: Attachment) throws -> UndoReceipt {
         try UnitOfWork.performUndoable(in: context) {
-            context.delete(attachment)
+            RecordContents.delete(attachment, in: context)
             try save()
         }.receipt
     }

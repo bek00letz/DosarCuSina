@@ -53,6 +53,7 @@ struct DataRepairs {
         CitizenshipsStep(),
         PersonalLessonLabelsStep(),
         LabourPartsStep(),
+        LostRecordsStep(),
     ]
 
     static func step(_ id: DataRepairStepID) -> any DataRepairStep {
@@ -133,6 +134,7 @@ enum DataRepairStepID: String, CaseIterable, Sendable, Hashable {
     case citizenships = "citizenships"
     case personalLessonLabels = "personal-lesson-labels"
     case labourParts = "labour-parts"
+    case lostRecords = "lost-records"
 }
 
 /// One thing a repair would change, in plain words, with what applying it needs.
@@ -196,6 +198,8 @@ struct DataRepairFinding: Identifiable, Hashable, Sendable {
         case issuerLesson(id: UUID)
         /// A visit's labour line kept as a part of one's own: it becomes the visit's labour.
         case labourPart(itemID: UUID)
+        /// A record whose section was deleted on another device: it is kept in „Recuperate”.
+        case lostRecord(LostRecordsStep.Lost)
     }
 }
 

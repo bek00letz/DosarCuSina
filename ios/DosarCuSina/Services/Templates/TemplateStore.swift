@@ -176,10 +176,11 @@ public struct TemplateStore {
         tint: TemplateTint,
         sections: [FieldSection],
         blueprints: [ObligationBlueprint] = [],
-        isSensitive: Bool = false
+        isSensitive: Bool = false,
+        key: String = TemplateDefinition.newCustomKey()
     ) throws -> CategoryTemplate {
         let definition = TemplateDefinition(
-            key: TemplateDefinition.newCustomKey(),
+            key: key,
             name: name,
             symbol: symbol,
             tint: tint,
@@ -198,8 +199,9 @@ public struct TemplateStore {
     /// Creates a category from a name, a symbol and the pockets it should show,
     /// with no fields of its own ("Altceva…"). Facts go in Date importante as free rows.
     @discardableResult
-    public func createCustom(name: String, symbol: String, pockets: [SectionPocket], tint: TemplateTint = .gray, isSensitive: Bool = false) throws -> CategoryTemplate {
-        let template = try createCustom(name: name, symbol: symbol, tint: tint, sections: [], isSensitive: isSensitive)
+    public func createCustom(name: String, symbol: String, pockets: [SectionPocket], tint: TemplateTint = .gray, isSensitive: Bool = false,
+                             key: String = TemplateDefinition.newCustomKey()) throws -> CategoryTemplate {
+        let template = try createCustom(name: name, symbol: symbol, tint: tint, sections: [], isSensitive: isSensitive, key: key)
         template.pockets = pockets
         try save()
         return template

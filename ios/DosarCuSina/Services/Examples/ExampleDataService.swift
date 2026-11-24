@@ -242,7 +242,7 @@ public struct ExampleDataService {
                 kept.append(asset.name)
                 Self.makeReal(asset)
             }
-            for asset in examples where asset.isExample { context.delete(asset) }
+            for asset in examples where asset.isExample { RecordContents.delete(asset, in: context) }
             // Example records that don't hang off an asset.
             // People who worked on a kept section were made the person's with it.
             for provider in try context.fetch(FetchDescriptor<Provider>(predicate: #Predicate { $0.isExample })) where provider.isExample {

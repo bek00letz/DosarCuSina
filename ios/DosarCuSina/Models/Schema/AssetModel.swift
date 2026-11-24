@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV17 {
+extension DosarSchemaV18 {
     /// Something the household looks after: a car, a home, a pet, a passport.
     /// Its details live in `values`, described by the template named in `templateKey`.
     @Model
@@ -29,17 +29,20 @@ extension DosarSchemaV17 {
         public var createdAt: Date = Date()
         public var updatedAt: Date = Date()
 
-        @Relationship(deleteRule: .cascade, inverse: \Obligation.asset)
+        // What a section holds goes with it only when the app deletes it (`RecordContents`): the
+        // database lets go of the links, so a deletion from another device never takes what this
+        // one added to the section meanwhile (`ParentLinks`). Version 18; before, `.cascade`.
+        @Relationship(deleteRule: .nullify, inverse: \Obligation.asset)
         public var obligations: [Obligation]? = []
 
-        @Relationship(deleteRule: .cascade, inverse: \Attachment.asset)
+        @Relationship(deleteRule: .nullify, inverse: \Attachment.asset)
         public var attachments: [Attachment]? = []
 
         /// Everything that happened to it: visits, repairs, purchases, completed obligations.
-        @Relationship(deleteRule: .cascade, inverse: \HistoryEntry.asset)
+        @Relationship(deleteRule: .nullify, inverse: \HistoryEntry.asset)
         public var history: [HistoryEntry]? = []
 
-        @Relationship(deleteRule: .cascade, inverse: \MeasurementLog.asset)
+        @Relationship(deleteRule: .nullify, inverse: \MeasurementLog.asset)
         public var measurements: [MeasurementLog]? = []
 
         /// People and businesses who look after it (the mechanic, the vet).
