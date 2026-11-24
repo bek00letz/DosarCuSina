@@ -314,24 +314,21 @@ enum UndoableRecords {
     }
 
     /// What the schema says, by type: read once, from the models' own declarations.
-    private static let schemaFacts: (owned: [String: Set<String>], keptOutside: [String: Set<String>]) = {
+    private static let keptOutsideByType: [String: Set<String>] = {
         let schema = Schema(versionedSchema: CurrentSchema.self)
-        let owned = Dictionary(schema.entities.map { entity in
-            (entity.name, Set(entity.relationships.filter { if case .cascade = $0.deleteRule { true } else { false } }.map(\.name)))
-        }, uniquingKeysWith: { first, _ in first })
-        let keptOutside = Dictionary(schema.entities.map { entity in
+        return Dictionary(schema.entities.map { entity in
             (entity.name, Set(entity.attributes.filter { $0.options.contains(.externalStorage) }.map(\.name)))
         }, uniquingKeysWith: { first, _ in first })
-        return (owned, keptOutside)
     }()
 
-    /// The relationships whose records go with their owner when it is deleted, by type:
-    /// read from the schema's own delete rules, so they're written once, on the models.
-    static var ownedRelationships: [String: Set<String>] { schemaFacts.owned }
+    /// The relationships whose records go with their owner when it is deleted, by type: what
+    /// the app deletes with it (`RecordContents.owned`), since the database deletes nothing by
+    /// itself (version 18).
+    static var ownedRelationships: [String: Set<String>] { RecordContents.owned }
 
     /// The attributes the store keeps outside the database, by type (pictures and files, the
     /// models' `.externalStorage`): read and compared by their digest (`StoredValue.file`).
-    static var keptOutside: [String: Set<String>] { schemaFacts.keptOutside }
+    static var keptOutside: [String: Set<String>] { keptOutsideByType }
 
     /// The records `state`'s record owns: deleting it deletes them too.
     static func owned(by state: RecordState) -> Set<RecordRef> {

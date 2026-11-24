@@ -206,6 +206,16 @@ struct ParentLinksTests {
                 "Undo brings all of it back, with every link")
     }
 
+    @Test("What the app deletes with a record is every relationship it says it holds, of the schema's own")
+    func whatARecordHoldsIsTheSchemasRelationships() {
+        let schema = Schema(versionedSchema: CurrentSchema.self)
+        for (type, names) in RecordContents.owned {
+            let entity = schema.entities.first { $0.name == type }
+            #expect(entity != nil, "\(type) is a model")
+            #expect(names.isSubset(of: Set(entity?.relationships.map(\.name) ?? [])), "\(type): each is one of its relationships")
+        }
+    }
+
     @Test func deletingADocumentOrAVisitTakesItsPagesOrParts() throws {
         let context = try makeContext()
         let invoice = DosarCuSina.Attachment(fileName: "factura.pdf", contentType: "com.adobe.pdf", data: Data("%PDF".utf8))
