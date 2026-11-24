@@ -10,8 +10,8 @@ on:
   workflow_dispatch:
     inputs:
       simulators:
-        description: "Simulators, comma-separated (iPhone 6.9″ and iPad 13″)"
-        default: "iPhone 17 Pro Max,iPad Pro 13-inch (M5)"
+        description: "Simulators, comma-separated (iPhone 6.3″, iPhone 6.9″ and iPad 13″)"
+        default: "iPhone 17 Pro,iPhone 17 Pro Max,iPad Pro 13-inch (M5)"
         required: true
   pull_request:
     paths:
@@ -51,7 +51,7 @@ jobs:
 
       - name: Take the screenshots
         env:
-          SIMULATORS: ${{ inputs.simulators || 'iPhone 17 Pro Max,iPad Pro 13-inch (M5)' }}
+          SIMULATORS: ${{ inputs.simulators || 'iPhone 17 Pro,iPhone 17 Pro Max,iPad Pro 13-inch (M5)' }}
           DERIVED_DATA_PATH: ${{ runner.temp }}/DerivedData
           SCREENSHOT_LOGS: ${{ runner.temp }}/screenshot-logs
         run: |
