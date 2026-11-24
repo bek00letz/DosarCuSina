@@ -6932,7 +6932,7 @@
       }
     },
     "Păstrează" : {
-      "comment" : "Cancel a delete."
+      "comment" : "Applies one repair: keep a record whose section was deleted on another device.\nCancel a delete."
     },
     "Păstrează ce era" : {
 
