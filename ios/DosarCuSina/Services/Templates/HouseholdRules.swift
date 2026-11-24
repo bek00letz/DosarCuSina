@@ -65,10 +65,18 @@ public enum HouseholdRules {
         let isExample = tenancies.allSatisfy(\.isExample)
         var changed = false
         if let kept = kept(among: existing) {
-            for extra in existing where extra !== kept {
-                fold(extra, into: kept)
-                context.delete(extra)
-                changed = true
+            // Joining copies waits for the binder to arrive: a completion or a document still on
+            // its way would make two devices keep different copies and delete each other's. And
+            // copies of one record (the same id, one backup brought in on two devices) are
+            // `RecordsMeet`'s to join, by the copy rule every device follows: nothing here tells
+            // them apart, so each device would keep the copy it read first.
+            let distinct = Set(existing.map(\.id)).count == existing.count
+            if existing.count > 1, distinct, CloudArrival.of(context.container).isWhole {
+                for extra in existing where extra !== kept {
+                    fold(extra, into: kept)
+                    context.delete(extra)
+                    changed = true
+                }
             }
             if kept.isExample != isExample { kept.isExample = isExample; changed = true }
             return changed

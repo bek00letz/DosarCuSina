@@ -59,7 +59,7 @@ private struct BackupSection: View {
         } header: {
             Text("Copie de siguranță", comment: "Settings section.")
         } footer: {
-            Text("Copia e un singur fișier cu tot dosarul, inclusiv documentele. Păstreaz-o în Fișiere, pe iCloud Drive sau trimite-o pe alt telefon. Codurile PIN și rândurile secrete nu intră în copie: rămân doar pe acest telefon.", comment: "Footer of the backup section.")
+            Text("Copia e un singur fișier cu tot dosarul, inclusiv documentele. Păstreaz-o în Fișiere sau pe iCloud Drive. Codurile PIN și rândurile secrete nu intră în copie.", comment: "Footer of the backup section.")
         }
     }
 

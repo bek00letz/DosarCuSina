@@ -177,4 +177,40 @@ struct HouseholdDeadlineCopiesTests {
         #expect(try LaunchData.reconcileHouseholdRules(in: context, today: CalendarDay("2026-11-10")))
         #expect(try declarations(in: context).count == 1, "Made once all of it has come")
     }
+
+    @Test("Copies are joined only once the binder has arrived: a completion may still be on its way")
+    func copiesWaitForTheBinder() throws {
+        let context = try makeContext()
+        context.insert(Asset(name: "Apartament Exemplu – chiriaș", templateKey: BuiltInTemplates.Key.tenancy))
+        _ = declaration(id: Self.smaller, in: context)
+        _ = declaration(id: Self.larger, in: context)
+        try context.save()
+        let container = context.container
+        CloudArrival.awaitFirstDownload(in: container)
+
+        _ = try LaunchData.reconcileHouseholdRules(in: context, today: CalendarDay("2026-11-10"))
+        #expect(try declarations(in: context).count == 2, "Nothing goes while the binder is arriving")
+
+        CloudArrival.follow(SyncEvent(kind: .download, finishedAt: noon("2026-11-10"), succeeded: true), in: container)
+        #expect(try LaunchData.reconcileHouseholdRules(in: context, today: CalendarDay("2026-11-10")))
+        #expect(try declarations(in: context).count == 1)
+    }
+
+    @Test("Two copies of one record (one backup brought in on two phones) are left to the copy rule")
+    func copiesOfOneRecordAreRecordsMeets() throws {
+        let context = try makeContext()
+        context.insert(Asset(name: "Apartament Exemplu – chiriaș", templateKey: BuiltInTemplates.Key.tenancy))
+        let first = declaration(id: Self.smaller, in: context)
+        let second = declaration(id: Self.smaller, in: context)
+        try context.save()
+
+        _ = try LaunchData.reconcileHouseholdRules(in: context, today: CalendarDay("2026-11-10"))
+        let left = try declarations(in: context)
+        #expect(left.count == 2, "The household rules can't tell them apart, so each phone would keep its own")
+        #expect(left.contains { $0 === first } && left.contains { $0 === second })
+
+        _ = try RecordsMeet.join(in: context)
+        try context.save()
+        #expect(try declarations(in: context).count == 1, "The copy rule joins them, the same way on every phone")
+    }
 }

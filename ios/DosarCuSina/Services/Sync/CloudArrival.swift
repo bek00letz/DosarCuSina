@@ -15,7 +15,9 @@ import Synchronization
 /// A container that syncs starts out not known to be whole (`awaitFirstDownload`): what changed
 /// on the person's other devices while this one was closed comes in this launch's first
 /// download, so it is whole once that download has finished, not before the mirroring's first
-/// report. `PersistenceController` tells it all of this as it opens the store and follows the
+/// report. Before that, the store opens on the phone alone while iCloud is asked which account
+/// it is: not whole either (`accountUnsettled`), since a download cut short at the last launch
+/// can have left half of a change. `PersistenceController` tells it all of this as it opens the store and follows the
 /// mirroring's events (`SyncEvent`); a container it doesn't run, a test's, is always whole.
 /// Joining two copies of a record waits too (`RecordsMeet`): what is still on its way may point
 /// at the copy that would go. When it
@@ -33,8 +35,11 @@ final class CloudArrival: Sendable {
         var downloading = false
         /// The store opened to sync and no download has finished since: not known yet.
         var awaitingThisLaunch = false
+        /// The store is open on the phone alone while iCloud is asked which account it is, and
+        /// sync may follow: what the account's binder holds is not known yet.
+        var accountUnsettled = false
 
-        var isWhole: Bool { !firstDownloadPending && !settingUp && !downloading && !awaitingThisLaunch }
+        var isWhole: Bool { !firstDownloadPending && !settingUp && !downloading && !awaitingThisLaunch && !accountUnsettled }
     }
 
     /// One container's arrival, kept while the container lives.
@@ -68,6 +73,13 @@ final class CloudArrival: Sendable {
     /// Whether the first download for the account is still to finish on this phone.
     static func firstDownload(pending: Bool, in container: ModelContainer) {
         of(container).change(in: container) { $0.firstDownloadPending = pending }
+    }
+
+    /// Whether `container` is the store opened on the phone alone while iCloud is still asked
+    /// which account it is (`PersistenceController.SyncState.checkingAccount`): every launch
+    /// that syncs starts so, on what the last launch left, which may be a download cut short.
+    static func accountUnsettled(_ unsettled: Bool, in container: ModelContainer) {
+        of(container).change(in: container) { $0.accountUnsettled = unsettled }
     }
 
     /// `container` opened to sync: not known to be whole until a download finishes in it.
