@@ -154,7 +154,7 @@ private struct BackupSection: View {
             }
             Button(role: .cancel) { flow.discard(pending.url) } label: { Text("Nu acum", comment: "Cancels an optional action.") }
         } message: { pending in
-            Text(verbatim: BackupWording.summary(pending.summary) + " " + String(localized: "Dacă alegi „Înlocuiește”, ce ai acum pe telefon se șterge și rămâne doar ce e în copie. Codurile PIN de pe acest telefon rămân.", comment: "Warning before replacing everything with a backup."))
+            Text(verbatim: BackupWording.summary(pending.summary) + " " + BackupWording.replaceWarning(everyDevice: flow.replacingReachesEveryDevice))
         }
     }
 
@@ -256,6 +256,16 @@ private struct ShareItem: Identifiable {
 
 /// Plain-language lines for the backup screen.
 enum BackupWording {
+    /// What „Înlocuiește tot” does, said before it is chosen: on every device when the binder
+    /// syncs, else on this phone; that a copy of the binder is kept first, and where.
+    static func replaceWarning(everyDevice: Bool) -> String {
+        everyDevice
+            ? String(localized: "Dacă alegi „Înlocuiește”, ce ai acum se șterge de pe toate dispozitivele tale și rămâne doar ce e în copie. Înainte păstrez o copie a dosarului de acum, în Setări › iCloud și copii de siguranță. Codurile PIN de pe acest telefon rămân.",
+                     comment: "Warning before replacing everything with a backup while the binder syncs with iCloud.")
+            : String(localized: "Dacă alegi „Înlocuiește”, ce ai acum pe telefon se șterge și rămâne doar ce e în copie. Înainte păstrez o copie a dosarului de acum, în Setări › iCloud și copii de siguranță. Codurile PIN de pe acest telefon rămân.",
+                     comment: "Warning before replacing everything with a backup.")
+    }
+
     static func summary(_ summary: ArchiveSummary, locale: Locale = .dosarDefault) -> String {
         let counts = [
             String(localized: "\(summary.counts.assets) secțiuni", locale: .dosarDefault, comment: "A number of sections, with Romanian plural forms."),
