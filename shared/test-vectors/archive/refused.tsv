@@ -1,0 +1,18 @@
+file	kind	what it is
+not-a-zip.bin	invalidZipArchive	is shorter than any zip
+no-end-record.bin	endOfCentralDirectoryNotFound	has no end of central directory record
+overlapping-entries.zip	overlappingEntries	has two files whose directory records start at the same bytes
+runs-into-directory.zip	overlappingEntries	has a file whose stated size runs into the directory
+changed-byte.zip	crcMismatch	has a stored file with one byte changed after its checksum was taken
+leaves-the-archive.zip	unsafeEntryPath	names a file outside the archive (../x.txt)
+same-file-twice.zip	duplicateEntry	holds the same name twice
+same-name-two-spellings.zip	duplicateEntry	holds one name twice, its letter ș written as one character and as s with a comma below
+marked-zip64.zip	sizeLimitExceeded	says it holds 65 535 files, which marks a ZIP64 archive
+file-too-large.zip	sizeLimitExceeded	says one file is 129 MiB once read back
+grows-too-much.zip	sizeLimitExceeded	says a 1 KiB compressed file unpacks to 10 MiB
+unpacks-too-large.zip	unpacksTooLarge	says its files together unpack to more than 8 GiB
+stored-sizes-differ.zip	fileCorrupted	has a stored file whose two sizes differ
+cut-short.zip	fileCorrupted	has a compressed file cut off halfway
+longer-than-it-says.zip	sizeLimitExceeded	has a compressed file that unpacks to more than it says
+unknown-compression.zip	unsupportedCompressionMethod	has a file compressed another way (method 12)
+no-local-header.zip	invalidZipArchive	has a file whose own header isn't where the directory says
