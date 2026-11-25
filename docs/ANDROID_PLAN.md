@@ -33,7 +33,7 @@ Rules that are checked, not remembered, carry over too: the Android build gets a
 - Pure Kotlin modules for everything that doesn't need a phone (the archive, the engines, capture's readers), so their tests run in seconds on GitHub's Linux machines, with no emulator.
 
 ### Phase 1: the archive, both ways (three or four agents at once)
-- The value rules first: days kept as days (`CalendarDay`), times in UTC to the second (`MachineText`), Romanian numbers, values a newer version wrote kept raw and written back (`KeptObject`, `KeptList`, `JSONValue.laying`).
+- The value rules first: days kept as days (`CalendarDay`), times in UTC to the second (`MachineText`), Romanian numbers, values a newer version wrote kept raw and written back (`KeptObject`, `KeptList`, `JSONValue.laying`). **Done** (`claude/android-p1-values`): in `android/core` (`com.ar.dosarcusina.core.values`), with money's stored form, unit keys and the app's calendar, pinned by the iOS app's own answers in `shared/test-vectors/values/` (written by `ValueVectorsTests`, fresh or failing, `TEST_RUNNER_VALUE_VECTORS_WRITE=1`).
 - The ZIP reader and writer with the same limits as iOS (`DosarZipEngine.Limits.standard`), never ZIP64, never the whole archive in memory.
 - The password format (PBKDF2, then AES-GCM in chunks), byte for byte as [dosar-v3.md](../shared/schemas/dosar-v3.md) describes.
 - The importer: which copy wins (`ArchiveMerge`), "Adaugă" and "Înlocuiește tot", secrets never written or read, locks only ever raised, version 2 archives still read.
