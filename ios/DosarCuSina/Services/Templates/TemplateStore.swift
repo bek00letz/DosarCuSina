@@ -401,11 +401,15 @@ public struct TemplateStore {
         try save()
     }
 
-    /// Locks or opens a category on this device only (`SectionLocks`): nothing is saved in the
-    /// store, so no other device follows. Opening a locked one takes the person's Face ID first,
-    /// every time (`lowering`, from `BiometricVaultManager.confirmLowering`); locking needs none.
+    /// Locks or opens a category (`SectionLocks`): locking it locks it on every device, saved on
+    /// its record (`CategoryTemplate.lockedEverywhereAt`); opening it opens it on this device only.
+    /// Opening a locked one takes the person's Face ID first, every time (`lowering`, from
+    /// `BiometricVaultManager.confirmLowering`); locking needs none.
     public func setSensitive(_ template: CategoryTemplate, _ isSensitive: Bool, lowering: LockLowering? = nil) throws {
-        try template.setLock(isSensitive, lowering: lowering)
+        try UnitOfWork.perform(in: context) {
+            try template.setLock(isSensitive, lowering: lowering)
+            try save()
+        }
     }
 
     /// Ends the wait after this device's locks couldn't be read (`SectionLocks.needsChoosingAgain`):

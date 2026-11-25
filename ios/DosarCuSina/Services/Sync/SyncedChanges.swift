@@ -100,6 +100,11 @@ final class SyncedChanges: ContainerHolder {
         guard !changes.isEmpty else { return }
         settle()
         NotificationCenter.default.post(name: Self.didArrive, object: container, userInfo: [Self.changesKey: changes])
+        // A category locked on another device locks it here too (`CategoryTemplate.lockedEverywhereAt`):
+        // what follows the locks reads them again.
+        if changes.everything || changes.changed.contains(where: { $0.entityName == "CategoryTemplate" }) {
+            NotificationCenter.default.post(name: SectionLocks.didChange, object: nil)
+        }
     }
 
     /// The app's own steps that make two devices' binders one: records that share an id joined

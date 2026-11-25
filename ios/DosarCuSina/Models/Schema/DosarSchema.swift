@@ -4,7 +4,7 @@ import SwiftData
 /// The current schema of the household database.
 ///
 /// Every model lives inside this namespace so that the next version can freeze a
-/// copy of these definitions and migrate from them (as `DosarSchemaV2` to `DosarSchemaV17`
+/// copy of these definitions and migrate from them (as `DosarSchemaV2` to `DosarSchemaV18`
 /// are frozen in `Versions/`). App code uses the top-level type aliases below and never names the
 /// version directly.
 ///
@@ -59,9 +59,12 @@ import SwiftData
 /// default: not known), and no longer has the database delete what a record holds with it: a
 /// deletion that arrives from another device then never takes what this one added meanwhile,
 /// which goes back to its copy by id or waits in the repair list (`ParentLinks`), and the app
-/// deletes what a record holds itself (`RecordContents`).
-public enum DosarSchemaV18: VersionedSchema {
-    public static let versionIdentifier = Schema.Version(18, 0, 0)
+/// deletes what a record holds itself (`RecordContents`). Version 19 adds when a category was last
+/// locked on one of the person's devices (`CategoryTemplate.lockedEverywhereAt`, none by default:
+/// never), so locking a category on one device locks it on every device that hasn't opened it
+/// since, a new one included; opening one stays on the device that opens it (`SectionLocks`).
+public enum DosarSchemaV19: VersionedSchema {
+    public static let versionIdentifier = Schema.Version(19, 0, 0)
 
     public static var models: [any PersistentModel.Type] {
         [
@@ -85,8 +88,8 @@ public enum DosarSchemaV18: VersionedSchema {
 /// stage that carries something across the change of shape carries it through `MigrationCarry`,
 /// never in memory, so an upgrade that stops halfway finishes at the next launch.
 public enum DosarMigrationPlan: SchemaMigrationPlan {
-    public static var schemas: [any VersionedSchema.Type] { [DosarSchemaV2.self, DosarSchemaV3.self, DosarSchemaV4.self, DosarSchemaV5.self, DosarSchemaV6.self, DosarSchemaV7.self, DosarSchemaV8.self, DosarSchemaV9.self, DosarSchemaV10.self, DosarSchemaV11.self, DosarSchemaV12.self, DosarSchemaV13.self, DosarSchemaV14.self, DosarSchemaV15.self, DosarSchemaV16.self, DosarSchemaV17.self, DosarSchemaV18.self] }
-    public static var stages: [MigrationStage] { [v2ToV3, v3ToV4, v4ToV5, v5ToV6, v6ToV7, v7ToV8, v8ToV9, v9ToV10, v10ToV11, v11ToV12, v12ToV13, v13ToV14, v14ToV15, v15ToV16, v16ToV17, v17ToV18] }
+    public static var schemas: [any VersionedSchema.Type] { [DosarSchemaV2.self, DosarSchemaV3.self, DosarSchemaV4.self, DosarSchemaV5.self, DosarSchemaV6.self, DosarSchemaV7.self, DosarSchemaV8.self, DosarSchemaV9.self, DosarSchemaV10.self, DosarSchemaV11.self, DosarSchemaV12.self, DosarSchemaV13.self, DosarSchemaV14.self, DosarSchemaV15.self, DosarSchemaV16.self, DosarSchemaV17.self, DosarSchemaV18.self, DosarSchemaV19.self] }
+    public static var stages: [MigrationStage] { [v2ToV3, v3ToV4, v4ToV5, v5ToV6, v6ToV7, v7ToV8, v8ToV9, v9ToV10, v10ToV11, v11ToV12, v12ToV13, v13ToV14, v14ToV15, v15ToV16, v16ToV17, v17ToV18, v18ToV19] }
 
     /// Version 3 only adds optional attributes; existing records keep every value. What
     /// the new attributes should hold for old records is filled in later: the categories'
@@ -183,23 +186,28 @@ public enum DosarMigrationPlan: SchemaMigrationPlan {
     /// as records are next saved (`ParentLinks.stamp`), never all at once: a record never saved
     /// again keeps its link and needs none.
     static var v17ToV18: MigrationStage { .lightweight(fromVersion: DosarSchemaV17.self, toVersion: DosarSchemaV18.self) }
+
+    /// Version 19 only adds an optional attribute (when a category was last locked on one of the
+    /// person's devices); every record keeps its values. Each device sends its own locks up once,
+    /// at the next launch (`LockPublishing`).
+    static var v18ToV19: MigrationStage { .lightweight(fromVersion: DosarSchemaV18.self, toVersion: DosarSchemaV19.self) }
 }
 
 /// The schema the app runs on, for code that needs the schema itself (its models, a `Schema`):
 /// outside `Models/Schema/`, code names this and the model aliases below, never a version, so
 /// the next version is one change here (the `frozen-schema-version` check).
-public typealias CurrentSchema = DosarSchemaV18
+public typealias CurrentSchema = DosarSchemaV19
 
-public typealias CategoryTemplate = DosarSchemaV18.CategoryTemplate
-public typealias Asset = DosarSchemaV18.Asset
-public typealias Obligation = DosarSchemaV18.Obligation
-public typealias HistoryEntry = DosarSchemaV18.HistoryEntry
-public typealias ServiceItem = DosarSchemaV18.ServiceItem
-public typealias MeasurementLog = DosarSchemaV18.MeasurementLog
-public typealias Attachment = DosarSchemaV18.Attachment
-public typealias Provider = DosarSchemaV18.Provider
-public typealias AttachmentPage = DosarSchemaV18.AttachmentPage
-public typealias IssuerLesson = DosarSchemaV18.IssuerLesson
+public typealias CategoryTemplate = DosarSchemaV19.CategoryTemplate
+public typealias Asset = DosarSchemaV19.Asset
+public typealias Obligation = DosarSchemaV19.Obligation
+public typealias HistoryEntry = DosarSchemaV19.HistoryEntry
+public typealias ServiceItem = DosarSchemaV19.ServiceItem
+public typealias MeasurementLog = DosarSchemaV19.MeasurementLog
+public typealias Attachment = DosarSchemaV19.Attachment
+public typealias Provider = DosarSchemaV19.Provider
+public typealias AttachmentPage = DosarSchemaV19.AttachmentPage
+public typealias IssuerLesson = DosarSchemaV19.IssuerLesson
 
 /// Shared JSON coding for values stored as `Data` on models and written to archives.
 /// Keys are sorted so the same value always produces the same bytes.
